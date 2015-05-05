@@ -1789,13 +1789,25 @@ static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_cl
   const float aratio = (float)ad / (float)an;
   const float bratio = (float)bd / (float)bn;
 
-  if(aratio > bratio) return -1;
+  if(aratio < bratio) return -1;
 
   float prec = 0.0003f;
   if(fabsf(aratio - bratio) < prec) return 0;
 
   return 1;
 }
+
+
+static gchar *format_aspect(gchar *original, int adim, int bdim)
+{
+  // Special ratios:  freehand, original image
+  if ( bdim == 0 ) {
+    return g_strdup(original);
+  }
+
+  return g_strdup_printf("%s  %4.2f", original, ((float)adim / (float)bdim));
+}
+
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -1861,25 +1873,33 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->crop_auto), "value-changed", G_CALLBACK(crop_auto_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->crop_auto, TRUE, TRUE, 0);
 
-  dt_iop_clipping_aspect_t aspects[] = { { _("free"), 0, 0 },
-                                         { _("image"), 1, 0 },
-                                         { _("golden cut"), 16180340, 10000000 },
-                                         { _("1:2"), 1, 2 },
-                                         { _("3:2"), 3, 2 },
-                                         { _("7:5"), 7, 5 },
-                                         { _("4:3"), 4, 3 },
-                                         { _("5:4"), 5, 4 },
+  dt_iop_clipping_aspect_t aspects[] = { { _("freehand"), 0, 0 },
+                                         { _("original image"), 1, 0 },
                                          { _("square"), 1, 1 },
-                                         { _("DIN"), 14142136, 10000000 },
-                                         { _("16:9"), 16, 9 },
-                                         { _("16:10"), 16, 10 },
-                                         { _("10:8 in print"), 2445, 2032 } };
+                                         { _("10:8 in print"), 2445, 2032 },
+                                         { _("5:4, 4x5, 8x10"), 5, 4 },
+                                         { _("11x14"), 14, 11 },
+                                         { _("8.5x11, letter"), 110, 85 },
+                                         { _("4:3, VGA, TV"), 4, 3 },
+                                         { _("5x7"), 7, 5 },
+                                         { _("din/iso a"), 14142136, 10000000 },
+                                         { _("3:2, 4x6, 35mm"), 3, 2 },
+                                         { _("16:10, 8x5"), 16, 10 },
+                                         { _("golden cut"), 16180340, 10000000 },
+                                         { _("16:9, HDTV"), 16, 9 },
+                                         { _("widescreen"), 185, 100 },
+                                         { _("2:1, univisium"), 2, 1 },
+                                         { _("cinemascope"), 235, 100 },
+                                         { _("21:9"), 237, 100 },
+                                         { _("anamorphic"), 239, 100 },
+  };
+
   const int aspects_count = sizeof(aspects) / sizeof(dt_iop_clipping_aspect_t);
 
   for(int i = 0; i < aspects_count; i++)
   {
     dt_iop_clipping_aspect_t *aspect = g_malloc(sizeof(dt_iop_clipping_aspect_t));
-    aspect->name = g_strdup(aspects[i].name);
+    aspect->name = format_aspect(aspects[i].name, aspects[i].d, aspects[i].n);
     aspect->d = aspects[i].d;
     aspect->n = aspects[i].n;
     g->aspect_list = g_list_append(g->aspect_list, aspect);
@@ -1907,7 +1927,7 @@ void gui_init(struct dt_iop_module_t *self)
         continue;
       }
       dt_iop_clipping_aspect_t *aspect = g_malloc(sizeof(dt_iop_clipping_aspect_t));
-      aspect->name = g_strdup(nv->key);
+      aspect->name = format_aspect(nv->key, d, n);
       aspect->d = d;
       aspect->n = n;
       g->aspect_list = g_list_append(g->aspect_list, aspect);
@@ -1965,7 +1985,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed", G_CALLBACK(aspect_presets_changed), self);
   g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text",
-               _("set the aspect ratio\nthe list is sorted: from least square to the most square"),
+               _("set the aspect ratio\nthe list is sorted: from most square to least square"),
                (char *)NULL);
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
