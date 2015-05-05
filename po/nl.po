@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-02 20:05+0200\n"
-"PO-Revision-Date: 2015-05-02 20:41+0100\n"
+"POT-Creation-Date: 2015-05-03 17:15+0200\n"
+"PO-Revision-Date: 2015-05-05 13:36+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -4955,7 +4955,7 @@ msgstr "omvang "
 #: ../src/iop/colorreconstruction.c:172
 msgctxt "accel"
 msgid "range extent"
-msgstr "bereik voorzover"
+msgstr "bereik uitbreiden"
 
 #: ../src/iop/colorreconstruction.c:173
 msgctxt "accel"
@@ -4969,7 +4969,7 @@ msgstr "omvang "
 
 #: ../src/iop/colorreconstruction.c:1310
 msgid "range extent"
-msgstr "bereik voorzover"
+msgstr "bereik uitbreiden"
 
 #: ../src/iop/colorreconstruction.c:1313
 msgid "precedence"
@@ -4985,11 +4985,11 @@ msgstr "pixels met helderheids waarden boven de drempel worden gecorrigeerd"
 
 #: ../src/iop/colorreconstruction.c:1346
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr "hoelang zoeken naar vervangende kleuren in ruimtelijke dimensies"
+msgstr "hoe diep zoeken naar vervangende kleuren in de ruimtelijke dimensies"
 
 #: ../src/iop/colorreconstruction.c:1347
 msgid "how far to look for replacement colors in the luminance dimension"
-msgstr "hoe lang zoeken naar vervangende kleuren in helderheids dimensie"
+msgstr "hoe diep zoeken naar vervangende kleuren in de helderheids dimensie"
 
 #: ../src/iop/colorreconstruction.c:1348
 msgid "if and how to give precedence to specific replacement colors"
