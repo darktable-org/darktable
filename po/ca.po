@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-05-05 16:06+0200\n"
-"PO-Revision-Date: 2015-05-05 16:11+0100\n"
+"PO-Revision-Date: 2015-05-05 16:23+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Josep Vicenç Moragues Pastor <josepvm@arrakis.es>\n"
 "Language: ca\n"
@@ -825,8 +825,8 @@ msgstr "etiquetat"
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
-msgstr[0] "selecionada %d imatge de %d de la col·lecció actual"
-msgstr[1] "selecionades %d imatges de %d de la col·lecció actual"
+msgstr[0] "seleccionada %d imatge de %d de la col·lecció actual"
+msgstr[1] "seleccionades %d imatges de %d de la col·lecció actual"
 
 #: ../src/common/darktable.c:315
 #, c-format
