@@ -246,7 +246,7 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         dest[x] = left1 = pred + ((diff << 2) | low);
         nw1 = up;
       }
-	    border = y_border;
+      border = y_border;
     }
   }
 }
