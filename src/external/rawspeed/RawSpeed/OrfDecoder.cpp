@@ -287,7 +287,7 @@ void OrfDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     // Newer cameras process the Image Processing SubIFD in the makernote
     if(mRootIFD->hasEntryRecursive(OLYMPUSIMAGEPROCESSING)) {
       TiffEntry *img_entry = mRootIFD->getEntryRecursive(OLYMPUSIMAGEPROCESSING);
-      uint32 offset = *((uint32 *) img_entry->getData()) + img_entry->parent_offset - 12;
+      uint32 offset = img_entry->getInt() + img_entry->parent_offset - 12;
       TiffIFD *image_processing = NULL;
       try {
         if (mRootIFD->endian == getHostEndianness())
