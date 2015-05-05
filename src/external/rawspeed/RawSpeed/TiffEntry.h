@@ -58,7 +58,8 @@ typedef	enum {
 	TIFF_SLONG	= 9,	/* !32-bit signed integer */
 	TIFF_SRATIONAL	= 10,	/* !64-bit signed fraction */
 	TIFF_FLOAT	= 11,	/* !32-bit IEEE floating point */
-	TIFF_DOUBLE	= 12	/* !64-bit IEEE floating point */
+	TIFF_DOUBLE	= 12,	/* !64-bit IEEE floating point */
+	TIFF_CRAZY	= 13	/* At least Olympus uses this for maker notes */
 } TiffDataType;
 
 
