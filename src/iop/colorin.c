@@ -643,8 +643,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     cam_xyz[0] = NAN;
 
     // Use the legacy name if it has been set to honor the partial matching matrices of low-end Canons
-    if (pipe->image.raw_legacy_alias[0])
-      dt_dcraw_adobe_coeff(pipe->image.raw_legacy_alias, (float(*)[12])cam_xyz);
+    if (pipe->image.camera_legacy_makermodel[0])
+      dt_dcraw_adobe_coeff(pipe->image.camera_legacy_makermodel, (float(*)[12])cam_xyz);
     else
       dt_dcraw_adobe_coeff(pipe->image.camera_makermodel, (float(*)[12])cam_xyz);
 
@@ -1006,8 +1006,8 @@ static void update_profile_list(dt_iop_module_t *self)
   cam_xyz[0] = NAN;
 
   // Use the legacy name if it has been set to honor the partial matching matrices of low-end Canons
-  if (self->dev->image_storage.raw_legacy_alias[0])
-    dt_dcraw_adobe_coeff(self->dev->image_storage.raw_legacy_alias, (float(*)[12])cam_xyz);
+  if (self->dev->image_storage.camera_legacy_makermodel[0])
+    dt_dcraw_adobe_coeff(self->dev->image_storage.camera_legacy_makermodel, (float(*)[12])cam_xyz);
   else
     dt_dcraw_adobe_coeff(self->dev->image_storage.camera_makermodel, (float(*)[12])cam_xyz);
 
