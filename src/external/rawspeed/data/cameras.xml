@@ -711,7 +711,7 @@
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS M2" supported="yes">
+	<Camera make="Canon" model="Canon EOS M2">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2121,7 +2121,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P330" supported="yes" decoder_version="5">
+	<Camera make="NIKON" model="COOLPIX P330" decoder_version="5">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2145,7 +2145,7 @@
 		<Crop x="0" y="0" width="-44" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P6000" supported="yes" decoder_version="1">
+	<Camera make="NIKON" model="COOLPIX P6000" decoder_version="1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2159,7 +2159,7 @@
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7000" supported="yes" decoder_version="1">
+	<Camera make="NIKON" model="COOLPIX P7000" decoder_version="1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2175,7 +2175,7 @@
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7100" supported="yes" decoder_version="1">
+	<Camera make="NIKON" model="COOLPIX P7100" decoder_version="1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2191,7 +2191,7 @@
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7700" supported="yes" decoder_version="5">
+	<Camera make="NIKON" model="COOLPIX P7700" decoder_version="5">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2205,7 +2205,7 @@
 			<Hint name="real_bpp" value="16"/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7800" supported="yes" decoder_version="5">
+	<Camera make="NIKON" model="COOLPIX P7800" decoder_version="5">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2709,7 +2709,7 @@
 			<Alias>STYLUS1,1s</Alias>
 		</Aliases>
 	</Camera>
-	<Camera make="Panasonic" model = "DMC-CM1" supported="yes">
+	<Camera make="Panasonic" model = "DMC-CM1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2722,7 +2722,7 @@
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="Panasonic" model = "DMC-CM1" mode="3:2" supported="yes">
+	<Camera make="Panasonic" model = "DMC-CM1" mode="3:2">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5449,7 +5449,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="SONY" model="DSLR-A450" supported="yes">
+	<Camera make="SONY" model="DSLR-A450">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5499,7 +5499,7 @@
 		<Crop x="0" y="0" width="-2" height="-2"/>
 		<Sensor black="520" white="16596"/>
 	</Camera>
-	<Camera make="SONY" model="DSLR-A700" supported="yes">
+	<Camera make="SONY" model="DSLR-A700">
 		<CFA width="2" height="2">
 			<Color x="1" y="1">BLUE</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5509,7 +5509,7 @@
 		<Crop x="0" y="0" width="4288" height="2856"/>
 		<Sensor black="520" white="16383"/>
 	</Camera>
-	<Camera make="SONY" model="DSLR-A850" supported="yes">
+	<Camera make="SONY" model="DSLR-A850">
 		<CFA width="2" height="2">
 			<Color x="1" y="1">BLUE</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5519,7 +5519,7 @@
 		<Crop x="0" y="0" width="6080" height="4048"/>
 		<Sensor black="500" white="15000"/>
 	</Camera>
-	<Camera make="SONY" model="DSLR-A900" supported="yes">
+	<Camera make="SONY" model="DSLR-A900">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5529,7 +5529,7 @@
 		<Crop x="0" y="0" width="6080" height="4048"/>
 		<Sensor black="520" white="16383"/>
 	</Camera>
-	<Camera make="SONY" model="NEX-3" supported="yes">
+	<Camera make="SONY" model="NEX-3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5549,7 +5549,7 @@
 		<Crop x="0" y="0" width="-10" height="0"/>
 		<Sensor black="520" white="16596"/>
 	</Camera>
-	<Camera make="SONY" model="NEX-5" supported="yes">
+	<Camera make="SONY" model="NEX-5">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5559,7 +5559,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="520" white="16383"/>
 	</Camera>
-	<Camera make="SONY" model="NEX-5N" supported="yes">
+	<Camera make="SONY" model="NEX-5N">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5569,7 +5569,7 @@
 		<Crop x="0" y="0" width="-12" height="0"/>
 		<Sensor black="520" white="16596"/>
 	</Camera>
-	<Camera make="SONY" model="NEX-5R" supported="yes">
+	<Camera make="SONY" model="NEX-5R">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5579,7 +5579,7 @@
 		<Crop x="0" y="0" width="-12" height="0"/>
 		<Sensor black="520" white="16596"/>
 	</Camera>
-	<Camera make="SONY" model="NEX-5T" supported="yes">
+	<Camera make="SONY" model="NEX-5T">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5589,7 +5589,7 @@
 		<Crop x="0" y="0" width="-12" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
-	<Camera make="SONY" model="NEX-6" supported="yes">
+	<Camera make="SONY" model="NEX-6">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5600,7 +5600,7 @@
 		<Sensor black="520" white="16596"/>
 	</Camera>
 	<!-- Measured on images from https://github.com/klauspost/rawspeed/issues/78 -->
-	<Camera make="SONY" model="NEX-7" supported="yes">
+	<Camera make="SONY" model="NEX-7">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5610,7 +5610,7 @@
 		<Crop x="0" y="0" width="-26" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
-	<Camera make="SONY" model="NEX-C3" supported="yes">
+	<Camera make="SONY" model="NEX-C3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5620,7 +5620,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="520" white="16596"/>
 	</Camera>
-	<Camera make="SONY" model="NEX-F3" supported="yes">
+	<Camera make="SONY" model="NEX-F3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5630,7 +5630,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="520" white="16360"/>
 	</Camera>
-	<Camera make="SONY" model="ILCE-3000" supported="yes">
+	<Camera make="SONY" model="ILCE-3000">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5640,7 +5640,7 @@
 		<Crop x="0" y="0" width="-34" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
-	<Camera make="SONY" model="ILCE-3500" supported="yes">
+	<Camera make="SONY" model="ILCE-3500">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5650,7 +5650,7 @@
 		<Crop x="0" y="0" width="-34" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
-	<Camera make="SONY" model="ILCE-5000" supported="yes">
+	<Camera make="SONY" model="ILCE-5000">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5670,7 +5670,7 @@
 		<Crop x="0" y="0" width="-26" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
-	<Camera make="SONY" model="ILCE-6000" supported="yes">
+	<Camera make="SONY" model="ILCE-6000">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5680,7 +5680,7 @@
 		<Crop x="0" y="0" width="-28" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
-	<Camera make="SONY" model="ILCE-7" supported="yes">
+	<Camera make="SONY" model="ILCE-7">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5700,7 +5700,7 @@
 		<Crop x="0" y="0" width="-26" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
-	<Camera make="SONY" model="ILCE-7R" supported="yes">
+	<Camera make="SONY" model="ILCE-7R">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5710,7 +5710,7 @@
 		<Crop x="0" y="0" width="-26" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
-	<Camera make="SONY" model="ILCE-7S" supported="yes">
+	<Camera make="SONY" model="ILCE-7S">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
