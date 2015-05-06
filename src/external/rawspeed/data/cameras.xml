@@ -7462,7 +7462,7 @@
 			<Hint name="offset" value="3212"/>
 		</Hints>
 	</Camera>
-	<Camera make="Minolta" model="RD175" supported="no" mode="chdk" supported="no">
+	<Camera make="Minolta" model="RD175" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
