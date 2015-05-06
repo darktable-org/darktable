@@ -55,7 +55,7 @@ RawImage NakedDecoder::decodeRawInternal() {
 
   if(cam->hints.find("offset") != cam->hints.end()) {
     string tmp = cam->hints.find(string("offset"))->second;
-    height = (uint32) atoi(tmp.c_str());
+    offset = (uint32) atoi(tmp.c_str());
   }
 
   if(cam->hints.find("bits") != cam->hints.end()) {
@@ -64,12 +64,26 @@ RawImage NakedDecoder::decodeRawInternal() {
   } else
     bits = (filesize-offset)*8/width/height;
 
+  BitOrder bo = BitOrder_Jpeg16;  // Default
+  if(cam->hints.find("order") != cam->hints.end()) {
+    string tmp = cam->hints.find(string("order"))->second;
+    if (tmp.compare("plain") == 0) {
+      bo = BitOrder_Plain;
+    } else if (tmp.compare("jpeg") == 0) {
+      bo = BitOrder_Jpeg;
+    } else if (tmp.compare("jpeg16") == 0) {
+      bo = BitOrder_Jpeg16;    
+    } else if (tmp.compare("jpeg32") == 0) {
+      bo = BitOrder_Jpeg32;    
+    }
+  }
+
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
 
   ByteStream input(mFile->getData(offset), mFile->getSize()-offset);
   iPoint2D pos(0, 0);
-  readUncompressedRaw(input, mRaw->dim, pos, width*bits/8, bits, BitOrder_Jpeg16);
+  readUncompressedRaw(input, mRaw->dim, pos, width*bits/8, bits, bo);
 
   return mRaw;
 }
