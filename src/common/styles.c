@@ -558,6 +558,16 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    /* then move to top of history */
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE images"
+                                " SET history_end=(SELECT MAX(num) FROM history WHERE imgid=?1)"
+                                " WHERE id=?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
     /* add tag */
     guint tagid = 0;
     gchar ntag[512] = { 0 };
