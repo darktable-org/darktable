@@ -540,16 +540,12 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->finetune, 0);
 
   const char *wb_name = NULL;
-  char makermodel[1024];
-  char *model = makermodel;
-  dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-                                      self->dev->image_storage.exif_maker,
-                                      self->dev->image_storage.exif_model);
   if(!dt_image_is_ldr(&self->dev->image_storage))
     for(int i = 0; i < wb_preset_count; i++)
     {
       if(g->preset_cnt >= 50) break;
-      if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model))
+      if(!strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker) 
+         && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model))
       {
         if(!wb_name || strcmp(wb_name, wb_preset[i].name))
         {
@@ -585,9 +581,10 @@ void gui_update(struct dt_iop_module_t *self)
     for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
     {
       // look through all variants of this preset, with different tuning
-      for(int i = g->preset_num[j]; !found && (i < wb_preset_count) && !strcmp(wb_preset[i].make, makermodel)
-                                        && !strcmp(wb_preset[i].model, model)
-                                        && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name);
+      for(int i = g->preset_num[j]; !found && (i < wb_preset_count) 
+                                    && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
+                                    && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
+                                    && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name);
           i++)
       {
         float coeffs[3];
@@ -614,8 +611,8 @@ void gui_update(struct dt_iop_module_t *self)
       {
         // look through all variants of this preset, with different tuning
         int i = g->preset_num[j] + 1;
-        while(!found && (i < wb_preset_count) && !strcmp(wb_preset[i].make, makermodel)
-              && !strcmp(wb_preset[i].model, model)
+        while(!found && (i < wb_preset_count) && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
+              && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_maker)
               && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name))
         {
           // let's find gaps
@@ -666,12 +663,9 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[3])
   }
 
   // color matrix
-  char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
-                                module->dev->image_storage.exif_model);
   float XYZ_to_CAM[4][3];
   XYZ_to_CAM[0][0] = NAN;
-  dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
+  dt_dcraw_adobe_coeff(module->dev->image_storage.camera_makermodel, (float(*)[12])XYZ_to_CAM);
   if(!isnan(XYZ_to_CAM[0][0]))
   {
     // sRGB D65
@@ -739,13 +733,9 @@ static int prepare_wb_matrices(dt_iop_module_t *module)
   }
 
   // prepare matrices for Kelvin temperature
-  char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
-                                module->dev->image_storage.exif_model);
-
   float XYZ_to_CAM[4][3];
   XYZ_to_CAM[0][0] = NAN;
-  dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
+  dt_dcraw_adobe_coeff(module->dev->image_storage.camera_makermodel, (float(*)[12])XYZ_to_CAM);
   if(!isnan(XYZ_to_CAM[0][0]))
   {
     for(int i = 0; i < 3; i++)
@@ -774,12 +764,6 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   if(module->gui_data) prepare_wb_matrices(module);
-
-  char makermodel[1024];
-  char *model = makermodel;
-  dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-                                      module->dev->image_storage.exif_maker,
-                                      module->dev->image_storage.exif_model);
 
   /* check if file is raw / hdr */
   if(dt_image_is_raw(&module->dev->image_storage))
@@ -813,7 +797,8 @@ void reload_defaults(dt_iop_module_t *module)
         // could not get useful info, try presets:
         for(int i = 0; i < wb_preset_count; i++)
         {
-          if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model))
+          if(!strcmp(wb_preset[i].make, module->dev->image_storage.camera_maker) 
+             && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model))
           {
             // just take the first preset we find for this camera
             for(int k = 0; k < 3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];
@@ -877,7 +862,8 @@ void reload_defaults(dt_iop_module_t *module)
       // we're normalizing that to be D65
       for(int i = 0; i < wb_preset_count; i++)
       {
-        if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+        if(!strcmp(wb_preset[i].make, module->dev->image_storage.camera_maker) 
+           && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model)
            && !strcmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
         {
           for(int k = 0; k < 3; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
@@ -1068,17 +1054,12 @@ static void apply_preset(dt_iop_module_t *self)
       break;
     default: // camera WB presets
     {
-      char makermodel[1024];
-      char *model = makermodel;
-      dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-                                          self->dev->image_storage.exif_maker,
-                                          self->dev->image_storage.exif_model);
-
       gboolean found = FALSE;
       // look through all variants of this preset, with different tuning
-      for(int i = g->preset_num[pos]; (i < wb_preset_count) && !strcmp(wb_preset[i].make, makermodel)
-                                          && !strcmp(wb_preset[i].model, model)
-                                          && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name);
+      for(int i = g->preset_num[pos]; (i < wb_preset_count) 
+                                      && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
+                                      && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
+                                      && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name);
           i++)
       {
         if(wb_preset[i].tuning == tune)
@@ -1100,8 +1081,8 @@ static void apply_preset(dt_iop_module_t *self)
         // look through all variants of this preset, with different tuning, starting from second entry (if
         // any)
         int i = g->preset_num[pos] + 1;
-        while((i < wb_preset_count) && !strcmp(wb_preset[i].make, makermodel)
-              && !strcmp(wb_preset[i].model, model)
+        while((i < wb_preset_count) && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
+              && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
               && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name))
         {
           if(wb_preset[i - 1].tuning < tune && wb_preset[i].tuning > tune)
