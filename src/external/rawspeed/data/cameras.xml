@@ -7090,6 +7090,17 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="31456"/>
 	</Camera>
+	<Camera make="Hasselblad" model="Flash Sync">
+		<ID make="Hasselblad" model="CF132">Hasselblad 22-Uncoated</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="62914"/>
+	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX 645Z" mode="dng">
 		<ID make="Pentax" model="645Z">PENTAX 645Z</ID>
 	</Camera>
