@@ -284,17 +284,23 @@ static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename
                                     gpointer user_data)
 {
   if(storage){
+    dt_imageio_module_data_t *format_copy = format->get_params(format);
+    memcpy(format_copy,fdata,format->params_size(format));
+    dt_imageio_module_data_t *storage_copy = storage->get_params(storage);
+    memcpy(storage_copy,sdata,storage->params_size(storage));
     dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
         LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
         LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),
-        LUA_ASYNC_TYPEID,format->parameter_lua_type,fdata,
-        LUA_ASYNC_TYPEID,storage->parameter_lua_type,sdata,
+        LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,
+        LUA_ASYNC_TYPEID_WITH_FREE,storage->parameter_lua_type,storage_copy,
         LUA_ASYNC_DONE);
   }else{
+    dt_imageio_module_data_t *format_copy = format->get_params(format);
+    memcpy(format_copy,fdata,format->params_size(format));
     dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
         LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
         LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),
-        LUA_ASYNC_TYPEID,format->parameter_lua_type,fdata,
+        LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,
         LUA_ASYNC_TYPENAME,"void",NULL,
         LUA_ASYNC_DONE);
   }
