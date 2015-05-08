@@ -17,6 +17,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+include(LibFindMacros)
+
 SET(GPHOTO2_FIND_REQUIRED ${Gphoto2_FIND_REQUIRED})
 
 find_path(GPHOTO2_INCLUDE_DIR gphoto2/gphoto2.h)
@@ -30,15 +32,10 @@ mark_as_advanced(GPHOTO2_LIBRARY)
 mark_as_advanced(GPHOTO2_PORT_LIBRARY)
 
 # Detect libgphoto2 version
-FIND_PROGRAM(GPHOTO2CONFIG_EXECUTABLE NAMES gphoto2-config)
-IF(GPHOTO2CONFIG_EXECUTABLE)
-  EXECUTE_PROCESS(COMMAND ${GPHOTO2CONFIG_EXECUTABLE} --version OUTPUT_STRIP_TRAILING_WHITESPACE RESULT_VARIABLE _return_VALUE OUTPUT_VARIABLE GPHOTO2_VERSION)
-  string(REGEX REPLACE "^.*libgphoto2 ([0-9]+).*$" "\\1" GPHOTO2_VERSION_MAJOR "${GPHOTO2_VERSION}")
-  string(REGEX REPLACE "^.*libgphoto2 [0-9]+\\.([0-9]+).*$" "\\1" GPHOTO2_VERSION_MINOR  "${GPHOTO2_VERSION}")
-  string(REGEX REPLACE "^.*libgphoto2 [0-9]+\\.[0-9]+\\.([0-9]+).*$" "\\1" GPHOTO2_VERSION_PATCH "${GPHOTO2_VERSION}")
-
-  set(GPHOTO2_VERSION_STRING "${GPHOTO2_VERSION_MAJOR}.${GPHOTO2_VERSION_MINOR}.${GPHOTO2_VERSION_PATCH}")
-ENDIF(GPHOTO2CONFIG_EXECUTABLE)
+libfind_pkg_check_modules(PC_GPHOTO2 libgphoto2)
+if(PC_GPHOTO2_FOUND)
+  set(GPHOTO2_VERSION_STRING "${PC_GPHOTO2_VERSION}")
+endif()
 
 # handle the QUIETLY and REQUIRED arguments and set GPHOTO2_FOUND to TRUE if
 # all listed variables are TRUE
