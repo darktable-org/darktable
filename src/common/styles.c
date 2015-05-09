@@ -526,9 +526,10 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
       newimgid = imgid;
 
     /* merge onto history stack, let's find history offest in destination image */
-    int32_t offs = 0;
+    /* in sqlite ROWID starts at 1, while our num column starts at 0 */
+    int32_t offs = -1;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT MAX(num)+1 FROM history WHERE imgid = ?1", -1, &stmt, NULL);
+                                "SELECT IFNULL(MAX(num), -1) FROM history WHERE imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
     if(sqlite3_step(stmt) == SQLITE_ROW) offs = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
