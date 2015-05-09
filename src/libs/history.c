@@ -138,7 +138,7 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, const char *label,
-                                             gboolean enabled)
+                                             gboolean enabled, gboolean selected)
 {
   /* create label */
   GtkWidget *widget = NULL;
@@ -158,6 +158,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)g_strdup(label));
+  if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 
   /* set callback when clicked */
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_history_button_clicked_callback), self);
@@ -178,7 +179,8 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   /* add default which always should be */
   int num = -1;
-  gtk_box_pack_start(GTK_BOX(d->history_box), _lib_history_create_button(self, num, _("original"), FALSE),
+  gtk_box_pack_start(GTK_BOX(d->history_box),
+                     _lib_history_create_button(self, num, _("original"), FALSE, darktable.develop->history_end == 0),
                      TRUE, TRUE, 0);
   num++;
 
@@ -197,7 +199,8 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     else
       label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
 
-    GtkWidget *widget = _lib_history_create_button(self, num, label, hitem->enabled);
+    gboolean selected = (num == darktable.develop->history_end - 1);
+    GtkWidget *widget = _lib_history_create_button(self, num, label, hitem->enabled, selected);
     g_free(label);
 
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
@@ -223,9 +226,10 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1 and num "
                                                              "not in (select MAX(num) from history where "
-                                                             "imgid = ?1 group by operation,multi_priority)",
+                                                             "imgid = ?1 and num < ?2 group by operation,multi_priority)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 

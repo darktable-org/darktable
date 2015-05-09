@@ -830,8 +830,8 @@ msgstr "etiquetat"
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
-msgstr[0] "sel·lecionada %d imatge de %d de la col·lecció actual"
-msgstr[1] "sel·lecionades %d imatges de %d de la col·lecció actual"
+msgstr[0] "seleccionada %d imatge de %d de la col·lecció actual"
+msgstr[1] "seleccionades %d imatges de %d de la col·lecció actual"
 
 #: ../src/common/cups_print.c:273
 #, c-format
@@ -7817,7 +7817,7 @@ msgstr "carpeta"
 
 #: ../src/libs/import.c:828
 msgid "select a folder to import as film roll"
-msgstr "sel·leccioneu una carpeta a importar com a rodet"
+msgstr "seleccioneu una carpeta a importar com a rodet"
 
 #: ../src/libs/lib.c:214
 #, c-format

@@ -117,6 +117,13 @@ typedef struct dt_image_t
   char exif_model[64];
   char exif_lens[128];
   char exif_datetime_taken[20];
+
+  char camera_maker[64];
+  char camera_model[64];
+  char camera_alias[64];
+  char camera_makermodel[128];
+  char camera_legacy_makermodel[128];
+
   char filename[DT_MAX_FILENAME_LEN];
 
   // common stuff
@@ -164,6 +171,8 @@ typedef struct dt_image_t
 // image buffer operations:
 /** inits basic values to sensible defaults. */
 void dt_image_init(dt_image_t *img);
+/** Refresh makermodel from the raw and exif values **/
+void dt_image_refresh_makermodel(dt_image_t *img);
 /** returns non-zero if the image contains low-dynamic range data. */
 int dt_image_is_ldr(const dt_image_t *img);
 /** returns non-zero if the image contains mosaic data. */

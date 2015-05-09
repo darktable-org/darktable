@@ -1,0 +1,91 @@
+#!/usr/bin/env ruby
+
+require 'nokogiri'
+
+CAMERAS=File.expand_path("../src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
+COEFFS=File.expand_path("../src/external/adobe_coeff.c", File.dirname(__FILE__))
+WBPRESETS=File.expand_path("../src/external/wb_presets.c", File.dirname(__FILE__))
+COLORMATRICES=File.expand_path("../src/common/colormatrices.c", File.dirname(__FILE__))
+
+rawspeed_cameras = []
+
+File.open(CAMERAS) do |f|
+  xml_doc  = Nokogiri::XML(f)
+  xml_doc.css("Camera").each do |c|
+    maker = c.attribute("make").value
+    model = c.attribute("model").value
+    if c.css("ID")[0]
+      maker = c.css("ID")[0].attribute("make").value
+      model = c.css("ID")[0].attribute("model").value
+    end
+    id = "#{maker} #{model}"
+    supported = !c.attribute("supported") || c.attribute("supported").value == "yes"
+    if supported
+      rawspeed_cameras << id
+    end
+  end
+end
+
+coeffs_cameras = []
+File.open(COEFFS) do |f|
+  f.each do |line|
+    if line[0..4] == "    {"
+      coeffs_cameras << line.split('"')[1]
+    end
+  end
+end
+
+presets_cameras = {}
+File.open(WBPRESETS) do |f|
+  f.each do |line|
+    if line[0..2] == "  {"
+      lineparts = line.split('"')
+      presets_cameras["#{lineparts[1]} #{lineparts[3]}"] = true
+    end
+  end
+end
+presets_cameras = presets_cameras.keys
+
+colormatrices_cameras = []
+File.open(COLORMATRICES) do |f|
+  f.each do |line|
+    if line[0..2] == "  {"
+      colormatrices_cameras << line.split('"')[1]
+    end
+  end
+end
+
+puts "Found #{rawspeed_cameras.size} cameras #{coeffs_cameras.size} adobe_coeffs #{presets_cameras.size} wb_coeffs #{colormatrices_cameras.size} colormatrices"
+
+def compare_lists(name, cameras, db)
+  dbhash = {}
+  db.each {|c| dbhash[c] = 0}
+
+  miss_cams = []
+  cameras.each do |c|
+    if !dbhash[c]
+      miss_cams << c
+    else
+      dbhash[c] += 1
+    end
+  end
+
+  miss_db = []
+  dbhash.each do |c, num|
+    if num == 0
+      miss_db << c
+    end
+  end
+
+  puts "For #{name} found #{miss_cams.size} cameras missing and #{miss_db.size} entries for no cam"
+
+#  puts "\nMissing Cams\n"
+#  miss_cams.each {|c| puts c}
+
+#  puts "\nUnmatched Cams\n"
+#  miss_db.each {|c| puts c}
+end
+
+compare_lists("adobe_coeffs", rawspeed_cameras, coeffs_cameras)
+compare_lists("wb_presets", rawspeed_cameras, presets_cameras)
+compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras)

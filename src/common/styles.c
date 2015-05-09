@@ -526,9 +526,17 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
       newimgid = imgid;
 
     /* merge onto history stack, let's find history offest in destination image */
-    int32_t offs = 0;
+    /* first trim the stack to get rid of whatever is above the selected entry */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT MAX(num)+1 FROM history WHERE imgid = ?1", -1, &stmt, NULL);
+                                "DELETE FROM history WHERE imgid = ?1 AND num >= (SELECT history_end FROM images WHERE id = imgid)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    /* in sqlite ROWID starts at 1, while our num column starts at 0 */
+    int32_t offs = -1;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT IFNULL(MAX(num), -1) FROM history WHERE imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
     if(sqlite3_step(stmt) == SQLITE_ROW) offs = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -555,6 +563,14 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    /* always make the whole stack active */
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1)",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 

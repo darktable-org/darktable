@@ -511,6 +511,14 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
   }
 
   mRaw->cfa = cam->cfa;
+  mRaw->metadata.canonical_make = cam->canonical_make;
+  mRaw->metadata.canonical_model = cam->canonical_model;
+  mRaw->metadata.canonical_alias = cam->canonical_alias;
+  mRaw->metadata.canonical_id = cam->canonical_id;
+  mRaw->metadata.make = make;
+  mRaw->metadata.model = model;
+  mRaw->metadata.mode = mode;
+
   if (applyCrop) {
     iPoint2D new_size = cam->cropSize;
 

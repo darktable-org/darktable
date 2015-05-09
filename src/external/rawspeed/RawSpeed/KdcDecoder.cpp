@@ -108,7 +108,9 @@ void KdcDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
           mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
         }
       }
-    } catch(...) {}
+    } catch(TiffParserException e) {
+      mRaw->setError(e.what());
+    }
     if (kodakifd)
       delete kodakifd;
   }
