@@ -55,6 +55,8 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled);
 /** get list of history items for image as a nice string */
 char *dt_history_get_items_as_string(int32_t imgid);
 
+/** select last history item in the stack */
+void dt_history_select_last(int32_t imgid);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

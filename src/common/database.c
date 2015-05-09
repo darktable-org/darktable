@@ -683,7 +683,7 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
       return version;
     }
     if(sqlite3_exec(db->handle,
-      "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = id)",
+      "UPDATE images SET history_end = (SELECT COUNT(num) FROM history WHERE imgid = id)",
                     NULL, NULL, NULL) != SQLITE_OK)
     {
       fprintf(stderr,

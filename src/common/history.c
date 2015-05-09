@@ -330,12 +330,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   sqlite3_finalize(stmt);
 
   // always make the whole stack active
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  dt_history_select_last(dest_imgid);
 
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, dest_imgid))
@@ -458,6 +453,19 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList 
 
   sqlite3_finalize(stmt);
   return res;
+}
+
+void dt_history_select_last(int32_t imgid)
+{
+  sqlite3_stmt *stmt;
+
+  // always make the whole stack active
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE images SET history_end = (SELECT COUNT(num) FROM history WHERE imgid = ?1)",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

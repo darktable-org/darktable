@@ -62,6 +62,7 @@ extern "C" {
 #include "common/metadata.h"
 #include "common/tags.h"
 #include "common/debug.h"
+#include "common/history.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 }
@@ -1760,12 +1761,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     }
     else
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1)", -1,
-                                  &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      dt_history_select_last(img->id);
     }
   }
   catch(Exiv2::AnyError &e)
