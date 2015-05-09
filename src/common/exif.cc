@@ -1761,7 +1761,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     else
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1)", -1,
+                                  "UPDATE images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) FROM history WHERE imgid = ?1)", -1,
                                   &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
       sqlite3_step(stmt);

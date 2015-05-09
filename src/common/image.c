@@ -294,15 +294,13 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
 {
   sqlite3_stmt *stmt;
   // push new orientation to sql via additional history entry:
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select MAX(num) from history where imgid = ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select IFNULL(MAX(num)+1, 0) from history where imgid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   const int iop_flip_MODVER = 2;
   int num = 0;
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    num = 1 + sqlite3_column_int(stmt, 0);
-  }
+  if(sqlite3_step(stmt) == SQLITE_ROW) num = sqlite3_column_int(stmt, 0);
+
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "insert into history (imgid, num, module, operation, op_params, enabled, "
@@ -315,6 +313,14 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, &orientation, sizeof(int32_t), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1)",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   // write that through to xmp:
   dt_image_write_sidecar_file(imgid);
@@ -777,7 +783,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "insert into images (id, film_id, filename, caption, description, "
-      "license, sha1sum, flags, version, max_version) values (null, ?1, ?2, '', '', '', '', ?3, 0, 0)",
+      "license, sha1sum, flags, version, max_version, history_end) values (null, ?1, ?2, '', '', '', '', ?3, 0, 0, 0)",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_TRANSIENT);
