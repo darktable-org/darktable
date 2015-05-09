@@ -230,7 +230,7 @@ static void pre_median_b(float *out, const float *const in, const dt_iop_roi_t *
   for(int pass = 0; pass < num_passes; pass++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) shared(out) firstprivate(lim) schedule(static)
 #endif
     for(int row = 3; row < roi->height - 3; row++)
     {
@@ -495,7 +495,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out) schedule(dynamic)
+#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out) firstprivate(dir) schedule(dynamic)
 #endif
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border

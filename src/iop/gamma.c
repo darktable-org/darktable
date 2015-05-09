@@ -70,7 +70,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   {
     const float yellow[3] = { 1.0f, 1.0f, 0.0f };
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, o, i, d) firstprivate(yellow) schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {

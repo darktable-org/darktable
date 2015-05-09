@@ -410,7 +410,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide)                           \
+#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide, norm2)                           \
     shared(kj, ki, roi_out, roi_in, ivoid, ovoid, Sa)
 #endif
       for(int j = 0; j < roi_out->height; j++)

@@ -1329,9 +1329,9 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points, a, b, ta, tb, alpha)
+#pragma omp parallel for default(none) shared(points, a, b, ta, tb, alpha) firstprivate(center)
 #else
-#pragma omp parallel for shared(points, a, b, ta, tb, alpha)
+#pragma omp parallel for shared(points, a, b, ta, tb, alpha, center)
 #endif
 #endif
   for(int i = 0; i < mh; i++)

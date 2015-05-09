@@ -220,7 +220,7 @@ static inline void precondition(const float *const in, float *const buf, const i
       = { (b[0] / a[0]) * (b[0] / a[0]), (b[1] / a[1]) * (b[1] / a[1]), (b[2] / a[1]) * (b[2] / a[1]) };
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(a)
+#pragma omp parallel for schedule(static) default(none) shared(a) firstprivate(sigma2)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -247,7 +247,7 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
       = { (b[0] / a[0]) * (b[0] / a[0]), (b[1] / a[1]) * (b[1] / a[1]), (b[2] / a[1]) * (b[2] / a[1]) };
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(a)
+#pragma omp parallel for schedule(static) default(none) shared(a) firstprivate(sigma2)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -349,7 +349,7 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static) firstprivate(filter)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -370,7 +370,7 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static) firstprivate(filter)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -427,7 +427,7 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static) firstprivate(filter)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {
@@ -667,6 +667,11 @@ void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
+  int inited_slide = 0;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) \
+    shared(roi_out, roi_in, in, ovoid, Sa)
+#endif
   // for each shift vector
   for(int kj = -K; kj <= K; kj++)
   {
@@ -675,15 +680,12 @@ void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
       // TODO: adaptive K tests here!
       // TODO: expf eval for real bilateral experience :)
 
-      int inited_slide = 0;
+      inited_slide = 0;
+
 // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
 // we will add up errors)
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide)                           \
-    shared(kj, ki, roi_out, roi_in, in, ovoid, Sa)
-#endif
       for(int j = 0; j < roi_out->height; j++)
       {
         if(j + kj < 0 || j + kj >= roi_out->height) continue;
@@ -760,10 +762,10 @@ void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
           for(; i < last - 4; i += 4, inp += 16, inps += 16, inm += 16, inms += 16, s += 4)
           {
             __m128 sv = _mm_load_ps(s);
-            const __m128 inp1 = _mm_load_ps(inp) - _mm_load_ps(inps);
-            const __m128 inp2 = _mm_load_ps(inp + 4) - _mm_load_ps(inps + 4);
-            const __m128 inp3 = _mm_load_ps(inp + 8) - _mm_load_ps(inps + 8);
-            const __m128 inp4 = _mm_load_ps(inp + 12) - _mm_load_ps(inps + 12);
+            const __m128 inp1 = _mm_sub_ps(_mm_load_ps(inp), _mm_load_ps(inps));
+            const __m128 inp2 = _mm_sub_ps(_mm_load_ps(inp + 4), _mm_load_ps(inps + 4));
+            const __m128 inp3 = _mm_sub_ps(_mm_load_ps(inp + 8), _mm_load_ps(inps + 8));
+            const __m128 inp4 = _mm_sub_ps(_mm_load_ps(inp + 12), _mm_load_ps(inps + 12));
 
             const __m128 inp12lo = _mm_unpacklo_ps(inp1, inp2);
             const __m128 inp34lo = _mm_unpacklo_ps(inp3, inp4);
@@ -779,10 +781,10 @@ void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
             const __m128 inpv2 = _mm_movelh_ps(inp12hi, inp34hi);
             sv += inpv2 * inpv2;
 
-            const __m128 inm1 = _mm_load_ps(inm) - _mm_load_ps(inms);
-            const __m128 inm2 = _mm_load_ps(inm + 4) - _mm_load_ps(inms + 4);
-            const __m128 inm3 = _mm_load_ps(inm + 8) - _mm_load_ps(inms + 8);
-            const __m128 inm4 = _mm_load_ps(inm + 12) - _mm_load_ps(inms + 12);
+            const __m128 inm1 = _mm_sub_ps(_mm_load_ps(inm), _mm_load_ps(inms));
+            const __m128 inm2 = _mm_sub_ps(_mm_load_ps(inm + 4), _mm_load_ps(inms + 4));
+            const __m128 inm3 = _mm_sub_ps(_mm_load_ps(inm + 8), _mm_load_ps(inms + 8));
+            const __m128 inm4 = _mm_sub_ps(_mm_load_ps(inm + 12), _mm_load_ps(inms + 12));
 
             const __m128 inm12lo = _mm_unpacklo_ps(inm1, inm2);
             const __m128 inm34lo = _mm_unpacklo_ps(inm3, inm4);
