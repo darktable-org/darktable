@@ -1975,9 +1975,6 @@
 		</CFA>
 		<Crop x="2" y="0" width="-48" height="0"/>
 		<Sensor black="0" white="15520"/>
-		<Aliases>
-			<Alias id="D800E">NIKON D800E</Alias>
-		</Aliases>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D800" mode="14bit-uncompressed">
 		<ID make="Nikon" model="D800">Nikon D800</ID>
@@ -1989,9 +1986,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="15520"/>
-		<Aliases>
-			<Alias id="D800E">NIKON D800E</Alias>
-		</Aliases>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D800">
 		<ID make="Nikon" model="D800">Nikon D800</ID>
@@ -2003,9 +1997,39 @@
 		</CFA>
 		<Crop x="2" y="0" width="-48" height="0"/>
 		<Sensor black="0" white="3880"/>
-		<Aliases>
-			<Alias id="D800E">NIKON D800E</Alias>
-		</Aliases>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D800E" mode="7424x4924-14bit-uncompressed">
+		<ID make="Nikon" model="D800E">Nikon D800E</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="0" width="-48" height="0"/>
+		<Sensor black="0" white="15520"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D800E" mode="14bit-uncompressed">
+		<ID make="Nikon" model="D800E">Nikon D800E</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15520"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D800E">
+		<ID make="Nikon" model="D800E">Nikon D800E</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="0" width="-48" height="0"/>
+		<Sensor black="0" white="3880"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="sNEF-uncompressed">
 		<ID make="Nikon" model="D810">Nikon D810</ID>
