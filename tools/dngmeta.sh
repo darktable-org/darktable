@@ -30,7 +30,14 @@ MODEL=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Model ' | sed 's#Exif.Ima
 UNIQUE_CAMERA_MODEL=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.UniqueCameraModel ' | sed 's#Exif.Image.UniqueCameraModel *##g')
 
 # This doesn't work with two name makes but there aren't any active ones
-CAMEL_MAKE=${MAKE:0:1}$(echo ${MAKE:1} | tr "[A-Z]" "[a-z]")
+ID_MAKE=${MAKE:0:1}$(echo ${MAKE:1} | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
+
+ID_MODEL=$MODEL
+first_maker=$(echo $MAKE | cut -d " " -f 1)
+first_model=$(echo $MODEL | cut -d " " -f 1)
+if [ "$first_maker" = "$first_model" ]; then
+  ID_MODEL=$(echo $MODEL | cut -d " " -f 2-)
+fi
 
 MANGLED_MAKE_MODEL=$(echo $MAKE $MODEL | sed 's# CORPORATION##gi' | sed 's#Canon Canon#Canon#g' | sed 's#NIKON NIKON#NIKON#g' | sed 's#PENTAX PENTAX#PENTAX#g' | sed 's#OLYMPUS IMAGING CORP.#OLYMPUS#g' | sed 's#OLYMPUS OPTICAL CO.,LTD#OLYMPUS#g' | sed 's# EASTMAN KODAK COMPANY#KODAK#g')
 
@@ -98,7 +105,7 @@ echo ""
 echo "$ nano -w src/external/rawspeed/data/cameras.xml (mind the tabs)"
 echo ""
 echo -e "\t<Camera make=\"$MAKE\" model=\"$MODEL\"$MODE>"
-echo -e "\t\t<ID make=\"$CAMEL_MAKE\" model=\"$MODEL\">$UNIQUE_CAMERA_MODEL</ID>"
+echo -e "\t\t<ID make=\"$ID_MAKE\" model=\"$ID_MODEL\">$UNIQUE_CAMERA_MODEL</ID>"
 
 if [[ $MAKE == FUJIFILM && $CFA_PATTERN_WIDTH == 6 && $CFA_PATTERN_HEIGHT == 6 ]]; then
   echo -e "\t\t<CFA2 width=\"$CFA_PATTERN_WIDTH\" height=\"$CFA_PATTERN_HEIGHT\">"
