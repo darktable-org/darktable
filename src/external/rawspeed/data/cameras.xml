@@ -2931,6 +2931,7 @@
 		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="SP570UZ">
+		<ID make="Olympus" model="SP570UZ">Olympus SP570UZ</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
 			<Color x="1" y="0">RED</Color>
