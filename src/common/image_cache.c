@@ -195,36 +195,39 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "UPDATE images SET width = ?1, height = ?2, maker = ?3, model = ?4, "
-      "lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, "
-      "focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, "
-      "crop = ?14, orientation = ?15, raw_parameters = ?16, group_id = ?17, longitude = ?18, "
-      "latitude = ?19, color_matrix = ?20, colorspace = ?21, raw_black = ?22, raw_maximum = ?23 WHERE id = "
-      "?24",
+      "sanitized_maker = ?5, sanitized_model = ?6, lens = ?7, exposure = ?8, "
+      "aperture = ?9, iso = ?10, focal_length = ?11, focus_distance = ?12, "
+      "film_id = ?13, datetime_taken = ?14, flags = ?15, crop = ?16, "
+      "orientation = ?17, raw_parameters = ?18, group_id = ?19, longitude = ?20, "
+      "latitude = ?21, color_matrix = ?22, colorspace = ?23, raw_black = ?24, "
+      "raw_maximum = ?25 WHERE id = ?26",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_maker, -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, img->exif_model, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_lens, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, img->exif_exposure);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, img->exif_aperture);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, img->exif_iso);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, img->exif_focal_length);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, img->exif_focus_distance);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, img->film_id);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 12, img->exif_datetime_taken, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, img->flags);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 14, img->exif_crop);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->orientation);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, *(uint32_t *)(&img->legacy_flip));
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, img->group_id);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->longitude);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->latitude);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 20, &img->d65_color_matrix, sizeof(img->d65_color_matrix), SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 21, img->colorspace);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, img->raw_black_level);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->raw_white_point);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, img->id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->camera_maker, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, img->camera_alias, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 7, img->exif_lens, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, img->exif_exposure);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, img->exif_aperture);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, img->exif_iso);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, img->exif_focal_length);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, img->exif_focus_distance);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, img->film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 14, img->exif_datetime_taken, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->flags);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 16, img->exif_crop);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, img->orientation);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, *(uint32_t *)(&img->legacy_flip));
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 19, img->group_id);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->longitude);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 21, img->latitude);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 22, &img->d65_color_matrix, sizeof(img->d65_color_matrix), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->colorspace);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, img->raw_black_level);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, img->raw_white_point);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 26, img->id);
   int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
