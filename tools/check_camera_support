@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 
 require 'nokogiri'
+require 'json'
 
 CAMERAS=File.expand_path("../src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
 COEFFS=File.expand_path("../src/external/adobe_coeff.c", File.dirname(__FILE__))
 WBPRESETS=File.expand_path("../src/external/wb_presets.c", File.dirname(__FILE__))
 COLORMATRICES=File.expand_path("../src/common/colormatrices.c", File.dirname(__FILE__))
+NOISEPROFILES=File.expand_path("../data/noiseprofiles.json", File.dirname(__FILE__))
 
 rawspeed_cameras = []
 
@@ -55,7 +57,16 @@ File.open(COLORMATRICES) do |f|
   end
 end
 
-puts "Found #{rawspeed_cameras.size} cameras #{coeffs_cameras.size} adobe_coeffs #{presets_cameras.size} wb_coeffs #{colormatrices_cameras.size} colormatrices"
+noiseprofiles_cameras = []
+JSON.parse(File.read(NOISEPROFILES))['noiseprofiles'].each do |mak|
+  maker = mak['maker']
+  mak['models'].each do |mod|
+    model = mod['model']
+    noiseprofiles_cameras << "#{maker} #{model}"
+  end
+end
+
+puts "Found #{rawspeed_cameras.size} cameras #{coeffs_cameras.size} adobe_coeffs #{presets_cameras.size} wb_coeffs #{colormatrices_cameras.size} colormatrices #{noiseprofiles_cameras.size} noise profiles"
 
 def compare_lists(name, cameras, db)
   dbhash = {}
@@ -89,3 +100,4 @@ end
 compare_lists("adobe_coeffs", rawspeed_cameras, coeffs_cameras)
 compare_lists("wb_presets", rawspeed_cameras, presets_cameras)
 compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras)
+compare_lists("noiseprofiles", rawspeed_cameras, noiseprofiles_cameras)
