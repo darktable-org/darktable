@@ -941,7 +941,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   const __attribute__((__unused__)) int num_threads = 1;
 #if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
 #pragma omp parallel default(none) private(imgid)                                                            \
-    shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, progress, darktable, settings) \
+    shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, progress, darktable, settings) \
         num_threads(num_threads) if(num_threads > 1)
 #else
 #pragma omp parallel private(imgid) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job,        \

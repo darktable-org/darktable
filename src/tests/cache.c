@@ -50,7 +50,7 @@ int main(int argc, char *arg[])
   dt_cache_set_allocate_callback(&cache, alloc_dummy, NULL);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(guided) shared(cache, stderr) num_threads(16)
+#pragma omp parallel for default(none) schedule(guided) shared(cache) num_threads(16)
 #endif
   for(int k = 0; k < 100000; k++)
   {
@@ -93,7 +93,7 @@ int main(int argc, char *arg[])
     dt_cache_set_allocate_callback(&cache2, alloc_dummy, NULL);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(guided) shared(cache2, stderr) num_threads(16)
+#pragma omp parallel for default(none) schedule(guided) shared(cache2) num_threads(16)
 #endif
     for(int k = 0; k < 100000; k++)
     {
