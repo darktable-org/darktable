@@ -52,8 +52,59 @@ int rawspeed_get_number_of_processor_cores()
 
 using namespace RawSpeed;
 
-dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
+static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
+
+static void dt_rawspeed_load_meta() {
+  /* Load rawspeed cameras.xml meta file once */
+  if(meta == NULL)
+  {
+    dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+    if(meta == NULL)
+    {
+      char datadir[PATH_MAX] = { 0 }, camfile[PATH_MAX] = { 0 };
+      dt_loc_get_datadir(datadir, sizeof(datadir));
+      snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
+      // never cleaned up (only when dt closes)
+      meta = new CameraMetaData(camfile);
+    }
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+  }
+}
+
+void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
+                                   char *mk, int mk_len, char *md, int md_len,
+                                   char *al, int al_len)
+{
+  int got_it_done = FALSE;
+  try {
+    dt_rawspeed_load_meta();
+    Camera *cam = meta->getCamera(maker, model, "");
+    // Also look for dng cameras
+    if (!cam)
+      cam = meta->getCamera(maker, model, "dng");
+    if (cam)
+    {
+      g_strlcpy(mk, cam->canonical_make.c_str(), mk_len);
+      g_strlcpy(md, cam->canonical_model.c_str(), md_len);
+      g_strlcpy(al, cam->canonical_alias.c_str(), al_len);
+      got_it_done = TRUE;
+    }
+  }
+  catch(const std::exception &exc)
+  {
+    printf("[rawspeed] %s\n", exc.what());
+  }
+
+  if (!got_it_done)
+  {
+    // We couldn't find the camera or caught some exception, just punt and pass
+    // through the same values
+    g_strlcpy(mk, maker, mk_len);
+    g_strlcpy(md, model, md_len);
+    g_strlcpy(al, model, al_len);
+  }
+}
 
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *mbuf)
@@ -81,20 +132,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
   try
   {
-    /* Load rawspeed cameras.xml meta file once */
-    if(meta == NULL)
-    {
-      dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-      if(meta == NULL)
-      {
-        char datadir[PATH_MAX] = { 0 }, camfile[PATH_MAX] = { 0 };
-        dt_loc_get_datadir(datadir, sizeof(datadir));
-        snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
-        // never cleaned up (only when dt closes)
-        meta = new CameraMetaData(camfile);
-      }
-      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    }
+    dt_rawspeed_load_meta();
 
 #ifdef __APPLE__
     m = auto_ptr<FileMap>(f.readFile());
@@ -116,6 +154,56 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     d->decodeRaw();
     d->decodeMetaData(meta);
     RawImage r = d->mRaw;
+
+    for (uint32 i=0; i<r->errors.size(); i++)
+      fprintf(stderr, "[rawspeed] %s\n", r->errors[i]);
+
+    g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
+    g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
+    g_strlcpy(img->camera_alias, r->metadata.canonical_alias.c_str(), sizeof(img->camera_alias));
+    dt_image_refresh_makermodel(img);
+
+    // We used to partial match the Canon local rebrandings so lets pass on
+    // the value just in those cases to be able to fix old history stacks
+    static const struct {
+      const char *mungedname;
+      const char *origname;
+    } legacy_aliases[] = {
+      {"Canon EOS","Canon EOS REBEL SL1"},
+      {"Canon EOS","Canon EOS Kiss X7"},
+      {"Canon EOS","Canon EOS DIGITAL REBEL XT"},
+      {"Canon EOS","Canon EOS Kiss Digital N"},
+      {"Canon EOS","Canon EOS 350D"},
+      {"Canon EOS","Canon EOS DIGITAL REBEL XSi"},
+      {"Canon EOS","Canon EOS Kiss Digital X2"},
+      {"Canon EOS","Canon EOS Kiss X2"},
+      {"Canon EOS","Canon EOS REBEL T5i"},
+      {"Canon EOS","Canon EOS Kiss X7i"},
+      {"Canon EOS","Canon EOS Rebel T6i"},
+      {"Canon EOS","Canon EOS Kiss X8i"},
+      {"Canon EOS","Canon EOS Rebel T6s"},
+      {"Canon EOS","Canon EOS 8000D"},
+      {"Canon EOS","Canon EOS REBEL T1i"},
+      {"Canon EOS","Canon EOS Kiss X3"},
+      {"Canon EOS","Canon EOS REBEL T2i"},
+      {"Canon EOS","Canon EOS Kiss X4"},
+      {"Canon EOS REBEL T3","Canon EOS REBEL T3i"},
+      {"Canon EOS","Canon EOS Kiss X5"},
+      {"Canon EOS","Canon EOS REBEL T4i"},
+      {"Canon EOS","Canon EOS Kiss X6i"},
+      {"Canon EOS","Canon EOS DIGITAL REBEL XS"},
+      {"Canon EOS","Canon EOS Kiss Digital F"},
+      {"Canon EOS","Canon EOS REBEL T5"},
+      {"Canon EOS","Canon EOS Kiss X70"},
+      {"Canon EOS","Canon EOS DIGITAL REBEL XTi"},
+      {"Canon EOS","Canon EOS Kiss Digital X"},
+    };
+
+    for (uint32 i=0; i<(sizeof(legacy_aliases)/sizeof(legacy_aliases[1])); i++)
+      if (!strcmp(legacy_aliases[i].origname, r->metadata.model.c_str())) {
+        g_strlcpy(img->camera_legacy_makermodel, legacy_aliases[i].mungedname, sizeof(img->camera_legacy_makermodel));
+        break;
+      }
 
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
@@ -260,10 +348,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
   iPoint2D dimUncropped = r->getUncroppedDim();
   iPoint2D cropTL = r->getCropOffset();
-
-  // work around 50D bug
-  char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), img->exif_maker, img->exif_model);
 
   // actually we want to store full floats here:
   img->bpp = 4 * sizeof(float);

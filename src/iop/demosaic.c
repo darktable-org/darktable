@@ -1439,9 +1439,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const dt_image_t *img = &self->dev->image_storage;
   const float threshold = 0.0001f * img->exif_iso;
 
-  dt_iop_roi_t roi, roo;
-  roi = *roi_in;
-  roo = *roi_out;
+  dt_iop_roi_t roi = *roi_in;
+  dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
 
@@ -1467,7 +1466,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     // Full demosaic and then scaling if needed
     int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
     float *tmp = (float *) o;
-    if (scaled) {
+    if(scaled)
+    {
       // demosaic and then clip and zoom
       // we demosaic at 1:1 the size of input roi, so make sure
       // we fit these bounds exactly, to avoid crashes..
@@ -1524,11 +1524,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
     }
 
-    if (scaled) {
+    if(scaled)
+    {
       roi = *roi_out;
-      roi.x = roi.y = 0;
-      roi.scale = roi_out->scale;
-      dt_iop_clip_and_zoom((float *)o, tmp, &roi, &roo, roi.width, roo.width);
+      dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo, roi.width, roo.width);
       dt_free_align(tmp);
     }
   }
@@ -1586,7 +1585,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     int width = roi_out->width;
     int height = roi_out->height;
     dev_tmp = dev_out;
-    if (scaled) {
+    if(scaled)
+    {
       // need to scale to right res
       dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
       if(dev_tmp == NULL) goto error;
@@ -1664,13 +1664,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    if (scaled) {
+    if(scaled)
+    {
       // scale temp buffer to output buffer
-      dt_iop_roi_t roi, roo;
-      roi = *roi_in;
-      roo = *roi_out;
-      roo.x = roo.y = roi.x = roi.y = 0;
-      err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_tmp, &roo, &roi);
+      err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_tmp, roi_out, roi_in);
       if(err != CL_SUCCESS) goto error;
     }
   }

@@ -496,6 +496,7 @@ RawImage DngDecoder::decodeRawInternal() {
       mRaw->whitePoint = 65535;
     }
   }
+
   return mRaw;
 }
 
@@ -503,6 +504,37 @@ void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
     mRaw->metadata.isoSpeed = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
+  // Set the make and model
+  if (!(mRootIFD->hasEntryRecursive(MAKE) && mRootIFD->hasEntryRecursive(MODEL))) {
+    if (mRootIFD->hasEntryRecursive(UNIQUECAMERAMODEL)) {
+      string unique = mRootIFD->getEntryRecursive(UNIQUECAMERAMODEL)->getString();
+      mRaw->metadata.canonical_make = mRaw->metadata.canonical_model = unique;
+      mRaw->metadata.canonical_alias = mRaw->metadata.canonical_id = unique;
+      mRaw->metadata.make = mRaw->metadata.model = unique;
+    }
+  } else {
+    vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
+    string make = data[0]->getEntry(MAKE)->getString();
+    string model = data[0]->getEntry(MODEL)->getString();
+    TrimSpaces(make);
+    TrimSpaces(model);
+    mRaw->metadata.make = make;
+    mRaw->metadata.model = model;
+
+    Camera *cam = meta->getCamera(make, model, "dng");
+    if (!cam) //Also look for non-DNG cameras in case it's a converted file
+      cam = meta->getCamera(make, model, "");
+    if (cam) {
+      mRaw->metadata.canonical_make = cam->canonical_make;
+      mRaw->metadata.canonical_model = cam->canonical_model;
+      mRaw->metadata.canonical_alias = cam->canonical_alias;
+      mRaw->metadata.canonical_id = cam->canonical_id;
+    } else {
+      mRaw->metadata.canonical_make = make;
+      mRaw->metadata.canonical_model = mRaw->metadata.canonical_alias = model;
+      mRaw->metadata.canonical_id = make + " " + model;
+    }
+  }
 }
 
 /* DNG Images are assumed to be decodable unless explicitly set so */

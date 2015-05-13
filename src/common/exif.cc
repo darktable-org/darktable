@@ -71,7 +71,7 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 // this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[]
     = { "Xmp.dc.subject", "Xmp.lr.hierarchicalSubject", "Xmp.darktable.colorlabels",
-        "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
+        "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled", "Xmp.darktable.history_end",
         "Xmp.darktable.history_operation", "Xmp.darktable.history_params", "Xmp.darktable.blendop_params",
         "Xmp.darktable.blendop_version", "Xmp.darktable.multi_priority", "Xmp.darktable.multi_name",
         "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights" };
@@ -560,15 +560,29 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensType"))) != exifData.end()
             && pos->size())
     {
+      /* For every Olympus camera Exif.OlympusEq.LensType is present. */
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+
+      /* We have to check if Exif.OlympusEq.LensType has been translated by
+       * exiv2. If it hasn't, fall back to Exif.OlympusEq.LensModel. */
+      std::string lens(img->exif_lens);
+      if(std::string::npos == lens.find_first_not_of(" 1234567890"))
+      {
+        /* Exif.OlympusEq.LensType contains only digits and spaces.
+         * This means that exiv2 couldn't convert it to human readable
+         * form. */
+        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end() && pos->size())
+        {
+          dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+        }
+        /* Just in case Exif.OlympusEq.LensModel hasn't been found */
+        else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
+        {
+          dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+        }
+	fprintf(stderr, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
+      }
     }
-#if EXIV2_MINOR_VERSION > 20
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end()
-            && pos->size())
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
-    }
-#endif
     else if((pos = Exiv2::lensName(exifData)) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
@@ -626,6 +640,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         *(c + 1) = '\0';
         break;
       }
+
+    // Make sure we copy the exif make and model to the correct place if needed
+    dt_image_refresh_makermodel(img);
 
     if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.DateTimeOriginal"))) != exifData.end()
        && pos->size())
@@ -1729,6 +1746,27 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         sqlite3_finalize(stmt_upd_hist);
       }
     }
+
+    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end"))) != xmpData.end())
+    {
+      int history_end = pos->toLong();
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE images SET history_end = ?1 where id = ?2", -1,
+                                  &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, history_end);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    else
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) FROM history WHERE imgid = ?1)", -1,
+                                  &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
   }
   catch(Exiv2::AnyError &e)
   {
@@ -1744,14 +1782,14 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 {
   const int xmp_version = 1;
-  int stars = 1, raw_params = 0;
+  int stars = 1, raw_params = 0, history_end = -1;
   double longitude = NAN, latitude = NAN;
   gchar *filename = NULL;
   // get stars and raw params from db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select filename, flags, raw_parameters, longitude, latitude from images where id = ?1", -1, &stmt,
+      "select filename, flags, raw_parameters, longitude, latitude, history_end from images where id = ?1", -1, &stmt,
       NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1761,6 +1799,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     raw_params = sqlite3_column_int(stmt, 2);
     if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT) longitude = sqlite3_column_double(stmt, 3);
     if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT) latitude = sqlite3_column_double(stmt, 4);
+    history_end = sqlite3_column_int(stmt, 5);
   }
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
 
@@ -2028,6 +2067,10 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
     num++;
   }
+
+  if(history_end == -1) history_end = num - 1;
+  xmpData["Xmp.darktable.history_end"] = history_end;
+
   sqlite3_finalize(stmt);
   g_list_free_full(tags, g_free);
   g_list_free_full(hierarchical, g_free);
@@ -2055,7 +2098,31 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
       img->setIptcData(input_image->iptcData());
       img->setXmpData(input_image->xmpData());
     }
-    dt_exif_xmp_read_data(img->xmpData(), imgid);
+
+    Exiv2::XmpData &xmpData = img->xmpData();
+
+    // now add whatever we have in the sidecar XMP. this overwrites stuff from the source image
+    dt_image_path_append_version(imgid, input_filename, sizeof(input_filename));
+    g_strlcat(input_filename, ".xmp", sizeof(input_filename));
+    if(g_file_test(input_filename, G_FILE_TEST_EXISTS))
+    {
+      Exiv2::XmpData sidecarXmpData;
+      std::string xmpPacket;
+
+      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
+      xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+      Exiv2::XmpParser::decode(sidecarXmpData, xmpPacket);
+
+      for(Exiv2::XmpData::const_iterator it = sidecarXmpData.begin(); it != sidecarXmpData.end(); ++it)
+        xmpData.add(*it);
+    }
+
+    dt_remove_known_keys(xmpData); // is this needed?
+
+    // last but not least attach what we have in DB to the XMP. in theory that should be
+    // the same as what we just copied over from the sidecar file, but you never know ...
+    dt_exif_xmp_read_data(xmpData, imgid);
+
     img->writeMetadata();
     return 0;
   }
@@ -2094,13 +2161,15 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
     dt_exif_xmp_read_data(xmpData, imgid);
 
     // serialize the xmp data and output the xmp packet
-    if(Exiv2::XmpParser::encode(xmpPacket, xmpData) != 0)
+    if(Exiv2::XmpParser::encode(xmpPacket, xmpData,
+       Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper) != 0)
     {
       throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
     }
     std::ofstream fout(filename);
     if(fout.is_open())
     {
+      fout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"; // write XML header
       fout << xmpPacket;
       fout.close();
     }

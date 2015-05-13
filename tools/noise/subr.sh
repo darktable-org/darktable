@@ -319,6 +319,7 @@ get_image_camera_maker() {
 	tool_installed exiv2
 
 	maker=$(get_exif_key "$file" Exif.Image.Make)
+	maker=$(echo $maker | cut -c 1)$(echo $maker | cut -c 2- | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
 	echo $maker
 }
 
@@ -328,7 +329,12 @@ get_image_camera_model() {
 
 	tool_installed exiv2
 
+	first_maker=$(echo $(get_exif_key "$file" Exif.Image.Make) | cut -d " " -f 1)
 	model=$(get_exif_key "$file" Exif.Image.Model)
+	first_model=$(echo $model | cut -d " " -f 1)
+	if [ "$first_maker" = "$first_model" ]; then
+		model=$(echo $model | cut -d " " -f 2-)
+	fi
 	echo $model
 }
 

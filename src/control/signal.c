@@ -39,10 +39,20 @@ typedef struct dt_signal_description
   GSignalCMarshaller c_marshaller;
   guint n_params;
   GType *param_types;
+  GCallback destructor;
 } dt_signal_description;
 
+static void clean_export_image_tmpfile(gpointer instance, int imgid, char *filename,
+                                    dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+                                    dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *sdata,
+                                    gpointer user_data)
+{
+  format->free_params(format,fdata);
+  storage->free_params(storage,sdata);
+}
+
+
 static GType uint_arg[] = { G_TYPE_UINT };
-static GType pointer_arg[] = { G_TYPE_POINTER };
 static GType pointer_2arg[] = { G_TYPE_POINTER, G_TYPE_POINTER };
 static GType image_export_arg[]
     = { G_TYPE_UINT, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER };
@@ -52,63 +62,61 @@ static GType image_export_arg[]
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   /* Global signals */
   { "dt-global-mouse-over-image-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
+    NULL, NULL }, // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
 
   { "dt-control-redraw-all", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_CONTROL_REDRAW_ALL
+    NULL, NULL }, // DT_SIGNAL_CONTROL_REDRAW_ALL
   { "dt-control-redraw-center", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_CONTROL_REDRAW_CENTER
+    NULL, NULL }, // DT_SIGNAL_CONTROL_REDRAW_CENTER
 
   { "dt-viewmanager-view-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2,
-    pointer_2arg }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
+    pointer_2arg, NULL }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
   { "dt-viewmanager-filmstrip-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
+    NULL, NULL }, // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
 
   { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_COLLECTION_CHANGED
+    NULL, NULL }, // DT_SIGNAL_COLLECTION_CHANGED
   { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_TAG_CHANGED
+    NULL, NULL }, // DT_SIGNAL_TAG_CHANGED
   { "dt-style-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_STYLE_CHANGED
+    NULL, NULL }, // DT_SIGNAL_STYLE_CHANGED
   { "dt-filmrolls-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_FILMROLLS_CHANGED
+    NULL, NULL }, // DT_SIGNAL_FILMROLLS_CHANGED
   { "dt-filmrolls-imported", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1,
-    uint_arg }, // DT_SIGNAL_FILMROLLS_IMPORTED
+    uint_arg, NULL }, // DT_SIGNAL_FILMROLLS_IMPORTED
   { "dt-filmrolls-removed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_FILMROLLS_REMOVED
+    NULL, NULL }, // DT_SIGNAL_FILMROLLS_REMOVED
 
 
   /* Develop related signals */
   { "dt-develop-initialized", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_DEVELOP_INITIALIZED
+    NULL, NULL }, // DT_SIGNAL_DEVELOP_INITIALIZED
   { "dt-develop-mipmap-updated", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
+    NULL, NULL }, // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
   { "dt-develop-preview-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
+    NULL, NULL }, // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
   { "dt-develop-ui-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
+    NULL, NULL }, // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
   { "dt-develop-history-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_HISTORY_CHANGE
+    NULL, NULL }, // DT_SIGNAL_HISTORY_CHANGE
   { "dt-develop-image-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
+    NULL, NULL }, // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
   { "dt-control-profile-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_CONTROL_PROFILE_CHANGED
+    NULL, NULL }, // DT_SIGNAL_CONTROL_PROFILE_CHANGED
   { "dt-image-import", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1,
-    uint_arg }, // DT_SIGNAL_IMAGE_IMPORT
-  { "dt-image-export-multiple", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__POINTER, 1,
-    pointer_arg }, // DT_SIGNAL_IMAGE_EXPORT_MULTIPLE
+    uint_arg, NULL }, // DT_SIGNAL_IMAGE_IMPORT
   { "dt-image-export-tmpfile", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 6,
-    image_export_arg }, // DT_SIGNAL_IMAGE_EXPORT_TMPFILE
+    image_export_arg, G_CALLBACK(clean_export_image_tmpfile) }, // DT_SIGNAL_IMAGE_EXPORT_TMPFILE
   { "dt-imageio-storage-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_IMAGEIO_STORAGE_CHANGE
+    NULL, NULL }, // DT_SIGNAL_IMAGEIO_STORAGE_CHANGE
 
 
   { "dt-preferences-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_PREFERENCES_CHANGE
+    NULL, NULL }, // DT_SIGNAL_PREFERENCES_CHANGE
 
 
   { "dt-camera-detected", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL }, // DT_SIGNAL_CAMERA_DETECTED,
+    NULL, NULL }, // DT_SIGNAL_CAMERA_DETECTED,
 
 };
 
@@ -132,12 +140,16 @@ dt_control_signal_t *dt_control_signal_init()
   ctlsig->sink = g_object_new(_signal_type, NULL);
 
   /* create the signals */
-  for(int k = 0; k < DT_SIGNAL_COUNT; k++)
+  for(int k = 0; k < DT_SIGNAL_COUNT; k++) 
+  {
     g_signal_newv(_signal_description[k].name, _signal_type, G_SIGNAL_RUN_LAST, 0,
-                  _signal_description[k].accumulator, _signal_description[k].accu_data,
-                  _signal_description[k].c_marshaller, _signal_description[k].return_type,
-                  _signal_description[k].n_params, _signal_description[k].param_types);
-
+        _signal_description[k].accumulator, _signal_description[k].accu_data,
+        _signal_description[k].c_marshaller, _signal_description[k].return_type,
+        _signal_description[k].n_params, _signal_description[k].param_types);
+    if(_signal_description[k].destructor) {
+      g_signal_connect_after(G_OBJECT(ctlsig->sink), _signal_description[k].name, _signal_description[k].destructor, NULL);
+    }
+  }
   return ctlsig;
 }
 

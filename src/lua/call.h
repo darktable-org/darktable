@@ -47,6 +47,19 @@ int dt_lua_dostring_silent(lua_State *L, const char *command, int nargs, int nre
 int dt_lua_dofile_silent(lua_State *L, const char *filename, int nargs, int nresults);
 
 
+/*
+   Call a lua function asynchronously, parameters are passed through varags,
+   and temporarly stored in a glist before pushing in the stack
+
+   This function CAN be called with the gtk lock held.
+   * function : the function to call
+   * ... triplets of dt_lua_asyc_call_arg_type, type_description, value,
+     * LUA_ASYNC_TYPEID : the type description is a luaA_Typeid
+     * LUA_ASYNC_TYPENAME : the type description is a const char * which is a type name for the lua typing system
+     * ..._WITH_FREE : the value is a pointer that must be freed after being pushed on the stack
+       add a GClosure parameter : the freeing function. will be invoked with the pointer to free plus any extra data given at closure creation
+ */
+
 typedef enum {
   LUA_ASYNC_TYPEID,
   LUA_ASYNC_TYPEID_WITH_FREE,

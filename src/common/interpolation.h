@@ -132,6 +132,11 @@ void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
                                const float *const in, const dt_iop_roi_t *const roi_in,
                                const int32_t in_stride);
 
+void dt_interpolation_resample_roi(const struct dt_interpolation *itor, float *out,
+                                   const dt_iop_roi_t *const roi_out, const int32_t out_stride,
+                                   const float *const in, const dt_iop_roi_t *const roi_in,
+                                   const int32_t in_stride);
+
 #ifdef HAVE_OPENCL
 typedef struct dt_interpolation_cl_global_t
 {
@@ -168,6 +173,10 @@ void dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g);
 int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid, cl_mem dev_out,
                                  const dt_iop_roi_t *const roi_out, cl_mem dev_in,
                                  const dt_iop_roi_t *const roi_in);
+
+int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor, int devid, cl_mem dev_out,
+                                     const dt_iop_roi_t *const roi_out, cl_mem dev_in,
+                                     const dt_iop_roi_t *const roi_in);
 #endif
 
 

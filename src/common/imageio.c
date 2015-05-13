@@ -372,11 +372,21 @@ static const uint8_t _imageio_ldr_magic[] = {
   /* png image */
   0x00, 0x01, 0x03, 0x50, 0x4E, 0x47, // ASCII 'PNG'
 
-  /* canon CR2 */
-  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x10, 0x00, 0x00, 0x00, 0x43, 0x52, // Canon CR2 is like TIFF with
-                                                                                // additional magic number.
-                                                                                // must come before tiff as an
-                                                                                // exclusion
+
+  /* Canon CR2/CRW is like TIFF with additional magic numbers so must come
+     before tiff as an exclusion */
+
+  /* Most CR2 */
+  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x10, 0x00, 0x00, 0x00, 0x43, 0x52,
+
+  // Older Canon RAW format with TIF Extension (i.e. 1Ds and 1D)
+  0x01, 0x00, 0x0a, 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x10, 0xba, 0xb0,
+
+  // Older Canon RAW format with TIF Extension (i.e. D2000)
+  0x01, 0x00, 0x0a, 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x11, 0x34, 0x00, 0x04,
+
+  // Older Canon RAW format with TIF Extension (i.e. DCS1)
+  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x00, 0x03, 0x00, 0x00, 0xff, 0x01,
 
   /* tiff image, intel */
   0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,
@@ -840,8 +850,12 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   if(!thumbnail_export && strcmp(format->mime(format_params), "memory"))
   {
+    dt_imageio_module_data_t *format_copy = format->get_params(format);
+    memcpy(format_copy,format_params,format->params_size(format));
+    dt_imageio_module_data_t *storage_copy = storage->get_params(storage);
+    memcpy(storage_copy,storage_params,storage->params_size(storage));
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
-                            format_params, storage, storage_params);
+                            format_copy, storage, storage_copy);
   }
   return res;
 }

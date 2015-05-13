@@ -1355,7 +1355,6 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
   params->data = data;
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_MULTIPLE, params);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
 
   // tell the storage that we got its params for an export so it can reset itself to a safe state

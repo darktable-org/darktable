@@ -107,7 +107,7 @@ bool TiffEntry::isInt() {
 }
 
 unsigned int TiffEntry::getInt() {
-  if (!(type == TIFF_LONG || type == TIFF_SHORT || type == TIFF_BYTE))
+  if (!(type == TIFF_LONG || type == TIFF_SHORT || type == TIFF_BYTE || type == TIFF_OFFSET))
     ThrowTPE("TIFF, getInt: Wrong type 0x%x encountered. Expected Long, Short or Byte", type);
   if (type == TIFF_BYTE)
     return getByte();

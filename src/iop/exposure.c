@@ -72,11 +72,10 @@ typedef struct dt_iop_exposure_gui_data_t
   GList *modes;
   GtkWidget *mode;
   GtkWidget *black;
-  GtkWidget *vbox_manual;
+  GtkWidget *mode_stack;
   GtkWidget *exposure;
   GtkCheckButton *autoexp;
   GtkWidget *autoexpp;
-  GtkWidget *vbox_deflicker;
   GtkWidget *deflicker_percentile;
   GtkWidget *deflicker_target_level;
   GList *deflicker_histogram_sources;
@@ -385,7 +384,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     const float *in = ((float *)i) + (size_t)ch * k * roi_out->width;
     float *out = ((float *)o) + (size_t)ch * k * roi_out->width;
     for(int j = 0; j < roi_out->width; j++, in += 4, out += 4)
-      _mm_store_ps(out, (_mm_load_ps(in) - blackv) * scalev);
+      _mm_store_ps(out, _mm_mul_ps(_mm_sub_ps(_mm_load_ps(in), blackv), scalev));
   }
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
@@ -530,16 +529,13 @@ void gui_update(struct dt_iop_module_t *self)
   {
     case EXPOSURE_MODE_DEFLICKER:
       autoexp_disable(self);
-      gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
-      gtk_widget_show(GTK_WIDGET(g->vbox_deflicker));
-
+      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "deflicker");
       if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE)
         deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
       break;
     case EXPOSURE_MODE_MANUAL:
     default:
-      gtk_widget_hide(GTK_WIDGET(g->vbox_deflicker));
-      gtk_widget_show(GTK_WIDGET(g->vbox_manual));
+      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "manual");
       break;
   }
 }
@@ -631,16 +627,14 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
         break;
       }
       p->mode = EXPOSURE_MODE_DEFLICKER;
-      gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
-      gtk_widget_show(GTK_WIDGET(g->vbox_deflicker));
+      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "deflicker");
       if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE)
         deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
       break;
     case EXPOSURE_MODE_MANUAL:
     default:
       p->mode = EXPOSURE_MODE_MANUAL;
-      gtk_widget_hide(GTK_WIDGET(g->vbox_deflicker));
-      gtk_widget_show(GTK_WIDGET(g->vbox_manual));
+      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "manual");
       break;
   }
 
@@ -921,14 +915,18 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->black, -1.0, 1.0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->black), TRUE, TRUE, 0);
 
-  g->vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  g->mode_stack = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(g->mode_stack),FALSE);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->mode_stack, TRUE, TRUE, 0);
+
+  GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   g->exposure = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, .02, p->exposure, 3);
   g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->exposure, "%.2fEV");
   dt_bauhaus_widget_set_label(g->exposure, NULL, _("exposure"));
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
-  gtk_box_pack_start(GTK_BOX(g->vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -942,24 +940,25 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(g->vbox_manual), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox_manual), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_widget_show_all(vbox_manual);
+  gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_manual, "manual");
 
-  g->vbox_deflicker = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  GtkWidget *vbox_deflicker = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   g->deflicker_percentile = dt_bauhaus_slider_new_with_range(self, 0, 100, .01, p->deflicker_percentile, 3);
   // FIXME: this needs a better tooltip!
   g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text", _("percentile"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
   dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("percentile"));
-  gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_percentile), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_percentile), TRUE, TRUE, 0);
 
   g->deflicker_target_level
       = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .01, p->deflicker_target_level, 3);
   g_object_set(G_OBJECT(g->deflicker_target_level), "tooltip-text", _("target level"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->deflicker_target_level, "%.2fEV");
   dt_bauhaus_widget_set_label(g->deflicker_target_level, NULL, _("target level"));
-  gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_target_level), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_target_level), TRUE, TRUE, 0);
 
   g->deflicker_histogram_source = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->deflicker_histogram_source, NULL, _("histogram of"));
@@ -975,7 +974,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set_default(g->deflicker_histogram_source, DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL);
   dt_bauhaus_combobox_set(g->deflicker_histogram_source,
                           g_list_index(g->modes, GUINT_TO_POINTER(p->deflicker_histogram_source)));
-  gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_histogram_source), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_histogram_source), TRUE, TRUE, 0);
 
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkLabel *label = GTK_LABEL(gtk_label_new(_("computed EC: ")));
@@ -990,9 +989,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->deflicker_computed_exposure = NAN;
   dt_pthread_mutex_unlock(&g->lock);
 
-  gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox_deflicker), TRUE, TRUE, 0);
+  gtk_widget_show_all(vbox_deflicker);
+  gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");
 
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->black), "value-changed", G_CALLBACK(black_callback), self);

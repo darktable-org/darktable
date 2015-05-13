@@ -125,12 +125,6 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_IMAGE_IMPORT,
 
-  /** \brief This signal is raised when multiple images are exported
-    1 dt_image_export_t *: structure describing the export. the content can be edited
-    no return
-    */
-  DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,
-
   /** \brief This signal is raised after an image has been exported
     to a file, but before it is sent to facebook/picasa etc...
     export won't happen until this function returns
@@ -151,7 +145,7 @@ typedef enum dt_signal_t
   DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
 
   /** \brief This signal is raised after preferences have been changed
-    1 dt_view_t* : the view
+    no parameters
     no return
     */
   DT_SIGNAL_PREFERENCES_CHANGE,

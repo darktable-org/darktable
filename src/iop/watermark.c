@@ -509,13 +509,13 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
       svgdata = svgdoc;
     }
 
-    svgdoc = _string_substitute(svgdata, "$(EXIF.MAKER)", image->exif_maker);
+    svgdoc = _string_substitute(svgdata, "$(EXIF.MAKER)", image->camera_maker);
     if(svgdoc != svgdata)
     {
       g_free(svgdata);
       svgdata = svgdoc;
     }
-    svgdoc = _string_substitute(svgdata, "$(EXIF.MODEL)", image->exif_model);
+    svgdoc = _string_substitute(svgdata, "$(EXIF.MODEL)", image->camera_model);
     if(svgdoc != svgdata)
     {
       g_free(svgdata);

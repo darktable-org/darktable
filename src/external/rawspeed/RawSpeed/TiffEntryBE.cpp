@@ -79,7 +79,7 @@ TiffEntryBE::~TiffEntryBE(void) {
 }
 
 unsigned int TiffEntryBE::getInt() {
-  if (!(type == TIFF_LONG || type == TIFF_SHORT || type == TIFF_UNDEFINED))
+  if (!(type == TIFF_LONG || type == TIFF_SHORT || type == TIFF_UNDEFINED || type == TIFF_OFFSET))
     ThrowTPE("TIFF, getInt: Wrong type 0x%x encountered. Expected Int", type);
   if (type == TIFF_SHORT)
     return getShort();

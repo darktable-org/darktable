@@ -100,7 +100,6 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   g_free(format_name);
   g_free(storage_name);
 
-  /*
   if(format_index == -1) {
     dt_control_log("invalid format for export selected\n");
     return;
@@ -108,7 +107,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   if(storage_index == -1) {
     dt_control_log("invalid storage for export selected\n");
     return;
-  }*/
+  }
 
   gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
@@ -227,7 +226,7 @@ static void set_format_by_name(dt_lib_export_t *d, const char *name)
     return;
   } else if(module->widget) {
     gtk_widget_show_all(d->format_extra_container);
-    gtk_stack_set_visible_child(GTK_STACK(d->format_extra_container),module->widget);
+    gtk_stack_set_visible_child(GTK_STACK(d->format_extra_container), module->widget);
   } else {
     gtk_widget_hide(d->format_extra_container);
   }
@@ -727,6 +726,10 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->width), "value-changed", G_CALLBACK(width_changed), NULL);
   g_signal_connect(G_OBJECT(d->height), "value-changed", G_CALLBACK(height_changed), NULL);
+
+  // this takes care of keeping hidden widgets hidden
+  gtk_widget_show_all(self->widget);
+  gtk_widget_set_no_show_all(self->widget, TRUE);
 
   self->gui_reset(self);
 }

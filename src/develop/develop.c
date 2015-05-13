@@ -789,13 +789,21 @@ void dt_dev_write_history(dt_develop_t *dev)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   GList *history = dev->history;
-  for(int i = 0; i < dev->history_end && history; i++)
+  for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(&dev->image_storage, hist, i);
     history = g_list_next(history);
     changed = TRUE;
   }
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE images SET history_end = ?1 where id = ?2", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->history_end);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dev->image_storage.id);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
   /* attach / detach changed tag reflecting actual change */
   guint tagid = 0;
@@ -881,14 +889,23 @@ static void auto_apply_presets(dt_develop_t *dev)
 
       if(sqlite3_step(stmt) == SQLITE_DONE)
       {
-        // and finally prepend the rest with increasing numbers (starting at 0)
         sqlite3_finalize(stmt);
-        DT_DEBUG_SQLITE3_PREPARE_V2(
-            dt_database_get(darktable.db),
-            "insert into history select imgid, rowid-1, module, operation, op_params, enabled, "
-            "blendop_params, blendop_version, multi_priority, multi_name from memory.history",
-            -1, &stmt, NULL);
-        sqlite3_step(stmt);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "UPDATE images SET history_end=history_end+?1 where id=?2",
+                                    -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+        if(sqlite3_step(stmt) == SQLITE_DONE)
+        {
+          // and finally prepend the rest with increasing numbers (starting at 0)
+          sqlite3_finalize(stmt);
+          DT_DEBUG_SQLITE3_PREPARE_V2(
+              dt_database_get(darktable.db),
+              "insert into history select imgid, rowid-1, module, operation, op_params, enabled, "
+              "blendop_params, blendop_version, multi_priority, multi_name from memory.history",
+              -1, &stmt, NULL);
+          sqlite3_step(stmt);
+        }
       }
     }
   }
@@ -1085,6 +1102,15 @@ void dt_dev_read_history(dt_develop_t *dev)
     dev->history = g_list_append(dev->history, hist);
     dev->history_end++;
   }
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
+  {
+    dev->history_end = sqlite3_column_int(stmt, 0);
+  }
 
   if(dev->gui_attached)
   {
@@ -1262,7 +1288,7 @@ void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
 
 float dt_dev_exposure_get_white(dt_develop_t *dev)
 {
-  if(dev->proxy.exposure.module && dev->proxy.exposure.set_white)
+  if(dev->proxy.exposure.module && dev->proxy.exposure.get_white)
     return dev->proxy.exposure.get_white(dev->proxy.exposure.module);
 
   return 0.0;
@@ -1276,7 +1302,7 @@ void dt_dev_exposure_set_black(dt_develop_t *dev, const float black)
 
 float dt_dev_exposure_get_black(dt_develop_t *dev)
 {
-  if(dev->proxy.exposure.module && dev->proxy.exposure.set_black)
+  if(dev->proxy.exposure.module && dev->proxy.exposure.get_black)
     return dev->proxy.exposure.get_black(dev->proxy.exposure.module);
 
   return 0.0;

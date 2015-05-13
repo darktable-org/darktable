@@ -153,6 +153,12 @@ void dt_history_delete_on_image(int32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "update images set history_end = 0 where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from mask where imgid = ?1", -1, &stmt,
                               NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -234,8 +240,15 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   if(merge)
   {
     /* apply on top of history stack */
+    // first trim the stack to get rid of whatever is above the selected entry
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT MAX(num)+1 FROM history WHERE imgid = ?1", -1, &stmt, NULL);
+                                "DELETE FROM history WHERE imgid = ?1 AND num >= (SELECT history_end FROM images WHERE id = imgid)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT IFNULL(MAX(num)+1, 0) FROM history WHERE imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW) offs = sqlite3_column_int(stmt, 0);
   }
@@ -313,6 +326,14 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // always make the whole stack active
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1)",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 

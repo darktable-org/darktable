@@ -79,7 +79,7 @@ typedef struct dt_iop_levels_gui_data_t
 {
   GList *modes;
   GtkWidget *mode;
-  GtkWidget *vbox_manual;
+  GtkWidget *mode_stack;
   GtkDrawingArea *area;
   double mouse_x, mouse_y;
   int dragging, handle_move;
@@ -88,7 +88,6 @@ typedef struct dt_iop_levels_gui_data_t
   GtkToggleButton *activeToggleButton;
   float last_picked_color;
   double pick_xy_positions[3][2];
-  GtkWidget *vbox_automatic;
   GtkWidget *percentile_black;
   GtkWidget *percentile_grey;
   GtkWidget *percentile_white;
@@ -461,13 +460,11 @@ void gui_update(dt_iop_module_t *self)
   switch(p->mode)
   {
     case LEVELS_MODE_AUTOMATIC:
-      gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
-      gtk_widget_show(GTK_WIDGET(g->vbox_automatic));
+      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "automatic");
       break;
     case LEVELS_MODE_MANUAL:
     default:
-      gtk_widget_hide(GTK_WIDGET(g->vbox_automatic));
-      gtk_widget_show(GTK_WIDGET(g->vbox_manual));
+      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "manual");
       break;
   }
 
@@ -562,9 +559,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(c->mode, g_list_index(c->modes, GUINT_TO_POINTER(p->mode)));
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode, TRUE, TRUE, 0);
 
+  c->mode_stack = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(c->mode_stack),FALSE);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
+
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
-  c->vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_box_pack_start(GTK_BOX(c->vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   g_object_set(G_OBJECT(c->area), "tooltip-text",
                _("drag handles to set black, gray, and white points.  operates on L channel."), (char *)NULL);
@@ -606,8 +607,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(greypick), TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(whitepick), TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(c->vbox_manual), box, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), c->vbox_manual, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_manual), box, TRUE, TRUE, 0);
+
+  gtk_widget_show_all(vbox_manual);
+  gtk_stack_add_named(GTK_STACK(c->mode_stack), vbox_manual, "manual");
 
   c->percentile_black = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[0], 3);
   g_object_set(G_OBJECT(c->percentile_black), "tooltip-text", _("black percentile"), (char *)NULL);
@@ -624,22 +627,22 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->percentile_white, "%.1f%%");
   dt_bauhaus_widget_set_label(c->percentile_white, NULL, _("white"));
 
-  c->vbox_automatic = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_black), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_grey), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_white), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), c->vbox_automatic, TRUE, TRUE, 0);
+  GtkWidget *vbox_automatic = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  gtk_box_pack_start(GTK_BOX(vbox_automatic), GTK_WIDGET(c->percentile_black), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_automatic), GTK_WIDGET(c->percentile_grey), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_automatic), GTK_WIDGET(c->percentile_white), FALSE, FALSE, 0);
+
+  gtk_widget_show_all(vbox_automatic);
+  gtk_stack_add_named(GTK_STACK(c->mode_stack), vbox_automatic, "automatic");
 
   switch(p->mode)
   {
     case LEVELS_MODE_AUTOMATIC:
-      gtk_widget_hide(GTK_WIDGET(c->vbox_manual));
-      gtk_widget_show(GTK_WIDGET(c->vbox_automatic));
+      gtk_stack_set_visible_child_name(GTK_STACK(c->mode_stack), "automatic");
       break;
     case LEVELS_MODE_MANUAL:
     default:
-      gtk_widget_hide(GTK_WIDGET(c->vbox_automatic));
-      gtk_widget_show(GTK_WIDGET(c->vbox_manual));
+      gtk_stack_set_visible_child_name(GTK_STACK(c->mode_stack), "manual");
       break;
   }
 
@@ -1122,14 +1125,12 @@ static void dt_iop_levels_mode_callback(GtkWidget *combo, gpointer user_data)
   {
     case LEVELS_MODE_AUTOMATIC:
       p->mode = LEVELS_MODE_AUTOMATIC;
-      gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
-      gtk_widget_show(GTK_WIDGET(g->vbox_automatic));
+      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "automatic");
       break;
     case LEVELS_MODE_MANUAL:
     default:
       p->mode = LEVELS_MODE_MANUAL;
-      gtk_widget_hide(GTK_WIDGET(g->vbox_automatic));
-      gtk_widget_show(GTK_WIDGET(g->vbox_manual));
+      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "manual");
       break;
   }
 

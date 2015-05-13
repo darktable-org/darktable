@@ -389,15 +389,33 @@ static int32_t async_callback_job(dt_job_t *job)
     cur_elt = g_list_next(cur_elt);
     switch(GPOINTER_TO_INT(type_type_elt->data)) {
       case LUA_ASYNC_TYPEID_WITH_FREE:
-        luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),&data_elt->data);
-        free(data_elt->data);
+        {
+          luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),data_elt->data);
+
+          GList *destructor_elt = cur_elt;
+          cur_elt = g_list_next(cur_elt);
+          GValue to_free = G_VALUE_INIT;
+          g_value_init(&to_free,G_TYPE_POINTER);
+          g_value_set_pointer(&to_free,data_elt->data);
+          g_closure_invoke(destructor_elt->data,NULL,1,&to_free,NULL);
+          g_closure_unref (destructor_elt->data);
+        }
         break;
       case LUA_ASYNC_TYPEID:
-        luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),&data_elt->data);
+        luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),data_elt->data);
         break;
       case LUA_ASYNC_TYPENAME_WITH_FREE:
-        luaA_push_type(L,luaA_type_find(L,type_elt->data),&data_elt->data);
-        free(data_elt->data);
+        {
+          luaA_push_type(L,luaA_type_find(L,type_elt->data),&data_elt->data);
+
+          GList *destructor_elt = cur_elt;
+          cur_elt = g_list_next(cur_elt);
+          GValue to_free = G_VALUE_INIT;
+          g_value_init(&to_free,G_TYPE_POINTER);
+          g_value_set_pointer(&to_free,data_elt->data);
+          g_closure_invoke(destructor_elt->data,NULL,1,&to_free,NULL);
+          g_closure_unref (destructor_elt->data);
+        }
         break;
       case LUA_ASYNC_TYPENAME:
         luaA_push_type(L,luaA_type_find(L,type_elt->data),&data_elt->data);
@@ -433,14 +451,34 @@ void dt_lua_do_chunk_async(lua_CFunction pusher,dt_lua_async_call_arg_type arg_t
       data->extra=g_list_append(data->extra,GINT_TO_POINTER(cur_type));
       switch(cur_type) {
         case LUA_ASYNC_TYPEID:
-        case LUA_ASYNC_TYPEID_WITH_FREE:
           data->extra=g_list_append(data->extra,GINT_TO_POINTER(va_arg(ap,luaA_Type)));
           data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
           break;
+        case LUA_ASYNC_TYPEID_WITH_FREE:
+          {
+            data->extra=g_list_append(data->extra,GINT_TO_POINTER(va_arg(ap,luaA_Type)));
+            data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
+            GClosure* closure = va_arg(ap,GClosure*);
+            g_closure_ref (closure);
+            g_closure_sink (closure);
+            g_closure_set_marshal(closure, g_cclosure_marshal_generic);
+            data->extra=g_list_append(data->extra,closure);
+          }
+          break;
         case LUA_ASYNC_TYPENAME:
-        case LUA_ASYNC_TYPENAME_WITH_FREE:
           data->extra=g_list_append(data->extra,va_arg(ap,char *));
           data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
+          break;
+        case LUA_ASYNC_TYPENAME_WITH_FREE:
+          {
+            data->extra=g_list_append(data->extra,va_arg(ap,char *));
+            data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
+            GClosure* closure = va_arg(ap,GClosure*);
+            g_closure_ref (closure);
+            g_closure_sink (closure);
+            g_closure_set_marshal(closure, g_cclosure_marshal_generic);
+            data->extra=g_list_append(data->extra,closure);
+          }
           break;
         default:
           // should never happen

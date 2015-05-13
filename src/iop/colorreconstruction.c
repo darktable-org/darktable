@@ -1329,6 +1329,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->precedence, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue, TRUE, TRUE, 0);
 
+  gtk_widget_show_all(g->hue);
+  gtk_widget_set_no_show_all(g->hue, TRUE);
+
   switch(p->precedence)
   {
     case COLORRECONSTRUCT_PRECEDENCE_HUE:

@@ -36,7 +36,7 @@
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 8
+#define CURRENT_DATABASE_VERSION 10
 
 typedef struct dt_database_t
 {
@@ -669,6 +669,48 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 8;
+  }
+  else if(version == 8)
+  {
+    // 8 -> 9 added history_end column to images
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    if(sqlite3_exec(db->handle, "ALTER TABLE images ADD COLUMN history_end INTEGER", NULL, NULL, NULL)
+      != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't add `history_end' column to database\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    if(sqlite3_exec(db->handle,
+      "UPDATE images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) FROM history WHERE imgid = id)",
+                    NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr,
+              "[init] can't initialize `history_end' with last history entry\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 9;
+  }
+  else if(version == 9)
+  {
+    // 9 -> 10 cleanup of last update :(
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    if(sqlite3_exec(db->handle,
+      "UPDATE images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) FROM history WHERE imgid = id)",
+                    NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr,
+              "[init] can't set `history_end' to 0 where it was NULL\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 10;
   } // maybe in the future, see commented out code elsewhere
     //   else if(version == XXX)
     //   {
@@ -739,7 +781,7 @@ static void _create_schema(dt_database_t *db)
       "caption VARCHAR, description VARCHAR, license VARCHAR, sha1sum CHAR(40), "
       "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
       "latitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, max_version INTEGER, "
-      "write_timestamp INTEGER)",
+      "write_timestamp INTEGER, history_end INTEGER)",
       NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX images_group_id_index ON images (group_id)", NULL, NULL,
                         NULL);

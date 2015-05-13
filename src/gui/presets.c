@@ -811,8 +811,8 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
                                 "order by writeprotect desc, name, rowid",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->camera_alias, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->camera_maker, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->exif_lens, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, image->exif_iso);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, image->exif_exposure);

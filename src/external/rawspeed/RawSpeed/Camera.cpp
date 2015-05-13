@@ -33,12 +33,14 @@ Camera::Camera(pugi::xml_node &camera) : cfa(iPoint2D(0,0)) {
   pugi::xml_attribute key = camera.attribute("make");
   if (!key)
     ThrowCME("Camera XML Parser: \"make\" attribute not found.");
-  make = key.as_string();
+  make = canonical_make = key.as_string();
 
   key = camera.attribute("model");
   if (!key)
     ThrowCME("Camera XML Parser: \"model\" attribute not found.");
-  model = key.as_string();
+  model = canonical_model = canonical_alias = key.as_string();
+
+  canonical_id = make + " " + model;
 
   supported = true;
   key = camera.attribute("supported");
@@ -74,6 +76,10 @@ Camera::Camera( const Camera* camera, uint32 alias_num) : cfa(iPoint2D(0,0))
 
   make = camera->make;
   model = camera->aliases[alias_num];
+  canonical_make = camera->canonical_make;
+  canonical_model = camera->canonical_model;
+  canonical_alias = camera->canonical_aliases[alias_num];
+  canonical_id = camera->canonical_id;
   mode = camera->mode;
   cfa = camera->cfa;
   supported = camera->supported;
@@ -172,6 +178,11 @@ void Camera::parseCameraChild(xml_node &cur) {
       parseHint(c);
       c = c.next_sibling();
     }
+    return;
+  }
+
+  if (isTag(cur.name(), "ID")) {
+    parseID(cur);
     return;
   }
 }
@@ -286,6 +297,11 @@ void Camera::parseAlias( xml_node &cur )
 {
   if (isTag(cur.name(), "Alias")) {
     aliases.push_back(string(cur.first_child().value()));
+    pugi::xml_attribute key = cur.attribute("id");
+    if (key)
+      canonical_aliases.push_back(string(key.as_string()));
+    else
+      canonical_aliases.push_back(string(cur.first_child().value()));
   }
 }
 
@@ -306,6 +322,26 @@ void Camera::parseHint( xml_node &cur )
       ThrowCME("CameraMetadata: Could not find value for hint %s for %s %s camera.", hint_name.c_str(), make.c_str(), model.c_str());
 
     hints.insert(make_pair(hint_name, hint_value));
+  }
+}
+
+void Camera::parseID( xml_node &cur )
+{
+  if (isTag(cur.name(), "ID")) {
+    pugi::xml_attribute id_make = cur.attribute("make");
+    if (id_make) {
+      canonical_make = string(id_make.as_string());
+    } else
+      ThrowCME("CameraMetadata: Could not find make for ID for %s %s camera.", make.c_str(), model.c_str());
+
+    pugi::xml_attribute id_model = cur.attribute("model");
+    if (id_model) {
+      canonical_model = string(id_model.as_string());
+      canonical_alias = string(id_model.as_string());
+    } else
+      ThrowCME("CameraMetadata: Could not find model for ID for %s %s camera.", make.c_str(), model.c_str());
+
+    canonical_id = string(cur.first_child().value());
   }
 }
 

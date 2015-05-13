@@ -30,7 +30,7 @@ namespace RawSpeed {
 
 OrfDecoder::OrfDecoder(TiffIFD *rootIFD, FileMap* file):
     RawDecoder(file), mRootIFD(rootIFD) {
-      decoderVersion = 2;
+      decoderVersion = 3;
 }
 
 OrfDecoder::~OrfDecoder(void) {
@@ -54,81 +54,52 @@ RawImage OrfDecoder::decodeRawInternal() {
   TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
   TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
-  if (offsets->count != 1) {
-    // We're in an old-school ORF file, decode it separately
-    try {
-      decodeOldORF(raw);
-    } catch (IOException &e) {
-       mRaw->setError(e.what());
-    }
-    return mRaw;
-  }
-  if (counts->count != offsets->count) {
+  if (counts->count != offsets->count)
     ThrowRDE("ORF Decoder: Byte count number does not match strip size: count:%u, strips:%u ", counts->count, offsets->count);
-  }
-  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
-  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
-  uint32 bps = raw->getEntry(BITSPERSAMPLE)->getInt();
 
-  if (!mFile->isValid(offsets->getInt() + counts->getInt()))
-    ThrowRDE("ORF Decoder: Truncated file");
-
-  mRaw->dim = iPoint2D(width, height);
-  mRaw->createData();
-
-  // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
-  ByteStream s(mFile->getData(offsets->getInt()), counts->getInt() + 3);
-
-  if ((hints.find(string("force_uncompressed")) != hints.end())) {
-    ByteStream in(mFile->getData(offsets->getInt()), counts->getInt() + 3);
-    iPoint2D size(width, height),pos(0,0);
-    readUncompressedRaw(in, size, pos, width*bps/8,bps, BitOrder_Jpeg32);
-    return mRaw;
-  }
-
-  if ((hints.find(string("force_uncompressed_with_control")) != hints.end())) {
-    // Old packed ORF, decode it like that
-    uint32 off = offsets->getInt();
-    uint32 size = mFile->getSize() - off;
-    ByteStream input(mFile->getData(off), size);
-    Decode12BitRawWithControl(input, width, height);
-    return mRaw;
-  }
-
-  try {
-    decodeCompressed(s, width, height);
-  } catch (IOException &e) {
-    mRaw->setError(e.what());
-    // Let's ignore it, it may have delivered somewhat useful data.
-  }
-
-  return mRaw;
-}
-
-void OrfDecoder::decodeOldORF(TiffIFD* raw) {
-  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
-  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
   uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
-  TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
   uint32 size = 0;
   const uint32 *sizes = counts->getIntArray();
   for (uint32 i=0; i < counts->count; i++)
     size += sizes[i];
 
-  if (!mFile->isValid(off))
-      ThrowRDE("ORF Decoder: Invalid image data offset, cannot decode.");
+  if (!mFile->isValid(off + size))
+    ThrowRDE("ORF Decoder: Truncated file");
+
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), MIN(size, mFile->getSize() - off));
 
-  if (size >= width*height*2) { // We're in an unpacked raw
-    if (raw->endian == little)
-      Decode12BitRawUnpacked(input, width, height);
+  // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
+  ByteStream input(mFile->getData(off), MIN(size+3, mFile->getSize() - off));
+
+  try {
+    if (offsets->count != 1 || (hints.find(string("force_uncompressed")) != hints.end()))
+      decodeUncompressed(input, width, height, size, raw->endian);
     else
-      Decode12BitRawBEunpackedLeftAligned(input, width, height);
-  } else if (size >= width*height*3/2) { // We're in one of those weird interlaced packed raws
-      Decode12BitRawBEInterlaced(input, width, height);
+      decodeCompressed(input, width, height);
+  } catch (IOException &e) {
+     mRaw->setError(e.what());
+  }
+
+  return mRaw;
+}
+
+void OrfDecoder::decodeUncompressed(ByteStream& s, uint32 w, uint32 h, uint32 size, Endianness endian) {
+  if ((hints.find(string("packed_with_control")) != hints.end()))
+    Decode12BitRawWithControl(s, w, h);
+  else if ((hints.find(string("jpeg32_bitorder")) != hints.end())) {
+    iPoint2D size(w, h),pos(0,0);
+    readUncompressedRaw(s, size, pos, w*12/8, 12, BitOrder_Jpeg32);
+  } else if (size >= w*h*2) { // We're in an unpacked raw
+    if (endian == little)
+      Decode12BitRawUnpacked(s, w, h);
+    else
+      Decode12BitRawBEunpackedLeftAligned(s, w, h);
+  } else if (size >= w*h*3/2) { // We're in one of those weird interlaced packed raws
+      Decode12BitRawBEInterlaced(s, w, h);
   } else {
     ThrowRDE("ORF Decoder: Don't know how to handle the encoding in this file\n");
   }
@@ -275,7 +246,7 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         dest[x] = left1 = pred + ((diff << 2) | low);
         nw1 = up;
       }
-	    border = y_border;
+      border = y_border;
     }
   }
 }
@@ -316,50 +287,55 @@ void OrfDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     // Newer cameras process the Image Processing SubIFD in the makernote
     if(mRootIFD->hasEntryRecursive(OLYMPUSIMAGEPROCESSING)) {
       TiffEntry *img_entry = mRootIFD->getEntryRecursive(OLYMPUSIMAGEPROCESSING);
-      uint32 offset = *((ushort16 *) img_entry->getData()) + img_entry->parent_offset - 12;
-      TiffIFD *image_processing;
-      if (mRootIFD->endian == getHostEndianness())
-        image_processing = new TiffIFD(mFile, offset);
-      else
-        image_processing = new TiffIFDBE(mFile, offset);
+      uint32 offset = img_entry->getInt() + img_entry->parent_offset - 12;
+      TiffIFD *image_processing = NULL;
+      try {
+        if (mRootIFD->endian == getHostEndianness())
+          image_processing = new TiffIFD(mFile, offset);
+        else
+          image_processing = new TiffIFDBE(mFile, offset);
 
-      // Get the WB
-      if(image_processing->hasEntry((TiffTag) 0x0100)) {
-        TiffEntry *wb = image_processing->getEntry((TiffTag) 0x0100);
-        if (wb->count == 4) {
-          wb->parent_offset = img_entry->parent_offset - 12;
-          wb->offsetFromParent();
-        }
-        if (wb->count == 2 || wb->count == 4) {
-          const ushort16 *tmp = wb->getShortArray();
-          mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
-          mRaw->metadata.wbCoeffs[1] = 256.0f;
-          mRaw->metadata.wbCoeffs[2] = (float) tmp[1];
-        }
-      }
-
-      // Get the black levels
-      if(image_processing->hasEntry((TiffTag) 0x0600)) {
-        TiffEntry *blackEntry = image_processing->getEntry((TiffTag) 0x0600);
-        // Order is assumed to be RGGB
-        if (blackEntry->count == 4) {
-          blackEntry->parent_offset = img_entry->parent_offset - 12;
-          blackEntry->offsetFromParent();
-          const ushort16* black = blackEntry->getShortArray();
-          for (int i = 0; i < 4; i++) {
-            if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_RED)
-              mRaw->blackLevelSeparate[i] = black[0];
-            else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_BLUE)
-              mRaw->blackLevelSeparate[i] = black[3];
-            else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN && i<2)
-              mRaw->blackLevelSeparate[i] = black[1];
-            else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN)
-              mRaw->blackLevelSeparate[i] = black[2];
+        // Get the WB
+        if(image_processing->hasEntry((TiffTag) 0x0100)) {
+          TiffEntry *wb = image_processing->getEntry((TiffTag) 0x0100);
+          if (wb->count == 4) {
+            wb->parent_offset = img_entry->parent_offset - 12;
+            wb->offsetFromParent();
           }
-          // Adjust whitelevel based on the read black (we assume the dynamic range is the same)
-          mRaw->whitePoint -= (mRaw->blackLevel - mRaw->blackLevelSeparate[0]);
+          if (wb->count == 2 || wb->count == 4) {
+            const ushort16 *tmp = wb->getShortArray();
+            mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
+            mRaw->metadata.wbCoeffs[1] = 256.0f;
+            mRaw->metadata.wbCoeffs[2] = (float) tmp[1];
+          }
         }
+
+        // Get the black levels
+        if(image_processing->hasEntry((TiffTag) 0x0600)) {
+          TiffEntry *blackEntry = image_processing->getEntry((TiffTag) 0x0600);
+          // Order is assumed to be RGGB
+          if (blackEntry->count == 4) {
+            blackEntry->parent_offset = img_entry->parent_offset - 12;
+            blackEntry->offsetFromParent();
+            const ushort16* black = blackEntry->getShortArray();
+            for (int i = 0; i < 4; i++) {
+              if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_RED)
+                mRaw->blackLevelSeparate[i] = black[0];
+              else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_BLUE)
+                mRaw->blackLevelSeparate[i] = black[3];
+              else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN && i<2)
+                mRaw->blackLevelSeparate[i] = black[1];
+              else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN)
+                mRaw->blackLevelSeparate[i] = black[2];
+            }
+            // Adjust whitelevel based on the read black (we assume the dynamic range is the same)
+            mRaw->whitePoint -= (mRaw->blackLevel - mRaw->blackLevelSeparate[0]);
+          }
+        }
+      } catch(TiffParserException e) {
+        mRaw->setError(e.what());
       }
+
       if (image_processing)
         delete image_processing;
     }

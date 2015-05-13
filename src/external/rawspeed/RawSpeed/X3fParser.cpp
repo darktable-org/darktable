@@ -130,6 +130,10 @@ X3fDirectory::X3fDirectory( ByteStream *bytes )
     offset = bytes->getUInt();
     length = bytes->getUInt();
     id = getIdAsString(bytes);
+    bytes->pushOffset();
+    bytes->setAbsoluteOffset(offset);
+    sectionID = getIdAsString(bytes);
+    bytes->popOffset();
 }
 
 
