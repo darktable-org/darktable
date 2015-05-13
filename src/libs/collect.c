@@ -1204,8 +1204,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
                escaped_text);
       break;
     case DT_COLLECTION_PROP_CAMERA: // camera
-      snprintf(query, sizeof(query), "select distinct maker || ' ' || model as model, 1 from images where "
-                                     "maker || ' ' || model like '%%%s%%' order by model",
+      snprintf(query, sizeof(query), "select distinct sanitized_maker || ' ' || sanitized_model as model, 1 from images where "
+                                     "sanitized_maker || ' ' || sanitized_model like '%%%s%%' order by model",
                escaped_text);
       break;
     case DT_COLLECTION_PROP_TAG: // tag
