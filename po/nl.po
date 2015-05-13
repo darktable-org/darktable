@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-05-13 22:21+0200\n"
-"PO-Revision-Date: 2015-05-13 22:27+0100\n"
+"PO-Revision-Date: 2015-05-13 22:36+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1174,7 +1174,7 @@ msgstr "bijgewerkt xmp bestand gevonden"
 
 #: ../src/control/crawler.c:363
 msgid "_Close"
-msgstr "_Close"
+msgstr "_Sluit"
 
 #: ../src/control/crawler.c:379 ../src/libs/select.c:94
 msgid "select all"
@@ -1377,7 +1377,7 @@ msgstr "selecteer map"
 #: ../src/libs/import.c:738 ../src/libs/import.c:834 ../src/libs/lib.c:216
 #: ../src/libs/styles.c:208 ../src/libs/styles.c:228
 msgid "_Cancel"
-msgstr "_Cancel"
+msgstr "_Annuleer"
 
 #: ../src/control/jobs/control_jobs.c:1215
 #: ../src/control/jobs/control_jobs.c:1269
@@ -2549,7 +2549,7 @@ msgstr "Selecteer alles"
 
 #: ../src/gui/hist_dialog.c:138
 msgid "_Clear"
-msgstr "_Clear"
+msgstr "_Wissen"
 
 #: ../src/gui/hist_dialog.c:138 ../src/gui/preferences.c:1174
 #: ../src/gui/presets.c:385 ../src/libs/lib.c:215
@@ -2690,7 +2690,7 @@ msgstr "kies bestand voor export"
 #: ../src/gui/preferences.c:1012 ../src/gui/styles_dialog.c:285
 #: ../src/libs/styles.c:209
 msgid "_Save"
-msgstr "_Save"
+msgstr "_Opslaan"
 
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1033
