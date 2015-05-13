@@ -24,6 +24,7 @@
 #define MRW_DECODER_H
 
 #include "RawDecoder.h"
+#include "TiffIFDBE.h"
 
 namespace RawSpeed {
 
@@ -45,9 +46,8 @@ public:
 protected:
   virtual void parseHeader();
   uint32 raw_width, raw_height, data_offset, packed;
-  uint64 cameraid;
-  const char* cameraName;
-  static const char* modelName(uint64 cameraid);
+  TiffIFD *tiff_meta;
+  float wb_coeffs[4];
 };
 
 } // namespace RawSpeed

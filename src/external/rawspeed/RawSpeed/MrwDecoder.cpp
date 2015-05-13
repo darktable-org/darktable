@@ -31,6 +31,8 @@ MrwDecoder::MrwDecoder(FileMap* file) :
 }
 
 MrwDecoder::~MrwDecoder(void) {
+  if (tiff_meta)
+    delete tiff_meta;
 }
 
 int MrwDecoder::isMRW(FileMap* input) {
@@ -40,23 +42,6 @@ int MrwDecoder::isMRW(FileMap* input) {
   const uchar8* data = input->getData(0);
   return data[0] == 0x00 && data[1] == 0x4D && data[2] == 0x52 && data[3] == 0x4D;
 }
-                        
-/* This table includes all cameras that have ever had official MRW raw support.
-   There were also a few compacts (G400, G500, G530 and G600) that had a raw
-   mode in a hidden menu with MRW format written to JPG named files. It should
-   be easy to support them given example files but chances are it was more of a
-   novelty than something people actually used. */
-static mrw_camera_t mrw_camera_table[] = {
-  {"27820001", "DIMAGE A1"},
-  {"27200001", "DIMAGE A2"},
-  {"27470002", "DIMAGE A200"},
-  {"27730001", "DIMAGE 5"},
-  {"27660001", "DIMAGE 7"},
-  {"27790001", "DIMAGE 7I"},
-  {"27780001", "DIMAGE 7HI"},
-  {"21810002", "DYNAX 7D"},
-  {"21860002", "DYNAX 5D"},
-};
 
 void MrwDecoder::parseHeader() {
   const unsigned char* data = mFile->getData(0);
@@ -68,27 +53,35 @@ void MrwDecoder::parseHeader() {
     ThrowRDE("This isn't actually a MRW file, why are you calling me?");
     
   data_offset = get4BE(data,4)+8;
-  
-  // Let's just get all we need from the PRD block and be done with it
-  raw_height = get2BE(data,24);
-  raw_width = get2BE(data,26);
-  packed = (data[32] == 12);
-  cameraid = get8LE(data,16);
-  cameraName = modelName(cameraid);
-  if (!cameraName) {
-    uchar8 cameracode[9] = {0};
-    *((uint64 *) cameracode) = cameraid;
-    ThrowRDE("MRW decoder: Unknown camera with ID %s", cameracode);
-  }
-}
 
-const char* MrwDecoder::modelName(uint64 cameraid) {
-  for (uint32 i=0; i<sizeof(mrw_camera_table)/sizeof(mrw_camera_table[0]); i++) { 
-    if (*((uint64*) mrw_camera_table[i].code) == cameraid) {
-        return mrw_camera_table[i].name;
+  if (!mFile->isValid(data_offset))
+    ThrowRDE("MRW: Data offset is invalid");
+
+  uint32 currpos = 8;
+  while (currpos < data_offset) {
+    uint32 tag = get4BE(data,currpos);
+    uint32 len = get4BE(data,currpos+4);
+    switch(tag) {
+    case 0x505244: // PRD
+      raw_height = get2BE(data,currpos+16);
+      raw_width = get2BE(data,currpos+18);
+      packed = (data[currpos+24] == 12);
+    case 0x574247: // WBG
+      for(uint32 i=0; i<4; i++)
+        wb_coeffs[i] = get2BE(data, currpos+12+i*2);
+      break;
+    case 0x545457: // TTW
+      // Base value for offsets needs to be at the beginning of the TIFF block, not the file
+      FileMap *f = new FileMap(mFile->getDataWrt(currpos+8), mFile->getSize()-currpos-8);
+      if (little == getHostEndianness())
+        tiff_meta = new TiffIFDBE(f, 8);
+      else
+        tiff_meta = new TiffIFD(f, 8);
+      delete f;
+      break;
     }
+    currpos += MAX(len+8,1); // MAX(,1) to make sure we make progress
   }
-  return NULL;
 }
 
 RawImage MrwDecoder::decodeRawInternal() {
@@ -123,35 +116,34 @@ RawImage MrwDecoder::decodeRawInternal() {
 }
 
 void MrwDecoder::checkSupportInternal(CameraMetaData *meta) {
-  this->checkCameraSupported(meta, "MINOLTA", cameraName, "");
+  if (!tiff_meta->hasEntry(MAKE) || !tiff_meta->hasEntry(MODEL))
+    ThrowRDE("MRW: Couldn't find make and model");
+
+  string make = tiff_meta->getEntry(MAKE)->getString();
+  string model = tiff_meta->getEntry(MODEL)->getString();
+  this->checkCameraSupported(meta, make, model, "");
 }
 
 void MrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   //Default
   int iso = 0;
 
-  setMetaData(meta, "MINOLTA", cameraName, "", iso);
+  if (!tiff_meta->hasEntry(MAKE) || !tiff_meta->hasEntry(MODEL))
+    ThrowRDE("MRW: Couldn't find make and model");
 
-  uint32 currpos = 8;
-  const unsigned char* data = mFile->getData(0);
-  while (currpos < data_offset) {
-    uint32 tag = get4BE(data,currpos);
-    uint32 len = get4BE(data,currpos+4);
-    if (tag == 0x574247) { /* WBG */
-      ushort16 tmp[4];
-      for(uint32 i=0; i<4; i++)
-        tmp[i] = get2BE(data, currpos+12+i*2);
-      if (!strcmp(cameraName,"DIMAGE A200")) {
-        mRaw->metadata.wbCoeffs[0] = (float) tmp[2];
-        mRaw->metadata.wbCoeffs[1] = (float) tmp[0];
-        mRaw->metadata.wbCoeffs[2] = (float) tmp[1];
-      } else {
-        mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
-        mRaw->metadata.wbCoeffs[1] = (float) tmp[1];
-        mRaw->metadata.wbCoeffs[2] = (float) tmp[3];
-      }
-    }
-    currpos += MAX(len+8,1); // MAX(,1) to make sure we make progress
+  string make = tiff_meta->getEntry(MAKE)->getString();
+  string model = tiff_meta->getEntry(MODEL)->getString();
+
+  setMetaData(meta, make, model, "", iso);
+
+  if (hints.find("swapped_wb") != hints.end()) {
+    mRaw->metadata.wbCoeffs[0] = (float) wb_coeffs[2];
+    mRaw->metadata.wbCoeffs[1] = (float) wb_coeffs[0];
+    mRaw->metadata.wbCoeffs[2] = (float) wb_coeffs[1];
+  } else {
+    mRaw->metadata.wbCoeffs[0] = (float) wb_coeffs[0];
+    mRaw->metadata.wbCoeffs[1] = (float) wb_coeffs[1];
+    mRaw->metadata.wbCoeffs[2] = (float) wb_coeffs[3];
   }
 }
 

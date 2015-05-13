@@ -6807,7 +6807,7 @@
 		<Crop x="4" y="0" width="-52" height="0"/>
 		<Sensor black="1024" white="16383"/>
 	</Camera>
-	<Camera make="MINOLTA" model="DYNAX 5D">
+	<Camera make="KONICA MINOLTA" model="DYNAX 5D">
 		<ID make="Minolta" model="Dynax 5D">Konica Minolta Maxxum 5D</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -6817,8 +6817,12 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
+		<Aliases>
+			<Alias id="Maxxum 5D">MAXXUM 5D</Alias>
+			<Alias id="Alpha 5D">ALPHA 5D</Alias>
+		</Aliases>
 	</Camera>
-	<Camera make="MINOLTA" model="DYNAX 7D">
+	<Camera make="KONICA MINOLTA" model="DYNAX 7D">
 		<ID make="Minolta" model="Dynax 7D">Konica Minolta Maxxum 7D</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -6828,8 +6832,12 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
+		<Aliases>
+			<Alias id="Maxxum 7D">MAXXUM 7D</Alias>
+			<Alias id="Alpha 7D">ALPHA 7D</Alias>
+		</Aliases>
 	</Camera>
-	<Camera make="MINOLTA" model="DIMAGE A1">
+	<Camera make="Minolta Co., Ltd." model="DiMAGE A1">
 		<ID make="Minolta" model="DiMAGE A1">Minolta DiMAGE A1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -6840,7 +6848,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
-	<Camera make="MINOLTA" model="DIMAGE A2">
+	<Camera make="Konica Minolta Camera, Inc." model="DiMAGE A2">
 		<ID make="Minolta" model="DiMAGE A2">Konica Minolta DiMAGE A2</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -6851,7 +6859,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
-	<Camera make="MINOLTA" model="DIMAGE A200">
+	<Camera make="KONICA MINOLTA" model="DiMAGE A200">
 		<ID make="Minolta" model="DiMAGE A200">Konica Minolta DiMAGE A200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -6861,8 +6869,11 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
+		<Hints>
+			<Hint name="swapped_wb" value=""/>
+		</Hints>
 	</Camera>
-	<Camera make="MINOLTA" model="DIMAGE 5">
+	<Camera make="Minolta Co., Ltd." model="DiMAGE 5">
 		<ID make="Minolta" model="DiMAGE 5">Minolta DiMAGE 5</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -6873,7 +6884,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
-	<Camera make="MINOLTA" model="DIMAGE 7">
+	<Camera make="Minolta Co., Ltd." model="DiMAGE 7">
 		<ID make="Minolta" model="DiMAGE 7">Minolta DiMAGE 7</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -6884,7 +6895,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
-	<Camera make="MINOLTA" model="DIMAGE 7I">
+	<Camera make="Minolta Co., Ltd." model="DiMAGE 7i">
 		<ID make="Minolta" model="DiMAGE 7i">Minolta DiMAGE 7i</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -6895,7 +6906,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
-	<Camera make="MINOLTA" model="DIMAGE 7HI">
+	<Camera make="Minolta Co., Ltd." model="DiMAGE 7Hi">
 		<ID make="Minolta" model="DiMAGE 7Hi">Minolta DiMAGE 7Hi</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
