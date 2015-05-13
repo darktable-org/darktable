@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-03 17:15+0200\n"
-"PO-Revision-Date: 2015-05-05 13:36+0100\n"
+"POT-Creation-Date: 2015-05-13 22:21+0200\n"
+"PO-Revision-Date: 2015-05-13 22:27+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -826,7 +826,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:586
 #: ../src/iop/colorbalance.c:625 ../src/iop/colorbalance.c:664
-#: ../src/iop/temperature.c:1167 ../src/libs/collect.c:1238
+#: ../src/iop/temperature.c:1148 ../src/libs/collect.c:1238
 #: ../src/libs/collect.c:1239
 msgid "red"
 msgstr "rood"
@@ -840,7 +840,7 @@ msgstr "geel"
 #: ../src/iop/bilateral.cc:352 ../src/iop/channelmixer.c:464
 #: ../src/iop/channelmixer.c:482 ../src/iop/colorbalance.c:595
 #: ../src/iop/colorbalance.c:634 ../src/iop/colorbalance.c:673
-#: ../src/iop/temperature.c:1168 ../src/libs/collect.c:1244
+#: ../src/iop/temperature.c:1149 ../src/libs/collect.c:1244
 #: ../src/libs/collect.c:1245
 msgid "green"
 msgstr "groen"
@@ -849,7 +849,7 @@ msgstr "groen"
 #: ../src/iop/bilateral.cc:353 ../src/iop/channelmixer.c:465
 #: ../src/iop/channelmixer.c:488 ../src/iop/colorbalance.c:604
 #: ../src/iop/colorbalance.c:643 ../src/iop/colorbalance.c:682
-#: ../src/iop/temperature.c:1169 ../src/libs/collect.c:1247
+#: ../src/iop/temperature.c:1150 ../src/libs/collect.c:1247
 #: ../src/libs/collect.c:1248
 msgid "blue"
 msgstr "blauw"
@@ -940,18 +940,18 @@ msgstr ""
 "kopieer eerst de afbeeldingsgeschiedens voordat je het op een andere toepast"
 
 #: ../src/common/history.c:392 ../src/common/history.c:395
-#: ../src/common/history.c:410 ../src/common/styles.c:700
-#: ../src/common/styles.c:704 ../src/develop/blend_gui.c:1825
+#: ../src/common/history.c:410 ../src/common/styles.c:716
+#: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1825
 #: ../src/develop/develop.c:1254 ../src/libs/live_view.c:409
 msgid "on"
 msgstr "aan"
 
 #: ../src/common/history.c:392 ../src/common/history.c:395
-#: ../src/common/history.c:410 ../src/common/styles.c:700
-#: ../src/common/styles.c:704 ../src/develop/blend_gui.c:1604
+#: ../src/common/history.c:410 ../src/common/styles.c:716
+#: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1254
 #: ../src/imageio/format/exr.cc:353 ../src/imageio/format/j2k.c:671
-#: ../src/iop/colorin.c:1259 ../src/iop/demosaic.c:2097
+#: ../src/iop/colorin.c:1256 ../src/iop/demosaic.c:2097
 #: ../src/iop/vignette.c:1143 ../src/libs/history.c:153
 #: ../src/libs/live_view.c:408
 msgid "off"
@@ -974,25 +974,25 @@ msgstr ""
 "<h1>bedankt,</h1><p>alles heeft gewerkt, je kunt nu  je webbrowser "
 "<b>sluiten</b> en <b>terugkeren</b> naar darktable.</p>"
 
-#: ../src/common/image.c:145
+#: ../src/common/image.c:146
 msgid "orphaned image"
 msgstr "verweesde afbeelding"
 
-#: ../src/common/image.c:1283
+#: ../src/common/image.c:1313
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "aanmaak lokale kopie lukt alleen als het origineel toegankelijk is "
 
-#: ../src/common/image.c:1297
+#: ../src/common/image.c:1327
 msgid "cannot create local copy."
 msgstr "aanmaak lokale kopie mislukt"
 
-#: ../src/common/image.c:1349 ../src/control/jobs/control_jobs.c:615
+#: ../src/common/image.c:1379 ../src/control/jobs/control_jobs.c:615
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "verwijderen van lokale kopie is niet mogelijk wanneer het origineel niet "
 "toegankelijk is"
 
-#: ../src/common/image.c:1502
+#: ../src/common/image.c:1532
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1099,8 +1099,8 @@ msgstr "naam stijl '%s' bestaat al"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:305 ../src/common/styles.c:309
 #: ../src/common/styles.c:389 ../src/common/styles.c:458
-#: ../src/common/styles.c:609 ../src/common/styles.c:1131
-#: ../src/common/styles.c:1150
+#: ../src/common/styles.c:625 ../src/common/styles.c:1147
+#: ../src/common/styles.c:1166
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1117,17 +1117,17 @@ msgstr "aanmaak profielstijl '%s' is gelukt"
 msgid "no image selected!"
 msgstr "er is geen afbeelding geselecteerd"
 
-#: ../src/common/styles.c:787
+#: ../src/common/styles.c:803
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "overschrijven stijl bestand voor %s mislukt"
 
-#: ../src/common/styles.c:793
+#: ../src/common/styles.c:809
 #, c-format
 msgid "style file for %s exists"
 msgstr "stijl bestand '%s' bestaat al"
 
-#: ../src/common/styles.c:1022
+#: ../src/common/styles.c:1038
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "stijl '%s' is geïmporteerd"
@@ -1136,7 +1136,7 @@ msgstr "stijl '%s' is geïmporteerd"
 #: ../src/iop/clipping.c:1573 ../src/iop/clipping.c:1826
 #: ../src/iop/clipping.c:1846 ../src/iop/clipping.c:1976
 #: ../src/iop/clipping.c:1998 ../src/iop/colorreconstruction.c:1314
-#: ../src/iop/lens.c:2037 ../src/libs/export.c:489 ../src/libs/live_view.c:323
+#: ../src/iop/lens.c:2037 ../src/libs/export.c:488 ../src/libs/live_view.c:323
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #: ../src/libs/print_settings.c:1012 ../src/libs/print_settings.c:1274
 msgid "none"
@@ -1382,7 +1382,7 @@ msgstr "_Cancel"
 #: ../src/control/jobs/control_jobs.c:1215
 #: ../src/control/jobs/control_jobs.c:1269
 msgid "_Select as destination"
-msgstr "_Select as destination"
+msgstr "_Selecteer als bestemming"
 
 #: ../src/control/jobs/control_jobs.c:1233
 #, c-format
@@ -1425,14 +1425,14 @@ msgstr ""
 "het opvragen instellingen van de opslag module `%s' is mislukt, het "
 "exporteren is gestopt"
 
-#: ../src/control/jobs/control_jobs.c:1388
+#: ../src/control/jobs/control_jobs.c:1387
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "pas tijdsverschil toe op %d afbeelding"
 msgstr[1] "pas tijdsverschil toe op %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1407
+#: ../src/control/jobs/control_jobs.c:1406
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
@@ -1923,7 +1923,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/gui/accelerators.c:679 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:188
 #: ../src/gui/presets.c:294 ../src/gui/presets.c:662
-#: ../src/iop/temperature.c:1179 ../src/libs/import.c:521
+#: ../src/iop/temperature.c:1160 ../src/libs/import.c:521
 #: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1092
 msgid "preset"
 msgstr "voorkeur"
@@ -2116,7 +2116,7 @@ msgstr "dubbelklikken is resetten"
 #. *	      will be interpolated.
 #. * Column 5 - Channel multipliers.
 #. *
-#. * Minolta's ALPHA and MAXXUM models are treated as the DYNAX model.
+#. * Minolta's ALPHA and MAXXUM models are treated as the Dynax model.
 #. *
 #. * WB name is standardized to one of the following:
 #. "Sunlight" and other variation should be switched to this:
@@ -2545,7 +2545,7 @@ msgstr "selecteer delen"
 
 #: ../src/gui/hist_dialog.c:138
 msgid "Select _All"
-msgstr "Select _All"
+msgstr "Selecteer alles"
 
 #: ../src/gui/hist_dialog.c:138
 msgid "_Clear"
@@ -2663,7 +2663,7 @@ msgstr "importeren"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:561 ../src/libs/export.c:722
+#: ../src/gui/preferences.c:561 ../src/libs/export.c:721
 #: ../src/libs/styles.c:367
 msgid "export"
 msgstr "exporteren"
@@ -3098,13 +3098,13 @@ msgstr "draai pixels"
 
 #: ../src/imageio/format/pdf.c:606 ../src/imageio/format/pdf.c:632
 #: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1857
-#: ../src/libs/export.c:589 ../src/libs/metadata_view.c:242
+#: ../src/libs/export.c:588 ../src/libs/metadata_view.c:242
 msgid "no"
 msgstr "nee"
 
 #: ../src/imageio/format/pdf.c:607 ../src/imageio/format/pdf.c:633
 #: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1858
-#: ../src/libs/export.c:590 ../src/libs/metadata_view.c:242
+#: ../src/libs/export.c:589 ../src/libs/metadata_view.c:242
 msgid "yes"
 msgstr "ja"
 
@@ -3292,7 +3292,7 @@ msgstr "lokale map"
 #: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:105
 #: ../src/imageio/storage/latex.c:105
 msgid "_Select as output destination"
-msgstr "_Select as output destination"
+msgstr "_Selecteer als bestemming"
 
 #: ../src/imageio/storage/disk.c:145 ../src/imageio/storage/gallery.c:158
 #: ../src/imageio/storage/latex.c:158
@@ -4637,102 +4637,102 @@ msgstr "kies globale verzadiging"
 msgid "input color profile"
 msgstr "ingaand kleuren profiel"
 
-#: ../src/iop/colorin.c:662
+#: ../src/iop/colorin.c:656
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "`%s' kleuren matrix is niet gevonden"
 
-#: ../src/iop/colorin.c:712
+#: ../src/iop/colorin.c:706
 msgid "input profile could not be generated!"
 msgstr "ingegeven profiel kan niet worden gemaakt!"
 
-#: ../src/iop/colorin.c:771
+#: ../src/iop/colorin.c:765
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "niet ondersteund ingegeven profiel is vervangen door lineair Rec709 RGB!"
 
-#: ../src/iop/colorin.c:1078 ../src/iop/colorin.c:1112
+#: ../src/iop/colorin.c:1075 ../src/iop/colorin.c:1109
 msgid "embedded ICC profile"
 msgstr "ingesloten ICC profiel"
 
-#: ../src/iop/colorin.c:1080 ../src/iop/colorin.c:1114
+#: ../src/iop/colorin.c:1077 ../src/iop/colorin.c:1111
 msgid "embedded matrix"
 msgstr "ingesloten matrix"
 
-#: ../src/iop/colorin.c:1082 ../src/iop/colorin.c:1116
+#: ../src/iop/colorin.c:1079 ../src/iop/colorin.c:1113
 msgid "standard color matrix"
 msgstr "standaard kleuren matrix"
 
-#: ../src/iop/colorin.c:1084 ../src/iop/colorin.c:1118
+#: ../src/iop/colorin.c:1081 ../src/iop/colorin.c:1115
 msgid "enhanced color matrix"
 msgstr "verbeterde kleuren matrix"
 
-#: ../src/iop/colorin.c:1086 ../src/iop/colorin.c:1120
+#: ../src/iop/colorin.c:1083 ../src/iop/colorin.c:1117
 msgid "vendor color matrix"
 msgstr "leverancier kleuren matrix"
 
-#: ../src/iop/colorin.c:1088 ../src/iop/colorin.c:1122
+#: ../src/iop/colorin.c:1085 ../src/iop/colorin.c:1119
 msgid "alternate color matrix"
 msgstr "alternatieve kleuren matrix "
 
-#: ../src/iop/colorin.c:1090 ../src/iop/colorin.c:1124
+#: ../src/iop/colorin.c:1087 ../src/iop/colorin.c:1121
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (b.v. JPG)"
 
-#: ../src/iop/colorin.c:1092 ../src/iop/colorin.c:1126
-#: ../src/iop/colorin.c:1261 ../src/iop/colorout.c:934
+#: ../src/iop/colorin.c:1089 ../src/iop/colorin.c:1123
+#: ../src/iop/colorin.c:1258 ../src/iop/colorout.c:934
 #: ../src/iop/colorout.c:935 ../src/iop/colorout.c:936
-#: ../src/libs/export.c:606 ../src/libs/print_settings.c:859
+#: ../src/libs/export.c:605 ../src/libs/print_settings.c:859
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatibel)"
 
-#: ../src/iop/colorin.c:1094 ../src/iop/colorin.c:1128
-#: ../src/iop/colorin.c:1262 ../src/iop/colorout.c:916
+#: ../src/iop/colorin.c:1091 ../src/iop/colorin.c:1125
+#: ../src/iop/colorin.c:1259 ../src/iop/colorout.c:916
 #: ../src/iop/colorout.c:917 ../src/iop/colorout.c:918
-#: ../src/libs/export.c:612
+#: ../src/libs/export.c:611
 msgid "linear Rec709 RGB"
 msgstr "linear Rec709 RGB"
 
-#: ../src/iop/colorin.c:1096 ../src/iop/colorin.c:1130
-#: ../src/iop/colorin.c:1263 ../src/iop/colorout.c:922
+#: ../src/iop/colorin.c:1093 ../src/iop/colorin.c:1127
+#: ../src/iop/colorin.c:1260 ../src/iop/colorout.c:922
 #: ../src/iop/colorout.c:923 ../src/iop/colorout.c:924
-#: ../src/libs/export.c:618
+#: ../src/libs/export.c:617
 msgid "linear Rec2020 RGB"
 msgstr "linear Rec709 RGB"
 
-#: ../src/iop/colorin.c:1098 ../src/iop/colorin.c:1132
+#: ../src/iop/colorin.c:1095 ../src/iop/colorin.c:1129
 msgid "linear infrared BGR"
 msgstr "lineair infrarood BGR"
 
-#: ../src/iop/colorin.c:1100 ../src/iop/colorin.c:1134
+#: ../src/iop/colorin.c:1097 ../src/iop/colorin.c:1131
 msgid "linear XYZ"
 msgstr "lineair XYZ"
 
-#: ../src/iop/colorin.c:1102 ../src/iop/colorin.c:1136
+#: ../src/iop/colorin.c:1099 ../src/iop/colorin.c:1133
 #: ../src/libs/colorpicker.c:542 ../src/libs/colorpicker.c:580
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1242 ../src/iop/denoiseprofile.c:1657
-#: ../src/libs/export.c:657 ../src/libs/print_settings.c:1002
+#: ../src/iop/colorin.c:1239 ../src/iop/denoiseprofile.c:1657
+#: ../src/libs/export.c:656 ../src/libs/print_settings.c:1002
 #: ../src/libs/print_settings.c:1216
 msgid "profile"
 msgstr "profiel"
 
-#: ../src/iop/colorin.c:1251
+#: ../src/iop/colorin.c:1248
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "ICC profielen in %s/kleur/in van %s/kleur/in"
 
-#: ../src/iop/colorin.c:1257
+#: ../src/iop/colorin.c:1254
 msgid "gamut clipping"
 msgstr "gamma clipping"
 
-#: ../src/iop/colorin.c:1260
+#: ../src/iop/colorin.c:1257
 msgid "sRGB"
 msgstr "sRGB"
 
-#: ../src/iop/colorin.c:1265
+#: ../src/iop/colorin.c:1262
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "beperk Lab-waarden tot gamma van RGB kleurruimte"
 
@@ -4863,26 +4863,26 @@ msgid "output intent"
 msgstr "voorgenomen output "
 
 #: ../src/iop/colorout.c:876 ../src/iop/colorout.c:883
-#: ../src/libs/export.c:678 ../src/libs/print_settings.c:1049
+#: ../src/libs/export.c:677 ../src/libs/print_settings.c:1049
 #: ../src/libs/print_settings.c:1259
 msgid "perceptual"
 msgstr "perceptueel"
 
 #: ../src/iop/colorout.c:877 ../src/iop/colorout.c:884
-#: ../src/libs/export.c:679 ../src/libs/print_settings.c:1050
+#: ../src/libs/export.c:678 ../src/libs/print_settings.c:1050
 #: ../src/libs/print_settings.c:1260
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
 #: ../src/iop/colorout.c:878 ../src/iop/colorout.c:885
-#: ../src/libs/export.c:680 ../src/libs/print_settings.c:1051
+#: ../src/libs/export.c:679 ../src/libs/print_settings.c:1051
 #: ../src/libs/print_settings.c:1261
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
 #: ../src/iop/colorout.c:879 ../src/iop/colorout.c:886
-#: ../src/libs/export.c:681 ../src/libs/print_settings.c:1052
+#: ../src/libs/export.c:680 ../src/libs/print_settings.c:1052
 #: ../src/libs/print_settings.c:1262
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
@@ -4909,7 +4909,7 @@ msgid "system display profile"
 msgstr "systeem weergave profiel"
 
 #: ../src/iop/colorout.c:928 ../src/iop/colorout.c:929
-#: ../src/iop/colorout.c:930 ../src/libs/export.c:599
+#: ../src/iop/colorout.c:930 ../src/libs/export.c:598
 #: ../src/libs/print_settings.c:852
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-veilig)"
@@ -5265,7 +5265,7 @@ msgid "interpolated from ISO %d and %d"
 msgstr "geïnterpoleerd uit ISO %d en %d"
 
 #: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:898
-#: ../src/iop/lens.c:2187 ../src/iop/levels.c:550 ../src/libs/export.c:696
+#: ../src/iop/lens.c:2187 ../src/iop/levels.c:550 ../src/libs/export.c:695
 #: ../src/libs/print_settings.c:1313
 msgid "mode"
 msgstr "modus"
@@ -6650,32 +6650,32 @@ msgstr "camera neutrale witbalans"
 msgid "spot white balance"
 msgstr "spot witbalans"
 
-#: ../src/iop/temperature.c:810
+#: ../src/iop/temperature.c:794
 msgid "failed to read camera white balance information!"
 msgstr "inlezen camera witbalans informatie is mislukt"
 
-#: ../src/iop/temperature.c:1165
+#: ../src/iop/temperature.c:1146
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:1166
+#: ../src/iop/temperature.c:1147
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:1181
+#: ../src/iop/temperature.c:1162
 msgid "choose white balance preset from camera"
 msgstr "neem camera witbalans"
 
-#: ../src/iop/temperature.c:1185
+#: ../src/iop/temperature.c:1166
 msgid "finetune"
 msgstr "fijnafstelling"
 
-#: ../src/iop/temperature.c:1186
+#: ../src/iop/temperature.c:1167
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1190
+#: ../src/iop/temperature.c:1171
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
@@ -7479,27 +7479,27 @@ msgstr "schrijf xmp bestanden"
 msgid "export selected"
 msgstr "selectie exporteren"
 
-#: ../src/libs/export.c:511
+#: ../src/libs/export.c:510
 msgid "storage options"
 msgstr "opslag instellingen"
 
-#: ../src/libs/export.c:515
+#: ../src/libs/export.c:514
 msgid "target storage"
 msgstr "doel"
 
-#: ../src/libs/export.c:538
+#: ../src/libs/export.c:537
 msgid "format options"
 msgstr "formaat instellingen"
 
-#: ../src/libs/export.c:543
+#: ../src/libs/export.c:542
 msgid "file format"
 msgstr "bestandstype"
 
-#: ../src/libs/export.c:561
+#: ../src/libs/export.c:560
 msgid "global options"
 msgstr "algemene instellingen"
 
-#: ../src/libs/export.c:566
+#: ../src/libs/export.c:565
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -7507,7 +7507,7 @@ msgstr ""
 "maximale breedte\n"
 "laat open voor geen herschaling"
 
-#: ../src/libs/export.c:569
+#: ../src/libs/export.c:568
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -7515,60 +7515,60 @@ msgstr ""
 "maximaal hoogte\n"
 "laat open  voor geen herschaling"
 
-#: ../src/libs/export.c:577
+#: ../src/libs/export.c:576
 msgid "max size"
 msgstr "formaat"
 
-#: ../src/libs/export.c:582
+#: ../src/libs/export.c:581
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:588
+#: ../src/libs/export.c:587
 msgid "allow upscaling"
 msgstr "opschalen toestaan"
 
-#: ../src/libs/export.c:659 ../src/libs/export.c:677
+#: ../src/libs/export.c:658 ../src/libs/export.c:676
 #: ../src/libs/print_settings.c:1219 ../src/libs/print_settings.c:1258
 msgid "image settings"
 msgstr "afbeeldings instellingen"
 
-#: ../src/libs/export.c:669 ../src/libs/print_settings.c:1249
+#: ../src/libs/export.c:668 ../src/libs/print_settings.c:1249
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "uitgaande ICC profielen in %s/kleur/uit of %s/kleur/uit"
 
-#: ../src/libs/export.c:676 ../src/libs/print_settings.c:1048
+#: ../src/libs/export.c:675 ../src/libs/print_settings.c:1048
 #: ../src/libs/print_settings.c:1256
 msgid "intent"
 msgstr "intensie"
 
-#: ../src/libs/export.c:687 ../src/libs/print_settings.c:1272
+#: ../src/libs/export.c:686 ../src/libs/print_settings.c:1272
 msgid "style"
 msgstr "stijl"
 
-#: ../src/libs/export.c:690
+#: ../src/libs/export.c:689
 msgid "temporary style to use while exporting"
 msgstr "tijdelijke stijl te gebruiken tijdens het exporteren"
 
-#: ../src/libs/export.c:700 ../src/libs/print_settings.c:1315
+#: ../src/libs/export.c:699 ../src/libs/print_settings.c:1315
 msgid "replace history"
 msgstr "vervang geschiedenis"
 
-#: ../src/libs/export.c:701 ../src/libs/print_settings.c:1316
+#: ../src/libs/export.c:700 ../src/libs/print_settings.c:1316
 msgid "append history"
 msgstr "toevoegen geschiedenis"
 
-#: ../src/libs/export.c:706
+#: ../src/libs/export.c:705
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "of de stijl items worden toegevoegd of ze vervangen de geschiedenis"
 
-#: ../src/libs/export.c:724
+#: ../src/libs/export.c:723
 msgid "export with current settings (ctrl-e)"
 msgstr "exporteer met bovenstaande instellingen   (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1191 ../src/libs/styles.c:66
+#: ../src/libs/export.c:1190 ../src/libs/styles.c:66
 #: ../src/views/darkroom.c:1756
 msgctxt "accel"
 msgid "export"
