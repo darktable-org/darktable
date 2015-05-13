@@ -337,6 +337,7 @@ void Camera::parseID( xml_node &cur )
     pugi::xml_attribute id_model = cur.attribute("model");
     if (id_model) {
       canonical_model = string(id_model.as_string());
+      canonical_alias = string(id_model.as_string());
     } else
       ThrowCME("CameraMetadata: Could not find model for ID for %s %s camera.", make.c_str(), model.c_str());
 
