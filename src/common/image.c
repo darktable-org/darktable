@@ -996,9 +996,9 @@ void dt_image_refresh_makermodel(dt_image_t *img)
 
   // Now we just create a makermodel by concatenation
   g_strlcpy(img->camera_makermodel, img->camera_maker, sizeof(img->camera_makermodel));
-  img->camera_makermodel[strlen(img->camera_maker)] = ' ';
-  g_strlcpy(img->camera_makermodel+strlen(img->camera_maker)+1, img->camera_model,
-            sizeof(img->camera_makermodel)-strlen(img->camera_maker)-1);
+  int len = strlen(img->camera_maker);
+  img->camera_makermodel[len] = ' ';
+  g_strlcpy(img->camera_makermodel+len+1, img->camera_model, sizeof(img->camera_makermodel)-len-1);
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
