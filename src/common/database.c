@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/database.h"
+#include "common/imageio_rawspeed.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/legacy_presets.h"
@@ -36,7 +37,7 @@
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 10
+#define CURRENT_DATABASE_VERSION 11
 
 typedef struct dt_database_t
 {
@@ -711,6 +712,64 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
     }
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 10;
+  }
+  else if(version == 10)
+  {
+    // 10 -> 11 added sanitized_maker/model fields to images
+    fprintf(stderr, "Going for 10->11 db update\n");
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    if((sqlite3_exec(db->handle, "ALTER TABLE images ADD COLUMN sanitized_maker VARCHAR(256)", NULL, NULL, NULL) != SQLITE_OK) ||
+       (sqlite3_exec(db->handle, "ALTER TABLE images ADD COLUMN sanitized_model VARCHAR(256)", NULL, NULL, NULL) != SQLITE_OK))
+    {
+      fprintf(stderr, "[init] can't add sanitized_maker or sanitized_model columns to database\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    sqlite3_stmt *query_stmt;
+    sqlite3_prepare_v2(db->handle,"SELECT id, maker, model FROM images", -1, &query_stmt, NULL);
+    sqlite3_stmt *update_stmt;
+    sqlite3_prepare_v2(db->handle,
+                       "UPDATE images SET sanitized_maker = ?1, sanitized_model = ?2 "
+                       "WHERE id = ?3", -1, &update_stmt, NULL);
+    while(sqlite3_step(query_stmt) == SQLITE_ROW)
+    {
+      char exif_maker[64];
+      char exif_model[64];
+      char camera_maker[64];
+      char camera_model[64];
+      char camera_alias[64];
+      int32_t id;
+      char *str;
+
+      id = sqlite3_column_int(query_stmt, 0);
+      str = (char *)sqlite3_column_text(query_stmt, 1);
+      if(str) g_strlcpy(exif_maker, str, sizeof(exif_maker));
+      str = (char *)sqlite3_column_text(query_stmt, 2);
+      if(str) g_strlcpy(exif_model, str, sizeof(exif_model));
+
+      dt_rawspeed_lookup_makermodel(exif_maker, exif_model,
+                                    camera_maker, sizeof(camera_maker),
+                                    camera_model, sizeof(camera_model),
+                                    camera_alias, sizeof(camera_alias));
+
+      sqlite3_bind_text(update_stmt, 1, camera_maker, -1, SQLITE_STATIC);
+      sqlite3_bind_text(update_stmt, 2, camera_alias, -1, SQLITE_STATIC);
+      sqlite3_bind_int(update_stmt, 3, id);
+      if(sqlite3_step(update_stmt) != SQLITE_DONE) {
+        fprintf(stderr, "[init] can't initialize sanitized_maker/sanitized_model\n");
+        fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+        sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        return version;
+      }
+      sqlite3_reset(update_stmt);
+      sqlite3_clear_bindings(update_stmt);
+    }
+    sqlite3_finalize(query_stmt);
+    sqlite3_finalize(update_stmt);
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 11;
   } // maybe in the future, see commented out code elsewhere
     //   else if(version == XXX)
     //   {
@@ -781,7 +840,7 @@ static void _create_schema(dt_database_t *db)
       "caption VARCHAR, description VARCHAR, license VARCHAR, sha1sum CHAR(40), "
       "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
       "latitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, max_version INTEGER, "
-      "write_timestamp INTEGER, history_end INTEGER)",
+      "write_timestamp INTEGER, history_end INTEGER, sanitized_maker VARCHAR, sanitized_model VARCHAR)",
       NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX images_group_id_index ON images (group_id)", NULL, NULL,
                         NULL);
