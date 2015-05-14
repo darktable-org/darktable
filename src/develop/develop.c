@@ -844,11 +844,11 @@ static void auto_apply_presets(dt_develop_t *dev)
   snprintf(query, sizeof(query), "insert into memory.history select ?1, 0, op_version, operation, op_params, "
                                  "enabled, blendop_params, blendop_version, multi_priority, multi_name "
                                  "from %s where autoapply=1 and "
-                                 "?2 like model and ?3 like maker and ?4 like lens and "
-                                 "?5 between iso_min and iso_max and "
-                                 "?6 between exposure_min and exposure_max and "
-                                 "?7 between aperture_min and aperture_max and "
-                                 "?8 between focal_length_min and focal_length_max and "
+                                 "((?2 like model and ?3 like maker) or (?4 like model and ?5 like maker)) and"
+                                 "?6 like lens and ?7 between iso_min and iso_max and "
+                                 "?8 between exposure_min and exposure_max and "
+                                 "?9 between aperture_min and aperture_max and "
+                                 "?10 between focal_length_min and focal_length_max and "
                                  "(format = 0 or format&?9!=0) order by writeprotect desc, "
                                  "length(model), length(maker), length(lens)",
            preset_table[legacy]);
@@ -858,11 +858,13 @@ static void auto_apply_presets(dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->exif_lens, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, fmaxf(0.0f, fminf(1000000, image->exif_iso)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->camera_alias, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw
   DT_DEBUG_SQLITE3_BIND_DOUBLE(
       stmt, 9, dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR));
