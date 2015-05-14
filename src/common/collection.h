@@ -137,6 +137,10 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone);
 void dt_collection_free(const dt_collection_t *collection);
 /** fetch params for collection for storing. */
 const dt_collection_params_t *dt_collection_params(const dt_collection_t *collection);
+/** get the filtered map between sanitized makermodel and exif maker/model **/
+GHashTable *dt_collection_get_makermodel_map(const gchar *filter);
+/** free the map between sanitized makermodel and exif maker/model **/
+void dt_collection_free_makermodel_map(GHashTable *map);
 /** get the generated query for collection */
 const gchar *dt_collection_get_query(const dt_collection_t *collection);
 /** updates sql query for a collection. @return 1 if query changed. */

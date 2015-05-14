@@ -23,6 +23,7 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/image.h"
+#include "common/imageio_rawspeed.h"
 
 #include <stdio.h>
 #include <memory.h>
@@ -516,6 +517,88 @@ void dt_collection_split_operator_number(const gchar *input, char **number, char
   g_regex_unref(regex);
 }
 
+GHashTable *dt_collection_get_makermodel_map(const gchar *filter)
+{
+  sqlite3_stmt *stmt;
+  GHashTable *result = g_hash_table_new(g_str_hash, g_str_equal);
+  gchar *needle = NULL;
+  if (filter && filter[0] != '\0')
+    needle = g_utf8_strdown(filter, -1);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "select maker, model from images group by maker, model",
+                              -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
+    char *exif_model = (char *)sqlite3_column_text(stmt, 1);
+
+    char maker[64];
+    char model[64];
+    char alias[64];
+    maker[0] = model[0] = alias[0] = '\0';
+    dt_rawspeed_lookup_makermodel(exif_maker, exif_model,
+                                  maker, sizeof(maker),
+                                  model, sizeof(model),
+                                  alias, sizeof(alias));
+
+    // Create the makermodel by concatenation
+    char makermodel[128];
+    g_strlcpy(makermodel, maker, sizeof(makermodel));
+    int maker_len = strlen(maker);
+    makermodel[maker_len] = ' ';
+    g_strlcpy(makermodel+maker_len+1, model, sizeof(makermodel)-maker_len-1);
+
+    gchar *haystack = g_utf8_strdown(makermodel, -1);
+    if (!needle || g_strrstr(haystack, needle) != NULL)
+    {
+      // Two element list with maker and model
+      GList *inner_list = NULL;
+      inner_list = g_list_append(inner_list, g_strdup(exif_maker));
+      inner_list = g_list_append(inner_list, g_strdup(exif_model));
+
+      // Store in the hash a list of lists to hold several maker/model pairs
+      // that give the same sanitized value
+      gchar *key = g_strdup(makermodel);
+      GList *outer_list = g_hash_table_lookup(result, key);
+      outer_list = g_list_append(outer_list, inner_list);
+      g_hash_table_replace(result, key, outer_list);
+    }
+    g_free(haystack);
+  }
+  sqlite3_finalize(stmt);
+  if(needle)
+    g_free(needle);
+
+  // Return the resulting hash that will need to be freed deeply
+  // (the keys, the lists of lists, the maker/model values)
+  // dt_collection_free_makermodel_map does the deed
+  return result;
+}
+
+void dt_collection_free_makermodel_map(GHashTable *map)
+{
+  // Free all the keys now
+  GList *keys = g_hash_table_get_keys(map);
+  GList *element = keys;
+  while (element)
+  {
+    GList *lists = g_hash_table_lookup(map, element->data);
+    GList *list = lists;
+    while (list)
+    {
+      GList *tuple = list->data;
+      g_free(tuple->data); // Free maker
+      g_free(tuple->next->data); // Free model
+      g_list_free(tuple); // Free the makermodel "tuple" (size 2 list)
+      list = list->next;
+    }
+    g_list_free(lists); // Free the list of lists
+    g_free(element->data); // Free the makermodel key
+    element = element->next;
+  }
+  g_list_free(keys);
+}
 
 static void get_query_string(const dt_collection_properties_t property, const gchar *escaped_text,
                              char *query, size_t query_len)
