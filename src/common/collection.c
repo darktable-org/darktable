@@ -600,30 +600,32 @@ void dt_collection_free_makermodel_map(GHashTable *map)
   g_list_free(keys);
 }
 
-static void get_query_string(const dt_collection_properties_t property, const gchar *escaped_text,
-                             char *query, size_t query_len)
+static gchar *get_query_string(const dt_collection_properties_t property, const gchar *text)
 {
+  gchar *escaped_text = dt_util_str_replace(text, "'", "''");
+  gchar *query = NULL;
+
   switch(property)
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
       if(!(escaped_text && *escaped_text))
-        snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s%%'))",
-                 escaped_text);
+        query = dt_util_dstrcat(query, "(film_id in (select id from film_rolls where folder like '%s%%'))",
+                                escaped_text);
       else
-        snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s'))",
-                 escaped_text);
+        query = dt_util_dstrcat(query, "(film_id in (select id from film_rolls where folder like '%s'))",
+                                escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
-      snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s%%'))",
-               escaped_text);
+      query = dt_util_dstrcat(query, "(film_id in (select id from film_rolls where folder like '%s%%'))",
+                              escaped_text);
       break;
 
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       int color = 0;
       if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
-        snprintf(query, query_len, "(id in (select imgid from color_labels where color IS NOT NULL))");
+        query = dt_util_dstrcat(query, "(id in (select imgid from color_labels where color IS NOT NULL))");
       else
       {
         if(strcmp(escaped_text, _("red")) == 0)
@@ -636,55 +638,55 @@ static void get_query_string(const dt_collection_properties_t property, const gc
           color = 3;
         else if(strcmp(escaped_text, _("purple")) == 0)
           color = 4;
-        snprintf(query, query_len, "(id in (select imgid from color_labels where color=%d))", color);
+        query = dt_util_dstrcat(query, "(id in (select imgid from color_labels where color=%d))", color);
       }
     }
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
-      snprintf(query, query_len, "(id %s in (select imgid from history where imgid=images.id)) ",
-               (strcmp(escaped_text, _("altered")) == 0) ? "" : "not");
+      query = dt_util_dstrcat(query, "(id %s in (select imgid from history where imgid=images.id)) ",
+                              (strcmp(escaped_text, _("altered")) == 0) ? "" : "not");
       break;
 
     case DT_COLLECTION_PROP_GEOTAGGING: // geotagging
-      snprintf(query, query_len, "(id %s in (select id AS imgid from images where (longitude IS NOT NULL AND "
+      query = dt_util_dstrcat(query, "(id %s in (select id AS imgid from images where (longitude IS NOT NULL AND "
                                  "latitude IS NOT NULL))) ",
-               (strcmp(escaped_text, _("tagged")) == 0) ? "" : "not");
+                              (strcmp(escaped_text, _("tagged")) == 0) ? "" : "not");
       break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
-      snprintf(query, query_len, "(maker || ' ' || model like '%%%s%%')", escaped_text);
+      query = dt_util_dstrcat(query, "(maker || ' ' || model like '%%%s%%')", escaped_text);
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      snprintf(query, query_len, "(id in (select imgid from tagged_images as a join "
+      query = dt_util_dstrcat(query, "(id in (select imgid from tagged_images as a join "
                                  "tags as b on a.tagid = b.id where name like '%s'))",
-               escaped_text);
+                              escaped_text);
       break;
 
     // TODO: How to handle images without metadata? In the moment they are not shown.
     // TODO: Autogenerate this code?
     case DT_COLLECTION_PROP_TITLE: // title
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
-               DT_METADATA_XMP_DC_TITLE, escaped_text);
+      query = dt_util_dstrcat(query, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                      DT_METADATA_XMP_DC_TITLE, escaped_text);
       break;
     case DT_COLLECTION_PROP_DESCRIPTION: // description
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
-               DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
+      query = dt_util_dstrcat(query, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                      DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
       break;
     case DT_COLLECTION_PROP_CREATOR: // creator
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
-               DT_METADATA_XMP_DC_CREATOR, escaped_text);
+      query = dt_util_dstrcat(query, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                      DT_METADATA_XMP_DC_CREATOR, escaped_text);
       break;
     case DT_COLLECTION_PROP_PUBLISHER: // publisher
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
-               DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
+      query = dt_util_dstrcat(query, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                      DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
       break;
     case DT_COLLECTION_PROP_RIGHTS: // rights
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
-               DT_METADATA_XMP_DC_RIGHTS, escaped_text);
+      query = dt_util_dstrcat(query, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                      DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
     case DT_COLLECTION_PROP_LENS: // lens
-      snprintf(query, query_len, "(lens like '%%%s%%')", escaped_text);
+      query = dt_util_dstrcat(query, "(lens like '%%%s%%')", escaped_text);
       break;
     case DT_COLLECTION_PROP_ISO: // iso
     {
@@ -692,11 +694,11 @@ static void get_query_string(const dt_collection_properties_t property, const gc
       dt_collection_split_operator_number(escaped_text, &number, &operator);
 
       if(operator&& number)
-        snprintf(query, query_len, "(iso %s %s)", operator, number);
+        query = dt_util_dstrcat(query, "(iso %s %s)", operator, number);
       else if(number)
-        snprintf(query, query_len, "(iso = %s)", number);
+        query = dt_util_dstrcat(query, "(iso = %s)", number);
       else
-        snprintf(query, query_len, "(iso like '%%%s%%')", escaped_text);
+        query = dt_util_dstrcat(query, "(iso like '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number);
@@ -709,11 +711,11 @@ static void get_query_string(const dt_collection_properties_t property, const gc
       dt_collection_split_operator_number(escaped_text, &number, &operator);
 
       if(operator&& number)
-        snprintf(query, query_len, "(aperture %s %s)", operator, number);
+        query = dt_util_dstrcat(query, "(aperture %s %s)", operator, number);
       else if(number)
-        snprintf(query, query_len, "(aperture = %s)", number);
+        query = dt_util_dstrcat(query, "(aperture = %s)", number);
       else
-        snprintf(query, query_len, "(aperture like '%%%s%%')", escaped_text);
+        query = dt_util_dstrcat(query, "(aperture like '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number);
@@ -721,13 +723,19 @@ static void get_query_string(const dt_collection_properties_t property, const gc
     break;
 
     case DT_COLLECTION_PROP_FILENAME: // filename
-      snprintf(query, query_len, "(filename like '%%%s%%')", escaped_text);
+      query = dt_util_dstrcat(query, "(filename like '%%%s%%')", escaped_text);
       break;
 
     default: // day or time
-      snprintf(query, query_len, "(datetime_taken like '%%%s%%')", escaped_text);
+      query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);
       break;
   }
+  g_free(escaped_text);
+
+  if(!query) // We've screwed up and not done a query string, send a placeholder
+    query = dt_util_dstrcat(query, "(1=1)");
+
+  return query;
 }
 
 int dt_collection_serialize(char *buf, int bufsize)
@@ -817,7 +825,7 @@ void dt_collection_deserialize(char *buf)
 
 void dt_collection_update_query(const dt_collection_t *collection)
 {
-  char query[1024], confname[200];
+  char confname[200];
   gchar *complete_query = NULL;
 
   const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
@@ -835,16 +843,15 @@ void dt_collection_update_query(const dt_collection_t *collection)
     if(!text) break;
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
-    gchar *escaped_text = dt_util_str_replace(text, "'", "''");
 
-    get_query_string(property, escaped_text, query, sizeof(query));
+    gchar *query = get_query_string(property, text);
 
     if(i > 0)
       complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
     else
       complete_query = dt_util_dstrcat(complete_query, "%s", query);
 
-    g_free(escaped_text);
+    g_free(query);
     g_free(text);
   }
 
