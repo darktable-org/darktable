@@ -1500,15 +1500,16 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   int del = 0;
   if(dev->gui_attached)
   {
-    int pos = 0;
-    for(guint i = 0; i < g_list_length(dev->history); i++)
+    GList *elem = g_list_first(dev->history);
+    while(elem != NULL)
     {
-      GList *elem = g_list_nth(dev->history, pos);
-
+      GList *next = g_list_next(elem);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(elem->data);
 
-      if(module->instance == hist->module->instance && module->multi_priority == hist->module->multi_priority)
+      if(module == hist->module)
       {
+        // printf("removing obsoleted history item: %s %s %p %p\n", hist->module->op, hist->module->multi_name,
+        //        module, hist->module);
         free(hist->params);
         free(hist->blend_params);
         free(hist);
@@ -1516,10 +1517,7 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
         dev->history_end--;
         del = 1;
       }
-      else
-      {
-        pos++;
-      }
+      elem = next;
     }
   }
 
