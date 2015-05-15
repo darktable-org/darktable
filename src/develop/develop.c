@@ -107,6 +107,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->iop_instance = 0;
   dev->iop = NULL;
 
+  dev->proxy.exposure = NULL;
+
   dev->overexposed.enabled = FALSE;
   dev->overexposed.colorscheme = dt_conf_get_int("darkroom/ui/overexposed/colorscheme");
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
@@ -147,6 +149,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
+
+  g_list_free_full(dev->proxy.exposure, g_free);
 
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/overexposed/lower", dev->overexposed.lower);
@@ -1262,11 +1266,33 @@ int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid)
   return (dev->image_storage.id == imgid) ? 1 : 0;
 }
 
+gint dt_dev_exposure_hooks_sort(gconstpointer a, gconstpointer b)
+{
+  const dt_dev_proxy_exposure_t *ai = (const dt_dev_proxy_exposure_t *)a;
+  const dt_dev_proxy_exposure_t *bi = (const dt_dev_proxy_exposure_t *)b;
+  const dt_iop_module_t *am = (const dt_iop_module_t *)ai->module;
+  const dt_iop_module_t *bm = (const dt_iop_module_t *)bi->module;
+  if(am->priority == bm->priority) return bm->multi_priority - am->multi_priority;
+  return am->priority - bm->priority;
+}
+
+static dt_dev_proxy_exposure_t *find_last_exposure_instance(dt_develop_t *dev)
+{
+  if(!dev->proxy.exposure) return NULL;
+
+  dev->proxy.exposure = g_list_sort(dev->proxy.exposure, dt_dev_exposure_hooks_sort);
+  dt_dev_proxy_exposure_t *instance = (dt_dev_proxy_exposure_t *)(g_list_last(dev->proxy.exposure)->data);
+
+  return instance;
+};
+
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
 {
+  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
+
   /* check if exposure iop module has registered its hooks */
-  if(dev->proxy.exposure.module && dev->proxy.exposure.set_black && dev->proxy.exposure.get_black
-     && dev->proxy.exposure.set_white && dev->proxy.exposure.get_white)
+  if(instance && instance->module && instance->set_black && instance->get_black && instance->set_white
+     && instance->get_white)
     return TRUE;
 
   return FALSE;
@@ -1274,9 +1300,13 @@ gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
 
 void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
 {
-  if(!dev->proxy.exposure.module) return;
+  if(!dev->proxy.exposure) return;
 
-  dt_iop_module_t *exposure = dev->proxy.exposure.module;
+  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
+
+  if(!(instance && instance->module)) return;
+
+  dt_iop_module_t *exposure = instance->module;
   memcpy(exposure->params, exposure->default_params, exposure->params_size);
   exposure->gui_update(exposure);
   dt_dev_add_history_item(exposure->dev, exposure, TRUE);
@@ -1284,28 +1314,32 @@ void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
 
 void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
 {
-  if(dev->proxy.exposure.module && dev->proxy.exposure.set_white)
-    dev->proxy.exposure.set_white(dev->proxy.exposure.module, white);
+  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
+
+  if(instance && instance->module && instance->set_white) instance->set_white(instance->module, white);
 }
 
 float dt_dev_exposure_get_white(dt_develop_t *dev)
 {
-  if(dev->proxy.exposure.module && dev->proxy.exposure.get_white)
-    return dev->proxy.exposure.get_white(dev->proxy.exposure.module);
+  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
+
+  if(instance && instance->module && instance->get_white) return instance->get_white(instance->module);
 
   return 0.0;
 }
 
 void dt_dev_exposure_set_black(dt_develop_t *dev, const float black)
 {
-  if(dev->proxy.exposure.module && dev->proxy.exposure.set_black)
-    dev->proxy.exposure.set_black(dev->proxy.exposure.module, black);
+  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
+
+  if(instance && instance->module && instance->set_black) instance->set_black(instance->module, black);
 }
 
 float dt_dev_exposure_get_black(dt_develop_t *dev)
 {
-  if(dev->proxy.exposure.module && dev->proxy.exposure.get_black)
-    return dev->proxy.exposure.get_black(dev->proxy.exposure.module);
+  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
+
+  if(instance && instance->module && instance->get_black) return instance->get_black(instance->module);
 
   return 0.0;
 }
