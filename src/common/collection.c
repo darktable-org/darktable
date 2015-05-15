@@ -655,7 +655,34 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
-      query = dt_util_dstrcat(query, "(maker || ' ' || model like '%%%s%%')", escaped_text);
+      if (!text || text[0] == '\0') // Optimize away the empty case
+        query = dt_util_dstrcat(query, "(1=1)");
+      else
+      {
+        // Start query with a false statement to avoid special casing the first condition
+        query = dt_util_dstrcat(query, "((1=0)");
+        GHashTable *makermodel_map = dt_collection_get_makermodel_map(text);
+        GList *keys = g_hash_table_get_keys(makermodel_map);
+        GList *element = keys;
+        while (element)
+        {
+          GList *list = g_hash_table_lookup(makermodel_map, element->data);
+          while (list)
+          {
+            GList *tuple = list->data;
+            gchar *mk = dt_util_str_replace(tuple->data, "'", "''");
+            gchar *md = dt_util_str_replace(tuple->next->data, "'", "''");
+            query = dt_util_dstrcat(query, " or (maker = '%s' and model = '%s')", mk, md);
+            g_free(mk);
+            g_free(md);
+            list = list->next;
+          }
+          element = element->next;
+        }
+        g_list_free(keys);
+        dt_collection_free_makermodel_map(makermodel_map);
+        query = dt_util_dstrcat(query, ")");
+      }
       break;
     case DT_COLLECTION_PROP_TAG: // tag
       query = dt_util_dstrcat(query, "(id in (select imgid from tagged_images as a join "
