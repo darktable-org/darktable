@@ -586,7 +586,7 @@ void dt_collection_get_makermodel(const gchar *filter, GList **sanitized, GList 
 
 static gchar *get_query_string(const dt_collection_properties_t property, const gchar *text)
 {
-  gchar *escaped_text = dt_util_str_replace(text, "'", "''");
+  char *escaped_text = sqlite3_mprintf("%q", text);
   gchar *query = NULL;
 
   switch(property)
@@ -651,11 +651,11 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         while (element)
         {
           GList *tuple = element->data;
-          gchar *mk = dt_util_str_replace(tuple->data, "'", "''");
-          gchar *md = dt_util_str_replace(tuple->next->data, "'", "''");
+          char *mk = sqlite3_mprintf("%q", tuple->data);
+          char *md = sqlite3_mprintf("%q", tuple->next->data);
           query = dt_util_dstrcat(query, " or (maker = '%s' and model = '%s')", mk, md);
-          g_free(mk);
-          g_free(md);
+          sqlite3_free(mk);
+          sqlite3_free(md);
           g_free(tuple->data);
           g_free(tuple->next->data);
           g_list_free(tuple);
@@ -738,7 +738,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);
       break;
   }
-  g_free(escaped_text);
+  sqlite3_free(escaped_text);
 
   if(!query) // We've screwed up and not done a query string, send a placeholder
     query = dt_util_dstrcat(query, "(1=1)");

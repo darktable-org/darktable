@@ -607,8 +607,7 @@ static int _count_images(const char *path)
   gchar query[1024] = {0};
   int count = 0;
 
-  gchar *escaped_text = NULL;
-  escaped_text = dt_util_str_replace(path, "'", "''");
+  char *escaped_text = sqlite3_mprintf("%q", path);
 
   snprintf (query, sizeof(query), "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%%')", escaped_text);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -616,7 +615,7 @@ static int _count_images(const char *path)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  g_free(escaped_text);
+  sqlite3_free(escaped_text);
 
   return count;
 #endif
@@ -1049,15 +1048,14 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   set_properties(dr);
 
   /* query construction */
-  char query[1024] = { 0 };
   const gchar *text = NULL;
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
-  gchar *escaped_text = NULL;
-  escaped_text = dt_util_str_replace(text, "'", "''");
-  snprintf(query, sizeof(query),
-           "SELECT distinct name, id, name LIKE '%%%s%%' FROM tags ORDER BY UPPER(name) DESC", escaped_text);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  char search[1024] = { 0 };
+  snprintf(search, sizeof(search), "%%%s%%", text);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT distinct name, id, name LIKE ?1 "
+                              "FROM tags ORDER BY UPPER(name) DESC", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, search, -1, SQLITE_STATIC);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1192,9 +1190,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
   int property = gtk_combo_box_get_active(dr->combo);
   const gchar *text = NULL;
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
-  gchar *escaped_text = NULL;
 
-  escaped_text = dt_util_str_replace(text, "'", "''");
+  char *escaped_text = sqlite3_mprintf("%q", text);
 
   switch(property)
   {
@@ -1372,7 +1369,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                escaped_text);
       break;
   }
-  g_free(escaped_text);
+  sqlite3_free(escaped_text);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
