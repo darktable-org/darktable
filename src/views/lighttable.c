@@ -297,15 +297,16 @@ static void _update_collected_images(dt_view_t *self)
 
   // 2. insert collected images into the temporary table
 
-  char col_query[2048] = { 0 };
+  gchar *ins_query = NULL;
+  ins_query = dt_util_dstrcat(ins_query, "INSERT INTO memory.collected_images (imgid) %s", query);
 
-  snprintf(col_query, sizeof(col_query), "INSERT INTO memory.collected_images (imgid) %s", query);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), col_query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), ins_query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  g_free(ins_query);
 
   // 3. get new low-bound, then update the full preview rowid accordingly
   if (lib->full_preview_id != -1)
@@ -322,6 +323,7 @@ static void _update_collected_images(dt_view_t *self)
     // but rowid is incremented each time we INSERT.
     lib->full_preview_rowid += (min_after - min_before);
 
+    char col_query[128] = { 0 };
     snprintf(col_query, sizeof(col_query), "SELECT imgid FROM memory.collected_images WHERE rowid=%d", lib->full_preview_rowid);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), col_query, -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
