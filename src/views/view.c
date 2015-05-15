@@ -199,6 +199,24 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
 
+/* 
+   When expanders get destoyed, they destroy the child
+   so remove the child before that
+   */
+static void _remove_child(GtkWidget *child,GtkContainer *container)
+{
+    if(DTGTK_IS_EXPANDER(child)) 
+    {
+      GtkWidget * evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(child));
+      gtk_container_remove(GTK_CONTAINER(evb),dtgtk_expander_get_body(DTGTK_EXPANDER(child)));
+      gtk_widget_destroy(child);
+    }
+    else
+    {
+      gtk_container_remove(container,child);
+    }
+}
+
 int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 {
   // Before switching views, restore accelerators if disabled
@@ -244,9 +262,9 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
       plugins = g_list_previous(plugins);
     }
 
-    /* remove all widets in all containers */
-    for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++) dt_ui_container_clear(darktable.gui->ui, l);
-
+    /* remove all widgets in all containers */
+    for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++) 
+      dt_ui_container_destroy_children(darktable.gui->ui, l);
     vm->current_view = -1;
     return 0;
   }
@@ -290,10 +308,8 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
         /* does this module belong to current view ?*/
         if(plugin->views() & v->view(v))
         {
-          plugin->gui_cleanup(plugin);
           dt_accel_disconnect_list(plugin->accel_closures);
           plugin->accel_closures = NULL;
-          plugin->widget = NULL;
         }
 
         /* get next plugin */
@@ -301,7 +317,8 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
       }
 
       /* remove all widets in all containers */
-      for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++) dt_ui_container_clear(darktable.gui->ui, l);
+      for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++) dt_ui_container_foreach(darktable.gui->ui, l,(GtkCallback)_remove_child);
+
     }
 
     /* change current view to the new view */
@@ -317,8 +334,6 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
       if(plugin->views() & nv->view(nv))
       {
-        /* module should be in this view, lets initialize */
-        plugin->gui_init(plugin);
 
         /* try get the module expander  */
         GtkWidget *w = NULL;

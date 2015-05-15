@@ -512,6 +512,7 @@ static int dt_lib_load_module(dt_lib_module_t *module, const char *libname, cons
   //  char name[1024];
   module->dt = &darktable;
   module->widget = NULL;
+  module->expander = NULL;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
@@ -711,7 +712,12 @@ int dt_lib_load_modules()
     init_presets(module);
     // Calling the keyboard shortcut initialization callback if present
     // do not init accelerators if there is no gui
-    if(darktable.gui && module->init_key_accels) module->init_key_accels(module);
+    if(darktable.gui)
+    {
+     if(module->init_key_accels) module->init_key_accels(module);
+     module->gui_init(module);
+     g_object_ref_sink(module->widget);
+    }
   }
   g_dir_close(dir);
 

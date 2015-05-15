@@ -472,7 +472,7 @@ _update_slider (dt_lib_print_settings_t *ps)
 
   // if widget are created, let's display the current image size
 
-  if (ps->width && ps->height && ps->info)
+  if (ps->image_id != -1 && ps->width && ps->height && ps->info)
   {
     int32_t px=0, py=0, pwidth=0, pheight=0;
     int32_t ax=0, ay=0, awidth=0, aheight=0;
