@@ -517,11 +517,15 @@ void dt_collection_split_operator_number(const gchar *input, char **number, char
   g_regex_unref(regex);
 }
 
-GHashTable *dt_collection_get_makermodel_map(const gchar *filter)
+void dt_collection_get_makermodel(const gchar *filter, GList **sanitized, GList **exif)
 {
   sqlite3_stmt *stmt;
-  GHashTable *result = g_hash_table_new(g_str_hash, g_str_equal);
   gchar *needle = NULL;
+
+  GHashTable *names = NULL;
+  if (sanitized)
+    names = g_hash_table_new(g_str_hash, g_str_equal);
+
   if (filter && filter[0] != '\0')
     needle = g_utf8_strdown(filter, -1);
 
@@ -552,17 +556,20 @@ GHashTable *dt_collection_get_makermodel_map(const gchar *filter)
     gchar *haystack = g_utf8_strdown(makermodel, -1);
     if (!needle || g_strrstr(haystack, needle) != NULL)
     {
-      // Two element list with maker and model
-      GList *inner_list = NULL;
-      inner_list = g_list_append(inner_list, g_strdup(exif_maker));
-      inner_list = g_list_append(inner_list, g_strdup(exif_model));
+      if (exif)
+      {
+        // Append a two element list with maker and model
+        GList *inner_list = NULL;
+        inner_list = g_list_append(inner_list, g_strdup(exif_maker));
+        inner_list = g_list_append(inner_list, g_strdup(exif_model));
+        *exif = g_list_append(*exif, inner_list);
+      }
 
-      // Store in the hash a list of lists to hold several maker/model pairs
-      // that give the same sanitized value
-      gchar *key = g_strdup(makermodel);
-      GList *outer_list = g_hash_table_lookup(result, key);
-      outer_list = g_list_append(outer_list, inner_list);
-      g_hash_table_replace(result, key, outer_list);
+      if (sanitized)
+      {
+        gchar *key = g_strdup(makermodel);
+        g_hash_table_add(names, key);
+      }
     }
     g_free(haystack);
   }
@@ -570,34 +577,11 @@ GHashTable *dt_collection_get_makermodel_map(const gchar *filter)
   if(needle)
     g_free(needle);
 
-  // Return the resulting hash that will need to be freed deeply
-  // (the keys, the lists of lists, the maker/model values)
-  // dt_collection_free_makermodel_map does the deed
-  return result;
-}
-
-void dt_collection_free_makermodel_map(GHashTable *map)
-{
-  // Free all the keys now
-  GList *keys = g_hash_table_get_keys(map);
-  GList *element = keys;
-  while (element)
+  if(sanitized)
   {
-    GList *lists = g_hash_table_lookup(map, element->data);
-    GList *list = lists;
-    while (list)
-    {
-      GList *tuple = list->data;
-      g_free(tuple->data); // Free maker
-      g_free(tuple->next->data); // Free model
-      g_list_free(tuple); // Free the makermodel "tuple" (size 2 list)
-      list = list->next;
-    }
-    g_list_free(lists); // Free the list of lists
-    g_free(element->data); // Free the makermodel key
-    element = element->next;
+    *sanitized = g_list_sort(g_hash_table_get_keys(names), (GCompareFunc) strcmp);
+    g_hash_table_destroy(names);
   }
-  g_list_free(keys);
 }
 
 static gchar *get_query_string(const dt_collection_properties_t property, const gchar *text)
@@ -661,26 +645,23 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       {
         // Start query with a false statement to avoid special casing the first condition
         query = dt_util_dstrcat(query, "((1=0)");
-        GHashTable *makermodel_map = dt_collection_get_makermodel_map(text);
-        GList *keys = g_hash_table_get_keys(makermodel_map);
-        GList *element = keys;
+        GList *lists = NULL;
+        dt_collection_get_makermodel(text, NULL, &lists);
+        GList *element = lists;
         while (element)
         {
-          GList *list = g_hash_table_lookup(makermodel_map, element->data);
-          while (list)
-          {
-            GList *tuple = list->data;
-            gchar *mk = dt_util_str_replace(tuple->data, "'", "''");
-            gchar *md = dt_util_str_replace(tuple->next->data, "'", "''");
-            query = dt_util_dstrcat(query, " or (maker = '%s' and model = '%s')", mk, md);
-            g_free(mk);
-            g_free(md);
-            list = list->next;
-          }
+          GList *tuple = element->data;
+          gchar *mk = dt_util_str_replace(tuple->data, "'", "''");
+          gchar *md = dt_util_str_replace(tuple->next->data, "'", "''");
+          query = dt_util_dstrcat(query, " or (maker = '%s' and model = '%s')", mk, md);
+          g_free(mk);
+          g_free(md);
+          g_free(tuple->data);
+          g_free(tuple->next->data);
+          g_list_free(tuple);
           element = element->next;
         }
-        g_list_free(keys);
-        dt_collection_free_makermodel_map(makermodel_map);
+        g_list_free(lists);
         query = dt_util_dstrcat(query, ")");
       }
       break;

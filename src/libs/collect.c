@@ -1204,9 +1204,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
                escaped_text);
       break;
     case DT_COLLECTION_PROP_CAMERA: ;// camera
-      GHashTable *makermodel_map = dt_collection_get_makermodel_map(text);
-      GList *makermodels = g_hash_table_get_keys(makermodel_map);
-      makermodels = g_list_sort(makermodels, (GCompareFunc) strcmp);
+      GList *makermodels = NULL;
+      dt_collection_get_makermodel(text, &makermodels, NULL);
       GList *element = makermodels;
       int index = 0;
       while(element)
@@ -1218,12 +1217,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
                            DT_LIB_COLLECT_COL_ID, index,
                            DT_LIB_COLLECT_COL_TOOLTIP, value,
                            DT_LIB_COLLECT_COL_PATH, value, -1);
-
+        g_free(value);
         index++;
         element = element->next;
       }
       g_list_free(makermodels);
-      dt_collection_free_makermodel_map(makermodel_map);
       break;
     case DT_COLLECTION_PROP_TAG: // tag
       snprintf(query, sizeof(query),
