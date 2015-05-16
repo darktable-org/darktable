@@ -2143,7 +2143,6 @@ typedef dt_lib_collect_params_rule_t* dt_lua_lib_collect_params_rule_t;
 static int filter_cb(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lua_lib_check_error(L,self);
   dt_lib_collect_params_t old_params;
   int size;
   

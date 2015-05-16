@@ -25,10 +25,6 @@ struct dt_lib_module_t;
 
 void dt_lua_lib_register(lua_State *L, struct dt_lib_module_t *self);
 
-void dt_lua_lib_check_error(lua_State *L, struct dt_lib_module_t *self);
-gboolean dt_lua_lib_check(lua_State *L, struct dt_lib_module_t *self);
-
-
 
 int dt_lua_init_early_lib(lua_State *L);
 
