@@ -174,6 +174,11 @@ void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size);
 /** set the colorpicker point selection tool and position */
 void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y);
 
+/** sorter callback to add a lib in the list of libs after init */
+gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b);
+/** init presets for a newly created lib */
+void dt_lib_init_presets(dt_lib_module_t *module);
+
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

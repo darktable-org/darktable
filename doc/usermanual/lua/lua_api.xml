@@ -313,6 +313,55 @@
 </variablelist>
 </section>
 
+<section status="final" id="darktable_register_lib">
+<title>darktable.register_lib</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register_lib</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_register_lib_plugin_name">plugin_name</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_register_lib_name">name</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_register_lib_expandable">expandable</link></emphasis> : boolean, 
+	<emphasis><link linkend="darktable_register_lib_containers">containers</link></emphasis> : table of <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link> => [ <link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link>, 
+	<emphasis><link linkend="darktable_register_lib_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+)</synopsis>
+<para>Register a new lib object. A lib is a graphical element of darktable's user interface</para>
+
+<variablelist>
+<varlistentry id="darktable_register_lib_plugin_name"><term>plugin_name</term><listitem>
+<synopsis>string</synopsis>
+<para>A unique name for your library</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_name"><term>name</term><listitem>
+<synopsis>string</synopsis>
+<para>A user-visible name for your library</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_expandable"><term>expandable</term><listitem>
+<synopsis>boolean</synopsis>
+<para>whether this lib should be expandable or not</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_containers"><term>containers</term><listitem>
+<synopsis>table of <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link> => [ <link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link></synopsis>
+<para>, int ]</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_widget"><term>widget</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widget to display in the lib</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 <section status="final" id="darktable_films">
 <title>darktable.films</title>
 <indexterm>
@@ -568,19 +617,19 @@
 <secondary>current_view</secondary>
 </indexterm>
 <synopsis>function( 
-	[<emphasis><link linkend="darktable_gui_current_view_view">view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>]
-) : <link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
+	[<emphasis><link linkend="darktable_gui_current_view_view">view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>]
+) : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
 <para>Allows to change the current view.</para>
 
 <variablelist>
 <varlistentry id="darktable_gui_current_view_view"><term>[view]</term><listitem>
-<synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
+<synopsis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
 <para>The view to switch to. If empty the current view is unchanged</para>
 
 </listitem></varlistentry>
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
+<synopsis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
 <para>the current view</para>
 
 </listitem></varlistentry>
@@ -664,7 +713,7 @@
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -748,7 +797,7 @@
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -769,7 +818,7 @@
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -790,7 +839,7 @@
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -811,7 +860,7 @@
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -832,7 +881,7 @@
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -5124,6 +5173,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_dt_lib_module_t_container">
+<title>types.dt_lib_module_t.container</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>container</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link></synopsis>
+<para>The location of the lib in the darktable UI</para>
+
+</section>
+
 <section status="final" id="types_dt_lib_module_t_expandable">
 <title>types.dt_lib_module_t.expandable</title>
 <indexterm>
@@ -5154,6 +5214,28 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_lib_module_t_position">
+<title>types.dt_lib_module_t.position</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>position</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>A value deciding the position of the lib within its container</para>
+
+</section>
+
+<section status="final" id="types_dt_lib_module_t_views">
+<title>types.dt_lib_module_t.views</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>views</secondary>
+</indexterm>
+<synopsis>table</synopsis>
+<para>A table of all the views that display this widget</para>
+
 </section>
 
 <section status="final" id="types_dt_lib_module_t_reset">
@@ -5190,17 +5272,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_view_t">
-<title>types.dt_view_t</title>
+<section status="final" id="types_dt_lua_view_t">
+<title>types.dt_lua_view_t</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>dt_view_t</secondary>
+<secondary>dt_lua_view_t</secondary>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A darktable view</para>
 
-<section status="final" id="types_dt_view_t_id">
-<title>types.dt_view_t.id</title>
+<section status="final" id="types_dt_lua_view_t_id">
+<title>types.dt_lua_view_t.id</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>id</secondary>
@@ -5210,8 +5292,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_view_t_name">
-<title>types.dt_view_t.name</title>
+<section status="final" id="types_dt_lua_view_t_name">
+<title>types.dt_lua_view_t.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -5360,6 +5442,46 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <listitem><para>hint_picture</para></listitem>
 <listitem><para>hint_photo</para></listitem>
 <listitem><para>hint_graphic</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_ui_container_t">
+<title>types.dt_ui_container_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_ui_container_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>A place in the darktable UI where a lib can be placed</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_TOP</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5583,17 +5705,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -5926,7 +6038,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The widgets contained by the box</para>
 <para>You can append widgets by adding them at the end of the list</para>
 <para>You can remove widgets by setting them to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 </section>
@@ -6447,7 +6569,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 <section status="final" id="types_lua_combobox_changed_callback">
@@ -7138,8 +7270,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>function( 
 	<emphasis><link linkend="events_view-changed_callback_event">event</link></emphasis> : string, 
-	<emphasis><link linkend="events_view-changed_callback_old_view">old_view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>, 
-	<emphasis><link linkend="events_view-changed_callback_new_view">new_view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>
+	<emphasis><link linkend="events_view-changed_callback_old_view">old_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>, 
+	<emphasis><link linkend="events_view-changed_callback_new_view">new_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>
 )</synopsis>
 <para></para>
 
@@ -7151,13 +7283,13 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </listitem></varlistentry>
 
 <varlistentry id="events_view-changed_callback_old_view"><term>old_view</term><listitem>
-<synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
+<synopsis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
 <para>The view that we just left</para>
 
 </listitem></varlistentry>
 
 <varlistentry id="events_view-changed_callback_new_view"><term>new_view</term><listitem>
-<synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
+<synopsis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
 <para>The view we are now in</para>
 
 </listitem></varlistentry>

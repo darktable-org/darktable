@@ -104,8 +104,8 @@ static int current_view_cb(lua_State *L)
 {
   if(lua_gettop(L) > 0)
   {
-    luaL_argcheck(L, dt_lua_isa(L, 1, dt_view_t), 1, "dt_view_t expected");
-    dt_view_t *module = *(dt_view_t **)lua_touserdata(L, 1);
+    dt_view_t *module;
+    luaA_to(L,dt_lua_view_t,&module,1);
     int i = 0;
     while(i < darktable.view_manager->num_views && module != &darktable.view_manager->view[i]) i++;
     if(i == darktable.view_manager->num_views)

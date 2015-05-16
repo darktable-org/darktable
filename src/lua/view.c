@@ -21,6 +21,7 @@
 #include "lua/events.h"
 #include "control/jobs/control_jobs.h"
 
+
 static int id_member(lua_State *L)
 {
   dt_view_t *module = *(dt_view_t **)lua_touserdata(L, 1);
@@ -46,7 +47,7 @@ void dt_lua_register_view(lua_State *L, dt_view_t *module)
 {
   dt_lua_module_entry_new_singleton(L, "view", module->module_name, module);
   int my_type = dt_lua_module_entry_get_type(L, "view", module->module_name);
-  dt_lua_type_register_parent_type(L, my_type, luaA_type_find(L, "dt_view_t"));
+  dt_lua_type_register_parent_type(L, my_type, luaA_type_find(L, "dt_lua_view_t"));
   lua_pushcfunction(L, view_tostring);
   dt_lua_type_setmetafield_type(L,my_type,"__tostring");
 };
@@ -64,11 +65,11 @@ static void on_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *n
 int dt_lua_init_early_view(lua_State *L)
 {
 
-  dt_lua_init_type(L, dt_view_t);
+  dt_lua_init_type(L, dt_lua_view_t);
   lua_pushcfunction(L, id_member);
-  dt_lua_type_register_const(L, dt_view_t, "id");
+  dt_lua_type_register_const(L, dt_lua_view_t, "id");
   lua_pushcfunction(L, name_member);
-  dt_lua_type_register_const(L, dt_view_t, "name");
+  dt_lua_type_register_const(L, dt_lua_view_t, "name");
 
   dt_lua_module_new(L, "view"); // special case : will be attached to dt.gui in lua/gui.c:dt_lua_init_gui
 

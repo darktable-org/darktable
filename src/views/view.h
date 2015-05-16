@@ -45,7 +45,7 @@
     control which view the module should be available in also
     which placement in the panels the module have.
 */
-enum dt_view_type_flags_t
+typedef enum 
 {
   DT_VIEW_LIGHTTABLE = 1,
   DT_VIEW_DARKROOM = 2,
@@ -53,7 +53,7 @@ enum dt_view_type_flags_t
   DT_VIEW_MAP = 8,
   DT_VIEW_SLIDESHOW = 16,
   DT_VIEW_PRINT = 32,
-};
+}dt_view_type_flags_t;
 
 #define DT_VIEW_ALL                                                                                          \
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | DT_VIEW_PRINT)

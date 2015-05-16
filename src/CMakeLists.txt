@@ -482,6 +482,7 @@ if(USE_LUA)
       "lua/init.c"
       "lua/lib.c"
       "lua/lua.c"
+      "lua/lualib.c"
       "lua/luastorage.c"
       "lua/modules.c"
       "lua/preferences.c"

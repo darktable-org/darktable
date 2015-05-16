@@ -57,7 +57,7 @@ local function remove_all_children(node)
 	end
 end
 -- prevent some objects to appear at the wrong end of the tree
---remove_all_children(types.dt_lib_module_t.views)
+remove_all_children(types.dt_lib_module_t.views)
 
 ----------------------
 --  REANAMINGS      --
@@ -128,6 +128,12 @@ tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra d
 tmp_node:add_return("table or nil",[[The modified table of images to export or nil]]..para()..
 [[If nil (or nothing) is returned, the original list of images will be exported]]..para()..
 [[If a table of images is returned, that table will be used instead. The table can be empty. The images parameter can be modified and returned]])
+darktable.register_lib:set_text("Register a new lib object. A lib is a graphical element of darktable's user interface")
+darktable.register_lib:add_parameter("plugin_name","string","A unique name for your library")
+darktable.register_lib:add_parameter("name","string","A user-visible name for your library")
+darktable.register_lib:add_parameter("expandable","boolean","whether this lib should be expandable or not")
+darktable.register_lib:add_parameter("containers","table of "..my_tostring(types.dt_lua_view_t).." => [ "..my_tostring(types.dt_ui_container_t),", int ]","A table associating to each view containing the lib the corresponding container and position")
+darktable.register_lib:add_parameter("widget",types.lua_widget,"The widget to display in the lib")
 
 
 darktable.films:set_text([[A table containing all the film objects in the database.]])
@@ -179,8 +185,8 @@ darktable.gui.selection:add_parameter("selection","table of "..my_tostring(types
 darktable.gui.selection:add_return("table of "..my_tostring(types.dt_lua_image_t),[[A table containing the selection as it was before the function was called.]])
 darktable.gui.selection:set_attribute("implicit_yield",true)
 darktable.gui.current_view:set_text([[Allows to change the current view.]])
-darktable.gui.current_view:add_parameter("view",types.dt_view_t,[[The view to switch to. If empty the current view is unchanged]]):set_attribute("optional",true)
-darktable.gui.current_view:add_return(types.dt_view_t,[[the current view]])
+darktable.gui.current_view:add_parameter("view",types.dt_lua_view_t,[[The view to switch to. If empty the current view is unchanged]]):set_attribute("optional",true)
+darktable.gui.current_view:add_return(types.dt_lua_view_t,[[the current view]])
 darktable.gui.create_job:set_text([[Create a new progress_bar displayed in ]]..my_tostring(darktable.gui.libs.backgroundjobs))
 darktable.gui.create_job:add_parameter("text","string",[[The text to display in the job entry]])
 darktable.gui.create_job:add_parameter("percentage","boolean",[[Should a progress bar be displayed]]):set_attribute("optional",true)
@@ -643,19 +649,19 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lib_module_t.visible:set_text([[Allow to make a lib module completely invisible to the user.]]..para()..
 	[[Note that if the module is invisible the user will have no way to restore it without lua]])
 	types.dt_lib_module_t.visible:set_attribute("implicit_yield",true)
-	--types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]]):set_reported_type(types.dt_ui_container_t)
+	types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]]):set_reported_type(types.dt_ui_container_t)
 	types.dt_lib_module_t.expandable:set_text([[True if the lib can be expanded/retracted]]);
 	types.dt_lib_module_t.expanded:set_text([[True if the lib is expanded]]);
-	--types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
-	--types.dt_lib_module_t.views:set_text([[A table of all the views that display this widget]])
+	types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
+	types.dt_lib_module_t.views:set_text([[A table of all the views that display this widget]])
 	types.dt_lib_module_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
 	[[This function will do nothing if the lib is not visible or can't be reset]])
 	types.dt_lib_module_t.reset:add_parameter("self",types.dt_lib_module_t,[[The lib to reset]]):set_attribute("is_self",true)
 	types.dt_lib_module_t.on_screen:set_text([[True if the lib is currently visible on the screen]])
 
-	types.dt_view_t:set_text([[A darktable view]])
-	types.dt_view_t.id:set_text([[A unique string identifying the view]])
-	types.dt_view_t.name:set_text([[The name of the view]])
+	types.dt_lua_view_t:set_text([[A darktable view]])
+	types.dt_lua_view_t.id:set_text([[A unique string identifying the view]])
+	types.dt_lua_view_t.name:set_text([[The name of the view]])
 
 
 	types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]])
@@ -670,7 +676,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_snapshot_t.name:set_text([[The name of the snapshot, as seen in the UI]])
 
 	types.hint_t:set_text([[a hint on the way to encode a webp image]])
-	--types.dt_ui_container_t:set_text([[A place in the darktable UI where a lib can be placed]])
+	types.dt_ui_container_t:set_text([[A place in the darktable UI where a lib can be placed]])
 	types.snapshot_direction_t:set_text([[Which part of the main window is occupied by a snapshot]])
 	types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
 	types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
@@ -839,8 +845,8 @@ local widget = dt.new_widget("button"){
 
 	events["view-changed"]:set_text([[This event is triggered after the user changed the active view]])
 	events["view-changed"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
-	events["view-changed"].callback:add_parameter("old_view",types.dt_view_t,[[The view that we just left]])
-	events["view-changed"].callback:add_parameter("new_view",types.dt_view_t,[[The view we are now in]])
+	events["view-changed"].callback:add_parameter("old_view",types.dt_lua_view_t,[[The view that we just left]])
+	events["view-changed"].callback:add_parameter("new_view",types.dt_lua_view_t,[[The view we are now in]])
 	events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 	events["global_toolbox-grouping_toggle"]:set_text([[This event is triggered after the user toggled the grouping button.]])

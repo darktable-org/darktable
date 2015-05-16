@@ -492,7 +492,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   }
 }
 
-static gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
+gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 {
   const dt_lib_module_t *am = (const dt_lib_module_t *)a;
   const dt_lib_module_t *bm = (const dt_lib_module_t *)b;
@@ -594,7 +594,7 @@ error:
   return 1;
 }
 
-static void init_presets(dt_lib_module_t *module)
+void dt_lib_init_presets(dt_lib_module_t *module)
 {
   // since lighttable presets can't end up in styles or any other place outside of the presets table it is
   // sufficient
