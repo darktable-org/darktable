@@ -427,7 +427,18 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /* Read focal length  */
     if((pos = Exiv2::focalLength(exifData)) != exifData.end() && pos->size())
     {
-      img->exif_focal_length = pos->toFloat();
+      // Use the first non-zero value as at least for CRW files the focal
+      // is a multi-value field like [0, 115, 914, 610] where only the second
+      // value is correct
+      for (long i = 0; i < pos->count(); i++)
+      {
+        float value = pos->toFloat(i);
+        if (value != 0.0f)
+        {
+          img->exif_focal_length = value;
+          break;
+        }
+      }
     }
 
     if((pos = exifData.findKey(Exiv2::ExifKey("Exif.NikonLd2.FocusDistance"))) != exifData.end()
