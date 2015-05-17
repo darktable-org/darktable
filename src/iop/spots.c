@@ -130,7 +130,7 @@ static void _resynch_params(struct dt_iop_module_t *self)
   {
     GList *forms = g_list_first(grp->points);
     int i = 0;
-    while(forms)
+    while((i < 64) && forms)
     {
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       nid[i] = grpt->formid;
@@ -386,7 +386,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
     GList *forms = g_list_first(grp->points);
-    while(forms)
+    while((pos < 64) && forms)
     {
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       // we get the spot
@@ -608,12 +608,12 @@ void gui_update(dt_iop_module_t *self)
   _resynch_params(self);
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
   // update clones count
-  char str[3];
   dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, self->blend_params->mask_id);
   guint nb = 0;
   if(grp && (grp->type & DT_MASKS_GROUP)) nb = g_list_length(grp->points);
-  snprintf(str, sizeof(str), "%d", nb);
+  gchar *str = g_strdup_printf("%d", nb);
   gtk_label_set_text(g->label, str);
+  g_free(str);
   // update buttons status
   int b1 = 0, b2 = 0, b3 = 0;
   if(self->dev->form_gui && self->dev->form_visible && self->dev->form_gui->creation
