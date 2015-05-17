@@ -110,6 +110,7 @@
 		</BlackAreas>
 		<Aliases>
 			<Alias id="EOS Digital Rebel">Canon EOS DIGITAL REBEL</Alias>
+			<Alias id="EOS Kiss Digital">Canon EOS Kiss Digital</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS D30">
