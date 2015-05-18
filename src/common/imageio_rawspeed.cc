@@ -22,12 +22,7 @@
 
 #include <memory>
 
-#include "rawspeed/RawSpeed/StdAfx.h"
-#include "rawspeed/RawSpeed/FileReader.h"
-#include "rawspeed/RawSpeed/RawDecoder.h"
-#include "rawspeed/RawSpeed/RawParser.h"
-#include "rawspeed/RawSpeed/CameraMetaData.h"
-#include "rawspeed/RawSpeed/ColorFilterArray.h"
+#include "rawspeed/RawSpeed/RawSpeed-API.h"
 
 extern "C" {
 #include "imageio.h"
