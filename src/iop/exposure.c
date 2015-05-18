@@ -913,11 +913,14 @@ void gui_init(struct dt_iop_module_t *self)
   /* register hooks with current dev so that  histogram
      can interact with this module.
    */
-  darktable.develop->proxy.exposure.module = self;
-  darktable.develop->proxy.exposure.set_white = dt_iop_exposure_set_white;
-  darktable.develop->proxy.exposure.get_white = dt_iop_exposure_get_white;
-  darktable.develop->proxy.exposure.set_black = dt_iop_exposure_set_black;
-  darktable.develop->proxy.exposure.get_black = dt_iop_exposure_get_black;
+  dt_dev_proxy_exposure_t *instance = g_malloc0(sizeof(dt_dev_proxy_exposure_t));
+  instance->module = self;
+  instance->set_white = dt_iop_exposure_set_white;
+  instance->get_white = dt_iop_exposure_get_white;
+  instance->set_black = dt_iop_exposure_set_black;
+  instance->get_black = dt_iop_exposure_get_black;
+  darktable.develop->proxy.exposure
+      = g_list_insert_sorted(darktable.develop->proxy.exposure, instance, dt_dev_exposure_hooks_sort);
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
@@ -1033,6 +1036,20 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+  GList *instances = darktable.develop->proxy.exposure;
+  while(instances != NULL)
+  {
+    GList *next = g_list_next(instances);
+    dt_dev_proxy_exposure_t *instance = (dt_dev_proxy_exposure_t *)instances->data;
+    if(instance->module == self)
+    {
+      g_free(instance);
+      darktable.develop->proxy.exposure = g_list_delete_link(darktable.develop->proxy.exposure, instances);
+    }
+    instances = next;
+  }
+
   free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
   g_list_free(g->deflicker_histogram_sources);
