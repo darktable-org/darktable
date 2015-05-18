@@ -1,12 +1,12 @@
-# - Find the native sqlite3 includes and library
+# - Find the native exiv2 includes and library
 #
 # This module defines
 #  EXIV2_INCLUDE_DIR, where to find png.h, etc.
-#  EXIV2_LIBRARIES, the libraries to link against to use sqlite3.
-#  EXIV2_FOUND, If false, do not try to use sqlite3.
+#  EXIV2_LIBRARIES, the libraries to link against to use exiv2
+#  EXIV2_FOUND, If false, do not try to use exiv2
 # also defined, but not for general use are
-#  EXIV2_LIBRARY, where to find the sqlite3 library.
-
+#  EXIV2_LIBRARY, where to find the exiv2 library
+#  EXIV2_VERSION, the version we are compiling against
 
 #=============================================================================
 # Copyright 2010 henrik andersson
@@ -38,7 +38,7 @@ if(EXIV2_INCLUDE_DIR  AND NOT  EXIV2_VERSION)
   string(REGEX MATCH "#define EXIV2_PATCH_VERSION +\\( *([0-9]+) *\\)"  _dummy "${EXIV2_VERSION_CONTENT}")
   set(EXIV2_VERSION_PATCH "${CMAKE_MATCH_1}")
 
-  set(EXIV2_VERSION "${EXIV2_VERSION_MAJOR}.${EXIV2_VERSION_MINOR}.${EXIV2_VERSION_PATCH}" CACHE STRING "Version number of Exiv2" FORCE)
+  set(EXIV2_VERSION "${EXIV2_VERSION_MAJOR}.${EXIV2_VERSION_MINOR}.${EXIV2_VERSION_PATCH}")
 endif(EXIV2_INCLUDE_DIR  AND NOT  EXIV2_VERSION)
 
 if(EXIV2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
