@@ -423,7 +423,6 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         // img->exif_iso = (float) std::atof( pos->toString().c_str() );
       }
     }
-#if EXIV2_MINOR_VERSION > 19
     /* Read focal length  */
     if((pos = Exiv2::focalLength(exifData)) != exifData.end() && pos->size())
     {
@@ -469,7 +468,6 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int nominator = pos->toRational(0).first;
       img->exif_focus_distance = fmax(0.0, (0.001 * nominator));
     }
-#if EXIV2_MINOR_VERSION > 24
     else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceUpper"))) != exifData.end()
             && pos->size())
     {
@@ -485,12 +483,10 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_focus_distance = (FocusDistanceLower + FocusDistanceUpper) / 200;
       }
     }
-#endif
     else if((pos = Exiv2::subjectDistance(exifData)) != exifData.end() && pos->size())
     {
       img->exif_focus_distance = pos->toFloat();
     }
-#endif
     /** read image orientation */
     if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.Orientation"))) != exifData.end() && pos->size())
     {
