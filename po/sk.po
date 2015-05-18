@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-05-15 13:43+0200\n"
-"PO-Revision-Date: 2015-05-15 18:05+0100\n"
+"PO-Revision-Date: 2015-05-18 15:52+0100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -687,22 +687,22 @@ msgstr ""
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../data/darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
-msgstr ""
+msgstr "grafika;fotografovanie;fotografie;raw;surový;"
 
 #: ../src/cli/main.c:51
 #, c-format
 msgid "creating cache directories\n"
-msgstr ""
+msgstr "vytvárajú sa adresáre vyrovnávacej pamäte\n"
 
 #: ../src/cli/main.c:56
 #, c-format
 msgid "creating cache directory '%s'\n"
-msgstr ""
+msgstr "vytvára sa adresár vyrovnávacej pamäte  „%s“\n"
 
 #: ../src/cli/main.c:60
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr ""
+msgstr "nepodarilo sa vytvoriť adresár „%s“!\n"
 
 #: ../src/cli/main.c:197
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
@@ -2581,7 +2581,7 @@ msgstr "import"
 #: ../src/gui/preferences.c:561 ../src/libs/export.c:721
 #: ../src/libs/styles.c:367
 msgid "export"
-msgstr ""
+msgstr "exportovať"
 
 #. Setting the notification text
 #: ../src/gui/preferences.c:829
@@ -2605,18 +2605,18 @@ msgstr ""
 #: ../src/gui/preferences.c:1012 ../src/gui/styles_dialog.c:285
 #: ../src/libs/styles.c:209
 msgid "_Save"
-msgstr ""
+msgstr "_Uložiť"
 
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1033
 msgid "select file to import"
-msgstr ""
+msgstr "vyberte súbor na importovanie"
 
 #: ../src/gui/preferences.c:1034 ../src/libs/collect.c:415
 #: ../src/libs/copy_history.c:71 ../src/libs/geotagging.c:440
 #: ../src/libs/import.c:739 ../src/libs/import.c:835 ../src/libs/styles.c:229
 msgid "_Open"
-msgstr ""
+msgstr "_Otvoriť"
 
 #: ../src/gui/preferences.c:1073
 msgid ""
@@ -2627,12 +2627,12 @@ msgstr ""
 #: ../src/gui/preferences.c:1172 ../src/gui/presets.c:384
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr ""
+msgstr "upraviť „%s“ pre modul „%s“"
 
 #: ../src/gui/preferences.c:1200 ../src/gui/presets.c:412
 #: ../src/libs/lib.c:241
 msgid "description or further information"
-msgstr ""
+msgstr "popis alebo ďalšie informácie"
 
 #: ../src/gui/preferences.c:1204 ../src/gui/presets.c:416
 msgid "auto apply this preset to matching images"
@@ -2706,15 +2706,15 @@ msgstr "(predvolené)"
 #: ../src/libs/lib.c:301 ../src/libs/lib.c:309 ../src/libs/lib.c:311
 #: ../src/libs/lib.c:313
 msgid "new preset"
-msgstr ""
+msgstr "nová predvoľba"
 
 #: ../src/gui/presets.c:222
 msgid "please give preset a name"
-msgstr ""
+msgstr "prosím, zadajte názov predvoľby"
 
 #: ../src/gui/presets.c:224
 msgid "unnamed preset"
-msgstr ""
+msgstr "nepomenovaná predvoľba"
 
 #: ../src/gui/presets.c:248 ../src/libs/lib.c:142
 #, c-format
@@ -2722,26 +2722,28 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
+"predvoľba „%s“ už existuje.\n"
+"chcete ju prepísať?"
 
 #: ../src/gui/presets.c:250 ../src/libs/lib.c:143
 msgid "overwrite preset?"
-msgstr ""
+msgstr "prepísať predvoľbu?"
 
 #: ../src/gui/presets.c:375
 msgid "normal images"
-msgstr ""
+msgstr "normálne obrázky"
 
 #: ../src/gui/presets.c:376 ../src/libs/metadata_view.c:257
 msgid "raw"
-msgstr ""
+msgstr "raw"
 
 #: ../src/gui/presets.c:377
 msgid "HDR"
-msgstr ""
+msgstr "HDR"
 
 #: ../src/gui/presets.c:408 ../src/libs/lib.c:237
 msgid "name of the preset"
-msgstr ""
+msgstr "názov predvoľby"
 
 #. raw/hdr/ldr
 #: ../src/gui/presets.c:517 ../src/imageio/format/j2k.c:655
@@ -2750,15 +2752,15 @@ msgstr "formát"
 
 #: ../src/gui/presets.c:890
 msgid "disabled: wrong module version"
-msgstr ""
+msgstr "zakázané: nesprávna verzia modulu"
 
 #: ../src/gui/presets.c:911 ../src/libs/lib.c:465
 msgid "edit this preset.."
-msgstr ""
+msgstr "upraviť predvoľbu.."
 
 #: ../src/gui/presets.c:915 ../src/libs/lib.c:469
 msgid "delete this preset"
-msgstr ""
+msgstr "odstrániť túto predvoľbu"
 
 #: ../src/gui/presets.c:921 ../src/libs/lib.c:476
 msgid "store new preset.."
@@ -2766,41 +2768,41 @@ msgstr "uložiť novú predvoľbu.."
 
 #: ../src/gui/presets.c:927 ../src/libs/lib.c:483
 msgid "update preset"
-msgstr ""
+msgstr "aktualizovať predvoľbu"
 
 #: ../src/gui/styles_dialog.c:165 ../src/gui/styles_dialog.c:171
 #: ../src/libs/styles.c:216
 #, c-format
 msgid "style %s was successfully saved"
-msgstr ""
+msgstr "štýl %s bol úspešne uložený"
 
 #: ../src/gui/styles_dialog.c:269
 msgid "edit style"
-msgstr ""
+msgstr "upraviť štýl"
 
 #: ../src/gui/styles_dialog.c:273
 msgid "duplicate style"
-msgstr ""
+msgstr "duplikovať štýl"
 
 #: ../src/gui/styles_dialog.c:274
 msgid "creates a duplicate of the style before applying changes"
-msgstr ""
+msgstr "vytvorí duplikát štýlu pred použitím zmien"
 
 #: ../src/gui/styles_dialog.c:279
 msgid "create new style"
-msgstr ""
+msgstr "vytvoriť nový štýl"
 
 #: ../src/gui/styles_dialog.c:296
 msgid "enter a name for the new style"
-msgstr ""
+msgstr "zadajte názov nového štýlu"
 
 #: ../src/gui/styles_dialog.c:300
 msgid "enter a description for the new style, this description is searchable"
-msgstr ""
+msgstr "zadajte popis nového štýlu, tento popis sa dá vyhľadávať"
 
 #: ../src/gui/styles_dialog.c:355
 msgid "update"
-msgstr ""
+msgstr "aktualizovať"
 
 #: ../src/gui/styles_dialog.c:450
 msgid "can't create style out of unaltered image"
@@ -2827,7 +2829,7 @@ msgstr ""
 
 #: ../src/imageio/format/exr.cc:351
 msgid "compression mode"
-msgstr ""
+msgstr "režim komprimácie"
 
 #: ../src/imageio/format/exr.cc:354
 msgid "RLE"
@@ -2835,11 +2837,11 @@ msgstr "RLE"
 
 #: ../src/imageio/format/exr.cc:355
 msgid "ZIPS"
-msgstr ""
+msgstr "ZIPY"
 
 #: ../src/imageio/format/exr.cc:356
 msgid "ZIP"
-msgstr ""
+msgstr "ZIP"
 
 #: ../src/imageio/format/exr.cc:357
 msgid "PIZ (default)"
@@ -3173,12 +3175,12 @@ msgstr ""
 
 #: ../src/imageio/storage/disk.c:60
 msgid "file on disk"
-msgstr ""
+msgstr "súbor na disku"
 
 #: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:105
 #: ../src/imageio/storage/latex.c:105
 msgid "_Select as output destination"
-msgstr ""
+msgstr "Vybrať a_ko cieľ výstupu"
 
 #: ../src/imageio/storage/disk.c:145 ../src/imageio/storage/gallery.c:158
 #: ../src/imageio/storage/latex.c:158
@@ -3186,48 +3188,50 @@ msgid ""
 "enter the path where to put exported images\n"
 "recognized variables:"
 msgstr ""
+"vyberte cestu, kam sa majú umiestniť exportované obrázky\n"
+"rozpoznané premenné:"
 
 #: ../src/imageio/storage/disk.c:161
 msgid "on conflict"
-msgstr ""
+msgstr "pri konflikte"
 
 #: ../src/imageio/storage/disk.c:162
 msgid "create unique filename"
-msgstr ""
+msgstr "vytvoriť jedinečný názov súboru"
 
 #: ../src/imageio/storage/disk.c:163 ../src/libs/copy_history.c:271
 msgid "overwrite"
-msgstr ""
+msgstr "prepísať"
 
 #: ../src/imageio/storage/disk.c:247 ../src/imageio/storage/gallery.c:258
 #: ../src/imageio/storage/latex.c:256
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr ""
+msgstr "nepodarilo sa vytvoriť adresár „%s“!"
 
 #: ../src/imageio/storage/disk.c:254
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr ""
+msgstr "nepodarilo sa zapísať do adresára „%s“!"
 
 #: ../src/imageio/storage/disk.c:296 ../src/imageio/storage/email.c:142
 #: ../src/imageio/storage/gallery.c:367 ../src/imageio/storage/latex.c:346
 #, c-format
 msgid "%d/%d exported to `%s%s'"
-msgstr ""
+msgstr "%d/%d exportovaných do „%s%s“"
 
 #: ../src/imageio/storage/email.c:51
 msgid "send as email"
-msgstr ""
+msgstr "odoslať emailom"
 
 #. subject, body format
 #: ../src/imageio/storage/email.c:189
 msgid "images exported from darktable"
-msgstr ""
+msgstr "obrázky exportované z programu darktable"
 
 #: ../src/imageio/storage/email.c:222
 msgid "could not launch email client!"
-msgstr ""
+msgstr "nepodarilo sa spustiť poštového klienta!"
 
 #: ../src/imageio/storage/facebook.c:250
 #, c-format
@@ -3249,7 +3253,7 @@ msgstr ""
 
 #: ../src/imageio/storage/facebook.c:622 ../src/imageio/storage/facebook.c:711
 msgid "facebook authentication"
-msgstr ""
+msgstr "overenie totožnosti služby facebook"
 
 #: ../src/imageio/storage/facebook.c:627 ../src/imageio/storage/picasa.c:842
 msgid "URL:"
@@ -3265,11 +3269,11 @@ msgstr ""
 
 #: ../src/imageio/storage/facebook.c:690
 msgid "authentication successful"
-msgstr ""
+msgstr "totožnosť bola úspešne overená"
 
 #: ../src/imageio/storage/facebook.c:694
 msgid "authentication failed"
-msgstr ""
+msgstr "overenie totožnosti zlyhalo"
 
 #: ../src/imageio/storage/facebook.c:707
 msgid ""
@@ -3280,25 +3284,25 @@ msgstr ""
 
 #: ../src/imageio/storage/facebook.c:838 ../src/imageio/storage/picasa.c:1007
 msgid "new account"
-msgstr ""
+msgstr "nový účet"
 
 #: ../src/imageio/storage/facebook.c:843 ../src/imageio/storage/picasa.c:1012
 msgid "other account"
-msgstr ""
+msgstr "iný účet"
 
 #: ../src/imageio/storage/facebook.c:872 ../src/imageio/storage/picasa.c:1040
 msgid "unable to retrieve the album list"
-msgstr ""
+msgstr "nie je možné získať zoznam albumov"
 
 #: ../src/imageio/storage/facebook.c:880 ../src/imageio/storage/flickr.c:386
 #: ../src/imageio/storage/flickr.c:413 ../src/imageio/storage/picasa.c:1048
 msgid "create new album"
-msgstr ""
+msgstr "vytvoriť nový album"
 
 #: ../src/imageio/storage/facebook.c:952 ../src/imageio/storage/picasa.c:1096
 #: ../src/imageio/storage/picasa.c:1255
 msgid "logout"
-msgstr ""
+msgstr "odhlásiť"
 
 #. Set default permission to private
 #: ../src/imageio/storage/facebook.c:958 ../src/imageio/storage/facebook.c:978
@@ -3308,7 +3312,7 @@ msgstr ""
 #: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1259
 #: ../src/imageio/storage/picasa.c:1272 ../src/imageio/storage/picasa.c:1343
 msgid "login"
-msgstr ""
+msgstr "prihlásiť"
 
 #: ../src/imageio/storage/facebook.c:1086
 msgid "facebook webalbum"
@@ -3317,27 +3321,27 @@ msgstr ""
 #: ../src/imageio/storage/facebook.c:1108 ../src/imageio/storage/flickr.c:547
 #: ../src/imageio/storage/picasa.c:1301
 msgid "summary"
-msgstr ""
+msgstr "súhrn"
 
 #: ../src/imageio/storage/facebook.c:1109
 msgid "privacy"
-msgstr ""
+msgstr "súkromie"
 
 #: ../src/imageio/storage/facebook.c:1155
 msgid "only me"
-msgstr ""
+msgstr "iba ja"
 
 #: ../src/imageio/storage/facebook.c:1158 ../src/imageio/storage/flickr.c:500
 msgid "friends"
-msgstr ""
+msgstr "priatelia"
 
 #: ../src/imageio/storage/facebook.c:1161
 msgid "public"
-msgstr ""
+msgstr "verejné"
 
 #: ../src/imageio/storage/facebook.c:1164
 msgid "friends of friends"
-msgstr ""
+msgstr "priatelia mojich priateľov"
 
 #: ../src/imageio/storage/facebook.c:1302 ../src/imageio/storage/picasa.c:1456
 msgid "unable to create album, no title provided"
@@ -4201,19 +4205,19 @@ msgstr ""
 
 #: ../src/iop/clipping.c:1867
 msgid "1:2"
-msgstr ""
+msgstr "1:2"
 
 #: ../src/iop/clipping.c:1869
 msgid "7:5"
-msgstr ""
+msgstr "7:5"
 
 #: ../src/iop/clipping.c:1871
 msgid "5:4"
-msgstr ""
+msgstr "5:4"
 
 #: ../src/iop/clipping.c:1875
 msgid "16:10"
-msgstr ""
+msgstr "16:10"
 
 #: ../src/iop/clipping.c:1876
 msgid "10:8 in print"
@@ -5049,9 +5053,8 @@ msgid "match greens"
 msgstr ""
 
 #: ../src/iop/demosaic.c:2109
-#, fuzzy
 msgid "disabled"
-msgstr "vypnutý"
+msgstr "zakázané"
 
 #: ../src/iop/demosaic.c:2110
 msgid "local average"
@@ -5701,19 +5704,19 @@ msgstr ""
 
 #: ../src/iop/lens.c:1703
 msgid "focal length (mm)"
-msgstr ""
+msgstr "ohnisková vzdialenosť (mm)"
 
 #: ../src/iop/lens.c:1727
 msgid "f/"
-msgstr ""
+msgstr "f/"
 
 #: ../src/iop/lens.c:1728
 msgid "f-number (aperture)"
-msgstr ""
+msgstr "f-číslo (clona)"
 
 #: ../src/iop/lens.c:1742
 msgid "d"
-msgstr ""
+msgstr "d"
 
 #: ../src/iop/lens.c:1743
 msgid "distance to subject"
@@ -5745,15 +5748,15 @@ msgstr ""
 
 #: ../src/iop/lens.c:2100
 msgid "find camera"
-msgstr ""
+msgstr "nájsť fotoaparát"
 
 #: ../src/iop/lens.c:2114
 msgid "find lens"
-msgstr ""
+msgstr "nájsť šošovku"
 
 #: ../src/iop/lens.c:2145
 msgid "corrections"
-msgstr ""
+msgstr "korekcie"
 
 #: ../src/iop/lens.c:2147
 msgid "which corrections to apply"
@@ -6716,7 +6719,6 @@ msgid "alignment"
 msgstr ""
 
 #: ../src/iop/watermark.c:1093
-#, fuzzy
 msgctxt "size"
 msgid "image"
 msgstr "obrázok"
@@ -8124,9 +8126,8 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/metadata_view.c:254
-#, fuzzy
 msgid "unused"
-msgstr "voľných"
+msgstr "nepoužité"
 
 #: ../src/libs/metadata_view.c:255
 msgid "unused/deprecated"
@@ -8903,7 +8904,7 @@ msgstr ""
 
 #: ../src/libs/tools/ratings.c:53
 msgid "ratings"
-msgstr ""
+msgstr "hodnotenia"
 
 #: ../src/libs/tools/viewswitcher.c:46
 msgid "viewswitcher"
