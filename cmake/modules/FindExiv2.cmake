@@ -6,7 +6,6 @@
 #  EXIV2_FOUND, If false, do not try to use exiv2
 # also defined, but not for general use are
 #  EXIV2_LIBRARY, where to find the exiv2 library
-#  EXIV2_VERSION, the version we are compiling against
 
 #=============================================================================
 # Copyright 2010 henrik andersson
