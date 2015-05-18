@@ -27,23 +27,11 @@ if(WIN32)
   list(APPEND EXIV2_LIBRARY ${EXPAT_LIBRARY} ${ICONV_LIBRARY})
 endif(WIN32)
 
-if(EXIV2_INCLUDE_DIR  AND NOT  EXIV2_VERSION)
-  file(READ ${EXIV2_INCLUDE_DIR}/exiv2/version.hpp EXIV2_VERSION_CONTENT)
-  string(REGEX MATCH "#define EXIV2_MAJOR_VERSION +\\( *([0-9]+) *\\)"  _dummy "${EXIV2_VERSION_CONTENT}")
-  set(EXIV2_VERSION_MAJOR "${CMAKE_MATCH_1}")
+libfind_pkg_check_modules(Exiv2 exiv2)
 
-  string(REGEX MATCH "#define EXIV2_MINOR_VERSION +\\( *([0-9]+) *\\)"  _dummy "${EXIV2_VERSION_CONTENT}")
-  set(EXIV2_VERSION_MINOR "${CMAKE_MATCH_1}")
-
-  string(REGEX MATCH "#define EXIV2_PATCH_VERSION +\\( *([0-9]+) *\\)"  _dummy "${EXIV2_VERSION_CONTENT}")
-  set(EXIV2_VERSION_PATCH "${CMAKE_MATCH_1}")
-
-  set(EXIV2_VERSION "${EXIV2_VERSION_MAJOR}.${EXIV2_VERSION_MINOR}.${EXIV2_VERSION_PATCH}")
-endif(EXIV2_INCLUDE_DIR  AND NOT  EXIV2_VERSION)
-
-if(EXIV2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
-  message(FATAL_ERROR "Exiv2 version check failed.  Version ${EXIV2_VERSION} was found, at least version ${Exiv2_FIND_VERSION} is required")
-endif(EXIV2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
+if(Exiv2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
+  message(FATAL_ERROR "Exiv2 version check failed.  Version ${Exiv2_VERSION} was found, at least version ${Exiv2_FIND_VERSION} is required")
+endif(Exiv2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(EXIV2 DEFAULT_MSG EXIV2_LIBRARY EXIV2_INCLUDE_DIR)
