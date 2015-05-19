@@ -72,6 +72,7 @@ typedef struct dt_view_t
   const char *(*name)(struct dt_view_t *self);    // get translatable name
   uint32_t (*view)(const struct dt_view_t *self); // get the view type
   void (*init)(struct dt_view_t *self);           // init *data
+  void (*gui_init)(struct dt_view_t *self);       // create gtk elements, called after libs are created
   void (*cleanup)(struct dt_view_t *self);        // cleanup *data
   void (*expose)(struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                  int32_t pointery);         // expose the module (gtk callback)
@@ -247,6 +248,7 @@ typedef struct dt_view_manager_t
 } dt_view_manager_t;
 
 void dt_view_manager_init(dt_view_manager_t *vm);
+void dt_view_manager_gui_init(dt_view_manager_t *vm);
 void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
 /** return translated name. */
