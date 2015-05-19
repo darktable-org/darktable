@@ -1048,37 +1048,9 @@ static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *a
   return TRUE;
 }
 
-void enter(dt_view_t *self)
+void gui_init(dt_view_t *self)
 {
-
-  /* connect to ui pipe finished signal for redraw */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                            G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback), (gpointer)self);
-
-  dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  if(!dev->form_gui)
-  {
-    dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
-  }
-  dt_masks_init_form_gui(dev);
-  dev->form_visible = NULL;
-  dev->form_gui->pipe_hash = 0;
-  dev->form_gui->formid = 0;
-  dev->gui_leaving = 0;
-  dev->gui_module = NULL;
-
-  select_this_image(dev->image_storage.id);
-
-  dt_control_set_dev_zoom(DT_ZOOM_FIT);
-  dt_control_set_dev_zoom_x(0);
-  dt_control_set_dev_zoom_y(0);
-  dt_control_set_dev_closeup(0);
-
-  // take a copy of the image struct for convenience.
-
-  dt_dev_load_image(darktable.develop, dev->image_storage.id);
-
   /*
    * Add view specific tool buttons
    */
@@ -1177,6 +1149,39 @@ void enter(dt_view_t *self)
     g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
   }
+}
+
+void enter(dt_view_t *self)
+{
+
+  /* connect to ui pipe finished signal for redraw */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+                            G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback), (gpointer)self);
+
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  if(!dev->form_gui)
+  {
+    dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
+  }
+  dt_masks_init_form_gui(dev);
+  dev->form_visible = NULL;
+  dev->form_gui->pipe_hash = 0;
+  dev->form_gui->formid = 0;
+  dev->gui_leaving = 0;
+  dev->gui_module = NULL;
+
+  select_this_image(dev->image_storage.id);
+
+  dt_control_set_dev_zoom(DT_ZOOM_FIT);
+  dt_control_set_dev_zoom_x(0);
+  dt_control_set_dev_zoom_y(0);
+  dt_control_set_dev_closeup(0);
+
+  // take a copy of the image struct for convenience.
+
+  dt_dev_load_image(darktable.develop, dev->image_storage.id);
+
 
   /*
    * add IOP modules to plugin list
@@ -1339,8 +1344,11 @@ void leave(dt_view_t *self)
   // take care of the overexposed window
   if(dev->overexposed.timeout > 0) g_source_remove(dev->overexposed.timeout);
   if(dev->overexposed.destroy_signal_handler > 0)
+  {
     g_signal_handler_disconnect(dt_ui_main_window(darktable.gui->ui), dev->overexposed.destroy_signal_handler);
-  gtk_widget_destroy(dev->overexposed.floating_window);
+    dev->overexposed.destroy_signal_handler = 0;
+    gtk_widget_hide(dev->overexposed.floating_window);
+  }
 
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
