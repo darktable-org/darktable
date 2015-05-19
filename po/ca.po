@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-05 16:06+0200\n"
-"PO-Revision-Date: 2015-05-05 16:23+0100\n"
+"POT-Creation-Date: 2015-05-09 16:22+0200\n"
+"PO-Revision-Date: 2015-05-09 16:23+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Josep Vicenç Moragues Pastor <josepvm@arrakis.es>\n"
 "Language: ca\n"
@@ -878,15 +878,15 @@ msgstr ""
 "altra"
 
 #: ../src/common/history.c:375 ../src/common/history.c:378
-#: ../src/common/history.c:393 ../src/common/styles.c:700
-#: ../src/common/styles.c:704 ../src/develop/blend_gui.c:1825
+#: ../src/common/history.c:393 ../src/common/styles.c:701
+#: ../src/common/styles.c:705 ../src/develop/blend_gui.c:1825
 #: ../src/develop/develop.c:1221 ../src/libs/live_view.c:410
 msgid "on"
 msgstr "actiu"
 
 #: ../src/common/history.c:375 ../src/common/history.c:378
-#: ../src/common/history.c:393 ../src/common/styles.c:700
-#: ../src/common/styles.c:704 ../src/develop/blend_gui.c:1604
+#: ../src/common/history.c:393 ../src/common/styles.c:701
+#: ../src/common/styles.c:705 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1221
 #: ../src/imageio/format/exr.cc:319 ../src/imageio/format/j2k.c:651
 #: ../src/iop/colorin.c:1265 ../src/iop/demosaic.c:2046
@@ -1005,8 +1005,8 @@ msgstr "l'estil amb nom '%s' ja existeix"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:305 ../src/common/styles.c:309
 #: ../src/common/styles.c:389 ../src/common/styles.c:458
-#: ../src/common/styles.c:609 ../src/common/styles.c:1131
-#: ../src/common/styles.c:1150
+#: ../src/common/styles.c:610 ../src/common/styles.c:1132
+#: ../src/common/styles.c:1151
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1023,17 +1023,17 @@ msgstr "s'ha creat l'estil '%s'"
 msgid "no image selected!"
 msgstr "no hi ha cap imatge seleccionada!"
 
-#: ../src/common/styles.c:787
+#: ../src/common/styles.c:788
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "no s'ha pogut sobreescriure el fitxer d'estil per a %s"
 
-#: ../src/common/styles.c:793
+#: ../src/common/styles.c:794
 #, c-format
 msgid "style file for %s exists"
 msgstr "existeix un fitxer d'estil per %s"
 
-#: ../src/common/styles.c:1022
+#: ../src/common/styles.c:1023
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "s'ha importat amb èxit l'estil %s"
@@ -2156,7 +2156,7 @@ msgstr "augmenta"
 #: ../src/gui/accelerators.c:56 ../src/gui/accelerators.c:97
 msgctxt "accel"
 msgid "decrease"
-msgstr "sisminueix"
+msgstr "disminueix"
 
 #: ../src/gui/accelerators.c:58 ../src/gui/accelerators.c:99
 msgctxt "accel"
@@ -3980,7 +3980,7 @@ msgstr "escapça i gira"
 
 #: ../src/iop/clipping.c:1485
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr "ralació de format invàlida. Hauria de ser \"número:número\" "
+msgstr "relació de format invàlida. Hauria de ser \"número:número\" "
 
 #: ../src/iop/clipping.c:1598 ../src/iop/clipping.c:1847
 #: ../src/iop/clipping.c:1866
