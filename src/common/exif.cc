@@ -468,7 +468,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int nominator = pos->toRational(0).first;
       img->exif_focus_distance = fmax(0.0, (0.001 * nominator));
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceUpper"))) != exifData.end()
+    else if(Exiv2::testVersion(0,25,0)
+            && (pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceUpper"))) != exifData.end()
             && pos->size())
     {
       float FocusDistanceUpper = pos->toFloat();
