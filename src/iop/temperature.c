@@ -792,7 +792,8 @@ void reload_defaults(dt_iop_module_t *module)
            && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12)))
       {
         dt_control_log(_("failed to read camera white balance information!"));
-        fprintf(stderr, "[temperature] failed to read camera white balance information!\n");
+        fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
+                module->dev->image_storage.filename);
 
         // could not get useful info, try presets:
         for(int i = 0; i < wb_preset_count; i++)
