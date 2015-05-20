@@ -916,6 +916,9 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   dt_tag_new(tagname, &tagid);
   dt_tag_attach(tagid, id);
 
+  // make sure that there are no stale thumbnails left
+  dt_mipmap_cache_remove(darktable.mipmap_cache, id);
+
   // read all sidecar files
   dt_image_read_duplicates(id, filename);
   dt_image_synch_all_xmp(filename);
