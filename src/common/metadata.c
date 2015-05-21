@@ -391,12 +391,20 @@ static GList *dt_metadata_get_dt(int id, const char *key, uint32_t *count)
 
 void dt_metadata_set(int id, const char *key, const char *value)
 {
+  if(!key) return;
+
+  char *v = NULL;
+  char *c = NULL;
+
   // strip whitespace from start & end
-  char *v = g_strdup(value);
-  char *c = v + strlen(v) - 1;
-  while(c >= v && *c == ' ') *c-- = '\0';
-  c = v;
-  while(*c == ' ') c++;
+  if(value)
+  {
+    v = g_strdup(value);
+    c = v + strlen(v) - 1;
+    while(c >= v && *c == ' ') *c-- = '\0';
+    c = v;
+    while(*c == ' ') c++;
+  }
 
   if(strncmp(key, "Xmp.", 4) == 0)
     dt_metadata_set_xmp(id, key, c);
