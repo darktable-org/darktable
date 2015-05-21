@@ -224,18 +224,6 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   dt_dev_write_history(darktable.develop);
   sqlite3_stmt *stmt;
 
-  // new history_end will be the first activated module on the stack below current history_end
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT operation FROM history "
-                                                             "WHERE imgid=?1 AND num<?2 "
-                                                             "ORDER BY num DESC LIMIT 1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
-  sqlite3_step(stmt);
-  char module_history_end[256];
-  g_strlcpy(module_history_end, (const char *)sqlite3_column_text(stmt, 0), sizeof(module_history_end));
-  sqlite3_finalize(stmt);
-
   // compress history
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1 and num "
                                                              "not in (select MAX(num) from history where "
@@ -250,11 +238,11 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   dt_dev_reload_history_items(darktable.develop);
   dt_dev_write_history(darktable.develop);
 
-  // then we can get the item to select in the new clean-up history retrieve the position of the module corresponding to the history end
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MAX(num)+1 FROM history WHERE imgid=?1 AND operation=?2",
+  // then we can get the item to select in the new clean-up history retrieve the position of the module
+  // corresponding to the history end.
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MAX(num)+1 FROM history WHERE imgid=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module_history_end, -1, SQLITE_STATIC);
 
   if (sqlite3_step(stmt) == SQLITE_ROW)
     darktable.develop->history_end = sqlite3_column_int(stmt, 0);
