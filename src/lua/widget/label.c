@@ -40,6 +40,19 @@ static int label_member(lua_State *L)
   return 1;
 }
 
+static int selectable_member(lua_State *L)
+{
+  lua_label label;
+  luaA_to(L,lua_label,&label,1);
+  if(lua_gettop(L) > 2) {
+    gboolean selectable = lua_toboolean(L,3);
+    gtk_label_set_selectable(GTK_LABEL(label->widget),selectable);
+    return 0;
+  }
+  lua_pushboolean(L,gtk_label_get_selectable(GTK_LABEL(label->widget)));
+  return 1;
+}
+
 int dt_lua_init_widget_label(lua_State* L)
 {
   dt_lua_init_widget_type(L,&label_type,lua_label,GTK_TYPE_LABEL);
@@ -47,6 +60,9 @@ int dt_lua_init_widget_label(lua_State* L)
   lua_pushcfunction(L,label_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_label, "label");
+  lua_pushcfunction(L,selectable_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_label, "selectable");
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
