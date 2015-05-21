@@ -736,6 +736,7 @@ local widget = dt.new_widget("button"){
 
   types.lua_label:set_text("A label containing some text");
   types.lua_label.label:set_text("The label displayed");
+  types.lua_label.selectable:set_text("True if the label content should be selectable");
 
   types.lua_button:set_text("A clickable button");
   types.lua_button.label:set_reported_type("string")
