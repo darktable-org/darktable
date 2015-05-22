@@ -746,6 +746,7 @@ local widget = dt.new_widget("button"){
   types.lua_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.lua_box:set_text("A container for widget in a horizontal or vertical list");
+  types.lua_button.label:set_reported_type(types.dt_lua_orientation_t)
   types.lua_box.orientation:set_text("The orientation of the box.")
 
   types.lua_entry:set_text("A widget in which the user can input text")

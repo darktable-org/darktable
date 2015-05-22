@@ -5705,17 +5705,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6205,6 +6195,27 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_lua_label_selectable">
+<title>types.lua_label.selectable</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>selectable</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if the label content should be selectable</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 </section>
 
 <section status="final" id="types_lua_button">
@@ -6241,7 +6252,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>label</secondary>
 </indexterm>
-<synopsis>string</synopsis>
+<synopsis><link linkend="types_dt_lua_orientation_t">types.dt_lua_orientation_t</link></synopsis>
 <para>The label displayed on the button</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
