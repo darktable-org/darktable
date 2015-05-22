@@ -1723,6 +1723,12 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_widget_set_name(pluginui_frame, "iop-plugin-ui");
 
+  gtk_widget_add_events(pluginui_frame, GDK_SCROLL_MASK);
+  gtk_widget_add_events(pluginui, GDK_SCROLL_MASK);
+  gtk_widget_add_events(header_evb, GDK_SCROLL_MASK);
+  gtk_widget_add_events(expander, GDK_SCROLL_MASK);
+  gtk_widget_add_events(header, GDK_SCROLL_MASK);
+
   module->header = header;
   /* connect mouse button callbacks for focus and presets */
   g_signal_connect(G_OBJECT(pluginui), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press),
