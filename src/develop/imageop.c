@@ -1647,13 +1647,6 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
 }
 
-
-static gboolean _iop_plugin_body_scrolled(GtkWidget *w, GdkEvent *e, gpointer user_data)
-{
-  // just make sure nothing happens:
-  return TRUE;
-}
-
 static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -1716,32 +1709,24 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   char tooltip[512];
 
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *pluginui = gtk_event_box_new();
-  GtkWidget *expander = dtgtk_expander_new(header, pluginui);
+  GtkWidget *iopw = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3 * DT_BAUHAUS_SPACE);
+
+  GtkWidget *expander = dtgtk_expander_new(header, iopw);
+
   GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
+  GtkWidget *body_evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
 
   gtk_widget_set_name(pluginui_frame, "iop-plugin-ui");
 
-  gtk_widget_add_events(pluginui_frame, GDK_SCROLL_MASK);
-  gtk_widget_add_events(pluginui, GDK_SCROLL_MASK);
-  gtk_widget_add_events(header_evb, GDK_SCROLL_MASK);
-  gtk_widget_add_events(expander, GDK_SCROLL_MASK);
-  gtk_widget_add_events(header, GDK_SCROLL_MASK);
-
   module->header = header;
-  /* connect mouse button callbacks for focus and presets */
-  g_signal_connect(G_OBJECT(pluginui), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press),
-                   module);
-  /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
-  g_signal_connect(G_OBJECT(pluginui_frame), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
-  g_signal_connect(G_OBJECT(pluginui), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
-  g_signal_connect(G_OBJECT(header_evb), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
-  g_signal_connect(G_OBJECT(expander), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
-  g_signal_connect(G_OBJECT(header), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
 
   /* setup the header box */
   g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_iop_plugin_header_button_press),
+                   module);
+
+  /* connect mouse button callbacks for focus and presets */
+  g_signal_connect(G_OBJECT(body_evb), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press),
                    module);
 
   /*
@@ -1858,19 +1843,17 @@ got_image:
   dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
 
   /* add the blending ui if supported */
-  GtkWidget *iopw = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3 * DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_iop_gui_init_blending(iopw, module);
 
 
   /* add empty space around module widget */
-  gtk_container_add(GTK_CONTAINER(pluginui), iopw);
   gtk_widget_set_margin_start(iopw, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_end(iopw, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_top(iopw, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_bottom(iopw, DT_PIXEL_APPLY_DPI(24));
 
-  gtk_widget_hide(pluginui);
+  gtk_widget_hide(iopw);
 
   module->expander = expander;
 
