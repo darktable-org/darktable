@@ -229,6 +229,7 @@ GList *dt_get_papers(const char *printer_name)
       }
 
       cupsFreeDestInfo(info);
+      httpClose(hcon);
     }
     else
       dt_print(DT_DEBUG_PRINT, "[print] cannot connect to printer %s (cancel=%d)\n", printer_name, cancel);
