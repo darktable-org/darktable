@@ -72,6 +72,7 @@ void *dt_control_job_get_params(const dt_job_t *job);
 
 struct dt_control_t;
 void dt_control_jobs_init(struct dt_control_t *control);
+void dt_control_jobs_cleanup(struct dt_control_t *control);
 
 int dt_control_add_job(struct dt_control_t *control, dt_job_queue_t queue_id, dt_job_t *job);
 int32_t dt_control_add_job_res(struct dt_control_t *s, dt_job_t *job, int32_t res);
