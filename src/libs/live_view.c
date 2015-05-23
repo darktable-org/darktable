@@ -443,6 +443,8 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  free(self->data);
+  self->data = NULL;
 }
 
 // TODO: find out where the zoom window is and draw overlay + grid accordingly

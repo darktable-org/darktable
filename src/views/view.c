@@ -263,6 +263,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
           if(plugin->views(plugin) & v->view(v))
       {
         plugin->gui_cleanup(plugin);
+        plugin->data = NULL;
         dt_accel_disconnect_list(plugin->accel_closures);
         plugin->accel_closures = NULL;
         plugin->widget = NULL;

@@ -1015,6 +1015,11 @@ void dt_lib_cleanup(dt_lib_t *lib)
     dt_lib_module_t *module = (dt_lib_module_t *)(lib->plugins->data);
     if(module) 
     {
+      if(module->data != NULL)
+      {
+        module->gui_cleanup(module);
+        module->data = NULL;
+      }
       dt_lib_unload_module(module);
       free(module);
     }

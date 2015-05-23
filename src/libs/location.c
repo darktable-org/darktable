@@ -124,7 +124,8 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_location_t *lib = self->data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(lib->search));
-  free(lib);
+  free(self->data);
+  self->data = NULL;
 }
 
 static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
