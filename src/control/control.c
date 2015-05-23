@@ -133,6 +133,10 @@ static void dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncRe
           dt_print(DT_DEBUG_CONTROL,
                    "[color profile] colord gave us a new screen profile: '%s' (size: %ld)\n", filename, size);
         }
+        else
+        {
+          g_free(tmp_data);
+        }
       }
     }
   }
