@@ -277,6 +277,10 @@ void dt_ctl_set_display_profile()
     dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile `%s' from the %s (size: %d)\n",
              *name ? name : "(unknown)", profile_source, buffer_size);
   }
+  else
+  {
+    g_free(buffer);
+  }
   pthread_rwlock_unlock(&darktable.control->xprofile_lock);
   if(profile_changed) dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
   g_free(profile_source);
