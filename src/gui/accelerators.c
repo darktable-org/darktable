@@ -616,6 +616,7 @@ static void preset_lib_module_callback_destroyer(gpointer data, GClosure *closur
   preset_lib_module_callback_description *callback_description
       = (preset_lib_module_callback_description *)data;
   g_free(callback_description->name);
+  g_free(data);
 }
 static gboolean preset_lib_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
