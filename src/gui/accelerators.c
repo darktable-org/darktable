@@ -533,6 +533,7 @@ static void preset_iop_module_callback_destroyer(gpointer data, GClosure *closur
   preset_iop_module_callback_description *callback_description
       = (preset_iop_module_callback_description *)data;
   g_free(callback_description->name);
+  g_free(data);
 }
 static gboolean preset_iop_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
