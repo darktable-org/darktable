@@ -326,6 +326,7 @@ void dt_imageio_cleanup(dt_imageio_t *iio)
   while(iio->plugins_format)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)(iio->plugins_format->data);
+    module->gui_cleanup(module);
     module->cleanup(module);
     if(module->widget) g_object_unref(module->widget);
     if(module->module) g_module_close(module->module);
@@ -335,6 +336,7 @@ void dt_imageio_cleanup(dt_imageio_t *iio)
   while(iio->plugins_storage)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)(iio->plugins_storage->data);
+    module->gui_cleanup(module);
     if(module->widget) g_object_unref(module->widget);
     if(module->module) g_module_close(module->module);
     free(module);
