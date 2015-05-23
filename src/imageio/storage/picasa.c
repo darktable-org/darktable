@@ -187,8 +187,7 @@ static PicasaContext *picasa_api_init()
 static void picasa_api_destroy(PicasaContext *ctx)
 {
   if(ctx == NULL) return;
-  // FIXME: This is causing a segfault. Probably trying to dereference twice something already freed.
-  // curl_easy_cleanup(ctx->curl_ctx);
+  curl_easy_cleanup(ctx->curl_ctx);
   g_free(ctx->token);
   g_free(ctx->refresh_token);
   g_free(ctx->album_title);
