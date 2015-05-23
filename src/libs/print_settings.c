@@ -360,6 +360,8 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
   if (!printer) return;
 
   memcpy(&ps->prt.printer, printer, sizeof(dt_printer_info_t));
+  free(printer);
+  printer = NULL;
 
   // if there is 0 hardware margins, set the user marging to 15mm
 
@@ -994,7 +996,7 @@ gui_init (dt_lib_module_t *self)
   free(default_printer);
   gtk_box_pack_start(GTK_BOX(self->widget), d->printers, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->printers), "value-changed", G_CALLBACK(_printer_changed), self);
-  g_list_free_full (printers, g_free);
+  g_list_free_full(printers, free);
 
   //  Add printer profile combo
 
