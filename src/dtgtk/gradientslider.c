@@ -437,6 +437,7 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     cairo_rectangle(cr, margins, (height - gheight) / 2.0, gwidth, gheight);
     cairo_fill(cr);
     cairo_stroke(cr);
+    cairo_pattern_destroy(gradient);
   }
 
   // Lets draw position arrows

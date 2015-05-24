@@ -1333,6 +1333,7 @@ void dtgtk_cairo_paint_modulegroup_tone(cairo_t *cr, gint x, gint y, gint w, gin
   cairo_set_source(cr, pat);
   cairo_arc(cr, 0.5, 0.5, 0.40, -M_PI, M_PI);
   cairo_fill(cr);
+  cairo_pattern_destroy(pat);
 }
 
 void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
@@ -1359,6 +1360,7 @@ void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, gint x, gint y, gint w, gi
   cairo_set_source(cr, pat);
   cairo_arc(cr, 0.5, 0.5, 0.40, -M_PI, M_PI);
   cairo_fill(cr);
+  cairo_pattern_destroy(pat);
 }
 
 void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
