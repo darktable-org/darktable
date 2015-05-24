@@ -423,11 +423,15 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         // img->exif_iso = (float) std::atof( pos->toString().c_str() );
       }
     }
-#if EXIV2_MINOR_VERSION > 19
     /* Read focal length  */
     if((pos = Exiv2::focalLength(exifData)) != exifData.end() && pos->size())
     {
-      img->exif_focal_length = pos->toFloat();
+      // Exiv2 returns the CRW FocalLength field as a whole, even though only
+      // the second value is the actual focal length
+      if (pos->key() == "Exif.Canon.FocalLength" && pos->count() == 4)
+        img->exif_focal_length = pos->toFloat(1);
+      else
+        img->exif_focal_length = pos->toFloat();
     }
 
     if((pos = exifData.findKey(Exiv2::ExifKey("Exif.NikonLd2.FocusDistance"))) != exifData.end()
@@ -464,8 +468,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int nominator = pos->toRational(0).first;
       img->exif_focus_distance = fmax(0.0, (0.001 * nominator));
     }
-#if EXIV2_MINOR_VERSION > 24
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceUpper"))) != exifData.end()
+    else if(Exiv2::testVersion(0,25,0)
+            && (pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceUpper"))) != exifData.end()
             && pos->size())
     {
       float FocusDistanceUpper = pos->toFloat();
@@ -480,12 +484,10 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_focus_distance = (FocusDistanceLower + FocusDistanceUpper) / 200;
       }
     }
-#endif
     else if((pos = Exiv2::subjectDistance(exifData)) != exifData.end() && pos->size())
     {
       img->exif_focus_distance = pos->toFloat();
     }
-#endif
     /** read image orientation */
     if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.Orientation"))) != exifData.end() && pos->size())
     {
@@ -1761,7 +1763,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     else
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) FROM history WHERE imgid = ?1)", -1,
+                                  "UPDATE images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) FROM history WHERE imgid = ?1) WHERE id = ?1", -1,
                                   &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
       sqlite3_step(stmt);

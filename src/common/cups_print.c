@@ -227,10 +227,15 @@ GList *dt_get_papers(const char *printer_name)
           }
         }
       }
+
+      cupsFreeDestInfo(info);
+      httpClose(hcon);
     }
     else
       dt_print(DT_DEBUG_PRINT, "[print] cannot connect to printer %s (cancel=%d)\n", printer_name, cancel);
   }
+
+  cupsFreeDests(num_dests, dests);
 #endif
 
   // check now PPD page sizes
@@ -287,6 +292,8 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
       num_options = cupsAddOption(dest->options[j].name,
                                   dest->options[j].value,
                                   num_options, &options);
+
+  cupsFreeDests(num_dests, dests);
 
   // disable cm on CUPS, this is important as dt does the cm
 

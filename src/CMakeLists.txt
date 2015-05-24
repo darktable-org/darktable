@@ -188,12 +188,18 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo PThread Rsvg2 LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo PThread Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
+
+# Require exiv2 >= 0.23 to make sure everything we need is available
+find_package(Exiv2 0.23 REQUIRED)
+include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
+list(APPEND LIBS ${Exiv2_LIBRARIES})
+add_definitions(${Exiv2_DEFINITIONS})
 
 if(USE_NLS)
   find_package(Gettext)
@@ -482,6 +488,7 @@ if(USE_LUA)
       "lua/init.c"
       "lua/lib.c"
       "lua/lua.c"
+      "lua/lualib.c"
       "lua/luastorage.c"
       "lua/modules.c"
       "lua/preferences.c"

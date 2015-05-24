@@ -627,7 +627,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(d->offset_entry);
   g_list_free_full(d->timezones, &g_free);
   d->timezones = NULL;
-  g_free(self->data);
+  free(self->data);
   self->data = NULL;
 }
 

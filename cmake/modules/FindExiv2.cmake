@@ -1,12 +1,11 @@
-# - Find the native sqlite3 includes and library
+# - Find the native exiv2 includes and library
 #
 # This module defines
 #  EXIV2_INCLUDE_DIR, where to find png.h, etc.
-#  EXIV2_LIBRARIES, the libraries to link against to use sqlite3.
-#  EXIV2_FOUND, If false, do not try to use sqlite3.
+#  EXIV2_LIBRARIES, the libraries to link against to use exiv2
+#  EXIV2_FOUND, If false, do not try to use exiv2
 # also defined, but not for general use are
-#  EXIV2_LIBRARY, where to find the sqlite3 library.
-
+#  EXIV2_LIBRARY, where to find the exiv2 library
 
 #=============================================================================
 # Copyright 2010 henrik andersson
@@ -26,6 +25,12 @@ if(WIN32)
   find_library(ICONV_LIBRARY NAMES iconv )
   list(APPEND EXIV2_LIBRARY ${EXPAT_LIBRARY} ${ICONV_LIBRARY})
 endif(WIN32)
+
+libfind_pkg_check_modules(Exiv2 exiv2)
+
+if(Exiv2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
+  message(FATAL_ERROR "Exiv2 version check failed.  Version ${Exiv2_VERSION} was found, at least version ${Exiv2_FIND_VERSION} is required")
+endif(Exiv2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(EXIV2 DEFAULT_MSG EXIV2_LIBRARY EXIV2_INCLUDE_DIR)

@@ -492,7 +492,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   }
 }
 
-static gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
+gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 {
   const dt_lib_module_t *am = (const dt_lib_module_t *)a;
   const dt_lib_module_t *bm = (const dt_lib_module_t *)b;
@@ -512,6 +512,7 @@ static int dt_lib_load_module(dt_lib_module_t *module, const char *libname, cons
   //  char name[1024];
   module->dt = &darktable;
   module->widget = NULL;
+  module->expander = NULL;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
@@ -593,7 +594,7 @@ error:
   return 1;
 }
 
-static void init_presets(dt_lib_module_t *module)
+void dt_lib_init_presets(dt_lib_module_t *module)
 {
   // since lighttable presets can't end up in styles or any other place outside of the presets table it is
   // sufficient
@@ -629,7 +630,7 @@ static void init_presets(dt_lib_module_t *module)
       size_t op_params_size = sqlite3_column_bytes(stmt, 2);
       const char *name = (char *)sqlite3_column_text(stmt, 3);
 
-      int version = module->version();
+      int version = module->version(module);
 
       if(op_version < version)
       {
@@ -708,10 +709,15 @@ int dt_lib_load_modules()
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_lib_sort_plugins);
 
-    init_presets(module);
+    dt_lib_init_presets(module);
     // Calling the keyboard shortcut initialization callback if present
     // do not init accelerators if there is no gui
-    if(darktable.gui && module->init_key_accels) module->init_key_accels(module);
+    if(darktable.gui)
+    {
+     if(module->init_key_accels) module->init_key_accels(module);
+     module->gui_init(module);
+     g_object_ref_sink(module->widget);
+    }
   }
   g_dir_close(dir);
 
@@ -757,7 +763,7 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   static dt_lib_module_info_t mi;
   int size = 0;
   g_strlcpy(mi.plugin_name, module->plugin_name, sizeof(mi.plugin_name));
-  mi.version = module->version();
+  mi.version = module->version(module);
   mi.module = module;
   void *params = module->get_params(module, &size);
 
@@ -790,7 +796,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   GtkWidget *icon;
   GtkWidget *header = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
   gint flags = CPF_DIRECTION_DOWN;
-  int c = module->container();
+  int c = module->container(module);
 
   if((c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
      || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
@@ -831,7 +837,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
 }
 gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
 {
-  if(!module->expandable()) return true;
+  if(!module->expandable(module)) return true;
   if(!module->expander) return true;
   if(!module->widget)
   {
@@ -849,20 +855,20 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   if(e->button == 1)
   {
     /* bail out if module is static */
-    if(!module->expandable()) return FALSE;
+    if(!module->expandable(module)) return FALSE;
 
     /* handle shiftclick on expander, hide all except this */
     if(!dt_conf_get_bool("lighttable/ui/single_module") != !(e->state & GDK_SHIFT_MASK))
     {
       GList *it = g_list_first(darktable.lib->plugins);
-      uint32_t container = module->container();
+      uint32_t container = module->container(module);
       dt_view_t *v = darktable.view_manager->view + darktable.view_manager->current_view;
       gboolean all_other_closed = TRUE;
       while(it)
       {
         dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
-        if(m != module && container == m->container() && m->expandable() && (m->views() & v->view(v)))
+        if(m != module && container == m->container(module) && m->expandable(module) && (m->views(module) & v->view(v)))
         {
           all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
           dt_lib_gui_set_expanded(m, FALSE);
@@ -895,7 +901,7 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 {
   /* check if module is expandable */
-  if(!module->expandable())
+  if(!module->expandable(module))
   {
     module->expander = NULL;
     return NULL;
@@ -927,11 +933,11 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add module label */
   char label[128];
-  g_snprintf(label, sizeof(label), "<span size=\"larger\">%s</span>", module->name());
+  g_snprintf(label, sizeof(label), "<span size=\"larger\">%s</span>", module->name(module));
   hw[idx] = gtk_label_new("");
   gtk_widget_set_name(hw[idx], "panel_label");
   gtk_label_set_markup(GTK_LABEL(hw[idx]), label);
-  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", module->name(), (char *)NULL);
+  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", module->name(module), (char *)NULL);
   gtk_label_set_ellipsize(GTK_LABEL(hw[idx++]), PANGO_ELLIPSIZE_MIDDLE);
 
   /* add reset button if module has implementation */
@@ -963,7 +969,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   /* lets order header elements depending on left/right side panel placement */
-  int c = module->container();
+  int c = module->container(module);
   if((c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
      || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
   {
@@ -1007,8 +1013,16 @@ void dt_lib_cleanup(dt_lib_t *lib)
   while(lib->plugins)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(lib->plugins->data);
-    dt_lib_unload_module(module);
-    free(module);
+    if(module) 
+    {
+      if(module->data != NULL)
+      {
+        module->gui_cleanup(module);
+        module->data = NULL;
+      }
+      dt_lib_unload_module(module);
+      free(module);
+    }
     lib->plugins = g_list_delete_link(lib->plugins, lib->plugins);
   }
 }
@@ -1110,7 +1124,7 @@ gchar *dt_lib_get_localized_name(const gchar *plugin_name)
       do
       {
         dt_lib_module_t *module = (dt_lib_module_t *)lib->data;
-        g_hash_table_insert(module_names, module->plugin_name, g_strdup(module->name()));
+        g_hash_table_insert(module_names, module->plugin_name, g_strdup(module->name(module)));
       } while((lib = g_list_next(lib)) != NULL);
     }
   }

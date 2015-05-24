@@ -85,15 +85,15 @@ typedef struct dt_lib_module_t
   /** version */
   int (*version)();
   /** get name of the module, to be translated. */
-  const char *(*name)();
+  const char *(*name)(struct dt_lib_module_t *self);
   /** get the views which the module should be loaded in. */
-  uint32_t (*views)();
+  uint32_t (*views)(struct dt_lib_module_t *self);
   /** get the container which the module should be placed in */
-  uint32_t (*container)();
+  uint32_t (*container)(struct dt_lib_module_t *self);
   /** check if module should use a expander or not, default implementation
       will make the module expandable and storing the expanding state,
       if not the module will always be shown without the expander. */
-  int (*expandable)();
+  int (*expandable)(struct dt_lib_module_t *self);
 
   /** constructor */
   void (*init)(struct dt_lib_module_t *self);
@@ -173,6 +173,11 @@ void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size);
 
 /** set the colorpicker point selection tool and position */
 void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y);
+
+/** sorter callback to add a lib in the list of libs after init */
+gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b);
+/** init presets for a newly created lib */
+void dt_lib_init_presets(dt_lib_module_t *module);
 
 #endif
 

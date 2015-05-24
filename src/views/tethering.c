@@ -228,7 +228,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
   while(modules)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if((module->views() & self->view(self)) && module->gui_post_expose)
+    if((module->views(module) & self->view(self)) && module->gui_post_expose)
       module->gui_post_expose(module, cri, width, height, pointerx, pointery);
     modules = g_list_next(modules);
   }

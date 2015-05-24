@@ -27,6 +27,7 @@ namespace RawSpeed {
 
 MrwDecoder::MrwDecoder(FileMap* file) :
     RawDecoder(file) {
+  tiff_meta = NULL;
   parseHeader();
 }
 
@@ -56,6 +57,10 @@ void MrwDecoder::parseHeader() {
 
   if (!mFile->isValid(data_offset))
     ThrowRDE("MRW: Data offset is invalid");
+
+  // Make sure all values have at least been initialized
+  raw_width = raw_height = packed = 0;
+  wb_coeffs[0] = wb_coeffs[1] = wb_coeffs[2] = wb_coeffs[3] = NAN;
 
   uint32 currpos = 8;
   while (currpos < data_offset) {

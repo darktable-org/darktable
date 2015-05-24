@@ -723,17 +723,13 @@ function M.all_children(node)
 
 
 
-	-- libs might be available only in certain views, iterate through all views to document them
-	for _,view in pairs(dt.gui.views) do
-		dt.gui.current_view(view);
-		if(view == dt.gui.views.darkroom) then
-			dt.gui.libs.snapshots:take_snapshot();
-			local snapshot = dt.gui.libs.snapshots[1]
-			document_from_obj(snapshot,toplevel.types.dt_lua_snapshot_t)
-		end
-		for libname,lib in pairs(dt.gui.libs) do
-			document_from_obj(lib,toplevel.darktable.gui.libs[libname])
-		end
+  dt.gui.libs.snapshots:take_snapshot();
+  local snapshot = dt.gui.libs.snapshots[1]
+  document_from_obj(snapshot,toplevel.types.dt_lua_snapshot_t)
+
+
+  for libname,lib in pairs(dt.gui.libs) do
+    document_from_obj(lib,toplevel.darktable.gui.libs[libname])
 	end
 
 
@@ -744,12 +740,6 @@ function M.all_children(node)
 	M.create_documentation_node = create_documentation_node
 	M.document_function = document_function
 	dt.gui.selection{dt.database[1]}
-	for _,view in pairs(dt.gui.views) do
-		dt.gui.current_view(view);
-		for libname,lib in pairs(dt.gui.libs) do
-			document_from_obj(lib,toplevel.darktable.gui.libs[libname])
-		end
-	end
 	return M;
 	--
 	-- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua

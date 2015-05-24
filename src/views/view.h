@@ -45,7 +45,7 @@
     control which view the module should be available in also
     which placement in the panels the module have.
 */
-enum dt_view_type_flags_t
+typedef enum 
 {
   DT_VIEW_LIGHTTABLE = 1,
   DT_VIEW_DARKROOM = 2,
@@ -53,7 +53,7 @@ enum dt_view_type_flags_t
   DT_VIEW_MAP = 8,
   DT_VIEW_SLIDESHOW = 16,
   DT_VIEW_PRINT = 32,
-};
+}dt_view_type_flags_t;
 
 #define DT_VIEW_ALL                                                                                          \
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | DT_VIEW_PRINT)
@@ -77,6 +77,7 @@ typedef struct dt_view_t
   const char *(*name)(struct dt_view_t *self);    // get translatable name
   uint32_t (*view)(const struct dt_view_t *self); // get the view type
   void (*init)(struct dt_view_t *self);           // init *data
+  void (*gui_init)(struct dt_view_t *self);       // create gtk elements, called after libs are created
   void (*cleanup)(struct dt_view_t *self);        // cleanup *data
   void (*expose)(struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                  int32_t pointery);         // expose the module (gtk callback)
@@ -273,6 +274,7 @@ typedef struct dt_view_manager_t
 } dt_view_manager_t;
 
 void dt_view_manager_init(dt_view_manager_t *vm);
+void dt_view_manager_gui_init(dt_view_manager_t *vm);
 void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
 /** return translated name. */

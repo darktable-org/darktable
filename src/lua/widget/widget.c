@@ -24,11 +24,11 @@
 #include "stdarg.h"
 /**
   TODO
-  generic property member registration
   use name to save/restore states as pref like other widgets
   have a way to save presets
   luastorage can't save presets
-
+dt_ui_section_label : make new lua widget
+widget names : implement for CSS ?
   */
 
 dt_lua_widget_type_t widget_type = {

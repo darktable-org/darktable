@@ -893,6 +893,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   if(init_gui)
   {
+    // init the gui part of views
+    dt_view_manager_gui_init(darktable.view_manager);
     // Loading the keybindings
     char keyfile[PATH_MAX] = { 0 };
 

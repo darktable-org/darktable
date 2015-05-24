@@ -214,8 +214,10 @@ void dt_ui_destroy(struct dt_ui_t *ui);
 void dt_ui_container_add_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
 /** \brief gives a widget focus in the container */
 void dt_ui_container_focus_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
-/** \brief removes all child widgets from container */
-void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c);
+/** \brief calls a callback on all children widgets from container */
+void dt_ui_container_foreach(struct dt_ui_t *ui, const dt_ui_container_t c, GtkCallback callback);
+/** \brief destroy all child widgets from container */
+void dt_ui_container_destroy_children(struct dt_ui_t *ui, const dt_ui_container_t c);
 /** \brief shows/hide a panel */
 void dt_ui_panel_show(struct dt_ui_t *ui, const dt_ui_panel_t, gboolean show, gboolean write);
 /** show or hide outermost borders with expand arrows */

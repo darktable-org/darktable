@@ -603,6 +603,10 @@ void gui_cleanup(dt_lib_module_t *self)
   // remove listener from camera control..
   dt_camctl_tether_mode(darktable.camctl, NULL, FALSE);
   dt_camctl_unregister_listener(darktable.camctl, lib->data.listener);
+  free(lib->data.listener);
+  lib->data.listener = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -441,7 +441,6 @@ static int direction_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  dt_lua_lib_check_error(L, self);
   if(lua_gettop(L) != 3)
   {
     snapshot_direction_t result;
@@ -496,7 +495,6 @@ static int ratio_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  dt_lua_lib_check_error(L, self);
   if(lua_gettop(L) != 3)
   {
     if(!d->vertical && !d->inverted)
@@ -547,7 +545,6 @@ static int max_snapshot_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  dt_lua_lib_check_error(L, self);
   lua_pushnumber(L, d->size);
   return 1;
 }
@@ -556,7 +553,6 @@ static int lua_take_snapshot(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  dt_lua_lib_check_error(L, self);
   _lib_snapshots_add_button_clicked_callback(d->take_button, self);
   return 0;
 }
@@ -566,7 +562,6 @@ static int selected_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  dt_lua_lib_check_error(L, self);
   for(int i = 0; i < d->num_snapshots; i++)
   {
     GtkWidget *widget = d->snapshot[i].button;
@@ -584,11 +579,6 @@ static int snapshots_length(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  if(!dt_lua_lib_check(L, self))
-  {
-    lua_pushnumber(L, 0);
-    return 1;
-  }
   lua_pushnumber(L, d->num_snapshots);
   return 1;
 }
@@ -597,7 +587,6 @@ static int number_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  dt_lua_lib_check_error(L, self);
   int index = luaL_checkinteger(L, 2);
   if(index > d->num_snapshots || index < 1)
   {
@@ -615,7 +604,6 @@ static int filename_member(lua_State *L)
   luaA_to(L, dt_lua_snapshot_t, &index, 1);
   dt_lib_module_t *module = lua_touserdata(L, lua_upvalueindex(1));
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
-  dt_lua_lib_check_error(L, module);
   if(index >= d->num_snapshots || index < 0)
   {
     return luaL_error(L, "Accessing a non-existant snapshot");
@@ -629,7 +617,6 @@ static int name_member(lua_State *L)
   luaA_to(L, dt_lua_snapshot_t, &index, 1);
   dt_lib_module_t *module = lua_touserdata(L, lua_upvalueindex(1));
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
-  dt_lua_lib_check_error(L, module);
   if(index >= d->num_snapshots || index < 0)
   {
     return luaL_error(L, "Accessing a non-existant snapshot");
@@ -643,7 +630,6 @@ static int lua_select(lua_State *L)
   dt_lua_snapshot_t index;
   luaA_to(L, dt_lua_snapshot_t, &index, 1);
   dt_lib_module_t *module = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lua_lib_check_error(L, module);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
   if(index >= d->num_snapshots || index < 0)
   {

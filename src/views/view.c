@@ -90,6 +90,15 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   vm->current_view = -1;
 }
 
+void dt_view_manager_gui_init(dt_view_manager_t *vm)
+{
+  for(int k = 0; k < vm->num_views; k++)
+  {
+    dt_view_t *cur_view = &vm->view[k];
+    if(cur_view->gui_init) cur_view->gui_init(cur_view);
+  }
+}
+
 void dt_view_manager_cleanup(dt_view_manager_t *vm)
 {
   for(int k = 0; k < vm->num_views; k++) dt_view_unload_module(vm->view + k);
@@ -141,6 +150,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "name", (gpointer) & (view->name))) view->name = NULL;
   if(!g_module_symbol(view->module, "view", (gpointer) & (view->view))) view->view = NULL;
   if(!g_module_symbol(view->module, "init", (gpointer) & (view->init))) view->init = NULL;
+  if(!g_module_symbol(view->module, "gui_init", (gpointer) & (view->gui_init))) view->gui_init = NULL;
   if(!g_module_symbol(view->module, "cleanup", (gpointer) & (view->cleanup))) view->cleanup = NULL;
   if(!g_module_symbol(view->module, "expose", (gpointer) & (view->expose))) view->expose = NULL;
   if(!g_module_symbol(view->module, "try_enter", (gpointer) & (view->try_enter))) view->try_enter = NULL;
@@ -199,6 +209,24 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
 
+/* 
+   When expanders get destoyed, they destroy the child
+   so remove the child before that
+   */
+static void _remove_child(GtkWidget *child,GtkContainer *container)
+{
+    if(DTGTK_IS_EXPANDER(child)) 
+    {
+      GtkWidget * evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(child));
+      gtk_container_remove(GTK_CONTAINER(evb),dtgtk_expander_get_body(DTGTK_EXPANDER(child)));
+      gtk_widget_destroy(child);
+    }
+    else
+    {
+      gtk_container_remove(container,child);
+    }
+}
+
 int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 {
   // Before switching views, restore accelerators if disabled
@@ -228,13 +256,14 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 
       if(!plugin->views)
       {
-        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name(plugin));
       }
       else
           /* does this module belong to current view ?*/
-          if(plugin->views() & v->view(v))
+          if(plugin->views(plugin) & v->view(v))
       {
         plugin->gui_cleanup(plugin);
+        plugin->data = NULL;
         dt_accel_disconnect_list(plugin->accel_closures);
         plugin->accel_closures = NULL;
         plugin->widget = NULL;
@@ -244,9 +273,9 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
       plugins = g_list_previous(plugins);
     }
 
-    /* remove all widets in all containers */
-    for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++) dt_ui_container_clear(darktable.gui->ui, l);
-
+    /* remove all widgets in all containers */
+    for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++) 
+      dt_ui_container_destroy_children(darktable.gui->ui, l);
     vm->current_view = -1;
     return 0;
   }
@@ -280,7 +309,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 
         if(!plugin->views)
         {
-          fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+          fprintf(stderr, "module %s doesn't have views flags\n", plugin->name(plugin));
 
           /* get next plugin */
           plugins = g_list_previous(plugins);
@@ -288,12 +317,10 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
         }
 
         /* does this module belong to current view ?*/
-        if(plugin->views() & v->view(v))
+        if(plugin->views(plugin) & v->view(v))
         {
-          plugin->gui_cleanup(plugin);
           dt_accel_disconnect_list(plugin->accel_closures);
           plugin->accel_closures = NULL;
-          plugin->widget = NULL;
         }
 
         /* get next plugin */
@@ -301,7 +328,8 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
       }
 
       /* remove all widets in all containers */
-      for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++) dt_ui_container_clear(darktable.gui->ui, l);
+      for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++) dt_ui_container_foreach(darktable.gui->ui, l,(GtkCallback)_remove_child);
+
     }
 
     /* change current view to the new view */
@@ -315,10 +343,8 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
     while(plugins)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-      if(plugin->views() & nv->view(nv))
+      if(plugin->views(plugin) & nv->view(nv))
       {
-        /* module should be in this view, lets initialize */
-        plugin->gui_init(plugin);
 
         /* try get the module expander  */
         GtkWidget *w = NULL;
@@ -331,7 +357,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
         if(!w) w = plugin->widget;
 
         /* add module to it's container */
-        dt_ui_container_add_widget(darktable.gui->ui, plugin->container(), w);
+        dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
       }
 
       /* lets get next plugin */
@@ -343,13 +369,13 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
     while(plugins)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-      if(plugin->views() & nv->view(nv))
+      if(plugin->views(plugin) & nv->view(nv))
       {
         /* set expanded if last mode was that */
         char var[1024];
         gboolean expanded = FALSE;
         gboolean visible = dt_lib_is_visible(plugin);
-        if(plugin->expandable())
+        if(plugin->expandable(plugin))
         {
           snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
@@ -443,7 +469,7 @@ void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, i
 
       if(!plugin->views)
       {
-        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name(plugin));
 
         /* get next plugin */
         plugins = g_list_previous(plugins);
@@ -451,7 +477,7 @@ void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, i
       }
 
       /* does this module belong to current view ?*/
-      if(plugin->gui_post_expose && plugin->views() & v->view(v))
+      if(plugin->gui_post_expose && plugin->views(plugin) & v->view(v))
         plugin->gui_post_expose(plugin, cr, v->width, v->height, px, py);
 
       /* get next plugin */
@@ -494,7 +520,7 @@ void dt_view_manager_mouse_moved(dt_view_manager_t *vm, double x, double y, doub
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
-    if(plugin->mouse_moved && plugin->views() & v->view(v))
+    if(plugin->mouse_moved && plugin->views(plugin) & v->view(v))
       if(plugin->mouse_moved(plugin, x, y, pressure, which)) handled = TRUE;
 
     /* get next plugin */
@@ -518,7 +544,7 @@ int dt_view_manager_button_released(dt_view_manager_t *vm, double x, double y, i
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
-    if(plugin->button_released && plugin->views() & v->view(v))
+    if(plugin->button_released && plugin->views(plugin) & v->view(v))
       if(plugin->button_released(plugin, x, y, which, state)) handled = TRUE;
 
     /* get next plugin */
@@ -545,7 +571,7 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
-    if(plugin->button_pressed && plugin->views() & v->view(v))
+    if(plugin->button_pressed && plugin->views(plugin) & v->view(v))
       if(plugin->button_pressed(plugin, x, y, pressure, which, type, state)) handled = TRUE;
 
     /* get next plugin */

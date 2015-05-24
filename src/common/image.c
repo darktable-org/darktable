@@ -315,7 +315,7 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1)",
+                              "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1) WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
@@ -916,6 +916,9 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   dt_tag_new(tagname, &tagid);
   dt_tag_attach(tagid, id);
 
+  // make sure that there are no stale thumbnails left
+  dt_mipmap_cache_remove(darktable.mipmap_cache, id);
+
   // read all sidecar files
   dt_image_read_duplicates(id, filename);
   dt_image_synch_all_xmp(filename);
@@ -996,9 +999,9 @@ void dt_image_refresh_makermodel(dt_image_t *img)
 
   // Now we just create a makermodel by concatenation
   g_strlcpy(img->camera_makermodel, img->camera_maker, sizeof(img->camera_makermodel));
-  img->camera_makermodel[strlen(img->camera_maker)] = ' ';
-  g_strlcpy(img->camera_makermodel+strlen(img->camera_maker)+1, img->camera_model,
-            sizeof(img->camera_makermodel)-strlen(img->camera_maker)-1);
+  int len = strlen(img->camera_maker);
+  img->camera_makermodel[len] = ' ';
+  g_strlcpy(img->camera_makermodel+len+1, img->camera_model, sizeof(img->camera_makermodel)-len-1);
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)

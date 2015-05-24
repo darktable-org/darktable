@@ -176,7 +176,6 @@ static int grouping_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
-  dt_lua_lib_check_error(L, self);
   if(lua_gettop(L) != 3)
   {
     lua_pushboolean(L, darktable.gui->grouping);
@@ -197,7 +196,6 @@ static int show_overlays_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
-  dt_lua_lib_check_error(L, self);
   if(lua_gettop(L) != 3)
   {
     lua_pushboolean(L, darktable.gui->show_overlays);

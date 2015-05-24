@@ -224,9 +224,32 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   dt_dev_write_history(darktable.develop);
   sqlite3_stmt *stmt;
 
+  // compress history
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1 and num "
                                                              "not in (select MAX(num) from history where "
                                                              "imgid = ?1 and num < ?2 group by operation,multi_priority)",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // load new history and write it back to ensure that all history are properly numbered without a gap
+  dt_dev_reload_history_items(darktable.develop);
+  dt_dev_write_history(darktable.develop);
+
+  // then we can get the item to select in the new clean-up history retrieve the position of the module
+  // corresponding to the history end.
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT IFNULL(MAX(num)+1, 0) FROM history WHERE imgid=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if (sqlite3_step(stmt) == SQLITE_ROW)
+    darktable.develop->history_end = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  // select the new history end corresponding to the one before the history compression
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE images SET history_end=?2 WHERE id=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
