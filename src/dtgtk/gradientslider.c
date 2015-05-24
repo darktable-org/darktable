@@ -481,6 +481,7 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_rectangle(cr, margins, (height - gheight) / 2.0, gwidth, gheight);
     cairo_fill(cr);
     cairo_stroke(cr);
+    cairo_pattern_destroy(gradient);
   }
 
 
