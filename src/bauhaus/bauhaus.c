@@ -648,7 +648,9 @@ void dt_bauhaus_init()
 void dt_bauhaus_cleanup()
 {
   // TODO: destroy popup window and resources
-  // TODO: destroy keymap hash table and auto complete lists!
+  // TODO: destroy keymap hash table!
+  g_list_free_full(darktable.bauhaus->key_mod, (GDestroyNotify)g_free);
+  g_list_free_full(darktable.bauhaus->key_val, (GDestroyNotify)g_free);
 }
 
 // fwd declare a few callbacks
@@ -854,6 +856,9 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const c
         if(!g_list_find_custom(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp))
           darktable.bauhaus->key_mod
               = g_list_insert_sorted(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp);
+        else
+          g_free(mod);
+
         // unfortunately need our own string, as replace in the hashtable below might destroy this pointer.
         darktable.bauhaus->key_val
             = g_list_insert_sorted(darktable.bauhaus->key_val, g_strdup(path), (GCompareFunc)strcmp);
