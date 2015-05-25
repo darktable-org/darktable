@@ -11,6 +11,8 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
+include(LibFindMacros)
+
 SET(EXIV2_FIND_REQUIRED ${Exiv2_FIND_REQUIRED})
 
 find_path(EXIV2_INCLUDE_DIR NAMES exiv2/image.hpp)
