@@ -885,6 +885,7 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
            module_label);
   g_free(module_label);
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(togglebutton));
 }
 
 gboolean dt_iop_is_hidden(dt_iop_module_t *module)
