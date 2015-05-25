@@ -592,6 +592,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         free(cl->dev[i].eventlist);
         free(cl->dev[i].eventtags);
       }
+      free((void *)(cl->dev[i].name));
+      free((void *)(cl->dev[i].cname));
     }
     free(cl->dev_priority_image);
     free(cl->dev_priority_preview);
