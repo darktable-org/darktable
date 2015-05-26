@@ -1008,6 +1008,12 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
         exifData.erase(pos);
       if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewOffset"))) != exifData.end())
         exifData.erase(pos);
+      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.PentaxDng.PreviewResolution"))) != exifData.end())
+        exifData.erase(pos);
+      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.PentaxDng.PreviewLength"))) != exifData.end())
+        exifData.erase(pos);
+      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.PentaxDng.PreviewOffset"))) != exifData.end())
+        exifData.erase(pos);
 
       // Minolta thumbnail data
       if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Minolta.Thumbnail"))) != exifData.end())
