@@ -257,6 +257,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
   }
 
   g_free(pictures_folder);
+  g_free((gchar *)homedir);
 
   return got_value;
 }

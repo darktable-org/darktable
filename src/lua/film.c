@@ -189,7 +189,7 @@ static int films_new(lua_State *L)
   const char *path = luaL_checkstring(L, -1);
   char *expanded_path = dt_util_fix_path(path);
   char *final_path = g_realpath(expanded_path);
-  free(expanded_path);
+  g_free(expanded_path);
   if(!final_path)
   {
     return luaL_error(L, "Couldn't create film for directory '%s' : %s\n", path, strerror(errno));

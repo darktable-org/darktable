@@ -204,6 +204,7 @@ gchar *dt_util_fix_path(const gchar *path)
     }
 
     rpath = g_build_filename(home_path, path + off, NULL);
+    g_free(home_path);
   }
   else
   {
