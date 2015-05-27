@@ -46,6 +46,7 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_PPG = 0,
   DT_IOP_DEMOSAIC_AMAZE = 1,
   DT_IOP_DEMOSAIC_VNG4 = 2,
+  DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3,
   // methods for x-trans images
   DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,
   DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
@@ -1151,6 +1152,33 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
 
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
+static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
+                                   const dt_iop_roi_t *const roi_in)
+{
+  roi_out->x = 0;
+  roi_out->y = 0;
+
+  // we never want to access the input out of bounds though:
+  assert(roi_in->width >= roi_out->width);
+  assert(roi_in->height >= roi_out->height);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        out[(size_t)4 * ((size_t)j * roi_out->width + i) + c]
+            = in[(size_t)((size_t)j + roi_out->y) * roi_in->width + i + roi_out->x];
+      }
+    }
+  }
+}
+
+/** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
                          const int filters, const float thrs)
 {
@@ -1511,11 +1539,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         }
       }
 
-      if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
+      if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+        passthrough_monochrome(tmp, in, &roo, &roi);
+      else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
         vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans);
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-        // wanted ppg or zoomed out a lot and quality is limited to 1
-        demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
+        demosaic_ppg(tmp, in, &roo, &roi, data->filters,
+                     data->median_thrs); // wanted ppg or zoomed out a lot and quality is limited to 1
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
 
@@ -1903,6 +1933,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   // Only demosaic mode PPG implemented in OpenCL currently
   if(d->demosaicing_method != DT_IOP_DEMOSAIC_PPG) piece->process_cl_ready = 0;
 
+  if(d->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+  {
+    piece->process_cl_ready = 0;
+    d->green_eq = DT_IOP_GREEN_EQ_NO;
+    d->color_smoothing = 0;
+    d->median_thrs = 0.0f;
+  }
+
   // OpenCL can not (yet) green-equilibrate over full image.
   if(d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH) piece->process_cl_ready = 0;
 }
@@ -1939,6 +1977,13 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_hide(g->scale1);
     gtk_widget_hide(g->greeneq);
     dt_bauhaus_combobox_set(g->demosaic_method_xtrans, p->demosaicing_method & ~DEMOSAIC_XTRANS);
+  }
+
+  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+  {
+    gtk_widget_hide(g->scale1);
+    gtk_widget_hide(g->color_smoothing);
+    gtk_widget_hide(g->greeneq);
   }
 
   dt_bauhaus_slider_set(g->scale1, p->median_thrs);
@@ -2026,6 +2071,7 @@ static void greeneq_callback(GtkWidget *combo, dt_iop_module_t *self)
 
 static void demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
+  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   int active = dt_bauhaus_combobox_get(combo);
 
@@ -2037,11 +2083,28 @@ static void demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *se
     case DT_IOP_DEMOSAIC_VNG4:
       p->demosaicing_method = DT_IOP_DEMOSAIC_VNG4;
       break;
+    case DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME:
+      p->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+      break;
     default:
     case DT_IOP_DEMOSAIC_PPG:
       p->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
       break;
   }
+
+  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+  {
+    gtk_widget_hide(g->scale1);
+    gtk_widget_hide(g->color_smoothing);
+    gtk_widget_hide(g->greeneq);
+  }
+  else
+  {
+    gtk_widget_show(g->scale1);
+    gtk_widget_show(g->color_smoothing);
+    gtk_widget_show(g->greeneq);
+  }
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2070,6 +2133,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("PPG (fast)"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("AMaZE (slow)"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4 (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("passthrough (monochrome) (experimental)"));
   g_object_set(G_OBJECT(g->demosaic_method_bayer), "tooltip-text", _("demosaicing raw data method"),
                (char *)NULL);
 
