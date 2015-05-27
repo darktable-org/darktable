@@ -124,7 +124,7 @@ void fb_album_destroy(FBAlbum *album)
 typedef struct FBAccountInfo
 {
   gchar *id;
-  gchar *username;
+  gchar *readablename;
   gchar *token;
 } FBAccountInfo;
 
@@ -137,7 +137,7 @@ void fb_account_info_destroy(FBAccountInfo *account)
 {
   if(account == NULL) return;
   g_free(account->id);
-  g_free(account->username);
+  g_free(account->readablename);
   g_free(account->token);
   g_free(account);
 }
@@ -554,12 +554,12 @@ static FBAccountInfo *fb_get_account_info(FBContext *ctx)
 {
   JsonObject *obj = fb_query_get(ctx, "me", NULL);
   g_return_val_if_fail((obj != NULL), NULL);
-  const gchar *user_name = json_object_get_string_member(obj, "username");
+  const gchar *readablename = json_object_get_string_member(obj, "name");
   const gchar *user_id = json_object_get_string_member(obj, "id");
-  g_return_val_if_fail(user_name != NULL && user_id != NULL, NULL);
+  g_return_val_if_fail(readablename != NULL && user_id != NULL, NULL);
   FBAccountInfo *accountinfo = fb_account_info_init();
   accountinfo->id = g_strdup(user_id);
-  accountinfo->username = g_strdup(user_name);
+  accountinfo->readablename = g_strdup(readablename);
   accountinfo->token = g_strdup(ctx->token);
   return accountinfo;
 }
@@ -754,7 +754,7 @@ static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlis
   if(root)
   {
     info->token = g_strdup(json_object_get_string_member(obj, "token"));
-    info->username = g_strdup(json_object_get_string_member(obj, "username"));
+    info->readablename = g_strdup(json_object_get_string_member(obj, "name"));
     *accountlist = g_slist_prepend(*accountlist, info);
   }
   g_object_unref(parser);
@@ -781,8 +781,8 @@ static void save_account_info(dt_storage_facebook_gui_data_t *ui, FBAccountInfo 
   /// serialize data;
   JsonBuilder *builder = json_builder_new();
   json_builder_begin_object(builder);
-  json_builder_set_member_name(builder, "username");
-  json_builder_add_string_value(builder, accountinfo->username);
+  json_builder_set_member_name(builder, "name");
+  json_builder_add_string_value(builder, accountinfo->readablename);
   json_builder_set_member_name(builder, "token");
   json_builder_add_string_value(builder, accountinfo->token);
   json_builder_end_object(builder);
@@ -819,7 +819,7 @@ static void ui_refresh_users_fill(FBAccountInfo *value, gpointer dataptr)
   GtkListStore *liststore = GTK_LIST_STORE(dataptr);
   GtkTreeIter iter;
   gtk_list_store_append(liststore, &iter);
-  gtk_list_store_set(liststore, &iter, COMBO_USER_MODEL_NAME_COL, value->username, COMBO_USER_MODEL_TOKEN_COL,
+  gtk_list_store_set(liststore, &iter, COMBO_USER_MODEL_NAME_COL, value->readablename, COMBO_USER_MODEL_TOKEN_COL,
                      value->token, COMBO_USER_MODEL_ID_COL, value->id, -1);
 }
 
@@ -926,7 +926,7 @@ static void ui_authenticate_finish(dt_storage_facebook_gui_data_t *ui, gboolean 
 
       if(g_strcmp0(uid, accountinfo->id) == 0)
       {
-        gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->username,
+        gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->readablename,
                            COMBO_USER_MODEL_TOKEN_COL, accountinfo->token, -1);
         updated = TRUE;
         break;
@@ -936,7 +936,7 @@ static void ui_authenticate_finish(dt_storage_facebook_gui_data_t *ui, gboolean 
     if(!updated)
     {
       gtk_list_store_append(model, &iter);
-      gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->username,
+      gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->readablename,
                          COMBO_USER_MODEL_TOKEN_COL, accountinfo->token, COMBO_USER_MODEL_ID_COL,
                          accountinfo->id, -1);
     }
