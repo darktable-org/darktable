@@ -1485,26 +1485,32 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, img, img->xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
     }
-    else if(data->green_eq != DT_IOP_GREEN_EQ_NO)
+    else
     {
-      float *in = (float *)dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
-      switch(data->green_eq)
+      float *in = (float *)pixels;
+
+      if(data->green_eq != DT_IOP_GREEN_EQ_NO)
       {
-        case DT_IOP_GREEN_EQ_FULL:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, data->filters, roi_in->x,
-                                   roi_in->y);
-          break;
-        case DT_IOP_GREEN_EQ_LOCAL:
-          green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height, data->filters, roi_in->x,
-                                   roi_in->y, 0, threshold);
-          break;
-        case DT_IOP_GREEN_EQ_BOTH:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, data->filters, roi_in->x,
-                                   roi_in->y);
-          green_equilibration_lavg(in, in, roi_in->width, roi_in->height, data->filters, roi_in->x, roi_in->y,
-                                   1, threshold);
-          break;
+        in = (float *)dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
+        switch(data->green_eq)
+        {
+          case DT_IOP_GREEN_EQ_FULL:
+            green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, data->filters, roi_in->x,
+                                     roi_in->y);
+            break;
+          case DT_IOP_GREEN_EQ_LOCAL:
+            green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height, data->filters, roi_in->x,
+                                     roi_in->y, 0, threshold);
+            break;
+          case DT_IOP_GREEN_EQ_BOTH:
+            green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, data->filters, roi_in->x,
+                                     roi_in->y);
+            green_equilibration_lavg(in, in, roi_in->width, roi_in->height, data->filters, roi_in->x,
+                                     roi_in->y, 1, threshold);
+            break;
+        }
       }
+
       if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
         vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans);
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
@@ -1512,16 +1518,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
-      dt_free_align(in);
-    }
-    else
-    {
-      if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
-        vng_interpolate(tmp, pixels, &roo, &roi, data->filters, img->xtrans);
-      else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-        demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
-      else
-        amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
+
+      if(data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
     }
 
     if(scaled)
