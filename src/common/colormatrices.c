@@ -150,6 +150,13 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Nikon D7000",                  { 744919, 228027, -46982}, { 454605, 1326797,  -33585}, {-132294, -467194, 985611}, {609375, 629852, 515625}},
 
+  // Ralf Brown, QPcard201, direct sunlight, well lit
+  // These have been commented out because they cause unwanted color shifts
+  // unrestricted gamut
+  //{ "NIKON D7200",		    { 518097, 211746, 15579},  { 448868, 891602,  -115341}, {-2731, -103317, 923605},   {908035, 955154, 1007889}},
+  // restrict primaries to non-negative XYZ coords
+  //{ "NIKON D7200",		    { 477829, 183090, 0},      { 357635, 775879, 2594},     {128784, 41061, 821457},    {859512, 901535, 1010498}},
+
   // Jessica Smith, Wolf Faust IT8, direct sunlight, well lit
   { "Nikon D80",                    { 893585, 348816, -39719}, { 363037, 1246628,  -80994}, { 11658, -286819, 1169052}, {694489, 710114, 562363}},
 
