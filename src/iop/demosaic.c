@@ -1477,8 +1477,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   const int qual = get_quality();
   int demosaicing_method = data->demosaicing_method;
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2
-     && roi_out->scale <= .99999f) // only overwrite setting if quality << requested and in dr mode
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2 && roi_out->scale <= .99999f
+     && // only overwrite setting if quality << requested and in dr mode
+     ((img->filters != 9u) && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)))
     demosaicing_method = (img->filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   // we check if we need ultra-high quality thumbnail for this size
