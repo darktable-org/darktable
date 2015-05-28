@@ -1300,6 +1300,30 @@ static void list_view(dt_lib_collect_rule_t *dr)
       snprintf(query, sizeof(query),
                "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
       break;
+
+    case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator&& number)
+        snprintf(query, sizeof(query), "select distinct round(focal_length,1) as focal_length, 1 from images where "
+        "focal_length %s %s order by focal_length",
+        operator, number);
+      else if(number)
+        snprintf(query, sizeof(query), "select distinct round(focal_length,1) as focal_length, 1 from images where "
+        "focal_length = %s order by focal_length",
+        number);
+      else
+        snprintf(query, sizeof(query), "select distinct round(focal_length,1) as focal_length, 1 from images where "
+        "focal_length like '%%%s%%' order by focal_length",
+        escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_ISO: // iso
     {
       gchar *operator, *number;

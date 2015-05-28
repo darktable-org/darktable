@@ -696,6 +696,24 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_LENS: // lens
       query = dt_util_dstrcat(query, "(lens like '%%%s%%')", escaped_text);
       break;
+
+    case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator&& number)
+        query = dt_util_dstrcat(query, "(focal_length %s %s)", operator, number);
+      else if(number)
+        query = dt_util_dstrcat(query, "(focal_length = %s)", number);
+      else
+        query = dt_util_dstrcat(query, "(focal_length like '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_ISO: // iso
     {
       gchar *operator, *number;
