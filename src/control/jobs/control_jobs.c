@@ -975,6 +975,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       goto end;
     }
     mformat->set_params(mformat, fdata, mformat->params_size(mformat));
+    mstorage->set_params(mstorage, sdata, mstorage->params_size(mstorage));
   }
 
   // Get max dimensions...
