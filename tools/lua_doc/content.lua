@@ -259,7 +259,6 @@ darktable.preferences.register:add_parameter("name","string",[[A unique name use
 darktable.preferences.register:add_parameter("type",types.lua_pref_type,[[The type of the preference - one of the string values described above.]])
 darktable.preferences.register:add_parameter("label","string",[[The label displayed in the preference screen.]])
 darktable.preferences.register:add_parameter("tooltip","string",[[The tooltip to display in the preference menue.]])
-darktable.preferences.register:add_parameter("sensitive","boolean",[[True if the widget can be interacted with.]])
 darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitely or by the user.]]..para().."For the enum type of pref, this is mandatory"):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("min","int or float",[[Minimum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("max","int or float",[[Maximum value (integer and float preferences only).]]):set_attribute("optional",true)
