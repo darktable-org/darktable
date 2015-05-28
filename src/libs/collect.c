@@ -1307,15 +1307,15 @@ static void list_view(dt_lib_collect_rule_t *dr)
       dt_collection_split_operator_number(escaped_text, &number, &operator);
 
       if(operator&& number)
-        snprintf(query, sizeof(query), "select distinct round(focal_length,1) as focal_length, 1 from images where "
+        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length, 1 from images where "
         "focal_length %s %s order by focal_length",
         operator, number);
       else if(number)
-        snprintf(query, sizeof(query), "select distinct round(focal_length,1) as focal_length, 1 from images where "
+        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length, 1 from images where "
         "focal_length = %s order by focal_length",
         number);
       else
-        snprintf(query, sizeof(query), "select distinct round(focal_length,1) as focal_length, 1 from images where "
+        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length, 1 from images where "
         "focal_length like '%%%s%%' order by focal_length",
         escaped_text);
 
