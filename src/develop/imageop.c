@@ -2215,6 +2215,146 @@ void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint1
   dt_iop_clip_and_zoom_demosaic_half_size(out, in, roi_out, roi_in, roi_out->width, in_stride, filters);
 }
 
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
+                                                            const dt_iop_roi_t *const roi_out,
+                                                            const dt_iop_roi_t *const roi_in,
+                                                            const int32_t out_stride, const int32_t in_stride)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many pixels can be sampled inside that area
+  const int samples = round(px_footprint);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *outc = out + 4 * (out_stride * y);
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy;
+    const float dy = fy - py;
+    py = MIN(((roi_in->height - 3)), py);
+
+    int maxj = MIN(((roi_in->height - 2)), py + samples);
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      __m128 col = _mm_setzero_ps();
+
+      float fx = (x + roi_out->x) * px_footprint;
+      int px = (int)fx;
+      const float dx = fx - px;
+      px = MIN(((roi_in->width - 3)), px);
+
+      int maxi = MIN(((roi_in->width - 2)), px + samples);
+
+      float p;
+      int i, j;
+      float num = 0;
+
+      // upper left pixel of sampling region
+      p = in[px + in_stride * py];
+      col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1 - dx) * (1 - dy)), _mm_set_ps(0.0f, p, p, p)));
+
+      // left pixel border of sampling region
+      for(j = py + 1; j <= maxj; j++)
+      {
+        p = in[px + in_stride * j];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1 - dx), _mm_set_ps(0.0f, p, p, p)));
+      }
+
+      // upper pixel border of sampling region
+      for(i = px + 1; i <= maxi; i++)
+      {
+        p = in[i + in_stride * py];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1 - dy), _mm_set_ps(0.0f, p, p, p)));
+      }
+
+      // pixels in the middle of sampling region
+      for(int j = py + 1; j <= maxj; j++)
+        for(int i = px + 1; i <= maxi; i++)
+        {
+          p = in[i + in_stride * j];
+          col = _mm_add_ps(col, _mm_set_ps(0.0f, p, p, p));
+        }
+
+      if(maxi == px + samples && maxj == py + samples)
+      {
+        // right border
+        for(j = py + 1; j <= maxj; j++)
+        {
+          p = in[maxi + 1 + in_stride * j];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx), _mm_set_ps(0.0f, p, p, p)));
+        }
+
+        // upper right
+        p = in[maxi + 1 + in_stride * py];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * (1 - dy)), _mm_set_ps(0.0f, p, p, p)));
+
+        // lower border
+        for(i = px + 1; i <= maxi; i++)
+        {
+          p = in[i + in_stride * (maxj + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy), _mm_set_ps(0.0f, p, p, p)));
+        }
+
+        // lower left pixel
+        p = in[px + in_stride * (maxj + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1 - dx) * dy), _mm_set_ps(0.0f, p, p, p)));
+
+        // lower right pixel
+        p = in[maxi + 1 + in_stride * (maxj + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * dy), _mm_set_ps(0.0f, p, p, p)));
+
+        num = (samples + 1) * (samples + 1);
+      }
+      else if(maxi == px + samples)
+      {
+        // right border
+        for(j = py + 1; j <= maxj; j++)
+        {
+          p = in[maxi + 1 + in_stride * j];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx), _mm_set_ps(0.0f, p, p, p)));
+        }
+
+        // upper right
+        p = in[maxi + 1 + in_stride * py];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * (1 - dy)), _mm_set_ps(0.0f, p, p, p)));
+
+        num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
+      }
+      else if(maxj == py + samples)
+      {
+        // lower border
+        for(i = px + 1; i <= maxi; i++)
+        {
+          p = in[i + in_stride * (maxj + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy), _mm_set_ps(0.0f, p, p, p)));
+        }
+
+        // lower left pixel
+        p = in[px + in_stride * (maxj + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1 - dx) * dy), _mm_set_ps(0.0f, p, p, p)));
+
+        num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
+      }
+      else
+      {
+        num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
+      }
+
+      num = 1.0f / num;
+      col = _mm_mul_ps(col, _mm_set_ps(0.0f, num, num, num));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
+}
+
 #if 0 // gets rid of pink artifacts, but doesn't do sub-pixel sampling, so shows some staircasing artifacts.
 void
 dt_iop_clip_and_zoom_demosaic_half_size_f(

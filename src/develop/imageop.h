@@ -520,6 +520,12 @@ void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint1
                                                          const int32_t out_stride, const int32_t in_stride,
                                                          const dt_image_t *img);
 
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
+                                                            const struct dt_iop_roi_t *const roi_out,
+                                                            const struct dt_iop_roi_t *const roi_in,
+                                                            const int32_t out_stride,
+                                                            const int32_t in_stride);
+
 void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
                                                const struct dt_iop_roi_t *const roi_out,
                                                const struct dt_iop_roi_t *const roi_in,
