@@ -850,12 +850,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   if(!thumbnail_export && strcmp(format->mime(format_params), "memory"))
   {
-    dt_imageio_module_data_t *format_copy = format->get_params(format);
-    memcpy(format_copy,format_params,format->params_size(format));
-    dt_imageio_module_data_t *storage_copy = storage->get_params(storage);
-    memcpy(storage_copy,storage_params,storage->params_size(storage));
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
-                            format_copy, storage, storage_copy);
+                            format_params, storage, storage_params);
   }
   return res;
 }
