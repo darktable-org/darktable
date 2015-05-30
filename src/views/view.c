@@ -85,15 +85,6 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   vm->current_view = -1;
 }
 
-void dt_view_manager_gui_init(dt_view_manager_t *vm)
-{
-  for(int k = 0; k < vm->num_views; k++)
-  {
-    dt_view_t *cur_view = &vm->view[k];
-    if(cur_view->gui_init) cur_view->gui_init(cur_view);
-  }
-}
-
 void dt_view_manager_cleanup(dt_view_manager_t *vm)
 {
   for(int k = 0; k < vm->num_views; k++) dt_view_unload_module(vm->view + k);
@@ -145,7 +136,6 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "name", (gpointer) & (view->name))) view->name = NULL;
   if(!g_module_symbol(view->module, "view", (gpointer) & (view->view))) view->view = NULL;
   if(!g_module_symbol(view->module, "init", (gpointer) & (view->init))) view->init = NULL;
-  if(!g_module_symbol(view->module, "gui_init", (gpointer) & (view->gui_init))) view->gui_init = NULL;
   if(!g_module_symbol(view->module, "cleanup", (gpointer) & (view->cleanup))) view->cleanup = NULL;
   if(!g_module_symbol(view->module, "expose", (gpointer) & (view->expose))) view->expose = NULL;
   if(!g_module_symbol(view->module, "try_enter", (gpointer) & (view->try_enter))) view->try_enter = NULL;
