@@ -444,7 +444,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
       cairo_set_dash(cr, dashed, len, 4);
       cairo_stroke(cr);
 
-      if(isinf(border[count * 2])) count++;
+      if(count < border_count && isinf(border[count * 2])) count++;
     }
   }
 
