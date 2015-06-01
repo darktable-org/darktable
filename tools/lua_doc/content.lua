@@ -132,7 +132,7 @@ darktable.register_lib:set_text("Register a new lib object. A lib is a graphical
 darktable.register_lib:add_parameter("plugin_name","string","A unique name for your library")
 darktable.register_lib:add_parameter("name","string","A user-visible name for your library")
 darktable.register_lib:add_parameter("expandable","boolean","whether this lib should be expandable or not")
-darktable.register_lib:add_parameter("containers","table of "..my_tostring(types.dt_lua_view_t).." => [ "..my_tostring(types.dt_ui_container_t),", int ]","A table associating to each view containing the lib the corresponding container and position")
+darktable.register_lib:add_parameter("containers","table of "..my_tostring(types.dt_lua_view_t).." => [ "..my_tostring(types.dt_ui_container_t)..", int ]","A table associating to each view containing the lib the corresponding container and position")
 darktable.register_lib:add_parameter("widget",types.lua_widget,"The widget to display in the lib")
 
 
