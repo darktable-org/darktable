@@ -2136,6 +2136,16 @@
 			<Hint name="real_bpp" value="16"/>
 		</Hints>
 	</Camera>
+	<Camera make="NIKON" model="COOLPIX P340" decoder_version="5">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="200" white="3800"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="COOLPIX A">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
