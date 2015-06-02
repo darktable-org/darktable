@@ -112,7 +112,8 @@
 	[<emphasis><link linkend="darktable_register_storage_store">store</link></emphasis> : function], 
 	[<emphasis><link linkend="darktable_register_storage_finalize">finalize</link></emphasis> : function], 
 	[<emphasis><link linkend="darktable_register_storage_supported">supported</link></emphasis> : function], 
-	[<emphasis><link linkend="darktable_register_storage_initialize">initialize</link></emphasis> : function]
+	[<emphasis><link linkend="darktable_register_storage_initialize">initialize</link></emphasis> : function], 
+	[<emphasis><link linkend="darktable_register_storage_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>]
 )</synopsis>
 <para>This function will add a new storage implemented in Lua.</para>
 <para>A storage is a module that is responsible for handling images once they have been generated during export. Examples of core storages include filesystem, e-mail, facebook...</para>
@@ -308,6 +309,12 @@
 
 
 </variablelist>
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_storage_widget"><term>[widget]</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>A widget to display in the export section of darktable's UI</para>
+
 </listitem></varlistentry>
 
 </variablelist>
@@ -5834,6 +5841,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <listitem><para>DT_COLLECTION_PROP_PUBLISHER</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_RIGHTS</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_LENS</para></listitem>
+<listitem><para>DT_COLLECTION_PROP_FOCAL_LENGTH</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_ISO</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_APERTURE</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_FILENAME</para></listitem>

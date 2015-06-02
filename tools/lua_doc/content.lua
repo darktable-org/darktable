@@ -128,6 +128,7 @@ tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra d
 tmp_node:add_return("table or nil",[[The modified table of images to export or nil]]..para()..
 [[If nil (or nothing) is returned, the original list of images will be exported]]..para()..
 [[If a table of images is returned, that table will be used instead. The table can be empty. The images parameter can be modified and returned]])
+darktable.register_storage:add_parameter("widget",types.lua_widget,[[A widget to display in the export section of darktable's UI]]):set_attribute("optional",true)
 darktable.register_lib:set_text("Register a new lib object. A lib is a graphical element of darktable's user interface")
 darktable.register_lib:add_parameter("plugin_name","string","A unique name for your library")
 darktable.register_lib:add_parameter("name","string","A user-visible name for your library")
