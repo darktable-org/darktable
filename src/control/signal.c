@@ -54,61 +54,61 @@ static GType image_export_arg[]
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   /* Global signals */
   { "dt-global-mouse-over-image-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
+    NULL, NULL, FALSE }, // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
 
   { "dt-control-redraw-all", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_CONTROL_REDRAW_ALL
+    NULL, NULL, FALSE }, // DT_SIGNAL_CONTROL_REDRAW_ALL
   { "dt-control-redraw-center", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_CONTROL_REDRAW_CENTER
+    NULL, NULL, FALSE }, // DT_SIGNAL_CONTROL_REDRAW_CENTER
 
   { "dt-viewmanager-view-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2,
-    pointer_2arg, NULL, false }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
+    pointer_2arg, NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
   { "dt-viewmanager-filmstrip-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL }, // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
 
   { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_COLLECTION_CHANGED
+    NULL, NULL, FALSE }, // DT_SIGNAL_COLLECTION_CHANGED
   { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_TAG_CHANGED
+    NULL, NULL, FALSE }, // DT_SIGNAL_TAG_CHANGED
   { "dt-style-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_STYLE_CHANGED
+    NULL, NULL, FALSE }, // DT_SIGNAL_STYLE_CHANGED
   { "dt-filmrolls-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_FILMROLLS_CHANGED
+    NULL, NULL, FALSE }, // DT_SIGNAL_FILMROLLS_CHANGED
   { "dt-filmrolls-imported", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1,
-    uint_arg, NULL, false }, // DT_SIGNAL_FILMROLLS_IMPORTED
+    uint_arg, NULL, FALSE }, // DT_SIGNAL_FILMROLLS_IMPORTED
   { "dt-filmrolls-removed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_FILMROLLS_REMOVED
+    NULL, NULL, FALSE }, // DT_SIGNAL_FILMROLLS_REMOVED
 
 
   /* Develop related signals */
   { "dt-develop-initialized", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_DEVELOP_INITIALIZED
+    NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_INITIALIZED
   { "dt-develop-mipmap-updated", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
+    NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
   { "dt-develop-preview-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
+    NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
   { "dt-develop-ui-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
+    NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
   { "dt-develop-history-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_HISTORY_CHANGE
+    NULL, NULL, FALSE }, // DT_SIGNAL_HISTORY_CHANGE
   { "dt-develop-image-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
+    NULL, NULL, FALSE }, // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
   { "dt-control-profile-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_CONTROL_PROFILE_CHANGED
+    NULL, NULL, FALSE }, // DT_SIGNAL_CONTROL_PROFILE_CHANGED
   { "dt-image-import", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1,
-    uint_arg, NULL, false }, // DT_SIGNAL_IMAGE_IMPORT
+    uint_arg, NULL, FALSE }, // DT_SIGNAL_IMAGE_IMPORT
   { "dt-image-export-tmpfile", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 6,
-    image_export_arg, NULL, true }, // DT_SIGNAL_IMAGE_EXPORT_TMPFILE
+    image_export_arg, NULL, TRUE }, // DT_SIGNAL_IMAGE_EXPORT_TMPFILE
   { "dt-imageio-storage-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_IMAGEIO_STORAGE_CHANGE
+    NULL, NULL, FALSE }, // DT_SIGNAL_IMAGEIO_STORAGE_CHANGE
 
 
   { "dt-preferences-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_PREFERENCES_CHANGE
+    NULL, NULL, FALSE }, // DT_SIGNAL_PREFERENCES_CHANGE
 
 
   { "dt-camera-detected", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
-    NULL, NULL, false }, // DT_SIGNAL_CAMERA_DETECTED,
+    NULL, NULL, FALSE }, // DT_SIGNAL_CAMERA_DETECTED,
 
 };
 
@@ -176,7 +176,7 @@ gboolean _async_com_callback(gpointer data)
 
   g_cond_signal(&communication->end_cond);
   g_mutex_unlock(&communication->end_mutex);
-  return false;
+  return FALSE;
 } 
 
 void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal, ...)
