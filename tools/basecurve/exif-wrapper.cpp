@@ -16,7 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <exiv2/exiv2.hpp>
+#include <exiv2/exif.hpp>
+#include <exiv2/image.hpp>
 
 #include <cstdio>
 #include <cassert>
