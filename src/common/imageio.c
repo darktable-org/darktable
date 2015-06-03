@@ -582,7 +582,20 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       return 1;
     }
 
-    //  Add each params
+    // remove everything above history_end
+    GList *history = g_list_nth(dev.history, dev.history_end);
+    while(history)
+    {
+      GList *next = g_list_next(history);
+      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+      free(hist->params);
+      free(hist->blend_params);
+      free(history->data);
+      dev.history = g_list_delete_link(dev.history, history);
+      history = next;
+    }
+
+    // Add each params
     while(stls)
     {
       dt_style_item_t *s = (dt_style_item_t *)stls->data;
