@@ -2365,6 +2365,14 @@ const wb_data wb_preset[] =
   { "NIKON", "COOLPIX P330", Cloudy, 0,		{ 1.929688, 1, 1.480469, 0 }},
   { "NIKON", "COOLPIX P330", Flash, 0,		{ 2.039063, 1, 1.578125, 0 }},
 
+  { "NIKON", "COOLPIX P340", DirectSunlight, 0,		{ 1.835938, 1, 1.632813, 0 } },
+  { "NIKON", "COOLPIX P340", Incandescent, 0,		{ 1.199219, 1, 2.691406, 0 } },
+  { "NIKON", "COOLPIX P340", CoolWhiteFluorescent, 0,	{ 1.914063, 1, 2.386719, 0 } },
+  { "NIKON", "COOLPIX P340", DayWhiteFluorescent, 0,	{ 1.855469, 1, 1.718750, 0 } },
+  { "NIKON", "COOLPIX P340", DaylightFluorescent, 0,	{ 2.093750, 1, 1.371094, 0 } },
+  { "NIKON", "COOLPIX P340", Cloudy, 0,			{ 1.976563, 1, 1.457031, 0 } },
+  { "NIKON", "COOLPIX P340", Flash, 0,			{ 2.085938, 1, 1.554688, 0 } },
+
   // Fine tuning is from A6 to B6 on amber-blue.
   { "NIKON", "COOLPIX P7100", DirectSunlight, -6, { 1.7908, 1, 1.9042, 0 } },
   { "NIKON", "COOLPIX P7100", DirectSunlight, 0, { 1.6500, 1, 2.1349, 0 } },
