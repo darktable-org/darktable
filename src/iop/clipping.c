@@ -47,14 +47,13 @@ DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
-// number of gui guides in combo box
-#define NUM_GUIDES 8
-
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
 {
-  FLAG_FLIP_HORIZONTAL = 1,
-  FLAG_FLIP_VERTICAL = 2
+  FLAG_FLIP_NONE = 0,
+  FLAG_FLIP_HORIZONTAL = 1<<0,
+  FLAG_FLIP_VERTICAL = 1<<1,
+  FLAG_FLIP_BOTH = FLAG_FLIP_HORIZONTAL|FLAG_FLIP_VERTICAL
 } dt_iop_clipping_flags_t;
 
 typedef struct dt_iop_clipping_aspect_t
@@ -65,14 +64,16 @@ typedef struct dt_iop_clipping_aspect_t
 
 typedef enum dt_iop_clipping_guide_t
 {
-  GUIDE_NONE = 0,
+  GUIDE_MIN = 0,
+  GUIDE_NONE = GUIDE_MIN,
   GUIDE_GRID,
   GUIDE_THIRD,
   GUIDE_METERING,
   GUIDE_PERSPECTIVE,
   GUIDE_DIAGONAL,
   GUIDE_TRIANGL,
-  GUIDE_GOLDEN
+  GUIDE_GOLDEN,
+  GUIDE_MAX
 } dt_iop_clipping_guide_t;
 
 typedef struct dt_iop_clipping_params_t
@@ -1737,10 +1738,8 @@ static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
   key_swap_callback(NULL, NULL, 0, 0, self);
 }
 
-static void guides_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
+static void guides_presets_set_visibility(dt_iop_clipping_gui_data_t *g, int which)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  int which = dt_bauhaus_combobox_get(combo);
   if(which == GUIDE_TRIANGL || which == GUIDE_GOLDEN)
     gtk_widget_set_visible(g->flip_guides, TRUE);
   else
@@ -1751,6 +1750,14 @@ static void guides_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   else
     gtk_widget_set_visible(g->golden_extras, FALSE);
 
+}
+
+static void guides_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  int which = dt_bauhaus_combobox_get(combo);
+  guides_presets_set_visibility(g, which);
+
   // remember setting
   dt_conf_set_int("plugins/darkroom/clipping/guide", which);
 
@@ -1758,9 +1765,25 @@ static void guides_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   dt_control_queue_redraw_center();
 }
 
-static void guides_button_changed(GtkWidget *combo, dt_iop_module_t *self)
+static void guides_flip_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
-  // redraw guides
+  int flip = dt_bauhaus_combobox_get(combo);
+
+  // remember setting
+  dt_conf_set_int("plugins/darkroom/clipping/flip_guides", flip);
+
+  dt_iop_request_focus(self);
+  dt_control_queue_redraw_center();
+}
+
+static void guides_golden_extras_changed(GtkWidget *combo, dt_iop_module_t *self)
+{
+  int golden_extra = dt_bauhaus_combobox_get(combo);
+
+  // remember setting
+  dt_conf_set_int("plugins/darkroom/clipping/golden_extras", golden_extra);
+
+  dt_iop_request_focus(self);
   dt_control_queue_redraw_center();
 }
 
@@ -2005,7 +2028,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->guide_lines, _("golden mean"));
 
   int guide = dt_conf_get_int("plugins/darkroom/clipping/guide");
-  if(guide < 0 || guide >= NUM_GUIDES) guide = 0;
+  if(guide < GUIDE_MIN || guide >= GUIDE_MAX) guide = GUIDE_MIN;
   dt_bauhaus_combobox_set(g->guide_lines, guide);
 
   g_object_set(G_OBJECT(g->guide_lines), "tooltip-text",
@@ -2020,8 +2043,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->flip_guides, _("vertically"));
   dt_bauhaus_combobox_add(g->flip_guides, _("both"));
   g_object_set(G_OBJECT(g->flip_guides), "tooltip-text", _("flip guides"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->flip_guides), "value-changed", G_CALLBACK(guides_button_changed), self);
+  g_signal_connect(G_OBJECT(g->flip_guides), "value-changed", G_CALLBACK(guides_flip_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->flip_guides, TRUE, TRUE, 0);
+
+  int flip_guides = dt_conf_get_int("plugins/darkroom/clipping/flip_guides");
+  if(flip_guides < FLAG_FLIP_NONE || flip_guides >= FLAG_FLIP_BOTH) flip_guides = FLAG_FLIP_NONE;
+  dt_bauhaus_combobox_set(g->flip_guides, flip_guides);
 
   g->golden_extras = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->golden_extras, NULL, _("extra"));
@@ -2030,13 +2057,16 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->golden_extras, _("golden spiral"));
   dt_bauhaus_combobox_add(g->golden_extras, _("all"));
   g_object_set(G_OBJECT(g->golden_extras), "tooltip-text", _("show some extra guides"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->golden_extras), "value-changed", G_CALLBACK(guides_button_changed), self);
+  g_signal_connect(G_OBJECT(g->golden_extras), "value-changed", G_CALLBACK(guides_golden_extras_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->golden_extras, TRUE, TRUE, 0);
 
-  gtk_widget_set_visible(g->flip_guides, FALSE);
-  gtk_widget_set_visible(g->golden_extras, FALSE);
+  int golden_extras = dt_conf_get_int("plugins/darkroom/clipping/golden_extras");
+  if(golden_extras < 0 || golden_extras >= 4) golden_extras = 0;
+  dt_bauhaus_combobox_set(g->golden_extras, golden_extras);
+
   gtk_widget_set_no_show_all(g->flip_guides, TRUE);
   gtk_widget_set_no_show_all(g->golden_extras, TRUE);
+  guides_presets_set_visibility(g, guide);
 }
 
 static void free_aspect(gpointer data)
@@ -2250,9 +2280,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_translate(cr, ((right - left) / 2 + left), ((bottom - top) / 2 + top));
 
     // Flip horizontal.
-    if(guide_flip & 1) cairo_scale(cr, -1, 1);
+    if(guide_flip & FLAG_FLIP_HORIZONTAL) cairo_scale(cr, -1, 1);
     // Flip vertical.
-    if(guide_flip & 2) cairo_scale(cr, 1, -1);
+    if(guide_flip & FLAG_FLIP_VERTICAL) cairo_scale(cr, 1, -1);
 
     dt_guides_draw_harmonious_triangles(cr, left, top, right, bottom, dst);
     cairo_stroke(cr);
@@ -2267,9 +2297,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_translate(cr, ((right - left) / 2 + left), ((bottom - top) / 2 + top));
 
     // Flip horizontal.
-    if(guide_flip & 1) cairo_scale(cr, -1, 1);
+    if(guide_flip & FLAG_FLIP_HORIZONTAL) cairo_scale(cr, -1, 1);
     // Flip vertical.
-    if(guide_flip & 2) cairo_scale(cr, 1, -1);
+    if(guide_flip & FLAG_FLIP_VERTICAL) cairo_scale(cr, 1, -1);
 
     float w = cwidth;
     float h = cheight;
