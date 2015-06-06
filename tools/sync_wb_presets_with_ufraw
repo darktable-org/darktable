@@ -1,0 +1,123 @@
+#!/usr/bin/env ruby
+
+require 'net/http'
+require 'nokogiri'
+
+DTPRESETS=File.expand_path("../src/external/wb_presets.c", File.dirname(__FILE__))
+UFRAWPRESETS=URI('http://ufraw.cvs.sourceforge.net/viewvc/ufraw/ufraw/wb_presets.c?content-type=text%2Fplain')
+CAMERAS=File.expand_path("../src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
+
+MANUAL_MUNGERS = {
+  ["EASTMAN KODAK COMPANY", "KODAK EASYSHARE Z1015 IS DIGITAL CAMERA"] => ["KODAK", "EASYSHARE Z1015 IS"],
+  ["KONICA MINOLTA", "ALPHA 5D"] => ["MINOLTA", "DYNAX 5D"],
+  ["KONICA MINOLTA", "MAXXUM 5D"] => ["MINOLTA", "DYNAX 5D"],
+  ["KONICA MINOLTA", "ALPHA 7D"] => ["MINOLTA", "DYNAX 7D"],
+  ["KONICA MINOLTA", "MAXXUM 7D"] => ["MINOLTA", "DYNAX 7D"],
+  ["Kodak", "DCS Pro SLR/n"] => ["KODAK", "DCS Pro SLR/n"],
+  ["Leica Camera AG", "M8 Digital Camera"] => ["Leica Camera AG", "M8 Digital Camera"],
+}
+
+$stderr.puts "Fetching ufraw presets from their CVS, may take a moment..."
+ufraw_presets = {}
+Net::HTTP.get(UFRAWPRESETS).each_line do |line|
+  if line[0..2] == "  {"
+    lineparts = line.split('"')
+    cameraname = [lineparts[1], lineparts[3]]
+    if cameraname.join.strip != ""
+      ufraw_presets[cameraname] ||= []
+      ufraw_presets[cameraname] << line
+    end
+  end
+end
+
+dt_presets = {}
+File.open(DTPRESETS) do |f|
+  f.each do |line|
+    if line[0..2] == "  {"
+      lineparts = line.split('"')
+      cameraname = [lineparts[1], lineparts[3]]
+      dt_presets[cameraname] ||= []
+      dt_presets[cameraname] << line
+    end
+  end
+end
+
+def munge_make_model(make, model)
+  return MANUAL_MUNGERS[[make,model]] if MANUAL_MUNGERS[[make,model]]
+
+  if make.split[0] == model.split[0]
+    [make.split[0], model[make.split[0].size..-1].strip]
+  elsif model[0..6] == "FinePix"
+    [make.split[0], model[7..-1].strip]
+  elsif make.split[0..1].join(" ").upcase == "KONICA MINOLTA"
+    [make.split[1], model.strip]
+  else
+    [make.split[0], model.strip]
+  end
+end
+
+forward_hash = {} # From EXIF to clean name (1:1)
+backward_hash = {} # From clean name to EXIF (1:N)
+File.open(CAMERAS) do |f|
+  xml_doc  = Nokogiri::XML(f)
+  xml_doc.css("Camera").each do |c|
+    clean_maker = exif_maker = c.attribute("make").value
+    clean_model = exif_model = c.attribute("model").value
+    if c.css("ID")[0]
+      clean_maker = c.css("ID")[0].attribute("make").value
+      clean_model = c.css("ID")[0].attribute("model").value
+    end
+    clean_id = [clean_maker, clean_model]
+    exif_id = munge_make_model(exif_maker, exif_model)
+    forward_hash[exif_id] = clean_id
+    backward_hash[clean_id] ||= []
+    backward_hash[clean_id] << exif_id
+    c.css("Alias").each do |a|
+      exif_model = a.content
+      exif_id = munge_make_model(exif_maker, exif_model)
+      forward_hash[exif_id] = clean_id
+      backward_hash[clean_id] << exif_id
+    end
+  end
+end
+
+grab_from_ufraw = []
+forward_hash.each do |exif_name, clean_name|
+  if(ufraw_presets[exif_name] && !dt_presets[clean_name])
+    grab_from_ufraw << [exif_name, clean_name]
+  end
+end
+
+submit_to_ufraw = []
+backward_hash.each do |clean_name, exif_names|
+  if dt_presets[clean_name] 
+    exif_names.each do |exif_name|
+      if !ufraw_presets[exif_name]
+        submit_to_ufraw << [clean_name, exif_name]
+      end
+    end
+  end
+end
+
+def change_makermodel(line, make, model)
+  lineparts = line.split('"')
+  lineparts[1] = make
+  lineparts[3] = model
+  lineparts.join('"')
+end
+
+$stderr.puts "Found #{grab_from_ufraw.size} cameras to copy ufraw->darktable"
+grab_from_ufraw.each do |exif_name, clean_name|
+  ufraw_presets[exif_name].each do |line|
+    puts change_makermodel(line, *clean_name)
+  end
+  puts ""
+end
+
+$stderr.puts "Found #{submit_to_ufraw.size} cameras to submit darktable->ufraw"
+submit_to_ufraw.each do |clean_name, exif_name|
+  dt_presets[clean_name].each do |line|
+    puts change_makermodel(line, *exif_name)
+  end
+  puts ""
+end
