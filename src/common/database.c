@@ -981,6 +981,7 @@ dt_database_t *dt_database_init(const char *alternative)
     {
       gchar *pid = g_strdup_printf("%d", getpid());
       if(write(fd, pid, strlen(pid) + 1) > -1) db->lock_acquired = TRUE;
+      g_free(pid);
       close(fd);
     }
     else // the lockfile already exists - see if it's a stale one left over from a crashed instance
@@ -1049,6 +1050,7 @@ dt_database_t *dt_database_init(const char *alternative)
     sqlite3_close(db->handle);
     g_free(dbname);
     g_free(db->lockfile);
+    g_free(db->dbfilename);
     g_free(db);
     return NULL;
   }
@@ -1181,6 +1183,7 @@ void dt_database_destroy(const dt_database_t *db)
   sqlite3_close(db->handle);
   unlink(db->lockfile);
   g_free(db->lockfile);
+  g_free(db->dbfilename);
   g_free((dt_database_t *)db);
 }
 
