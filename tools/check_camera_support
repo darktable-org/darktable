@@ -17,7 +17,7 @@ end
 matrix_mode = (ARGV[0] == "--matrix")
 verbose_mode = (ARGV[0] == "--verbose")
 
-rawspeed_cameras = []
+rawspeed_cameras = {}
 rawspeed_aliases = {}
 File.open(CAMERAS) do |f|
   xml_doc  = Nokogiri::XML(f)
@@ -31,7 +31,7 @@ File.open(CAMERAS) do |f|
     id = "#{maker} #{model}"
     supported = !c.attribute("supported") || c.attribute("supported").value == "yes"
     if supported
-      rawspeed_cameras << id
+      rawspeed_cameras[id] = 0
       rawspeed_aliases[id] = [id]
       c.css("Alias").each do |a|
         model = a.content
@@ -42,6 +42,7 @@ File.open(CAMERAS) do |f|
     end
   end
 end
+rawspeed_cameras = rawspeed_cameras.keys
 
 coeffs_cameras = {}
 File.open(COEFFS) do |f|
