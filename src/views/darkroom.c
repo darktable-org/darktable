@@ -528,6 +528,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   {
     // clear history of old image
     free(((dt_dev_history_item_t *)dev->history->data)->params);
+    free(((dt_dev_history_item_t *)dev->history->data)->blend_params);
     free((dt_dev_history_item_t *)dev->history->data);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
@@ -1314,6 +1315,8 @@ void leave(dt_view_t *self)
     // *)hist->params, *((float *)hist->params+1));
     free(hist->params);
     hist->params = NULL;
+    free(hist->blend_params);
+    hist->blend_params = NULL;
     free(hist);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
