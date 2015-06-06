@@ -9,8 +9,16 @@ WBPRESETS=File.expand_path("../src/external/wb_presets.c", File.dirname(__FILE__
 COLORMATRICES=File.expand_path("../src/common/colormatrices.c", File.dirname(__FILE__))
 NOISEPROFILES=File.expand_path("../data/noiseprofiles.json", File.dirname(__FILE__))
 
-rawspeed_cameras = []
+if ARGV.size > 1 || (ARGV.size == 1) && (!["--verbose","--matrix"].include? ARGV[0])
+  $stderr.puts "Usage: check_camera_support [--verbose] [--matrix]"
+  exit 2
+end
 
+matrix_mode = (ARGV[0] == "--matrix")
+verbose_mode = (ARGV[0] == "--verbose")
+
+rawspeed_cameras = []
+rawspeed_aliases = {}
 File.open(CAMERAS) do |f|
   xml_doc  = Nokogiri::XML(f)
   xml_doc.css("Camera").each do |c|
@@ -24,15 +32,22 @@ File.open(CAMERAS) do |f|
     supported = !c.attribute("supported") || c.attribute("supported").value == "yes"
     if supported
       rawspeed_cameras << id
+      rawspeed_aliases[id] = [id]
+      c.css("Alias").each do |a|
+        model = a.content
+        model = a.attribute("id").value if a.attribute("id")
+        aliasid = "#{maker} #{model}"
+        rawspeed_aliases[id] << aliasid if aliasid != id
+      end
     end
   end
 end
 
-coeffs_cameras = []
+coeffs_cameras = {}
 File.open(COEFFS) do |f|
   f.each do |line|
     if line[0..4] == "    {"
-      coeffs_cameras << line.split('"')[1]
+      coeffs_cameras[line.split('"')[1]] = 0
     end
   end
 end
@@ -42,62 +57,73 @@ File.open(WBPRESETS) do |f|
   f.each do |line|
     if line[0..2] == "  {"
       lineparts = line.split('"')
-      presets_cameras["#{lineparts[1]} #{lineparts[3]}"] = true
+      presets_cameras["#{lineparts[1]} #{lineparts[3]}"] = 0
     end
   end
 end
-presets_cameras = presets_cameras.keys
 
-colormatrices_cameras = []
+colormatrices_cameras = {}
 File.open(COLORMATRICES) do |f|
   f.each do |line|
     if line[0..2] == "  {"
-      colormatrices_cameras << line.split('"')[1]
+      colormatrices_cameras[line.split('"')[1]] = 0
     end
   end
 end
 
-noiseprofiles_cameras = []
+noiseprofiles_cameras = {}
 JSON.parse(File.read(NOISEPROFILES))['noiseprofiles'].each do |mak|
   maker = mak['maker']
   mak['models'].each do |mod|
     model = mod['model']
-    noiseprofiles_cameras << "#{maker} #{model}"
+    noiseprofiles_cameras["#{maker} #{model}"] = 0
   end
 end
 
-puts "Found #{rawspeed_cameras.size} cameras #{coeffs_cameras.size} adobe_coeffs #{presets_cameras.size} wb_coeffs #{colormatrices_cameras.size} colormatrices #{noiseprofiles_cameras.size} noise profiles"
-
-def compare_lists(name, cameras, db)
-  dbhash = {}
-  db.each {|c| dbhash[c] = 0}
-
+def compare_lists(name, cameras, db, verbose_miss, verbose_nomatch)
   miss_cams = []
   cameras.each do |c|
-    if !dbhash[c]
+    if !db[c]
       miss_cams << c
     else
-      dbhash[c] += 1
+      db[c] += 1
     end
   end
 
   miss_db = []
-  dbhash.each do |c, num|
+  db.each do |c, num|
     if num == 0
       miss_db << c
     end
   end
 
   puts "For #{name} found #{miss_cams.size} cameras missing and #{miss_db.size} entries for no cam"
-
-#  puts "\nMissing Cams\n"
-#  miss_cams.each {|c| puts c}
-
-#  puts "\nUnmatched Cams\n"
-#  miss_db.each {|c| puts c}
+  miss_cams.each {|c| puts "  MISS: #{c}"} if verbose_miss
+  miss_db.each {|c| puts "  NOMATCH: #{c}"} if verbose_nomatch
 end
 
-compare_lists("adobe_coeffs", rawspeed_cameras, coeffs_cameras)
-compare_lists("wb_presets", rawspeed_cameras, presets_cameras)
-compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras)
-compare_lists("noiseprofiles", rawspeed_cameras, noiseprofiles_cameras)
+if (!matrix_mode)
+  puts "Found #{rawspeed_cameras.size} cameras #{coeffs_cameras.size} adobe_coeffs #{presets_cameras.size} wb_coeffs #{colormatrices_cameras.size} colormatrices #{noiseprofiles_cameras.size} noise profiles"
+  compare_lists("adobe_coeffs", rawspeed_cameras, coeffs_cameras, true, verbose_mode)
+  compare_lists("wb_presets", rawspeed_cameras, presets_cameras, verbose_mode, true)
+  compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras, verbose_mode, true)
+  compare_lists("noiseprofiles", rawspeed_cameras, noiseprofiles_cameras, verbose_mode, true)
+else
+  puts "<table><tbody>"
+  puts "  <tr class=\"odd\"><th>Camera</th><th>WB Presets</th><th>Noise Profile</th><th>Custom Matrix</th></tr>"
+  i = 1
+  rawspeed_cameras.sort.each do |camera|
+    rawspeed_aliases[camera].each do |al|
+      i += 1
+      line_class = i%2 == 0 ? "even" : "odd"
+      $stdout.write "  <tr class=\"#{line_class}\">"
+      $stdout.write "<td>#{al}</td>"
+      [presets_cameras, noiseprofiles_cameras, colormatrices_cameras].each do |db|
+        value = db[camera] ? "Yes" : "<strong>NO</strong>"
+        $stdout.write "<td>#{value}</td>"
+      end
+      $stdout.write "</tr>\n"
+    end
+  end
+  puts "</tbody></table>"
+end
