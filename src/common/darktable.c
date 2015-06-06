@@ -981,7 +981,10 @@ void dt_cleanup()
 
   dt_database_destroy(darktable.db);
 
-  dt_bauhaus_cleanup();
+  if(init_gui)
+  {
+    dt_bauhaus_cleanup();
+  }
 
   dt_capabilities_cleanup();
 
