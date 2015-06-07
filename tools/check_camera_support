@@ -156,7 +156,7 @@ if (!matrix_mode)
   compare_lists("samples", rawspeed_cameras, samples_cameras, verbose_mode, !quiet_mode) if samplesdir
 else
   puts "<table><tbody>"
-  puts "  <tr class=\"odd\"><th>Camera</th><th>Sample</th><th>WB Presets</th><th>Noise Profile</th><th>Custom Matrix</th></tr>"
+  puts "  <tr class=\"odd\"><th>Camera</th><th>Raw Sample</th><th>WB Presets</th><th>Noise Profile</th><th>Custom Matrix</th></tr>"
   i = 1
   rawspeed_cameras.sort.each do |camera|
     rawspeed_aliases[camera].each do |al|
