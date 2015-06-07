@@ -9,21 +9,36 @@ WBPRESETS=File.expand_path("../src/external/wb_presets.c", File.dirname(__FILE__
 COLORMATRICES=File.expand_path("../src/common/colormatrices.c", File.dirname(__FILE__))
 NOISEPROFILES=File.expand_path("../data/noiseprofiles.json", File.dirname(__FILE__))
 
-if ARGV.size > 1 || (ARGV.size == 1) && (!["--verbose","--matrix"].include? ARGV[0])
-  $stderr.puts "Usage: check_camera_support [--verbose] [--matrix]"
-  exit 2
-end
+samplesdir = nil
+matrix_mode = false
+verbose_mode = false
+quiet_mode = false
 
-matrix_mode = (ARGV[0] == "--matrix")
-verbose_mode = (ARGV[0] == "--verbose")
+ARGV.each do |arg|
+  if arg == "--matrix"
+    matrix_mode = true
+  elsif arg == "--verbose"
+    verbose_mode = true
+  elsif arg == "--quiet"
+    quiet_mode = true
+  elsif samplesdir == nil && File.exists?(arg)
+    samplesdir = arg
+  else
+    $stderr.puts "Usage: check_camera_support [--verbose] [--matrix] <samples dir>"
+    exit 2
+  end
+end
 
 rawspeed_cameras = {}
 rawspeed_aliases = {}
+exif_name_map = {}
+exif_alias_map = {}
 File.open(CAMERAS) do |f|
   xml_doc  = Nokogiri::XML(f)
   xml_doc.css("Camera").each do |c|
-    maker = c.attribute("make").value
+    maker = exif_maker = c.attribute("make").value
     model = c.attribute("model").value
+    exif_id = "#{maker} #{model}"
     if c.css("ID")[0]
       maker = c.css("ID")[0].attribute("make").value
       model = c.css("ID")[0].attribute("model").value
@@ -33,11 +48,16 @@ File.open(CAMERAS) do |f|
     if supported
       rawspeed_cameras[id] = 0
       rawspeed_aliases[id] = [id]
+      exif_name_map[exif_id] = id
+      exif_alias_map[exif_id] = id
       c.css("Alias").each do |a|
         model = a.content
+        exif_id = "#{exif_maker} #{model}"
         model = a.attribute("id").value if a.attribute("id")
         aliasid = "#{maker} #{model}"
         rawspeed_aliases[id] << aliasid if aliasid != id
+        exif_name_map[exif_id] = id
+        exif_alias_map[exif_id] = aliasid
       end
     end
   end
@@ -81,6 +101,30 @@ JSON.parse(File.read(NOISEPROFILES))['noiseprofiles'].each do |mak|
   end
 end
 
+def get_exif_key(key, file)
+  IO.popen("exiv2 -g \"#{key}\" -Pt \"#{file}\" 2>/dev/null","r").read
+end
+
+samples_cameras = {}
+samples_alias_cameras = {}
+if samplesdir
+  Dir["#{samplesdir}/**/**/*"].each do |file|
+    if (File.file?(file))
+      maker = get_exif_key("Exif.Image.Make", file)
+      maker = maker[0..6] == "SAMSUNG" ? "SAMSUNG" : maker.strip
+      model = get_exif_key("Exif.Image.Model", file)
+      model = model[0..5] == "NX2000" ? "NX2000" : model.strip
+      if (maker != "" && model != "")
+        id = name = alias_name = "#{maker} #{model}"
+        name = exif_name_map[id] if exif_name_map[id]
+        alias_name = exif_alias_map[id] if exif_alias_map[id]
+        samples_cameras[name] = 0
+        samples_alias_cameras[alias_name] = 0
+      end
+    end
+  end
+end
+
 def compare_lists(name, cameras, db, verbose_miss, verbose_nomatch)
   miss_cams = []
   cameras.each do |c|
@@ -104,14 +148,15 @@ def compare_lists(name, cameras, db, verbose_miss, verbose_nomatch)
 end
 
 if (!matrix_mode)
-  puts "Found #{rawspeed_cameras.size} cameras #{coeffs_cameras.size} adobe_coeffs #{presets_cameras.size} wb_coeffs #{colormatrices_cameras.size} colormatrices #{noiseprofiles_cameras.size} noise profiles"
-  compare_lists("adobe_coeffs", rawspeed_cameras, coeffs_cameras, true, verbose_mode)
-  compare_lists("wb_presets", rawspeed_cameras, presets_cameras, verbose_mode, true)
-  compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras, verbose_mode, true)
-  compare_lists("noiseprofiles", rawspeed_cameras, noiseprofiles_cameras, verbose_mode, true)
+  puts "Found #{rawspeed_cameras.size} cameras #{coeffs_cameras.size} adobe_coeffs #{presets_cameras.size} wb_coeffs #{colormatrices_cameras.size} colormatrices #{noiseprofiles_cameras.size} noise profiles #{samples_cameras.size} samples"
+  compare_lists("adobe_coeffs", rawspeed_cameras, coeffs_cameras, !quiet_mode, verbose_mode)
+  compare_lists("wb_presets", rawspeed_cameras, presets_cameras, verbose_mode, !quiet_mode)
+  compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras, verbose_mode, !quiet_mode)
+  compare_lists("noiseprofiles", rawspeed_cameras, noiseprofiles_cameras, verbose_mode, !quiet_mode)
+  compare_lists("samples", rawspeed_cameras, samples_cameras, verbose_mode, !quiet_mode) if samplesdir
 else
   puts "<table><tbody>"
-  puts "  <tr class=\"odd\"><th>Camera</th><th>WB Presets</th><th>Noise Profile</th><th>Custom Matrix</th></tr>"
+  puts "  <tr class=\"odd\"><th>Camera</th><th>Sample</th><th>WB Presets</th><th>Noise Profile</th><th>Custom Matrix</th></tr>"
   i = 1
   rawspeed_cameras.sort.each do |camera|
     rawspeed_aliases[camera].each do |al|
@@ -119,8 +164,9 @@ else
       line_class = i%2 == 0 ? "even" : "odd"
       $stdout.write "  <tr class=\"#{line_class}\">"
       $stdout.write "<td>#{al}</td>"
-      [presets_cameras, noiseprofiles_cameras, colormatrices_cameras].each do |db|
-        value = db[camera] ? "Yes" : "<strong>NO</strong>"
+      [samples_alias_cameras[al], presets_cameras[camera],
+       noiseprofiles_cameras[camera], colormatrices_cameras[camera]].each do |value|
+        value = value ? "Yes" : "<strong>NO</strong>"
         $stdout.write "<td>#{value}</td>"
       end
       $stdout.write "</tr>\n"
