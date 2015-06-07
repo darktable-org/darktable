@@ -875,8 +875,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       {
         float pi[2], po[2];
 
-        pi[0] = roi_out->x - roi_out->scale * d->enlarge_x + roi_out->scale * d->cix + i;
-        pi[1] = roi_out->y - roi_out->scale * d->enlarge_y + roi_out->scale * d->ciy + j;
+        pi[0] = roi_out->x - roi_out->scale * d->enlarge_x + roi_out->scale * d->cix + i + 0.5f;
+        pi[1] = roi_out->y - roi_out->scale * d->enlarge_y + roi_out->scale * d->ciy + j + 0.5f;
 
         // transform this point using matrix m
         if(d->flip)
@@ -897,8 +897,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         po[0] += d->tx * roi_in->scale;
         po[1] += d->ty * roi_in->scale;
         if(d->k_apply == 1) keystone_backtransform(po, k_space, ma, mb, md, me, mg, mh, kxa, kya);
-        po[0] -= roi_in->x;
-        po[1] -= roi_in->y;
+        po[0] -= roi_in->x + 0.5f;
+        po[1] -= roi_in->y + 0.5f;
 
         dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, po[0], po[1], roi_in->width,
                                          roi_in->height, ch_width);
