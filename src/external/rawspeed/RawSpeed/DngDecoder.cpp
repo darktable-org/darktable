@@ -505,17 +505,9 @@ void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     mRaw->metadata.isoSpeed = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
   // Set the make and model
-  if (!(mRootIFD->hasEntryRecursive(MAKE) && mRootIFD->hasEntryRecursive(MODEL))) {
-    if (mRootIFD->hasEntryRecursive(UNIQUECAMERAMODEL)) {
-      string unique = mRootIFD->getEntryRecursive(UNIQUECAMERAMODEL)->getString();
-      mRaw->metadata.canonical_make = mRaw->metadata.canonical_model = unique;
-      mRaw->metadata.canonical_alias = mRaw->metadata.canonical_id = unique;
-      mRaw->metadata.make = mRaw->metadata.model = unique;
-    }
-  } else {
-    vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
-    string make = data[0]->getEntry(MAKE)->getString();
-    string model = data[0]->getEntry(MODEL)->getString();
+  if (mRootIFD->hasEntryRecursive(MAKE) && mRootIFD->hasEntryRecursive(MODEL)) {
+    string make = mRootIFD->getEntryRecursive(MAKE)->getString();
+    string model = mRootIFD->getEntryRecursive(MODEL)->getString();
     TrimSpaces(make);
     TrimSpaces(model);
     mRaw->metadata.make = make;
@@ -532,7 +524,11 @@ void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     } else {
       mRaw->metadata.canonical_make = make;
       mRaw->metadata.canonical_model = mRaw->metadata.canonical_alias = model;
-      mRaw->metadata.canonical_id = make + " " + model;
+      if (mRootIFD->hasEntryRecursive(UNIQUECAMERAMODEL)) {
+        mRaw->metadata.canonical_id = mRootIFD->getEntryRecursive(UNIQUECAMERAMODEL)->getString();
+      } else {
+        mRaw->metadata.canonical_id = make + " " + model;
+      }
     }
   }
 }
