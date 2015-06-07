@@ -5967,6 +5967,16 @@
 		<Crop x="28" y="0" width="-28" height="0"/>
 		<Sensor black="519" white="16250"/>
 	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F600EXR">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="34" y="0" width="-32" height="0"/>
+		<Sensor black="256" white="3900"/>
+	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F700">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
