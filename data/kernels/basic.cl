@@ -556,8 +556,8 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
 
   float2 pi, po;
   
-  pi.x = roi_out.x + x ;
-  pi.y = roi_out.y + y ;
+  pi.x = roi_out.x + x + 0.5f;
+  pi.y = roi_out.y + y + 0.5f;
   
   pi.x -= flip ? t.y * scale_out : t.x * scale_out;
   pi.y -= flip ? t.x * scale_out : t.y * scale_out;
@@ -571,8 +571,8 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
 
   if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
 
-  po.x -= roi_in.x;
-  po.y -= roi_in.y;
+  po.x -= roi_in.x + 0.5f;
+  po.y -= roi_in.y + 0.5f;
 
   const int ii = (int)po.x;
   const int jj = (int)po.y;
@@ -601,8 +601,8 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
 
   float2 pi, po;
   
-  pi.x = roi_out.x + x ;
-  pi.y = roi_out.y + y ;
+  pi.x = roi_out.x + x + 0.5f;
+  pi.y = roi_out.y + y + 0.5f;
   
   pi.x -= flip ? t.y * scale_out : t.x * scale_out;
   pi.y -= flip ? t.x * scale_out : t.y * scale_out;
@@ -616,8 +616,8 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
 
   if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
 
-  po.x -= roi_in.x;
-  po.y -= roi_in.y;
+  po.x -= roi_in.x + 0.5f;
+  po.y -= roi_in.y + 0.5f;
 
   int tx = po.x;
   int ty = po.y;
@@ -662,8 +662,8 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
 
   float2 pi, po;
   
-  pi.x = roi_out.x + x ;
-  pi.y = roi_out.y + y ;
+  pi.x = roi_out.x + x + 0.5f;
+  pi.y = roi_out.y + y + 0.5f;
   
   pi.x -= flip ? t.y * scale_out : t.x * scale_out;
   pi.y -= flip ? t.x * scale_out : t.y * scale_out;
@@ -677,8 +677,8 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
 
   if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
 
-  po.x -= roi_in.x;
-  po.y -= roi_in.y;
+  po.x -= roi_in.x + 0.5f;
+  po.y -= roi_in.y + 0.5f;
 
   int tx = po.x;
   int ty = po.y;
@@ -724,8 +724,8 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
 
   float2 pi, po;
   
-  pi.x = roi_out.x + x ;
-  pi.y = roi_out.y + y ;
+  pi.x = roi_out.x + x + 0.5f;
+  pi.y = roi_out.y + y + 0.5f;
   
   pi.x -= flip ? t.y * scale_out : t.x * scale_out;
   pi.y -= flip ? t.x * scale_out : t.y * scale_out;
@@ -739,8 +739,8 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
 
   if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
 
-  po.x -= roi_in.x ;
-  po.y -= roi_in.y ;
+  po.x -= roi_in.x + 0.5f;
+  po.y -= roi_in.y + 0.5f;
 
   int tx = (int)po.x;
   int ty = (int)po.y;
