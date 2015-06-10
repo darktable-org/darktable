@@ -330,6 +330,7 @@
 	<emphasis><link linkend="darktable_register_lib_plugin_name">plugin_name</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_register_lib_name">name</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_register_lib_expandable">expandable</link></emphasis> : boolean, 
+	<emphasis><link linkend="darktable_register_lib_resetable">resetable</link></emphasis> : boolean, 
 	<emphasis><link linkend="darktable_register_lib_containers">containers</link></emphasis> : table of <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link> => [ <link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link>, int ], 
 	<emphasis><link linkend="darktable_register_lib_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
@@ -351,6 +352,12 @@
 <varlistentry id="darktable_register_lib_expandable"><term>expandable</term><listitem>
 <synopsis>boolean</synopsis>
 <para>whether this lib should be expandable or not</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_resetable"><term>resetable</term><listitem>
+<synopsis>boolean</synopsis>
+<para>whether this lib has a reset button or not</para>
 
 </listitem></varlistentry>
 
@@ -6039,17 +6046,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The widgets contained by the box</para>
 <para>You can append widgets by adding them at the end of the list</para>
 <para>You can remove widgets by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6591,17 +6588,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_lua_combobox_changed_callback">
