@@ -307,6 +307,22 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
       img->longitude = _gps_string_to_number(pos->toString().c_str());
     }
 
+    /* read lens type from Xmp.exifEX.LensModel */
+    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exifEX.LensModel"))) != xmpData.end())
+    {
+      // lens model
+      char *lens = strdup(pos->toString().c_str());
+      char *adr =  lens;
+      if(strncmp(lens, "lang=", 5) == 0)
+      {
+        lens = strchr(lens, ' ');
+        if(lens != NULL) lens++;
+      }
+      // no need to do any Unicode<->locale conversion, the field is specified as ASCII
+      g_strlcpy(img->exif_lens, lens, sizeof(img->exif_lens));
+      free(adr);
+    }
+
     return true;
   }
   catch(Exiv2::AnyError &e)
@@ -2172,6 +2188,7 @@ void dt_exif_init()
   // this has te stay with the old url (namespace already propagated outside dt)
   Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
   Exiv2::XmpProperties::registerNs("http://ns.adobe.com/lightroom/1.0/", "lr");
+  Exiv2::XmpProperties::registerNs("http://cipa.jp/exif/1.0/", "exifEX");
 }
 
 void dt_exif_cleanup()
