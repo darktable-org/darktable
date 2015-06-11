@@ -39,7 +39,7 @@ int dt_exif_read_blob(uint8_t *blob, const char *path, const int imgid, const in
                       const int out_height, const int dng_mode);
 
 /** write blob to file exif. merges with existing exif information.*/
-int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path);
+int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
 /** write xmp sidecar file. */
 int dt_exif_xmp_write(const int imgid, const char *filename);

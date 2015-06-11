@@ -224,7 +224,7 @@ static inline void dt_imageio_write_dng(const char *filename, const float *const
     k = fwrite(pixel, sizeof(float), wd * ht, f);
     if(k != wd * ht) fprintf(stderr, "[dng_write] Error writing image data to %s\n", filename);
     fclose(f);
-    if(exif) dt_exif_write_blob(exif, exif_len, filename);
+    if(exif) dt_exif_write_blob(exif, exif_len, filename, 0);
   }
 }
 

@@ -900,7 +900,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
   }
 }
 
-int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path)
+int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed)
 {
   try
   {
@@ -932,6 +932,15 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path)
     if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.JPEGInterchangeFormatLength")))
        != imgExifData.end())
       imgExifData.erase(it);
+
+    // only compressed images may set PixelXDimension and PixelYDimension
+    if(!compressed)
+    {
+      if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Photo.PixelXDimension"))) != imgExifData.end())
+        imgExifData.erase(it);
+      if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Photo.PixelYDimension"))) != imgExifData.end())
+        imgExifData.erase(it);
+    }
 
     imgExifData.sortByTag();
     image->writeMetadata();
