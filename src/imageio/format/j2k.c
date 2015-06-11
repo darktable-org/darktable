@@ -511,7 +511,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   opj_destroy_compress(cinfo);
 
   /* add exif data blob. seems to not work for j2k files :( */
-  if(exif && j2k->format == JP2_CFMT) rc = dt_exif_write_blob(exif, exif_len, filename);
+  if(exif && j2k->format == JP2_CFMT) rc = dt_exif_write_blob(exif, exif_len, filename, 1);
 
   /* free image data */
   opj_image_destroy(image);

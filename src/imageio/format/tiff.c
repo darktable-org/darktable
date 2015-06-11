@@ -223,7 +223,7 @@ exit:
   }
   if(!rc && exif)
   {
-    rc = dt_exif_write_blob(exif, exif_len, filename);
+    rc = dt_exif_write_blob(exif, exif_len, filename, d->compress > 0);
     // Until we get symbolic error status codes, if rc is 1, return 0
     rc = (rc == 1) ? 0 : 1;
   }
