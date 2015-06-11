@@ -411,10 +411,9 @@ static int register_storage(lua_State *L)
   }
   else
   {
-    lua_pushvalue(L, 7);
-    lua_setfield(L, -2, "widget"); // protect the widget from GC
     lua_widget widget;
     luaA_to(L,lua_widget,&widget,7);
+    dt_lua_widget_bind(L,widget);
     data->widget = widget;
   }
 

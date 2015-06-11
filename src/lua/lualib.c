@@ -210,8 +210,7 @@ static int register_lib(lua_State *L)
 
   lua_widget widget;
   luaA_to(L,lua_widget,&widget,6);
-  lua_pushvalue(L, 6);
-  lua_setfield(L, -2, "widget"); // protect the widget from GC
+  dt_lua_widget_bind(L,widget);
   data->widget = widget;
 
   lua_setfield(L, -2, plugin_name);

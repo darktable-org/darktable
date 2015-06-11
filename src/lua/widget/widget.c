@@ -235,8 +235,22 @@ int widget_call(lua_State *L)
   return 1;
 }
 
+void dt_lua_widget_bind(lua_State *L, lua_widget widget)
+{
+  lua_getfield(L, LUA_REGISTRYINDEX,"dt_lua_widget_bind_table");
+  lua_pushlightuserdata(L,widget);
+  luaA_push(L,lua_widget,&widget);
+  lua_settable(L,-3);
+  lua_pop(L,1);
+}
+
+
 int dt_lua_init_widget(lua_State* L)
 {
+
+  lua_newtable(L);
+  lua_setfield(L, LUA_REGISTRYINDEX,"dt_lua_widget_bind_table");
+
   dt_lua_module_new(L,"widget");
 
   widget_type.associated_type = dt_lua_init_gpointer_type(L,lua_widget);

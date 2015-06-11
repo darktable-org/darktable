@@ -70,6 +70,15 @@ void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,con
   dt_lua_init_widget_type_type(L, widget_type, #lua_type,gtk_type)
 luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget_type,const char* lua_type,GType gtk_type);
 
+/**
+  Bind a lua widget, i.e prevent it from being destroyed by the lua GC.
+  after that, both the lua-side and the C side object will be un-releaseable until DT shutdown
+
+  You want to call that on widget you add to the UI so they exist forever
+  removing a widget from the UI is not supported at this point
+  */
+void dt_lua_widget_bind(lua_State *L, lua_widget widget);
+
 
 int dt_lua_init_widget(lua_State *L);
 #endif
