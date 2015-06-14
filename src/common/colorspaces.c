@@ -300,8 +300,8 @@ cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
   cmsWriteTag(hAdobeRGB, cmsSigBlueColorantTag, (void *)&Colorants.Blue);
 
   cmsWriteTag(hAdobeRGB, cmsSigRedTRCTag, (void *)transferFunction);
-  cmsWriteTag(hAdobeRGB, cmsSigGreenTRCTag, (void *)transferFunction);
-  cmsWriteTag(hAdobeRGB, cmsSigBlueTRCTag, (void *)transferFunction);
+  cmsLinkTag(hAdobeRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag);
+  cmsLinkTag(hAdobeRGB, cmsSigBlueTRCTag, cmsSigRedTRCTag);
 
   return hAdobeRGB;
 }
@@ -672,8 +672,8 @@ cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
   cmsWriteTag(hRec709RGB, cmsSigBlueColorantTag, (void *)&Colorants.Blue);
 
   cmsWriteTag(hRec709RGB, cmsSigRedTRCTag, (void *)transferFunction);
-  cmsWriteTag(hRec709RGB, cmsSigGreenTRCTag, (void *)transferFunction);
-  cmsWriteTag(hRec709RGB, cmsSigBlueTRCTag, (void *)transferFunction);
+  cmsLinkTag(hRec709RGB, cmsSigGreenTRCTag, cmsSigRedTRCTag);
+  cmsLinkTag(hRec709RGB, cmsSigBlueTRCTag, cmsSigRedTRCTag);
 
   return hRec709RGB;
 }
@@ -726,8 +726,8 @@ cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
   cmsWriteTag(hRec2020RGB, cmsSigBlueColorantTag, (void *)&Colorants.Blue);
 
   cmsWriteTag(hRec2020RGB, cmsSigRedTRCTag, (void *)transferFunction);
-  cmsWriteTag(hRec2020RGB, cmsSigGreenTRCTag, (void *)transferFunction);
-  cmsWriteTag(hRec2020RGB, cmsSigBlueTRCTag, (void *)transferFunction);
+  cmsLinkTag(hRec2020RGB, cmsSigGreenTRCTag, cmsSigRedTRCTag);
+  cmsLinkTag(hRec2020RGB, cmsSigBlueTRCTag, cmsSigRedTRCTag);
 
   return hRec2020RGB;
 }
