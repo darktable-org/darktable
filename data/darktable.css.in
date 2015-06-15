@@ -190,7 +190,7 @@ GtkFrame > GtkEventBox {
 }
 
 GtkFrame > GtkEventBox * {
-  background-color: @selected_bg_color;
+  background-color: transparent;
   color: @selected_fg_color;
 }
 
