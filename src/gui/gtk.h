@@ -27,24 +27,6 @@
 #if GTK_CHECK_VERSION(3, 12, 0) == 0
 #define gtk_widget_set_margin_start(w, m) gtk_widget_set_margin_left(w, m)
 #define gtk_widget_set_margin_end(w, m) gtk_widget_set_margin_right(w, m)
-
-static GtkWidget *gtk_stack_get_child_by_name(GtkStack *stack, const gchar *name)
-{
-  GtkStackPrivate *priv = gtk_stack_get_instance_private(stack);
-  GtkStackChildInfo *info;
-  GList *l;
-
-  g_return_val_if_fail(GTK_IS_STACK(stack), NULL);
-  g_return_val_if_fail(name != NULL, NULL);
-
-  for(l = priv->children; l != NULL; l = l->next)
-  {
-    info = l->data;
-    if(info->name && strcmp(info->name, name) == 0) return info->widget;
-  }
-
-  return NULL;
-}
 #endif
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
