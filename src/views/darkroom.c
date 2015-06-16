@@ -1063,14 +1063,14 @@ void gui_init(dt_view_t *self)
                (char *)NULL);
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
-  dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets);
+  dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets,self);
 
   /* create quick styles popup menu tool */
   GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(styles), "clicked", G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   g_object_set(G_OBJECT(styles), "tooltip-text", _("quick access for applying any of your styles"),
                (char *)NULL);
-  dt_view_manager_view_toolbox_add(darktable.view_manager, styles);
+  dt_view_manager_view_toolbox_add(darktable.view_manager, styles,self);
 
   /* create overexposed popup tool */
   {

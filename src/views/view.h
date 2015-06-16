@@ -187,7 +187,7 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*add)(struct dt_lib_module_t *, GtkWidget *);
+      void (*add)(struct dt_lib_module_t *, GtkWidget *, dt_view_t *);
     } view_toolbox;
 
     /* module toolbox proxy object */
@@ -302,7 +302,7 @@ void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up,
 void dt_view_manager_border_scrolled(dt_view_manager_t *vm, double x, double y, int which, int up);
 
 /** add widget to the current view toolbox */
-void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool);
+void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool,dt_view_t *target_view);
 
 /** add widget to the current module toolbox */
 void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool);
