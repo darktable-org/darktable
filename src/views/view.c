@@ -1481,9 +1481,9 @@ void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool,dt_
   if(vm->proxy.view_toolbox.module) vm->proxy.view_toolbox.add(vm->proxy.view_toolbox.module, tool,target_view);
 }
 
-void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool)
+void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool,dt_view_t *target_view)
 {
-  if(vm->proxy.module_toolbox.module) vm->proxy.module_toolbox.add(vm->proxy.module_toolbox.module, tool);
+  if(vm->proxy.module_toolbox.module) vm->proxy.module_toolbox.add(vm->proxy.module_toolbox.module, tool,target_view);
 }
 
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)

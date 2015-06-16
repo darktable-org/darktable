@@ -1085,7 +1085,7 @@ void gui_init(dt_view_t *self)
                      G_CALLBACK(_overexposed_quickbutton_pressed), dev);
     g_signal_connect(G_OBJECT(dev->overexposed.button), "button-release-event",
                      G_CALLBACK(_overexposed_quickbutton_released), dev);
-    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button,self);
 
     // and the popup window
     const int panel_width = dt_conf_get_int("panel_width");
