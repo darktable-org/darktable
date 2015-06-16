@@ -85,6 +85,23 @@ static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
   GList *hitems = NULL;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    const char *op = (const char *)sqlite3_column_text(stmt, 1);
+    GList *modules = darktable.iop;
+    while (modules)
+    {
+      dt_iop_module_so_t *find_op = (dt_iop_module_so_t *)(modules->data);
+      if (!strcmp(find_op->op, op))
+      {
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+    if (modules && (((dt_iop_module_so_t *)(modules->data))->flags() & IOP_FLAGS_ONE_INSTANCE))
+    {
+      // the current module is a single-instance one, so there's no point in trying to mess up our multi_priority value
+      continue;
+    }
+
     _history_item_t *hi = (_history_item_t *)calloc(1, sizeof(_history_item_t));
     hi->num = sqlite3_column_int(stmt, 0);
     snprintf(hi->op, sizeof(hi->op), "%s", sqlite3_column_text(stmt, 1));
