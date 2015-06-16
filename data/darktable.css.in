@@ -460,3 +460,10 @@ GtkNotebook GtkMenuItem:hover
 {
   background-color: shade(@selected_bg_color, 1.7);
 }
+
+/* empty space at top/bottom of sidepanels when scrolled */
+.undershoot.top,
+.undershoot.bottom
+{
+  background: none;
+}
