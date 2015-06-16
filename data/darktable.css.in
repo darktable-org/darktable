@@ -180,7 +180,7 @@ GtkTable {
 }
 
 #lib-modulelist * {
-  background-color: @bg_color;
+  background-color: transparent;
 }
 
 GtkFrame > GtkEventBox {
