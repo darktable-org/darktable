@@ -105,9 +105,8 @@ void dt_lua_unlock()
 
 static gboolean async_redraw(gpointer data)
 {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED); // just for good measure
-    dt_control_queue_redraw();
-    return false;
+  dt_control_queue_redraw();
+  return false;
 }
 
 void dt_lua_redraw_screen()
