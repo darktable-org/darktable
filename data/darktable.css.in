@@ -463,7 +463,9 @@ GtkNotebook GtkMenuItem:hover
 
 /* empty space at top/bottom of sidepanels when scrolled */
 .undershoot.top,
-.undershoot.bottom
+.undershoot.bottom,
+.undershoot.left,
+.undershoot.right
 {
   background: none;
 }
