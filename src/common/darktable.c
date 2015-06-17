@@ -690,8 +690,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   g_slist_free_full(config_override, g_free);
 
   // set the interface language
-  const gchar *lang = dt_conf_get_string(
-      "ui_last/gui_language"); // we may not g_free 'lang' since it is owned by setlocale afterwards
+  const gchar *lang = dt_conf_get_string("ui_last/gui_language");
   if(lang != NULL && lang[0] != '\0')
   {
     setenv("LANGUAGE", lang, 1);
@@ -699,6 +698,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     setlocale(LC_MESSAGES, lang);
     setenv("LANG", lang, 1);
   }
+  g_free((gchar *)lang);
 
   // initialize the database
   darktable.db = dt_database_init(dbfilename_from_command);
