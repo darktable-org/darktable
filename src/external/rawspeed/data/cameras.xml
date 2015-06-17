@@ -522,7 +522,7 @@
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS 5DS" decoder_version="6" supported="no">
+	<Camera make="Canon" model="Canon EOS 5DS" decoder_version="6">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
