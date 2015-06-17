@@ -738,8 +738,12 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="72" y="34" width="0" height="0"/>
 		<Sensor black="2048" white="16000"/>
+		<BlackAreas>
+			<Vertical x="2" width="68"/>
+			<Horizontal y="2" height="30"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS-1D" decoder_version="5">
 		<CFA width="2" height="2">
