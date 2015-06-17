@@ -49,6 +49,10 @@ GtkAlignment
   border:0;
   padding:0;
 }
+#lib-plugin-ui GtkTreeView
+{
+  background-color: shade(@selected_bg_color, 0.8); /* 'transparent' doesn't work for those it seems */
+}
 /* bright background */
 #background_job_eventbox,
 #iop-plugin-ui *
