@@ -3693,7 +3693,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">RED</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="0" y="0" width="-208" height="0"/>
 		<Sensor black="143" white="4095"/>
 		<Hints>
 			<Hint name="zero_is_bad" value=""/>
@@ -3706,7 +3706,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">RED</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="0" y="0" width="-208" height="0"/>
 		<Sensor black="143" white="4095"/>
 		<Hints>
 			<Hint name="zero_is_bad" value=""/>
