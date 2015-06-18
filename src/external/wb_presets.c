@@ -5258,6 +5258,15 @@ const wb_data wb_preset[] =
   { "Samsung", "NX300", "5500K", 0,			{ 2.636719, 1, 1.792969, 0 } },
   { "Samsung", "NX300", "6500K", 0,			{ 3.003906, 1, 1.644531, 0 } },
 
+  // Firmware 1.00
+  { "Samsung", "NX500", Daylight, 0,			{ 1.810484, 1, 1.471774, 0 } },
+  { "Samsung", "NX500", Cloudy, 0,			{ 1.895161, 1, 1.302419, 0 } },
+  { "Samsung", "NX500", CoolWhiteFluorescent, 0,	{ 1.802419, 1, 2.350806, 0 } },
+  { "Samsung", "NX500", DayWhiteFluorescent, 0,		{ 1.975806, 1, 1.826613, 0 } },
+  { "Samsung", "NX500", DaylightFluorescent, 0,		{ 2.274194, 1, 1.512097, 0 } },
+  { "Samsung", "NX500", Tungsten, 0,			{ 1.298387, 1, 2.439516, 0 } },
+  { "Samsung", "NX500", Flash, 0,			{ 1.959677, 1, 1.169355, 0 } },
+
   // Firmware NXF1_01.01
   { "Samsung", "NX3000", Daylight, 0,			{ 2.214844, 1, 1.816406, 0 } },
   { "Samsung", "NX3000", Cloudy, 0,			{ 2.347656, 1, 1.656250, 0 } },
