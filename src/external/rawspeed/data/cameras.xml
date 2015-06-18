@@ -562,8 +562,8 @@
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS 5DS R" decoder_version="6" supported="no">
-		<ID make="Canon" model="EOS 5DS R">Canon EOS 5DS R</ID>
+	<Camera make="Canon" model="Canon EOS 5DS" decoder_version="6">
+		<ID make="Canon" model="EOS 5DS">Canon EOS 5DS</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -571,11 +571,15 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="160" y="64" width="-2" height="0"/>
-		<Sensor black="2060" white="16383"/>
+		<Sensor black="2048" white="15181"/>
+		<Sensor black="2048" white="14466" iso_list="50 100"/>
 		<BlackAreas>
 			<Vertical x="0" width="150"/>
 			<Horizontal y="2" height="60"/>
 		</BlackAreas>
+		<Aliases>
+			<Alias>Canon EOS 5DS R</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 6D" decoder_version="2">
 		<ID make="Canon" model="EOS 6D">Canon EOS 6D</ID>
