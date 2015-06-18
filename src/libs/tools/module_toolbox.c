@@ -24,11 +24,20 @@
 DT_MODULE(1)
 
 /* proxy function, to add a widget to toolbox */
-static void _lib_module_toolbox_add(dt_lib_module_t *self, GtkWidget *widget, dt_view_t *target_view);
+static void _lib_module_toolbox_add(dt_lib_module_t *self, GtkWidget *widget, dt_view_type_flags_t views);
+
+
+typedef struct child_data_t
+{
+  GtkWidget * child;
+  dt_view_type_flags_t views;
+
+} child_data_t;
 
 typedef struct dt_lib_module_toolbox_t
 {
   GtkWidget *container;
+  GList * child_views;
 } dt_lib_module_toolbox_t;
 
 const char *name()
@@ -60,7 +69,21 @@ static void on_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *n
 {
   dt_lib_module_t * self = (dt_lib_module_t*) user_data;
   dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)self->data;
-  gtk_stack_set_visible_child_name(GTK_STACK(d->container),new_view->module_name);
+  GList *child_elt = d->child_views;
+  dt_view_type_flags_t nv= new_view->view(new_view);
+  while(child_elt)
+  {
+    child_data_t* child_data = (child_data_t*)child_elt->data;
+    if(child_data->views & nv) 
+    {
+      gtk_widget_show_all(child_data->child);
+    }
+    else
+    {
+      gtk_widget_hide(child_data->child);
+    }
+    child_elt = g_list_next(child_elt);
+  }
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -69,20 +92,12 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)g_malloc0(sizeof(dt_lib_module_toolbox_t));
   self->data = (void *)d;
 
+   /* change the child on view_changed */
+ dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+                           G_CALLBACK(on_view_changed), self);
   /* the toolbar container */
-  d->container = self->widget = gtk_stack_new();
+  d->container = self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
-  dt_view_manager_t *vm =darktable.view_manager;
-  for(int k = 0; k < vm->num_views; k++)
-  {
-    dt_view_t *cur_view = &vm->view[k];
-    gtk_stack_add_named(GTK_STACK(d->container),gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10),cur_view->module_name);
-    
-  }
-
-  /* change the child on view_changed */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
-                            G_CALLBACK(on_view_changed), self);
   /* setup proxy */
   darktable.view_manager->proxy.module_toolbox.module = self;
   darktable.view_manager->proxy.module_toolbox.add = _lib_module_toolbox_add;
@@ -90,17 +105,24 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)g_malloc0(sizeof(dt_lib_module_toolbox_t));
+  g_list_free_full(d->child_views,free);
   g_free(self->data);
   self->data = NULL;
 }
 
 
-static void _lib_module_toolbox_add(dt_lib_module_t *self, GtkWidget *widget, dt_view_t *target_view)
+static void _lib_module_toolbox_add(dt_lib_module_t *self, GtkWidget *widget, dt_view_type_flags_t views)
 {
   dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)self->data;
-  GtkWidget *box = gtk_stack_get_child_by_name(GTK_STACK(d->container),target_view->module_name);
-  gtk_box_pack_start(GTK_BOX(box), widget, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->container), widget, TRUE, FALSE, 0);
   gtk_widget_show_all(widget);
+
+  child_data_t *child_data = malloc(sizeof(child_data_t));
+  child_data->child = widget;
+  child_data->views = views;
+  d->child_views = g_list_prepend(d->child_views,child_data);
+
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
