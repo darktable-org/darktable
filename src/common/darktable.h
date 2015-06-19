@@ -174,7 +174,6 @@ typedef struct darktable_t
   int32_t thumbnail_width, thumbnail_height;
   int32_t unmuted;
   GList *iop;
-  GList *collection_listeners;
   GList *capabilities;
   struct dt_conf_t *conf;
   struct dt_develop_t *develop;

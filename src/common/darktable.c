@@ -786,7 +786,6 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   }
 
   // initialize collection query
-  darktable.collection_listeners = NULL;
   darktable.collection = dt_collection_new(NULL);
 
   /* initialize selection */
