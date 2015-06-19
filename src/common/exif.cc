@@ -937,7 +937,11 @@ int dt_exif_read(dt_image_t *img, const char *path)
 
   try
   {
+#ifdef __APPLE__
     Exiv2::Image::AutoPtr image;
+#else
+    std::unique_ptr<Exiv2::Image> image;
+#endif
     image = Exiv2::ImageFactory::open(path);
     assert(image.get() != 0);
     image->readMetadata();
@@ -981,7 +985,12 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
 {
   try
   {
-    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(path);
+#ifdef __APPLE__
+    Exiv2::Image::AutoPtr image;
+#else
+    std::unique_ptr<Exiv2::Image> image;
+#endif
+    image = Exiv2::ImageFactory::open(path);
     assert(image.get() != 0);
     image->readMetadata();
     Exiv2::ExifData &imgExifData = image->exifData();
@@ -1036,7 +1045,11 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
 {
   try
   {
+#ifdef __APPLE__
     Exiv2::Image::AutoPtr image;
+#else
+    std::unique_ptr<Exiv2::Image> image;
+#endif
     image = Exiv2::ImageFactory::open(path);
     assert(image.get() != 0);
     image->readMetadata();
@@ -1518,7 +1531,11 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
   try
   {
     // read xmp sidecar
+#ifdef __APPLE__
     Exiv2::Image::AutoPtr image;
+#else
+    std::unique_ptr<Exiv2::Image> image;
+#endif
     image = Exiv2::ImageFactory::open(filename);
     assert(image.get() != 0);
     image->readMetadata();
@@ -1913,8 +1930,19 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData["Xmp.darktable.auto_presets_applied"] = 0;
 
   // get tags from db, store in dublin core
-  Exiv2::Value::AutoPtr v1 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
-  Exiv2::Value::AutoPtr v2 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
+#ifdef __APPLE__
+  Exiv2::Value::AutoPtr v1;
+#else
+  std::unique_ptr<Exiv2::Value> v1;
+#endif
+  v1 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
+
+#ifdef __APPLE__
+  Exiv2::Value::AutoPtr v2;
+#else
+  std::unique_ptr<Exiv2::Value> v2;
+#endif
+  v2 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
 
   GList *tags = dt_tag_get_list(imgid);
   while(tags)
@@ -1936,7 +1964,13 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   // color labels
   char val[2048];
-  Exiv2::Value::AutoPtr v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
+#ifdef __APPLE__
+  Exiv2::Value::AutoPtr v;
+#else
+  std::unique_ptr<Exiv2::Value> v;
+#endif
+  v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
+
   /* Already initialized v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.*/
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1",
                               -1, &stmt, NULL);
@@ -2124,14 +2158,24 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
 
-    Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open(filename);
+#ifdef __APPLE__
+    Exiv2::Image::AutoPtr img;
+#else
+    std::unique_ptr<Exiv2::Image> img;
+#endif
+    img = Exiv2::ImageFactory::open(filename);
     // unfortunately it seems we have to read the metadata, to not erase the exif (which we just wrote).
     // will make export slightly slower, oh well.
     // img->clearXmpPacket();
     img->readMetadata();
 
     // initialize XMP and IPTC data with the one from the original file
-    Exiv2::Image::AutoPtr input_image = Exiv2::ImageFactory::open(input_filename);
+#ifdef __APPLE__
+    Exiv2::Image::AutoPtr input_image;
+#else
+    std::unique_ptr<Exiv2::Image> input_image;
+#endif
+    input_image = Exiv2::ImageFactory::open(input_filename);
     if(input_image.get() != 0)
     {
       input_image->readMetadata();
