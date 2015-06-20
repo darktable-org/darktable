@@ -4847,6 +4847,11 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-TZ60", Shade, 0,		{ 2.335849, 1, 1.415094, 0 } },
   { "Panasonic", "DMC-TZ60", Incandescent, 0,	{ 1.384906, 1, 2.577358, 0 } },
 
+  { "Panasonic", "DMC-TZ71", Daylight, 0,	{ 2.090909, 1, 1.818182, 0 } },
+  { "Panasonic", "DMC-TZ71", Cloudy, 0,		{ 2.241509, 1, 1.660377, 0 } },
+  { "Panasonic", "DMC-TZ71", Shade, 0,		{ 2.378788, 1, 1.590909, 0 } },
+  { "Panasonic", "DMC-TZ71", Incandescent, 0,	{ 1.420455, 1, 2.727273, 0 } },
+
   { "Panasonic", "DMC-G1", Daylight, 0,		{ 1.942966, 1, 1.448669, 0 } },
   { "Panasonic", "DMC-G1", Cloudy, 0,		{ 2.106464, 1, 1.326996, 0 } },
   { "Panasonic", "DMC-G1", Shade, 0,		{ 2.323194, 1, 1.224335, 0 } },
