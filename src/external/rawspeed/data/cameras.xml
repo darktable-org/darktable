@@ -5420,6 +5420,61 @@
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="145" white="3956"/>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ71">
+		<ID make="Panasonic" model="DMC-TZ71">Panasonic DMC-ZS50</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="143" white="3956"/>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ71" mode="4:3">
+		<ID make="Panasonic" model="DMC-TZ71">Panasonic DMC-ZS50</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-128" height="0"/>
+		<Sensor black="143" white="3956"/>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ71" mode="3:2">
+		<ID make="Panasonic" model="DMC-TZ71">Panasonic DMC-ZS50</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-128" height="0"/>
+		<Sensor black="142" white="3971"/>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ71" mode="16:9">
+		<ID make="Panasonic" model="DMC-TZ71">Panasonic DMC-ZS50</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-128" height="0"/>
+		<Sensor black="143" white="3956"/>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ71" mode="1:1">
+		<ID make="Panasonic" model="DMC-TZ71">Panasonic DMC-ZS50</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-16" height="0"/>
+		<Sensor black="143" white="3956"/>
+	</Camera>
 	<Camera make="PENTAX Corporation" model="PENTAX K100D">
 		<ID make="Pentax" model="K100D">Pentax K100D</ID>
 		<CFA width="2" height="2">
