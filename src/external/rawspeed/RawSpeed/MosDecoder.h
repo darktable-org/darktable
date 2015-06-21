@@ -42,7 +42,7 @@ protected:
   TiffIFD *mRootIFD;
   const char *make, *model;
   void parseXMP(TiffEntry *xmp);
-  void DecodePhaseOneC(ByteStream &input, uint32 width, uint32 height);
+  void DecodePhaseOneC(uint32 data_offset, uint32 strip_offset, uint32 width, uint32 height);
 };
 
 } // namespace RawSpeed
