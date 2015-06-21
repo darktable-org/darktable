@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-17 21:56+0200\n"
-"PO-Revision-Date: 2015-06-17 22:02+0100\n"
+"POT-Creation-Date: 2015-06-21 11:46+0200\n"
+"PO-Revision-Date: 2015-06-21 11:47+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1715,7 +1715,7 @@ msgstr "%s est désactivé"
 
 #: ../src/develop/imageop.c:1195 ../src/gui/accelerators.c:596 ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847 ../src/gui/accelerators.c:873
 #: ../src/gui/presets.c:188 ../src/gui/presets.c:294 ../src/gui/presets.c:662 ../src/iop/temperature.c:1161 ../src/libs/import.c:521 ../src/libs/lib.c:309
-#: ../src/libs/lib.c:334 ../src/libs/lib.c:1108
+#: ../src/libs/lib.c:334 ../src/libs/lib.c:1112
 msgid "preset"
 msgstr "pré-réglage"
 
@@ -1735,12 +1735,12 @@ msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1247 ../src/libs/lib.c:579
+#: ../src/develop/imageop.c:1247 ../src/libs/lib.c:583
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1248 ../src/libs/lib.c:583
+#: ../src/develop/imageop.c:1248 ../src/libs/lib.c:587
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
@@ -1749,11 +1749,11 @@ msgstr "afficher le menu des pré-réglages"
 msgid "multiple instances actions"
 msgstr "instances multiples"
 
-#: ../src/develop/imageop.c:1811 ../src/libs/lib.c:950
+#: ../src/develop/imageop.c:1811 ../src/libs/lib.c:954
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1819 ../src/gui/preferences.c:411 ../src/libs/lib.c:962
+#: ../src/develop/imageop.c:1819 ../src/gui/preferences.c:411 ../src/libs/lib.c:966
 msgid "presets"
 msgstr "pré-réglages"
 
@@ -3427,8 +3427,8 @@ msgid "make effect stronger or weaker"
 msgstr "rend l'effet plus fort ou plus faible"
 
 #: ../src/iop/basecurve.c:91
-msgid "natural"
-msgstr "naturelle"
+msgid "neutral"
+msgstr "neutre"
 
 #: ../src/iop/basecurve.c:92
 msgid "canon eos like"
@@ -8880,7 +8880,7 @@ msgctxt "accel"
 msgid "zoom min"
 msgstr "zoom mini"
 
-#: ../src/libs/tools/module_toolbox.c:36
+#: ../src/libs/tools/module_toolbox.c:45
 msgid "module toolbox"
 msgstr "boîte à outils de module"
 
@@ -8892,7 +8892,7 @@ msgstr "étoiles"
 msgid "viewswitcher"
 msgstr "changer de vue"
 
-#: ../src/libs/tools/view_toolbox.c:36
+#: ../src/libs/tools/view_toolbox.c:45
 msgid "view toolbox"
 msgstr "afficher la boîte à outils"
 
@@ -9187,6 +9187,9 @@ msgstr "nouvelle session initiée «%s»"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
+
+#~ msgid "natural"
+#~ msgstr "naturelle"
 
 #~ msgctxt "accel"
 #~ msgid "capture view"
