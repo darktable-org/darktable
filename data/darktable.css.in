@@ -410,14 +410,16 @@ GtkDialog *
   padding:0;
   margin:0;
   border:0;
-  background-color: transparent;
+  background-color: @selected_bg_color;
   background-image: none;
   border-color:  shade(@selected_bg_color, 1.2);
 }
 
-GtkDialog .button
+GtkDialog .button *
 {
   padding: 5px;
+  background-color: shade(@bg_color, 1.7);
+  border-color:  shade(@bg_color, 1.7);
 }
 
 GtkDialog .button:hover *
