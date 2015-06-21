@@ -73,7 +73,7 @@ void MrwDecoder::parseHeader() {
       packed = (data[currpos+24] == 12);
     case 0x574247: // WBG
       for(uint32 i=0; i<4; i++)
-        wb_coeffs[i] = get2BE(data, currpos+12+i*2);
+        wb_coeffs[i] = (float)get2BE(data, currpos+12+i*2);
       break;
     case 0x545457: // TTW
       // Base value for offsets needs to be at the beginning of the TIFF block, not the file

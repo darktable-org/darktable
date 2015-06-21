@@ -75,6 +75,16 @@
 ]>
 
 <Cameras>
+	<Camera make="ARRI" model="ALEXA">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 100D">
 		<ID make="Canon" model="EOS 100D">Canon EOS 100D</ID>
 		<CFA width="2" height="2">

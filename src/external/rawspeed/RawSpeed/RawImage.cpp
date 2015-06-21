@@ -412,13 +412,6 @@ void RawImageData::clearArea( iRectangle2D area, uchar8 val /*= 0*/ )
     memset(getData(area.getLeft(),y), val, area.getWidth() * bpp);
 }
 
-RawImageData* RawImage::operator->() {
-  return p_;
-}
-
-RawImageData& RawImage::operator*() {
-  return *p_;
-}
 
 RawImage& RawImage::operator=(const RawImage & p) {
   if (this == &p)      // Same object?

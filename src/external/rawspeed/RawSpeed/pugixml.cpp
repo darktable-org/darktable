@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 #include <wchar.h>
 */
+#include <assert.h>
 #ifndef PUGIXML_NO_XPATH
 #	include <math.h>
 #	include <float.h>

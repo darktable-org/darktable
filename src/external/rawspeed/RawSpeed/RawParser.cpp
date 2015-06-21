@@ -5,6 +5,7 @@
 #include "CiffParserException.h"
 #include "CiffParser.h"
 #include "X3fParser.h"
+#include "AriDecoder.h"
 #include "ByteStreamSwap.h"
 #include "TiffEntryBE.h"
 #include "MrwDecoder.h"
@@ -53,6 +54,13 @@ RawDecoder* RawParser::getDecoder(CameraMetaData* meta) {
   if (MrwDecoder::isMRW(mInput)) {
     try {
       return new MrwDecoder(mInput);
+    } catch (RawDecoderException) {
+    }
+  }
+
+  if (0 == memcmp(&data[0], "ARRI\x12\x34\x56\x78", 8)) {
+    try {
+      return new AriDecoder(mInput);
     } catch (RawDecoderException) {
     }
   }

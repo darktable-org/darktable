@@ -45,6 +45,9 @@ public:
   virtual int getInt();
   virtual uint32 getUInt();
   virtual float getFloat();
+  // Increments the stream to after the next zero byte and returns the bytes in between (not a copy).
+  // If the first byte is zero, stream is incremented one.
+  const char* getString();  
   void pushOffset() { offset_stack.push(off);}
   void popOffset();
 protected:

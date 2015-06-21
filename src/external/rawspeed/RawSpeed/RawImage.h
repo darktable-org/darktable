@@ -207,8 +207,8 @@ protected:
  public:
    static RawImage create(RawImageType type = TYPE_USHORT16);
    static RawImage create(iPoint2D dim, RawImageType type = TYPE_USHORT16, uint32 componentsPerPixel = 1);
-   RawImageData* operator-> ();
-   RawImageData& operator* ();
+   RawImageData* operator-> (){ return p_; };
+   RawImageData& operator* (){ return *p_; };
    RawImage(RawImageData* p);  // p must not be NULL
   ~RawImage();
    RawImage(const RawImage& p);

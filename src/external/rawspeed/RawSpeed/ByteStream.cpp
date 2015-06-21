@@ -95,6 +95,17 @@ void ByteStream::skipToMarker() {
 //  _RPT1(0,"Skipped %u bytes.\n", c);
 }
 
+const char* ByteStream::getString() {
+  int start = off;
+  while (buffer[off] != 0x00) {
+    off++;
+    if (off >= size)
+      ThrowIOE("String not terminated inside rest of buffer");
+  }
+  off++;
+  return (const char*)&buffer[start];
+}
+
 float ByteStream::getFloat()
 {
   if (off + 4 > size)
@@ -103,6 +114,7 @@ float ByteStream::getFloat()
   uchar8 *temp = (uchar8 *)&temp_f;
   for (int i = 0; i < 4; i++)
     temp[i] = buffer[off+i];
+  off+=4;
   return temp_f;
 }
 
