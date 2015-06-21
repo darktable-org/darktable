@@ -105,6 +105,11 @@ typedef struct dt_lib_module_t
   /** reset to defaults. */
   void (*gui_reset)(struct dt_lib_module_t *self);
 
+  /** entering a view, only called if lib is displayed on the new view */
+  void (*view_enter)(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view);
+  /** entering a view, only called if lib is displayed on the old view */
+  void (*view_leave)(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view);
+
   /** optional event callbacks for big center widget. */
   /** optional method called after lighttable expose. */
   void (*gui_post_expose)(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,

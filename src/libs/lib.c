@@ -541,6 +541,10 @@ static int dt_lib_load_module(dt_lib_module_t *module, const char *libname, cons
 
   if(!g_module_symbol(module->module, "gui_post_expose", (gpointer) & (module->gui_post_expose)))
     module->gui_post_expose = NULL;
+
+  if(!g_module_symbol(module->module, "view_enter", (gpointer) & (module->view_enter))) module->view_enter = NULL;
+  if(!g_module_symbol(module->module, "view_leave", (gpointer) & (module->view_leave))) module->view_leave = NULL;
+
   if(!g_module_symbol(module->module, "mouse_leave", (gpointer) & (module->mouse_leave)))
     module->mouse_leave = NULL;
   if(!g_module_symbol(module->module, "mouse_moved", (gpointer) & (module->mouse_moved)))

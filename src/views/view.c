@@ -262,6 +262,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
           /* does this module belong to current view ?*/
           if(plugin->views(plugin) & v->view(v))
       {
+        if(plugin->view_leave) plugin->view_leave(plugin,v,NULL);
         plugin->gui_cleanup(plugin);
         plugin->data = NULL;
         dt_accel_disconnect_list(plugin->accel_closures);
@@ -319,6 +320,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
         /* does this module belong to current view ?*/
         if(plugin->views(plugin) & v->view(v))
         {
+          if(plugin->view_leave) plugin->view_leave(plugin,v,nv);
           dt_accel_disconnect_list(plugin->accel_closures);
           plugin->accel_closures = NULL;
         }
@@ -358,6 +360,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 
         /* add module to it's container */
         dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
+        if(plugin->view_enter) plugin->view_enter(plugin,v,nv);
       }
 
       /* lets get next plugin */
