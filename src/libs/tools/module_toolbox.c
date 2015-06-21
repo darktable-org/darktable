@@ -65,9 +65,31 @@ int position()
   return 100;
 }
 
-static void on_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *new_view, gpointer user_data)
+
+void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_module_t * self = (dt_lib_module_t*) user_data;
+  /* initialize ui widgets */
+  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)g_malloc0(sizeof(dt_lib_module_toolbox_t));
+  self->data = (void *)d;
+
+  /* the toolbar container */
+  d->container = self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+
+  /* setup proxy */
+  darktable.view_manager->proxy.module_toolbox.module = self;
+  darktable.view_manager->proxy.module_toolbox.add = _lib_module_toolbox_add;
+}
+
+void gui_cleanup(dt_lib_module_t *self)
+{
+  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)g_malloc0(sizeof(dt_lib_module_toolbox_t));
+  g_list_free_full(d->child_views,free);
+  g_free(self->data);
+  self->data = NULL;
+}
+
+void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
   dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)self->data;
   GList *child_elt = d->child_views;
   dt_view_type_flags_t nv= new_view->view(new_view);
@@ -85,32 +107,6 @@ static void on_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *n
     child_elt = g_list_next(child_elt);
   }
 }
-
-void gui_init(dt_lib_module_t *self)
-{
-  /* initialize ui widgets */
-  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)g_malloc0(sizeof(dt_lib_module_toolbox_t));
-  self->data = (void *)d;
-
-   /* change the child on view_changed */
- dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
-                           G_CALLBACK(on_view_changed), self);
-  /* the toolbar container */
-  d->container = self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-
-  /* setup proxy */
-  darktable.view_manager->proxy.module_toolbox.module = self;
-  darktable.view_manager->proxy.module_toolbox.add = _lib_module_toolbox_add;
-}
-
-void gui_cleanup(dt_lib_module_t *self)
-{
-  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)g_malloc0(sizeof(dt_lib_module_toolbox_t));
-  g_list_free_full(d->child_views,free);
-  g_free(self->data);
-  self->data = NULL;
-}
-
 
 static void _lib_module_toolbox_add(dt_lib_module_t *self, GtkWidget *widget, dt_view_type_flags_t views)
 {
