@@ -14,7 +14,7 @@ MANUAL_MUNGERS = {
   ["KONICA MINOLTA", "ALPHA 7D"] => ["MINOLTA", "DYNAX 7D"],
   ["KONICA MINOLTA", "MAXXUM 7D"] => ["MINOLTA", "DYNAX 7D"],
   ["Kodak", "DCS Pro SLR/n"] => ["KODAK", "DCS Pro SLR/n"],
-  ["Leica Camera AG", "M8 Digital Camera"] => ["Leica Camera AG", "M8 Digital Camera"],
+  ["Leica Camera AG", "M8 Digital Camera"] => ["LEICA", "M8"],
 }
 
 $stderr.puts "Fetching ufraw presets from their CVS, may take a moment..."
@@ -70,13 +70,13 @@ File.open(CAMERAS) do |f|
     clean_id = [clean_maker, clean_model]
     exif_id = munge_make_model(exif_maker, exif_model)
     forward_hash[exif_id] = clean_id
-    backward_hash[clean_id] ||= []
-    backward_hash[clean_id] << exif_id
+    backward_hash[clean_id] ||= {}
+    backward_hash[clean_id][exif_id] = true
     c.css("Alias").each do |a|
       exif_model = a.content
       exif_id = munge_make_model(exif_maker, exif_model)
       forward_hash[exif_id] = clean_id
-      backward_hash[clean_id] << exif_id
+      backward_hash[clean_id][exif_id] = true
     end
   end
 end
@@ -91,7 +91,7 @@ end
 submit_to_ufraw = []
 backward_hash.each do |clean_name, exif_names|
   if dt_presets[clean_name] 
-    exif_names.each do |exif_name|
+    exif_names.keys.each do |exif_name|
       if !ufraw_presets[exif_name]
         submit_to_ufraw << [clean_name, exif_name]
       end
