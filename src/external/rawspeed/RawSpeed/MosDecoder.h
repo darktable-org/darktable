@@ -39,6 +39,7 @@ public:
   virtual void checkSupportInternal(CameraMetaData *meta);
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
 protected:
+  uint32 black_level;
   TiffIFD *mRootIFD;
   const char *make, *model;
   void parseXMP(TiffEntry *xmp);

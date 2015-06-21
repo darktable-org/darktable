@@ -28,6 +28,7 @@ namespace RawSpeed {
 MosDecoder::MosDecoder(TiffIFD *rootIFD, FileMap* file)  :
     RawDecoder(file), mRootIFD(rootIFD) {
   decoderVersion = 0;
+  black_level = 0;
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MAKE);
   if (!data.empty()) {
@@ -101,6 +102,7 @@ RawImage MosDecoder::decodeRawInternal() {
       case 0x109: height       = data;      break;
       case 0x10f: data_offset  = data+base; break;
       case 0x21c: strip_offset = data+base; break;
+      case 0x21d: black_level  = data>>2;   break;
       }
     }
     if (width <= 0 || height <= 0)
@@ -209,6 +211,9 @@ void MosDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     if (text)
       delete text;
   }
+
+  if (black_level)
+    mRaw->blackLevel = black_level;
 }
 
 } // namespace RawSpeed
