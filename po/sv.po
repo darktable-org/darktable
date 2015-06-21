@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-29 22:42+0200\n"
-"PO-Revision-Date: 2015-04-29 22:47+0200\n"
+"POT-Creation-Date: 2015-06-21 10:29+0200\n"
+"PO-Revision-Date: 2015-06-21 10:33+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -881,16 +881,16 @@ msgstr ""
 "du måste kopiera historik från en bild innan du klistrar in på en annan"
 
 #: ../src/common/history.c:375 ../src/common/history.c:378
-#: ../src/common/history.c:393 ../src/common/styles.c:700
-#: ../src/common/styles.c:704 ../src/develop/blend_gui.c:1825
-#: ../src/develop/develop.c:1221 ../src/libs/live_view.c:410
+#: ../src/common/history.c:393 ../src/common/styles.c:701
+#: ../src/common/styles.c:705 ../src/develop/blend_gui.c:1825
+#: ../src/develop/develop.c:1225 ../src/libs/live_view.c:410
 msgid "on"
 msgstr "på"
 
 #: ../src/common/history.c:375 ../src/common/history.c:378
-#: ../src/common/history.c:393 ../src/common/styles.c:700
-#: ../src/common/styles.c:704 ../src/develop/blend_gui.c:1604
-#: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1221
+#: ../src/common/history.c:393 ../src/common/styles.c:701
+#: ../src/common/styles.c:705 ../src/develop/blend_gui.c:1604
+#: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1225
 #: ../src/imageio/format/exr.cc:319 ../src/imageio/format/j2k.c:651
 #: ../src/iop/colorin.c:1265 ../src/iop/demosaic.c:2046
 #: ../src/iop/vignette.c:1145 ../src/libs/history.c:152
@@ -919,26 +919,26 @@ msgstr ""
 msgid "orphaned image"
 msgstr "anonyma bilder"
 
-#: ../src/common/image.c:1277
+#: ../src/common/image.c:1280
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "kan inte skapa lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1291
+#: ../src/common/image.c:1294
 msgid "cannot create local copy."
 msgstr "kan inte skapa lokal kopia."
 
-#: ../src/common/image.c:1344 ../src/control/jobs/control_jobs.c:547
+#: ../src/common/image.c:1347 ../src/control/jobs/control_jobs.c:547
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "kan inte ta bort lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1499
+#: ../src/common/image.c:1502
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokal kopia har synkroniserats"
 msgstr[1] "%d lokala kopior har synkroniserats"
 
-#: ../src/common/imageio.c:638
+#: ../src/common/imageio.c:648
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -947,22 +947,22 @@ msgstr ""
 "misslyckades med att tilldela minne för %s, var god och minska antalet "
 "trådar som används för export eller köp mer minne."
 
-#: ../src/common/imageio.c:639
+#: ../src/common/imageio.c:649
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "export av miniatyrbild"
 
-#: ../src/common/imageio.c:639
+#: ../src/common/imageio.c:649
 msgctxt "noun"
 msgid "export"
 msgstr "export"
 
-#: ../src/common/imageio.c:647 ../src/common/mipmap_cache.c:1116
+#: ../src/common/imageio.c:657 ../src/common/mipmap_cache.c:1116
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "bild `%s' är inte tillgänglig"
 
-#: ../src/common/imageio.c:663
+#: ../src/common/imageio.c:673
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "kan inte finna stilen '%s' att applicera under export."
@@ -1007,8 +1007,8 @@ msgstr "stil med namn '%s' existerar redan"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:305 ../src/common/styles.c:309
 #: ../src/common/styles.c:389 ../src/common/styles.c:458
-#: ../src/common/styles.c:609 ../src/common/styles.c:1131
-#: ../src/common/styles.c:1150
+#: ../src/common/styles.c:610 ../src/common/styles.c:1132
+#: ../src/common/styles.c:1151
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1025,17 +1025,17 @@ msgstr "skapade stilen '%s'"
 msgid "no image selected!"
 msgstr "inga bilder valda!"
 
-#: ../src/common/styles.c:787
+#: ../src/common/styles.c:788
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "kunde inte skriva över stilfilen för %s"
 
-#: ../src/common/styles.c:793
+#: ../src/common/styles.c:794
 #, c-format
 msgid "style file for %s exists"
 msgstr "stil fil med namn '%s' existerar redan"
 
-#: ../src/common/styles.c:1022
+#: ../src/common/styles.c:1023
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
@@ -1055,11 +1055,11 @@ msgid ""
 msgstr ""
 "Hårdvaruacceleration via opencl har slagits av på grund av långsam GPU."
 
-#: ../src/control/control.c:543 ../src/control/control.c:546
+#: ../src/control/control.c:560 ../src/control/control.c:563
 msgid "working.."
 msgstr "arbetar.."
 
-#: ../src/control/control.c:629
+#: ../src/control/control.c:646
 #, c-format
 msgid "switch to %s mode"
 msgstr "byt till %s vy"
@@ -1449,7 +1449,7 @@ msgstr ""
 "* område mellan intilliggande övre/undre markörer: blanda gradvis"
 
 #: ../src/develop/blend_gui.c:1089 ../src/iop/colorzones.c:1086
-#: ../src/iop/tonecurve.c:734
+#: ../src/iop/tonecurve.c:750
 msgid "pick GUI color from image"
 msgstr "välj gränsnittsfärg från bild"
 
@@ -1767,7 +1767,7 @@ msgstr "visningsmask"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "stäng av markeringen tillfälligtvis.  enbart för den aktiva modulen."
 
-#: ../src/develop/develop.c:1034
+#: ../src/develop/develop.c:1038
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: modul `%s' skiljer i version: %d != %d"
@@ -1794,61 +1794,61 @@ msgstr "flytta ner"
 msgid "delete"
 msgstr "radera"
 
-#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1803
+#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1812
 #, c-format
 msgid "%s is switched on"
 msgstr "%s är påslagen"
 
-#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1803
+#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1812
 #, c-format
 msgid "%s is switched off"
 msgstr "%s är avslagen"
 
-#: ../src/develop/imageop.c:1198 ../src/gui/accelerators.c:675
-#: ../src/gui/accelerators.c:759 ../src/gui/accelerators.c:927
-#: ../src/gui/accelerators.c:953 ../src/gui/presets.c:189
+#: ../src/develop/imageop.c:1199 ../src/gui/accelerators.c:675
+#: ../src/gui/accelerators.c:759 ../src/gui/accelerators.c:925
+#: ../src/gui/accelerators.c:951 ../src/gui/presets.c:189
 #: ../src/gui/presets.c:295 ../src/gui/presets.c:664
 #: ../src/iop/temperature.c:770 ../src/libs/import.c:508 ../src/libs/lib.c:308
-#: ../src/libs/lib.c:333 ../src/libs/lib.c:1097
+#: ../src/libs/lib.c:333 ../src/libs/lib.c:1099
 msgid "preset"
 msgstr "förinställning"
 
-#: ../src/develop/imageop.c:1242
+#: ../src/develop/imageop.c:1243
 msgctxt "accel"
 msgid "fusion"
 msgstr "slå samman"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1247
+#: ../src/develop/imageop.c:1248
 msgctxt "accel"
 msgid "show module"
 msgstr "visa modul"
 
-#: ../src/develop/imageop.c:1248
+#: ../src/develop/imageop.c:1249
 msgctxt "accel"
 msgid "enable module"
 msgstr "aktivera modul"
 
-#: ../src/develop/imageop.c:1250 ../src/libs/lib.c:577
+#: ../src/develop/imageop.c:1251 ../src/libs/lib.c:577
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "återställ modulparametrar"
 
-#: ../src/develop/imageop.c:1251 ../src/libs/lib.c:581
+#: ../src/develop/imageop.c:1252 ../src/libs/lib.c:581
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "ny förinställningar"
 
-#: ../src/develop/imageop.c:1774
+#: ../src/develop/imageop.c:1783
 msgid "multiple instances actions"
 msgstr "hantera multipla instanser"
 
-#: ../src/develop/imageop.c:1782 ../src/libs/lib.c:951
+#: ../src/develop/imageop.c:1791 ../src/libs/lib.c:953
 msgid "reset parameters"
 msgstr "återställ parametrar"
 
-#: ../src/develop/imageop.c:1790 ../src/gui/preferences.c:410
-#: ../src/libs/lib.c:963
+#: ../src/develop/imageop.c:1799 ../src/gui/preferences.c:410
+#: ../src/libs/lib.c:965
 msgid "presets"
 msgstr "fördefinierade"
 
@@ -2265,27 +2265,27 @@ msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 #: ../src/gui/gtk.c:847
 msgctxt "accel"
 msgid "capture view"
-msgstr "tjudring"
+msgstr "tjudringsvy"
 
 #: ../src/gui/gtk.c:848
 msgctxt "accel"
 msgid "lighttable view"
-msgstr "ljusbord"
+msgstr "ljusbordsvy"
 
 #: ../src/gui/gtk.c:849
 msgctxt "accel"
 msgid "darkroom view"
-msgstr "mörkrum"
+msgstr "mörkrumsvy"
 
 #: ../src/gui/gtk.c:850
 msgctxt "accel"
 msgid "map view"
-msgstr "karta"
+msgstr "kartvy"
 
 #: ../src/gui/gtk.c:851
 msgctxt "accel"
 msgid "slideshow view"
-msgstr "bildspel"
+msgstr "bildspelsvy"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:872
@@ -2505,7 +2505,7 @@ msgstr "ISO"
 #. exposure
 #: ../src/gui/preferences.c:448 ../src/gui/preferences.c:1255
 #: ../src/gui/presets.c:476 ../src/iop/exposure.c:107
-#: ../src/iop/exposure.c:954 ../src/iop/relight.c:372
+#: ../src/iop/exposure.c:957 ../src/iop/relight.c:372
 #: ../src/libs/metadata_view.c:98
 msgid "exposure"
 msgstr "exponering"
@@ -2525,7 +2525,7 @@ msgid "focal length"
 msgstr "brännvidd"
 
 #: ../src/gui/preferences.c:461 ../src/iop/borders.c:1046
-#: ../src/iop/exposure.c:960 ../src/iop/levels.c:563
+#: ../src/iop/exposure.c:963 ../src/iop/levels.c:563
 msgid "auto"
 msgstr "automatisk"
 
@@ -3004,7 +3004,7 @@ msgstr "kunde inte skriva till katalog `%s'!"
 #: ../src/imageio/storage/disk.c:284 ../src/imageio/storage/email.c:133
 #: ../src/imageio/storage/facebook.c:1288 ../src/imageio/storage/flickr.c:670
 #: ../src/imageio/storage/gallery.c:337 ../src/imageio/storage/gallery.c:357
-#: ../src/imageio/storage/picasa.c:1447
+#: ../src/imageio/storage/picasa.c:1446
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "kunde inte exportera till fil `%s'!"
@@ -3054,15 +3054,15 @@ msgstr ""
 msgid "facebook authentication"
 msgstr "facebook-autentisering"
 
-#: ../src/imageio/storage/facebook.c:628 ../src/imageio/storage/picasa.c:842
+#: ../src/imageio/storage/facebook.c:628 ../src/imageio/storage/picasa.c:841
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:650 ../src/imageio/storage/picasa.c:865
+#: ../src/imageio/storage/facebook.c:650 ../src/imageio/storage/picasa.c:864
 msgid "please enter the validation URL"
 msgstr "var god ange validerings-URL:en"
 
-#: ../src/imageio/storage/facebook.c:660 ../src/imageio/storage/picasa.c:876
+#: ../src/imageio/storage/facebook.c:660 ../src/imageio/storage/picasa.c:875
 msgid "the given URL is not valid, it should look like: "
 msgstr "den angivna URL:en är inte giltig, den borde se ut såhär: "
 
@@ -3084,25 +3084,25 @@ msgstr ""
 "logga in med ditt facebook-konto där och bekräfta att darktable får ladda "
 "upp bilder innan du kan fortsätta."
 
-#: ../src/imageio/storage/facebook.c:839 ../src/imageio/storage/picasa.c:1007
+#: ../src/imageio/storage/facebook.c:839 ../src/imageio/storage/picasa.c:1006
 msgid "new account"
 msgstr "nytt konto"
 
-#: ../src/imageio/storage/facebook.c:844 ../src/imageio/storage/picasa.c:1012
+#: ../src/imageio/storage/facebook.c:844 ../src/imageio/storage/picasa.c:1011
 msgid "other account"
 msgstr "annat konto"
 
-#: ../src/imageio/storage/facebook.c:873 ../src/imageio/storage/picasa.c:1040
+#: ../src/imageio/storage/facebook.c:873 ../src/imageio/storage/picasa.c:1039
 msgid "unable to retrieve the album list"
 msgstr "kunde inte hämta listan på album"
 
 #: ../src/imageio/storage/facebook.c:881 ../src/imageio/storage/flickr.c:391
-#: ../src/imageio/storage/flickr.c:418 ../src/imageio/storage/picasa.c:1048
+#: ../src/imageio/storage/flickr.c:418 ../src/imageio/storage/picasa.c:1047
 msgid "create new album"
 msgstr "skapa nytt album"
 
-#: ../src/imageio/storage/facebook.c:953 ../src/imageio/storage/picasa.c:1096
-#: ../src/imageio/storage/picasa.c:1255
+#: ../src/imageio/storage/facebook.c:953 ../src/imageio/storage/picasa.c:1095
+#: ../src/imageio/storage/picasa.c:1254
 msgid "logout"
 msgstr "logga ut"
 
@@ -3111,8 +3111,8 @@ msgstr "logga ut"
 #: ../src/imageio/storage/facebook.c:1026
 #: ../src/imageio/storage/facebook.c:1052
 #: ../src/imageio/storage/facebook.c:1166 ../src/imageio/storage/flickr.c:528
-#: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1259
-#: ../src/imageio/storage/picasa.c:1272 ../src/imageio/storage/picasa.c:1343
+#: ../src/imageio/storage/picasa.c:1101 ../src/imageio/storage/picasa.c:1258
+#: ../src/imageio/storage/picasa.c:1271 ../src/imageio/storage/picasa.c:1342
 msgid "login"
 msgstr "logga in"
 
@@ -3124,13 +3124,13 @@ msgstr "facebook-album"
 #. xmp
 #: ../src/imageio/storage/facebook.c:1107 ../src/imageio/storage/flickr.c:482
 #: ../src/imageio/storage/gallery.c:171 ../src/imageio/storage/latex.c:171
-#: ../src/imageio/storage/picasa.c:1300 ../src/libs/collect.h:29
+#: ../src/imageio/storage/picasa.c:1299 ../src/libs/collect.h:29
 #: ../src/libs/metadata.c:336 ../src/libs/metadata_view.c:107
 msgid "title"
 msgstr "titel"
 
 #: ../src/imageio/storage/facebook.c:1108 ../src/imageio/storage/flickr.c:483
-#: ../src/imageio/storage/picasa.c:1301
+#: ../src/imageio/storage/picasa.c:1300
 msgid "summary"
 msgstr "sammanfattning"
 
@@ -3154,11 +3154,11 @@ msgstr "publik"
 msgid "friends of friends"
 msgstr "vänners vänner"
 
-#: ../src/imageio/storage/facebook.c:1297 ../src/imageio/storage/picasa.c:1456
+#: ../src/imageio/storage/facebook.c:1297 ../src/imageio/storage/picasa.c:1455
 msgid "unable to create album, no title provided"
 msgstr "kunde inte skapa album, ingen titel angiven"
 
-#: ../src/imageio/storage/facebook.c:1306 ../src/imageio/storage/picasa.c:1464
+#: ../src/imageio/storage/facebook.c:1306 ../src/imageio/storage/picasa.c:1463
 msgid "unable to create album"
 msgstr "kunde inte skapa album"
 
@@ -3293,7 +3293,7 @@ msgid "enter the title of the book"
 msgstr "ange en titel för boken"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/picasa.c:828
+#: ../src/imageio/storage/picasa.c:827
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google+ account there and authorize darktable to "
@@ -3303,7 +3303,7 @@ msgstr ""
 "måste logga in med ditt google+-konto där och bekräfta att darktable får "
 "ladda upp bilder innan du kan fortsätta."
 
-#: ../src/imageio/storage/picasa.c:831
+#: ../src/imageio/storage/picasa.c:830
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
@@ -3311,20 +3311,20 @@ msgstr ""
 "steg 2: klistra in verifikationskoden som visas i din internetbrowser och "
 "klicka på OK-knappen när du är klar."
 
-#: ../src/imageio/storage/picasa.c:837
+#: ../src/imageio/storage/picasa.c:836
 msgid "google+ authentication"
 msgstr "google+-autentisering"
 
-#: ../src/imageio/storage/picasa.c:1287
+#: ../src/imageio/storage/picasa.c:1286
 msgid "google+ photos"
 msgstr "google+-bilder"
 
-#: ../src/imageio/storage/picasa.c:1474
+#: ../src/imageio/storage/picasa.c:1473
 msgid "unable to export photo to google+ album"
 msgstr "kunde inte exportera bild till google+-album"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1487
+#: ../src/imageio/storage/picasa.c:1486
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgstr "%d/%d exporterad till google+-album"
@@ -3437,8 +3437,8 @@ msgid "make effect stronger or weaker"
 msgstr "gör effekten starkare eller svagare"
 
 #: ../src/iop/basecurve.c:90
-msgid "natural"
-msgstr "naturlig"
+msgid "neutral"
+msgstr "neutral"
 
 #: ../src/iop/basecurve.c:91
 msgid "canon eos like"
@@ -3504,29 +3504,29 @@ msgstr "liknande fujifilm"
 msgid "nokia like"
 msgstr "liknande nokia"
 
-#: ../src/iop/basecurve.c:192
+#: ../src/iop/basecurve.c:200
 msgid "base curve"
 msgstr "baskurva"
 
-#: ../src/iop/basecurve.c:761
+#: ../src/iop/basecurve.c:769
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-axel: ingående, y-axel: utgående. arbetar på RGB-kanalerna"
 
-#: ../src/iop/basecurve.c:767 ../src/iop/lens.c:2176
+#: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2176
 #: ../src/iop/vignette.c:1151 ../src/iop/watermark.c:1087
 msgid "scale"
 msgstr "skala"
 
-#: ../src/iop/basecurve.c:768 ../src/iop/profile_gamma.c:321
-#: ../src/iop/tonecurve.c:411
+#: ../src/iop/basecurve.c:776 ../src/iop/profile_gamma.c:321
+#: ../src/iop/tonecurve.c:413
 msgid "linear"
 msgstr "linjär"
 
-#: ../src/iop/basecurve.c:769
+#: ../src/iop/basecurve.c:777
 msgid "logarithmic"
 msgstr "logaritmisk"
 
-#: ../src/iop/basecurve.c:771
+#: ../src/iop/basecurve.c:779
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -4872,7 +4872,7 @@ msgstr "fann motsvarighet till ISO %d"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolerat från ISO %d och %d"
 
-#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:927
+#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:930
 #: ../src/iop/lens.c:2184 ../src/iop/levels.c:532
 msgid "mode"
 msgstr "läge"
@@ -5031,55 +5031,55 @@ msgctxt "accel"
 msgid "histogram source"
 msgstr "histogramkälla"
 
-#: ../src/iop/exposure.c:929 ../src/iop/levels.c:534
+#: ../src/iop/exposure.c:932 ../src/iop/levels.c:534
 msgctxt "mode"
 msgid "manual"
 msgstr "manuell"
 
-#: ../src/iop/exposure.c:943
+#: ../src/iop/exposure.c:946
 msgid "adjust the black level"
 msgstr "justeringen av svart nivå"
 
-#: ../src/iop/exposure.c:945 ../src/iop/levels.c:606
+#: ../src/iop/exposure.c:948 ../src/iop/levels.c:606
 msgid "black"
 msgstr "svärta"
 
-#: ../src/iop/exposure.c:952
+#: ../src/iop/exposure.c:955
 msgid "adjust the exposure correction"
 msgstr "justera exponeringskompensation [EV]"
 
-#: ../src/iop/exposure.c:965
+#: ../src/iop/exposure.c:968
 msgid "percentage of bright values clipped out"
 msgstr ""
 "procentdel av ljusa värden\n"
 "som kapas bort"
 
 #. FIXME: this needs a better tooltip!
-#: ../src/iop/exposure.c:977 ../src/iop/exposure.c:979
+#: ../src/iop/exposure.c:980 ../src/iop/exposure.c:982
 msgid "percentile"
 msgstr "percentil"
 
-#: ../src/iop/exposure.c:984 ../src/iop/exposure.c:986
+#: ../src/iop/exposure.c:987 ../src/iop/exposure.c:989
 msgid "target level"
 msgstr "målnivå"
 
-#: ../src/iop/exposure.c:990
+#: ../src/iop/exposure.c:993
 msgid "histogram of"
 msgstr "histogram för"
 
-#: ../src/iop/exposure.c:992
+#: ../src/iop/exposure.c:995
 msgid "pre-processed image"
 msgstr "förprocessad bild"
 
-#: ../src/iop/exposure.c:996
+#: ../src/iop/exposure.c:999
 msgid "source raw data"
 msgstr "källans rådata"
 
-#: ../src/iop/exposure.c:1006
+#: ../src/iop/exposure.c:1009
 msgid "computed EC: "
 msgstr "beräknad EK: "
 
-#: ../src/iop/exposure.c:1011
+#: ../src/iop/exposure.c:1014
 msgid "what exposure correction has actually been used"
 msgstr "vilken exponeringskorrigering som faktiskt användes"
 
@@ -5643,7 +5643,7 @@ msgstr "let's go float!"
 msgid "levels"
 msgstr "nivåer"
 
-#: ../src/iop/levels.c:537 ../src/iop/tonecurve.c:766
+#: ../src/iop/levels.c:537 ../src/iop/tonecurve.c:782
 #: ../src/iop/vignette.c:1142
 msgid "automatic"
 msgstr "automatisk"
@@ -6235,56 +6235,56 @@ msgstr "finjustera förinställd vitbalans"
 msgid "tone curve"
 msgstr "nyanskurva"
 
-#: ../src/iop/tonecurve.c:407
+#: ../src/iop/tonecurve.c:409
 msgid "low contrast"
 msgstr "låg kontrast"
 
-#: ../src/iop/tonecurve.c:421
+#: ../src/iop/tonecurve.c:423
 msgid "med contrast"
 msgstr "medel kontrast"
 
-#: ../src/iop/tonecurve.c:431
+#: ../src/iop/tonecurve.c:433
 msgid "high contrast"
 msgstr "hög kontrast"
 
-#: ../src/iop/tonecurve.c:713
+#: ../src/iop/tonecurve.c:729
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:716
+#: ../src/iop/tonecurve.c:732
 msgid "tonecurve for L channel"
 msgstr "tonkurva för L kanal"
 
-#: ../src/iop/tonecurve.c:718
+#: ../src/iop/tonecurve.c:734
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:721
+#: ../src/iop/tonecurve.c:737
 msgid "tonecurve for a channel"
 msgstr "tonkurva för a kanal"
 
-#: ../src/iop/tonecurve.c:723
+#: ../src/iop/tonecurve.c:739
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:726
+#: ../src/iop/tonecurve.c:742
 msgid "tonecurve for b channel"
 msgstr "tonkurva för b kanal"
 
-#: ../src/iop/tonecurve.c:750
+#: ../src/iop/tonecurve.c:766
 msgid "double click to reset curve"
 msgstr "dubbelklicka för återställning"
 
-#: ../src/iop/tonecurve.c:765
+#: ../src/iop/tonecurve.c:781
 msgid "scale chroma"
 msgstr "skala färg"
 
-#: ../src/iop/tonecurve.c:767
+#: ../src/iop/tonecurve.c:783
 msgctxt "scale"
 msgid "manual"
 msgstr "manuell"
 
-#: ../src/iop/tonecurve.c:770
+#: ../src/iop/tonecurve.c:786
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data."
@@ -8846,6 +8846,9 @@ msgstr "ny session skapad '%s'"
 #: ../src/views/tethering.c:250
 msgid "no camera with tethering support available for use..."
 msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
+
+#~ msgid "natural"
+#~ msgstr "naturlig"
 
 #~ msgid "set the aspect ratio (w:h)"
 #~ msgstr "ange bildförhållandet (b:h)"
