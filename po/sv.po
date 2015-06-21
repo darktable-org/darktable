@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-07 19:32+0200\n"
-"PO-Revision-Date: 2015-06-07 19:37+0200\n"
+"POT-Creation-Date: 2015-06-21 10:29+0200\n"
+"PO-Revision-Date: 2015-06-21 10:31+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -946,20 +946,20 @@ msgstr ""
 "kan inte ta bort en filmrulle som har lokala kopior där originalen inte går "
 "att nå"
 
-#: ../src/common/history.c:230
+#: ../src/common/history.c:247
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "du måste kopiera historik från en bild innan du klistrar in på en annan"
 
-#: ../src/common/history.c:407 ../src/common/history.c:410
-#: ../src/common/history.c:425 ../src/common/styles.c:716
+#: ../src/common/history.c:425 ../src/common/history.c:428
+#: ../src/common/history.c:443 ../src/common/styles.c:716
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1825
 #: ../src/develop/develop.c:1293 ../src/libs/live_view.c:409
 msgid "on"
 msgstr "på"
 
-#: ../src/common/history.c:407 ../src/common/history.c:410
-#: ../src/common/history.c:425 ../src/common/styles.c:716
+#: ../src/common/history.c:425 ../src/common/history.c:428
+#: ../src/common/history.c:443 ../src/common/styles.c:716
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1293
 #: ../src/imageio/format/exr.cc:353 ../src/imageio/format/j2k.c:671
@@ -2386,28 +2386,28 @@ msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 #. register keys for view switching
 #: ../src/gui/gtk.c:849
 msgctxt "accel"
-msgid "capture view"
-msgstr "tjudring"
+msgid "tethering view"
+msgstr "tjudringsvy"
 
 #: ../src/gui/gtk.c:850
 msgctxt "accel"
 msgid "lighttable view"
-msgstr "ljusbord"
+msgstr "ljusbordsy"
 
 #: ../src/gui/gtk.c:851
 msgctxt "accel"
 msgid "darkroom view"
-msgstr "mörkrum"
+msgstr "mörkrumsvy"
 
 #: ../src/gui/gtk.c:852
 msgctxt "accel"
 msgid "map view"
-msgstr "karta"
+msgstr "kartvy"
 
 #: ../src/gui/gtk.c:853
 msgctxt "accel"
 msgid "slideshow view"
-msgstr "bildspel"
+msgstr "bildspelsvy"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:874
@@ -3750,8 +3750,8 @@ msgid "make effect stronger or weaker"
 msgstr "gör effekten starkare eller svagare"
 
 #: ../src/iop/basecurve.c:91
-msgid "natural"
-msgstr "naturlig"
+msgid "neutral"
+msgstr "neutral"
 
 #: ../src/iop/basecurve.c:92
 msgid "canon eos like"
@@ -9238,7 +9238,7 @@ msgctxt "accel"
 msgid "zoom min"
 msgstr "minsta zoom"
 
-#: ../src/libs/tools/module_toolbox.c:35
+#: ../src/libs/tools/module_toolbox.c:45
 msgid "module toolbox"
 msgstr "verktygslåda för moduler"
 
@@ -9250,7 +9250,7 @@ msgstr "betyg"
 msgid "viewswitcher"
 msgstr "vyväljare"
 
-#: ../src/libs/tools/view_toolbox.c:35
+#: ../src/libs/tools/view_toolbox.c:45
 msgid "view toolbox"
 msgstr "vy verktygslåda"
 
@@ -9549,6 +9549,13 @@ msgstr "ny session skapad '%s'"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
+
+#~ msgctxt "accel"
+#~ msgid "capture view"
+#~ msgstr "tjudring"
+
+#~ msgid "natural"
+#~ msgstr "naturlig"
 
 #~ msgid "1:2"
 #~ msgstr "1:2"
