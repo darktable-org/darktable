@@ -410,7 +410,7 @@ GtkDialog *
   padding:0;
   margin:0;
   border:0;
-  background-color: transparent;
+  background-color: @selected_bg_color; /* transparent fails */
   background-image: none;
   border-color:  shade(@selected_bg_color, 1.2);
 }
