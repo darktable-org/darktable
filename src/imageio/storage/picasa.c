@@ -850,13 +850,13 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   ////////////// wait for the user to enter the verification code
   gint result;
   gchar *token = NULL;
-  const char *replyurl;
+  const char *replycode;
   while(TRUE)
   {
     result = gtk_dialog_run(GTK_DIALOG(picasa_auth_dialog));
     if(result == GTK_RESPONSE_CANCEL) break;
-    replyurl = gtk_entry_get_text(GTK_ENTRY(entry));
-    if(replyurl == NULL || g_strcmp0(replyurl, "") == 0)
+    replycode = gtk_entry_get_text(GTK_ENTRY(entry));
+    if(replycode == NULL || g_strcmp0(replycode, "") == 0)
     {
       gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(picasa_auth_dialog),
                                                  "%s\n\n%s\n\n<span foreground=\"" MSGCOLOR_RED
@@ -866,7 +866,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
     }
     else
     {
-      token = g_strdup(replyurl);
+      token = g_strdup(replycode);
       break;
     }
   }
