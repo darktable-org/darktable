@@ -883,6 +883,8 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
                                    "&redirect_uri=" GOOGLE_URI "&grant_type=authorization_code",
                            token);
 
+  g_free(token);
+
   reply = picasa_query_post_auth(ui->picasa_api, "o/oauth2/token", params);
 
   gchar *access_token = g_strdup(json_object_get_string_member(reply, "access_token"));
