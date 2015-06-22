@@ -872,6 +872,9 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   }
   gtk_widget_destroy(GTK_WIDGET(picasa_auth_dialog));
 
+  if(result == GTK_RESPONSE_CANCEL)
+    return 1;
+
   // Interchange now the authorization_code for an access_token and refresh_token
   JsonObject *reply;
 
