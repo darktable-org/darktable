@@ -838,7 +838,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
   GtkWidget *entry = gtk_entry_new();
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("URL:"))), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("validation code:"))), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(entry), TRUE, TRUE, 0);
 
   GtkWidget *picasaauthdialog_vbox
@@ -861,7 +861,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
       gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(picasa_auth_dialog),
                                                  "%s\n\n%s\n\n<span foreground=\"" MSGCOLOR_RED
                                                  "\" ><small>%s</small></span>",
-                                                 text1, text2, _("please enter the validation URL"));
+                                                 text1, text2, _("please enter the validation code"));
       continue;
     }
     // token = picasa_extract_token_from_url(replyurl);
