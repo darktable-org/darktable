@@ -439,7 +439,7 @@ GtkDialog GtkEventBox *
 
 GtkDialog GtkTreeView *:selected
 {
-   background-color: @selected_bg_color;
+   background-color: shade(@selected_bg_color, 1.7);
 }
 
 /* preferences notebook */
