@@ -175,7 +175,7 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 
   /* fill list with history items */
   GtkTreeIter iter;
-  GList *items = dt_history_get_items(imgid, TRUE);
+  GList *items = dt_history_get_items(imgid, FALSE);
   if(items)
   {
     do
