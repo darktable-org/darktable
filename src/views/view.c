@@ -508,6 +508,8 @@ void dt_view_manager_mouse_enter(dt_view_manager_t *vm)
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->mouse_enter) v->mouse_enter(v);
+  /* raise widget */
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
 
 void dt_view_manager_mouse_moved(dt_view_manager_t *vm, double x, double y, double pressure, int which)
