@@ -382,7 +382,7 @@ static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadat
     g_value_unset(&value);
   }
 }
-
+#ifdef USE_LUA
 static void reset_child(GtkWidget* child, gpointer user_data)
 {
   dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
@@ -390,11 +390,11 @@ static void reset_child(GtkWidget* child, gpointer user_data)
       LUA_ASYNC_TYPENAME,"const char*","reset",
       LUA_ASYNC_DONE);
 }
+#endif
 
 
 static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_import_metadata_t *data, gboolean import_folder)
 {
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   // add extra lines to 'extra'. don't forget to destroy the widgets later.
   GtkWidget *expander = gtk_expander_new(_("import options"));
   gtk_expander_set_expanded(GTK_EXPANDER(expander), dt_conf_get_bool("ui_last/import_options_expanded"));
@@ -468,8 +468,9 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_box_pack_start(GTK_BOX(extra), grid, FALSE, FALSE, 0);
 
 #ifdef USE_LUA
-    gtk_box_pack_start(GTK_BOX(extra),d->extra_lua_widgets , FALSE, FALSE, 0);
-    gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets),reset_child,NULL);
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  gtk_box_pack_start(GTK_BOX(extra),d->extra_lua_widgets , FALSE, FALSE, 0);
+  gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets),reset_child,NULL);
 #endif
 
   creator = gtk_entry_new();
@@ -852,7 +853,6 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
 static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t* self= (dt_lib_module_t*) user_data;
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("import film"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Cancel"),
@@ -914,6 +914,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
     g_slist_free(list);
   }
 #ifdef USE_LUA
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   // remove the extra portion from the filechooser before destroying it
   GtkWidget * parent =gtk_widget_get_parent(d->extra_lua_widgets);
   gtk_container_remove(GTK_CONTAINER(parent),d->extra_lua_widgets);
