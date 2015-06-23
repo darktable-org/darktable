@@ -360,7 +360,6 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 
         /* add module to it's container */
         dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
-        if(plugin->view_enter) plugin->view_enter(plugin,v,nv);
       }
 
       /* lets get next plugin */
@@ -394,6 +393,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
           else
             gtk_widget_hide(plugin->widget);
         }
+        if(plugin->view_enter) plugin->view_enter(plugin,v,nv);
       }
 
       /* lets get next plugin */
