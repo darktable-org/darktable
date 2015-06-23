@@ -1095,6 +1095,48 @@ end</programlisting></para>
 
 </section>
 
+<section status="final" id="darktable_gui_libs_import">
+<title>darktable.gui.libs.import</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>import</secondary>
+</indexterm>
+<para>The buttons to start importing images</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="darktable_gui_libs_import_register_widget">
+<title>darktable.gui.libs.import.register_widget</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register_widget</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_import_register_widget_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+)</synopsis>
+<para>Add a widget in the option expander of the import dialog</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_import_register_widget_widget"><term>widget</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widget to add to the dialog. The reset callback of the widget will be called whenever the dialog is opened</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+</section>
+
 <section status="final" id="darktable_gui_libs_styles">
 <title>darktable.gui.libs.styles</title>
 <indexterm>
@@ -1396,27 +1438,6 @@ end</programlisting></para>
 <secondary>filter</secondary>
 </indexterm>
 <para>The image-filter menus at the top of the UI</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
-<section status="final" id="darktable_gui_libs_import">
-<title>darktable.gui.libs.import</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>import</secondary>
-</indexterm>
-<para>The buttons to start importing images</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>

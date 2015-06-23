@@ -47,6 +47,15 @@ static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
   if(widget_type->gui_init) 
     widget_type->gui_init(L);
 }
+
+/*
+static void on_destroy(GtkWidget *widget, gpointer user_data)
+{
+  lua_widget lwidget = (lua_widget)user_data;
+  printf("%s of type %s destroyed\n",gtk_widget_get_name(widget),lwidget->type->name);
+}
+*/
+
 static int get_widget_params(lua_State *L)
 {
   struct dt_lua_widget_type_t *widget_type = lua_touserdata(L, lua_upvalueindex(1));
@@ -70,6 +79,7 @@ static int get_widget_params(lua_State *L)
     lua_pop(L,1);
   }
   lua_pop(L,1);
+  //g_signal_connect(widget->widget,"destroy",G_CALLBACK(on_destroy),widget);
   return 1;
 }
 

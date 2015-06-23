@@ -414,6 +414,12 @@ darktable.gui.libs.collect.filter:add_parameter("rules",my_tostring(types.dt_lib
 darktable.gui.libs.collect.filter:add_return(my_tostring(types.dt_lib_collect_params_t),[[The rules that were applied before this call.]])
 darktable.gui.libs.collect.filter:set_attribute("implicit_yield",true)
 
+darktable.gui.libs.import:set_text([[The buttons to start importing images]])
+darktable.gui.libs.import.register_widget:set_text([[Add a widget in the option expander of the import dialog]])
+darktable.gui.libs.import.register_widget:add_parameter("widget",types.lua_widget,[[The widget to add to the dialog. The reset callback of the widget will be called whenever the dialog is opened]])
+
+
+
 darktable.gui.libs.styles:set_text([[The style selection menu]])
 darktable.gui.libs.metadata_view:set_text([[The widget displaying metadata about the current image]])
 darktable.gui.libs.metadata:set_text([[The widget allowing modification of metadata fields on the current image]])
@@ -429,7 +435,6 @@ darktable.gui.libs.global_toolbox:set_text([[The common tools to all view (setti
 darktable.gui.libs.global_toolbox.grouping:set_text([[The current status of the image grouping option]])
 darktable.gui.libs.global_toolbox.show_overlays:set_text([[the current status of the image overlays option]])
 darktable.gui.libs.filter:set_text([[The image-filter menus at the top of the UI]])
-darktable.gui.libs.import:set_text([[The buttons to start importing images]])
 darktable.gui.libs.ratings:set_text([[The starts to set the rating of an image]])
 darktable.gui.libs.select:set_text([[The buttons that allow to quickly change the selection]])
 darktable.gui.libs.colorlabels:set_text([[The color buttons that allow to set labels on an image]])
