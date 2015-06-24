@@ -190,7 +190,7 @@ void MosDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     if (neutobj && neutobj+44 < buffer+size) {
       uint32 tmp[4] = {0};
       sscanf((const char *)neutobj+44, "%u %u %u %u", &tmp[0], &tmp[1], &tmp[2], &tmp[3]);
-      if (tmp[0] >0 && tmp[1] > 0 && tmp[2] > 0 && tmp[3] > 0) {
+      if (tmp[0] > 0 && tmp[1] > 0 && tmp[2] > 0 && tmp[3] > 0) {
         mRaw->metadata.wbCoeffs[0] = (float) tmp[0]/tmp[1];
         mRaw->metadata.wbCoeffs[1] = (float) tmp[0]/tmp[2];
         mRaw->metadata.wbCoeffs[2] = (float) tmp[0]/tmp[3];
