@@ -766,7 +766,6 @@ void LJpegPlain::decodeScanLeft3Comps() {
 #define COMPS 4
 
 void LJpegPlain::decodeScanLeft4Comps() {
-  uchar8 *draw = mRaw->getData();
   // First line
   HuffmanTable *dctbl1 = &huff[frame.compInfo[0].dcTblNo];
   HuffmanTable *dctbl2 = &huff[frame.compInfo[1].dcTblNo];
@@ -779,6 +778,7 @@ void LJpegPlain::decodeScanLeft4Comps() {
     mRaw->destroyData();
     mRaw->createData();
   }
+  uchar8 *draw = mRaw->getData();
 
   //Prepare slices (for CR2)
   uint32 slices = (uint32)slicesW.size() * (frame.h - skipY);
