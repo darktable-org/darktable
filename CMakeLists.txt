@@ -104,6 +104,7 @@ if(NOT SOURCE_PACKAGE)
     generate_version ALL
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
     COMMENT "Updating version string"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
 endif(NOT SOURCE_PACKAGE)
 
