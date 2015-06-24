@@ -292,7 +292,15 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
   if(!error)
   {
     GList *plugins;
-    dt_view_t *v = vm->view + vm->current_view;
+    dt_view_t *v;
+    if(vm->current_view >=0)
+    {
+     v = vm->view + vm->current_view;
+    }
+    else
+    {
+      v = NULL;
+    }
 
     /* cleanup current view before initialization of new  */
     if(vm->current_view >= 0)
