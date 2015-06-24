@@ -572,6 +572,12 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
+    else if(Exiv2::testVersion(0,25,0)
+            && (pos = exifData.findKey(Exiv2::ExifKey("Exif.PentaxDng.LensType"))) != exifData.end()
+            && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+    }
     else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Panasonic.LensType"))) != exifData.end()
             && pos->size())
     {
