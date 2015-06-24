@@ -172,8 +172,8 @@ float TiffEntry::getFloat() {
 }
 
 string TiffEntry::getString() {
-  if (type != TIFF_ASCII)
-    ThrowTPE("TIFF, getString: Wrong type 0x%x encountered. Expected Ascii", type);
+  if (type != TIFF_ASCII && type != TIFF_BYTE)
+    ThrowTPE("TIFF, getString: Wrong type 0x%x encountered. Expected Ascii or Byte", type);
   if (!own_data) {
     own_data = new uchar8[count];
     memcpy(own_data, data, count);

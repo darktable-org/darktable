@@ -32,44 +32,28 @@ MosDecoder::MosDecoder(TiffIFD *rootIFD, FileMap* file)  :
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MAKE);
   if (!data.empty()) {
-    make = (const char *) data[0]->getEntry(MAKE)->getDataWrt();
-    model = (const char *) data[0]->getEntry(MODEL)->getDataWrt();
+    make = data[0]->getEntry(MAKE)->getString();
+    model = data[0]->getEntry(MODEL)->getString();
   } else {
     TiffEntry *xmp = mRootIFD->getEntryRecursive(XMP);
     if (!xmp)
       ThrowRDE("MOS Decoder: Couldn't find the XMP");
-
-    parseXMP(xmp);
+    string xmpText = xmp->getString();
+    make = getXMPTag(xmpText, "Make");
+    model = getXMPTag(xmpText, "Model");
   }
 }
 
 MosDecoder::~MosDecoder(void) {
 }
 
-void MosDecoder::parseXMP(TiffEntry *xmp) {
-  if (xmp->count <= 0)
-    ThrowRDE("MOS Decoder: Empty XMP");
-
-  uchar8 *xmpText = xmp->getDataWrt();
-  xmpText[xmp->count - 1] = 0; // Make sure the string is NUL terminated
-
-  char *makeEnd;
-  make = strstr((char *) xmpText, "<tiff:Make>");
-  makeEnd = strstr((char *) xmpText, "</tiff:Make>");
-  if (!make || !makeEnd)
-    ThrowRDE("MOS Decoder: Couldn't find the Make in the XMP");
-  make += 11; // Advance to the end of the start tag
-
-  char *modelEnd;
-  model = strstr((char *) xmpText, "<tiff:Model>");
-  modelEnd = strstr((char *) xmpText, "</tiff:Model>");
-  if (!model || !modelEnd)
-    ThrowRDE("MOS Decoder: Couldn't find the Model in the XMP");
-  model += 12; // Advance to the end of the start tag
-
-  // NUL terminate the strings in place
-  *makeEnd = 0;
-  *modelEnd = 0;
+string MosDecoder::getXMPTag(string xmp, string tag) {
+  string::size_type start = xmp.find("<tiff:"+tag+">");
+  string::size_type end = xmp.find("</tiff:"+tag+">");
+  if (start == string::npos || end == string::npos || end <= start)
+    ThrowRDE("MOS Decoder: Couldn't find tag '%s' in the XMP", tag.c_str());
+  int startlen = tag.size()+7;
+  return xmp.substr(start+startlen, end-start-startlen);
 }
 
 RawImage MosDecoder::decodeRawInternal() {
@@ -195,21 +179,23 @@ void MosDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   // Fetch the white balance (see dcraw.c parse_mos for more metadata that can be gotten)
   if (mRootIFD->hasEntryRecursive(LEAFMETADATA)) {
     TiffEntry *meta = mRootIFD->getEntryRecursive(LEAFMETADATA);
-    char *text = (char *) meta->getDataWrt();
+    uchar8 *buffer = meta->getDataWrt();
     uint32 size = meta->count;
-    text[size-1] = 0; //Make sure the data is NUL terminated so that scanf never reads beyond limits
+    //Make sure the data is NUL terminated so that scanf never reads beyond limits
+    //This is not a string though, it will have other NUL's in the middle
+    buffer[size-1] = 0;
 
     // dcraw does actual parsing, since we just want one field we bruteforce it
-    char *neutobj = (char *) memmem(text, size, "NeutObj_neutrals", 16);
-    if (neutobj) {
+    uchar8 *neutobj = (uchar8 *) memmem(buffer, size, "NeutObj_neutrals", 16);
+    if (neutobj && neutobj+44 < buffer+size) {
       uint32 tmp[4] = {0};
       sscanf((const char *)neutobj+44, "%u %u %u %u", &tmp[0], &tmp[1], &tmp[2], &tmp[3]);
-      mRaw->metadata.wbCoeffs[0] = (float) tmp[0]/tmp[1];
-      mRaw->metadata.wbCoeffs[1] = (float) tmp[0]/tmp[2];
-      mRaw->metadata.wbCoeffs[2] = (float) tmp[0]/tmp[3];
+      if (tmp[0] >0 && tmp[1] > 0 && tmp[2] > 0 && tmp[3] > 0) {
+        mRaw->metadata.wbCoeffs[0] = (float) tmp[0]/tmp[1];
+        mRaw->metadata.wbCoeffs[1] = (float) tmp[0]/tmp[2];
+        mRaw->metadata.wbCoeffs[2] = (float) tmp[0]/tmp[3];
+      }
     }
-    if (text)
-      delete text;
   }
 
   if (black_level)
