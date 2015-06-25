@@ -1237,6 +1237,8 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char) * 64);
   GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
 
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("content")), FALSE, FALSE, 5);
+
   // Add the marker combobox
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->combobox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
@@ -1290,6 +1292,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->fontsel), TRUE, TRUE, 0);
 
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 5);
+
   // Add opacity/scale sliders to table
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0);
   dt_bauhaus_slider_set_format(g->scale1, "%.f%%");
@@ -1312,6 +1316,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->sizeto, NULL, _("scale on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->sizeto, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->sizeto), "tooltip-text", _("size is relative to"), (char *)NULL);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("position")), FALSE, FALSE, 5);
 
   // Create the 3x3 gtk table toggle button table...
   GtkGrid *bat = GTK_GRID(gtk_grid_new());
