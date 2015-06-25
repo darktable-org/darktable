@@ -442,6 +442,11 @@ GtkDialog GtkTreeView *:selected
    background-color: shade(@selected_bg_color, 1.7);
 }
 
+GtkColorSwatch
+{
+    background-color: transparent;
+}
+
 /* preferences notebook */
 
 #preferences_notebook GtkGrid *
