@@ -63,7 +63,7 @@ GtkAlignment
 }
 /* bright background */
 #background_job_eventbox,
-#iop-plugin-ui *
+#iop-plugin-ui
 {
   padding:0;
   border:0;
