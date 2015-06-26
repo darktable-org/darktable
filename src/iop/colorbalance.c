@@ -29,6 +29,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "common/sse.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -94,7 +95,6 @@ int groups()
   return IOP_GROUP_COLOR;
 }
 
-// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -102,37 +102,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const int ch = piece->colors;
 
   // these are RGB values!
-  const float lift[3] = { 2.0 - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
-                          2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
-                          2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]) },
-              gamma[3] = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
-                           d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
-                           d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR] },
-              gamma_inv[3] = { (gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
-                               (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
-                               (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0 },
-              gain[3] = { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
-                          d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
-                          d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR] };
-
-  // sRGB -> XYZ matrix, D65
-  const float srgb_to_xyz[3][3] = {
-    { 0.4360747, 0.3850649, 0.1430804 },
-    { 0.2225045, 0.7168786, 0.0606169 },
-    { 0.0139322, 0.0971045, 0.7141733 }
-    //     {0.4124564, 0.3575761, 0.1804375},
-    //     {0.2126729, 0.7151522, 0.0721750},
-    //     {0.0193339, 0.1191920, 0.9503041}
-  };
-  // XYZ -> sRGB matrix, D65
-  const float xyz_to_srgb[3][3] = {
-    { 3.1338561, -1.6168667, -0.4906146 },
-    { -0.9787684, 1.9161415, 0.0334540 },
-    { 0.0719453, -0.2289914, 1.4052427 }
-    //     {3.2404542, -1.5371385, -0.4985314},
-    //     {-0.9692660,  1.8760108,  0.0415560},
-    //     {0.0556434, -0.2040259,  1.0572252}
-  };
+  const __m128 lift = { 2.0 - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
+                        2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
+                        2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]) },
+              gamma = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
+                        d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
+                        d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR] },
+              gamma_inv = { (gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
+                            (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
+                            (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0 },
+              gain = { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
+                       d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
+                       d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR] };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(i, o, roi_in, roi_out)
@@ -141,42 +122,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   {
     float *in = ((float *)i) + (size_t)ch * roi_in->width * j;
     float *out = ((float *)o) + (size_t)ch * roi_out->width * j;
-    for(int i = 0; i < roi_out->width; i++)
+    for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
     {
       // transform the pixel to sRGB:
       // Lab -> XYZ
-      float XYZ[3];
-      dt_Lab_to_XYZ(in, XYZ);
+      __m128 Lab = _mm_load_ps(in);
+      __m128 XYZ = dt_Lab_to_XYZ_SSE(Lab);
       // XYZ -> sRGB
-      float rgb[3] = { 0, 0, 0 };
-      for(int r = 0; r < 3; r++)
-        for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb[r][c] * XYZ[c];
-      // linear sRGB -> gamma corrected sRGB
-      for(int c = 0; c < 3; c++)
-        rgb[c] = rgb[c] <= 0.0031308 ? 12.92 * rgb[c] : (1.0 + 0.055) * powf(rgb[c], 1.0 / 2.4) - 0.055;
+      __m128 rgb = dt_XYZ_to_sRGB_SSE(XYZ);
 
       // do the calculation in RGB space
-      for(int c = 0; c < 3; c++)
-      {
-        float tmp = (((rgb[c] - 1.0f) * lift[c]) + 1.0f) * gain[c];
-        if(tmp < 0.0f) tmp = 0.0f;
-        rgb[c] = powf(tmp, gamma_inv[c]);
-      }
+      __m128 one = _mm_set1_ps(1.0);
+      __m128 tmp = (((rgb - one) * lift) + one) * gain;
+      tmp = _mm_max_ps(tmp, _mm_setzero_ps());
+      rgb = _mm_pow_ps(tmp, gamma_inv);
 
       // transform the result back to Lab
       // sRGB -> XYZ
-      XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
-      // gamma corrected sRGB -> linear sRGB
-      for(int c = 0; c < 3; c++)
-        rgb[c] = rgb[c] <= 0.04045 ? rgb[c] / 12.92 : powf((rgb[c] + 0.055) / (1 + 0.055), 2.4);
-      for(int r = 0; r < 3; r++)
-        for(int c = 0; c < 3; c++) XYZ[r] += srgb_to_xyz[r][c] * rgb[c];
+      XYZ = dt_sRGB_to_XYZ_SSE(rgb);
       // XYZ -> Lab
-      dt_XYZ_to_Lab(XYZ, out);
-      out[3] = in[3];
-
-      in += ch;
-      out += ch;
+      __m128 outv = dt_XYZ_to_Lab_SSE(XYZ);
+      _mm_store_ps(out, outv);
     }
   }
 }
