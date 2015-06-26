@@ -17,7 +17,10 @@
 */
 
 #include "common/colorspaces.h"
+#include "common/sse.h"
 #include <xmmintrin.h>
+
+/* These functions are derived from the non-SSE versions in colorspaces.c */
 
 static inline __m128 lab_f_inv_m(const __m128 x)
 {
@@ -80,4 +83,53 @@ __m128 dt_XYZ_to_Lab_SSE(const __m128 XYZ)
   // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
   return _mm_mul_ps(coef, _mm_sub_ps(_mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 1, 0, 1)),
                                      _mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 2, 1, 3))));
+}
+
+// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
+__m128 dt_XYZ_to_sRGB_SSE(__m128 XYZ)
+{
+  // XYZ -> sRGB matrix, D65
+  static const __m128 xyz_to_srgb[3] = {
+    { 3.1338561, -0.9787684, 0.0719453, 0 },
+    { -1.6168667, 1.9161415, -0.2289914, 0 },
+    { -0.4906146, 0.0334540, 1.4052427, 0 }
+    //     {3.2404542, -1.5371385, -0.4985314},
+    //     {-0.9692660,  1.8760108,  0.0415560},
+    //     {0.0556434, -0.2040259,  1.0572252}
+  };
+  __m128 rgb
+    = xyz_to_srgb[0] * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0))
+    + xyz_to_srgb[1] * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1))
+    + xyz_to_srgb[2] * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2));
+
+  // linear sRGB -> gamma corrected sRGB
+  __m128 mask = _mm_cmple_ps(rgb, _mm_set1_ps(0.0031308));
+  __m128 rgb0 = _mm_set1_ps(12.92) * rgb;
+  __m128 rgb1 = _mm_set1_ps(1.0 + 0.055) * _mm_pow_ps1(rgb, 1.0 / 2.4) - _mm_set1_ps(0.055);
+  return _mm_or_ps(_mm_and_ps(mask, rgb0), _mm_andnot_ps(mask, rgb1));
+}
+
+__m128 dt_sRGB_to_XYZ_SSE(__m128 rgb)
+{
+  // sRGB -> XYZ matrix, D65
+  static const __m128 srgb_to_xyz[3] = {
+    { 0.4360747, 0.2225045, 0.0139322, 0 },
+    { 0.3850649, 0.7168786, 0.0971045, 0 },
+    { 0.1430804, 0.0606169, 0.7141733, 0 }
+    //     {0.4124564, 0.3575761, 0.1804375},
+    //     {0.2126729, 0.7151522, 0.0721750},
+    //     {0.0193339, 0.1191920, 0.9503041}
+  };
+
+  // gamma corrected sRGB -> linear sRGB
+  __m128 mask = _mm_cmple_ps(rgb, _mm_set1_ps(0.04045));
+  __m128 rgb0 = rgb / _mm_set1_ps(12.92);
+  __m128 rgb1 = _mm_pow_ps1((rgb + _mm_set1_ps(0.055)) / _mm_set1_ps(1 + 0.055), 2.4);
+  rgb = _mm_or_ps(_mm_and_ps(mask, rgb0), _mm_andnot_ps(mask, rgb1));
+
+  __m128 XYZ
+    = srgb_to_xyz[0] * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0))
+    + srgb_to_xyz[1] * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1))
+    + srgb_to_xyz[2] * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2));
+  return XYZ;
 }
