@@ -43,7 +43,7 @@
 #include "common/file_location.h"
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-DT_MODULE_INTROSPECTION(3, dt_iop_watermark_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
@@ -70,6 +70,12 @@ typedef struct dt_iop_watermark_params_t
   float rotate;
   dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
+  /* simple text */
+  char text[64];
+  /* text color */
+  float color[3];
+  /* text font */
+  char font[64];
 } dt_iop_watermark_params_t;
 
 typedef struct dt_iop_watermark_data_t
@@ -82,6 +88,9 @@ typedef struct dt_iop_watermark_data_t
   float rotate;
   dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
+  char text[64];
+  float color[3];
+  char font[64];
 } dt_iop_watermark_data_t;
 
 typedef struct dt_iop_watermark_gui_data_t
@@ -92,12 +101,15 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkWidget *scale1, *scale2, *scale3, *scale4; // opacity, scale, xoffs, yoffs
   GtkWidget *sizeto;                            // relative size to
   GtkWidget *rotate;
+  GtkWidget *text;
+  GtkWidget *colorpick;
+  GtkWidget *fontsel;
 } dt_iop_watermark_gui_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     typedef struct dt_iop_watermark_params_v1_t
     {
@@ -128,9 +140,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->rotate = 0.0;
     n->sizeto = DT_SCALE_IMAGE;
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->text, "", sizeof(n->text));
+    g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
+    n->color[0] = n->color[1] = n->color[2] = 0;
+
     return 0;
   }
-  else if(old_version == 2 && new_version == 3)
+  else if(old_version == 2 && new_version == 4)
   {
     typedef struct dt_iop_watermark_params_v2_t
     {
@@ -162,6 +178,48 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->rotate = 0.0;
     n->sizeto = DT_SCALE_IMAGE;
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->text, "", sizeof(n->text));
+    g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
+    n->color[0] = n->color[1] = n->color[2] = 0;
+    return 0;
+  }
+  else if(old_version == 3 && new_version == 4)
+  {
+    typedef struct dt_iop_watermark_params_v3_t
+    {
+      /** opacity value of rendering watermark */
+      float opacity;
+      /** scale value of rendering watermark */
+      float scale;
+      /** Pixel independent xoffset, 0 to 1 */
+      float xoffset;
+      /** Pixel independent yoffset, 0 to 1 */
+      float yoffset;
+      /** Alignment value 0-8 3x3 */
+      int alignment;
+      /** Rotation **/
+      float rotate;
+      dt_iop_watermark_base_scale_t sizeto;
+      char filename[64];
+    } dt_iop_watermark_params_v3_t;
+
+    dt_iop_watermark_params_v3_t *o = (dt_iop_watermark_params_v3_t *)old_params;
+    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
+    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->opacity = o->opacity;
+    n->scale = o->scale;
+    n->xoffset = o->xoffset;
+    n->yoffset = o->yoffset;
+    n->alignment = o->alignment;
+    n->rotate = o->rotate;
+    n->sizeto = o->sizeto;
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->text, "", sizeof(n->text));
+    g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
+    n->color[0] = n->color[1] = n->color[2] = 0;
     return 0;
   }
   return 1;
@@ -256,6 +314,7 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
 static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data_t *data,
                                     const dt_image_t *image)
 {
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   gsize length;
 
   gchar *svgdoc = NULL;
@@ -311,8 +370,71 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
       svgdata = svgdoc;
     }
 
-    // Current image ID
+    // Simple text from watermark module
     gchar buffer[1024];
+
+    if (p->font)
+    {
+      g_snprintf(buffer, sizeof(buffer), "%s", p->text);
+      svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
+      if(svgdoc != svgdata)
+      {
+        g_free(svgdata);
+        svgdata = svgdoc;
+      }
+
+      GdkRGBA c = { p->color[0], p->color[1], p->color[2], 1.0f };
+      g_snprintf(buffer, sizeof(buffer), "%s", gdk_rgba_to_string(&c));
+      svgdoc = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
+      if(svgdoc != svgdata)
+      {
+        g_free(svgdata);
+        svgdata = svgdoc;
+      }
+
+      PangoFontDescription *font = pango_font_description_from_string(p->font);
+      const PangoStyle font_style = pango_font_description_get_style(font);
+      const int font_weight = (int)pango_font_description_get_weight(font);
+
+      g_snprintf(buffer, sizeof(buffer), "%s", pango_font_description_get_family(font));
+      svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
+      if(svgdoc != svgdata)
+      {
+        g_free(svgdata);
+        svgdata = svgdoc;
+      }
+
+      switch (font_style)
+      {
+      case PANGO_STYLE_OBLIQUE:
+        g_strlcpy(buffer, "oblique", sizeof(buffer));
+        break;
+      case PANGO_STYLE_ITALIC:
+        g_strlcpy(buffer, "italic", sizeof(buffer));
+        break;
+      default:
+        g_strlcpy(buffer, "normal", sizeof(buffer));
+        break;
+      }
+      svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_STYLE)", buffer);
+      if(svgdoc != svgdata)
+      {
+        g_free(svgdata);
+        svgdata = svgdoc;
+      }
+
+      g_snprintf(buffer, sizeof(buffer), "%d", font_weight);
+      svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_WEIGHT)", buffer);
+      if(svgdoc != svgdata)
+      {
+        g_free(svgdata);
+        svgdata = svgdoc;
+      }
+
+      pango_font_description_free(font);
+    }
+
+    // Current image ID
     g_snprintf(buffer, sizeof(buffer), "%d", image->id);
     svgdoc = _string_substitute(svgdata, "$(IMAGE.ID)", buffer);
     if(svgdoc != svgdata)
@@ -922,6 +1044,45 @@ static void opacity_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void text_callback(GtkWidget *entry, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  snprintf(p->text, sizeof(p->text), "%s", gtk_entry_get_text(GTK_ENTRY(entry)));
+  dt_conf_set_string("plugins/darkroom/watermark/text", p->text);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void colorpick_color_set(GtkColorButton *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+
+  GdkRGBA c;
+  gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
+  p->color[0] = c.red;
+  p->color[1] = c.green;
+  p->color[2] = c.blue;
+
+  dt_conf_set_float("plugins/darkroom/watermark/color_red", p->color[0]);
+  dt_conf_set_float("plugins/darkroom/watermark/color_green", p->color[1]);
+  dt_conf_set_float("plugins/darkroom/watermark/color_blue", p->color[2]);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void fontsel_callback(GtkWidget *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+
+  snprintf(p->font, sizeof(p->font), "%s", gtk_font_button_get_font_name(GTK_FONT_BUTTON(button)));
+  dt_conf_set_string("plugins/darkroom/watermark/font", p->font);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void xoffset_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -986,6 +1147,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->sizeto = p->sizeto;
   memset(d->filename, 0, sizeof(d->filename));
   snprintf(d->filename, sizeof(d->filename), "%s", p->filename);
+  memset(d->text, 0, sizeof(d->text));
+  snprintf(d->text, sizeof(d->text), "%s", p->text);
+  for (int k=0; k<3; k++)
+    d->color[k] = p->color[k];
+  memset(d->font, 0, sizeof(d->font));
+  snprintf(d->font, sizeof(d->font), "%s", p->font);
 
 // fprintf(stderr,"Commit params: %s...\n",d->filename);
 #endif
@@ -1028,6 +1195,10 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dtba[p->alignment]), TRUE);
   _combo_box_set_active_text(GTK_COMBO_BOX(g->combobox1), p->filename);
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
+  gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
+  GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
+  gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
+  gtk_font_button_set_font_name(GTK_FONT_BUTTON(g->fontsel), p->font);
 }
 
 void init(dt_iop_module_t *module)
@@ -1040,7 +1211,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){
-    100.0, 100.0, 0.0, 0.0, 4, 0.0, DT_SCALE_IMAGE, { "darktable.svg" }
+    100.0, 100.0, 0.0, 0.0, 4, 0.0, DT_SCALE_IMAGE, { "darktable.svg" }, { "" }, {0.0, 0.0, 0.0}, {"DejaVu Sans 10"}
   }; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));
@@ -1065,6 +1236,8 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char) * 64);
   GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
 
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("content")), FALSE, FALSE, 5);
+
   // Add the marker combobox
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->combobox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
@@ -1074,6 +1247,51 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->combobox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->dtbutton1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
+  // Simple text
+  GtkBox *hboxt = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkWidget *label = gtk_label_new(_("text"));
+  g->text = gtk_entry_new();
+  gtk_box_pack_start(hboxt, label, TRUE, TRUE, 0);
+  gtk_box_pack_start(hboxt, g->text, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxt), TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->text), "tooltip-text", _("text string, tag\n$(WATERMARK_TEXT)"), (char *)NULL);
+  dt_gui_key_accel_block_on_focus_connect(g->text);
+
+  gchar *str = dt_conf_get_string("plugins/darkroom/watermark/text");
+  gtk_entry_set_text(GTK_ENTRY(g->text), str);
+  g_free(str);
+
+  // Text color
+  float red = dt_conf_get_float("plugins/darkroom/watermark/color_red");
+  float green = dt_conf_get_float("plugins/darkroom/watermark/color_green");
+  float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
+  GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
+
+  hboxt = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  g->colorpick = gtk_color_button_new_with_rgba(&color);
+  g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("text color, tag:\n$(WATERMARK_COLOR)"), (char *)NULL);
+  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select text color"));
+  label = dtgtk_reset_label_new(_("text color"), self, &p->color, 3 * sizeof(float));
+
+  gtk_box_pack_start(hboxt, label, TRUE, TRUE, 0);
+  gtk_box_pack_start(hboxt, g->colorpick, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxt), TRUE, TRUE, 0);
+
+  // Text font
+  str = dt_conf_get_string("plugins/darkroom/watermark/font");
+  g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
+  g_object_set(G_OBJECT(g->fontsel), "tooltip-text",
+               _("text font, tags:\n$(WATERMARK_FONT_FAMILY)\n$(WATERMARK_FONT_STYLE)\n$(WATERMARK_FONT_WEIGHT)"),
+               (char *)NULL);
+  gtk_font_button_set_show_size (GTK_FONT_BUTTON(g->fontsel), FALSE);
+  g_free(str);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->fontsel), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 5);
 
   // Add opacity/scale sliders to table
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0);
@@ -1097,6 +1315,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->sizeto, NULL, _("scale on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->sizeto, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->sizeto), "tooltip-text", _("size is relative to"), (char *)NULL);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("position")), FALSE, FALSE, 5);
 
   // Create the 3x3 gtk table toggle button table...
   GtkGrid *bat = GTK_GRID(gtk_grid_new());
@@ -1147,6 +1367,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->combobox1), "changed", G_CALLBACK(watermark_callback), self);
   g_signal_connect(G_OBJECT(g->sizeto), "value-changed", G_CALLBACK(sizeto_callback), self);
+
+  g_signal_connect(G_OBJECT(g->text), "changed", G_CALLBACK(text_callback), self);
+  g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(colorpick_color_set), self);
+  g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(fontsel_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
