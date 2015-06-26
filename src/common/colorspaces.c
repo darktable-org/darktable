@@ -81,12 +81,18 @@ static void mat3mul(float *dst, const float *const m1, const float *const m2)
 }
 
 static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                  float *lutb, const int lutsize, const int input)
+                                                  float *lutb, const int lutsize, const int input,
+                                                  const int intent)
 {
   // create an OpenCL processable matrix + tone curves from an cmsHPROFILE:
 
   // check this first:
   if(!cmsIsMatrixShaper(prof)) return 1;
+
+  // if this profile contains LUT, it might also contain swapped matrix,
+  // so the only right way to handle it is to let LCMS apply it.
+  const int UsedDirection = input ? LCMS_USED_AS_INPUT : LCMS_USED_AS_OUTPUT;
+  if(cmsIsCLUT(prof, intent, UsedDirection)) return 1;
 
   cmsToneCurve *red_curve = cmsReadTag(prof, cmsSigRedTRCTag);
   cmsToneCurve *green_curve = cmsReadTag(prof, cmsSigGreenTRCTag);
@@ -168,15 +174,15 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
 }
 
 int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                 float *lutb, const int lutsize)
+                                                 float *lutb, const int lutsize, const int intent)
 {
-  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 1);
+  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 1, intent);
 }
 
 int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                  float *lutb, const int lutsize)
+                                                  float *lutb, const int lutsize, const int intent)
 {
-  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0);
+  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0, intent);
 }
 
 cmsHPROFILE dt_colorspaces_create_lab_profile()

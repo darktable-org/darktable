@@ -604,11 +604,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(d->softproof_enabled == DT_SOFTPROOF_GAMUTCHECK) transformFlags |= cmsFLAGS_GAMUTCHECK;
   }
 
+  /*
+   * NOTE: theoretically, we should be passing
+   * UsedDirection = LCMS_USED_AS_PROOF  into
+   * dt_colorspaces_get_matrix_from_output_profile() so that
+   * dt_colorspaces_get_matrix_from_profile() knows it, but since we do not try
+   * to use our matrix codepath when softproof is enabled, this seemed redundant.
+   */
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
   if(d->softproof_enabled || force_lcms2
      || dt_colorspaces_get_matrix_from_output_profile(d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-                                                      LUT_SAMPLES))
+                                                      LUT_SAMPLES, outintent))
   {
     d->cmatrix[0] = NAN;
     piece->process_cl_ready = 0;
@@ -622,8 +629,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     if(d->output) dt_colorspaces_cleanup_profile(d->output);
     d->output = dt_colorspaces_create_srgb_profile();
-    if(d->softproof_enabled || dt_colorspaces_get_matrix_from_output_profile(
-                                   d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+    if(d->softproof_enabled
+       || dt_colorspaces_get_matrix_from_output_profile(d->output, d->cmatrix, d->lut[0], d->lut[1],
+                                                        d->lut[2], LUT_SAMPLES, outintent))
     {
       d->cmatrix[0] = NAN;
       piece->process_cl_ready = 0;
