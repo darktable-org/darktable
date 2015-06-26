@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-22 10:21+0200\n"
-"PO-Revision-Date: 2015-06-22 10:23+0100\n"
+"POT-Creation-Date: 2015-06-26 15:05+0200\n"
+"PO-Revision-Date: 2015-06-26 15:09+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -770,7 +770,7 @@ msgstr "erreur de chargement du dossier «%s»"
 msgid "file `%s' has unknown format!"
 msgstr "le fichier «%s» possède un format inconnu !"
 
-#: ../src/common/darktable.c:371 ../src/libs/import.c:800
+#: ../src/common/darktable.c:371 ../src/libs/import.c:823
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
@@ -1190,8 +1190,8 @@ msgstr "sélectionner répertoire"
 
 #: ../src/control/jobs/control_jobs.c:1215 ../src/control/jobs/control_jobs.c:1269 ../src/gui/hist_dialog.c:137 ../src/gui/preferences.c:1012
 #: ../src/gui/preferences.c:1034 ../src/gui/presets.c:386 ../src/gui/styles_dialog.c:284 ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
-#: ../src/imageio/storage/latex.c:104 ../src/libs/collect.c:414 ../src/libs/copy_history.c:70 ../src/libs/geotagging.c:439 ../src/libs/import.c:738
-#: ../src/libs/import.c:834 ../src/libs/lib.c:216 ../src/libs/styles.c:208 ../src/libs/styles.c:228
+#: ../src/imageio/storage/latex.c:104 ../src/libs/collect.c:414 ../src/libs/copy_history.c:70 ../src/libs/geotagging.c:439 ../src/libs/import.c:761
+#: ../src/libs/import.c:858 ../src/libs/lib.c:216 ../src/libs/styles.c:208 ../src/libs/styles.c:228
 msgid "_Cancel"
 msgstr "_Annuler"
 
@@ -1619,7 +1619,7 @@ msgstr "mode de fusion"
 msgid "choose blending mode"
 msgstr "choisir le mode de fusion"
 
-#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1081
+#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1299
 msgid "opacity"
 msgstr "opacité"
 
@@ -1714,7 +1714,7 @@ msgid "%s is switched off"
 msgstr "%s est désactivé"
 
 #: ../src/develop/imageop.c:1195 ../src/gui/accelerators.c:596 ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847 ../src/gui/accelerators.c:873
-#: ../src/gui/presets.c:188 ../src/gui/presets.c:294 ../src/gui/presets.c:662 ../src/iop/temperature.c:1161 ../src/libs/import.c:521 ../src/libs/lib.c:309
+#: ../src/gui/presets.c:188 ../src/gui/presets.c:294 ../src/gui/presets.c:662 ../src/iop/temperature.c:1161 ../src/libs/import.c:543 ../src/libs/lib.c:309
 #: ../src/libs/lib.c:334 ../src/libs/lib.c:1112
 msgid "preset"
 msgstr "pré-réglage"
@@ -1766,7 +1766,7 @@ msgstr "impossible de trouver un XMP venant de Lightroom !"
 msgid "`%s' not a lightroom XMP!"
 msgstr "«%s» n'est pas un XMP de Lightroom !"
 
-#: ../src/develop/lightroom.c:1382 ../src/libs/import.c:541
+#: ../src/develop/lightroom.c:1382 ../src/libs/import.c:563
 msgid "tags"
 msgstr "mots-clés"
 
@@ -2101,11 +2101,11 @@ msgid "general"
 msgstr "général"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:419
+#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:435
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:420
+#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:436
 msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+JPEG in a directory."
 msgstr "les fichiers possédant une extension .jpg ou .jpeg ne sont pas importés. cela peut être utile lorsqu'un dossier possède des fichiers raw+JPEG."
 
@@ -2443,8 +2443,8 @@ msgstr "_Enregistrer"
 msgid "select file to import"
 msgstr "sélectionne le fichier à importer"
 
-#: ../src/gui/preferences.c:1034 ../src/libs/collect.c:415 ../src/libs/copy_history.c:71 ../src/libs/geotagging.c:440 ../src/libs/import.c:739
-#: ../src/libs/import.c:835 ../src/libs/styles.c:229
+#: ../src/gui/preferences.c:1034 ../src/libs/collect.c:415 ../src/libs/copy_history.c:71 ../src/libs/geotagging.c:440 ../src/libs/import.c:762
+#: ../src/libs/import.c:859 ../src/libs/styles.c:229
 msgid "_Open"
 msgstr "_Ouvrir"
 
@@ -2735,7 +2735,7 @@ msgid "invalid border size, using 0"
 msgstr "taille des bords non valide, 0 est utilisé"
 
 #: ../src/imageio/format/pdf.c:194 ../src/imageio/storage/disk.c:289 ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1293
-#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:337 ../src/imageio/storage/gallery.c:357 ../src/imageio/storage/picasa.c:1441
+#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:337 ../src/imageio/storage/gallery.c:357 ../src/imageio/storage/picasa.c:1446
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier «%s» !"
@@ -2749,7 +2749,7 @@ msgstr "PDF"
 #. clang-format off
 #. xmp
 #: ../src/imageio/format/pdf.c:523 ../src/imageio/storage/facebook.c:1107 ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:171
-#: ../src/imageio/storage/latex.c:172 ../src/imageio/storage/picasa.c:1294 ../src/libs/collect.h:29 ../src/libs/metadata.c:344 ../src/libs/metadata_view.c:104
+#: ../src/imageio/storage/latex.c:172 ../src/imageio/storage/picasa.c:1299 ../src/libs/collect.h:29 ../src/libs/metadata.c:344 ../src/libs/metadata_view.c:104
 msgid "title"
 msgstr "titre"
 
@@ -3100,30 +3100,30 @@ msgstr ""
 "une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans votre navigateur. connectez-vous à votre compte facebook et autorisez darktable à charger des photos "
 "pour continuer."
 
-#: ../src/imageio/storage/facebook.c:838 ../src/imageio/storage/picasa.c:1001
+#: ../src/imageio/storage/facebook.c:838 ../src/imageio/storage/picasa.c:1006
 msgid "new account"
 msgstr "nouveau compte"
 
-#: ../src/imageio/storage/facebook.c:843 ../src/imageio/storage/picasa.c:1006
+#: ../src/imageio/storage/facebook.c:843 ../src/imageio/storage/picasa.c:1011
 msgid "other account"
 msgstr "autre compte"
 
-#: ../src/imageio/storage/facebook.c:872 ../src/imageio/storage/picasa.c:1034
+#: ../src/imageio/storage/facebook.c:872 ../src/imageio/storage/picasa.c:1039
 msgid "unable to retrieve the album list"
 msgstr "impossible de rafraîchir la liste d'album"
 
-#: ../src/imageio/storage/facebook.c:880 ../src/imageio/storage/flickr.c:386 ../src/imageio/storage/flickr.c:413 ../src/imageio/storage/picasa.c:1042
+#: ../src/imageio/storage/facebook.c:880 ../src/imageio/storage/flickr.c:386 ../src/imageio/storage/flickr.c:413 ../src/imageio/storage/picasa.c:1047
 msgid "create new album"
 msgstr "créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:952 ../src/imageio/storage/picasa.c:1090 ../src/imageio/storage/picasa.c:1249
+#: ../src/imageio/storage/facebook.c:952 ../src/imageio/storage/picasa.c:1095 ../src/imageio/storage/picasa.c:1254
 msgid "logout"
 msgstr "se déconnecter"
 
 #. Set default permission to private
 #: ../src/imageio/storage/facebook.c:958 ../src/imageio/storage/facebook.c:978 ../src/imageio/storage/facebook.c:1025 ../src/imageio/storage/facebook.c:1051
-#: ../src/imageio/storage/facebook.c:1170 ../src/imageio/storage/flickr.c:474 ../src/imageio/storage/picasa.c:1096 ../src/imageio/storage/picasa.c:1253
-#: ../src/imageio/storage/picasa.c:1266 ../src/imageio/storage/picasa.c:1337
+#: ../src/imageio/storage/facebook.c:1170 ../src/imageio/storage/flickr.c:474 ../src/imageio/storage/picasa.c:1101 ../src/imageio/storage/picasa.c:1258
+#: ../src/imageio/storage/picasa.c:1271 ../src/imageio/storage/picasa.c:1342
 msgid "login"
 msgstr "connexion"
 
@@ -3131,7 +3131,7 @@ msgstr "connexion"
 msgid "facebook webalbum"
 msgstr "album web facebook"
 
-#: ../src/imageio/storage/facebook.c:1108 ../src/imageio/storage/flickr.c:547 ../src/imageio/storage/picasa.c:1295
+#: ../src/imageio/storage/facebook.c:1108 ../src/imageio/storage/flickr.c:547 ../src/imageio/storage/picasa.c:1300
 msgid "summary"
 msgstr "résumé"
 
@@ -3155,11 +3155,11 @@ msgstr "public"
 msgid "friends of friends"
 msgstr "amis d'amis"
 
-#: ../src/imageio/storage/facebook.c:1302 ../src/imageio/storage/picasa.c:1450
+#: ../src/imageio/storage/facebook.c:1302 ../src/imageio/storage/picasa.c:1455
 msgid "unable to create album, no title provided"
 msgstr "impossible de créer un album, titre manquant"
 
-#: ../src/imageio/storage/facebook.c:1311 ../src/imageio/storage/picasa.c:1458
+#: ../src/imageio/storage/facebook.c:1311 ../src/imageio/storage/picasa.c:1463
 msgid "unable to create album"
 msgstr "impossible de créer un nouvel album"
 
@@ -3316,16 +3316,16 @@ msgstr "code de vérification"
 msgid "please enter the verification code"
 msgstr "merci d'entrer le code de vérification"
 
-#: ../src/imageio/storage/picasa.c:1281
+#: ../src/imageio/storage/picasa.c:1286
 msgid "google+ photos"
 msgstr "photos google+"
 
-#: ../src/imageio/storage/picasa.c:1468
+#: ../src/imageio/storage/picasa.c:1473
 msgid "unable to export photo to google+ album"
 msgstr "impossible d'exporter les photos vers l'album google+"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1481
+#: ../src/imageio/storage/picasa.c:1486
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgstr "%d/%d exportée(s) vers l'album google+"
@@ -3516,7 +3516,7 @@ msgstr "courbe de base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
-#: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2179 ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1084
+#: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2179 ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1302
 msgid "scale"
 msgstr "échelle"
 
@@ -3670,7 +3670,7 @@ msgid "15:10 postcard black"
 msgstr "15x10 noir"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:909 ../src/libs/import.c:913
+#: ../src/iop/borders.c:909 ../src/libs/import.c:967
 msgid "image"
 msgstr "image"
 
@@ -5325,7 +5325,7 @@ msgstr ""
 "progressivité du dégradé :\n"
 "0% = doux, 100% = dur"
 
-#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1087
+#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1305
 msgid "rotation"
 msgstr "rotation"
 
@@ -5475,7 +5475,7 @@ msgstr "choisir la couleur du film dans l'image"
 msgid "lens correction"
 msgstr "correction des objectifs"
 
-#: ../src/iop/lens.c:160 ../src/iop/vignette.c:169 ../src/iop/watermark.c:194
+#: ../src/iop/lens.c:160 ../src/iop/vignette.c:169 ../src/iop/watermark.c:252
 msgctxt "accel"
 msgid "scale"
 msgstr "échelle"
@@ -6560,82 +6560,134 @@ msgstr "ratio entre la largeur et la hauteur"
 msgid "add some level of random noise to prevent banding"
 msgstr "ajoute du bruit aléatoire pour éviter l'apparition de bandes"
 
-#: ../src/iop/watermark.c:172
+#: ../src/iop/watermark.c:230
 msgid "watermark"
 msgstr "filigrane"
 
-#: ../src/iop/watermark.c:192
+#: ../src/iop/watermark.c:250
 msgctxt "accel"
 msgid "refresh"
 msgstr "rafraîchir"
 
-#: ../src/iop/watermark.c:193
+#: ../src/iop/watermark.c:251
 msgctxt "accel"
 msgid "opacity"
 msgstr "opacité"
 
-#: ../src/iop/watermark.c:195
+#: ../src/iop/watermark.c:253
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/watermark.c:196
+#: ../src/iop/watermark.c:254
 msgctxt "accel"
 msgid "x offset"
 msgstr "décalage x"
 
-#: ../src/iop/watermark.c:197
+#: ../src/iop/watermark.c:255
 msgctxt "accel"
 msgid "y offset"
 msgstr "décalage y"
 
-#: ../src/iop/watermark.c:1065
+#: ../src/iop/watermark.c:1236
 msgid "marker"
 msgstr "fichier"
 
-#: ../src/iop/watermark.c:1066 ../src/libs/print_settings.c:1205
+#: ../src/iop/watermark.c:1237 ../src/libs/print_settings.c:1205
 msgid "alignment"
 msgstr "alignement"
 
-#: ../src/iop/watermark.c:1093
+#: ../src/iop/watermark.c:1239
+msgid "content"
+msgstr "contenu"
+
+#: ../src/iop/watermark.c:1253
+msgid "text"
+msgstr "texte"
+
+#: ../src/iop/watermark.c:1258
+msgid ""
+"text string, tag\n"
+"$(WATERMARK_TEXT)"
+msgstr ""
+"texte, tag\n"
+"$(WATERMARK_TEXT)"
+
+#: ../src/iop/watermark.c:1273
+msgid ""
+"text color, tag:\n"
+"$(WATERMARK_COLOR)"
+msgstr ""
+"couleur du texte, tag:\n"
+"$(WATERMARK_COLOR)"
+
+#: ../src/iop/watermark.c:1276
+msgid "select text color"
+msgstr "sélectionner la couleur du texte"
+
+#: ../src/iop/watermark.c:1277
+msgid "text color"
+msgstr "couleur du texte"
+
+#: ../src/iop/watermark.c:1287
+msgid ""
+"text font, tags:\n"
+"$(WATERMARK_FONT_FAMILY)\n"
+"$(WATERMARK_FONT_STYLE)\n"
+"$(WATERMARK_FONT_WEIGHT)"
+msgstr ""
+"police de caractère, tags:\n"
+"$(WATERMARK_FONT_FAMILY)\n"
+"$(WATERMARK_FONT_STYLE)\n"
+"$(WATERMARK_FONT_WEIGHT)"
+
+#: ../src/iop/watermark.c:1294 ../src/libs/camera.c:495
+msgid "properties"
+msgstr "paramètres"
+
+#: ../src/iop/watermark.c:1311
 msgctxt "size"
 msgid "image"
 msgstr "image"
 
-#: ../src/iop/watermark.c:1094
+#: ../src/iop/watermark.c:1312
 msgid "larger border"
 msgstr "grand coté"
 
-#: ../src/iop/watermark.c:1095
+#: ../src/iop/watermark.c:1313
 msgid "smaller border"
 msgstr "petit coté"
 
-#: ../src/iop/watermark.c:1097
+#: ../src/iop/watermark.c:1315
 msgid "scale on"
 msgstr "échelle sur"
 
-#: ../src/iop/watermark.c:1099
+#: ../src/iop/watermark.c:1317
 msgid "size is relative to"
 msgstr "la taille est relative à"
 
-#: ../src/iop/watermark.c:1121
+#: ../src/iop/watermark.c:1319
+msgid "position"
+msgstr "position"
+
+#: ../src/iop/watermark.c:1341
 msgid "x offset"
 msgstr "décalage x"
 
-#: ../src/iop/watermark.c:1124
+#: ../src/iop/watermark.c:1344
 msgid "y offset"
 msgstr "décalage y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1130
+#: ../src/iop/watermark.c:1350
 msgid "the opacity of the watermark"
 msgstr "opacité du filigrane"
 
-#: ../src/iop/watermark.c:1131
+#: ../src/iop/watermark.c:1351
 msgid "the scale of the watermark"
 msgstr "taille du filigrane"
 
-#: ../src/iop/watermark.c:1132
+#: ../src/iop/watermark.c:1352
 msgid "the rotation of the watermark"
 msgstr "la rotation du filigrane"
 
@@ -6751,10 +6803,6 @@ msgid ""
 msgstr ""
 "pas d'exposition, le pas étant configurable par le boîtier et habituellement de 3 pas par \"stop\"\n"
 "autrement dit, 3 pas correspondent à 1 IL entre expositions."
-
-#: ../src/libs/camera.c:495
-msgid "properties"
-msgstr "paramètres"
 
 #: ../src/libs/camera.c:500
 msgid "program"
@@ -6906,15 +6954,15 @@ msgstr "historique"
 msgid "description"
 msgstr "description"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:526 ../src/libs/metadata.c:346 ../src/libs/metadata_view.c:105
+#: ../src/libs/collect.h:30 ../src/libs/import.c:548 ../src/libs/metadata.c:346 ../src/libs/metadata_view.c:105
 msgid "creator"
 msgstr "auteur"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:531 ../src/libs/metadata.c:347
+#: ../src/libs/collect.h:30 ../src/libs/import.c:553 ../src/libs/metadata.c:347
 msgid "publisher"
 msgstr "diffuseur"
 
-#: ../src/libs/collect.h:31 ../src/libs/import.c:536 ../src/libs/metadata.c:348
+#: ../src/libs/collect.h:31 ../src/libs/import.c:558 ../src/libs/metadata.c:348
 msgid "rights"
 msgstr "droits"
 
@@ -6993,7 +7041,7 @@ msgstr "ouvrir un fichier xmp"
 msgid "XMP sidecar files"
 msgstr "fichiers XMP"
 
-#: ../src/libs/copy_history.c:81 ../src/libs/geotagging.c:457 ../src/libs/import.c:767 ../src/libs/styles.c:242
+#: ../src/libs/copy_history.c:81 ../src/libs/geotagging.c:457 ../src/libs/import.c:790 ../src/libs/styles.c:242
 msgid "all files"
 msgstr "tous les fichiers"
 
@@ -7545,116 +7593,116 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "dégrouper"
 
-#: ../src/libs/import.c:96
+#: ../src/libs/import.c:102
 msgid "import"
 msgstr "importer"
 
-#: ../src/libs/import.c:117
+#: ../src/libs/import.c:123
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:118
+#: ../src/libs/import.c:124
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
-#: ../src/libs/import.c:119
+#: ../src/libs/import.c:125
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
-#: ../src/libs/import.c:120
+#: ../src/libs/import.c:126
 msgctxt "accel"
 msgid "import image"
 msgstr "importer une image"
 
-#: ../src/libs/import.c:121
+#: ../src/libs/import.c:127
 msgctxt "accel"
 msgid "import folder"
 msgstr "importer un dossier"
 
-#: ../src/libs/import.c:212
+#: ../src/libs/import.c:218
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "appareil «%s» connecté sur le port «%s»"
 
-#: ../src/libs/import.c:222
+#: ../src/libs/import.c:228
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
-#: ../src/libs/import.c:228
+#: ../src/libs/import.c:234
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:250
+#: ../src/libs/import.c:256
 msgid "no supported devices found"
 msgstr "aucun appareil supporté n'a été détecté"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:383
+#: ../src/libs/import.c:399
 msgid "import options"
 msgstr "options d'importation"
 
 #. recursive opening.
-#: ../src/libs/import.c:412
+#: ../src/libs/import.c:428
 msgid "import directories recursively"
 msgstr "importer les dossiers récursivement"
 
-#: ../src/libs/import.c:414
+#: ../src/libs/import.c:430
 msgid "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "importe les dossiers de manière récursive"
 
-#: ../src/libs/import.c:431
+#: ../src/libs/import.c:447
 msgid "apply metadata on import"
 msgstr "appliquer des métadonnées lors de l'importation"
 
-#: ../src/libs/import.c:432
+#: ../src/libs/import.c:448
 msgid "apply some metadata to all newly imported images."
 msgstr ""
 "appliquer des métadonnées\n"
 "à toutes les images nouvellement importées"
 
-#: ../src/libs/import.c:472
+#: ../src/libs/import.c:494
 msgid "comma separated list of tags"
 msgstr "liste de mots-clés séparés par une virgule"
 
-#: ../src/libs/import.c:738
+#: ../src/libs/import.c:761
 msgid "import image"
 msgstr "importer une image"
 
-#: ../src/libs/import.c:762
+#: ../src/libs/import.c:785
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/libs/import.c:816
+#: ../src/libs/import.c:839
 msgid "file has unknown format!"
 msgstr "le fichier possède un format inconnu !"
 
-#: ../src/libs/import.c:834
+#: ../src/libs/import.c:858
 msgid "import film"
 msgstr "importer un dossier"
 
-#: ../src/libs/import.c:916
+#: ../src/libs/import.c:970
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
-#: ../src/libs/import.c:923
+#: ../src/libs/import.c:977
 msgid "folder"
 msgstr "dossier"
 
-#: ../src/libs/import.c:926
+#: ../src/libs/import.c:980
 msgid "select a folder to import as film roll"
 msgstr "sélectionner un dossier à importer"
 
 #. add the rescan button
-#: ../src/libs/import.c:934
+#: ../src/libs/import.c:988
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:937
+#: ../src/libs/import.c:991
 msgid "scan for newly attached devices"
 msgstr "recherche des appareils branchés récemment"
 
