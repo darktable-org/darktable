@@ -101,6 +101,7 @@ GtkAlignment
   background-image: none;
 }
 #lib-plugin-ui .button:${GTK_CSS_CLASS},
+#iop-plugin-ui .button:${GTK_CSS_CLASS},
 .button:${GTK_CSS_CLASS}
 {
   border-style:none;
@@ -108,6 +109,7 @@ GtkAlignment
   background-color: shade(@selected_bg_color, 1.4);
 }
 #lib-plugin-ui .button:hover,
+#iop-plugin-ui .button:hover,
 .button:hover
 {
   border-style:none;
@@ -116,13 +118,6 @@ GtkAlignment
 #iop-plugin-ui .button,
 #iop-plugin-ui GtkButton {
   background-color: transparent;
-}
-#iop-plugin-ui GtkGrid {
-  background-color: transparent;
-}
-#iop-plugin-ui .button:hover,
-#iop-plugin-ui GtkButton:hover {
-  background-color: shade(@plugin_bg_color, 1.7);
 }
 #iop-plugin-ui GtkLabel,
 #iop-plugin-ui GtkLabel:hover,
@@ -143,7 +138,7 @@ GtkAlignment
   background-color: @plugin_bg_color;
 }
 #iop-plugin-ui:selected,
-#lib-plugin-ui
+#lib-plugin-ui:selected
 {
   border: 1px solid #111111;
   box-shadow: inset 0 0 2px #141414;
@@ -215,11 +210,13 @@ GtkFrame > GtkEventBox * {
 {
   background-color:shade(@selected_bg_color, 0.8);
 }
-#lib-plugin-ui row
+#lib-plugin-ui row,
+#iop-plugin-ui row
 {
   background-color:@selected_bg_color;
 }
-#lib-plugin-ui row:selected
+#lib-plugin-ui row:selected,
+#iop-plugin-ui row:selected
 {
   background-color:@bg_color;
 }
@@ -279,7 +276,8 @@ GtkFrame > GtkEventBox * {
 {
   background-color:@selected_bg_color;
 }
-#lib-plugin-ui row:selected
+#lib-plugin-ui row:selected,
+#iop-plugin-ui row:selected
 {
   background-color:@bg_color;
 }
