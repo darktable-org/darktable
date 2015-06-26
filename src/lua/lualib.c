@@ -107,6 +107,42 @@ int position_wrapper(struct dt_lib_module_t *self)
   return 0;
 }
 
+static int async_lib_call(lua_State * L)
+{
+  //lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_libs");
+  const char* event = lua_tostring(L,1);
+  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,2);
+  dt_lua_module_entry_push(L,"lib",module->plugin_name);
+  lua_getuservalue(L,-1);
+  lua_getfield(L,-1,event);
+  if(lua_isnoneornil(L,-1)) {
+    return 0;
+  }
+  lua_pushvalue(L,2);
+  lua_pushvalue(L,3);
+  lua_pushvalue(L,4);
+  dt_lua_do_chunk_raise(L,3,0);
+  return 0;
+}
+static void view_enter_wrapper(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
+  dt_lua_do_chunk_async(async_lib_call,
+      LUA_ASYNC_TYPENAME,"const char*","view_enter",
+      LUA_ASYNC_TYPENAME,"dt_lua_lib_t",self,
+      LUA_ASYNC_TYPENAME,"dt_lua_view_t",old_view,
+      LUA_ASYNC_TYPENAME,"dt_lua_view_t",new_view,
+      LUA_ASYNC_DONE);
+}
+
+static void view_leave_wrapper(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
+  dt_lua_do_chunk_async(async_lib_call,
+      LUA_ASYNC_TYPENAME,"const char*","view_leave",
+      LUA_ASYNC_TYPENAME,"dt_lua_lib_t",self,
+      LUA_ASYNC_TYPENAME,"dt_lua_view_t",old_view,
+      LUA_ASYNC_TYPENAME,"dt_lua_view_t",new_view,
+      LUA_ASYNC_DONE);
+}
 
 static dt_lib_module_t ref_lib = {
   .module = NULL,
@@ -141,14 +177,12 @@ static dt_lib_module_t ref_lib = {
   .accel_closures = NULL,
   .reset_button = NULL,
   .presets_button = NULL,
+  .view_enter = view_enter_wrapper,
+  .view_leave = view_leave_wrapper,
 };
 
 static int register_lib(lua_State *L)
 {
-  lua_settop(L, 6);
-  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_libs");
-  lua_newtable(L);
-
   dt_lib_module_t *lib = malloc(sizeof(dt_lib_module_t));
   memcpy(lib, &ref_lib, sizeof(dt_lib_module_t));
   lib->data = malloc(sizeof(lua_lib_data_t));
@@ -156,10 +190,13 @@ static int register_lib(lua_State *L)
   memset(data,0,sizeof(lua_lib_data_t));
 
   const char *plugin_name = luaL_checkstring(L, 1);
+  g_strlcpy(lib->plugin_name, plugin_name, sizeof(lib->plugin_name));
+  dt_lua_lib_register(L, lib);
+  /* push the object on the stack to have its metadata */
+  dt_lua_module_entry_push(L,"lib",lib->plugin_name);
+  lua_getuservalue(L,-1);
   lua_pushvalue(L, 1);
   lua_setfield(L, -2, "plugin_name");
-  g_strlcpy(lib->plugin_name, plugin_name, sizeof(lib->plugin_name));
-
   const char *name = luaL_checkstring(L, 2);
   lua_pushvalue(L, 2);
   lua_setfield(L, -2, "name");
@@ -213,7 +250,21 @@ static int register_lib(lua_State *L)
   dt_lua_widget_bind(L,widget);
   data->widget = widget;
 
-  lua_setfield(L, -2, plugin_name);
+  if(lua_isfunction(L,7)) {
+    lua_pushvalue(L, 7);
+    lua_setfield(L, -2, "view_enter");
+  } else {
+    lib->view_enter = NULL;
+  }
+
+  if(lua_isfunction(L,8)) {
+    lua_pushvalue(L, 8);
+    lua_setfield(L, -2, "view_leave");
+  } else {
+    lib->view_leave = NULL;
+  }
+
+  lua_pop(L,2);
 
 
 
@@ -222,7 +273,6 @@ static int register_lib(lua_State *L)
   {
     dt_accel_register_lib(lib, NC_("accel", "reset lib parameters"), 0, 0);
   }
-  dt_lua_lib_register(L, lib);
   if(lib->init) lib->init(lib);
 
   lib->gui_init(lib);
@@ -248,8 +298,6 @@ int dt_lua_init_lualib(lua_State *L)
   lua_settable(L, -3);
   lua_pop(L, 1);
 
-  lua_newtable(L);
-  lua_setfield(L, LUA_REGISTRYINDEX, "dt_lua_libs");
   return 0;
 }
 

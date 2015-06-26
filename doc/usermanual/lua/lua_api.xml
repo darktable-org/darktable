@@ -332,7 +332,9 @@
 	<emphasis><link linkend="darktable_register_lib_expandable">expandable</link></emphasis> : boolean, 
 	<emphasis><link linkend="darktable_register_lib_resetable">resetable</link></emphasis> : boolean, 
 	<emphasis><link linkend="darktable_register_lib_containers">containers</link></emphasis> : table of <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link> => [ <link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link>, int ], 
-	<emphasis><link linkend="darktable_register_lib_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+	<emphasis><link linkend="darktable_register_lib_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>, 
+	<emphasis><link linkend="darktable_register_lib_view_enter">view_enter</link></emphasis> : function, 
+	<emphasis><link linkend="darktable_register_lib_view_leave">view_leave</link></emphasis> : function
 )</synopsis>
 <para>Register a new lib object. A lib is a graphical element of darktable's user interface</para>
 
@@ -371,6 +373,64 @@
 <synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
 <para>The widget to display in the lib</para>
 
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_view_enter"><term>view_enter</term><listitem>
+<synopsis>self:function( 
+	<emphasis><link linkend="darktable_register_lib_view_enter_old_view">old_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>, 
+	<emphasis><link linkend="darktable_register_lib_view_enter_new_view">new_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>
+)</synopsis>
+<para>A callback called when a view displaying the lib is entered</para>
+
+<variablelist>
+<varlistentry id="darktable_register_lib_view_enter_self"><term>self</term><listitem>
+<synopsis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></synopsis>
+<para>The lib on which the callback is called</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_view_enter_old_view"><term>old_view</term><listitem>
+<synopsis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
+<para>The view that we are leaving</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_view_enter_new_view"><term>new_view</term><listitem>
+<synopsis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
+<para>The view that we are entering</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_view_leave"><term>view_leave</term><listitem>
+<synopsis>self:function( 
+	<emphasis><link linkend="darktable_register_lib_view_leave_old_view">old_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>, 
+	<emphasis><link linkend="darktable_register_lib_view_leave_new_view">new_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>
+)</synopsis>
+<para>A callback called when leaving a view displaying the lib</para>
+
+<variablelist>
+<varlistentry id="darktable_register_lib_view_leave_self"><term>self</term><listitem>
+<synopsis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></synopsis>
+<para>The lib on which the callback is called</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_view_leave_old_view"><term>old_view</term><listitem>
+<synopsis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
+<para>The view that we are leaving</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_register_lib_view_leave_new_view"><term>new_view</term><listitem>
+<synopsis><link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
+<para>The view that we are entering</para>
+
+</listitem></varlistentry>
+
+</variablelist>
 </listitem></varlistentry>
 
 </variablelist>
@@ -939,7 +999,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1050,7 +1110,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1109,7 +1169,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1151,7 +1211,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1172,7 +1232,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1193,7 +1253,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1214,7 +1274,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1235,7 +1295,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1256,7 +1316,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1277,7 +1337,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1298,7 +1358,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1319,7 +1379,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1340,7 +1400,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1361,7 +1421,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1382,7 +1442,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1445,7 +1505,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1466,7 +1526,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1487,7 +1547,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1508,7 +1568,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1529,7 +1589,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1550,7 +1610,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1571,7 +1631,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1592,7 +1652,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1613,7 +1673,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1634,7 +1694,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1655,7 +1715,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1676,7 +1736,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1697,7 +1757,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1718,7 +1778,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1739,7 +1799,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1760,7 +1820,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1781,7 +1841,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1802,7 +1862,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1823,7 +1883,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1844,7 +1904,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1865,7 +1925,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1886,7 +1946,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1907,7 +1967,7 @@ end</programlisting></para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -5136,17 +5196,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_lib_module_t">
-<title>types.dt_lib_module_t</title>
+<section status="final" id="types_dt_lua_lib_t">
+<title>types.dt_lua_lib_t</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>dt_lib_module_t</secondary>
+<secondary>dt_lua_lib_t</secondary>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>The type of a UI lib</para>
 
-<section status="final" id="types_dt_lib_module_t_id">
-<title>types.dt_lib_module_t.id</title>
+<section status="final" id="types_dt_lua_lib_t_id">
+<title>types.dt_lua_lib_t.id</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>id</secondary>
@@ -5156,8 +5216,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_lib_module_t_name">
-<title>types.dt_lib_module_t.name</title>
+<section status="final" id="types_dt_lua_lib_t_name">
+<title>types.dt_lua_lib_t.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -5167,8 +5227,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_lib_module_t_version">
-<title>types.dt_lib_module_t.version</title>
+<section status="final" id="types_dt_lua_lib_t_version">
+<title>types.dt_lua_lib_t.version</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>version</secondary>
@@ -5178,8 +5238,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_lib_module_t_visible">
-<title>types.dt_lib_module_t.visible</title>
+<section status="final" id="types_dt_lua_lib_t_visible">
+<title>types.dt_lua_lib_t.visible</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>visible</secondary>
@@ -5201,8 +5261,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_lib_module_t_container">
-<title>types.dt_lib_module_t.container</title>
+<section status="final" id="types_dt_lua_lib_t_container">
+<title>types.dt_lua_lib_t.container</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>container</secondary>
@@ -5212,8 +5272,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_lib_module_t_expandable">
-<title>types.dt_lib_module_t.expandable</title>
+<section status="final" id="types_dt_lua_lib_t_expandable">
+<title>types.dt_lua_lib_t.expandable</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>expandable</secondary>
@@ -5223,8 +5283,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_lib_module_t_expanded">
-<title>types.dt_lib_module_t.expanded</title>
+<section status="final" id="types_dt_lua_lib_t_expanded">
+<title>types.dt_lua_lib_t.expanded</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>expanded</secondary>
@@ -5244,8 +5304,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_lib_module_t_position">
-<title>types.dt_lib_module_t.position</title>
+<section status="final" id="types_dt_lua_lib_t_position">
+<title>types.dt_lua_lib_t.position</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>position</secondary>
@@ -5255,8 +5315,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_lib_module_t_views">
-<title>types.dt_lib_module_t.views</title>
+<section status="final" id="types_dt_lua_lib_t_views">
+<title>types.dt_lua_lib_t.views</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>views</secondary>
@@ -5266,8 +5326,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_lib_module_t_reset">
-<title>types.dt_lib_module_t.reset</title>
+<section status="final" id="types_dt_lua_lib_t_reset">
+<title>types.dt_lua_lib_t.reset</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>reset</secondary>
@@ -5278,8 +5338,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>This function will do nothing if the lib is not visible or can't be reset</para>
 
 <variablelist>
-<varlistentry id="types_dt_lib_module_t_reset_self"><term>self</term><listitem>
-<synopsis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></synopsis>
+<varlistentry id="types_dt_lua_lib_t_reset_self"><term>self</term><listitem>
+<synopsis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></synopsis>
 <para>The lib to reset</para>
 
 </listitem></varlistentry>
@@ -5287,8 +5347,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </variablelist>
 </section>
 
-<section status="final" id="types_dt_lib_module_t_on_screen">
-<title>types.dt_lib_module_t.on_screen</title>
+<section status="final" id="types_dt_lua_lib_t_on_screen">
+<title>types.dt_lua_lib_t.on_screen</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>on_screen</secondary>

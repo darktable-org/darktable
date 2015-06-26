@@ -57,7 +57,7 @@ local function remove_all_children(node)
 	end
 end
 -- prevent some objects to appear at the wrong end of the tree
-remove_all_children(types.dt_lib_module_t.views)
+remove_all_children(types.dt_lua_lib_t.views)
 
 ----------------------
 --  REANAMINGS      --
@@ -136,6 +136,15 @@ darktable.register_lib:add_parameter("expandable","boolean","whether this lib sh
 darktable.register_lib:add_parameter("resetable","boolean","whether this lib has a reset button or not")
 darktable.register_lib:add_parameter("containers","table of "..my_tostring(types.dt_lua_view_t).." => [ "..my_tostring(types.dt_ui_container_t)..", int ]","A table associating to each view containing the lib the corresponding container and position")
 darktable.register_lib:add_parameter("widget",types.lua_widget,"The widget to display in the lib")
+tmp = darktable.register_lib:add_parameter("view_enter","function","A callback called when a view displaying the lib is entered")
+tmp:add_parameter("self",types.dt_lua_lib_t,"The lib on which the callback is called"):set_attribute("is_self",true)
+tmp:add_parameter("old_view",types.dt_lua_view_t,"The view that we are leaving")
+tmp:add_parameter("new_view",types.dt_lua_view_t,"The view that we are entering")
+tmp = darktable.register_lib:add_parameter("view_leave","function","A callback called when leaving a view displaying the lib")
+tmp:add_parameter("self",types.dt_lua_lib_t,"The lib on which the callback is called"):set_attribute("is_self",true)
+tmp:add_parameter("old_view",types.dt_lua_view_t,"The view that we are leaving")
+tmp:add_parameter("new_view",types.dt_lua_view_t,"The view that we are entering")
+
 
 
 darktable.films:set_text([[A table containing all the film objects in the database.]])
@@ -648,22 +657,22 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_tag_t["#"]:set_text([[The images that have that tag attached to them.]])
 	types.dt_lua_tag_t["#"]:set_reported_type(types.dt_lua_image_t)
 
-	types.dt_lib_module_t:set_text([[The type of a UI lib]])
-	types.dt_lib_module_t.id:set_text([[A unit string identifying the lib]])
-	types.dt_lib_module_t.name:set_text([[The translated title of the UI element]])
-	types.dt_lib_module_t.version:set_text([[The version of the internal data of this lib]])
-	types.dt_lib_module_t.visible:set_text([[Allow to make a lib module completely invisible to the user.]]..para()..
+	types.dt_lua_lib_t:set_text([[The type of a UI lib]])
+	types.dt_lua_lib_t.id:set_text([[A unit string identifying the lib]])
+	types.dt_lua_lib_t.name:set_text([[The translated title of the UI element]])
+	types.dt_lua_lib_t.version:set_text([[The version of the internal data of this lib]])
+	types.dt_lua_lib_t.visible:set_text([[Allow to make a lib module completely invisible to the user.]]..para()..
 	[[Note that if the module is invisible the user will have no way to restore it without lua]])
-	types.dt_lib_module_t.visible:set_attribute("implicit_yield",true)
-	types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]]):set_reported_type(types.dt_ui_container_t)
-	types.dt_lib_module_t.expandable:set_text([[True if the lib can be expanded/retracted]]);
-	types.dt_lib_module_t.expanded:set_text([[True if the lib is expanded]]);
-	types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
-	types.dt_lib_module_t.views:set_text([[A table of all the views that display this widget]])
-	types.dt_lib_module_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
+	types.dt_lua_lib_t.visible:set_attribute("implicit_yield",true)
+	types.dt_lua_lib_t.container:set_text([[The location of the lib in the darktable UI]]):set_reported_type(types.dt_ui_container_t)
+	types.dt_lua_lib_t.expandable:set_text([[True if the lib can be expanded/retracted]]);
+	types.dt_lua_lib_t.expanded:set_text([[True if the lib is expanded]]);
+	types.dt_lua_lib_t.position:set_text([[A value deciding the position of the lib within its container]])
+	types.dt_lua_lib_t.views:set_text([[A table of all the views that display this widget]])
+	types.dt_lua_lib_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
 	[[This function will do nothing if the lib is not visible or can't be reset]])
-	types.dt_lib_module_t.reset:add_parameter("self",types.dt_lib_module_t,[[The lib to reset]]):set_attribute("is_self",true)
-	types.dt_lib_module_t.on_screen:set_text([[True if the lib is currently visible on the screen]])
+	types.dt_lua_lib_t.reset:add_parameter("self",types.dt_lua_lib_t,[[The lib to reset]]):set_attribute("is_self",true)
+	types.dt_lua_lib_t.on_screen:set_text([[True if the lib is currently visible on the screen]])
 
 	types.dt_lua_view_t:set_text([[A darktable view]])
 	types.dt_lua_view_t.id:set_text([[A unique string identifying the view]])
