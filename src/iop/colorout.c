@@ -362,36 +362,6 @@ error:
 }
 #endif
 
-static inline __m128 lab_f_inv_m(const __m128 x)
-{
-  const __m128 epsilon = _mm_set1_ps(0.20689655172413796f); // cbrtf(216.0f/24389.0f);
-  const __m128 kappa_rcp_x16 = _mm_set1_ps(16.0f * 27.0f / 24389.0f);
-  const __m128 kappa_rcp_x116 = _mm_set1_ps(116.0f * 27.0f / 24389.0f);
-
-  // x > epsilon
-  const __m128 res_big = _mm_mul_ps(_mm_mul_ps(x, x), x);
-  // x <= epsilon
-  const __m128 res_small = _mm_sub_ps(_mm_mul_ps(kappa_rcp_x116, x), kappa_rcp_x16);
-
-  // blend results according to whether each component is > epsilon or not
-  const __m128 mask = _mm_cmpgt_ps(x, epsilon);
-  return _mm_or_ps(_mm_and_ps(mask, res_big), _mm_andnot_ps(mask, res_small));
-}
-
-static inline __m128 dt_Lab_to_XYZ_SSE(const __m128 Lab)
-{
-  const __m128 d50 = _mm_set_ps(0.0f, 0.8249f, 1.0f, 0.9642f);
-  const __m128 coef = _mm_set_ps(0.0f, -1.0f / 200.0f, 1.0f / 116.0f, 1.0f / 500.0f);
-  const __m128 offset = _mm_set1_ps(0.137931034f);
-
-  // last component ins shuffle taken from 1st component of Lab to make sure it is not nan, so it will become
-  // 0.0f in f
-  const __m128 f = _mm_mul_ps(_mm_shuffle_ps(Lab, Lab, _MM_SHUFFLE(0, 2, 0, 1)), coef);
-
-  return _mm_mul_ps(
-      d50, lab_f_inv_m(_mm_add_ps(_mm_add_ps(f, _mm_shuffle_ps(f, f, _MM_SHUFFLE(1, 1, 3, 1))), offset)));
-}
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
