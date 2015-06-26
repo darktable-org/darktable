@@ -22,6 +22,7 @@
 
 
 struct dt_lib_module_t;
+typedef struct dt_lib_module_t* dt_lua_lib_t;
 
 void dt_lua_lib_register(lua_State *L, struct dt_lib_module_t *self);
 
