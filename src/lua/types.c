@@ -715,6 +715,8 @@ luaA_Type dt_lua_init_singleton(lua_State *L, const char *unique_name, void *dat
   init_metatable(L, type_id);
 
   void **udata = lua_newuserdata(L, sizeof(void *));
+  lua_newtable(L);
+  lua_setuservalue(L, -2);
   if(!data)
   {
     memset(udata, 0, sizeof(void *));
