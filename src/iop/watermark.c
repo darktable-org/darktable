@@ -373,7 +373,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     // Simple text from watermark module
     gchar buffer[1024];
 
-    if (p->font)
+    if (p->font[0] && p->text[0])
     {
       g_snprintf(buffer, sizeof(buffer), "%s", p->text);
       svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
