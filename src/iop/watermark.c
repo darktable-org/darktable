@@ -314,7 +314,6 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
 static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data_t *data,
                                     const dt_image_t *image)
 {
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   gsize length;
 
   gchar *svgdoc = NULL;
@@ -373,9 +372,9 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     // Simple text from watermark module
     gchar buffer[1024];
 
-    if (p->font[0] && p->text[0])
+    if (data->font[0] && data->text[0])
     {
-      g_snprintf(buffer, sizeof(buffer), "%s", p->text);
+      g_snprintf(buffer, sizeof(buffer), "%s", data->text);
       svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
       if(svgdoc != svgdata)
       {
@@ -383,7 +382,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
         svgdata = svgdoc;
       }
 
-      GdkRGBA c = { p->color[0], p->color[1], p->color[2], 1.0f };
+      GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
       g_snprintf(buffer, sizeof(buffer), "%s", gdk_rgba_to_string(&c));
       svgdoc = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
       if(svgdoc != svgdata)
@@ -392,7 +391,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
         svgdata = svgdoc;
       }
 
-      PangoFontDescription *font = pango_font_description_from_string(p->font);
+      PangoFontDescription *font = pango_font_description_from_string(data->font);
       const PangoStyle font_style = pango_font_description_get_style(font);
       const int font_weight = (int)pango_font_description_get_weight(font);
 
