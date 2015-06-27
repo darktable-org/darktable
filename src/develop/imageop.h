@@ -513,6 +513,11 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
                                              const int32_t out_stride, const int32_t in_stride,
                                              const uint32_t filters);
 
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint16_t *const in,
+                                                          const struct dt_iop_roi_t *const roi_out,
+                                                          const struct dt_iop_roi_t *const roi_in,
+                                                          const int32_t out_stride, const int32_t in_stride);
+
 /** clip and zoom mosaiced from half size, crop away black borders. */
 void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint16_t *const in,
                                                          struct dt_iop_roi_t *const roi_out,

@@ -26,6 +26,7 @@
 #include "common/mipmap_cache.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "common/debug.h"
 
 #include <assert.h>
 #include <string.h>
@@ -793,6 +794,53 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
   }
 }
 
+int dt_image_get_demosaic_method(const int imgid)
+{
+  // find the demosaic module -- the pointer stays valid until darktable shuts down
+  static dt_iop_module_so_t *demosaic = NULL;
+  if(demosaic == NULL)
+  {
+    GList *modules = g_list_first(darktable.iop);
+    while(modules)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(module->op, "demosaic"))
+      {
+        demosaic = module;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+
+  int method = 0; // normal demosaic, DT_IOP_DEMOSAIC_PPG
+
+  // db lookup demosaic params
+  if(demosaic && demosaic->get_f && demosaic->get_p)
+  {
+    // dt_introspection_field_t *field = demosaic->get_f("demosaicing_method");
+
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "SELECT op_params FROM history WHERE imgid=?1 AND operation='demosaic' ORDER BY num DESC LIMIT 1", -1,
+        &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      // use introspection to get the orientation from the binary params blob
+      const void *params = sqlite3_column_blob(stmt, 0);
+      method = *((int *)demosaic->get_p(params, "demosaicing_method"));
+    }
+    sqlite3_finalize(stmt);
+
+    // printf("%i %i %s\n", imgid, method, field->Enum.values[method].name);
+  }
+
+  return method;
+}
+
 static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_t imgid)
 {
   const uint32_t wd = *width, ht = *height;
@@ -840,16 +888,34 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
     // demosaic during downsample
     if(image->filters != 9u)
     {
+      const int method = dt_image_get_demosaic_method(imgid);
+
       // Bayer
       if(image->bpp == sizeof(float))
       {
-        dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(out, (const float *)buf.buf, &roi_out, &roi_in,
-                                                              roi_out.width, roi_in.width, image, 1.0f);
+        if(method == 3)
+        {
+          dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(out, (const float *)buf.buf, &roi_out,
+                                                                 &roi_in, roi_out.width, roi_in.width);
+        }
+        else
+        {
+          dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(
+              out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width, roi_in.width, image, 1.0f);
+        }
       }
       else
       {
-        dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
-                                                            roi_out.width, roi_in.width, image);
+        if(method == 3)
+        {
+          dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(out, (const uint16_t *)buf.buf, &roi_out,
+                                                               &roi_in, roi_out.width, roi_in.width);
+        }
+        else
+        {
+          dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(out, (const uint16_t *)buf.buf, &roi_out,
+                                                              &roi_in, roi_out.width, roi_in.width, image);
+        }
       }
     }
     else

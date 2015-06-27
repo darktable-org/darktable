@@ -2104,6 +2104,71 @@ uint32_t dt_iop_adjust_filters_to_crop(const dt_image_t *img)
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
+ * resamping is done via bilateral filtering.
+ */
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint16_t *const in,
+                                                          const dt_iop_roi_t *const roi_out,
+                                                          const dt_iop_roi_t *const roi_in,
+                                                          const int32_t out_stride, const int32_t in_stride)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many pixels can be sampled inside that area
+  const int samples = round(px_footprint);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *outc = out + 4 * (out_stride * y);
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy;
+    py = MIN(((roi_in->height - 2)), py);
+
+    int maxj = MIN(((roi_in->height - 1)), py + samples);
+
+    float fx = roi_out->x * px_footprint;
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      __m128 col = _mm_setzero_ps();
+
+      fx += px_footprint;
+      int px = (int)fx;
+      px = MIN(((roi_in->width - 2)), px);
+
+      int maxi = MIN(((roi_in->width - 1)), px + samples);
+
+      int num = 0;
+
+      // pixels in the middle of sampling region
+      __m128i sum = _mm_set_epi32(0, 0, 0, 0);
+
+      for(int j = py; j <= maxj; j++)
+        for(int i = px; i <= maxi; i++)
+        {
+          const uint16_t p = in[i + in_stride * j];
+
+          sum = _mm_add_epi32(sum, _mm_set_epi32(0, p, p, p));
+          num++;
+        }
+
+      col = _mm_mul_ps(
+          _mm_cvtepi32_ps(sum),
+          _mm_div_ps(_mm_set_ps(0.0f, 1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / 65535.0f), _mm_set1_ps(num)));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
+}
+
+/**
+ * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
+ * and writes it to out in float4 format.
  * filters is the dcraw supplied int encoding of the bayer pattern, flipped with the buffer.
  * resamping is done via bilateral filtering and respecting the input mosaic pattern.
  */
