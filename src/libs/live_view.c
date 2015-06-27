@@ -426,19 +426,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_id_box), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_splitline), TRUE);
 
-  // disable buttons that won't work with this camera
-  // TODO: initialize tethering mode outside of libs/camera.s so we can use darktable.camctl->active_camera
-  // here
-  const dt_camera_t *cam = darktable.camctl->active_camera;
-  if(cam == NULL) cam = darktable.camctl->wanted_camera;
-  if(cam != NULL && cam->can_live_view_advanced == FALSE)
-  {
-    gtk_widget_set_sensitive(lib->live_view_zoom, FALSE);
-    gtk_widget_set_sensitive(lib->focus_in_big, FALSE);
-    gtk_widget_set_sensitive(lib->focus_in_small, FALSE);
-    gtk_widget_set_sensitive(lib->focus_out_big, FALSE);
-    gtk_widget_set_sensitive(lib->focus_out_small, FALSE);
-  }
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -447,6 +434,31 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
+  // disable buttons that won't work with this camera
+  // TODO: initialize tethering mode outside of libs/camera.s so we can use darktable.camctl->active_camera
+  // here
+  const dt_camera_t *cam = darktable.camctl->active_camera;
+  dt_lib_live_view_t *lib = self->data;
+  if(cam == NULL) cam = darktable.camctl->wanted_camera;
+  if(cam != NULL && cam->can_live_view_advanced == FALSE)
+  {
+    gtk_widget_set_sensitive(lib->live_view_zoom, FALSE);
+    gtk_widget_set_sensitive(lib->focus_in_big, FALSE);
+    gtk_widget_set_sensitive(lib->focus_in_small, FALSE);
+    gtk_widget_set_sensitive(lib->focus_out_big, FALSE);
+    gtk_widget_set_sensitive(lib->focus_out_small, FALSE);
+  } 
+  else if(cam != NULL)
+  {
+    gtk_widget_set_sensitive(lib->live_view_zoom, TRUE);
+    gtk_widget_set_sensitive(lib->focus_in_big, TRUE);
+    gtk_widget_set_sensitive(lib->focus_in_small, TRUE);
+    gtk_widget_set_sensitive(lib->focus_out_big, TRUE);
+    gtk_widget_set_sensitive(lib->focus_out_small, TRUE);
+  }
+}
 // TODO: find out where the zoom window is and draw overlay + grid accordingly
 #define MARGIN 20
 #define BAR_HEIGHT 18 /* see libs/camera.c */
