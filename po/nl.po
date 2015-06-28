@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-17 18:57+0200\n"
-"PO-Revision-Date: 2015-06-17 19:08+0100\n"
+"POT-Creation-Date: 2015-06-28 16:10+0200\n"
+"PO-Revision-Date: 2015-06-28 16:16+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -906,7 +906,7 @@ msgstr "fout bij het inladen van map `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "bestand `%s' heeft een onbekend formaat!"
 
-#: ../src/common/darktable.c:371 ../src/libs/import.c:800
+#: ../src/common/darktable.c:371 ../src/libs/import.c:823
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
@@ -1374,7 +1374,7 @@ msgstr "selecteer map"
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/latex.c:104 ../src/libs/collect.c:414
 #: ../src/libs/copy_history.c:70 ../src/libs/geotagging.c:439
-#: ../src/libs/import.c:738 ../src/libs/import.c:834 ../src/libs/lib.c:216
+#: ../src/libs/import.c:761 ../src/libs/import.c:858 ../src/libs/lib.c:216
 #: ../src/libs/styles.c:208 ../src/libs/styles.c:228
 msgid "_Cancel"
 msgstr "_Annuleer"
@@ -1820,7 +1820,7 @@ msgstr "overvloei wijze"
 msgid "choose blending mode"
 msgstr "kies wijze van overvloeien"
 
-#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1081
+#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1298
 msgid "opacity"
 msgstr "dekking"
 
@@ -1923,8 +1923,8 @@ msgstr "%s is uitgeschakeld"
 #: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:188
 #: ../src/gui/presets.c:294 ../src/gui/presets.c:662
-#: ../src/iop/temperature.c:1161 ../src/libs/import.c:521
-#: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1108
+#: ../src/iop/temperature.c:1161 ../src/libs/import.c:543
+#: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1112
 msgid "preset"
 msgstr "voorkeur"
 
@@ -1944,12 +1944,12 @@ msgctxt "accel"
 msgid "enable module"
 msgstr "inschakelen module"
 
-#: ../src/develop/imageop.c:1247 ../src/libs/lib.c:579
+#: ../src/develop/imageop.c:1247 ../src/libs/lib.c:583
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "reset module"
 
-#: ../src/develop/imageop.c:1248 ../src/libs/lib.c:583
+#: ../src/develop/imageop.c:1248 ../src/libs/lib.c:587
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "toon vooraf ingesteld menu"
@@ -1958,12 +1958,12 @@ msgstr "toon vooraf ingesteld menu"
 msgid "multiple instances actions"
 msgstr "meerdere exemplaren"
 
-#: ../src/develop/imageop.c:1811 ../src/libs/lib.c:950
+#: ../src/develop/imageop.c:1811 ../src/libs/lib.c:954
 msgid "reset parameters"
 msgstr "reset"
 
 #: ../src/develop/imageop.c:1819 ../src/gui/preferences.c:411
-#: ../src/libs/lib.c:962
+#: ../src/libs/lib.c:966
 msgid "presets"
 msgstr "voorkeuren"
 
@@ -1978,7 +1978,7 @@ msgstr "ligthroom xmp niet gevonden!"
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' is geen lightroom xmp!"
 
-#: ../src/develop/lightroom.c:1382 ../src/libs/import.c:541
+#: ../src/develop/lightroom.c:1382 ../src/libs/import.c:563
 msgid "tags"
 msgstr "labels"
 
@@ -2330,11 +2330,11 @@ msgid "general"
 msgstr "algemeen"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:419
+#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:435
 msgid "ignore JPEG files"
 msgstr "negeer JPEG bestanden"
 
-#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:420
+#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:436
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2605,7 +2605,7 @@ msgstr "lens"
 
 #. iso
 #: ../src/gui/preferences.c:445 ../src/gui/preferences.c:1247
-#: ../src/gui/presets.c:461 ../src/libs/camera.c:521 ../src/libs/collect.h:32
+#: ../src/gui/presets.c:461 ../src/libs/camera.c:584 ../src/libs/collect.h:32
 #: ../src/libs/metadata_view.c:98
 msgid "ISO"
 msgstr "ISO"
@@ -2620,14 +2620,14 @@ msgstr "belichting"
 
 #. aperture
 #: ../src/gui/preferences.c:453 ../src/gui/preferences.c:1275
-#: ../src/gui/presets.c:489 ../src/libs/camera.c:508 ../src/libs/camera.c:510
+#: ../src/gui/presets.c:489 ../src/libs/camera.c:571 ../src/libs/camera.c:573
 #: ../src/libs/collect.h:32 ../src/libs/metadata_view.c:94
 msgid "aperture"
 msgstr "diafragma"
 
 #. focal length
 #: ../src/gui/preferences.c:457 ../src/gui/preferences.c:1290
-#: ../src/gui/presets.c:504 ../src/libs/camera.c:513 ../src/libs/collect.h:31
+#: ../src/gui/presets.c:504 ../src/libs/camera.c:576 ../src/libs/collect.h:31
 #: ../src/libs/metadata_view.c:96
 msgid "focal length"
 msgstr "brandpuntsafstand"
@@ -2699,7 +2699,7 @@ msgstr "kies bestand voor import"
 
 #: ../src/gui/preferences.c:1034 ../src/libs/collect.c:415
 #: ../src/libs/copy_history.c:71 ../src/libs/geotagging.c:440
-#: ../src/libs/import.c:739 ../src/libs/import.c:835 ../src/libs/styles.c:229
+#: ../src/libs/import.c:762 ../src/libs/import.c:859 ../src/libs/styles.c:229
 msgid "_Open"
 msgstr "_Open"
 
@@ -2965,7 +2965,7 @@ msgid "jp2"
 msgstr "jp2"
 
 #: ../src/imageio/format/j2k.c:663 ../src/imageio/format/jpeg.c:586
-#: ../src/imageio/format/webp.c:308 ../src/libs/camera.c:527
+#: ../src/imageio/format/webp.c:308 ../src/libs/camera.c:590
 msgid "quality"
 msgstr "kwaliteit"
 
@@ -3370,15 +3370,15 @@ msgstr "stap 2: plak de webbrowser URL en klik op de oké button."
 msgid "facebook authentication"
 msgstr "aanmelden facebook"
 
-#: ../src/imageio/storage/facebook.c:627 ../src/imageio/storage/picasa.c:841
+#: ../src/imageio/storage/facebook.c:627
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:649 ../src/imageio/storage/picasa.c:864
+#: ../src/imageio/storage/facebook.c:649
 msgid "please enter the validation URL"
 msgstr "geef a.u.b. de bevestigings URL"
 
-#: ../src/imageio/storage/facebook.c:659 ../src/imageio/storage/picasa.c:875
+#: ../src/imageio/storage/facebook.c:659
 msgid "the given URL is not valid, it should look like: "
 msgstr "de gegeven URL is niet goed, het moet eruit zien als:"
 
@@ -3622,6 +3622,14 @@ msgstr ""
 msgid "google+ authentication"
 msgstr "aanmelden google+"
 
+#: ../src/imageio/storage/picasa.c:841
+msgid "verification code:"
+msgstr "verificatie code:"
+
+#: ../src/imageio/storage/picasa.c:864
+msgid "please enter the verification code"
+msgstr "wat is de verificatie code"
+
 #: ../src/imageio/storage/picasa.c:1286
 msgid "google+ photos"
 msgstr "google+ foto's"
@@ -3744,8 +3752,8 @@ msgid "make effect stronger or weaker"
 msgstr "effect versterken/afzwakken"
 
 #: ../src/iop/basecurve.c:91
-msgid "natural"
-msgstr "natuurlijk"
+msgid "neutral"
+msgstr "neutraal"
 
 #: ../src/iop/basecurve.c:92
 msgid "canon eos like"
@@ -3826,7 +3834,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscis: invoer, coördineer: uitvoer beïnvloedt de RGB kanalen"
 
 #: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2179
-#: ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1084
+#: ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1301
 msgid "scale"
 msgstr "schaal"
 
@@ -3928,7 +3936,7 @@ msgctxt "accel"
 msgid "strength"
 msgstr "kracht"
 
-#: ../src/iop/bloom.c:530 ../src/iop/soften.c:559 ../src/libs/camera.c:530
+#: ../src/iop/bloom.c:530 ../src/iop/soften.c:559 ../src/libs/camera.c:593
 msgid "size"
 msgstr "afmeting"
 
@@ -3989,7 +3997,7 @@ msgid "15:10 postcard black"
 msgstr "15:10 briefkaart zwart"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:909 ../src/libs/import.c:913
+#: ../src/iop/borders.c:909 ../src/libs/import.c:967
 msgid "image"
 msgstr "afbeelding"
 
@@ -5703,7 +5711,7 @@ msgstr ""
 "compressie  voor gradering:\n"
 "0% = zacht, 100% = hard"
 
-#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1087
+#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1304
 msgid "rotation"
 msgstr "draaiing"
 
@@ -5857,7 +5865,7 @@ msgstr "kies een kleur voor het filmmateriaal uit afbeelding"
 msgid "lens correction"
 msgstr "lenscorrectie"
 
-#: ../src/iop/lens.c:160 ../src/iop/vignette.c:169 ../src/iop/watermark.c:194
+#: ../src/iop/lens.c:160 ../src/iop/vignette.c:169 ../src/iop/watermark.c:252
 msgctxt "accel"
 msgid "scale"
 msgstr "schaal"
@@ -6951,82 +6959,135 @@ msgstr ""
 "een zekere mate van willekeurige ruis toevoegen ter voorkoming van "
 "streepvorming"
 
-#: ../src/iop/watermark.c:172
+#: ../src/iop/watermark.c:230
 msgid "watermark"
 msgstr "watermerk"
 
-#: ../src/iop/watermark.c:192
+#: ../src/iop/watermark.c:250
 msgctxt "accel"
 msgid "refresh"
 msgstr "ververs"
 
-#: ../src/iop/watermark.c:193
+#: ../src/iop/watermark.c:251
 msgctxt "accel"
 msgid "opacity"
 msgstr "dekking"
 
-#: ../src/iop/watermark.c:195
+#: ../src/iop/watermark.c:253
 msgctxt "accel"
 msgid "rotation"
 msgstr "draaiing"
 
-#: ../src/iop/watermark.c:196
+#: ../src/iop/watermark.c:254
 msgctxt "accel"
 msgid "x offset"
 msgstr "compenseer x"
 
-#: ../src/iop/watermark.c:197
+#: ../src/iop/watermark.c:255
 msgctxt "accel"
 msgid "y offset"
 msgstr "compenseer y"
 
-#: ../src/iop/watermark.c:1065
+#: ../src/iop/watermark.c:1235
 msgid "marker"
 msgstr "bestand"
 
-#: ../src/iop/watermark.c:1066 ../src/libs/print_settings.c:1205
+#: ../src/iop/watermark.c:1236 ../src/libs/print_settings.c:1205
 msgid "alignment"
 msgstr "uitlijning"
 
-#: ../src/iop/watermark.c:1093
+#: ../src/iop/watermark.c:1238
+msgid "content"
+msgstr "inhoud"
+
+#: ../src/iop/watermark.c:1252
+msgid "text"
+msgstr "tekst"
+
+#: ../src/iop/watermark.c:1257
+msgid ""
+"text string, tag\n"
+"$(WATERMARK_TEXT)"
+msgstr ""
+"tekst string, label\n"
+"$(WATERMARK_TEXT)"
+
+#: ../src/iop/watermark.c:1272
+msgid ""
+"text color, tag:\n"
+"$(WATERMARK_COLOR)"
+msgstr ""
+"tekst kleur, label:\n"
+"$(WATERMARK_COLOR)"
+
+#: ../src/iop/watermark.c:1275
+msgid "select text color"
+msgstr "selecteer tekst kleur"
+
+#: ../src/iop/watermark.c:1276
+msgid "text color"
+msgstr "tekst kleur"
+
+#: ../src/iop/watermark.c:1286
+msgid ""
+"text font, tags:\n"
+"$(WATERMARK_FONT_FAMILY)\n"
+"$(WATERMARK_FONT_STYLE)\n"
+"$(WATERMARK_FONT_WEIGHT)"
+msgstr ""
+"tekst lettertype, labels:\n"
+"$(WATERMARK_FONT_FAMILY)\n"
+"$(WATERMARK_FONT_STYLE)\n"
+"$(WATERMARK_FONT_WEIGHT)"
+
+#. Camera settings
+#: ../src/iop/watermark.c:1293 ../src/libs/camera.c:508
+msgid "properties"
+msgstr "eigenschappen"
+
+#: ../src/iop/watermark.c:1310
 msgctxt "size"
 msgid "image"
 msgstr "afbeelding"
 
-#: ../src/iop/watermark.c:1094
+#: ../src/iop/watermark.c:1311
 msgid "larger border"
 msgstr "grotere rand"
 
-#: ../src/iop/watermark.c:1095
+#: ../src/iop/watermark.c:1312
 msgid "smaller border"
 msgstr "kleinere rand"
 
-#: ../src/iop/watermark.c:1097
+#: ../src/iop/watermark.c:1314
 msgid "scale on"
 msgstr "vergroting"
 
-#: ../src/iop/watermark.c:1099
+#: ../src/iop/watermark.c:1316
 msgid "size is relative to"
 msgstr "afmeting is relatief aan"
 
-#: ../src/iop/watermark.c:1121
+#: ../src/iop/watermark.c:1318
+msgid "position"
+msgstr "positie"
+
+#: ../src/iop/watermark.c:1340
 msgid "x offset"
 msgstr "compenseer x"
 
-#: ../src/iop/watermark.c:1124
+#: ../src/iop/watermark.c:1343
 msgid "y offset"
 msgstr "compenseer y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1130
+#: ../src/iop/watermark.c:1349
 msgid "the opacity of the watermark"
 msgstr "de dekking van het watermerk"
 
-#: ../src/iop/watermark.c:1131
+#: ../src/iop/watermark.c:1350
 msgid "the scale of the watermark"
 msgstr "de grootte van het watermerk"
 
-#: ../src/iop/watermark.c:1132
+#: ../src/iop/watermark.c:1351
 msgid "the rotation of the watermark"
 msgstr "de draaiing van het watermerk"
 
@@ -7050,78 +7111,78 @@ msgstr ""
 msgid "background jobs"
 msgstr "achtergrond taken"
 
-#: ../src/libs/camera.c:78
+#: ../src/libs/camera.c:79
 msgid "camera settings"
 msgstr "camera instellingen"
 
-#: ../src/libs/camera.c:103
+#: ../src/libs/camera.c:104
 msgctxt "accel"
 msgid "capture image(s)"
 msgstr " afbeelding(en) opnemen"
 
-#: ../src/libs/camera.c:142
+#: ../src/libs/camera.c:146
 msgid "toggle view property in center view"
 msgstr "schakel beeldeigenschappen naar gecentreerd beeld "
 
-#: ../src/libs/camera.c:219
+#: ../src/libs/camera.c:232
 msgid "connection with camera lost, exiting tethering mode"
 msgstr "verbinding met camera verbroken, tethering modus wordt gestopt"
 
-#: ../src/libs/camera.c:352
+#: ../src/libs/camera.c:366
 msgid "battery"
 msgstr "accu"
 
-#: ../src/libs/camera.c:352
+#: ../src/libs/camera.c:366
 msgid "n/a"
 msgstr "n/a"
 
 #. , *vbox1, *vbox2
 #. Camera control
-#: ../src/libs/camera.c:420
+#: ../src/libs/camera.c:434
 msgid "camera control"
 msgstr "camera bediening"
 
-#: ../src/libs/camera.c:423
+#: ../src/libs/camera.c:437
 msgid "modes"
 msgstr "modus"
 
-#: ../src/libs/camera.c:424
+#: ../src/libs/camera.c:438
 msgid "timer (s)"
 msgstr "teller (s)"
 
-#: ../src/libs/camera.c:425
+#: ../src/libs/camera.c:439
 msgid "count"
 msgstr "tel"
 
-#: ../src/libs/camera.c:426
+#: ../src/libs/camera.c:440
 msgid "brackets"
 msgstr "brackets"
 
-#: ../src/libs/camera.c:427
+#: ../src/libs/camera.c:441
 msgid "bkt. steps"
 msgstr "bkt. stappen"
 
-#: ../src/libs/camera.c:463
+#: ../src/libs/camera.c:477
 msgid "capture image(s)"
 msgstr "opnemen afbeelding(en)"
 
-#: ../src/libs/camera.c:466
+#: ../src/libs/camera.c:480
 msgid "toggle delayed capture mode"
 msgstr "schakel naar vertraagde opname modus"
 
-#: ../src/libs/camera.c:467
+#: ../src/libs/camera.c:481
 msgid "toggle sequenced capture mode"
 msgstr "schakel naar een reeks opname modus"
 
-#: ../src/libs/camera.c:468
+#: ../src/libs/camera.c:482
 msgid "toggle bracketed capture mode"
 msgstr "schakel naar bracketing opname modus"
 
-#: ../src/libs/camera.c:470
+#: ../src/libs/camera.c:484
 msgid "the count of seconds before actually doing a capture"
 msgstr "aantal seconden voordat werkelijk een opname wordt uitgevoerd"
 
-#: ../src/libs/camera.c:472
+#: ../src/libs/camera.c:486
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -7131,7 +7192,7 @@ msgstr ""
 "U kunt die met een vertraagde modus opnemen om zo bewegende beelden  te "
 "maken "
 
-#: ../src/libs/camera.c:476
+#: ../src/libs/camera.c:490
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
@@ -7139,7 +7200,7 @@ msgstr ""
 "het aantal brackets aan beide zijden van de hoofdafbeelding, aantal "
 "afbeeldingen =( (brackets*2)+1"
 
-#: ../src/libs/camera.c:479
+#: ../src/libs/camera.c:493
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
@@ -7149,46 +7210,42 @@ msgstr ""
 "meestal 3 stappen per stop\n"
 "m.a.w. 3 stappen is gelijk aan 1EV belichtingsstap tussen de 'brackets'.  "
 
-#: ../src/libs/camera.c:495
-msgid "properties"
-msgstr "eigenschappen"
-
-#: ../src/libs/camera.c:500
-msgid "program"
-msgstr "programma"
-
-#: ../src/libs/camera.c:503 ../src/libs/camera.c:505
-msgid "focus mode"
-msgstr "focus modus"
-
-#: ../src/libs/camera.c:516
-msgid "shutterspeed2"
-msgstr "sluitersnelheid"
-
-#: ../src/libs/camera.c:518
-msgid "shutterspeed"
-msgstr "sluitersnelheid"
-
-#: ../src/libs/camera.c:524
-msgid "WB"
-msgstr "WB"
-
 #. user specified properties
-#: ../src/libs/camera.c:562
+#: ../src/libs/camera.c:516
 msgid "additional properties"
 msgstr "extra eigenschappen"
 
-#: ../src/libs/camera.c:565
+#: ../src/libs/camera.c:519
 msgid "label"
 msgstr "label"
 
-#: ../src/libs/camera.c:573
+#: ../src/libs/camera.c:527
 msgid "property"
 msgstr "eigenschap"
 
-#: ../src/libs/camera.c:585
+#: ../src/libs/camera.c:539
 msgid "add user property"
 msgstr "voeg gebruikers eigenschappen toe"
+
+#: ../src/libs/camera.c:563
+msgid "program"
+msgstr "programma"
+
+#: ../src/libs/camera.c:566 ../src/libs/camera.c:568
+msgid "focus mode"
+msgstr "focus modus"
+
+#: ../src/libs/camera.c:579
+msgid "shutterspeed2"
+msgstr "sluitersnelheid"
+
+#: ../src/libs/camera.c:581
+msgid "shutterspeed"
+msgstr "sluitersnelheid"
+
+#: ../src/libs/camera.c:587
+msgid "WB"
+msgstr "WB"
 
 #: ../src/libs/collect.c:112
 msgid "collect images"
@@ -7301,17 +7358,17 @@ msgstr "geschiedenis"
 msgid "description"
 msgstr "omschrijving"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:526
+#: ../src/libs/collect.h:30 ../src/libs/import.c:548
 #: ../src/libs/metadata.c:346 ../src/libs/metadata_view.c:105
 msgid "creator"
 msgstr "fotograaf"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:531
+#: ../src/libs/collect.h:30 ../src/libs/import.c:553
 #: ../src/libs/metadata.c:347
 msgid "publisher"
 msgstr "uitgever"
 
-#: ../src/libs/collect.h:31 ../src/libs/import.c:536
+#: ../src/libs/collect.h:31 ../src/libs/import.c:558
 #: ../src/libs/metadata.c:348
 msgid "rights"
 msgstr "rechten"
@@ -7393,7 +7450,7 @@ msgid "XMP sidecar files"
 msgstr "xmp bestanden"
 
 #: ../src/libs/copy_history.c:81 ../src/libs/geotagging.c:457
-#: ../src/libs/import.c:767 ../src/libs/styles.c:242
+#: ../src/libs/import.c:790 ../src/libs/styles.c:242
 msgid "all files"
 msgstr "alle bestanden"
 
@@ -7944,117 +8001,117 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "degroeperen"
 
-#: ../src/libs/import.c:96
+#: ../src/libs/import.c:102
 msgid "import"
 msgstr "importeren"
 
-#: ../src/libs/import.c:117
+#: ../src/libs/import.c:123
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "media"
 
-#: ../src/libs/import.c:118
+#: ../src/libs/import.c:124
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importeer van camera"
 
-#: ../src/libs/import.c:119
+#: ../src/libs/import.c:125
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "tethered shoot (communiceer direct met camera)"
 
-#: ../src/libs/import.c:120
+#: ../src/libs/import.c:126
 msgctxt "accel"
 msgid "import image"
 msgstr "importeer afbeelding"
 
-#: ../src/libs/import.c:121
+#: ../src/libs/import.c:127
 msgctxt "accel"
 msgid "import folder"
 msgstr "importeer een map"
 
-#: ../src/libs/import.c:212
+#: ../src/libs/import.c:218
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "station \"%s\" verbonden op poort \"%s\"."
 
-#: ../src/libs/import.c:222
+#: ../src/libs/import.c:228
 msgid "import from camera"
 msgstr "importeer vanaf camera"
 
-#: ../src/libs/import.c:228
+#: ../src/libs/import.c:234
 msgid "tethered shoot"
 msgstr "tethered shoot (communiceer direct met camera)"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:250
+#: ../src/libs/import.c:256
 msgid "no supported devices found"
 msgstr "geen media gevonden"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:383
+#: ../src/libs/import.c:399
 msgid "import options"
 msgstr "importeer opties"
 
 #. recursive opening.
-#: ../src/libs/import.c:412
+#: ../src/libs/import.c:428
 msgid "import directories recursively"
 msgstr "importeer mappen recursief"
 
-#: ../src/libs/import.c:414
+#: ../src/libs/import.c:430
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "recursief onderliggende mappen importeren, elke map wordt daarbij in een "
 "nieuwe map geplaatst."
 
-#: ../src/libs/import.c:431
+#: ../src/libs/import.c:447
 msgid "apply metadata on import"
 msgstr "toepassen metadata op import"
 
-#: ../src/libs/import.c:432
+#: ../src/libs/import.c:448
 msgid "apply some metadata to all newly imported images."
 msgstr "pas metadata  toe op alle nieuw geïmporteerde afbeeldingen "
 
-#: ../src/libs/import.c:472
+#: ../src/libs/import.c:494
 msgid "comma separated list of tags"
 msgstr "labels gescheiden door komma's"
 
-#: ../src/libs/import.c:738
+#: ../src/libs/import.c:761
 msgid "import image"
 msgstr "importeer afbeelding"
 
-#: ../src/libs/import.c:762
+#: ../src/libs/import.c:785
 msgid "supported images"
 msgstr "ondersteunde afbeeldingen"
 
-#: ../src/libs/import.c:816
+#: ../src/libs/import.c:839
 msgid "file has unknown format!"
 msgstr "formaat bestand onbekend!"
 
-#: ../src/libs/import.c:834
+#: ../src/libs/import.c:858
 msgid "import film"
 msgstr "importeer een map"
 
-#: ../src/libs/import.c:916
+#: ../src/libs/import.c:970
 msgid "select one or more images to import"
 msgstr "importeer nieuwe afbeelding(en)"
 
 #. adding the import folder button
-#: ../src/libs/import.c:923
+#: ../src/libs/import.c:977
 msgid "folder"
 msgstr "mappen"
 
-#: ../src/libs/import.c:926
+#: ../src/libs/import.c:980
 msgid "select a folder to import as film roll"
 msgstr "importeer nieuwe map(pen)"
 
 #. add the rescan button
-#: ../src/libs/import.c:934
+#: ../src/libs/import.c:988
 msgid "scan for devices"
 msgstr "media"
 
-#: ../src/libs/import.c:937
+#: ../src/libs/import.c:991
 msgid "scan for newly attached devices"
 msgstr "zoek media"
 
@@ -9258,7 +9315,7 @@ msgctxt "accel"
 msgid "zoom min"
 msgstr "volledig uitzoomen"
 
-#: ../src/libs/tools/module_toolbox.c:36
+#: ../src/libs/tools/module_toolbox.c:45
 msgid "module toolbox"
 msgstr "module toolbox"
 
@@ -9270,7 +9327,7 @@ msgstr "waarderingen"
 msgid "viewswitcher"
 msgstr "scherm wisselaar"
 
-#: ../src/libs/tools/view_toolbox.c:36
+#: ../src/libs/tools/view_toolbox.c:45
 msgid "view toolbox"
 msgstr "bekijk toolbox"
 
@@ -9567,6 +9624,9 @@ msgstr "nieuwe sessie gestart-'%s'"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "geen tethering ondersteunde camera aanwezig"
+
+#~ msgid "natural"
+#~ msgstr "natuurlijk"
 
 #~ msgctxt "accel"
 #~ msgid "capture view"
