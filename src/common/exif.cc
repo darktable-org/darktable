@@ -1605,7 +1605,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
             const char *mname = "form";
             DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, mname, -1, SQLITE_TRANSIENT);
           }
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, mask_version->toLong());
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, mask_version->toLong(i));
           std::string mask_str = mask->toString(i);
           const char *mask_c = mask_str.c_str();
           const size_t mask_c_len = strlen(mask_c);
