@@ -59,12 +59,11 @@ typedef struct dt_print_info_t
   dt_paper_info_t paper;
 } dt_print_info_t;
 
+// Asynchronous printer discovery, cb will be called for each printer found
+void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), void *user_data);
 
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo);
-
-// get all available printers
-GList *dt_get_printers(void);
 
 // get printer information for the given printer name
 dt_printer_info_t *dt_get_printer_info(const char *printer_name);
