@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 pascal obry.
+    copyright (c) 2014-2015 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,8 +59,6 @@ typedef struct dt_print_info_t
   dt_paper_info_t paper;
 } dt_print_info_t;
 
-// is some printers are available
-gboolean is_printer_available(void);
 
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo);

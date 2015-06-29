@@ -241,13 +241,6 @@ int try_enter(dt_view_t *self)
 {
   dt_print_t *prt=(dt_print_t*)self->data;
 
-  // enter only if there is some printer available
-  if (!is_printer_available())
-  {
-    dt_control_log(_("there is no printer available, cannot print!"));
-    return 1;
-  }
-
   //  now check that there is at least one selected image
 
   prt->image_id = -1;
