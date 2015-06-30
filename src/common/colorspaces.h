@@ -94,11 +94,11 @@ void dt_Lab_to_XYZ(const float *Lab, float *XYZ);
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */
 int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                 float *lutb, const int lutsize);
+                                                 float *lutb, const int lutsize, const int intent);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given output profile, returns 0 on success. */
 int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                  float *lutb, const int lutsize);
+                                                  float *lutb, const int lutsize, const int intent);
 
 /** searches for the given profile name in the user config dir ~/.config/darktable/color/<inout> and
  * /usr/share/darktable/.. */
