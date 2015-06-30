@@ -125,13 +125,19 @@ static int _dest_cb(void *user_data, unsigned flags, cups_dest_t *dest)
   return 1;
 }
 
+static int _cancel = 0;
+
 static int _detect_printers_callback(dt_job_t *job)
 {
   dt_prtctl_t *pctl = dt_control_job_get_params(job);
-  int cancel = 0;
-  const int res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 15000, &cancel, 0, 0, _dest_cb, pctl);
+  const int res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 30000, &_cancel, 0, 0, _dest_cb, pctl);
   g_free(pctl);
   return !res;
+}
+
+void dt_printers_abort_discovery(void)
+{
+  _cancel = 1;
 }
 
 void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), void *user_data)

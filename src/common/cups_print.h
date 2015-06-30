@@ -61,6 +61,7 @@ typedef struct dt_print_info_t
 
 // Asynchronous printer discovery, cb will be called for each printer found
 void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), void *user_data);
+void dt_printers_abort_discovery(void);
 
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo);
