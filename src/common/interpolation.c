@@ -710,14 +710,16 @@ static inline void compute_downsampling_kernel_sse(const struct dt_interpolation
  * Sample interpolation function (see usage in iop/lens.c and iop/clipping.c)
  * ------------------------------------------------------------------------*/
 
+#define MAX_KERNEL_REQ ((2 * (MAX_HALF_FILTER_WIDTH) + 3) & (~3))
+
 float dt_interpolation_compute_sample(const struct dt_interpolation *itor, const float *in, const float x,
                                       const float y, const int width, const int height,
                                       const int samplestride, const int linestride)
 {
-  assert(itor->width < 4);
+  assert(itor->width < (MAX_HALF_FILTER_WIDTH + 1));
 
-  float kernelh[8] __attribute__((aligned(SSE_ALIGNMENT)));
-  float kernelv[8] __attribute__((aligned(SSE_ALIGNMENT)));
+  float kernelh[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
+  float kernelv[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
 
   // Compute both horizontal and vertical kernels
   float normh;
@@ -804,8 +806,6 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor, const
 /* --------------------------------------------------------------------------
  * Pixel interpolation function (see usage in iop/lens.c and iop/clipping.c)
  * ------------------------------------------------------------------------*/
-
-#define MAX_KERNEL_REQ ((2 * MAX_HALF_FILTER_WIDTH + 3) & (~3))
 
 void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor, const float *in, float *out,
                                       const float x, const float y, const int width, const int height,
