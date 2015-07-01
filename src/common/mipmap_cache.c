@@ -845,6 +845,42 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
 {
   const uint32_t wd = *width, ht = *height;
 
+  static int demosaic_monochrome_enum = -1;
+  if(demosaic_monochrome_enum == -1)
+  {
+    for(GList *modules = g_list_first(darktable.iop); modules; modules = g_list_next(modules))
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(module->op, "demosaic"))
+      {
+        if(module->get_f)
+        {
+          dt_introspection_field_t *f = module->get_f("demosaicing_method");
+          if(f && f->header.type == DT_INTROSPECTION_TYPE_ENUM)
+          {
+            for(dt_introspection_type_enum_tuple_t *value = f->Enum.values; value->name; value++)
+            {
+              if(!strcmp(value->name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME"))
+              {
+                demosaic_monochrome_enum = value->value;
+                break;
+              }
+            }
+          }
+        }
+
+        if(demosaic_monochrome_enum == -1)
+        {
+          // oh, missing introspection for demosaic,
+          // let's hope that DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME is still 3
+          demosaic_monochrome_enum = 3;
+        }
+
+        break;
+      }
+    }
+  }
+
   /* do not even try to process file if it isn't available */
   char filename[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
@@ -894,7 +930,8 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
       // Bayer
       if(image->bpp == sizeof(float))
       {
-        if(method == 3 && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")))
+        if(method == demosaic_monochrome_enum
+           && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")))
         {
           dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(out, (const float *)buf.buf, &roi_out,
                                                                  &roi_in, roi_out.width, roi_in.width);
@@ -907,7 +944,8 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
       }
       else
       {
-        if(method == 3 && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")))
+        if(method == demosaic_monochrome_enum
+           && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")))
         {
           dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(out, (const uint16_t *)buf.buf, &roi_out,
                                                                &roi_in, roi_out.width, roi_in.width);
