@@ -51,7 +51,9 @@ static void releasereadimage(lua_State *L, const dt_image_t *image)
 
 static dt_image_t *checkwriteimage(lua_State *L, int index)
 {
-  return dt_image_cache_get(darktable.image_cache, index, 'w');
+  dt_lua_image_t imgid;
+  luaA_to(L, dt_lua_image_t, &imgid, index);
+  return dt_image_cache_get(darktable.image_cache, imgid, 'w');
 }
 
 static void releasewriteimage(lua_State *L, dt_image_t *image)
