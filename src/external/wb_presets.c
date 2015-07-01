@@ -5003,6 +5003,18 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-G6", Incandescent, 0,	{ 1.535156, 1, 2.375000, 0 } },
   { "Panasonic", "DMC-G6", Flash, 0,		{ 2.332031, 1, 1.566406, 0 } },
 
+  { "Panasonic", "DMC-G7", Daylight, 0,		{ 2.351563, 1, 1.664063, 0 } },
+  { "Panasonic", "DMC-G7", Cloudy, 0,		{ 2.519531, 1, 1.542969, 0 } },
+  { "Panasonic", "DMC-G7", Shade, 0,		{ 2.691406, 1, 1.464844, 0 } },
+  { "Panasonic", "DMC-G7", Incandescent, 0,	{ 1.625, 1, 2.425781, 0 } },
+  { "Panasonic", "DMC-G7", Flash, 0,		{ 2.371094, 1, 1.589844, 0 } },
+
+  { "Panasonic", "DMC-G70", Daylight, 0,		{ 2.351563, 1, 1.664063, 0 } },
+  { "Panasonic", "DMC-G70", Cloudy, 0,		{ 2.519531, 1, 1.542969, 0 } },
+  { "Panasonic", "DMC-G70", Shade, 0,		{ 2.691406, 1, 1.464844, 0 } },
+  { "Panasonic", "DMC-G70", Incandescent, 0,	{ 1.625, 1, 2.425781, 0 } },
+  { "Panasonic", "DMC-G70", Flash, 0,		{ 2.371094, 1, 1.589844, 0 } },
+
   /* Firmware version 1.2 */
   /* -9/+9 fine tuning is -9/+9 in blue-amber and zero in magenta-green */
   { "Panasonic", "DMC-GF1", Daylight, -9,	{ 1.817490, 1, 1.760456, 0 } },
