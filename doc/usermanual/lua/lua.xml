@@ -656,7 +656,7 @@ a simple storage to export images via scp
 AUTHOR
 Jérémy Rosen (jeremy.rosen@enst-bretagne.fr)
 
-INSTALATION
+INSTALLATION
 * copy this file in $CONFIGDIR/lua/ where CONFIGDIR
 is your darktable configuration directory
 * add the following line in the file $CONFIGDIR/luarc
