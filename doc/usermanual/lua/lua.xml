@@ -593,7 +593,7 @@ dt.register_lib("test","test",false,{
     </programlisting>
     <para>
 	    There is a nice syntactic trick to make UI element code easier to read and write. You can call these objects as functions
-	    with a table of key values as an argument. This allows the following example to work. It creats a container widget with two
+	    with a table of key values as an argument. This allows the following example to work. It creates a container widget with two
 	    sub-widgets. A label and a text entry field.
     </para>
 <programlisting language="lua">
