@@ -247,6 +247,12 @@ int widget_call(lua_State *L)
 
 void dt_lua_widget_bind(lua_State *L, lua_widget widget)
 {
+  /* check that widget isn't already parented */
+  if(gtk_widget_get_parent (widget->widget) != NULL) {
+    luaL_error(L,"Attempting to add a widget which already has a parent\n");
+  }
+
+  /* store it as a toplevel widget */
   lua_getfield(L, LUA_REGISTRYINDEX,"dt_lua_widget_bind_table");
   lua_pushlightuserdata(L,widget);
   luaA_push(L,lua_widget,&widget);

@@ -72,7 +72,7 @@ static void on_child_removed(GtkContainer *container,GtkWidget *child,lua_contai
 static int child_added(lua_State *L)
 {
   lua_widget widget;
-  luaA_to(L, lua_widget,&widget,2),
+  luaA_to(L, lua_widget,&widget,2);
   lua_getuservalue(L,1);
   lua_pushlightuserdata(L,widget->widget);
   lua_pushvalue(L,2);
