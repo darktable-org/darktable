@@ -969,7 +969,9 @@ void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
 
+#ifdef HAVE_PRINT
   dt_printers_abort_discovery();
+#endif
 
 #ifdef USE_LUA
   dt_lua_finalize_early();
