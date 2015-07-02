@@ -172,24 +172,20 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   if (imgid == -1)
   {
     dt_control_log(_("cannot print until a picture is selected"));
-    dt_control_queue_redraw();
     return;
   }
   if (strlen(ps->prt.printer.name) == 0 || ps->prt.printer.resolution == 0)
   {
     dt_control_log(_("cannot print until a printer is selected"));
-    dt_control_queue_redraw();
     return;
   }
   if (ps->prt.paper.width == 0 || ps->prt.paper.height == 0)
   {
     dt_control_log(_("cannot print until a paper is selected"));
-    dt_control_queue_redraw();
     return;
   }
 
   dt_control_log(_("prepare printing image %d on `%s'"), imgid, ps->prt.printer.name);
-  dt_control_queue_redraw();
 
   // user margin are already in the proper orientation landscape/portrait
   double width, height;
@@ -301,7 +297,6 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     free(dat.ps->buf);
     dt_control_log("failed to create temporary pdf for printing");
     fprintf(stderr, "failed to create temporary pdf for printing\n");
-    dt_control_queue_redraw();
     return;
   }
   close(fd);
