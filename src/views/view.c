@@ -945,7 +945,6 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       cairo_restore(cr);
       cairo_save(cr);
       cairo_new_path(cr);
-      cairo_restore(cr);
     }
     else
     {
