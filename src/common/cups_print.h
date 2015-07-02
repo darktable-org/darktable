@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 pascal obry.
+    copyright (c) 2014-2015 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,14 +59,12 @@ typedef struct dt_print_info_t
   dt_paper_info_t paper;
 } dt_print_info_t;
 
-// is some printers are available
-gboolean is_printer_available(void);
+// Asynchronous printer discovery, cb will be called for each printer found
+void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), void *user_data);
+void dt_printers_abort_discovery(void);
 
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo);
-
-// get all available printers
-GList *dt_get_printers(void);
 
 // get printer information for the given printer name
 dt_printer_info_t *dt_get_printer_info(const char *printer_name);

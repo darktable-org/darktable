@@ -900,6 +900,29 @@ static GList* _get_profiles ()
   return list;
 }
 
+static void _new_printer_callback(dt_printer_info_t *printer, void *user_data)
+{
+  static int count = 0;
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)self->data;
+
+  char *default_printer = dt_conf_get_string("plugins/print/print/printer");
+
+  g_signal_handlers_block_by_func(G_OBJECT(d->printers), G_CALLBACK(_printer_changed), NULL);
+
+  dt_bauhaus_combobox_add(d->printers, printer->name);
+
+  if (!strcmp(default_printer, printer->name) || default_printer[0]=='\0')
+  {
+    dt_bauhaus_combobox_set(d->printers, count);
+    _set_printer(self, printer->name);
+  }
+  count++;
+  g_free(default_printer);
+
+  g_signal_handlers_unblock_by_func(G_OBJECT(d->printers), G_CALLBACK(_printer_changed), NULL);
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -966,37 +989,13 @@ gui_init (dt_lib_module_t *self)
   // create papers combo as filled when adding printers
   d->papers = dt_bauhaus_combobox_new(NULL);
 
-  GList *printers = dt_get_printers();
-  int np=0;
-  int printer_index = 0;
-  char printer_name[128] = { 0 };
-
   label = dt_ui_section_label_new(_("printer"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   d->printers = dt_bauhaus_combobox_new(NULL);
 
-  char *default_printer = dt_conf_get_string("plugins/print/print/printer");
-
-  // we need the printer details, so request them here
-  while (printers)
-  {
-    dt_printer_info_t *printer = (dt_printer_info_t *)printers->data;
-    dt_bauhaus_combobox_add(d->printers, printer->name);
-    if (!strcmp(default_printer, printer->name) || default_printer[0]=='\0')
-    {
-      // record the printer to set as we want to set this when the paper widget is realized
-      printer_index = np;
-      g_strlcpy(printer_name, printer->name, sizeof(printer_name));
-    }
-    printers = g_list_next (printers);
-    np++;
-  }
-
-  free(default_printer);
   gtk_box_pack_start(GTK_BOX(self->widget), d->printers, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->printers), "value-changed", G_CALLBACK(_printer_changed), self);
-  g_list_free_full(printers, free);
 
   //  Add printer profile combo
 
@@ -1083,11 +1082,6 @@ gui_init (dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(d->papers), "value-changed", G_CALLBACK(_paper_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->papers), TRUE, TRUE, 0);
-
-  // now set recorded default/active printer
-
-  dt_bauhaus_combobox_set(d->printers, printer_index);
-  _set_printer(self, printer_name);
 
   //// portrait / landscape
 
@@ -1338,6 +1332,10 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_print_button_clicked),
                     (gpointer)self);
+
+  // Let's start the printer discovery now
+
+  dt_printers_discovery(_new_printer_callback, self);
 }
 
 static gboolean _bauhaus_combobox_set_active_text(GtkWidget *cb, const gchar *text)
