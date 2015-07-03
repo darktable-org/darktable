@@ -83,6 +83,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       img->latitude = sqlite3_column_double(stmt, 20);
     else
       img->latitude = NAN;
+    img->elevation = NAN;
     const void *color_matrix = sqlite3_column_blob(stmt, 21);
     if(color_matrix)
       memcpy(img->d65_color_matrix, color_matrix, sizeof(img->d65_color_matrix));

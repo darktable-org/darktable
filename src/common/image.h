@@ -148,6 +148,7 @@ typedef struct dt_image_t
   /* gps coords */
   double longitude;
   double latitude;
+  double elevation;
 
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;

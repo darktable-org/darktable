@@ -56,6 +56,7 @@ dt_logo_season_t get_logo_season(void);
 
 gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);
+gchar *dt_util_elevation_str(float elevation);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
