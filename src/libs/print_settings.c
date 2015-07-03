@@ -398,8 +398,7 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
 
   // then add papers for the given printer
 
-  if (ps->paper_list)
-    g_list_free_full(ps->paper_list, g_free);
+  if(ps->paper_list) g_list_free_full(ps->paper_list, free);
 
   ps->paper_list = dt_get_papers (printer_name);
   GList *papers = ps->paper_list;
@@ -1021,6 +1020,7 @@ gui_init (dt_lib_module_t *self)
       n++;
       if (strcmp(prof->filename,printer_profile)==0)
       {
+        if(d->v_piccprofile) g_free(d->v_piccprofile);
         d->v_piccprofile = g_strdup(printer_profile);
         combo_idx=n;
       }
@@ -1034,6 +1034,7 @@ gui_init (dt_lib_module_t *self)
   if (combo_idx == -1)
   {
     dt_conf_set_string("plugins/print/printer/iccprofile", "");
+    if(d->v_piccprofile) g_free(d->v_piccprofile);
     d->v_piccprofile = g_strdup("");
     combo_idx=0;
   }
@@ -1226,6 +1227,7 @@ gui_init (dt_lib_module_t *self)
     n++;
     if (strcmp(prof->filename, iccprofile)==0)
     {
+      if(d->v_iccprofile) g_free(d->v_iccprofile);
       d->v_iccprofile = g_strdup(iccprofile);
       combo_idx=n;
     }
@@ -1235,6 +1237,7 @@ gui_init (dt_lib_module_t *self)
   if (combo_idx == -1)
   {
     dt_conf_set_string("plugins/print/print/iccprofile", "image");
+    if(d->v_iccprofile) g_free(d->v_iccprofile);
     d->v_iccprofile = g_strdup("");
     combo_idx=0;
   }
@@ -1280,6 +1283,7 @@ gui_init (dt_lib_module_t *self)
     n++;
     if (strcmp(style->name,current_style)==0)
     {
+      if(d->v_style) g_free(d->v_style);
       d->v_style = g_strdup(current_style);
       combo_idx=n;
     }
@@ -1294,6 +1298,7 @@ gui_init (dt_lib_module_t *self)
   if (combo_idx == -1)
   {
     dt_conf_set_string("plugins/print/print/style", "");
+    if(d->v_style) g_free(d->v_style);
     d->v_style = g_strdup("");
     combo_idx=0;
   }
@@ -1592,7 +1597,12 @@ gui_cleanup (dt_lib_module_t *self)
                                self);
 
   g_list_free_full(ps->profiles, g_free);
-  g_list_free_full(ps->paper_list, g_free);
+  g_list_free_full(ps->paper_list, free);
+
+  g_free(ps->v_iccprofile);
+  g_free(ps->v_piccprofile);
+  g_free(ps->v_style);
+
   free(self->data);
   self->data = NULL;
 }
