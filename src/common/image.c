@@ -437,13 +437,13 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, color_matrix, colorspace, version, max_version, history_end) "
+      "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end) "
       "select null, group_id, film_id, width, height, filename, maker, model, lens, "
       "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
       "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, color_matrix, colorspace, null, null, 0 "
+      "longitude, latitude, altitude, color_matrix, colorspace, null, null, 0 "
       "from images where id = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1163,13 +1163,13 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
           "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-          "longitude, latitude, color_matrix, colorspace, version, max_version) "
+          "longitude, latitude, altitude, color_matrix, colorspace, version, max_version) "
           "select null, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
           "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
           "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-          "longitude, latitude, color_matrix, colorspace, -1, -1 "
+          "longitude, latitude, altitude, color_matrix, colorspace, -1, -1 "
           "from images where id = ?2",
           -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);

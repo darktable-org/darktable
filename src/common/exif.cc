@@ -1906,14 +1906,14 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 {
   const int xmp_version = 1;
   int stars = 1, raw_params = 0, history_end = -1;
-  double longitude = NAN, latitude = NAN;
+  double longitude = NAN, latitude = NAN, altitude = NAN;
   gchar *filename = NULL;
   // get stars and raw params from db
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "select filename, flags, raw_parameters, longitude, latitude, history_end from images where id = ?1", -1, &stmt,
-      NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select filename, flags, raw_parameters, "
+                                                             "longitude, latitude, altitude, history_end "
+                                                             "from images where id = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1922,7 +1922,8 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     raw_params = sqlite3_column_int(stmt, 2);
     if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT) longitude = sqlite3_column_double(stmt, 3);
     if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT) latitude = sqlite3_column_double(stmt, 4);
-    history_end = sqlite3_column_int(stmt, 5);
+    if(sqlite3_column_type(stmt, 5) == SQLITE_FLOAT) altitude = sqlite3_column_double(stmt, 5);
+    history_end = sqlite3_column_int(stmt, 6);
   }
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
 
@@ -1956,6 +1957,15 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     g_free(long_str);
     g_free(lat_str);
     g_free(str);
+  }
+  if(!std::isnan(altitude))
+  {
+    xmpData["Xmp.exif.GPSAltitudeRef"] = (altitude < 0) ? "1" : "0";
+
+    long ele_dm = (int)floor(fabs(10.0 * altitude));
+    gchar *ele_str = g_strdup_printf("%ld/10", ele_dm);
+    xmpData["Xmp.exif.GPSAltitude"] = ele_str;
+    g_free(ele_str);
   }
   sqlite3_finalize(stmt);
 
