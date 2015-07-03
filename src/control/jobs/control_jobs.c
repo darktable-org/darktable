@@ -818,7 +818,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   {
     GTimeVal timestamp;
     GDateTime *exif_time, *utc_time;
-    gdouble lon, lat;
+    gdouble lon, lat, ele;
     int imgid = GPOINTER_TO_INT(t->data);
 
     /* get image */
@@ -857,9 +857,10 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     if(!res) continue;
 
     /* only update image location if time is within gpx tack range */
-    if(dt_gpx_get_location(gpx, &timestamp, &lon, &lat))
+    if(dt_gpx_get_location(gpx, &timestamp, &lon, &lat, &ele))
     {
       dt_image_set_location(imgid, lon, lat);
+      dt_image_set_elevation(imgid, ele);
       cntr++;
     }
 

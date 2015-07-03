@@ -290,6 +290,18 @@ void dt_image_set_location(const int32_t imgid, double lon, double lat)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
+void dt_image_set_elevation(const int32_t imgid, double ele)
+{
+  /* fetch image from cache */
+  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+
+  /* set image location */
+  image->elevation = ele;
+
+  /* store */
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+}
+
 void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orientation)
 {
   sqlite3_stmt *stmt;

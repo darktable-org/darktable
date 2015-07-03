@@ -117,7 +117,8 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
   g_free(gpx);
 }
 
-gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble *lon, gdouble *lat)
+gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble *lon, gdouble *lat,
+                             gdouble *ele)
 {
   g_assert(gpx != NULL);
 
@@ -137,6 +138,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
     {
       *lon = tp->longitude;
       *lat = tp->latitude;
+      *ele = tp->elevation;
       return FALSE;
     }
 
@@ -146,6 +148,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
     {
       *lon = tp->longitude;
       *lat = tp->latitude;
+      *ele = tp->elevation;
       return TRUE;
     }
 
