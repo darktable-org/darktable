@@ -941,6 +941,9 @@ gui_init (dt_lib_module_t *self)
   d->iwidth = d->iheight = 0;
   d->unit = 0;
   d->width = d->height = NULL;
+  d->v_piccprofile = NULL;
+  d->v_iccprofile = NULL;
+  d->v_style = NULL;
 
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt);
