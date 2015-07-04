@@ -199,6 +199,11 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new MosDecoder(root, mInput);
       }
+      if (!make.compare("Phase One A/S")) {
+        mRootIFD = NULL;
+        return new MosDecoder(root, mInput);
+      }
+
     }
   }
 

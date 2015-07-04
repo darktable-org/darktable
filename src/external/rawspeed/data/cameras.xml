@@ -7392,6 +7392,17 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="15000"/>
 	</Camera>
+	<Camera make="Phase One A/S" model="IQ250">
+		<ID make="Phase One" model="IQ250">Phase One IQ250</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="92" y="108" width="0" height="0"/>
+		<Sensor black="1024" white="65535"/>
+	</Camera>
 	<Camera make="Kodak" model="DCS Pro SLR/n">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
