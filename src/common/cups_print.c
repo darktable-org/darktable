@@ -135,7 +135,7 @@ static int _detect_printers_callback(dt_job_t *job)
   res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 30000, &_cancel, 0, 0, _dest_cb, pctl);
 #else
   cups_dest_t *dests;
-  int num_dests = cupsGetDests(&dests);
+  const int num_dests = cupsGetDests(&dests);
   for (int k=0; k<num_dests; k++)
   {
     _dest_cb((void *)pctl, 0, &dests[k]);
