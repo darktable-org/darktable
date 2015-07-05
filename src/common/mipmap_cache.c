@@ -660,6 +660,7 @@ void dt_mipmap_cache_get_with_caller(
         dt_cache_release(&_get_cache(cache, mip)->cache, entry);
         // get a read lock
         buf->cache_entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
+        dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
       }
 #endif
       /* raise signal that mipmaps has been flushed to cache */
