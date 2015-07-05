@@ -367,6 +367,9 @@ dt_logo_season_t get_logo_season(void)
 #define OSD_COORDINATES_CHR_E  "E"
 #define OSD_COORDINATES_CHR_W  "W"
 
+static const char *OSD_ELEVATION_ASL = N_("Above sea level");
+static const char *OSD_ELEVATION_BSL = N_("Below sea level");
+
 /* this is the classic geocaching notation */
 gchar *dt_util_latitude_str(float latitude)
 {
@@ -402,6 +405,21 @@ gchar *dt_util_longitude_str(float longitude)
   fractional = modff(longitude, &integral);
 
   return g_strdup_printf("%s %03d° %06.3f'", c, (int)integral, fractional*60.0);
+}
+
+gchar *dt_util_elevation_str(float elevation)
+{
+  const gchar *c = OSD_ELEVATION_ASL;
+
+  if(isnan(elevation)) return NULL;
+
+  if(elevation < 0)
+  {
+    elevation = fabs(elevation);
+    c = OSD_ELEVATION_BSL;
+  }
+
+  return g_strdup_printf("%.2f %s %s", elevation, _("m"), _(c));
 }
 
 

@@ -141,6 +141,23 @@ static gboolean _gps_rationale_to_number(const double r0_1, const double r0_2, c
   return TRUE;
 }
 
+static gboolean _gps_elevation_to_number(const double r_1, const double r_2, char sign, double *result)
+{
+  if(!result) return FALSE;
+  double res = 0.0;
+  // Altitude decoding from Exif.
+  double num, den;
+  num = r_1;
+  den = r_2;
+  if(den == 0) return FALSE;
+  res = num / den;
+
+  if(sign != '0') res *= -1.0;
+
+  *result = res;
+  return TRUE;
+}
+
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max, Exiv2::ExifData::const_iterator &pos,
@@ -308,6 +325,19 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
     if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude"))) != xmpData.end())
     {
       img->longitude = _gps_string_to_number(pos->toString().c_str());
+    }
+
+    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSAltitude"))) != xmpData.end())
+    {
+      Exiv2::XmpData::const_iterator ref = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSAltitudeRef"));
+      if(ref != xmpData.end() && ref->size())
+      {
+        std::string sign_str = ref->toString();
+        const char *sign = sign_str.c_str();
+        double elevation = 0.0;
+        if(_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
+          img->elevation = elevation;
+      }
     }
 
     /* read lens type from Xmp.exifEX.LensModel */
@@ -561,6 +591,19 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
                                     pos->toRational(1).first, pos->toRational(1).second,
                                     pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
           img->longitude = longitude;
+      }
+    }
+
+    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSAltitude"))) != exifData.end() && pos->size())
+    {
+      Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSAltitudeRef"));
+      if(ref != exifData.end() && ref->size())
+      {
+        std::string sign_str = ref->toString();
+        const char *sign = sign_str.c_str();
+        double elevation = 0.0;
+        if(_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
+          img->elevation = elevation;
       }
     }
 
@@ -1264,6 +1307,16 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
         g_free(long_str);
         g_free(lat_str);
       }
+      if(!std::isnan(cimg->elevation))
+      {
+        exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
+        exifData["Exif.GPSInfo.GPSAltitudeRef"] = (cimg->elevation < 0) ? "1" : "0";
+
+        long ele_dm = (int)floor(fabs(10.0 * cimg->elevation));
+        gchar *ele_str = g_strdup_printf("%ld/10", ele_dm);
+        exifData["Exif.GPSInfo.GPSAltitude"] = ele_str;
+        g_free(ele_str);
+      }
 
       // According to the Exif specs DateTime is to be set to the last modification time while
       // DateTimeOriginal is to be kept.
@@ -1591,6 +1644,18 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       img->longitude = _gps_string_to_number(pos->toString().c_str());
     }
 
+    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSAltitude"))) != xmpData.end())
+    {
+      Exiv2::XmpData::const_iterator ref = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSAltitudeRef"));
+      if(ref != xmpData.end() && ref->size())
+      {
+        std::string sign_str = ref->toString();
+        const char *sign = sign_str.c_str();
+        double elevation = 0.0;
+        if(_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
+          img->elevation = elevation;
+      }
+    }
     if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.auto_presets_applied"))) != xmpData.end())
     {
       int32_t i = pos->toLong();
@@ -1841,14 +1906,14 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 {
   const int xmp_version = 1;
   int stars = 1, raw_params = 0, history_end = -1;
-  double longitude = NAN, latitude = NAN;
+  double longitude = NAN, latitude = NAN, altitude = NAN;
   gchar *filename = NULL;
   // get stars and raw params from db
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "select filename, flags, raw_parameters, longitude, latitude, history_end from images where id = ?1", -1, &stmt,
-      NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select filename, flags, raw_parameters, "
+                                                             "longitude, latitude, altitude, history_end "
+                                                             "from images where id = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1857,7 +1922,8 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     raw_params = sqlite3_column_int(stmt, 2);
     if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT) longitude = sqlite3_column_double(stmt, 3);
     if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT) latitude = sqlite3_column_double(stmt, 4);
-    history_end = sqlite3_column_int(stmt, 5);
+    if(sqlite3_column_type(stmt, 5) == SQLITE_FLOAT) altitude = sqlite3_column_double(stmt, 5);
+    history_end = sqlite3_column_int(stmt, 6);
   }
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
 
@@ -1891,6 +1957,15 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     g_free(long_str);
     g_free(lat_str);
     g_free(str);
+  }
+  if(!std::isnan(altitude))
+  {
+    xmpData["Xmp.exif.GPSAltitudeRef"] = (altitude < 0) ? "1" : "0";
+
+    long ele_dm = (int)floor(fabs(10.0 * altitude));
+    gchar *ele_str = g_strdup_printf("%ld/10", ele_dm);
+    xmpData["Xmp.exif.GPSAltitude"] = ele_str;
+    g_free(ele_str);
   }
   sqlite3_finalize(stmt);
 

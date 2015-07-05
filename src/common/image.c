@@ -290,6 +290,20 @@ void dt_image_set_location(const int32_t imgid, double lon, double lat)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
+void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double lat, double ele)
+{
+  /* fetch image from cache */
+  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+
+  /* set image location and elevation */
+  image->longitude = lon;
+  image->latitude = lat;
+  image->elevation = ele;
+
+  /* store */
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+}
+
 void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orientation)
 {
   sqlite3_stmt *stmt;
@@ -437,13 +451,13 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, color_matrix, colorspace, version, max_version, history_end) "
+      "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end) "
       "select null, group_id, film_id, width, height, filename, maker, model, lens, "
       "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
       "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, color_matrix, colorspace, null, null, 0 "
+      "longitude, latitude, altitude, color_matrix, colorspace, null, null, 0 "
       "from images where id = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -971,6 +985,7 @@ void dt_image_init(dt_image_t *img)
   img->exif_focus_distance = 0;
   img->latitude = NAN;
   img->longitude = NAN;
+  img->elevation = NAN;
   img->raw_black_level = 0;
   for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
   img->raw_white_point = 16384; // 2^14
@@ -1162,13 +1177,13 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
           "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-          "longitude, latitude, color_matrix, colorspace, version, max_version) "
+          "longitude, latitude, altitude, color_matrix, colorspace, version, max_version) "
           "select null, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
           "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
           "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-          "longitude, latitude, color_matrix, colorspace, -1, -1 "
+          "longitude, latitude, altitude, color_matrix, colorspace, -1, -1 "
           "from images where id = ?2",
           -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);

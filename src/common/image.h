@@ -148,6 +148,7 @@ typedef struct dt_image_t
   /* gps coords */
   double longitude;
   double latitude;
+  double elevation;
 
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
@@ -214,6 +215,8 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_fl
 dt_image_orientation_t dt_image_get_orientation(const int imgid);
 /** set image location lon/lat */
 void dt_image_set_location(const int32_t imgid, double lon, double lat);
+/** set image location lon/lat/ele */
+void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double lat, double ele);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** returns the orientation bits of the image from exif. */

@@ -66,6 +66,7 @@ enum
   /* geotagging */
   md_geotagging_lat,
   md_geotagging_lon,
+  md_geotagging_ele,
 
   /* entries, do not touch! */
   md_size
@@ -108,6 +109,7 @@ static void _lib_metatdata_view_init_labels()
   /* geotagging */
   _md_labels[md_geotagging_lat] = _("latitude");
   _md_labels[md_geotagging_lon] = _("longitude");
+  _md_labels[md_geotagging_ele] = _("elevation");
 }
 
 
@@ -475,6 +477,25 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         gchar EW = img->longitude < 0 ? 'W' : 'E';
         snprintf(value, sizeof(value), "%c %010.6f", EW, fabs(img->longitude));
         _metadata_update_value(d->metadata[md_geotagging_lon], value);
+      }
+    }
+    /* longitude */
+    if(isnan(img->elevation))
+    {
+      _metadata_update_value(d->metadata[md_geotagging_ele], NODATA_STRING);
+    }
+    else
+    {
+      if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
+      {
+        gchar *elevation = dt_util_elevation_str(img->elevation);
+        _metadata_update_value(d->metadata[md_geotagging_ele], elevation);
+        g_free(elevation);
+      }
+      else
+      {
+        snprintf(value, sizeof(value), "%.2f %s", img->elevation, _("m"));
+        _metadata_update_value(d->metadata[md_geotagging_ele], value);
       }
     }
 
