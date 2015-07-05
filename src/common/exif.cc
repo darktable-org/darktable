@@ -146,9 +146,8 @@ static gboolean _gps_elevation_to_number(const double r_1, const double r_2, cha
   if(!result) return FALSE;
   double res = 0.0;
   // Altitude decoding from Exif.
-  double num, den;
-  num = r_1;
-  den = r_2;
+  const double num = r_1;
+  const double den = r_2;
   if(den == 0) return FALSE;
   res = num / den;
 
