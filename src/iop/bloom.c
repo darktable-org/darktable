@@ -96,7 +96,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
+  const dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
   dt_accel_connect_slider_iop(self, "size", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->scale2));
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale3));
@@ -117,7 +117,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   float *blurlightness = calloc((size_t)roi_out->width * roi_out->height, sizeof(float));
   memcpy(out, in, (size_t)roi_out->width * roi_out->height * ch * sizeof(float));
 
-  int rad = 256.0f * (fmin(100.0f, data->size + 1.0f) / 100.0f);
+  const int rad = 256.0f * (fmin(100.0f, data->size + 1.0f) / 100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
 
@@ -131,7 +131,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *inp = ((float *)ivoid) + ch * k;
-    float L = inp[0] * scale;
+    const float L = inp[0] * scale;
     if(L > data->threshold) blurlightness[k] = L;
 
     inp += ch;
@@ -154,7 +154,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       float scanline[size];
       float L = 0;
       int hits = 0;
-      size_t index = (size_t)y * roi_out->width;
+      const size_t index = (size_t)y * roi_out->width;
       for(int x = -hr; x < roi_out->width; x++)
       {
         int op = x - hr - 1;
@@ -231,8 +231,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 #ifdef HAVE_OPENCL
 static int bucket_next(unsigned int *state, unsigned int max)
 {
-  unsigned int current = *state;
-  unsigned int next = (current >= max - 1 ? 0 : current + 1);
+  const unsigned int current = *state;
+  const unsigned int next = (current >= max - 1 ? 0 : current + 1);
 
   *state = next;
 
@@ -242,8 +242,8 @@ static int bucket_next(unsigned int *state, unsigned int max)
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
-  dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)self->data;
+  const dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
+  const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)self->data;
 
   cl_int err = -999;
   cl_mem dev_tmp[NUM_BUCKETS] = { NULL };
@@ -383,7 +383,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
+  const dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
 
   const int rad = 256.0f * (fmin(100.0f, d->size + 1.0f) / 100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
@@ -411,7 +411,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)module->data;
+  const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_bloom_threshold);
   dt_opencl_free_kernel(gd->kernel_bloom_hblur);
   dt_opencl_free_kernel(gd->kernel_bloom_vblur);
@@ -450,7 +450,7 @@ static void size_callback(GtkWidget *slider, gpointer user_data)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)p1;
+  const const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)p1;
 #ifdef HAVE_GEGL
   fprintf(stderr, "[bloom] TODO: implement gegl version!\n");
 // pull in new params to gegl
@@ -487,9 +487,9 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
+  const dt_iop_module_t *module = (dt_iop_module_t *)self;
+  const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)module->params;
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
-  dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)module->params;
   dt_bauhaus_slider_set(g->scale1, p->size);
   dt_bauhaus_slider_set(g->scale2, p->threshold);
   dt_bauhaus_slider_set(g->scale3, p->strength);
@@ -520,7 +520,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_bloom_gui_data_t));
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
-  dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
+  const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

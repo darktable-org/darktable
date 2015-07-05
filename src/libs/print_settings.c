@@ -115,13 +115,13 @@ typedef struct dt_print_format_t
 
 static int bpp(dt_imageio_module_data_t *data)
 {
-  dt_print_format_t *d = (dt_print_format_t *)data;
+  const dt_print_format_t *d = (dt_print_format_t *)data;
   return d->bpp;
 }
 
 static int levels(dt_imageio_module_data_t *data)
 {
-  dt_print_format_t *d = (dt_print_format_t *)data;
+  const dt_print_format_t *d = (dt_print_format_t *)data;
   return IMAGEIO_RGB | (d->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
 }
 
@@ -164,7 +164,7 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
 static void
 _print_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
@@ -217,8 +217,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   // compute the needed size for picture for the given printer resolution
 
-  int max_width  = (pa_width  * ps->prt.printer.resolution);
-  int max_height = (pa_height * ps->prt.printer.resolution);
+  const int max_width  = (pa_width  * ps->prt.printer.resolution);
+  const int max_height = (pa_height * ps->prt.printer.resolution);
 
   dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", max_width, max_height, ps->prt.printer.resolution);
 
@@ -347,7 +347,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_tag_attach(tagid, imgid);
 }
 
-static void _set_printer(dt_lib_module_t *self, const char *printer_name)
+static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   dt_printer_info_t *printer = dt_get_printer_info (printer_name);
@@ -402,7 +402,7 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
 
   while (papers)
   {
-    dt_paper_info_t *p = (dt_paper_info_t *)papers->data;
+    const dt_paper_info_t *p = (dt_paper_info_t *)papers->data;
     dt_bauhaus_combobox_add(ps->papers, p->common_name);
 
     if (ispaperset == FALSE && (!strcmp(default_paper, p->common_name) || default_paper[0] == '\0'))
@@ -415,7 +415,7 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
     papers = g_list_next (papers);
   }
 
-  dt_paper_info_t *paper = dt_get_paper(ps->paper_list, default_paper);
+  const dt_paper_info_t *paper = dt_get_paper(ps->paper_list, default_paper);
 
   if (paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
@@ -426,7 +426,7 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
 }
 
 static void
-_printer_changed (GtkWidget *combo, dt_lib_module_t *self)
+_printer_changed (GtkWidget *combo, const dt_lib_module_t *self)
 {
   const gchar *printer_name = dt_bauhaus_combobox_get_text(combo);
 
@@ -435,7 +435,7 @@ _printer_changed (GtkWidget *combo, dt_lib_module_t *self)
 }
 
 static void
-_paper_changed (GtkWidget *combo, dt_lib_module_t *self)
+_paper_changed (GtkWidget *combo, const dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
@@ -443,7 +443,7 @@ _paper_changed (GtkWidget *combo, dt_lib_module_t *self)
 
   if (!paper_name) return;
 
-  dt_paper_info_t *paper = dt_get_paper(ps->paper_list, paper_name);
+  const dt_paper_info_t *paper = dt_get_paper(ps->paper_list, paper_name);
 
   if (paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
@@ -620,7 +620,7 @@ static void
 _alignment_callback(GtkWidget *tb, gpointer user_data)
 {
   int index=-1;
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   for(int i=0; i<9; i++)
@@ -662,10 +662,10 @@ _unit_changed (GtkWidget *combo, dt_lib_module_t *self)
   ps->unit = unit;
   dt_conf_set_int("plugins/print/print/unit", ps->unit);
 
-  double margin_top = ps->prt.page.margin_top;
-  double margin_left = ps->prt.page.margin_left;
-  double margin_right = ps->prt.page.margin_right;
-  double margin_bottom = ps->prt.page.margin_bottom;
+  const double margin_top = ps->prt.page.margin_top;
+  const double margin_left = ps->prt.page.margin_left;
+  const double margin_right = ps->prt.page.margin_right;
+  const double margin_bottom = ps->prt.page.margin_bottom;
 
   const int n_digits = (int)(1.0 / (units[ps->unit] * 10.0));
 
@@ -827,7 +827,7 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
 
 static void _print_settings_filmstrip_activate_callback(gpointer instance,gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
@@ -897,8 +897,8 @@ static GList* _get_profiles ()
 static void _new_printer_callback(dt_printer_info_t *printer, void *user_data)
 {
   static int count = 0;
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)self->data;
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)self->data;
 
   char *default_printer = dt_conf_get_string("plugins/print/print/printer");
 
@@ -1401,7 +1401,7 @@ static const char *_get_profile(GList *profiles, const char *filename)
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
-  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+  const dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   if(!params) return 1;
 

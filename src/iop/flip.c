@@ -128,9 +128,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int32_t orientation;
     } dt_iop_flip_params_v1_t;
 
-    dt_iop_flip_params_v1_t *old = (dt_iop_flip_params_v1_t *)old_params;
+    const dt_iop_flip_params_v1_t *old = (dt_iop_flip_params_v1_t *)old_params;
     dt_iop_flip_params_t *n = (dt_iop_flip_params_t *)new_params;
-    dt_iop_flip_params_t *d = (dt_iop_flip_params_t *)self->default_params;
+    const dt_iop_flip_params_t *d = (dt_iop_flip_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
@@ -177,7 +177,7 @@ static void backtransform(const int32_t *x, int32_t *o, const dt_image_orientati
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   // if (!self->enabled) return 2;
-  dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   float x, y;
 
@@ -203,7 +203,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
                           size_t points_count)
 {
   // if (!self->enabled) return 2;
-  dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   float x, y;
 
@@ -233,8 +233,8 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
+  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
   *roi_out = *roi_in;
-  dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   // transform whole buffer roi
   if(d->orientation & ORIENTATION_SWAP_XY)
@@ -248,7 +248,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
-  dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
   *roi_in = *roi_out;
   // transform aabb back to roi_in
 
@@ -287,7 +287,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   const int bpp = sizeof(float) * piece->colors;
   const int stride = bpp * roi_in->width;
@@ -300,8 +300,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_flip_data_t *data = (dt_iop_flip_data_t *)piece->data;
-  dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;
+  const dt_iop_flip_data_t *data = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;
@@ -337,7 +337,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;
+  const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;
   dt_opencl_free_kernel(gd->kernel_flip);
   free(self->data);
   self->data = NULL;
@@ -346,7 +346,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)p1;
+  const dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)p1;
   dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   if(p->orientation == ORIENTATION_NULL)

@@ -79,7 +79,7 @@ static void _set_orientation(dt_print_t *prt)
 
 static void _film_strip_activated(const int imgid, void *data)
 {
-  dt_view_t *self = (dt_view_t *)data;
+  const dt_view_t *self = (dt_view_t *)data;
   dt_print_t *prt = (dt_print_t *)self->data;
 
   prt->image_id = imgid;
@@ -227,7 +227,7 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
 
 void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
 {
-  dt_print_t *prt=(dt_print_t*)self->data;
+  const dt_print_t *prt=(dt_print_t*)self->data;
 
   // clear the current surface
   cairo_set_source_rgb (cri, 0.1, 0.1, 0.1);
@@ -341,7 +341,7 @@ static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *accele
                                      GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gboolean vs = dt_lib_is_visible(m);
+  const gboolean vs = dt_lib_is_visible(m);
   dt_lib_set_visible(m, !vs);
   return TRUE;
 }

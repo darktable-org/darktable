@@ -176,7 +176,7 @@ static int paper_exists(GList *papers, const char *name)
   GList *p = papers;
   while (p)
   {
-    dt_paper_info_t *pi = (dt_paper_info_t*)p->data;
+    const dt_paper_info_t *pi = (dt_paper_info_t*)p->data;
     if (!strcmp(pi->name,name) || !strcmp(pi->common_name,name))
       return 1;
     p = g_list_next (p);
