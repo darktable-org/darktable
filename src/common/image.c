@@ -290,12 +290,14 @@ void dt_image_set_location(const int32_t imgid, double lon, double lat)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_set_elevation(const int32_t imgid, double ele)
+void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double lat, double ele)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  /* set image location */
+  /* set image location and elevation */
+  image->longitude = lon;
+  image->latitude = lat;
   image->elevation = ele;
 
   /* store */

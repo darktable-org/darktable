@@ -187,6 +187,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
       /* initialize with NAN for validation check */
       gpx->current_track_point->longitude = NAN;
       gpx->current_track_point->latitude = NAN;
+      gpx->current_track_point->elevation = NAN;
 
       /* go thru the attributes to find and get values of lon / lat*/
       while(*attribute_name)

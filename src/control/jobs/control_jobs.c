@@ -859,8 +859,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     /* only update image location if time is within gpx tack range */
     if(dt_gpx_get_location(gpx, &timestamp, &lon, &lat, &ele))
     {
-      dt_image_set_location(imgid, lon, lat);
-      dt_image_set_elevation(imgid, ele);
+      dt_image_set_location_and_elevation(imgid, lon, lat, ele);
       cntr++;
     }
 
