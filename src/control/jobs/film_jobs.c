@@ -55,7 +55,7 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
   params->film = film;
   dt_pthread_mutex_lock(&film->images_mutex);
   film->ref++;

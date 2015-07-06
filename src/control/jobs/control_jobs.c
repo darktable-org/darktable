@@ -167,7 +167,7 @@ static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback ex
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
   dt_control_image_enumerator_job_selected_init(params);
   params->flag = flag;
   params->data = data;
@@ -1087,7 +1087,7 @@ static dt_job_t *dt_control_gpx_apply_job_create(const gchar *filename, int32_t 
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
   if(filmid != -1)
     dt_control_image_enumerator_job_film_init(params, filmid);
   else
@@ -1330,7 +1330,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
     dt_control_job_dispose(job);
     return;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
   params->index = imgid_list;
   dt_control_export_t *data = (dt_control_export_t *)malloc(sizeof(dt_control_export_t));
   data->max_width = max_width;
@@ -1424,7 +1424,7 @@ static dt_job_t *dt_control_time_offset_job_create(const long int offset, int im
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
   if(imgid != -1)
     params->index = g_list_append(params->index, GINT_TO_POINTER(imgid));
   else

@@ -87,10 +87,11 @@ dt_job_state_t dt_control_job_get_state(_dt_job_t *job)
   return state;
 }
 
-void dt_control_job_set_params(_dt_job_t *job, void *params)
+void dt_control_job_set_params(_dt_job_t *job, void *params, dt_job_destroy_callback callback)
 {
   if(!job || dt_control_job_get_state(job) != DT_JOB_STATE_INITIALIZED) return;
   job->params = params;
+  job->params_destroy = callback;
 }
 
 void *dt_control_job_get_params(const _dt_job_t *job)

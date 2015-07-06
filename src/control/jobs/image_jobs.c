@@ -51,7 +51,7 @@ dt_job_t *dt_image_load_job_create(int32_t id, dt_mipmap_size_t mip)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
   params->imgid = id;
   params->mip = mip;
   return job;
@@ -99,7 +99,7 @@ dt_job_t *dt_image_import_job_create(uint32_t filmid, const char *filename)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
   params->filename = g_strdup(filename);
   params->film_id = filmid;
   return job;

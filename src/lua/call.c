@@ -304,7 +304,7 @@ void dt_lua_do_chunk_later(lua_State *L, int nargs)
 
   if(job)
   {
-    dt_control_job_set_params(job, GINT_TO_POINTER(reference));
+    dt_control_job_set_params(job, GINT_TO_POINTER(reference), NULL);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   }
 }
@@ -490,7 +490,7 @@ void dt_lua_do_chunk_async(lua_CFunction pusher,dt_lua_async_call_arg_type arg_t
     }
     va_end(ap);
     
-    dt_control_job_set_params(job, data);
+    dt_control_job_set_params(job, data, free);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   }
 }

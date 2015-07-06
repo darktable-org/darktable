@@ -67,8 +67,9 @@ void dt_control_job_cancel(dt_job_t *job);
 dt_job_state_t dt_control_job_get_state(dt_job_t *job);
 /** wait for a job to finish execution. */
 void dt_control_job_wait(dt_job_t *job);
-/** accessors for internal fields */
-void dt_control_job_set_params(dt_job_t *job, void *params);
+/** set job params and a callback to destroy those params */
+void dt_control_job_set_params(dt_job_t *job, void *params, dt_job_destroy_callback callback);
+/** get job params. WARNING: you must not free them. dt_control_job_dispose() will take care of that */
 void *dt_control_job_get_params(const dt_job_t *job);
 
 struct dt_control_t;

@@ -194,7 +194,7 @@ dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
 
   params->shared.session = dt_import_session_new();
   dt_import_session_set_name(params->shared.session, jobcode);
@@ -229,7 +229,7 @@ dt_job_t *dt_camera_get_previews_job_create(dt_camera_t *camera, dt_camctl_liste
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
 
   params->listener = g_malloc(sizeof(dt_camctl_listener_t));
   memcpy(params->listener, listener, sizeof(dt_camctl_listener_t));
@@ -333,7 +333,7 @@ dt_job_t *dt_camera_import_job_create(const char *jobcode, GList *images, struct
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
 
   /* intitialize import session for camera import job */
   params->shared.session = dt_import_session_new();
