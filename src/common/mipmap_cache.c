@@ -652,8 +652,11 @@ void dt_mipmap_cache_get_with_caller(
       }
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
-        // XXX or just leave the write lock as it was? same for image_cache.
-#if 1 // 0
+      // image cache is leaving the write lock in place in case the image has been newly allocated.
+      // this leads to a slight increase in thread contention, so we opt for dropping the write lock
+      // and acquiring a read lock immediately after. since this opens a small window for other threads
+      // to get in between, we need to take some care to re-init cache entries and dsc.
+      // note that concurrencykit has rw locks that can be demoted from w->r without losing the lock in between.
       if(mode == 'r')
       {
         // drop the write lock
@@ -662,10 +665,7 @@ void dt_mipmap_cache_get_with_caller(
         buf->cache_entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
         dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
       }
-#endif
       /* raise signal that mipmaps has been flushed to cache */
-      // FIXME: calling the signal here directly is a circular deadlock, often times 3-way circular and more
-      // FIXME: TODO: signals cannot acquire the gdk lock, but should wrap this idle call code:
       g_idle_add(_raise_signal_mipmap_updated, 0);
     }
     buf->width = dsc->width;
