@@ -54,6 +54,7 @@ typedef struct _dt_job_t dt_job_t;
 
 typedef int32_t (*dt_job_execute_callback)(dt_job_t *);
 typedef void (*dt_job_state_change_callback)(dt_job_t *, dt_job_state_t state);
+typedef void (*dt_job_destroy_callback)(void *data);
 
 /** create a new initialized job */
 dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg, ...);
