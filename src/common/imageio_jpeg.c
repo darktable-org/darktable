@@ -155,6 +155,7 @@ int dt_imageio_jpeg_decompress(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
   jpg->dinfo.err = jpeg_std_error(&jerr.pub);
+  jerr.pub.error_exit = dt_imageio_jpeg_error_exit;
   if(setjmp(jerr.setjmp_buffer))
   {
     jpeg_destroy_decompress(&(jpg->dinfo));
@@ -204,6 +205,12 @@ int dt_imageio_jpeg_decompress(dt_imageio_jpeg_t *jpg, uint8_t *out)
 #else
   if(decompress_plain(jpg, out)) return 1;
 #endif
+
+  if(setjmp(jerr.setjmp_buffer))
+  {
+    jpeg_destroy_decompress(&(jpg->dinfo));
+    return 1;
+  }
 
   // jpg->dinfo.src = NULL;
   (void)jpeg_finish_decompress(&(jpg->dinfo));
@@ -613,6 +620,7 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
   jpg->dinfo.err = jpeg_std_error(&jerr.pub);
+  jerr.pub.error_exit = dt_imageio_jpeg_error_exit;
   if(setjmp(jerr.setjmp_buffer))
   {
     jpeg_destroy_decompress(&(jpg->dinfo));
@@ -647,6 +655,7 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
   if(setjmp(jerr.setjmp_buffer))
   {
     jpeg_destroy_decompress(&(jpg->dinfo));
+    fclose(jpg->f);
     return 1;
   }
 
@@ -663,7 +672,15 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
   read_plain(jpg, out);
 #endif
 
+  if(setjmp(jerr.setjmp_buffer))
+  {
+    jpeg_destroy_decompress(&(jpg->dinfo));
+    fclose(jpg->f);
+    return 1;
+  }
+
   (void)jpeg_finish_decompress(&(jpg->dinfo));
+
   jpeg_destroy_decompress(&(jpg->dinfo));
   fclose(jpg->f);
   return 0;

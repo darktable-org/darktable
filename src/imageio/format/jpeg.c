@@ -428,6 +428,7 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
   dt_imageio_jpeg_t *jpg = (dt_imageio_jpeg_t *)jpg_tmp;
   struct dt_imageio_jpeg_error_mgr jerr;
   jpg->dinfo.err = jpeg_std_error(&jerr.pub);
+  jerr.pub.error_exit = dt_imageio_jpeg_error_exit;
   if(setjmp(jerr.setjmp_buffer))
   {
     jpeg_destroy_decompress(&(jpg->dinfo));
@@ -448,6 +449,13 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
       for(JDIMENSION i = 0; i < jpg->dinfo.image_width; i++)
         for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][3 * i + k];
     tmp += 4 * jpg->width;
+  }
+  if(setjmp(jerr.setjmp_buffer))
+  {
+    jpeg_destroy_decompress(&(jpg->dinfo));
+    free(row_pointer[0]);
+    fclose(jpg->f);
+    return 1;
   }
   (void)jpeg_finish_decompress(&(jpg->dinfo));
   jpeg_destroy_decompress(&(jpg->dinfo));
