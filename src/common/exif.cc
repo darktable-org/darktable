@@ -1034,6 +1034,8 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
       exifData.erase(pos);
     if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.DNGVersion"))) != exifData.end())
       exifData.erase(pos);
+    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.DNGBackwardVersion"))) != exifData.end())
+      exifData.erase(pos);
 
     if(!dng_mode)
     {
