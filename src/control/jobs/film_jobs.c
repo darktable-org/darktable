@@ -38,12 +38,18 @@ static int32_t dt_film_import1_run(dt_job_t *job)
     {
       dt_film_remove(params->film->id);
     }
-
-    // FIXME: leak
-    dt_film_cleanup(params->film);
-    free(params->film);
   }
   return 0;
+}
+
+static void dt_film_import1_cleanup(void *p)
+{
+  dt_film_import1_t *params = p;
+
+  dt_film_cleanup(params->film);
+  free(params->film);
+
+  free(params);
 }
 
 dt_job_t *dt_film_import1_create(dt_film_t *film)
@@ -56,7 +62,7 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params, free);
+  dt_control_job_set_params(job, params, dt_film_import1_cleanup);
   params->film = film;
   dt_pthread_mutex_lock(&film->images_mutex);
   film->ref++;
