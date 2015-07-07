@@ -60,7 +60,7 @@ static const gchar introspection_xml[] = "<node>"
 #ifdef USE_LUA
 static int32_t dbus_callback_job(dt_job_t *job)
 {
-  GDBusMethodInvocation *invocation = dt_control_job_get_params(job);
+  GDBusMethodInvocation *invocation = (GDBusMethodInvocation *)dt_control_job_get_params(job);
   lua_State *L = darktable.lua_state.state;
   GVariant *parameters = g_dbus_method_invocation_get_parameters(invocation);
   const gchar *command;

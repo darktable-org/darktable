@@ -29,7 +29,7 @@ typedef struct dt_image_load_t
 
 static int32_t dt_image_load_job_run(dt_job_t *job)
 {
-  dt_image_load_t *params = dt_control_job_get_params(job);
+  const dt_image_load_t *params = dt_control_job_get_params(job);
 
   // hook back into mipmap_cache:
   dt_mipmap_buffer_t buf;
@@ -37,7 +37,6 @@ static int32_t dt_image_load_job_run(dt_job_t *job)
 
   // drop read lock, as this is only speculative async loading.
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  free(params);
   return 0;
 }
 
@@ -67,9 +66,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
 {
   int id;
   char message[512];
-  dt_image_import_t *params;
-
-  params = dt_control_job_get_params(job);
+  const dt_image_import_t *params = dt_control_job_get_params(job);
   message[0] = 0;
 
   snprintf(message, sizeof(message), _("importing image %s"), params->filename);
@@ -84,7 +81,6 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
 
   dt_control_progress_set_progress(darktable.control, progress, 1.0);
   dt_control_progress_destroy(darktable.control, progress);
-  free(params);
   return 0;
 }
 

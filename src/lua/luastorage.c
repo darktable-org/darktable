@@ -254,7 +254,7 @@ typedef struct
 
 static int32_t free_param_wrapper_job(dt_job_t *job)
 {
-  free_param_wrapper_data *params = dt_control_job_get_params(job);
+  const free_param_wrapper_data *params = dt_control_job_get_params(job);
   lua_storage_t *d = params->data;
   if(d->data_created)
   {
@@ -265,7 +265,6 @@ static int32_t free_param_wrapper_job(dt_job_t *job)
     dt_lua_unlock();
   }
   free(d);
-  free(params);
   return 0;
 }
 

@@ -431,7 +431,6 @@ static int32_t async_callback_job(dt_job_t *job)
   dt_lua_do_chunk_silent(L,nargs,0);
   dt_lua_redraw_screen();
   g_list_free(data->extra);
-  free(data);
   dt_lua_unlock();
   return 0;
 }

@@ -129,10 +129,10 @@ static int _cancel = 0;
 
 static int _detect_printers_callback(dt_job_t *job)
 {
-  dt_prtctl_t *pctl = dt_control_job_get_params(job);
+  const dt_prtctl_t *pctl = dt_control_job_get_params(job);
   int res;
 #if ((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 6)) || CUPS_VERSION_MAJOR > 1
-  res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 30000, &_cancel, 0, 0, _dest_cb, pctl);
+  res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 30000, &_cancel, 0, 0, _dest_cb, (void *)pctl);
 #else
   cups_dest_t *dests;
   const int num_dests = cupsGetDests(&dests);
@@ -143,7 +143,6 @@ static int _detect_printers_callback(dt_job_t *job)
   cupsFreeDests(num_dests, dests);
   res=1;
 #endif
-  g_free(pctl);
   return !res;
 }
 
