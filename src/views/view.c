@@ -375,6 +375,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
     }
 
     /* hide/show modules as last config */
+    gchar *view_name = nv->module_name;
     plugins = g_list_last(darktable.lib->plugins);
     while(plugins)
     {
@@ -387,7 +388,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
         gboolean visible = dt_lib_is_visible(plugin);
         if(plugin->expandable(plugin))
         {
-          snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", plugin->plugin_name);
+          snprintf(var, sizeof(var), "plugins/%s/%s/expanded", view_name, plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
 
           dt_lib_gui_set_expanded(plugin, expanded);

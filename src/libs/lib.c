@@ -836,9 +836,11 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
 
   /* store expanded state of module */
   char var[1024];
-  snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", module->plugin_name);
+  const dt_view_t *current_view = dt_view_manager_get_current_view(darktable.view_manager);
+  snprintf(var, sizeof(var), "plugins/%s/%s/expanded", current_view->module_name, module->plugin_name);
   dt_conf_set_bool(var, expanded);
 }
+
 gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
 {
   if(!module->expandable(module)) return true;
@@ -846,7 +848,8 @@ gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
   if(!module->widget)
   {
     char var[1024];
-    snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", module->plugin_name);
+    const dt_view_t *current_view = dt_view_manager_get_current_view(darktable.view_manager);
+    snprintf(var, sizeof(var), "plugins/%s/%s/expanded", current_view->module_name, module->plugin_name);
     return dt_conf_get_bool(var);
   }
   return dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander));
@@ -868,7 +871,7 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     {
       GList *it = g_list_first(darktable.lib->plugins);
       uint32_t container = module->container(module);
-      dt_view_t *v = darktable.view_manager->view + darktable.view_manager->current_view;
+      const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
       gboolean all_other_closed = TRUE;
       while(it)
       {
