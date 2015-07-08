@@ -421,7 +421,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
 
     dt_dev_invalidate(darktable.develop);
 
-    d->snapshot_image = cairo_image_surface_create_from_png(s->filename);
+    d->snapshot_image = dt_cairo_image_surface_create_from_png(s->filename);
   }
 
   /* redraw center view */
