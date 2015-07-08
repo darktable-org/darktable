@@ -853,6 +853,8 @@ int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *
 
 void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
+  if(!params) return NULL;
+
   dt_storage_flickr_params_t *d = (dt_storage_flickr_params_t *)params;
 
   _flickr_api_free(d->flickr_api); // TODO

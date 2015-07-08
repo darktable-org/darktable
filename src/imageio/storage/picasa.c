@@ -1566,6 +1566,7 @@ void *get_params(struct dt_imageio_module_storage_t *self)
 
 void free_params(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
+  if(!data) return NULL;
   PicasaContext *ctx = (PicasaContext *)data;
   picasa_api_destroy(ctx);
 }

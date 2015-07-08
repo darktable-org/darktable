@@ -1407,6 +1407,7 @@ void *get_params(struct dt_imageio_module_storage_t *self)
 
 void free_params(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
+  if(!data) return NULL;
   dt_storage_facebook_param_t *p = (dt_storage_facebook_param_t *)data;
   fb_api_destroy(p->facebook_ctx);
   g_free(p);
