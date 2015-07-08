@@ -8,7 +8,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      cxx_stdlib libstdc++
     (practice showed that support for versions older than 10.6 isn't viable)
     and this line to /opt/local/etc/macports/variant.conf:
-     +llvm34
+     +llvm34 +ld64_236
     To have working OpenMP (at least partly, only for C source files) you will also need gcc49:
      sudo port install gcc49
     Configure darktable with this command instead of just "cmake ..":
