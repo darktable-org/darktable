@@ -964,7 +964,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     if(mstorage->initialize_store(mstorage, sdata, &mformat, &fdata, &t, settings->high_quality, settings->upscale))
     {
       // bail out, something went wrong
-      g_list_free(t);
       goto end;
     }
     mformat->set_params(mformat, fdata, mformat->params_size(mformat));
@@ -1060,6 +1059,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
 end:
   mstorage->free_params(mstorage, sdata);
+  settings->sdata = NULL;
 
   // all threads free their fdata
   mformat->free_params(mformat, fdata);
@@ -1337,21 +1337,52 @@ void dt_control_reset_local_copy_images()
                                                           "local copy images", 0, NULL));
 }
 
+static dt_control_image_enumerator_t *dt_control_export_alloc()
+{
+  dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
+  if(!params) return NULL;
+
+  params->data = calloc(1, sizeof(dt_control_export_t));
+  if(!params->data)
+  {
+    dt_control_image_enumerator_cleanup(params);
+    return NULL;
+  }
+
+  return params;
+}
+
+static void dt_control_export_cleanup(void *p)
+{
+  dt_control_image_enumerator_t *params = p;
+
+  dt_control_export_t *settings = (dt_control_export_t *)params->data;
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
+  dt_imageio_module_data_t *sdata = settings->sdata;
+
+  mstorage->free_params(mstorage, sdata);
+
+  free(params->data);
+
+  dt_control_image_enumerator_cleanup(params);
+}
+
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
                        gboolean high_quality, gboolean upscale, char *style, gboolean style_append)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_export_job_run, "export");
   if(!job) return;
-  dt_control_image_enumerator_t *params
-      = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
+  dt_control_image_enumerator_t *params = dt_control_export_alloc();
   if(!params)
   {
     dt_control_job_dispose(job);
     return;
   }
-  dt_control_job_set_params(job, params, free);
+  dt_control_job_set_params(job, params, dt_control_export_cleanup);
+
   params->index = imgid_list;
-  dt_control_export_t *data = (dt_control_export_t *)malloc(sizeof(dt_control_export_t));
+
+  dt_control_export_t *data = params->data;
   data->max_width = max_width;
   data->max_height = max_height;
   data->format_index = format_index;
@@ -1364,7 +1395,6 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   {
     dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."),
                    mstorage->name(mstorage));
-    free(data);
     dt_control_job_dispose(job);
     return;
   }
@@ -1373,7 +1403,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->upscale = upscale;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
-  params->data = data;
+
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
 
   // tell the storage that we got its params for an export so it can reset itself to a safe state
