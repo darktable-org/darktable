@@ -81,7 +81,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)g_malloc0(sizeof(dt_lib_view_toolbox_t));
+  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)self->data;
   g_list_free_full(d->child_views,free);
   g_free(self->data);
   self->data = NULL;
