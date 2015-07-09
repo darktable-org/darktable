@@ -80,6 +80,8 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
   JsonReader *reader = NULL;
   GList *result = NULL;
 
+  dt_print(DT_DEBUG_CONTROL, "[noiseprofile] looking for maker `%s', model `%s'\n", cimg->camera_maker, cimg->camera_model);
+
   JsonNode *root = json_parser_get_root(parser);
   if(!root)
   {
