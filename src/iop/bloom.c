@@ -450,7 +450,7 @@ static void size_callback(GtkWidget *slider, gpointer user_data)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  const const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)p1;
+  const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)p1;
 #ifdef HAVE_GEGL
   fprintf(stderr, "[bloom] TODO: implement gegl version!\n");
 // pull in new params to gegl
