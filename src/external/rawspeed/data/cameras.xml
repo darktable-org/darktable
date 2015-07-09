@@ -2548,6 +2548,7 @@
 		<Sensor black="65" white="4095"/>
 	</Camera>
         <Camera make="OLYMPUS CORPORATION" model="TG-4">
+	        <ID make="Olympus" model="TG-4">Olympus TG-4</ID>
                 <CFA width="2" height="2">
                         <Color x="0" y="0">GREEN</Color>
                         <Color x="1" y="0">RED</Color>
