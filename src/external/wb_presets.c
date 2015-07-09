@@ -4163,6 +4163,13 @@ const wb_data wb_preset[] =
   { "Olympus", "SP510UZ", NeutralFluorescent, 0, { 1.644531, 1, 1.843750, 0 } },
   { "Olympus", "SP510UZ", DaylightFluorescent, 0, { 1.628906, 1, 2.210938, 0 } },
 
+  /* Firmware version 1.002 */
+  { "Olympus", "TG-4", Daylight, 0,             { 1.703125, 1, 1.695313, 0 } },
+  { "Olympus", "TG-4", Cloudy, 0,               { 1.8125, 1, 1.5625, 0 } },
+  { "Olympus", "TG-4", Incandescent, 0,         { 1.070313, 1, 2.765625, 0 } },
+  { "Olympus", "TG-4", Fluorescent, 0,          { 1.601563, 1, 2.15625, 0 } },
+  { "Olympus", "TG-4", Underwater, 0,           { 1.3125, 1, 2.257813, 0 } },
+
   /* Firmware version 1.5 */
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "Olympus", "XZ-1", Daylight, -7,		{ 1.687500, 1, 2.054688, 0 } },
