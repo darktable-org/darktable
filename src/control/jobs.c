@@ -382,6 +382,7 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
     {
       GList *last = g_list_last(*queue);
       dt_control_job_set_state((_dt_job_t *)last->data, DT_JOB_STATE_DISCARDED);
+      dt_control_job_dispose((_dt_job_t *)last->data);
       *queue = g_list_delete_link(*queue, last);
       length--;
     }
