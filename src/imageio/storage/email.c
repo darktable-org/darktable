@@ -174,7 +174,7 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
 
 void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
-  if(!params) return NULL;
+  if(!params) return;
   free(params);
 }
 

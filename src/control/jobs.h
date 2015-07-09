@@ -70,7 +70,7 @@ void dt_control_job_wait(dt_job_t *job);
 /** set job params and a callback to destroy those params */
 void dt_control_job_set_params(dt_job_t *job, void *params, dt_job_destroy_callback callback);
 /** get job params. WARNING: you must not free them. dt_control_job_dispose() will take care of that */
-const void *dt_control_job_get_params(const dt_job_t *job);
+void *dt_control_job_get_params(const dt_job_t *job);
 
 struct dt_control_t;
 void dt_control_jobs_init(struct dt_control_t *control);

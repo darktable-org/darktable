@@ -29,7 +29,7 @@ typedef struct dt_image_load_t
 
 static int32_t dt_image_load_job_run(dt_job_t *job)
 {
-  const dt_image_load_t *params = dt_control_job_get_params(job);
+  dt_image_load_t *params = dt_control_job_get_params(job);
 
   // hook back into mipmap_cache:
   dt_mipmap_buffer_t buf;
@@ -66,7 +66,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
 {
   int id;
   char message[512] = { 0 };
-  const dt_image_import_t *params = dt_control_job_get_params(job);
+  dt_image_import_t *params = dt_control_job_get_params(job);
 
   snprintf(message, sizeof(message), _("importing image %s"), params->filename);
   dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);

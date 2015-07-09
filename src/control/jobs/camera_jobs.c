@@ -71,14 +71,14 @@ typedef struct dt_camera_import_t
 void *dt_camera_previews_job_get_data(const dt_job_t *job)
 {
   if(!job) return NULL;
-  const dt_camera_get_previews_t *params = dt_control_job_get_params(job);
+  dt_camera_get_previews_t *params = dt_control_job_get_params(job);
   if(!params) return NULL;
   return params->data;
 }
 
 static int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
-  const dt_camera_capture_t *params = dt_control_job_get_params(job);
+  dt_camera_capture_t *params = dt_control_job_get_params(job);
   int total;
   char message[512] = { 0 };
   double fraction = 0;
@@ -225,7 +225,7 @@ dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint
 
 static int32_t dt_camera_get_previews_job_run(dt_job_t *job)
 {
-  const dt_camera_get_previews_t *params = dt_control_job_get_params(job);
+  dt_camera_get_previews_t *params = dt_control_job_get_params(job);
 
   dt_camctl_register_listener(darktable.camctl, params->listener);
   dt_camctl_get_previews(darktable.camctl, params->flags, params->camera);
@@ -317,7 +317,7 @@ static const char *_camera_request_image_path(const dt_camera_t *camera, void *d
 
 static int32_t dt_camera_import_job_run(dt_job_t *job)
 {
-  dt_camera_import_t *params = (dt_camera_import_t *)dt_control_job_get_params(job);
+  dt_camera_import_t *params = dt_control_job_get_params(job);
   dt_control_log(_("starting to import images from camera"));
 
   if(!dt_import_session_ready(params->shared.session))
@@ -338,7 +338,7 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
 
   // register listener
   dt_camctl_listener_t listener = { 0 };
-  listener.data = (void *)params;
+  listener.data = params;
   listener.image_downloaded = _camera_import_image_downloaded;
   listener.request_image_path = _camera_request_image_path;
   listener.request_image_filename = _camera_request_image_filename;

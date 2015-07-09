@@ -21,7 +21,7 @@
 
 static int32_t dt_dev_process_preview_job_run(dt_job_t *job)
 {
-  dt_develop_t *dev = (dt_develop_t *)dt_control_job_get_params(job);
+  dt_develop_t *dev = dt_control_job_get_params(job);
   dt_dev_process_preview_job(dev);
   return 0;
 }
@@ -36,7 +36,7 @@ dt_job_t *dt_dev_process_preview_job_create(dt_develop_t *dev)
 
 static int32_t dt_dev_process_image_job_run(dt_job_t *job)
 {
-  dt_develop_t *dev = (dt_develop_t *)dt_control_job_get_params(job);
+  dt_develop_t *dev = dt_control_job_get_params(job);
   dt_dev_process_image_job(dev);
   return 0;
 }

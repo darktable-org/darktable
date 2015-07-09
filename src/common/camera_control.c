@@ -748,7 +748,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
 
 static int _detect_cameras_callback(dt_job_t *job)
 {
-  const dt_camctl_t *c = dt_control_job_get_params(job);
+  dt_camctl_t *c = dt_control_job_get_params(job);
   dt_camctl_detect_cameras(c);
   return 0;
 }

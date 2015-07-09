@@ -94,7 +94,7 @@ void dt_control_job_set_params(_dt_job_t *job, void *params, dt_job_destroy_call
   job->params_destroy = callback;
 }
 
-const void *dt_control_job_get_params(const _dt_job_t *job)
+void *dt_control_job_get_params(const _dt_job_t *job)
 {
   if(!job) return NULL;
   return job->params;
@@ -112,9 +112,6 @@ dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg
 
   job->execute = execute;
   job->state = DT_JOB_STATE_INITIALIZED;
-
-  job->params = NULL;
-  job->params_destroy = NULL;
 
   dt_pthread_mutex_init(&job->state_mutex, NULL);
   dt_pthread_mutex_init(&job->wait_mutex, NULL);

@@ -192,7 +192,7 @@ static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback ex
 static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  const dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -401,7 +401,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
 
 static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 {
-  const dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   const guint total = g_list_length(t);
   char message[512] = { 0 };
@@ -488,7 +488,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
   int newimgid = -1;
-  const dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   guint total = g_list_length(t);
   char message[512] = { 0 };
@@ -513,7 +513,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 static int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  const dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   const int cw = params->flag;
   GList *t = params->index;
   guint total = g_list_length(t);
@@ -587,7 +587,7 @@ static GList *_get_full_pathname(char *imgs)
 static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  const dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   char *imgs = _get_image_list(t);
   guint total = g_list_length(t);
@@ -660,7 +660,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  const dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   char *imgs = _get_image_list(t);
   guint total = g_list_length(t);
@@ -792,7 +792,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
 static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 {
-  const dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   struct dt_gpx_t *gpx = NULL;
   uint32_t cntr = 0;

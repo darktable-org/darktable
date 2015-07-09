@@ -194,7 +194,7 @@ static int process_next_image(dt_slideshow_t *d)
 
 static int32_t process_job_run(dt_job_t *job)
 {
-  dt_slideshow_t *d = (dt_slideshow_t *)dt_control_job_get_params(job);
+  dt_slideshow_t *d = dt_control_job_get_params(job);
   process_next_image(d);
   return 0;
 }

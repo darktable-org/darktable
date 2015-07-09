@@ -27,7 +27,7 @@ typedef struct dt_film_import1_t
 
 static int32_t dt_film_import1_run(dt_job_t *job)
 {
-  const dt_film_import1_t *params = dt_control_job_get_params(job);
+  dt_film_import1_t *params = dt_control_job_get_params(job);
   dt_film_import1(params->film);
   dt_pthread_mutex_lock(&params->film->images_mutex);
   params->film->ref--;
