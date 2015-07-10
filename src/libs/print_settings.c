@@ -501,13 +501,15 @@ _update_slider (dt_lib_print_settings_t *ps)
 
     const double h = iheight * units[ps->unit];
     const double w = iwidth * units[ps->unit];
-    char value[20];
+    char *value;
 
-    sprintf(value, "%3.2f", w);
+    value = g_strdup_printf("%3.2f", w);
     gtk_label_set_text(GTK_LABEL(ps->width), value);
+    g_free(value);
 
-    sprintf(value, "%3.2f", h);
+    value = g_strdup_printf("%3.2f", h);
     gtk_label_set_text(GTK_LABEL(ps->height), value);
+    g_free(value);
 
     // compute the image down/up scale and report information
     double scale;
@@ -517,8 +519,9 @@ _update_slider (dt_lib_print_settings_t *ps)
     else
       scale = dt_pdf_point_to_pixel(dt_pdf_mm_to_point((double)aheight), ps->prt.printer.resolution) / ps->iheight;
 
-    sprintf(value, _("%3.2f (dpi:%d)"), scale, scale<=1.0 ? (int)ps->prt.printer.resolution : (int)(ps->prt.printer.resolution / scale));
+    value = g_strdup_printf(_("%3.2f (dpi:%d)"), scale, scale<=1.0 ? (int)ps->prt.printer.resolution : (int)(ps->prt.printer.resolution / scale));
     gtk_label_set_text(GTK_LABEL(ps->info), value);
+    g_free(value);
   }
 
   // set the max range for the borders depending on the others border and never allow to have an image size of 0 or less
