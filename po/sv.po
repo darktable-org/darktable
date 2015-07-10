@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-21 10:29+0200\n"
-"PO-Revision-Date: 2015-06-21 10:31+0200\n"
+"POT-Creation-Date: 2015-07-10 12:07+0200\n"
+"PO-Revision-Date: 2015-07-10 12:19+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -888,17 +888,17 @@ msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "%d bild av %d i kollektionen är markerade "
 msgstr[1] "%d bilder av %d i kollektionen är markerade "
 
-#: ../src/common/cups_print.c:278
+#: ../src/common/cups_print.c:310
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr "file `%s' som skulle skrivas ut finns inte, för bild %d på `%s'"
 
-#: ../src/common/cups_print.c:340
+#: ../src/common/cups_print.c:372
 #, c-format
 msgid "error while printing image %d on `%s'"
 msgstr "fel uppstod vid utskrift av bild %d på `%s'"
 
-#: ../src/common/cups_print.c:342
+#: ../src/common/cups_print.c:374
 #, c-format
 msgid "printing image %d on `%s'"
 msgstr "skriver ut bild %d på `%s'"
@@ -918,7 +918,7 @@ msgstr "fel uppstod vid läsning av katalog '%s'"
 msgid "file `%s' has unknown format!"
 msgstr "`%s' är av okänt format!"
 
-#: ../src/common/darktable.c:371 ../src/libs/import.c:800
+#: ../src/common/darktable.c:371 ../src/libs/import.c:823
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
@@ -990,19 +990,19 @@ msgstr ""
 msgid "orphaned image"
 msgstr "anonyma bilder"
 
-#: ../src/common/image.c:1316
+#: ../src/common/image.c:1331
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "kan inte skapa lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1330
+#: ../src/common/image.c:1345
 msgid "cannot create local copy."
 msgstr "kan inte skapa lokal kopia."
 
-#: ../src/common/image.c:1382 ../src/control/jobs/control_jobs.c:615
+#: ../src/common/image.c:1397 ../src/control/jobs/control_jobs.c:615
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "kan inte ta bort lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1535
+#: ../src/common/image.c:1550
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1028,7 +1028,7 @@ msgctxt "noun"
 msgid "export"
 msgstr "export"
 
-#: ../src/common/imageio.c:563 ../src/common/mipmap_cache.c:829
+#: ../src/common/imageio.c:563 ../src/common/mipmap_cache.c:830
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "bild `%s' är inte tillgänglig"
@@ -1051,15 +1051,15 @@ msgid "generic poissonian"
 msgstr "generisk poissonfördelning"
 
 #: ../src/common/pdf.h:85 ../src/iop/lens.c:1702
-#: ../src/libs/print_settings.c:1102
+#: ../src/libs/print_settings.c:1098
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:86 ../src/libs/print_settings.c:1103
+#: ../src/common/pdf.h:86 ../src/libs/print_settings.c:1099
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:87 ../src/libs/print_settings.c:1104
+#: ../src/common/pdf.h:87 ../src/libs/print_settings.c:1100
 msgid "inch"
 msgstr "tum"
 
@@ -1123,7 +1123,7 @@ msgstr "skapade stilen '%s'"
 
 #. fail :(
 #: ../src/common/styles.c:491 ../src/common/styles.c:508
-#: ../src/views/darkroom.c:424 ../src/views/print.c:277
+#: ../src/views/darkroom.c:422 ../src/views/print.c:270
 msgid "no image selected!"
 msgstr "inga bilder valda!"
 
@@ -1148,7 +1148,7 @@ msgstr "importerade stilen '%s'"
 #: ../src/iop/clipping.c:2041 ../src/iop/colorreconstruction.c:1314
 #: ../src/iop/lens.c:2037 ../src/libs/export.c:488 ../src/libs/live_view.c:323
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
-#: ../src/libs/print_settings.c:1014 ../src/libs/print_settings.c:1276
+#: ../src/libs/print_settings.c:1013 ../src/libs/print_settings.c:1274
 msgid "none"
 msgstr "ingen"
 
@@ -1337,8 +1337,8 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "exporterar %d bild till %s"
 msgstr[1] "exporterar %d bilder till %s"
 
-#: ../src/control/jobs/control_jobs.c:1047 ../src/views/darkroom.c:437
-#: ../src/views/print.c:290
+#: ../src/control/jobs/control_jobs.c:1047 ../src/views/darkroom.c:435
+#: ../src/views/print.c:283
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "`%s' är inte tillgänglig"
@@ -1383,7 +1383,7 @@ msgstr "välj katalog"
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/latex.c:104 ../src/libs/collect.c:414
 #: ../src/libs/copy_history.c:70 ../src/libs/geotagging.c:439
-#: ../src/libs/import.c:738 ../src/libs/import.c:834 ../src/libs/lib.c:216
+#: ../src/libs/import.c:761 ../src/libs/import.c:858 ../src/libs/lib.c:216
 #: ../src/libs/styles.c:208 ../src/libs/styles.c:228
 msgid "_Cancel"
 msgstr "_Avbryt"
@@ -1828,7 +1828,7 @@ msgstr "blandningsläge"
 msgid "choose blending mode"
 msgstr "välj blandningstyp"
 
-#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1081
+#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1298
 msgid "opacity"
 msgstr "ogenomskinlighet"
 
@@ -1929,8 +1929,8 @@ msgstr "%s är avslagen"
 #: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:188
 #: ../src/gui/presets.c:294 ../src/gui/presets.c:662
-#: ../src/iop/temperature.c:1161 ../src/libs/import.c:521
-#: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1108
+#: ../src/iop/temperature.c:1161 ../src/libs/import.c:543
+#: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1115
 msgid "preset"
 msgstr "förinställning"
 
@@ -1950,12 +1950,12 @@ msgctxt "accel"
 msgid "enable module"
 msgstr "aktivera modul"
 
-#: ../src/develop/imageop.c:1247 ../src/libs/lib.c:579
+#: ../src/develop/imageop.c:1247 ../src/libs/lib.c:583
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "återställ modulparametrar"
 
-#: ../src/develop/imageop.c:1248 ../src/libs/lib.c:583
+#: ../src/develop/imageop.c:1248 ../src/libs/lib.c:587
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "ny förinställningar"
@@ -1964,12 +1964,12 @@ msgstr "ny förinställningar"
 msgid "multiple instances actions"
 msgstr "hantera multipla instanser"
 
-#: ../src/develop/imageop.c:1811 ../src/libs/lib.c:950
+#: ../src/develop/imageop.c:1811 ../src/libs/lib.c:957
 msgid "reset parameters"
 msgstr "återställ parametrar"
 
 #: ../src/develop/imageop.c:1819 ../src/gui/preferences.c:411
-#: ../src/libs/lib.c:962
+#: ../src/libs/lib.c:969
 msgid "presets"
 msgstr "fördefinierade"
 
@@ -1984,7 +1984,7 @@ msgstr "kan inte finna någon XMP från Lightroom!"
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' inte en XMP från Lightroom!"
 
-#: ../src/develop/lightroom.c:1382 ../src/libs/import.c:541
+#: ../src/develop/lightroom.c:1382 ../src/libs/import.c:563
 msgid "tags"
 msgstr "taggar"
 
@@ -2218,7 +2218,7 @@ msgstr "kvällssol"
 msgid "underwater"
 msgstr "under vatten"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1123
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1121
 msgid "black & white"
 msgstr "svart & vitt"
 
@@ -2336,11 +2336,11 @@ msgid "general"
 msgstr "generella"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:419
+#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:435
 msgid "ignore JPEG files"
 msgstr "ignorera JPEG-bilder"
 
-#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:420
+#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:436
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2593,25 +2593,25 @@ msgstr "namn"
 
 #. exif
 #: ../src/gui/preferences.c:433 ../src/gui/preferences.c:1224
-#: ../src/gui/presets.c:439 ../src/libs/metadata_view.c:91
+#: ../src/gui/presets.c:439 ../src/libs/metadata_view.c:92
 msgid "model"
 msgstr "modell"
 
 #: ../src/gui/preferences.c:437 ../src/gui/preferences.c:1233
-#: ../src/gui/presets.c:447 ../src/libs/metadata_view.c:92
+#: ../src/gui/presets.c:447 ../src/libs/metadata_view.c:93
 msgid "maker"
 msgstr "tillverkare"
 
 #: ../src/gui/preferences.c:441 ../src/gui/preferences.c:1241
 #: ../src/gui/presets.c:454 ../src/libs/collect.h:31
-#: ../src/libs/metadata_view.c:93
+#: ../src/libs/metadata_view.c:94
 msgid "lens"
 msgstr "objektiv"
 
 #. iso
 #: ../src/gui/preferences.c:445 ../src/gui/preferences.c:1247
-#: ../src/gui/presets.c:461 ../src/libs/camera.c:521 ../src/libs/collect.h:32
-#: ../src/libs/metadata_view.c:98
+#: ../src/gui/presets.c:461 ../src/libs/camera.c:584 ../src/libs/collect.h:32
+#: ../src/libs/metadata_view.c:99
 msgid "ISO"
 msgstr "ISO"
 
@@ -2619,21 +2619,21 @@ msgstr "ISO"
 #: ../src/gui/preferences.c:449 ../src/gui/preferences.c:1260
 #: ../src/gui/presets.c:474 ../src/iop/exposure.c:105
 #: ../src/iop/exposure.c:930 ../src/iop/relight.c:372
-#: ../src/libs/metadata_view.c:95
+#: ../src/libs/metadata_view.c:96
 msgid "exposure"
 msgstr "exponering"
 
 #. aperture
 #: ../src/gui/preferences.c:453 ../src/gui/preferences.c:1275
-#: ../src/gui/presets.c:489 ../src/libs/camera.c:508 ../src/libs/camera.c:510
-#: ../src/libs/collect.h:32 ../src/libs/metadata_view.c:94
+#: ../src/gui/presets.c:489 ../src/libs/camera.c:571 ../src/libs/camera.c:573
+#: ../src/libs/collect.h:32 ../src/libs/metadata_view.c:95
 msgid "aperture"
 msgstr "bländare"
 
 #. focal length
 #: ../src/gui/preferences.c:457 ../src/gui/preferences.c:1290
-#: ../src/gui/presets.c:504 ../src/libs/camera.c:513 ../src/libs/collect.h:31
-#: ../src/libs/metadata_view.c:96
+#: ../src/gui/presets.c:504 ../src/libs/camera.c:576 ../src/libs/collect.h:31
+#: ../src/libs/metadata_view.c:97
 msgid "focal length"
 msgstr "brännvidd"
 
@@ -2704,7 +2704,7 @@ msgstr "välj fil att importera"
 
 #: ../src/gui/preferences.c:1034 ../src/libs/collect.c:415
 #: ../src/libs/copy_history.c:71 ../src/libs/geotagging.c:440
-#: ../src/libs/import.c:739 ../src/libs/import.c:835 ../src/libs/styles.c:229
+#: ../src/libs/import.c:762 ../src/libs/import.c:859 ../src/libs/styles.c:229
 msgid "_Open"
 msgstr "_Öppna"
 
@@ -2827,7 +2827,7 @@ msgstr "skriv över förinställning?"
 msgid "normal images"
 msgstr "normala bilder"
 
-#: ../src/gui/presets.c:376 ../src/libs/metadata_view.c:257
+#: ../src/gui/presets.c:376 ../src/libs/metadata_view.c:259
 msgid "raw"
 msgstr "rå"
 
@@ -2967,8 +2967,8 @@ msgstr "J2K"
 msgid "jp2"
 msgstr "jp2"
 
-#: ../src/imageio/format/j2k.c:663 ../src/imageio/format/jpeg.c:586
-#: ../src/imageio/format/webp.c:308 ../src/libs/camera.c:527
+#: ../src/imageio/format/j2k.c:663 ../src/imageio/format/jpeg.c:594
+#: ../src/imageio/format/webp.c:308 ../src/libs/camera.c:590
 msgid "quality"
 msgstr "kvalitet"
 
@@ -2988,7 +2988,7 @@ msgstr "Cinema2K, 48 bilder/s"
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24 bilder/s"
 
-#: ../src/imageio/format/jpeg.c:568
+#: ../src/imageio/format/jpeg.c:576
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
 
@@ -3030,7 +3030,7 @@ msgstr "PDF"
 #: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:171
 #: ../src/imageio/storage/latex.c:172 ../src/imageio/storage/picasa.c:1299
 #: ../src/libs/collect.h:29 ../src/libs/metadata.c:344
-#: ../src/libs/metadata_view.c:104
+#: ../src/libs/metadata_view.c:105
 msgid "title"
 msgstr "titel"
 
@@ -3039,7 +3039,7 @@ msgid "enter the title of the pdf"
 msgstr "ange en titel för pdf:en"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:546 ../src/libs/print_settings.c:1082
+#: ../src/imageio/format/pdf.c:546 ../src/libs/print_settings.c:1083
 msgid "paper size"
 msgstr "pappersstorlek"
 
@@ -3058,12 +3058,12 @@ msgid "page orientation"
 msgstr "sidorientering"
 
 #: ../src/imageio/format/pdf.c:560 ../src/iop/borders.c:994
-#: ../src/libs/print_settings.c:1096
+#: ../src/libs/print_settings.c:1092
 msgid "portrait"
 msgstr "stående"
 
 #: ../src/imageio/format/pdf.c:561 ../src/iop/borders.c:995
-#: ../src/libs/print_settings.c:1097
+#: ../src/libs/print_settings.c:1093
 msgid "landscape"
 msgstr "liggande"
 
@@ -3101,13 +3101,13 @@ msgstr "rotera bilder"
 
 #: ../src/imageio/format/pdf.c:606 ../src/imageio/format/pdf.c:632
 #: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1892
-#: ../src/libs/export.c:588 ../src/libs/metadata_view.c:242
+#: ../src/libs/export.c:588 ../src/libs/metadata_view.c:244
 msgid "no"
 msgstr "nej"
 
 #: ../src/imageio/format/pdf.c:607 ../src/imageio/format/pdf.c:633
 #: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1893
-#: ../src/libs/export.c:589 ../src/libs/metadata_view.c:242
+#: ../src/libs/export.c:589 ../src/libs/metadata_view.c:244
 msgid "yes"
 msgstr "ja"
 
@@ -3375,15 +3375,15 @@ msgstr ""
 msgid "facebook authentication"
 msgstr "facebook-autentisering"
 
-#: ../src/imageio/storage/facebook.c:627 ../src/imageio/storage/picasa.c:841
+#: ../src/imageio/storage/facebook.c:627
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:649 ../src/imageio/storage/picasa.c:864
+#: ../src/imageio/storage/facebook.c:649
 msgid "please enter the validation URL"
 msgstr "var god ange validerings-URL:en"
 
-#: ../src/imageio/storage/facebook.c:659 ../src/imageio/storage/picasa.c:875
+#: ../src/imageio/storage/facebook.c:659
 msgid "the given URL is not valid, it should look like: "
 msgstr "den angivna URL:en är inte giltig, den borde se ut såhär: "
 
@@ -3628,6 +3628,14 @@ msgstr ""
 msgid "google+ authentication"
 msgstr "google+-autentisering"
 
+#: ../src/imageio/storage/picasa.c:841
+msgid "verification code:"
+msgstr "kontrollkod:"
+
+#: ../src/imageio/storage/picasa.c:864
+msgid "please enter the verification code"
+msgstr "var god ange kontrollkoden"
+
 #: ../src/imageio/storage/picasa.c:1286
 msgid "google+ photos"
 msgstr "google+-bilder"
@@ -3832,7 +3840,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-axel: ingående, y-axel: utgående. arbetar på RGB-kanalerna"
 
 #: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2179
-#: ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1084
+#: ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1301
 msgid "scale"
 msgstr "skala"
 
@@ -3934,7 +3942,7 @@ msgctxt "accel"
 msgid "strength"
 msgstr "styrka"
 
-#: ../src/iop/bloom.c:530 ../src/iop/soften.c:559 ../src/libs/camera.c:530
+#: ../src/iop/bloom.c:530 ../src/iop/soften.c:559 ../src/libs/camera.c:593
 msgid "size"
 msgstr "storlek"
 
@@ -3995,7 +4003,7 @@ msgid "15:10 postcard black"
 msgstr "15:10 vykort svart ram"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:909 ../src/libs/import.c:913
+#: ../src/iop/borders.c:909 ../src/libs/import.c:967
 msgid "image"
 msgstr "bild"
 
@@ -4080,7 +4088,7 @@ msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr "välj bildförhållande eller högerklicka och skriv in egen (b:h)"
 
 #: ../src/iop/borders.c:992 ../src/iop/flip.c:73
-#: ../src/libs/print_settings.c:1095
+#: ../src/libs/print_settings.c:1091
 msgid "orientation"
 msgstr "orientering"
 
@@ -4721,22 +4729,22 @@ msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (tex. JPG)"
 
 #: ../src/iop/colorin.c:1089 ../src/iop/colorin.c:1123
-#: ../src/iop/colorin.c:1258 ../src/iop/colorout.c:934
-#: ../src/iop/colorout.c:935 ../src/iop/colorout.c:936
-#: ../src/libs/export.c:605 ../src/libs/print_settings.c:861
+#: ../src/iop/colorin.c:1258 ../src/iop/colorout.c:942
+#: ../src/iop/colorout.c:943 ../src/iop/colorout.c:944
+#: ../src/libs/export.c:605 ../src/libs/print_settings.c:858
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
 #: ../src/iop/colorin.c:1091 ../src/iop/colorin.c:1125
-#: ../src/iop/colorin.c:1259 ../src/iop/colorout.c:916
-#: ../src/iop/colorout.c:917 ../src/iop/colorout.c:918
+#: ../src/iop/colorin.c:1259 ../src/iop/colorout.c:924
+#: ../src/iop/colorout.c:925 ../src/iop/colorout.c:926
 #: ../src/libs/export.c:611
 msgid "linear Rec709 RGB"
 msgstr "linjär Rec709 RGB"
 
 #: ../src/iop/colorin.c:1093 ../src/iop/colorin.c:1127
-#: ../src/iop/colorin.c:1260 ../src/iop/colorout.c:922
-#: ../src/iop/colorout.c:923 ../src/iop/colorout.c:924
+#: ../src/iop/colorin.c:1260 ../src/iop/colorout.c:930
+#: ../src/iop/colorout.c:931 ../src/iop/colorout.c:932
 #: ../src/libs/export.c:617
 msgid "linear Rec2020 RGB"
 msgstr "linjär Rec2020 RGB"
@@ -4755,8 +4763,8 @@ msgid "Lab"
 msgstr "Lab"
 
 #: ../src/iop/colorin.c:1239 ../src/iop/denoiseprofile.c:1657
-#: ../src/libs/export.c:656 ../src/libs/print_settings.c:1004
-#: ../src/libs/print_settings.c:1218
+#: ../src/libs/export.c:656 ../src/libs/print_settings.c:1003
+#: ../src/libs/print_settings.c:1214
 msgid "profile"
 msgstr "profil"
 
@@ -4886,99 +4894,99 @@ msgstr "histogramutjämningens styrka"
 msgid "output color profile"
 msgstr "utgående färgprofil"
 
-#: ../src/iop/colorout.c:622
+#: ../src/iop/colorout.c:629
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "ej stödd utgående färgprofil har ersatts med srgb!"
 
-#: ../src/iop/colorout.c:758
+#: ../src/iop/colorout.c:766
 msgid "gamut check"
 msgstr "kontroll av tonskala"
 
-#: ../src/iop/colorout.c:758
+#: ../src/iop/colorout.c:766
 msgid "soft proof"
 msgstr "skärmkorrektur"
 
-#: ../src/iop/colorout.c:875
+#: ../src/iop/colorout.c:883
 msgid "output intent"
 msgstr "utgående avsikt"
 
-#: ../src/iop/colorout.c:876 ../src/iop/colorout.c:883
-#: ../src/libs/export.c:677 ../src/libs/print_settings.c:1051
-#: ../src/libs/print_settings.c:1261
+#: ../src/iop/colorout.c:884 ../src/iop/colorout.c:891
+#: ../src/libs/export.c:677 ../src/libs/print_settings.c:1052
+#: ../src/libs/print_settings.c:1259
 msgid "perceptual"
 msgstr "perceptuell"
 
-#: ../src/iop/colorout.c:877 ../src/iop/colorout.c:884
-#: ../src/libs/export.c:678 ../src/libs/print_settings.c:1052
-#: ../src/libs/print_settings.c:1262
+#: ../src/iop/colorout.c:885 ../src/iop/colorout.c:892
+#: ../src/libs/export.c:678 ../src/libs/print_settings.c:1053
+#: ../src/libs/print_settings.c:1260
 msgid "relative colorimetric"
 msgstr "relativ färgmetri"
 
-#: ../src/iop/colorout.c:878 ../src/iop/colorout.c:885
-#: ../src/libs/export.c:679 ../src/libs/print_settings.c:1053
-#: ../src/libs/print_settings.c:1263
+#: ../src/iop/colorout.c:886 ../src/iop/colorout.c:893
+#: ../src/libs/export.c:679 ../src/libs/print_settings.c:1054
+#: ../src/libs/print_settings.c:1261
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mättnad"
 
-#: ../src/iop/colorout.c:879 ../src/iop/colorout.c:886
-#: ../src/libs/export.c:680 ../src/libs/print_settings.c:1054
-#: ../src/libs/print_settings.c:1264
+#: ../src/iop/colorout.c:887 ../src/iop/colorout.c:894
+#: ../src/libs/export.c:680 ../src/libs/print_settings.c:1055
+#: ../src/libs/print_settings.c:1262
 msgid "absolute colorimetric"
 msgstr "absolut färgmetri"
 
-#: ../src/iop/colorout.c:881
+#: ../src/iop/colorout.c:889
 msgid "display intent"
 msgstr "visningsavsikt"
 
-#: ../src/iop/colorout.c:899
+#: ../src/iop/colorout.c:907
 msgid "output profile"
 msgstr "utgående profil"
 
-#: ../src/iop/colorout.c:900
+#: ../src/iop/colorout.c:908
 msgid "softproof profile"
 msgstr "profil för skärmkorrektur"
 
-#: ../src/iop/colorout.c:901
+#: ../src/iop/colorout.c:909
 msgid "display profile"
 msgstr "skärmprofil"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:912
+#: ../src/iop/colorout.c:920
 msgid "system display profile"
 msgstr "systemets skärmprofil"
 
-#: ../src/iop/colorout.c:928 ../src/iop/colorout.c:929
-#: ../src/iop/colorout.c:930 ../src/libs/export.c:598
-#: ../src/libs/print_settings.c:854
+#: ../src/iop/colorout.c:936 ../src/iop/colorout.c:937
+#: ../src/iop/colorout.c:938 ../src/libs/export.c:598
+#: ../src/libs/print_settings.c:851
 msgid "sRGB (web-safe)"
 msgstr "sRGB (webb-säker)"
 
-#: ../src/iop/colorout.c:948
+#: ../src/iop/colorout.c:956
 msgid "rendering intent"
 msgstr "återgivningsavsikt"
 
-#: ../src/iop/colorout.c:949
+#: ../src/iop/colorout.c:957
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "utgående ICC profiler i %s/color/out eller %s/color/out"
 
-#: ../src/iop/colorout.c:951
+#: ../src/iop/colorout.c:959
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler för skärm i %s/color/out eller %s/color/out"
 
-#: ../src/iop/colorout.c:954
+#: ../src/iop/colorout.c:962
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler för skärmkorrektur i %s/color/out eller %s/color/out"
 
-#: ../src/iop/colorout.c:986
+#: ../src/iop/colorout.c:994
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "växla skärmkorrektur"
 
-#: ../src/iop/colorout.c:988
+#: ../src/iop/colorout.c:996
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "växla kontroll av tonskala"
@@ -5699,7 +5707,7 @@ msgstr ""
 "komprimering av gradering\n"
 "0% = mjuk, 100% = hård"
 
-#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1087
+#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1304
 msgid "rotation"
 msgstr "rotation"
 
@@ -5853,7 +5861,7 @@ msgstr "välj färg för filmmaterial från bild"
 msgid "lens correction"
 msgstr "objektivkorrigering"
 
-#: ../src/iop/lens.c:160 ../src/iop/vignette.c:169 ../src/iop/watermark.c:194
+#: ../src/iop/lens.c:160 ../src/iop/vignette.c:169 ../src/iop/watermark.c:252
 msgctxt "accel"
 msgid "scale"
 msgstr "skala"
@@ -6399,8 +6407,8 @@ msgstr "bredd"
 msgid "the fill-light in EV"
 msgstr "fyllnadsljuset i EV"
 
-#: ../src/iop/relight.c:378 ../src/libs/metadata_view.c:100
-#: ../src/libs/print_settings.c:1120
+#: ../src/iop/relight.c:378 ../src/libs/metadata_view.c:101
+#: ../src/libs/print_settings.c:1116
 msgid "width"
 msgstr "bredd"
 
@@ -6941,82 +6949,135 @@ msgstr "bred-till-höjd-förhållande"
 msgid "add some level of random noise to prevent banding"
 msgstr "lägg till en mängd slumpmässigt brus för att undvika bandning"
 
-#: ../src/iop/watermark.c:172
+#: ../src/iop/watermark.c:230
 msgid "watermark"
 msgstr "vattenstämpel"
 
-#: ../src/iop/watermark.c:192
+#: ../src/iop/watermark.c:250
 msgctxt "accel"
 msgid "refresh"
 msgstr "uppdatera"
 
-#: ../src/iop/watermark.c:193
+#: ../src/iop/watermark.c:251
 msgctxt "accel"
 msgid "opacity"
 msgstr "ogenomskinlighet"
 
-#: ../src/iop/watermark.c:195
+#: ../src/iop/watermark.c:253
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/watermark.c:196
+#: ../src/iop/watermark.c:254
 msgctxt "accel"
 msgid "x offset"
 msgstr "förskjutning x-led"
 
-#: ../src/iop/watermark.c:197
+#: ../src/iop/watermark.c:255
 msgctxt "accel"
 msgid "y offset"
 msgstr "förskjutning y-led"
 
-#: ../src/iop/watermark.c:1065
+#: ../src/iop/watermark.c:1235
 msgid "marker"
 msgstr "markering"
 
-#: ../src/iop/watermark.c:1066 ../src/libs/print_settings.c:1205
+#: ../src/iop/watermark.c:1236 ../src/libs/print_settings.c:1201
 msgid "alignment"
 msgstr "orientering"
 
-#: ../src/iop/watermark.c:1093
+#: ../src/iop/watermark.c:1238
+msgid "content"
+msgstr "innehåll"
+
+#: ../src/iop/watermark.c:1252
+msgid "text"
+msgstr "text"
+
+#: ../src/iop/watermark.c:1257
+msgid ""
+"text string, tag\n"
+"$(WATERMARK_TEXT)"
+msgstr ""
+"text-sträng, tag\n"
+"$(WATERMARK_TEXT)"
+
+#: ../src/iop/watermark.c:1272
+msgid ""
+"text color, tag:\n"
+"$(WATERMARK_COLOR)"
+msgstr ""
+"text-färg, tag:\n"
+"$(WATERMARK_COLOR)"
+
+#: ../src/iop/watermark.c:1275
+msgid "select text color"
+msgstr "välj textens färg"
+
+#: ../src/iop/watermark.c:1276
+msgid "text color"
+msgstr "text-färg"
+
+#: ../src/iop/watermark.c:1286
+msgid ""
+"text font, tags:\n"
+"$(WATERMARK_FONT_FAMILY)\n"
+"$(WATERMARK_FONT_STYLE)\n"
+"$(WATERMARK_FONT_WEIGHT)"
+msgstr ""
+"typsnitt för text, taggar:\n"
+"$(WATERMARK_FONT_FAMILY)\n"
+"$(WATERMARK_FONT_STYLE)\n"
+"$(WATERMARK_FONT_WEIGHT)"
+
+#. Camera settings
+#: ../src/iop/watermark.c:1293 ../src/libs/camera.c:508
+msgid "properties"
+msgstr "inställningar"
+
+#: ../src/iop/watermark.c:1310
 msgctxt "size"
 msgid "image"
 msgstr "bild"
 
-#: ../src/iop/watermark.c:1094
+#: ../src/iop/watermark.c:1311
 msgid "larger border"
 msgstr "långsidan"
 
-#: ../src/iop/watermark.c:1095
+#: ../src/iop/watermark.c:1312
 msgid "smaller border"
 msgstr "kortsidan"
 
-#: ../src/iop/watermark.c:1097
+#: ../src/iop/watermark.c:1314
 msgid "scale on"
 msgstr "skala i förhållande till"
 
-#: ../src/iop/watermark.c:1099
+#: ../src/iop/watermark.c:1316
 msgid "size is relative to"
 msgstr "storleken är i förhållande till"
 
-#: ../src/iop/watermark.c:1121
+#: ../src/iop/watermark.c:1318
+msgid "position"
+msgstr "placering"
+
+#: ../src/iop/watermark.c:1340
 msgid "x offset"
 msgstr "förskjutning x-led"
 
-#: ../src/iop/watermark.c:1124
+#: ../src/iop/watermark.c:1343
 msgid "y offset"
 msgstr "förskjutning y-led"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1130
+#: ../src/iop/watermark.c:1349
 msgid "the opacity of the watermark"
 msgstr "vattenstämpelns ogenomskinlighet"
 
-#: ../src/iop/watermark.c:1131
+#: ../src/iop/watermark.c:1350
 msgid "the scale of the watermark"
 msgstr "skalning av vattenstämpel"
 
-#: ../src/iop/watermark.c:1132
+#: ../src/iop/watermark.c:1351
 msgid "the rotation of the watermark"
 msgstr "vattenstämpelns rotation"
 
@@ -7040,78 +7101,78 @@ msgstr ""
 msgid "background jobs"
 msgstr "bakgrundsjobb"
 
-#: ../src/libs/camera.c:78
+#: ../src/libs/camera.c:79
 msgid "camera settings"
 msgstr "kamerainställningar"
 
-#: ../src/libs/camera.c:103
+#: ../src/libs/camera.c:104
 msgctxt "accel"
 msgid "capture image(s)"
 msgstr "fånga bild(er)"
 
-#: ../src/libs/camera.c:142
+#: ../src/libs/camera.c:146
 msgid "toggle view property in center view"
 msgstr "visa inställning i centrervyn"
 
-#: ../src/libs/camera.c:219
+#: ../src/libs/camera.c:232
 msgid "connection with camera lost, exiting tethering mode"
 msgstr "anslutningen med kameran avbruten, avslutar tjudringsläge"
 
-#: ../src/libs/camera.c:352
+#: ../src/libs/camera.c:366
 msgid "battery"
 msgstr "batteri"
 
-#: ../src/libs/camera.c:352
+#: ../src/libs/camera.c:366
 msgid "n/a"
 msgstr "ej tillgänglig"
 
 #. , *vbox1, *vbox2
 #. Camera control
-#: ../src/libs/camera.c:420
+#: ../src/libs/camera.c:434
 msgid "camera control"
 msgstr "kamerakontroll"
 
-#: ../src/libs/camera.c:423
+#: ../src/libs/camera.c:437
 msgid "modes"
 msgstr "lägen"
 
-#: ../src/libs/camera.c:424
+#: ../src/libs/camera.c:438
 msgid "timer (s)"
 msgstr "timer (s)"
 
-#: ../src/libs/camera.c:425
+#: ../src/libs/camera.c:439
 msgid "count"
 msgstr "antal"
 
-#: ../src/libs/camera.c:426
+#: ../src/libs/camera.c:440
 msgid "brackets"
 msgstr "stegning"
 
-#: ../src/libs/camera.c:427
+#: ../src/libs/camera.c:441
 msgid "bkt. steps"
 msgstr "steg"
 
-#: ../src/libs/camera.c:463
+#: ../src/libs/camera.c:477
 msgid "capture image(s)"
 msgstr "fånga bild(er)"
 
-#: ../src/libs/camera.c:466
+#: ../src/libs/camera.c:480
 msgid "toggle delayed capture mode"
 msgstr "aktivera fördröjd tagning"
 
-#: ../src/libs/camera.c:467
+#: ../src/libs/camera.c:481
 msgid "toggle sequenced capture mode"
 msgstr "aktivera sekvensiell tagning"
 
-#: ../src/libs/camera.c:468
+#: ../src/libs/camera.c:482
 msgid "toggle bracketed capture mode"
 msgstr "växla användning av stegnings läge"
 
-#: ../src/libs/camera.c:470
+#: ../src/libs/camera.c:484
 msgid "the count of seconds before actually doing a capture"
 msgstr "antal sekunders fördröjning innan bilden tas"
 
-#: ../src/libs/camera.c:472
+#: ../src/libs/camera.c:486
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -7121,14 +7182,14 @@ msgstr ""
 "du kan använda detta tillsammans med fördröjd tagning för att skapa en stop-"
 "motion sekvens."
 
-#: ../src/libs/camera.c:476
+#: ../src/libs/camera.c:490
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
 msgstr ""
 "antal steg på vardera sida om center inställning, antal bilder = (steg*2)+1"
 
-#: ../src/libs/camera.c:479
+#: ../src/libs/camera.c:493
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
@@ -7139,46 +7200,42 @@ msgstr ""
 "med andra ord är 3 steg 1EV exponeringssteg mellan bilder i "
 "exponeringsstegen."
 
-#: ../src/libs/camera.c:495
-msgid "properties"
-msgstr "inställningar"
-
-#: ../src/libs/camera.c:500
-msgid "program"
-msgstr "program"
-
-#: ../src/libs/camera.c:503 ../src/libs/camera.c:505
-msgid "focus mode"
-msgstr "fokusläge"
-
-#: ../src/libs/camera.c:516
-msgid "shutterspeed2"
-msgstr "slutartid 2"
-
-#: ../src/libs/camera.c:518
-msgid "shutterspeed"
-msgstr "slutartid"
-
-#: ../src/libs/camera.c:524
-msgid "WB"
-msgstr "VB"
-
 #. user specified properties
-#: ../src/libs/camera.c:562
+#: ../src/libs/camera.c:516
 msgid "additional properties"
 msgstr "ytterligare inställningar"
 
-#: ../src/libs/camera.c:565
+#: ../src/libs/camera.c:519
 msgid "label"
 msgstr "etikett"
 
-#: ../src/libs/camera.c:573
+#: ../src/libs/camera.c:527
 msgid "property"
 msgstr "inställning"
 
-#: ../src/libs/camera.c:585
+#: ../src/libs/camera.c:539
 msgid "add user property"
 msgstr "lägg till användarinställning"
+
+#: ../src/libs/camera.c:563
+msgid "program"
+msgstr "program"
+
+#: ../src/libs/camera.c:566 ../src/libs/camera.c:568
+msgid "focus mode"
+msgstr "fokusläge"
+
+#: ../src/libs/camera.c:579
+msgid "shutterspeed2"
+msgstr "slutartid 2"
+
+#: ../src/libs/camera.c:581
+msgid "shutterspeed"
+msgstr "slutartid"
+
+#: ../src/libs/camera.c:587
+msgid "WB"
+msgstr "VB"
 
 #: ../src/libs/collect.c:112
 msgid "collect images"
@@ -7291,22 +7348,22 @@ msgstr "historik"
 msgid "description"
 msgstr "beskrivning"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:526
-#: ../src/libs/metadata.c:346 ../src/libs/metadata_view.c:105
+#: ../src/libs/collect.h:30 ../src/libs/import.c:548
+#: ../src/libs/metadata.c:346 ../src/libs/metadata_view.c:106
 msgid "creator"
 msgstr "skapare"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:531
+#: ../src/libs/collect.h:30 ../src/libs/import.c:553
 #: ../src/libs/metadata.c:347
 msgid "publisher"
 msgstr "utgivare"
 
-#: ../src/libs/collect.h:31 ../src/libs/import.c:536
+#: ../src/libs/collect.h:31 ../src/libs/import.c:558
 #: ../src/libs/metadata.c:348
 msgid "rights"
 msgstr "rättigheter"
 
-#: ../src/libs/collect.h:32 ../src/libs/metadata_view.c:83
+#: ../src/libs/collect.h:32 ../src/libs/metadata_view.c:84
 #: ../src/libs/tools/filter.c:139
 msgid "filename"
 msgstr "filnamn"
@@ -7381,7 +7438,7 @@ msgid "XMP sidecar files"
 msgstr "XMP sidofiler"
 
 #: ../src/libs/copy_history.c:81 ../src/libs/geotagging.c:457
-#: ../src/libs/import.c:767 ../src/libs/styles.c:242
+#: ../src/libs/import.c:790 ../src/libs/styles.c:242
 msgid "all files"
 msgstr "alla filer"
 
@@ -7562,21 +7619,21 @@ msgid "allow upscaling"
 msgstr "tillåt uppskalning"
 
 #: ../src/libs/export.c:658 ../src/libs/export.c:676
-#: ../src/libs/print_settings.c:1221 ../src/libs/print_settings.c:1260
+#: ../src/libs/print_settings.c:1217 ../src/libs/print_settings.c:1258
 msgid "image settings"
 msgstr "bildinställningar"
 
-#: ../src/libs/export.c:668 ../src/libs/print_settings.c:1251
+#: ../src/libs/export.c:668 ../src/libs/print_settings.c:1249
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "utgående ICC-profiler i %s/color/out eller %s/color/out"
 
-#: ../src/libs/export.c:675 ../src/libs/print_settings.c:1050
-#: ../src/libs/print_settings.c:1258
+#: ../src/libs/export.c:675 ../src/libs/print_settings.c:1051
+#: ../src/libs/print_settings.c:1256
 msgid "intent"
 msgstr "avsikt"
 
-#: ../src/libs/export.c:686 ../src/libs/print_settings.c:1274
+#: ../src/libs/export.c:686 ../src/libs/print_settings.c:1272
 msgid "style"
 msgstr "stil"
 
@@ -7605,7 +7662,7 @@ msgstr "exportera med nuvarande inställningar (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1190 ../src/libs/styles.c:66
-#: ../src/views/darkroom.c:1767
+#: ../src/views/darkroom.c:1763
 msgctxt "accel"
 msgid "export"
 msgstr "exportera"
@@ -7920,116 +7977,116 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "avgruppera"
 
-#: ../src/libs/import.c:96
+#: ../src/libs/import.c:102
 msgid "import"
 msgstr "import"
 
-#: ../src/libs/import.c:117
+#: ../src/libs/import.c:123
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "leta efter enheter"
 
-#: ../src/libs/import.c:118
+#: ../src/libs/import.c:124
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importera från kamera"
 
-#: ../src/libs/import.c:119
+#: ../src/libs/import.c:125
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "tjudrad tagning"
 
-#: ../src/libs/import.c:120
+#: ../src/libs/import.c:126
 msgctxt "accel"
 msgid "import image"
 msgstr "importera bild"
 
-#: ../src/libs/import.c:121
+#: ../src/libs/import.c:127
 msgctxt "accel"
 msgid "import folder"
 msgstr "importera katalog"
 
-#: ../src/libs/import.c:212
+#: ../src/libs/import.c:218
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "enhet \"%s\" ansluten på port \"%s\""
 
-#: ../src/libs/import.c:222
+#: ../src/libs/import.c:228
 msgid "import from camera"
 msgstr "importera från kamera"
 
-#: ../src/libs/import.c:228
+#: ../src/libs/import.c:234
 msgid "tethered shoot"
 msgstr "tjudrad tagning"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:250
+#: ../src/libs/import.c:256
 msgid "no supported devices found"
 msgstr "inga enheter som stöds hittades"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:383
+#: ../src/libs/import.c:399
 msgid "import options"
 msgstr "inställningar för import"
 
 #. recursive opening.
-#: ../src/libs/import.c:412
+#: ../src/libs/import.c:428
 msgid "import directories recursively"
 msgstr "rekursiv import av kataloger"
 
-#: ../src/libs/import.c:414
+#: ../src/libs/import.c:430
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "rekursiv import av underkataloger. vardera katalog skapar en ny filmrulle."
 
-#: ../src/libs/import.c:431
+#: ../src/libs/import.c:447
 msgid "apply metadata on import"
 msgstr "applicera metadata vid import"
 
-#: ../src/libs/import.c:432
+#: ../src/libs/import.c:448
 msgid "apply some metadata to all newly imported images."
 msgstr "applicera metadata på samtliga bilder som importeras"
 
-#: ../src/libs/import.c:472
+#: ../src/libs/import.c:494
 msgid "comma separated list of tags"
 msgstr "kommaseparerad lista med taggar"
 
-#: ../src/libs/import.c:738
+#: ../src/libs/import.c:761
 msgid "import image"
 msgstr "importera bild"
 
-#: ../src/libs/import.c:762
+#: ../src/libs/import.c:785
 msgid "supported images"
 msgstr "bilder som stöds"
 
-#: ../src/libs/import.c:816
+#: ../src/libs/import.c:839
 msgid "file has unknown format!"
 msgstr "filformat är okänt!"
 
-#: ../src/libs/import.c:834
+#: ../src/libs/import.c:858
 msgid "import film"
 msgstr "importera filmrulle"
 
-#: ../src/libs/import.c:916
+#: ../src/libs/import.c:970
 msgid "select one or more images to import"
 msgstr "välj en eller flera bilder att importera"
 
 #. adding the import folder button
-#: ../src/libs/import.c:923
+#: ../src/libs/import.c:977
 msgid "folder"
 msgstr "katalog"
 
-#: ../src/libs/import.c:926
+#: ../src/libs/import.c:980
 msgid "select a folder to import as film roll"
 msgstr "välj en katalog att importera som filmrulle"
 
 #. add the rescan button
-#: ../src/libs/import.c:934
+#: ../src/libs/import.c:988
 msgid "scan for devices"
 msgstr "leta efter enheter"
 
-#: ../src/libs/import.c:937
+#: ../src/libs/import.c:991
 msgid "scan for newly attached devices"
 msgstr "letar efter nya anslutna enheter"
 
@@ -8124,7 +8181,7 @@ msgstr "id"
 msgid "overlay another image over the live view"
 msgstr "lägg en annan bild över live view"
 
-#: ../src/libs/live_view.c:363 ../src/libs/metadata_view.c:81
+#: ../src/libs/live_view.c:363 ../src/libs/metadata_view.c:82
 msgid "image id"
 msgstr "bildidentitet"
 
@@ -8369,60 +8426,64 @@ msgid "all rights reserved."
 msgstr "med ensamrätt."
 
 #. internal
-#: ../src/libs/metadata_view.c:80
+#: ../src/libs/metadata_view.c:81
 msgid "filmroll"
 msgstr "filmrulle"
 
-#: ../src/libs/metadata_view.c:82
+#: ../src/libs/metadata_view.c:83
 msgid "group id"
 msgstr "gruppidentitet"
 
-#: ../src/libs/metadata_view.c:84
+#: ../src/libs/metadata_view.c:85
 msgid "version"
 msgstr "version"
 
-#: ../src/libs/metadata_view.c:85
+#: ../src/libs/metadata_view.c:86
 msgid "full path"
 msgstr "hel sökväg"
 
-#: ../src/libs/metadata_view.c:86 ../src/libs/metadata_view.c:262
+#: ../src/libs/metadata_view.c:87 ../src/libs/metadata_view.c:264
 msgid "local copy"
 msgstr "lokal kopia"
 
-#: ../src/libs/metadata_view.c:87
+#: ../src/libs/metadata_view.c:88
 msgid "flags"
 msgstr "status"
 
-#: ../src/libs/metadata_view.c:97
+#: ../src/libs/metadata_view.c:98
 msgid "focus distance"
 msgstr "fokus distans"
 
-#: ../src/libs/metadata_view.c:99
+#: ../src/libs/metadata_view.c:100
 msgid "datetime"
 msgstr "datum/tid"
 
-#: ../src/libs/metadata_view.c:101 ../src/libs/print_settings.c:1124
+#: ../src/libs/metadata_view.c:102 ../src/libs/print_settings.c:1120
 msgid "height"
 msgstr "höjd"
 
-#: ../src/libs/metadata_view.c:106
+#: ../src/libs/metadata_view.c:107
 msgid "copyright"
 msgstr "rättigheter"
 
 #. geotagging
-#: ../src/libs/metadata_view.c:109
+#: ../src/libs/metadata_view.c:110
 msgid "latitude"
 msgstr "latitud"
 
-#: ../src/libs/metadata_view.c:110
+#: ../src/libs/metadata_view.c:111
 msgid "longitude"
 msgstr "longitud"
 
-#: ../src/libs/metadata_view.c:121
+#: ../src/libs/metadata_view.c:112
+msgid "elevation"
+msgstr "höjd"
+
+#: ../src/libs/metadata_view.c:123
 msgid "image information"
 msgstr "bild information"
 
-#: ../src/libs/metadata_view.c:224
+#: ../src/libs/metadata_view.c:226
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -8431,54 +8492,58 @@ msgstr ""
 "dubbelklicka för att hoppa till filmrulle\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:254
+#: ../src/libs/metadata_view.c:256
 msgid "unused"
 msgstr "ej använd"
 
-#: ../src/libs/metadata_view.c:255
+#: ../src/libs/metadata_view.c:257
 msgid "unused/deprecated"
 msgstr "ej använd/utgående"
 
-#: ../src/libs/metadata_view.c:256
+#: ../src/libs/metadata_view.c:258
 msgid "ldr"
 msgstr "ldr"
 
-#: ../src/libs/metadata_view.c:258
+#: ../src/libs/metadata_view.c:260
 msgid "hdr"
 msgstr "hdr"
 
-#: ../src/libs/metadata_view.c:259
+#: ../src/libs/metadata_view.c:261
 msgid "marked for deletion"
 msgstr "markerad för borttagning"
 
-#: ../src/libs/metadata_view.c:260
+#: ../src/libs/metadata_view.c:262
 msgid "auto-applying presets applied"
 msgstr "automatisk applicerbara förinställningar applicerade"
 
-#: ../src/libs/metadata_view.c:261
+#: ../src/libs/metadata_view.c:263
 msgid "legacy flag. set for all new images"
 msgstr "'gammal' status. sätts på alla nya bilder"
 
-#: ../src/libs/metadata_view.c:263
+#: ../src/libs/metadata_view.c:265
 msgid "has .txt"
 msgstr "har .txt"
 
-#: ../src/libs/metadata_view.c:264
+#: ../src/libs/metadata_view.c:266
 msgid "has .wav"
 msgstr "har .wav"
 
-#: ../src/libs/metadata_view.c:276
+#: ../src/libs/metadata_view.c:278
 msgid "image rejected"
 msgstr "förkastad bild"
 
-#: ../src/libs/metadata_view.c:281
+#: ../src/libs/metadata_view.c:283
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
 msgstr[0] "bilden har %d stjärna"
 msgstr[1] "bilden har %d stjärnor"
 
-#: ../src/libs/metadata_view.c:540
+#: ../src/libs/metadata_view.c:497
+msgid "m"
+msgstr "m"
+
+#: ../src/libs/metadata_view.c:561
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "hoppa till filmrulle"
@@ -8544,7 +8609,7 @@ msgid "200%"
 msgstr "200%"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1212
+#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1208
 msgid "print settings"
 msgstr "utskriftsinställningar"
 
@@ -8552,64 +8617,64 @@ msgstr "utskriftsinställningar"
 msgid "cannot print until a picture is selected"
 msgstr "kan inte skriva ut om ingen bild är vald"
 
-#: ../src/libs/print_settings.c:180
+#: ../src/libs/print_settings.c:179
 msgid "cannot print until a printer is selected"
 msgstr "kan inte skriva ut om ingen skrivare är vald"
 
-#: ../src/libs/print_settings.c:186
+#: ../src/libs/print_settings.c:184
 msgid "cannot print until a paper is selected"
 msgstr "kan inte skriva ut om ingen papperstyp är vald"
 
-#: ../src/libs/print_settings.c:191
+#: ../src/libs/print_settings.c:188
 #, c-format
 msgid "prepare printing image %d on `%s'"
 msgstr "förbereder utskrift av bild %d på `%s'"
 
-#: ../src/libs/print_settings.c:285
+#: ../src/libs/print_settings.c:281
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "kan inte applicera skrivarprofil `%s'!"
 
-#: ../src/libs/print_settings.c:526
+#: ../src/libs/print_settings.c:522
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:974
+#: ../src/libs/print_settings.c:992
 msgid "printer"
 msgstr "skrivare"
 
-#: ../src/libs/print_settings.c:1043
+#: ../src/libs/print_settings.c:1044
 #, c-format
 msgid "printer ICC profiles in %s/color/out or %s/color/out"
 msgstr "skrivares ICC profiler i %s/color/out eller %s/color/out"
 
-#: ../src/libs/print_settings.c:1062
+#: ../src/libs/print_settings.c:1063
 msgid "black point compensation"
 msgstr "svartpunktkompensation"
 
-#: ../src/libs/print_settings.c:1070
+#: ../src/libs/print_settings.c:1071
 msgid "activate black point compensation when applying the printer profile"
 msgstr "slå på svartpunktkompensation när skrivarprofilen appliceras"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:1077
+#: ../src/libs/print_settings.c:1078
 msgid "page"
 msgstr "sida"
 
-#: ../src/libs/print_settings.c:1118
+#: ../src/libs/print_settings.c:1114
 msgid "image width/height"
 msgstr "bildens bredd/höjd"
 
-#: ../src/libs/print_settings.c:1122
+#: ../src/libs/print_settings.c:1118
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:1130
+#: ../src/libs/print_settings.c:1126
 msgid "scale factor"
 msgstr "skalningsfaktor"
 
-#: ../src/libs/print_settings.c:1135
+#: ../src/libs/print_settings.c:1131
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 0 means that it is downscaled (best quality)\n"
@@ -8622,34 +8687,34 @@ msgstr ""
 " a för stort värde kan innebära sämre utskriftskvalité"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1149
+#: ../src/libs/print_settings.c:1145
 msgid "top margin"
 msgstr "övre marginal"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1153
+#: ../src/libs/print_settings.c:1149
 msgid "left margin"
 msgstr "vänster marginal"
 
-#: ../src/libs/print_settings.c:1156
+#: ../src/libs/print_settings.c:1152
 msgid "lock"
 msgstr "lås"
 
-#: ../src/libs/print_settings.c:1157
+#: ../src/libs/print_settings.c:1153
 msgid "change all margins uniformly"
 msgstr "ändra all marginaler samtidigt"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1161
+#: ../src/libs/print_settings.c:1157
 msgid "right margin"
 msgstr "höger marginal"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1165
+#: ../src/libs/print_settings.c:1161
 msgid "bottom margin"
 msgstr "undre marginal"
 
-#: ../src/libs/print_settings.c:1297
+#: ../src/libs/print_settings.c:1296
 msgid "temporary style to use while printing"
 msgstr "temporär stil som ska användas vid utskrift"
 
@@ -9271,28 +9336,28 @@ msgstr "dubbelklicka för att återställa till `%f'"
 msgid "darkroom"
 msgstr "mörkrum"
 
-#: ../src/views/darkroom.c:864
+#: ../src/views/darkroom.c:862
 msgid "no userdefined presets for favorite modules were found"
 msgstr "inga förinställningar skapad av användare för favorit moduler hittades"
 
-#: ../src/views/darkroom.c:869
+#: ../src/views/darkroom.c:867
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "applicerar stil `%s' på aktiv bild"
 
-#: ../src/views/darkroom.c:924
+#: ../src/views/darkroom.c:922
 msgid "no styles have been created yet"
 msgstr "det finns inga stilar skapade ännu"
 
-#: ../src/views/darkroom.c:1062
+#: ../src/views/darkroom.c:1060
 msgid "quick access to presets of your favorites"
 msgstr "snabbtillgång av förinställningar av dina favoriter"
 
-#: ../src/views/darkroom.c:1071
+#: ../src/views/darkroom.c:1069
 msgid "quick access for applying any of your styles"
 msgstr "snabbtillgång för applicering av dina stilar"
 
-#: ../src/views/darkroom.c:1081
+#: ../src/views/darkroom.c:1079
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -9300,92 +9365,92 @@ msgstr ""
 "växla visning av indikation på över-/underexponering\n"
 "höger-klicka för alternativ"
 
-#: ../src/views/darkroom.c:1122
+#: ../src/views/darkroom.c:1120
 msgid "color scheme"
 msgstr "färgschema"
 
-#: ../src/views/darkroom.c:1124
+#: ../src/views/darkroom.c:1122
 msgid "red & blue"
 msgstr "rött & blått"
 
-#: ../src/views/darkroom.c:1125
+#: ../src/views/darkroom.c:1123
 msgid "purple & green"
 msgstr "lila & grönt"
 
-#: ../src/views/darkroom.c:1127
+#: ../src/views/darkroom.c:1125
 msgid "select colors to indicate over/under exposure"
 msgstr "välj färger som ska ange över- och underexponering"
 
-#: ../src/views/darkroom.c:1137
+#: ../src/views/darkroom.c:1135
 msgid "lower threshold"
 msgstr "undre tröskel"
 
-#: ../src/views/darkroom.c:1138
+#: ../src/views/darkroom.c:1136
 msgid "threshold of what shall be considered underexposed"
 msgstr "tröskelvärde för underexponerade områden"
 
-#: ../src/views/darkroom.c:1147
+#: ../src/views/darkroom.c:1145
 msgid "upper threshold"
 msgstr "övre tröskel"
 
-#: ../src/views/darkroom.c:1148
+#: ../src/views/darkroom.c:1146
 msgid "threshold of what shall be considered overexposed"
 msgstr "tröskelvärde för överexponerade områden"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1759 ../src/views/map.c:719
-#: ../src/views/print.c:359 ../src/views/tethering.c:391
+#: ../src/views/darkroom.c:1755 ../src/views/map.c:719
+#: ../src/views/print.c:352 ../src/views/tethering.c:391
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "växla visning av filmrulle"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1762
+#: ../src/views/darkroom.c:1758
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom close-up"
 
-#: ../src/views/darkroom.c:1763
+#: ../src/views/darkroom.c:1759
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "fyll zoom"
 
-#: ../src/views/darkroom.c:1764
+#: ../src/views/darkroom.c:1760
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "anpassa zoom"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1770
+#: ../src/views/darkroom.c:1766
 msgctxt "accel"
 msgid "image forward"
 msgstr "nästa bild"
 
-#: ../src/views/darkroom.c:1771
+#: ../src/views/darkroom.c:1767
 msgctxt "accel"
 msgid "image back"
 msgstr "föregående bild"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1774
+#: ../src/views/darkroom.c:1770
 msgctxt "accel"
 msgid "overexposed"
 msgstr "överexponerad"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:1777
+#: ../src/views/darkroom.c:1773
 msgctxt "accel"
 msgid "brush larger"
 msgstr "större pensel"
 
-#: ../src/views/darkroom.c:1778
+#: ../src/views/darkroom.c:1774
 msgctxt "accel"
 msgid "brush smaller"
 msgstr "mindre pensel"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:1781
+#: ../src/views/darkroom.c:1777
 msgctxt "accel"
 msgid "full preview"
 msgstr "förhandsvisning i helskärm"
@@ -9519,10 +9584,6 @@ msgctxt "view"
 msgid "print"
 msgstr "skriv ut"
 
-#: ../src/views/print.c:247
-msgid "there is no printer available, cannot print!"
-msgstr "inga skrivare tillgängliga, kan inte skriva ut!"
-
 #: ../src/views/slideshow.c:164
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
@@ -9549,6 +9610,9 @@ msgstr "ny session skapad '%s'"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
+
+#~ msgid "there is no printer available, cannot print!"
+#~ msgstr "inga skrivare tillgängliga, kan inte skriva ut!"
 
 #~ msgctxt "accel"
 #~ msgid "capture view"
