@@ -744,7 +744,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
       size_t ooffs = (ty * tile_ht) * opitch + (tx * tile_wd) * out_bpp;
 
 
-      dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] tile (%d, %d) with %d x %d at origin [%d, %d]\n",
+      dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] tile (%zu, %zu) with %zu x %zu at origin [%zu, %zu]\n",
                tx, ty, wd, ht, tx * tile_wd, ty * tile_ht);
 
 /* prepare input tile buffer */
@@ -1067,7 +1067,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       size_t ooffs = ((size_t)oroi_good.y - roi_out->y) * opitch
                      + ((size_t)oroi_good.x - roi_out->x) * out_bpp;
 
-      dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] tile (%d, %d) with %d x %d at origin [%d, %d]\n",
+      dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] tile (%zu, %zu) with %d x %d at origin [%d, %d]\n",
                tx, ty, iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
 
 
@@ -1383,7 +1383,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
 
 
       dt_print(DT_DEBUG_OPENCL,
-               "[default_process_tiling_cl_ptp] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd,
+               "[default_process_tiling_cl_ptp] tile (%zu, %zu) with %zu x %zu at origin [%zu, %zu]\n", tx, ty, wd,
                ht, tx * tile_wd, ty * tile_ht);
 
       /* get input and output buffers */
@@ -1821,7 +1821,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
                      + ((size_t)oroi_good.x - roi_out->x) * out_bpp;
 
       dt_print(DT_DEBUG_OPENCL,
-               "[default_process_tiling_cl_roi] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty,
+               "[default_process_tiling_cl_roi] tile (%zu, %zu) with %d x %d at origin [%d, %d]\n", tx, ty,
                iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
 
       /* origin and region of full input tile */
