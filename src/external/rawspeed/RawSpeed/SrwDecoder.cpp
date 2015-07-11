@@ -449,7 +449,7 @@ void SrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
     const uchar8* cPat = data[0]->getEntry(CFAPATTERN)->getData();
     if (cfaSize.area() != data[0]->getEntry(CFAPATTERN)->count)
-      ThrowRDE("SRW Decoder: CFA pattern dimension and pattern count does not match: %d.");
+      ThrowRDE("SRW Decoder: CFA pattern dimension and pattern count does not match: %d.", data[0]->getEntry(CFAPATTERN)->count);
 
     for (int y = 0; y < cfaSize.y; y++) {
       for (int x = 0; x < cfaSize.x; x++) {

@@ -195,7 +195,7 @@ void Camera::parseCFA(xml_node &cur) {
     }
     const char* key = cur.first_child().value();
     if ((int)strlen(key) != cfa.size.x) {
-      ThrowCME("Invalid number of colors in definition for row %d in camera %s %s. Expected %d, found %d.", y, make.c_str(), model.c_str(),  cfa.size.x, strlen(key));
+      ThrowCME("Invalid number of colors in definition for row %d in camera %s %s. Expected %d, found %zu.", y, make.c_str(), model.c_str(),  cfa.size.x, strlen(key));
     }
     for (int x = 0; x < cfa.size.x; x++) {
     	char v = (char)tolower((int)key[x]);
