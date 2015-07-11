@@ -517,6 +517,10 @@ else(USE_LUA)
   message(STATUS "Lua support: Disabled")
 endif(USE_LUA)
 
+find_package(Pugixml 1.2 REQUIRED)
+include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
+list(APPEND LIBS ${Pugixml_LIBRARIES})
+
 #
 # the rawspeed part is a bit of a hack:
 # the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
