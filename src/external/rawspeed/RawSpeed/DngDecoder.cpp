@@ -135,7 +135,7 @@ RawImage DngDecoder::decodeRawInternal() {
       iPoint2D cfaSize(pDim[1], pDim[0]);
       mRaw->cfa.setSize(cfaSize);
       if (cfaSize.area() != raw->getEntry(CFAPATTERN)->count)
-        ThrowRDE("DNG Decoder: CFA pattern dimension and pattern count does not match: %d.");
+        ThrowRDE("DNG Decoder: CFA pattern dimension and pattern count does not match: %d.", raw->getEntry(CFAPATTERN)->count);
 
       for (int y = 0; y < cfaSize.y; y++) {
         for (int x = 0; x < cfaSize.x; x++) {
