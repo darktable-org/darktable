@@ -828,7 +828,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       if(darktable.control->vimkey_cnt == 0)
         dt_control_log_ack_all();
       else
-        dt_control_log(darktable.control->vimkey);
+        dt_control_log("%s", darktable.control->vimkey);
       g_list_free(autocomplete);
       autocomplete = NULL;
     }
@@ -859,7 +859,7 @@ int dt_control_key_pressed_override(guint key, guint state)
         autocomplete = g_list_remove(autocomplete, autocomplete->data);
         darktable.control->vimkey_cnt = strlen(darktable.control->vimkey);
       }
-      dt_control_log(darktable.control->vimkey);
+      dt_control_log("%s", darktable.control->vimkey);
     }
     else if(g_unichar_isprint(unichar)) // printable unicode character
     {
@@ -870,7 +870,7 @@ int dt_control_key_pressed_override(guint key, guint state)
         g_utf8_strncpy(darktable.control->vimkey + darktable.control->vimkey_cnt, utf8, 1);
         darktable.control->vimkey_cnt += char_width;
         darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
-        dt_control_log(darktable.control->vimkey);
+        dt_control_log("%s", darktable.control->vimkey);
         g_list_free(autocomplete);
         autocomplete = NULL;
       }
@@ -890,7 +890,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     darktable.control->vimkey[0] = ':';
     darktable.control->vimkey[1] = 0;
     darktable.control->vimkey_cnt = 1;
-    dt_control_log(darktable.control->vimkey);
+    dt_control_log("%s", darktable.control->vimkey);
     return 1;
   }
 

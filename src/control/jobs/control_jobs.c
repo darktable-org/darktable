@@ -916,7 +916,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     snprintf(message, sizeof(message),
              ngettext("removing local copy of %d image", "removing local copies of %d images", total), total);
 
-  dt_control_log(message);
+  dt_control_log("%s", message);
 
   dt_tag_new("darktable|local-copy", &tagid);
 

@@ -1546,11 +1546,9 @@ void dt_image_local_copy_synch(void)
 
   if(count > 0)
   {
-    char message[128];
-    g_snprintf(message, sizeof(message), ngettext("%d local copy has been synchronized",
-                                                  "%d local copies have been synchronized", count),
-               count);
-    dt_control_log(message);
+    dt_control_log(ngettext("%d local copy has been synchronized",
+                            "%d local copies have been synchronized", count),
+                   count);
   }
 }
 

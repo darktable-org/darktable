@@ -1412,11 +1412,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(dev != NULL && refresh_needed && dev->gui_attached)
   {
-    char message[512];
-
-    g_snprintf(message, sizeof(message), ngettext("%s has been imported", "%s have been imported", n_import),
-               imported);
-    dt_control_log(message);
+    dt_control_log(ngettext("%s has been imported", "%s have been imported", n_import), imported);
 
     if(!iauto)
     {
