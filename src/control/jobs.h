@@ -56,7 +56,7 @@ typedef int32_t (*dt_job_execute_callback)(dt_job_t *);
 typedef void (*dt_job_state_change_callback)(dt_job_t *, dt_job_state_t state);
 
 /** create a new initialized job */
-dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg, ...);
+dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 /** destroy a job object and free its memory. this does NOT remove it from any job queues! */
 void dt_control_job_dispose(dt_job_t *job);
 /** setup a state callback for job. */

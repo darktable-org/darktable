@@ -158,7 +158,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
 static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback execute, const char *message,
                                                       int flag, gpointer data)
 {
-  dt_job_t *job = dt_control_job_create(execute, message);
+  dt_job_t *job = dt_control_job_create(execute, "%s", message);
   if(!job) return NULL;
   dt_control_image_enumerator_t *params
       = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
