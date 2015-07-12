@@ -44,6 +44,7 @@ typedef struct dt_gpx_t
   _gpx_track_point_t *current_track_point;
   _gpx_parser_element_t current_parser_element;
   gboolean invalid_track_point;
+  gboolean parsing_trk;
 
 } dt_gpx_t;
 
@@ -167,6 +168,17 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
 {
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
+  if(gpx->parsing_trk == FALSE)
+  {
+    // we only parse tracks and its points, nothing else
+    if(strcmp(element_name, "trk") == 0)
+    {
+      gpx->parsing_trk = TRUE;
+    }
+    goto end;
+  }
+
+  /* from here on, parse wpType data from track points */
   if(strcmp(element_name, "trkpt") == 0)
   {
     if(gpx->current_track_point)
@@ -226,6 +238,8 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
     gpx->current_parser_element = GPX_PARSER_ELEMENT_ELE;
   }
 
+end:
+
   return;
 
 element_error:
@@ -238,18 +252,25 @@ void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
   /* closing trackpoint lets take care of data parsed */
-  if(strcmp(element_name, "trkpt") == 0)
+  if(gpx->parsing_trk == TRUE)
   {
-    if(!gpx->invalid_track_point)
-      gpx->track = g_list_append(gpx->track, gpx->current_track_point);
-    else
-      g_free(gpx->current_track_point);
+    if(strcmp(element_name, "trk") == 0)
+    {
+      gpx->parsing_trk = FALSE;
+    }
+    else if(strcmp(element_name, "trkpt") == 0)
+    {
+      if(!gpx->invalid_track_point)
+        gpx->track = g_list_append(gpx->track, gpx->current_track_point);
+      else
+        g_free(gpx->current_track_point);
 
-    gpx->current_track_point = NULL;
+      gpx->current_track_point = NULL;
+    }
+
+    /* clear current parser element */
+    gpx->current_parser_element = GPX_PARSER_ELEMENT_NONE;
   }
-
-  /* clear current parser element */
-  gpx->current_parser_element = GPX_PARSER_ELEMENT_NONE;
 }
 
 void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize text_len, gpointer user_data,
