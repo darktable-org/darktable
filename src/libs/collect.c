@@ -1117,8 +1117,8 @@ static void tags_view(dt_lib_collect_rule_t *dr)
           /* lets add new keyword and assign current */
           if(!found && pch[j] && *pch[j])
           {
-            gchar *pth2 = NULL;
-            pth2 = dt_util_dstrcat(pth2, "");
+            gchar *pth2 = g_malloc(1);
+            pth2[0] = '\0';
 
             for(int i = 0; i <= level; i++)
             {
