@@ -243,7 +243,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       fail = 1;
       goto failed;
     }
-    if(g_access(dirname, W_OK) != 0)
+    if(g_access(dirname, W_OK | X_OK) != 0)
     {
       fprintf(stderr, "[imageio_storage_disk] could not write to directory: `%s'!\n", dirname);
       dt_control_log(_("could not write to directory `%s'!"), dirname);
