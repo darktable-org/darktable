@@ -173,7 +173,7 @@ static void dt_control_image_enumerator_cleanup(void *p)
 static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback execute, const char *message,
                                                       int flag, gpointer data)
 {
-  dt_job_t *job = dt_control_job_create(execute, message);
+  dt_job_t *job = dt_control_job_create(execute, "%s", message);
   if(!job) return NULL;
   dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
   if(!params)
@@ -910,7 +910,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     snprintf(message, sizeof(message),
              ngettext("removing local copy of %d image", "removing local copies of %d images", total), total);
 
-  dt_control_log(message);
+  dt_control_log("%s", message);
 
   dt_tag_new("darktable|local-copy", &tagid);
 
