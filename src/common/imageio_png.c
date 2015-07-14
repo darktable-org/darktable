@@ -78,7 +78,7 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
-    png_destroy_read_struct(&png->png_ptr, NULL, NULL);
+    png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
     return 1;
   }
 
@@ -125,7 +125,7 @@ int read_image(dt_imageio_png_t *png, void *out)
   if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
-    png_destroy_read_struct(&png->png_ptr, NULL, NULL);
+    png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
     return 1;
   }
   // reflect changes
@@ -174,7 +174,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   if(!mipbuf)
   {
     fclose(image.f);
-    png_destroy_read_struct(&image.png_ptr, NULL, NULL);
+    png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
     fprintf(stderr, "[png_open] could not alloc full buffer for image `%s'\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -183,7 +183,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   if(!buf)
   {
     fclose(image.f);
-    png_destroy_read_struct(&image.png_ptr, NULL, NULL);
+    png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
     fprintf(stderr, "[png_open] could not alloc intermediate buffer for image `%s'\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -240,7 +240,7 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out)
 #endif
     proflen = 0;
 
-  png_destroy_read_struct(&image.png_ptr, NULL, NULL);
+  png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
   fclose(image.f);
 
   return proflen;
