@@ -74,6 +74,9 @@ typedef struct dt_control_image_enumerator_t
 /* enumerator of images from filmroll */
 static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
 {
+  g_list_free(t->index);
+  t->index = NULL;
+
   sqlite3_stmt *stmt;
   /* get a list of images in filmroll */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from images where film_id = ?1", -1,
@@ -91,7 +94,9 @@ static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerato
 /* enumerator of selected images */
 static void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t)
 {
-  t->index = 0;
+  g_list_free(t->index);
+  t->index = NULL;
+
   int imgid = dt_view_get_image_to_act_on();
 
   if(imgid < 0) /* get sorted list of selected images */
@@ -99,12 +104,6 @@ static void dt_control_image_enumerator_job_selected_init(dt_control_image_enume
   else
     /* Create a list with only one image */
     t->index = g_list_append(t->index, GINT_TO_POINTER(imgid));
-}
-
-static void dt_control_image_enumerator_job_selected_cleanup(dt_control_image_enumerator_t *t)
-{
-  while(t->index) t->index = g_list_delete_link(t->index, t->index);
-  g_list_free(t->index);
 }
 
 static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
@@ -151,8 +150,24 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
-  free(params);
   return 0;
+}
+
+static void *dt_control_image_enumerator_alloc()
+{
+  dt_control_image_enumerator_t *params = calloc(1, sizeof(dt_control_image_enumerator_t));
+  if(!params) return NULL;
+
+  return params;
+}
+
+static void dt_control_image_enumerator_cleanup(void *p)
+{
+  dt_control_image_enumerator_t *params = p;
+
+  g_list_free(params->index);
+
+  free(params);
 }
 
 static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback execute, const char *message,
@@ -160,24 +175,18 @@ static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback ex
 {
   dt_job_t *job = dt_control_job_create(execute, message);
   if(!job) return NULL;
-  dt_control_image_enumerator_t *params
-      = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
+  dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
   if(!params)
   {
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
   dt_control_image_enumerator_job_selected_init(params);
+  dt_control_job_set_params(job, params, dt_control_image_enumerator_cleanup);
+
   params->flag = flag;
   params->data = data;
   return job;
-}
-
-static void dt_control_generic_images_job_cleanup(dt_job_t *job)
-{
-  dt_control_image_enumerator_job_selected_cleanup(dt_control_job_get_params(job));
-  dt_control_job_dispose(job);
 }
 
 static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
@@ -211,7 +220,6 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     t = g_list_delete_link(t, t);
   }
   sqlite3_finalize(stmt);
-  free(params);
   return 0;
 }
 
@@ -473,7 +481,6 @@ end:
 
   dt_control_progress_destroy(darktable.control, progress);
   dt_control_queue_redraw_center();
-  free(params);
   return 0;
 }
 
@@ -500,7 +507,6 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   dt_control_progress_destroy(darktable.control, progress);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
-  free(params);
   return 0;
 }
 
@@ -525,7 +531,6 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   }
   dt_control_progress_destroy(darktable.control, progress);
   dt_control_queue_redraw_center();
-  free(params);
   return 0;
 }
 
@@ -615,7 +620,6 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
     dt_control_progress_destroy(darktable.control, progress);
     free(imgs);
-    free(params);
     return 0;
   }
 
@@ -649,7 +653,6 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
-  free(params);
   return 0;
 }
 
@@ -784,7 +787,6 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
-  free(params);
   return 0;
 }
 
@@ -870,19 +872,11 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   g_time_zone_unref(tz_camera);
   g_time_zone_unref(tz_utc);
   dt_gpx_destroy(gpx);
-  g_free(d->filename);
-  g_free(d->tz);
-  g_free(params->data);
-  free(params);
   return 0;
 
 bail_out:
   if(gpx) dt_gpx_destroy(gpx);
 
-  g_free(d->filename);
-  g_free(d->tz);
-  g_free(params->data);
-  free(params);
   return 1;
 }
 
@@ -947,7 +941,6 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 
   dt_control_progress_destroy(control, progress);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
-  free(params);
   return 0;
 }
 
@@ -971,7 +964,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     if(mstorage->initialize_store(mstorage, sdata, &mformat, &fdata, &t, settings->high_quality, settings->upscale))
     {
       // bail out, something went wrong
-      g_list_free(t);
       goto end;
     }
     mformat->set_params(mformat, fdata, mformat->params_size(mformat));
@@ -1067,36 +1059,63 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
 end:
   mstorage->free_params(mstorage, sdata);
+  settings->sdata = NULL;
 
   // all threads free their fdata
   mformat->free_params(mformat, fdata);
 
-  g_free(params->data);
-  free(params);
   return 0;
+}
+
+static dt_control_image_enumerator_t *dt_control_gpx_apply_alloc()
+{
+  dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
+  if(!params) return NULL;
+
+  params->data = calloc(1, sizeof(dt_control_gpx_apply_t));
+  if(!params->data)
+  {
+    dt_control_image_enumerator_cleanup(params);
+    return NULL;
+  }
+
+  return params;
+}
+
+static void dt_control_gpx_apply_job_cleanup(void *p)
+{
+  dt_control_image_enumerator_t *params = p;
+
+  dt_control_gpx_apply_t *data = params->data;
+  g_free(data->filename);
+  g_free(data->tz);
+
+  free(data);
+
+  dt_control_image_enumerator_cleanup(params);
 }
 
 static dt_job_t *dt_control_gpx_apply_job_create(const gchar *filename, int32_t filmid, const gchar *tz)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_gpx_apply_job_run, "gpx apply");
   if(!job) return NULL;
-  dt_control_image_enumerator_t *params
-      = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
+  dt_control_image_enumerator_t *params = dt_control_gpx_apply_alloc();
   if(!params)
   {
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, dt_control_gpx_apply_job_cleanup);
+
   if(filmid != -1)
     dt_control_image_enumerator_job_film_init(params, filmid);
   else
     dt_control_image_enumerator_job_selected_init(params);
 
-  dt_control_gpx_apply_t *data = (dt_control_gpx_apply_t *)malloc(sizeof(dt_control_gpx_apply_t));
+  dt_control_gpx_apply_t *data = params->data;
   data->filename = g_strdup(filename);
   data->tz = g_strdup(tz);
-  params->data = data;
+
   return job;
 }
 
@@ -1141,7 +1160,7 @@ void dt_control_remove_images()
     // Do not show the dialog if no image is selected:
     if(number == 0)
     {
-      dt_control_generic_images_job_cleanup(job);
+      dt_control_job_dispose(job);
       return;
     }
 
@@ -1156,7 +1175,7 @@ void dt_control_remove_images()
     gtk_widget_destroy(dialog);
     if(res != GTK_RESPONSE_YES)
     {
-      dt_control_generic_images_job_cleanup(job);
+      dt_control_job_dispose(job);
       return;
     }
   }
@@ -1177,7 +1196,7 @@ void dt_control_delete_images()
     // Do not show the dialog if no image is selected:
     if(number == 0)
     {
-      dt_control_generic_images_job_cleanup(job);
+      dt_control_job_dispose(job);
       return;
     }
 
@@ -1192,7 +1211,7 @@ void dt_control_delete_images()
     gtk_widget_destroy(dialog);
     if(res != GTK_RESPONSE_YES)
     {
-      dt_control_generic_images_job_cleanup(job);
+      dt_control_job_dispose(job);
       return;
     }
   }
@@ -1250,7 +1269,7 @@ void dt_control_move_images()
 
 abort:
   g_free(dir);
-  dt_control_generic_images_job_cleanup(job);
+  dt_control_job_dispose(job);
 }
 
 void dt_control_copy_images()
@@ -1301,7 +1320,7 @@ void dt_control_copy_images()
 
 abort:
   g_free(dir);
-  dt_control_generic_images_job_cleanup(job);
+  dt_control_job_dispose(job);
 }
 
 void dt_control_set_local_copy_images()
@@ -1318,21 +1337,52 @@ void dt_control_reset_local_copy_images()
                                                           "local copy images", 0, NULL));
 }
 
+static dt_control_image_enumerator_t *dt_control_export_alloc()
+{
+  dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
+  if(!params) return NULL;
+
+  params->data = calloc(1, sizeof(dt_control_export_t));
+  if(!params->data)
+  {
+    dt_control_image_enumerator_cleanup(params);
+    return NULL;
+  }
+
+  return params;
+}
+
+static void dt_control_export_cleanup(void *p)
+{
+  dt_control_image_enumerator_t *params = p;
+
+  dt_control_export_t *settings = (dt_control_export_t *)params->data;
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
+  dt_imageio_module_data_t *sdata = settings->sdata;
+
+  mstorage->free_params(mstorage, sdata);
+
+  free(params->data);
+
+  dt_control_image_enumerator_cleanup(params);
+}
+
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
                        gboolean high_quality, gboolean upscale, char *style, gboolean style_append)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_export_job_run, "export");
   if(!job) return;
-  dt_control_image_enumerator_t *params
-      = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
+  dt_control_image_enumerator_t *params = dt_control_export_alloc();
   if(!params)
   {
     dt_control_job_dispose(job);
     return;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, dt_control_export_cleanup);
+
   params->index = imgid_list;
-  dt_control_export_t *data = (dt_control_export_t *)malloc(sizeof(dt_control_export_t));
+
+  dt_control_export_t *data = params->data;
   data->max_width = max_width;
   data->max_height = max_height;
   data->format_index = format_index;
@@ -1345,8 +1395,6 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   {
     dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."),
                    mstorage->name(mstorage));
-    free(data);
-    free(params);
     dt_control_job_dispose(job);
     return;
   }
@@ -1355,7 +1403,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->upscale = upscale;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
-  params->data = data;
+
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
 
   // tell the storage that we got its params for an export so it can reset itself to a safe state
@@ -1375,8 +1423,6 @@ static int32_t dt_control_time_offset_job_run(dt_job_t *job)
   /* do we have any selected images and is offset != 0 */
   if(!t || offset == 0)
   {
-    g_free(params->data);
-    free(params);
     return 1;
   }
 
@@ -1408,29 +1454,51 @@ static int32_t dt_control_time_offset_job_run(dt_job_t *job)
 
   if(progress) dt_control_progress_destroy(darktable.control, progress);
 
-  g_free(params->data);
-  free(params);
   return 0;
+}
+
+static void *dt_control_time_offset_alloc()
+{
+  dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
+  if(!params) return NULL;
+
+  params->data = calloc(1, sizeof(dt_control_time_offset_t));
+  if(!params->data)
+  {
+    dt_control_image_enumerator_cleanup(params);
+    return NULL;
+  }
+
+  return params;
+}
+
+static void dt_control_time_offset_job_cleanup(void *p)
+{
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)p;
+
+  free(params->data);
+
+  dt_control_image_enumerator_cleanup(params);
 }
 
 static dt_job_t *dt_control_time_offset_job_create(const long int offset, int imgid)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_time_offset_job_run, "time offset");
   if(!job) return NULL;
-  dt_control_image_enumerator_t *params
-      = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
+  dt_control_image_enumerator_t *params = dt_control_time_offset_alloc();
   if(!params)
   {
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, dt_control_time_offset_job_cleanup);
+
   if(imgid != -1)
     params->index = g_list_append(params->index, GINT_TO_POINTER(imgid));
   else
     dt_control_image_enumerator_job_selected_init(params);
 
-  dt_control_time_offset_t *data = (dt_control_time_offset_t *)malloc(sizeof(dt_control_time_offset_t));
+  dt_control_time_offset_t *data = params->data;
   data->offset = offset;
   params->data = data;
   return job;

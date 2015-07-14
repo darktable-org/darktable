@@ -304,7 +304,7 @@ void dt_lua_do_chunk_later(lua_State *L, int nargs)
 
   if(job)
   {
-    dt_control_job_set_params(job, GINT_TO_POINTER(reference));
+    dt_control_job_set_params(job, GINT_TO_POINTER(reference), NULL);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   }
 }
@@ -431,7 +431,6 @@ static int32_t async_callback_job(dt_job_t *job)
   dt_lua_do_chunk_silent(L,nargs,0);
   dt_lua_redraw_screen();
   g_list_free(data->extra);
-  free(data);
   dt_lua_unlock();
   return 0;
 }
@@ -490,7 +489,7 @@ void dt_lua_do_chunk_async(lua_CFunction pusher,dt_lua_async_call_arg_type arg_t
     }
     va_end(ap);
     
-    dt_control_job_set_params(job, data);
+    dt_control_job_set_params(job, data, free);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   }
 }

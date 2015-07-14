@@ -446,12 +446,12 @@ void dt_film_import1(dt_film_t *film)
           dt_film_remove(cfr->id);
         }
         dt_film_cleanup(cfr);
-        g_free(cfr);
+        free(cfr);
         cfr = NULL;
       }
 
       /* initialize and create a new film to import to */
-      cfr = g_malloc(sizeof(dt_film_t));
+      cfr = malloc(sizeof(dt_film_t));
       dt_film_init(cfr);
       dt_film_new(cfr, cdn);
     }
@@ -466,6 +466,8 @@ void dt_film_import1(dt_film_t *film)
 
 
   } while((image = g_list_next(image)) != NULL);
+
+  g_list_free_full(images, g_free);
 
   // only redraw at the end, to not spam the cpu with exposure events
   dt_control_queue_redraw_center();
@@ -495,6 +497,8 @@ void dt_film_import1(dt_film_t *film)
       }
     }
   }
+
+  free(cfr);
 }
 
 

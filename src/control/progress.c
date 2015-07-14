@@ -114,6 +114,7 @@ void dt_control_progress_destroy(dt_control_t *control, dt_progress_t *progress)
 
   // free the object
   dt_pthread_mutex_destroy(&progress->mutex);
+  g_free(progress->message);
   free(progress);
 }
 

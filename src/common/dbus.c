@@ -109,7 +109,7 @@ static void _handle_method_call(GDBusConnection *connection, const gchar *sender
     dt_job_t *job = dt_control_job_create(&dbus_callback_job, "lua: on dbus");
     if(job)
     {
-      dt_control_job_set_params(job, invocation);
+      dt_control_job_set_params(job, invocation, NULL);
       dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, job);
       // we don't finish the invocation, the async task will do this for us
     }

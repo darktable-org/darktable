@@ -37,7 +37,6 @@ static int32_t dt_image_load_job_run(dt_job_t *job)
 
   // drop read lock, as this is only speculative async loading.
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  free(params);
   return 0;
 }
 
@@ -51,7 +50,7 @@ dt_job_t *dt_image_load_job_create(int32_t id, dt_mipmap_size_t mip)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, free);
   params->imgid = id;
   params->mip = mip;
   return job;
@@ -60,17 +59,14 @@ dt_job_t *dt_image_load_job_create(int32_t id, dt_mipmap_size_t mip)
 typedef struct dt_image_import_t
 {
   uint32_t film_id;
-  const char *filename;
+  gchar *filename;
 } dt_image_import_t;
 
 static int32_t dt_image_import_job_run(dt_job_t *job)
 {
   int id;
-  char message[512];
-  dt_image_import_t *params;
-
-  params = dt_control_job_get_params(job);
-  message[0] = 0;
+  char message[512] = { 0 };
+  dt_image_import_t *params = dt_control_job_get_params(job);
 
   snprintf(message, sizeof(message), _("importing image %s"), params->filename);
   dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
@@ -84,8 +80,16 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
 
   dt_control_progress_set_progress(darktable.control, progress, 1.0);
   dt_control_progress_destroy(darktable.control, progress);
-  free(params);
   return 0;
+}
+
+static void dt_image_import_job_cleanup(void *p)
+{
+  dt_image_import_t *params = p;
+
+  g_free(params->filename);
+
+  free(params);
 }
 
 dt_job_t *dt_image_import_job_create(uint32_t filmid, const char *filename)
@@ -99,7 +103,7 @@ dt_job_t *dt_image_import_job_create(uint32_t filmid, const char *filename)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params);
+  dt_control_job_set_params(job, params, dt_image_import_job_cleanup);
   params->filename = g_strdup(filename);
   params->film_id = filmid;
   return job;

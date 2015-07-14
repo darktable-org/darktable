@@ -143,7 +143,6 @@ static int _detect_printers_callback(dt_job_t *job)
   cupsFreeDests(num_dests, dests);
   res=1;
 #endif
-  g_free(pctl);
   return !res;
 }
 
@@ -163,7 +162,7 @@ void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), v
   dt_job_t *job = dt_control_job_create(&_detect_printers_callback, "detect connected printers");
   if(job)
   {
-    dt_control_job_set_params(job, prtctl);
+    dt_control_job_set_params(job, prtctl, g_free);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
   }
 }

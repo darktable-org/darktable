@@ -206,7 +206,7 @@ typedef enum dt_camera_preview_flags_t
 /** Initializes the gphoto and cam control, returns NULL if failed */
 dt_camctl_t *dt_camctl_new();
 /** Destroys the came control */
-void dt_camctl_destroy(const dt_camctl_t *c);
+void dt_camctl_destroy(dt_camctl_t *c);
 /** Registers a listener of camera control */
 void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Unregisters a listener of camera control */

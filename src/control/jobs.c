@@ -39,6 +39,7 @@ typedef struct _dt_job_t
 {
   dt_job_execute_callback execute;
   void *params;
+  dt_job_destroy_callback params_destroy;
   int32_t result;
 
   dt_pthread_mutex_t state_mutex;
@@ -86,10 +87,11 @@ dt_job_state_t dt_control_job_get_state(_dt_job_t *job)
   return state;
 }
 
-void dt_control_job_set_params(_dt_job_t *job, void *params)
+void dt_control_job_set_params(_dt_job_t *job, void *params, dt_job_destroy_callback callback)
 {
   if(!job || dt_control_job_get_state(job) != DT_JOB_STATE_INITIALIZED) return;
   job->params = params;
+  job->params_destroy = callback;
 }
 
 void *dt_control_job_get_params(const _dt_job_t *job)
@@ -110,6 +112,7 @@ dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg
 
   job->execute = execute;
   job->state = DT_JOB_STATE_INITIALIZED;
+
   dt_pthread_mutex_init(&job->state_mutex, NULL);
   dt_pthread_mutex_init(&job->wait_mutex, NULL);
   return job;
@@ -119,6 +122,7 @@ void dt_control_job_dispose(_dt_job_t *job)
 {
   if(!job) return;
   dt_control_job_set_state(job, DT_JOB_STATE_DISPOSED);
+  if(job->params_destroy) job->params_destroy(job->params);
   dt_pthread_mutex_destroy(&job->state_mutex);
   dt_pthread_mutex_destroy(&job->wait_mutex);
   free(job);
@@ -375,6 +379,7 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
     {
       GList *last = g_list_last(*queue);
       dt_control_job_set_state((_dt_job_t *)last->data, DT_JOB_STATE_DISCARDED);
+      dt_control_job_dispose((_dt_job_t *)last->data);
       *queue = g_list_delete_link(*queue, last);
       length--;
     }

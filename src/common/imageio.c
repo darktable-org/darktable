@@ -552,18 +552,14 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     dt_control_log(
         _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
         thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
-    dt_dev_cleanup(&dev);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    return 1;
+    goto error;
   }
 
   if(!buf.buf)
   {
     fprintf(stderr, "allocation failed???\n");
     dt_control_log(_("image `%s' is not available!"), img->filename);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    dt_dev_cleanup(&dev);
-    return 1;
+    goto error;
   }
 
   //  If a style is to be applied during export, add the iop params into the history
@@ -577,9 +573,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     if((stls = dt_styles_get_item_list(format_params->style, TRUE, -1)) == 0)
     {
       dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
-      dt_dev_cleanup(&dev);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-      return 1;
+      goto error;
     }
 
     // remove everything above history_end
@@ -619,7 +613,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
             if(!sty_module)
             {
               free(h);
-              return 1;
+              goto error;
             }
           }
 
@@ -866,7 +860,14 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
                             format_params, storage, storage_params);
   }
+
   return res;
+
+error:
+  dt_dev_pixelpipe_cleanup(&pipe);
+  dt_dev_cleanup(&dev);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  return 1;
 }
 
 
