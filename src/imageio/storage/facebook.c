@@ -590,7 +590,7 @@ static gboolean _open_browser(const char *callback_url)
   GError *error = NULL;
   char *url = g_strdup_printf(FB_WS_BASE_URL "dialog/oauth?"
                                              "client_id=" FB_API_KEY "&redirect_uri=%s"
-                                             "&scope=user_photos,publish_stream"
+                                             "&scope=user_photos,publish_actions"
                                              "&response_type=token",
                               callback_url);
   if(!gtk_show_uri(gdk_screen_get_default(), url, gtk_get_current_event_time(), &error))
