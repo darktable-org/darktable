@@ -263,7 +263,7 @@ int read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
   if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
-    png_destroy_read_struct(&png->png_ptr, NULL, NULL);
+    png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
     return 1;
   }
 
@@ -324,7 +324,7 @@ int read_image(dt_imageio_module_data_t *p_tmp, uint8_t *out)
   if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
-    png_destroy_read_struct(&png->png_ptr, NULL, NULL);
+    png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
     return 1;
   }
   // reflect changes
