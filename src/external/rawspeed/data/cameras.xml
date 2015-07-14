@@ -2556,7 +2556,7 @@
                         <Color x="1" y="1">GREEN</Color>
 			</CFA>
                 <Crop x="0" y="0" width="0" height="0"/>
-                <Sensor black="250" white="4095"/>
+                <Sensor black="252" white="4000"/>
 		</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="C7070WZ">
 		<ID make="Olympus" model="C7070WZ">Olympus C7070WZ</ID>
