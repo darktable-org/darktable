@@ -245,8 +245,9 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 
   /* verify that expanded path and filename yields a unique file */
   path = dt_import_session_path(self, TRUE);
-  previous_fname = fname
-      = g_build_path(G_DIR_SEPARATOR_S, path, dt_variables_get_result(self->vp), (char *)NULL);
+  gchar *result_fname = dt_variables_get_result(self->vp);
+  previous_fname = fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
+  g_free(result_fname);
   if(g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE)
   {
     fprintf(stderr, "[import_session] File %s exists.\n", fname);
@@ -254,7 +255,10 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
     {
       /* file exists, yield a new filename */
       dt_variables_expand(self->vp, pattern, TRUE);
-      fname = g_build_path(G_DIR_SEPARATOR_S, path, dt_variables_get_result(self->vp), (char *)NULL);
+
+      gchar *result_fname = dt_variables_get_result(self->vp);
+      fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
+      g_free(result_fname);
 
       fprintf(stderr, "[import_session] Testing %s.\n", fname);
       /* check if same filename was yielded as before */
@@ -276,7 +280,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   g_free(previous_fname);
   g_free(pattern);
 
-  self->current_filename = g_strdup(dt_variables_get_result(self->vp));
+  self->current_filename = dt_variables_get_result(self->vp);
   fprintf(stderr, "[import_session] Using filename %s.\n", self->current_filename);
 
   return self->current_filename;
@@ -299,7 +303,7 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean cu
   }
 
   dt_variables_expand(self->vp, pattern, FALSE);
-  new_path = g_strdup(dt_variables_get_result(self->vp));
+  new_path = dt_variables_get_result(self->vp);
   g_free(pattern);
 
   /* did the session path change ? */
