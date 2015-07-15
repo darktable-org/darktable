@@ -498,7 +498,12 @@ void dt_film_import1(dt_film_t *film)
     }
   }
 
-  free(cfr);
+  /* cleanup previously imported filmroll*/
+  if(cfr && cfr != film)
+  {
+    dt_film_cleanup(cfr);
+    free(cfr);
+  }
 }
 
 
