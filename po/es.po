@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-05 19:15+0200\n"
-"PO-Revision-Date: 2015-06-05 19:14+0100\n"
+"POT-Creation-Date: 2015-07-16 23:09+0200\n"
+"PO-Revision-Date: 2015-07-16 23:09+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Poedit-Bookmarks: -1,1170,-1,-1,-1,-1,-1,-1,-1,-1\n"
-"X-Generator: Poedit 1.7.7\n"
+"X-Generator: Poedit 1.8.2\n"
 
 #: ../build/src/preferences_gen.h:1337
 msgid "GUI options"
@@ -1452,7 +1452,7 @@ msgstr ""
 "gradualmente"
 
 #: ../src/develop/blend_gui.c:1089 ../src/iop/colorzones.c:1086
-#: ../src/iop/tonecurve.c:750
+#: ../src/iop/tonecurve.c:752
 msgid "pick GUI color from image"
 msgstr "seleccionar color de la imagen"
 
@@ -3441,8 +3441,8 @@ msgid "make effect stronger or weaker"
 msgstr "hacer mas suave o fuerte el efecto"
 
 #: ../src/iop/basecurve.c:90
-msgid "natural"
-msgstr "natural"
+msgid "neutral"
+msgstr "neutro"
 
 #: ../src/iop/basecurve.c:91
 msgid "canon eos like"
@@ -3508,29 +3508,29 @@ msgstr "similar a fujifilm"
 msgid "nokia like"
 msgstr "similar a nokia"
 
-#: ../src/iop/basecurve.c:200
+#: ../src/iop/basecurve.c:202
 msgid "base curve"
 msgstr "curva base"
 
-#: ../src/iop/basecurve.c:769
+#: ../src/iop/basecurve.c:771
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abcisas: entrada, ordenadas: salida. trabaja en los canales RGB"
 
-#: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2176
+#: ../src/iop/basecurve.c:777 ../src/iop/lens.c:2176
 #: ../src/iop/vignette.c:1151 ../src/iop/watermark.c:1087
 msgid "scale"
 msgstr "escala"
 
-#: ../src/iop/basecurve.c:776 ../src/iop/profile_gamma.c:321
-#: ../src/iop/tonecurve.c:413
+#: ../src/iop/basecurve.c:778 ../src/iop/profile_gamma.c:321
+#: ../src/iop/tonecurve.c:415
 msgid "linear"
 msgstr "lineal"
 
-#: ../src/iop/basecurve.c:777
+#: ../src/iop/basecurve.c:779
 msgid "logarithmic"
 msgstr "logarítmico"
 
-#: ../src/iop/basecurve.c:779
+#: ../src/iop/basecurve.c:781
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -4372,22 +4372,22 @@ msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (e.g. JPG)"
 
 #: ../src/iop/colorin.c:1098 ../src/iop/colorin.c:1132
-#: ../src/iop/colorin.c:1267 ../src/iop/colorout.c:934
-#: ../src/iop/colorout.c:935 ../src/iop/colorout.c:936
+#: ../src/iop/colorin.c:1267 ../src/iop/colorout.c:942
+#: ../src/iop/colorout.c:943 ../src/iop/colorout.c:944
 #: ../src/libs/export.c:568
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
 #: ../src/iop/colorin.c:1100 ../src/iop/colorin.c:1134
-#: ../src/iop/colorin.c:1268 ../src/iop/colorout.c:916
-#: ../src/iop/colorout.c:917 ../src/iop/colorout.c:918
+#: ../src/iop/colorin.c:1268 ../src/iop/colorout.c:924
+#: ../src/iop/colorout.c:925 ../src/iop/colorout.c:926
 #: ../src/libs/export.c:574
 msgid "linear Rec709 RGB"
 msgstr "linear Rec709 RGB"
 
 #: ../src/iop/colorin.c:1102 ../src/iop/colorin.c:1136
-#: ../src/iop/colorin.c:1269 ../src/iop/colorout.c:922
-#: ../src/iop/colorout.c:923 ../src/iop/colorout.c:924
+#: ../src/iop/colorin.c:1269 ../src/iop/colorout.c:930
+#: ../src/iop/colorout.c:931 ../src/iop/colorout.c:932
 #: ../src/libs/export.c:580
 msgid "linear Rec2020 RGB"
 msgstr "linear Rec2020 RGB"
@@ -4537,94 +4537,94 @@ msgstr "nivel de equalización del histograma"
 msgid "output color profile"
 msgstr "salida de perfil de color"
 
-#: ../src/iop/colorout.c:622
+#: ../src/iop/colorout.c:629
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "perfil de salida no soportado reemplazado por sRGB!"
 
-#: ../src/iop/colorout.c:758
+#: ../src/iop/colorout.c:766
 msgid "gamut check"
 msgstr "chequeo de gama"
 
-#: ../src/iop/colorout.c:758
+#: ../src/iop/colorout.c:766
 msgid "soft proof"
 msgstr "prueba de impresión"
 
-#: ../src/iop/colorout.c:875
+#: ../src/iop/colorout.c:883
 msgid "output intent"
 msgstr "salida"
 
-#: ../src/iop/colorout.c:876 ../src/iop/colorout.c:883
+#: ../src/iop/colorout.c:884 ../src/iop/colorout.c:891
 #: ../src/libs/export.c:646
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:877 ../src/iop/colorout.c:884
+#: ../src/iop/colorout.c:885 ../src/iop/colorout.c:892
 #: ../src/libs/export.c:647
 msgid "relative colorimetric"
 msgstr "relativo colorimétrico"
 
-#: ../src/iop/colorout.c:878 ../src/iop/colorout.c:885
+#: ../src/iop/colorout.c:886 ../src/iop/colorout.c:893
 #: ../src/libs/export.c:648
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturación"
 
-#: ../src/iop/colorout.c:879 ../src/iop/colorout.c:886
+#: ../src/iop/colorout.c:887 ../src/iop/colorout.c:894
 #: ../src/libs/export.c:649
 msgid "absolute colorimetric"
 msgstr "absoluto colorimétrico"
 
-#: ../src/iop/colorout.c:881
+#: ../src/iop/colorout.c:889
 msgid "display intent"
 msgstr "salida en pantalla"
 
-#: ../src/iop/colorout.c:899
+#: ../src/iop/colorout.c:907
 msgid "output profile"
 msgstr "perfil (salida)"
 
-#: ../src/iop/colorout.c:900
+#: ../src/iop/colorout.c:908
 msgid "softproof profile"
 msgstr "perfil (impresión)"
 
-#: ../src/iop/colorout.c:901
+#: ../src/iop/colorout.c:909
 msgid "display profile"
 msgstr "perfil (pantalla)"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:912
+#: ../src/iop/colorout.c:920
 msgid "system display profile"
 msgstr "perfil de pantalla del s.o"
 
-#: ../src/iop/colorout.c:928 ../src/iop/colorout.c:929
-#: ../src/iop/colorout.c:930 ../src/libs/export.c:561
+#: ../src/iop/colorout.c:936 ../src/iop/colorout.c:937
+#: ../src/iop/colorout.c:938 ../src/libs/export.c:561
 msgid "sRGB (web-safe)"
 msgstr "sRGB (seguro para web)"
 
-#: ../src/iop/colorout.c:948
+#: ../src/iop/colorout.c:956
 msgid "rendering intent"
 msgstr "renderizado"
 
-#: ../src/iop/colorout.c:949
+#: ../src/iop/colorout.c:957
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "perfil ICC en %s/color/out o %s/color/out"
 
-#: ../src/iop/colorout.c:951
+#: ../src/iop/colorout.c:959
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "mostrar perfil ICC en %s/color/out o %s/color/out"
 
-#: ../src/iop/colorout.c:954
+#: ../src/iop/colorout.c:962
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr "prueba del perfil ICC en %s/color/out o %s/color/out"
 
-#: ../src/iop/colorout.c:986
+#: ../src/iop/colorout.c:994
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "activar prueba impresión"
 
-#: ../src/iop/colorout.c:988
+#: ../src/iop/colorout.c:996
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "activar prueba de gama"
@@ -5646,7 +5646,7 @@ msgstr "flotemos!"
 msgid "levels"
 msgstr "niveles"
 
-#: ../src/iop/levels.c:537 ../src/iop/tonecurve.c:782
+#: ../src/iop/levels.c:537 ../src/iop/tonecurve.c:784
 #: ../src/iop/vignette.c:1142
 msgid "automatic"
 msgstr "automático"
@@ -6241,56 +6241,56 @@ msgstr "ajuste fino del balance de blancos predefinido"
 msgid "tone curve"
 msgstr "curva tono"
 
-#: ../src/iop/tonecurve.c:409
+#: ../src/iop/tonecurve.c:411
 msgid "low contrast"
 msgstr "bajo contraste"
 
-#: ../src/iop/tonecurve.c:423
+#: ../src/iop/tonecurve.c:425
 msgid "med contrast"
 msgstr "medio contraste"
 
-#: ../src/iop/tonecurve.c:433
+#: ../src/iop/tonecurve.c:435
 msgid "high contrast"
 msgstr "alto contraste"
 
-#: ../src/iop/tonecurve.c:729
+#: ../src/iop/tonecurve.c:731
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:732
+#: ../src/iop/tonecurve.c:734
 msgid "tonecurve for L channel"
 msgstr "curva para el canal L"
 
-#: ../src/iop/tonecurve.c:734
+#: ../src/iop/tonecurve.c:736
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:737
+#: ../src/iop/tonecurve.c:739
 msgid "tonecurve for a channel"
 msgstr "curva para el canal a"
 
-#: ../src/iop/tonecurve.c:739
+#: ../src/iop/tonecurve.c:741
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:742
+#: ../src/iop/tonecurve.c:744
 msgid "tonecurve for b channel"
 msgstr "curva para el canal b"
 
-#: ../src/iop/tonecurve.c:766
+#: ../src/iop/tonecurve.c:768
 msgid "double click to reset curve"
 msgstr "doble click para restablece la curva"
 
-#: ../src/iop/tonecurve.c:781
+#: ../src/iop/tonecurve.c:783
 msgid "scale chroma"
 msgstr "escalar croma"
 
-#: ../src/iop/tonecurve.c:783
+#: ../src/iop/tonecurve.c:785
 msgctxt "scale"
 msgid "manual"
 msgstr "manual"
 
-#: ../src/iop/tonecurve.c:786
+#: ../src/iop/tonecurve.c:788
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data."
@@ -8855,6 +8855,9 @@ msgstr "nueva sesión iniciada '%s'"
 #: ../src/views/tethering.c:250
 msgid "no camera with tethering support available for use..."
 msgstr "no está disponible ninguna cámara con soporte de captura..."
+
+#~ msgid "natural"
+#~ msgstr "natural"
 
 #~ msgid "set the aspect ratio (w:h)"
 #~ msgstr "relación de aspecto (w:h)"
