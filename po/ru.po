@@ -4372,7 +4372,7 @@ msgstr "Цветовой профиль вывода"
 
 #: ../src/iop/colorout.c:651
 msgid "unsupported output profile has been replaced by sRGB!"
-msgstr "Неподдерживаемый профиль вывода заменён на sRGB!"
+msgstr "Неподдерживаемый профиль вывода заменён на sRGB!"
 
 #: ../src/iop/colorout.c:792
 msgid "gamut check"
@@ -5212,7 +5212,7 @@ msgstr "Инвертация"
 #: ../src/iop/invert.c:79
 msgctxt "accel"
 msgid "pick color of film material from image"
-msgstr "Взять цвет плёнки с фотографии"
+msgstr "Взять цвет плёнки с фотографии"
 
 #: ../src/iop/invert.c:163
 msgid "select color of film material"
