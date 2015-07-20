@@ -5871,8 +5871,8 @@
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="1024" white="16100" iso_list="51200"/>
-		<Sensor black="512" white="16100" iso_list="12800 25600"/>
+		<Sensor black="1024" white="16100" iso_min="51200"/>
+		<Sensor black="512" white="16100" iso_min="8000" iso_max="25600"/>
 		<Sensor black="128" white="16100"/>
 	</Camera>
 	<Camera make="SAMSUNG" model="NX5">
@@ -6059,8 +6059,8 @@
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="1024" white="16100" iso_list="51200"/>
-		<Sensor black="512" white="16100" iso_list="12800 25600"/>
+		<Sensor black="1024" white="16100" iso_min="51200"/>
+		<Sensor black="512" white="16100" iso_min="8000" iso_max="25600"/>
 		<Sensor black="128" white="16100"/>
 	</Camera>
 	<Camera make="SAMSUNG" model="EK-GN120" decoder_version="3">
