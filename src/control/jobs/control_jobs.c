@@ -142,6 +142,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
     fraction += 1.0 / total;
     dt_control_progress_set_progress(darktable.control, progress, fraction);
   }
+  params->index = NULL;
 
   char collect[1024];
   snprintf(collect, sizeof(collect), "1:0:0:%s$", new_film.dirname);
@@ -219,6 +220,7 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     dt_image_cache_read_release(darktable.image_cache, img);
     t = g_list_delete_link(t, t);
   }
+  params->index = NULL;
   sqlite3_finalize(stmt);
   return 0;
 }
@@ -437,6 +439,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     dt_control_progress_set_progress(darktable.control, progress, fraction);
     num++;
   }
+  params->index = NULL;
 
   if(d.abort) goto end;
 
@@ -504,6 +507,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     fraction = 1.0 / total;
     dt_control_progress_set_progress(darktable.control, progress, fraction);
   }
+  params->index = NULL;
   dt_control_progress_destroy(darktable.control, progress);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
@@ -529,6 +533,7 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
     fraction = 1.0 / total;
     dt_control_progress_set_progress(darktable.control, progress, fraction);
   }
+  params->index = NULL;
   dt_control_progress_destroy(darktable.control, progress);
   dt_control_queue_redraw_center();
   return 0;
@@ -641,6 +646,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     fraction = 1.0 / total;
     dt_control_progress_set_progress(darktable.control, progress, fraction);
   }
+  params->index = NULL;
 
   char *imgname;
   while(list)
@@ -773,6 +779,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     fraction = 1.0 / total;
     dt_control_progress_set_progress(darktable.control, progress, fraction);
   }
+  params->index = NULL;
   sqlite3_finalize(stmt);
 
   char *imgname;
@@ -938,6 +945,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     fraction += 1.0 / total;
     dt_control_progress_set_progress(control, progress, fraction);
   }
+  params->index = NULL;
 
   dt_control_progress_destroy(control, progress);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
@@ -1053,6 +1061,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     if(fraction > 1.0) fraction = 1.0;
     dt_control_progress_set_progress(control, progress, fraction);
   }
+  params->index = NULL;
 
   dt_control_progress_destroy(control, progress);
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);

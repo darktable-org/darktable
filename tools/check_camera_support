@@ -31,6 +31,7 @@ end
 
 rawspeed_cameras = {}
 rawspeed_aliases = {}
+rawspeed_panasonic_formats = {}
 exif_name_map = {}
 exif_alias_map = {}
 File.open(CAMERAS) do |f|
@@ -50,6 +51,12 @@ File.open(CAMERAS) do |f|
       rawspeed_aliases[id] = [id]
       exif_name_map[exif_id] = id
       exif_alias_map[exif_id] = id
+      mode = ""
+      mode = c.attribute("mode").value if c.attribute("mode")
+      if maker == "Panasonic"
+        rawspeed_panasonic_formats[id] ||= []
+        rawspeed_panasonic_formats[id] << mode
+      end
       c.css("Alias").each do |a|
         model = a.content
         exif_id = "#{exif_maker} #{model}"
@@ -154,6 +161,13 @@ if (!matrix_mode)
   compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras, verbose_mode, !quiet_mode)
   compare_lists("noiseprofiles", rawspeed_cameras, noiseprofiles_cameras, verbose_mode, !quiet_mode)
   compare_lists("samples", rawspeed_cameras, samples_cameras, verbose_mode, !quiet_mode) if samplesdir
+  needed_formats = ["", "4:3", "3:2", "16:9", "1:1"]
+  rawspeed_panasonic_formats.each do |camera, formats|
+    if formats.size != 1 && formats.size != 5
+      missing_formats = needed_formats.select{|f| !formats.include?(f)}
+      puts "Missing formats for '#{camera}' #{missing_formats.join(' ')}"
+    end
+  end
 else
   puts "<table><tbody>"
 

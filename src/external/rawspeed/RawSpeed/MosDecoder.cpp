@@ -186,8 +186,15 @@ void MosDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     buffer[size-1] = 0;
 
     // dcraw does actual parsing, since we just want one field we bruteforce it
-    uchar8 *neutobj = (uchar8 *) memmem(buffer, size, "NeutObj_neutrals", 16);
-    if (neutobj && neutobj+44 < buffer+size) {
+    uchar8 *neutobj = NULL;
+    // We need at least 17+44 bytes for the NeutObj_neutrals section itself
+    for(uint32 i=0; i<size-17-44; i++) {
+      if (!strncmp("NeutObj_neutrals", (const char *) buffer+i, 16)) {
+        neutobj = buffer+i;
+        break;
+      }
+    }
+    if (neutobj) {
       uint32 tmp[4] = {0};
       sscanf((const char *)neutobj+44, "%u %u %u %u", &tmp[0], &tmp[1], &tmp[2], &tmp[3]);
       if (tmp[0] > 0 && tmp[1] > 0 && tmp[2] > 0 && tmp[3] > 0) {

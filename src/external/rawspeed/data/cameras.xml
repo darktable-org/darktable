@@ -2555,8 +2555,8 @@
                         <Color x="0" y="1">BLUE</Color>
                         <Color x="1" y="1">GREEN</Color>
 			</CFA>
-                <Crop x="0" y="0" width="-14" height="0"/>
-                <Sensor black="252" white="4000"/>
+		<Crop x="16" y="8" width="-16" height="-8"/>
+                <Sensor black="0" white="4000"/>
 		</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="C7070WZ">
 		<ID make="Olympus" model="C7070WZ">Olympus C7070WZ</ID>
@@ -5871,8 +5871,8 @@
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="1024" white="16100" iso_list="51200"/>
-		<Sensor black="512" white="16100" iso_list="12800 25600"/>
+		<Sensor black="1024" white="16100" iso_min="51200"/>
+		<Sensor black="512" white="16100" iso_min="8000" iso_max="25600"/>
 		<Sensor black="128" white="16100"/>
 	</Camera>
 	<Camera make="SAMSUNG" model="NX5">
@@ -6059,8 +6059,8 @@
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="1024" white="16100" iso_list="51200"/>
-		<Sensor black="512" white="16100" iso_list="12800 25600"/>
+		<Sensor black="1024" white="16100" iso_min="51200"/>
+		<Sensor black="512" white="16100" iso_min="8000" iso_max="25600"/>
 		<Sensor black="128" white="16100"/>
 	</Camera>
 	<Camera make="SAMSUNG" model="EK-GN120" decoder_version="3">
