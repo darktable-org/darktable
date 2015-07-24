@@ -40,6 +40,7 @@
 #include <libgen.h>
 #include <ctype.h>
 #include <zlib.h>
+#include <unistd.h>
 
 static const char *dt_opencl_get_vendor_by_id(unsigned int id);
 static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const size_t height, const int count, const float sigma);
@@ -307,9 +308,15 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
                                              &(cl->dev[dev].max_global_mem), NULL);
     if(cl->dev[dev].max_global_mem < opencl_memory_requirement * 1024 * 1024)
     {
+#ifdef __WIN32__
+	dt_print(DT_DEBUG_OPENCL,
+	               "[opencl_init] discarding device %d `%s' due to insufficient global memory (%I64dMB).\n", k,
+	               infostr, (long long) (cl->dev[dev].max_global_mem / 1024 / 1024));
+#else
       dt_print(DT_DEBUG_OPENCL,
                "[opencl_init] discarding device %d `%s' due to insufficient global memory (%luMB).\n", k,
                infostr, cl->dev[dev].max_global_mem / 1024 / 1024);
+#endif
       continue;
     }
 
@@ -319,10 +326,17 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
 
     cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
 
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr,
+#ifdef __WIN32__
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %Id x %Id\n", k, infostr,
              cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %I64dMB\n",
+                 k, infostr, (long long) cl->dev[dev].max_mem_alloc / 1024 / 1024);
+#else
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr,
+                 cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %luMB\n",
-             k, infostr, cl->dev[dev].max_mem_alloc / 1024 / 1024);
+                     k, infostr, cl->dev[dev].max_mem_alloc / 1024 / 1024);
+#endif
 
     if(darktable.unmuted & DT_DEBUG_OPENCL)
     {
@@ -399,7 +413,11 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
       while(!feof(f))
       {
         int prog = -1;
+#ifdef __WIN32__
+        gchar *confline_pattern = g_strdup_printf("%%%Iu[^\n]\n", sizeof(confentry) - 1);
+#else
         gchar *confline_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(confentry) - 1);
+#endif
         int rd = fscanf(f, confline_pattern, confentry);
         g_free(confline_pattern);
         if(rd != 1) continue;
@@ -1112,7 +1130,10 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   cl_int err;
   dt_opencl_t *cl = darktable.opencl;
 
-  struct stat filestat, cachedstat;
+  struct stat filestat;
+#ifndef __WIN32__
+  struct stat cachedstat;
+#endif
   *loaded_cached = 0;
 
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS)
@@ -1167,6 +1188,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   char linkedfile[PATH_MAX] = { 0 };
   ssize_t linkedfile_len = 0;
 
+#ifndef __WIN32__
   FILE *cached = fopen_stat(binname, &cachedstat);
   if(cached)
   {
@@ -1208,6 +1230,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     }
     fclose(cached);
   }
+#endif
 
 
   if(*loaded_cached == 0)
@@ -1350,8 +1373,10 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           if(chdir(cachedir) != 0) goto ret;
           char dup[PATH_MAX] = { 0 };
           g_strlcpy(dup, binname, sizeof(dup));
+#ifndef __WIN32__
           char *bname = basename(dup);
           if(symlink(md5sum, bname) != 0) goto ret;
+#endif
           if(chdir(cwd) != 0) goto ret;
         }
 

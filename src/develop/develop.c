@@ -899,7 +899,7 @@ static void auto_apply_presets(dt_develop_t *dev)
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "SELECT rowid FROM memory.history ORDER BY rowid ASC", -1, &stmt, NULL);
         while(sqlite3_step(stmt) == SQLITE_ROW)
-          rowids = g_list_append(rowids, (void *)(long)sqlite3_column_int(stmt, 0));
+          rowids = g_list_append(rowids, (void *)(intptr_t)sqlite3_column_int(stmt, 0));
         sqlite3_finalize(stmt);
 
         // update num accordingly
@@ -909,7 +909,7 @@ static void auto_apply_presets(dt_develop_t *dev)
 
         while(r)
         {
-          snprintf(query, sizeof(query), "UPDATE memory.history SET num=%d WHERE rowid=%ld", v, (long)(r->data));
+          snprintf(query, sizeof(query), "UPDATE memory.history SET num=%d WHERE rowid=%ld", v, (intptr_t)(r->data));
           DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
           v++;
           r = g_list_next(r);

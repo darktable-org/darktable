@@ -16,7 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#ifdef __WIN32__
+#include <winsock2.h> // need to add this before windows.h, otherwise it won't compile on windows
+#endif
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "common/darktable.h"
@@ -713,7 +715,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD, 1); // A put request
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_READDATA, &writebuffer);
-      curl_easy_setopt(ctx->curl_ctx, CURLOPT_INFILESIZE, writebuffer.size);
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_INFILESIZE, (long) writebuffer.size);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_READFUNCTION, _picasa_api_buffer_read_func);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &response);

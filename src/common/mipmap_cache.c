@@ -38,7 +38,9 @@
 #include <glib/gstdio.h>
 #include <errno.h>
 #include <xmmintrin.h>
+#ifndef __WIN32__
 #include <sys/statvfs.h>
+#endif
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
 #define DT_MIPMAP_CACHE_FILE_VERSION 23
@@ -333,6 +335,8 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
             uint8_t *blob = NULL;
 
             // first check the disk isn't full
+
+	    #ifndef __WIN32__
             struct statvfs vfsbuf;
             if (!statvfs(filename, &vfsbuf))
             {
@@ -348,6 +352,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
               fprintf(stderr, "Aborting image write since couldn't determine free space available to write %s\n", filename);
               goto write_error;
             }
+	    #endif
 
             // allocate temp memory, at least 1MB to be sure we fit:
             size_t bloblen = MAX(1<<20, cache->buffer_size[mip]);

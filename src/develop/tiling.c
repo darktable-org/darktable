@@ -743,9 +743,13 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
       size_t ioffs = (ty * tile_ht) * ipitch + (tx * tile_wd) * in_bpp;
       size_t ooffs = (ty * tile_ht) * opitch + (tx * tile_wd) * out_bpp;
 
-
+#ifndef __WIN32__
       dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] tile (%zu, %zu) with %zu x %zu at origin [%zu, %zu]\n",
                tx, ty, wd, ht, tx * tile_wd, ty * tile_ht);
+#else
+      dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] tile (%Iu, %Iu) with %Iu x %Iu at origin [%Iu, %Iu]\n",
+                     tx, ty, wd, ht, tx * tile_wd, ty * tile_ht);
+#endif
 
 /* prepare input tile buffer */
 #ifdef _OPENMP
@@ -1066,9 +1070,14 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       size_t ioffs = ((size_t)iroi_full.y - roi_in->y) * ipitch + ((size_t)iroi_full.x - roi_in->x) * in_bpp;
       size_t ooffs = ((size_t)oroi_good.y - roi_out->y) * opitch
                      + ((size_t)oroi_good.x - roi_out->x) * out_bpp;
-
+#ifndef __WIN32__
       dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] tile (%zu, %zu) with %d x %d at origin [%d, %d]\n",
                tx, ty, iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
+#else
+      dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] tile (%Iu, %Iu) with %d x %d at origin [%d, %d]\n",
+                     tx, ty, iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
+#endif
+
 
 
       /* prepare input tile buffer */
@@ -1381,10 +1390,15 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       size_t ioffs = (ty * tile_ht) * ipitch + (tx * tile_wd) * in_bpp;
       size_t ooffs = (ty * tile_ht) * opitch + (tx * tile_wd) * out_bpp;
 
-
+#ifndef __WIN32__
       dt_print(DT_DEBUG_OPENCL,
                "[default_process_tiling_cl_ptp] tile (%zu, %zu) with %zu x %zu at origin [%zu, %zu]\n", tx, ty, wd,
                ht, tx * tile_wd, ty * tile_ht);
+#else
+      dt_print(DT_DEBUG_OPENCL,
+                     "[default_process_tiling_cl_ptp] tile (%Iu, %Iu) with %Iu x %Iu at origin [%Iu, %Iu]\n", tx, ty, wd,
+                     ht, tx * tile_wd, ty * tile_ht);
+#endif
 
       /* get input and output buffers */
       input = dt_opencl_alloc_device(devid, wd, ht, in_bpp);
@@ -1819,10 +1833,15 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       size_t ioffs = ((size_t)iroi_full.y - roi_in->y) * ipitch + ((size_t)iroi_full.x - roi_in->x) * in_bpp;
       size_t ooffs = ((size_t)oroi_good.y - roi_out->y) * opitch
                      + ((size_t)oroi_good.x - roi_out->x) * out_bpp;
-
+#ifndef __WIN32__
       dt_print(DT_DEBUG_OPENCL,
                "[default_process_tiling_cl_roi] tile (%zu, %zu) with %d x %d at origin [%d, %d]\n", tx, ty,
                iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
+#else
+      dt_print(DT_DEBUG_OPENCL,
+                     "[default_process_tiling_cl_roi] tile (%Iu, %Iu) with %d x %d at origin [%d, %d]\n", tx, ty,
+                     iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
+#endif
 
       /* origin and region of full input tile */
       size_t iorigin[] = { 0, 0, 0 };
@@ -1882,6 +1901,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
               DT_DEBUG_OPENCL,
               "[default_process_tiling_cl_roi] processed_maximum[%d] differs between tiles in module '%s'\n",
               k, self->op);
+
         processed_maximum_new[k] = piece->pipe->processed_maximum[k];
       }
 

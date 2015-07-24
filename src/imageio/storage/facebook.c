@@ -16,7 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#ifdef __WIN32__
+#include <winsock2.h> // need to add this before windows.h, otherwise it won't compile on windows
+#endif
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "common/darktable.h"
@@ -35,6 +37,7 @@
 #include <unistd.h>
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
+
 
 #ifdef HAVE_HTTP_SERVER
 #include "common/http_server.h"

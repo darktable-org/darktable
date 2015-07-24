@@ -26,6 +26,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +100,12 @@ static inline void dt_conf_set_int(const char *name, int val)
 static inline void dt_conf_set_int64(const char *name, int64_t val)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
+#ifdef __WIN32__
+  char *str = g_strdup_printf("%I64d",(long long) val);
+#else
   char *str = g_strdup_printf("%" PRId64, val);
+#endif
+
   if(!dt_conf_is_still_overridden(name, str))
     g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
   else
@@ -229,7 +235,11 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     if(!f) return;
     while(!feof(f))
     {
-      gchar *line_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(line) - 1);
+      #if defined(__WIN32__)
+	gchar *line_pattern = g_strdup_printf("%%%Iu[^\n]\n", sizeof(line) - 1);
+      #else
+	gchar *line_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(line) - 1);
+      #endif
       read = fscanf(f, line_pattern, line);
       g_free(line_pattern);
       if(read > 0)

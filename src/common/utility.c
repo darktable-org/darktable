@@ -34,6 +34,8 @@
 
 #include "utility.h"
 #include "file_location.h"
+#include <math.h>
+#include <glib/gi18n-lib.h>
 
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
 {
@@ -335,7 +337,11 @@ dt_logo_season_t get_logo_season(void)
   time_t now;
   time(&now);
   struct tm lt;
+#ifdef __WIN32__
+  localtime_s(&lt, &now);
+#else
   localtime_r(&now, &lt);
+#endif
 
   // Halloween is active on 31.10. and 01.11.
   if((lt.tm_mon == 9 && lt.tm_mday == 31) || (lt.tm_mon == 10 && lt.tm_mday == 1))
