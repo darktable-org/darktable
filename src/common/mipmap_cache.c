@@ -794,7 +794,7 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
   }
 }
 
-int dt_image_get_demosaic_method(const int imgid)
+int dt_image_get_demosaic_method(const int imgid, const char **method_name)
 {
   // find the demosaic module -- the pointer stays valid until darktable shuts down
   static dt_iop_module_so_t *demosaic = NULL;
@@ -818,7 +818,7 @@ int dt_image_get_demosaic_method(const int imgid)
   // db lookup demosaic params
   if(demosaic && demosaic->get_f && demosaic->get_p)
   {
-    // dt_introspection_field_t *field = demosaic->get_f("demosaicing_method");
+    dt_introspection_field_t *field = demosaic->get_f("demosaicing_method");
 
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -835,7 +835,7 @@ int dt_image_get_demosaic_method(const int imgid)
     }
     sqlite3_finalize(stmt);
 
-    // printf("%i %i %s\n", imgid, method, field->Enum.values[method].name);
+    if(method_name) *method_name = field->Enum.values[method].name;
   }
 
   return method;
@@ -888,12 +888,13 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
     // demosaic during downsample
     if(image->filters != 9u)
     {
-      const int method = dt_image_get_demosaic_method(imgid);
+      const char *method_name = NULL;
+      const int method = dt_image_get_demosaic_method(imgid, &(method_name));
 
       // Bayer
       if(image->bpp == sizeof(float))
       {
-        if(method == 3)
+        if(method == 3 && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")))
         {
           dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(out, (const float *)buf.buf, &roi_out,
                                                                  &roi_in, roi_out.width, roi_in.width);
@@ -906,7 +907,7 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
       }
       else
       {
-        if(method == 3)
+        if(method == 3 && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")))
         {
           dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(out, (const uint16_t *)buf.buf, &roi_out,
                                                                &roi_in, roi_out.width, roi_in.width);
