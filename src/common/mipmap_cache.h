@@ -66,6 +66,8 @@ typedef struct dt_mipmap_buffer_t
   uint32_t imgid;
   int32_t width, height;
   uint8_t *buf;
+  // buffer is pre-demosaiced and the demosaicing method is monochrome
+  int pre_monochrome_demosaiced;
   dt_cache_entry_t *cache_entry;
 } dt_mipmap_buffer_t;
 

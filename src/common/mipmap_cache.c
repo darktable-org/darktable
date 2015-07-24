@@ -157,7 +157,8 @@ exit:
   return r;
 }
 
-static void _init_f(float *buf, uint32_t *width, uint32_t *height, const uint32_t imgid);
+static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *buf, uint32_t *width, uint32_t *height,
+                    const uint32_t imgid);
 static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint32_t imgid,
                     const dt_mipmap_size_t size);
 
@@ -596,6 +597,9 @@ void dt_mipmap_cache_get_with_caller(
 
     if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
     {
+      // _init_f() will set it, if needed
+      buf->pre_monochrome_demosaiced = 0;
+
       __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_fetches), 1);
       // fprintf(stderr, "[mipmap cache get] now initializing buffer for img %u mip %d!\n", imgid, mip);
       // we're write locked here, as requested by the alloc callback.
@@ -644,7 +648,7 @@ void dt_mipmap_cache_get_with_caller(
       }
       else if(mip == DT_MIPMAP_F)
       {
-        _init_f((float *)(dsc + 1), &dsc->width, &dsc->height, imgid);
+        _init_f(buf, (float *)(dsc + 1), &dsc->width, &dsc->height, imgid);
       }
       else
       {
@@ -841,7 +845,8 @@ int dt_image_get_demosaic_method(const int imgid, const char **method_name)
   return method;
 }
 
-static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_t imgid)
+static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width, uint32_t *height,
+                    const uint32_t imgid)
 {
   const uint32_t wd = *width, ht = *height;
 
@@ -919,6 +924,8 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
 
   assert(!buffer_is_broken(&buf));
 
+  mipmap_buf->pre_monochrome_demosaiced = 0;
+
   if(image->filters)
   {
     // demosaic during downsample
@@ -926,12 +933,14 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
     {
       const char *method_name = NULL;
       const int method = dt_image_get_demosaic_method(imgid, &(method_name));
+      mipmap_buf->pre_monochrome_demosaiced
+          = (method == demosaic_monochrome_enum
+             && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")));
 
       // Bayer
       if(image->bpp == sizeof(float))
       {
-        if(method == demosaic_monochrome_enum
-           && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")))
+        if(mipmap_buf->pre_monochrome_demosaiced)
         {
           dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(out, (const float *)buf.buf, &roi_out,
                                                                  &roi_in, roi_out.width, roi_in.width);
@@ -944,8 +953,7 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
       }
       else
       {
-        if(method == demosaic_monochrome_enum
-           && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")))
+        if(mipmap_buf->pre_monochrome_demosaiced)
         {
           dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(out, (const uint16_t *)buf.buf, &roi_out,
                                                                &roi_in, roi_out.width, roi_in.width);
