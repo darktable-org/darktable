@@ -208,12 +208,19 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   int ok = 1;
 
+  img->flags &= ~DT_IMAGE_HDR;
+  img->flags |= DT_IMAGE_LDR;
+
   if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
     ok = _read_planar_8(&t);
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
     ok = _read_planar_16(&t);
   else if(t.bpp == 32 && t.sampleformat == SAMPLEFORMAT_IEEEFP && config == PLANARCONFIG_CONTIG)
+  {
     ok = _read_planar_f(&t);
+    img->flags |= DT_IMAGE_HDR;
+    img->flags &= ~DT_IMAGE_LDR;
+  }
   else
   {
     fprintf(stderr, "[tiff_open] error: Not an supported tiff image format.");
