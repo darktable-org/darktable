@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-22 11:46+0200\n"
-"PO-Revision-Date: 2015-03-27 21:37+0100\n"
+"POT-Creation-Date: 2015-07-26 13:47+0200\n"
+"PO-Revision-Date: 2015-07-26 13:44+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 1.6.10\n"
+"X-Generator: Poedit 1.8.2\n"
 
 #: ../build/src/preferences_gen.h:1337
 msgid "GUI options"
@@ -923,23 +923,23 @@ msgstr ""
 msgid "orphaned image"
 msgstr "verwaistes Bild"
 
-#: ../src/common/image.c:1277
+#: ../src/common/image.c:1280
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht erzeugt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:1291
+#: ../src/common/image.c:1294
 msgid "cannot create local copy."
 msgstr "lokale Kopie kann nicht erzeugt werden."
 
-#: ../src/common/image.c:1344 ../src/control/jobs/control_jobs.c:547
+#: ../src/common/image.c:1347 ../src/control/jobs/control_jobs.c:547
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht entfernt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:1499
+#: ../src/common/image.c:1502
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1064,11 +1064,11 @@ msgstr ""
 "OpenCL-Hardware-Beschleunigung wurde aufgrund einer langsamen GPU "
 "deaktiviert."
 
-#: ../src/control/control.c:543 ../src/control/control.c:546
+#: ../src/control/control.c:560 ../src/control/control.c:563
 msgid "working.."
 msgstr "Arbeite …"
 
-#: ../src/control/control.c:629
+#: ../src/control/control.c:646
 #, c-format
 msgid "switch to %s mode"
 msgstr "in den %s-Modus wechseln"
@@ -1472,7 +1472,7 @@ msgstr ""
 "   allmählich einblenden"
 
 #: ../src/develop/blend_gui.c:1089 ../src/iop/colorzones.c:1086
-#: ../src/iop/tonecurve.c:734
+#: ../src/iop/tonecurve.c:752
 msgid "pick GUI color from image"
 msgstr "GUI-Farbe aus dem Bild übernehmen"
 
@@ -1817,61 +1817,61 @@ msgstr "abwärtsschieben"
 msgid "delete"
 msgstr "löschen"
 
-#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1803
+#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1812
 #, c-format
 msgid "%s is switched on"
 msgstr "%s ist eingeschaltet"
 
-#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1803
+#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1812
 #, c-format
 msgid "%s is switched off"
 msgstr "%s ist ausgeschaltet"
 
-#: ../src/develop/imageop.c:1198 ../src/gui/accelerators.c:675
-#: ../src/gui/accelerators.c:759 ../src/gui/accelerators.c:927
-#: ../src/gui/accelerators.c:953 ../src/gui/presets.c:189
+#: ../src/develop/imageop.c:1199 ../src/gui/accelerators.c:675
+#: ../src/gui/accelerators.c:759 ../src/gui/accelerators.c:925
+#: ../src/gui/accelerators.c:951 ../src/gui/presets.c:189
 #: ../src/gui/presets.c:295 ../src/gui/presets.c:664
 #: ../src/iop/temperature.c:770 ../src/libs/import.c:508 ../src/libs/lib.c:308
-#: ../src/libs/lib.c:333 ../src/libs/lib.c:1097
+#: ../src/libs/lib.c:333 ../src/libs/lib.c:1099
 msgid "preset"
 msgstr "Voreinstellung"
 
-#: ../src/develop/imageop.c:1242
+#: ../src/develop/imageop.c:1243
 msgctxt "accel"
 msgid "fusion"
 msgstr "Überblenden-Deckkraft"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1247
+#: ../src/develop/imageop.c:1248
 msgctxt "accel"
 msgid "show module"
 msgstr "Modul zeigen"
 
-#: ../src/develop/imageop.c:1248
+#: ../src/develop/imageop.c:1249
 msgctxt "accel"
 msgid "enable module"
 msgstr "Modul aktivieren"
 
-#: ../src/develop/imageop.c:1250 ../src/libs/lib.c:577
+#: ../src/develop/imageop.c:1251 ../src/libs/lib.c:577
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "Modul-Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:1251 ../src/libs/lib.c:581
+#: ../src/develop/imageop.c:1252 ../src/libs/lib.c:581
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "Voreinstellungs-Menü zeigen"
 
-#: ../src/develop/imageop.c:1774
+#: ../src/develop/imageop.c:1783
 msgid "multiple instances actions"
 msgstr "Multi-Instanz-Optionen"
 
-#: ../src/develop/imageop.c:1782 ../src/libs/lib.c:951
+#: ../src/develop/imageop.c:1791 ../src/libs/lib.c:953
 msgid "reset parameters"
 msgstr "Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:1790 ../src/gui/preferences.c:410
-#: ../src/libs/lib.c:963
+#: ../src/develop/imageop.c:1799 ../src/gui/preferences.c:410
+#: ../src/libs/lib.c:965
 msgid "presets"
 msgstr "Voreinstellungen"
 
@@ -3038,7 +3038,7 @@ msgstr "Konnte nicht in Verzeichnis ‚%s‘ schreiben!"
 #: ../src/imageio/storage/disk.c:284 ../src/imageio/storage/email.c:133
 #: ../src/imageio/storage/facebook.c:1288 ../src/imageio/storage/flickr.c:670
 #: ../src/imageio/storage/gallery.c:337 ../src/imageio/storage/gallery.c:357
-#: ../src/imageio/storage/picasa.c:1447
+#: ../src/imageio/storage/picasa.c:1446
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "Konnte nicht in Datei ‚%s‘ exportieren!"
@@ -3088,15 +3088,15 @@ msgstr ""
 msgid "facebook authentication"
 msgstr "Facebook-Authentifizierung"
 
-#: ../src/imageio/storage/facebook.c:628 ../src/imageio/storage/picasa.c:842
+#: ../src/imageio/storage/facebook.c:628 ../src/imageio/storage/picasa.c:841
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:650 ../src/imageio/storage/picasa.c:865
+#: ../src/imageio/storage/facebook.c:650 ../src/imageio/storage/picasa.c:864
 msgid "please enter the validation URL"
 msgstr "bitte die Validierungs-URL eingeben"
 
-#: ../src/imageio/storage/facebook.c:660 ../src/imageio/storage/picasa.c:876
+#: ../src/imageio/storage/facebook.c:660 ../src/imageio/storage/picasa.c:875
 msgid "the given URL is not valid, it should look like: "
 msgstr "die angegebene URL ist nicht gültig, sie sollte wie folgt aussehen:"
 
@@ -3118,26 +3118,26 @@ msgstr ""
 "Loggen Sie sich dort nun in Ihren Facebook-Account ein und autorisieren Sie "
 "darktable Fotos hochzuladen, bevor Sie fortfahren."
 
-#: ../src/imageio/storage/facebook.c:839 ../src/imageio/storage/picasa.c:1007
+#: ../src/imageio/storage/facebook.c:839 ../src/imageio/storage/picasa.c:1006
 msgid "new account"
 msgstr "neuer Account"
 
-#: ../src/imageio/storage/facebook.c:844 ../src/imageio/storage/picasa.c:1012
+#: ../src/imageio/storage/facebook.c:844 ../src/imageio/storage/picasa.c:1011
 msgid "other account"
 msgstr "anderer Account"
 
-#: ../src/imageio/storage/facebook.c:873 ../src/imageio/storage/picasa.c:1040
+#: ../src/imageio/storage/facebook.c:873 ../src/imageio/storage/picasa.c:1039
 msgid "unable to retrieve the album list"
 msgstr "konnte Albenliste nicht holen"
 
 #: ../src/imageio/storage/facebook.c:881 ../src/imageio/storage/flickr.c:391
-#: ../src/imageio/storage/flickr.c:418 ../src/imageio/storage/picasa.c:1048
+#: ../src/imageio/storage/flickr.c:418 ../src/imageio/storage/picasa.c:1047
 msgid "create new album"
 msgstr "Neues Album erstellen"
 
 # abmelden wäre besser, aber der andere Knopf heißt "einloggen" und nicht anmelden.
-#: ../src/imageio/storage/facebook.c:953 ../src/imageio/storage/picasa.c:1096
-#: ../src/imageio/storage/picasa.c:1255
+#: ../src/imageio/storage/facebook.c:953 ../src/imageio/storage/picasa.c:1095
+#: ../src/imageio/storage/picasa.c:1254
 msgid "logout"
 msgstr "logout"
 
@@ -3147,8 +3147,8 @@ msgstr "logout"
 #: ../src/imageio/storage/facebook.c:1026
 #: ../src/imageio/storage/facebook.c:1052
 #: ../src/imageio/storage/facebook.c:1166 ../src/imageio/storage/flickr.c:528
-#: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1259
-#: ../src/imageio/storage/picasa.c:1272 ../src/imageio/storage/picasa.c:1343
+#: ../src/imageio/storage/picasa.c:1101 ../src/imageio/storage/picasa.c:1258
+#: ../src/imageio/storage/picasa.c:1271 ../src/imageio/storage/picasa.c:1342
 msgid "login"
 msgstr "login"
 
@@ -3160,13 +3160,13 @@ msgstr "Facebook-Webalbum"
 #. xmp
 #: ../src/imageio/storage/facebook.c:1107 ../src/imageio/storage/flickr.c:482
 #: ../src/imageio/storage/gallery.c:171 ../src/imageio/storage/latex.c:171
-#: ../src/imageio/storage/picasa.c:1300 ../src/libs/collect.h:29
+#: ../src/imageio/storage/picasa.c:1299 ../src/libs/collect.h:29
 #: ../src/libs/metadata.c:336 ../src/libs/metadata_view.c:107
 msgid "title"
 msgstr "Titel"
 
 #: ../src/imageio/storage/facebook.c:1108 ../src/imageio/storage/flickr.c:483
-#: ../src/imageio/storage/picasa.c:1301
+#: ../src/imageio/storage/picasa.c:1300
 msgid "summary"
 msgstr "Zusammenfassung"
 
@@ -3190,11 +3190,11 @@ msgstr "öffentlich"
 msgid "friends of friends"
 msgstr "Freunde von Freunden"
 
-#: ../src/imageio/storage/facebook.c:1297 ../src/imageio/storage/picasa.c:1456
+#: ../src/imageio/storage/facebook.c:1297 ../src/imageio/storage/picasa.c:1455
 msgid "unable to create album, no title provided"
 msgstr "kann Album nicht anlegen, kein Titel angegeben"
 
-#: ../src/imageio/storage/facebook.c:1306 ../src/imageio/storage/picasa.c:1464
+#: ../src/imageio/storage/facebook.c:1306 ../src/imageio/storage/picasa.c:1463
 msgid "unable to create album"
 msgstr "kann Album nicht erstellen"
 
@@ -3329,7 +3329,7 @@ msgid "enter the title of the book"
 msgstr "den Titel für das Buch eingeben"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/picasa.c:828
+#: ../src/imageio/storage/picasa.c:827
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google+ account there and authorize darktable to "
@@ -3339,7 +3339,7 @@ msgstr ""
 "haben. Loggen Sie sich dort nun in Ihren Google+-Account ein und "
 "autorisieren Sie darktable Fotos hochzuladen, bevor Sie fortfahren."
 
-#: ../src/imageio/storage/picasa.c:831
+#: ../src/imageio/storage/picasa.c:830
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
@@ -3347,20 +3347,20 @@ msgstr ""
 "Schritt 2: Fügen Sie den Verifizierungs-Code, der im Browser angezeigt wird, "
 "hier ein und klicken Sie auf OK, sobald Sie fertig sind."
 
-#: ../src/imageio/storage/picasa.c:837
+#: ../src/imageio/storage/picasa.c:836
 msgid "google+ authentication"
 msgstr "Google+-Authentifizierung"
 
-#: ../src/imageio/storage/picasa.c:1287
+#: ../src/imageio/storage/picasa.c:1286
 msgid "google+ photos"
 msgstr "Google+-Fotos"
 
-#: ../src/imageio/storage/picasa.c:1474
+#: ../src/imageio/storage/picasa.c:1473
 msgid "unable to export photo to google+ album"
 msgstr "kann Foto nicht ins Google+-Album exportieren"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1487
+#: ../src/imageio/storage/picasa.c:1486
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgstr "%d/%d ins Google+-Album exportiert"
@@ -3476,8 +3476,8 @@ msgid "make effect stronger or weaker"
 msgstr "mache den Effekt stärker oder schwächer"
 
 #: ../src/iop/basecurve.c:90
-msgid "natural"
-msgstr "natürlich"
+msgid "neutral"
+msgstr "Neutral"
 
 #: ../src/iop/basecurve.c:91
 msgid "canon eos like"
@@ -3543,29 +3543,29 @@ msgstr "Fujifilm-artig"
 msgid "nokia like"
 msgstr "Nokia-artig"
 
-#: ../src/iop/basecurve.c:192
+#: ../src/iop/basecurve.c:202
 msgid "base curve"
 msgstr "Basiskurve"
 
-#: ../src/iop/basecurve.c:761
+#: ../src/iop/basecurve.c:771
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-Wert: Eingabe, y-Wert: Ausgabe. Arbeitet auf den RGB-Kanälen."
 
-#: ../src/iop/basecurve.c:767 ../src/iop/lens.c:2176
+#: ../src/iop/basecurve.c:777 ../src/iop/lens.c:2176
 #: ../src/iop/vignette.c:1151 ../src/iop/watermark.c:1087
 msgid "scale"
 msgstr "Skalierung"
 
-#: ../src/iop/basecurve.c:768 ../src/iop/profile_gamma.c:321
-#: ../src/iop/tonecurve.c:411
+#: ../src/iop/basecurve.c:778 ../src/iop/profile_gamma.c:321
+#: ../src/iop/tonecurve.c:415
 msgid "linear"
 msgstr "linear"
 
-#: ../src/iop/basecurve.c:769
+#: ../src/iop/basecurve.c:779
 msgid "logarithmic"
 msgstr "logarithmisch"
 
-#: ../src/iop/basecurve.c:771
+#: ../src/iop/basecurve.c:781
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -4414,22 +4414,22 @@ msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (z.B. JPEG)"
 
 #: ../src/iop/colorin.c:1098 ../src/iop/colorin.c:1132
-#: ../src/iop/colorin.c:1267 ../src/iop/colorout.c:934
-#: ../src/iop/colorout.c:935 ../src/iop/colorout.c:936
+#: ../src/iop/colorin.c:1267 ../src/iop/colorout.c:942
+#: ../src/iop/colorout.c:943 ../src/iop/colorout.c:944
 #: ../src/libs/export.c:568
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
 #: ../src/iop/colorin.c:1100 ../src/iop/colorin.c:1134
-#: ../src/iop/colorin.c:1268 ../src/iop/colorout.c:916
-#: ../src/iop/colorout.c:917 ../src/iop/colorout.c:918
+#: ../src/iop/colorin.c:1268 ../src/iop/colorout.c:924
+#: ../src/iop/colorout.c:925 ../src/iop/colorout.c:926
 #: ../src/libs/export.c:574
 msgid "linear Rec709 RGB"
 msgstr "lineares Rec709-RGB"
 
 #: ../src/iop/colorin.c:1102 ../src/iop/colorin.c:1136
-#: ../src/iop/colorin.c:1269 ../src/iop/colorout.c:922
-#: ../src/iop/colorout.c:923 ../src/iop/colorout.c:924
+#: ../src/iop/colorin.c:1269 ../src/iop/colorout.c:930
+#: ../src/iop/colorout.c:931 ../src/iop/colorout.c:932
 #: ../src/libs/export.c:580
 msgid "linear Rec2020 RGB"
 msgstr "lineares Rec2020-RGB"
@@ -4581,94 +4581,94 @@ msgstr "Grad der Histogramm-Angleichung"
 msgid "output color profile"
 msgstr "Ausgabefarbprofil"
 
-#: ../src/iop/colorout.c:622
+#: ../src/iop/colorout.c:629
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "nicht unterstütztes Ausgabeprofil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:758
+#: ../src/iop/colorout.c:766
 msgid "gamut check"
 msgstr "Gamut überprüfen"
 
-#: ../src/iop/colorout.c:758
+#: ../src/iop/colorout.c:766
 msgid "soft proof"
 msgstr "Softproof"
 
-#: ../src/iop/colorout.c:875
+#: ../src/iop/colorout.c:883
 msgid "output intent"
 msgstr "Ausgabevorsatz"
 
-#: ../src/iop/colorout.c:876 ../src/iop/colorout.c:883
+#: ../src/iop/colorout.c:884 ../src/iop/colorout.c:891
 #: ../src/libs/export.c:646
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:877 ../src/iop/colorout.c:884
+#: ../src/iop/colorout.c:885 ../src/iop/colorout.c:892
 #: ../src/libs/export.c:647
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
-#: ../src/iop/colorout.c:878 ../src/iop/colorout.c:885
+#: ../src/iop/colorout.c:886 ../src/iop/colorout.c:893
 #: ../src/libs/export.c:648
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:879 ../src/iop/colorout.c:886
+#: ../src/iop/colorout.c:887 ../src/iop/colorout.c:894
 #: ../src/libs/export.c:649
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
-#: ../src/iop/colorout.c:881
+#: ../src/iop/colorout.c:889
 msgid "display intent"
 msgstr "Anzeigevorsatz"
 
-#: ../src/iop/colorout.c:899
+#: ../src/iop/colorout.c:907
 msgid "output profile"
 msgstr "Ausgabeprofil"
 
-#: ../src/iop/colorout.c:900
+#: ../src/iop/colorout.c:908
 msgid "softproof profile"
 msgstr "Softproof-Profil"
 
-#: ../src/iop/colorout.c:901
+#: ../src/iop/colorout.c:909
 msgid "display profile"
 msgstr "Anzeigeprofil"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:912
+#: ../src/iop/colorout.c:920
 msgid "system display profile"
 msgstr "System-Bildschirmprofil"
 
-#: ../src/iop/colorout.c:928 ../src/iop/colorout.c:929
-#: ../src/iop/colorout.c:930 ../src/libs/export.c:561
+#: ../src/iop/colorout.c:936 ../src/iop/colorout.c:937
+#: ../src/iop/colorout.c:938 ../src/libs/export.c:561
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sicher)"
 
-#: ../src/iop/colorout.c:948
+#: ../src/iop/colorout.c:956
 msgid "rendering intent"
 msgstr "Wiedergabeabsicht"
 
-#: ../src/iop/colorout.c:949
+#: ../src/iop/colorout.c:957
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/iop/colorout.c:951
+#: ../src/iop/colorout.c:959
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "Anzeige-ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/iop/colorout.c:954
+#: ../src/iop/colorout.c:962
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr "Softproof-ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/iop/colorout.c:986
+#: ../src/iop/colorout.c:994
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "Softproofing umschalten"
 
-#: ../src/iop/colorout.c:988
+#: ../src/iop/colorout.c:996
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "Gamut-Überprüfung umschalten"
@@ -5701,7 +5701,7 @@ msgstr "Fließkommazahlen sind fein!"
 msgid "levels"
 msgstr "Werte"
 
-#: ../src/iop/levels.c:537 ../src/iop/tonecurve.c:766
+#: ../src/iop/levels.c:537 ../src/iop/tonecurve.c:784
 #: ../src/iop/vignette.c:1142
 msgid "automatic"
 msgstr "automatisch"
@@ -6302,56 +6302,56 @@ msgstr "Weißabgleichsvorgabe feinabstimmen"
 msgid "tone curve"
 msgstr "Farbkurve"
 
-#: ../src/iop/tonecurve.c:407
+#: ../src/iop/tonecurve.c:411
 msgid "low contrast"
 msgstr "schwacher Kontrast"
 
-#: ../src/iop/tonecurve.c:421
+#: ../src/iop/tonecurve.c:425
 msgid "med contrast"
 msgstr "mittlerer Kontrast"
 
-#: ../src/iop/tonecurve.c:431
+#: ../src/iop/tonecurve.c:435
 msgid "high contrast"
 msgstr "hoher Kontrast"
 
-#: ../src/iop/tonecurve.c:713
+#: ../src/iop/tonecurve.c:731
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:716
+#: ../src/iop/tonecurve.c:734
 msgid "tonecurve for L channel"
 msgstr "Farbkurve für L-Kanal"
 
-#: ../src/iop/tonecurve.c:718
+#: ../src/iop/tonecurve.c:736
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:721
+#: ../src/iop/tonecurve.c:739
 msgid "tonecurve for a channel"
 msgstr "Farbkurve für a-Kanal"
 
-#: ../src/iop/tonecurve.c:723
+#: ../src/iop/tonecurve.c:741
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:726
+#: ../src/iop/tonecurve.c:744
 msgid "tonecurve for b channel"
 msgstr "Farbkurve für b-Kanal"
 
-#: ../src/iop/tonecurve.c:750
+#: ../src/iop/tonecurve.c:768
 msgid "double click to reset curve"
 msgstr "Doppelklick zum Zurücksetzen der Kurve"
 
-#: ../src/iop/tonecurve.c:765
+#: ../src/iop/tonecurve.c:783
 msgid "scale chroma"
 msgstr "Chrominanz skalieren"
 
-#: ../src/iop/tonecurve.c:767
+#: ../src/iop/tonecurve.c:785
 msgctxt "scale"
 msgid "manual"
 msgstr "manuell"
 
-#: ../src/iop/tonecurve.c:770
+#: ../src/iop/tonecurve.c:788
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data."
@@ -8954,6 +8954,9 @@ msgstr "neue Sitzung ‚%s‘ gestartet"
 #: ../src/views/tethering.c:250
 msgid "no camera with tethering support available for use..."
 msgstr "keine Kamera mit Tethering-Unterstützung verfügbar ..."
+
+#~ msgid "natural"
+#~ msgstr "natürlich"
 
 #~ msgid "set the aspect ratio (w:h)"
 #~ msgstr "Seitenverhältnis setzen (b:h)"
