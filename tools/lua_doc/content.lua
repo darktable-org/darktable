@@ -540,6 +540,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.latitude:set_reported_type("float or nil")
 	types.dt_lua_image_t.longitude:set_text([[GPS longitude data of the image, nil if not set.]])
 	types.dt_lua_image_t.longitude:set_reported_type("float or nil")
+	types.dt_lua_image_t.elevation:set_text([[GPS altitude data of the image, nil if not set.]])
+	types.dt_lua_image_t.elevation:set_reported_type("float or nil")
 	types.dt_lua_image_t.is_raw:set_text([[True if the image is a RAW file.]])
 	types.dt_lua_image_t.is_ldr:set_text([[True if the image is a ldr image.]])
 	types.dt_lua_image_t.is_hdr:set_text([[True if the image is a hdr image.]])
