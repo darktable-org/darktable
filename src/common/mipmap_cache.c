@@ -973,6 +973,28 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
 
   if(res)
   {
+    //try to generate mip from larger mip
+    for(dt_mipmap_size_t k = size + 1; k <= DT_MIPMAP_7; k++)
+    {
+      dt_mipmap_buffer_t tmp;
+      dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
+      if(tmp.buf == NULL)
+        continue;
+      dt_print(DT_DEBUG_CACHE, "[_init_8] generate mip %d for %s from level %d\n", size, filename, k);
+      //keep aspect ratio
+      float scale = MIN(wd/(float)tmp.width, ht/(float)tmp.height);
+      *width = tmp.width*scale;
+      *height = tmp.height*scale;
+      // downsample
+      dt_iop_clip_and_zoom_8(tmp.buf, 0, 0, tmp.width, tmp.height, tmp.width, tmp.height, buf, 0, 0, *width, *height, *width, *height);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
+      res = 0;
+      break;
+    }
+  }
+
+  if(res)
+  {
     // try the real thing: rawspeed + pixelpipe
     dt_imageio_module_format_t format;
     _dummy_data_t dat;
