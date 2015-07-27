@@ -502,9 +502,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // commit image ops to db
   dt_dev_write_history(dev);
 
-  // be sure light table will update the thumbnail
-  // TODO: only if image changed!
-  // if()
+  if(dev->history_was_changed)
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_synch_xmp(dev->image_storage.id);
@@ -1292,8 +1290,7 @@ void leave(dt_view_t *self)
   dt_dev_write_history(dev);
 
   // be sure light table will regenerate the thumbnail:
-  // TODO: only if changed!
-  // if()
+  if(dev->history_was_changed)
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     // dump new xmp data

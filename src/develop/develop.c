@@ -641,6 +641,9 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
+  //Invalidate mipmaps
+  dev->history_was_changed = TRUE;
+
   if(dev->gui_attached)
   {
     /* signal that history has changed */
@@ -743,6 +746,11 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   // printf("dev popping all history items >= %d\n", cnt);
   dt_pthread_mutex_lock(&dev->history_mutex);
   darktable.gui->reset = 1;
+  if(cnt != dev->history_end)
+  {
+      //History really changes -> invalidate mipmaps
+      dev->history_was_changed = TRUE;
+  }
   dev->history_end = cnt;
   // reset gui params for all modules
   GList *modules = dev->iop;
@@ -1161,6 +1169,8 @@ void dt_dev_read_history(dt_develop_t *dev)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   sqlite3_finalize(stmt);
+
+  dev->history_was_changed = FALSE;
 }
 
 
