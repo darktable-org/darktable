@@ -14,5 +14,6 @@ else(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif(WIN32)
 
+add_definitions(-std=c++11)
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
 target_link_libraries(rawspeed ${RAWSPEED_LIBS})

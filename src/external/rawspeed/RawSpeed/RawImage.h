@@ -175,7 +175,7 @@ class RawImageDataU16 : public RawImageData
 public:
   virtual void scaleBlackWhite();
   virtual void calculateBlackAreas();
-  virtual void setWithLookUp(ushort16 value, uchar8* dst, uint32* random);
+  virtual void setWithLookUp(ushort16 value, uchar8* dst, uint32* random) final;
 
 protected:
   virtual void scaleValues(int start_y, int end_y);
@@ -214,6 +214,7 @@ protected:
    RawImage(const RawImage& p);
    RawImage& operator= (const RawImage& p);
 
+   RawImageData* get() { return p_; }
  private:
    RawImageData* p_;    // p_ is never NULL
  };
@@ -240,6 +241,32 @@ inline RawImage RawImage::create(iPoint2D dim, RawImageType type, uint32 compone
       writeLog(DEBUG_PRIO_ERROR, "RawImage::create: Unknown Image type!\n");
   }
   return NULL; 
+}
+
+// setWithLookUp will set a single pixel by using the lookup table if supplied,
+// You must supply the destination where the value should be written, and a pointer to
+// a value that will be used to store a random counter that can be reused between calls.
+// this needs to be inline to speed up tight decompressor loops
+inline void RawImageDataU16::setWithLookUp(ushort16 value, uchar8* dst, uint32* random) {
+  ushort16* dest = (ushort16*)dst;
+  if (table == NULL) {
+    *dest = value;
+    return;
+  }
+  if (table->dither) {
+    uint32* t = (uint32*)table->tables;
+    uint32 lookup = t[value];
+    uint32 base = lookup & 0xffff;
+    uint32 delta = lookup >> 16;
+    uint32 r = *random;
+
+    uint32 pix = base + ((delta * (r&2047) + 1024) >> 12);
+    *random = 15700 *(r & 65535) + (r >> 16);
+    *dest = pix;
+    return;
+  }
+  ushort16* t = (ushort16*)table->tables;
+  *dest = t[value];
 }
 
 } // namespace RawSpeed
