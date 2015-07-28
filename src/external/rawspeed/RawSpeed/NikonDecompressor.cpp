@@ -107,6 +107,8 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   int pLeft2 = 0;
   uint32 cw = w / 2;
   uint32 random = bits.peekBits(24);
+  //allow gcc to devirtualize the calls below
+  RawImageDataU16* rawdata = (RawImageDataU16*)mRaw.get();
   for (y = 0; y < h; y++) {
     if (split && y == split) {
       initTable(huffSelect + 1);
@@ -116,14 +118,14 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
     pUp2[y&1] += HuffDecodeNikon(bits);
     pLeft1 = pUp1[y&1];
     pLeft2 = pUp2[y&1];
-    mRaw->setWithLookUp(clampbits(pLeft1,15), (uchar8*)dest++, &random);
-    mRaw->setWithLookUp(clampbits(pLeft2,15), (uchar8*)dest++, &random);
+    rawdata->setWithLookUp(clampbits(pLeft1,15), (uchar8*)dest++, &random);
+    rawdata->setWithLookUp(clampbits(pLeft2,15), (uchar8*)dest++, &random);
     for (x = 1; x < cw; x++) {
       bits.checkPos();
       pLeft1 += HuffDecodeNikon(bits);
       pLeft2 += HuffDecodeNikon(bits);
-      mRaw->setWithLookUp(clampbits(pLeft1,15), (uchar8*)dest++, &random);
-      mRaw->setWithLookUp(clampbits(pLeft2,15), (uchar8*)dest++, &random);
+      rawdata->setWithLookUp(clampbits(pLeft1,15), (uchar8*)dest++, &random);
+      rawdata->setWithLookUp(clampbits(pLeft2,15), (uchar8*)dest++, &random);
     }
   }
 
