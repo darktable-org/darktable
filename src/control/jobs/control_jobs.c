@@ -39,6 +39,7 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <gio/gio.h>
 #ifndef __WIN32__
 #include <glob.h>
 #endif
@@ -663,6 +664,29 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 }
 
 
+static void delete_file_from_disk(const char *filename)
+{
+  GError *gerror = NULL;
+  GFile *gfile = NULL;
+  int must_unlink = !dt_conf_get_bool("send_to_trash");
+
+  if (!must_unlink)
+  {
+    gfile = g_file_new_for_path(filename);
+    if (!g_file_trash(gfile, NULL, &gerror))
+    {
+      if (g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED))
+        must_unlink = TRUE;
+    }
+
+    if (gerror != NULL)
+      g_object_unref(gfile);
+  }
+  if (must_unlink)
+    (void)g_unlink(filename);
+}
+
+
 static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
@@ -708,7 +732,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     {
       // there are no further duplicates so we can remove the source data file
       dt_image_remove(imgid);
-      (void)g_unlink(filename);
+      delete_file_from_disk(filename);
 
       // all sidecar files - including left-overs - can be deleted;
       // left-overs can result when previously duplicates have been REMOVED;
@@ -757,7 +781,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       GList *file_iter = g_list_first(files);
       while(file_iter != NULL)
       {
-        (void)g_unlink(file_iter->data);
+        delete_file_from_disk(file_iter->data);
         file_iter = g_list_next(file_iter);
       }
 
@@ -772,7 +796,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       g_strlcat(filename, ".xmp", sizeof(filename));
 
       dt_image_remove(imgid);
-      (void)g_unlink(filename);
+      delete_file_from_disk(filename);
     }
 
     t = g_list_delete_link(t, t);
