@@ -254,6 +254,7 @@ typedef struct
 
 static void free_param_wrapper_destroy(void * data)
 {
+  if(!data) return;
   free_param_wrapper_data *params = data;
   lua_storage_t *d = params->data;
   if(d->data_created)
