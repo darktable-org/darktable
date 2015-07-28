@@ -1067,9 +1067,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
 
 end:
-  mstorage->free_params(mstorage, sdata);
-  settings->sdata = NULL;
-
   // all threads free their fdata
   mformat->free_params(mformat, fdata);
 
