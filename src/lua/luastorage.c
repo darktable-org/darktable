@@ -252,6 +252,25 @@ typedef struct
   lua_storage_t *data;
 } free_param_wrapper_data;
 
+static void free_param_wrapper_destroy(void * data)
+{
+  if(!data) return;
+  free_param_wrapper_data *params = data;
+  lua_storage_t *d = params->data;
+  if(d->data_created)
+  {
+    // if we reach here, then the main job hasn't been executed.
+    // This means that we are in an error path, and might be in the GUI thread
+    // we take the lock anyway to avoid a memory leak, but this might freeze the UI
+    dt_lua_lock();
+    lua_pushlightuserdata(darktable.lua_state.state, d);
+    lua_pushnil(darktable.lua_state.state);
+    lua_settable(darktable.lua_state.state, LUA_REGISTRYINDEX);
+    dt_lua_unlock();
+  }
+  free(d);
+  free(params);
+}
 static int32_t free_param_wrapper_job(dt_job_t *job)
 {
   free_param_wrapper_data *params = dt_control_job_get_params(job);
@@ -263,8 +282,8 @@ static int32_t free_param_wrapper_job(dt_job_t *job)
     lua_pushnil(darktable.lua_state.state);
     lua_settable(darktable.lua_state.state, LUA_REGISTRYINDEX);
     dt_lua_unlock();
+    d->data_created = false;
   }
-  free(d);
   return 0;
 }
 
@@ -279,9 +298,9 @@ static void free_params_wrapper(struct dt_imageio_module_storage_t *self, dt_ima
     dt_control_job_dispose(job);
     return;
   }
-  dt_control_job_set_params(job, t, free);
+  dt_control_job_set_params(job, t, free_param_wrapper_destroy);
   t->data = (lua_storage_t *)data;
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, job);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
 }
 
 static int set_params_wrapper(struct dt_imageio_module_storage_t *self, const void *params, const int size)

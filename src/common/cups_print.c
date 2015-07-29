@@ -378,8 +378,6 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheight)
 {
   dt_develop_t dev;
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
 
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, imgid);
@@ -391,7 +389,7 @@ static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheig
   if(res)
   {
     // set mem pointer to 0, won't be used.
-    dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, wd, ht, 1.0f);
+    dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, wd, ht, 1.0f);
     dt_dev_pixelpipe_create_nodes(&pipe, &dev);
     dt_dev_pixelpipe_synch_all(&pipe, &dev);
     dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
@@ -401,7 +399,6 @@ static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheig
     dt_dev_pixelpipe_cleanup(&pipe);
   }
   dt_dev_cleanup(&dev);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   *iwidth = wd;
   *iheight = ht;
