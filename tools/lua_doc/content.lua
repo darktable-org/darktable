@@ -475,6 +475,28 @@ darktable.control.dispatch:set_text([[Runs a function in the background. This fu
 darktable.control.dispatch:add_parameter("function","function",[[The call to dispatch]])
 darktable.control.dispatch:add_parameter("...","anything",[[extra parameters to pass to the function]])
 
+darktable.gettext:set_text([[This table contains functions related to translating lua scripts]])
+darktable.gettext.gettext:set_text([[Translate a string using the darktable textdomain]])
+darktable.gettext.gettext:add_parameter("msgid","string","The string to translate");
+darktable.gettext.gettext:add_return("string","The translated string");
+darktable.gettext.dgettext:set_text([[Translate a string using the specified textdomain]])
+darktable.gettext.dgettext:add_parameter("domainname","string","The domain to use for that translation");
+darktable.gettext.dgettext:add_parameter("msgid","string","The string to translate");
+darktable.gettext.dgettext:add_return("string","The translated string");
+darktable.gettext.ngettext:set_text([[Translate a string depending on the number of objects using the darktable textdomain]])
+darktable.gettext.ngettext:add_parameter("msgid","string","The string to translate");
+darktable.gettext.ngettext:add_parameter("msgid_plural","string","The string to translate in plural form");
+darktable.gettext.ngettext:add_parameter("n","int","The number of objetc");
+darktable.gettext.ngettext:add_return("string","The translated string");
+darktable.gettext.dngettext:set_text([[Translate a string depending on the number of objects using the specified textdomain]])
+darktable.gettext.dngettext:add_parameter("domainname","string","The domain to use for that translation");
+darktable.gettext.dngettext:add_parameter("msgid","string","The string to translate");
+darktable.gettext.dngettext:add_parameter("msgid_plural","string","The string to translate in plural form");
+darktable.gettext.dngettext:add_parameter("n","int","The number of objetc");
+darktable.gettext.dngettext:add_return("string","The translated string");
+darktable.gettext.bindtextdomain:set_text([[Tell gettext where to find the .mo file translating messages for a particular domain]])
+darktable.gettext.dngettext:add_parameter("domainname","string","The domain to use for that translation");
+darktable.gettext.dngettext:add_parameter("dirname","string","The base directory to look for the file. The file should be placed in <dirname>/<locale name>/LC_MESSAGES/<domain>.mo");
 
 ----------------------
 --  DARKTABLE.DEBUG --

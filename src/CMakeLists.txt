@@ -482,6 +482,7 @@ if(USE_LUA)
       "lua/events.c"
       "lua/film.c"
       "lua/format.c"
+      "lua/gettext.c"
       "lua/glist.c"
       "lua/gui.c"
       "lua/image.c"
