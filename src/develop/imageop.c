@@ -351,6 +351,7 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
 
   // only reference cached results of dlopen:
   module->module = so->module;
+  module->so = so;
 
   module->version = so->version;
   module->name = so->name;
@@ -888,7 +889,7 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
   gtk_widget_queue_draw(GTK_WIDGET(togglebutton));
 }
 
-gboolean dt_iop_is_hidden(dt_iop_module_t *module)
+gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module)
 {
   gboolean is_hidden = TRUE;
   if(!(module->flags() & IOP_FLAGS_HIDDEN))
@@ -903,6 +904,11 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
   return is_hidden;
 }
 
+gboolean dt_iop_is_hidden(dt_iop_module_t *module)
+{
+  return dt_iop_so_is_hidden(module->so);
+}
+
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 {
   uint32_t additional_flags = 0;
@@ -913,7 +919,7 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
   if(module->enabled) additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
 
   /* add special group flag for favorite */
-  if(module->state == dt_iop_state_FAVORITE) additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
+  if(module->so->state == dt_iop_state_FAVORITE) additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
   return dt_dev_modulegroups_test(module->dev, group, module->groups() | additional_flags);
 }
@@ -2728,7 +2734,7 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
   dt_iop_module_t *module = (dt_iop_module_t *)data;
 
   // Showing the module, if it isn't already visible
-  if(module->state == dt_iop_state_HIDDEN)
+  if(module->so->state == dt_iop_state_HIDDEN)
   {
     dt_iop_gui_set_state(module, dt_iop_state_ACTIVE);
   }
@@ -2810,29 +2816,22 @@ gchar *dt_iop_get_localized_name(const gchar *op)
   return (gchar *)g_hash_table_lookup(module_names, op);
 }
 
-void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
+void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t state)
 {
-  char option[1024];
   module->state = state;
-  /* we should apply this to all other instance of the module too */
-  GList *mods = g_list_first(module->dev->iop);
-  while(mods)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
-    if(mod->so == module->so) mod->state = state;
-    mods = g_list_next(mods);
-  }
+
+  char option[1024];
+  GList *mods = NULL;
   if(state == dt_iop_state_HIDDEN)
   {
-    /* module is hidden lets set conf values */
-    if(module->expander) gtk_widget_hide(GTK_WIDGET(module->expander));
-    mods = g_list_first(module->dev->iop);
+    mods = g_list_first(darktable.develop->iop);
     while(mods)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
-      if(mod->so == module->so && mod->expander) gtk_widget_hide(GTK_WIDGET(mod->expander));
+      if(mod->so == module && mod->expander) gtk_widget_hide(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
+
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool(option, FALSE);
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
@@ -2840,16 +2839,25 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
   }
   else if(state == dt_iop_state_ACTIVE)
   {
-    /* module is shown lets set conf values */
-    dt_dev_modulegroups_switch(darktable.develop, module);
-    if(module->expander) gtk_widget_show(GTK_WIDGET(module->expander));
-    mods = g_list_first(module->dev->iop);
+    int once = 0;
+
+    mods = g_list_first(darktable.develop->iop);
     while(mods)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
-      if(mod->so == module->so && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
+      if(mod->so == module && mod->expander)
+      {
+        gtk_widget_show(GTK_WIDGET(mod->expander));
+        if(!once)
+        {
+          dt_dev_modulegroups_switch(darktable.develop, mod);
+          once = 1;
+        }
+      }
       mods = g_list_next(mods);
     }
+
+    /* module is shown lets set conf values */
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool(option, TRUE);
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
@@ -2857,16 +2865,17 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
   }
   else if(state == dt_iop_state_FAVORITE)
   {
-    /* module is shown and favorite lets set conf values */
     dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
-    if(module->expander) gtk_widget_show(GTK_WIDGET(module->expander));
-    mods = g_list_first(module->dev->iop);
+
+    mods = g_list_first(darktable.develop->iop);
     while(mods)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
-      if(mod->so == module->so && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
+      if(mod->so == module && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
+
+    /* module is shown and favorite lets set conf values */
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool(option, TRUE);
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
@@ -2876,6 +2885,11 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
   dt_view_manager_t *vm = darktable.view_manager;
   if(vm->proxy.more_module.module) vm->proxy.more_module.update(vm->proxy.more_module.module);
   // dt_view_manager_reset(vm);
+}
+
+void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
+{
+  dt_iop_so_gui_set_state(module->so, state);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

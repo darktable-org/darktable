@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2011 Henrik Andersson.
     copyright (c) 2012 Tobias Ellinghaus.
+    copyright (c) 2015 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -112,7 +113,7 @@ static void image_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *ren
 {
   // FIXME: is that correct?
   GtkImage *pixbuf;
-  dt_iop_module_t *module;
+  dt_iop_module_so_t *module;
   gtk_tree_model_get(model, iter, COL_IMAGE, &pixbuf, -1);
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
   g_object_set(renderer, "pixbuf", pixbuf, NULL);
@@ -122,7 +123,7 @@ static void image_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *ren
 static void favorite_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
                                        GtkTreeIter *iter, gpointer user_data)
 {
-  dt_iop_module_t *module;
+  dt_iop_module_so_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
   g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, NULL);
   GdkPixbuf *fav_pixbuf
@@ -132,7 +133,7 @@ static void favorite_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *
 static void text_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
                                    GtkTreeIter *iter, gpointer user_data)
 {
-  dt_iop_module_t *module;
+  dt_iop_module_so_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
   g_object_set(renderer, "text", module->name(), NULL);
   g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, NULL);
@@ -221,15 +222,15 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
                                              text_renderer_function, NULL, NULL);
 
   /* go thru list of iop modules and add them to the list */
-  GList *modules = g_list_last(darktable.develop->iop);
+  GList *modules = g_list_last(darktable.iop);
 
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
   while(modules)
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+    if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       GdkPixbuf *pixbuf;
       char filename[PATH_MAX] = { 0 };
@@ -270,7 +271,7 @@ static void _lib_modulelist_style_set(GtkWidget *widget, GtkStyle *previous_styl
 
 static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer user_data)
 {
-  dt_iop_module_t *module;
+  dt_iop_module_so_t *module;
   GtkTreeIter iter;
   GtkTreeModel *model;
   GtkTreePath *path;
@@ -284,7 +285,7 @@ static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer
     gtk_tree_path_free(path);
     gtk_tree_model_get(model, &iter, COL_MODULE, &module, -1);
 
-    dt_iop_gui_set_state(module, (module->state + 1) % dt_iop_state_LAST);
+    dt_iop_so_gui_set_state(module, (module->state + 1) % dt_iop_state_LAST);
   }
 }
 
@@ -295,7 +296,7 @@ static void _lib_modulelist_gui_update(struct dt_lib_module_t *module)
 
 static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata)
 {
-  dt_iop_module_t *modulea, *moduleb;
+  dt_iop_module_so_t *modulea, *moduleb;
   gtk_tree_model_get(model, a, COL_MODULE, &modulea, -1);
   gtk_tree_model_get(model, b, COL_MODULE, &moduleb, -1);
   return g_utf8_collate(modulea->name(), moduleb->name());

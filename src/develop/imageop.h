@@ -125,6 +125,8 @@ typedef struct dt_iop_module_so_t
   dt_iop_gui_data_t *gui_data;
   /** which results in this widget here, too. */
   GtkWidget *widget;
+  /** button used to show/hide this module in the plugin list. */
+  dt_iop_module_state_t state;
 
   /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
   void (*init_presets)(struct dt_iop_module_so_t *self);
@@ -273,8 +275,6 @@ typedef struct dt_iop_module_t
   /** this is the module header, contains labe and buttons */
   GtkWidget *header;
 
-  /** button used to show/hide this module in the plugin list. */
-  dt_iop_module_state_t state;
   /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
   gboolean expanded;
@@ -424,6 +424,7 @@ void dt_iop_cleanup_module(dt_iop_module_t *module);
 void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe,
                       struct dt_dev_pixelpipe_iop_t *piece);
 /** checks if iop do have an ui */
+gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module);
 gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 /** checks whether iop is shown in specified group */
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group);
@@ -438,6 +439,7 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolea
 /** refresh iop according to set expanded state */
 void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 /** change module state */
+void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t state);
 void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state);
 
 void dt_iop_gui_update_header(dt_iop_module_t *module);
