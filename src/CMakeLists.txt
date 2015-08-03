@@ -456,14 +456,14 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 # Build external deps
 #
 if(USE_LUA)
-  find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
+  find_package(Lua52 5.2 EXACT)
   if(LUA52_FOUND)
     message(STATUS "Lua support: Enabled")
     include_directories(SYSTEM ${LUA52_INCLUDE_DIRS})
     list(APPEND LIBS ${LUA52_LDFLAGS})
   else()
     if(DONT_USE_INTERNAL_LUA)
-      message(STATUS "Lua support: System library not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
+      message(STATUS "Lua support: System library for lua 5.2 not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
       set(USE_LUA OFF)
     else(DONT_USE_INTERNAL_LUA)
       message(STATUS "Lua support: System library not found (using darktable's version)")
