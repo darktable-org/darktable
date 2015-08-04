@@ -1183,36 +1183,97 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
 
   int ch = c->channel;
   int autoscale_ab = p->tonecurve_autoscale_ab;
+  int nodes = p->tonecurve_nodes[ch];
+  dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
 
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == 1)
   {
-    // reset current curve
-    // if autoscale_ab is on: allow only reset of L curve
-    if(!(autoscale_ab && ch != ch_L))
+    if(event->type == GDK_BUTTON_PRESS && (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK
+       && nodes < 20 && c->selected == -1)
     {
-      p->tonecurve_nodes[ch] = d->tonecurve_nodes[ch];
-      p->tonecurve_type[ch] = d->tonecurve_type[ch];
-      for(int k = 0; k < d->tonecurve_nodes[ch]; k++)
+      // if we are not on a node -> add a new node at the current x of the pointer and y of the curve at that x
+      const int inset = DT_GUI_CURVE_EDITOR_INSET;
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(widget, &allocation);
+      int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+      c->mouse_x = CLAMP(event->x - inset, 0, width);
+      c->mouse_y = CLAMP(event->y - inset, 0, height);
+
+      const float mx = c->mouse_x / (float)width;
+      const float my = 1.0f - c->mouse_y / (float)height;
+
+      // evaluate the curve at the current x position
+      const float y = dt_draw_curve_calc_value(c->minmax_curve[ch], mx);
+
+      if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
       {
-        p->tonecurve[ch][k].x = d->tonecurve[ch][k].x;
-        p->tonecurve[ch][k].y = d->tonecurve[ch][k].y;
-      }
-      c->selected = -2; // avoid motion notify re-inserting immediately.
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(self->widget);
-    }
-    else
-    {
-      if(ch != ch_L)
-      {
-        p->tonecurve_autoscale_ab = 0;
-        c->selected = -2; // avoid motion notify re-inserting immediately.
-        dt_bauhaus_combobox_set(c->autoscale_ab, 1 - p->tonecurve_autoscale_ab);
+        // create a new node
+        int selected = -1;
+        if(tonecurve[0].x > mx)
+          selected = 0;
+        else
+          for(int k = 1; k < nodes; k++)
+          {
+            if(tonecurve[k].x > mx)
+            {
+              selected = k;
+              break;
+            }
+          }
+        if(selected == -1) selected = nodes;
+        for(int i = nodes; i > selected; i--)
+        {
+          tonecurve[i].x = tonecurve[i - 1].x;
+          tonecurve[i].y = tonecurve[i - 1].y;
+        }
+        // found a new point
+        tonecurve[selected].x = mx;
+        tonecurve[selected].y = y;
+        p->tonecurve_nodes[ch]++;
+
+        // maybe set the new one as being selected
+        float min = .04f;
+        min *= min; // comparing against square
+        for(int k = 0; k < nodes; k++)
+        {
+          float dist = (my - y) * (my - y);
+          if(dist < min) c->selected = selected;
+        }
+
         dt_dev_add_history_item(darktable.develop, self, TRUE);
         gtk_widget_queue_draw(self->widget);
       }
     }
-    return TRUE;
+    else if(event->type == GDK_2BUTTON_PRESS)
+    {
+      // reset current curve
+      // if autoscale_ab is on: allow only reset of L curve
+      if(!(autoscale_ab && ch != ch_L))
+      {
+        p->tonecurve_nodes[ch] = d->tonecurve_nodes[ch];
+        p->tonecurve_type[ch] = d->tonecurve_type[ch];
+        for(int k = 0; k < d->tonecurve_nodes[ch]; k++)
+        {
+          p->tonecurve[ch][k].x = d->tonecurve[ch][k].x;
+          p->tonecurve[ch][k].y = d->tonecurve[ch][k].y;
+        }
+        c->selected = -2; // avoid motion notify re-inserting immediately.
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        gtk_widget_queue_draw(self->widget);
+      }
+      else
+      {
+        if(ch != ch_L)
+        {
+          p->tonecurve_autoscale_ab = 0;
+          c->selected = -2; // avoid motion notify re-inserting immediately.
+          dt_bauhaus_combobox_set(c->autoscale_ab, 1 - p->tonecurve_autoscale_ab);
+          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          gtk_widget_queue_draw(self->widget);
+        }
+      }
+      return TRUE;
+    }
   }
   return FALSE;
 }
