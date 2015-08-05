@@ -51,9 +51,6 @@ static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossin
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 
 
-#define DT_IOP_TONECURVE_RES 64
-#define DT_IOP_TONECURVE_MAXNODES 20
-
 typedef enum tonecurve_channel_t
 {
   ch_L = 0,
@@ -1077,6 +1074,35 @@ finally:
   return TRUE;
 }
 
+static inline int _add_node(dt_iop_tonecurve_node_t *tonecurve, int *nodes, float x, float y)
+{
+  int selected = -1;
+  if(tonecurve[0].x > x)
+    selected = 0;
+  else
+  {
+    for(int k = 1; k < *nodes; k++)
+    {
+      if(tonecurve[k].x > x)
+      {
+        selected = k;
+        break;
+      }
+    }
+  }
+  if(selected == -1) selected = *nodes;
+  for(int i = *nodes; i > selected; i--)
+  {
+    tonecurve[i].x = tonecurve[i - 1].x;
+    tonecurve[i].y = tonecurve[i - 1].y;
+  }
+  // found a new point
+  tonecurve[selected].x = x;
+  tonecurve[selected].y = y;
+  (*nodes)++;
+  return selected;
+}
+
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1124,30 +1150,10 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
         }
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
-    else if(nodes < 20 && c->selected >= -1)
+    else if(nodes < DT_IOP_TONECURVE_MAXNODES && c->selected >= -1)
     {
       // no vertex was close, create a new one!
-      if(tonecurve[0].x > mx)
-        c->selected = 0;
-      else
-        for(int k = 1; k < nodes; k++)
-        {
-          if(tonecurve[k].x > mx)
-          {
-            c->selected = k;
-            break;
-          }
-        }
-      if(c->selected == -1) c->selected = nodes;
-      for(int i = nodes; i > c->selected; i--)
-      {
-        tonecurve[i].x = tonecurve[i - 1].x;
-        tonecurve[i].y = tonecurve[i - 1].y;
-      }
-      // found a new point
-      tonecurve[c->selected].x = mx;
-      tonecurve[c->selected].y = my;
-      p->tonecurve_nodes[ch]++;
+      c->selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], mx, my);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
   }
@@ -1189,7 +1195,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
   if(event->button == 1)
   {
     if(event->type == GDK_BUTTON_PRESS && (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK
-       && nodes < 20 && c->selected == -1)
+       && nodes < DT_IOP_TONECURVE_MAXNODES && c->selected == -1)
     {
       // if we are not on a node -> add a new node at the current x of the pointer and y of the curve at that x
       const int inset = DT_GUI_CURVE_EDITOR_INSET;
@@ -1208,28 +1214,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
       {
         // create a new node
-        int selected = -1;
-        if(tonecurve[0].x > mx)
-          selected = 0;
-        else
-          for(int k = 1; k < nodes; k++)
-          {
-            if(tonecurve[k].x > mx)
-            {
-              selected = k;
-              break;
-            }
-          }
-        if(selected == -1) selected = nodes;
-        for(int i = nodes; i > selected; i--)
-        {
-          tonecurve[i].x = tonecurve[i - 1].x;
-          tonecurve[i].y = tonecurve[i - 1].y;
-        }
-        // found a new point
-        tonecurve[selected].x = mx;
-        tonecurve[selected].y = y;
-        p->tonecurve_nodes[ch]++;
+        int selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], mx, y);
 
         // maybe set the new one as being selected
         float min = .04f;
@@ -1243,6 +1228,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
         dt_dev_add_history_item(darktable.develop, self, TRUE);
         gtk_widget_queue_draw(self->widget);
       }
+      return TRUE;
     }
     else if(event->type == GDK_2BUTTON_PRESS)
     {
