@@ -1001,13 +1001,10 @@ dt_database_t *dt_database_init(const char *alternative)
 
     if (fd)
     {
-        char buf[64];
-        int readed = 0;
-        memset(buf, 0, sizeof(buf));
-        if((readed = fread(buf, sizeof(char), sizeof(buf) - 1, fd)) && readed > -1)
+        pid_t pid;
+        if (fscanf(fd, "%d", &pid))
         {
-          int other_pid = atoi(buf);
-          if((kill(other_pid, 0) == -1) && errno == ESRCH)
+          if((kill(pid, 0) == -1) && errno == ESRCH)
           {
             // the other process seems to no longer exist. unlink the .lock file and try again            
             if(lock_tries < 5)
@@ -1026,7 +1023,7 @@ dt_database_t *dt_database_init(const char *alternative)
             fprintf(
                 stderr,
                 "[init] the database lock file contains a pid that seems to be alive in your system: %d\n",
-                other_pid);
+                pid);
           }
     }
     }
@@ -1037,11 +1034,8 @@ dt_database_t *dt_database_init(const char *alternative)
             fprintf(stderr, "[init] error opening the database lock file for writing\n");            
         }
         
-        gchar *pid = g_strdup_printf("%d", getpid());
-        int writed = 0;
-        if((writed = fwrite(pid, sizeof(gchar), strlen(pid) + 1, fd)) && writed > -1)
-            db->lock_acquired = TRUE;
-        g_free(pid);    
+        if (fprintf(fd, "%d", getpid()))
+            db->lock_acquired = TRUE;  
     }    
     fclose(fd);    
   }
