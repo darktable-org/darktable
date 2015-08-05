@@ -984,7 +984,8 @@ dt_database_t *dt_database_init(const char *alternative)
   db->lock_acquired = TRUE;
 #else
   mode_t old_mode;
-  int fd = 0, lock_tries = 0;
+  FILE *fd = NULL;
+  int lock_tries = 0;
   if(!strcmp(dbfilename, ":memory:"))
   {
     db->lock_acquired = TRUE;
@@ -995,33 +996,28 @@ dt_database_t *dt_database_init(const char *alternative)
   lock_again:
     lock_tries++;
     old_mode = umask(0);
-    fd = open(db->lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
+    fd = fopen(db->lockfile, "r");
     umask(old_mode);
 
-    if(fd != -1) // the lockfile was successfully created - write our PID into it
+    if (fd)
     {
-      gchar *pid = g_strdup_printf("%d", getpid());
-      if(write(fd, pid, strlen(pid) + 1) > -1) db->lock_acquired = TRUE;
-      g_free(pid);
-      close(fd);
-    }
-    else // the lockfile already exists - see if it's a stale one left over from a crashed instance
-    {
-      char buf[64];
-      memset(buf, 0, sizeof(buf));
-      fd = open(db->lockfile, O_RDWR | O_CREAT, 0666);
-      if(fd != -1)
-      {
-        if(read(fd, buf, sizeof(buf) - 1) > -1)
+        char buf[64];
+        int readed = 0;
+        memset(buf, 0, sizeof(buf));
+        if((readed = fread(buf, sizeof(char), sizeof(buf) - 1, fd)) && readed > -1)
         {
           int other_pid = atoi(buf);
           if((kill(other_pid, 0) == -1) && errno == ESRCH)
           {
-            // the other process seems to no longer exist. unlink the .lock file and try again
-            unlink(db->lockfile);
+            // the other process seems to no longer exist. unlink the .lock file and try again            
             if(lock_tries < 5)
             {
-              close(fd);
+              int ret = fclose(fd);
+              if (ret) {
+                  fprintf(stderr, "[init] error opening the database lock file for reading\n");
+                  return NULL;
+              }
+              unlink(db->lockfile);
               goto lock_again;
             }
           }
@@ -1032,18 +1028,22 @@ dt_database_t *dt_database_init(const char *alternative)
                 "[init] the database lock file contains a pid that seems to be alive in your system: %d\n",
                 other_pid);
           }
-        }
-        else
-        {
-          fprintf(stderr, "[init] the database lock file seems to be empty\n");
-        }
-        close(fd);
-      }
-      else
-      {
-        fprintf(stderr, "[init] error opening the database lock file for reading\n");
-      }
     }
+    }
+    else  // No lockfile exists - write our PID into new oneit
+    {
+        fd = fopen(db->lockfile, "w");
+        if (!fd) {
+            fprintf(stderr, "[init] error opening the database lock file for writing\n");            
+        }
+        
+        gchar *pid = g_strdup_printf("%d", getpid());
+        int writed = 0;
+        if((writed = fwrite(pid, sizeof(gchar), strlen(pid) + 1, fd)) && writed > -1)
+            db->lock_acquired = TRUE;
+        g_free(pid);    
+    }    
+    fclose(fd);    
   }
 #endif
 
