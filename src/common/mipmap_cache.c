@@ -54,6 +54,7 @@ struct dt_mipmap_buffer_dsc
   uint32_t height;
   size_t size;
   uint32_t flags;
+  uint32_t pre_monochrome_demosaiced;
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
 } __attribute__((packed, aligned(16)));
 
@@ -557,6 +558,7 @@ void dt_mipmap_cache_get_with_caller(
       buf->height = dsc->height;
       buf->imgid = imgid;
       buf->size = mip;
+      buf->pre_monochrome_demosaiced = dsc->pre_monochrome_demosaiced;
       // skip to next 8-byte alignment, for sse buffers.
       buf->buf = (uint8_t *)(dsc + 1);
     }
@@ -655,6 +657,7 @@ void dt_mipmap_cache_get_with_caller(
         // 8-bit thumbs
         _init_8((uint8_t *)(dsc + 1), &dsc->width, &dsc->height, imgid, mip);
       }
+      dsc->pre_monochrome_demosaiced = buf->pre_monochrome_demosaiced;
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
       // image cache is leaving the write lock in place in case the image has been newly allocated.
@@ -677,6 +680,7 @@ void dt_mipmap_cache_get_with_caller(
     buf->height = dsc->height;
     buf->imgid = imgid;
     buf->size = mip;
+    buf->pre_monochrome_demosaiced = dsc->pre_monochrome_demosaiced;
     buf->buf = (uint8_t *)(dsc + 1);
     if(dsc->width == 0 || dsc->height == 0)
     {
