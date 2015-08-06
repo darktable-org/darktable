@@ -392,6 +392,34 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     }
     _mm_sfence();
   }
+#if 0
+  else if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters
+          && piece->pipe->pre_monochrome_demosaiced)
+  { // pre-demosaiced (monochrome)
+    const int ch = piece->colors;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      const float *in = ((float *)ivoid) + (size_t)ch * j * roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+
+      const __m128 coeffs[3]
+          = { _mm_set1_ps(d->coeffs[0]), _mm_set1_ps(d->coeffs[1]), _mm_set1_ps(d->coeffs[2]) };
+
+      for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+      {
+        const __m128 input = _mm_load_ps(in);
+        const __m128 multiplied = _mm_mul_ps(input, coeffs[FC(j + roi_out->y, roi_out->x + i, filters)]);
+        _mm_stream_ps(out, multiplied);
+      }
+    }
+    _mm_sfence();
+
+    if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  }
+#endif
   else
   { // non-mosaiced
     const int ch = piece->colors;
@@ -491,6 +519,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k = 0; k < 3; k++) d->coeffs[k] = p->coeffs[k];
+
+  if(dt_image_filter(&piece->pipe->image) && dt_dev_pixelpipe_uses_downsampled_input(piece->pipe)
+     && pipe->pre_monochrome_demosaiced)
+  {
+    // piece->process_cl_ready = 0;
+    piece->enabled = 0;
+  }
 
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u) piece->process_cl_ready = 0;

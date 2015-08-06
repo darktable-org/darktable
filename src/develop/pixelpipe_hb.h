@@ -121,6 +121,8 @@ typedef struct dt_dev_pixelpipe_t
   int mask_display;
   // input data based on this timestamp:
   int input_timestamp;
+  // input data was pre-demosaiced and the demosaicing method is monochrome
+  int pre_monochrome_demosaiced;
   dt_dev_pixelpipe_type_t type;
   // the final output pixel format this pixelpipe will be converted to
   dt_imageio_levels_t levels;
@@ -148,7 +150,7 @@ int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t
 int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries);
 // constructs a new input gegl_buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
-                                int height, float iscale);
+                                int height, float iscale, int pre_monochrome_demosaiced);
 
 // returns the dimensions of the full image after processing.
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int width_in,
