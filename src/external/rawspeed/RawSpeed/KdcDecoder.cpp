@@ -35,6 +35,9 @@ KdcDecoder::~KdcDecoder(void) {
 }
 
 RawImage KdcDecoder::decodeRawInternal() {
+  if (!mRootIFD->hasEntryRecursive(COMPRESSION))
+    ThrowRDE("KDC Decoder: Couldn't find compression setting");
+
   int compression = mRootIFD->getEntryRecursive(COMPRESSION)->getInt();
   if (7 != compression)
     ThrowRDE("KDC Decoder: Unsupported compression %d", compression);
@@ -58,6 +61,9 @@ RawImage KdcDecoder::decodeRawInternal() {
   // Offset hardcoding gotten from dcraw
   if (hints.find("easyshare_offset_hack") != hints.end())
     off = off < 0x15000 ? 0x15000 : 0x17000;
+
+  if (off > mFile->getSize())
+    ThrowRDE("KDC Decoder: offset is out of bounds");
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
