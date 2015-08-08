@@ -7443,7 +7443,7 @@
 			<Color x="0" y="1">BLUE</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="3" y="0" width="-3" height="0"/>
 		<Sensor black="7" white="6664"/>
 	</Camera>
 	<Camera make="Kodak" model="DCS560C">
