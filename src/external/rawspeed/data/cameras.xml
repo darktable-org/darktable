@@ -7449,6 +7449,17 @@
 			<Hint name="old_format" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="KODAK" model="EOSDCS1B        FILE VERSION 3">
+		<ID make="Kodak" model="EOS DCS 1">Kodak EOSDCS1</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="19" white="7638"/>
+	</Camera>
 	<Camera make="EASTMAN KODAK COMPANY" model="KODAK P880 ZOOM DIGITAL CAMERA">
 		<ID make="Kodak" model="P880">Kodak P880</ID>
 		<CFA width="2" height="2">

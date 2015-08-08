@@ -35,10 +35,35 @@ DcsDecoder::~DcsDecoder(void) {
 }
 
 RawImage DcsDecoder::decodeRawInternal() {
-  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
+  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(IMAGEWIDTH);
 
   if (data.size() < 1)
     ThrowRDE("DCS Decoder: No image data found");
+
+  TiffIFD* raw = data[0];
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  // Find the largest image in the file
+  for(uint32 i=1; i<data.size(); i++)
+    if(data[i]->getEntry(IMAGEWIDTH)->getInt() > width)
+      raw = data[i];
+
+  width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+  uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
+  uint32 c2 = raw->getEntry(STRIPBYTECOUNTS)->getInt();
+
+  if (off > mFile->getSize())
+    ThrowRDE("DCR Decoder: Offset is out of bounds");
+
+  if (c2 > mFile->getSize() - off) {
+    mRaw->setError("Warning: byte count larger than file size, file probably truncated.");
+  }
+
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->createData();
+  ByteStream input(mFile->getData(off), mFile->getSize() - off);
+
+  Decode8BitRaw(input, width, height);
 
   return mRaw;
 }
