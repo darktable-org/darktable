@@ -80,10 +80,6 @@ RawImage AriDecoder::decodeRawInternal() {
 }
 
 void AriDecoder::decodeThreaded(RawDecoderThread * t) {
-  uchar8* data = mRaw->getData();
-  uint32 pitch = mRaw->pitch;
-  uint32 w = mRaw->dim.x;
-
   uint32 startOff = mDataOffset + t->start_y * ((mWidth * 12) / 8);
   BitPumpMSB32 bits(mFile->getData(startOff), mFile->getSize()-startOff);
   
