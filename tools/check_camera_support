@@ -8,6 +8,7 @@ COEFFS=File.expand_path("../src/external/adobe_coeff.c", File.dirname(__FILE__))
 WBPRESETS=File.expand_path("../src/external/wb_presets.c", File.dirname(__FILE__))
 COLORMATRICES=File.expand_path("../src/common/colormatrices.c", File.dirname(__FILE__))
 NOISEPROFILES=File.expand_path("../data/noiseprofiles.json", File.dirname(__FILE__))
+PANASONIC_NEEDED_FORMATS = ["4:3", "3:2", "16:9", "1:1"]
 
 samplesdir = nil
 matrix_mode = false
@@ -40,8 +41,6 @@ File.open(CAMERAS) do |f|
   xml_doc.css("Camera").each do |c|
     maker = exif_maker = c.attribute("make").value
     model = c.attribute("model").value
-    mode = ""
-    mode = c.attribute("mode").value if c.attribute("mode")
     exif_id = "#{maker} #{model}"
     if c.css("ID")[0]
       maker = c.css("ID")[0].attribute("make").value
@@ -52,12 +51,12 @@ File.open(CAMERAS) do |f|
     if supported
       rawspeed_cameras[id] = 0
       rawspeed_aliases[id] = [id]
-      rawspeed_dngs[id] = true if mode == "dng"
       exif_name_map[exif_id] = id
       exif_alias_map[exif_id] = id
       mode = ""
       mode = c.attribute("mode").value if c.attribute("mode")
-      if maker == "Panasonic"
+      rawspeed_dngs[id] = true if mode == "dng"
+      if PANASONIC_NEEDED_FORMATS.include?(mode)
         rawspeed_panasonic_formats[id] ||= []
         rawspeed_panasonic_formats[id] << mode
       end
@@ -166,10 +165,9 @@ if (!matrix_mode)
   compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras, verbose_mode, !quiet_mode)
   compare_lists("noiseprofiles", rawspeed_cameras, noiseprofiles_cameras, verbose_mode, !quiet_mode)
   compare_lists("samples", rawspeed_cameras, samples_cameras, verbose_mode, !quiet_mode) if samplesdir
-  needed_formats = ["", "4:3", "3:2", "16:9", "1:1"]
   rawspeed_panasonic_formats.each do |camera, formats|
-    if formats.size != 1 && formats.size != 5
-      missing_formats = needed_formats.select{|f| !formats.include?(f)}
+    if formats.size != 4
+      missing_formats = PANASONIC_NEEDED_FORMATS.select{|f| !formats.include?(f)}
       puts "Missing formats for '#{camera}' #{missing_formats.join(' ')}"
     end
   end
