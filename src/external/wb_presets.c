@@ -1421,14 +1421,6 @@ const wb_data wb_preset[] =
   { "Fujifilm", "FinePix S7000", CoolWhiteFluorescent, 0, { 1.836957, 1, 2.130435, 0 } },
   { "Fujifilm", "FinePix S7000", Incandescent, 0,	{ 1.221239, 1, 2.548673, 0 } },
 
-  /* The S9000 and S9500 are the same camera */
-  { "Fujifilm", "FinePix S9000", Daylight, 0,		{ 1.618750, 1, 1.231250, 0 } },
-  { "Fujifilm", "FinePix S9000", Cloudy, 0,		{ 1.700000, 1, 1.046875, 0 } },
-  { "Fujifilm", "FinePix S9000", DaylightFluorescent, 0, { 1.902174, 1, 1.057065, 0 } },
-  { "Fujifilm", "FinePix S9000", WarmWhiteFluorescent, 0, { 1.633152, 1, 1.293478, 0 } },
-  { "Fujifilm", "FinePix S9000", CoolWhiteFluorescent, 0, { 1.546196, 1, 1.622283, 0 } },
-  { "Fujifilm", "FinePix S9000", Incandescent, 0,	{ 1.064159, 1, 1.960177, 0 } },
-
   { "Fujifilm", "FinePix S9100", Daylight, 0,		{ 1.506250, 1, 1.318750, 0 } },
   { "Fujifilm", "FinePix S9100", Cloudy, 0,		{ 1.587500, 1, 1.128125, 0 } },
   { "Fujifilm", "FinePix S9100", DaylightFluorescent, 0, { 1.777174, 1, 1.138587, 0 } },
@@ -1436,7 +1428,6 @@ const wb_data wb_preset[] =
   { "Fujifilm", "FinePix S9100", CoolWhiteFluorescent, 0, { 1.437500, 1, 1.720109, 0 } },
   { "Fujifilm", "FinePix S9100", Incandescent, 0,	{ 1, 1.024943, 2.113379, 0 } },
 
-  /* The S9000 and S9500 are the same camera */
   { "Fujifilm", "FinePix S9500", Daylight, 0,		{ 1.618750, 1, 1.231250, 0 } },
   { "Fujifilm", "FinePix S9500", Cloudy, 0,		{ 1.700000, 1, 1.046875, 0 } },
   { "Fujifilm", "FinePix S9500", DaylightFluorescent, 0, { 1.902174, 1, 1.057065, 0 } },
@@ -4761,17 +4752,17 @@ const wb_data wb_preset[] =
   { "Pentax", "Caplio GX100", Incandescent, 0,	{ 1.520002, 1, 2.520003, 0 } },
   { "Pentax", "Caplio GX100", Fluorescent, 0,	{ 1.840001, 1, 1.970001, 0 } },
 
-  /* Pentax GR Firmware Version 4.00 */
-  { "Pentax", "GR", Daylight, 0,			{ 2.980000, 1, 1.580000, 0 } },
-  { "Pentax", "GR", Shade, 0,			{ 3.450000, 1, 1.360000, 0 } },
-  { "Pentax", "GR", Cloudy, 0,			{ 3.170000, 1, 1.500000, 0 } },
-  { "Pentax", "GR", Incandescent, 0,		{ 1.920000, 1, 2.530000, 0 } },
-  { "Pentax", "GR", IncandescentWarm, 0,		{ 2.090000, 1, 2.030000, 0 } },
-  { "Pentax", "GR", DaylightFluorescent, 0,	{ 3.220000, 1, 1.510000, 0 } },
-  { "Pentax", "GR", WhiteFluorescent, 0,		{ 2.860000, 1, 1.700000, 0 } },
-  { "Pentax", "GR", CoolWhiteFluorescent, 0,	{ 2.610000, 1, 2.080000, 0 } },
-  { "Pentax", "GR", WarmWhiteFluorescent, 0,	{ 2.240000, 1, 2.160000, 0 } },
-  { "Pentax", "GR", "5000K", 0,			{ 2.890000, 1, 1.520000, 0 } },
+  /* Ricoh GR Firmware Version 4.00 */
+  { "Ricoh", "GR", Daylight, 0,			{ 2.980000, 1, 1.580000, 0 } },
+  { "Ricoh", "GR", Shade, 0,			{ 3.450000, 1, 1.360000, 0 } },
+  { "Ricoh", "GR", Cloudy, 0,			{ 3.170000, 1, 1.500000, 0 } },
+  { "Ricoh", "GR", Incandescent, 0,		{ 1.920000, 1, 2.530000, 0 } },
+  { "Ricoh", "GR", IncandescentWarm, 0,		{ 2.090000, 1, 2.030000, 0 } },
+  { "Ricoh", "GR", DaylightFluorescent, 0,	{ 3.220000, 1, 1.510000, 0 } },
+  { "Ricoh", "GR", WhiteFluorescent, 0,		{ 2.860000, 1, 1.700000, 0 } },
+  { "Ricoh", "GR", CoolWhiteFluorescent, 0,	{ 2.610000, 1, 2.080000, 0 } },
+  { "Ricoh", "GR", WarmWhiteFluorescent, 0,	{ 2.240000, 1, 2.160000, 0 } },
+  { "Ricoh", "GR", "5000K", 0,			{ 2.890000, 1, 1.520000, 0 } },
 
   { "Samsung", "EX1", Daylight, 0,		{ 1.8711, 1, 2.0039, 0 } },
   { "Samsung", "EX1", Cloudy, 0,		{ 2.3672, 1, 1.6797, 0 } },
