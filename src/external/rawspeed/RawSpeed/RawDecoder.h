@@ -166,10 +166,8 @@ protected:
   /* order: Order of the bits - see Common.h for possibilities. */
   void readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch, int bitPerPixel, BitOrder order);
 
-  /* Faster versions for unpacking 8 bit data, curve is a 256 entry lookup table
-     to convert the 8 bit values to 16bit */
+  /* Faster versions for unpacking 8 bit data */
   void Decode8BitRaw(ByteStream &input, uint32 w, uint32 h);
-  void Decode8BitRaw(ByteStream &input, uint32 w, uint32 h, const ushort16 *curve);
 
   /* Faster version for unpacking 12 bit LSB data */
   void Decode12BitRaw(ByteStream &input, uint32 w, uint32 h);
