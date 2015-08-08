@@ -7435,6 +7435,17 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3700"/>
 	</Camera>
+	<Camera make="KODAK" model="DCS460D         FILE VERSION 3">
+		<ID make="Kodak" model="DCS460D">Kodak DCS460</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="7" white="6664"/>
+	</Camera>
 	<Camera make="Kodak" model="DCS560C">
 		<ID make="Kodak" model="DCS560C">Kodak DCS560C</ID>
 		<CFA width="2" height="2">
