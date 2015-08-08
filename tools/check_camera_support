@@ -32,6 +32,7 @@ end
 rawspeed_cameras = {}
 rawspeed_aliases = {}
 rawspeed_panasonic_formats = {}
+rawspeed_dngs = {}
 exif_name_map = {}
 exif_alias_map = {}
 File.open(CAMERAS) do |f|
@@ -39,6 +40,8 @@ File.open(CAMERAS) do |f|
   xml_doc.css("Camera").each do |c|
     maker = exif_maker = c.attribute("make").value
     model = c.attribute("model").value
+    mode = ""
+    mode = c.attribute("mode").value if c.attribute("mode")
     exif_id = "#{maker} #{model}"
     if c.css("ID")[0]
       maker = c.css("ID")[0].attribute("make").value
@@ -49,6 +52,7 @@ File.open(CAMERAS) do |f|
     if supported
       rawspeed_cameras[id] = 0
       rawspeed_aliases[id] = [id]
+      rawspeed_dngs[id] = true if mode == "dng"
       exif_name_map[exif_id] = id
       exif_alias_map[exif_id] = id
       mode = ""
@@ -156,7 +160,8 @@ end
 
 if (!matrix_mode)
   puts "Found #{rawspeed_cameras.size} cameras #{coeffs_cameras.size} adobe_coeffs #{presets_cameras.size} wb_coeffs #{colormatrices_cameras.size} colormatrices #{noiseprofiles_cameras.size} noise profiles #{samples_cameras.size} samples"
-  compare_lists("adobe_coeffs", rawspeed_cameras, coeffs_cameras, !quiet_mode, verbose_mode)
+  rawspeed_coeffs_cameras = rawspeed_cameras.select{|id| !rawspeed_dngs[id]}
+  compare_lists("adobe_coeffs", rawspeed_coeffs_cameras, coeffs_cameras, !quiet_mode, verbose_mode)
   compare_lists("wb_presets", rawspeed_cameras, presets_cameras, verbose_mode, !quiet_mode)
   compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras, verbose_mode, !quiet_mode)
   compare_lists("noiseprofiles", rawspeed_cameras, noiseprofiles_cameras, verbose_mode, !quiet_mode)
