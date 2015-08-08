@@ -7435,6 +7435,20 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3700"/>
 	</Camera>
+	<Camera make="Kodak" model="DCS560C">
+		<ID make="Kodak" model="DCS560C">Kodak DCS560C</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="old_format" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="EASTMAN KODAK COMPANY" model="KODAK P880 ZOOM DIGITAL CAMERA">
 		<ID make="Kodak" model="P880">Kodak P880</ID>
 		<CFA width="2" height="2">

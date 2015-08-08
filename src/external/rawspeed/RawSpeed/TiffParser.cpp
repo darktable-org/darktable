@@ -134,6 +134,11 @@ RawDecoder* TiffParser::getDecoder() {
     for (vector<TiffIFD*>::iterator i = potentials.begin(); i != potentials.end(); ++i) {
       string make = (*i)->getEntry(MAKE)->getString();
       TrimSpaces(make);
+      string model = "";
+      if ((*i)->hasEntry(MODEL)) {
+        model = (*i)->getEntry(MODEL)->getString();
+        TrimSpaces(model);
+      }
       if (!make.compare("Canon")) {
         mRootIFD = NULL;
         return new Cr2Decoder(root, mInput);
@@ -182,7 +187,10 @@ RawDecoder* TiffParser::getDecoder() {
       }
       if (!make.compare("Kodak")) {
         mRootIFD = NULL;
-        return new DcrDecoder(root, mInput);
+        if (!model.compare("DCS560C"))
+          return new Cr2Decoder(root, mInput);
+        else
+          return new DcrDecoder(root, mInput);
       }
       if (!make.compare("KODAK")) {
         mRootIFD = NULL;
