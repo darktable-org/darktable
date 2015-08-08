@@ -7573,6 +7573,15 @@
 	<Camera make="Leica Camera AG" model="M8 Digital Camera" mode="dng">
 		<ID make="Leica" model="M8">M8 Digital Camera</ID>
 	</Camera>
+	<Camera make="Leica Camera AG" model="LEICA M (Typ 240)" mode="dng">
+		<ID make="Leica" model="M (Typ 240)">LEICA M (Typ 240)</ID>
+	</Camera>
+	<Camera make="RICOH IMAGING COMPANY, LTD." model="GR" mode="dng">
+		<ID make="Ricoh" model="GR">GR</ID>
+	</Camera>
+	<Camera make="RICOH" model="GR DIGITAL 2" mode="dng">
+		<ID make="Ricoh" model="GR II">Ricoh GR DIGITAL 2</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot SX100 IS" mode="dng">
 		<ID make="Canon" model="PowerShot SX100 IS">Canon PowerShot SX100 IS</ID>
 	</Camera>
