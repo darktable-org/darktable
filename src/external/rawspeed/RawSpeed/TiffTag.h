@@ -58,6 +58,8 @@ typedef enum {
   YRESOLUTION    = 0x011B,
   PLANARCONFIGURATION   = 0x011C,
 
+  GRAYRESPONSECURVE = 0x0123,
+
   T4OPTIONS                       = 0x0124,
   T6OPTIONS                       = 0x0125,
 

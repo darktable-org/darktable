@@ -63,7 +63,14 @@ RawImage DcsDecoder::decodeRawInternal() {
   mRaw->createData();
   ByteStream input(mFile->getData(off), mFile->getSize() - off);
 
-  Decode8BitRaw(input, width, height);
+  TiffEntry *linearization = mRootIFD->getEntryRecursive(GRAYRESPONSECURVE);
+  if (!linearization || linearization->count != 256 || linearization->type != TIFF_SHORT)
+    ThrowRDE("DCS Decoder: Couldn't find the linearization table");
+
+  if (uncorrectedRawValues)
+    Decode8BitRaw(input, width, height);
+  else
+    Decode8BitRaw(input, width, height, linearization->getShortArray());
 
   return mRaw;
 }

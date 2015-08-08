@@ -195,7 +195,7 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
   }
 }
 
-void RawDecoder::Decode8BitRaw(ByteStream &input, uint32 w, uint32 h) {
+void RawDecoder::Decode8BitRaw(ByteStream &input, uint32 w, uint32 h, const ushort16 *curve) {
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
   const uchar8 *in = input.getData();
@@ -208,9 +208,17 @@ void RawDecoder::Decode8BitRaw(ByteStream &input, uint32 w, uint32 h) {
   }
   for (uint32 y = 0; y < h; y++) {
     ushort16* dest = (ushort16*) & data[y*pitch];
-    for (uint32 x = 0 ; x < w; x += 1)
-      dest[x] = *in++;
+    for (uint32 x = 0 ; x < w; x += 1) {
+      if (curve)
+        dest[x] = curve[*in++];
+      else
+        dest[x] = *in++;
+    }
   }
+}
+
+void RawDecoder::Decode8BitRaw(ByteStream &input, uint32 w, uint32 h) {
+  Decode8BitRaw(input, w, h, NULL);
 }
 
 void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
