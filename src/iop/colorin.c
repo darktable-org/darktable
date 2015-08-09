@@ -913,7 +913,7 @@ void reload_defaults(dt_iop_module_t *module)
       use_eprofile = (img->profile_size > 0);
     }
 #endif
-    else if(!strcmp(ext, "tif") || !strcmp(ext, "tiff"))
+    else if((!strcmp(ext, "tif") || !strcmp(ext, "tiff")) && dt_imageio_is_ldr(filename))
     {
       img->profile_size = dt_imageio_tiff_read_profile(filename, &img->profile);
       use_eprofile = (img->profile_size > 0);

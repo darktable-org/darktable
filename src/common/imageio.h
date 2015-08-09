@@ -41,6 +41,8 @@ typedef enum dt_imageio_levels_t
   IMAGEIO_CHANNEL_MASK = 0xFF00
 } dt_imageio_levels_t;
 
+// Checks that the image is indeed an ldr image
+gboolean dt_imageio_is_ldr(const char *filename);
 
 // opens the file using pfm, hdr, exr.
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
