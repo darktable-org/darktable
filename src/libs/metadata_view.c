@@ -575,6 +575,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
+    gtk_label_set_selectable(d->metadata[k], TRUE);
     gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(d->metadata[k]));
     if(k == md_internal_filmroll)
     {
