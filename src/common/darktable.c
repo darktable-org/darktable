@@ -111,7 +111,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 static int usage(const char *argv0)
 {
   printf("usage: %s [-d "
-         "{all,cache,camctl,control,dev,fswatch,input,lighttable,masks,memory,nan,opencl,perf,pwstorage,sql}]"
+         "{all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,masks,memory,nan,opencl,perf,pwstorage,print,sql}]"
          " [IMG_1234.{RAW,..}|image_folder/]",
          argv0);
 #ifdef HAVE_OPENCL
@@ -621,6 +621,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
           darktable.unmuted |= DT_DEBUG_LUA; // lua errors are reported on console
         else if(!strcmp(argv[k + 1], "print"))
           darktable.unmuted |= DT_DEBUG_PRINT; // print errors are reported on console
+        else if(!strcmp(argv[k + 1], "camsupport"))
+          darktable.unmuted |= DT_DEBUG_CAMERA_SUPPORT; // camera support warnings are reported on console
         else
           return usage(argv[0]);
         k++;
