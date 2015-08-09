@@ -2347,13 +2347,16 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
 
 static void dt_exif_log_handler(int log_level, const char *message)
 {
-  if(log_level >= Exiv2::LogMsg::level()) fprintf(stderr, "[exiv2] %s\n", message);
+  if(log_level >= Exiv2::LogMsg::level())
+  {
+    // We don't seem to need \n in the format string as exiv2 includes it
+    // in the messages themselves
+    dt_print(DT_DEBUG_CAMERA_SUPPORT, "[exiv2] %s", message);
+  }
 }
 
 void dt_exif_init()
 {
-  // mute exiv2:
-  //   Exiv2::LogMsg::setLevel(Exiv2::LogMsg::mute);
   // preface the exiv2 messages with "[exiv2] "
   Exiv2::LogMsg::setHandler(&dt_exif_log_handler);
 

@@ -165,7 +165,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_MASKS = 1 << 12,
   DT_DEBUG_LUA = 1 << 13,
   DT_DEBUG_INPUT = 1 << 14,
-  DT_DEBUG_PRINT = 1 << 15
+  DT_DEBUG_PRINT = 1 << 15,
+  DT_DEBUG_CAMERA_SUPPORT = 1 << 16,
 } dt_debug_thread_t;
 
 typedef struct darktable_t
