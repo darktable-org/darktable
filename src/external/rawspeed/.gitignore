@@ -2,7 +2,3 @@
 *.vcproj.*
 *.vcxproj
 *.vcxproj.*
-
-pugiconfig.hpp
-pugixml.*
-pugixml-readme.txt

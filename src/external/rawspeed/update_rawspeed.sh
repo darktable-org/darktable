@@ -10,8 +10,6 @@ rm develop.zip
 rm RawSpeed/*.vcproj*
 rm RawSpeed/*.vcxproj*
 
-rm RawSpeed/pugiconfig.hpp RawSpeed/pugixml* RawSpeed/pugixml-readme.txt
-
 fromdos RawSpeed/*
 fromdos data/*
 
