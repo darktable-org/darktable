@@ -1384,6 +1384,23 @@
 			<Horizontal y="0" height="16"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot SX60 HS">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="112" y="26" width="-24" height="-10"/>
+		<Sensor black="128" white="4000"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
+		<BlackAreas>
+			<Vertical x="0" width="70"/>
+			<Horizontal y="0" height="16"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D100">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
