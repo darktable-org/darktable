@@ -4630,7 +4630,7 @@ msgstr "étendue spatiale"
 #: ../src/iop/colorreconstruction.c:172
 msgctxt "accel"
 msgid "range extent"
-msgstr "étendu de clarté"
+msgstr "étendue de clarté"
 
 #: ../src/iop/colorreconstruction.c:173
 msgctxt "accel"
@@ -4643,7 +4643,7 @@ msgstr "étendue spatiale"
 
 #: ../src/iop/colorreconstruction.c:1310
 msgid "range extent"
-msgstr "étendu de clarté"
+msgstr "étendue de clarté"
 
 #: ../src/iop/colorreconstruction.c:1313
 msgid "precedence"
