@@ -7149,6 +7149,17 @@
 		<Crop x="0" y="0" width="-168" height="0"/>
 		<Sensor black="256" white="4094"/>
 	</Camera>
+	<Camera make="FUJIFILM" model="X-A2">
+		<ID make="Fujifilm" model="X-A2">Fujifilm X-A2</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-168" height="0"/>
+		<Sensor black="256" white="4094"/>
+	</Camera>
 	<Camera make="FUJIFILM" model="XQ1">
 		<ID make="Fujifilm" model="XQ1">Fujifilm XQ1</ID>
 		<CFA2 width="6" height="6">
