@@ -1480,6 +1480,13 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X100S", "6700K", 0,		{ 2.076159, 1, 1.291391, 0 } },
   { "Fujifilm", "X100S", "10000K", 0,		{ 2.360927, 1, 1.079470, 0 } },
 
+  { "Fujifilm", "X-A2", Daylight, 0,                  { 1.824503, 1, 1.758278, 0 } },
+  { "Fujifilm", "X-A2", Cloudy, 0,                    { 2.033113, 1, 1.496689, 0 } },
+  { "Fujifilm", "X-A2", DaylightFluorescent, 0,      { 2.327815, 1, 1.5, 0 } },
+  { "Fujifilm", "X-A2", DayWhiteFluorescent, 0,     { 1.986755, 1, 1.804636, 0 } },
+  { "Fujifilm", "X-A2", WhiteFluorescent, 0,         { 1.900662, 1, 2.284768, 0 } },
+  { "Fujifilm", "X-A2", Incandescent, 0,              { 1.162252, 1, 2.864238, 0 } },
+
   /* Fujifilm X-E1 Firmware Version 1.01 */
   // The manual calls it "Direct sunlight".
   { "Fujifilm", "X-E1", Daylight, 0,		{ 1.821192, 1, 1.804636, 0 } },
