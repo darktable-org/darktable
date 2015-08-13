@@ -4620,17 +4620,17 @@ msgstr "activer/désactiver la vérification du gamut"
 
 #: ../src/iop/colorreconstruction.c:125
 msgid "color reconstruction"
-msgstr "reconstruction couleurs"
+msgstr "reconstruction des couleurs"
 
 #: ../src/iop/colorreconstruction.c:171 ../src/iop/tonemap.cc:91
 msgctxt "accel"
 msgid "spatial extent"
-msgstr "rayon"
+msgstr "étendue spatiale"
 
 #: ../src/iop/colorreconstruction.c:172
 msgctxt "accel"
 msgid "range extent"
-msgstr "étendu luminosité"
+msgstr "étendu de clarté"
 
 #: ../src/iop/colorreconstruction.c:173
 msgctxt "accel"
@@ -4639,11 +4639,11 @@ msgstr "teinte"
 
 #: ../src/iop/colorreconstruction.c:1309 ../src/iop/shadhi.c:851 ../src/iop/tonemap.cc:301
 msgid "spatial extent"
-msgstr "rayon"
+msgstr "étendue spatiale"
 
 #: ../src/iop/colorreconstruction.c:1310
 msgid "range extent"
-msgstr "étendu luminosité"
+msgstr "étendu de clarté"
 
 #: ../src/iop/colorreconstruction.c:1313
 msgid "precedence"
@@ -4655,23 +4655,23 @@ msgstr "couleurs saturées"
 
 #: ../src/iop/colorreconstruction.c:1345
 msgid "pixels with lightness values above this threshold are corrected"
-msgstr "seuil L au dessus duquel les pixels sont affectés"
+msgstr "seuil de clarté au dessus duquel les pixels sont affectés"
 
 #: ../src/iop/colorreconstruction.c:1346
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr "largeur de recherche pour le remplacement des couleurs"
+msgstr "distance spatiale pour la recherche des couleurs de remplacement"
 
 #: ../src/iop/colorreconstruction.c:1347
 msgid "how far to look for replacement colors in the luminance dimension"
-msgstr "largeur de recherche pour le remplacement des couleurs dans la dimension de luminosité"
+msgstr "distance de clarté pour la recherche des couleurs de remplacement"
 
 #: ../src/iop/colorreconstruction.c:1348
 msgid "if and how to give precedence to specific replacement colors"
-msgstr "si et comment donner la priorité à une couleur de remplacement spécifique"
+msgstr "faut-il donner la priorité à une couleur de remplacement spécifique ? Si oui, comment le faire ?"
 
 #: ../src/iop/colorreconstruction.c:1349
 msgid "the hue tone which should be given precedence over other hue tones"
-msgstr "la teinte qui doit prendre priorité sur les autres teintes"
+msgstr "la teinte à laquelle on donne priorité sur les autres teintes"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
