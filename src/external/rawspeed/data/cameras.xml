@@ -5090,7 +5090,11 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="143" white="3956"/>
+		<Sensor black="143" white="3971"/>
+		<Aliases>
+			<Alias>DMC-ZS50</Alias>
+			<Alias>DMC-TZ70</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ71" mode="4:3">
 		<CFA width="2" height="2">
@@ -5100,7 +5104,11 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-128" height="0"/>
-		<Sensor black="143" white="3956"/>
+		<Sensor black="143" white="3971"/>
+		<Aliases>
+			<Alias>DMC-ZS50</Alias>
+			<Alias>DMC-TZ70</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ71" mode="3:2">
 		<CFA width="2" height="2">
@@ -5111,6 +5119,10 @@
 		</CFA>
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="142" white="3971"/>
+		<Aliases>
+			<Alias>DMC-ZS50</Alias>
+			<Alias>DMC-TZ70</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ71" mode="16:9">
 		<CFA width="2" height="2">
@@ -5120,7 +5132,11 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-128" height="0"/>
-		<Sensor black="143" white="3956"/>
+		<Sensor black="143" white="3971"/>
+		<Aliases>
+			<Alias>DMC-ZS50</Alias>
+			<Alias>DMC-TZ70</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ71" mode="1:1">
 		<CFA width="2" height="2">
@@ -5130,7 +5146,11 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-16" height="0"/>
-		<Sensor black="143" white="3956"/>
+		<Sensor black="143" white="3971"/>
+		<Aliases>
+			<Alias>DMC-ZS50</Alias>
+			<Alias>DMC-TZ70</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="PENTAX Corporation" model="PENTAX K100D">
 		<CFA width="2" height="2">
