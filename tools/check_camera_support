@@ -178,7 +178,7 @@ else
   clist = ""
   i = 1
   rawspeed_cameras.sort.each do |camera|
-    rawspeed_aliases[camera].each do |al|
+    rawspeed_aliases[camera].sort.each do |al|
       counts[0] += 1
       i += 1
       line_class = i%2 == 0 ? "even" : "odd"
