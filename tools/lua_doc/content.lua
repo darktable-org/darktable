@@ -495,8 +495,8 @@ darktable.gettext.dngettext:add_parameter("msgid_plural","string","The string to
 darktable.gettext.dngettext:add_parameter("n","int","The number of objetc");
 darktable.gettext.dngettext:add_return("string","The translated string");
 darktable.gettext.bindtextdomain:set_text([[Tell gettext where to find the .mo file translating messages for a particular domain]])
-darktable.gettext.dngettext:add_parameter("domainname","string","The domain to use for that translation");
-darktable.gettext.dngettext:add_parameter("dirname","string","The base directory to look for the file. The file should be placed in <dirname>/<locale name>/LC_MESSAGES/<domain>.mo");
+darktable.gettext.bindtextdomain:add_parameter("domainname","string","The domain to use for that translation");
+darktable.gettext.bindtextdomain:add_parameter("dirname","string","The base directory to look for the file. The file should be placed in "..emphasis("dirname").."/"..emphasis("locale name").."/LC_MESSAGES/"..emphasis("domain")..".mo");
 
 ----------------------
 --  DARKTABLE.DEBUG --
