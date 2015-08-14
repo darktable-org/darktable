@@ -5364,7 +5364,7 @@ msgstr "force du grain à appliquer"
 
 #: ../src/iop/highlights.c:69
 msgid "highlight reconstruction"
-msgstr "récupérer hautes lumières"
+msgstr "reconstruire hautes lumières"
 
 #: ../src/iop/highlights.c:736
 msgid "clip highlights"
