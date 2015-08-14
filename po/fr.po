@@ -5372,7 +5372,7 @@ msgstr "tronquer les hautes lumières"
 
 #: ../src/iop/highlights.c:737
 msgid "reconstruct in LCh"
-msgstr "mélanger LCh"
+msgstr "reconstruire dans LCh"
 
 #: ../src/iop/highlights.c:738
 msgid "reconstruct color"
@@ -5380,11 +5380,11 @@ msgstr "reconstruire les couleurs"
 
 #: ../src/iop/highlights.c:739
 msgid "highlight reconstruction method"
-msgstr "méthode de récupération des hautes lumières"
+msgstr "méthode de reconstruction des hautes lumières"
 
 #: ../src/iop/highlights.c:743
 msgid "manually adjust the clipping threshold against magenta highlights (you shouldn't ever need to touch this)"
-msgstr "ajuste le seuil de troncature pour éviter les hautes lumières roses (vous ne devriez jamais avoir à modifier ce réglage)"
+msgstr "ajuste le seuil de troncature pour éviter les hautes lumières magenta (vous ne devriez jamais avoir à modifier ce réglage)"
 
 #: ../src/iop/highlights.c:746
 msgid "clipping threshold"
