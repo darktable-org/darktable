@@ -419,6 +419,16 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
   }
 }
 
+string SrwDecoder::getMode() {
+  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
+  ostringstream mode;
+  if (!data.empty() && data[0]->hasEntryRecursive(BITSPERSAMPLE)) {
+    mode << data[0]->getEntryRecursive(BITSPERSAMPLE)->getInt() << "bit";
+    return mode.str();
+  }
+  return "";
+}
+
 void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
@@ -427,7 +437,9 @@ void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {
     ThrowRDE("SRW Support: Make name not found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
-  this->checkCameraSupported(meta, make, model, "");
+
+  if (!this->checkCameraSupported(meta, make, model, getMode()))
+    this->checkCameraSupported(meta, make, model, "");
 }
 
 void SrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
@@ -442,7 +454,11 @@ void SrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
-  setMetaData(meta, make, model, "", iso);
+  string mode = getMode();
+  if (meta->hasCamera(make, model, mode))
+    setMetaData(meta, make, model, mode, iso);
+  else
+    setMetaData(meta, make, model, "", iso);
 
   // Set the whitebalance
   if (mRootIFD->hasEntryRecursive(SAMSUNG_WB_RGGBLEVELSUNCORRECTED) &&

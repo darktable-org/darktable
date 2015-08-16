@@ -6088,7 +6088,19 @@
 		<Crop x="96" y="42" width="-32" height="-24"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="SAMSUNG" model="NX500">
+	<Camera make="SAMSUNG" model="NX500" mode="12bit">
+		<ID make="Samsung" model="NX500">Samsung NX500</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="128" white="4000" iso_min="8000"/>
+		<Sensor black="32" white="4000"/>
+	</Camera>
+	<Camera make="SAMSUNG" model="NX500" mode="14bit">
 		<ID make="Samsung" model="NX500">Samsung NX500</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
