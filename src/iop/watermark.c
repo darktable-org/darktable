@@ -95,11 +95,11 @@ typedef struct dt_iop_watermark_data_t
 
 typedef struct dt_iop_watermark_gui_data_t
 {
-  GtkComboBoxText *combobox1;                   // watermark
-  GtkDarktableButton *dtbutton1;                // refresh watermarks...
-  GtkDarktableToggleButton *dtba[9];            // Alignment buttons
-  GtkWidget *scale1, *scale2, *scale3, *scale4; // opacity, scale, xoffs, yoffs
-  GtkWidget *sizeto;                            // relative size to
+  GtkComboBoxText *watermarks;                       // watermark
+  GtkDarktableButton *refresh;                       // refresh watermarks...
+  GtkDarktableToggleButton *align[9];                // Alignment buttons
+  GtkWidget *opacity, *scale, *x_offset, *y_offset;  // opacity, scale, xoffs, yoffs
+  GtkWidget *sizeto;                                 // relative size to
   GtkWidget *rotate;
   GtkWidget *text;
   GtkWidget *colorpick;
@@ -259,12 +259,12 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_button_iop(self, "refresh", GTK_WIDGET(g->dtbutton1));
-  dt_accel_connect_slider_iop(self, "opacity", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale2));
+  dt_accel_connect_button_iop(self, "refresh", GTK_WIDGET(g->refresh));
+  dt_accel_connect_slider_iop(self, "opacity", GTK_WIDGET(g->opacity));
+  dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
   dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotate));
-  dt_accel_connect_slider_iop(self, "x offset", GTK_WIDGET(g->scale3));
-  dt_accel_connect_slider_iop(self, "y offset", GTK_WIDGET(g->scale4));
+  dt_accel_connect_slider_iop(self, "x offset", GTK_WIDGET(g->x_offset));
+  dt_accel_connect_slider_iop(self, "y offset", GTK_WIDGET(g->y_offset));
 }
 
 static gboolean _combo_box_set_active_text(GtkComboBox *cb, gchar *text)
@@ -938,7 +938,7 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   memset(p->filename, 0, sizeof(p->filename));
-  snprintf(p->filename, sizeof(p->filename), "%s", gtk_combo_box_text_get_active_text(g->combobox1));
+  snprintf(p->filename, sizeof(p->filename), "%s", gtk_combo_box_text_get_active_text(g->watermarks));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -948,10 +948,10 @@ static void refresh_watermarks(dt_iop_module_t *self)
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-  g_signal_handlers_block_by_func(g->combobox1, watermark_callback, self);
+  g_signal_handlers_block_by_func(g->watermarks, watermark_callback, self);
 
   // Clear combobox...
-  GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(g->combobox1));
+  GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(g->watermarks));
   gtk_list_store_clear(GTK_LIST_STORE(model));
 
   // check watermarkdir and update combo with entries...
@@ -972,7 +972,7 @@ static void refresh_watermarks(dt_iop_module_t *self)
     while((d_name = g_dir_read_name(dir)))
     {
       snprintf(filename, sizeof(filename), "%s/%s", datadir, d_name);
-      gtk_combo_box_text_append_text(g->combobox1, d_name);
+      gtk_combo_box_text_append_text(g->watermarks, d_name);
       count++;
     }
     g_dir_close(dir);
@@ -985,15 +985,15 @@ static void refresh_watermarks(dt_iop_module_t *self)
     while((d_name = g_dir_read_name(dir)))
     {
       snprintf(filename, sizeof(filename), "%s/%s", configdir, d_name);
-      gtk_combo_box_text_append_text(g->combobox1, d_name);
+      gtk_combo_box_text_append_text(g->watermarks, d_name);
       count++;
     }
     g_dir_close(dir);
   }
 
-  _combo_box_set_active_text(GTK_COMBO_BOX(g->combobox1), p->filename);
+  _combo_box_set_active_text(GTK_COMBO_BOX(g->watermarks), p->filename);
 
-  g_signal_handlers_unblock_by_func(g->combobox1, watermark_callback, self);
+  g_signal_handlers_unblock_by_func(g->watermarks, watermark_callback, self);
 }
 
 static void refresh_callback(GtkWidget *tb, gpointer user_data)
@@ -1017,18 +1017,18 @@ static void alignment_callback(GtkWidget *tb, gpointer user_data)
   for(int i = 0; i < 9; i++)
   {
     /* block signal handler */
-    g_signal_handlers_block_by_func(g->dtba[i], alignment_callback, user_data);
+    g_signal_handlers_block_by_func(g->align[i], alignment_callback, user_data);
 
-    if(GTK_WIDGET(g->dtba[i]) == tb)
+    if(GTK_WIDGET(g->align[i]) == tb)
     {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dtba[i]), TRUE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), TRUE);
       index = i;
     }
     else
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dtba[i]), FALSE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
 
     /* unblock signal handler */
-    g_signal_handlers_unblock_by_func(g->dtba[i], alignment_callback, user_data);
+    g_signal_handlers_unblock_by_func(g->align[i], alignment_callback, user_data);
   }
   p->alignment = index;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1186,13 +1186,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)module->params;
-  dt_bauhaus_slider_set(g->scale1, p->opacity);
-  dt_bauhaus_slider_set(g->scale2, p->scale);
+  dt_bauhaus_slider_set(g->opacity, p->opacity);
+  dt_bauhaus_slider_set_soft(g->scale, p->scale);
   dt_bauhaus_slider_set(g->rotate, p->rotate);
-  dt_bauhaus_slider_set(g->scale3, p->xoffset);
-  dt_bauhaus_slider_set(g->scale4, p->yoffset);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dtba[p->alignment]), TRUE);
-  _combo_box_set_active_text(GTK_COMBO_BOX(g->combobox1), p->filename);
+  dt_bauhaus_slider_set(g->x_offset, p->xoffset);
+  dt_bauhaus_slider_set(g->y_offset, p->yoffset);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
+  _combo_box_set_active_text(GTK_COMBO_BOX(g->watermarks), p->filename);
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
@@ -1239,12 +1239,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Add the marker combobox
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  g->combobox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  g->dtbutton1
+  g->watermarks = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+  g->refresh
       = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->combobox1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->dtbutton1), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->watermarks), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->refresh), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // Simple text
@@ -1293,17 +1293,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 5);
 
   // Add opacity/scale sliders to table
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0);
-  dt_bauhaus_slider_set_format(g->scale1, "%.f%%");
-  dt_bauhaus_widget_set_label(g->scale1, NULL, _("opacity"));
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0);
-  dt_bauhaus_slider_set_format(g->scale2, "%.f%%");
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("scale"));
+  g->opacity = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0);
+  dt_bauhaus_slider_set_format(g->opacity, "%.f%%");
+  dt_bauhaus_widget_set_label(g->opacity, NULL, _("opacity"));
+  g->scale = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0);
+  dt_bauhaus_slider_enable_soft_boundaries(g->scale, 1.0, 500.0);
+  dt_bauhaus_slider_set_format(g->scale, "%.f%%");
+  dt_bauhaus_widget_set_label(g->scale, NULL, _("scale"));
   g->rotate = dt_bauhaus_slider_new_with_range(self, -180.0, 180.0, 1.0, p->rotate, 2);
   dt_bauhaus_slider_set_format(g->rotate, "%.02f°");
   dt_bauhaus_widget_set_label(g->rotate, NULL, _("rotation"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->opacity), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->rotate), TRUE, TRUE, 0);
 
   g->sizeto = dt_bauhaus_combobox_new(self);
@@ -1323,11 +1324,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_set_column_spacing(bat, DT_PIXEL_APPLY_DPI(3));
   for(int i = 0; i < 9; i++)
   {
-    g->dtba[i] = DTGTK_TOGGLEBUTTON(
+    g->align[i] = DTGTK_TOGGLEBUTTON(
         dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, CPF_STYLE_FLAT | (CPF_SPECIAL_FLAG << i)));
-    gtk_widget_set_size_request(GTK_WIDGET(g->dtba[i]), DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
-    gtk_grid_attach(bat, GTK_WIDGET(g->dtba[i]), i%3, i/3, 1, 1);
-    g_signal_connect(G_OBJECT(g->dtba[i]), "toggled", G_CALLBACK(alignment_callback), self);
+    gtk_widget_set_size_request(GTK_WIDGET(g->align[i]), DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
+    gtk_grid_attach(bat, GTK_WIDGET(g->align[i]), i%3, i/3, 1, 1);
+    g_signal_connect(G_OBJECT(g->align[i]), "toggled", G_CALLBACK(alignment_callback), self);
   }
   GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(label4), TRUE, TRUE, 0);
@@ -1335,36 +1336,36 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   // x/y offset
-  g->scale3 = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.001, p->xoffset, 3);
-  dt_bauhaus_slider_set_format(g->scale3, "%.3f");
-  dt_bauhaus_widget_set_label(g->scale3, NULL, _("x offset"));
-  g->scale4 = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.001, p->yoffset, 3);
-  dt_bauhaus_slider_set_format(g->scale4, "%.3f");
-  dt_bauhaus_widget_set_label(g->scale4, NULL, _("y offset"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
+  g->x_offset = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.001, p->xoffset, 3);
+  dt_bauhaus_slider_set_format(g->x_offset, "%.3f");
+  dt_bauhaus_widget_set_label(g->x_offset, NULL, _("x offset"));
+  g->y_offset = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.001, p->yoffset, 3);
+  dt_bauhaus_slider_set_format(g->y_offset, "%.3f");
+  dt_bauhaus_widget_set_label(g->y_offset, NULL, _("y offset"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->x_offset), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->y_offset), TRUE, TRUE, 0);
 
 
   // Let's add some tooltips and hook up some signals...
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), (char *)NULL);
+  g_object_set(G_OBJECT(g->opacity), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale), "tooltip-text", _("the scale of the watermark"), (char *)NULL);
   g_object_set(G_OBJECT(g->rotate), "tooltip-text", _("the rotation of the watermark"), (char *)NULL);
 
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(opacity_callback), self);
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(scale_callback), self);
+  g_signal_connect(G_OBJECT(g->opacity), "value-changed", G_CALLBACK(opacity_callback), self);
+  g_signal_connect(G_OBJECT(g->scale), "value-changed", G_CALLBACK(scale_callback), self);
   g_signal_connect(G_OBJECT(g->rotate), "value-changed", G_CALLBACK(rotate_callback), self);
 
-  g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(xoffset_callback), self);
+  g_signal_connect(G_OBJECT(g->x_offset), "value-changed", G_CALLBACK(xoffset_callback), self);
 
-  g_signal_connect(G_OBJECT(g->scale4), "value-changed", G_CALLBACK(yoffset_callback), self);
+  g_signal_connect(G_OBJECT(g->y_offset), "value-changed", G_CALLBACK(yoffset_callback), self);
 
 
-  g_signal_connect(G_OBJECT(g->dtbutton1), "clicked", G_CALLBACK(refresh_callback), self);
+  g_signal_connect(G_OBJECT(g->refresh), "clicked", G_CALLBACK(refresh_callback), self);
 
   refresh_watermarks(self);
 
 
-  g_signal_connect(G_OBJECT(g->combobox1), "changed", G_CALLBACK(watermark_callback), self);
+  g_signal_connect(G_OBJECT(g->watermarks), "changed", G_CALLBACK(watermark_callback), self);
   g_signal_connect(G_OBJECT(g->sizeto), "value-changed", G_CALLBACK(sizeto_callback), self);
 
   g_signal_connect(G_OBJECT(g->text), "changed", G_CALLBACK(text_callback), self);
