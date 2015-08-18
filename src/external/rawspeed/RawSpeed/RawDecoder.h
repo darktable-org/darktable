@@ -166,6 +166,9 @@ protected:
   /* order: Order of the bits - see Common.h for possibilities. */
   void readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch, int bitPerPixel, BitOrder order);
 
+  /* Faster versions for unpacking 8 bit data */
+  void Decode8BitRaw(ByteStream &input, uint32 w, uint32 h);
+
   /* Faster version for unpacking 12 bit LSB data */
   void Decode12BitRaw(ByteStream &input, uint32 w, uint32 h);
 

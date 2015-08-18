@@ -5290,7 +5290,7 @@ msgstr ""
 
 #: ../src/iop/lens.c:1616
 msgid "camera/lens not found - please select manually"
-msgstr "cámara/lente no encontrada - por favor, seleccionelo manualmente"
+msgstr "cámara/lente no encontrada -\npor favor, seleccionelo manualmente"
 
 #: ../src/iop/lens.c:1618
 msgid "try to locate your camera/lens in the above two menus"

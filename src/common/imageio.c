@@ -388,6 +388,12 @@ static const uint8_t _imageio_ldr_magic[] = {
   // Older Canon RAW format with TIF Extension (i.e. DCS1)
   0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x00, 0x03, 0x00, 0x00, 0xff, 0x01,
 
+  // Older Kodak RAW format with TIF Extension (i.e. DCS560C)
+  0x01, 0x00, 0x0a, 0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x11, 0x76, 0x00, 0x04,
+
+  // Older Kodak RAW format with TIF Extension (i.e. DCS460D)
+  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x00, 0x03, 0x00, 0x00, 0x7c, 0x01,
+
   /* tiff image, intel */
   0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,
 
@@ -647,7 +653,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     g_list_free(stls);
   }
 
-  dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0,
+                             buf.pre_monochrome_demosaiced);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,

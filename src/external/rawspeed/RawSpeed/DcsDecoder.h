@@ -20,27 +20,24 @@
 
     http://www.klauspost.com
 */
-#ifndef DCR_DECODER_H
-#define DCR_DECODER_H
+#ifndef DCS_DECODER_H
+#define DCS_DECODER_H
 
 #include "RawDecoder.h"
-#include "TiffIFDBE.h"
 
 namespace RawSpeed {
 
-class DcrDecoder :
+class DcsDecoder :
   public RawDecoder
 {
 public:
-  DcrDecoder(TiffIFD *rootIFD, FileMap* file);
-  virtual ~DcrDecoder(void);
+  DcsDecoder(TiffIFD *rootIFD, FileMap* file);
+  virtual ~DcsDecoder(void);
   virtual RawImage decodeRawInternal();
   virtual void checkSupportInternal(CameraMetaData *meta);
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
 protected:
   TiffIFD *mRootIFD;
-  void decodeKodak65000(ByteStream &input, uint32 w, uint32 h);
-  void decodeKodak65000Segment(ByteStream &input, ushort16 *out, uint32 bsize);
 };
 
 } // namespace RawSpeed

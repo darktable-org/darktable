@@ -399,7 +399,19 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     snprintf(value, sizeof(value), "%.0f", img->exif_iso);
     _metadata_update_value(d->metadata[md_exif_iso], value);
 
-    _metadata_update_value(d->metadata[md_exif_datetime], img->exif_datetime_taken);
+    struct tm tt_exif = { 0 };
+    if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &tt_exif.tm_year, &tt_exif.tm_mon,
+      &tt_exif.tm_mday, &tt_exif.tm_hour, &tt_exif.tm_min, &tt_exif.tm_sec) == 6)
+    {
+      char datetime[200];
+      tt_exif.tm_year -= 1900;
+      tt_exif.tm_mon--;
+      // just %c is too long and includes a time zone that we don't know from exif
+      strftime(datetime, sizeof(datetime), "%a %x %X", &tt_exif);
+      _metadata_update_value(d->metadata[md_exif_datetime], datetime);
+    }
+    else
+      _metadata_update_value(d->metadata[md_exif_datetime], img->exif_datetime_taken);
 
     snprintf(value, sizeof(value), "%d", img->height);
     _metadata_update_value(d->metadata[md_exif_height], value);
@@ -585,6 +597,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
+    gtk_label_set_selectable(d->metadata[k], TRUE);
     gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(d->metadata[k]));
     if(k == md_internal_filmroll)
     {

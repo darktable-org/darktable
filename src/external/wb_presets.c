@@ -266,6 +266,14 @@ const wb_data wb_preset[] =
   { "Canon", "PowerShot SX50 HS", Flash, 0,	{ 1.876289, 1, 1.398969, 0 } },
   { "Canon", "PowerShot SX50 HS", Flash, 9,	{ 4.536036, 1.073574, 1, 0 } },
 
+  { "Canon", "PowerShot SX60 HS", Daylight, 0,{ 1.60520833333333, 1, 1.72604166666667, 0 } },
+  { "Canon", "PowerShot SX60 HS", Shade, 0, { 1.9936974789916, 1, 1.37920168067227, 0 } },
+  { "Canon", "PowerShot SX60 HS", Cloudy, 0,{ 1.87604166666667, 1, 1.45625, 0 } },
+  { "Canon", "PowerShot SX60 HS", Tungsten, 0,{ 1.15801354401806, 1, 2.61625282167043, 0 } },
+  { "Canon", "PowerShot SX60 HS", Fluorescent, 0,{ 1.67549668874172, 1, 2.25496688741722, 0 } },
+  { "Canon", "PowerShot SX60 HS", FluorescentHigh, 0,{ 2.09885057471264, 1, 1.78505747126437, 0 } },
+  { "Canon", "PowerShot SX60 HS", Flash, 0, { 1.96638655462185, 1, 1.40861344537815, 0 } },
+
   { "Canon", "EOS D60", Daylight, 0,		{ 2.472594, 1, 1.225335, 0 } },
   { "Canon", "EOS D60", Cloudy, 0,		{ 2.723926, 1, 1.137423, 0 } },
   { "Canon", "EOS D60", Tungsten, 0,		{ 1.543054, 1, 1.907003, 0 } },
@@ -1421,14 +1429,6 @@ const wb_data wb_preset[] =
   { "Fujifilm", "FinePix S7000", CoolWhiteFluorescent, 0, { 1.836957, 1, 2.130435, 0 } },
   { "Fujifilm", "FinePix S7000", Incandescent, 0,	{ 1.221239, 1, 2.548673, 0 } },
 
-  /* The S9000 and S9500 are the same camera */
-  { "Fujifilm", "FinePix S9000", Daylight, 0,		{ 1.618750, 1, 1.231250, 0 } },
-  { "Fujifilm", "FinePix S9000", Cloudy, 0,		{ 1.700000, 1, 1.046875, 0 } },
-  { "Fujifilm", "FinePix S9000", DaylightFluorescent, 0, { 1.902174, 1, 1.057065, 0 } },
-  { "Fujifilm", "FinePix S9000", WarmWhiteFluorescent, 0, { 1.633152, 1, 1.293478, 0 } },
-  { "Fujifilm", "FinePix S9000", CoolWhiteFluorescent, 0, { 1.546196, 1, 1.622283, 0 } },
-  { "Fujifilm", "FinePix S9000", Incandescent, 0,	{ 1.064159, 1, 1.960177, 0 } },
-
   { "Fujifilm", "FinePix S9100", Daylight, 0,		{ 1.506250, 1, 1.318750, 0 } },
   { "Fujifilm", "FinePix S9100", Cloudy, 0,		{ 1.587500, 1, 1.128125, 0 } },
   { "Fujifilm", "FinePix S9100", DaylightFluorescent, 0, { 1.777174, 1, 1.138587, 0 } },
@@ -1436,7 +1436,6 @@ const wb_data wb_preset[] =
   { "Fujifilm", "FinePix S9100", CoolWhiteFluorescent, 0, { 1.437500, 1, 1.720109, 0 } },
   { "Fujifilm", "FinePix S9100", Incandescent, 0,	{ 1, 1.024943, 2.113379, 0 } },
 
-  /* The S9000 and S9500 are the same camera */
   { "Fujifilm", "FinePix S9500", Daylight, 0,		{ 1.618750, 1, 1.231250, 0 } },
   { "Fujifilm", "FinePix S9500", Cloudy, 0,		{ 1.700000, 1, 1.046875, 0 } },
   { "Fujifilm", "FinePix S9500", DaylightFluorescent, 0, { 1.902174, 1, 1.057065, 0 } },
@@ -1480,6 +1479,13 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X100S", "6300K", 0,		{ 2.019868, 1, 1.334437, 0 } },
   { "Fujifilm", "X100S", "6700K", 0,		{ 2.076159, 1, 1.291391, 0 } },
   { "Fujifilm", "X100S", "10000K", 0,		{ 2.360927, 1, 1.079470, 0 } },
+
+  { "Fujifilm", "X-A2", Daylight, 0,                  { 1.824503, 1, 1.758278, 0 } },
+  { "Fujifilm", "X-A2", Cloudy, 0,                    { 2.033113, 1, 1.496689, 0 } },
+  { "Fujifilm", "X-A2", DaylightFluorescent, 0,      { 2.327815, 1, 1.5, 0 } },
+  { "Fujifilm", "X-A2", DayWhiteFluorescent, 0,     { 1.986755, 1, 1.804636, 0 } },
+  { "Fujifilm", "X-A2", WhiteFluorescent, 0,         { 1.900662, 1, 2.284768, 0 } },
+  { "Fujifilm", "X-A2", Incandescent, 0,              { 1.162252, 1, 2.864238, 0 } },
 
   /* Fujifilm X-E1 Firmware Version 1.01 */
   // The manual calls it "Direct sunlight".
@@ -1767,12 +1773,12 @@ const wb_data wb_preset[] =
   { "Nikon", "1 J3", Shade, 0,			{ 2.718750, 1, 1.382813, 0 } },
   { "Nikon", "1 J3", Underwater, 0,		{ 2.144531, 1, 1.660156, 0 } },
 
-  { "NIKON", "1 J5", Incandescent, 0, { 1.546875, 1, 2.171875, 0 } },
-  { "NIKON", "1 J5", CoolWhiteFluorescent, 0, { 2.15625, 1, 1.94921875, 0 } },
-  { "NIKON", "1 J5", DirectSunlight, 0, { 2.31640625, 1, 1.37890625, 0 } },
-  { "NIKON", "1 J5", Flash, 0, { 2.62109375, 1, 1.16796875, 0 } },
-  { "NIKON", "1 J5", Cloudy, 0, { 2.4609375, 1, 1.2578125, 0 } },
-  { "NIKON", "1 J5", Shade, 0, { 2.78515625, 1, 1.125, 0 } },
+  { "Nikon", "1 J5", Incandescent, 0, { 1.546875, 1, 2.171875, 0 } },
+  { "Nikon", "1 J5", CoolWhiteFluorescent, 0, { 2.15625, 1, 1.94921875, 0 } },
+  { "Nikon", "1 J5", DirectSunlight, 0, { 2.31640625, 1, 1.37890625, 0 } },
+  { "Nikon", "1 J5", Flash, 0, { 2.62109375, 1, 1.16796875, 0 } },
+  { "Nikon", "1 J5", Cloudy, 0, { 2.4609375, 1, 1.2578125, 0 } },
+  { "Nikon", "1 J5", Shade, 0, { 2.78515625, 1, 1.125, 0 } },
 
   // Nikon CoolPix P330 firmware 1.0
   { "Nikon", "Coolpix P330", DirectSunlight, 0,	{ 1.792969, 1, 1.65625, 0 }},
@@ -4761,17 +4767,17 @@ const wb_data wb_preset[] =
   { "Pentax", "Caplio GX100", Incandescent, 0,	{ 1.520002, 1, 2.520003, 0 } },
   { "Pentax", "Caplio GX100", Fluorescent, 0,	{ 1.840001, 1, 1.970001, 0 } },
 
-  /* Pentax GR Firmware Version 4.00 */
-  { "Pentax", "GR", Daylight, 0,			{ 2.980000, 1, 1.580000, 0 } },
-  { "Pentax", "GR", Shade, 0,			{ 3.450000, 1, 1.360000, 0 } },
-  { "Pentax", "GR", Cloudy, 0,			{ 3.170000, 1, 1.500000, 0 } },
-  { "Pentax", "GR", Incandescent, 0,		{ 1.920000, 1, 2.530000, 0 } },
-  { "Pentax", "GR", IncandescentWarm, 0,		{ 2.090000, 1, 2.030000, 0 } },
-  { "Pentax", "GR", DaylightFluorescent, 0,	{ 3.220000, 1, 1.510000, 0 } },
-  { "Pentax", "GR", WhiteFluorescent, 0,		{ 2.860000, 1, 1.700000, 0 } },
-  { "Pentax", "GR", CoolWhiteFluorescent, 0,	{ 2.610000, 1, 2.080000, 0 } },
-  { "Pentax", "GR", WarmWhiteFluorescent, 0,	{ 2.240000, 1, 2.160000, 0 } },
-  { "Pentax", "GR", "5000K", 0,			{ 2.890000, 1, 1.520000, 0 } },
+  /* Ricoh GR Firmware Version 4.00 */
+  { "Ricoh", "GR", Daylight, 0,			{ 2.980000, 1, 1.580000, 0 } },
+  { "Ricoh", "GR", Shade, 0,			{ 3.450000, 1, 1.360000, 0 } },
+  { "Ricoh", "GR", Cloudy, 0,			{ 3.170000, 1, 1.500000, 0 } },
+  { "Ricoh", "GR", Incandescent, 0,		{ 1.920000, 1, 2.530000, 0 } },
+  { "Ricoh", "GR", IncandescentWarm, 0,		{ 2.090000, 1, 2.030000, 0 } },
+  { "Ricoh", "GR", DaylightFluorescent, 0,	{ 3.220000, 1, 1.510000, 0 } },
+  { "Ricoh", "GR", WhiteFluorescent, 0,		{ 2.860000, 1, 1.700000, 0 } },
+  { "Ricoh", "GR", CoolWhiteFluorescent, 0,	{ 2.610000, 1, 2.080000, 0 } },
+  { "Ricoh", "GR", WarmWhiteFluorescent, 0,	{ 2.240000, 1, 2.160000, 0 } },
+  { "Ricoh", "GR", "5000K", 0,			{ 2.890000, 1, 1.520000, 0 } },
 
   { "Samsung", "EX1", Daylight, 0,		{ 1.8711, 1, 2.0039, 0 } },
   { "Samsung", "EX1", Cloudy, 0,		{ 2.3672, 1, 1.6797, 0 } },
@@ -5409,6 +5415,40 @@ const wb_data wb_preset[] =
   { "Samsung", "NX3000", DaylightFluorescent, 0,	{ 2.582031, 1, 1.835938, 0 } },
   { "Samsung", "NX3000", Tungsten, 0,			{ 1.539063, 1, 2.816406, 0 } },
   { "Samsung", "NX3000", Flash, 0,			{ 2.597656, 1, 1.566406, 0 } },
+
+  /* Firmware version 2.00 */
+  /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
+  { "Sony", "DSC-RX10", Daylight, -7,          { 2.035156, 1, 2.292969, 0 } },
+  { "Sony", "DSC-RX10", Daylight, 0,           { 2.503906, 1, 1.824219, 0 } },
+  { "Sony", "DSC-RX10", Daylight, 7,           { 3.105469, 1, 1.449219, 0 } },
+  { "Sony", "DSC-RX10", Shade, -7,             { 2.398438, 1, 1.910156, 0 } },
+  { "Sony", "DSC-RX10", Shade, 0,              { 2.968750, 1, 1.519531, 0 } },
+  { "Sony", "DSC-RX10", Shade, 7,              { 3.710938, 1, 1.210938, 0 } },
+  { "Sony", "DSC-RX10", Cloudy, -7,            { 2.187500, 1, 2.113281, 0 } },
+  { "Sony", "DSC-RX10", Cloudy, 0,             { 2.699219, 1, 1.679688, 0 } },
+  { "Sony", "DSC-RX10", Cloudy, 7,             { 3.359375, 1, 1.335938, 0 } },
+  { "Sony", "DSC-RX10", Incandescent, -7,      { 1.285156, 1, 3.925781, 0 } },
+  { "Sony", "DSC-RX10", Incandescent, 0,       { 1.562500, 1, 3.109375, 0 } },
+  { "Sony", "DSC-RX10", Incandescent, 7,       { 1.906250, 1, 2.468750, 0 } },
+  { "Sony", "DSC-RX10", WarmWhiteFluorescent, -7, { 1.515625, 1, 3.808594, 0 } },
+  { "Sony", "DSC-RX10", WarmWhiteFluorescent, 0, { 1.828125, 1, 3.058594, 0 } },
+  { "Sony", "DSC-RX10", WarmWhiteFluorescent, 7, { 2.214844, 1, 2.460938, 0 } },
+  { "Sony", "DSC-RX10", CoolWhiteFluorescent, -7, { 1.921875, 1, 3.207031, 0 } },
+  { "Sony", "DSC-RX10", CoolWhiteFluorescent, 0, { 2.316406, 1, 2.601563, 0 } },
+  { "Sony", "DSC-RX10", CoolWhiteFluorescent, 7, { 2.804688, 1, 2.113281, 0 } },
+  { "Sony", "DSC-RX10", DayWhiteFluorescent, -7, { 1.949219, 1, 2.332031, 0 } },
+  { "Sony", "DSC-RX10", DayWhiteFluorescent, 0,        { 2.402344, 1, 1.851563, 0 } },
+  { "Sony", "DSC-RX10", DayWhiteFluorescent, 7,        { 2.976563, 1, 1.468750, 0 } },
+  { "Sony", "DSC-RX10", DaylightFluorescent, -7, { 2.156250, 1, 2.097656, 0 } },
+  { "Sony", "DSC-RX10", DaylightFluorescent, 0,        { 2.664063, 1, 1.664063, 0 } },
+  { "Sony", "DSC-RX10", DaylightFluorescent, 7,        { 3.316406, 1, 1.324219, 0 } },
+  { "Sony", "DSC-RX10", Flash, -7,             { 2.367188, 1, 1.867188, 0 } },
+  { "Sony", "DSC-RX10", Flash, 0,              { 2.937500, 1, 1.484375, 0 } },
+  { "Sony", "DSC-RX10", Flash, 7,              { 3.675781, 1, 1.179688, 0 } },
+  { "Sony", "DSC-RX10", "2700K", 0,            { 1.476563, 1, 3.316406, 0 } },
+  { "Sony", "DSC-RX10", "5000K", 0,            { 2.421875, 1, 1.890625, 0 } },
+  { "Sony", "DSC-RX10", "5500K", 0,            { 2.558594, 1, 1.781250, 0 } },
+  { "Sony", "DSC-RX10", "6500K", 0,            { 2.785156, 1, 1.625000, 0 } },
 
   { "Sony", "DSC-RX100", Daylight, 0,		{ 2.0703, 1, 2.1602, 0 } },
   { "Sony", "DSC-RX100", Shade, 0,		{ 2.4531, 1, 1.7852, 0 } },

@@ -2917,6 +2917,199 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 
 </section>
 
+<section status="final" id="darktable_gettext">
+<title>darktable.gettext</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>gettext</secondary>
+</indexterm>
+<synopsis>table</synopsis>
+<para>This table contains functions related to translating lua scripts</para>
+
+<section status="final" id="darktable_gettext_gettext">
+<title>darktable.gettext.gettext</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>gettext</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gettext_gettext_msgid">msgid</link></emphasis> : string
+) : string</synopsis>
+<para>Translate a string using the darktable textdomain</para>
+
+<variablelist>
+<varlistentry id="darktable_gettext_gettext_msgid"><term>msgid</term><listitem>
+<synopsis>string</synopsis>
+<para>The string to translate</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>string</synopsis>
+<para>The translated string</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gettext_dgettext">
+<title>darktable.gettext.dgettext</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dgettext</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gettext_dgettext_domainname">domainname</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gettext_dgettext_msgid">msgid</link></emphasis> : string
+) : string</synopsis>
+<para>Translate a string using the specified textdomain</para>
+
+<variablelist>
+<varlistentry id="darktable_gettext_dgettext_domainname"><term>domainname</term><listitem>
+<synopsis>string</synopsis>
+<para>The domain to use for that translation</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gettext_dgettext_msgid"><term>msgid</term><listitem>
+<synopsis>string</synopsis>
+<para>The string to translate</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>string</synopsis>
+<para>The translated string</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gettext_ngettext">
+<title>darktable.gettext.ngettext</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>ngettext</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gettext_ngettext_msgid">msgid</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gettext_ngettext_msgid_plural">msgid_plural</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gettext_ngettext_n">n</link></emphasis> : int
+) : string</synopsis>
+<para>Translate a string depending on the number of objects using the darktable textdomain</para>
+
+<variablelist>
+<varlistentry id="darktable_gettext_ngettext_msgid"><term>msgid</term><listitem>
+<synopsis>string</synopsis>
+<para>The string to translate</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gettext_ngettext_msgid_plural"><term>msgid_plural</term><listitem>
+<synopsis>string</synopsis>
+<para>The string to translate in plural form</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gettext_ngettext_n"><term>n</term><listitem>
+<synopsis>int</synopsis>
+<para>The number of objetc</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>string</synopsis>
+<para>The translated string</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gettext_dngettext">
+<title>darktable.gettext.dngettext</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dngettext</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gettext_dngettext_domainname">domainname</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gettext_dngettext_msgid">msgid</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gettext_dngettext_msgid_plural">msgid_plural</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gettext_dngettext_n">n</link></emphasis> : int
+) : string</synopsis>
+<para>Translate a string depending on the number of objects using the specified textdomain</para>
+
+<variablelist>
+<varlistentry id="darktable_gettext_dngettext_domainname"><term>domainname</term><listitem>
+<synopsis>string</synopsis>
+<para>The domain to use for that translation</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gettext_dngettext_msgid"><term>msgid</term><listitem>
+<synopsis>string</synopsis>
+<para>The string to translate</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gettext_dngettext_msgid_plural"><term>msgid_plural</term><listitem>
+<synopsis>string</synopsis>
+<para>The string to translate in plural form</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gettext_dngettext_n"><term>n</term><listitem>
+<synopsis>int</synopsis>
+<para>The number of objetc</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>string</synopsis>
+<para>The translated string</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gettext_bindtextdomain">
+<title>darktable.gettext.bindtextdomain</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>bindtextdomain</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gettext_bindtextdomain_domainname">domainname</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gettext_bindtextdomain_dirname">dirname</link></emphasis> : string
+)</synopsis>
+<para>Tell gettext where to find the .mo file translating messages for a particular domain</para>
+
+<variablelist>
+<varlistentry id="darktable_gettext_bindtextdomain_domainname"><term>domainname</term><listitem>
+<synopsis>string</synopsis>
+<para>The domain to use for that translation</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gettext_bindtextdomain_dirname"><term>dirname</term><listitem>
+<synopsis>string</synopsis>
+<para>The base directory to look for the file. The file should be placed in <emphasis>dirname</emphasis>/<emphasis>locale name</emphasis>/LC_MESSAGES/<emphasis>domain</emphasis>.mo</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+</section>
+
 <section status="final" id="darktable_debug">
 <title>darktable.debug</title>
 <indexterm>
@@ -5814,17 +6007,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6158,17 +6341,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The widgets contained by the box</para>
 <para>You can append widgets by adding them at the end of the list</para>
 <para>You can remove widgets by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6710,17 +6883,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_lua_combobox_changed_callback">

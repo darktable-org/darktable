@@ -734,7 +734,7 @@ void dt_gui_favorite_presets_menu_show()
       dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
 
       /* check if module is favorite */
-      if(iop->state == dt_iop_state_FAVORITE)
+      if(iop->so->state == dt_iop_state_FAVORITE)
       {
         /* create submenu for module */
         GtkMenuItem *smi = (GtkMenuItem *)gtk_menu_item_new_with_label(iop->name());

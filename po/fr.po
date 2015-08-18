@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-05 22:43+0200\n"
-"PO-Revision-Date: 2015-07-05 22:43+0200\n"
+"POT-Creation-Date: 2015-08-07 18:01+0200\n"
+"PO-Revision-Date: 2015-08-07 18:03+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 1.8.2\n"
+"X-Generator: Poedit 1.8.3\n"
 
 #: ../build/src/preferences_gen.h:1335
 msgid "GUI options"
@@ -700,7 +700,7 @@ msgid "failed to get parameters from format module, aborting export ..."
 msgstr "impossible d'obtenir les paramètres du module de format, exportation abandonnée..."
 
 #: ../src/common/collection.c:615 ../src/develop/lightroom.c:915 ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463 ../src/iop/channelmixer.c:475
-#: ../src/iop/colorbalance.c:586 ../src/iop/colorbalance.c:625 ../src/iop/colorbalance.c:664 ../src/iop/temperature.c:1149 ../src/libs/collect.c:1250
+#: ../src/iop/colorbalance.c:586 ../src/iop/colorbalance.c:625 ../src/iop/colorbalance.c:664 ../src/iop/temperature.c:1184 ../src/libs/collect.c:1250
 #: ../src/libs/collect.c:1251
 msgid "red"
 msgstr "rouge"
@@ -710,13 +710,13 @@ msgid "yellow"
 msgstr "jaune"
 
 #: ../src/common/collection.c:619 ../src/develop/lightroom.c:919 ../src/iop/bilateral.cc:352 ../src/iop/channelmixer.c:464 ../src/iop/channelmixer.c:482
-#: ../src/iop/colorbalance.c:595 ../src/iop/colorbalance.c:634 ../src/iop/colorbalance.c:673 ../src/iop/temperature.c:1150 ../src/libs/collect.c:1256
+#: ../src/iop/colorbalance.c:595 ../src/iop/colorbalance.c:634 ../src/iop/colorbalance.c:673 ../src/iop/temperature.c:1185 ../src/libs/collect.c:1256
 #: ../src/libs/collect.c:1257
 msgid "green"
 msgstr "vert"
 
 #: ../src/common/collection.c:621 ../src/develop/lightroom.c:921 ../src/iop/bilateral.cc:353 ../src/iop/channelmixer.c:465 ../src/iop/channelmixer.c:488
-#: ../src/iop/colorbalance.c:604 ../src/iop/colorbalance.c:643 ../src/iop/colorbalance.c:682 ../src/iop/temperature.c:1151 ../src/libs/collect.c:1259
+#: ../src/iop/colorbalance.c:604 ../src/iop/colorbalance.c:643 ../src/iop/colorbalance.c:682 ../src/iop/temperature.c:1186 ../src/libs/collect.c:1259
 #: ../src/libs/collect.c:1260
 msgid "blue"
 msgstr "bleu"
@@ -740,17 +740,17 @@ msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "%d image sur %d de la collection courante est sélectionnée"
 msgstr[1] "%d images sur %d de la collection courante sont sélectionnées"
 
-#: ../src/common/cups_print.c:310
+#: ../src/common/cups_print.c:309
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr "fichier «%s» à imprimer non trouvé pour l'image %d sur «%s»"
 
-#: ../src/common/cups_print.c:372
+#: ../src/common/cups_print.c:371
 #, c-format
 msgid "error while printing image %d on `%s'"
 msgstr "erreur pendant l'impression de l'image %d sur «%s»"
 
-#: ../src/common/cups_print.c:374
+#: ../src/common/cups_print.c:373
 #, c-format
 msgid "printing image %d on `%s'"
 msgstr "impression de l'image %d sur «%s»"
@@ -791,7 +791,7 @@ msgid_plural "importing %d images"
 msgstr[0] "importation de %d image"
 msgstr[1] "importation de %d images"
 
-#: ../src/common/film.c:567
+#: ../src/common/film.c:576
 msgid "cannot remove film roll having local copies with non accessible originals"
 msgstr "impossible de supprimer un film comprenant des copies locales dont les originaux ne sont pas accessibles"
 
@@ -800,13 +800,13 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr "il est nécessaire de copier le développement d'une image avant de le coller sur une autre"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428 ../src/common/history.c:443 ../src/common/styles.c:716 ../src/common/styles.c:720
-#: ../src/develop/blend_gui.c:1825 ../src/develop/develop.c:1293 ../src/libs/live_view.c:409
+#: ../src/develop/blend_gui.c:1825 ../src/develop/develop.c:1295 ../src/libs/live_view.c:409
 msgid "on"
 msgstr "activé(e)"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428 ../src/common/history.c:443 ../src/common/styles.c:716 ../src/common/styles.c:720
-#: ../src/develop/blend_gui.c:1604 ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1293 ../src/imageio/format/exr.cc:353 ../src/imageio/format/j2k.c:671
-#: ../src/iop/colorin.c:1256 ../src/iop/demosaic.c:2097 ../src/iop/vignette.c:1143 ../src/libs/history.c:153 ../src/libs/live_view.c:408
+#: ../src/develop/blend_gui.c:1604 ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1295 ../src/imageio/format/exr.cc:353 ../src/imageio/format/j2k.c:671
+#: ../src/iop/colorin.c:1256 ../src/iop/demosaic.c:2218 ../src/iop/vignette.c:1143 ../src/libs/history.c:153 ../src/libs/live_view.c:408
 msgid "off"
 msgstr "désactivé(e)"
 
@@ -835,11 +835,11 @@ msgstr "impossible de créer la copie locale lorsque l'original n'est pas access
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1397 ../src/control/jobs/control_jobs.c:615
+#: ../src/common/image.c:1397 ../src/control/jobs/control_jobs.c:625
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "impossible de supprimer la copie locale lorsque l'original n'est pas accessible"
 
-#: ../src/common/image.c:1550
+#: ../src/common/image.c:1549
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -861,17 +861,17 @@ msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:563 ../src/common/mipmap_cache.c:829
+#: ../src/common/imageio.c:561 ../src/common/mipmap_cache.c:923
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image «%s» non disponible!"
 
-#: ../src/common/imageio.c:579
+#: ../src/common/imageio.c:575
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "impossible de trouver le style «%s» à appliquer pendant l'exportation."
 
-#: ../src/common/import_session.c:266
+#: ../src/common/import_session.c:270
 msgid "couldn't expand to a unique filename for session, please check your import session settings."
 msgstr "impossible d'affecter un nom unique pour la session. vérifier les réglages d'importation."
 
@@ -879,15 +879,15 @@ msgstr "impossible d'affecter un nom unique pour la session. vérifier les régl
 msgid "generic poissonian"
 msgstr "distribution générique"
 
-#: ../src/common/pdf.h:85 ../src/iop/lens.c:1702 ../src/libs/print_settings.c:1095
+#: ../src/common/pdf.h:85 ../src/iop/lens.c:1702 ../src/libs/print_settings.c:1098
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:86 ../src/libs/print_settings.c:1096
+#: ../src/common/pdf.h:86 ../src/libs/print_settings.c:1099
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:87 ../src/libs/print_settings.c:1097
+#: ../src/common/pdf.h:87 ../src/libs/print_settings.c:1100
 msgid "inch"
 msgstr "pouce"
 
@@ -969,7 +969,7 @@ msgstr "le style «%s» a été importé"
 
 #: ../src/common/variables.c:240 ../src/common/variables.c:254 ../src/iop/clipping.c:1574 ../src/iop/clipping.c:1861 ../src/iop/clipping.c:1881
 #: ../src/iop/clipping.c:2019 ../src/iop/clipping.c:2041 ../src/iop/colorreconstruction.c:1314 ../src/iop/lens.c:2037 ../src/libs/export.c:488
-#: ../src/libs/live_view.c:323 ../src/libs/live_view.c:336 ../src/libs/live_view.c:354 ../src/libs/print_settings.c:1010 ../src/libs/print_settings.c:1271
+#: ../src/libs/live_view.c:323 ../src/libs/live_view.c:336 ../src/libs/live_view.c:354 ../src/libs/print_settings.c:1013 ../src/libs/print_settings.c:1274
 msgid "none"
 msgstr "sans"
 
@@ -1028,113 +1028,113 @@ msgstr[1] "capture de %d images"
 msgid "please set your camera to manual mode first!"
 msgstr "merci de régler le boîtier en mode manuel !"
 
-#: ../src/control/jobs/camera_jobs.c:251
+#: ../src/control/jobs/camera_jobs.c:285
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d importé(s) vers %s"
 
-#: ../src/control/jobs/camera_jobs.c:287
+#: ../src/control/jobs/camera_jobs.c:321
 msgid "starting to import images from camera"
 msgstr "début de l'importation d'images depuis le boîtier"
 
-#: ../src/control/jobs/camera_jobs.c:299
+#: ../src/control/jobs/camera_jobs.c:332
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "importation de %d image depuis l'appareil photo"
 msgstr[1] "importation de %d images depuis l'appareil photo"
 
-#: ../src/control/jobs/control_jobs.c:134
+#: ../src/control/jobs/control_jobs.c:133
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr "échec de la création du dossier de destination, abandon du déplacement..."
 
-#: ../src/control/jobs/control_jobs.c:302
+#: ../src/control/jobs/control_jobs.c:312
 msgid "exposure bracketing only works on Bayer raw images."
 msgstr "bracketing d'exposition marche uniquement sur les raw de Bayer"
 
-#: ../src/control/jobs/control_jobs.c:309
+#: ../src/control/jobs/control_jobs.c:319
 msgid "images have to be of same size and orientation!"
 msgstr "les images doivent avoir la même taille et orientation !"
 
-#: ../src/control/jobs/control_jobs.c:401
+#: ../src/control/jobs/control_jobs.c:411
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "fusion de %d image"
 msgstr[1] "fusion  de %d images"
 
-#: ../src/control/jobs/control_jobs.c:461
+#: ../src/control/jobs/control_jobs.c:472
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "image HDR «%s» écrite"
 
-#: ../src/control/jobs/control_jobs.c:489
+#: ../src/control/jobs/control_jobs.c:499
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplication de %d image"
 msgstr[1] "duplication de %d images"
 
-#: ../src/control/jobs/control_jobs.c:516
+#: ../src/control/jobs/control_jobs.c:526
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "rotation de %d image"
 msgstr[1] "rotation de %d images"
 
-#: ../src/control/jobs/control_jobs.c:591
+#: ../src/control/jobs/control_jobs.c:601
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "enlèvement de %d image"
 msgstr[1] "enlèvement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:666
+#: ../src/control/jobs/control_jobs.c:675
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "suppression de %d image"
 msgstr[1] "suppression de %d images"
 
-#: ../src/control/jobs/control_jobs.c:808
+#: ../src/control/jobs/control_jobs.c:817
 msgid "failed to parse GPX file"
 msgstr "erreur de lecture du fichier GPX"
 
-#: ../src/control/jobs/control_jobs.c:868
+#: ../src/control/jobs/control_jobs.c:877
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "application des données GPX recalées à %d image"
 msgstr[1] "application des données GPX recalées à %d images"
 
-#: ../src/control/jobs/control_jobs.c:891
+#: ../src/control/jobs/control_jobs.c:892
 #, c-format
 msgid "moving %d image"
 msgstr "déplacement de %d image"
 
-#: ../src/control/jobs/control_jobs.c:892
+#: ../src/control/jobs/control_jobs.c:893
 #, c-format
 msgid "moving %d images"
 msgstr "déplacement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:897
+#: ../src/control/jobs/control_jobs.c:898
 #, c-format
 msgid "copying %d image"
 msgstr "copie de %d image"
 
-#: ../src/control/jobs/control_jobs.c:898
+#: ../src/control/jobs/control_jobs.c:899
 #, c-format
 msgid "copying %d images"
 msgstr "copie de %d images"
 
-#: ../src/control/jobs/control_jobs.c:914
+#: ../src/control/jobs/control_jobs.c:915
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "création de copie locale de %d image"
 msgstr[1] "création des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:917
+#: ../src/control/jobs/control_jobs.c:918
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
@@ -1160,46 +1160,46 @@ msgstr[1] "exportation de %d images vers %s"
 msgid "image `%s' is currently unavailable"
 msgstr "image «%s» non disponible actuellement"
 
-#: ../src/control/jobs/control_jobs.c:1150
+#: ../src/control/jobs/control_jobs.c:1175
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural "do you really want to remove %d selected images from the collection?"
 msgstr[0] "êtes-vous sûr de vouloir enlever de la bibliothèque %d image sélectionnée ?"
 msgstr[1] "êtes-vous sûr de vouloir enlever de la bibliothèque les %d images sélectionnées ?"
 
-#: ../src/control/jobs/control_jobs.c:1154
+#: ../src/control/jobs/control_jobs.c:1179
 msgid "remove images?"
 msgstr "enlever les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1186
+#: ../src/control/jobs/control_jobs.c:1211
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural "do you really want to physically delete %d selected images from disk?"
 msgstr[0] "êtes-vous sûr de vouloir supprimer du disque définitivement %d image sélectionnée  ?"
 msgstr[1] "êtes-vous sûr de vouloir supprimer du disque définitivement les %d images sélectionnées  ?"
 
-#: ../src/control/jobs/control_jobs.c:1190
+#: ../src/control/jobs/control_jobs.c:1215
 msgid "delete images?"
 msgstr "supprimer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1215 ../src/control/jobs/control_jobs.c:1269 ../src/imageio/storage/disk.c:92 ../src/imageio/storage/disk.c:156
+#: ../src/control/jobs/control_jobs.c:1240 ../src/control/jobs/control_jobs.c:1294 ../src/imageio/storage/disk.c:92 ../src/imageio/storage/disk.c:156
 #: ../src/imageio/storage/gallery.c:104 ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104 ../src/imageio/storage/latex.c:165
 #: ../src/libs/styles.c:208 ../src/lua/preferences.c:610
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
-#: ../src/control/jobs/control_jobs.c:1215 ../src/control/jobs/control_jobs.c:1269 ../src/gui/hist_dialog.c:137 ../src/gui/preferences.c:1012
+#: ../src/control/jobs/control_jobs.c:1240 ../src/control/jobs/control_jobs.c:1294 ../src/gui/hist_dialog.c:137 ../src/gui/preferences.c:1012
 #: ../src/gui/preferences.c:1034 ../src/gui/presets.c:386 ../src/gui/styles_dialog.c:284 ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/latex.c:104 ../src/libs/collect.c:414 ../src/libs/copy_history.c:70 ../src/libs/geotagging.c:439 ../src/libs/import.c:761
 #: ../src/libs/import.c:858 ../src/libs/lib.c:216 ../src/libs/styles.c:208 ../src/libs/styles.c:228
 msgid "_Cancel"
 msgstr "_Annuler"
 
-#: ../src/control/jobs/control_jobs.c:1216 ../src/control/jobs/control_jobs.c:1270
+#: ../src/control/jobs/control_jobs.c:1241 ../src/control/jobs/control_jobs.c:1295
 msgid "_Select as destination"
 msgstr "_Sélectionner comme destination"
 
-#: ../src/control/jobs/control_jobs.c:1234
+#: ../src/control/jobs/control_jobs.c:1259
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1214,45 +1214,45 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers %s  ?\n"
 "(les clones non sélectionnés seront également déplacés)"
 
-#: ../src/control/jobs/control_jobs.c:1240
+#: ../src/control/jobs/control_jobs.c:1265
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "déplacer l' image ?"
 msgstr[1] "déplacer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1288
+#: ../src/control/jobs/control_jobs.c:1313
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] "êtes-vous sûr de vouloir copier physiquement %d image sélectionnée vers %s  ?"
 msgstr[1] "êtes-vous sûr de vouloir copier physiquement les %d images sélectionnées vers %s  ?"
 
-#: ../src/control/jobs/control_jobs.c:1291
+#: ../src/control/jobs/control_jobs.c:1316
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copier l'image ?"
 msgstr[1] "copier les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1346
+#: ../src/control/jobs/control_jobs.c:1402
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr "impossible d'obtenir les paramètres du module de stockage «%s», exportation abandonnée."
 
-#: ../src/control/jobs/control_jobs.c:1388
+#: ../src/control/jobs/control_jobs.c:1440
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1407
+#: ../src/control/jobs/control_jobs.c:1459
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "décalage horaire ajouté à %d image"
 msgstr[1] "décalage horaire ajouté à %d images"
 
-#: ../src/control/jobs/image_jobs.c:75
+#: ../src/control/jobs/image_jobs.c:71
 #, c-format
 msgid "importing image %s"
 msgstr "importation de l'image %s"
@@ -1372,7 +1372,7 @@ msgstr ""
 "* intervalle à l’extérieur des marqueurs externes (triangles vides du bas) : pas de fusion\n"
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
-#: ../src/develop/blend_gui.c:1087 ../src/iop/colorzones.c:1093 ../src/iop/tonecurve.c:756
+#: ../src/develop/blend_gui.c:1087 ../src/iop/colorzones.c:1093 ../src/iop/tonecurve.c:755
 msgid "pick GUI color from image"
 msgstr "choisit une couleur dans l'image"
 
@@ -1411,8 +1411,8 @@ msgstr[1] "%d formes utilisées"
 msgid "no mask used"
 msgstr "aucun utilisé"
 
-#: ../src/develop/blend_gui.c:1257 ../src/develop/blend_gui.c:1602 ../src/develop/blend_gui.c:1642 ../src/develop/blend_gui.c:1789
-#: ../src/develop/blend_gui.c:1797 ../src/develop/blend_gui.c:1820 ../src/develop/blend_gui.c:1837
+#: ../src/develop/blend_gui.c:1257 ../src/develop/blend_gui.c:1602 ../src/develop/blend_gui.c:1642 ../src/develop/blend_gui.c:1789 ../src/develop/blend_gui.c:1797
+#: ../src/develop/blend_gui.c:1820 ../src/develop/blend_gui.c:1837
 msgid "blend"
 msgstr "fusion"
 
@@ -1675,85 +1675,85 @@ msgstr "affiche le masque"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "désactive temporairement le masque de fusion. uniquement pour le module actif"
 
-#: ../src/develop/develop.c:1097
+#: ../src/develop/develop.c:1099
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module «%s» version non cohérente: %d != %d"
 
-#: ../src/develop/imageop.c:837
+#: ../src/develop/imageop.c:838
 msgid "new instance"
 msgstr "nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:843
+#: ../src/develop/imageop.c:844
 msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:848 ../src/libs/masks.c:1139
+#: ../src/develop/imageop.c:849 ../src/libs/masks.c:1139
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:854 ../src/libs/masks.c:1142
+#: ../src/develop/imageop.c:855 ../src/libs/masks.c:1142
 msgid "move down"
 msgstr "descendre"
 
 #. delete
-#: ../src/develop/imageop.c:860 ../src/libs/image.c:155 ../src/libs/styles.c:353 ../src/libs/tagging.c:469
+#: ../src/develop/imageop.c:861 ../src/libs/image.c:155 ../src/libs/styles.c:353 ../src/libs/tagging.c:469
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:884 ../src/develop/imageop.c:1832
+#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1838
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:884 ../src/develop/imageop.c:1832
+#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1838
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1195 ../src/gui/accelerators.c:596 ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847 ../src/gui/accelerators.c:873
-#: ../src/gui/presets.c:188 ../src/gui/presets.c:294 ../src/gui/presets.c:662 ../src/iop/temperature.c:1161 ../src/libs/import.c:543 ../src/libs/lib.c:309
-#: ../src/libs/lib.c:334 ../src/libs/lib.c:1112
+#: ../src/develop/imageop.c:1201 ../src/gui/accelerators.c:596 ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847 ../src/gui/accelerators.c:873
+#: ../src/gui/presets.c:188 ../src/gui/presets.c:294 ../src/gui/presets.c:662 ../src/iop/temperature.c:1196 ../src/libs/import.c:543 ../src/libs/lib.c:309
+#: ../src/libs/lib.c:334 ../src/libs/lib.c:1115
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1239
+#: ../src/develop/imageop.c:1245
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1244
+#: ../src/develop/imageop.c:1250
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1245
+#: ../src/develop/imageop.c:1251
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1247 ../src/libs/lib.c:583
+#: ../src/develop/imageop.c:1253 ../src/libs/lib.c:583
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1248 ../src/libs/lib.c:587
+#: ../src/develop/imageop.c:1254 ../src/libs/lib.c:587
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1803
+#: ../src/develop/imageop.c:1809
 msgid "multiple instances actions"
 msgstr "instances multiples"
 
-#: ../src/develop/imageop.c:1811 ../src/libs/lib.c:954
+#: ../src/develop/imageop.c:1817 ../src/libs/lib.c:957
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1819 ../src/gui/preferences.c:411 ../src/libs/lib.c:966
+#: ../src/develop/imageop.c:1825 ../src/gui/preferences.c:411 ../src/libs/lib.c:969
 msgid "presets"
 msgstr "pré-réglages"
 
@@ -1782,7 +1782,7 @@ msgstr "géolocalisation"
 msgid "color label"
 msgstr "labels de couleur"
 
-#: ../src/develop/lightroom.c:1417
+#: ../src/develop/lightroom.c:1415
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -1872,7 +1872,7 @@ msgstr "ajouter un masque existant"
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
-#: ../src/develop/pixelpipe_hb.c:2407
+#: ../src/develop/pixelpipe_hb.c:2408
 msgid "darktable discovered problems with your OpenCL setup; disabling OpenCL for this session!"
 msgstr "darktable a rencontré des problèmes avec la configuration OpenCL qui sera désactivé pour cette session!"
 
@@ -2694,7 +2694,7 @@ msgstr "J2K"
 msgid "jp2"
 msgstr "jp2"
 
-#: ../src/imageio/format/j2k.c:663 ../src/imageio/format/jpeg.c:586 ../src/imageio/format/webp.c:308 ../src/libs/camera.c:590
+#: ../src/imageio/format/j2k.c:663 ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:308 ../src/libs/camera.c:590
 msgid "quality"
 msgstr "qualité"
 
@@ -2714,7 +2714,7 @@ msgstr "Cinema2K, 48fps"
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24fps"
 
-#: ../src/imageio/format/jpeg.c:568
+#: ../src/imageio/format/jpeg.c:576
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bits)"
 
@@ -2734,8 +2734,8 @@ msgstr "taille du papier non valide"
 msgid "invalid border size, using 0"
 msgstr "taille des bords non valide, 0 est utilisé"
 
-#: ../src/imageio/format/pdf.c:194 ../src/imageio/storage/disk.c:289 ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1293
-#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:337 ../src/imageio/storage/gallery.c:357 ../src/imageio/storage/picasa.c:1446
+#: ../src/imageio/format/pdf.c:194 ../src/imageio/storage/disk.c:293 ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1293
+#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:344 ../src/imageio/storage/gallery.c:364 ../src/imageio/storage/picasa.c:1446
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier «%s» !"
@@ -2758,7 +2758,7 @@ msgid "enter the title of the pdf"
 msgstr "entrer le titre du pdf"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:546 ../src/libs/print_settings.c:1080
+#: ../src/imageio/format/pdf.c:546 ../src/libs/print_settings.c:1083
 msgid "paper size"
 msgstr "taille papier"
 
@@ -2776,11 +2776,11 @@ msgstr ""
 msgid "page orientation"
 msgstr "orientation de la page"
 
-#: ../src/imageio/format/pdf.c:560 ../src/iop/borders.c:994 ../src/libs/print_settings.c:1089
+#: ../src/imageio/format/pdf.c:560 ../src/iop/borders.c:994 ../src/libs/print_settings.c:1092
 msgid "portrait"
 msgstr "portrait"
 
-#: ../src/imageio/format/pdf.c:561 ../src/iop/borders.c:995 ../src/libs/print_settings.c:1090
+#: ../src/imageio/format/pdf.c:561 ../src/iop/borders.c:995 ../src/libs/print_settings.c:1093
 msgid "landscape"
 msgstr "paysage"
 
@@ -3022,17 +3022,17 @@ msgstr "créer fichier unique"
 msgid "overwrite"
 msgstr "écraser"
 
-#: ../src/imageio/storage/disk.c:247 ../src/imageio/storage/gallery.c:258 ../src/imageio/storage/latex.c:256
+#: ../src/imageio/storage/disk.c:251 ../src/imageio/storage/gallery.c:265 ../src/imageio/storage/latex.c:260
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "impossible de créer le répertoire «%s» !"
 
-#: ../src/imageio/storage/disk.c:254
+#: ../src/imageio/storage/disk.c:258
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "impossible d'écrire dans le répertoire «%s» !"
 
-#: ../src/imageio/storage/disk.c:296 ../src/imageio/storage/email.c:142 ../src/imageio/storage/gallery.c:367 ../src/imageio/storage/latex.c:346
+#: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:142 ../src/imageio/storage/gallery.c:374 ../src/imageio/storage/latex.c:350
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d exportée(s) vers «%s%s»"
@@ -3042,11 +3042,11 @@ msgid "send as email"
 msgstr "envoyer par e-mail"
 
 #. subject, body format
-#: ../src/imageio/storage/email.c:189
+#: ../src/imageio/storage/email.c:190
 msgid "images exported from darktable"
 msgstr "images exportées depuis darktable"
 
-#: ../src/imageio/storage/email.c:222
+#: ../src/imageio/storage/email.c:223
 msgid "could not launch email client!"
 msgstr "impossible de lancer le client de messagerie!"
 
@@ -3508,27 +3508,27 @@ msgstr "similaire nokia"
 msgid "cubic spline"
 msgstr "spline cubique"
 
-#: ../src/iop/basecurve.c:203
+#: ../src/iop/basecurve.c:205
 msgid "base curve"
 msgstr "courbe de base"
 
-#: ../src/iop/basecurve.c:770
+#: ../src/iop/basecurve.c:822
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
-#: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2179 ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1301
+#: ../src/iop/basecurve.c:827 ../src/iop/lens.c:2179 ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1301
 msgid "scale"
 msgstr "échelle"
 
-#: ../src/iop/basecurve.c:776 ../src/iop/profile_gamma.c:321 ../src/iop/tonecurve.c:414
+#: ../src/iop/basecurve.c:828 ../src/iop/profile_gamma.c:321 ../src/iop/tonecurve.c:413
 msgid "linear"
 msgstr "linéaire"
 
-#: ../src/iop/basecurve.c:777
+#: ../src/iop/basecurve.c:829
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../src/iop/basecurve.c:779
+#: ../src/iop/basecurve.c:831
 msgid "scale to use in the graph. use logarithmic scale for more precise control near the blacks"
 msgstr "échelle pour le graphe, utilisez une échelle logarithmique pour une meilleure précision près des noirs"
 
@@ -3756,7 +3756,7 @@ msgstr ""
 "sélectionne les dimensions ou permet par clic-droit\n"
 "d'entrer des dimensions personnalisées (l:h)"
 
-#: ../src/iop/borders.c:992 ../src/iop/flip.c:73 ../src/libs/print_settings.c:1088
+#: ../src/iop/borders.c:992 ../src/iop/flip.c:73 ../src/libs/print_settings.c:1091
 msgid "orientation"
 msgstr "orientation"
 
@@ -4375,7 +4375,7 @@ msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (ex: JPG)"
 
 #: ../src/iop/colorin.c:1089 ../src/iop/colorin.c:1123 ../src/iop/colorin.c:1258 ../src/iop/colorout.c:942 ../src/iop/colorout.c:943 ../src/iop/colorout.c:944
-#: ../src/libs/export.c:605 ../src/libs/print_settings.c:855
+#: ../src/libs/export.c:605 ../src/libs/print_settings.c:858
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
@@ -4401,7 +4401,7 @@ msgstr "linéaire XYZ"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1239 ../src/iop/denoiseprofile.c:1657 ../src/libs/export.c:656 ../src/libs/print_settings.c:1000 ../src/libs/print_settings.c:1211
+#: ../src/iop/colorin.c:1239 ../src/iop/denoiseprofile.c:1657 ../src/libs/export.c:656 ../src/libs/print_settings.c:1003 ../src/libs/print_settings.c:1214
 msgid "profile"
 msgstr "profil"
 
@@ -4544,20 +4544,20 @@ msgstr "épreuvage"
 msgid "output intent"
 msgstr "rendu (sortie)"
 
-#: ../src/iop/colorout.c:884 ../src/iop/colorout.c:891 ../src/libs/export.c:677 ../src/libs/print_settings.c:1049 ../src/libs/print_settings.c:1256
+#: ../src/iop/colorout.c:884 ../src/iop/colorout.c:891 ../src/libs/export.c:677 ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1259
 msgid "perceptual"
 msgstr "perceptif"
 
-#: ../src/iop/colorout.c:885 ../src/iop/colorout.c:892 ../src/libs/export.c:678 ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1257
+#: ../src/iop/colorout.c:885 ../src/iop/colorout.c:892 ../src/libs/export.c:678 ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1260
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
-#: ../src/iop/colorout.c:886 ../src/iop/colorout.c:893 ../src/libs/export.c:679 ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1258
+#: ../src/iop/colorout.c:886 ../src/iop/colorout.c:893 ../src/libs/export.c:679 ../src/libs/print_settings.c:1054 ../src/libs/print_settings.c:1261
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/colorout.c:887 ../src/iop/colorout.c:894 ../src/libs/export.c:680 ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1259
+#: ../src/iop/colorout.c:887 ../src/iop/colorout.c:894 ../src/libs/export.c:680 ../src/libs/print_settings.c:1055 ../src/libs/print_settings.c:1262
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -4582,7 +4582,7 @@ msgstr "profil (écran)"
 msgid "system display profile"
 msgstr "système"
 
-#: ../src/iop/colorout.c:936 ../src/iop/colorout.c:937 ../src/iop/colorout.c:938 ../src/libs/export.c:598 ../src/libs/print_settings.c:848
+#: ../src/iop/colorout.c:936 ../src/iop/colorout.c:937 ../src/iop/colorout.c:938 ../src/libs/export.c:598 ../src/libs/print_settings.c:851
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web)"
 
@@ -4620,17 +4620,17 @@ msgstr "activer/désactiver la vérification du gamut"
 
 #: ../src/iop/colorreconstruction.c:125
 msgid "color reconstruction"
-msgstr "reconstruction couleurs"
+msgstr "reconstruction des couleurs"
 
 #: ../src/iop/colorreconstruction.c:171 ../src/iop/tonemap.cc:91
 msgctxt "accel"
 msgid "spatial extent"
-msgstr "rayon"
+msgstr "étendue spatiale"
 
 #: ../src/iop/colorreconstruction.c:172
 msgctxt "accel"
 msgid "range extent"
-msgstr "étendu luminosité"
+msgstr "étendue de clarté"
 
 #: ../src/iop/colorreconstruction.c:173
 msgctxt "accel"
@@ -4639,11 +4639,11 @@ msgstr "teinte"
 
 #: ../src/iop/colorreconstruction.c:1309 ../src/iop/shadhi.c:851 ../src/iop/tonemap.cc:301
 msgid "spatial extent"
-msgstr "rayon"
+msgstr "étendue spatiale"
 
 #: ../src/iop/colorreconstruction.c:1310
 msgid "range extent"
-msgstr "étendu luminosité"
+msgstr "étendue de clarté"
 
 #: ../src/iop/colorreconstruction.c:1313
 msgid "precedence"
@@ -4655,23 +4655,23 @@ msgstr "couleurs saturées"
 
 #: ../src/iop/colorreconstruction.c:1345
 msgid "pixels with lightness values above this threshold are corrected"
-msgstr "seuil L au dessus duquel les pixels sont affectés"
+msgstr "seuil de clarté au dessus duquel les pixels sont affectés"
 
 #: ../src/iop/colorreconstruction.c:1346
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr "largeur de recherche pour le remplacement des couleurs"
+msgstr "distance spatiale pour la recherche des couleurs de remplacement"
 
 #: ../src/iop/colorreconstruction.c:1347
 msgid "how far to look for replacement colors in the luminance dimension"
-msgstr "largeur de recherche pour le remplacement des couleurs dans la dimension de luminosité"
+msgstr "distance de clarté pour la recherche des couleurs de remplacement"
 
 #: ../src/iop/colorreconstruction.c:1348
 msgid "if and how to give precedence to specific replacement colors"
-msgstr "si et comment donner la priorité à une couleur de remplacement spécifique"
+msgstr "faut-il donner la priorité à une couleur de remplacement spécifique ? Si oui, comment le faire ?"
 
 #: ../src/iop/colorreconstruction.c:1349
 msgid "the hue tone which should be given precedence over other hue tones"
-msgstr "la teinte qui doit prendre priorité sur les autres teintes"
+msgstr "la teinte à laquelle on donne priorité sur les autres teintes"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
@@ -4801,48 +4801,52 @@ msgstr "rayon pour la détection de la frange"
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr "seuil pour la détection de la frange, valeurs plus grandes pour moins de suppression de la frange"
 
-#: ../src/iop/demosaic.c:114
+#: ../src/iop/demosaic.c:117
 msgid "demosaic"
 msgstr "dématriçage"
 
-#: ../src/iop/demosaic.c:129
+#: ../src/iop/demosaic.c:132
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:2070 ../src/iop/demosaic.c:2079 ../src/iop/dither.c:558 ../src/iop/highlights.c:735
+#: ../src/iop/demosaic.c:2190 ../src/iop/demosaic.c:2200 ../src/iop/dither.c:558 ../src/iop/highlights.c:735
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:2072
+#: ../src/iop/demosaic.c:2192
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:2073
+#: ../src/iop/demosaic.c:2193
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:2074
+#: ../src/iop/demosaic.c:2194
 msgid "VNG4 (slow)"
 msgstr "VNG4 (lent)"
 
-#: ../src/iop/demosaic.c:2075 ../src/iop/demosaic.c:2084
+#: ../src/iop/demosaic.c:2195
+msgid "passthrough (monochrome) (experimental)"
+msgstr "monochrome (expérimental)"
+
+#: ../src/iop/demosaic.c:2196 ../src/iop/demosaic.c:2205
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:2081
+#: ../src/iop/demosaic.c:2202
 msgid "VNG (slow)"
 msgstr "VNG (lent)"
 
-#: ../src/iop/demosaic.c:2082
+#: ../src/iop/demosaic.c:2203
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-passe"
 
-#: ../src/iop/demosaic.c:2083
+#: ../src/iop/demosaic.c:2204
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-passes (lent)"
 
-#: ../src/iop/demosaic.c:2089
+#: ../src/iop/demosaic.c:2210
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4852,63 +4856,63 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:2091
+#: ../src/iop/demosaic.c:2212
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:2095
+#: ../src/iop/demosaic.c:2216
 msgid "color smoothing"
 msgstr "lissage des couleurs"
 
-#: ../src/iop/demosaic.c:2098
+#: ../src/iop/demosaic.c:2219
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:2099
+#: ../src/iop/demosaic.c:2220
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:2100
+#: ../src/iop/demosaic.c:2221
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:2101
+#: ../src/iop/demosaic.c:2222
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:2102
+#: ../src/iop/demosaic.c:2223
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:2104
+#: ../src/iop/demosaic.c:2225
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:2108
+#: ../src/iop/demosaic.c:2229
 msgid "match greens"
 msgstr "correction des verts"
 
-#: ../src/iop/demosaic.c:2109
+#: ../src/iop/demosaic.c:2230
 msgid "disabled"
 msgstr "désactivée"
 
-#: ../src/iop/demosaic.c:2110
+#: ../src/iop/demosaic.c:2231
 msgid "local average"
 msgstr "moyenne locale"
 
-#: ../src/iop/demosaic.c:2111
+#: ../src/iop/demosaic.c:2232
 msgid "full average"
 msgstr "moyenne globale"
 
-#: ../src/iop/demosaic.c:2112
+#: ../src/iop/demosaic.c:2233
 msgid "full and local average"
 msgstr "moyenne globale et locale"
 
-#: ../src/iop/demosaic.c:2113
+#: ../src/iop/demosaic.c:2234
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:2125
+#: ../src/iop/demosaic.c:2246
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -4931,7 +4935,7 @@ msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
 #: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:901 ../src/iop/lens.c:2187 ../src/iop/levels.c:550 ../src/libs/export.c:695
-#: ../src/libs/print_settings.c:1312
+#: ../src/libs/print_settings.c:1315
 msgid "mode"
 msgstr "mode"
 
@@ -5102,7 +5106,7 @@ msgctxt "mode"
 msgid "manual"
 msgstr "manuel"
 
-#: ../src/iop/exposure.c:906 ../src/iop/levels.c:555 ../src/iop/tonecurve.c:786 ../src/iop/vignette.c:1140
+#: ../src/iop/exposure.c:906 ../src/iop/levels.c:555 ../src/iop/tonecurve.c:785 ../src/iop/vignette.c:1140
 msgid "automatic"
 msgstr "automatique"
 
@@ -5360,7 +5364,7 @@ msgstr "force du grain à appliquer"
 
 #: ../src/iop/highlights.c:69
 msgid "highlight reconstruction"
-msgstr "récupérer hautes lumières"
+msgstr "reconstruire hautes lumières"
 
 #: ../src/iop/highlights.c:736
 msgid "clip highlights"
@@ -5368,7 +5372,7 @@ msgstr "tronquer les hautes lumières"
 
 #: ../src/iop/highlights.c:737
 msgid "reconstruct in LCh"
-msgstr "mélanger LCh"
+msgstr "reconstruire dans LCh"
 
 #: ../src/iop/highlights.c:738
 msgid "reconstruct color"
@@ -5376,11 +5380,11 @@ msgstr "reconstruire les couleurs"
 
 #: ../src/iop/highlights.c:739
 msgid "highlight reconstruction method"
-msgstr "méthode de récupération des hautes lumières"
+msgstr "méthode de reconstruction des hautes lumières"
 
 #: ../src/iop/highlights.c:743
 msgid "manually adjust the clipping threshold against magenta highlights (you shouldn't ever need to touch this)"
-msgstr "ajuste le seuil de troncature pour éviter les hautes lumières roses (vous ne devriez jamais avoir à modifier ce réglage)"
+msgstr "ajuste le seuil de troncature pour éviter les hautes lumières magenta (vous ne devriez jamais avoir à modifier ce réglage)"
 
 #: ../src/iop/highlights.c:746
 msgid "clipping threshold"
@@ -6018,7 +6022,7 @@ msgstr "largeur"
 msgid "the fill-light in EV"
 msgstr "lumière d'appoint en IL"
 
-#: ../src/iop/relight.c:378 ../src/libs/metadata_view.c:101 ../src/libs/print_settings.c:1113
+#: ../src/iop/relight.c:378 ../src/libs/metadata_view.c:101 ../src/libs/print_settings.c:1116
 msgid "width"
 msgstr "largeur"
 
@@ -6297,101 +6301,101 @@ msgctxt "accel"
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:532
+#: ../src/iop/temperature.c:567
 msgid "camera white balance"
 msgstr "boîtier"
 
-#: ../src/iop/temperature.c:533
+#: ../src/iop/temperature.c:568
 msgid "camera neutral white balance"
 msgstr "neutre boîtier"
 
-#: ../src/iop/temperature.c:534
+#: ../src/iop/temperature.c:569
 msgid "spot white balance"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:794
+#: ../src/iop/temperature.c:829
 msgid "failed to read camera white balance information!"
 msgstr "impossible de récupérer la balance des blancs du boîtier!"
 
-#: ../src/iop/temperature.c:1147
+#: ../src/iop/temperature.c:1182
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:1148
+#: ../src/iop/temperature.c:1183
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:1163
+#: ../src/iop/temperature.c:1198
 msgid "choose white balance preset from camera"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:1167
+#: ../src/iop/temperature.c:1202
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:1168
+#: ../src/iop/temperature.c:1203
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1172
+#: ../src/iop/temperature.c:1207
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
-#: ../src/iop/tonecurve.c:140
+#: ../src/iop/tonecurve.c:137
 msgid "tone curve"
 msgstr "courbe des tonalités"
 
-#: ../src/iop/tonecurve.c:410
+#: ../src/iop/tonecurve.c:409
 msgid "low contrast"
 msgstr "contraste faible"
 
-#: ../src/iop/tonecurve.c:424
+#: ../src/iop/tonecurve.c:423
 msgid "med contrast"
 msgstr "contraste moyen"
 
-#: ../src/iop/tonecurve.c:434
+#: ../src/iop/tonecurve.c:433
 msgid "high contrast"
 msgstr "contraste fort "
 
-#: ../src/iop/tonecurve.c:736
+#: ../src/iop/tonecurve.c:735
 msgid "  L  "
 msgstr "  L"
 
-#: ../src/iop/tonecurve.c:739
+#: ../src/iop/tonecurve.c:738
 msgid "tonecurve for L channel"
 msgstr "courbe des tonalités pour le canal L"
 
-#: ../src/iop/tonecurve.c:741
+#: ../src/iop/tonecurve.c:740
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:744
+#: ../src/iop/tonecurve.c:743
 msgid "tonecurve for a channel"
 msgstr "courbe des tonalités pour le canal a"
 
-#: ../src/iop/tonecurve.c:746
+#: ../src/iop/tonecurve.c:745
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:749
+#: ../src/iop/tonecurve.c:748
 msgid "tonecurve for b channel"
 msgstr "courbe des tonalités pour le canal b"
 
-#: ../src/iop/tonecurve.c:770
+#: ../src/iop/tonecurve.c:769
 msgid "double click to reset curve"
 msgstr "double-cliquer pour réinitialiser"
 
-#: ../src/iop/tonecurve.c:785
+#: ../src/iop/tonecurve.c:784
 msgid "scale chroma"
 msgstr "échelle des canaux a et b"
 
-#: ../src/iop/tonecurve.c:787
+#: ../src/iop/tonecurve.c:786
 msgctxt "scale"
 msgid "manual"
 msgstr "manuelle"
 
-#: ../src/iop/tonecurve.c:790
+#: ../src/iop/tonecurve.c:789
 msgid "if set to auto, a and b curves have no effect and are not displayed. chroma values (a and b) of each pixel are then adjusted based on L curve data."
 msgstr "si auto, les courbes a et b ne sont pas actives et ne sont pas affichées. les valeurs a et b de chaque pixel sont ajustées sur la base de la courbe L."
 
@@ -6593,7 +6597,7 @@ msgstr "décalage y"
 msgid "marker"
 msgstr "fichier"
 
-#: ../src/iop/watermark.c:1236 ../src/libs/print_settings.c:1198
+#: ../src/iop/watermark.c:1236 ../src/libs/print_settings.c:1201
 msgid "alignment"
 msgstr "alignement"
 
@@ -7230,20 +7234,20 @@ msgstr "x"
 msgid "allow upscaling"
 msgstr "autorise l'agrandissement"
 
-#: ../src/libs/export.c:658 ../src/libs/export.c:676 ../src/libs/print_settings.c:1214 ../src/libs/print_settings.c:1255
+#: ../src/libs/export.c:658 ../src/libs/export.c:676 ../src/libs/print_settings.c:1217 ../src/libs/print_settings.c:1258
 msgid "image settings"
 msgstr "paramètres d'image"
 
-#: ../src/libs/export.c:668 ../src/libs/print_settings.c:1246
+#: ../src/libs/export.c:668 ../src/libs/print_settings.c:1249
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC de sortie dans %s/color/out ou %s/color/out"
 
-#: ../src/libs/export.c:675 ../src/libs/print_settings.c:1048 ../src/libs/print_settings.c:1253
+#: ../src/libs/export.c:675 ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1256
 msgid "intent"
 msgstr "rendu"
 
-#: ../src/libs/export.c:686 ../src/libs/print_settings.c:1269
+#: ../src/libs/export.c:686 ../src/libs/print_settings.c:1272
 msgid "style"
 msgstr "style"
 
@@ -7251,11 +7255,11 @@ msgstr "style"
 msgid "temporary style to use while exporting"
 msgstr "style temporaire à utiliser lors de l'exportation"
 
-#: ../src/libs/export.c:699 ../src/libs/print_settings.c:1314
+#: ../src/libs/export.c:699 ../src/libs/print_settings.c:1317
 msgid "replace history"
 msgstr "remplacer l'historique"
 
-#: ../src/libs/export.c:700 ../src/libs/print_settings.c:1315
+#: ../src/libs/export.c:700 ../src/libs/print_settings.c:1318
 msgid "append history"
 msgstr "ajouter à l'historique"
 
@@ -8099,7 +8103,7 @@ msgstr "mise au point"
 msgid "datetime"
 msgstr "date/heure"
 
-#: ../src/libs/metadata_view.c:102 ../src/libs/print_settings.c:1117
+#: ../src/libs/metadata_view.c:102 ../src/libs/print_settings.c:1120
 msgid "height"
 msgstr "hauteur"
 
@@ -8221,13 +8225,9 @@ msgstr "modules de tonalité"
 msgid "effects group"
 msgstr "groupe d'effets"
 
-#: ../src/libs/modulelist.c:54
+#: ../src/libs/modulelist.c:55
 msgid "more modules"
 msgstr "plus de modules"
-
-#: ../src/libs/modulelist.c:137
-msgid "(a wild bug appears)"
-msgstr "(un étrange problème est survenu)"
 
 #: ../src/libs/navigation.c:63
 msgid "navigation"
@@ -8250,7 +8250,7 @@ msgid "200%"
 msgstr "200%"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1205
+#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1208
 msgid "print settings"
 msgstr "paramètres d'impression"
 
@@ -8276,46 +8276,46 @@ msgstr "préparation de l'impression de l'image %d sur «%s»"
 msgid "cannot apply printer profile `%s'"
 msgstr "impossible d'appliquer le profil d'impression «%s» !"
 
-#: ../src/libs/print_settings.c:520
+#: ../src/libs/print_settings.c:522
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:989
+#: ../src/libs/print_settings.c:992
 msgid "printer"
 msgstr "imprimante"
 
-#: ../src/libs/print_settings.c:1041
+#: ../src/libs/print_settings.c:1044
 #, c-format
 msgid "printer ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC d'imprimante dans %s/color/out ou %s/color/out"
 
-#: ../src/libs/print_settings.c:1060
+#: ../src/libs/print_settings.c:1063
 msgid "black point compensation"
 msgstr "compensation du point noir"
 
-#: ../src/libs/print_settings.c:1068
+#: ../src/libs/print_settings.c:1071
 msgid "activate black point compensation when applying the printer profile"
 msgstr "active la compensation du point noir lors de l'application du profil d'imprimante"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:1075
+#: ../src/libs/print_settings.c:1078
 msgid "page"
 msgstr "page"
 
-#: ../src/libs/print_settings.c:1111
+#: ../src/libs/print_settings.c:1114
 msgid "image width/height"
 msgstr "largeur/hauteur image"
 
-#: ../src/libs/print_settings.c:1115
+#: ../src/libs/print_settings.c:1118
 msgid " x "
 msgstr " x"
 
-#: ../src/libs/print_settings.c:1123
+#: ../src/libs/print_settings.c:1126
 msgid "scale factor"
 msgstr "facteur d'agrandissement"
 
-#: ../src/libs/print_settings.c:1128
+#: ../src/libs/print_settings.c:1131
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 0 means that it is downscaled (best quality)\n"
@@ -8328,47 +8328,47 @@ msgstr ""
 "une valeur trop grande peut donner une qualité d'impression médiocre"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1142
+#: ../src/libs/print_settings.c:1145
 msgid "top margin"
 msgstr "marge haute"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1146
+#: ../src/libs/print_settings.c:1149
 msgid "left margin"
 msgstr "marge gauche"
 
-#: ../src/libs/print_settings.c:1149
+#: ../src/libs/print_settings.c:1152
 msgid "lock"
 msgstr "sync"
 
-#: ../src/libs/print_settings.c:1150
+#: ../src/libs/print_settings.c:1153
 msgid "change all margins uniformly"
 msgstr "change toutes les marges uniformément"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1154
+#: ../src/libs/print_settings.c:1157
 msgid "right margin"
 msgstr "marge droite"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1158
+#: ../src/libs/print_settings.c:1161
 msgid "bottom margin"
 msgstr "marge basse"
 
-#: ../src/libs/print_settings.c:1293
+#: ../src/libs/print_settings.c:1296
 msgid "temporary style to use while printing"
 msgstr "style temporaire à utiliser lors de l'exportation"
 
-#: ../src/libs/print_settings.c:1321
+#: ../src/libs/print_settings.c:1324
 msgid "whether the style is appended to the history or replacing the history"
 msgstr "indique si les éléments du style sont à ajouter à l'historique ou remplace ce dernier"
 
 #. Print button
-#: ../src/libs/print_settings.c:1330
+#: ../src/libs/print_settings.c:1333
 msgid "print"
 msgstr "impression"
 
-#: ../src/libs/print_settings.c:1332
+#: ../src/libs/print_settings.c:1335
 msgid "print with current settings (ctrl-p)"
 msgstr "imprime avec les réglages actuels (ctrl-p)"
 
@@ -9248,6 +9248,9 @@ msgstr "nouvelle session initiée «%s»"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
+
+#~ msgid "(a wild bug appears)"
+#~ msgstr "(un étrange problème est survenu)"
 
 #~ msgid "there is no printer available, cannot print!"
 #~ msgstr "aucune imprimante disponible, impossible d'imprimer !"
@@ -10377,9 +10380,6 @@ msgstr "aucun boîtier disponible pour la capture..."
 #~ msgctxt "accel"
 #~ msgid "blend H"
 #~ msgstr "mélanger H"
-
-#~ msgid "shadow recovery (experimental)"
-#~ msgstr "récupération des ombres (BETA)"
 
 #~ msgctxt "accel"
 #~ msgid "mu"

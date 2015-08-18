@@ -201,7 +201,8 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_status = DT_DEV_PIXELPIPE_RUNNING;
 
   // lock if there, issue a background load, if not (best-effort for mip f).
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_F, 0, 'r');
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_F, DT_MIPMAP_BEST_EFFORT,
+                      'r');
   if(!buf.buf)
   {
     dt_control_log_busy_leave();
@@ -212,7 +213,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   }
   // init pixel pipeline for preview.
   dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height,
-                             dev->image_storage.width / (float)buf.width);
+                             dev->image_storage.width / (float)buf.width, buf.pre_monochrome_demosaiced);
 
   if(dev->preview_loading)
   {
@@ -295,7 +296,8 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     return;
   }
 
-  dt_dev_pixelpipe_set_input(dev->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0);
+  dt_dev_pixelpipe_set_input(dev->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0,
+                             buf.pre_monochrome_demosaiced);
 
   if(dev->image_loading)
   {

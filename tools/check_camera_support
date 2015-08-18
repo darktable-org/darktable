@@ -8,6 +8,7 @@ COEFFS=File.expand_path("../src/external/adobe_coeff.c", File.dirname(__FILE__))
 WBPRESETS=File.expand_path("../src/external/wb_presets.c", File.dirname(__FILE__))
 COLORMATRICES=File.expand_path("../src/common/colormatrices.c", File.dirname(__FILE__))
 NOISEPROFILES=File.expand_path("../data/noiseprofiles.json", File.dirname(__FILE__))
+PANASONIC_NEEDED_FORMATS = ["4:3", "3:2", "16:9", "1:1"]
 
 samplesdir = nil
 matrix_mode = false
@@ -32,6 +33,7 @@ end
 rawspeed_cameras = {}
 rawspeed_aliases = {}
 rawspeed_panasonic_formats = {}
+rawspeed_dngs = {}
 exif_name_map = {}
 exif_alias_map = {}
 File.open(CAMERAS) do |f|
@@ -53,7 +55,8 @@ File.open(CAMERAS) do |f|
       exif_alias_map[exif_id] = id
       mode = ""
       mode = c.attribute("mode").value if c.attribute("mode")
-      if maker == "Panasonic"
+      rawspeed_dngs[id] = true if mode == "dng"
+      if PANASONIC_NEEDED_FORMATS.include?(mode)
         rawspeed_panasonic_formats[id] ||= []
         rawspeed_panasonic_formats[id] << mode
       end
@@ -156,15 +159,15 @@ end
 
 if (!matrix_mode)
   puts "Found #{rawspeed_cameras.size} cameras #{coeffs_cameras.size} adobe_coeffs #{presets_cameras.size} wb_coeffs #{colormatrices_cameras.size} colormatrices #{noiseprofiles_cameras.size} noise profiles #{samples_cameras.size} samples"
-  compare_lists("adobe_coeffs", rawspeed_cameras, coeffs_cameras, !quiet_mode, verbose_mode)
+  rawspeed_coeffs_cameras = rawspeed_cameras.select{|id| !rawspeed_dngs[id]}
+  compare_lists("adobe_coeffs", rawspeed_coeffs_cameras, coeffs_cameras, !quiet_mode, verbose_mode)
   compare_lists("wb_presets", rawspeed_cameras, presets_cameras, verbose_mode, !quiet_mode)
   compare_lists("colormatrices", rawspeed_cameras, colormatrices_cameras, verbose_mode, !quiet_mode)
   compare_lists("noiseprofiles", rawspeed_cameras, noiseprofiles_cameras, verbose_mode, !quiet_mode)
   compare_lists("samples", rawspeed_cameras, samples_cameras, verbose_mode, !quiet_mode) if samplesdir
-  needed_formats = ["", "4:3", "3:2", "16:9", "1:1"]
   rawspeed_panasonic_formats.each do |camera, formats|
-    if formats.size != 1 && formats.size != 5
-      missing_formats = needed_formats.select{|f| !formats.include?(f)}
+    if formats.size != 4
+      missing_formats = PANASONIC_NEEDED_FORMATS.select{|f| !formats.include?(f)}
       puts "Missing formats for '#{camera}' #{missing_formats.join(' ')}"
     end
   end
@@ -175,7 +178,7 @@ else
   clist = ""
   i = 1
   rawspeed_cameras.sort.each do |camera|
-    rawspeed_aliases[camera].each do |al|
+    rawspeed_aliases[camera].sort.each do |al|
       counts[0] += 1
       i += 1
       line_class = i%2 == 0 ? "even" : "odd"

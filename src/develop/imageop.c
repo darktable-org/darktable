@@ -351,6 +351,7 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
 
   // only reference cached results of dlopen:
   module->module = so->module;
+  module->so = so;
 
   module->version = so->version;
   module->name = so->name;
@@ -888,7 +889,7 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
   gtk_widget_queue_draw(GTK_WIDGET(togglebutton));
 }
 
-gboolean dt_iop_is_hidden(dt_iop_module_t *module)
+gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module)
 {
   gboolean is_hidden = TRUE;
   if(!(module->flags() & IOP_FLAGS_HIDDEN))
@@ -903,6 +904,11 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
   return is_hidden;
 }
 
+gboolean dt_iop_is_hidden(dt_iop_module_t *module)
+{
+  return dt_iop_so_is_hidden(module->so);
+}
+
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 {
   uint32_t additional_flags = 0;
@@ -913,7 +919,7 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
   if(module->enabled) additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
 
   /* add special group flag for favorite */
-  if(module->state == dt_iop_state_FAVORITE) additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
+  if(module->so->state == dt_iop_state_FAVORITE) additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
   return dt_dev_modulegroups_test(module->dev, group, module->groups() | additional_flags);
 }
@@ -2104,6 +2110,71 @@ uint32_t dt_iop_adjust_filters_to_crop(const dt_image_t *img)
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
+ * resamping is done via bilateral filtering.
+ */
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint16_t *const in,
+                                                          const dt_iop_roi_t *const roi_out,
+                                                          const dt_iop_roi_t *const roi_in,
+                                                          const int32_t out_stride, const int32_t in_stride)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many pixels can be sampled inside that area
+  const int samples = round(px_footprint);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *outc = out + 4 * (out_stride * y);
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy;
+    py = MIN(((roi_in->height - 2)), py);
+
+    int maxj = MIN(((roi_in->height - 1)), py + samples);
+
+    float fx = roi_out->x * px_footprint;
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      __m128 col = _mm_setzero_ps();
+
+      fx += px_footprint;
+      int px = (int)fx;
+      px = MIN(((roi_in->width - 2)), px);
+
+      int maxi = MIN(((roi_in->width - 1)), px + samples);
+
+      int num = 0;
+
+      // pixels in the middle of sampling region
+      __m128i sum = _mm_set_epi32(0, 0, 0, 0);
+
+      for(int j = py; j <= maxj; j++)
+        for(int i = px; i <= maxi; i++)
+        {
+          const uint16_t p = in[i + in_stride * j];
+
+          sum = _mm_add_epi32(sum, _mm_set_epi32(0, p, p, p));
+          num++;
+        }
+
+      col = _mm_mul_ps(
+          _mm_cvtepi32_ps(sum),
+          _mm_div_ps(_mm_set_ps(0.0f, 1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / 65535.0f), _mm_set1_ps(num)));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
+}
+
+/**
+ * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
+ * and writes it to out in float4 format.
  * filters is the dcraw supplied int encoding of the bayer pattern, flipped with the buffer.
  * resamping is done via bilateral filtering and respecting the input mosaic pattern.
  */
@@ -2213,6 +2284,146 @@ void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint1
   const uint32_t filters = dt_iop_adjust_filters_to_crop(img);
 
   dt_iop_clip_and_zoom_demosaic_half_size(out, in, roi_out, roi_in, roi_out->width, in_stride, filters);
+}
+
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
+                                                            const dt_iop_roi_t *const roi_out,
+                                                            const dt_iop_roi_t *const roi_in,
+                                                            const int32_t out_stride, const int32_t in_stride)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many pixels can be sampled inside that area
+  const int samples = round(px_footprint);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *outc = out + 4 * (out_stride * y);
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy;
+    const float dy = fy - py;
+    py = MIN(((roi_in->height - 3)), py);
+
+    int maxj = MIN(((roi_in->height - 2)), py + samples);
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      __m128 col = _mm_setzero_ps();
+
+      float fx = (x + roi_out->x) * px_footprint;
+      int px = (int)fx;
+      const float dx = fx - px;
+      px = MIN(((roi_in->width - 3)), px);
+
+      int maxi = MIN(((roi_in->width - 2)), px + samples);
+
+      float p;
+      int i, j;
+      float num = 0;
+
+      // upper left pixel of sampling region
+      p = in[px + in_stride * py];
+      col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1 - dx) * (1 - dy)), _mm_set_ps(0.0f, p, p, p)));
+
+      // left pixel border of sampling region
+      for(j = py + 1; j <= maxj; j++)
+      {
+        p = in[px + in_stride * j];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1 - dx), _mm_set_ps(0.0f, p, p, p)));
+      }
+
+      // upper pixel border of sampling region
+      for(i = px + 1; i <= maxi; i++)
+      {
+        p = in[i + in_stride * py];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1 - dy), _mm_set_ps(0.0f, p, p, p)));
+      }
+
+      // pixels in the middle of sampling region
+      for(int j = py + 1; j <= maxj; j++)
+        for(int i = px + 1; i <= maxi; i++)
+        {
+          p = in[i + in_stride * j];
+          col = _mm_add_ps(col, _mm_set_ps(0.0f, p, p, p));
+        }
+
+      if(maxi == px + samples && maxj == py + samples)
+      {
+        // right border
+        for(j = py + 1; j <= maxj; j++)
+        {
+          p = in[maxi + 1 + in_stride * j];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx), _mm_set_ps(0.0f, p, p, p)));
+        }
+
+        // upper right
+        p = in[maxi + 1 + in_stride * py];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * (1 - dy)), _mm_set_ps(0.0f, p, p, p)));
+
+        // lower border
+        for(i = px + 1; i <= maxi; i++)
+        {
+          p = in[i + in_stride * (maxj + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy), _mm_set_ps(0.0f, p, p, p)));
+        }
+
+        // lower left pixel
+        p = in[px + in_stride * (maxj + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1 - dx) * dy), _mm_set_ps(0.0f, p, p, p)));
+
+        // lower right pixel
+        p = in[maxi + 1 + in_stride * (maxj + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * dy), _mm_set_ps(0.0f, p, p, p)));
+
+        num = (samples + 1) * (samples + 1);
+      }
+      else if(maxi == px + samples)
+      {
+        // right border
+        for(j = py + 1; j <= maxj; j++)
+        {
+          p = in[maxi + 1 + in_stride * j];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx), _mm_set_ps(0.0f, p, p, p)));
+        }
+
+        // upper right
+        p = in[maxi + 1 + in_stride * py];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * (1 - dy)), _mm_set_ps(0.0f, p, p, p)));
+
+        num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
+      }
+      else if(maxj == py + samples)
+      {
+        // lower border
+        for(i = px + 1; i <= maxi; i++)
+        {
+          p = in[i + in_stride * (maxj + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy), _mm_set_ps(0.0f, p, p, p)));
+        }
+
+        // lower left pixel
+        p = in[px + in_stride * (maxj + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1 - dx) * dy), _mm_set_ps(0.0f, p, p, p)));
+
+        num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
+      }
+      else
+      {
+        num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
+      }
+
+      num = 1.0f / num;
+      col = _mm_mul_ps(col, _mm_set_ps(0.0f, num, num, num));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
 }
 
 #if 0 // gets rid of pink artifacts, but doesn't do sub-pixel sampling, so shows some staircasing artifacts.
@@ -2728,7 +2939,7 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
   dt_iop_module_t *module = (dt_iop_module_t *)data;
 
   // Showing the module, if it isn't already visible
-  if(module->state == dt_iop_state_HIDDEN)
+  if(module->so->state == dt_iop_state_HIDDEN)
   {
     dt_iop_gui_set_state(module, dt_iop_state_ACTIVE);
   }
@@ -2810,29 +3021,22 @@ gchar *dt_iop_get_localized_name(const gchar *op)
   return (gchar *)g_hash_table_lookup(module_names, op);
 }
 
-void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
+void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t state)
 {
-  char option[1024];
   module->state = state;
-  /* we should apply this to all other instance of the module too */
-  GList *mods = g_list_first(module->dev->iop);
-  while(mods)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
-    if(mod->so == module->so) mod->state = state;
-    mods = g_list_next(mods);
-  }
+
+  char option[1024];
+  GList *mods = NULL;
   if(state == dt_iop_state_HIDDEN)
   {
-    /* module is hidden lets set conf values */
-    if(module->expander) gtk_widget_hide(GTK_WIDGET(module->expander));
-    mods = g_list_first(module->dev->iop);
+    mods = g_list_first(darktable.develop->iop);
     while(mods)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
-      if(mod->so == module->so && mod->expander) gtk_widget_hide(GTK_WIDGET(mod->expander));
+      if(mod->so == module && mod->expander) gtk_widget_hide(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
+
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool(option, FALSE);
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
@@ -2840,16 +3044,25 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
   }
   else if(state == dt_iop_state_ACTIVE)
   {
-    /* module is shown lets set conf values */
-    dt_dev_modulegroups_switch(darktable.develop, module);
-    if(module->expander) gtk_widget_show(GTK_WIDGET(module->expander));
-    mods = g_list_first(module->dev->iop);
+    int once = 0;
+
+    mods = g_list_first(darktable.develop->iop);
     while(mods)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
-      if(mod->so == module->so && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
+      if(mod->so == module && mod->expander)
+      {
+        gtk_widget_show(GTK_WIDGET(mod->expander));
+        if(!once)
+        {
+          dt_dev_modulegroups_switch(darktable.develop, mod);
+          once = 1;
+        }
+      }
       mods = g_list_next(mods);
     }
+
+    /* module is shown lets set conf values */
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool(option, TRUE);
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
@@ -2857,16 +3070,17 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
   }
   else if(state == dt_iop_state_FAVORITE)
   {
-    /* module is shown and favorite lets set conf values */
     dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
-    if(module->expander) gtk_widget_show(GTK_WIDGET(module->expander));
-    mods = g_list_first(module->dev->iop);
+
+    mods = g_list_first(darktable.develop->iop);
     while(mods)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
-      if(mod->so == module->so && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
+      if(mod->so == module && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
+
+    /* module is shown and favorite lets set conf values */
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool(option, TRUE);
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
@@ -2876,6 +3090,11 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
   dt_view_manager_t *vm = darktable.view_manager;
   if(vm->proxy.more_module.module) vm->proxy.more_module.update(vm->proxy.more_module.module);
   // dt_view_manager_reset(vm);
+}
+
+void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
+{
+  dt_iop_so_gui_set_state(module->so, state);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

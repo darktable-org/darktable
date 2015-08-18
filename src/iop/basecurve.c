@@ -588,6 +588,34 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   return TRUE;
 }
 
+static inline int _add_node(dt_iop_basecurve_node_t *basecurve, int *nodes, float x, float y)
+{
+  int selected = -1;
+  if(basecurve[0].x > x)
+    selected = 0;
+  else
+  {
+    for(int k = 1; k < *nodes; k++)
+    {
+      if(basecurve[k].x > x)
+      {
+        selected = k;
+        break;
+      }
+    }
+  }
+  if(selected == -1) selected = *nodes;
+  for(int i = *nodes; i > selected; i--)
+  {
+    basecurve[i].x = basecurve[i - 1].x;
+    basecurve[i].y = basecurve[i - 1].y;
+  }
+  // found a new point
+  basecurve[selected].x = x;
+  basecurve[selected].y = y;
+  (*nodes)++;
+  return selected;
+}
 static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -631,30 +659,10 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
         }
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
-    else if(nodes < 20 && c->selected >= -1)
+    else if(nodes < MAXNODES && c->selected >= -1)
     {
       // no vertex was close, create a new one!
-      if(basecurve[0].x > linx)
-        c->selected = 0;
-      else
-        for(int k = 1; k < nodes; k++)
-        {
-          if(basecurve[k].x > linx)
-          {
-            c->selected = k;
-            break;
-          }
-        }
-      if(c->selected == -1) c->selected = nodes;
-      for(int i = nodes; i > c->selected; i--)
-      {
-        basecurve[i].x = basecurve[i - 1].x;
-        basecurve[i].y = basecurve[i - 1].y;
-      }
-      // found a new point
-      basecurve[c->selected].x = linx;
-      basecurve[c->selected].y = liny;
-      p->basecurve_nodes[ch]++;
+      c->selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, liny);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
   }
@@ -689,21 +697,63 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
   int ch = 0;
+  int nodes = p->basecurve_nodes[ch];
+  dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == 1)
   {
-    // reset current curve
-    p->basecurve_nodes[ch] = d->basecurve_nodes[ch];
-    p->basecurve_type[ch] = d->basecurve_type[ch];
-    for(int k = 0; k < d->basecurve_nodes[ch]; k++)
+    if(event->type == GDK_BUTTON_PRESS && (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK
+      && nodes < MAXNODES && c->selected == -1)
     {
-      p->basecurve[ch][k].x = d->basecurve[ch][k].x;
-      p->basecurve[ch][k].y = d->basecurve[ch][k].y;
+      // if we are not on a node -> add a new node at the current x of the pointer and y of the curve at that x
+      const int inset = DT_GUI_CURVE_EDITOR_INSET;
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(widget, &allocation);
+      int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+      c->mouse_x = CLAMP(event->x - inset, 0, width);
+      c->mouse_y = CLAMP(event->y - inset, 0, height);
+
+      const float mx = c->mouse_x / (float)width;
+      const float my = 1.0f - c->mouse_y / (float)height;
+      const float linx = to_lin(mx, c->loglogscale);
+
+      // evaluate the curve at the current x position
+      const float y = dt_draw_curve_calc_value(c->minmax_curve, linx);
+
+      if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
+      {
+        // create a new node
+        int selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, y);
+
+        // maybe set the new one as being selected
+        float min = .04f;
+        min *= min; // comparing against square
+        for(int k = 0; k < nodes; k++)
+        {
+          float dist = (my - to_log(y, c->loglogscale)) * (my - to_log(y, c->loglogscale));
+          if(dist < min) c->selected = selected;
+        }
+
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        gtk_widget_queue_draw(self->widget);
+      }
+      return TRUE;
     }
-    c->selected = -2; // avoid motion notify re-inserting immediately.
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(self->widget);
-    return TRUE;
+    else if(event->type == GDK_2BUTTON_PRESS)
+    {
+      // reset current curve
+      p->basecurve_nodes[ch] = d->basecurve_nodes[ch];
+      p->basecurve_type[ch] = d->basecurve_type[ch];
+      for(int k = 0; k < d->basecurve_nodes[ch]; k++)
+      {
+        p->basecurve[ch][k].x = d->basecurve[ch][k].x;
+        p->basecurve[ch][k].y = d->basecurve[ch][k].y;
+      }
+      c->selected = -2; // avoid motion notify re-inserting immediately.
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      gtk_widget_queue_draw(self->widget);
+      return TRUE;
+    }
   }
   return FALSE;
 }

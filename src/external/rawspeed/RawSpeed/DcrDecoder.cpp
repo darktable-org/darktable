@@ -39,12 +39,15 @@ RawImage DcrDecoder::decodeRawInternal() {
 
   if (data.size() < 1)
     ThrowRDE("DCR Decoder: No image data found");
-    
+
   TiffIFD* raw = data[0];
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
   uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
   uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
   uint32 c2 = raw->getEntry(STRIPBYTECOUNTS)->getInt();
+
+  if (off > mFile->getSize())
+    ThrowRDE("DCR Decoder: Offset is out of bounds");
 
   if (c2 > mFile->getSize() - off) {
     mRaw->setError("Warning: byte count larger than file size, file probably truncated.");
@@ -70,6 +73,9 @@ RawImage DcrDecoder::decodeRawInternal() {
       ThrowRDE("DCR Decoder: Couldn't find the linearization table");
     }
 
+    if (!uncorrectedRawValues)
+      mRaw->setTable(linearization->getShortArray(), 1024, true);
+
     // FIXME: dcraw does all sorts of crazy things besides this to fetch
     //        WB from what appear to be presets and calculate it in weird ways
     //        The only file I have only uses this method, if anybody careas look
@@ -82,20 +88,19 @@ RawImage DcrDecoder::decodeRawInternal() {
       mRaw->metadata.wbCoeffs[2] = (float) 2048.0f / data[22];
     }
 
-    // Get create passthrough curve if user has requested that.
-    if (uncorrectedRawValues) {
-      for (int i = 0; i < 1024; i++)
-        linear[i] = i;
-    }
-
     try {
-      if (uncorrectedRawValues)
-        decodeKodak65000(input, width, height, linear);
-      else
-        decodeKodak65000(input, width, height, linearization->getShortArray());
+      decodeKodak65000(input, width, height);
     } catch (IOException) {
       mRaw->setError("IO error occurred while reading image. Returning partial result.");
     }
+
+    // Set the table, if it should be needed later.
+    if (uncorrectedRawValues) {
+      mRaw->setTable(linearization->getShortArray(), 1024, false);
+    } else {
+      mRaw->setTable(NULL);
+    }
+
     delete kodakifd;
   } else
     ThrowRDE("DCR Decoder: Unsupported compression %d", compression);
@@ -103,12 +108,13 @@ RawImage DcrDecoder::decodeRawInternal() {
   return mRaw;
 }
 
-void DcrDecoder::decodeKodak65000(ByteStream &input, uint32 w, uint32 h, const ushort16 *curve) {
+void DcrDecoder::decodeKodak65000(ByteStream &input, uint32 w, uint32 h) {
   ushort16 buf[256];
   uint32 pred[2];
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
 
+  uint32 random = 0;
   for (uint32 y = 0; y < h; y++) {
     ushort16* dest = (ushort16*) & data[y*pitch];
     for (uint32 x = 0 ; x < w; x += 256) {
@@ -119,7 +125,10 @@ void DcrDecoder::decodeKodak65000(ByteStream &input, uint32 w, uint32 h, const u
         ushort16 value = pred[i & 1] += buf[i];
         if (value > 1023)
           ThrowRDE("DCR Decoder: Value out of bounds %d", value);
-        dest[x+i] = curve[value];
+        if(uncorrectedRawValues)
+          dest[x+i] = value;
+        else
+          mRaw->setWithLookUp(value, (uchar8*)&dest[x+i], &random);
       }
     }
   }

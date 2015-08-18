@@ -431,46 +431,12 @@ void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {
 }
 
 void SrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
-  mRaw->cfa.setCFA(iPoint2D(2,2), CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
-
   if (data.empty())
     ThrowRDE("SRW Meta Decoder: Model name found");
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
-
-  data = mRootIFD->getIFDsWithTag(CFAPATTERN);
-  if (!this->checkCameraSupported(meta, make, model, "") && !data.empty() && data[0]->hasEntry(CFAREPEATPATTERNDIM)) {
-    const unsigned short* pDim = data[0]->getEntry(CFAREPEATPATTERNDIM)->getShortArray();
-    iPoint2D cfaSize(pDim[1], pDim[0]);
-    if (cfaSize.x != 2 && cfaSize.y != 2)
-      ThrowRDE("SRW Decoder: Unsupported CFA pattern size");
-
-    const uchar8* cPat = data[0]->getEntry(CFAPATTERN)->getData();
-    if (cfaSize.area() != data[0]->getEntry(CFAPATTERN)->count)
-      ThrowRDE("SRW Decoder: CFA pattern dimension and pattern count does not match: %d.", data[0]->getEntry(CFAPATTERN)->count);
-
-    for (int y = 0; y < cfaSize.y; y++) {
-      for (int x = 0; x < cfaSize.x; x++) {
-        uint32 c1 = cPat[x+y*cfaSize.x];
-        CFAColor c2;
-        switch (c1) {
-            case 0:
-              c2 = CFA_RED; break;
-            case 1:
-              c2 = CFA_GREEN; break;
-            case 2:
-              c2 = CFA_BLUE; break;
-            default:
-              c2 = CFA_UNKNOWN;
-              ThrowRDE("SRW Decoder: Unsupported CFA Color.");
-        }
-        mRaw->cfa.setColorAt(iPoint2D(x, y), c2);
-      }
-    }
-    //printf("Camera CFA: %s\n", mRaw->cfa.asString().c_str());
-  }
 
   int iso = 0;
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))

@@ -16,7 +16,7 @@ find package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Co
 ln -s /Applications package/
 #copy gtk-osx-application translations if we can find them
 IFS=""
-port contents gtk-osx-application | sed "s|^ */|/|" | grep "\.lproj/GtkosxApplication\.strings$" | while read -r i
+port contents gtk-osx-application-common-gtk2 | sed "s|^ */|/|" | grep "\.lproj/GtkosxApplication\.strings$" | while read -r i
 do
 	mkdir package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"
 	cp "$i" package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"

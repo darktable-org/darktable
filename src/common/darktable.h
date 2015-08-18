@@ -81,7 +81,7 @@ typedef unsigned int u_int;
 #include "common/poison.h"
 #endif
 
-#define DT_MODULE_VERSION 9 // version of dt's module interface
+#define DT_MODULE_VERSION 10 // version of dt's module interface
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -165,7 +165,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_MASKS = 1 << 12,
   DT_DEBUG_LUA = 1 << 13,
   DT_DEBUG_INPUT = 1 << 14,
-  DT_DEBUG_PRINT = 1 << 15
+  DT_DEBUG_PRINT = 1 << 15,
+  DT_DEBUG_CAMERA_SUPPORT = 1 << 16,
 } dt_debug_thread_t;
 
 typedef struct darktable_t

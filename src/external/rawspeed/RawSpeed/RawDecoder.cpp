@@ -195,6 +195,29 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
   }
 }
 
+void RawDecoder::Decode8BitRaw(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < w*h) {
+    if ((uint32)input.getRemainSize() > w) {
+      h = input.getRemainSize() / w - 1;
+      mRaw->setError("Image truncated (file is too short)");
+    } else
+      ThrowIOE("Decode8BitRaw: Not enough data to decode a single line. Image file truncated.");
+  }
+
+  uint32 random = 0;
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (uint32 x = 0 ; x < w; x += 1) {
+      if (uncorrectedRawValues)
+        dest[x] = *in++;
+      else
+        mRaw->setWithLookUp(*in++, (uchar8*)&dest[x], &random);
+    }
+  }
+}
 
 void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
   uchar8* data = mRaw->getData();

@@ -26,6 +26,7 @@
 #include "lua/preferences.h"
 #include "lua/print.h"
 #include "lua/types.h"
+#include "lua/gettext.h"
 #include "lua/tags.h"
 #include "lua/modules.h"
 #include "lua/luastorage.h"
@@ -128,7 +129,7 @@ static lua_CFunction init_funcs[]
         dt_lua_init_configuration, dt_lua_init_preferences, dt_lua_init_database, dt_lua_init_gui,
         dt_lua_init_luastorages,   dt_lua_init_tags,        dt_lua_init_film,     dt_lua_init_call,
         dt_lua_init_view,          dt_lua_init_events,      dt_lua_init_init,     dt_lua_init_widget,
-        dt_lua_init_lualib, NULL };
+        dt_lua_init_lualib,        dt_lua_init_gettext,     NULL };
 
 
 void dt_lua_init(lua_State *L, const char *lua_command)
