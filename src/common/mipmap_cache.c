@@ -786,6 +786,7 @@ dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cach
   return best;
 }
 
+// invalidates and remove thumbnails from cache. They will be deleted from disc if existing
 void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
 {
   // get rid of all ldr thumbnails:
@@ -798,7 +799,17 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
     dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
     dt_cache_release(&_get_cache(cache, k)->cache, entry);
 
-    dt_cache_remove(&_get_cache(cache, k)->cache, key); // this would write jpg backing thumbs again, if it wasn't for the flag
+    dt_cache_remove(&_get_cache(cache, k)->cache, key); // due to DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE, removes thumbnail from disc
+  }
+}
+
+// evict thumbnails from cache. They will be written to disc if not existing
+void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const uint32_t imgid)
+{
+  for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
+  {
+    const uint32_t key = get_key(imgid, k);
+    dt_cache_remove(&_get_cache(cache, k)->cache, key); //write thumbnail to disc if not existing there
   }
 }
 

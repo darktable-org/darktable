@@ -101,6 +101,8 @@ static void generate_thumbnail_cache()
       }
     }
 
+    dt_mimap_cache_evict(darktable.mipmap_cache, imgid); //write to disc
+
     counter ++;
     fprintf(stderr, "\rimage %zu/%zu (%.02f%%)            ", counter, image_count,
             100.0 * counter / (float)image_count);
