@@ -318,7 +318,7 @@ EOF
           "profiles": [
 EOF
       n_profiles=$(awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ print \$1; } }" "$txt" | wc -l)
-      awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ printf(\"\\\"name\\\": \\\"%s\\\", \\\"iso\\\": %s, \\\"a\\\": [%s], \\\"b\\\": [%s]\n\", \$3, \$4, \$5, \$6); } }" "$txt" | sort -n | while read profile
+      awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ printf(\"\\\"name\\\": \\\"%s\\\", \\\"iso\\\": %s, \\\"a\\\": [%s], \\\"b\\\": [%s]\n\", \$3, \$4, \$5, \$6); } }" "$txt" | sort -V | while read profile
       do
         n_profiles=$((n_profiles-1))
         end=","
