@@ -307,7 +307,14 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
   uint32 height    = startpump.getBitsSafe(16);
   startpump.getBitsSafe(16); // TileWidth
   startpump.getBitsSafe(4);  // reserved
-  startpump.getBitsSafe(4);  // OptCode
+
+  // The format includes an optimization code that sets 3 flags to change the
+  // decoding parameters
+  uint32 optflags = startpump.getBitsSafe(4);
+  #define OPT_SKIP 1 // Skip checking if we need differences from previous line
+  #define OPT_MV   2 // Simplify motion vector definition
+  #define OPT_QP   4 // Don't scale the diff values
+
   startpump.getBitsSafe(8);  // OverlapWidth
   startpump.getBitsSafe(8);  // reserved
   startpump.getBitsSafe(8);  // Inc
@@ -337,12 +344,22 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
     ushort16* img_up2 = (ushort16*)mRaw->getData(0, max(0, (int)row - 2));
     // Initialize the motion and diff modes at the start of the line
     motion = 7;
+    // By default we are not scaling values at all
+    int32 scale = 0;
     for (uint32 i=0; i<3; i++)
       diffBitsMode[i][0] = diffBitsMode[i][1] = (row==0 || row==1) ? 7 : 4;
 
     for (uint32 col=0; col < width; col += 16) {
+      if (!(optflags & OPT_QP) && !(col & 63)) {
+        int32 scalevals[] = {0,-2,2};
+        uint32 i = pump.getBitsSafe(2);
+        scale = i < 3 ? scale+scalevals[i] : pump.getBitsSafe(12);
+      }
+
       // First we figure out which reference pixels mode we're in
-      if (!pump.getBitsSafe(1))
+      if (optflags & OPT_MV)
+        motion = pump.getBitsSafe(1) ? 3 : 7;
+      else if (!pump.getBitsSafe(1))
         motion = pump.getBitsSafe(3);
       if ((row==0 || row==1) && (motion != 7))
         ThrowRDE("SRW Decoder: At start of image and motion isn't 7. File corrupted?");
@@ -379,36 +396,43 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
 
       // Figure out how many difference bits we have to read for each pixel
       uint32 diffBits[4] = {0};
-      uint32 flags[4];
-      for (uint32 i=0; i<4; i++)
-        flags[i] = pump.getBitsSafe(2);
-      for (uint32 i=0; i<4; i++) {
-        // The color is 0-Green 1-Blue 2-Red
-        uint32 colornum = (row % 2 != 0) ? i>>1 : ((i>>1)+2) % 3;
-        switch(flags[i]) {
-          case 0: diffBits[i] = diffBitsMode[colornum][0]; break;
-          case 1: diffBits[i] = diffBitsMode[colornum][0]+1; break;
-          case 2: diffBits[i] = diffBitsMode[colornum][0]-1; break;
-          case 3: diffBits[i] = pump.getBitsSafe(4); break;
+      if (optflags & OPT_SKIP || !pump.getBitsSafe(1)) {
+        uint32 flags[4];
+        for (uint32 i=0; i<4; i++)
+          flags[i] = pump.getBitsSafe(2);
+        for (uint32 i=0; i<4; i++) {
+          // The color is 0-Green 1-Blue 2-Red
+          uint32 colornum = (row % 2 != 0) ? i>>1 : ((i>>1)+2) % 3;
+          switch(flags[i]) {
+            case 0: diffBits[i] = diffBitsMode[colornum][0]; break;
+            case 1: diffBits[i] = diffBitsMode[colornum][0]+1; break;
+            case 2: diffBits[i] = diffBitsMode[colornum][0]-1; break;
+            case 3: diffBits[i] = pump.getBitsSafe(4); break;
+          }
+          diffBitsMode[colornum][0] = diffBitsMode[colornum][1];
+          diffBitsMode[colornum][1] = diffBits[i];
+          if(diffBits[i] > bitDepth+1)
+            ThrowRDE("SRW Decoder: Too many difference bits. File corrupted?");
         }
-        diffBitsMode[colornum][0] = diffBitsMode[colornum][1];
-        diffBitsMode[colornum][1] = diffBits[i];
-        if(diffBits[i] > bitDepth+1)
-          ThrowRDE("SRW Decoder: Too many difference bits. File corrupted?");
       }
 
       // Actually read the differences and write them to the pixels
       for (uint32 i=0; i<16; i++) {
         uint32 len = diffBits[i>>2];
         int32 diff = pump.getBitsSafe(len);
+
         // If the first bit is 1 we need to turn this into a negative number
         if (diff >> (len-1))
           diff -= (1 << len);
+
+        ushort16 *value = NULL;
         // Apply the diff to pixels 0 2 4 6 8 10 12 14 1 3 5 7 9 11 13 15
         if (row % 2)
-          img[((i&0x7)<<1)+1-(i>>3)] += diff;
+          value = &img[((i&0x7)<<1)+1-(i>>3)];
         else
-          img[((i&0x7)<<1)+(i>>3)] += diff;
+          value = &img[((i&0x7)<<1)+(i>>3)];
+
+        *value = *value + diff * (scale*2+1) + scale;
       }
 
       img += 16;
