@@ -105,7 +105,7 @@ RawImage SrwDecoder::decodeRawInternal() {
   if (32773 == compression)
   {
     try {
-      decodeCompressed3(raw);
+      decodeCompressed3(raw, bits);
     } catch (RawDecoderException& e) {
       mRaw->setError(e.what());
     }
@@ -291,7 +291,7 @@ int32 SrwDecoder::samsungDiff (BitPumpMSB &pump, encTableItem *tbl)
 // Thanks to Michael Reichmann (Luminous Landscape) for putting me in contact
 // and Loring von Palleske (Samsung) for pointing to the open-source code of
 // Samsung's DNG converter at http://opensource.samsung.com/
-void SrwDecoder::decodeCompressed3( TiffIFD* raw)
+void SrwDecoder::decodeCompressed3( TiffIFD* raw, int bits)
 {
   uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
   BitPumpMSB32 startpump(mFile->getData(offset),mFile->getSize() - offset);
@@ -433,7 +433,7 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
           value = &img[((i&0x7)<<1)+(i>>3)];
 
         diff = diff * (scale*2+1) + scale;
-        *value = clampbits(*value + diff, 14 - scale*2);
+        *value = clampbits(*value + diff, bits);
       }
 
       img += 16;
