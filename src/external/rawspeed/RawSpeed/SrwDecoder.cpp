@@ -319,7 +319,7 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
   startpump.getBitsSafe(8);  // reserved
   startpump.getBitsSafe(8);  // Inc
   startpump.getBitsSafe(2);  // reserved
-  uint32 initVal  = startpump.getBitsSafe(14);
+  uint32 initVal = startpump.getBitsSafe(14);
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
@@ -432,7 +432,8 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
         else
           value = &img[((i&0x7)<<1)+(i>>3)];
 
-        *value = *value + diff * (scale*2+1) + scale;
+        diff = diff * (scale*2+1) + scale;
+        *value = clampbits(*value + diff, 14 - scale*2);
       }
 
       img += 16;
