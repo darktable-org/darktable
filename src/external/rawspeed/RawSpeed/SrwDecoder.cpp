@@ -104,11 +104,7 @@ RawImage SrwDecoder::decodeRawInternal() {
   }
   if (32773 == compression)
   {
-    try {
-      decodeCompressed3(raw, bits);
-    } catch (RawDecoderException& e) {
-      mRaw->setError(e.what());
-    }
+    decodeCompressed3(raw, bits);
     return mRaw;
   }
   ThrowRDE("Srw Decoder: Unsupported compression");
