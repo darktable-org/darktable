@@ -5913,6 +5913,18 @@
 		<Sensor black="512" white="16100" iso_min="8000" iso_max="25600"/>
 		<Sensor black="128" white="16100"/>
 	</Camera>
+	<Camera make="SAMSUNG" model="NX1" mode="12bit">
+		<ID make="Samsung" model="NX1">Samsung NX1</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="128" white="4000" iso_min="8000"/>
+		<Sensor black="32" white="4000"/>
+	</Camera>
 	<Camera make="SAMSUNG" model="NX5">
 		<ID make="Samsung" model="NX5">Samsung NX5</ID>
 		<CFA width="2" height="2">
