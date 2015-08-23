@@ -440,8 +440,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /* Read focal length  */
     if((pos = Exiv2::focalLength(exifData)) != exifData.end() && pos->size())
     {
-      // Exiv2 returns the CRW FocalLength field as a whole, even though only
-      // the second value is the actual focal length
+      // This works around a bug in exiv2 the developers refuse to fix
+      // For details see http://dev.exiv2.org/issues/1083
       if (pos->key() == "Exif.Canon.FocalLength" && pos->count() == 4)
         img->exif_focal_length = pos->toFloat(1);
       else
