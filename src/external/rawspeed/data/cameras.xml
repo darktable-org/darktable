@@ -2935,7 +2935,6 @@
 		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-FZ200" mode="3:2">
-		<ID make="Panasonic" model="DMC-FZ200">Panasonic DMC-FZ200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
 			<Color x="1" y="0">BLUE</Color>
@@ -2949,7 +2948,6 @@
 		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-FZ200" mode="1:1">
-		<ID make="Panasonic" model="DMC-FZ200">Panasonic DMC-FZ200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
 			<Color x="1" y="0">BLUE</Color>
@@ -2963,7 +2961,6 @@
 		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-FZ200" mode="16:9">
-		<ID make="Panasonic" model="DMC-FZ200">Panasonic DMC-FZ200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
 			<Color x="1" y="0">BLUE</Color>
@@ -5447,7 +5444,6 @@
 		<Sensor black="128" white="16100"/>
 	</Camera>
 	<Camera make="SAMSUNG" model="NX1" mode="12bit">
-		<ID make="Samsung" model="NX1">Samsung NX1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
 			<Color x="1" y="0">RED</Color>
@@ -5633,7 +5629,6 @@
 		<Sensor black="128" white="16100"/>
 	</Camera>
 	<Camera make="SAMSUNG" model="NX500" mode="12bit">
-		<ID make="Samsung" model="NX500">Samsung NX500</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
 			<Color x="1" y="0">RED</Color>
