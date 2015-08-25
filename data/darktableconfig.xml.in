@@ -206,7 +206,7 @@
   <dtconfig prefs="gui">
     <name>send_to_trash</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>send files to trash when erasing images</shortdescription>
     <longdescription>send files to trash instead of permanently deleting files on system that supports it</longdescription>
   </dtconfig>

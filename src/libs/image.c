@@ -128,6 +128,21 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
     dt_control_reset_local_copy_images();
 }
 
+static const char* _image_get_delete_button_label()
+{
+if (dt_conf_get_bool("send_to_trash"))
+  return _("trash");
+else
+  return _("delete");
+}
+
+static void _image_preference_changed(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t*)user_data;
+  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  gtk_button_set_label(GTK_BUTTON(d->delete_button), _image_get_delete_button_label());
+}
+
 int position()
 {
   return 700;
@@ -152,7 +167,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
-  button = gtk_button_new_with_label(_("delete"));
+  button = gtk_button_new_with_label(_image_get_delete_button_label());
   d->delete_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("physically delete from disk"), (char *)NULL);
   gtk_grid_attach(grid, button, 2, line++, 2, 1);
@@ -232,10 +247,19 @@ void gui_init(dt_lib_module_t *self)
   g_object_set(G_OBJECT(button), "tooltip-text", _("remove selected images from the group"), (char *)NULL);
   gtk_grid_attach(grid, button, 2, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(11));
+
+  /* connect preference changed signal */
+  dt_control_signal_connect(
+      darktable.signals,
+      DT_SIGNAL_PREFERENCES_CHANGE,
+      G_CALLBACK(_image_preference_changed),
+      (gpointer)self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_preference_changed), self);
+
   free(self->data);
   self->data = NULL;
 }
@@ -259,7 +283,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
 
   dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
-  dt_accel_connect_button_lib(self, "delete from disk", d->delete_button);
+  dt_accel_connect_button_lib(self, "delete from disk/send to trash", d->delete_button);
   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CW", d->rotate_cw_button);
   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CCW", d->rotate_ccw_button);
   dt_accel_connect_button_lib(self, "create HDR", d->create_hdr_button);

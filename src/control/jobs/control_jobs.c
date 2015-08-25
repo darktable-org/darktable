@@ -666,24 +666,47 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
 static void delete_file_from_disk(const char *filename)
 {
+  const char *filename_display = NULL;
   GError *gerror = NULL;
-  GFile *gfile = NULL;
-  int must_unlink = !dt_conf_get_bool("send_to_trash");
+  GFileInfo *gfileinfo = NULL;
+  gboolean delete_success = FALSE;
 
-  if (!must_unlink)
+  GFile *gfile = g_file_new_for_path(filename);
+  int send_to_trash = dt_conf_get_bool("send_to_trash");
+
+  if (send_to_trash)
   {
-    gfile = g_file_new_for_path(filename);
-    if (!g_file_trash(gfile, NULL, &gerror))
-    {
-      if (g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED))
-        must_unlink = TRUE;
-    }
-
-    if (gerror != NULL)
-      g_object_unref(gfile);
+    delete_success = g_file_trash(gfile, NULL /*cancellable*/, &gerror);
   }
-  if (must_unlink)
-    (void)g_unlink(filename);
+  else
+  {
+    delete_success = g_file_delete(gfile, NULL /*cancellable*/, &gerror);
+  }
+
+  if (!delete_success)
+  {
+    gfileinfo = g_file_query_info(
+        gfile,
+        G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+        G_FILE_QUERY_INFO_NONE,
+        NULL /*cancellable*/,
+        NULL /*error*/);
+    if (gfileinfo != NULL)
+      filename_display = g_file_info_get_attribute_string(
+          gfileinfo,
+          G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME);
+
+    dt_control_log(
+        send_to_trash ? _("Could not send %s to trash%s%s") : _("Could not physically delete %s%s%s"),
+        filename_display == NULL ? filename : filename_display,
+        gerror != NULL && gerror->message != NULL ? ": " : "",
+        gerror != NULL && gerror->message != NULL ? gerror->message : "");
+  }
+
+  if (gfileinfo != NULL)
+    g_object_unref(gfileinfo);
+  if (gfile != NULL)
+    g_object_unref(gfile);
 }
 
 
@@ -1232,8 +1255,11 @@ void dt_control_delete_images()
 
     dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to physically delete %d selected image from disk?",
-                 "do you really want to physically delete %d selected images from disk?", number),
+        dt_conf_get_bool("send_to_trash")
+          ? ngettext("do you really want to send %d selected image to trash?",
+                     "do you really want to send %d selected images to trash?", number)
+          : ngettext("do you really want to physically delete %d selected image from disk?",
+                     "do you really want to physically delete %d selected images from disk?", number),
         number);
 
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
