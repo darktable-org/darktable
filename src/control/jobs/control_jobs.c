@@ -1162,7 +1162,12 @@ void dt_control_remove_images()
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    int number = dt_collection_get_selected_count(darktable.collection);
+    int number = 0;
+    if (dt_view_get_image_to_act_on() != -1)
+      number = 1;
+    else
+      number = dt_collection_get_selected_count(darktable.collection);
+    
     // Do not show the dialog if no image is selected:
     if(number == 0)
     {
@@ -1198,7 +1203,12 @@ void dt_control_delete_images()
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    int number = dt_collection_get_selected_count(darktable.collection);
+    int number = 0;
+    if (dt_view_get_image_to_act_on() != -1)
+      number = 1;
+    else
+      number = dt_collection_get_selected_count(darktable.collection);
+
     // Do not show the dialog if no image is selected:
     if(number == 0)
     {
