@@ -1162,7 +1162,7 @@ void dt_control_remove_images()
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    int number = 0;
+    int number;
     if (dt_view_get_image_to_act_on() != -1)
       number = 1;
     else
@@ -1203,7 +1203,7 @@ void dt_control_delete_images()
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    int number = 0;
+    int number;
     if (dt_view_get_image_to_act_on() != -1)
       number = 1;
     else
