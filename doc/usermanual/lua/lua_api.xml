@@ -1237,6 +1237,44 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" id="darktable_gui_libs_metadata_view_register_info">
+<title>darktable.gui.libs.metadata_view.register_info</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register_info</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback">callback</link></emphasis> : function
+)</synopsis>
+<para>Register a function providing extra info to display in the widget</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_metadata_view_register_info_callback"><term>callback</term><listitem>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : string</synopsis>
+<para>The function providing the info</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_metadata_view_register_info_callback_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to analyze</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>string</synopsis>
+<para>The extra information to displa</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs_metadata">

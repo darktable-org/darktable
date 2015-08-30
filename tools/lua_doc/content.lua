@@ -431,6 +431,11 @@ darktable.gui.libs.import.register_widget:add_parameter("widget",types.lua_widge
 
 darktable.gui.libs.styles:set_text([[The style selection menu]])
 darktable.gui.libs.metadata_view:set_text([[The widget displaying metadata about the current image]])
+darktable.gui.libs.metadata_view.register_info:set_text([[Register a function providing extra info to display in the widget]])
+darktable.gui.libs.metadata_view.register_info:add_parameter("name","string","The name displayed for the new information")
+tmp = darktable.gui.libs.metadata_view.register_info:add_parameter("callback","function","The function providing the info")
+tmp:add_parameter("image",types.dt_lua_image_t,"The image to analyze")
+tmp:add_return("string","The extra information to displa")
 darktable.gui.libs.metadata:set_text([[The widget allowing modification of metadata fields on the current image]])
 darktable.gui.libs.hinter:set_text([[The small line of text at the top of the UI showing the number of selected images]])
 darktable.gui.libs.modulelist:set_text([[The window allowing to set modules as visible/hidden/favorite]])
