@@ -1244,11 +1244,18 @@ end</programlisting></para>
 <secondary>register_info</secondary>
 </indexterm>
 <synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_name">name</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback">callback</link></emphasis> : function
 )</synopsis>
 <para>Register a function providing extra info to display in the widget</para>
 
 <variablelist>
+<varlistentry id="darktable_gui_libs_metadata_view_register_info_name"><term>name</term><listitem>
+<synopsis>string</synopsis>
+<para>The name displayed for the new information</para>
+
+</listitem></varlistentry>
+
 <varlistentry id="darktable_gui_libs_metadata_view_register_info_callback"><term>callback</term><listitem>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
@@ -1661,7 +1668,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>image</secondary>
 </indexterm>
-<para>The UI element that manipulates the current image</para>
+<para>The UI element that manipulates the current images</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -1674,6 +1681,58 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" id="darktable_gui_libs_image_register_action">
+<title>darktable.gui.libs.image.register_action</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register_action</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_label">label</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback">callback</link></emphasis> : function, 
+	[<emphasis><link linkend="darktable_gui_libs_image_register_action_tooltip">tooltip</link></emphasis> : string]
+)</synopsis>
+<para>Add a new button and call a callback when it is clicked</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_image_register_action_label"><term>label</term><listitem>
+<synopsis>string</synopsis>
+<para>The label to display on the button</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_image_register_action_callback"><term>callback</term><listitem>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback_event">event</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback_images">images</link></emphasis> : table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+)</synopsis>
+<para>The function to call when the button is pressed</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_image_register_action_callback_event"><term>event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the button that was pressed</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_image_register_action_callback_images"><term>images</term><listitem>
+<synopsis>table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The images to act on when the button was clicked</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_image_register_action_tooltip"><term>[tooltip]</term><listitem>
+<synopsis>string</synopsis>
+<para>The tooltip to use on the new button</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs_modulegroups">
