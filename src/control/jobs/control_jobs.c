@@ -746,7 +746,7 @@ static gint _dt_delete_file_display_modal_dialog(int send_to_trash, const char *
 
   gdk_threads_add_idle(_dt_delete_dialog_main_thread, &modal_dialog);
   while (modal_dialog.dialog_result == GTK_RESPONSE_NONE)
-    pthread_cond_wait(&modal_dialog.cond, &modal_dialog.mutex);
+    dt_pthread_cond_wait(&modal_dialog.cond, &modal_dialog.mutex);
 
   dt_pthread_mutex_unlock(&modal_dialog.mutex);
   dt_pthread_mutex_destroy(&modal_dialog.mutex);
