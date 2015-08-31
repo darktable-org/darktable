@@ -734,7 +734,7 @@ void dt_mipmap_cache_get_with_caller(
     {
       char filename[PATH_MAX] = {0};
       snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
-      if(!g_file_test(filename, G_FILE_TEST_EXISTS))
+      if(g_file_test(filename, G_FILE_TEST_EXISTS))
         dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
     }
     // nothing found :(
