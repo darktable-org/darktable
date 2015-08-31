@@ -1522,9 +1522,11 @@ static void angle_callback(GtkWidget *slider, dt_iop_module_t *self)
 
 void gui_reset(struct dt_iop_module_t *self)
 {
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   /* reset aspect preset to default */
   dt_conf_set_int("plugins/darkroom/clipping/ratio_d", 0);
   dt_conf_set_int("plugins/darkroom/clipping/ratio_n", 0);
+  g->k_show = -1;
 }
 
 static void keystone_type_changed(GtkWidget *combo, dt_iop_module_t *self)
