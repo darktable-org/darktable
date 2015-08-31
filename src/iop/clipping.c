@@ -1647,6 +1647,8 @@ void gui_update(struct dt_iop_module_t *self)
 
   // keystone :
   if(p->k_apply == 1) g->k_show = 2; // needed to initialise correctly the combobox
+  else g->k_show = -1;
+
   if(g->k_show == 2)
   {
     keystone_type_populate(self, TRUE, 99);
