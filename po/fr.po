@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-07 18:01+0200\n"
-"PO-Revision-Date: 2015-08-07 18:03+0200\n"
+"POT-Creation-Date: 2015-09-01 21:06+0200\n"
+"PO-Revision-Date: 2015-09-01 21:08+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -775,7 +775,7 @@ msgstr "le fichier «%s» possède un format inconnu !"
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
 
-#: ../src/common/darktable.c:697
+#: ../src/common/darktable.c:699
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERREUR : répertoire temporaire invalide : %s\n"
@@ -846,27 +846,27 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:553
+#: ../src/common/imageio.c:559
 #, c-format
 msgid "failed to allocate memory for %s, please lower the threads used for export or buy more memory."
 msgstr "échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
-#: ../src/common/imageio.c:554
+#: ../src/common/imageio.c:560
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "l'aperçu"
 
-#: ../src/common/imageio.c:554
+#: ../src/common/imageio.c:560
 msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:561 ../src/common/mipmap_cache.c:923
+#: ../src/common/imageio.c:567 ../src/common/mipmap_cache.c:923
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image «%s» non disponible!"
 
-#: ../src/common/imageio.c:575
+#: ../src/common/imageio.c:581
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "impossible de trouver le style «%s» à appliquer pendant l'exportation."
@@ -1160,46 +1160,46 @@ msgstr[1] "exportation de %d images vers %s"
 msgid "image `%s' is currently unavailable"
 msgstr "image «%s» non disponible actuellement"
 
-#: ../src/control/jobs/control_jobs.c:1175
+#: ../src/control/jobs/control_jobs.c:1180
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural "do you really want to remove %d selected images from the collection?"
 msgstr[0] "êtes-vous sûr de vouloir enlever de la bibliothèque %d image sélectionnée ?"
 msgstr[1] "êtes-vous sûr de vouloir enlever de la bibliothèque les %d images sélectionnées ?"
 
-#: ../src/control/jobs/control_jobs.c:1179
+#: ../src/control/jobs/control_jobs.c:1184
 msgid "remove images?"
 msgstr "enlever les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1211
+#: ../src/control/jobs/control_jobs.c:1221
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural "do you really want to physically delete %d selected images from disk?"
 msgstr[0] "êtes-vous sûr de vouloir supprimer du disque définitivement %d image sélectionnée  ?"
 msgstr[1] "êtes-vous sûr de vouloir supprimer du disque définitivement les %d images sélectionnées  ?"
 
-#: ../src/control/jobs/control_jobs.c:1215
+#: ../src/control/jobs/control_jobs.c:1225
 msgid "delete images?"
 msgstr "supprimer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1240 ../src/control/jobs/control_jobs.c:1294 ../src/imageio/storage/disk.c:92 ../src/imageio/storage/disk.c:156
+#: ../src/control/jobs/control_jobs.c:1250 ../src/control/jobs/control_jobs.c:1304 ../src/imageio/storage/disk.c:92 ../src/imageio/storage/disk.c:156
 #: ../src/imageio/storage/gallery.c:104 ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104 ../src/imageio/storage/latex.c:165
 #: ../src/libs/styles.c:208 ../src/lua/preferences.c:610
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
-#: ../src/control/jobs/control_jobs.c:1240 ../src/control/jobs/control_jobs.c:1294 ../src/gui/hist_dialog.c:137 ../src/gui/preferences.c:1012
-#: ../src/gui/preferences.c:1034 ../src/gui/presets.c:386 ../src/gui/styles_dialog.c:284 ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
+#: ../src/control/jobs/control_jobs.c:1250 ../src/control/jobs/control_jobs.c:1304 ../src/gui/preferences.c:1012 ../src/gui/preferences.c:1034
+#: ../src/gui/presets.c:386 ../src/gui/styles_dialog.c:284 ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/latex.c:104 ../src/libs/collect.c:414 ../src/libs/copy_history.c:70 ../src/libs/geotagging.c:439 ../src/libs/import.c:761
 #: ../src/libs/import.c:858 ../src/libs/lib.c:216 ../src/libs/styles.c:208 ../src/libs/styles.c:228
 msgid "_Cancel"
 msgstr "_Annuler"
 
-#: ../src/control/jobs/control_jobs.c:1241 ../src/control/jobs/control_jobs.c:1295
+#: ../src/control/jobs/control_jobs.c:1251 ../src/control/jobs/control_jobs.c:1305
 msgid "_Select as destination"
 msgstr "_Sélectionner comme destination"
 
-#: ../src/control/jobs/control_jobs.c:1259
+#: ../src/control/jobs/control_jobs.c:1269
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1214,38 +1214,38 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers %s  ?\n"
 "(les clones non sélectionnés seront également déplacés)"
 
-#: ../src/control/jobs/control_jobs.c:1265
+#: ../src/control/jobs/control_jobs.c:1275
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "déplacer l' image ?"
 msgstr[1] "déplacer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1313
+#: ../src/control/jobs/control_jobs.c:1323
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] "êtes-vous sûr de vouloir copier physiquement %d image sélectionnée vers %s  ?"
 msgstr[1] "êtes-vous sûr de vouloir copier physiquement les %d images sélectionnées vers %s  ?"
 
-#: ../src/control/jobs/control_jobs.c:1316
+#: ../src/control/jobs/control_jobs.c:1326
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copier l'image ?"
 msgstr[1] "copier les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1402
+#: ../src/control/jobs/control_jobs.c:1412
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr "impossible d'obtenir les paramètres du module de stockage «%s», exportation abandonnée."
 
-#: ../src/control/jobs/control_jobs.c:1440
+#: ../src/control/jobs/control_jobs.c:1450
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1459
+#: ../src/control/jobs/control_jobs.c:1469
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
@@ -2304,17 +2304,21 @@ msgstr "$(TITLE) - titre des metadonnées"
 msgid "select parts"
 msgstr "sélectionner les modules à copier"
 
-#: ../src/gui/hist_dialog.c:138
-msgid "Select _All"
-msgstr "_Tout sélectionner"
+#: ../src/gui/hist_dialog.c:137
+msgid "_cancel"
+msgstr "annuler"
 
 #: ../src/gui/hist_dialog.c:138
-msgid "_Clear"
-msgstr "_Effacer"
+msgid "select _all"
+msgstr "tout"
 
-#: ../src/gui/hist_dialog.c:138 ../src/gui/preferences.c:1174 ../src/gui/presets.c:385 ../src/libs/lib.c:215
-msgid "_OK"
-msgstr "_OK"
+#: ../src/gui/hist_dialog.c:138
+msgid "select _none"
+msgstr "aucune"
+
+#: ../src/gui/hist_dialog.c:138
+msgid "_ok"
+msgstr "ok"
 
 #: ../src/gui/hist_dialog.c:160 ../src/gui/styles_dialog.c:334 ../src/gui/styles_dialog.c:343
 msgid "include"
@@ -2456,6 +2460,10 @@ msgstr "êtes-vous sûr de vouloir rétablir les réglages par défaut ? cela va
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "éditer «%s» pour le module «%s»"
+
+#: ../src/gui/preferences.c:1174 ../src/gui/presets.c:385 ../src/libs/lib.c:215
+msgid "_OK"
+msgstr "_OK"
 
 #: ../src/gui/preferences.c:1200 ../src/gui/presets.c:412 ../src/libs/lib.c:241
 msgid "description or further information"
@@ -3516,7 +3524,7 @@ msgstr "courbe de base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
-#: ../src/iop/basecurve.c:827 ../src/iop/lens.c:2179 ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1301
+#: ../src/iop/basecurve.c:827 ../src/iop/lens.c:2179 ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1302
 msgid "scale"
 msgstr "échelle"
 
@@ -5329,7 +5337,7 @@ msgstr ""
 "progressivité du dégradé :\n"
 "0% = doux, 100% = dur"
 
-#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1304
+#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1305
 msgid "rotation"
 msgstr "rotation"
 
@@ -6650,49 +6658,49 @@ msgstr ""
 msgid "properties"
 msgstr "paramètres"
 
-#: ../src/iop/watermark.c:1310
+#: ../src/iop/watermark.c:1311
 msgctxt "size"
 msgid "image"
 msgstr "image"
 
-#: ../src/iop/watermark.c:1311
+#: ../src/iop/watermark.c:1312
 msgid "larger border"
 msgstr "grand coté"
 
-#: ../src/iop/watermark.c:1312
+#: ../src/iop/watermark.c:1313
 msgid "smaller border"
 msgstr "petit coté"
 
-#: ../src/iop/watermark.c:1314
+#: ../src/iop/watermark.c:1315
 msgid "scale on"
 msgstr "échelle sur"
 
-#: ../src/iop/watermark.c:1316
+#: ../src/iop/watermark.c:1317
 msgid "size is relative to"
 msgstr "la taille est relative à"
 
-#: ../src/iop/watermark.c:1318
+#: ../src/iop/watermark.c:1319
 msgid "position"
 msgstr "position"
 
-#: ../src/iop/watermark.c:1340
+#: ../src/iop/watermark.c:1341
 msgid "x offset"
 msgstr "décalage x"
 
-#: ../src/iop/watermark.c:1343
+#: ../src/iop/watermark.c:1344
 msgid "y offset"
 msgstr "décalage y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1349
+#: ../src/iop/watermark.c:1350
 msgid "the opacity of the watermark"
 msgstr "opacité du filigrane"
 
-#: ../src/iop/watermark.c:1350
+#: ../src/iop/watermark.c:1351
 msgid "the scale of the watermark"
 msgstr "taille du filigrane"
 
-#: ../src/iop/watermark.c:1351
+#: ../src/iop/watermark.c:1352
 msgid "the rotation of the watermark"
 msgstr "la rotation du filigrane"
 
@@ -8184,11 +8192,11 @@ msgid_plural "image has %d stars"
 msgstr[0] "l'image a %d étoile"
 msgstr[1] "l'image a %d étoiles"
 
-#: ../src/libs/metadata_view.c:497
+#: ../src/libs/metadata_view.c:509
 msgid "m"
 msgstr "m"
 
-#: ../src/libs/metadata_view.c:561
+#: ../src/libs/metadata_view.c:573
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
@@ -9248,6 +9256,12 @@ msgstr "nouvelle session initiée «%s»"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
+
+#~ msgid "Select _All"
+#~ msgstr "_Tout sélectionner"
+
+#~ msgid "_Clear"
+#~ msgstr "_Effacer"
 
 #~ msgid "(a wild bug appears)"
 #~ msgstr "(un étrange problème est survenu)"
