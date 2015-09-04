@@ -1604,10 +1604,55 @@ end</programlisting></para>
 <secondary>register_selection</secondary>
 </indexterm>
 <synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_label">label</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback">callback</link></emphasis> : function, 
+	[<emphasis><link linkend="darktable_gui_libs_select_register_selection_tooltip">tooltip</link></emphasis> : string]
 )</synopsis>
-<para>undocumented</para>
+<para>Add a new button and call a callback when it is clicked</para>
 
 <variablelist>
+<varlistentry id="darktable_gui_libs_select_register_selection_label"><term>label</term><listitem>
+<synopsis>string</synopsis>
+<para>The label to display on the button</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_select_register_selection_callback"><term>callback</term><listitem>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback_event">event</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback_images">images</link></emphasis> : table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The function to call when the button is pressed</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_select_register_selection_callback_event"><term>event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the button that was pressed</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_select_register_selection_callback_images"><term>images</term><listitem>
+<synopsis>table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The images in the current collection. This is the same content as<link linkend="darktable_collection">darktable.collection</link></para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The images to set the selection to</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_select_register_selection_tooltip"><term>[tooltip]</term><listitem>
+<synopsis>string</synopsis>
+<para>The tooltip to use on the new button</para>
+
+</listitem></varlistentry>
+
 </variablelist>
 </section>
 
