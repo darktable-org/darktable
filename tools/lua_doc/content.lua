@@ -366,6 +366,10 @@ darktable.database.copy_image:add_parameter("image",types.dt_lua_image_t,[[The i
 darktable.database.copy_image:add_parameter("film",types.dt_lua_film_t,[[The film to copy to]])
 darktable.database.copy_image:add_return(types.dt_lua_image_t,[[The new image]])
 darktable.database.copy_image:set_main_parent(darktable.database)
+darktable.collection:set_text([[Allows to access the currently worked on images, i.e the ones selected by the collection lib. Filtering (rating etc) does not change that collection.]])
+
+
+darktable.collection["#"]:set_text([[Each image in the collection appears with a numerical index; you can interate them using ipairs.]])
 
 
 for k, v in darktable.gui.views:unskiped_children() do

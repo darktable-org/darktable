@@ -183,6 +183,9 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection);
 /** get the count of query */
 uint32_t dt_collection_get_count(const dt_collection_t *collection);
 
+/** get all image ids order as current selection. no more than limit many images are returned, <0 ==
+ * unlimited */
+GList *dt_collection_get_all(const dt_collection_t *collection, int limit);
 /** get selected image ids order as current selection. no more than limit many images are returned, <0 ==
  * unlimited */
 GList *dt_collection_get_selected(const dt_collection_t *collection, int limit);
