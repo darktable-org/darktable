@@ -8,7 +8,7 @@
 
 #define PACKAGE_NAME "@CMAKE_PROJECT_NAME@"
 #define PACKAGE_STRING PACKAGE_NAME " " PACKAGE_VERSION
-#define PACKAGE_BUGREPORT "darktable-devel@lists.sf.net"
+#define PACKAGE_BUGREPORT "darktable-dev@lists.darktable.org"
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
