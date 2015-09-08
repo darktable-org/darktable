@@ -39,6 +39,7 @@ You can build the tool using the following commands:
 
     $ cd "$DARKATBLE_SRC_ROOT/tools/basecurve"
     $ mkdir build
+    $ cd build/
     $ cmake -DCMAKE_INSTALL_PREFIX=$YOUR_INSTALL_PATH -DCMAKE_BUILD_TYPE=Release ..
     $ cmake --build . -- install
 
