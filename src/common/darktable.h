@@ -146,6 +146,7 @@ struct dt_points_t;
 struct dt_imageio_t;
 struct dt_bauhaus_t;
 struct dt_undo_t;
+struct dt_colorspaces_t;
 
 typedef enum dt_debug_thread_t
 {
@@ -200,6 +201,7 @@ typedef struct darktable_t
   struct dt_blendop_t *blendop;
   struct dt_dbus_t *dbus;
   struct dt_undo_t *undo;
+  struct dt_colorspaces_t *color_profiles;
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   dt_pthread_mutex_t capabilities_threadsafe;

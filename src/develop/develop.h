@@ -195,6 +195,15 @@ typedef struct dt_develop_t
     float lower;
     float upper;
   } overexposed;
+
+  // the display profile related things (softproof, gamut check, profiles ...)
+  struct
+  {
+    guint timeout;
+    gulong destroy_signal_handler;
+    GtkWidget *floating_window, *softproof_button, *gamut_button;
+  } profile;
+
 } dt_develop_t;
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);

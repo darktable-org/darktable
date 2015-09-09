@@ -39,20 +39,19 @@ static cmsUInt32Number ComputeFormatDescriptor (int OutColorSpace, int bps)
 }
 
 int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t height, int bpp,
-                             const char *profile, int intent, gboolean black_point_compensation)
+                             cmsHPROFILE hOutProfile, int intent, gboolean black_point_compensation)
 {
-  cmsHPROFILE hInProfile, hOutProfile;
+  cmsHPROFILE hInProfile;
   cmsHTRANSFORM hTransform;
   cmsUInt32Number wInput, wOutput;
   int OutputColorSpace;
 
-  if(!g_file_test(profile, G_FILE_TEST_IS_REGULAR))
+  if(!hOutProfile)
     return 1;
 
   void *out = (void *)malloc(width*height*3);
 
-  hInProfile = dt_colorspaces_create_output_profile(imgid);
-  hOutProfile = cmsOpenProfileFromFileTHR(NULL, profile, "r");
+  hInProfile = dt_colorspaces_get_output_profile(imgid)->profile;
 
   wInput = ComputeFormatDescriptor (PT_RGB, (bpp==8?1:2));
 
@@ -65,8 +64,7 @@ int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t heig
      intent,
      black_point_compensation ? cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
 
-  cmsCloseProfile(hInProfile);
-  cmsCloseProfile(hOutProfile);
+  dt_colorspaces_cleanup_profile(hOutProfile);
 
   if (bpp == 8)
   {

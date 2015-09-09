@@ -32,6 +32,7 @@
 
 #include "common/darktable.h"
 #include "common/collection.h"
+#include "common/colorspaces.h"
 #include "common/selection.h"
 #include "common/exif.h"
 #include "common/fswatch.h"
@@ -747,6 +748,9 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   }
   g_free((gchar *)lang);
 
+  // get the list of color profiles
+  darktable.color_profiles = dt_colorspaces_init();
+
   // initialize the database
   darktable.db = dt_database_init(dbfilename_from_command);
   if(darktable.db == NULL)
@@ -998,7 +1002,6 @@ void dt_cleanup()
   {
     dt_imageio_cleanup(darktable.imageio);
     free(darktable.imageio);
-    dt_gui_gtk_cleanup(darktable.gui);
     free(darktable.gui);
   }
   dt_image_cache_cleanup(darktable.image_cache);
@@ -1011,6 +1014,7 @@ void dt_cleanup()
     free(darktable.control);
     dt_undo_cleanup(darktable.undo);
   }
+  dt_colorspaces_cleanup(darktable.color_profiles);
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
   dt_points_cleanup(darktable.points);

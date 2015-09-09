@@ -91,8 +91,6 @@ typedef struct dt_iop_colorzones_gui_data_t
   float draw_max_xs[DT_IOP_COLORZONES_RES], draw_max_ys[DT_IOP_COLORZONES_RES];
   float band_hist[DT_IOP_COLORZONES_BANDS];
   float band_max;
-  cmsHPROFILE hsRGB;
-  cmsHPROFILE hLab;
   cmsHTRANSFORM xform;
 } dt_iop_colorzones_gui_data_t;
 
@@ -1133,17 +1131,15 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(colorzones_scrolled), self);
 
 
-  c->hsRGB = dt_colorspaces_create_srgb_profile();
-  c->hLab = dt_colorspaces_create_lab_profile();
-  c->xform = cmsCreateTransform(c->hLab, TYPE_Lab_DBL, c->hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
+  cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
+  cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  c->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/colorzones/gui_channel", c->channel);
-  dt_colorspaces_cleanup_profile(c->hsRGB);
-  dt_colorspaces_cleanup_profile(c->hLab);
   cmsDeleteTransform(c->xform);
   dt_draw_curve_destroy(c->minmax_curve);
   free(self->gui_data);

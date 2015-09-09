@@ -25,6 +25,7 @@
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "control/conf.h"
+#include "common/colorspaces.h"
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -295,9 +296,8 @@ int main(int argc, char *arg[])
   // init dt without gui:
   if(dt_init(argc, arg, 0, NULL)) exit(1);
   // use system color profile, if we can:
-  gchar *oldprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  const gchar *overprofile = "X profile";
-  dt_conf_set_string("plugins/lighttable/export/iccprofile", overprofile);
+  int old_profile_type = dt_conf_get_int("plugins/lighttable/export/icctype");
+  dt_conf_set_int("plugins/lighttable/export/iccprofile", DT_COLORSPACE_DISPLAY);
   running = init(argc, arg);
   srand48(SDL_GetTicks());
   if(use_random) random_state = drand48() * INT_MAX;
@@ -332,11 +332,7 @@ int main(int argc, char *arg[])
       nanosleep(&time, NULL);
     }
   }
-  if(oldprofile)
-  {
-    dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
-    g_free(oldprofile);
-  }
+  if(old_profile_type) dt_conf_set_int("plugins/lighttable/export/icctype", old_profile_type);
   dtv_shutdown();
 }
 

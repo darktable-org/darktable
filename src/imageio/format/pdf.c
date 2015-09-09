@@ -81,7 +81,7 @@ static const struct
 
 typedef struct _pdf_icc_t
 {
-  char *name;
+  const dt_colorspaces_color_profile_t *profile;
   int   icc_id;
 } _pdf_icc_t;
 
@@ -208,13 +208,13 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(imgid > 0 && d->params.icc && d->params.mode == MODE_NORMAL)
   {
     // get the id of the profile
-    char *profile_name = dt_colorspaces_get_output_profile_name(imgid);
+    const dt_colorspaces_color_profile_t *profile = dt_colorspaces_get_output_profile(imgid);
 
     // look it up in the list
     for(GList *iter = d->icc_profiles; iter; iter = g_list_next(iter))
     {
       _pdf_icc_t *icc = (_pdf_icc_t *)iter->data;
-      if(!g_strcmp0(profile_name, icc->name))
+      if(icc->profile == profile)
       {
         icc_id = icc->icc_id;
         break;
@@ -222,25 +222,19 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
     if(icc_id == 0)
     {
-      cmsHPROFILE profile = dt_colorspaces_create_output_profile(imgid);
       uint32_t len = 0;
-      cmsSaveProfileToMem(profile, 0, &len);
+      cmsSaveProfileToMem(profile->profile, 0, &len);
       if(len > 0)
       {
         unsigned char buf[len];
-        cmsSaveProfileToMem(profile, buf, &len);
+        cmsSaveProfileToMem(profile->profile, buf, &len);
         icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
         _pdf_icc_t *icc = (_pdf_icc_t *)malloc(sizeof(_pdf_icc_t));
-        icc->name = profile_name;
+        icc->profile = profile;
         icc->icc_id = icc_id;
         d->icc_profiles = g_list_append(d->icc_profiles, icc);
       }
-      else
-        g_free(profile_name);
-      dt_colorspaces_cleanup_profile(profile);
     }
-    else
-      g_free(profile_name);
   }
 
   uint8_t *image_data = NULL;
@@ -317,11 +311,6 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     for(int i = 0; i < n_images; i++)
       free(pages[i]);
     g_free(d->actual_filename);
-    for(GList *iter = d->icc_profiles; iter; iter = g_list_next(iter))
-    {
-      _pdf_icc_t *icc = (_pdf_icc_t *)iter->data;
-      g_free(icc->name);
-    }
     g_list_free_full(d->icc_profiles, free);
 
     d->pdf = NULL;
@@ -757,11 +746,6 @@ void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *par
     g_free(d->actual_filename);
   }
 
-  for(GList *iter = d->icc_profiles; iter; iter = g_list_next(iter))
-  {
-    _pdf_icc_t *icc = (_pdf_icc_t *)iter->data;
-    g_free(icc->name);
-  }
   g_list_free_full(d->icc_profiles, free);
 
   d->pdf = NULL;

@@ -33,16 +33,6 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
-#ifdef USE_COLORDGTK
-#include "colord-gtk.h"
-#endif
-
-#ifdef GDK_WINDOWING_QUARTZ
-#include <Carbon/Carbon.h>
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreServices/CoreServices.h>
-#endif
-
 #include <stdlib.h>
 #include <strings.h>
 #include <assert.h>
@@ -98,206 +88,6 @@ int dt_control_write_config(dt_control_t *c)
   return 0;
 }
 
-#ifdef USE_COLORDGTK
-static void dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, gpointer user_data)
-{
-  pthread_rwlock_wrlock(&darktable.control->xprofile_lock);
-
-  int profile_changed = 0;
-  CdWindow *window = CD_WINDOW(source);
-  GError *error = NULL;
-  CdProfile *profile = cd_window_get_profile_finish(window, res, &error);
-  if(error == NULL && profile != NULL)
-  {
-    const gchar *filename = cd_profile_get_filename(profile);
-    if(filename)
-    {
-      if(g_strcmp0(filename, darktable.control->colord_profile_file))
-      {
-        /* the profile has changed (either because the user changed the colord settings or because we are on a
-         * different screen now) */
-        // update darktable.control->colord_profile_file
-        g_free(darktable.control->colord_profile_file);
-        darktable.control->colord_profile_file = g_strdup(filename);
-        // read the file
-        guchar *tmp_data = NULL;
-        gsize size;
-        g_file_get_contents(filename, (gchar **)&tmp_data, &size, NULL);
-        profile_changed = size > 0 && (darktable.control->xprofile_size != size
-                                       || memcmp(darktable.control->xprofile_data, tmp_data, size) != 0);
-        if(profile_changed)
-        {
-          g_free(darktable.control->xprofile_data);
-          darktable.control->xprofile_data = tmp_data;
-          darktable.control->xprofile_size = size;
-          dt_print(DT_DEBUG_CONTROL,
-                   "[color profile] colord gave us a new screen profile: '%s' (size: %ld)\n", filename, size);
-        }
-        else
-        {
-          g_free(tmp_data);
-        }
-      }
-    }
-  }
-  if(profile) g_object_unref(profile);
-  g_object_unref(window);
-
-  pthread_rwlock_unlock(&darktable.control->xprofile_lock);
-  if(profile_changed) dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
-}
-#endif
-
-// Get the display ICC profile of the monitor associated with the widget.
-// For X display, uses the ICC profile specifications version 0.2 from
-// http://burtonini.com/blog/computers/xicc
-// Based on code from Gimp's modules/cdisplay_lcms.c
-void dt_ctl_set_display_profile()
-{
-  if(!dt_control_running()) return;
-  // make sure that no one gets a broken profile
-  // FIXME: benchmark if the try is really needed when moving/resizing the window. Maybe we can just lock it
-  // and block
-  if(pthread_rwlock_trywrlock(&darktable.control->xprofile_lock))
-    return; // we are already updating the profile. Or someone is reading right now. Too bad we can't
-            // distinguish that. Whatever ...
-
-  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
-  guint8 *buffer = NULL;
-  gint buffer_size = 0;
-  gchar *profile_source = NULL;
-
-#if defined GDK_WINDOWING_X11
-
-  // we will use the xatom no matter what configured when compiled without colord
-  gboolean use_xatom = TRUE;
-#if defined USE_COLORDGTK
-  gboolean use_colord = TRUE;
-  gchar *display_profile_source = dt_conf_get_string("ui_last/display_profile_source");
-  if(display_profile_source)
-  {
-    if(!strcmp(display_profile_source, "xatom"))
-      use_colord = FALSE;
-    else if(!strcmp(display_profile_source, "colord"))
-      use_xatom = FALSE;
-    g_free(display_profile_source);
-  }
-#endif
-
-  /* let's have a look at the xatom, just in case ... */
-  if(use_xatom)
-  {
-    GdkScreen *screen = gtk_widget_get_screen(widget);
-    if(screen == NULL) screen = gdk_screen_get_default();
-    int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
-    char *atom_name;
-    if(monitor > 0)
-      atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
-    else
-      atom_name = g_strdup("_ICC_PROFILE");
-
-    profile_source = g_strdup_printf("xatom %s", atom_name);
-
-    GdkAtom type = GDK_NONE;
-    gint format = 0;
-    gdk_property_get(gdk_screen_get_root_window(screen), gdk_atom_intern(atom_name, FALSE), GDK_NONE, 0,
-                     64 * 1024 * 1024, FALSE, &type, &format, &buffer_size, &buffer);
-    g_free(atom_name);
-  }
-
-#ifdef USE_COLORDGTK
-  /* also try to get the profile from colord. this will set the value asynchronously! */
-  if(use_colord)
-  {
-    CdWindow *window = cd_window_new();
-    GtkWidget *center_widget = dt_ui_center(darktable.gui->ui);
-    cd_window_get_profile(window, center_widget, NULL, dt_ctl_get_display_profile_colord_callback, NULL);
-  }
-#endif
-
-#elif defined GDK_WINDOWING_QUARTZ
-  // disable automatic color management on OS X 10.10 since we end up applying a profile twice
-  // TODO: check if this issue applies to OS X 10.9, also re-check 10.8 and earlier versions
-#ifndef kCFCoreFoundationVersionNumber10_10
-#define kCFCoreFoundationVersionNumber10_10 1151.16
-#endif
-  if(kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber10_10)
-  {
-    GdkScreen *screen = gtk_widget_get_screen(widget);
-    if(screen == NULL) screen = gdk_screen_get_default();
-    int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
-
-    CGDirectDisplayID ids[monitor + 1];
-    uint32_t total_ids;
-    CMProfileRef prof = NULL;
-    if(CGGetOnlineDisplayList(monitor + 1, &ids[0], &total_ids) == kCGErrorSuccess && total_ids == monitor + 1)
-      CMGetProfileByAVID(ids[monitor], &prof);
-    if(prof != NULL)
-    {
-      CFDataRef data;
-      data = CMProfileCopyICCData(NULL, prof);
-      CMCloseProfile(prof);
-
-      UInt8 *tmp_buffer = (UInt8 *)g_malloc(CFDataGetLength(data));
-      CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
-
-      buffer = (guint8 *)tmp_buffer;
-      buffer_size = CFDataGetLength(data);
-
-      CFRelease(data);
-    }
-    profile_source = g_strdup("osx color profile api");
-  }
-#elif defined G_OS_WIN32
-  (void)widget;
-  HDC hdc = GetDC(NULL);
-  if(hdc != NULL)
-  {
-    DWORD len = 0;
-    GetICMProfile(hdc, &len, NULL);
-    gchar *path = g_new(gchar, len);
-
-    if(GetICMProfile(hdc, &len, path))
-    {
-      gsize size;
-      g_file_get_contents(path, (gchar **)&buffer, &size, NULL);
-      buffer_size = size;
-    }
-    g_free(path);
-    ReleaseDC(NULL, hdc);
-  }
-  profile_source = g_strdup("windows color profile api");
-#endif
-
-  int profile_changed = buffer_size > 0
-                        && (darktable.control->xprofile_size != buffer_size
-                            || memcmp(darktable.control->xprofile_data, buffer, buffer_size) != 0);
-  if(profile_changed)
-  {
-    cmsHPROFILE profile = NULL;
-    char name[512] = { 0 };
-    // thanks to ufraw for this!
-    g_free(darktable.control->xprofile_data);
-    darktable.control->xprofile_data = buffer;
-    darktable.control->xprofile_size = buffer_size;
-    profile = cmsOpenProfileFromMem(buffer, buffer_size);
-    if(profile)
-    {
-      dt_colorspaces_get_profile_name(profile, "en", "US", name, sizeof(name));
-      cmsCloseProfile(profile);
-    }
-    dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile `%s' from the %s (size: %d)\n",
-             *name ? name : "(unknown)", profile_source, buffer_size);
-  }
-  else
-  {
-    g_free(buffer);
-  }
-  pthread_rwlock_unlock(&darktable.control->xprofile_lock);
-  if(profile_changed) dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
-  g_free(profile_source);
-}
-
 void dt_control_init(dt_control_t *s)
 {
   memset(s->vimkey, 0, sizeof(s->vimkey));
@@ -319,7 +109,6 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
   dt_pthread_mutex_init(&s->run_mutex, NULL);
-  pthread_rwlock_init(&s->xprofile_lock, NULL);
   dt_pthread_mutex_init(&(s->global_mutex), NULL);
   dt_pthread_mutex_init(&(s->progress_system.mutex), NULL);
 
@@ -425,7 +214,6 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->log_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
   dt_pthread_mutex_destroy(&s->progress_system.mutex);
-  pthread_rwlock_destroy(&s->xprofile_lock);
   if(s->accelerator_list)
   {
     g_slist_free_full(s->accelerator_list, g_free);

@@ -608,7 +608,7 @@ static gboolean configure(GtkWidget *da, GdkEventConfigure *event, gpointer user
     // we're done with our old pixmap, so we can get rid of it and replace it with our properly-sized one.
     cairo_surface_destroy(darktable.gui->surface);
     darktable.gui->surface = tmpsurface;
-    dt_ctl_set_display_profile(); // maybe we are on another screen now with > 50% of the area
+    dt_colorspaces_set_display_profile(); // maybe we are on another screen now with > 50% of the area
   }
   oldw = event->width;
   oldh = event->height;
@@ -622,7 +622,7 @@ static gboolean window_configure(GtkWidget *da, GdkEvent *event, gpointer user_d
   static int oldy = 0;
   if(oldx != event->configure.x || oldy != event->configure.y)
   {
-    dt_ctl_set_display_profile(); // maybe we are on another screen now with > 50% of the area
+    dt_colorspaces_set_display_profile(); // maybe we are on another screen now with > 50% of the area
     oldx = event->configure.x;
     oldy = event->configure.y;
   }
@@ -840,7 +840,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                                                 widgets.right_scrolled_window);
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
   */
-  dt_ctl_set_display_profile();
+  dt_colorspaces_set_display_profile();
   // update the profile when the window is moved. resize is already handled in configure()
   widget = dt_ui_main_window(darktable.gui->ui);
   g_signal_connect(G_OBJECT(widget), "configure-event", G_CALLBACK(window_configure), NULL);
@@ -930,16 +930,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
 
   return 0;
-}
-
-void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
-{
-  g_free(darktable.control->xprofile_data);
-#ifdef USE_COLORDGTK
-  g_free(darktable.control->colord_profile_file);
-  darktable.control->colord_profile_file = NULL;
-#endif
-  darktable.control->xprofile_size = 0;
 }
 
 void dt_gui_gtk_run(dt_gui_gtk_t *gui)

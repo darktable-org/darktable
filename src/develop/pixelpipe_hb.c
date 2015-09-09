@@ -26,7 +26,6 @@
 #include "common/imageio.h"
 #include "libs/lib.h"
 #include "libs/colorpicker.h"
-#include "iop/colorout.h"
 #include "common/colorspaces.h"
 #include "common/histogram.h"
 
@@ -1890,6 +1889,20 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       dt_colorpicker_sample_t *sample = NULL;
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
 
+      cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+
+      if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+        pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+
+      cmsHPROFILE out_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
+                                                           darktable.color_profiles->display_filename,
+                                                           DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+
+      cmsHTRANSFORM xform = out_profile ? cmsCreateTransform(out_profile, TYPE_RGB_FLT, Lab, TYPE_Lab_FLT, INTENT_PERCEPTUAL, 0) : NULL;
+
+      if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+        pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
       while(samples)
       {
         sample = samples->data;
@@ -1939,27 +1952,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         // Converting the RGB values to Lab
-
-        GList *nodes = pipe->nodes;
-        cmsHPROFILE out_profile = NULL;
-        while(nodes)
+        if(xform)
         {
-          dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-          if(!strcmp(piece->module->op, "colorout"))
-          {
-            out_profile = ((dt_iop_colorout_data_t *)piece->data)->output;
-            break;
-          }
-          nodes = g_list_next(nodes);
-        }
-        if(out_profile)
-        {
-          cmsHPROFILE Lab = dt_colorspaces_create_lab_profile();
-
-          cmsHTRANSFORM xform
-              = cmsCreateTransform(out_profile, TYPE_RGB_FLT, Lab, TYPE_Lab_FLT, INTENT_PERCEPTUAL, 0);
-
-
           // Preparing the data for transformation
           float rgb_data[9];
           for(int i = 0; i < 3; i++)
@@ -1978,13 +1972,11 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             sample->picked_color_lab_min[i] = Lab_data[i + 3];
             sample->picked_color_lab_max[i] = Lab_data[i + 6];
           }
-
-          cmsDeleteTransform(xform);
-          dt_colorspaces_cleanup_profile(Lab);
         }
-
         samples = g_slist_next(samples);
       }
+
+      cmsDeleteTransform(xform);
     }
     // Picking RGB for primary colorpicker output and converting to Lab
     if(dev->gui_attached && pipe == dev->preview_pipe
@@ -2036,25 +2028,18 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       }
 
       // Converting the RGB values to Lab
+      if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+        pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
-      GList *nodes = pipe->nodes;
-      cmsHPROFILE out_profile = NULL;
-      while(nodes)
-      {
-        dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-        if(!strcmp(piece->module->op, "colorout"))
-        {
-          out_profile = ((dt_iop_colorout_data_t *)piece->data)->output;
-          break;
-        }
-        nodes = g_list_next(nodes);
-      }
+      cmsHPROFILE out_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
+                                                           darktable.color_profiles->display_filename,
+                                                           DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+
       if(out_profile)
       {
-        cmsHPROFILE Lab = dt_colorspaces_create_lab_profile();
+        cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
-        cmsHTRANSFORM xform
-            = cmsCreateTransform(out_profile, TYPE_RGB_FLT, Lab, TYPE_Lab_FLT, INTENT_PERCEPTUAL, 0);
+        cmsHTRANSFORM xform = cmsCreateTransform(out_profile, TYPE_RGB_FLT, Lab, TYPE_Lab_FLT, INTENT_PERCEPTUAL, 0);
 
 
         // Preparing the data for transformation
@@ -2079,6 +2064,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         cmsDeleteTransform(xform);
         dt_colorspaces_cleanup_profile(Lab);
       }
+
+      if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+        pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 

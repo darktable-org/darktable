@@ -33,7 +33,7 @@
 #include "gui/gtk.h"
 #include "bauhaus/bauhaus.h"
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 static gboolean _bauhaus_combobox_set_active_text(GtkWidget *cb, const gchar *text);
 
@@ -72,17 +72,18 @@ typedef struct dt_lib_print_settings_t
   int32_t iwidth, iheight;
   int unit;
   int v_intent, v_pintent;
+  int v_icctype, v_picctype;
   char *v_iccprofile, *v_piccprofile, *v_style;
   gboolean v_style_append, v_black_point_compensation;
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_export_profile_t
 {
-  char filename[512]; // icc file name
-  char name[512];     // product name
-  int  pos;           // position in combo box
-}
-dt_lib_export_profile_t;
+  dt_colorspaces_color_profile_type_t type; // filename is only used for type DT_COLORSPACE_FILE
+  char filename[512];                       // icc file name
+  char name[512];                           // product name
+  int  pos, ppos;                           // position in combo boxen
+} dt_lib_export_profile_t;
 
 typedef struct _dialog_description
 {
@@ -275,7 +276,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   if (*ps->v_piccprofile)
     if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp,
-                                 ps->v_piccprofile, ps->v_pintent, ps->v_black_point_compensation))
+                                 dt_colorspaces_get_profile(ps->v_picctype, ps->v_piccprofile,
+                                                            DT_PROFILE_DIRECTION_OUT)->profile,
+                                 ps->v_pintent, ps->v_black_point_compensation))
     {
       free(dat.ps->buf);
       dt_control_log(_("cannot apply printer profile `%s'"), ps->v_piccprofile);
@@ -736,38 +739,44 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
   GList *prof = ps->profiles;
   while(prof)
   {
-    // could use g_list_nth. this seems safer?
     dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
     if(pp->pos == pos)
     {
+      dt_conf_set_int("plugins/lighttable/export/icctype", pp->type);
+      dt_conf_set_int("plugins/print/print/icctype", pp->type);
       dt_conf_set_string("plugins/lighttable/export/iccprofile", pp->filename);
       dt_conf_set_string("plugins/print/print/iccprofile", pp->filename);
-      if (ps->v_iccprofile) g_free(ps->v_iccprofile);
+      g_free(ps->v_iccprofile);
+      ps->v_icctype = pp->type;
       ps->v_iccprofile = g_strdup(pp->filename);
       return;
     }
     prof = g_list_next(prof);
   }
-  dt_conf_set_string("plugins/lighttable/export/iccprofile", "image");
-  dt_conf_set_string("plugins/print/print/iccprofile", "image");
-  if (ps->v_iccprofile) g_free(ps->v_iccprofile);
-  ps->v_iccprofile = g_strdup("image");
+  dt_conf_set_int("plugins/lighttable/export/icctype", DT_COLORSPACE_NONE);
+  dt_conf_set_int("plugins/print/print/icctype", DT_COLORSPACE_NONE);
+  dt_conf_set_string("plugins/lighttable/export/iccprofile", "");
+  dt_conf_set_string("plugins/print/print/iccprofile", "");
+  g_free(ps->v_iccprofile);
+  ps->v_icctype = DT_COLORSPACE_NONE;
+  ps->v_iccprofile = g_strdup("");
 }
 
 static void
 _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  const gchar *printer_profile = dt_bauhaus_combobox_get_text(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   GList *prof = ps->profiles;
   while(prof)
   {
-    // could use g_list_nth. this seems safer?
     dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
-    if(strcmp(pp->name,printer_profile)==0)
+    if(pp->ppos == pos)
     {
+      dt_conf_set_int("plugins/print/printer/icctype", pp->type);
       dt_conf_set_string("plugins/print/printer/iccprofile", pp->filename);
-      if (ps->v_piccprofile) g_free(ps->v_piccprofile);
+      g_free(ps->v_piccprofile);
+      ps->v_picctype = pp->type;
       ps->v_piccprofile = g_strdup(pp->filename);
 
       // activate the black compensation and printer intent
@@ -777,8 +786,10 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     }
     prof = g_list_next(prof);
   }
+  dt_conf_set_int("plugins/print/printer/iccprofile", DT_COLORSPACE_NONE);
   dt_conf_set_string("plugins/print/printer/iccprofile", "");
-  if (ps->v_piccprofile) g_free(ps->v_piccprofile);
+  g_free(ps->v_piccprofile);
+  ps->v_picctype = DT_COLORSPACE_NONE;
   ps->v_piccprofile = g_strdup("");
   gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), FALSE);
@@ -847,51 +858,33 @@ static GList* _get_profiles ()
   GList *list = NULL;
 
   dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
+  prof->type = DT_COLORSPACE_SRGB;
   dt_utf8_strlcpy(prof->name, _("sRGB (web-safe)"), sizeof(prof->name));
-  int pos;
-  prof->pos = 1;
+  prof->pos = -2;
+  prof->ppos = -2;
   list = g_list_append(list, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
+  prof->type = DT_COLORSPACE_ADOBERGB;
   dt_utf8_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
-  pos = prof->pos = 2;
+  prof->pos = -2;
+  prof->ppos = -2;
   list = g_list_append(list, prof);
 
-  // read datadir/color/out/*.icc
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  char dirname[PATH_MAX] = { 0 };
-  char filename[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  cmsHPROFILE tmpprof;
-  const gchar *d_name;
-  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
-  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
-  GDir *dir = g_dir_open(dirname, 0, NULL);
-  if(dir)
+  // add the profiles from datadir/color/out/*.icc
+  for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
   {
-    while((d_name = g_dir_read_name(dir)))
+    dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
+    if(p->type == DT_COLORSPACE_FILE)
     {
-      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
-      tmpprof = cmsOpenProfileFromFile(filename, "r");
-      if(tmpprof)
-      {
-        char *lang = getenv("LANG");
-        if (!lang) lang = "en_US";
-
-        dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-        dt_colorspaces_get_profile_name(tmpprof, lang, lang+3, prof->name, sizeof(prof->name));
-        g_strlcpy(prof->filename, filename, sizeof(prof->filename));
-        prof->pos = ++pos;
-        cmsCloseProfile(tmpprof);
-        list = g_list_append(list, prof);
-      }
+      dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+      g_strlcpy(prof->name, p->name, sizeof(prof->name));
+      g_strlcpy(prof->filename, p->filename, sizeof(prof->filename));
+      prof->type = DT_COLORSPACE_FILE;
+      prof->pos = -2;
+      prof->ppos = -2;
+      list = g_list_append(list, prof);
     }
-    g_dir_close(dir);
   }
 
   return list;
@@ -1002,28 +995,31 @@ gui_init (dt_lib_module_t *self)
   d->pprofile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->pprofile, NULL, _("profile"));
 
-  int combo_idx = -1, n=0;
+  int combo_idx, n;
   GList *l = d->profiles;
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pprofile), TRUE, TRUE, 0);
+  int printer_profile_type = dt_conf_get_int("plugins/print/printer/icctype");
   gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
   combo_idx = -1;
-  n=0;
+  n = 0;
 
   dt_bauhaus_combobox_add(d->pprofile, _("none"));
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
-    // do not add built-in profile, these are in no way for printing
-    if (strcmp(prof->filename,"sRGB")!=0 && strcmp(prof->filename,"adobergb")!=0)
+    // do not add built-in profiles, these are in no way for printing
+    if(prof->type == DT_COLORSPACE_FILE)
     {
       dt_bauhaus_combobox_add(d->pprofile, prof->name);
-      n++;
-      if (strcmp(prof->filename,printer_profile)==0)
+      prof->ppos = ++n;
+      if(prof->type == printer_profile_type &&
+        (prof->type != DT_COLORSPACE_FILE || !strcmp(prof->filename, printer_profile)))
       {
-        if(d->v_piccprofile) g_free(d->v_piccprofile);
+        g_free(d->v_piccprofile);
+        d->v_picctype = printer_profile_type;
         d->v_piccprofile = g_strdup(printer_profile);
-        combo_idx=n;
+        combo_idx = n;
       }
     }
     l = g_list_next(l);
@@ -1034,10 +1030,12 @@ gui_init (dt_lib_module_t *self)
   // profile not found, maybe a profile has been removed? revert to none
   if (combo_idx == -1)
   {
+    dt_conf_set_int("plugins/print/printer/icctype", DT_COLORSPACE_NONE);
     dt_conf_set_string("plugins/print/printer/iccprofile", "");
-    if(d->v_piccprofile) g_free(d->v_piccprofile);
+    g_free(d->v_piccprofile);
+    d->v_picctype = DT_COLORSPACE_NONE;
     d->v_piccprofile = g_strdup("");
-    combo_idx=0;
+    combo_idx = 0;
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
 
@@ -1216,31 +1214,35 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->profile), TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
 
+  int icctype = dt_conf_get_int("plugins/print/print/icctype");
   gchar *iccprofile = dt_conf_get_string("plugins/print/print/iccprofile");
   combo_idx = -1;
-  n=0;
+  n = 0;
 
   l = d->profiles;
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
     dt_bauhaus_combobox_add(d->profile, prof->name);
-    n++;
-    if (strcmp(prof->filename, iccprofile)==0)
+    prof->pos = ++n;
+    if(prof->type == icctype && (prof->type != DT_COLORSPACE_FILE || !strcmp(prof->filename, iccprofile)))
     {
-      if(d->v_iccprofile) g_free(d->v_iccprofile);
+      g_free(d->v_iccprofile);
+      d->v_icctype = icctype;
       d->v_iccprofile = g_strdup(iccprofile);
-      combo_idx=n;
+      combo_idx = n;
     }
     l = g_list_next(l);
   }
 
   if (combo_idx == -1)
   {
-    dt_conf_set_string("plugins/print/print/iccprofile", "image");
-    if(d->v_iccprofile) g_free(d->v_iccprofile);
+    dt_conf_set_int("plugins/print/print/icctype", DT_COLORSPACE_NONE);
+    dt_conf_set_string("plugins/print/print/iccprofile", "");
+    g_free(d->v_iccprofile);
+    d->v_icctype = DT_COLORSPACE_NONE;
     d->v_iccprofile = g_strdup("");
-    combo_idx=0;
+    combo_idx = 0;
   }
   g_free (iccprofile);
 
@@ -1368,38 +1370,149 @@ void init_presets(dt_lib_module_t *self)
 {
 }
 
-static const char *none = "none";
-
-static const char *_get_profile_filename(GList *profiles, const char *name)
+void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
+                    const int old_version, const int new_version, size_t *new_size)
 {
-  GList *p = profiles;
-  while(p)
+  if(old_version == 1 && new_version == 2)
   {
-    // could use g_list_nth. this seems safer?
-    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)p->data;
-    if(!strcmp(pp->name, name))
-    {
-      const char *ds = strrchr(pp->filename,'/'); // keep last / to ensure full match of filename
-      return ds ? ds : pp->filename;
-    }
-    p = g_list_next(p);
-  }
-  return none;
-}
+    // we added the profile type
+    //
+    // old format:
+    //   char *printer
+    //   char *paper
+    //   int32_t landscape
+    //   char *f_profile
+    //   int32_t intent
+    //   char *f_pprofile
+    //   <rest>
+    //
+    // new format:
+    //   char *printer
+    //   char *paper
+    //   int32_t landscape
+    //   int32_t f_profile_type
+    //   char *f_profile
+    //   int32_t intent
+    //   int32_t f_pprofile_type
+    //   char *f_pprofile
+    //   <rest>
 
-static const char *_get_profile(GList *profiles, const char *filename)
-{
-  GList *p = profiles;
-  while(p)
-  {
-    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)p->data;
-    if(strstr(pp->filename, filename))
+    const char *buf = (const char *)old_params;
+
+    // printer
+    const char *printer = buf;
+    const int32_t printer_len = strlen(printer) + 1;
+    buf += printer_len;
+
+    // paper
+    const char *paper = buf;
+    const int32_t paper_len = strlen(paper) + 1;
+    buf += paper_len;
+
+    // landscape
+    const int32_t landscape = *(int32_t *)buf;
+    buf +=  sizeof(int32_t);
+
+    // profile
+    const char *profile = buf;
+    const int32_t profile_len = strlen(profile) + 1;
+    buf += profile_len;
+
+    // intent
+    const int32_t intent = *(int32_t *)buf;
+    buf += sizeof(int32_t);
+
+    // pprofile
+    const char *pprofile = buf;
+    const int32_t pprofile_len = strlen(pprofile) + 1;
+    buf += pprofile_len;
+
+
+    // now we got all fields from the start of the buffer and buf points to the beginning or <rest>
+
+    // find the new values for the two profiles
+    dt_colorspaces_color_profile_type_t profile_type, pprofile_type;
+    const char *profile_filename = "", *pprofile_filename = "";
+
+    if(*profile == '\0' || !strcmp(profile, "none"))
     {
-      return pp->name;
+      profile_type = DT_COLORSPACE_NONE;
     }
-    p = g_list_next(p);
+    else if(!strcmp(profile, "sRGB"))
+    {
+      profile_type = DT_COLORSPACE_SRGB;
+    }
+    else if(!strcmp(profile, "adobergb"))
+    {
+      profile_type = DT_COLORSPACE_ADOBERGB;
+    }
+    else
+    {
+      profile_type = DT_COLORSPACE_FILE;
+      profile_filename = &profile[1]; // the old code had a '/' in the beginning
+    }
+
+    // in theory pprofile can't be srgb or adobergb, but checking for them won't hurt
+    if(*pprofile == '\0' || !strcmp(pprofile, "none"))
+    {
+      pprofile_type = DT_COLORSPACE_NONE;
+    }
+    else if(!strcmp(pprofile, "sRGB"))
+    {
+      pprofile_type = DT_COLORSPACE_SRGB;
+    }
+    else if(!strcmp(pprofile, "adobergb"))
+    {
+      pprofile_type = DT_COLORSPACE_ADOBERGB;
+    }
+    else
+    {
+      pprofile_type = DT_COLORSPACE_FILE;
+      pprofile_filename = &pprofile[1]; // the old code had a '/' in the beginning
+    }
+
+    int32_t new_profile_len = strlen(profile_filename) + 1;
+    int32_t new_pprofile_len = strlen(pprofile_filename) + 1;
+
+    // now we got everything to reassemble the new params
+    size_t new_params_size = old_params_size - profile_len - pprofile_len;
+    new_params_size += 2 * sizeof(dt_colorspaces_color_profile_type_t);
+    new_params_size += new_profile_len + new_pprofile_len;
+    void *new_params = malloc(new_params_size);
+
+    size_t pos = 0;
+    //   char *printer
+    memcpy(new_params + pos, printer, printer_len);
+    pos += printer_len;
+    //   char *paper
+    memcpy(new_params + pos, paper, paper_len);
+    pos += paper_len;
+    //   int32_t landscape
+    memcpy(new_params + pos, &landscape, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    //   int32_t f_profile_type
+    memcpy(new_params + pos, &profile_type, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    //   char *f_profile
+    memcpy(new_params + pos, profile_filename, new_profile_len);
+    pos += new_profile_len;
+    //   int32_t intent
+    memcpy(new_params + pos, &intent, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    //   int32_t f_pprofile_type
+    memcpy(new_params + pos, &pprofile_type, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    //   char *f_pprofile
+    memcpy(new_params + pos, pprofile_filename, new_pprofile_len);
+    pos += new_pprofile_len;
+    //   <rest>
+    memcpy(new_params + pos, buf, old_params_size - ((char *)buf - (char *)old_params));
+
+    *new_size = new_params_size;
+    return new_params;
   }
-  return none;
+
+  return NULL;
 }
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
@@ -1425,6 +1538,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   const int32_t landscape = *(int32_t *)buf;
   buf +=  sizeof(int32_t);
 
+  const int32_t f_profile_type = *(int32_t *)buf;
+  buf +=  sizeof(int32_t);
+
   const char *f_profile = buf;
   if (!f_profile) return 1;
   const int32_t profile_len = strlen(f_profile) + 1;
@@ -1432,6 +1548,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   const int32_t intent = *(int32_t *)buf;
   buf += sizeof(int32_t);
+
+  const int32_t f_pprofile_type = *(int32_t *)buf;
+  buf +=  sizeof(int32_t);
 
   const char *f_pprofile = buf;
   if (!f_pprofile) return 1;
@@ -1468,7 +1587,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
 
   // ensure that the size is correct
-  if(size != printer_len + paper_len + profile_len + pprofile_len + style_len + 6 * sizeof(int32_t) + 4 * sizeof(double))
+  if(size != printer_len + paper_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double))
     return 1;
 
   // set the GUI with corresponding values
@@ -1480,16 +1599,30 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   dt_bauhaus_combobox_set (ps->orientation, landscape);
 
-  const char *profile = _get_profile(ps->profiles, f_profile);
+  dt_bauhaus_combobox_set(ps->profile, 0);
+  for(GList *iter = ps->profiles; iter; iter = g_list_next(iter))
+  {
+    dt_lib_export_profile_t *p = (dt_lib_export_profile_t *)iter->data;
+    if(f_profile_type == p->type && (f_profile_type != DT_COLORSPACE_FILE || !strcmp(f_profile, p->filename)))
+    {
+      dt_bauhaus_combobox_set(ps->profile, p->pos);
+      break;
+    }
+  }
 
-  if (profile[0] != '\0')
-    _bauhaus_combobox_set_active_text(ps->profile, profile);
   dt_bauhaus_combobox_set (ps->intent, intent);
 
-  const char *pprofile = _get_profile(ps->profiles, f_pprofile);
+  dt_bauhaus_combobox_set(ps->pprofile, 0);
+  for(GList *iter = ps->profiles; iter; iter = g_list_next(iter))
+  {
+    dt_lib_export_profile_t *p = (dt_lib_export_profile_t *)iter->data;
+    if(f_pprofile_type == p->type && (f_pprofile_type != DT_COLORSPACE_FILE || !strcmp(f_pprofile, p->filename)))
+    {
+      dt_bauhaus_combobox_set(ps->pprofile, p->ppos);
+      break;
+    }
+  }
 
-  if (pprofile[0] != '\0')
-    _bauhaus_combobox_set_active_text(ps->pprofile, pprofile);
   dt_bauhaus_combobox_set (ps->pintent, pintent);
 
   if (style[0] != '\0')
@@ -1514,11 +1647,11 @@ void *get_params(dt_lib_module_t *self, int *size)
   // get the data
   const char *printer = dt_bauhaus_combobox_get_text(ps->printers);
   const char *paper = dt_bauhaus_combobox_get_text(ps->papers);
-  const char *profile = _get_profile_filename(ps->profiles, dt_bauhaus_combobox_get_text(ps->profile));
+  const int32_t profile_pos = dt_bauhaus_combobox_get(ps->profile);
   const int32_t intent =  dt_bauhaus_combobox_get(ps->intent);
   const char *style = dt_bauhaus_combobox_get_text(ps->style);
   const int32_t style_mode = dt_bauhaus_combobox_get(ps->style_mode);
-  const char *pprofile = _get_profile_filename(ps->profiles, dt_bauhaus_combobox_get_text(ps->pprofile));
+  const int32_t pprofile_pos = dt_bauhaus_combobox_get(ps->pprofile);
   const int32_t pintent =  dt_bauhaus_combobox_get(ps->pintent);
   const int32_t landscape = dt_bauhaus_combobox_get(ps->orientation);
   const int32_t bpc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation));
@@ -1527,6 +1660,23 @@ void *get_params(dt_lib_module_t *self, int *size)
   const double b_left = ps->prt.page.margin_left;
   const double b_right = ps->prt.page.margin_right;
   const int32_t alignment = ps->prt.page.alignment;
+
+  dt_colorspaces_color_profile_type_t profile_type = DT_COLORSPACE_NONE, pprofile_type = DT_COLORSPACE_NONE;
+  const char *profile = "", *pprofile = "";
+  for(GList *iter = ps->profiles; iter; iter = g_list_next(iter))
+  {
+    dt_lib_export_profile_t *p = (dt_lib_export_profile_t *)iter->data;
+    if(p->pos == profile_pos)
+    {
+      profile_type = p->type;
+      profile = p->filename;
+    }
+    if(p->ppos == pprofile_pos)
+    {
+      pprofile_type = p->type;
+      pprofile = p->filename;
+    }
+  }
 
   // these will be NULL when no printer is connected/found
   if(!printer) printer = "";
@@ -1540,7 +1690,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t style_len = strlen (style) + 1;
 
   // compute the size of all parameters
-  *size = printer_len + paper_len + profile_len + pprofile_len + style_len + 6 * sizeof(int32_t) + 4 * sizeof(double);
+  *size = printer_len + paper_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double);
 
   // allocate the parameter buffer
   char *params = (char *)malloc(*size);
@@ -1553,9 +1703,13 @@ void *get_params(dt_lib_module_t *self, int *size)
   pos += paper_len;
   memcpy(params+pos, &landscape, sizeof(int32_t));
   pos += sizeof(int32_t);
+  memcpy(params+pos, &profile_type, sizeof(int32_t));
+  pos += sizeof(int32_t);
   memcpy(params+pos, profile, profile_len);
   pos += profile_len;
   memcpy(params+pos, &intent, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params+pos, &pprofile_type, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params+pos, pprofile, pprofile_len);
   pos += pprofile_len;

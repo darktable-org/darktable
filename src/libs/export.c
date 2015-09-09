@@ -36,7 +36,7 @@
 #include "dtgtk/button.h"
 #include "bauhaus/bauhaus.h"
 
-DT_MODULE(3)
+DT_MODULE(4)
 
 #define EXPORT_MAX_IMAGE_SIZE UINT16_MAX
 
@@ -46,17 +46,9 @@ typedef struct dt_lib_export_t
   GtkWidget *storage, *format;
   int format_lut[128];
   GtkWidget *upscale, *profile, *intent, *style, *style_mode;
-  GList *profiles;
   GtkButton *export_button;
   GtkWidget *storage_extra_container, *format_extra_container;
 } dt_lib_export_t;
-
-typedef struct dt_lib_export_profile_t
-{
-  char filename[512]; // icc file name
-  char name[512];     // product name
-  int pos;            // position in combo box
-} dt_lib_export_profile_t;
 
 /** Updates the combo box and shows only the supported formats of current selected storage module */
 static void _update_formats_combobox(dt_lib_export_t *d);
@@ -160,25 +152,27 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0);
 
   dt_bauhaus_combobox_set(d->intent, dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
+
   // iccprofile
-  int iccfound = 0;
-  gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(iccprofile)
+  int icctype = dt_conf_get_int("plugins/lighttable/export/icctype");
+  gchar *iccfilename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  dt_bauhaus_combobox_set(d->profile, 0);
+  if(icctype != DT_COLORSPACE_NONE)
   {
-    GList *prof = d->profiles;
-    while(prof)
+    for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
     {
-      dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
-      if(!strcmp(pp->filename, iccprofile))
+      dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+      if(pp->out_pos > -1 &&
+         icctype == pp->type && (icctype != DT_COLORSPACE_FILE || !strcmp(iccfilename, pp->filename)))
       {
-        dt_bauhaus_combobox_set(d->profile, pp->pos);
-        iccfound = 1;
+        dt_bauhaus_combobox_set(d->profile, pp->out_pos + 1);
+        break;
       }
-      if(iccfound) break;
-      prof = g_list_next(prof);
     }
-    g_free(iccprofile);
   }
+
+  g_free(iccfilename);
+
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
   gboolean rc = FALSE;
@@ -193,12 +187,9 @@ void gui_reset(dt_lib_module_t *self)
     dt_bauhaus_combobox_set(d->style, 0);
 
   // style mode to overwrite as it was the initial behavior
-
   dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool("plugins/lighttable/export/style_append"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
-
-  if(!iccfound) dt_bauhaus_combobox_set(d->profile, 0);
 
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   if(mformat) mformat->gui_reset(mformat);
@@ -349,19 +340,25 @@ static void storage_changed(GtkWidget *widget, dt_lib_export_t *d)
 static void profile_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   int pos = dt_bauhaus_combobox_get(widget);
-  GList *prof = d->profiles;
-  while(prof)
+  if(pos > 0)
   {
-    // could use g_list_nth. this seems safer?
-    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
-    if(pp->pos == pos)
+    pos--;
+    for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
     {
-      dt_conf_set_string("plugins/lighttable/export/iccprofile", pp->filename);
-      return;
+      dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+      if(pp->out_pos == pos)
+      {
+        dt_conf_set_int("plugins/lighttable/export/icctype", pp->type);
+        if(pp->type == DT_COLORSPACE_FILE)
+          dt_conf_set_string("plugins/lighttable/export/iccprofile", pp->filename);
+        else
+          dt_conf_set_string("plugins/lighttable/export/iccprofile", "");
+        return;
+      }
     }
-    prof = g_list_next(prof);
   }
-  dt_conf_set_string("plugins/lighttable/export/iccprofile", "image");
+  dt_conf_set_int("plugins/lighttable/export/icctype", DT_COLORSPACE_NONE);
+  dt_conf_set_string("plugins/lighttable/export/iccprofile", "");
 }
 
 static void upscale_changed(GtkWidget *widget, dt_lib_export_t *d)
@@ -591,76 +588,19 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add profile combo
 
-  d->profiles = NULL;
-
-  dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("sRGB (web-safe)"), sizeof(prof->name));
-  int pos;
-  prof->pos = 1;
-  d->profiles = g_list_append(d->profiles, prof);
-
-  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
-  prof->pos = 2;
-  d->profiles = g_list_append(d->profiles, prof);
-
-  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("linear Rec709 RGB"), sizeof(prof->name));
-  pos = prof->pos = 3;
-  d->profiles = g_list_append(d->profiles, prof);
-
-  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("linear Rec2020 RGB"), sizeof(prof->name));
-  pos = prof->pos = 4;
-  d->profiles = g_list_append(d->profiles, prof);
-
-  // read datadir/color/out/*.icc
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
-  char dirname[PATH_MAX] = { 0 };
-  char filename[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
-  cmsHPROFILE tmpprof;
-  const gchar *d_name;
-  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
-  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR)) snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
-  GDir *dir = g_dir_open(dirname, 0, NULL);
-  if(dir)
-  {
-    while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
-      tmpprof = cmsOpenProfileFromFile(filename, "r");
-      if(tmpprof)
-      {
-        char *lang = getenv("LANG");
-        if(!lang) lang = "en_US";
 
-        dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-        dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
-        g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
-        prof->pos = ++pos;
-        cmsCloseProfile(tmpprof);
-        d->profiles = g_list_append(d->profiles, prof);
-      }
-    }
-    g_dir_close(dir);
-  }
-  GList *l = d->profiles;
   d->profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->profile, NULL, _("profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->profile, FALSE, TRUE, 0);
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
-  while(l)
+  for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
-    dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
-    dt_bauhaus_combobox_add(d->profile, prof->name);
-    l = g_list_next(l);
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+    if(prof->out_pos > -1) dt_bauhaus_combobox_add(d->profile, prof->name);
   }
 
   dt_bauhaus_combobox_set(d->profile, 0);
@@ -757,12 +697,6 @@ void gui_cleanup(dt_lib_module_t *self)
     if(module->widget) gtk_container_remove(GTK_CONTAINER(d->format_extra_container), module->widget);
   } while((it = g_list_next(it)));
 
-
-  while(d->profiles)
-  {
-    g_free(d->profiles->data);
-    d->profiles = g_list_delete_link(d->profiles, d->profiles);
-  }
   free(self->data);
   self->data = NULL;
 }
@@ -815,9 +749,9 @@ void init_presets(dt_lib_module_t *self)
       // extract the interesting parts from the blob
       const char *buf = (const char *)op_params;
 
-      // skip 4*int32_t: max_width, max_height, upscale and iccintent
-      buf += 4 * sizeof(int32_t);
-      // next skip iccprofile
+      // skip 5*int32_t: max_width, max_height, upscale and iccintent, icctype
+      buf += 5 * sizeof(int32_t);
+      // next skip iccfilename
       buf += strlen(buf) + 1;
 
       // parse both names to '\0'
@@ -991,6 +925,59 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     *new_size = new_params_size;
     return new_params;
   }
+  else if(old_version == 3 && new_version == 4)
+  {
+    // replace iccprofile by type + filename
+    // format of v3:
+    //  - 4 x int32_t (max_width, max_height, upscale, iccintent)
+    //  - char* (iccprofile)
+    //  - rest
+    // format of v4:
+    //  - 5 x int32_t (max_width, max_height, upscale, iccintent, icctype)
+    //  - char* (iccfilename)
+    //  - old rest
+
+    const char *buf = (const char *)old_params;
+
+    // first get the old iccprofile to find out how big our new blob has to be
+    const char *iccprofile = buf + 4 * sizeof(int32_t);
+
+    size_t new_params_size = old_params_size - strlen(iccprofile) + sizeof(int32_t);
+    int icctype;
+    const char *iccfilename = "";
+
+    if(!strcmp(iccprofile, "image"))
+      icctype = DT_COLORSPACE_NONE;
+    else if(!strcmp(iccprofile, "sRGB"))
+      icctype = DT_COLORSPACE_SRGB;
+    else if(!strcmp(iccprofile, "linear_rec709_rgb") || !strcmp(iccprofile, "linear_rgb"))
+      icctype = DT_COLORSPACE_LIN_REC709;
+    else if(!strcmp(iccprofile, "linear_rec2020_rgb"))
+      icctype = DT_COLORSPACE_LIN_REC2020;
+    else if(!strcmp(iccprofile, "adobergb"))
+      icctype = DT_COLORSPACE_ADOBERGB;
+    else
+    {
+      icctype = DT_COLORSPACE_FILE;
+      iccfilename = iccprofile;
+      new_params_size += strlen(iccfilename);
+    }
+
+    void *new_params = calloc(1, new_params_size);
+    size_t pos = 0;
+    memcpy(new_params, old_params, 4 * sizeof(int32_t));
+    pos += 4 * sizeof(int32_t);
+    memcpy(new_params + pos, &icctype, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    memcpy(new_params + pos, iccfilename, strlen(iccfilename) + 1);
+    pos += strlen(iccfilename) + 1;
+    size_t old_pos = 4 * sizeof(int32_t) + strlen(iccprofile) + 1;
+    memcpy(new_params + pos, old_params + old_pos, old_params_size - old_pos);
+
+    *new_size = new_params_size;
+    return new_params;
+  }
+
   return NULL;
 }
 
@@ -1025,10 +1012,11 @@ void *get_params(dt_lib_module_t *self, int *size)
   // insane preset)?
   // also store icc profile/intent here.
   int32_t iccintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
+  int32_t icctype = dt_conf_get_int("plugins/lighttable/export/icctype");
   int32_t max_width = dt_conf_get_int("plugins/lighttable/export/width");
   int32_t max_height = dt_conf_get_int("plugins/lighttable/export/height");
   int32_t upscale = dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0;
-  gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  gchar *iccfilename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
   gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
 
@@ -1038,16 +1026,17 @@ void *get_params(dt_lib_module_t *self, int *size)
     fdata->style_append = style_append;
   }
 
-  if(!iccprofile)
+  if(icctype != DT_COLORSPACE_FILE)
   {
-    iccprofile = (char *)g_malloc(1);
-    iccprofile[0] = '\0';
+    g_free(iccfilename);
+    iccfilename = NULL;
   }
+  if(!iccfilename) iccfilename = (char *)calloc(1, sizeof(char));
 
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
-  *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 4 * sizeof(int32_t)
-          + strlen(iccprofile) + 1;
+  *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 5 * sizeof(int32_t)
+          + strlen(iccfilename) + 1;
 
   char *params = (char *)calloc(1, *size);
   int pos = 0;
@@ -1059,8 +1048,10 @@ void *get_params(dt_lib_module_t *self, int *size)
   pos += sizeof(int32_t);
   memcpy(params + pos, &iccintent, sizeof(int32_t));
   pos += sizeof(int32_t);
-  memcpy(params + pos, iccprofile, strlen(iccprofile) + 1);
-  pos += strlen(iccprofile) + 1;
+  memcpy(params + pos, &icctype, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params + pos, iccfilename, strlen(iccfilename) + 1);
+  pos += strlen(iccfilename) + 1;
   memcpy(params + pos, fname, fname_len + 1);
   pos += fname_len + 1;
   memcpy(params + pos, sname, sname_len + 1);
@@ -1085,7 +1076,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   }
   g_assert(pos == *size);
 
-  g_free(iccprofile);
+  g_free(iccfilename);
   g_free(style);
 
   if(fdata) mformat->free_params(mformat, fdata);
@@ -1107,27 +1098,26 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
   const int iccintent = *(const int *)buf;
   buf += sizeof(int32_t);
-  const char *iccprofile = buf;
-  buf += strlen(iccprofile) + 1;
+  const int icctype = *(const int *)buf;
+  buf += sizeof(int32_t);
+  const char *iccfilename = buf;
+  buf += strlen(iccfilename) + 1;
 
   // reverse these by setting the gui, not the conf vars!
   dt_bauhaus_combobox_set(d->intent, iccintent + 1);
-  if(!strcmp(iccprofile, "image"))
+
+  dt_bauhaus_combobox_set(d->profile, 0);
+  if(icctype != DT_COLORSPACE_NONE)
   {
-    dt_bauhaus_combobox_set(d->profile, 0);
-  }
-  else
-  {
-    GList *prof = d->profiles;
-    while(prof)
+    for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
     {
-      dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
-      if(!strcmp(pp->filename, iccprofile))
+      dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)iter->data;
+      if(pp->out_pos > -1 &&
+         icctype == pp->type && (icctype != DT_COLORSPACE_FILE || !strcmp(iccfilename, pp->filename)))
       {
-        dt_bauhaus_combobox_set(d->profile, pp->pos);
+        dt_bauhaus_combobox_set(d->profile, pp->out_pos + 1);
         break;
       }
-      prof = g_list_next(prof);
     }
   }
 
@@ -1153,8 +1143,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
 
   if(size
-     != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 4 * sizeof(int32_t)
-        + strlen(iccprofile) + 1)
+     != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 5 * sizeof(int32_t)
+        + strlen(iccfilename) + 1)
     return 1;
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
 

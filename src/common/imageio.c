@@ -668,12 +668,12 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   // find output color profile for this image:
   int sRGB = 1;
-  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(overprofile && !strcmp(overprofile, "sRGB"))
+  int icctype = dt_conf_get_int("plugins/lighttable/export/icctype");
+  if(icctype == DT_COLORSPACE_SRGB)
   {
     sRGB = 1;
   }
-  else if(!overprofile || !strcmp(overprofile, "image"))
+  else if(icctype == DT_COLORSPACE_NONE)
   {
     GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;
@@ -682,11 +682,9 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       colorout = (dt_iop_module_t *)modules->data;
       if(colorout->get_p && strcmp(colorout->op, "colorout") == 0)
       {
-        const char *iccprofile = colorout->get_p(colorout->params, "iccprofile");
-        if(!strcmp(iccprofile, "sRGB"))
-          sRGB = 1;
-        else
-          sRGB = 0;
+        const dt_colorspaces_color_profile_type_t *type = colorout->get_p(colorout->params, "type");
+        sRGB = (!type || *type == DT_COLORSPACE_SRGB);
+        break; // colorout can't have > 1 instance
       }
       modules = g_list_next(modules);
     }
@@ -695,7 +693,6 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   {
     sRGB = 0;
   }
-  g_free(overprofile);
 
   // get only once at the beginning, in case the user changes it on the way:
   const gboolean high_quality_processing
