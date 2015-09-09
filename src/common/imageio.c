@@ -21,6 +21,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/colorlabels.h"
+#include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image_cache.h"

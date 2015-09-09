@@ -21,6 +21,7 @@
 #include "common/camera_control.h"
 #endif
 #include "common/collection.h"
+#include "common/colorspaces.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "develop/develop.h"

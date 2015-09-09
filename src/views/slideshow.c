@@ -19,6 +19,7 @@
 #include "views/view.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/colorspaces.h"
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/dtpthread.h"
