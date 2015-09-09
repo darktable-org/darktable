@@ -108,7 +108,7 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
   // create an OpenCL processable matrix + tone curves from an cmsHPROFILE:
 
   // check this first:
-  if(!cmsIsMatrixShaper(prof)) return 1;
+  if(!prof || !cmsIsMatrixShaper(prof)) return 1;
 
   // if this profile contains LUT, it might also contain swapped matrix,
   // so the only right way to handle it is to let LCMS apply it.
@@ -1162,7 +1162,8 @@ dt_colorspaces_t *dt_colorspaces_init()
   char *lang = getenv("LANG");
   if(!lang) lang = "en_US";
 
-  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_DISPLAY, NULL,
+  // init the display profile with srgb so some stupid code that runs before the real profile could be fetched has something to work with
+  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_DISPLAY, dt_colorspaces_create_srgb_profile(),
                                                                _("system display profile"), -1, -1, ++display_pos));
   // we want a v4 with parametric curve for input and a v2 with point trc for output
   // see http://ninedegreesbelow.com/photography/lcms-make-icc-profiles.html#profile-variants-and-versions
