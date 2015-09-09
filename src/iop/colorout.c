@@ -451,7 +451,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   /* creating output profile */
   if(out_type == DT_COLORSPACE_DISPLAY) pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
-  output = dt_colorspaces_get_profile(out_type, out_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  const dt_colorspaces_color_profile_t *out_profile
+        = dt_colorspaces_get_profile(out_type, out_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
+  output = out_profile->profile;
 
   /* creating softproof profile if softproof is enabled */
   if(d->mode != DT_PROFILE_NORMAL && pipe->type == DT_DEV_PIXELPIPE_FULL)
@@ -490,7 +492,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(!d->xform && isnan(d->cmatrix[0]))
   {
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
-    fprintf(stderr, "unsupported output profile has been replaced by sRGB!\n");
+    fprintf(stderr, "unsupported output profile `%s' has been replaced by sRGB!\n", out_profile->name);
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
     if(d->mode != DT_PROFILE_NORMAL
        || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1],
