@@ -1134,6 +1134,7 @@ static void tags_view(dt_lib_collect_rule_t *dr)
             gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
                                DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_COUNT, count,
                                DT_LIB_COLLECT_COL_VISIBLE, sqlite3_column_int(stmt, 2), -1);
+            g_free(pth2);
             current = iter;
           }
 
