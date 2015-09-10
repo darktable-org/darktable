@@ -54,11 +54,6 @@ typedef struct dt_iop_bilat_gui_data_t
   GtkWidget *detail;
 } dt_iop_bilat_gui_data_t;
 
-typedef struct dt_iop_bilat_global_data_t
-{
-  // we don't need it for this example (as for most dt plugins)
-} dt_iop_bilat_global_data_t;
-
 // this returns a translatable name
 const char *name()
 {
@@ -189,8 +184,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
-  // we don't need global data:
-  module->data = malloc(sizeof(dt_iop_bilat_global_data_t));
   module->params = malloc(sizeof(dt_iop_bilat_params_t));
   module->default_params = malloc(sizeof(dt_iop_bilat_params_t));
   // our module is disabled by default
@@ -213,8 +206,6 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL; // just to be sure
   free(module->params);
   module->params = NULL;
-  free(module->data); // just to be sure
-  module->data = NULL;
 }
 
 static void spatial_callback(GtkWidget *w, dt_iop_module_t *self)
