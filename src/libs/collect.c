@@ -738,6 +738,7 @@ static GtkTreeStore *_folder_tree()
         gtk_tree_store_insert(store, &iter, level > 0 ? &current : NULL, 0);
         gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch[level], DT_LIB_COLLECT_COL_PATH, pth2,
                            DT_LIB_COLLECT_COL_COUNT, count, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
+        g_free(pth2);
         current = iter;
       }
 
