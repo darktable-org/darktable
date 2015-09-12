@@ -2908,7 +2908,7 @@ end</programlisting></para>
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The created image if an image is imported or the toplevel film object if a film was imported.</para>
+<para>The new image object.</para>
 
 </listitem></varlistentry>
 
@@ -2924,7 +2924,7 @@ end</programlisting></para>
 </indexterm>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_database_import_location">location</link></emphasis> : string
-)</synopsis>
+) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Imports new images into the database.</para>
 
 <variablelist>
@@ -2940,6 +2940,13 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 </para>
 
 </listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The created image if an image is imported or the toplevel film object if a film was imported.</para>
+
+</listitem></varlistentry>
+
 
 </variablelist>
 </section>
@@ -6184,17 +6191,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>

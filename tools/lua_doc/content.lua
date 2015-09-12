@@ -35,6 +35,11 @@ if  #real_darktable.styles == 0 then
 	error("The database needs to contain at least one style to generate documentation")
 end
 
+local orig_params = real_darktable.gui.libs.collect.filter()
+for k,v in pairs(orig_params) do
+   orig_params[k] = nil
+ end
+ real_darktable.gui.libs.collect.filter(orig_params)
 
 doc = require "core"
 darktable = doc.toplevel.darktable
@@ -351,7 +356,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 
 
 ]])
-darktable.database.duplicate:add_return(types.dt_lua_image_t,[[The created image if an image is imported or the toplevel film object if a film was imported.]])
+darktable.database.import:add_return(types.dt_lua_image_t,[[The created image if an image is imported or the toplevel film object if a film was imported.]])
 darktable.database.move_image:set_text([[Physically moves an image (and all its duplicates) to another film.]]..para()..
 [[This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film]]..para()..
 [[Note that the parameter order is not relevant.]])
