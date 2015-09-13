@@ -35,11 +35,7 @@ if  #real_darktable.styles == 0 then
 	error("The database needs to contain at least one style to generate documentation")
 end
 
-local orig_params = real_darktable.gui.libs.collect.filter()
-for k,v in pairs(orig_params) do
-   orig_params[k] = nil
- end
- real_darktable.gui.libs.collect.filter(orig_params)
+real_darktable.gui.libs.collect.filter({})
 
 doc = require "core"
 darktable = doc.toplevel.darktable
@@ -428,9 +424,11 @@ darktable.gui.libs.snapshots.max_snapshot:set_text([[The maximum number of snaps
 
 darktable.gui.libs.collect:set_text([[The collection UI element that allows to filter images by collection]])
 darktable.gui.libs.collect.filter:set_text([[Allows to get or change the list of visible images]])
-darktable.gui.libs.collect.filter:add_parameter("rules",my_tostring(types.dt_lib_collect_params_t),[[An object describing filtering rules for the collection. These rules will be applied after this call]]):set_attribute("optional",true)
-darktable.gui.libs.collect.filter:add_return(my_tostring(types.dt_lib_collect_params_t),[[The rules that were applied before this call.]])
+darktable.gui.libs.collect.filter:add_parameter("rules","array of"..my_tostring(types.dt_lib_collect_params_rule_t),[[A table of rules describing the filter. These rules will be applied after this call]]):set_attribute("optional",true)
+darktable.gui.libs.collect.filter:add_return("array of"..my_tostring(types.dt_lib_collect_params_rule_t),[[The rules that were applied before this call.]])
 darktable.gui.libs.collect.filter:set_attribute("implicit_yield",true)
+darktable.gui.libs.collect.new_rule:set_text([[Returns a newly created rule object]])
+darktable.gui.libs.collect.new_rule:add_return(my_tostring(types.dt_lib_collect_params_rule_t),[[The newly created rule]])
 
 darktable.gui.libs.import:set_text([[The buttons to start importing images]])
 darktable.gui.libs.import.register_widget:set_text([[Add a widget in the option expander of the import dialog]])
@@ -753,15 +751,12 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
   types.dt_imageio_exr_compression_t:set_text("The type of compression to use for the EXR image")
 
-  types.dt_lib_collect_params_t:set_text("A set of rules decribing a collection filter for the collect module")
-  types.dt_lib_collect_params_t["#"]:set_text("Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil")
-
-  types.dt_lua_lib_collect_params_rule_t:set_text("A single rule for filtering a collection");
-  types.dt_lua_lib_collect_params_rule_t.mode:set_text("How this rule is applied after the previous one. Unused for the first rule");
-  types.dt_lua_lib_collect_params_rule_t.mode:set_reported_type(types.dt_lib_collect_mode_t)
-  types.dt_lua_lib_collect_params_rule_t.data:set_text("The text segment of the rule. Exact content depends on the type of rule");
-  types.dt_lua_lib_collect_params_rule_t.item:set_text("The item on which this rule filter. i.e the type of the rule");
-  types.dt_lua_lib_collect_params_rule_t.item:set_reported_type(types.dt_collection_properties_t)
+  types.dt_lib_collect_params_rule_t:set_text("A single rule for filtering a collection");
+  types.dt_lib_collect_params_rule_t.mode:set_text("How this rule is applied after the previous one. Unused for the first rule");
+  types.dt_lib_collect_params_rule_t.mode:set_reported_type(types.dt_lib_collect_mode_t)
+  types.dt_lib_collect_params_rule_t.data:set_text("The text segment of the rule. Exact content depends on the type of rule");
+  types.dt_lib_collect_params_rule_t.item:set_text("The item on which this rule filter. i.e the type of the rule");
+  types.dt_lib_collect_params_rule_t.item:set_reported_type(types.dt_collection_properties_t)
   types.dt_lib_collect_mode_t:set_text("The logical operators to apply between rules");
   types.dt_collection_properties_t:set_text("The different elements on which a collection can be filtered");
 

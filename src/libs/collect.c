@@ -2165,75 +2165,57 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
 #ifdef USE_LUA
-typedef dt_lib_collect_params_rule_t* dt_lua_lib_collect_params_rule_t;
+static int new_rule_cb(lua_State*L)
+{
+  dt_lib_collect_params_rule_t rule;
+  memset(&rule,0, sizeof(dt_lib_collect_params_rule_t));
+  luaA_push(L,dt_lib_collect_params_rule_t,&rule);
+  return 1;
+}
 static int filter_cb(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lib_collect_params_t old_params;
-  int size;
   
-  dt_lib_collect_params_t *p = get_params(self, &size);
+  int size;
+  dt_lib_collect_params_t *p = get_params(self,&size);
   // put it in stack so memory is not lost if a lua exception is raised
-  memcpy(&old_params, p,size);
-  free(p);
+
+
+
   if(lua_gettop(L) > 0) {
-    dt_lib_collect_params_t params;
-    luaA_to(L,dt_lib_collect_params_t,&params,1);
-    set_params(self, &params,size);
-    lua_pop(L,1);
-  }
-  luaA_push(L,dt_lib_collect_params_t,&old_params);
-  return 1;
-}
-
-static int param_len(lua_State *L)
-{
-  dt_lib_collect_params_t params;
-  luaA_to(L,dt_lib_collect_params_t,&params,1);
-  lua_pushnumber(L, params.rules);
-  return 1;
-}
-
-static int param_index(lua_State *L)
-{
-  dt_lib_collect_params_t* params =  lua_touserdata(L,1);
-  int index = luaL_checkinteger(L,2);
-  if(lua_gettop(L) > 2) {
-    if(index < 1 || index > params->rules+1 || index > MAX_RULES) {
-      return luaL_error(L,"incorrect write index for object of type dt_lib_collect_params_t\n");
-    }
-    if(lua_isnil(L,3)) {
-      for(int i = index; i< params->rules -1 ;i++){
-        memcpy(&params->rule[index-1],&params->rule[index],sizeof(dt_lib_collect_params_rule_t));
+    luaL_checktype(L,1,LUA_TTABLE);
+    dt_lib_collect_params_t *new_p = get_params(self,&size);
+    new_p->rules = 0;
+    do {
+      lua_pushinteger(L,new_p->rules + 1);
+      lua_gettable(L,1);
+      if(lua_isnil(L,-1)) break;
+      luaA_to(L,dt_lib_collect_params_rule_t,&new_p->rule[new_p->rules],-1);
+      new_p->rules++;
+    }while(new_p->rules < MAX_RULES);
+    if(new_p->rules == MAX_RULES) {
+      lua_pushinteger(L,new_p->rules + 1);
+      lua_gettable(L,1);
+      if(!lua_isnil(L,-1)) {
+        luaL_error(L,"Number of rules given excedes max allowed (%d)",MAX_RULES);
       }
-      params->rules--;
-    } else if(dt_lua_isa(L,3,dt_lua_lib_collect_params_rule_t)){
-      if(index == params->rules+1) {
-        params->rules++;
-      }
-      dt_lib_collect_params_rule_t *rule;
-      luaA_to(L,dt_lua_lib_collect_params_rule_t,&rule,3);
-      memcpy(&params->rule[index-1],rule,sizeof(dt_lib_collect_params_rule_t));
-    } else {
-      return luaL_error(L,"incorrect type for field of dt_lib_collect_params_t\n");
     }
+    set_params(self,new_p,size);
+    free(new_p);
+
   }
-  if(index < 1 || index > params->rules) {
-    return luaL_error(L,"incorrect read index for object of type dt_lib_collect_params_t\n");
+  lua_newtable(L);
+  for(int i = 0; i < p->rules; i++) {
+    luaA_push(L,dt_lib_collect_params_rule_t,&p->rule[i]);
+    luaL_ref(L,-2);
   }
-  dt_lib_collect_params_rule_t* tmp = &params->rule[index-1];
-  luaA_push(L,dt_lua_lib_collect_params_rule_t,&tmp);
-  lua_getuservalue(L,-1);
-  lua_pushvalue(L,1);
-  lua_setfield(L,-2,"containing_object");//prevent GC from killing the child object
-  lua_pop(L,1);
+  free(p);
   return 1;
 }
 
 static int mode_member(lua_State *L)
 {
-  dt_lib_collect_params_rule_t *rule;
-  luaA_to(L,dt_lua_lib_collect_params_rule_t,&rule,1);
+  dt_lib_collect_params_rule_t *rule = luaL_checkudata(L,1,"dt_lib_collect_params_rule_t");
   if(lua_gettop(L) > 2) {
     dt_lib_collect_mode_t value;
     luaA_to(L,dt_lib_collect_mode_t,&value,3);
@@ -2247,8 +2229,7 @@ static int mode_member(lua_State *L)
 
 static int item_member(lua_State *L)
 {
-  dt_lib_collect_params_rule_t *rule;
-  luaA_to(L,dt_lua_lib_collect_params_rule_t,&rule,1);
+  dt_lib_collect_params_rule_t *rule = luaL_checkudata(L,1,"dt_lib_collect_params_rule_t");
 
   if(lua_gettop(L) > 2) {
     dt_collection_properties_t value;
@@ -2263,8 +2244,7 @@ static int item_member(lua_State *L)
 
 static int data_member(lua_State *L)
 {
-  dt_lib_collect_params_rule_t *rule;
-  luaA_to(L,dt_lua_lib_collect_params_rule_t,&rule,1);
+  dt_lib_collect_params_rule_t *rule = luaL_checkudata(L,1,"dt_lib_collect_params_rule_t");
 
   if(lua_gettop(L) > 2) {
     size_t tgt_size;
@@ -2292,19 +2272,17 @@ void init(struct dt_lib_module_t *self)
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "filter");
+  lua_pushcfunction(L, new_rule_cb);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "new_rule");
 
-  dt_lua_init_type(L,dt_lib_collect_params_t);
-  lua_pushcfunction(L,param_len);
-  lua_pushcfunction(L,param_index);
-  dt_lua_type_register_number(L,dt_lib_collect_params_t);
-
-  dt_lua_init_type(L,dt_lua_lib_collect_params_rule_t);
+  dt_lua_init_type(L,dt_lib_collect_params_rule_t);
   lua_pushcfunction(L,mode_member);
-  dt_lua_type_register(L, dt_lua_lib_collect_params_rule_t, "mode");
+  dt_lua_type_register(L, dt_lib_collect_params_rule_t, "mode");
   lua_pushcfunction(L,item_member);
-  dt_lua_type_register(L, dt_lua_lib_collect_params_rule_t, "item");
+  dt_lua_type_register(L, dt_lib_collect_params_rule_t, "item");
   lua_pushcfunction(L,data_member);
-  dt_lua_type_register(L, dt_lua_lib_collect_params_rule_t, "data");
+  dt_lua_type_register(L, dt_lib_collect_params_rule_t, "data");
   
 
   luaA_enum(L,dt_lib_collect_mode_t);

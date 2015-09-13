@@ -1122,8 +1122,8 @@ end</programlisting></para>
 <secondary>filter</secondary>
 </indexterm>
 <synopsis>function( 
-	[<emphasis><link linkend="darktable_gui_libs_collect_filter_rules">rules</link></emphasis> : <link linkend="types_dt_lib_collect_params_t">types.dt_lib_collect_params_t</link>]
-) : <link linkend="types_dt_lib_collect_params_t">types.dt_lib_collect_params_t</link></synopsis>
+	[<emphasis><link linkend="darktable_gui_libs_collect_filter_rules">rules</link></emphasis> : array of<link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link>]
+) : <link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
 <para>Allows to get or change the list of visible images</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
@@ -1138,18 +1138,32 @@ end</programlisting></para>
     </tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_gui_libs_collect_filter_rules"><term>[rules]</term><listitem>
-<synopsis><link linkend="types_dt_lib_collect_params_t">types.dt_lib_collect_params_t</link></synopsis>
-<para>An object describing filtering rules for the collection. These rules will be applied after this call</para>
+<synopsis>array of<link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
+<para>A table of rules describing the filter. These rules will be applied after this call</para>
 
 </listitem></varlistentry>
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis><link linkend="types_dt_lib_collect_params_t">types.dt_lib_collect_params_t</link></synopsis>
-<para>The rules that were applied before this call.</para>
+<synopsis><link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
+<para>The newly created rule</para>
 
 </listitem></varlistentry>
 
 
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_collect_new_rule">
+<title>darktable.gui.libs.collect.new_rule</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>new_rule</secondary>
+</indexterm>
+<synopsis>function( 
+)</synopsis>
+<para>Returns a newly created rule object</para>
+
+<variablelist>
 </variablelist>
 </section>
 
@@ -6174,39 +6188,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_lib_collect_params_t">
-<title>types.dt_lib_collect_params_t</title>
+<section status="final" id="types_dt_lib_collect_params_rule_t">
+<title>types.dt_lib_collect_params_rule_t</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>dt_lib_collect_params_t</secondary>
-</indexterm>
-<synopsis>dt_type</synopsis>
-<para>A set of rules decribing a collection filter for the collect module</para>
-
-<section status="final" id="types_dt_lib_collect_params_t__hash_">
-<title>types.dt_lib_collect_params_t.#</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>#</secondary>
-</indexterm>
-<synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
-<para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-
-</section>
-
-</section>
-
-<section status="final" id="types_dt_lua_lib_collect_params_rule_t">
-<title>types.dt_lua_lib_collect_params_rule_t</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>dt_lua_lib_collect_params_rule_t</secondary>
+<secondary>dt_lib_collect_params_rule_t</secondary>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A single rule for filtering a collection</para>
 
-<section status="final" id="types_dt_lua_lib_collect_params_rule_t_mode">
-<title>types.dt_lua_lib_collect_params_rule_t.mode</title>
+<section status="final" id="types_dt_lib_collect_params_rule_t_mode">
+<title>types.dt_lib_collect_params_rule_t.mode</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mode</secondary>
@@ -6226,8 +6218,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_lua_lib_collect_params_rule_t_data">
-<title>types.dt_lua_lib_collect_params_rule_t.data</title>
+<section status="final" id="types_dt_lib_collect_params_rule_t_data">
+<title>types.dt_lib_collect_params_rule_t.data</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>data</secondary>
@@ -6247,8 +6239,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_lua_lib_collect_params_rule_t_item">
-<title>types.dt_lua_lib_collect_params_rule_t.item</title>
+<section status="final" id="types_dt_lib_collect_params_rule_t_item">
+<title>types.dt_lib_collect_params_rule_t.item</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>item</secondary>
@@ -6525,17 +6517,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The widgets contained by the box</para>
 <para>You can append widgets by adding them at the end of the list</para>
 <para>You can remove widgets by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -7077,17 +7059,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_lua_combobox_changed_callback">
