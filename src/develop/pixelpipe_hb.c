@@ -2062,7 +2062,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         cmsDeleteTransform(xform);
-        dt_colorspaces_cleanup_profile(Lab);
       }
 
       if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
