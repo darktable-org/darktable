@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013--2014 pascal obry.
+    copyright (c) 2013--2015 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -337,7 +337,7 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
   //  get current num if any
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
+                              "SELECT count(num) FROM history WHERE imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -347,8 +347,9 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
 
   // add new history info
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "insert into history (imgid, num, module, operation, op_params, enabled, "
-                              "blendop_params, blendop_version) values (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7)",
+                              "INSERT INTO history (imgid, num, module, operation, op_params, enabled, "
+                              "blendop_params, blendop_version, multi_priority) "
+                              "VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7, 0)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
@@ -835,13 +836,13 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][7] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShawowHue"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShadowHue"))
     {
       int v = atoi((char *)value);
       if(v != 0) has_splittoning = TRUE;
       pst.shadow_hue = (float)v / 255.0;
     }
-    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShawowSaturation"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShadowSaturation"))
     {
       int v = atoi((char *)value);
       if(v != 0) has_splittoning = TRUE;
