@@ -52,6 +52,7 @@ if (JAVA_RUNTIME)
   find_file (SAXON
     NAMES saxon.jar saxon6.jar saxon-6.5.5.jar saxon-6.5.4.jar saxon-6.5.3.jar
     PATH_SUFFIXES share/java
+                  share/java/saxon6
                   share/saxon-6.5/lib 
     DOC "location of saxon 6.5.x JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
@@ -64,6 +65,7 @@ if (JAVA_RUNTIME)
                   share/xml/docbook-xsl/extensions
                   share/xml/docbook/xsl/extensions
                   share/java
+                  share/java/docbook-xsl-saxon
                   share/saxon-6.5/lib
     DOC "location of saxon 6.5.x DocBook XSL extension JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
