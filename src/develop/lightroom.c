@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013--2014 pascal obry.
+    copyright (c) 2013--2015 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -843,13 +843,13 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][7] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShawowHue"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShadowHue"))
     {
       int v = atoi((char *)value);
       if(v != 0) has_splittoning = TRUE;
       pst.shadow_hue = (float)v / 255.0;
     }
-    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShawowSaturation"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShadowSaturation"))
     {
       int v = atoi((char *)value);
       if(v != 0) has_splittoning = TRUE;
