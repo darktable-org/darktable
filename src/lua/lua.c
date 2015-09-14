@@ -44,7 +44,7 @@ void dt_lua_debug_table_internal(lua_State *L, int t, const char *function, int 
     return;
   }
   lua_pushnil(L); /* first key */
-  while(lua_next(L, t - 1) != 0)
+  while(lua_next(L, t ) != 0)
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
     printf("%s - %s\n", luaL_checkstring(L, -2), lua_typename(L, lua_type(L, -1)));

@@ -35,6 +35,7 @@ if  #real_darktable.styles == 0 then
 	error("The database needs to contain at least one style to generate documentation")
 end
 
+real_darktable.gui.libs.collect.filter({})
 
 doc = require "core"
 darktable = doc.toplevel.darktable
@@ -351,7 +352,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 
 
 ]])
-darktable.database.duplicate:add_return(types.dt_lua_image_t,[[The created image if an image is imported or the toplevel film object if a film was imported.]])
+darktable.database.import:add_return(types.dt_lua_image_t,[[The created image if an image is imported or the toplevel film object if a film was imported.]])
 darktable.database.move_image:set_text([[Physically moves an image (and all its duplicates) to another film.]]..para()..
 [[This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film]]..para()..
 [[Note that the parameter order is not relevant.]])
@@ -366,6 +367,10 @@ darktable.database.copy_image:add_parameter("image",types.dt_lua_image_t,[[The i
 darktable.database.copy_image:add_parameter("film",types.dt_lua_film_t,[[The film to copy to]])
 darktable.database.copy_image:add_return(types.dt_lua_image_t,[[The new image]])
 darktable.database.copy_image:set_main_parent(darktable.database)
+darktable.collection:set_text([[Allows to access the currently worked on images, i.e the ones selected by the collection lib. Filtering (rating etc) does not change that collection.]])
+
+
+darktable.collection["#"]:set_text([[Each image in the collection appears with a numerical index; you can interate them using ipairs.]])
 
 
 for k, v in darktable.gui.views:unskiped_children() do
@@ -419,9 +424,11 @@ darktable.gui.libs.snapshots.max_snapshot:set_text([[The maximum number of snaps
 
 darktable.gui.libs.collect:set_text([[The collection UI element that allows to filter images by collection]])
 darktable.gui.libs.collect.filter:set_text([[Allows to get or change the list of visible images]])
-darktable.gui.libs.collect.filter:add_parameter("rules",my_tostring(types.dt_lib_collect_params_t),[[An object describing filtering rules for the collection. These rules will be applied after this call]]):set_attribute("optional",true)
-darktable.gui.libs.collect.filter:add_return(my_tostring(types.dt_lib_collect_params_t),[[The rules that were applied before this call.]])
+darktable.gui.libs.collect.filter:add_parameter("rules","array of"..my_tostring(types.dt_lib_collect_params_rule_t),[[A table of rules describing the filter. These rules will be applied after this call]]):set_attribute("optional",true)
+darktable.gui.libs.collect.filter:add_return("array of"..my_tostring(types.dt_lib_collect_params_rule_t),[[The rules that were applied before this call.]])
 darktable.gui.libs.collect.filter:set_attribute("implicit_yield",true)
+darktable.gui.libs.collect.new_rule:set_text([[Returns a newly created rule object]])
+darktable.gui.libs.collect.new_rule:add_return(my_tostring(types.dt_lib_collect_params_rule_t),[[The newly created rule]])
 
 darktable.gui.libs.import:set_text([[The buttons to start importing images]])
 darktable.gui.libs.import.register_widget:set_text([[Add a widget in the option expander of the import dialog]])
@@ -431,6 +438,11 @@ darktable.gui.libs.import.register_widget:add_parameter("widget",types.lua_widge
 
 darktable.gui.libs.styles:set_text([[The style selection menu]])
 darktable.gui.libs.metadata_view:set_text([[The widget displaying metadata about the current image]])
+darktable.gui.libs.metadata_view.register_info:set_text([[Register a function providing extra info to display in the widget]])
+darktable.gui.libs.metadata_view.register_info:add_parameter("name","string","The name displayed for the new information")
+tmp = darktable.gui.libs.metadata_view.register_info:add_parameter("callback","function","The function providing the info")
+tmp:add_parameter("image",types.dt_lua_image_t,"The image to analyze")
+tmp:add_return("string","The extra information to displa")
 darktable.gui.libs.metadata:set_text([[The widget allowing modification of metadata fields on the current image]])
 darktable.gui.libs.hinter:set_text([[The small line of text at the top of the UI showing the number of selected images]])
 darktable.gui.libs.modulelist:set_text([[The window allowing to set modules as visible/hidden/favorite]])
@@ -446,10 +458,23 @@ darktable.gui.libs.global_toolbox.show_overlays:set_text([[the current status of
 darktable.gui.libs.filter:set_text([[The image-filter menus at the top of the UI]])
 darktable.gui.libs.ratings:set_text([[The starts to set the rating of an image]])
 darktable.gui.libs.select:set_text([[The buttons that allow to quickly change the selection]])
+darktable.gui.libs.select.register_selection:set_text([[Add a new button and call a callback when it is clicked]])
+darktable.gui.libs.select.register_selection:add_parameter("label","string","The label to display on the button")
+tmp = darktable.gui.libs.select.register_selection:add_parameter("callback","function","The function to call when the button is pressed")
+tmp:add_parameter("event","string","The name of the button that was pressed")
+tmp:add_parameter("images","table of"..tostring(types.dt_lua_image_t),"The images in the current collection. This is the same content as"..my_tostring(darktable.collection))
+tmp:add_return("table of"..tostring(types.dt_lua_image_t),"The images to set the selection to")
+darktable.gui.libs.select.register_selection:add_parameter("tooltip","string","The tooltip to use on the new button"):set_attribute("optional",true)
 darktable.gui.libs.colorlabels:set_text([[The color buttons that allow to set labels on an image]])
 darktable.gui.libs.lighttable_mode:set_text([[The navigation and zoom level UI in lighttable]])
 darktable.gui.libs.copy_history:set_text([[The UI element that manipulates history]])
-darktable.gui.libs.image:set_text([[The UI element that manipulates the current image]])
+darktable.gui.libs.image:set_text([[The UI element that manipulates the current images]])
+darktable.gui.libs.image.register_action:set_text([[Add a new button and call a callback when it is clicked]])
+darktable.gui.libs.image.register_action:add_parameter("label","string","The label to display on the button")
+tmp = darktable.gui.libs.image.register_action:add_parameter("callback","function","The function to call when the button is pressed")
+tmp:add_parameter("event","string","The name of the button that was pressed")
+tmp:add_parameter("images","table of"..tostring(types.dt_lua_image_t),"The images to act on when the button was clicked")
+darktable.gui.libs.image.register_action:add_parameter("tooltip","string","The tooltip to use on the new button"):set_attribute("optional",true)
 darktable.gui.libs.modulegroups:set_text([[The icons describing the different iop groups]])
 darktable.gui.libs.module_toolbox:set_text([[The tools on the bottom line of the UI (overexposure)]])
 darktable.gui.libs.session:set_text([[The session UI when tethering]])
@@ -726,15 +751,12 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
   types.dt_imageio_exr_compression_t:set_text("The type of compression to use for the EXR image")
 
-  types.dt_lib_collect_params_t:set_text("A set of rules decribing a collection filter for the collect module")
-  types.dt_lib_collect_params_t["#"]:set_text("Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil")
-
-  types.dt_lua_lib_collect_params_rule_t:set_text("A single rule for filtering a collection");
-  types.dt_lua_lib_collect_params_rule_t.mode:set_text("How this rule is applied after the previous one. Unused for the first rule");
-  types.dt_lua_lib_collect_params_rule_t.mode:set_reported_type(types.dt_lib_collect_mode_t)
-  types.dt_lua_lib_collect_params_rule_t.data:set_text("The text segment of the rule. Exact content depends on the type of rule");
-  types.dt_lua_lib_collect_params_rule_t.item:set_text("The item on which this rule filter. i.e the type of the rule");
-  types.dt_lua_lib_collect_params_rule_t.item:set_reported_type(types.dt_collection_properties_t)
+  types.dt_lib_collect_params_rule_t:set_text("A single rule for filtering a collection");
+  types.dt_lib_collect_params_rule_t.mode:set_text("How this rule is applied after the previous one. Unused for the first rule");
+  types.dt_lib_collect_params_rule_t.mode:set_reported_type(types.dt_lib_collect_mode_t)
+  types.dt_lib_collect_params_rule_t.data:set_text("The text segment of the rule. Exact content depends on the type of rule");
+  types.dt_lib_collect_params_rule_t.item:set_text("The item on which this rule filter. i.e the type of the rule");
+  types.dt_lib_collect_params_rule_t.item:set_reported_type(types.dt_collection_properties_t)
   types.dt_lib_collect_mode_t:set_text("The logical operators to apply between rules");
   types.dt_collection_properties_t:set_text("The different elements on which a collection can be filtered");
 

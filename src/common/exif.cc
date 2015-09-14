@@ -1137,6 +1137,10 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
     {
       /* Delete various MakerNote fields only applicable to the raw file */
 
+      // Canon color space info
+      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.ColorSpace"))) != exifData.end())
+        exifData.erase(pos);
+
       // Nikon thumbnail data
       if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Preview"))) != exifData.end())
         exifData.erase(pos);

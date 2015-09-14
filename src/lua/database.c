@@ -25,6 +25,7 @@
 #include "common/grealpath.h"
 #include "common/image.h"
 #include "common/film.h"
+#include "common/collection.h"
 #include "control/control.h"
 #include <errno.h>
 
@@ -157,7 +158,7 @@ static int database_len(lua_State *L)
   return 1;
 }
 
-static int number_member(lua_State *L)
+static int database_numindex(lua_State *L)
 {
   int index = luaL_checkinteger(L, -1);
   if(index < 1)
@@ -181,6 +182,61 @@ static int number_member(lua_State *L)
     return luaL_error(L, "incorrect index in database");
   }
   return 1;
+}
+
+static int collection_len(lua_State *L)
+{
+  lua_pushnumber(L, dt_collection_get_count(darktable.collection));
+  return 1;
+}
+
+static int collection_numindex(lua_State *L)
+{
+  int index = luaL_checkinteger(L, -1);
+  if(index < 1)
+  {
+    return luaL_error(L, "incorrect index in database");
+  }
+
+  gchar *query = NULL;
+  gchar *sq = NULL;
+
+  /* get collection order */
+  if((darktable.collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+    sq = dt_collection_get_sort_query(darktable.collection);
+
+
+  sqlite3_stmt *stmt = NULL;
+
+  /* build the query string */
+  query = dt_util_dstrcat(query, "select distinct id from images ");
+
+  if(darktable.collection->params.sort == DT_COLLECTION_SORT_COLOR
+     && (darktable.collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+    query = dt_util_dstrcat(query, "as a left outer join color_labels as b on a.id = b.imgid ");
+
+  query = dt_util_dstrcat(query, "%s limit -1 offset ?1", sq);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, index -1);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(stmt, 0);
+    luaA_push(L, dt_lua_image_t, &imgid);
+    sqlite3_finalize(stmt);
+  }
+  else
+  {
+    g_free(sq);
+    g_free(query);
+    sqlite3_finalize(stmt);
+    return luaL_error(L, "incorrect index in database");
+  }
+  g_free(sq);
+  g_free(query);
+  return 1;
+
 }
 
 static void on_film_imported(gpointer instance, uint32_t id, gpointer user_data)
@@ -208,7 +264,7 @@ int dt_lua_init_database(lua_State *L)
   lua_pop(L, 1);
 
   lua_pushcfunction(L, database_len);
-  lua_pushcfunction(L, number_member);
+  lua_pushcfunction(L, database_numindex);
   dt_lua_type_register_number_const_type(L, type_id);
   lua_pushcfunction(L, dt_lua_duplicate_image);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
@@ -225,6 +281,16 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_copy_image);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "copy_image");
+
+  /* database type */
+  dt_lua_push_darktable_lib(L);
+  type_id = dt_lua_init_singleton(L, "image_collection", NULL);
+  lua_setfield(L, -2, "collection");
+  lua_pop(L, 1);
+
+  lua_pushcfunction(L, collection_len);
+  lua_pushcfunction(L, collection_numindex);
+  dt_lua_type_register_number_const_type(L, type_id);
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);

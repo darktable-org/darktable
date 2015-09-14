@@ -67,7 +67,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
     cmsSaveProfileToMem(out_profile, 0, &profile_len);
     if(profile_len > 0)
     {
@@ -79,7 +79,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
       }
       cmsSaveProfileToMem(out_profile, profile, &profile_len);
     }
-    dt_colorspaces_cleanup_profile(out_profile);
   }
 
   // Create little endian tiff image

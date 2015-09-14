@@ -27,6 +27,10 @@
 #include "gui/gtk.h"
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
+#ifdef USE_LUA
+#include "lua/image.h"
+#include "lua/call.h"
+#endif
 
 DT_MODULE(1)
 
@@ -134,6 +138,106 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+#ifdef USE_LUA
+typedef struct {
+  const char* key;
+  dt_lib_module_t * self;
+} lua_callback_data;
+
+
+static int lua_button_clicked_cb(lua_State* L)
+{
+  lua_callback_data * data = lua_touserdata(L,1);
+  dt_lua_module_entry_push(L,"lib",data->self->plugin_name);
+  lua_getuservalue(L,-1);
+  lua_getfield(L,-1,"callbacks");
+  lua_getfield(L,-1,data->key);
+  lua_pushstring(L,data->key);
+
+  GList *image = dt_collection_get_all(darktable.collection, -1);
+  lua_newtable(L);
+  while(image)
+  {
+    luaA_push(L, dt_lua_image_t, &image->data);
+    luaL_ref(L, -2);
+    image = g_list_delete_link(image, image);
+  }
+
+  dt_lua_do_chunk_raise(L,2,1);
+
+  GList *new_selection = NULL;
+  luaL_checktype(L, -1, LUA_TTABLE);
+  lua_pushnil(L);
+  while(lua_next(L, -2) != 0)
+  {
+    /* uses 'key' (at index -2) and 'value' (at index -1) */
+    int imgid;
+    luaA_to(L, dt_lua_image_t, &imgid, -1);
+    new_selection = g_list_prepend(new_selection, GINT_TO_POINTER(imgid));
+    lua_pop(L, 1);
+  }
+  new_selection = g_list_reverse(new_selection);
+  dt_selection_clear(darktable.selection);
+  dt_selection_select_list(darktable.selection, new_selection);
+  g_list_free(new_selection);
+  return 0;
+}
+
+static void lua_button_clicked(GtkWidget *widget, gpointer user_data)
+{
+  dt_lua_do_chunk_async(lua_button_clicked_cb,
+      LUA_ASYNC_TYPENAME,"void*", user_data,
+      LUA_ASYNC_DONE);
+}
+
+static int lua_register_selection(lua_State *L)
+{
+  lua_settop(L,3);
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  dt_lua_module_entry_push(L,"lib",self->plugin_name);
+  lua_getuservalue(L,-1);
+  const char* key = luaL_checkstring(L,1);
+  luaL_checktype(L,2,LUA_TFUNCTION);
+
+  lua_getfield(L,-1,"callbacks");
+  lua_pushstring(L,key);
+  lua_pushvalue(L,2);
+  lua_settable(L,-3);
+
+  GtkWidget* button = gtk_button_new_with_label(key);
+  const char * tooltip = lua_tostring(L,3);
+  if(tooltip)  {
+    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
+  }
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), button, NULL, GTK_POS_BOTTOM, 2, 1);
+
+
+  lua_callback_data * data = malloc(sizeof(lua_callback_data));
+  data->key = strdup(key);
+  data->self = self;
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
+  gtk_widget_show_all(self->widget);
+  return 0;
+}
+
+void init(struct dt_lib_module_t *self)
+{
+
+  lua_State *L = darktable.lua_state.state;
+  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, lua_register_selection ,1);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "register_selection");
+
+  dt_lua_module_entry_push(L,"lib",self->plugin_name);
+  lua_getuservalue(L,-1);
+  lua_newtable(L);
+  lua_setfield(L,-2,"callbacks");
+  lua_pop(L,2);
+}
+#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

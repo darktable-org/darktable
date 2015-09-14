@@ -80,8 +80,6 @@ typedef struct dt_iop_colortransfer_gui_data_t
   GtkWidget *acquire_button;
   GtkSpinButton *spinbutton;
   GtkWidget *area;
-  cmsHPROFILE hsRGB;
-  cmsHPROFILE hLab;
   cmsHTRANSFORM xform;
 } dt_iop_colortransfer_gui_data_t;
 
@@ -655,9 +653,9 @@ void gui_init(struct dt_iop_module_t *self)
   // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
 
   g->flowback_set = 0;
-  g->hsRGB = dt_colorspaces_create_srgb_profile();
-  g->hLab  = dt_colorspaces_create_lab_profile();
-  g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
+  cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
+  cmsHPROFILE hLab  = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g_signal_connect (G_OBJECT(self->widget), "draw",
@@ -699,8 +697,6 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   //  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
-  //  dt_colorspaces_cleanup_profile(g->hsRGB);
-  //  dt_colorspaces_cleanup_profile(g->hLab);
   //  cmsDeleteTransform(g->xform);
   free(self->gui_data);
   self->gui_data = NULL;

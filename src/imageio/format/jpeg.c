@@ -368,7 +368,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
 
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
     uint32_t len = 0;
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
@@ -377,7 +377,6 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
     }
-    dt_colorspaces_cleanup_profile(out_profile);
   }
 
   if(exif && exif_len > 0 && exif_len < 65534)

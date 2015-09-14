@@ -129,7 +129,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
               *green_color = NULL,
               *blue_color = NULL,
               *white_point = NULL;
-    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
     float r[2], g[2], b[2], w[2];
     float sum;
     Imf::Chromaticities chromaticities;
@@ -182,10 +182,8 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 icc_error:
     dt_control_log(_("the selected output profile doesn't work well with exr"));
     fprintf(stderr, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong results when opening the image\n");
-
-icc_end:
-    dt_colorspaces_cleanup_profile(out_profile);
   }
+icc_end:
 
 
   header.channels().insert("R", Imf::Channel(Imf::PixelType::FLOAT));

@@ -441,6 +441,46 @@ uint32_t dt_collection_get_selected_count(const dt_collection_t *collection)
   return count;
 }
 
+GList *dt_collection_get_all(const dt_collection_t *collection, int limit)
+{
+  GList *list = NULL;
+  gchar *query = NULL;
+  gchar *sq = NULL;
+
+  /* get collection order */
+  if((collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+    sq = dt_collection_get_sort_query(collection);
+
+
+  sqlite3_stmt *stmt = NULL;
+
+  /* build the query string */
+  query = dt_util_dstrcat(query, "select distinct id from images ");
+
+  if(collection->params.sort == DT_COLLECTION_SORT_COLOR
+     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+    query = dt_util_dstrcat(query, "as a left outer join color_labels as b on a.id = b.imgid ");
+
+  query = dt_util_dstrcat(query, "%s limit ?1", sq);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, limit);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(stmt, 0);
+    list = g_list_append(list, GINT_TO_POINTER(imgid));
+  }
+
+
+  /* free allocated strings */
+  g_free(sq);
+
+  g_free(query);
+
+  return list;
+}
+
 GList *dt_collection_get_selected(const dt_collection_t *collection, int limit)
 {
   GList *list = NULL;

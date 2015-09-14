@@ -126,8 +126,6 @@ typedef struct dt_iop_colormapping_gui_data_t
   GtkWidget *clusters;
   GtkWidget *dominance;
   GtkWidget *equalization;
-  cmsHPROFILE hsRGB;
-  cmsHPROFILE hLab;
   cmsHTRANSFORM xform;
   dt_pthread_mutex_t lock;
 } dt_iop_colormapping_gui_data_t;
@@ -1037,9 +1035,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->flag = NEUTRAL;
   g->flowback_set = 0;
-  g->hsRGB = dt_colorspaces_create_srgb_profile();
-  g->hLab = dt_colorspaces_create_lab_profile();
-  g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
+  cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
+  cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
   g->buffer = NULL;
 
   dt_pthread_mutex_init(&g->lock, NULL);
@@ -1117,8 +1115,6 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
-  dt_colorspaces_cleanup_profile(g->hsRGB);
-  dt_colorspaces_cleanup_profile(g->hLab);
   cmsDeleteTransform(g->xform);
   dt_pthread_mutex_destroy(&g->lock);
   free(g->buffer);

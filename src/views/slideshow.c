@@ -19,6 +19,7 @@
 #include "views/view.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/colorspaces.h"
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/dtpthread.h"
@@ -65,7 +66,7 @@ typedef struct dt_slideshow_t
   int32_t front_num, back_num;
 
   // output profile before we overwrote it:
-  gchar *oldprofile;
+  int old_profile_type;
 
   // state machine stuff for image transitions:
   dt_pthread_mutex_t lock;
@@ -348,9 +349,8 @@ void enter(dt_view_t *self)
   dt_ui_border_show(darktable.gui->ui, FALSE);
 
   // use display profile:
-  d->oldprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  const gchar *overprofile = "X profile";
-  dt_conf_set_string("plugins/lighttable/export/iccprofile", overprofile);
+  d->old_profile_type = dt_conf_get_int("plugins/lighttable/export/icctype");
+  dt_conf_set_int("plugins/lighttable/export/icctype", DT_COLORSPACE_DISPLAY);
 
   // alloc screen-size double buffer
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -393,9 +393,7 @@ void leave(dt_view_t *self)
   dt_ui_border_show(darktable.gui->ui, TRUE);
   d->auto_advance = 0;
   dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
-  dt_conf_set_string("plugins/lighttable/export/iccprofile", d->oldprofile);
-  g_free(d->oldprofile);
-  d->oldprofile = NULL;
+  dt_conf_set_int("plugins/lighttable/export/icctype", d->old_profile_type);
   dt_pthread_mutex_lock(&d->lock);
   dt_free_align(d->buf1);
   dt_free_align(d->buf2);

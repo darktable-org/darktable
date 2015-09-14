@@ -510,7 +510,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
 
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
     uint32_t len = 0;
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
@@ -519,7 +519,6 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg.cinfo), buf, len);
     }
-    dt_colorspaces_cleanup_profile(out_profile);
   }
 
   if(exif && exif_len > 0 && exif_len < 65534) jpeg_write_marker(&(jpg.cinfo), JPEG_APP0 + 1, exif, exif_len);

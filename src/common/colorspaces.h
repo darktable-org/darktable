@@ -27,18 +27,94 @@ typedef enum dt_iop_color_intent_t
   DT_INTENT_PERCEPTUAL = INTENT_PERCEPTUAL,                       // 0
   DT_INTENT_RELATIVE_COLORIMETRIC = INTENT_RELATIVE_COLORIMETRIC, // 1
   DT_INTENT_SATURATION = INTENT_SATURATION,                       // 2
-  DT_INTENT_ABSOLUTE_COLORIMETRIC = INTENT_ABSOLUTE_COLORIMETRIC  // 3
+  DT_INTENT_ABSOLUTE_COLORIMETRIC = INTENT_ABSOLUTE_COLORIMETRIC, // 3
+  DT_INTENT_LAST
 } dt_iop_color_intent_t;
+
+typedef enum dt_colorspaces_color_profile_type_t
+{
+  DT_COLORSPACE_NONE = -1,
+  DT_COLORSPACE_FILE = 0,
+  DT_COLORSPACE_SRGB = 1,
+  DT_COLORSPACE_ADOBERGB = 2,
+  DT_COLORSPACE_LIN_REC709 = 3,
+  DT_COLORSPACE_LIN_REC2020 = 4,
+  DT_COLORSPACE_XYZ = 5,
+  DT_COLORSPACE_LAB = 6,
+  DT_COLORSPACE_INFRARED = 7,
+  DT_COLORSPACE_DISPLAY = 8,
+  DT_COLORSPACE_EMBEDDED_ICC = 9,
+  DT_COLORSPACE_EMBEDDED_MATRIX = 10,
+  DT_COLORSPACE_STANDARD_MATRIX = 11,
+  DT_COLORSPACE_ENHANCED_MATRIX = 12,
+  DT_COLORSPACE_VENDOR_MATRIX = 13,
+  DT_COLORSPACE_ALTERNATE_MATRIX = 14,
+  DT_COLORSPACE_LAST = 15
+} dt_colorspaces_color_profile_type_t;
+
+typedef enum dt_colorspaces_color_mode_t
+{
+  DT_PROFILE_NORMAL = 0,
+  DT_PROFILE_SOFTPROOF,
+  DT_PROFILE_GAMUTCHECK
+} dt_colorspaces_color_mode_t;
+
+typedef enum dt_colorspaces_profile_direction_t
+{
+  DT_PROFILE_DIRECTION_IN = 1 << 0,
+  DT_PROFILE_DIRECTION_OUT = 1 << 1,
+  DT_PROFILE_DIRECTION_DISPLAY = 1 << 2,
+  DT_PROFILE_DIRECTION_ANY = DT_PROFILE_DIRECTION_IN | DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY
+} dt_colorspaces_profile_direction_t;
+
+typedef struct dt_colorspaces_t
+{
+  GList *profiles;
+
+  // xatom color profile:
+  pthread_rwlock_t xprofile_lock;
+  gchar *colord_profile_file;
+  uint8_t *xprofile_data;
+  int xprofile_size;
+
+  // the current set of selected profiles
+  dt_colorspaces_color_profile_type_t display_type;
+  dt_colorspaces_color_profile_type_t softproof_type;
+  char display_filename[512];
+  char softproof_filename[512];
+  dt_iop_color_intent_t display_intent;
+  dt_iop_color_intent_t softproof_intent;
+
+  dt_colorspaces_color_mode_t mode;
+
+} dt_colorspaces_t;
+
+typedef struct dt_colorspaces_color_profile_t
+{
+  dt_colorspaces_color_profile_type_t type; // filename is only used for type DT_COLORSPACE_FILE
+  char filename[512];                       // icc file name
+  char name[512];                           // product name, displayed in GUI
+  cmsHPROFILE profile;                      // the actual profile
+  int in_pos;                               // position in input combo box, -1 if not applicable
+  int out_pos;                              // position in output combo box, -1 if not applicable
+  int display_pos;                          // position in display combo box, -1 if not applicable
+} dt_colorspaces_color_profile_t;
 
 int mat3inv_float(float *const dst, const float *const src);
 int mat3inv_double(double *const dst, const double *const src);
 int mat3inv(float *const dst, const float *const src);
+
+/** populate the global color profile lists */
+dt_colorspaces_t *dt_colorspaces_init();
+/** cleanup on shutdown */
+void dt_colorspaces_cleanup(dt_colorspaces_t *self);
 
 /** create the lab profile. */
 cmsHPROFILE dt_colorspaces_create_lab_profile();
 
 /** create the ICC virtual profile for srgb space. */
 cmsHPROFILE dt_colorspaces_create_srgb_profile(void);
+cmsHPROFILE dt_colorspaces_create_srgb_profile_v4(void);
 
 /** create the ICC virtual profile for linear rec709 rgb space. */
 cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void);
@@ -76,11 +152,8 @@ cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel);
 /** just get the associated transformation matrix, for manual application. */
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
 
-/** get the name of the icc profile this image would be exported with. */
-char *dt_colorspaces_get_output_profile_name(const int imgid);
-
-/** get the icc profile this image would be exported with. */
-cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid);
+/** return the output profile, taking export override into account */
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid);
 
 /** free the resources of a profile created with the functions above. */
 void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
@@ -108,9 +181,20 @@ int dt_colorspaces_find_profile(char *filename, size_t filename_len, const char 
 void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char *country, char *name,
                                      size_t len);
 
+/** get a nice printable name. */
+const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type, const char *filename);
+
 /** common functions to change between colorspaces, used in iop modules */
 void rgb2hsl(const float rgb[3], float *h, float *s, float *l);
 void hsl2rgb(float rgb[3], float h, float s, float l);
+
+/** trigger updating the display profile from the system settings (x atom, colord, ...) */
+void dt_colorspaces_set_display_profile();
+/** get the profile described by type & filename.
+ *  this doesn't support image specifics like embedded profiles or camera matrices */
+const dt_colorspaces_color_profile_t *
+dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char *filename,
+                           dt_colorspaces_profile_direction_t direction);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

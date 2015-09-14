@@ -31,6 +31,7 @@
 // LAST RELEASED VERSION : 1.4 was 1.0.0
 // 1.6 was 2.0.1
 // 1.6.1 was 2.0.2
+// 2.0 WILL BE 2.1.0 or 3.0.0 depending on compatibility
 /* incompatible API change */
 #define API_VERSION_MAJOR 2
 /* backward compatible API change */
@@ -42,7 +43,8 @@
 
 static int check_version(lua_State *L)
 {
-  const char *module_name = luaL_checkstring(L, 1);
+  const char *module_name = "<unnamed module>";
+  if(!lua_isnil(L,1)) module_name = luaL_checkstring(L, 1);
   gboolean valid = false;
   for(int i = 2; i <= lua_gettop(L); i++)
   {

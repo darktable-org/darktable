@@ -1122,8 +1122,8 @@ end</programlisting></para>
 <secondary>filter</secondary>
 </indexterm>
 <synopsis>function( 
-	[<emphasis><link linkend="darktable_gui_libs_collect_filter_rules">rules</link></emphasis> : <link linkend="types_dt_lib_collect_params_t">types.dt_lib_collect_params_t</link>]
-) : <link linkend="types_dt_lib_collect_params_t">types.dt_lib_collect_params_t</link></synopsis>
+	[<emphasis><link linkend="darktable_gui_libs_collect_filter_rules">rules</link></emphasis> : array of<link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link>]
+) : <link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
 <para>Allows to get or change the list of visible images</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
@@ -1138,18 +1138,32 @@ end</programlisting></para>
     </tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_gui_libs_collect_filter_rules"><term>[rules]</term><listitem>
-<synopsis><link linkend="types_dt_lib_collect_params_t">types.dt_lib_collect_params_t</link></synopsis>
-<para>An object describing filtering rules for the collection. These rules will be applied after this call</para>
+<synopsis>array of<link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
+<para>A table of rules describing the filter. These rules will be applied after this call</para>
 
 </listitem></varlistentry>
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis><link linkend="types_dt_lib_collect_params_t">types.dt_lib_collect_params_t</link></synopsis>
-<para>The rules that were applied before this call.</para>
+<synopsis><link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
+<para>The newly created rule</para>
 
 </listitem></varlistentry>
 
 
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_collect_new_rule">
+<title>darktable.gui.libs.collect.new_rule</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>new_rule</secondary>
+</indexterm>
+<synopsis>function( 
+)</synopsis>
+<para>Returns a newly created rule object</para>
+
+<variablelist>
 </variablelist>
 </section>
 
@@ -1237,6 +1251,51 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" id="darktable_gui_libs_metadata_view_register_info">
+<title>darktable.gui.libs.metadata_view.register_info</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register_info</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_name">name</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback">callback</link></emphasis> : function
+)</synopsis>
+<para>Register a function providing extra info to display in the widget</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_metadata_view_register_info_name"><term>name</term><listitem>
+<synopsis>string</synopsis>
+<para>The name displayed for the new information</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_metadata_view_register_info_callback"><term>callback</term><listitem>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : string</synopsis>
+<para>The function providing the info</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_metadata_view_register_info_callback_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to analyze</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>string</synopsis>
+<para>The extra information to displa</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs_metadata">
@@ -1552,6 +1611,65 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" id="darktable_gui_libs_select_register_selection">
+<title>darktable.gui.libs.select.register_selection</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register_selection</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_label">label</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback">callback</link></emphasis> : function, 
+	[<emphasis><link linkend="darktable_gui_libs_select_register_selection_tooltip">tooltip</link></emphasis> : string]
+)</synopsis>
+<para>Add a new button and call a callback when it is clicked</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_select_register_selection_label"><term>label</term><listitem>
+<synopsis>string</synopsis>
+<para>The label to display on the button</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_select_register_selection_callback"><term>callback</term><listitem>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback_event">event</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback_images">images</link></emphasis> : table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The function to call when the button is pressed</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_select_register_selection_callback_event"><term>event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the button that was pressed</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_select_register_selection_callback_images"><term>images</term><listitem>
+<synopsis>table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The images in the current collection. This is the same content as<link linkend="darktable_collection">darktable.collection</link></para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The images to set the selection to</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_select_register_selection_tooltip"><term>[tooltip]</term><listitem>
+<synopsis>string</synopsis>
+<para>The tooltip to use on the new button</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs_colorlabels">
@@ -1623,7 +1741,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>image</secondary>
 </indexterm>
-<para>The UI element that manipulates the current image</para>
+<para>The UI element that manipulates the current images</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -1636,6 +1754,58 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" id="darktable_gui_libs_image_register_action">
+<title>darktable.gui.libs.image.register_action</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register_action</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_label">label</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback">callback</link></emphasis> : function, 
+	[<emphasis><link linkend="darktable_gui_libs_image_register_action_tooltip">tooltip</link></emphasis> : string]
+)</synopsis>
+<para>Add a new button and call a callback when it is clicked</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_image_register_action_label"><term>label</term><listitem>
+<synopsis>string</synopsis>
+<para>The label to display on the button</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_image_register_action_callback"><term>callback</term><listitem>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback_event">event</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback_images">images</link></emphasis> : table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+)</synopsis>
+<para>The function to call when the button is pressed</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_image_register_action_callback_event"><term>event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the button that was pressed</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_image_register_action_callback_images"><term>images</term><listitem>
+<synopsis>table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The images to act on when the button was clicked</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_libs_image_register_action_tooltip"><term>[tooltip]</term><listitem>
+<synopsis>string</synopsis>
+<para>The tooltip to use on the new button</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs_modulegroups">
@@ -2752,7 +2922,7 @@ end</programlisting></para>
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The created image if an image is imported or the toplevel film object if a film was imported.</para>
+<para>The new image object.</para>
 
 </listitem></varlistentry>
 
@@ -2768,7 +2938,7 @@ end</programlisting></para>
 </indexterm>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_database_import_location">location</link></emphasis> : string
-)</synopsis>
+) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Imports new images into the database.</para>
 
 <variablelist>
@@ -2784,6 +2954,13 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 </para>
 
 </listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The created image if an image is imported or the toplevel film object if a film was imported.</para>
+
+</listitem></varlistentry>
+
 
 </variablelist>
 </section>
@@ -2863,6 +3040,27 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <secondary>delete</secondary>
 </indexterm>
 <para>see <link linkend="types_dt_lua_image_t_delete">types.dt_lua_image_t.delete</link></para>
+</section>
+
+</section>
+
+<section status="final" id="darktable_collection">
+<title>darktable.collection</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>collection</secondary>
+</indexterm>
+<para>Allows to access the currently worked on images, i.e the ones selected by the collection lib. Filtering (rating etc) does not change that collection.</para>
+
+<section status="final" id="darktable_collection__hash_">
+<title>darktable.collection.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Each image in the collection appears with a numerical index; you can interate them using ipairs.</para>
+
 </section>
 
 </section>
@@ -5990,39 +6188,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_lib_collect_params_t">
-<title>types.dt_lib_collect_params_t</title>
+<section status="final" id="types_dt_lib_collect_params_rule_t">
+<title>types.dt_lib_collect_params_rule_t</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>dt_lib_collect_params_t</secondary>
-</indexterm>
-<synopsis>dt_type</synopsis>
-<para>A set of rules decribing a collection filter for the collect module</para>
-
-<section status="final" id="types_dt_lib_collect_params_t__hash_">
-<title>types.dt_lib_collect_params_t.#</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>#</secondary>
-</indexterm>
-<synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
-<para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-
-</section>
-
-</section>
-
-<section status="final" id="types_dt_lua_lib_collect_params_rule_t">
-<title>types.dt_lua_lib_collect_params_rule_t</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>dt_lua_lib_collect_params_rule_t</secondary>
+<secondary>dt_lib_collect_params_rule_t</secondary>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A single rule for filtering a collection</para>
 
-<section status="final" id="types_dt_lua_lib_collect_params_rule_t_mode">
-<title>types.dt_lua_lib_collect_params_rule_t.mode</title>
+<section status="final" id="types_dt_lib_collect_params_rule_t_mode">
+<title>types.dt_lib_collect_params_rule_t.mode</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mode</secondary>
@@ -6042,8 +6218,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_lua_lib_collect_params_rule_t_data">
-<title>types.dt_lua_lib_collect_params_rule_t.data</title>
+<section status="final" id="types_dt_lib_collect_params_rule_t_data">
+<title>types.dt_lib_collect_params_rule_t.data</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>data</secondary>
@@ -6063,8 +6239,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_lua_lib_collect_params_rule_t_item">
-<title>types.dt_lua_lib_collect_params_rule_t.item</title>
+<section status="final" id="types_dt_lib_collect_params_rule_t_item">
+<title>types.dt_lib_collect_params_rule_t.item</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>item</secondary>

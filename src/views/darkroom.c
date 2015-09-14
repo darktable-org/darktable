@@ -19,6 +19,7 @@
 /** this is the view for the darkroom module.  */
 #include "common/darktable.h"
 #include "common/collection.h"
+#include "common/colorspaces.h"
 #include "views/view.h"
 #include "develop/develop.h"
 #include "control/jobs.h"
@@ -60,12 +61,14 @@ static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
                                           GdkModifierType modifier, gpointer data);
 static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data);
-static gboolean _overexposed_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                             GdkModifierType modifier, gpointer data);
+static gboolean _toolbox_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                         GdkModifierType modifier, gpointer data);
 static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data);
 static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data);
+
+static void _update_softproof_gamut_checking(dt_develop_t *d);
 
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data);
@@ -383,6 +386,24 @@ void expose(
     // module
     if(dev->gui_module && dev->gui_module->gui_post_expose)
       dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+  }
+
+  // indicate if we are in gamut check or softproof mode
+  if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
+  {
+    gchar *label = darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK ? _("gamut check") : _("soft proof");
+    cairo_set_source_rgba(cri, 0.5, 0.5, 0.5, 0.5);
+    cairo_text_extents_t te;
+    cairo_select_font_face(cri, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cri, 20);
+    cairo_text_extents(cri, label, &te);
+    cairo_move_to(cri, te.height * 2, height - (te.height * 2));
+    cairo_text_path(cri, label);
+    cairo_set_source_rgb(cri, 0.7, 0.7, 0.7);
+    cairo_fill_preserve(cri);
+    cairo_set_line_width(cri, 0.7);
+    cairo_set_source_rgb(cri, 0.3, 0.3, 0.3);
+    cairo_stroke(cri);
   }
 }
 
@@ -922,6 +943,9 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
     dt_control_log(_("no styles have been created yet"));
 }
 
+/** toolbar buttons */
+
+/* overexposed */
 static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
@@ -953,8 +977,8 @@ static gboolean _overexposed_show_popup(gpointer user_data)
   window_h = gdk_window_get_height(gtk_widget_get_window(d->overexposed.floating_window));
 
   gtk_widget_translate_coordinates(d->overexposed.button, window, 0, 0, &wx, &wy);
-  x = px + wx - window_w + 5;
-  y = py + wy - window_h - 5;
+  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
+  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
   gtk_window_move(GTK_WINDOW(d->overexposed.floating_window), x, y);
 
   gtk_window_present(GTK_WINDOW(d->overexposed.floating_window));
@@ -1023,12 +1047,274 @@ static void upper_callback(GtkWidget *slider, gpointer user_data)
     dt_dev_reprocess_all(d);
 }
 
-static gboolean _overexposed_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean _toolbox_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                              GdkModifierType modifier, gpointer data)
 {
-  gtk_button_clicked(GTK_BUTTON(((dt_develop_t *)data)->overexposed.button));
+  gtk_button_clicked(GTK_BUTTON(data));
   return TRUE;
 }
+
+/* softproof */
+static void _softproof_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  if(darktable.color_profiles->mode == DT_PROFILE_SOFTPROOF)
+    darktable.color_profiles->mode = DT_PROFILE_NORMAL;
+  else
+    darktable.color_profiles->mode = DT_PROFILE_SOFTPROOF;
+
+  _update_softproof_gamut_checking(d);
+
+  dt_dev_reprocess_all(d);
+}
+
+static gboolean _profile_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  g_signal_handler_disconnect(widget, d->profile.destroy_signal_handler);
+  d->profile.destroy_signal_handler = 0;
+  gtk_widget_hide(d->profile.floating_window);
+  return FALSE;
+}
+
+static gboolean _softproof_show_popup(gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  /** finally move the window next to the button */
+  gint x, y, wx, wy;
+  gint px, py, window_w, window_h;
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  gtk_widget_show_all(d->profile.floating_window);
+  gdk_window_get_origin(gtk_widget_get_window(d->profile.softproof_button), &px, &py);
+
+  window_w = gdk_window_get_width(gtk_widget_get_window(d->profile.floating_window));
+  window_h = gdk_window_get_height(gtk_widget_get_window(d->profile.floating_window));
+
+  gtk_widget_translate_coordinates(d->profile.softproof_button, window, 0, 0, &wx, &wy);
+  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
+  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
+  gtk_window_move(GTK_WINDOW(d->profile.floating_window), x, y);
+
+  gtk_window_present(GTK_WINDOW(d->profile.floating_window));
+
+  // when the mouse moves back over the main window we close the popup.
+  d->profile.destroy_signal_handler
+  = g_signal_connect(window, "focus-in-event", G_CALLBACK(_profile_close_popup), user_data);
+
+  return FALSE;
+}
+
+static gboolean _softproof_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  GdkEventButton *e = (GdkEventButton *)event;
+  if(e->button == 3)
+  {
+    _softproof_show_popup(user_data);
+    return TRUE;
+  }
+  else
+  {
+    d->profile.timeout = g_timeout_add_seconds(1, _softproof_show_popup, user_data);
+    return FALSE;
+  }
+}
+
+static gboolean _profile_quickbutton_released(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  if(d->profile.timeout > 0) g_source_remove(d->profile.timeout);
+  d->profile.timeout = 0;
+  return FALSE;
+}
+
+/* gamut */
+static void _gamut_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  if(darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK)
+    darktable.color_profiles->mode = DT_PROFILE_NORMAL;
+  else
+    darktable.color_profiles->mode = DT_PROFILE_GAMUTCHECK;
+
+  _update_softproof_gamut_checking(d);
+
+  dt_dev_reprocess_all(d);
+}
+
+static gboolean _gamut_show_popup(gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  /** finally move the window next to the button */
+  gint x, y, wx, wy;
+  gint px, py, window_w, window_h;
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  gtk_widget_show_all(d->profile.floating_window);
+  gdk_window_get_origin(gtk_widget_get_window(d->profile.gamut_button), &px, &py);
+
+  window_w = gdk_window_get_width(gtk_widget_get_window(d->profile.floating_window));
+  window_h = gdk_window_get_height(gtk_widget_get_window(d->profile.floating_window));
+
+  gtk_widget_translate_coordinates(d->profile.gamut_button, window, 0, 0, &wx, &wy);
+  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
+  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
+  gtk_window_move(GTK_WINDOW(d->profile.floating_window), x, y);
+
+  gtk_window_present(GTK_WINDOW(d->profile.floating_window));
+
+  // when the mouse moves back over the main window we close the popup.
+  d->profile.destroy_signal_handler
+  = g_signal_connect(window, "focus-in-event", G_CALLBACK(_profile_close_popup), user_data);
+
+  return FALSE;
+}
+
+static gboolean _gamut_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  GdkEventButton *e = (GdkEventButton *)event;
+  if(e->button == 3)
+  {
+    _gamut_show_popup(user_data);
+    return TRUE;
+  }
+  else
+  {
+    d->profile.timeout = g_timeout_add_seconds(1, _gamut_show_popup, user_data);
+    return FALSE;
+  }
+}
+
+/* set the gui state for both softproof and gamut checking */
+static void _update_softproof_gamut_checking(dt_develop_t *d)
+{
+  g_signal_handlers_block_by_func(d->profile.softproof_button, _softproof_quickbutton_clicked, d);
+  g_signal_handlers_block_by_func(d->profile.gamut_button, _gamut_quickbutton_clicked, d);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->profile.softproof_button), darktable.color_profiles->mode == DT_PROFILE_SOFTPROOF);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->profile.gamut_button), darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK);
+
+  g_signal_handlers_unblock_by_func(d->profile.softproof_button, _softproof_quickbutton_clicked, d);
+  g_signal_handlers_unblock_by_func(d->profile.gamut_button, _gamut_quickbutton_clicked, d);
+}
+
+static void display_intent_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  const int pos = dt_bauhaus_combobox_get(combo);
+
+  dt_iop_color_intent_t new_intent = darktable.color_profiles->display_intent;
+
+  // we are not using the int value directly so it's robust against changes on lcms' side
+  switch(pos)
+  {
+    case 0:
+      new_intent = DT_INTENT_PERCEPTUAL;
+      break;
+    case 1:
+      new_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
+      break;
+    case 2:
+      new_intent = DT_INTENT_SATURATION;
+      break;
+    case 3:
+      new_intent = DT_INTENT_ABSOLUTE_COLORIMETRIC;
+      break;
+  }
+
+  if(new_intent != darktable.color_profiles->display_intent)
+  {
+    darktable.color_profiles->display_intent = new_intent;
+    dt_dev_reprocess_all(d);
+  }
+}
+
+static void softproof_profile_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  gboolean profile_changed = FALSE;
+  const int pos = dt_bauhaus_combobox_get(combo);
+  for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+    if(pp->out_pos == pos)
+    {
+      if(darktable.color_profiles->softproof_type != pp->type
+        || (darktable.color_profiles->softproof_type == DT_COLORSPACE_FILE
+            && strcmp(darktable.color_profiles->softproof_filename, pp->filename)))
+
+      {
+        darktable.color_profiles->softproof_type = pp->type;
+        g_strlcpy(darktable.color_profiles->softproof_filename, pp->filename,
+                  sizeof(darktable.color_profiles->softproof_filename));
+        profile_changed = TRUE;
+      }
+      goto end;
+    }
+  }
+
+  // profile not found, fall back to sRGB. shouldn't happen
+  fprintf(stderr, "can't find softproof profile `%s', using sRGB instead\n", dt_bauhaus_combobox_get_text(combo));
+  profile_changed = darktable.color_profiles->softproof_type != DT_COLORSPACE_SRGB;
+  darktable.color_profiles->softproof_type = DT_COLORSPACE_SRGB;
+  darktable.color_profiles->softproof_filename[0] = '\0';
+
+end:
+  if(profile_changed) dt_dev_reprocess_all(d);
+}
+
+static void display_profile_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  gboolean profile_changed = FALSE;
+  const int pos = dt_bauhaus_combobox_get(combo);
+  for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+    if(pp->display_pos == pos)
+    {
+      if(darktable.color_profiles->display_type != pp->type
+        || (darktable.color_profiles->display_type == DT_COLORSPACE_FILE
+            && strcmp(darktable.color_profiles->display_filename, pp->filename)))
+      {
+        darktable.color_profiles->display_type = pp->type;
+        g_strlcpy(darktable.color_profiles->display_filename, pp->filename,
+                  sizeof(darktable.color_profiles->display_filename));
+        profile_changed = TRUE;
+      }
+      goto end;
+    }
+  }
+
+  // profile not found, fall back to system display profile. shouldn't happen
+  fprintf(stderr, "can't find display profile `%s', using system display profile instead\n", dt_bauhaus_combobox_get_text(combo));
+  profile_changed = darktable.color_profiles->display_type != DT_COLORSPACE_DISPLAY;
+  darktable.color_profiles->display_type = DT_COLORSPACE_DISPLAY;
+  darktable.color_profiles->display_filename[0] = '\0';
+
+end:
+  if(profile_changed) dt_dev_reprocess_all(d);
+}
+
+// FIXME: turning off lcms2 in prefs hides the widget but leaves the window sized like before -> ugly-ish
+static void _preference_changed(gpointer instance, gpointer user_data)
+{
+  GtkWidget *display_intent = GTK_WIDGET(user_data);
+
+  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  if(force_lcms2)
+  {
+    gtk_widget_set_no_show_all(display_intent, FALSE);
+    gtk_widget_set_visible(display_intent, TRUE);
+  }
+  else
+  {
+    gtk_widget_set_no_show_all(display_intent, TRUE);
+    gtk_widget_set_visible(display_intent, FALSE);
+  }
+}
+
+/** end of toolbox */
 
 static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
@@ -1147,6 +1433,135 @@ void gui_init(dt_view_t *self)
                  (char *)NULL);
     g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
+  }
+
+  /* create profile popup tool & buttons (softproof + gamut) */
+  {
+    // the softproof button
+    dev->profile.softproof_button
+    = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    g_object_set(G_OBJECT(dev->profile.softproof_button), "tooltip-text",
+                 _("toggle softproofing\nright click for profile options"), (char *)NULL);
+    g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
+                     G_CALLBACK(_softproof_quickbutton_clicked), dev);
+    g_signal_connect(G_OBJECT(dev->profile.softproof_button), "button-press-event",
+                     G_CALLBACK(_softproof_quickbutton_pressed), dev);
+    g_signal_connect(G_OBJECT(dev->profile.softproof_button), "button-release-event",
+                     G_CALLBACK(_profile_quickbutton_released), dev);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.softproof_button, DT_VIEW_DARKROOM);
+
+    // the gamut check button
+    dev->profile.gamut_button
+    = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    g_object_set(G_OBJECT(dev->profile.gamut_button), "tooltip-text",
+                 _("toggle gamut checking\nright click for profile options"), (char *)NULL);
+    g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
+                     G_CALLBACK(_gamut_quickbutton_clicked), dev);
+    g_signal_connect(G_OBJECT(dev->profile.gamut_button), "button-press-event",
+                     G_CALLBACK(_gamut_quickbutton_pressed), dev);
+    g_signal_connect(G_OBJECT(dev->profile.gamut_button), "button-release-event",
+                     G_CALLBACK(_profile_quickbutton_released), dev);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.gamut_button, DT_VIEW_DARKROOM);
+
+    // and the popup window
+    const int panel_width = dt_conf_get_int("panel_width");
+
+    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+
+    dev->profile.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size(GTK_WINDOW(dev->profile.floating_window), panel_width, -1);
+    GtkWidget *frame = gtk_frame_new(NULL);
+    GtkWidget *event_box = gtk_event_box_new();
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
+    gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
+    gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
+    gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
+
+    gtk_widget_set_can_focus(dev->profile.floating_window, TRUE);
+    gtk_window_set_decorated(GTK_WINDOW(dev->profile.floating_window), FALSE);
+    gtk_window_set_type_hint(GTK_WINDOW(dev->profile.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+    gtk_window_set_transient_for(GTK_WINDOW(dev->profile.floating_window), GTK_WINDOW(window));
+    gtk_widget_set_opacity(dev->profile.floating_window, 0.9);
+
+    gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
+    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
+
+    gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), frame);
+    gtk_container_add(GTK_CONTAINER(frame), event_box);
+    gtk_container_add(GTK_CONTAINER(event_box), vbox);
+
+    /** let's fill the encapsulating widgets */
+    char datadir[PATH_MAX] = { 0 };
+    char confdir[PATH_MAX] = { 0 };
+    dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+    const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+
+    GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(display_intent, NULL, _("display intent"));
+    gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
+    dt_bauhaus_combobox_add(display_intent, _("perceptual"));
+    dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
+    dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
+    dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
+
+    if(!force_lcms2)
+    {
+      gtk_widget_set_no_show_all(display_intent, TRUE);
+      gtk_widget_set_visible(display_intent, FALSE);
+    }
+
+    GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
+    GtkWidget *softproof_profile = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(softproof_profile, NULL, _("softproof profile"));
+    dt_bauhaus_widget_set_label(display_profile, NULL, _("display profile"));
+    gtk_box_pack_start(GTK_BOX(vbox), softproof_profile, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
+
+    GList *l = darktable.color_profiles->profiles;
+    while(l)
+    {
+      dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+      if(prof->display_pos > -1)
+      {
+        dt_bauhaus_combobox_add(display_profile, prof->name);
+        if(prof->type == darktable.color_profiles->display_type
+          && (prof->type != DT_COLORSPACE_FILE
+              || !strcmp(prof->filename, darktable.color_profiles->display_filename)))
+        {
+          dt_bauhaus_combobox_set(display_profile, prof->display_pos);
+        }
+      }
+      // the system display profile is only suitable for display purposes
+      if(prof->out_pos > -1)
+      {
+        dt_bauhaus_combobox_add(softproof_profile, prof->name);
+        if(prof->type == darktable.color_profiles->softproof_type
+          && (prof->type != DT_COLORSPACE_FILE
+              || !strcmp(prof->filename, darktable.color_profiles->softproof_filename)))
+          dt_bauhaus_combobox_set(softproof_profile, prof->out_pos);
+      }
+      l = g_list_next(l);
+    }
+
+    char tooltip[1024];
+    snprintf(tooltip, sizeof(tooltip), _("display ICC profiles in %s/color/out or %s/color/out"), confdir,
+             datadir);
+    g_object_set(G_OBJECT(display_profile), "tooltip-text", tooltip, (char *)NULL);
+    snprintf(tooltip, sizeof(tooltip), _("softproof ICC profiles in %s/color/out or %s/color/out"), confdir,
+             datadir);
+    g_object_set(G_OBJECT(softproof_profile), "tooltip-text", tooltip, (char *)NULL);
+
+    g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), dev);
+    g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);
+    g_signal_connect(G_OBJECT(softproof_profile), "value-changed", G_CALLBACK(softproof_profile_callback), dev);
+
+    _update_softproof_gamut_checking(dev);
+
+    // update the gui when the preferences changed (i.e. show intent when using lcms2)
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                              G_CALLBACK(_preference_changed), (gpointer)display_intent);
   }
 }
 
@@ -1769,6 +2184,12 @@ void init_key_accels(dt_view_t *self)
   // toggle overexposure indication
   dt_accel_register_view(self, NC_("accel", "overexposed"), GDK_KEY_o, 0);
 
+  // toggle softproofing
+  dt_accel_register_view(self, NC_("accel", "softproof"), GDK_KEY_s, GDK_CONTROL_MASK);
+
+  // toggle gamut check
+  dt_accel_register_view(self, NC_("accel", "gamut check"), GDK_KEY_g, GDK_CONTROL_MASK);
+
   // brush size +/-
   dt_accel_register_view(self, NC_("accel", "brush larger"), GDK_KEY_bracketright, 0);
   dt_accel_register_view(self, NC_("accel", "brush smaller"), GDK_KEY_bracketleft, 0);
@@ -1780,6 +2201,7 @@ void init_key_accels(dt_view_t *self)
 void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure;
+  dt_develop_t *data = (dt_develop_t *)self->data;
 
   // Film strip shortcuts
   closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
@@ -1807,8 +2229,16 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "image back", closure);
 
   // toggle overexposure indication
-  closure = g_cclosure_new(G_CALLBACK(_overexposed_toggle_callback), (gpointer)self->data, NULL);
+  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->overexposed.button, NULL);
   dt_accel_connect_view(self, "overexposed", closure);
+
+  // toggle softproof indication
+  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->profile.softproof_button, NULL);
+  dt_accel_connect_view(self, "softproof", closure);
+
+  // toggle gamut indication
+  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->profile.gamut_button, NULL);
+  dt_accel_connect_view(self, "gamut check", closure);
 
   // brush size +/-
   closure = g_cclosure_new(G_CALLBACK(_brush_size_up_callback), (gpointer)self->data, NULL);

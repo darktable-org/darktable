@@ -76,7 +76,6 @@ void dt_control_log_busy_leave();
 void dt_control_change_cursor(dt_cursor_t cursor);
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
-void dt_ctl_set_display_profile();
 
 /** \brief request redraw of the workspace.
     This redraws the whole workspace within a gdk critical
@@ -174,12 +173,6 @@ typedef struct dt_control_t
   dt_pthread_mutex_t global_mutex, image_mutex;
   double last_expose_time;
   int key_accelerators_on;
-
-  // xatom color profile:
-  pthread_rwlock_t xprofile_lock;
-  gchar *colord_profile_file;
-  uint8_t *xprofile_data;
-  int xprofile_size;
 
   // job management
   int32_t running;
