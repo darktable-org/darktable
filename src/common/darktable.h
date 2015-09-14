@@ -235,7 +235,7 @@ void dt_free_align(void *mem);
 #define dt_free_align(A) free(A)
 #endif
 
-inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
+static inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
 {
     return (uintptr_t)pointer % byte_count == 0;
 }
