@@ -64,6 +64,7 @@ typedef struct _dt_job_t
  */
 static inline int dt_control_job_equal(_dt_job_t *j1, _dt_job_t *j2)
 {
+  if(!j1 || !j2) return 0;
   return (j1->execute == j2->execute && j1->state_changed_cb == j2->state_changed_cb && j1->queue == j2->queue
           && (g_strcmp0(j1->description, j2->description) == 0));
 }
@@ -245,6 +246,9 @@ static _dt_job_t *dt_control_schedule_job(dt_control_t *control)
   *queue = g_list_delete_link(*queue, *queue);
   control->queue_length[winner_queue]--;
 
+  // and place it in scheduled job array (for job deduping)
+  control->job[dt_control_get_threadid()] = job;
+
   // increment the priorities of the others
   for(int i = 0; i < DT_JOB_QUEUE_MAX; i++)
   {
@@ -285,8 +289,14 @@ static int32_t dt_control_run_job(dt_control_t *control)
     dt_print(DT_DEBUG_CONTROL, "\n");
   }
 
-  /* free job */
   dt_pthread_mutex_unlock(&job->wait_mutex);
+
+  // remove the job from scheduled job array (for job deduping)
+  dt_pthread_mutex_lock(&control->queue_mutex);
+  control->job[dt_control_get_threadid()] = NULL;
+  dt_pthread_mutex_unlock(&control->queue_mutex);
+
+  // and free it
   dt_control_job_dispose(job);
 
   return 0;
@@ -491,6 +501,7 @@ void dt_control_jobs_init(dt_control_t *control)
   // start threads
   control->num_threads = CLAMP(dt_conf_get_int("worker_threads"), 1, 8);
   control->thread = (pthread_t *)calloc(control->num_threads, sizeof(pthread_t));
+  control->job = (dt_job_t **)calloc(control->num_threads, sizeof(dt_job_t *));
   dt_pthread_mutex_lock(&control->run_mutex);
   control->running = 1;
   dt_pthread_mutex_unlock(&control->run_mutex);
@@ -520,6 +531,7 @@ void dt_control_jobs_init(dt_control_t *control)
 
 void dt_control_jobs_cleanup(dt_control_t *control)
 {
+  free(control->job);
   free(control->thread);
 }
 
