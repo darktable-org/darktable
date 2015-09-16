@@ -65,7 +65,7 @@ typedef struct _dt_job_t
 static inline int dt_control_job_equal(_dt_job_t *j1, _dt_job_t *j2)
 {
   return (j1->execute == j2->execute && j1->state_changed_cb == j2->state_changed_cb && j1->queue == j2->queue
-          && g_strcmp0(j1->description, j2->description));
+          && (g_strcmp0(j1->description, j2->description) == 0));
 }
 
 static void dt_control_job_set_state(_dt_job_t *job, dt_job_state_t state)
