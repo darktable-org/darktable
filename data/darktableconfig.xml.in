@@ -204,6 +204,13 @@
     <longdescription>always ask the user before any image file is deleted.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>send_to_trash</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>send files to trash when erasing images</shortdescription>
+    <longdescription>send files to trash instead of permanently deleting files on system that supports it</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>ask_before_move</name>
     <type>bool</type>
     <default>true</default>
