@@ -4,6 +4,7 @@
     copyright (c) 2010--2013 henrik andersson.
     Copyright (c) 2012 James C. McPherson
     copyright (c) 2014 tobias ellinghaus.
+    copyright (c) 2015 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -361,12 +362,32 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
     // this is a stack with limited size and bubble up and all that stuff
     job->priority = DT_CONTROL_FG_PRIORITY;
 
+    // check if we have already scheduled the job
+    for(int k = 0; k < control->num_threads; k++)
+    {
+      _dt_job_t *other_job = (_dt_job_t *)control->job[k];
+      if(dt_control_job_equal(job, other_job))
+      {
+        // FIXME: can we dispose job after unlocking queue_mutex ?
+        dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in scheduled: ");
+        dt_control_job_print(job);
+        dt_print(DT_DEBUG_CONTROL, "\n");
+
+        dt_control_job_set_state(job, DT_JOB_STATE_DISCARDED);
+        dt_control_job_dispose(job);
+
+        dt_pthread_mutex_unlock(&control->queue_mutex);
+        return 0; // there can't be any further copy
+      }
+    }
+
     // if the job is already in the queue -> move it to the top
     for(GList *iter = *queue; iter; iter = g_list_next(iter))
     {
       _dt_job_t *other_job = (_dt_job_t *)iter->data;
       if(dt_control_job_equal(job, other_job))
       {
+        // FIXME: can we dispose job after unlocking queue_mutex ?
         dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue: ");
         dt_control_job_print(job);
         dt_print(DT_DEBUG_CONTROL, "\n");
