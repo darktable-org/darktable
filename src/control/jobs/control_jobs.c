@@ -775,7 +775,9 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
       delete_success = g_file_delete(gfile, NULL /*cancellable*/, &gerror);
     }
 
-    if (delete_success)
+    // Delete is a success or the file does not exists: OK to remove from collection
+    if (delete_success
+        || g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
     {
       delete_status = _DT_DELETE_STATUS_OK_TO_REMOVE;
     }
@@ -832,6 +834,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   char *imgs = _get_image_list(t);
+  char imgidstr[25] = { 0 };
   guint total = g_list_length(t);
   char message[512] = { 0 };
   double fraction = 0;
@@ -842,8 +845,6 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
 
   sqlite3_stmt *stmt;
-
-  _set_remove_flag(imgs);
 
   dt_collection_update(darktable.collection);
 
@@ -877,6 +878,9 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       delete_status = delete_file_from_disk(filename);
       if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
         goto delete_next_file;
+
+      snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
+      _set_remove_flag(imgidstr);
       dt_image_remove(imgid);
 
       // all sidecar files - including left-overs - can be deleted;
@@ -944,7 +948,11 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
       delete_status = delete_file_from_disk(filename);
       if (delete_status == _DT_DELETE_STATUS_OK_TO_REMOVE)
+      {
+        snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
+        _set_remove_flag(imgidstr);
         dt_image_remove(imgid);
+      }
     }
 
 delete_next_file:

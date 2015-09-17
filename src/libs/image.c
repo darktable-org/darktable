@@ -136,11 +136,21 @@ else
   return _("delete");
 }
 
+static const char* _image_get_delete_button_tooltip()
+{
+if (dt_conf_get_bool("send_to_trash"))
+  return _("send file to trash");
+else
+  return _("physically delete from disk");
+}
+
+
 static void _image_preference_changed(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t*)user_data;
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   gtk_button_set_label(GTK_BUTTON(d->delete_button), _image_get_delete_button_label());
+  g_object_set(G_OBJECT(d->delete_button), "tooltip-text", _image_get_delete_button_tooltip(), (char *)NULL);
 }
 
 int position()
@@ -169,7 +179,7 @@ void gui_init(dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_image_get_delete_button_label());
   d->delete_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("physically delete from disk"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _image_get_delete_button_tooltip(), (char *)NULL);
   gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
 
