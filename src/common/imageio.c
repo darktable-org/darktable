@@ -536,12 +536,14 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
+  dt_dev_load_image(&dev, imgid);
+
   dt_mipmap_buffer_t buf;
   if(thumbnail_export && dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');
   else
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-  dt_dev_load_image(&dev, imgid);
+
   const dt_image_t *img = &dev.image_storage;
   const int wd = img->width;
   const int ht = img->height;
