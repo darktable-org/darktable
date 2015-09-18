@@ -23,6 +23,7 @@
 #include <float.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 #include <string.h>
 #include <glib.h>
 #include <assert.h>
@@ -63,6 +64,7 @@ typedef struct dt_pthread_rwlock_t
 static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
   const int ret = pthread_mutex_destroy(&(mutex->mutex));
+  assert(!ret);
 
 #if 0
   printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
@@ -98,6 +100,7 @@ static inline int dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex,
   }
 #endif
   const int ret = pthread_mutex_init(&(mutex->mutex), attr);
+  assert(!ret);
   return ret;
 }
 
@@ -107,6 +110,7 @@ static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, c
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_lock(&(mutex->mutex));
+  assert(!ret);
   mutex->time_locked = dt_pthread_get_wtime();
   double wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
@@ -133,6 +137,7 @@ static inline int dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_trylock(&(mutex->mutex));
+  assert(!ret || (ret == EBUSY));
   if(ret) return ret;
   mutex->time_locked = dt_pthread_get_wtime();
   double wait = mutex->time_locked - t0;
@@ -183,6 +188,7 @@ static inline int dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex,
 
   // need to unlock last, to shield our internal data.
   const int ret = pthread_mutex_unlock(&(mutex->mutex));
+  assert(!ret);
   return ret;
 }
 
@@ -195,31 +201,39 @@ static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t 
 static inline int dt_pthread_rwlock_init(dt_pthread_rwlock_t *lock,
     const pthread_rwlockattr_t *attr)
 {
-  memset(lock->name, 0, sizeof(lock->name));
+  memset(lock, 0, sizeof(dt_pthread_rwlock_t));
   lock->cnt = 0;
-  return pthread_rwlock_init(&lock->lock, attr);
+  const int res = pthread_rwlock_init(&lock->lock, attr);
+  assert(!res);
+  return res;
 }
 
 static inline int dt_pthread_rwlock_destroy(dt_pthread_rwlock_t *lock)
 {
   snprintf(lock->name, sizeof(lock->name), "destroyed with cnt %d", lock->cnt);
-  return pthread_rwlock_destroy(&lock->lock);
+  const int res = pthread_rwlock_destroy(&lock->lock);
+  assert(!res);
+  return res;
 }
 
-static inline int dt_pthread_rwlock_unlock(dt_pthread_rwlock_t *rwlock)
+#define dt_pthread_rwlock_unlock(A) dt_pthread_rwlock_unlock_with_caller(A, __FILE__, __LINE__)
+static inline int dt_pthread_rwlock_unlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
-  int res = pthread_rwlock_unlock(&rwlock->lock);
+  const int res = pthread_rwlock_unlock(&rwlock->lock);
+
+  assert(!res);
+
   rwlock->cnt --;
   assert(rwlock->cnt >= 0);
-  if(!res)
-    memset(rwlock->name, 0, sizeof(rwlock->name));
+  if(!res) snprintf(rwlock->name, sizeof(rwlock->name), "u:%s:%d", file, line);
   return res;
 }
 
 #define dt_pthread_rwlock_rdlock(A) dt_pthread_rwlock_rdlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_rdlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
-  int res = pthread_rwlock_rdlock(&rwlock->lock);
+  const int res = pthread_rwlock_rdlock(&rwlock->lock);
+  assert(!res);
   rwlock->cnt ++;
   if(!res)
     snprintf(rwlock->name, sizeof(rwlock->name), "r:%s:%d", file, line);
@@ -228,7 +242,8 @@ static inline int dt_pthread_rwlock_rdlock_with_caller(dt_pthread_rwlock_t *rwlo
 #define dt_pthread_rwlock_wrlock(A) dt_pthread_rwlock_wrlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_wrlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
-  int res = pthread_rwlock_wrlock(&rwlock->lock);
+  const int res = pthread_rwlock_wrlock(&rwlock->lock);
+  assert(!res);
   rwlock->cnt ++;
   if(!res)
     snprintf(rwlock->name, sizeof(rwlock->name), "w:%s:%d", file, line);
@@ -237,7 +252,8 @@ static inline int dt_pthread_rwlock_wrlock_with_caller(dt_pthread_rwlock_t *rwlo
 #define dt_pthread_rwlock_tryrdlock(A) dt_pthread_rwlock_tryrdlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_tryrdlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
-  int res = pthread_rwlock_tryrdlock(&rwlock->lock);
+  const int res = pthread_rwlock_tryrdlock(&rwlock->lock);
+  assert(!res || (res == EBUSY));
   if(!res)
   {
     rwlock->cnt ++;
@@ -248,7 +264,8 @@ static inline int dt_pthread_rwlock_tryrdlock_with_caller(dt_pthread_rwlock_t *r
 #define dt_pthread_rwlock_trywrlock(A) dt_pthread_rwlock_trywrlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
-  int res = pthread_rwlock_trywrlock(&rwlock->lock);
+  const int res = pthread_rwlock_trywrlock(&rwlock->lock);
+  assert(!res || (res == EBUSY));
   if(!res)
   {
     rwlock->cnt ++;
