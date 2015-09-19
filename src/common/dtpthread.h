@@ -58,6 +58,7 @@ typedef struct dt_pthread_rwlock_t
 {
   pthread_rwlock_t lock;
   int cnt;
+  pthread_t writer;
   char name[256];
 } dt_pthread_rwlock_t;
 
@@ -225,6 +226,7 @@ static inline int dt_pthread_rwlock_unlock_with_caller(dt_pthread_rwlock_t *rwlo
 
   __sync_fetch_and_sub(&(rwlock->cnt), 1);
   assert(rwlock->cnt >= 0);
+  __sync_bool_compare_and_swap(&(rwlock->writer), pthread_self(), 0);
   if(!res) snprintf(rwlock->name, sizeof(rwlock->name), "u:%s:%d", file, line);
   return res;
 }
@@ -246,7 +248,10 @@ static inline int dt_pthread_rwlock_wrlock_with_caller(dt_pthread_rwlock_t *rwlo
   assert(!res);
   __sync_fetch_and_add(&(rwlock->cnt), 1);
   if(!res)
+  {
+    __sync_lock_test_and_set(&(rwlock->writer), pthread_self());
     snprintf(rwlock->name, sizeof(rwlock->name), "w:%s:%d", file, line);
+  }
   return res;
 }
 #define dt_pthread_rwlock_tryrdlock(A) dt_pthread_rwlock_tryrdlock_with_caller(A, __FILE__, __LINE__)
@@ -269,6 +274,7 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
   if(!res)
   {
     __sync_fetch_and_add(&(rwlock->cnt), 1);
+    __sync_lock_test_and_set(&(rwlock->writer), pthread_self());
     snprintf(rwlock->name, sizeof(rwlock->name), "tw:%s:%d", file, line);
   }
   return res;

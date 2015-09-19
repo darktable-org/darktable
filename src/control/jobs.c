@@ -439,6 +439,7 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
 }
 
 static __thread int threadid = -1;
+static __thread pthread_t pthreadid = -1;
 
 int32_t dt_control_get_threadid()
 {
@@ -502,6 +503,7 @@ static void *dt_control_work(void *ptr)
   threadid = params->threadid;
   free(params);
   // int32_t threadid = dt_control_get_threadid();
+  pthreadid = pthread_self();
   while(dt_control_running())
   {
     // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid);
