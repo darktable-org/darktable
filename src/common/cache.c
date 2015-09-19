@@ -247,6 +247,15 @@ restart:
     goto restart;
   }
 
+  if(entry->_lock_demoting)
+  {
+    // oops, we are currently demoting (rw -> r) lock to this entry in some thread. do not touch!
+    dt_pthread_rwlock_unlock(&entry->lock);
+    dt_pthread_mutex_unlock(&cache->lock);
+    g_usleep(5);
+    goto restart;
+  }
+
   gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
   (void)removed; // make non-assert compile happy
   assert(removed);
