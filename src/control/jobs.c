@@ -359,6 +359,8 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
 
   job->queue = queue_id;
 
+  _dt_job_t *job_for_disposal = NULL;
+
   dt_pthread_mutex_lock(&control->queue_mutex);
 
   GList **queue = &control->queues[queue_id];
@@ -379,15 +381,15 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
       _dt_job_t *other_job = (_dt_job_t *)control->job[k];
       if(dt_control_job_equal(job, other_job))
       {
-        // FIXME: can we dispose job after unlocking queue_mutex ?
         dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in scheduled: ");
         dt_control_job_print(job);
         dt_print(DT_DEBUG_CONTROL, "\n");
 
+        dt_pthread_mutex_unlock(&control->queue_mutex);
+
         dt_control_job_set_state(job, DT_JOB_STATE_DISCARDED);
         dt_control_job_dispose(job);
 
-        dt_pthread_mutex_unlock(&control->queue_mutex);
         return 0; // there can't be any further copy
       }
     }
@@ -398,15 +400,15 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
       _dt_job_t *other_job = (_dt_job_t *)iter->data;
       if(dt_control_job_equal(job, other_job))
       {
-        // FIXME: can we dispose job after unlocking queue_mutex ?
         dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue: ");
         dt_control_job_print(job);
         dt_print(DT_DEBUG_CONTROL, "\n");
 
         *queue = g_list_delete_link(*queue, iter);
         length--;
-        dt_control_job_set_state(job, DT_JOB_STATE_DISCARDED);
-        dt_control_job_dispose(job);
+
+        job_for_disposal = job;
+
         job = other_job;
         break; // there can't be any further copy in the list
       }
@@ -445,6 +447,10 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
   dt_pthread_mutex_lock(&control->cond_mutex);
   pthread_cond_broadcast(&control->cond);
   dt_pthread_mutex_unlock(&control->cond_mutex);
+
+  // dispose of dropped job, if any
+  dt_control_job_set_state(job_for_disposal, DT_JOB_STATE_DISCARDED);
+  dt_control_job_dispose(job_for_disposal);
 
   return 0;
 }
