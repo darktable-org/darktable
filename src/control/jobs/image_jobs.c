@@ -50,7 +50,7 @@ dt_job_t *dt_image_load_job_create(int32_t id, dt_mipmap_size_t mip)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_set_params(job, params, free);
+  dt_control_job_set_params_with_size(job, params, sizeof(dt_image_load_t), free);
   params->imgid = id;
   params->mip = mip;
   return job;

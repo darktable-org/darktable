@@ -40,6 +40,7 @@ typedef struct _dt_job_t
 {
   dt_job_execute_callback execute;
   void *params;
+  size_t params_size;
   dt_job_destroy_callback params_destroy;
   int32_t result;
 
@@ -93,6 +94,16 @@ void dt_control_job_set_params(_dt_job_t *job, void *params, dt_job_destroy_call
 {
   if(!job || dt_control_job_get_state(job) != DT_JOB_STATE_INITIALIZED) return;
   job->params = params;
+  job->params_size = 0;
+  job->params_destroy = callback;
+}
+
+void dt_control_job_set_params_with_size(dt_job_t *job, void *params, size_t params_size,
+                                         dt_job_destroy_callback callback)
+{
+  if(!job || dt_control_job_get_state(job) != DT_JOB_STATE_INITIALIZED) return;
+  job->params = params;
+  job->params_size = params_size;
   job->params_destroy = callback;
 }
 

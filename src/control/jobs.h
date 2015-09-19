@@ -22,6 +22,7 @@
 #define DT_CONTROL_JOBS_H
 
 #include <inttypes.h>
+#include <stddef.h>
 
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers
@@ -69,6 +70,10 @@ dt_job_state_t dt_control_job_get_state(dt_job_t *job);
 void dt_control_job_wait(dt_job_t *job);
 /** set job params and a callback to destroy those params */
 void dt_control_job_set_params(dt_job_t *job, void *params, dt_job_destroy_callback callback);
+/** set job params (with size params_size) and a callback to destroy those params.
+  * NOTE: in most cases you want dt_control_job_set_params() */
+void dt_control_job_set_params_with_size(dt_job_t *job, void *params, size_t params_size,
+                                         dt_job_destroy_callback callback);
 /** get job params. WARNING: you must not free them. dt_control_job_dispose() will take care of that */
 void *dt_control_job_get_params(const dt_job_t *job);
 
