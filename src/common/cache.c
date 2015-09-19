@@ -163,6 +163,19 @@ restart:
     cache->lru = g_list_remove_link(cache->lru, entry->link);
     cache->lru = g_list_concat(cache->lru, entry->link);
     dt_pthread_mutex_unlock(&cache->lock);
+
+#ifdef _DEBUG
+    const pthread_t writer = dt_pthread_rwlock_get_writer(&entry->lock);
+    if(mode == 'w')
+    {
+      assert(writer == pthread_self());
+    }
+    else
+    {
+      assert(writer != pthread_self());
+    }
+#endif
+
     return entry;
   }
 

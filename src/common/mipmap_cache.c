@@ -677,6 +677,19 @@ void dt_mipmap_cache_get_with_caller(
         buf->cache_entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
         dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
       }
+
+#ifdef _DEBUG
+      const pthread_t writer = dt_pthread_rwlock_get_writer(&(buf->cache_entry->lock));
+      if(mode == 'w')
+      {
+        assert(writer == pthread_self());
+      }
+      else
+      {
+        assert(writer != pthread_self());
+      }
+#endif
+
       /* raise signal that mipmaps has been flushed to cache */
       g_idle_add(_raise_signal_mipmap_updated, 0);
     }

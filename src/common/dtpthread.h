@@ -218,6 +218,11 @@ static inline int dt_pthread_rwlock_destroy(dt_pthread_rwlock_t *lock)
   return res;
 }
 
+static inline pthread_t dt_pthread_rwlock_get_writer(dt_pthread_rwlock_t *lock)
+{
+  return lock->writer;
+}
+
 #define dt_pthread_rwlock_unlock(A) dt_pthread_rwlock_unlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_unlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
