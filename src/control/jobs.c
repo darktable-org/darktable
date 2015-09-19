@@ -60,13 +60,13 @@ typedef struct _dt_job_t
    match
     we don't want to compare result, priority or state since these will change during the course of
    processing.
-    TODO: somehow compare params. maybe we have to pass the sizeof(params) when setting the params to do a
-   memcmp, or maybe even
-          allow to pass a comparator for that.
+    NOTE: maybe allow to pass a comparator for params.
  */
 static inline int dt_control_job_equal(_dt_job_t *j1, _dt_job_t *j2)
 {
   if(!j1 || !j2) return 0;
+  if(j1->params_size != 0 && j1->params_size == j2->params_size)
+    return (memcmp(j1->params, j2->params, j1->params_size) == 0);
   return (j1->execute == j2->execute && j1->state_changed_cb == j2->state_changed_cb && j1->queue == j2->queue
           && (g_strcmp0(j1->description, j2->description) == 0));
 }
