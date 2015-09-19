@@ -45,15 +45,19 @@
 #define DT_MIPMAP_CACHE_FILE_VERSION 23
 #define DT_MIPMAP_CACHE_DEFAULT_FILE_NAME "mipmaps"
 
-#define DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE (1 << 0)
-#define DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE (1 << 1)
+typedef enum dt_mipmap_buffer_dsc_flags
+{
+  DT_MIPMAP_BUFFER_DSC_FLAG_NONE = 0,
+  DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE = 1 << 0,
+  DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE = 1 << 1
+} dt_mipmap_buffer_dsc_flags;
 
 struct dt_mipmap_buffer_dsc
 {
   uint32_t width;
   uint32_t height;
   size_t size;
-  uint32_t flags;
+  dt_mipmap_buffer_dsc_flags flags;
   uint32_t pre_monochrome_demosaiced;
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
 } __attribute__((packed, aligned(16)));
