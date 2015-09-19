@@ -671,10 +671,12 @@ void dt_mipmap_cache_get_with_caller(
       // note that concurrencykit has rw locks that can be demoted from w->r without losing the lock in between.
       if(mode == 'r')
       {
+        entry->_lock_demoting = 1;
         // drop the write lock
         dt_cache_release(&_get_cache(cache, mip)->cache, entry);
         // get a read lock
-        buf->cache_entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
+        buf->cache_entry = entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
+        entry->_lock_demoting = 0;
         dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
       }
 
