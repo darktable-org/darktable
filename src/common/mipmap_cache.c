@@ -601,8 +601,10 @@ void dt_mipmap_cache_get_with_caller(
     struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
     buf->cache_entry = entry;
 
+    int mipmap_generated = 0;
     if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
     {
+      mipmap_generated = 1;
       // _init_f() will set it, if needed
       buf->pre_monochrome_demosaiced = 0;
 
@@ -663,38 +665,42 @@ void dt_mipmap_cache_get_with_caller(
       }
       dsc->pre_monochrome_demosaiced = buf->pre_monochrome_demosaiced;
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
+    }
 
-      // image cache is leaving the write lock in place in case the image has been newly allocated.
-      // this leads to a slight increase in thread contention, so we opt for dropping the write lock
-      // and acquiring a read lock immediately after. since this opens a small window for other threads
-      // to get in between, we need to take some care to re-init cache entries and dsc.
-      // note that concurrencykit has rw locks that can be demoted from w->r without losing the lock in between.
-      if(mode == 'r')
-      {
-        entry->_lock_demoting = 1;
-        // drop the write lock
-        dt_cache_release(&_get_cache(cache, mip)->cache, entry);
-        // get a read lock
-        buf->cache_entry = entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
-        entry->_lock_demoting = 0;
-        dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
-      }
+    // image cache is leaving the write lock in place in case the image has been newly allocated.
+    // this leads to a slight increase in thread contention, so we opt for dropping the write lock
+    // and acquiring a read lock immediately after. since this opens a small window for other threads
+    // to get in between, we need to take some care to re-init cache entries and dsc.
+    // note that concurrencykit has rw locks that can be demoted from w->r without losing the lock in between.
+    if(mode == 'r')
+    {
+      entry->_lock_demoting = 1;
+      // drop the write lock
+      dt_cache_release(&_get_cache(cache, mip)->cache, entry);
+      // get a read lock
+      buf->cache_entry = entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
+      entry->_lock_demoting = 0;
+      dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
+    }
 
 #ifdef _DEBUG
-      const pthread_t writer = dt_pthread_rwlock_get_writer(&(buf->cache_entry->lock));
-      if(mode == 'w')
-      {
-        assert(writer == pthread_self());
-      }
-      else
-      {
-        assert(writer != pthread_self());
-      }
+    const pthread_t writer = dt_pthread_rwlock_get_writer(&(buf->cache_entry->lock));
+    if(mode == 'w')
+    {
+      assert(writer == pthread_self());
+    }
+    else
+    {
+      assert(writer != pthread_self());
+    }
 #endif
 
+    if(mipmap_generated)
+    {
       /* raise signal that mipmaps has been flushed to cache */
       g_idle_add(_raise_signal_mipmap_updated, 0);
     }
+
     buf->width = dsc->width;
     buf->height = dsc->height;
     buf->imgid = imgid;
