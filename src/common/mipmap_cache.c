@@ -687,11 +687,11 @@ void dt_mipmap_cache_get_with_caller(
     const pthread_t writer = dt_pthread_rwlock_get_writer(&(buf->cache_entry->lock));
     if(mode == 'w')
     {
-      assert(writer == pthread_self());
+      assert(pthread_equal(writer, pthread_self()));
     }
     else
     {
-      assert(writer != pthread_self());
+      assert(!pthread_equal(writer, pthread_self()));
     }
 #endif
 

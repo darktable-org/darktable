@@ -169,11 +169,11 @@ restart:
     const pthread_t writer = dt_pthread_rwlock_get_writer(&entry->lock);
     if(mode == 'w')
     {
-      assert(writer == pthread_self());
+      assert(pthread_equal(writer, pthread_self()));
     }
     else
     {
-      assert(writer != pthread_self());
+      assert(!pthread_equal(writer, pthread_self()));
     }
 #endif
 

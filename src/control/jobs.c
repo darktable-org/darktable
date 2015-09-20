@@ -66,7 +66,8 @@ static inline int dt_control_job_equal(_dt_job_t *j1, _dt_job_t *j2)
 {
   if(!j1 || !j2) return 0;
   if(j1->params_size != 0 && j1->params_size == j2->params_size)
-    return (memcmp(j1->params, j2->params, j1->params_size) == 0);
+    return (j1->execute == j2->execute && j1->state_changed_cb == j2->state_changed_cb
+            && j1->queue == j2->queue && (memcmp(j1->params, j2->params, j1->params_size) == 0));
   return (j1->execute == j2->execute && j1->state_changed_cb == j2->state_changed_cb && j1->queue == j2->queue
           && (g_strcmp0(j1->description, j2->description) == 0));
 }
@@ -456,7 +457,6 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
 }
 
 static __thread int threadid = -1;
-static __thread pthread_t pthreadid = -1;
 
 int32_t dt_control_get_threadid()
 {
@@ -520,7 +520,6 @@ static void *dt_control_work(void *ptr)
   threadid = params->threadid;
   free(params);
   // int32_t threadid = dt_control_get_threadid();
-  pthreadid = pthread_self();
   while(dt_control_running())
   {
     // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid);

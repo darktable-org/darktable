@@ -242,7 +242,7 @@ static inline int dt_pthread_rwlock_rdlock_with_caller(dt_pthread_rwlock_t *rwlo
 {
   const int res = pthread_rwlock_rdlock(&rwlock->lock);
   assert(!res);
-  assert(!(res && (rwlock->writer == pthread_self())));
+  assert(!(res && pthread_equal(rwlock->writer, pthread_self())));
   __sync_fetch_and_add(&(rwlock->cnt), 1);
   if(!res)
     snprintf(rwlock->name, sizeof(rwlock->name), "r:%s:%d", file, line);
@@ -266,7 +266,7 @@ static inline int dt_pthread_rwlock_tryrdlock_with_caller(dt_pthread_rwlock_t *r
 {
   const int res = pthread_rwlock_tryrdlock(&rwlock->lock);
   assert(!res || (res == EBUSY));
-  assert(!(res && (rwlock->writer == pthread_self())));
+  assert(!(res && pthread_equal(rwlock->writer, pthread_self())));
   if(!res)
   {
     __sync_fetch_and_add(&(rwlock->cnt), 1);
