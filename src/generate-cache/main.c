@@ -35,10 +35,8 @@
 #include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
 #include "config.h"              // for GETTEXT_PACKAGE, etc
 
-static int generate_thumbnail_cache()
+static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
 {
-  const dt_mipmap_size_t max_mip = DT_MIPMAP_2;
-
   fprintf(stderr, _("creating cache directories\n"));
   for(dt_mipmap_size_t k = DT_MIPMAP_0; k <= max_mip; k++)
   {
@@ -102,7 +100,10 @@ static int generate_thumbnail_cache()
 
 static void usage(const char *progname)
 {
-  fprintf(stderr, "usage: %s [-h, --help; --version] [--core <darktable options>]\n", progname);
+  fprintf(
+      stderr,
+      "usage: %s [-h, --help; --version] [-m, --max-mip <0-7> (default = 2)] [--core <darktable options>]\n",
+      progname);
 }
 
 int main(int argc, char *arg[])
@@ -114,6 +115,7 @@ int main(int argc, char *arg[])
   gtk_init_check(&argc, &arg);
 
   // parse command line arguments
+  dt_mipmap_size_t max_mip = DT_MIPMAP_2;
 
   int k;
   for(k = 1; k < argc; k++)
@@ -127,6 +129,11 @@ int main(int argc, char *arg[])
     {
       printf("this is darktable-generate-cache\ncopyright (c) 2014 johannes hanika; 2015 LebedevRI\n");
       exit(EXIT_FAILURE);
+    }
+    else if(!strcmp(arg[k], "-m") || !strcmp(arg[k], "--max-mip"))
+    {
+      k++;
+      max_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), 0), 7);
     }
     else if(!strcmp(arg[k], "--core"))
     {
@@ -149,7 +156,7 @@ int main(int argc, char *arg[])
 
   fprintf(stderr, _("creating complete lighttable thumbnail cache\n"));
 
-  if(generate_thumbnail_cache())
+  if(generate_thumbnail_cache(max_mip))
   {
     exit(EXIT_FAILURE);
   }
