@@ -167,10 +167,8 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char *m_arg[5 + argc - k];
+  char *m_arg[3 + argc - k];
   m_arg[m_argc++] = "darktable-generate-cache";
-  m_arg[m_argc++] = "--library";
-  m_arg[m_argc++] = ":memory:";
   m_arg[m_argc++] = "--conf";
   m_arg[m_argc++] = "write_sidecar_files=FALSE";
   for(; k < argc; k++) m_arg[m_argc++] = arg[k];
