@@ -140,6 +140,9 @@ void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
 // remove thumbnails, so they will be regenerated:
 void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);
 
+// evict thumbnails from cache. They will be written to disc if not existing
+void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const uint32_t imgid);
+
 // return the closest mipmap size
 // for the given window you wish to draw.
 // a dt_mipmap_size_t has always a fixed resolution associated with it,

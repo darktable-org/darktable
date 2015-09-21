@@ -17,117 +17,87 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>    // for assert
-#include <glib.h>      // for g_mkdir_with_parents, etc
-#include <gtk/gtk.h>   // for gtk_init_check
-#include <libintl.h>   // for bind_textdomain_codeset, etc
-#include <limits.h>    // for PATH_MAX
-#include <sqlite3.h>   // for sqlite3_finalize, etc
-#include <stddef.h>    // for size_t
-#include <stdint.h>    // for uint32_t, uint8_t
-#include <stdio.h>     // for fprintf, stderr, snprintf, NULL, etc
-#include <stdlib.h>    // for exit, free, malloc
-#include <string.h>    // for strcmp
-#include <sys/types.h> // for int32_t
-#include <unistd.h>    // for access, unlink, R_OK
+#include <glib.h>    // for g_mkdir_with_parents, _
+#include <gtk/gtk.h> // for gtk_init_check
+#include <libintl.h> // for bind_textdomain_codeset, etc
+#include <limits.h>  // for PATH_MAX
+#include <sqlite3.h> // for sqlite3_column_int, etc
+#include <stddef.h>  // for size_t
+#include <stdint.h>  // for uint32_t
+#include <stdio.h>   // for fprintf, stderr, snprintf, NULL, etc
+#include <stdlib.h>  // for exit, EXIT_FAILURE
+#include <string.h>  // for strcmp
+#include <unistd.h>  // for access, R_OK
 
-#include "common/darktable.h"    // for darktable, darktable_t, etc
+#include "common/darktable.h"    // for darktable, darktable_t, dt_cleanup, etc
 #include "common/database.h"     // for dt_database_get
 #include "common/debug.h"        // for DT_DEBUG_SQLITE3_PREPARE_V2
-#include "common/imageio_jpeg.h" // for dt_imageio_jpeg_compress
-#include "common/mipmap_cache.h" // for dt_mipmap_cache_t, etc
+#include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
 #include "config.h"              // for GETTEXT_PACKAGE, etc
-#include "control/conf.h"        // for dt_conf_get_int
-#include "develop/imageop.h"     // for dt_iop_flip_and_zoom_8
 
-static void generate_thumbnail_cache()
+static int generate_thumbnail_cache()
 {
-  const int max_mip = DT_MIPMAP_2;
+  const dt_mipmap_size_t max_mip = DT_MIPMAP_2;
+
   fprintf(stderr, _("creating cache directories\n"));
-  char filename[PATH_MAX] = { 0 };
-  for(int k = DT_MIPMAP_0; k <= max_mip; k++)
+  for(dt_mipmap_size_t k = DT_MIPMAP_0; k <= max_mip; k++)
   {
-    snprintf(filename, sizeof(filename), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
-    fprintf(stderr, _("creating cache directory '%s'\n"), filename);
-    int mkd = g_mkdir_with_parents(filename, 0750);
-    if(mkd)
+    char dirname[PATH_MAX] = { 0 };
+    snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
+
+    fprintf(stderr, _("creating cache directory '%s'\n"), dirname);
+    if(g_mkdir_with_parents(dirname, 0750))
     {
-      fprintf(stderr, _("could not create directory '%s'!\n"), filename);
-      return;
+      fprintf(stderr, _("could not create directory '%s'!\n"), dirname);
+      return 1;
     }
   }
+
   // some progress counter
   sqlite3_stmt *stmt;
   size_t image_count = 0, counter = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images", -1, &stmt, 0);
-  if(sqlite3_step(stmt) == SQLITE_ROW) image_count = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    image_count = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
+  else
+  {
+    return 1;
+  }
 
   // go through all images:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, 0);
-  // could only alloc max_mip-1, but would need to detect the special case that max==0.
-  const size_t bufsize
-      = (size_t)4 * darktable.mipmap_cache->max_width[max_mip] * darktable.mipmap_cache->max_height[max_mip];
-  uint8_t *tmp = (uint8_t *)dt_alloc_align(16, bufsize);
-  if(!tmp)
-  {
-    fprintf(stderr, "couldn't allocate temporary memory!\n");
-    sqlite3_finalize(stmt);
-    return;
-  }
-  const int cache_quality = MIN(100, MAX(10, dt_conf_get_int("database_cache_quality")));
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int32_t imgid = sqlite3_column_int(stmt, 0);
-    // check whether all of these files are already there
-    int all_exist = 1;
+    const uint32_t imgid = sqlite3_column_int(stmt, 0);
+
     for(int k = max_mip; k >= DT_MIPMAP_0; k--)
     {
+      char filename[PATH_MAX] = { 0 };
       snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
-      all_exist &= !access(filename, R_OK);
-    }
-    if(all_exist) goto next;
-    dt_mipmap_buffer_t buf;
-    // get largest thumbnail for this image
-    // this one will take care of itself, we'll just write out the lower thumbs manually:
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, max_mip, DT_MIPMAP_BLOCKING, 'r');
-    if(buf.width > 8 && buf.height > 8) // don't create for skulls
-      for(int k = max_mip - 1; k >= DT_MIPMAP_0; k--)
-      {
-        uint32_t width, height;
-        const int wd = darktable.mipmap_cache->max_width[k];
-        const int ht = darktable.mipmap_cache->max_height[k];
-        // use exactly the same mechanism as the cache internally to rescale the thumbnail:
-        dt_iop_flip_and_zoom_8(buf.buf, buf.width, buf.height, tmp, wd, ht, 0, &width, &height);
 
-        snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
-        FILE *f = fopen(filename, "wb");
-        if(f)
-        {
-          // allocate temp memory:
-          uint8_t *blob = (uint8_t *)malloc(bufsize);
-          if(!blob) goto write_error;
-          const int32_t length = dt_imageio_jpeg_compress(tmp, blob, width, height, cache_quality);
-          assert(length <= bufsize);
-          int written = fwrite(blob, sizeof(uint8_t), length, f);
-          if(written != length)
-          {
-          write_error:
-            unlink(filename);
-          }
-          free(blob);
-          fclose(f);
-        }
-      }
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  next:
+      // if the thumbnail is already on disc - do nothing
+      if(!access(filename, R_OK)) continue;
+
+      // else, generate thumbnail and store in mipmap cache.
+      dt_mipmap_buffer_t buf;
+      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    }
+
+    // and immediately write thumbs to disc and remove from mipmap cache.
+    dt_mimap_cache_evict(darktable.mipmap_cache, imgid);
+
     counter++;
-    fprintf(stderr, "\rimage %zu/%zu (%.02f%%)            ", counter, image_count,
-            100.0 * counter / (float)image_count);
+    fprintf(stderr, "image %zu/%zu (%.02f%%)\n", counter, image_count, 100.0 * counter / (float)image_count);
   }
-  dt_free_align(tmp);
+
   sqlite3_finalize(stmt);
-  fprintf(stderr, "done                     \n");
+  fprintf(stderr, "done\n");
+
+  return 0;
 }
 
 static void usage(const char *progname)
@@ -151,12 +121,12 @@ int main(int argc, char *arg[])
     if(!strcmp(arg[k], "-h") || !strcmp(arg[k], "--help"))
     {
       usage(arg[0]);
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     else if(!strcmp(arg[k], "--version"))
     {
       printf("this is darktable-generate-cache\ncopyright (c) 2014 johannes hanika; 2015 LebedevRI\n");
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     else if(!strcmp(arg[k], "--core"))
     {
@@ -175,10 +145,15 @@ int main(int argc, char *arg[])
   m_arg[m_argc] = NULL;
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
+  if(dt_init(m_argc, m_arg, 0, NULL)) exit(EXIT_FAILURE);
 
   fprintf(stderr, _("creating complete lighttable thumbnail cache\n"));
-  generate_thumbnail_cache();
+
+  if(generate_thumbnail_cache())
+  {
+    exit(EXIT_FAILURE);
+  }
+
   dt_cleanup();
 }
 
