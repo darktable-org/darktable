@@ -81,53 +81,28 @@ static void generate_thumbnail_cache()
     sqlite3_finalize(stmt);
     return;
   }
-  const int cache_quality = MIN(100, MAX(10, dt_conf_get_int("database_cache_quality")));
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int32_t imgid = sqlite3_column_int(stmt, 0);
-    // check whether all of these files are already there
-    int all_exist = 1;
     for(int k=max_mip;k>=DT_MIPMAP_0;k--)
     {
       snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
-      all_exist &= !access(filename, R_OK); 
-    }
-    if(all_exist) goto next;
-    dt_mipmap_buffer_t buf;
-    // get largest thumbnail for this image
-    // this one will take care of itself, we'll just write out the lower thumbs manually:
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, max_mip, DT_MIPMAP_BLOCKING, 'r');
-    if(buf.width > 8 && buf.height > 8) // don't create for skulls
-    for(int k=max_mip-1;k>=DT_MIPMAP_0;k--)
-    {
-      uint32_t width, height;
-      const int wd = darktable.mipmap_cache->max_width[k];
-      const int ht = darktable.mipmap_cache->max_height[k];
-      // use exactly the same mechanism as the cache internally to rescale the thumbnail:
-      dt_iop_flip_and_zoom_8(buf.buf, buf.width, buf.height, tmp, wd, ht, 0, &width, &height);
-
-      snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
-      FILE *f = fopen(filename, "wb");
-      if(f)
+      //check if that thumbnail is already on disc
+      if(access(filename, R_OK))
       {
-        // allocate temp memory:
-        uint8_t *blob = (uint8_t *)malloc(bufsize);
-        if(!blob) goto write_error;
-        const int32_t length
-          = dt_imageio_jpeg_compress(tmp, blob, width, height, cache_quality);
-        assert(length <= bufsize);
-        int written = fwrite(blob, sizeof(uint8_t), length, f);
-        if(written != length)
-        {
-write_error:
-          unlink(filename);
-        }
-        free(blob);
-        fclose(f);
+        dt_mipmap_buffer_t buf;
+        //Generate thumbnail and store in mipmap cache.
+        //Lower mip levels will be generate from higher ones by downscaling, thus the pixelpipe is only
+        //run for max_mip.
+        //The thumbnails will be written to disc when the cache is full or latest at the end
+        //by dt_cleanup() -> dt_mipmap_cache_cleanup().
+        dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
+        dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       }
     }
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-next:
+
+    dt_mimap_cache_evict(darktable.mipmap_cache, imgid); //write to disc
+
     counter ++;
     fprintf(stderr, "\rimage %zu/%zu (%.02f%%)            ", counter, image_count,
             100.0 * counter / (float)image_count);
