@@ -396,7 +396,9 @@ if(NOT CUSTOM_CFLAGS)
   #we MUST always specify our requred instruction set, native might not detect it
   set(DT_REQ_INSTRUCTIONS "-msse3")
 
-  if(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
+  if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+    set(MARCH "-msse4.2")
+  elseif(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
     MESSAGE("-- Checking for -march=native support")
     CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
     if (MARCHNATIVE)
