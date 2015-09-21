@@ -34,6 +34,7 @@
 #include "common/debug.h"        // for DT_DEBUG_SQLITE3_PREPARE_V2
 #include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
 #include "config.h"              // for GETTEXT_PACKAGE, etc
+#include "control/conf.h"        // for dt_conf_get_bool
 
 static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
 {
@@ -153,6 +154,16 @@ int main(int argc, char *arg[])
 
   // init dt without gui:
   if(dt_init(m_argc, m_arg, 0, NULL)) exit(EXIT_FAILURE);
+
+  if(!dt_conf_get_bool("cache_disk_backend"))
+  {
+    fprintf(stderr,
+            _("Warning: disk backend for mipmap cache is disabled (cache_disk_backend)\nIf you want "
+              "to pre-generate thumbnails and for darktable to use them, you need to enable disk backend "
+              "for mipmap cache\nno thumbnails to be generated, done."));
+    dt_cleanup();
+    exit(EXIT_FAILURE);
+  }
 
   fprintf(stderr, _("creating complete lighttable thumbnail cache\n"));
 
