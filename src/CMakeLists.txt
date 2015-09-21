@@ -749,6 +749,9 @@ endif(HAVE_OPENCL)
 # have a command line interface
 add_subdirectory(cli)
 
+# have a command line utility to generate all the thumbnails
+add_subdirectory(generate-cache)
+
 # have a small test program that verifies your color management setup
 if(BUILD_CMSTEST)
   add_subdirectory(cmstest)
