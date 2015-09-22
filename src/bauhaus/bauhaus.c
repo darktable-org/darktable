@@ -546,7 +546,6 @@ void dt_bauhaus_init()
   path = gtk_widget_path_new ();
   int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
   gtk_widget_path_iter_set_name(path, pos, "iop-plugin-ui");
-  pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
   gtk_style_context_set_path(ctx, path);
   gtk_style_context_set_screen (ctx, gtk_widget_get_screen(root_window));
 
