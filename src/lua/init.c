@@ -79,7 +79,7 @@ void dt_lua_init_early(lua_State *L)
   darktable.lua_state.state = L;
   darktable.lua_state.ending = false;
   darktable.lua_state.pending_threads = 0;
-  dt_lua_init_lock();
+  dt_lua_init_lock(); // lock is initialized in the locked state
   luaL_openlibs(darktable.lua_state.state);
   luaA_open(L);
   dt_lua_push_darktable_lib(L);
@@ -134,16 +134,6 @@ static lua_CFunction init_funcs[]
 
 void dt_lua_init(lua_State *L, const char *lua_command)
 {
-  /*
-     Note to reviewers
-     this is the only place where lua code is run without the lua lock.
-     At this point, no user script has been called,
-     so we are completely thread-safe. no need to lock
-
-     This is also the only place where lua code is run with the gdk lock
-     held, but this is not a problem because it is very brief, user calls
-     are delegated to a secondary job
-     */
   char tmp_path[PATH_MAX] = { 0 };
   // init the lua environment
   lua_CFunction *cur_type = init_funcs;
@@ -195,6 +185,8 @@ void dt_lua_init(lua_State *L, const char *lua_command)
   {
     dt_lua_do_chunk_silent(L,1,0);
   }
+  // allow other threads to wake up and do their job
+  dt_lua_unlock();
 }
 
 

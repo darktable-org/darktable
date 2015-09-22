@@ -91,6 +91,8 @@ void dt_lua_init_lock()
   pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
   dt_pthread_mutex_init(&darktable.lua_state.mutex, &a);
   pthread_mutexattr_destroy(&a);
+  // we want our lock initialized locked
+  dt_pthread_mutex_lock(&darktable.lua_state.mutex);
 }
 
 void dt_lua_lock()
