@@ -293,8 +293,12 @@ static int32_t do_chunk_later_callback(dt_job_t *job)
 }
 
 
-void dt_lua_do_chunk_later(lua_State *L, int nargs)
+void dt_lua_do_chunk_later_internal(const char* function, int line,lua_State *L, int nargs)
 {
+#ifdef _DEBUG
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,function,line);
+#endif
+  
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
   lua_State *new_thread = lua_newthread(L);
   const int reference = luaL_ref(L,-2);
@@ -454,8 +458,11 @@ static int32_t async_callback_job(dt_job_t *job)
   return 0;
 }
 
-void dt_lua_do_chunk_async(lua_CFunction pusher,dt_lua_async_call_arg_type arg_type,...)
+void dt_lua_do_chunk_async_internal(const char * call_function, int line, lua_CFunction pusher,dt_lua_async_call_arg_type arg_type,...)
 {
+#ifdef _DEBUG
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,call_function,line);
+#endif
   dt_job_t *job = dt_control_job_create(&async_callback_job, "lua: async call");
   if(job)
   {

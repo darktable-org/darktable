@@ -39,7 +39,8 @@
 int dt_lua_do_chunk(lua_State *L, int nargs, int nresults);
 int dt_lua_do_chunk_silent(lua_State *L, int nargs, int nresults);
 int dt_lua_do_chunk_raise(lua_State *L, int nargs, int nresults);
-void dt_lua_do_chunk_later(lua_State *L, int nargs);
+void dt_lua_do_chunk_later_internal(const char * function, int line,lua_State *L, int nargs);
+#define dt_lua_do_chunk_later(L,nargs) dt_lua_do_chunk_later_internal(__FUNCTION__,__LINE__,L,nargs)
 
 int dt_lua_dostring(lua_State *L, const char *command, int nargs, int nresults);
 int dt_lua_dostring_silent(lua_State *L, const char *command, int nargs, int nresults);
@@ -67,7 +68,9 @@ typedef enum {
   LUA_ASYNC_TYPENAME_WITH_FREE,
   LUA_ASYNC_DONE
 } dt_lua_async_call_arg_type;
-void dt_lua_do_chunk_async(lua_CFunction function,dt_lua_async_call_arg_type arg_type,...);
+void dt_lua_do_chunk_async_internal(const char * call_function, int line, lua_CFunction function,dt_lua_async_call_arg_type arg_type,...);
+#define dt_lua_do_chunk_async(L,arg,...) dt_lua_do_chunk_async_internal(__FUNCTION__,__LINE__,L,arg,__VA_ARGS__)
+
 /*
    call a lua function that is its upvalue, with an unchanged stack
    the function is called within the gtk thread so it
