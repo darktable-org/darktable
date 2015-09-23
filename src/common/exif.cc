@@ -648,7 +648,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         {
           dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
-	fprintf(stderr, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
+        fprintf(stderr, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
       }
     }
     else if((pos = Exiv2::lensName(exifData)) != exifData.end() && pos->size())
@@ -2346,6 +2346,50 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
   {
     std::cerr << "[xmp_write] caught exiv2 exception '" << e << "'\n";
     return -1;
+  }
+}
+
+dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data, size_t size)
+{
+  try
+  {
+    Exiv2::ExifData::const_iterator pos;
+    Exiv2::ExifData exifData;
+    Exiv2::ExifParser::decode(exifData, data, size);
+
+    // 0x01   -> sRGB
+    // 0x02   -> AdobeRGB
+    // 0xffff -> Uncalibrated
+    //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
+    //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
+    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace"))) != exifData.end() && pos->size())
+    {
+      int colorspace = pos->toLong();
+      if(colorspace == 0x01)
+        return DT_COLORSPACE_SRGB;
+      else if(colorspace == 0x02)
+        return DT_COLORSPACE_ADOBERGB;
+      else if(colorspace == 0xffff)
+      {
+        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex"))) != exifData.end()
+          && pos->size())
+        {
+          std::string interop_index = pos->toString();
+          if(interop_index == "R03")
+            return DT_COLORSPACE_ADOBERGB;
+          else if(interop_index == "R98")
+            return DT_COLORSPACE_SRGB;
+        }
+      }
+    }
+
+    return DT_COLORSPACE_DISPLAY; // nothing embedded
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return DT_COLORSPACE_DISPLAY;
   }
 }
 

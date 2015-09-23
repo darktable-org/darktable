@@ -20,7 +20,7 @@
 
 #include "common/cache.h"
 #include "common/image.h"
-
+#include "common/colorspaces.h"
 
 // sizes stored in the mipmap cache, set to fixed values in mipmap_cache.c
 typedef enum dt_mipmap_size_t
@@ -66,6 +66,7 @@ typedef struct dt_mipmap_buffer_t
   uint32_t imgid;
   int32_t width, height;
   uint8_t *buf;
+  dt_colorspaces_color_profile_type_t color_space;
   // buffer is pre-demosaiced and the demosaicing method is monochrome
   int pre_monochrome_demosaiced;
   dt_cache_entry_t *cache_entry;
@@ -153,6 +154,9 @@ dt_mipmap_size_t dt_mipmap_cache_get_matching_size(
     const dt_mipmap_cache_t *cache,
     const int32_t width,
     const int32_t height);
+
+// returns the colorspace to use for created thumbnails, takes config into account
+dt_colorspaces_color_profile_type_t dt_mipmap_cache_get_colorspace();
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

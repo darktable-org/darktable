@@ -886,16 +886,48 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
       if(rgbbuf)
       {
-        for(int i = 0; i < buf.height; i++)
-        {
-          uint8_t *in = buf.buf + i * buf.width * 4;
-          uint8_t *out = rgbbuf + i * buf.width * 4;
+        gboolean do_copy = TRUE;
 
-          for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+        if(dt_conf_get_bool("cache_color_managed"))
+        {
+          pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+
+          // we only color manage when a thumbnail is sRGB or AdobeRGB. everything else just gets dumped to the screen
+          if(buf.color_space == DT_COLORSPACE_SRGB &&
+             darktable.color_profiles->transform_srgb_to_display)
           {
-            out[0] = in[2];
-            out[1] = in[1];
-            out[2] = in[0];
+            cmsDoTransform(darktable.color_profiles->transform_srgb_to_display,
+                           buf.buf, rgbbuf, buf.width * buf.height);
+            do_copy = FALSE;
+          }
+          else if(buf.color_space == DT_COLORSPACE_ADOBERGB &&
+                  darktable.color_profiles->transform_adobe_rgb_to_display)
+          {
+            cmsDoTransform(darktable.color_profiles->transform_adobe_rgb_to_display,
+                           buf.buf, rgbbuf, buf.width * buf.height);
+            do_copy = FALSE;
+          }
+          else if(buf.color_space == DT_COLORSPACE_NONE)
+          {
+            fprintf(stderr, "oops, there seems to be a code path not setting the color space of thumbnails!\n");
+          }
+
+          pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+        }
+
+        if(do_copy)
+        {
+          for(int i = 0; i < buf.height; i++)
+          {
+            uint8_t *in = buf.buf + i * buf.width * 4;
+            uint8_t *out = rgbbuf + i * buf.width * 4;
+
+            for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+            {
+              out[0] = in[2];
+              out[1] = in[1];
+              out[2] = in[0];
+            }
           }
         }
 

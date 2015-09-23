@@ -37,6 +37,13 @@
     <longdescription>if enabled, write thumbnails to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when browsing a lot. to generate all thumbnails of your entire collection offline, run 'darktable-cli --generate-cache --core --library ~/.config/darktable/library.db'.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
+    <name>cache_color_managed</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>color manage cached thumbnails</shortdescription>
+    <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="core">
     <name>worker_threads</name>
     <type>int</type>
     <default>2</default>

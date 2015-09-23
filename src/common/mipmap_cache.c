@@ -48,6 +48,22 @@
 #define DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE (1 << 0)
 #define DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE (1 << 1)
 
+// the embedded Exif data to tag thumbnails as sRGB or AdobeRGB
+static const uint8_t dt_mipmap_cache_exif_data_srgb[] = {
+  0x45, 0x78, 0x69, 0x66, 0x00, 0x00, 0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x69,
+  0x87, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x1a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
+  0x01, 0xa0, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+static const uint8_t dt_mipmap_cache_exif_data_adobergb[] = {
+  0x45, 0x78, 0x69, 0x66, 0x00, 0x00, 0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x69,
+  0x87, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x1a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
+  0x01, 0xa0, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+static const int dt_mipmap_cache_exif_data_srgb_length
+                      = sizeof(dt_mipmap_cache_exif_data_srgb) / sizeof(*dt_mipmap_cache_exif_data_srgb);
+static const int dt_mipmap_cache_exif_data_adobergb_length
+                      = sizeof(dt_mipmap_cache_exif_data_adobergb) / sizeof(*dt_mipmap_cache_exif_data_adobergb);
+
 struct dt_mipmap_buffer_dsc
 {
   uint32_t width;
@@ -55,6 +71,7 @@ struct dt_mipmap_buffer_dsc
   size_t size;
   uint32_t flags;
   uint32_t pre_monochrome_demosaiced;
+  dt_colorspaces_color_profile_type_t color_space;
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
 } __attribute__((packed, aligned(16)));
 
@@ -67,6 +84,7 @@ static inline void dead_image_8(dt_mipmap_buffer_t *buf)
   if(!buf->buf) return;
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)buf->buf - 1;
   dsc->width = dsc->height = 8;
+  dsc->color_space = DT_COLORSPACE_DISPLAY;
   assert(dsc->size > 64 * sizeof(uint32_t));
   const uint32_t X = 0xffffffffu;
   const uint32_t o = 0u;
@@ -81,6 +99,7 @@ static inline void dead_image_f(dt_mipmap_buffer_t *buf)
   if(!buf->buf) return;
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)buf->buf - 1;
   dsc->width = dsc->height = 8;
+  dsc->color_space = DT_COLORSPACE_DISPLAY;
   assert(dsc->size > 64 * 4 * sizeof(float));
   const __m128 X = _mm_set1_ps(1.0f);
   const __m128 o = _mm_set1_ps(0.0f);
@@ -160,8 +179,8 @@ exit:
 
 static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *buf, uint32_t *width, uint32_t *height,
                     const uint32_t imgid);
-static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint32_t imgid,
-                    const dt_mipmap_size_t size);
+static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, dt_colorspaces_color_profile_type_t *color_space,
+                    const uint32_t imgid, const dt_mipmap_size_t size);
 
 // callback for the imageio core to allocate memory.
 // only needed for _F and _FULL buffers, as they change size
@@ -194,6 +213,7 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   }
   dsc->width = wd;
   dsc->height = ht;
+  dsc->color_space = DT_COLORSPACE_NONE;
   dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
   buf->buf = (uint8_t *)(dsc + 1);
 
@@ -235,11 +255,13 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       dsc->width = cache->max_width[mip];
       dsc->height = cache->max_height[mip];
       dsc->size = cache->buffer_size[mip];
+      dsc->color_space = DT_COLORSPACE_NONE;
     }
     else
     {
       dsc->width = 0;
       dsc->height = 0;
+      dsc->color_space = DT_COLORSPACE_NONE;
       dsc->size = sizeof(*dsc) + sizeof(float) * 4 * 64;
     }
   }
@@ -266,9 +288,11 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
         fseek(f, 0, SEEK_SET);
         int rd = fread(blob, sizeof(uint8_t), len, f);
         if(rd != len) goto read_error;
+        dt_colorspaces_color_profile_type_t color_space;
         dt_imageio_jpeg_t jpg;
         if(dt_imageio_jpeg_decompress_header(blob, len, &jpg)
            || (jpg.width > cache->max_width[mip] || jpg.height > cache->max_height[mip])
+           || ((color_space = dt_imageio_jpeg_read_color_space(&jpg)) == DT_COLORSPACE_NONE) // pointless test to keep it in the if clause
            || dt_imageio_jpeg_decompress(&jpg, entry->data + sizeof(*dsc)))
         {
           fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d from `%s'!\n", get_imgid(entry->key), filename);
@@ -276,6 +300,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
         }
         dsc->width = jpg.width;
         dsc->height = jpg.height;
+        dsc->color_space = color_space;
         loaded_from_disk = 1;
         if(0)
         {
@@ -333,8 +358,6 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
           FILE *f;
           if (!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = fopen(filename, "wb")))
           {
-            uint8_t *blob = NULL;
-
             // first check the disk isn't full
             struct statvfs vfsbuf;
             if (!statvfs(filename, &vfsbuf))
@@ -351,23 +374,26 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
               fprintf(stderr, "Aborting image write since couldn't determine free space available to write %s\n", filename);
               goto write_error;
             }
+            fclose(f);
 
-            // allocate temp memory, at least 1MB to be sure we fit:
-            size_t bloblen = MAX(1<<20, cache->buffer_size[mip]);
-            blob = (uint8_t *)malloc(bloblen);
-            if(!blob) goto write_error;
             const int cache_quality = dt_conf_get_int("database_cache_quality");
-            const int32_t length
-              = dt_imageio_jpeg_compress(entry->data + sizeof(*dsc), blob, dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)));
-            assert(length <= bloblen);
-            int written = fwrite(blob, sizeof(uint8_t), length, f);
-            if(written != length)
+            const uint8_t *exif = NULL;
+            int exif_len = 0;
+            if(dsc->color_space == DT_COLORSPACE_SRGB)
+            {
+              exif = dt_mipmap_cache_exif_data_srgb;
+              exif_len = dt_mipmap_cache_exif_data_srgb_length;
+            }
+            else if(dsc->color_space == DT_COLORSPACE_ADOBERGB)
+            {
+              exif = dt_mipmap_cache_exif_data_adobergb;
+              exif_len = dt_mipmap_cache_exif_data_adobergb_length;
+            }
+            if(dt_imageio_jpeg_write(filename, entry->data + sizeof(*dsc), dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)), exif, exif_len))
             {
 write_error:
               g_unlink(filename);
             }
-            free(blob);
-            fclose(f);
           }
         }
       }
@@ -556,6 +582,7 @@ void dt_mipmap_cache_get_with_caller(
       struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
       buf->width = dsc->width;
       buf->height = dsc->height;
+      buf->color_space = dsc->color_space;
       buf->imgid = imgid;
       buf->size = mip;
       buf->pre_monochrome_demosaiced = dsc->pre_monochrome_demosaiced;
@@ -567,6 +594,7 @@ void dt_mipmap_cache_get_with_caller(
       // set to NULL if failed.
       buf->width = buf->height = 0;
       buf->imgid = 0;
+      buf->color_space = DT_COLORSPACE_NONE;
       buf->size = DT_MIPMAP_NONE;
       buf->buf = NULL;
     }
@@ -582,12 +610,12 @@ void dt_mipmap_cache_get_with_caller(
   {
     // only prefetch if the disk cache exists:
     if(!cache->cachedir[0]) return;
+    if(mip > DT_MIPMAP_FULL || (int)mip < DT_MIPMAP_0)
+      return; // remove the (int) once we no longer have to support gcc < 4.8 :/
     char filename[PATH_MAX] = {0};
     snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
     // don't attempt to load if disk cache doesn't exist
     if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return;
-    if(mip > DT_MIPMAP_FULL || (int)mip < DT_MIPMAP_0)
-      return; // remove the (int) once we no longer have to support gcc < 4.8 :/
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, dt_image_load_job_create(imgid, mip));
   }
   else if(flags == DT_MIPMAP_BLOCKING)
@@ -625,7 +653,8 @@ void dt_mipmap_cache_get_with_caller(
         buf->size = mip;
         buf->buf = 0;
         buf->width = buf->height = 0;
-        dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, buf);
+        buf->color_space = DT_COLORSPACE_NONE; // TODO: does the full buffer need to know this?
+        dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, buf); // TODO: color_space?
         // might have been reallocated:
         dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
         if(ret != DT_IMAGEIO_OK)
@@ -635,7 +664,11 @@ void dt_mipmap_cache_get_with_caller(
           // we can only return a zero dimension buffer if the buffer has been allocated.
           // in case dsc couldn't be allocated and points to the static buffer, it contains
           // a dead image already.
-          if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image) dsc->width = dsc->height = 0;
+          if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image)
+          {
+            dsc->width = dsc->height = 0;
+            dsc->color_space = DT_COLORSPACE_NONE;
+          }
         }
         else
         {
@@ -655,9 +688,10 @@ void dt_mipmap_cache_get_with_caller(
       else
       {
         // 8-bit thumbs
-        _init_8((uint8_t *)(dsc + 1), &dsc->width, &dsc->height, imgid, mip);
+        _init_8((uint8_t *)(dsc + 1), &dsc->width, &dsc->height, &buf->color_space, imgid, mip);
       }
       dsc->pre_monochrome_demosaiced = buf->pre_monochrome_demosaiced;
+      dsc->color_space = buf->color_space;
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
       // image cache is leaving the write lock in place in case the image has been newly allocated.
@@ -678,6 +712,7 @@ void dt_mipmap_cache_get_with_caller(
     }
     buf->width = dsc->width;
     buf->height = dsc->height;
+    buf->color_space = dsc->color_space;
     buf->imgid = imgid;
     buf->size = mip;
     buf->pre_monochrome_demosaiced = dsc->pre_monochrome_demosaiced;
@@ -742,6 +777,7 @@ void dt_mipmap_cache_get_with_caller(
     buf->imgid = 0;
     buf->size = DT_MIPMAP_NONE;
     buf->width = buf->height = 0;
+    buf->color_space = DT_COLORSPACE_NONE;
   }
 }
 
@@ -941,6 +977,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   assert(!buffer_is_broken(&buf));
 
   mipmap_buf->pre_monochrome_demosaiced = 0;
+  mipmap_buf->color_space = DT_COLORSPACE_NONE; // TODO: do we need that information in this buffer?
 
   if(image->filters)
   {
@@ -1035,7 +1072,7 @@ static int _write_image(dt_imageio_module_data_t *data, const char *filename, co
   return 0;
 }
 
-static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint32_t imgid,
+static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, dt_colorspaces_color_profile_type_t *color_space, const uint32_t imgid,
                     const dt_mipmap_size_t size)
 {
   const uint32_t wd = *width, ht = *height;
@@ -1047,6 +1084,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
   if(!*filename || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
     *width = *height = 0;
+    *color_space = DT_COLORSPACE_NONE;
     return;
   }
 
@@ -1077,6 +1115,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
       if(!dt_imageio_jpeg_read_header(filename, &jpg))
       {
         uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t) * jpg.width * jpg.height * 4);
+        *color_space = dt_imageio_jpeg_read_color_space(&jpg);
         if(!dt_imageio_jpeg_read(&jpg, tmp))
         {
           // scale to fit
@@ -1090,7 +1129,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
     {
       uint8_t *tmp = 0;
       int32_t thumb_width, thumb_height;
-      res = dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height);
+      res = dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, color_space);
       if(!res)
       {
         // scale to fit
@@ -1114,6 +1153,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
       float scale = MIN(wd/(float)tmp.width, ht/(float)tmp.height);
       *width = tmp.width*scale;
       *height = tmp.height*scale;
+      *color_space = tmp.color_space;
       // downsample
       dt_iop_clip_and_zoom_8(tmp.buf, 0, 0, tmp.width, tmp.height, tmp.width, tmp.height, buf, 0, 0, *width, *height, *width, *height);
       dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
@@ -1142,6 +1182,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
       // might be smaller, or have a different aspect than what we got as input.
       *width = dat.head.width;
       *height = dat.head.height;
+      *color_space = dt_mipmap_cache_get_colorspace();
     }
   }
 
@@ -1153,6 +1194,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
   {
     // fprintf(stderr, "[mipmap_cache] could not process thumbnail!\n");
     *width = *height = 0;
+    *color_space = DT_COLORSPACE_NONE;
     return;
   }
 
@@ -1160,6 +1202,13 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
   // TODO: also init all smaller mips!
   // TODO: use mipf, but:
   // TODO: if output is cropped, don't use mipf!
+}
+
+dt_colorspaces_color_profile_type_t dt_mipmap_cache_get_colorspace()
+{
+  if(dt_conf_get_bool("cache_color_managed"))
+    return DT_COLORSPACE_ADOBERGB;
+  return DT_COLORSPACE_DISPLAY;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
