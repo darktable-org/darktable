@@ -1528,8 +1528,8 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
       gchar **image_to_load = uri_list;
       while(*image_to_load)
       {
-        dt_load_from_string(*image_to_load, FALSE); // TODO: do we want to open the image in darkroom mode? If
-                                                    // yes -> set to TRUE.
+        dt_load_from_string(*image_to_load, FALSE, NULL); // TODO: do we want to open the image in darkroom mode? If
+                                                          // yes -> set to TRUE.
         image_to_load++;
       }
     }
