@@ -171,11 +171,7 @@ void dt_lua_init(lua_State *L, const char *lua_command)
 
 
   lua_pushcfunction(L,run_early_script);
-  if(lua_command) {
-    lua_pushstring(L,lua_command);
-  }else {
-    lua_pushnil(L);
-  }
+  lua_pushstring(L,lua_command);
 
   if(darktable.gui)
   {
