@@ -355,7 +355,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         {
           snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
           // Don't write existing files as both performance and quality (lossy jpg) suffer
-          FILE *f;
+          FILE *f = NULL;
           if (!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = fopen(filename, "wb")))
           {
             // first check the disk isn't full
@@ -374,7 +374,6 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
               fprintf(stderr, "Aborting image write since couldn't determine free space available to write %s\n", filename);
               goto write_error;
             }
-            fclose(f);
 
             const int cache_quality = dt_conf_get_int("database_cache_quality");
             const uint8_t *exif = NULL;
@@ -395,6 +394,7 @@ write_error:
               g_unlink(filename);
             }
           }
+          if(f) fclose(f);
         }
       }
     }
