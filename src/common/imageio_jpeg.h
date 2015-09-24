@@ -30,6 +30,7 @@
 
 #include "common/image.h"
 #include "common/mipmap_cache.h"
+#include "common/colorspaces.h"
 
 typedef struct dt_imageio_jpeg_t
 {
@@ -52,10 +53,10 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
 
 /** write jpeg to file, with exif if not NULL. */
 int dt_imageio_jpeg_write(const char *filename, const uint8_t *in, const int width, const int height,
-                          const int quality, void *exif, int exif_len);
+                          const int quality, const void *exif, int exif_len);
 /** this will collect the images icc profile (or the global export override) and append it during write. */
 int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *in, const int width,
-                                           const int height, const int quality, void *exif, int exif_len,
+                                           const int height, const int quality, const void *exif, int exif_len,
                                            int imgid);
 /** read jpeg header from file, leave file descriptor open until jpeg_read is called. */
 int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg);
@@ -63,6 +64,8 @@ int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg);
 int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out);
 /** reads the color profile attached to the jpeg, closes file. */
 int dt_imageio_jpeg_read_profile(dt_imageio_jpeg_t *jpg, uint8_t **out);
+/** return the color space of the image, this only distinguishs between sRGB, AdobeRGB and unknown. used for mipmaps */
+dt_colorspaces_color_profile_type_t dt_imageio_jpeg_read_color_space(dt_imageio_jpeg_t *jpg);
 
 /** utility function to read and open jpeg from imagio.c */
 dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);

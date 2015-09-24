@@ -65,7 +65,8 @@
 #include <glib/gstdio.h>
 
 // load a full-res thumbnail:
-int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height)
+int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
+                               dt_colorspaces_color_profile_type_t *color_space)
 {
   int res = 1;
 
@@ -81,12 +82,13 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     // Decompress the JPG into our own memory format
     dt_imageio_jpeg_t jpg;
     if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg)) goto error;
-
     *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
     if(!*buffer) goto error;
 
     *width = jpg.width;
     *height = jpg.height;
+    // TODO: check if the embedded thumbs have a color space set! currently we assume that it's always sRGB
+    *color_space = DT_COLORSPACE_SRGB;
     if(dt_imageio_jpeg_decompress(&jpg, *buffer))
     {
       free(*buffer);
@@ -118,6 +120,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 
     *width = image->columns;
     *height = image->rows;
+    *color_space = DT_COLORSPACE_SRGB; // FIXME: this assumes that embedded thumbnails are always srgb
 
     *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * image->columns * image->rows * 4);
     if(!*buffer) goto error_gm;

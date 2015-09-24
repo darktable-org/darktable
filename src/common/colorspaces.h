@@ -87,6 +87,8 @@ typedef struct dt_colorspaces_t
 
   dt_colorspaces_color_mode_t mode;
 
+  cmsHTRANSFORM transform_srgb_to_display, transform_adobe_rgb_to_display;
+
 } dt_colorspaces_t;
 
 typedef struct dt_colorspaces_color_profile_t
@@ -195,6 +197,10 @@ void dt_colorspaces_set_display_profile();
 const dt_colorspaces_color_profile_t *
 dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char *filename,
                            dt_colorspaces_profile_direction_t direction);
+
+/** update the display transforms of srgb and adobergb to the display profile.
+ * make sure that darktable.color_profiles->xprofile_lock is held when calling this! */
+void dt_colorspaces_update_display_transforms();
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

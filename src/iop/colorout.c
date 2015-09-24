@@ -435,6 +435,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     out_filename = p->filename;
     out_intent = p->intent;
   }
+  else if(pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+  {
+    out_type = dt_mipmap_cache_get_colorspace();
+    out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
+    out_intent = darktable.color_profiles->display_intent;
+  }
   else
   {
     /* we are not exporting, using display profile as output */

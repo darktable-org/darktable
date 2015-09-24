@@ -101,6 +101,11 @@ static void mat3mul(float *dst, const float *const m1, const float *const m2)
   }
 }
 
+static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self,
+                                                          dt_colorspaces_color_profile_type_t type,
+                                                          const char *filename,
+                                                          dt_colorspaces_profile_direction_t direction);
+
 static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
                                                   float *lutb, const int lutsize, const int input,
                                                   const int intent)
@@ -1141,6 +1146,79 @@ static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_prof
   return prof;
 }
 
+
+// update cached transforms for color management of thumbnails
+// make sure that darktable.color_profiles->xprofile_lock is held when calling this!
+void dt_colorspaces_update_display_transforms()
+{
+  if(darktable.color_profiles->transform_srgb_to_display)
+    cmsDeleteTransform(darktable.color_profiles->transform_srgb_to_display);
+  darktable.color_profiles->transform_srgb_to_display = NULL;
+
+  if(darktable.color_profiles->transform_adobe_rgb_to_display)
+    cmsDeleteTransform(darktable.color_profiles->transform_adobe_rgb_to_display);
+  darktable.color_profiles->transform_adobe_rgb_to_display = NULL;
+
+  cmsHPROFILE display_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
+                                                           darktable.color_profiles->display_filename,
+                                                           DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  if(!display_profile) return;
+
+  darktable.color_profiles->transform_srgb_to_display
+      = cmsCreateTransform(dt_colorspaces_get_profile(DT_COLORSPACE_SRGB,
+                                                      "",
+                                                      DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                           TYPE_RGBA_8,
+                           display_profile,
+                           TYPE_BGRA_8,
+                           darktable.color_profiles->display_intent,
+                           0);
+
+  darktable.color_profiles->transform_adobe_rgb_to_display
+      = cmsCreateTransform(dt_colorspaces_get_profile(DT_COLORSPACE_ADOBERGB,
+                                                      "",
+                                                      DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                           TYPE_RGBA_8,
+                           display_profile,
+                           TYPE_BGRA_8,
+                           darktable.color_profiles->display_intent,
+                           0);
+}
+
+// make sure that darktable.color_profiles->xprofile_lock is held when calling this!
+static void _update_display_profile(guchar *tmp_data, gsize size, char *name, size_t name_size)
+{
+  g_free(darktable.color_profiles->xprofile_data);
+  darktable.color_profiles->xprofile_data = tmp_data;
+  darktable.color_profiles->xprofile_size = size;
+
+  cmsHPROFILE profile = cmsOpenProfileFromMem(tmp_data, size);
+  if(profile)
+  {
+    for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
+    {
+      dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
+      if(p->type == DT_COLORSPACE_DISPLAY)
+      {
+        if(p->profile) dt_colorspaces_cleanup_profile(p->profile);
+        p->profile = profile;
+        if(name)
+          dt_colorspaces_get_profile_name(profile, "en", "US", name, name_size);
+
+        // update cached transforms for color management of thumbnails
+        dt_colorspaces_update_display_transforms();
+
+        break;
+      }
+    }
+  }
+}
+
+static void cms_error_handler(cmsContext ContextID, cmsUInt32Number ErrorCode, const char *text)
+{
+  fprintf(stderr, "[lcms2] error %d: %s\n", ErrorCode, text);
+}
+
 dt_colorspaces_t *dt_colorspaces_init()
 {
   dt_colorspaces_t *res = (dt_colorspaces_t *)calloc(1, sizeof(dt_colorspaces_t));
@@ -1286,6 +1364,26 @@ dt_colorspaces_t *dt_colorspaces_init()
     res->softproof_type = DT_COLORSPACE_SRGB;
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
 
+  cmsSetLogErrorHandler(cms_error_handler);
+
+  cmsHPROFILE display_profile = _get_profile(res, res->display_type, res->display_filename,
+                                             DT_PROFILE_DIRECTION_DISPLAY)->profile;
+
+  res->transform_srgb_to_display = cmsCreateTransform(_get_profile(res, DT_COLORSPACE_SRGB, "",
+                                                                   DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                                                      TYPE_RGB_8,
+                                                      display_profile,
+                                                      TYPE_BGR_8,
+                                                      res->display_intent,
+                                                      0);
+  res->transform_adobe_rgb_to_display = cmsCreateTransform(_get_profile(res, DT_COLORSPACE_ADOBERGB, "",
+                                                                        DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                                                           TYPE_RGB_8,
+                                                           display_profile,
+                                                           TYPE_BGR_8,
+                                                           res->display_intent,
+                                                           0);
+
   return res;
 }
 
@@ -1352,19 +1450,7 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source, 
                           || memcmp(darktable.color_profiles->xprofile_data, tmp_data, size) != 0);
         if(profile_changed)
         {
-          g_free(darktable.color_profiles->xprofile_data);
-          darktable.color_profiles->xprofile_data = tmp_data;
-          darktable.color_profiles->xprofile_size = size;
-          for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
-          {
-            dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
-            if(p->type == DT_COLORSPACE_DISPLAY)
-            {
-              if(p->profile) dt_colorspaces_cleanup_profile(p->profile);
-              p->profile = cmsOpenProfileFromMem(tmp_data, size);
-              break;
-            }
-          }
+          _update_display_profile(tmp_data, size, NULL, 0);
           dt_print(DT_DEBUG_CONTROL,
                    "[color profile] colord gave us a new screen profile: '%s' (size: %ld)\n", filename, size);
         }
@@ -1509,27 +1595,8 @@ void dt_colorspaces_set_display_profile()
                             || memcmp(darktable.color_profiles->xprofile_data, buffer, buffer_size) != 0);
   if(profile_changed)
   {
-    cmsHPROFILE profile = NULL;
     char name[512] = { 0 };
-    // thanks to ufraw for this!
-    g_free(darktable.color_profiles->xprofile_data);
-    darktable.color_profiles->xprofile_data = buffer;
-    darktable.color_profiles->xprofile_size = buffer_size;
-    profile = cmsOpenProfileFromMem(buffer, buffer_size);
-    if(profile)
-    {
-      dt_colorspaces_get_profile_name(profile, "en", "US", name, sizeof(name));
-      for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
-      {
-        dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
-        if(p->type == DT_COLORSPACE_DISPLAY)
-        {
-          if(p->profile) dt_colorspaces_cleanup_profile(p->profile);
-          p->profile = profile;
-          break;
-        }
-      }
-    }
+    _update_display_profile(buffer, buffer_size, name, sizeof(name));
     dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile `%s' from the %s (size: %d)\n",
              *name ? name : "(unknown)", profile_source, buffer_size);
   }
@@ -1542,9 +1609,12 @@ void dt_colorspaces_set_display_profile()
   g_free(profile_source);
 }
 
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char *filename, dt_colorspaces_profile_direction_t direction)
+static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self,
+                                                          dt_colorspaces_color_profile_type_t type,
+                                                          const char *filename,
+                                                          dt_colorspaces_profile_direction_t direction)
 {
-  for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
+  for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
     if(((direction & DT_PROFILE_DIRECTION_IN && p->in_pos > -1) ||
@@ -1557,6 +1627,13 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_
   }
 
   return NULL;
+}
+
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type,
+                                                                 const char *filename,
+                                                                 dt_colorspaces_profile_direction_t direction)
+{
+  return _get_profile(darktable.color_profiles, type, filename, direction);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

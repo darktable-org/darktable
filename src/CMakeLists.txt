@@ -388,7 +388,9 @@ if(NOT CUSTOM_CFLAGS)
   #we MUST always specify our requred instruction set, native might not detect it
   set(DT_REQ_INSTRUCTIONS "-msse3")
 
-  if(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
+  if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+    set(MARCH "-msse4.2")
+  elseif(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
     MESSAGE("-- Checking for -march=native support")
     CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
     if (MARCHNATIVE)
@@ -414,11 +416,7 @@ if(NOT CUSTOM_CFLAGS)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
-    if(GCC_VERSION VERSION_LESS 4.8)
-      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g3 -ggdb3")
-    else()
-      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og -g3 -ggdb3")
-    endif()
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g3 -ggdb3")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
   else()
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
@@ -431,11 +429,7 @@ if(NOT CUSTOM_CFLAGS)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
-    if(GCC_VERSION VERSION_LESS 4.8)
-      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -ggdb3")
-    else()
-      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Os -g3 -ggdb3")
-    endif()
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -ggdb3")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fexpensive-optimizations")
   else()
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
@@ -756,6 +750,9 @@ endif(HAVE_OPENCL)
 
 # have a command line interface
 add_subdirectory(cli)
+
+# have a command line utility to generate all the thumbnails
+add_subdirectory(generate-cache)
 
 # have a small test program that verifies your color management setup
 if(BUILD_CMSTEST)

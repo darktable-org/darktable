@@ -1293,7 +1293,13 @@ static void display_profile_callback(GtkWidget *combo, gpointer user_data)
   darktable.color_profiles->display_filename[0] = '\0';
 
 end:
-  if(profile_changed) dt_dev_reprocess_all(d);
+  if(profile_changed)
+  {
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+    dt_colorspaces_update_display_transforms();
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+    dt_dev_reprocess_all(d);
+  }
 }
 
 // FIXME: turning off lcms2 in prefs hides the widget but leaves the window sized like before -> ugly-ish

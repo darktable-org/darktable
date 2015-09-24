@@ -100,7 +100,7 @@ static void _handle_method_call(GDBusConnection *connection, const gchar *sender
   {
     const gchar *filename;
     g_variant_get(parameters, "(&s)", &filename);
-    int32_t id = dt_load_from_string(filename, TRUE);
+    int32_t id = dt_load_from_string(filename, TRUE, NULL);
     g_dbus_method_invocation_return_value(invocation, g_variant_new("(i)", id));
   }
 #ifdef USE_LUA

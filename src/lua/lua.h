@@ -50,13 +50,17 @@ void dt_lua_goto_subtable(lua_State *L, const char *sub_name);
 
 
 void dt_lua_init_lock();
-void dt_lua_lock();
-void dt_lua_unlock();
+void dt_lua_lock_internal( const char *function, int line);
+void dt_lua_unlock_internal( const char *function, int line);
 
 #define dt_lua_debug_stack(L) dt_lua_debug_stack_internal(L, __FUNCTION__, __LINE__)
 void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line);
 #define dt_lua_debug_table(L, index) dt_lua_debug_table_internal(L, index, __FUNCTION__, __LINE__)
 void dt_lua_debug_table_internal(lua_State *L, int t, const char *function, int line);
+
+
+#define dt_lua_lock() dt_lua_lock_internal( __FUNCTION__, __LINE__) 
+#define dt_lua_unlock() dt_lua_unlock_internal( __FUNCTION__, __LINE__) 
 
 typedef struct
 {

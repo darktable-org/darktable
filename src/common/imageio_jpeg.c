@@ -24,7 +24,6 @@
 #endif
 #include "common/exif.h"
 #include "common/imageio.h"
-#include "common/colorspaces.h"
 #include "common/imageio_jpeg.h"
 #include <setjmp.h>
 
@@ -38,7 +37,7 @@ struct dt_imageio_jpeg_error_mgr
 
 typedef struct dt_imageio_jpeg_error_mgr *dt_imageio_jpeg_error_ptr;
 
-void dt_imageio_jpeg_error_exit(j_common_ptr cinfo)
+static void dt_imageio_jpeg_error_exit(j_common_ptr cinfo)
 {
   dt_imageio_jpeg_error_ptr myerr = (dt_imageio_jpeg_error_ptr)cinfo->err;
   (*cinfo->err->output_message)(cinfo);
@@ -46,35 +45,76 @@ void dt_imageio_jpeg_error_exit(j_common_ptr cinfo)
 }
 
 // destination functions
-void dt_imageio_jpeg_init_destination(j_compress_ptr cinfo)
+static void dt_imageio_jpeg_init_destination(j_compress_ptr cinfo)
 {
 }
-boolean dt_imageio_jpeg_empty_output_buffer(j_compress_ptr cinfo)
+static boolean dt_imageio_jpeg_empty_output_buffer(j_compress_ptr cinfo)
 {
   fprintf(stderr, "[imageio_jpeg] output buffer full!\n");
   return FALSE;
 }
-void dt_imageio_jpeg_term_destination(j_compress_ptr cinfo)
+static void dt_imageio_jpeg_term_destination(j_compress_ptr cinfo)
 {
 }
 
 // source functions
-void dt_imageio_jpeg_init_source(j_decompress_ptr cinfo)
+static void dt_imageio_jpeg_init_source(j_decompress_ptr cinfo)
 {
 }
-boolean dt_imageio_jpeg_fill_input_buffer(j_decompress_ptr cinfo)
+static boolean dt_imageio_jpeg_fill_input_buffer(j_decompress_ptr cinfo)
 {
   return 1;
 }
-void dt_imageio_jpeg_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
+static void dt_imageio_jpeg_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 {
   ssize_t i = cinfo->src->bytes_in_buffer - num_bytes;
   if(i < 0) i = 0;
   cinfo->src->bytes_in_buffer = i;
   cinfo->src->next_input_byte += num_bytes;
 }
-void dt_imageio_jpeg_term_source(j_decompress_ptr cinfo)
+static void dt_imageio_jpeg_term_source(j_decompress_ptr cinfo)
 {
+}
+
+
+/*
+ * Since an ICC profile can be larger than the maximum size of a JPEG marker
+ * (64K), we need provisions to split it into multiple markers.  The format
+ * defined by the ICC specifies one or more APP2 markers containing the
+ * following data:
+ *	Identifying string	ASCII "ICC_PROFILE\0"  (12 bytes)
+ *	Marker sequence number	1 for first APP2, 2 for next, etc (1 byte)
+ *	Number of markers	Total number of APP2's used (1 byte)
+ *      Profile data		(remainder of APP2 data)
+ * Decoders should use the marker sequence numbers to reassemble the profile,
+ * rather than assuming that the APP2 markers appear in the correct sequence.
+ */
+
+#define EXIF_MARKER (JPEG_APP0 + 1) /* JPEG marker code for Exif */
+#define ICC_MARKER (JPEG_APP0 + 2)  /* JPEG marker code for ICC */
+#define ICC_OVERHEAD_LEN 14         /* size of non-profile data in APP2 */
+#define MAX_BYTES_IN_MARKER 65533   /* maximum data len of a JPEG marker */
+#define MAX_DATA_BYTES_IN_MARKER (MAX_BYTES_IN_MARKER - ICC_OVERHEAD_LEN)
+
+
+/*
+ * Prepare for reading an ICC profile
+ */
+
+static void setup_read_icc_profile(j_decompress_ptr cinfo)
+{
+  /* Tell the library to keep any APP2 data it may find */
+  jpeg_save_markers(cinfo, ICC_MARKER, 0xFFFF);
+}
+
+/*
+ * Prepare for reading an Exif blob
+ */
+
+static void setup_read_exif(j_decompress_ptr cinfo)
+{
+  /* Tell the library to keep any APP1 data it may find */
+  jpeg_save_markers(cinfo, EXIF_MARKER, 0xFFFF);
 }
 
 
@@ -99,6 +139,8 @@ int dt_imageio_jpeg_decompress_header(const void *in, size_t length, dt_imageio_
   }
 
   jpg->dinfo.src = &(jpg->src);
+  setup_read_exif(&(jpg->dinfo));
+  setup_read_icc_profile(&(jpg->dinfo));
   jpeg_read_header(&(jpg->dinfo), TRUE);
 #ifdef JCS_EXTENSIONS
   jpg->dinfo.out_color_space = JCS_EXT_RGBX;
@@ -264,24 +306,6 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
   return 4 * width * height * sizeof(uint8_t) - jpg.dest.free_in_buffer;
 }
 
-/*
- * Since an ICC profile can be larger than the maximum size of a JPEG marker
- * (64K), we need provisions to split it into multiple markers.  The format
- * defined by the ICC specifies one or more APP2 markers containing the
- * following data:
- *	Identifying string	ASCII "ICC_PROFILE\0"  (12 bytes)
- *	Marker sequence number	1 for first APP2, 2 for next, etc (1 byte)
- *	Number of markers	Total number of APP2's used (1 byte)
- *      Profile data		(remainder of APP2 data)
- * Decoders should use the marker sequence numbers to reassemble the profile,
- * rather than assuming that the APP2 markers appear in the correct sequence.
- */
-
-#define ICC_MARKER (JPEG_APP0 + 2) /* JPEG marker code for ICC */
-#define ICC_OVERHEAD_LEN 14        /* size of non-profile data in APP2 */
-#define MAX_BYTES_IN_MARKER 65533  /* maximum data len of a JPEG marker */
-#define MAX_DATA_BYTES_IN_MARKER (MAX_BYTES_IN_MARKER - ICC_OVERHEAD_LEN)
-
 
 /*
  * This routine writes the given ICC profile data into a JPEG file.
@@ -291,7 +315,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
  * SOI and JFIF or Adobe markers, but before all else.)
  */
 
-void write_icc_profile(j_compress_ptr cinfo, const JOCTET *icc_data_ptr, unsigned int icc_data_len)
+static void write_icc_profile(j_compress_ptr cinfo, const JOCTET *icc_data_ptr, unsigned int icc_data_len)
 {
   unsigned int num_markers; /* total number of markers we'll write */
   int cur_marker = 1;       /* per spec, counting starts at 1 */
@@ -344,17 +368,6 @@ void write_icc_profile(j_compress_ptr cinfo, const JOCTET *icc_data_ptr, unsigne
 
 
 /*
- * Prepare for reading an ICC profile
- */
-
-void setup_read_icc_profile(j_decompress_ptr cinfo)
-{
-  /* Tell the library to keep any APP2 data it may find */
-  jpeg_save_markers(cinfo, ICC_MARKER, 0xFFFF);
-}
-
-
-/*
  * Handy subroutine to test whether a saved marker is an ICC profile marker.
  */
 
@@ -391,7 +404,7 @@ static boolean marker_is_icc(jpeg_saved_marker_ptr marker)
  * return FALSE.  You might want to issue an error message instead.
  */
 
-boolean read_icc_profile(j_decompress_ptr dinfo, JOCTET **icc_data_ptr, unsigned int *icc_data_len)
+static boolean read_icc_profile(j_decompress_ptr dinfo, JOCTET **icc_data_ptr, unsigned int *icc_data_len)
 {
   jpeg_saved_marker_ptr marker;
   int num_markers = 0;
@@ -480,7 +493,7 @@ boolean read_icc_profile(j_decompress_ptr dinfo, JOCTET **icc_data_ptr, unsigned
 
 
 int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *in, const int width,
-                                           const int height, const int quality, void *exif, int exif_len,
+                                           const int height, const int quality, const void *exif, int exif_len,
                                            int imgid)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
@@ -541,7 +554,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
 }
 
 int dt_imageio_jpeg_write(const char *filename, const uint8_t *in, const int width, const int height,
-                          const int quality, void *exif, int exif_len)
+                          const int quality, const void *exif, int exif_len)
 {
   return dt_imageio_jpeg_write_with_icc_profile(filename, in, width, height, quality, exif, exif_len, -1);
 }
@@ -562,6 +575,7 @@ int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg)
   }
   jpeg_create_decompress(&(jpg->dinfo));
   jpeg_stdio_src(&(jpg->dinfo), jpg->f);
+  setup_read_exif(&(jpg->dinfo));
   setup_read_icc_profile(&(jpg->dinfo));
   // jpg->dinfo.buffered_image = TRUE;
   jpeg_read_header(&(jpg->dinfo), TRUE);
@@ -692,6 +706,17 @@ int dt_imageio_jpeg_read_profile(dt_imageio_jpeg_t *jpg, uint8_t **out)
   jpeg_destroy_decompress(&(jpg->dinfo));
   fclose(jpg->f);
   return res ? length : 0;
+}
+
+dt_colorspaces_color_profile_type_t dt_imageio_jpeg_read_color_space(dt_imageio_jpeg_t *jpg)
+{
+  for(jpeg_saved_marker_ptr marker = jpg->dinfo.marker_list; marker != NULL; marker = marker->next)
+  {
+    if(marker->marker == EXIF_MARKER && marker->data_length > 6)
+      return dt_exif_get_color_space(marker->data + 6, marker->data_length - 6);
+  }
+
+  return DT_COLORSPACE_DISPLAY; // nothing embedded
 }
 
 dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)

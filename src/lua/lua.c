@@ -22,11 +22,13 @@
 
 void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
 {
-  printf("lua stack at %s:%d\n", function, line);
+  printf("lua stack at %s:%d", function, line);
   if(!L) 
   {
-    printf("No stack\n");
+    printf("Stack in NULL\n");
     return;
+  } else {
+    printf("\n");
   }
   for(int i = 1; i <= lua_gettop(L); i++)
   {
@@ -91,9 +93,11 @@ void dt_lua_init_lock()
   pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
   dt_pthread_mutex_init(&darktable.lua_state.mutex, &a);
   pthread_mutexattr_destroy(&a);
+  // we want our lock initialized locked
+  dt_pthread_mutex_lock(&darktable.lua_state.mutex);
 }
 
-void dt_lua_lock()
+void dt_lua_lock_internal(const char *function, int line)
 {
   if(!darktable.lua_state.ending && pthread_equal(darktable.control->gui_thread, pthread_self()) != 0)
   {
@@ -102,9 +106,15 @@ void dt_lua_lock()
   }
 
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
+#ifdef _DEBU
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,function,line);
+#endif
 }
-void dt_lua_unlock()
+void dt_lua_unlock_internal(const char *function, int line)
 {
+#ifdef _DEBUG
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,function,line);
+#endif
   dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
 }
 

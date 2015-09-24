@@ -235,7 +235,7 @@ void dt_free_align(void *mem);
 #define dt_free_align(A) free(A)
 #endif
 
-inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
+static inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
 {
     return (uintptr_t)pointer % byte_count == 0;
 }
@@ -477,7 +477,8 @@ static inline size_t dt_get_total_memory()
 void dt_configure_defaults();
 
 // helper function which loads whatever image_to_load points to: single image files or whole directories
-int dt_load_from_string(const gchar *image_to_load, gboolean open_image_in_dr);
+// it tells you if it was a single image or a directory in single_image (when it's not NULL)
+int dt_load_from_string(const gchar *image_to_load, gboolean open_image_in_dr, gboolean *single_image);
 
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256

@@ -890,8 +890,7 @@ after_drawing:
     while(imgids_num > 0)
     {
       imgids_num--;
-      dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgids[imgids_num], mip, DT_MIPMAP_PREFETCH, 'r');
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgids[imgids_num], mip, DT_MIPMAP_PREFETCH, 'r');
     }
   }
 
@@ -1248,10 +1247,7 @@ int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
    * that LIMIT has to work with the "correct" sort order. One could use a subquery, but I don't
    * think that would be terribly elegant, either. */
   while(--count >= 0 && preload_stack[count] != -1)
-  {
-    dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
-  }
+    dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
 
   lib->image_over = DT_VIEW_DESERT;
   cairo_set_source_rgb(cr, .1, .1, .1);
@@ -1267,9 +1263,11 @@ int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
       dt_image_full_path(lib->full_preview_id, filename, sizeof(filename), &from_cache);
       free(lib->full_res_thumb);
       lib->full_res_thumb = NULL;
+      dt_colorspaces_color_profile_type_t color_space;
       if(!dt_imageio_large_thumbnail(filename, &lib->full_res_thumb,
                                                &lib->full_res_thumb_wd,
-                                               &lib->full_res_thumb_ht)) {
+                                               &lib->full_res_thumb_ht,
+                                               &color_space)) {
         lib->full_res_thumb_orientation = ORIENTATION_NONE;
         lib->full_res_thumb_id = lib->full_preview_id;
       }
@@ -1528,8 +1526,8 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
       gchar **image_to_load = uri_list;
       while(*image_to_load)
       {
-        dt_load_from_string(*image_to_load, FALSE); // TODO: do we want to open the image in darkroom mode? If
-                                                    // yes -> set to TRUE.
+        dt_load_from_string(*image_to_load, FALSE, NULL); // TODO: do we want to open the image in darkroom mode? If
+                                                          // yes -> set to TRUE.
         image_to_load++;
       }
     }
