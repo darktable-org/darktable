@@ -561,51 +561,45 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       }
       else if(!strcmp(argv[k], "--library") && argc > k + 1)
       {
-        g_free(dbfilename_from_command);
-        dbfilename_from_command = g_strdup(argv[++k]);
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        dbfilename_from_command = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--datadir") && argc > k + 1)
       {
-        g_free(datadir_from_command);
-        datadir_from_command = g_strdup(argv[++k]);
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        datadir_from_command = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--moduledir") && argc > k + 1)
       {
-        g_free(moduledir_from_command);
-        moduledir_from_command = g_strdup(argv[++k]);
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        moduledir_from_command = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--tmpdir") && argc > k + 1)
       {
-        g_free(tmpdir_from_command);
-        tmpdir_from_command = g_strdup(argv[++k]);
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        tmpdir_from_command = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--configdir") && argc > k + 1)
       {
-        g_free(configdir_from_command);
-        configdir_from_command = g_strdup(argv[++k]);
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        configdir_from_command = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--cachedir") && argc > k + 1)
       {
-        g_free(cachedir_from_command);
-        cachedir_from_command = g_strdup(argv[++k]);
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        cachedir_from_command = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
       {
         bindtextdomain(GETTEXT_PACKAGE, argv[++k]);
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
@@ -648,22 +642,22 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
         else
           return usage(argv[0]);
         k++;
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(argv[k][1] == 't' && argc > k + 1)
       {
         darktable.num_openmp_threads = CLAMP(atol(argv[k + 1]), 1, 100);
         printf("[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
         k++;
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--conf") && argc > k + 1)
       {
         gchar *keyval = g_strdup(argv[++k]), *c = keyval;
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        argv[k-1] = NULL;
+        argv[k] = NULL;
         gchar *end = keyval + strlen(keyval);
         while(*c != '=' && c < end) c++;
         if(*c == '=' && *(c + 1) != '\0')
@@ -678,37 +672,54 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       }
       else if(!strcmp(argv[k], "--noiseprofiles") && argc > k + 1)
       {
-        g_free(noiseprofiles_from_command);
-        noiseprofiles_from_command = g_strdup(argv[++k]);
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        noiseprofiles_from_command = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--luacmd") && argc > k + 1)
       {
 #ifdef USE_LUA
-        g_free(lua_command);
-        lua_command = g_strdup(argv[++k]);
+        lua_command = argv[++k];
 #else
         ++k;
 #endif
-        *argv[k-1] = '\0';
-        *argv[k] = '\0';
+        argv[k-1] = NULL;
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--disable-opencl"))
       {
 #ifdef HAVE_OPENCL
         exclude_opencl = TRUE;
 #endif
-        *argv[k] = '\0';
+        argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--"))
       {
         // "--" confuses the argument parser of glib/gtk. remove it.
-        *argv[k] = '\0';
+        argv[k] = NULL;
         break;
       }
       else
         return usage(argv[0]); // fail on unrecognized options
+    }
+  }
+
+  // remove the NULLs to not confuse gtk_init() later.
+  for(int i = 1; i < argc; i++)
+  {
+    int k;
+    for(k = i; k < argc; k++)
+      if(argv[k] != NULL) break;
+
+    if(k > i)
+    {
+      k -= i;
+      for(int j = i + k; j < argc; j++)
+      {
+        argv[j-k] = argv[j];
+        argv[j] = NULL;
+      }
+      argc -= k;
     }
   }
 
@@ -997,19 +1008,6 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   {
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
-
-  // clean up the strigns we had to g_strdup because gtk NULLs in argv happily but breaks when we do it
-  g_free(dbfilename_from_command);
-  g_free(noiseprofiles_from_command);
-  g_free(datadir_from_command);
-  g_free(moduledir_from_command);
-  g_free(tmpdir_from_command);
-  g_free(configdir_from_command);
-  g_free(cachedir_from_command);
-
-#ifdef USE_LUA
-  g_free(lua_command);
-#endif
 
   return 0;
 }
