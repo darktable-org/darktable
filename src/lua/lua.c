@@ -106,11 +106,15 @@ void dt_lua_lock_internal(const char *function, int line)
   }
 
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
+#ifdef _DEBUG
   dt_lua_debug_stack_internal (darktable.lua_state.state,function,line,"(lock)");
+#endif
 }
 void dt_lua_unlock_internal(const char *function, int line)
 {
+#ifdef _DEBUG
   dt_lua_debug_stack_internal (darktable.lua_state.state,function,line,"(unlock)");
+#endif
   dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
 }
 
