@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2015-08-24 11:28+0200\n"
-"PO-Revision-Date: 2015-08-14 17:13+0100\n"
+"POT-Creation-Date: 2015-09-14 22:59+0200\n"
+"PO-Revision-Date: 2015-09-14 23:17+0200\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.6.10\n"
+"X-Generator: Poedit 1.8.4\n"
 "X-Poedit-Bookmarks: 2169,1480,-1,416,182,458,465,290,-1,1846\n"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
@@ -72,10 +72,10 @@ msgid ""
 "Software Foundation, either version 3 of the License, or (at your option) "
 "any later version."
 msgstr ""
-"darktable est un logiciel libre : vous pouvez le redistribuer et/ou le "
-"modifier selon les termes de la Licence Publique Générale GNU telle que "
-"publiée par la Free Software Fundation, soit dans la version 3, soit (à "
-"votre choix), dans toute autre version ultérieure."
+"darktable est un logiciel libre : vous pouvez le redistribuer ou le modifier "
+"selon les termes de la Licence Publique Générale GNU telle que publiée par "
+"la Free Software Fundation, soit dans la version 3, soit (à votre choix), "
+"dans toute autre version ultérieure."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:38(para)
 msgid ""
@@ -315,14 +315,14 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:183(para)
 msgid "Fully non-destructive editing."
-msgstr "Édition totalement non destructive ;"
+msgstr "édition totalement non destructive ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:187(para)
 msgid ""
 "All darktable core functions operate on 4x32-bit floating point pixel "
 "buffers for high accuracy processing, preventing banding and color breaks."
 msgstr ""
-"Toutes les fonctions de base de darktable utilisent des tampons de pixels en "
+"toutes les fonctions de base de darktable utilisent des tampons de pixels en "
 "arithmétique flottante 4x32 bits pour un traitement de haute précision "
 "évitant les effets de bandes et les ruptures de dégradé ;"
 
@@ -339,14 +339,14 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:198(para)
 msgid "GPU acceleration via OpenCL (runtime detection and enabling)."
-msgstr "Accélération GPU via OpenCL (détection et activation au lancement) ;"
+msgstr "accélération GPU via OpenCL (détection et activation au lancement) ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:202(para)
 msgid ""
 "Most image processing is done in CIELab color space, which is much larger "
 "than the gamut of modern displays, printers or even human vision."
 msgstr ""
-"L’essentiel du traitement des images est effectué dans l’espace "
+"l’essentiel du traitement des images est effectué dans l’espace "
 "colorimétrique CIELab, qui est bien plus étendu que le gamut (gamme des "
 "couleurs prises en compte) des écrans modernes, des imprimantes et même de "
 "la vision humaine ;"
@@ -356,7 +356,7 @@ msgid ""
 "Full color managed display with softproofing and gamut-check. Built-in ICC "
 "profile support for export: sRGB, Adobe RGB, XYZ and linear RGB."
 msgstr ""
-"Écran géré en pleines couleurs avec épreuvage et vérification du gamut. "
+"écran géré en pleines couleurs avec épreuvage et vérification du gamut. "
 "Profil ICC intégré pour effectuer l’exportation : sRGB, Adobe RGB, XYZ et "
 "RGB linéaire ;"
 
@@ -367,7 +367,7 @@ msgid ""
 "Filtering and sorting your collections within the base query or simple "
 "tagging by related tags are useful tools in your every-day photo workflow."
 msgstr ""
-"Un module de collection vous permet d’exécuter des requêtes flexibles de "
+"un module de collection vous permet d’exécuter des requêtes flexibles de "
 "base de données, de rechercher vos images par mots-clés, par notes "
 "(étoiles), par labels de couleur et de faire beaucoup plus. Filtrage et tri "
 "de vos collections par requêtes sur la base de données ou simple marquage "
@@ -379,7 +379,7 @@ msgid ""
 "Import a variety of standard, raw and high dynamic range image formats (e.g. "
 "JPG, CR2, OpenEXR, PFM, ...)."
 msgstr ""
-"Importe une variété de formats d’image, standard, RAW ou en grande plage "
+"importe une variété de formats d’image, standard, RAW ou en grande plage "
 "dynamique (par exemple JPG, CR2, OpenEXR, PFM, ...) ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:224(para)
@@ -387,12 +387,12 @@ msgid ""
 "darktable has a zero-latency fullscreen, zoomable user interface through "
 "multi-level software caches."
 msgstr ""
-"Grâce à des caches logiciels à plusieurs niveaux, darktable possède une "
+"grâce à des caches logiciels à plusieurs niveaux, darktable possède une "
 "interface utilisateur sans latence, plein écran et zoomable  ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:229(para)
 msgid "Tethered shooting."
-msgstr "Prise de vue en mode connecté ;"
+msgstr "prise de vue en mode connecté ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:233(para)
 msgid ""
@@ -402,7 +402,7 @@ msgid ""
 "JPEG2000, PNG, TIFF), 16-bit (PPM, TIFF), or linear high dynamic range (PFM, "
 "EXR) images."
 msgstr ""
-"Le système d’exportation puissant prend en charge les albums web de Google+, "
+"le système d’exportation puissant prend en charge les albums web de Google+, "
 "le téléchargement Flickr, l’enregistrement sur disque, la copie 1:1, "
 "l’attachement à un courriel et il peut générer une galerie web simple basée "
 "sur html. darktable vous permet d’exporter des images en plage dynamique "
@@ -435,7 +435,7 @@ msgid ""
 "Many darktable modules can be combined with blending operators for even more "
 "development options."
 msgstr ""
-"De nombreux modules de darktable peuvent être combinés par des opérateurs de "
+"de nombreux modules de darktable peuvent être combinés par des opérateurs de "
 "fusion afin de permettre encore plus d’options de développement ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:256(para)
@@ -444,7 +444,7 @@ msgid ""
 "different parts of an image. You can at your choice draw a mask using "
 "various shapes or define a parametric mask based on pixel values."
 msgstr ""
-"Une fonctionnalité puissante de masque vous donne un contrôle précis de "
+"une fonctionnalité puissante de masque vous donne un contrôle précis de "
 "l'action des modules sur différentes parties d’une image. Vous pouvez, à "
 "votre choix, dessiner un masque en utilisant différentes formes ou définir "
 "un masque paramétrique basé sur les valeurs des pixels ;"
@@ -455,7 +455,7 @@ msgid ""
 "feature, you can let an operation have different effects on different parts "
 "of the image."
 msgstr ""
-"La plupart des modules peuvent exister en tant qu’instances multiples. En "
+"la plupart des modules peuvent exister en tant qu’instances multiples. En "
 "combinaison avec la fonctionnalité de masque, une opération pourra avoir des "
 "actions différentes sur les différentes parties d’une image ;"
 
@@ -477,7 +477,7 @@ msgid ""
 "darktable comes with a versatile scripting interface for functionality "
 "enhancement using Lua as a scripting language."
 msgstr ""
-"Pour améliorer la fonctionnalité darktable possède une interface souple "
+"pour améliorer la fonctionnalité darktable possède une interface souple "
 "d'écriture de scripts. Il utilise Lua comme langage de script."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:283(title)
@@ -963,12 +963,13 @@ msgstr ""
 "<informaltable frame=\"none\" width=\"60%\"><tgroup cols=\"2\" colsep=\"0\" "
 "rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"9*\"/"
 "><tbody><row><entry><emphasis>l</emphasis></entry><entry>passer à la vue "
-"table lumineuse</entry></row><row><entry><emphasis>d</emphasis></"
-"entry><entry>passer à la vue chambre noire</entry></"
-"row><row><entry><emphasis>t</emphasis></entry><entry>passer à la vue capture "
-"</entry></row><row><entry><emphasis>m</emphasis></entry><entry>passer à la "
-"vue carte </entry></row><row><entry><emphasis>s</emphasis></entry><entry> "
-"passer à la vue diaporama </entry></row></tbody></tgroup></informaltable>"
+"table lumineuse ;</entry></row><row><entry><emphasis>d</emphasis></"
+"entry><entry>passer à la vue chambre noire ;</entry></"
+"row><row><entry><emphasis>t</emphasis></entry><entry>passer à la vue "
+"capture ;</entry></row><row><entry><emphasis>m</emphasis></"
+"entry><entry>passer à la vue carte ;</entry></row><row><entry><emphasis>s</"
+"emphasis></entry><entry> passer à la vue diaporama.</entry></row></tbody></"
+"tgroup></informaltable>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:737(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1229(title)
@@ -2681,16 +2682,16 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1996(para)
 msgid "tags and hierarchical tags"
-msgstr "mots-clés et mots-clés hiérarchiques"
+msgstr "mots-clés et mots-clés hiérarchiques ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2004(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19492(secondary)
 msgid "ratings"
-msgstr "évaluations"
+msgstr "évaluations ."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2008(para)
 msgid "GPS information"
-msgstr "informations GPS"
+msgstr "informations GPS."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1991(para)
 msgid ""
@@ -2736,43 +2737,43 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2036(para)
 msgid "crop and rotate <emphasis>(crop and rotate)</emphasis>"
-msgstr "recadrer et pivoter <emphasis>(recadrer et pivoter)</emphasis>"
+msgstr "recadrer et pivoter <emphasis>(recadrer et pivoter)</emphasis>  ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2040(para)
 msgid "black level <emphasis>(exposure)</emphasis>"
-msgstr "niveau de noir <emphasis>(exposition)</emphasis>"
+msgstr "niveau de noir <emphasis>(exposition)</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2044(para)
 msgid "exposure <emphasis>(exposure)</emphasis>"
-msgstr "exposition <emphasis>(exposition)</emphasis>"
+msgstr "exposition <emphasis>(exposition)</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2048(para)
 msgid "vignette <emphasis>(vignette)</emphasis>"
-msgstr "vignetage <emphasis>(vignetage)</emphasis>"
+msgstr "vignetage <emphasis>(vignetage)</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2052(para)
 msgid "clarity <emphasis>(local contrast)</emphasis>"
-msgstr "clarté <emphasis>(contraste local)</emphasis>"
+msgstr "clarté <emphasis>(contraste local)</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2056(para)
 msgid "tone curve <emphasis>(tone curve)</emphasis>"
-msgstr "courbe des tonalités <emphasis>(courbe des tonalités)</emphasis>"
+msgstr "courbe des tonalités <emphasis>(courbe des tonalités)</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2060(para)
 msgid "HSL <emphasis>(color zones)</emphasis>"
-msgstr "HSL <emphasis>(zones de couleur)</emphasis>"
+msgstr "HSL <emphasis>(zones de couleur)</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2064(para)
 msgid "split toning <emphasis>(split toning)</emphasis>"
-msgstr "virage partiel <emphasis>(virage partiel)</emphasis>"
+msgstr "virage partiel <emphasis>(virage partiel)</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2068(para)
 msgid "grain <emphasis>(grain)</emphasis>"
-msgstr "grain <emphasis>(grain)</emphasis>"
+msgstr "grain <emphasis>(grain)</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2072(para)
 msgid "spot removal <emphasis>(spot removal)</emphasis>"
-msgstr "correction des taches <emphasis>(correction des taches)</emphasis>"
+msgstr "correction des taches <emphasis>(correction des taches)</emphasis>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2031(para)
 msgid ""
@@ -2857,10 +2858,10 @@ msgstr ""
 "quote>, où : <informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\" "
 "colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"3*\"/"
 "><tbody><row><entry><emphasis>N</emphasis></entry><entry> est le numéro de "
-"l’image dans darktable </entry></row><row><entry><emphasis>SIGNATURE</"
+"l’image dans darktable ;</entry></row><row><entry><emphasis>SIGNATURE</"
 "emphasis></entry> <entry> est une signature de hachage (SHA-1) du nom de "
-"chemin complet</entry></row><row><entry><emphasis>EXT</emphasis></"
-"entry><entry> est l’extension du nom de fichier d’origine</entry></row></"
+"chemin complet ;</entry></row><row><entry><emphasis>EXT</emphasis></"
+"entry><entry> est l’extension du nom de fichier d’origine.</entry></row></"
 "tbody></tgroup></informaltable> "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2158(para)
@@ -3415,15 +3416,15 @@ msgstr "Attributs de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2515(para)
 msgid "the film roll to which the image belongs"
-msgstr "pellicule à laquelle appartient l’image"
+msgstr "pellicule à laquelle appartient l’image ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2525(para)
 msgid "the disk folder where the input image file is located"
-msgstr "dossier disque où se trouve le fichier de l’image d’entrée"
+msgstr "dossier disque où se trouve le fichier de l’image d’entrée ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2535(para)
 msgid "the EXIF data entry describing the camera make and model"
-msgstr "données EXIF décrivant la marque et le modèle de l’appareil photo"
+msgstr "données EXIF décrivant la marque et le modèle de l’appareil photo ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2545(para)
 msgid ""
@@ -3431,7 +3432,7 @@ msgid ""
 "known tags is displayed for quick selection"
 msgstr ""
 "tout mot-clé attaché à l'image ; si activé, une liste hiérarchique des mots-"
-"clés connus est affichée pour permettre une sélection rapide"
+"clés connus est affichée pour permettre une sélection rapide ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2556(para)
 msgid ""
@@ -3439,7 +3440,7 @@ msgid ""
 "emphasis>"
 msgstr ""
 "date à laquelle la photo a été prise, dans le format <emphasis>AAAA:MM:JJ</"
-"emphasis>"
+"emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2567(para)
 msgid ""
@@ -3447,12 +3448,12 @@ msgid ""
 "taken, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>"
 msgstr ""
 "heure (date <emphasis>et</emphasis> heure du jour) où la photo a été prise, "
-"dans le format <emphasis>AAAA:MM:JJ hh:mm:ss</emphasis>"
+"dans le format <emphasis>AAAA:MM:JJ hh:mm:ss</emphasis> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2578(para)
 msgid "choose images whose history stacks have been altered or not altered"
 msgstr ""
-"choisir les images dont l'historique de développement a été ou non modifié"
+"choisir les images dont l'historique de développement a été ou non modifié ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2588(para)
 msgid ""
@@ -3462,13 +3463,13 @@ msgid ""
 msgstr ""
 "tout label de couleur attaché à l’image : <quote>rouge</quote>, "
 "<quote>jaune</quote>, <quote>vert</quote>, <quote>bleu</quote>, "
-"<quote>violet</quote>"
+"<quote>violet</quote> ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2600(para)
 msgid "the title, as listed in the image's metadata <quote>title</quote> field"
 msgstr ""
 "titre tel que défini dans le champ <quote>titre</quote> des métadonnées de "
-"l’image"
+"l’image ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2610(para)
 msgid ""
@@ -3476,14 +3477,14 @@ msgid ""
 "quote> field"
 msgstr ""
 "description de l’image telle que définie dans le champ <quote>description</"
-"quote> des métadonnées de l’image"
+"quote> des métadonnées de l’image ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2621(para)
 msgid ""
 "the creator, as listed in the image's metadata <quote>creator</quote> field"
 msgstr ""
 "créateur tel que défini dans le champ <quote>créateur</quote> des "
-"métadonnées de l’image"
+"métadonnées de l’image ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2631(para)
 msgid ""
@@ -3491,7 +3492,7 @@ msgid ""
 "field"
 msgstr ""
 "diffuseur tel que défini dans  le champ <quote>diffuseur</quote> des "
-"métadonnées de l’image"
+"métadonnées de l’image ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2642(para)
 msgid ""
@@ -3499,23 +3500,23 @@ msgid ""
 "quote> field"
 msgstr ""
 "copyrights tel que défini dans  le champ <quote>droits</quote> des "
-"métadonnées de l’image"
+"métadonnées de l’image ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2653(para)
 msgid "the EXIF data entry describing the lens"
-msgstr "entrée des données EXIF décrivant l’objectif"
+msgstr "entrée des données EXIF décrivant l’objectif ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2663(para)
 msgid "the ISO value, as derived from EXIF data"
-msgstr "valeur de la sensibilité ISO déduite des données EXIF"
+msgstr "valeur de la sensibilité ISO déduite des données EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2673(para)
 msgid "the aperture value, as derived from EXIF data"
-msgstr "valeur de l’ouverture déduite des données EXIF"
+msgstr "valeur de l’ouverture déduite des données EXIF ."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2683(para)
 msgid "the filename of the physical input image"
-msgstr "nom de fichier de l’image physique en entrée"
+msgstr "nom de fichier de l’image physique en entrée.modèle"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2503(para)
 msgid ""
@@ -4768,7 +4769,7 @@ msgstr "$(ROLL_NAME)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3820(entry)
 msgid "roll of the input image"
-msgstr "nom du dossier de l’image d’entrée"
+msgstr "nom du dossier de l’image d’entrée ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3825(entry)
 msgid "$(FILE_FOLDER)"
@@ -4776,7 +4777,7 @@ msgstr "$(FILE_FOLDER)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3828(entry)
 msgid "folder containing the input image"
-msgstr "chemin du dossier contenant l’image d’entrée"
+msgstr "chemin du dossier contenant l’image d’entrée ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3833(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16123(entry)
@@ -4785,7 +4786,7 @@ msgstr "$(FILE_NAME)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3836(entry)
 msgid "basename of the input image"
-msgstr "nom de base de l’image d’entrée"
+msgstr "nom de base de l’image d’entrée ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3841(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16131(entry)
@@ -4794,7 +4795,7 @@ msgstr "$(FILE_EXTENSION)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3844(entry)
 msgid "extension of the input image"
-msgstr "extension du fichier de l’image d’entrée"
+msgstr "extension du fichier de l’image d’entrée ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3849(entry)
 msgid "$(VERSION)"
@@ -4802,7 +4803,7 @@ msgstr "$(VERSION)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3852(entry)
 msgid "the duplicate version (see <xref linkend=\"sidecar_files\"/>)"
-msgstr "la version clonée (voyez <xref linkend=\"sidecar_files\"/>)"
+msgstr "la version clonée (voyez <xref linkend=\"sidecar_files\"/>) ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3857(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16147(entry)
@@ -4811,7 +4812,7 @@ msgstr "$(SEQUENCE)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3860(entry)
 msgid "a sequence number within export job"
-msgstr "nombre séquentiel dans la tâche d’exportation"
+msgstr "nombre séquentiel dans la tâche d’exportation ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3865(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16163(entry)
@@ -4820,7 +4821,7 @@ msgstr "$(YEAR)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3868(entry)
 msgid "year at date of export"
-msgstr "année de la date d’exportation"
+msgstr "année de la date d’exportation ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3873(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16171(entry)
@@ -4829,7 +4830,7 @@ msgstr "$(MONTH)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3876(entry)
 msgid "month at date of export"
-msgstr "mois de la date d’exportation"
+msgstr "mois de la date d’exportation ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3881(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16179(entry)
@@ -4838,7 +4839,7 @@ msgstr "$(DAY)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3884(entry)
 msgid "day at date of export"
-msgstr "jour de la date d’exportation"
+msgstr "jour de la date d’exportation ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3889(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16187(entry)
@@ -4847,7 +4848,7 @@ msgstr "$(HOUR)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3892(entry)
 msgid "hour at time of export"
-msgstr "heure de la date d’exportation"
+msgstr "heure de la date d’exportation ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3897(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16195(entry)
@@ -4856,7 +4857,7 @@ msgstr "$(MINUTE)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3900(entry)
 msgid "minute at time of export"
-msgstr "minutes de l’heure d’exportation"
+msgstr "minutes de l’heure d’exportation ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3905(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16203(entry)
@@ -4865,7 +4866,7 @@ msgstr "$(SECOND)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3908(entry)
 msgid "second at time of export"
-msgstr "secondes de l’heure d’exportation"
+msgstr "secondes de l’heure d’exportation ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3913(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16211(entry)
@@ -4874,7 +4875,7 @@ msgstr "$(EXIF_YEAR)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3916(entry)
 msgid "exif year"
-msgstr "année EXIF"
+msgstr "année EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3921(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16219(entry)
@@ -4883,7 +4884,7 @@ msgstr "$(EXIF_MONTH)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3924(entry)
 msgid "exif month"
-msgstr "mois EXIF"
+msgstr "mois EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3929(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16227(entry)
@@ -4892,7 +4893,7 @@ msgstr "$(EXIF_DAY)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3932(entry)
 msgid "exif day"
-msgstr "jour EXIF"
+msgstr "jour EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3937(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16235(entry)
@@ -4901,7 +4902,7 @@ msgstr "$(EXIF_HOUR)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3940(entry)
 msgid "exif hour"
-msgstr "heure EXIF"
+msgstr "heure EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3945(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16243(entry)
@@ -4910,7 +4911,7 @@ msgstr "$(EXIF_MINUTE)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3948(entry)
 msgid "exif minute"
-msgstr "minutes EXIF"
+msgstr "minutes EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3953(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16251(entry)
@@ -4919,7 +4920,7 @@ msgstr "$(EXIF_SECOND)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3956(entry)
 msgid "exif second"
-msgstr "secondes EXIF"
+msgstr "secondes EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3961(entry)
 msgid "$(STARS)"
@@ -4927,7 +4928,7 @@ msgstr "$(STARS)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3964(entry)
 msgid "star rating"
-msgstr "étoiles de l’évaluation"
+msgstr "étoiles de l’évaluation ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3969(entry)
 msgid "$(LABELS)"
@@ -4936,7 +4937,7 @@ msgstr "$(LABELS)"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3972(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19534(secondary)
 msgid "colorlabels"
-msgstr "labels de couleur"
+msgstr "labels de couleur ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3977(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16099(entry)
@@ -4945,7 +4946,7 @@ msgstr "$(PICTURES_FOLDER)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3980(entry)
 msgid "pictures folder"
-msgstr "dossier des images"
+msgstr "dossier des images ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3985(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16091(entry)
@@ -4954,7 +4955,7 @@ msgstr "$(HOME)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3988(entry)
 msgid "home folder"
-msgstr "répertoire personnel"
+msgstr "répertoire personnel ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3993(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16107(entry)
@@ -4963,7 +4964,7 @@ msgstr "$(DESKTOP)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3996(entry)
 msgid "desktop folder"
-msgstr "dossier 'bureau'"
+msgstr "dossier <quote>bureau</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4008(title)
 msgid "output directory"
@@ -9177,7 +9178,7 @@ msgstr "vertical"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7358(entry)
 msgid "if you want to limit the correction to vertical lines"
-msgstr "si vous désirez limiter la correction aux lignes verticales"
+msgstr "si vous désirez limiter la correction aux lignes verticales ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7364(emphasis)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24148(para)
@@ -9186,7 +9187,7 @@ msgstr "horizontal"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7366(entry)
 msgid "limit the correction to horizontal lines"
-msgstr "si vous désirez limiter la correction aux lignes horizontales"
+msgstr "si vous désirez limiter la correction aux lignes horizontales ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7372(emphasis)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7446(emphasis)
@@ -9196,7 +9197,7 @@ msgstr "libre"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7374(entry)
 msgid "if you want to correct horizontal and vertical lines"
 msgstr ""
-"si vous désirez corriger à la fois les lignes horizontales et verticales"
+"si vous désirez corriger à la fois les lignes horizontales et verticales."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7391(para)
 msgid ""
@@ -9266,11 +9267,11 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7448(entry)
 msgid "free forming the rectangle without any ratio restrictions"
-msgstr "créer un rectangle de manière libre sans le contraindre à un rapport"
+msgstr "créer un rectangle de manière libre sans le contraindre à un rapport ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7456(entry)
 msgid "this option constrains the ratio to be equal to image ratio"
-msgstr "cette option contraint le rapport d’aspect à celui de l’image"
+msgstr "cette option contraint le rapport d’aspect à celui de l’image ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7462(emphasis)
 msgid "golden cut"
@@ -9278,7 +9279,7 @@ msgstr "rapport d’or"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7464(entry)
 msgid "this option constrains the ratio to be equal the golden number"
-msgstr "cette option contraint le rapport d’aspect au nombre d’or"
+msgstr "cette option contraint le rapport d’aspect au nombre d’or ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7470(emphasis)
 msgid "square"
@@ -9286,7 +9287,7 @@ msgstr "carré"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7472(entry)
 msgid "this option constrains the ratio to be 1"
-msgstr "cette option contraint le rapport d’aspect à 1"
+msgstr "cette option contraint le rapport d’aspect à 1."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7483(title)
 msgid "guides"
@@ -9540,7 +9541,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7733(entry)
 msgid "Resulting image."
-msgstr "Image résultante"
+msgstr "Image résultante."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7748(title)
 msgid "Base curve"
@@ -10586,12 +10587,12 @@ msgstr ""
 "Sélectionne une balance des blancs prédéfinie. <informaltable frame=\"none\" "
 "width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth="
 "\"4*\"/><colspec colwidth=\"6*\"/><tbody><row><entry><emphasis>boîtier</"
-"emphasis></entry><entry>balance des blancs du boîtier. </entry></"
+"emphasis></entry><entry>balance des blancs du boîtier ;</entry></"
 "row><row><entry><emphasis>spot</emphasis></entry><entry>sélectionnez dans "
 "votre image une zone carrée qui comporte principalement des pixels gris. La "
-"balance des blancs est calculée en se basant sur la zone sélectionnée. </"
+"balance des blancs est calculée en se basant sur la zone sélectionnée ;</"
 "entry></row><row><entry><emphasis>aucune</emphasis></entry><entry>afficher "
-"sans réglage de la balance des blancs.</entry></row><row><entry><emphasis> "
+"sans réglage de la balance des blancs ;</entry></row><row><entry><emphasis> "
 "préréglage du boîtier</emphasis></entry><entry>préréglage d’une balance des "
 "blancs spécifique au boîtier. Exemples : soleil de face, flash, nuageux, "
 "ombragé et un certain nombre d’options d’éclairage artificiel pour "
@@ -11039,7 +11040,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9053(entry)
 msgid "Resulting image"
-msgstr "Image résultante"
+msgstr "Image résultante."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9068(title)
 msgid "Zone system"
