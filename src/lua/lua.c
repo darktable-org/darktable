@@ -20,9 +20,9 @@
 #include "control/control.h"
 #include "lua/call.h"
 
-void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line,const char* extra)
+void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
 {
-  printf("lua stack at %s:%d %s", function, line,extra);
+  printf("lua stack at %s:%d", function, line);
   if(!L) 
   {
     printf("Stack in NULL\n");
@@ -106,14 +106,14 @@ void dt_lua_lock_internal(const char *function, int line)
   }
 
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
-#ifdef _DEBUG
-  dt_lua_debug_stack_internal (darktable.lua_state.state,function,line,"(lock)");
+#ifdef _DEBU
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,function,line);
 #endif
 }
 void dt_lua_unlock_internal(const char *function, int line)
 {
 #ifdef _DEBUG
-  dt_lua_debug_stack_internal (darktable.lua_state.state,function,line,"(unlock)");
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,function,line);
 #endif
   dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
 }
