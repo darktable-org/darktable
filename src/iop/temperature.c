@@ -564,9 +564,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_tint, tint);
 
   dt_bauhaus_combobox_clear(g->presets);
-  dt_bauhaus_combobox_add(g->presets, _("camera white balance"));
-  dt_bauhaus_combobox_add(g->presets, _("camera neutral white balance"));
-  dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
+  dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera"));
+  dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera neutral"));
+  dt_bauhaus_combobox_add(g->presets, C_("white balance", "spot"));
   g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
   memset(g->preset_num, 0, sizeof(g->preset_num));
 
