@@ -1149,6 +1149,7 @@ static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_prof
 
 // update cached transforms for color management of thumbnails
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!
+// FIXME: call it from dt_colorspaces_init() instead of duplicating code?
 void dt_colorspaces_update_display_transforms()
 {
   if(darktable.color_profiles->transform_srgb_to_display)
@@ -1366,21 +1367,22 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   cmsSetLogErrorHandler(cms_error_handler);
 
+  // FIXME: call dt_colorspaces_update_display_transforms() ?
   cmsHPROFILE display_profile = _get_profile(res, res->display_type, res->display_filename,
                                              DT_PROFILE_DIRECTION_DISPLAY)->profile;
 
   res->transform_srgb_to_display = cmsCreateTransform(_get_profile(res, DT_COLORSPACE_SRGB, "",
                                                                    DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                                                      TYPE_RGB_8,
+                                                      TYPE_RGBA_8,
                                                       display_profile,
-                                                      TYPE_BGR_8,
+                                                      TYPE_BGRA_8,
                                                       res->display_intent,
                                                       0);
   res->transform_adobe_rgb_to_display = cmsCreateTransform(_get_profile(res, DT_COLORSPACE_ADOBERGB, "",
                                                                         DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                                                           TYPE_RGB_8,
+                                                           TYPE_RGBA_8,
                                                            display_profile,
-                                                           TYPE_BGR_8,
+                                                           TYPE_BGRA_8,
                                                            res->display_intent,
                                                            0);
 
