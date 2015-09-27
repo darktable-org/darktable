@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-26 10:47+0200\n"
-"PO-Revision-Date: 2015-09-26 11:05+0100\n"
+"POT-Creation-Date: 2015-09-27 14:13+0200\n"
+"PO-Revision-Date: 2015-09-27 14:44+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -117,14 +117,15 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1471
 msgid "send files to trash when erasing images"
-msgstr ""
-"verplaats bestanden naar de prullenbak wanneer afbeeldingen worden verwijderd"
+msgstr "verplaats bestanden naar de prullenbak wanneer deze worden verwijderd"
 
 #: ../build/src/preferences_gen.h:1483
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
 msgstr ""
+"stuur bestanden naar de prullenbak in plaats van deze permanent te "
+"verwijderen"
 
 #: ../build/src/preferences_gen.h:1490
 msgid "ask before moving images from film roll folder"
@@ -197,7 +198,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1699
 msgid "enable filmstrip"
-msgstr "toon filmstrip"
+msgstr "toon filmreeks"
 
 #: ../build/src/preferences_gen.h:1711
 msgid "enable the filmstrip in darkroom, tethering and map modes."
@@ -347,9 +348,9 @@ msgid ""
 "map, i.e. limit the images drawn to the current filmstrip. this limits the "
 "number of images drawn and thus reduces the time needed to draw the images."
 msgstr ""
-"use the current filter settings to select the geotagged images drawn on the "
-"map, i.e. limit the images drawn to the current filmstrip. this limits the "
-"number of images drawn and thus reduces the time needed to draw the images."
+"gebruik het huidige filter om geo-gelabelde afbeeldingen op de map te "
+"selecteren, geef bijvoorbeeld een weergave limiet aan de huidige filmreeks "
+"waardoor de tijd nodig om ze weergeven wordt verkort"
 
 #: ../build/src/preferences_gen.h:1926
 msgid "maximum number of images drawn on map"
@@ -492,7 +493,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2190
 msgid "color manage cached thumbnails"
-msgstr ""
+msgstr "op kleur beheerde gecachede miniaturen"
 
 #: ../build/src/preferences_gen.h:2202
 msgid ""
@@ -500,6 +501,9 @@ msgid ""
 "filmstrip can show correct colors. otherwise the results may look wrong once "
 "the display profile gets changed."
 msgstr ""
+"indien ingeschakeld zullen gecachte miniaturen op kleur worden beheerd en "
+"vertonen bibliotheek en filmreeks de correcte kleuren, anders wordt mogelijk "
+"bij een gewijzigd weergave profiel het resultaat niet goed weergegeven"
 
 #: ../build/src/preferences_gen.h:2209
 msgid "number of background threads"
@@ -1337,7 +1341,7 @@ msgstr[1] "verplaatsen %d afbeeldingen"
 #: ../src/control/jobs/control_jobs.c:705
 #, c-format
 msgid "Could not send %s to trash%s%s"
-msgstr ""
+msgstr "%s naar de prullenbak verplaatsen lukt niet%s%s"
 
 #: ../src/control/jobs/control_jobs.c:706
 #, c-format
@@ -1358,7 +1362,7 @@ msgstr "doorgaan naar volgend bestand"
 
 #: ../src/control/jobs/control_jobs.c:715
 msgid "Stop process"
-msgstr ""
+msgstr "stop bewerking"
 
 #: ../src/control/jobs/control_jobs.c:720
 msgid "trashing error"
@@ -9421,7 +9425,7 @@ msgid ""
 "right click for options"
 msgstr ""
 "over- en onderbelichtingsindicator aan/uit schakelen\n"
-"opties via de rechtermuis klik"
+"opties via de rechtermuis "
 
 #: ../src/views/darkroom.c:1412
 msgid "color scheme"
@@ -9456,22 +9460,20 @@ msgid "threshold of what shall be considered overexposed"
 msgstr "drempel voor wat moet worden beschouwt als overbelicht"
 
 #: ../src/views/darkroom.c:1450
-#, fuzzy
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
 msgstr ""
-"over- en onderbelichtingsindicator aan/uit schakelen\n"
-"opties via de rechtermuis klik"
+"softproofing aan/uit schakelen\n"
+"opties via de rechtermuis"
 
 #: ../src/views/darkroom.c:1463
-#, fuzzy
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
-"over- en onderbelichtingsindicator aan/uit schakelen\n"
-"opties via de rechtermuis klik"
+"gamma controle aan/uit schakelen\n"
+"opties via de rechtermuis"
 
 #: ../src/views/darkroom.c:1508
 msgid "display intent"
