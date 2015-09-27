@@ -6269,6 +6269,16 @@ const wb_data wb_preset[] =
   { "Sony", "ILCE-7RM2", Flash, 0,    { 2.65625, 1, 1.41015625, 0 } },
   { "Sony", "ILCE-7RM2", "5500K", 0,    { 2.45703125, 1, 1.52734375, 0 } },
 
+  { "Sony", "ILCE-7M2", Daylight, 0, { 2.27734375, 1, 1.48828125, 0 } },
+  { "Sony", "ILCE-7M2", Shade, 0,     { 2.71484375, 1, 1.234375, 0 } },
+  { "Sony", "ILCE-7M2", Cloudy, 0,   { 2.4609375, 1, 1.3671875, 0 } },
+  { "Sony", "ILCE-7M2", Incandescent, 0,{ 1.3984375, 1, 2.625, 0 } },
+  { "Sony", "ILCE-7M2", WarmWhiteFluorescent, 0,{ 1.625, 1, 2.609375, 0 } },
+  { "Sony", "ILCE-7M2", CoolWhiteFluorescent, 0,{ 2.1328125, 1, 2.1328125, 0 } },
+  { "Sony", "ILCE-7M2", DayWhiteFluorescent, 0,{ 2.1796875, 1, 1.61328125, 0 } },
+  { "Sony", "ILCE-7M2", DaylightFluorescent, 0,{ 2.4453125, 1, 1.40625, 0 } },
+  { "Sony", "ILCE-7M2", Flash, 0,    { 2.5078125, 1, 1.34765625, 0 } },
+
   { "Sony", "SLT-A37", Daylight, 0,		{ 2.6641, 1, 1.5156, 0 } },
   { "Sony", "SLT-A37", Shade, 0,		{ 3.1836, 1, 1.2539, 0 } },
   { "Sony", "SLT-A37", Cloudy, 0,		{ 2.8828, 1, 1.3906, 0 } },
