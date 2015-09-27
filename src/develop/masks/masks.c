@@ -1132,6 +1132,7 @@ void dt_masks_free_form(dt_masks_form_t *form)
 {
   if(!form) return;
   g_list_free_full(form->points, free);
+  form->points = NULL;
   free(form);
   form = NULL;
 }
@@ -1780,6 +1781,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
       {
         ok = 1;
         grp->points = g_list_remove(grp->points, grpt);
+        free(grpt);
         break;
       }
       forms = g_list_next(forms);
@@ -1823,6 +1825,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
             {
               ok = 1;
               iopgrp->points = g_list_remove(iopgrp->points, grpt);
+              free(grpt);
               forms = g_list_first(iopgrp->points);
               continue;
             }
@@ -1848,6 +1851,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
     if(form->formid == id)
     {
       darktable.develop->forms = g_list_remove(darktable.develop->forms, form);
+      dt_masks_free_form(form);
       dt_masks_write_forms(darktable.develop);
       break;
     }
