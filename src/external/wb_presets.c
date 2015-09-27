@@ -7072,6 +7072,18 @@ const wb_data wb_preset[] =
   { "SONY", "ILCE-7R", Flash, 0,		{ 2.75, 1, 1.34375, 0 } },
   { "SONY", "ILCE-7R", "5500K", 0,		{ 2.55859375, 1, 1.45703125, 0 } },
 
+  // firmware ILCE-7RM2 (A7R ii) Ver 1.0
+  { "SONY", "ILCE-7RM2", Daylight, 0,		{ 2.40234375, 1, 1.56640625, 0 } },
+  { "SONY", "ILCE-7RM2", Shade, 0,		{ 2.87890625, 1, 1.28906250, 0 } },
+  { "SONY", "ILCE-7RM2", Cloudy, 0,		{ 2.60156250, 1, 1.43359375, 0 } },
+  { "SONY", "ILCE-7RM2", Incandescent, 0,	{ 1.46484375, 1, 2.84765625, 0 } },
+  { "SONY", "ILCE-7RM2", WarmWhiteFluorescent, 0,{ 1.73046875, 1, 2.73437500, 0 } },
+  { "SONY", "ILCE-7RM2", CoolWhiteFluorescent, 0,{ 2.18750000, 1, 2.22656250, 0 } },
+  { "SONY", "ILCE-7RM2", DayWhiteFluorescent, 0,{ 2.32812500, 1, 1.64453125, 0 } },
+  { "SONY", "ILCE-7RM2", DaylightFluorescent, 0,{ 2.61718750, 1, 1.51562500, 0 } },
+  { "SONY", "ILCE-7RM2", Flash, 0,		{ 2.65625000, 1, 1.41015625, 0 } },
+  { "SONY", "ILCE-7RM2", "5500K", 0,		{ 2.45703125, 1, 1.52734375, 0 } },
+
   { "SONY", "SLT-A37", Daylight, 0,		{ 2.6641, 1, 1.5156, 0 } },
   { "SONY", "SLT-A37", Shade, 0,		{ 3.1836, 1, 1.2539, 0 } },
   { "SONY", "SLT-A37", Cloudy, 0,		{ 2.8828, 1, 1.3906, 0 } },
