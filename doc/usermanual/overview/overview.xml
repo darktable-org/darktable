@@ -743,7 +743,7 @@
 
       <para>
         To begin with darktable, you first need to import images. The import module is in the
-        left pane of the lighttable view (<xref linkend="import"/>). You can either import from
+        left panel of the lighttable view (<xref linkend="import"/>). You can either import from
         the filesystem or, if darktable supports your camera model, directly from camera.
       </para>
 
@@ -766,9 +766,9 @@
         <para>
           Connect your camera to your system. If your distribution tries to automount it, select
           the option to abort the mount operation. Otherwise the camera will be locked and not
-          accessible from within darktable. If you don't see your camera in the import pane, hit
+          accessible from within darktable. If you don't see your camera in the import module, hit
           the <quote>scan for devices</quote> button. Your camera will then appear in the same
-          pane with additional choices: <emphasis>import</emphasis> and
+          module with additional choices: <emphasis>import</emphasis> and
           <emphasis>tethering</emphasis>.
         </para>
 
