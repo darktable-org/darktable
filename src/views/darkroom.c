@@ -1327,7 +1327,7 @@ static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acc
 {
   dt_develop_t *dev = (dt_develop_t *)data;
 
-  dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
   return TRUE;
 }
 static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1335,7 +1335,7 @@ static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *a
 {
   dt_develop_t *dev = (dt_develop_t *)data;
 
-  dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
   return TRUE;
 }
 
