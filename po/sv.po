@@ -25,8 +25,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-25 11:05+0200\n"
-"PO-Revision-Date: 2015-09-25 11:07+0200\n"
+"POT-Creation-Date: 2015-09-28 22:44+0200\n"
+"PO-Revision-Date: 2015-09-28 22:50+0200\n"
 "Last-Translator: Gustav Ernberg <gustav@exceed-it.se>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -516,7 +516,10 @@ msgid ""
 "if enabled, cached thumbnails will be color managed so that lighttable and "
 "filmstrip can show correct colors. otherwise the results may look wrong once "
 "the display profile gets changed."
-msgstr "om detta val slås på kommer cachade miniatyrbilder att färghanteras så att ljusbordet och filmremsan visar korrekta färger. annars kan de se felaktiga ut så snart skärmens profil ändras."
+msgstr ""
+"om detta val slås på kommer cachade miniatyrbilder att färghanteras så att "
+"ljusbordet och filmremsan visar korrekta färger. annars kan de se felaktiga "
+"ut så snart skärmens profil ändras."
 
 #: ../build/src/preferences_gen.h:2209
 msgid "number of background threads"
@@ -1198,7 +1201,7 @@ msgstr "skapade stilen '%s'"
 
 #. fail :(
 #: ../src/common/styles.c:491 ../src/common/styles.c:508
-#: ../src/views/darkroom.c:443 ../src/views/print.c:270
+#: ../src/views/darkroom.c:451 ../src/views/print.c:270
 msgid "no image selected!"
 msgstr "inga bilder valda!"
 
@@ -1453,7 +1456,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "exporterar %d bild till %s"
 msgstr[1] "exporterar %d bilder till %s"
 
-#: ../src/control/jobs/control_jobs.c:1232 ../src/views/darkroom.c:456
+#: ../src/control/jobs/control_jobs.c:1232 ../src/views/darkroom.c:464
 #: ../src/views/print.c:283
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -2183,46 +2186,46 @@ msgstr ""
 "scroll för att ställa in hårdhet, ctrl+scroll för att ställa in formens "
 "ogenomskinlighet"
 
-#: ../src/develop/masks/masks.c:182
+#: ../src/develop/masks/masks.c:195
 #, c-format
 msgid "circle #%d"
 msgstr "cirkelform #%d"
 
-#: ../src/develop/masks/masks.c:184
+#: ../src/develop/masks/masks.c:197
 #, c-format
 msgid "path #%d"
 msgstr "slinga #%d"
 
-#: ../src/develop/masks/masks.c:186
+#: ../src/develop/masks/masks.c:199
 #, c-format
 msgid "gradient #%d"
 msgstr "gradient #%d"
 
-#: ../src/develop/masks/masks.c:188
+#: ../src/develop/masks/masks.c:201
 #, c-format
 msgid "ellipse #%d"
 msgstr "ellips #%d"
 
-#: ../src/develop/masks/masks.c:190
+#: ../src/develop/masks/masks.c:203
 #, c-format
 msgid "brush #%d"
 msgstr "pensel #%d"
 
-#: ../src/develop/masks/masks.c:243
+#: ../src/develop/masks/masks.c:256
 #, c-format
 msgid "copy of %s"
 msgstr "kopia av %s"
 
-#: ../src/develop/masks/masks.c:890
+#: ../src/develop/masks/masks.c:903
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: maskering skiljer i version: %d != %d"
 
-#: ../src/develop/masks/masks.c:1627 ../src/libs/masks.c:1022
+#: ../src/develop/masks/masks.c:1641 ../src/libs/masks.c:1022
 msgid "add existing shape"
 msgstr "lägg till existerande form"
 
-#: ../src/develop/masks/masks.c:1654
+#: ../src/develop/masks/masks.c:1668
 msgid "use same shapes as"
 msgstr "använd samma form som"
 
@@ -2345,7 +2348,7 @@ msgstr "kvällssol"
 msgid "underwater"
 msgstr "under vatten"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1413
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1455
 msgid "black & white"
 msgstr "svart & vitt"
 
@@ -4968,26 +4971,26 @@ msgstr "utgående avsikt"
 
 #: ../src/iop/colorout.c:639 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261
-#: ../src/views/darkroom.c:1510
+#: ../src/views/darkroom.c:1552
 msgid "perceptual"
 msgstr "perceptuell"
 
 #: ../src/iop/colorout.c:640 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
-#: ../src/views/darkroom.c:1511
+#: ../src/views/darkroom.c:1553
 msgid "relative colorimetric"
 msgstr "relativ färgmetri"
 
 #: ../src/iop/colorout.c:641 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
-#: ../src/views/darkroom.c:1512
+#: ../src/views/darkroom.c:1554
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mättnad"
 
 #: ../src/iop/colorout.c:642 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
-#: ../src/views/darkroom.c:1513
+#: ../src/views/darkroom.c:1555
 msgid "absolute colorimetric"
 msgstr "absolut färgmetri"
 
@@ -6700,16 +6703,19 @@ msgid "temperature"
 msgstr "temperatur"
 
 #: ../src/iop/temperature.c:567
-msgid "camera white balance"
-msgstr "vitbalans från kamera"
+msgctxt "white balance"
+msgid "camera"
+msgstr "kamera"
 
 #: ../src/iop/temperature.c:568
-msgid "camera neutral white balance"
-msgstr "neutral vitbalans från kamera"
+msgctxt "white balance"
+msgid "camera neutral"
+msgstr "kamera - neutral"
 
 #: ../src/iop/temperature.c:569
-msgid "spot white balance"
-msgstr "vitbalans i mätningsområde"
+msgctxt "white balance"
+msgid "spot"
+msgstr "punkt VB"
 
 #: ../src/iop/temperature.c:829
 msgid "failed to read camera white balance information!"
@@ -7013,10 +7019,10 @@ msgstr "text"
 
 #: ../src/iop/watermark.c:1257
 msgid ""
-"text string, tag\n"
+"text string, tag:\n"
 "$(WATERMARK_TEXT)"
 msgstr ""
-"text-sträng, tag\n"
+"text-sträng, tag:\n"
 "$(WATERMARK_TEXT)"
 
 #: ../src/iop/watermark.c:1272
@@ -7677,7 +7683,7 @@ msgstr "exportera med nuvarande inställningar (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1180 ../src/libs/styles.c:66
-#: ../src/views/darkroom.c:2184
+#: ../src/views/darkroom.c:2226
 msgctxt "accel"
 msgid "export"
 msgstr "exportera"
@@ -9347,40 +9353,40 @@ msgstr "välj fil"
 msgid "double click to reset to `%f'"
 msgstr "dubbelklicka för att återställa till `%f'"
 
-#: ../src/views/darkroom.c:78
+#: ../src/views/darkroom.c:86
 msgid "darkroom"
 msgstr "mörkrum"
 
-#: ../src/views/darkroom.c:394
+#: ../src/views/darkroom.c:402
 msgid "gamut check"
 msgstr "kontroll av tonskala"
 
-#: ../src/views/darkroom.c:394
+#: ../src/views/darkroom.c:402
 msgid "soft proof"
 msgstr "skärmkorrektur"
 
-#: ../src/views/darkroom.c:883
+#: ../src/views/darkroom.c:891
 msgid "no userdefined presets for favorite modules were found"
 msgstr "inga förinställningar skapad av användare för favorit moduler hittades"
 
-#: ../src/views/darkroom.c:888
+#: ../src/views/darkroom.c:896
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "applicerar stil `%s' på aktiv bild"
 
-#: ../src/views/darkroom.c:943
+#: ../src/views/darkroom.c:951
 msgid "no styles have been created yet"
 msgstr "det finns inga stilar skapade ännu"
 
-#: ../src/views/darkroom.c:1352
+#: ../src/views/darkroom.c:1394
 msgid "quick access to presets of your favorites"
 msgstr "snabbtillgång av förinställningar av dina favoriter"
 
-#: ../src/views/darkroom.c:1361
+#: ../src/views/darkroom.c:1403
 msgid "quick access for applying any of your styles"
 msgstr "snabbtillgång för applicering av dina stilar"
 
-#: ../src/views/darkroom.c:1371
+#: ../src/views/darkroom.c:1413
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -9388,39 +9394,39 @@ msgstr ""
 "växla visning av indikation på över-/underexponering\n"
 "höger-klicka för alternativ"
 
-#: ../src/views/darkroom.c:1412
+#: ../src/views/darkroom.c:1454
 msgid "color scheme"
 msgstr "färgschema"
 
-#: ../src/views/darkroom.c:1414
+#: ../src/views/darkroom.c:1456
 msgid "red & blue"
 msgstr "rött & blått"
 
-#: ../src/views/darkroom.c:1415
+#: ../src/views/darkroom.c:1457
 msgid "purple & green"
 msgstr "lila & grönt"
 
-#: ../src/views/darkroom.c:1417
+#: ../src/views/darkroom.c:1459
 msgid "select colors to indicate over/under exposure"
 msgstr "välj färger som ska ange över- och underexponering"
 
-#: ../src/views/darkroom.c:1427
+#: ../src/views/darkroom.c:1469
 msgid "lower threshold"
 msgstr "undre tröskel"
 
-#: ../src/views/darkroom.c:1428
+#: ../src/views/darkroom.c:1470
 msgid "threshold of what shall be considered underexposed"
 msgstr "tröskelvärde för underexponerade områden"
 
-#: ../src/views/darkroom.c:1437
+#: ../src/views/darkroom.c:1479
 msgid "upper threshold"
 msgstr "övre tröskel"
 
-#: ../src/views/darkroom.c:1438
+#: ../src/views/darkroom.c:1480
 msgid "threshold of what shall be considered overexposed"
 msgstr "tröskelvärde för överexponerade områden"
 
-#: ../src/views/darkroom.c:1450
+#: ../src/views/darkroom.c:1492
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -9428,7 +9434,7 @@ msgstr ""
 "växla till/från färggodkännande på skärm\n"
 "höger-klicka för profilval"
 
-#: ../src/views/darkroom.c:1463
+#: ../src/views/darkroom.c:1505
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -9436,94 +9442,116 @@ msgstr ""
 "växla till/från kontroll av färgskala\n"
 "höger-klicka för profilval"
 
-#: ../src/views/darkroom.c:1508
+#: ../src/views/darkroom.c:1550
 msgid "display intent"
 msgstr "visningsavsikt"
 
-#: ../src/views/darkroom.c:1523
+#: ../src/views/darkroom.c:1565
 msgid "softproof profile"
 msgstr "profil för skärmkorrektur"
 
-#: ../src/views/darkroom.c:1524
+#: ../src/views/darkroom.c:1566
 msgid "display profile"
 msgstr "skärmprofil"
 
-#: ../src/views/darkroom.c:1555
+#: ../src/views/darkroom.c:1597
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler för skärm i %s/color/out eller %s/color/out"
 
-#: ../src/views/darkroom.c:1558
+#: ../src/views/darkroom.c:1600
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler för skärmkorrektur i %s/color/out eller %s/color/out"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2176 ../src/views/map.c:719 ../src/views/print.c:352
+#: ../src/views/darkroom.c:2218 ../src/views/map.c:719 ../src/views/print.c:352
 #: ../src/views/tethering.c:391
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "växla visning av filmrulle"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2179
+#: ../src/views/darkroom.c:2221
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom close-up"
 
-#: ../src/views/darkroom.c:2180
+#: ../src/views/darkroom.c:2222
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "fyll zoom"
 
-#: ../src/views/darkroom.c:2181
+#: ../src/views/darkroom.c:2223
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "anpassa zoom"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2187
+#: ../src/views/darkroom.c:2229
 msgctxt "accel"
 msgid "image forward"
 msgstr "nästa bild"
 
-#: ../src/views/darkroom.c:2188
+#: ../src/views/darkroom.c:2230
 msgctxt "accel"
 msgid "image back"
 msgstr "föregående bild"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2191
+#: ../src/views/darkroom.c:2233
 msgctxt "accel"
 msgid "overexposed"
 msgstr "överexponerad"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2194
+#: ../src/views/darkroom.c:2236
 msgctxt "accel"
 msgid "softproof"
 msgstr "färggodkännande"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2197
+#: ../src/views/darkroom.c:2239
 msgctxt "accel"
 msgid "gamut check"
 msgstr "kontroll av tonskala"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2200
+#: ../src/views/darkroom.c:2242
 msgctxt "accel"
 msgid "brush larger"
 msgstr "större pensel"
 
-#: ../src/views/darkroom.c:2201
+#: ../src/views/darkroom.c:2243
 msgctxt "accel"
 msgid "brush smaller"
 msgstr "mindre pensel"
 
+#. brush hardness +/-
+#: ../src/views/darkroom.c:2246
+msgctxt "accel"
+msgid "increase brush hardness"
+msgstr "öka penselns hårdhet"
+
+#: ../src/views/darkroom.c:2247
+msgctxt "accel"
+msgid "decrease brush hardness"
+msgstr "minska penselns hårdhet"
+
+#. brush opacity +/-
+#: ../src/views/darkroom.c:2250
+msgctxt "accel"
+msgid "increase brush opacity"
+msgstr "öka penselns ogenomskinlighet"
+
+#: ../src/views/darkroom.c:2251
+msgctxt "accel"
+msgid "decrease brush opacity"
+msgstr "minska penselns ogenomskinlighet"
+
 #. fullscreen view
-#: ../src/views/darkroom.c:2204
+#: ../src/views/darkroom.c:2254
 msgctxt "accel"
 msgid "full preview"
 msgstr "förhandsvisning i helskärm"
@@ -9684,6 +9712,15 @@ msgstr "ny session skapad '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
 
+#~ msgid "camera white balance"
+#~ msgstr "vitbalans från kamera"
+
+#~ msgid "camera neutral white balance"
+#~ msgstr "neutral vitbalans från kamera"
+
+#~ msgid "spot white balance"
+#~ msgstr "vitbalans i mätningsområde"
+
 #~ msgid "creating cache directories\n"
 #~ msgstr "skapar cache-katalogerna\n"
 
@@ -9822,14 +9859,6 @@ msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
 #~ "av - ingen komprimering i minnet, JPG på disk. låg kvalitet - DXT1 "
 #~ "(snabb). hög kvalitet - DXT1, tar lika mycket minne som låg kvalitet men "
 #~ "är långsammare."
-
-#~ msgctxt "accel"
-#~ msgid "increase brightness"
-#~ msgstr "öka ljusstyrka"
-
-#~ msgctxt "accel"
-#~ msgid "decrease brightness"
-#~ msgstr "minska ljusstyrka"
 
 #~ msgctxt "accel"
 #~ msgid "increase contrast"
