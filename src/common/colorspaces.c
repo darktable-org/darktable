@@ -1146,43 +1146,41 @@ static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_prof
   return prof;
 }
 
+// this function is basically thread safe, at least when not called on the global darktable.color_profiles
+static void _update_display_transforms(dt_colorspaces_t *self)
+{
+  if(self->transform_srgb_to_display) cmsDeleteTransform(self->transform_srgb_to_display);
+  self->transform_srgb_to_display = NULL;
+
+  if(self->transform_adobe_rgb_to_display) cmsDeleteTransform(self->transform_adobe_rgb_to_display);
+  self->transform_adobe_rgb_to_display = NULL;
+
+  cmsHPROFILE display_profile = _get_profile(self, self->display_type, self->display_filename,
+                                             DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  if(!display_profile) return;
+
+  self->transform_srgb_to_display = cmsCreateTransform(_get_profile(self, DT_COLORSPACE_SRGB, "",
+                                                                    DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                                                       TYPE_RGBA_8,
+                                                       display_profile,
+                                                       TYPE_BGRA_8,
+                                                       self->display_intent,
+                                                       0);
+
+  self->transform_adobe_rgb_to_display = cmsCreateTransform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
+                                                                         DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                                                            TYPE_RGBA_8,
+                                                            display_profile,
+                                                            TYPE_BGRA_8,
+                                                            self->display_intent,
+                                                            0);
+}
 
 // update cached transforms for color management of thumbnails
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!
 void dt_colorspaces_update_display_transforms()
 {
-  if(darktable.color_profiles->transform_srgb_to_display)
-    cmsDeleteTransform(darktable.color_profiles->transform_srgb_to_display);
-  darktable.color_profiles->transform_srgb_to_display = NULL;
-
-  if(darktable.color_profiles->transform_adobe_rgb_to_display)
-    cmsDeleteTransform(darktable.color_profiles->transform_adobe_rgb_to_display);
-  darktable.color_profiles->transform_adobe_rgb_to_display = NULL;
-
-  cmsHPROFILE display_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
-                                                           darktable.color_profiles->display_filename,
-                                                           DT_PROFILE_DIRECTION_DISPLAY)->profile;
-  if(!display_profile) return;
-
-  darktable.color_profiles->transform_srgb_to_display
-      = cmsCreateTransform(dt_colorspaces_get_profile(DT_COLORSPACE_SRGB,
-                                                      "",
-                                                      DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                           TYPE_RGBA_8,
-                           display_profile,
-                           TYPE_BGRA_8,
-                           darktable.color_profiles->display_intent,
-                           0);
-
-  darktable.color_profiles->transform_adobe_rgb_to_display
-      = cmsCreateTransform(dt_colorspaces_get_profile(DT_COLORSPACE_ADOBERGB,
-                                                      "",
-                                                      DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                           TYPE_RGBA_8,
-                           display_profile,
-                           TYPE_BGRA_8,
-                           darktable.color_profiles->display_intent,
-                           0);
+  _update_display_transforms(darktable.color_profiles);
 }
 
 // make sure that darktable.color_profiles->xprofile_lock is held when calling this!
@@ -1221,6 +1219,8 @@ static void cms_error_handler(cmsContext ContextID, cmsUInt32Number ErrorCode, c
 
 dt_colorspaces_t *dt_colorspaces_init()
 {
+  cmsSetLogErrorHandler(cms_error_handler);
+
   dt_colorspaces_t *res = (dt_colorspaces_t *)calloc(1, sizeof(dt_colorspaces_t));
 
   pthread_rwlock_init(&res->xprofile_lock, NULL);
@@ -1364,25 +1364,7 @@ dt_colorspaces_t *dt_colorspaces_init()
     res->softproof_type = DT_COLORSPACE_SRGB;
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
 
-  cmsSetLogErrorHandler(cms_error_handler);
-
-  cmsHPROFILE display_profile = _get_profile(res, res->display_type, res->display_filename,
-                                             DT_PROFILE_DIRECTION_DISPLAY)->profile;
-
-  res->transform_srgb_to_display = cmsCreateTransform(_get_profile(res, DT_COLORSPACE_SRGB, "",
-                                                                   DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                                                      TYPE_RGB_8,
-                                                      display_profile,
-                                                      TYPE_BGR_8,
-                                                      res->display_intent,
-                                                      0);
-  res->transform_adobe_rgb_to_display = cmsCreateTransform(_get_profile(res, DT_COLORSPACE_ADOBERGB, "",
-                                                                        DT_PROFILE_DIRECTION_DISPLAY)->profile,
-                                                           TYPE_RGB_8,
-                                                           display_profile,
-                                                           TYPE_BGR_8,
-                                                           res->display_intent,
-                                                           0);
+  _update_display_transforms(res);
 
   return res;
 }

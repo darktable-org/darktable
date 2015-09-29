@@ -82,15 +82,15 @@ void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
   if(g_list_length(gui->points) == index)
   {
     dt_masks_form_gui_points_t *gpt2
-        = (dt_masks_form_gui_points_t *)malloc(sizeof(dt_masks_form_gui_points_t));
+        = (dt_masks_form_gui_points_t *)calloc(1, sizeof(dt_masks_form_gui_points_t));
     gui->points = g_list_append(gui->points, gpt2);
   }
   else if(g_list_length(gui->points) < index)
     return;
-  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-  gui->pipe_hash = gui->formid = gpt->points_count = gpt->border_count = gpt->source_count = 0;
-  gpt->points = gpt->border = gpt->source = NULL;
 
+  dt_masks_gui_form_remove(form, gui, index);
+
+  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(dt_masks_get_points_border(darktable.develop, form, &gpt->points, &gpt->points_count, &gpt->border,
                                 &gpt->border_count, 0))
   {
@@ -100,6 +100,19 @@ void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
     gui->formid = form->formid;
   }
 }
+
+void dt_masks_form_gui_points_free(gpointer data)
+{
+  if(!data) return;
+
+  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)data;
+
+  free(gpt->points);
+  free(gpt->border);
+  free(gpt->source);
+  free(gpt);
+}
+
 void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index)
 {
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -125,7 +138,7 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *g
     if(gui->pipe_hash != darktable.develop->preview_pipe->backbuf_hash)
     {
       gui->pipe_hash = gui->formid = 0;
-      g_list_free(gui->points);
+      g_list_free_full(gui->points, dt_masks_form_gui_points_free);
       gui->points = NULL;
     }
   }
@@ -1119,6 +1132,7 @@ void dt_masks_free_form(dt_masks_form_t *form)
 {
   if(!form) return;
   g_list_free_full(form->points, free);
+  form->points = NULL;
   free(form);
   form = NULL;
 }
@@ -1298,7 +1312,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
 
 void dt_masks_clear_form_gui(dt_develop_t *dev)
 {
-  g_list_free(dev->form_gui->points);
+  g_list_free_full(dev->form_gui->points, dt_masks_form_gui_points_free);
   dev->form_gui->points = NULL;
   dt_masks_dynbuf_free(dev->form_gui->guipoints);
   dev->form_gui->guipoints = NULL;
@@ -1767,6 +1781,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
       {
         ok = 1;
         grp->points = g_list_remove(grp->points, grpt);
+        free(grpt);
         break;
       }
       forms = g_list_next(forms);
@@ -1810,6 +1825,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
             {
               ok = 1;
               iopgrp->points = g_list_remove(iopgrp->points, grpt);
+              free(grpt);
               forms = g_list_first(iopgrp->points);
               continue;
             }
@@ -1835,6 +1851,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
     if(form->formid == id)
     {
       darktable.develop->forms = g_list_remove(darktable.develop->forms, form);
+      dt_masks_free_form(form);
       dt_masks_write_forms(darktable.develop);
       break;
     }

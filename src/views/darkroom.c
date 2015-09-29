@@ -67,6 +67,14 @@ static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acc
                                         GdkModifierType modifier, gpointer data);
 static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data);
+static gboolean _brush_hardness_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                            GdkModifierType modifier, gpointer data);
+static gboolean _brush_hardness_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                              GdkModifierType modifier, gpointer data);
+static gboolean _brush_opacity_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data);
+static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer data);
 
 static void _update_softproof_gamut_checking(dt_develop_t *d);
 
@@ -1327,7 +1335,7 @@ static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acc
 {
   dt_develop_t *dev = (dt_develop_t *)data;
 
-  dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
   return TRUE;
 }
 static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1335,7 +1343,41 @@ static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *a
 {
   dt_develop_t *dev = (dt_develop_t *)data;
 
-  dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
+  return TRUE;
+}
+
+static gboolean _brush_hardness_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                            GdkModifierType modifier, gpointer data)
+{
+  dt_develop_t *dev = (dt_develop_t *)data;
+
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_SHIFT_MASK);
+  return TRUE;
+}
+static gboolean _brush_hardness_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                              GdkModifierType modifier, gpointer data)
+{
+  dt_develop_t *dev = (dt_develop_t *)data;
+
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_SHIFT_MASK);
+  return TRUE;
+}
+
+static gboolean _brush_opacity_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  dt_develop_t *dev = (dt_develop_t *)data;
+
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_CONTROL_MASK);
+  return TRUE;
+}
+static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer data)
+{
+  dt_develop_t *dev = (dt_develop_t *)data;
+
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_CONTROL_MASK);
   return TRUE;
 }
 
@@ -2200,6 +2242,14 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "brush larger"), GDK_KEY_bracketright, 0);
   dt_accel_register_view(self, NC_("accel", "brush smaller"), GDK_KEY_bracketleft, 0);
 
+  // brush hardness +/-
+  dt_accel_register_view(self, NC_("accel", "increase brush hardness"), GDK_KEY_braceright, 0);
+  dt_accel_register_view(self, NC_("accel", "decrease brush hardness"), GDK_KEY_braceleft, 0);
+
+  // brush opacity +/-
+  dt_accel_register_view(self, NC_("accel", "increase brush opacity"), GDK_KEY_greater, 0);
+  dt_accel_register_view(self, NC_("accel", "decrease brush opacity"), GDK_KEY_less, 0);
+
   // fullscreen view
   dt_accel_register_view(self, NC_("accel", "full preview"), GDK_KEY_z, 0);
 }
@@ -2251,6 +2301,18 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "brush larger", closure);
   closure = g_cclosure_new(G_CALLBACK(_brush_size_down_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "brush smaller", closure);
+
+  // brush hardness +/-
+  closure = g_cclosure_new(G_CALLBACK(_brush_hardness_up_callback), (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "increase brush hardness", closure);
+  closure = g_cclosure_new(G_CALLBACK(_brush_hardness_down_callback), (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "decrease brush hardness", closure);
+
+  // brush opacity +/-
+  closure = g_cclosure_new(G_CALLBACK(_brush_opacity_up_callback), (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "increase brush opacity", closure);
+  closure = g_cclosure_new(G_CALLBACK(_brush_opacity_down_callback), (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "decrease brush opacity", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

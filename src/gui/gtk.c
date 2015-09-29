@@ -930,6 +930,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     input_devices = g_list_next(input_devices);
   }
 
+  // finally set the cursor to be the default.
+  // for some reason this is needed on some systems to pick up the correctly themed cursor
+  dt_control_change_cursor(GDK_LEFT_PTR);
+
   return 0;
 }
 

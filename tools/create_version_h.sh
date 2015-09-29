@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 H_FILE=$1
 
 VERSION_H_NEEDS_UPDATE=1
