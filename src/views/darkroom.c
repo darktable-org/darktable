@@ -2298,9 +2298,9 @@ void connect_key_accels(dt_view_t *self)
 
   // brush size +/-
   closure = g_cclosure_new(G_CALLBACK(_brush_size_up_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "brush larger", closure);
+  dt_accel_connect_view(self, "increase brush size", closure);
   closure = g_cclosure_new(G_CALLBACK(_brush_size_down_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "brush smaller", closure);
+  dt_accel_connect_view(self, "decrease brush size", closure);
 
   // brush hardness +/-
   closure = g_cclosure_new(G_CALLBACK(_brush_hardness_up_callback), (gpointer)self->data, NULL);
