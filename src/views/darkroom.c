@@ -2239,8 +2239,8 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "gamut check"), GDK_KEY_g, GDK_CONTROL_MASK);
 
   // brush size +/-
-  dt_accel_register_view(self, NC_("accel", "brush larger"), GDK_KEY_bracketright, 0);
-  dt_accel_register_view(self, NC_("accel", "brush smaller"), GDK_KEY_bracketleft, 0);
+  dt_accel_register_view(self, NC_("accel", "increase brush size"), GDK_KEY_bracketright, 0);
+  dt_accel_register_view(self, NC_("accel", "decrease brush size"), GDK_KEY_bracketleft, 0);
 
   // brush hardness +/-
   dt_accel_register_view(self, NC_("accel", "increase brush hardness"), GDK_KEY_braceright, 0);
