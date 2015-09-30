@@ -2239,8 +2239,8 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "gamut check"), GDK_KEY_g, GDK_CONTROL_MASK);
 
   // brush size +/-
-  dt_accel_register_view(self, NC_("accel", "brush larger"), GDK_KEY_bracketright, 0);
-  dt_accel_register_view(self, NC_("accel", "brush smaller"), GDK_KEY_bracketleft, 0);
+  dt_accel_register_view(self, NC_("accel", "increase brush size"), GDK_KEY_bracketright, 0);
+  dt_accel_register_view(self, NC_("accel", "decrease brush size"), GDK_KEY_bracketleft, 0);
 
   // brush hardness +/-
   dt_accel_register_view(self, NC_("accel", "increase brush hardness"), GDK_KEY_braceright, 0);
@@ -2298,9 +2298,9 @@ void connect_key_accels(dt_view_t *self)
 
   // brush size +/-
   closure = g_cclosure_new(G_CALLBACK(_brush_size_up_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "brush larger", closure);
+  dt_accel_connect_view(self, "increase brush size", closure);
   closure = g_cclosure_new(G_CALLBACK(_brush_size_down_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "brush smaller", closure);
+  dt_accel_connect_view(self, "decrease brush size", closure);
 
   // brush hardness +/-
   closure = g_cclosure_new(G_CALLBACK(_brush_hardness_up_callback), (gpointer)self->data, NULL);

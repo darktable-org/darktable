@@ -216,7 +216,9 @@ static int load_from_lua(lua_State *L)
   argv[argc] = NULL;
   argv_copy[argc] = NULL;
   gtk_init(&argc, &argv);
-  dt_init(argc, argv, false, L);
+  if(dt_init(argc, argv, false, L)) {
+    luaL_error(L,"Starting darktable failed.");
+  }
   for(int i = 0; i < argc; i++)
   {
     free(argv_copy[i]);

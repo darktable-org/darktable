@@ -146,7 +146,7 @@ static gchar *get_active_preset_name(dt_iop_module_t *module)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select name, op_params, blendop_params, enabled from presets where "
-                              "operation=?1 and op_version=?2 order by writeprotect desc, name, rowid",
+                              "operation=?1 and op_version=?2 order by writeprotect desc, lower(name), rowid",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
@@ -745,7 +745,7 @@ void dt_gui_favorite_presets_menu_show()
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, writeprotect, "
                                                                    "description, blendop_params, op_version "
                                                                    "from presets where operation=?1 order by "
-                                                                   "writeprotect desc, name, rowid",
+                                                                   "writeprotect desc, lower(name), rowid",
                                     -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
 
@@ -808,7 +808,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
                                 "?10 between focal_length_min and focal_length_max and "
                                 "(format = 0 or format&?9!=0)"
                                 " ) )"
-                                "order by writeprotect desc, name, rowid",
+                                "order by writeprotect desc, lower(name), rowid",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
@@ -829,7 +829,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, writeprotect, "
                                                                "description, blendop_params, op_version, "
                                                                "enabled from presets where operation=?1 "
-                                                               "order by writeprotect desc, name, rowid",
+                                                               "order by writeprotect desc, lower(name), rowid",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, -1, SQLITE_TRANSIENT);
   }
