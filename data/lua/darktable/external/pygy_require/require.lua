@@ -8,19 +8,27 @@ local t_concat = table.concat
 
 --- Helpers
 
-local function _tostring(s) return ""..s end
 
 local function checkstring(s)
-    local success, res = pcall(_tostring, s)
-    if success then return res end
-    error("bad argument #1 to 'require' (string expected, got "..type(s)..")", 3)
+    local t = type(s)
+    if t == "string" then
+        return s
+    elseif t == "number" then
+        return tostring(s)
+    else
+        error("bad argument #1 to 'require' (string expected, got "..t..")", 3)
+    end
 end
 
 --- for Lua 5.1
 
 local package, p_loaded = package, package.loaded
 
-local sentinel = newproxy and newproxy() or string.char(1,2,3,4,5)
+
+local sentinel do
+    local function errhandler() error("the require() sentinel can't be indexed or updated", 2) end
+    sentinel = newproxy and newproxy() or setmetatable({}, {__index = errhandler, __newindex = errhandler, __metatable = false})
+end
 
 local function require51 (name)
     name = checkstring(name)
@@ -76,7 +84,7 @@ local function require52 (name)
         loader = nil
     end
     if loader == nil then
-        error("module '" .. name .. "' not found: "..table.concat(msg), 2)
+        error("module '" .. name .. "' not found: "..t_concat(msg), 2)
     end
     local res = loader(name, param)
     if res ~= nil then
