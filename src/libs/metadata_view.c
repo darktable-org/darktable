@@ -408,6 +408,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       char datetime[200];
       tt_exif.tm_year -= 1900;
       tt_exif.tm_mon--;
+      tt_exif.tm_isdst = -1;
       mktime(&tt_exif);
       // just %c is too long and includes a time zone that we don't know from exif
       strftime(datetime, sizeof(datetime), "%a %x %X", &tt_exif);
