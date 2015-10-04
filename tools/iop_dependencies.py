@@ -7,7 +7,7 @@ sys.path.append('/usr/lib/graphviz/python/')
 sys.path.append('/usr/lib64/graphviz/python/')
 
 # libgv-python
-import gv
+import pygraphviz as gv
 
 # import pygraph
 from pygraph.classes.digraph import digraph
@@ -485,11 +485,7 @@ for n in sorted_nodes:
   priority -= 1000.0/(length-1.0)
 
 # beauty-print the sorted pipe as pdf:
-gr2 = digraph()
-gr2.add_nodes(sorted_nodes)
-add_edges(gr2)
-
-dot = write(gr2)
-gvv = gv.readstring(dot)
-gv.layout(gvv,'dot')
-gv.render(gvv,'pdf','iop_deps.pdf')
+dot = write(gr)
+gvv = gv.AGraph(dot)
+gvv.layout(prog='dot')
+gvv.draw('iop_deps.pdf')
