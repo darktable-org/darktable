@@ -4005,6 +4005,14 @@ const wb_data wb_preset[] =
   { "Olympus", "E-M10", "3300K", 0,		{ 1.453125, 1, 2.640625, 0 } },
   { "Olympus", "E-M10", "5000K", 0,		{ 1.882813, 1, 1.906250, 0 } },
 
+  { "Olympus", "E-M10 Mark II", Daylight, 0, { 1.851563, 1, 1.835938, 0 } },
+  { "Olympus", "E-M10 Mark II", Shade, 0, { 2.171875, 1, 1.429688, 0 } },
+  { "Olympus", "E-M10 Mark II", Cloudy, 0, { 1.992188, 1, 1.664063, 0 } },
+  { "Olympus", "E-M10 Mark II", Tungsten, 0, { 1.140625, 1, 3.429688, 0 } },
+  { "Olympus", "E-M10 Mark II", Fluorescent, 0, { 1.875, 1, 2.695313, 0 } },
+  { "Olympus", "E-M10 Mark II", Underwater, 0, { 1.890625, 1, 2.257813, 0 } },
+  { "Olympus", "E-M10 Mark II", Flash, 0, { 2.148438, 1, 1.601563, 0 } },
+
   { "Olympus", "E-P1", Daylight, 0,		{ 1.835938, 1, 1.351563, 0 } },
   { "Olympus", "E-P1", Shade, 0,		{ 2.195313, 1, 1.046875, 0 } },
   { "Olympus", "E-P1", Cloudy, 0,		{ 2.031250, 1, 1.203125, 0 } },
