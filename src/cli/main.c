@@ -25,6 +25,7 @@
  *  - profit
  */
 
+#include "version.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/collection.h"
@@ -77,7 +78,7 @@ int main(int argc, char *arg[])
       }
       else if(!strcmp(arg[k], "--version"))
       {
-        printf("this is darktable-cli\ncopyright (c) 2012-2014 johannes hanika, tobias ellinghaus\n");
+        printf("this is darktable-cli " PACKAGE_VERSION  "\ncopyright (c) 2012-2015 johannes hanika, tobias ellinghaus\n");
         exit(1);
       }
       else if(!strcmp(arg[k], "--width"))
