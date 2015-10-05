@@ -45,8 +45,12 @@
 #define DT_MIPMAP_CACHE_FILE_VERSION 23
 #define DT_MIPMAP_CACHE_DEFAULT_FILE_NAME "mipmaps"
 
-#define DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE (1 << 0)
-#define DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE (1 << 1)
+typedef enum dt_mipmap_buffer_dsc_flags
+{
+  DT_MIPMAP_BUFFER_DSC_FLAG_NONE = 0,
+  DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE = 1 << 0,
+  DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE = 1 << 1
+} dt_mipmap_buffer_dsc_flags;
 
 // the embedded Exif data to tag thumbnails as sRGB or AdobeRGB
 static const uint8_t dt_mipmap_cache_exif_data_srgb[] = {
@@ -69,7 +73,7 @@ struct dt_mipmap_buffer_dsc
   uint32_t width;
   uint32_t height;
   size_t size;
-  uint32_t flags;
+  dt_mipmap_buffer_dsc_flags flags;
   uint32_t pre_monochrome_demosaiced;
   dt_colorspaces_color_profile_type_t color_space;
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
@@ -625,8 +629,10 @@ void dt_mipmap_cache_get_with_caller(
     struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
     buf->cache_entry = entry;
 
+    int mipmap_generated = 0;
     if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
     {
+      mipmap_generated = 1;
       // _init_f() will set it, if needed
       buf->pre_monochrome_demosaiced = 0;
 
@@ -693,23 +699,42 @@ void dt_mipmap_cache_get_with_caller(
       dsc->pre_monochrome_demosaiced = buf->pre_monochrome_demosaiced;
       dsc->color_space = buf->color_space;
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
+    }
 
-      // image cache is leaving the write lock in place in case the image has been newly allocated.
-      // this leads to a slight increase in thread contention, so we opt for dropping the write lock
-      // and acquiring a read lock immediately after. since this opens a small window for other threads
-      // to get in between, we need to take some care to re-init cache entries and dsc.
-      // note that concurrencykit has rw locks that can be demoted from w->r without losing the lock in between.
-      if(mode == 'r')
-      {
-        // drop the write lock
-        dt_cache_release(&_get_cache(cache, mip)->cache, entry);
-        // get a read lock
-        buf->cache_entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
-        dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
-      }
+    // image cache is leaving the write lock in place in case the image has been newly allocated.
+    // this leads to a slight increase in thread contention, so we opt for dropping the write lock
+    // and acquiring a read lock immediately after. since this opens a small window for other threads
+    // to get in between, we need to take some care to re-init cache entries and dsc.
+    // note that concurrencykit has rw locks that can be demoted from w->r without losing the lock in between.
+    if(mode == 'r')
+    {
+      entry->_lock_demoting = 1;
+      // drop the write lock
+      dt_cache_release(&_get_cache(cache, mip)->cache, entry);
+      // get a read lock
+      buf->cache_entry = entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
+      entry->_lock_demoting = 0;
+      dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
+    }
+
+#ifdef _DEBUG
+    const pthread_t writer = dt_pthread_rwlock_get_writer(&(buf->cache_entry->lock));
+    if(mode == 'w')
+    {
+      assert(pthread_equal(writer, pthread_self()));
+    }
+    else
+    {
+      assert(!pthread_equal(writer, pthread_self()));
+    }
+#endif
+
+    if(mipmap_generated)
+    {
       /* raise signal that mipmaps has been flushed to cache */
       g_idle_add(_raise_signal_mipmap_updated, 0);
     }
+
     buf->width = dsc->width;
     buf->height = dsc->height;
     buf->color_space = dsc->color_space;

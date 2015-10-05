@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2014 johannes hanika.
+    copyright (c) 2015 LebedevRI
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@
 #include <float.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 #include <string.h>
 #include <glib.h>
 #include <assert.h>
@@ -57,12 +59,14 @@ typedef struct dt_pthread_rwlock_t
 {
   pthread_rwlock_t lock;
   int cnt;
+  pthread_t writer;
   char name[256];
 } dt_pthread_rwlock_t;
 
 static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
   const int ret = pthread_mutex_destroy(&(mutex->mutex));
+  assert(!ret);
 
 #if 0
   printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
@@ -98,6 +102,7 @@ static inline int dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex,
   }
 #endif
   const int ret = pthread_mutex_init(&(mutex->mutex), attr);
+  assert(!ret);
   return ret;
 }
 
@@ -107,6 +112,7 @@ static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, c
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_lock(&(mutex->mutex));
+  assert(!ret);
   mutex->time_locked = dt_pthread_get_wtime();
   double wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
@@ -133,6 +139,7 @@ static inline int dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_trylock(&(mutex->mutex));
+  assert(!ret || (ret == EBUSY));
   if(ret) return ret;
   mutex->time_locked = dt_pthread_get_wtime();
   double wait = mutex->time_locked - t0;
@@ -183,6 +190,7 @@ static inline int dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex,
 
   // need to unlock last, to shield our internal data.
   const int ret = pthread_mutex_unlock(&(mutex->mutex));
+  assert(!ret);
   return ret;
 }
 
@@ -195,32 +203,47 @@ static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t 
 static inline int dt_pthread_rwlock_init(dt_pthread_rwlock_t *lock,
     const pthread_rwlockattr_t *attr)
 {
-  memset(lock->name, 0, sizeof(lock->name));
+  memset(lock, 0, sizeof(dt_pthread_rwlock_t));
   lock->cnt = 0;
-  return pthread_rwlock_init(&lock->lock, attr);
+  const int res = pthread_rwlock_init(&lock->lock, attr);
+  assert(!res);
+  return res;
 }
 
 static inline int dt_pthread_rwlock_destroy(dt_pthread_rwlock_t *lock)
 {
   snprintf(lock->name, sizeof(lock->name), "destroyed with cnt %d", lock->cnt);
-  return pthread_rwlock_destroy(&lock->lock);
+  const int res = pthread_rwlock_destroy(&lock->lock);
+  assert(!res);
+  return res;
 }
 
-static inline int dt_pthread_rwlock_unlock(dt_pthread_rwlock_t *rwlock)
+static inline pthread_t dt_pthread_rwlock_get_writer(dt_pthread_rwlock_t *lock)
 {
-  int res = pthread_rwlock_unlock(&rwlock->lock);
-  rwlock->cnt --;
+  return lock->writer;
+}
+
+#define dt_pthread_rwlock_unlock(A) dt_pthread_rwlock_unlock_with_caller(A, __FILE__, __LINE__)
+static inline int dt_pthread_rwlock_unlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
+{
+  const int res = pthread_rwlock_unlock(&rwlock->lock);
+
+  assert(!res);
+
+  __sync_fetch_and_sub(&(rwlock->cnt), 1);
   assert(rwlock->cnt >= 0);
-  if(!res)
-    memset(rwlock->name, 0, sizeof(rwlock->name));
+  __sync_bool_compare_and_swap(&(rwlock->writer), pthread_self(), 0);
+  if(!res) snprintf(rwlock->name, sizeof(rwlock->name), "u:%s:%d", file, line);
   return res;
 }
 
 #define dt_pthread_rwlock_rdlock(A) dt_pthread_rwlock_rdlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_rdlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
-  int res = pthread_rwlock_rdlock(&rwlock->lock);
-  rwlock->cnt ++;
+  const int res = pthread_rwlock_rdlock(&rwlock->lock);
+  assert(!res);
+  assert(!(res && pthread_equal(rwlock->writer, pthread_self())));
+  __sync_fetch_and_add(&(rwlock->cnt), 1);
   if(!res)
     snprintf(rwlock->name, sizeof(rwlock->name), "r:%s:%d", file, line);
   return res;
@@ -228,19 +251,25 @@ static inline int dt_pthread_rwlock_rdlock_with_caller(dt_pthread_rwlock_t *rwlo
 #define dt_pthread_rwlock_wrlock(A) dt_pthread_rwlock_wrlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_wrlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
-  int res = pthread_rwlock_wrlock(&rwlock->lock);
-  rwlock->cnt ++;
+  const int res = pthread_rwlock_wrlock(&rwlock->lock);
+  assert(!res);
+  __sync_fetch_and_add(&(rwlock->cnt), 1);
   if(!res)
+  {
+    __sync_lock_test_and_set(&(rwlock->writer), pthread_self());
     snprintf(rwlock->name, sizeof(rwlock->name), "w:%s:%d", file, line);
+  }
   return res;
 }
 #define dt_pthread_rwlock_tryrdlock(A) dt_pthread_rwlock_tryrdlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_tryrdlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
-  int res = pthread_rwlock_tryrdlock(&rwlock->lock);
+  const int res = pthread_rwlock_tryrdlock(&rwlock->lock);
+  assert(!res || (res == EBUSY));
+  assert(!(res && pthread_equal(rwlock->writer, pthread_self())));
   if(!res)
   {
-    rwlock->cnt ++;
+    __sync_fetch_and_add(&(rwlock->cnt), 1);
     snprintf(rwlock->name, sizeof(rwlock->name), "tr:%s:%d", file, line);
   }
   return res;
@@ -248,10 +277,12 @@ static inline int dt_pthread_rwlock_tryrdlock_with_caller(dt_pthread_rwlock_t *r
 #define dt_pthread_rwlock_trywrlock(A) dt_pthread_rwlock_trywrlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
-  int res = pthread_rwlock_trywrlock(&rwlock->lock);
+  const int res = pthread_rwlock_trywrlock(&rwlock->lock);
+  assert(!res || (res == EBUSY));
   if(!res)
   {
-    rwlock->cnt ++;
+    __sync_fetch_and_add(&(rwlock->cnt), 1);
+    __sync_lock_test_and_set(&(rwlock->writer), pthread_self());
     snprintf(rwlock->name, sizeof(rwlock->name), "tw:%s:%d", file, line);
   }
   return res;
