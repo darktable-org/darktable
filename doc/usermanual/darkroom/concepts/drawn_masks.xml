@@ -295,7 +295,7 @@
       </para>
 
       <para>
-        The size of the complete shape can be modified by scrolling&nbsp;&ndash; analogeous to
+        The size of the complete shape can be modified by scrolling&nbsp;&ndash; analogous to
         the circle shape. The same holds true for the width of the border, i.e. the area with a
         gradual opacity decay. Single nodes as well as path segments can be moved by mouse
         dragging. If a node is selected by clicking on it, a further control point
