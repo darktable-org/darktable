@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-02 10:17+0200\n"
-"PO-Revision-Date: 2015-10-02 10:48+0200\n"
+"POT-Creation-Date: 2015-10-06 22:02+0200\n"
+"PO-Revision-Date: 2015-10-06 22:07+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -656,46 +656,46 @@ msgstr "Organiser et développer les images d'un boîtier numérique"
 msgid "graphics;photography;raw;"
 msgstr "graphisme;photographie;raw;"
 
-#: ../src/cli/main.c:101
+#: ../src/cli/main.c:102
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr "TODO: désolé, dû à des restrictions d'interfaces de programmation, il n'est pas possible de régler le BPP"
 
-#: ../src/cli/main.c:113
+#: ../src/cli/main.c:114
 msgid "Unknown option for --hq"
 msgstr "Option inconnue pour --hq"
 
-#: ../src/cli/main.c:129
+#: ../src/cli/main.c:130
 msgid "Unknown option for --upscale"
 msgstr "Option inconnue pour --upscale"
 
-#: ../src/cli/main.c:183
+#: ../src/cli/main.c:184
 msgid "output file already exists, it will get renamed"
 msgstr "ficher de sortie existant, il va être renommé"
 
-#: ../src/cli/main.c:198
+#: ../src/cli/main.c:199
 #, c-format
 msgid "error: can't open file %s"
 msgstr "erreur : impossible d'ouvrir le fichier «%s»"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
-#: ../src/cli/main.c:220
+#: ../src/cli/main.c:221
 msgid "empty history stack"
 msgstr "réinitialiser le développement"
 
-#: ../src/cli/main.c:243
+#: ../src/cli/main.c:244
 msgid "cannot find disk storage module. please check your installation, something seems to be broken."
 msgstr "impossible de trouver le module d'export vers le disque. vérifier votre installation, quelque chose est brisée."
 
-#: ../src/cli/main.c:250
+#: ../src/cli/main.c:251
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr "impossible d'obtenir les paramètres du module de stockage, exportation abandonnée..."
 
-#: ../src/cli/main.c:262
+#: ../src/cli/main.c:263
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "extension inconnue «.%s»"
 
-#: ../src/cli/main.c:270
+#: ../src/cli/main.c:271
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "impossible d'obtenir les paramètres du module de format, exportation abandonnée..."
 
@@ -912,27 +912,27 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:563
+#: ../src/common/imageio.c:565
 #, c-format
 msgid "failed to allocate memory for %s, please lower the threads used for export or buy more memory."
 msgstr "échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
-#: ../src/common/imageio.c:564
+#: ../src/common/imageio.c:566
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "l'aperçu"
 
-#: ../src/common/imageio.c:564
+#: ../src/common/imageio.c:566
 msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:571 ../src/common/mipmap_cache.c:971
+#: ../src/common/imageio.c:573 ../src/common/mipmap_cache.c:996
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image «%s» non disponible!"
 
-#: ../src/common/imageio.c:585
+#: ../src/common/imageio.c:587
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "impossible de trouver le style «%s» à appliquer pendant l'exportation."
@@ -1043,7 +1043,19 @@ msgstr "sans"
 msgid "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
 
-#: ../src/control/control.c:353 ../src/control/control.c:356
+#: ../src/common/utility.c:371
+msgid "Above sea level"
+msgstr "au dessus du niveau de la mer"
+
+#: ../src/common/utility.c:372
+msgid "Below sea level"
+msgstr "sous le niveau de la mer"
+
+#: ../src/common/utility.c:423 ../src/libs/metadata_view.c:518
+msgid "m"
+msgstr "m"
+
+#: ../src/control/control.c:355 ../src/control/control.c:358
 msgid "working.."
 msgstr "en cours..."
 
@@ -2124,6 +2136,37 @@ msgstr "BdB du boîtier"
 #: ../src/external/wb_presets.c:78
 msgid "auto WB"
 msgstr "BdB automatique"
+
+#: ../src/generate-cache/main.c:41
+#, c-format
+msgid "creating cache directories\n"
+msgstr "création des dossiers pour le cache\n"
+
+#: ../src/generate-cache/main.c:47
+#, c-format
+msgid "creating cache directory '%s'\n"
+msgstr "création du dossier de cache «%s»\n"
+
+#: ../src/generate-cache/main.c:50
+#, c-format
+msgid "could not create directory '%s'!\n"
+msgstr "impossible de créer le dossier «%s» !\n"
+
+#: ../src/generate-cache/main.c:161
+#, c-format
+msgid ""
+"Warning: disk backend for mipmap cache is disabled (cache_disk_backend)\n"
+"If you want to pre-generate thumbnails and for darktable to use them, you need to enable disk backend for mipmap cache\n"
+"no thumbnails to be generated, done."
+msgstr ""
+"Attention: l'utilisation du disque pour les miniatures est désactivé (cache_disk_backend)\n"
+"si vous voulez pré-générer les miniatures pour que darktable puisse les utiliser, vous devez activer l'utilisation du cache disque\n"
+"aucune miniature à générer, fini."
+
+#: ../src/generate-cache/main.c:168
+#, c-format
+msgid "creating complete lighttable thumbnail cache\n"
+msgstr "création de toutes les miniatures pour le cache de la table lumineuse\n"
 
 #: ../src/gui/accelerators.c:32 ../src/gui/accelerators.c:69
 msgctxt "accel"
@@ -5173,6 +5216,11 @@ msgstr "CE calculée: "
 msgid "what exposure correction have actually been used"
 msgstr "la correction d'exposition réellement utilisée"
 
+#: ../src/iop/finalscale.c:37
+msgctxt "modulename"
+msgid "scale into final size"
+msgstr "redimensionne à la taille finale"
+
 #: ../src/iop/flip.c:378 ../src/iop/flip.c:379
 msgid "autodetect"
 msgstr "détection automatique"
@@ -8213,11 +8261,7 @@ msgid_plural "image has %d stars"
 msgstr[0] "l'image a %d étoile"
 msgstr[1] "l'image a %d étoiles"
 
-#: ../src/libs/metadata_view.c:517
-msgid "m"
-msgstr "m"
-
-#: ../src/libs/metadata_view.c:592
+#: ../src/libs/metadata_view.c:593
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
@@ -8990,6 +9034,11 @@ msgstr "changer de vue"
 msgid "view toolbox"
 msgstr "afficher la boîte à outils"
 
+#: ../src/lua/lualib.c:274
+msgctxt "accel"
+msgid "reset lib parameters"
+msgstr "réinitialiser les paramètres de la bibliothèque"
+
 #: ../src/lua/preferences.c:565
 msgid "lua options"
 msgstr "options lua"
@@ -9365,18 +9414,6 @@ msgstr "aucun boîtier disponible pour la capture..."
 #~ msgctxt "accel"
 #~ msgid "brush smaller"
 #~ msgstr "pinceau plus fin"
-
-#~ msgid "creating cache directories\n"
-#~ msgstr "création des dossiers pour le cache\n"
-
-#~ msgid "creating cache directory '%s'\n"
-#~ msgstr "création du dossier de cache «%s»\n"
-
-#~ msgid "could not create directory '%s'!\n"
-#~ msgstr "impossible de créer le dossier «%s» !\n"
-
-#~ msgid "creating complete lighttable thumbnail cache\n"
-#~ msgstr "création de toutes les miniatures pour le cache de la table lumineuse\n"
 
 #~ msgid "camera white balance"
 #~ msgstr "boîtier"
