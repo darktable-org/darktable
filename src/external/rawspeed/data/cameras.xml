@@ -4574,6 +4574,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="143" white="4095"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ1000" mode="3:2">
 		<ID make="Panasonic" model="DMC-FZ1000">Panasonic DMC-FZ1000</ID>
@@ -4585,6 +4588,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="142" white="4095"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ1000" mode="1:1">
 		<ID make="Panasonic" model="DMC-FZ1000">Panasonic DMC-FZ1000</ID>
@@ -4596,6 +4602,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-32" height="0"/>
 		<Sensor black="143" white="4095"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ1000" mode="4:3">
 		<ID make="Panasonic" model="DMC-FZ1000">Panasonic DMC-FZ1000</ID>
@@ -4607,6 +4616,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-160" height="0"/>
 		<Sensor black="143" white="4095"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ1000" mode="16:9">
 		<ID make="Panasonic" model="DMC-FZ1000">Panasonic DMC-FZ1000</ID>
@@ -4618,6 +4630,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="143" white="4095"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-GX1">
 		<ID make="Panasonic" model="DMC-GX1">Panasonic DMC-GX1</ID>
