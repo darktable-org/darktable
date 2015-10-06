@@ -1088,6 +1088,21 @@
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G3 X">
+		<ID make="Canon" model="PowerShot G3 X">Canon PowerShot G3 X</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="96" y="17" width="0" height="0"/>
+		<Sensor black="2047" white="16000"/>
+		<BlackAreas>
+			<Vertical x="0" width="90"/>
+			<Horizontal y="0" height="16"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G5">
 		<ID make="Canon" model="PowerShot G5">Canon PowerShot G5</ID>
 		<CFA width="2" height="2">
