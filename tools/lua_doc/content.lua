@@ -564,6 +564,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.path:set_text([[The file the directory containing the image.]])
 	types.dt_lua_image_t.film:set_text([[The film object that contains this image.]])
 	types.dt_lua_image_t.filename:set_text([[The filename of the image.]])
+  types.dt_lua_image_t.sidecar:set_text([[The filename of the image's sidecar file.]])
 	types.dt_lua_image_t.duplicate_index:set_text([[If there are multiple images based on a same file, each will have a unique number, starting from 0.]])
 
 

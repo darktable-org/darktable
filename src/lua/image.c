@@ -101,23 +101,22 @@ static int drop_cache(lua_State *L)
 static int path_member(lua_State *L)
 {
   const dt_image_t *my_image = checkreadimage(L, 1);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select folder from images, film_rolls where "
-                              "images.film_id = film_rolls.id and images.id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    lua_pushstring(L, (char *)sqlite3_column_text(stmt, 0));
-  }
-  else
-  {
-    sqlite3_finalize(stmt);
-    releasereadimage(L, my_image);
-    return luaL_error(L, "should never happen");
-  }
-  sqlite3_finalize(stmt);
+  char pathname[PATH_MAX] = { 0 };
+  dt_image_film_roll_directory(my_image, pathname, sizeof(pathname));
+  lua_pushstring(L, pathname);
+  releasereadimage(L, my_image);
+  return 1;
+}
+
+static int sidecar_member(lua_State *L)
+{
+  const dt_image_t *my_image = checkreadimage(L, 1);
+  gboolean from_cache = TRUE;
+  char filename[PATH_MAX] = { 0 };
+  dt_image_full_path(my_image->id, filename, sizeof(filename), &from_cache);
+  dt_image_path_append_version(my_image->id, filename, sizeof(filename));
+  g_strlcat(filename, ".xmp", sizeof(filename));
+  lua_pushstring(L, filename);
   releasereadimage(L, my_image);
   return 1;
 }
@@ -125,18 +124,7 @@ static int path_member(lua_State *L)
 static int duplicate_index_member(lua_State *L)
 {
   const dt_image_t *my_image = checkreadimage(L, 1);
-  // get duplicate suffix
-  int version = 0;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select count(id) from images where filename in "
-                              "(select filename from images where id = ?1) and film_id in "
-                              "(select film_id from images where id = ?1) and id < ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-  if(sqlite3_step(stmt) == SQLITE_ROW) version = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-  lua_pushinteger(L, version);
+  lua_pushinteger(L, my_image->version);
   releasereadimage(L, my_image);
   return 1;
 }
@@ -252,21 +240,13 @@ static int creator_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_CREATOR);
-    if(sqlite3_step(stmt) != SQLITE_ROW)
-    {
-      lua_pushstring(L, "");
-    }
+    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.creator", NULL);
+    if(res)
+      lua_pushstring(L, (char *)res->data);
     else
-    {
-      lua_pushstring(L, (char *)sqlite3_column_text(stmt, 0));
-    }
-    sqlite3_finalize(stmt);
+      lua_pushstring(L, "");
     releasereadimage(L, my_image);
+    g_list_free_full(res, g_free);
     return 1;
   }
   else
@@ -284,21 +264,13 @@ static int publisher_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_PUBLISHER);
-    if(sqlite3_step(stmt) != SQLITE_ROW)
-    {
-      lua_pushstring(L, "");
-    }
+    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.publisher", NULL);
+    if(res)
+      lua_pushstring(L, (char *)res->data);
     else
-    {
-      lua_pushstring(L, (char *)sqlite3_column_text(stmt, 0));
-    }
-    sqlite3_finalize(stmt);
+      lua_pushstring(L, "");
     releasereadimage(L, my_image);
+    g_list_free_full(res, g_free);
     return 1;
   }
   else
@@ -316,21 +288,13 @@ static int title_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_TITLE);
-    if(sqlite3_step(stmt) != SQLITE_ROW)
-    {
-      lua_pushstring(L, "");
-    }
+    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.title", NULL);
+    if(res)
+      lua_pushstring(L, (char *)res->data);
     else
-    {
-      lua_pushstring(L, (char *)sqlite3_column_text(stmt, 0));
-    }
-    sqlite3_finalize(stmt);
+      lua_pushstring(L, "");
     releasereadimage(L, my_image);
+    g_list_free_full(res, g_free);
     return 1;
   }
   else
@@ -348,21 +312,13 @@ static int description_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_DESCRIPTION);
-    if(sqlite3_step(stmt) != SQLITE_ROW)
-    {
-      lua_pushstring(L, "");
-    }
+    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.description", NULL);
+    if(res)
+      lua_pushstring(L, (char *)res->data);
     else
-    {
-      lua_pushstring(L, (char *)sqlite3_column_text(stmt, 0));
-    }
-    sqlite3_finalize(stmt);
+      lua_pushstring(L, "");
     releasereadimage(L, my_image);
+    g_list_free_full(res, g_free);
     return 1;
   }
   else
@@ -380,21 +336,13 @@ static int rights_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_RIGHTS);
-    if(sqlite3_step(stmt) != SQLITE_ROW)
-    {
-      lua_pushstring(L, "");
-    }
+    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.title", NULL);
+    if(res)
+      lua_pushstring(L, (char *)res->data);
     else
-    {
-      lua_pushstring(L, (char *)sqlite3_column_text(stmt, 0));
-    }
-    sqlite3_finalize(stmt);
+      lua_pushstring(L, "");
     releasereadimage(L, my_image);
+    g_list_free_full(res, g_free);
     return 1;
   }
   else
@@ -591,6 +539,8 @@ int dt_lua_init_image(lua_State *L)
   // read only members
   lua_pushcfunction(L, path_member);
   dt_lua_type_register_const(L, dt_lua_image_t, "path");
+  lua_pushcfunction(L, sidecar_member);
+  dt_lua_type_register_const(L, dt_lua_image_t, "sidecar");
   lua_pushcfunction(L, duplicate_index_member);
   dt_lua_type_register_const(L, dt_lua_image_t, "duplicate_index");
   lua_pushcfunction(L, is_ldr_member);
