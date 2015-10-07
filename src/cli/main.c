@@ -25,7 +25,6 @@
  *  - profit
  */
 
-#include "version.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/collection.h"
