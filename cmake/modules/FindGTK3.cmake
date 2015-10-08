@@ -83,7 +83,11 @@ find_library(GDKPIXBUF_LIBRARY NAMES gdk_pixbuf-2.0
 
 # Glib
 
-find_package(Glib REQUIRED)
+# NOTE: must be one of the macros listed in https://developer.gnome.org/glib/stable/glib-Version-Information.html
+find_package(Glib REQUIRED 2.32)
+set(GTK3_DEFINITIONS ${GTK3_DEFINITIONS} "-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_32")
+set(GTK3_DEFINITIONS ${GTK3_DEFINITIONS} "-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_MIN_REQUIRED")
+
 if(NOT Glib_FOUND)
   set(_GTK3_found_all false)
 endif()
