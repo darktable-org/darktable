@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-06 22:02+0200\n"
-"PO-Revision-Date: 2015-10-06 22:07+0200\n"
+"POT-Creation-Date: 2015-10-08 19:07+0200\n"
+"PO-Revision-Date: 2015-10-08 19:07+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -893,19 +893,19 @@ msgstr "<h1>Merci,</h1><p>tout devrait s'être bien passé, vous pouvez <b>ferme
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1331
+#: ../src/common/image.c:1334
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1345
+#: ../src/common/image.c:1348
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1397 ../src/control/jobs/control_jobs.c:626
+#: ../src/common/image.c:1407 ../src/control/jobs/control_jobs.c:626
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "impossible de supprimer la copie locale lorsque l'original n'est pas accessible"
 
-#: ../src/common/image.c:1549
+#: ../src/common/image.c:1559
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1033,8 +1033,8 @@ msgstr "le fichier du style «%s» existe"
 msgid "style %s was successfully imported"
 msgstr "le style «%s» a été importé"
 
-#: ../src/common/variables.c:240 ../src/common/variables.c:254 ../src/iop/clipping.c:1574 ../src/iop/clipping.c:1861 ../src/iop/clipping.c:1881
-#: ../src/iop/clipping.c:2019 ../src/iop/clipping.c:2041 ../src/iop/colorreconstruction.c:1314 ../src/iop/lens.c:2037 ../src/libs/export.c:485
+#: ../src/common/variables.c:240 ../src/common/variables.c:254 ../src/iop/clipping.c:1576 ../src/iop/clipping.c:1865 ../src/iop/clipping.c:1885
+#: ../src/iop/clipping.c:2023 ../src/iop/clipping.c:2045 ../src/iop/colorreconstruction.c:1314 ../src/iop/lens.c:2037 ../src/libs/export.c:485
 #: ../src/libs/live_view.c:323 ../src/libs/live_view.c:336 ../src/libs/live_view.c:354 ../src/libs/print_settings.c:1007 ../src/libs/print_settings.c:1276
 msgid "none"
 msgstr "sans"
@@ -1044,11 +1044,11 @@ msgid "due to a slow GPU hardware acceleration via opencl has been de-activated.
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
 
 #: ../src/common/utility.c:371
-msgid "Above sea level"
+msgid "above sea level"
 msgstr "au dessus du niveau de la mer"
 
 #: ../src/common/utility.c:372
-msgid "Below sea level"
+msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
 #: ../src/common/utility.c:423 ../src/libs/metadata_view.c:518
@@ -2155,11 +2155,11 @@ msgstr "impossible de créer le dossier «%s» !\n"
 #: ../src/generate-cache/main.c:161
 #, c-format
 msgid ""
-"Warning: disk backend for mipmap cache is disabled (cache_disk_backend)\n"
-"If you want to pre-generate thumbnails and for darktable to use them, you need to enable disk backend for mipmap cache\n"
+"warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\n"
+"if you want to pre-generate thumbnails and for darktable to use them, you need to enable disk backend for thumbnail cache\n"
 "no thumbnails to be generated, done."
 msgstr ""
-"Attention: l'utilisation du disque pour les miniatures est désactivé (cache_disk_backend)\n"
+"attention: l'utilisation du disque pour les miniatures est désactivé (cache_disk_backend)\n"
 "si vous voulez pré-générer les miniatures pour que darktable puisse les utiliser, vous devez activer l'utilisation du cache disque\n"
 "aucune miniature à générer, fini."
 
@@ -2985,12 +2985,12 @@ msgstr "dpi des images embarquées dans le pdf"
 msgid "rotate images"
 msgstr "retournement des images"
 
-#: ../src/imageio/format/pdf.c:595 ../src/imageio/format/pdf.c:621 ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1892 ../src/libs/export.c:585
+#: ../src/imageio/format/pdf.c:595 ../src/imageio/format/pdf.c:621 ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1896 ../src/libs/export.c:585
 #: ../src/libs/metadata_view.c:251
 msgid "no"
 msgstr "non"
 
-#: ../src/imageio/format/pdf.c:596 ../src/imageio/format/pdf.c:622 ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1893 ../src/libs/export.c:586
+#: ../src/imageio/format/pdf.c:596 ../src/imageio/format/pdf.c:622 ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1897 ../src/libs/export.c:586
 #: ../src/libs/metadata_view.c:251
 msgid "yes"
 msgstr "oui"
@@ -3003,7 +3003,7 @@ msgstr "les images peuvent être tournées pour correspondre à l'orientation du
 msgid "TODO: pages"
 msgstr ""
 
-#: ../src/imageio/format/pdf.c:608 ../src/iop/clipping.c:2058 ../src/iop/lens.c:2043 ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:117
+#: ../src/imageio/format/pdf.c:608 ../src/iop/clipping.c:2062 ../src/iop/lens.c:2043 ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "tout"
 
@@ -3859,7 +3859,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:914 ../src/iop/clipping.c:1911
+#: ../src/iop/borders.c:914 ../src/iop/clipping.c:1915
 msgid "golden cut"
 msgstr "rapport d'or"
 
@@ -3879,7 +3879,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:919 ../src/iop/clipping.c:1901
+#: ../src/iop/borders.c:919 ../src/iop/clipping.c:1905
 msgid "square"
 msgstr "carré"
 
@@ -3915,7 +3915,7 @@ msgstr "taille du cadre"
 msgid "size of the border in percent of the full image"
 msgstr "taille du cadre en pourcentage de l'image"
 
-#: ../src/iop/borders.c:984 ../src/iop/clipping.c:1997
+#: ../src/iop/borders.c:984 ../src/iop/clipping.c:2001
 msgid "aspect"
 msgstr "aspect"
 
@@ -4120,136 +4120,136 @@ msgstr "recadrer et pivoter"
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "format de dimension non reconnu. il devrait être  \"nombre:nombre\""
 
-#: ../src/iop/clipping.c:1575 ../src/iop/clipping.c:1863 ../src/iop/clipping.c:1882
+#: ../src/iop/clipping.c:1577 ../src/iop/clipping.c:1867 ../src/iop/clipping.c:1886
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/clipping.c:1576 ../src/iop/clipping.c:1862 ../src/iop/clipping.c:1883
+#: ../src/iop/clipping.c:1578 ../src/iop/clipping.c:1866 ../src/iop/clipping.c:1887
 msgid "horizontal"
 msgstr "horizontale"
 
-#: ../src/iop/clipping.c:1577 ../src/iop/clipping.c:1884
+#: ../src/iop/clipping.c:1579 ../src/iop/clipping.c:1888
 msgid "full"
 msgstr "les deux"
 
-#: ../src/iop/clipping.c:1578
+#: ../src/iop/clipping.c:1580
 msgid "old system"
 msgstr "système précédent"
 
-#: ../src/iop/clipping.c:1579
+#: ../src/iop/clipping.c:1581
 msgid "correction applied"
 msgstr "correction appliquée"
 
-#: ../src/iop/clipping.c:1860 ../src/iop/clipping.c:2040 ../src/libs/live_view.c:335
+#: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:2044 ../src/libs/live_view.c:335
 msgid "flip"
 msgstr "symétrie miroir"
 
-#: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:2044 ../src/libs/live_view.c:339
+#: ../src/iop/clipping.c:1868 ../src/iop/clipping.c:2048 ../src/libs/live_view.c:339
 msgid "both"
 msgstr "les deux"
 
-#: ../src/iop/clipping.c:1866
+#: ../src/iop/clipping.c:1870
 msgid "mirror image horizontally and/or vertically"
 msgstr "retourne l'image horizontalement et/ou horizontalement"
 
-#: ../src/iop/clipping.c:1872
+#: ../src/iop/clipping.c:1876
 msgid "angle"
 msgstr "rotation"
 
-#: ../src/iop/clipping.c:1876
+#: ../src/iop/clipping.c:1880
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "clic-droit et tracer une ligne pour indiquer l'horizontale"
 
-#: ../src/iop/clipping.c:1880
+#: ../src/iop/clipping.c:1884
 msgid "keystone"
 msgstr "perspective"
 
-#: ../src/iop/clipping.c:1885
+#: ../src/iop/clipping.c:1889
 msgid "set perspective correction for your image"
 msgstr "règle la correction de perspective"
 
-#: ../src/iop/clipping.c:1891
+#: ../src/iop/clipping.c:1895
 msgid "automatic cropping"
 msgstr "recadrage"
 
-#: ../src/iop/clipping.c:1894
+#: ../src/iop/clipping.c:1898
 msgid "automatically crop to avoid black edges"
 msgstr "recadre automatique pour éviter les bords noirs"
 
-#: ../src/iop/clipping.c:1899
+#: ../src/iop/clipping.c:1903
 msgid "freehand"
 msgstr "libre"
 
-#: ../src/iop/clipping.c:1900
+#: ../src/iop/clipping.c:1904
 msgid "original image"
 msgstr "image"
 
-#: ../src/iop/clipping.c:1902
+#: ../src/iop/clipping.c:1906
 msgid "10:8 in print"
 msgstr "10:8 in print"
 
-#: ../src/iop/clipping.c:1903
+#: ../src/iop/clipping.c:1907
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:1904
+#: ../src/iop/clipping.c:1908
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:1905
+#: ../src/iop/clipping.c:1909
 msgid "8.5x11, letter"
 msgstr "8.5x11, letter"
 
-#: ../src/iop/clipping.c:1906
+#: ../src/iop/clipping.c:1910
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:1907
+#: ../src/iop/clipping.c:1911
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:1908
+#: ../src/iop/clipping.c:1912
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:1909
+#: ../src/iop/clipping.c:1913
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:1910
+#: ../src/iop/clipping.c:1914
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:1912
+#: ../src/iop/clipping.c:1916
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:1913
+#: ../src/iop/clipping.c:1917
 msgid "widescreen"
 msgstr "panoramique"
 
-#: ../src/iop/clipping.c:1914
+#: ../src/iop/clipping.c:1918
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:1915
+#: ../src/iop/clipping.c:1919
 msgid "cinemascope"
 msgstr "cinemascope"
 
-#: ../src/iop/clipping.c:1916
+#: ../src/iop/clipping.c:1920
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:1917
+#: ../src/iop/clipping.c:1921
 msgid "anamorphic"
 msgstr "anamorphique"
 
-#: ../src/iop/clipping.c:1949 ../src/iop/clipping.c:1961
+#: ../src/iop/clipping.c:1953 ../src/iop/clipping.c:1965
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "format de dimension non reconnu «%s». il devrait être  \"nombre:nombre\""
 
-#: ../src/iop/clipping.c:2011
+#: ../src/iop/clipping.c:2015
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -4257,82 +4257,82 @@ msgstr ""
 "sélectionne les dimensions\n"
 "la liste est triée de la moins à la plus carrée"
 
-#: ../src/iop/clipping.c:2018 ../src/libs/live_view.c:322
+#: ../src/iop/clipping.c:2022 ../src/libs/live_view.c:322
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/clipping.c:2021 ../src/libs/live_view.c:324
+#: ../src/iop/clipping.c:2025 ../src/libs/live_view.c:324
 msgid "grid"
 msgstr "grille"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:2022 ../src/libs/live_view.c:325
+#: ../src/iop/clipping.c:2026 ../src/libs/live_view.c:325
 msgid "rules of thirds"
 msgstr "règle des tiers"
 
-#: ../src/iop/clipping.c:2023
+#: ../src/iop/clipping.c:2027
 msgid "metering"
 msgstr "mesure"
 
-#: ../src/iop/clipping.c:2025
+#: ../src/iop/clipping.c:2029
 msgid "perspective"
 msgstr "perspective"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:2026 ../src/libs/live_view.c:326
+#: ../src/iop/clipping.c:2030 ../src/libs/live_view.c:326
 msgid "diagonal method"
 msgstr "diagonales"
 
-#: ../src/iop/clipping.c:2027 ../src/libs/live_view.c:327
+#: ../src/iop/clipping.c:2031 ../src/libs/live_view.c:327
 msgid "harmonious triangles"
 msgstr "triangles harmonieux"
 
-#: ../src/iop/clipping.c:2028 ../src/libs/live_view.c:328
+#: ../src/iop/clipping.c:2032 ../src/libs/live_view.c:328
 msgid "golden mean"
 msgstr "nombre d'or"
 
-#: ../src/iop/clipping.c:2035 ../src/libs/live_view.c:330
+#: ../src/iop/clipping.c:2039 ../src/libs/live_view.c:330
 msgid "display guide lines to help compose your photograph"
 msgstr "affiche des guides pour vous aider à composer votre photo"
 
-#: ../src/iop/clipping.c:2042 ../src/libs/live_view.c:337
+#: ../src/iop/clipping.c:2046 ../src/libs/live_view.c:337
 msgid "horizontally"
 msgstr "horizontale"
 
-#: ../src/iop/clipping.c:2043 ../src/libs/live_view.c:338
+#: ../src/iop/clipping.c:2047 ../src/libs/live_view.c:338
 msgid "vertically"
 msgstr "verticale"
 
-#: ../src/iop/clipping.c:2045 ../src/libs/live_view.c:340
+#: ../src/iop/clipping.c:2049 ../src/libs/live_view.c:340
 msgid "flip guides"
 msgstr "retourne les guides"
 
-#: ../src/iop/clipping.c:2054 ../src/libs/live_view.c:344
+#: ../src/iop/clipping.c:2058 ../src/libs/live_view.c:344
 msgid "extra"
 msgstr "guides additionnels"
 
-#: ../src/iop/clipping.c:2055 ../src/libs/live_view.c:345
+#: ../src/iop/clipping.c:2059 ../src/libs/live_view.c:345
 msgid "golden sections"
 msgstr "sections d'or"
 
-#: ../src/iop/clipping.c:2056 ../src/libs/live_view.c:346
+#: ../src/iop/clipping.c:2060 ../src/libs/live_view.c:346
 msgid "golden spiral sections"
 msgstr "sections de spirale d'or"
 
-#: ../src/iop/clipping.c:2057 ../src/libs/live_view.c:347
+#: ../src/iop/clipping.c:2061 ../src/libs/live_view.c:347
 msgid "golden spiral"
 msgstr "spirale d'or"
 
-#: ../src/iop/clipping.c:2059 ../src/libs/live_view.c:349
+#: ../src/iop/clipping.c:2063 ../src/libs/live_view.c:349
 msgid "show some extra guides"
 msgstr "afficher des guides supplémentaires"
 
-#: ../src/iop/clipping.c:3187
+#: ../src/iop/clipping.c:3191
 msgctxt "accel"
 msgid "commit"
 msgstr "valider"
 
-#: ../src/iop/clipping.c:3188
+#: ../src/iop/clipping.c:3192
 msgctxt "accel"
 msgid "angle"
 msgstr "rotation"
@@ -5213,7 +5213,7 @@ msgid "computed EC: "
 msgstr "CE calculée: "
 
 #: ../src/iop/exposure.c:988
-msgid "what exposure correction have actually been used"
+msgid "what exposure correction has actually been used"
 msgstr "la correction d'exposition réellement utilisée"
 
 #: ../src/iop/finalscale.c:37
