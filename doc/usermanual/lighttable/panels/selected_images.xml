@@ -60,18 +60,25 @@
 
     <sect4>
 
-      <title>delete</title>
+      <title>delete/trash</title>
 
       <indexterm>
         <primary>delete images</primary>
+        <primary>trash images</primary>
       </indexterm>
 
       <para>
-        Physically delete selected images from filesystem. See also preference option <quote>ask
-        before erasing images from disk</quote> (<xref linkend="gui_options"/>). If this
-        configuration option is not active, darktable will delete the file(s) without further
-        question! This is irreversible, and will also erase your development work of these
-        images.
+        Eliminate the selected images from the darktable database and remove the image files
+        from their respective locations. Depending on the setting of config parameter
+        <quote>send files to trash when erasing images</quote> (<xref linkend="gui_options"/>)
+        this either irrevocably deletes the images from filesystem or puts them into your
+        system's trash bin.
+      </para>
+
+      <para>
+        See also preference option <quote>ask before erasing images from disk</quote>
+        (<xref linkend="gui_options"/>). If this configuration option is not active, darktable
+        will delete/trash the file(s) without further question.
       </para>
 
       <para>
@@ -159,7 +166,7 @@
         Perform a counter-clockwise or clockwise rotation on selected images. The third button
         resets the image rotation to the value in the EXIF data. This feature is directly linked
         to the orientation module (see <xref linkend="orientation"/>)&nbsp;&ndash; adjustments
-        are converted into history stack items of that module.      
+        are converted into history stack items of that module.
       </para>
 
     </sect4>

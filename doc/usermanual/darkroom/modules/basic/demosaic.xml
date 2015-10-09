@@ -61,7 +61,7 @@
 
     <para>
       As interpolation is prone to produce artifacts, various different demosaic algorithms have
-      been developed in the past. Artifacts would typically be visible as moiré-like patterns
+      been developed in the past. Artifacts would typically be visible as moir&eacute;-like patterns
       when you strongly zoom into your image. Currently darktable supports PPG, AMAZE, and VNG4.
       All these algorithms produce high quality output with a low tendency to artifacts. AMAZE
       is reported to sometimes give slightly better results. However, as AMAZE is significantly

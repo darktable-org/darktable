@@ -45,6 +45,13 @@
   </para>
 
   <para>
+    Starting with darktable 2.0 it is now safe to quit darktable, leave the darkroom mode, or
+    switch to another image while having selected some earlier state in the history stack panel.
+    The history stack does no longer get truncated. When returning to the image you will find
+    the history stack panel in the state where you left it.
+  </para>
+
+  <para>
     Hitting <quote>compress history stack</quote> generates the shortest history stack that
     produces the current image, i.e. suppressing all de-activated modules. This also will
     discard all modules above the currently selected one.

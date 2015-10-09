@@ -654,7 +654,7 @@ SCP STORAGE
 a simple storage to export images via scp
 
 AUTHOR
-Jérémy Rosen (jeremy.rosen@enst-bretagne.fr)
+J&eacute;r&eacute;my Rosen (jeremy.rosen@enst-bretagne.fr)
 
 INSTALLATION
 * copy this file in $CONFIGDIR/lua/ where CONFIGDIR

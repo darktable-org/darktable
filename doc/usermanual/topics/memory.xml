@@ -13,13 +13,13 @@
 
   <para>
     darktable's memory requirements are high. A simple calculation makes this clear. If you have
-    a 20MPx image, darktable for precision reasons will store this internally as a 4 × 32-bit
+    a 20MPx image, darktable for precision reasons will store this internally as a 4 x 32-bit
     floating point cell for each pixel. Each full image of this size will need about 300MB of
     memory. As we want to process the image, we will at least need two buffers for each module
-    – one for input and one for output. If we have a more complex module, its algorithm might
+    &nbsp;&ndash; one for input and one for output. If we have a more complex module, its algorithm might
     additionally require several intermediate buffers of the same size. Without further
     optimization, anything between 600MB and 3GB would be needed only to store and process image
-    data. On top we have darktable’s code segment, the code and data of all dynamically linked
+    data. On top we have darktable's code segment, the code and data of all dynamically linked
     system libraries, and not to forget further buffers where darktable stores intermediate
     images for quick access during interactive work (mip map cache). All in all, darktable would
     like to see a minimum of about 4GB to run happily.
@@ -60,7 +60,7 @@
     </para>
 
     <para>
-      darktable’s escape route is called tiling. Instead of processing an image in one big
+      darktable's escape route is called tiling. Instead of processing an image in one big
       chunk, we split the image into smaller parts for every processing step (module). This will
       still require one full input and output buffer, but intermediate buffers can be made small
       enough to have everything fit into the hardware limits.
@@ -77,7 +77,7 @@
       fragmentation, which can and will hit software that needs to do extensive memory
       management. If such a program allocates 5 times 300MB at a time and frees it again, that
       memory should normally be available for one big 1.5GB allocation afterwards. This however
-      is often not the case. The system’s memory allocator may no longer see this area as one
+      is often not the case. The system's memory allocator may no longer see this area as one
       contiguous 1.5GB block but as a row of 300MB areas. If there is no other free area of
       1.5GB available, the allocation would fail. During a program run this mechanism will take
       away more and more of the larger memory blocks in favor of smaller ones. darktable 1.0
@@ -121,7 +121,7 @@
     </indexterm>
 
     <para>
-      As we’ve seen 32-bit systems are difficult environments for darktable. Still many users
+      As we've seen 32-bit systems are difficult environments for darktable. Still many users
       are successfully running darktable on them, if the basic requirements in terms of total
       system memory and the topics mentioned in the paragraphs above are addressed properly.
     </para>
@@ -131,16 +131,16 @@
       will detect your system and set conservative values by default. However, if you upgrade
       darktable from an older version (e.g. coming from 0.9.3 and going to 1.0), chances are you
       have unfavorable settings in your preferences. The consequences might be darktable
-      aborting due to allocation failures or – very typically – darktable not being able to
+      aborting due to allocation failures or&nbsp;&ndash; very typically&nbsp;&ndash; darktable not being able to
       properly import a new film roll. As a frequent symptom you get skulls displayed instead of
       thumbs for many of your pictures.
     </para>
 
     <para>
       If this is the case, take a minute to optimize the preference settings in this case. You
-      will find them under “core options” (<xref linkend="core_options"/>) in darktable’s
-      preference dialog. You should also find these parameters as configuration variables in
-      $HOME/.config/darktable/darktablerc and edit them there.
+      will find them under <quote>core options</quote> (<xref linkend="core_options"/>) in
+      darktable's preference dialog. You should also find these parameters as configuration
+      variables in $HOME/.config/darktable/darktablerc and edit them there.
     </para>
 
     <para>
@@ -191,7 +191,7 @@
 
         <varlistentry>
 
-          <term>memory in megabytes to use for mipmap cache</term>
+          <term>memory in megabytes to use for thumbnail cache</term>
 
           <listitem><para>
             This controls how many thumbnails (or mip maps) can be stored in memory at a time.

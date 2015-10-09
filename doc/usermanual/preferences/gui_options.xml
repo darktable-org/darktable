@@ -42,6 +42,13 @@
     Always ask the user before any image file is deleted (default on).
   </para>
 
+  <bridgehead renderas="sect4">send files to trash when erasing images</bridgehead>
+
+  <para>
+    Instead of physically deleting images from disk put them into the system's trash bin
+    (default on).
+  </para>
+
   <bridgehead renderas="sect4">ask before moving images from film roll folder</bridgehead>
 
   <para>
