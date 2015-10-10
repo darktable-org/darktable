@@ -1249,10 +1249,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Simple text
   GtkBox *hboxt = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkWidget *label = gtk_label_new(_("text"));
   g->text = gtk_entry_new();
-  gtk_box_pack_start(hboxt, label, TRUE, TRUE, 0);
-  gtk_box_pack_start(hboxt, g->text, TRUE, TRUE, 0);
+  gtk_entry_set_width_chars(GTK_ENTRY(g->text), 27);
+  GtkWidget *label = dtgtk_reset_label_new(_("text"), self, &g->text, 0);
+
+  gtk_box_pack_start(hboxt, label, FALSE, TRUE, 0);
+  gtk_box_pack_end(hboxt, g->text, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxt), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->text), "tooltip-text", _("text string, tag:\n$(WATERMARK_TEXT)"), (char *)NULL);
   dt_gui_key_accel_block_on_focus_connect(g->text);
@@ -1280,6 +1282,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxt), TRUE, TRUE, 0);
 
   // Text font
+  hboxt = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   str = dt_conf_get_string("plugins/darkroom/watermark/font");
   g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
   g_object_set(G_OBJECT(g->fontsel), "tooltip-text",
@@ -1287,8 +1290,11 @@ void gui_init(struct dt_iop_module_t *self)
                (char *)NULL);
   gtk_font_button_set_show_size (GTK_FONT_BUTTON(g->fontsel), FALSE);
   g_free(str);
+  label = dtgtk_reset_label_new(_("font"), self, &g->fontsel, 3 * sizeof(float));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->fontsel), TRUE, TRUE, 0);
+  gtk_box_pack_start(hboxt, label, TRUE, TRUE, 0);
+  gtk_box_pack_start(hboxt, g->fontsel, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxt), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 5);
 
