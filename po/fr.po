@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-08 19:07+0200\n"
-"PO-Revision-Date: 2015-10-08 19:07+0200\n"
+"POT-Creation-Date: 2015-10-10 11:46+0200\n"
+"PO-Revision-Date: 2015-10-10 11:46+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1749,7 +1749,7 @@ msgstr "mode de fusion"
 msgid "choose blending mode"
 msgstr "choisir le mode de fusion"
 
-#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1298
+#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1304
 msgid "opacity"
 msgstr "opacité"
 
@@ -3685,7 +3685,7 @@ msgstr "courbe de base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
-#: ../src/iop/basecurve.c:827 ../src/iop/lens.c:2179 ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1302
+#: ../src/iop/basecurve.c:827 ../src/iop/lens.c:2179 ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1308
 msgid "scale"
 msgstr "échelle"
 
@@ -5395,7 +5395,7 @@ msgstr ""
 "progressivité du dégradé :\n"
 "0% = doux, 100% = dur"
 
-#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1305
+#: ../src/iop/graduatednd.c:1047 ../src/iop/watermark.c:1311
 msgid "rotation"
 msgstr "rotation"
 
@@ -6674,11 +6674,11 @@ msgstr "alignement"
 msgid "content"
 msgstr "contenu"
 
-#: ../src/iop/watermark.c:1252
+#: ../src/iop/watermark.c:1254
 msgid "text"
 msgstr "texte"
 
-#: ../src/iop/watermark.c:1257
+#: ../src/iop/watermark.c:1259
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -6686,7 +6686,7 @@ msgstr ""
 "texte, tag:\n"
 "$(WATERMARK_TEXT)"
 
-#: ../src/iop/watermark.c:1272
+#: ../src/iop/watermark.c:1274
 msgid ""
 "text color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -6694,15 +6694,15 @@ msgstr ""
 "couleur du texte, tag:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1275
+#: ../src/iop/watermark.c:1277
 msgid "select text color"
 msgstr "sélectionner la couleur du texte"
 
-#: ../src/iop/watermark.c:1276
+#: ../src/iop/watermark.c:1278
 msgid "text color"
 msgstr "couleur du texte"
 
-#: ../src/iop/watermark.c:1286
+#: ../src/iop/watermark.c:1289
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -6714,54 +6714,58 @@ msgstr ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 
+#: ../src/iop/watermark.c:1293
+msgid "font"
+msgstr "police"
+
 #. Camera settings
-#: ../src/iop/watermark.c:1293 ../src/libs/camera.c:508
+#: ../src/iop/watermark.c:1299 ../src/libs/camera.c:508
 msgid "properties"
 msgstr "paramètres"
 
-#: ../src/iop/watermark.c:1311
+#: ../src/iop/watermark.c:1317
 msgctxt "size"
 msgid "image"
 msgstr "image"
 
-#: ../src/iop/watermark.c:1312
+#: ../src/iop/watermark.c:1318
 msgid "larger border"
 msgstr "grand coté"
 
-#: ../src/iop/watermark.c:1313
+#: ../src/iop/watermark.c:1319
 msgid "smaller border"
 msgstr "petit coté"
 
-#: ../src/iop/watermark.c:1315
+#: ../src/iop/watermark.c:1321
 msgid "scale on"
 msgstr "échelle sur"
 
-#: ../src/iop/watermark.c:1317
+#: ../src/iop/watermark.c:1323
 msgid "size is relative to"
 msgstr "la taille est relative à"
 
-#: ../src/iop/watermark.c:1319
+#: ../src/iop/watermark.c:1325
 msgid "position"
 msgstr "position"
 
-#: ../src/iop/watermark.c:1341
+#: ../src/iop/watermark.c:1347
 msgid "x offset"
 msgstr "décalage x"
 
-#: ../src/iop/watermark.c:1344
+#: ../src/iop/watermark.c:1350
 msgid "y offset"
 msgstr "décalage y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1350
+#: ../src/iop/watermark.c:1356
 msgid "the opacity of the watermark"
 msgstr "opacité du filigrane"
 
-#: ../src/iop/watermark.c:1351
+#: ../src/iop/watermark.c:1357
 msgid "the scale of the watermark"
 msgstr "taille du filigrane"
 
-#: ../src/iop/watermark.c:1352
+#: ../src/iop/watermark.c:1358
 msgid "the rotation of the watermark"
 msgstr "la rotation du filigrane"
 
