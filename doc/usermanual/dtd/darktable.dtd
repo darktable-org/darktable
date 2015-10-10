@@ -17,6 +17,8 @@
 <!ENTITY icon_module_mask "images/darkroom_module_icon_mask.png">
 <!ENTITY icon_module_picker "images/darkroom_module_icon_picker.png">
 <!ENTITY icon_module_overexposed "images/darkroom_module_icon_overexposed.png">
+<!ENTITY icon_module_softproof "images/darkroom_module_icon_softproof.png">
+<!ENTITY icon_module_gamutcheck "images/darkroom_module_icon_gamutcheck.png">
 <!ENTITY icon_module_plus "images/darkroom_module_icon_polarity_plus.png">
 <!ENTITY icon_module_minus "images/darkroom_module_icon_polarity_minus.png">
 <!ENTITY icon_module_invert "images/darkroom_module_icon_invert.png">

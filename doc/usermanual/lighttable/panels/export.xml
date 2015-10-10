@@ -389,7 +389,7 @@
 
       <para>
         This option lets you define the intent, i.e. the way darktable will deal with
-        out-of-gamut colors. See <xref linkend="output_color_profile"/> for a more detailed
+        out-of-gamut colors. See <xref linkend="rendering_intent"/> for a more detailed
         description of the available options.
       </para>
 

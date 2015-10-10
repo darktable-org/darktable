@@ -45,9 +45,9 @@
     <title>Usage</title>
 
     <para>
-      The horizontal axis represents the range of values you can work on. The vertical axis shows
-      the modifications you can apply by designing a curve. For both horizontal and vertical axes you 
-      can work on lightness, saturation or hue. 
+      The horizontal axis represents the range of values you can work on. The vertical axis
+      shows the modifications you can apply by designing a curve. For both horizontal and
+      vertical axes you can work on lightness, saturation or hue.
     </para>
 
     <para>
@@ -75,8 +75,8 @@
       <title>select by</title>
       <para>
         Defines the horizontal axis, i.e. the range of values you work on. You can chose between
-        <quote>lightness</quote>, <quote>saturation</quote>, and <quote>hue</quote> (default). Changing
-        this parameter resets any defined curve to a straight horizontal line.
+        <quote>lightness</quote>, <quote>saturation</quote>, and <quote>hue</quote> (default).
+        Changing this parameter resets any defined curve to a straight horizontal line.
       </para>
     </sect5>
 

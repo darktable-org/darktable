@@ -32,8 +32,8 @@
     <para>
       darktable's requirements are no exception. Our decision to not compromise processing
       quality, has led to all calculations being done on 4 x 32bit floating point numbers. This
-      is slower than <quote>ordinary</quote> 8 or 16bit integer algebra, but eliminates all problems of
-      tonal breaks or loss of information.
+      is slower than <quote>ordinary</quote> 8 or 16bit integer algebra, but eliminates all
+      problems of tonal breaks or loss of information.
     </para>
 
     <para>
@@ -45,11 +45,11 @@
     </para>
 
     <para>
-      That's where OpenCL comes in. OpenCL allows us to take advantage of the enormous power
-      of modern graphics cards. Gamer's demand for high detailed 3D worlds in modern ego
-      shooters has fostered GPU development. ATI, NVIDIA and Co had to put enormous processing
-      power into their GPUs to meet these demands. The result is modern graphics cards with
-      highly parallelized GPUs to quickly calculate surfaces and textures at high frame rates.
+      That's where OpenCL comes in. OpenCL allows us to take advantage of the enormous power of
+      modern graphics cards. Gamer's demand for high detailed 3D worlds in modern ego shooters
+      has fostered GPU development. ATI, NVIDIA and Co had to put enormous processing power into
+      their GPUs to meet these demands. The result is modern graphics cards with highly
+      parallelized GPUs to quickly calculate surfaces and textures at high frame rates.
     </para>
 
     <para>

@@ -16,13 +16,13 @@
     a 20MPx image, darktable for precision reasons will store this internally as a 4 x 32-bit
     floating point cell for each pixel. Each full image of this size will need about 300MB of
     memory. As we want to process the image, we will at least need two buffers for each module
-    &nbsp;&ndash; one for input and one for output. If we have a more complex module, its algorithm might
-    additionally require several intermediate buffers of the same size. Without further
-    optimization, anything between 600MB and 3GB would be needed only to store and process image
-    data. On top we have darktable's code segment, the code and data of all dynamically linked
-    system libraries, and not to forget further buffers where darktable stores intermediate
-    images for quick access during interactive work (mip map cache). All in all, darktable would
-    like to see a minimum of about 4GB to run happily.
+    &nbsp;&ndash; one for input and one for output. If we have a more complex module, its
+    algorithm might additionally require several intermediate buffers of the same size. Without
+    further optimization, anything between 600MB and 3GB would be needed only to store and
+    process image data. On top we have darktable's code segment, the code and data of all
+    dynamically linked system libraries, and not to forget further buffers where darktable
+    stores intermediate images for quick access during interactive work (mip map cache). All in
+    all, darktable would like to see a minimum of about 4GB to run happily.
   </para>
 
   <sect2 status="final">
@@ -131,9 +131,9 @@
       will detect your system and set conservative values by default. However, if you upgrade
       darktable from an older version (e.g. coming from 0.9.3 and going to 1.0), chances are you
       have unfavorable settings in your preferences. The consequences might be darktable
-      aborting due to allocation failures or&nbsp;&ndash; very typically&nbsp;&ndash; darktable not being able to
-      properly import a new film roll. As a frequent symptom you get skulls displayed instead of
-      thumbs for many of your pictures.
+      aborting due to allocation failures or&nbsp;&ndash; very typically&nbsp;&ndash; darktable
+      not being able to properly import a new film roll. As a frequent symptom you get skulls
+      displayed instead of thumbs for many of your pictures.
     </para>
 
     <para>
