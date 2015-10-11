@@ -6,15 +6,14 @@
 		]>
 <book lang="en">
 
-  <title>darktable 1.6</title>
+  <title>darktable 2.0</title>
 
   <bookinfo>
 
     <legalnotice>
 
       <para>
-        The owner of the darktable project is Johannes Hanika. Main developers are Johannes
-        Hanika, Henrik Andersson, Tobias Ellinghaus, Pascal de Bruijn and Ulrich Pegelow.
+        The founder of the darktable project is Johannes Hanika.
       </para>
 
       <para>
@@ -23,14 +22,15 @@
         Rocha, Brian Teague, Bruce Guenter, Cherrot Luo, Christian Himpel, Christian Tellefsen,
         Dan Torop, David Bremner, Dennis Gnad, Dimitrios Psychogios, Eckhart Pedersen, Edouard
         Gomez, Frédéric Grollier, Gaspard Jankowiak, Ger Siemerink, Gianluigi Calcaterra,
-        Guilherme Brondani Torri, Igor Kuzmin, Ivan Tarozzi, James C. McPherson, Jean-Sébastien
-        Pédron, Jérémy Rosen, Jesper Pedersen, Jochen Schröder, Johanes Schneider, José
-        Carlos Casimiro, Jose Carlos Garcia Sogo, Josep Vicenç Moragues Pastor, Kaminsky
-        Andrey, Kanstantsin Shautsou, Karl Mikaelsson, Loic Guibert, Marcel Laubach, Mauro
-        Bartoccelli, Michal Babej, Michel Leblond, Mikko Ruohola, Milan Knížek, Moritz Lipp,
-        Olivier Tribout, Pascal Obry, Pedro Côrte-Real, Petr Styblo, Richard Hughes, Richard
-        Levitte, Richard Wonka, Robert Bieber, Roman Lebedev, Rostyslav Pidgornyi, Sergey
-        Pavlov, Simon Spannagel, Stuart Henderson, Tatica Leandro, Thomas Pryds, Victor Lamoine,
+        Guilherme Brondani Torri, Henrik Andersson, Igor Kuzmin, Ivan Tarozzi, James C.
+        McPherson, Jean-Sébastien Pédron, Jérémy Rosen, Jesper Pedersen, Jochen Schröder,
+        Johanes Schneider, José Carlos Casimiro, Jose Carlos Garcia Sogo, Josep Vicenç
+        Moragues Pastor, Kaminsky Andrey, Kanstantsin Shautsou, Karl Mikaelsson, Loic Guibert,
+        Marcel Laubach, Mauro Bartoccelli, Michal Babej, Michel Leblond, Mikko Ruohola, Milan
+        Knížek, Moritz Lipp, Olivier Tribout, Pascal de Bruijn, Pascal Obry, Pedro
+        Côrte-Real, Petr Styblo, Richard Hughes, Richard Levitte, Richard Wonka, Robert Bieber,
+        Roman Lebedev, Rostyslav Pidgornyi, Sergey Pavlov, Simon Spannagel, Stuart Henderson,
+        Tatica Leandro, Thomas Pryds, Tobias Ellinghaus, Ulrich Pegelow, Victor Lamoine,
         Wolfgang Goetz, Wyatt Olson and many others.
       </para>
 
@@ -74,12 +74,12 @@
     </copyright>
 
     <copyright>
-      <year>2012-2014</year>
+      <year>2012-2015</year>
       <holder>Ulrich Pegelow</holder>
     </copyright>
 
     <copyright>
-      <year>2013-2014</year>
+      <year>2013-2015</year>
       <holder>Jérémy Rosen</holder>
     </copyright>
 
@@ -117,10 +117,10 @@
                 user manual
               </entry>
               <entry>
-                1.6.0
+                2.0.0
               </entry>
               <entry>
-                November 2014
+                November 2015
               </entry>
             </row>
             <row>
@@ -128,10 +128,10 @@
                 darktable
               </entry>
               <entry>
-                1.6
+                2.0
               </entry>
               <entry>
-                November 2014
+                November 2015
               </entry>
             </row>
           </tbody>

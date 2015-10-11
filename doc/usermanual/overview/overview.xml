@@ -164,9 +164,9 @@
         <filename>darktable</filename> is called with the following command line parameters:
       </para>
 
-<synopsis>darktable [-d {all,cache,camctl,control,dev,fswatch,
-               input,lighttable,masks,memory,nan,opencl,
-               perf,pwstorage,sql}]
+<synopsis>darktable [-d {all,cache,camctl,camsupport,control,dev,
+               fswatch,input,lighttable,masks,memory,nan,
+               opencl,perf,pwstorage,print,sql}]
           [IMG_1234.{RAW,..}|image_folder/] 
           [--version]
           [--disable-opencl] 
@@ -178,6 +178,7 @@
           [--cachedir &lt;user cache directory&gt;]
           [--localedir &lt;locale directory&gt;]
           [--luacmd &lt;lua command&gt;]
+          [--noiseprofiles &lt;noiseprofiles json file&gt;]
           [--conf &lt;key&gt;=&lt;value&gt;]</synopsis>
 
       <para>
@@ -320,7 +321,7 @@
             <listitem><para>
               The place where darktable finds its language specific text strings. The default
               place depends on your installation. Typical places are
-              <quote>/opt/darktable/share/locale/</quote> and <quote>/usr/share/locale/</quote>
+              <quote>/opt/darktable/share/locale/</quote> and <quote>/usr/share/locale/</quote>.
             </para></listitem>
 
           </varlistentry>
@@ -335,7 +336,20 @@
             </para>
 
             <para>
-              If lua is not compiled in, this option will be accepted but won't do anything
+              If lua is not compiled in, this option will be accepted but won't do anything.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--noiseprofiles &lt;noiseprofiles json file&gt;</term>
+
+            <listitem><para>
+              The json file that contains the camera specific noise profiles. The default
+              location depends on your installation. Typical places are
+              <quote>/opt/darktable/share/darktable/noiseprofile.json</quote> and
+              <quote>/usr/share/darktable/noiseprofile.json</quote>.
             </para></listitem>
 
           </varlistentry>
@@ -593,7 +607,7 @@
 
       <para>
         This binary starts a stand-alone slideshow viewer that displays the images of your
-        current collection fullscreen and with soft transitions.
+        current collection fullscreen.
       </para>
 
       <para>
@@ -604,11 +618,12 @@
 <synopsis>darktable-viewer
               [-h, --help]
               [--random]
-              [--repeat]</synopsis>
+              [--repeat]
+              [--core &lt;darktable options&gt;]</synopsis>
 
       <para>
         All parameters are optional. If started without parameters
-        <filename>darktable-generate-cache</filename> uses reasonable defaults.
+        <filename>darktable-viewer</filename> uses reasonable defaults.
         <variablelist>
 
           <varlistentry>
@@ -642,7 +657,29 @@
 
           </varlistentry>
 
+          <varlistentry>
+
+            <term>--core &lt;darktable options&gt;</term>
+
+            <listitem><para>
+              All command line parameters following <quote>--core</quote> are passed to the
+              darktable core and handled as standard parameters. See
+              <xref linkend="darktable_commandline_parameters"/> for a detailed description.
+            </para></listitem>
+
+          </varlistentry>
+
         </variablelist>
+      </para>
+
+      <para>
+        <filename>darktable-viewer</filename> uses OpenGL to produce soft transitions between
+        images. Although OpenGL and OpenCL (see <xref linkend="darktable_and_opencl"/>) are
+        designed to cooperate flawlessly, there have been reports about problems with certain
+        drivers. If <filename>darktable-viewer</filename> crashes upon startup, please try to
+        use it without OpenCL support:
+<programlisting>darktable-viewer --core --disable-opencl
+</programlisting>
       </para>
 
     </sect2>

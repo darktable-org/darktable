@@ -89,7 +89,7 @@
     and <quote>only large entries</quote> (default).
   </para>
 
-  <bridgehead renderas="sect4">activate opencl support</bridgehead>
+  <bridgehead renderas="sect4">activate OpenCL support</bridgehead>
 
   <para>
     darktable can use your GPU to speed up processing significantly. Interface OpenCL requires
@@ -98,7 +98,7 @@
     (default on).
   </para>
 
-  <bridgehead renderas="sect4">always try to use littlecms2</bridgehead>
+  <bridgehead renderas="sect4">always try to use LittleCMS 2</bridgehead>
 
   <para>
     If this option is activated, darktable will use system library littlecms2 instead of its own
