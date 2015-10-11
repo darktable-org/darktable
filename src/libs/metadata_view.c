@@ -687,7 +687,7 @@ static int lua_update_metadata(lua_State*L)
     lua_settable(L,6);
     lua_pop(L, 2);
   }
-  lua_pushcfunction(L,lua_update_widgets),
+  lua_pushcfunction(L,lua_update_widgets);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   lua_pushlightuserdata(L,self);
   dt_lua_do_chunk_raise(L,1,0);
