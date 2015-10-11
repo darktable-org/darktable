@@ -210,6 +210,8 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkWidget *guide_lines;
   GtkWidget *flip_guides;
   GtkWidget *guides_widgets;
+  GList *guides_widgets_list;
+
   GtkWidget *keystone_type;
   GtkWidget *crop_auto;
 
@@ -1727,22 +1729,32 @@ static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
   key_swap_callback(NULL, NULL, 0, 0, self);
 }
 
+// TODO once we depend on GTK3 >= 3.12 use the name as in 2f491cf8355a81554b98de538fe862d6ad9b62e5
 static void guides_presets_set_visibility(dt_iop_clipping_gui_data_t *g, int which)
 {
-  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
-  GtkWidget *widget = NULL;
-  char name[5];
-  snprintf(name, sizeof(name), "%d", which - 1);
-  if(guide && (widget = gtk_stack_get_child_by_name(GTK_STACK(g->guides_widgets), name)))
-  {
-    gtk_widget_set_no_show_all(g->guides_widgets, FALSE);
-    gtk_widget_show_all(g->guides_widgets);
-    gtk_stack_set_visible_child(GTK_STACK(g->guides_widgets), widget);
-  }
-  else
+  if(which == 0)
   {
     gtk_widget_set_no_show_all(g->guides_widgets, TRUE);
     gtk_widget_hide(g->guides_widgets);
+    gtk_widget_set_no_show_all(g->flip_guides, TRUE);
+    gtk_widget_hide(g->flip_guides);
+  }
+  else
+  {
+    GtkWidget *widget = g_list_nth_data(g->guides_widgets_list, which - 1);
+    if(widget)
+    {
+      gtk_widget_set_no_show_all(g->guides_widgets, FALSE);
+      gtk_widget_show_all(g->guides_widgets);
+      gtk_stack_set_visible_child(GTK_STACK(g->guides_widgets), widget);
+    }
+    else
+    {
+      gtk_widget_set_no_show_all(g->guides_widgets, TRUE);
+      gtk_widget_hide(g->guides_widgets);
+    }
+    gtk_widget_set_no_show_all(g->flip_guides, FALSE);
+    gtk_widget_show_all(g->flip_guides);
   }
 
   // TODO: add a support_flip flag to guides to hide the flip gui?
@@ -1816,7 +1828,7 @@ static gchar *format_aspect(gchar *original, int adim, int bdim)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_clipping_gui_data_t));
+  self->gui_data = calloc(1, sizeof(dt_iop_clipping_gui_data_t));
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
@@ -2008,6 +2020,7 @@ void gui_init(struct dt_iop_module_t *self)
   int i = 0;
   for(GList *iter = darktable.guides; iter; iter = g_list_next(iter), i++)
   {
+    GtkWidget *widget = NULL;
     dt_guides_t *guide = (dt_guides_t *)iter->data;
     dt_bauhaus_combobox_add(g->guide_lines, _(guide->name));
     if(guide->widget)
@@ -2015,12 +2028,12 @@ void gui_init(struct dt_iop_module_t *self)
       // generate some unique name so that we can have the same name several times
       char name[5];
       snprintf(name, sizeof(name), "%d", i);
-      GtkWidget *widget = guide->widget(self, guide->user_data);
+      widget = guide->widget(self, guide->user_data);
       gtk_widget_show_all(widget);
       gtk_stack_add_named(GTK_STACK(g->guides_widgets), widget, name);
     }
+    g->guides_widgets_list = g_list_append(g->guides_widgets_list, widget);
   }
-  gtk_widget_set_no_show_all(g->guides_widgets, TRUE);
 
   int guide = dt_conf_get_int("plugins/darkroom/clipping/guide");
   dt_bauhaus_combobox_set(g->guide_lines, guide);

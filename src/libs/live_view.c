@@ -73,6 +73,7 @@ typedef struct dt_lib_live_view_t
   GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw, *flip;
   GtkWidget *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
   GtkWidget *guide_selector, *flip_guides, *guides_widgets;
+  GList *guides_widgets_list;
   GtkWidget *overlay, *overlay_id_box, *overlay_id, *overlay_mode, *overlay_splitline;
 } dt_lib_live_view_t;
 
@@ -87,11 +88,8 @@ static void guides_presets_set_visibility(dt_lib_live_view_t *lib, int which)
   }
   else
   {
-    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
-    GtkWidget *widget = NULL;
-    char name[5];
-    snprintf(name, sizeof(name), "%d", which - 1);
-    if(guide && (widget = gtk_stack_get_child_by_name(GTK_STACK(lib->guides_widgets), name)))
+    GtkWidget *widget = g_list_nth_data(lib->guides_widgets_list, which - 1);
+    if(widget)
     {
       gtk_widget_set_no_show_all(lib->guides_widgets, FALSE);
       gtk_widget_show_all(lib->guides_widgets);
@@ -352,6 +350,7 @@ void gui_init(dt_lib_module_t *self)
   int i = 0;
   for(GList *iter = darktable.guides; iter; iter = g_list_next(iter), i++)
   {
+    GtkWidget *widget = NULL;
     dt_guides_t *guide = (dt_guides_t *)iter->data;
     dt_bauhaus_combobox_add(lib->guide_selector, _(guide->name));
     if(guide->widget)
@@ -359,10 +358,11 @@ void gui_init(dt_lib_module_t *self)
       // generate some unique name so that we can have the same name several times
       char name[5];
       snprintf(name, sizeof(name), "%d", i);
-      GtkWidget *widget = guide->widget(NULL, guide->user_data);
+      widget = guide->widget(NULL, guide->user_data);
       gtk_widget_show_all(widget);
       gtk_stack_add_named(GTK_STACK(lib->guides_widgets), widget, name);
     }
+    lib->guides_widgets_list = g_list_append(lib->guides_widgets_list, widget);
   }
   gtk_widget_set_no_show_all(lib->guides_widgets, TRUE);
 
