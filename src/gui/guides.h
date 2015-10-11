@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 tobias ellinghaus.
+    copyright (c) 2012-2015 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,33 +18,27 @@
 #ifndef __DT_GUI_GUIDES_H__
 #define __DT_GUI_GUIDES_H__
 
-#include "draw.h"
+#include "develop/imageop.h"
 
-typedef struct dt_QRect_t
+typedef void (*dt_guides_draw_callback)(cairo_t *cr, const float x, const float y,
+                                        const float w, const float h,
+                                        const float zoom_scale, void *user_data);
+
+typedef GtkWidget *(*dt_guides_widget_callback)(dt_iop_module_t *self, void *user_data);
+
+typedef struct dt_guides_t
 {
-  float left, top, right, bottom, width, height;
-} dt_QRect_t;
+  char name[64];
+  dt_guides_draw_callback draw;
+  dt_guides_widget_callback widget;
+  void *user_data;
+  GDestroyNotify free;
+} dt_guides_t;
 
-void dt_guides_q_rect(dt_QRect_t *R1, float left, float top, float width, float height);
+GList *dt_guides_init();
+void dt_guides_cleanup(GList *guides);
 
-void dt_guides_draw_simple_grid(cairo_t *cr, const float left, const float top, const float right,
-                                const float bottom, float zoom_scale);
-
-void dt_guides_draw_diagonal_method(cairo_t *cr, const float x, const float y, const float w, const float h);
-
-void dt_guides_draw_rules_of_thirds(cairo_t *cr, const float left, const float top, const float right,
-                                    const float bottom, const float xThird, const float yThird);
-
-void dt_guides_draw_perspective(cairo_t *cr, const float x, const float y, const float w, const float h);
-
-void dt_guides_draw_metering(cairo_t *cr, const float x, const float y, const float w, const float h);
-
-void dt_guides_draw_harmonious_triangles(cairo_t *cr, const float left, const float top, const float right,
-                                         const float bottom, const float dst);
-
-void dt_guides_draw_golden_mean(cairo_t *cr, dt_QRect_t *R1, dt_QRect_t *R2, dt_QRect_t *R3, dt_QRect_t *R4,
-                                dt_QRect_t *R5, dt_QRect_t *R6, dt_QRect_t *R7, gboolean goldenSection,
-                                gboolean goldenTriangle, gboolean goldenSpiralSection, gboolean goldenSpiral);
+void dt_guides_add_guide(const char *name, dt_guides_draw_callback draw, dt_guides_widget_callback widget, void *user_data, GDestroyNotify free);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

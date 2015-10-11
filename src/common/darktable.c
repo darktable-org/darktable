@@ -60,6 +60,7 @@
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
 #include "control/conf.h"
+#include "gui/guides.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "lua/init.h"
@@ -868,6 +869,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   // Initialize the password storage engine
   darktable.pwstorage = dt_pwstorage_new();
 
+  darktable.guides = dt_guides_init();
+
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */
   InitializeMagick(darktable.progname);
@@ -930,6 +933,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     dt_control_load_config(darktable.control);
   }
 
+  dt_control_gui_mode_t mode = DT_LIBRARY;
   if(init_gui)
   {
     // init the gui part of views
@@ -980,12 +984,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     if(loaded_images == 1 && only_single_images)
     {
       dt_control_set_mouse_over_id(last_id);
-      dt_ctl_switch_mode_to(DT_DEVELOP);
+      mode = DT_DEVELOP;
     }
-    else
-      dt_ctl_switch_mode_to(DT_LIBRARY);
-#else
-    dt_ctl_switch_mode_to(DT_LIBRARY);
 #endif
   }
 
@@ -1008,6 +1008,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   {
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
+
+  if(init_gui) dt_ctl_switch_mode_to(mode);
 
   return 0;
 }
@@ -1072,6 +1074,8 @@ void dt_cleanup()
 #ifdef HAVE_GRAPHICSMAGICK
   DestroyMagick();
 #endif
+
+  dt_guides_cleanup(darktable.guides);
 
   dt_database_destroy(darktable.db);
 
