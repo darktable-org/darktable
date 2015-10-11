@@ -607,7 +607,7 @@
 
       <para>
         This binary starts a stand-alone slideshow viewer that displays the images of your
-        current collection fullscreen.
+	current collection fullscreen. Press <emphasis>ESC</emphasis> to stop.
       </para>
 
       <para>
@@ -652,7 +652,7 @@
 
             <listitem><para>
               Continues the slideshow in an endless loop instead of terminating after the last
-              image. Press any key to stop.
+              image.
             </para></listitem>
 
           </varlistentry>
@@ -676,7 +676,7 @@
         <filename>darktable-viewer</filename> uses OpenGL to produce soft transitions between
         images. Although OpenGL and OpenCL (see <xref linkend="darktable_and_opencl"/>) are
         designed to cooperate flawlessly, there have been reports about problems with certain
-        drivers. If <filename>darktable-viewer</filename> crashes upon startup, please try to
+        setups. If <filename>darktable-viewer</filename> crashes upon startup, please try to
         use it without OpenCL support:
 <programlisting>darktable-viewer --core --disable-opencl
 </programlisting>
