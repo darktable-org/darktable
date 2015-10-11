@@ -1235,7 +1235,7 @@ void dt_ui_container_focus_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWid
 {
   g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
 
-  if(GTK_WIDGET(ui->containers[c]) != gtk_widget_get_parent(gtk_widget_get_parent(w))) return;
+  if(GTK_WIDGET(ui->containers[c]) != gtk_widget_get_parent(w)) return;
 
   gtk_container_set_focus_child(GTK_CONTAINER(ui->containers[c]), w);
   gtk_widget_queue_draw(ui->containers[c]);
