@@ -1393,7 +1393,6 @@ int dt_image_local_copy_reset(const int32_t imgid)
 
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, destpath, sizeof(destpath), &from_cache);
-  dt_image_path_append_version(imgid, destpath, sizeof(destpath));
 
   from_cache = TRUE;
   dt_image_full_path(imgid, locppath, sizeof(locppath), &from_cache);
