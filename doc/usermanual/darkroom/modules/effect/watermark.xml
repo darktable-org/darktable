@@ -75,6 +75,46 @@
             </row>
             <row>
               <entry>
+                $(WATERMARK_TEXT)
+              </entry>
+              <entry>
+                A short free text (max. 63 characters)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(WATERMARK_COLOR)
+              </entry>
+              <entry>
+                The color to use for $WATERMARK_TEXT
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(WATERMARK_FONT_FAMILY)
+              </entry>
+              <entry>
+                The font family to use for $WATERMARK_TEXT
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(WATERMARK_FONT_STYLE)
+              </entry>
+              <entry>
+                The font style (normal, oblique, italic)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(WATERMARK_FONT_WEIGHT)
+              </entry>
+              <entry>
+                The font weight (boldness)
+              </entry>
+            </row>
+            <row>
+              <entry>
                 $(IMAGE.ID)
               </entry>
               <entry>
@@ -347,6 +387,33 @@
     </sect5>
 
     <sect5>
+      <title>text</title>
+      <para>
+        A free text field with up to 63 characters which gets printed if the corresponding
+        watermark references it. An example is supplied as <filename>simple-text.svg</filename>.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>text color</title>
+      <para>
+        This field shows the text color. Clicking on the color swatch opens a dialog box which
+        offers you a choice of commonly used colors, or lets you add your own choice of colors
+        in a HSV color picker.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>text font</title>
+      <para>
+        This field lets you select the text font. Clicking on the field opens a dialog box which
+        shows the fonts available to your system. Fonts can be searched by name and a preview of
+        each available font is shown next to the font name; you may specify your own sample
+        text. The font defaults to <quote>DejaVu Sans Book</quote>.
+      </para>
+    </sect5>
+
+    <sect5>
       <title>opacity</title>
       <para>
         Set the opacity of the watermark's rendering.
@@ -372,8 +439,8 @@
       <para>
         Defines the reference for the scale parameter. The default setting <quote>image</quote>
         scales the watermark relative to the horizontal image size. Alternatively you can scale
-        the watermark relative to the <quote>larger border</quote> and <quote>smaller border</quote>,
-        respectively.
+        the watermark relative to the <quote>larger border</quote> and <quote>smaller
+        border</quote>, respectively.
       </para>
     </sect5>
 

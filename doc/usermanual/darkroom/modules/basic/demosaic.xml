@@ -61,12 +61,13 @@
 
     <para>
       As interpolation is prone to produce artifacts, various different demosaic algorithms have
-      been developed in the past. Artifacts would typically be visible as moiré-like patterns
-      when you strongly zoom into your image. Currently darktable supports PPG, AMAZE, and VNG4.
-      All these algorithms produce high quality output with a low tendency to artifacts. AMAZE
-      is reported to sometimes give slightly better results. However, as AMAZE is significantly
-      slower, darktable uses PPG as a default. VNG4 produces the softest results of the three
-      algorithms, but if you see "maze" artifacts, try VNG4 to eliminate them.
+      been developed in the past. Artifacts would typically be visible as moir&eacute;-like
+      patterns when you strongly zoom into your image. Currently darktable supports PPG, AMAZE,
+      and VNG4. All these algorithms produce high quality output with a low tendency to
+      artifacts. AMAZE is reported to sometimes give slightly better results. However, as AMAZE
+      is significantly slower, darktable uses PPG as a default. VNG4 produces the softest
+      results of the three algorithms, but if you see "maze" artifacts, try VNG4 to eliminate
+      them.
     </para>
 
     <para>
@@ -94,8 +95,8 @@
       <title>method</title>
       <para>
         Set the demosaic method. darktable currently supports PPG, AMAZE, and VNG4 for Bayer
-        sensors. For X-Trans sensors darktable supports VNG, Markesteijn 1-pass, and
-        Markesteijn 3-pass.
+        sensors. For X-Trans sensors darktable supports VNG, Markesteijn 1-pass, and Markesteijn
+        3-pass.
       </para>
     </sect5>
 

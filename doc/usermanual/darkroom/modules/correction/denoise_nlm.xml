@@ -5,7 +5,7 @@
 		]>
 <sect3 status="final" id="denoise_non_local_means">
 
-  <title>Denoise&nbsp;&ndash; Non local means</title>
+  <title>Denoise&nbsp;&ndash; non local means</title>
 
   <indexterm>
     <primary>modules</primary>

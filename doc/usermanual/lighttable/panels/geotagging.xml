@@ -44,8 +44,8 @@
       satellites and records them in a GPX file&nbsp;&ndash; together with the current date and
       time. The EXIF data of the images also contains a time stamp defined by the camera
       settings. darktable takes the time stamp of the image, looks-up the position in the GPX
-      file at that time, and stores the coordinates (latitude/longitude) in its database and the
-      image's XMP sidecar file.
+      file at that time, and stores the coordinates (latitude/longitude/elevation) in its
+      database and the image's XMP sidecar file.
     </para>
 
     <para>
@@ -57,7 +57,7 @@
     </para>
 
     <para>
-      If your image already carry the UTC time stamp you can directly apply the GPX track
+      If your image already carries the UTC time stamp you can directly apply the GPX track
       without further adjustments.
     </para>
 

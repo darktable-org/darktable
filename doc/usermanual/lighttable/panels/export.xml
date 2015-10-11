@@ -111,7 +111,7 @@
                 $(VERSION)
               </entry>
               <entry>
-                the duplicate version (see <xref linkend="sidecar_files"/>) 
+                the duplicate version (see <xref linkend="sidecar_files"/>)
               </entry>
             </row>
             <row>
@@ -343,8 +343,9 @@
 
       <para>
         Set the maximum width and height of the output images in pixels. Set both to a value of
-        "0" to export with full resolution. darktable currently can only do down-scaling; the
-        maximum output resolution is defined by the parent image.
+        <quote>0</quote> to export with the original dimensions (after cropping). If the values
+        exceed the original dimensions darktable will either export with the original dimensions
+        or perform an upscaling step, depending on the setting of the following parameter.
       </para>
 
       <para>
@@ -358,12 +359,13 @@
 
     <sect4>
 
-      <title>intent</title>
+      <title>allow upscaling</title>
 
       <para>
-        This option lets you define the intent, i.e. the way darktable will deal with
-        out-of-gamut colors. See <xref linkend="output_color_profile"/> for a more detailed
-        description of the available options.
+        If set to <quote>yes</quote> darktable will perform an upscaling step in case the user
+        defined maximum width and height exceed the original dimensions. If set to
+        <quote>no</quote> the exported image's dimensions will not exceed the original ones
+        (after cropping).
       </para>
 
     </sect4>
@@ -383,17 +385,46 @@
 
     <sect4>
 
+      <title>intent</title>
+
+      <para>
+        This option lets you define the intent, i.e. the way darktable will deal with
+        out-of-gamut colors. See <xref linkend="rendering_intent"/> for a more detailed
+        description of the available options.
+      </para>
+
+    </sect4>
+
+    <sect4>
+
       <title>style</title>
 
       <para>
         This option lets you choose a style, i.e. a collection of history stack items, which
-        darktable concatenates with the existing history stack to generate the output image.
-        These history items are only added temporarily; the original history stack is not
-        overwritten. You can use this feature to add processing steps and parameters that you
-        want to be applied specifically to exported images, e.g. you may define a style that
-        adds a stronger level of sharpening when you produce scaled-down JPEG files for the
-        internet. Learn more about styles in <xref linkend="styles"/>, and
-        <xref linkend="history"/>.
+        darktable combines with the existing history stack to generate the output image. These
+        history items are only added temporarily; the original history stack is not overwritten.
+        You can use this feature to add processing steps and parameters that you want to be
+        applied specifically to exported images, e.g. you may define a style that adds a
+        stronger level of sharpening when you produce scaled-down JPEG files for the internet or
+        add a certain level of exposure compensation to all of your output images. Learn more
+        about styles in <xref linkend="styles"/>, and <xref linkend="history"/>.
+      </para>
+
+    </sect4>
+
+    <sect4>
+
+      <title>mode</title>
+
+      <para>
+        When applying a style during export this option defines whether the history stack items
+        of that style replace the original history stack of the image or are appended to it.
+        Technically speaking, in append mode history stack items of the style will constitute
+        separate instances of the respective modules on top of any existing ones (see also
+        <xref linkend="multiple_instances"/>). As a consequence the original history stack will
+        fully remain in effect with the new items being applied additionally. This way you can
+        apply an overall adjustment (e.g. exposure) to a bunch of exported images while
+        respecting the settings of each individual image.
       </para>
 
     </sect4>
@@ -404,9 +435,8 @@
 
       <para>
         Pressing this button starts a background job to export all selected images. A bar at the
-        bottom of the left side panel displays the progress. Whenever a file is successfully
-        exported, a notification message pops up for a few seconds. You may click on the pop-up
-        to make it disappear.
+        bottom of the left side panel displays the progress. Furthermore a notification message
+        pops up reporting the export progress. You may click on the pop-up to make it disappear.
       </para>
 
     </sect4>

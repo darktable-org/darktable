@@ -536,12 +536,12 @@ end)</programlisting>
 
           <listitem><para>
             We use preferences to configure the target path. It would be nicer to add an element
-	    to the export UI in darktable. We will detail how to do that in the next section
-	  </para></listitem>
+            to the export UI in darktable. We will detail how to do that in the next section
+          </para></listitem>
 
           <listitem><para>
-            We do not check the returned value of scp. That command might fail, in particular if the
-            user has not correctly set the preference.
+            We do not check the returned value of scp. That command might fail, in particular if
+            the user has not correctly set the preference.
           </para></listitem>
 
           <listitem><para>
@@ -572,16 +572,23 @@ end)</programlisting>
     <section id="lua_gui_example">
 
       <title>Building User Interface elements</title>
+
       <para>
-	      Our previous example was a bit limited. In particular the use of a preference for the export path wasn't very nice. 
-	      We can do better than that by adding elements to the user interface in the export dialog.
+        Our previous example was a bit limited. In particular the use of a preference for the
+        export path wasn't very nice. We can do better than that by adding elements to the user
+        interface in the export dialog.
       </para>
+
       <para>
-	      UI elements are created via the <link linkend="darktable_new_widget">darktable.widget</link> function. This function 
-	      takes a type of widget as a parameter and returns a new object corresponding to that widget. You can then set various
-	      fields to that widget to set its parameters. You will then use that object as a parameter to various functions that 
-	      will add it to the darktable UI. The following simple example adds a lib in the lighttable view with a simple label
+        UI elements are created via the
+        <link linkend="darktable_new_widget">darktable.widget</link> function. This function
+        takes a type of widget as a parameter and returns a new object corresponding to that
+        widget. You can then set various fields to that widget to set its parameters. You will
+        then use that object as a parameter to various functions that will add it to the
+        darktable UI. The following simple example adds a lib in the lighttable view with a
+        simple label
       </para>
+
 <programlisting language="lua">
 local my_button = darktable.new_widget("label")
 my_button.label = "Hello, world !"
@@ -591,11 +598,14 @@ dt.register_lib("test","test",false,{
     [dt.gui.views.lighttable] = {"DT_UI_CONTAINER_PANEL_LEFT_CENTER",20},
     },my_button)
     </programlisting>
-    <para>
-	    There is a nice syntactic trick to make UI element code easier to read and write. You can call these objects as functions
-	    with a table of key values as an argument. This allows the following example to work. It creates a container widget with two
-	    sub-widgets. A label and a text entry field.
-    </para>
+
+      <para>
+        There is a nice syntactic trick to make UI element code easier to read and write. You
+        can call these objects as functions with a table of key values as an argument. This
+        allows the following example to work. It creates a container widget with two
+        sub-widgets. A label and a text entry field.
+      </para>
+
 <programlisting language="lua">
 	local my_widget = darktable.new_widget("box"){
 		orientation = "horizontal",
@@ -603,9 +613,11 @@ dt.register_lib("test","test",false,{
 		darktable.new_widget("entry"){ tooltip = "please enter text here" }
 	}
 </programlisting>
-	<para>
-		Now that we know that, let's improve our script a bit. 
-	</para>
+
+      <para>
+        Now that we know that, let's improve our script a bit.
+      </para>
+
 <programlisting language="lua">
 darktable = require "darktable"
 
@@ -634,7 +646,8 @@ darktable.register_storage("scp_export","Export via scp",
     scp_path,
 })
 </programlisting>
-</section>
+
+    </section>
 
     <section id="lua_sharing_scripts">
 
@@ -654,7 +667,7 @@ SCP STORAGE
 a simple storage to export images via scp
 
 AUTHOR
-Jérémy Rosen (jeremy.rosen@enst-bretagne.fr)
+J&eacute;r&eacute;my Rosen (jeremy.rosen@enst-bretagne.fr)
 
 INSTALLATION
 * copy this file in $CONFIGDIR/lua/ where CONFIGDIR
