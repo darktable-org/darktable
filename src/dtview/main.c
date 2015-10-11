@@ -277,28 +277,57 @@ static int process_next_image()
   return 0;
 }
 
+static void usage(const char *progname)
+{
+  fprintf(
+      stderr,
+      "usage: %s [-h, --help; --version] [--random] [--repeat] [--core <darktable options>]\n",
+      progname);
+}
+
 int main(int argc, char *arg[])
 {
   gtk_init(&argc, &arg);
   repeat = random_state = use_random = 0;
-  for(int k = 1; k < argc; k++)
+
+  // use system color profile, if we can:
+  char set_iccprofile[64];
+  snprintf(set_iccprofile, sizeof(set_iccprofile), "plugins/lighttable/export/icctype=%d", DT_COLORSPACE_DISPLAY);
+
+  int k;
+  for(k = 1; k < argc; k++)
   {
-    if(!strcmp(arg[k], "--random"))
+    if(!strcmp(arg[k], "-h") || !strcmp(arg[k], "--help"))
+    {
+      usage(arg[0]);
+      exit(EXIT_FAILURE);
+    }
+    else if(!strcmp(arg[k], "--random"))
       use_random = 1;
     else if(!strcmp(arg[k], "--repeat"))
       repeat = -1;
-    else if(!strcmp(arg[k], "-h") || !strcmp(arg[k], "--help"))
+    else if(!strcmp(arg[k], "--core"))
     {
-      fprintf(stderr, "usage: %s [--random] [--repeat]\n", arg[0]);
-      exit(0);
+      // everything from here on should be passed to the core
+      k++;
+      break;
     }
   }
+
+  int m_argc = 0;
+  char *m_arg[5 + argc - k];
+  m_arg[m_argc++] = "darktable-viewer";
+  m_arg[m_argc++] = "--conf";
+  m_arg[m_argc++] = "write_sidecar_files=FALSE";
+  m_arg[m_argc++] = "--conf";
+  m_arg[m_argc++] = set_iccprofile;
+  for(; k < argc; k++) m_arg[m_argc++] = arg[k];
+  m_arg[m_argc] = NULL;
+
   // init dt without gui:
-  if(dt_init(argc, arg, 0, NULL)) exit(1);
-  // use system color profile, if we can:
-  int old_profile_type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  dt_conf_set_int("plugins/lighttable/export/iccprofile", DT_COLORSPACE_DISPLAY);
-  running = init(argc, arg);
+  if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
+  running = init(m_argc, m_arg);
+
   srand48(SDL_GetTicks());
   if(use_random) random_state = drand48() * INT_MAX;
   if(repeat < 0) repeat = random_state;
@@ -332,7 +361,7 @@ int main(int argc, char *arg[])
       nanosleep(&time, NULL);
     }
   }
-  if(old_profile_type) dt_conf_set_int("plugins/lighttable/export/icctype", old_profile_type);
+
   dtv_shutdown();
 }
 
