@@ -287,7 +287,7 @@ end</programlisting>
           </para></listitem>
 
           <listitem><para>
-            Note tha we use the standard lua function
+            Note that we use the standard lua function
             <code>tostring</code>
             here and not the darktable specific <link linkend="darktable_debug_dump">
             <code>darktable.debug.dump</code>
@@ -356,7 +356,7 @@ darktable.register_event("shortcut",hello_shortcut,
 
       <para>
         Let's try a shortcut a little more interactive. This one will look at the images the
-        user is currently interested in (selected our moused-over) and will increase their
+        user is currently interested in (selected or moused-over) and will increase their
         rating.
       </para>
 
@@ -590,13 +590,13 @@ end)</programlisting>
       </para>
 
 <programlisting language="lua">
-local my_button = darktable.new_widget("label")
-my_button.label = "Hello, world !"
+local my_label = darktable.new_widget("label")
+my_label.label = "Hello, world !"
 
 
 dt.register_lib("test","test",false,{
     [dt.gui.views.lighttable] = {"DT_UI_CONTAINER_PANEL_LEFT_CENTER",20},
-    },my_button)
+    },my_label)
     </programlisting>
 
       <para>
@@ -621,7 +621,7 @@ dt.register_lib("test","test",false,{
 <programlisting language="lua">
 darktable = require "darktable"
 
-local scp_path = dt.new_widget("entry"){
+local scp_path = darktable.new_widget("entry"){
   tooltip ="Complete path to copy to. Can include user and hostname",
   text = "",
   reset_callback = function(self) self.text = "" end
@@ -685,8 +685,9 @@ GPLv2
 
 ]]
 darktable = require "darktable"
+darktable.configuration.check_version(...,{2,0,0})
 
-local scp_path = dt.new_widget("entry"){
+local scp_path = darktable.new_widget("entry"){
   tooltip ="Complete path to copy to. Can include user and hostname",
   text = "",
   reset_callback = function(self) self.text = "" end
