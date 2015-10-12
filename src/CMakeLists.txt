@@ -470,6 +470,7 @@ if(USE_LUA)
   if(USE_LUA)
     add_definitions("-DUSE_LUA")
     FILE(GLOB SOURCE_FILES_LUA
+      "lua/cairo.c"
       "lua/call.c"
       "lua/configuration.c"
       "lua/database.c"
@@ -479,6 +480,7 @@ if(USE_LUA)
       "lua/gettext.c"
       "lua/glist.c"
       "lua/gui.c"
+      "lua/guides.c"
       "lua/image.c"
       "lua/init.c"
       "lua/lib.c"
