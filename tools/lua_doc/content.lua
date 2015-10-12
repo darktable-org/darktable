@@ -20,7 +20,7 @@ end
 ---------------------
 -- check for generator functions
 ---------------------
-for _,v in pairs({"node_to_string","para","startlist","listel","endlist","code","emphasis"})   do
+for _,v in pairs({"node_to_string","para","startlist","listel","endlist","code","emphasis","url"})   do
 	if _ENV[v]== nil then
 		error("function '"..v.."' not defined when requiring content")
 	end
