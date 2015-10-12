@@ -821,10 +821,42 @@ luaA_Type dt_lua_init_int_type_type(lua_State *L, luaA_Type type_id)
   return type_id;
 }
 
+static int gpointer_wrapper(lua_State*L) 
+{
+  gpointer *udata = (gpointer*)lua_touserdata(L,1);
+  if(!*udata) {
+    luaL_getmetafield(L,1,"__luaA_TypeName");
+    luaL_error(L,"Attempting to access an invalid object of type %s",lua_tostring(L,-1));
+  }
+  lua_CFunction callback = lua_tocfunction(L,lua_upvalueindex(1));
+  return callback(L);
+}
+
 
 luaA_Type dt_lua_init_gpointer_type_type(lua_State *L, luaA_Type type_id)
 {
   init_metatable(L, type_id);
+
+  lua_getfield(L,-1,"__index");
+  lua_pushcclosure(L, gpointer_wrapper,1);
+  lua_setfield(L, -2, "__index");
+
+  lua_getfield(L,-1,"__newindex");
+  lua_pushcclosure(L, gpointer_wrapper,1);
+  lua_setfield(L, -2, "__newindex");
+
+  lua_getfield(L,-1,"__pairs");
+  lua_pushcclosure(L, gpointer_wrapper,1);
+  lua_setfield(L, -2, "__pairs");
+
+  lua_getfield(L,-1,"__ipairs");
+  lua_pushcclosure(L, gpointer_wrapper,1);
+  lua_setfield(L, -2, "__ipairs");
+
+  lua_getfield(L,-1,"__tostring");
+  lua_pushcclosure(L, gpointer_wrapper,1);
+  lua_setfield(L, -2, "__tostring");
+
   lua_pop(L, 1);
 
   luaA_conversion_type(L, type_id, gpointer_pushfunc, gpointer_tofunc);
@@ -845,6 +877,24 @@ void dt_lua_type_gpointer_alias_type(lua_State*L,luaA_Type type_id,void* pointer
   lua_settable(L,-3);
   lua_pop(L,1);
 
+
+}
+
+void dt_lua_type_gpointer_drop(lua_State*L, void* pointer)
+{
+  luaL_getsubtable(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
+
+  lua_pushlightuserdata(L, pointer);
+  lua_gettable(L,-2);
+  gpointer *udata = (gpointer*)lua_touserdata(L,-1);
+  *udata = NULL;
+  lua_pop(L,1);
+
+  lua_pushlightuserdata(L, pointer);
+  lua_pushnil(L);
+  lua_settable(L,-3);
+
+  lua_pop(L,1);
 
 }
 

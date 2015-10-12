@@ -135,6 +135,17 @@ luaA_Type dt_lua_init_gpointer_type_type(lua_State *L, luaA_Type type_id);
 #define dt_lua_type_gpointer_alias(L,type_name,pointer,alias) \
   dt_lua_type_gpointer_alias_type(L,luaA_type(L,type_name),pointer,alias)
 void dt_lua_type_gpointer_alias_type(lua_State*L,luaA_Type type_id,void* pointer,void* alias);
+
+
+/**
+  * drop a gpointer. Pushing the pointer again will create a new object.
+  * We can't guarentee when the original object will be GC, but it will point to NULL
+  * instead of its normal content. accessing it from the lua side will cause an error
+  * luaA_to will also raise an error
+  * NOTE : if the object had aliases, the aliases will return NULL too.
+  */
+void dt_lua_type_gpointer_drop(lua_State*L, void* pointer);
+
 /**
  * similar to dt_lua_init_type but creates a singleton type
  * that is : a type who has only one instance (which is a void* pointer)
