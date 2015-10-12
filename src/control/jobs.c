@@ -367,7 +367,12 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
   GList **queue = &control->queues[queue_id];
   size_t length = control->queue_length[queue_id];
 
+#ifdef __WIN32__
+  dt_print(DT_DEBUG_CONTROL, "[add_job] %Id | ", length);
+#else
   dt_print(DT_DEBUG_CONTROL, "[add_job] %ld | ", length);
+#endif
+
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
 

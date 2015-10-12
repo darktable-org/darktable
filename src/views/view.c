@@ -1298,7 +1298,11 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         int k = 0;
         while(!feof(f))
         {
+#ifndef __WIN32__
           gchar *line_pattern = g_strdup_printf("%%%zu[^\n]", sizeof(line) - 1);
+#else
+          gchar *line_pattern = g_strdup_printf("%%%Iu[^\n]", sizeof(line) - 1);
+#endif
           const int read = fscanf(f, line_pattern, line);
           g_free(line_pattern);
           if(read != 1) break;

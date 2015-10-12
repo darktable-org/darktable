@@ -781,10 +781,24 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   const gchar *lang = dt_conf_get_string("ui_last/gui_language");
   if(lang != NULL && lang[0] != '\0')
   {
+#ifdef HAVE_SETENV
     setenv("LANGUAGE", lang, 1);
+#else
+    char *winenv = (char *) malloc(9+sizeof(lang)+1);
+    sprintf(winenv, "%s=%s", "LANGUAGE", lang);
+    putenv(winenv);
+#endif
+
     if(setlocale(LC_ALL, lang) != NULL) gtk_disable_setlocale();
-    setlocale(LC_MESSAGES, lang);
+        setlocale(LC_MESSAGES, lang);
+
+#ifdef HAVE_SETENV
     setenv("LANG", lang, 1);
+#else
+    winenv = (char *) malloc(5+sizeof(lang)+1);
+    sprintf(winenv, "%s=%s", "LANG", lang);
+    putenv(winenv);
+#endif
   }
   g_free((gchar *)lang);
 

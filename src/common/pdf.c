@@ -674,7 +674,11 @@ void dt_pdf_finish(dt_pdf_t *pdf, dt_pdf_page_t **pages, int n_pages)
 
   /* get the time */
   t = time(NULL);
+#ifdef __WIN32__
+  localtime_s(&lt, &t);
+#else
   localtime_r(&t, &lt);
+#endif
   size = strftime(time_str, sizeof(time_str), "D:%Y%m%d%H%M%S", &lt);
   /* expected format: "YYYYmmddHHMMSS" */
   if(size == 0)
@@ -695,7 +699,11 @@ void dt_pdf_finish(dt_pdf_t *pdf, dt_pdf_page_t **pages, int n_pages)
   }
 
   /* get the time zone offset */
+#ifdef __WIN32__
+  gmtime_s(&gmt, &t);
+#else
   gmtime_r(&t, &gmt);
+#endif
 
   /* this calculation method was found in exim's tod.c */
   off = 60 * (lt.tm_hour - gmt.tm_hour) + lt.tm_min - gmt.tm_min;
