@@ -97,17 +97,17 @@ void dt_lua_init_lock()
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
 }
 
-void dt_lua_lock_internal(const char *function, int line)
+void dt_lua_lock_internal(const char *function, const char *file, int line, gboolean silent)
 {
-  if(!darktable.lua_state.ending && pthread_equal(darktable.control->gui_thread, pthread_self()) != 0)
+  if(!silent && !darktable.lua_state.ending && pthread_equal(darktable.control->gui_thread, pthread_self()) != 0)
   {
     dt_print(DT_DEBUG_LUA, "LUA WARNING locking from the gui thread should be avoided\n");
     //g_assert(false);
   }
 
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
-#ifdef _DEBU
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,function,line);
+#ifdef _DEBUG
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s:%d (%s)\n", __FUNCTION__, file, line, function);
 #endif
 }
 void dt_lua_unlock_internal(const char *function, int line)
