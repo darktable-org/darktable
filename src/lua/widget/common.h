@@ -1,6 +1,7 @@
 /*
    This file is part of darktable,
    copyright (c) 2015 Jeremy Rosen
+   copyright (c) 2015 tobias ellinghaus
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,6 +25,7 @@
 
 // Types added to the lua type system and useable externally
 typedef GtkOrientation dt_lua_orientation_t;
+typedef GtkAlign dt_lua_align_t;
 
 typedef dt_lua_widget_t* lua_separator;
 typedef dt_lua_widget_t* lua_label;
