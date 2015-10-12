@@ -874,14 +874,18 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     // remove from disk:
     if(duplicates == 1)
     {
-      // there are no further duplicates so we can remove the source data file
-      delete_status = delete_file_from_disk(filename);
-      if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
+      // first check for local copies, never delete a file whose original file is now accessible
+      if (dt_image_local_copy_reset(imgid))
         goto delete_next_file;
 
       snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
       _set_remove_flag(imgidstr);
       dt_image_remove(imgid);
+
+      // there are no further duplicates so we can remove the source data file
+      delete_status = delete_file_from_disk(filename);
+      if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
+        goto delete_next_file;
 
       // all sidecar files - including left-overs - can be deleted;
       // left-overs can result when previously duplicates have been REMOVED;
