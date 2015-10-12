@@ -49,6 +49,8 @@ static void _guides_draw_callback(cairo_t *cr, const float x, const float y,
   // this will be called directly from the gui thread so we can just execute it, without caring about the gtk lock
   dt_lua_do_chunk_silent(L, 6, 0);
 
+  dt_lua_type_gpointer_drop(L,cr);
+
   dt_lua_unlock();
 }
 
