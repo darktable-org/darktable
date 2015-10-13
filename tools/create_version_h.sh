@@ -17,7 +17,7 @@ if [ -z "${NEW_VERSION}" ]; then
 	NEW_VERSION="archive-$Format:%H$"
 fi
 
-if [ -n `echo $NEW_VERSION | grep %` ]; then
+if [ -n  "`echo -e $NEW_VERSION | grep  H`" ]; then
 	NEW_VERSION="unknown-version"
 fi
 
