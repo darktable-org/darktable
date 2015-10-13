@@ -38,10 +38,8 @@
 #include "gui/presets.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <xmmintrin.h>
 
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-#define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
 
 #define BLOCKSIZE 64 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed  \
                         */
