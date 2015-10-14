@@ -38,7 +38,7 @@
 #include "colord-gtk.h"
 #endif
 
-#ifdef GDK_WINDOWING_QUARTZ
+#if 0
 #include <Carbon/Carbon.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreServices/CoreServices.h>
@@ -220,6 +220,8 @@ void dt_ctl_set_display_profile()
 #endif
 
 #elif defined GDK_WINDOWING_QUARTZ
+  (void)widget;
+#if 0
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if(screen == NULL) screen = gdk_screen_get_default();
   int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
@@ -244,6 +246,7 @@ void dt_ctl_set_display_profile()
     CFRelease(data);
   }
   profile_source = g_strdup("osx color profile api");
+#endif
 #elif defined G_OS_WIN32
   (void)widget;
   HDC hdc = GetDC(NULL);
