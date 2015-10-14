@@ -1,18 +1,17 @@
-diff -uNr gtk-mac-bundler-0.6.1-orig/bundler/bundler.py gtk-mac-bundler-0.6.1/bundler/bundler.py
---- gtk-mac-bundler-0.6.1-orig/bundler/bundler.py	2011-03-28 23:19:46.000000000 +0400
-+++ gtk-mac-bundler-0.6.1/bundler/bundler.py	2012-08-21 04:26:31.000000000 +0400
-@@ -340,6 +340,10 @@
+diff -uNr gtk-mac-bundler-0.7.4-orig/bundler/bundler.py gtk-mac-bundler-0.7.4/bundler/bundler.py
+--- gtk-mac-bundler-0.7.4-orig/bundler/bundler.py	2014-11-06 22:34:11.000000000 +0300
++++ gtk-mac-bundler-0.7.4/bundler/bundler.py	2015-10-14 14:41:15.000000000 +0300
+@@ -377,6 +377,9 @@
                  if not "(compatibility" in line:
                      return False
  
 +                if line.startswith("@executable_path/"):
-+                    print "Warning, can't resolve @executable_path, skipping:", line.strip().split()[0]
 +                    return False
 +
                  if line.startswith("/usr/X11"):
                      print "Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0]
  
-@@ -509,7 +513,6 @@
+@@ -568,7 +571,6 @@
  
      def copy_translations(self):
          translations = self.project.get_translations()
@@ -20,7 +19,7 @@ diff -uNr gtk-mac-bundler-0.6.1-orig/bundler/bundler.py gtk-mac-bundler-0.6.1/bu
  
  
          def name_filter(filename):
-@@ -526,14 +529,21 @@
+@@ -585,14 +587,21 @@
              if program.name == "" or program.name == None:
                  raise "No program name to tranlate!"
  
@@ -44,30 +43,21 @@ diff -uNr gtk-mac-bundler-0.6.1-orig/bundler/bundler.py gtk-mac-bundler-0.6.1/bu
  
  
      def run(self):
-@@ -552,9 +562,6 @@
+@@ -611,9 +620,6 @@
          self.create_pkglist()
          self.copy_plist()
  
 -        # Note: could move this to xml file...
 -        self.copy_path(Path("${prefix}/lib/charset.alias"))
 -
-         # Launcher script, if necessary.
-         launcher_script = self.project.get_launcher_script()
-         if launcher_script:
-diff -uNr gtk-mac-bundler-0.6.1-orig/bundler/run-install-name-tool-change.sh gtk-mac-bundler-0.6.1/bundler/run-install-name-tool-change.sh
---- gtk-mac-bundler-0.6.1-orig/bundler/run-install-name-tool-change.sh	2010-06-02 03:32:31.000000000 +0400
-+++ gtk-mac-bundler-0.6.1/bundler/run-install-name-tool-change.sh	2012-08-18 22:26:27.000000000 +0400
-@@ -15,11 +15,13 @@
-     for lib in $libs; do
- 	if ! echo $lib | grep --silent "@executable_path" ; then
- 	    fixed=`echo $lib | sed -e s,\$WRONG_PREFIX,\$RIGHT_PREFIX,`
-+	    chmod u+w $LIBRARY
- 	    install_name_tool -change $lib $fixed $LIBRARY
- 	fi
-     done;
- elif [ "x$ACTION" == "xid" ]; then
-     lib="`otool -D $LIBRARY 2>/dev/null | grep ^$WRONG_PREFIX`"
-+    chmod u+w $LIBRARY
-     install_name_tool -id "$RIGHT_PREFIX/$lib" $LIBRARY;
- fi
-     
+         # Main binary
+         path = self.project.get_main_binary()
+         source = self.project.evaluate_path(path.source)
+@@ -643,7 +649,6 @@
+ 
+         self.copy_icon_themes()
+ 
+-        self.create_pango_setup()
+         self.create_gtk_immodules_setup()
+         self.create_gdk_pixbuf_loaders_setup()
+ 
