@@ -232,8 +232,12 @@
         You can also select any other ratio after opening the combobox and typing it in the form
         of <quote>x:y</quote>. If you want a certain aspect ratio to be added to the pre-defined
         ones you can do so by including a line of the form
+      </para>
+      <para>
 <programlisting>plugins/darkroom/clipping/extra_aspect_ratios/foo=x:y
 </programlisting>
+      </para>
+      <para>
         into darktable's configuration file
         <filename>$HOME/.config/darktable/darktablerc</filename>. Here <quote>foo</quote>
         defines the name of the new aspect ratio and <quote>x</quote> and <quote>y</quote> the

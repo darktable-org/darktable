@@ -678,6 +678,8 @@
         designed to cooperate flawlessly, there have been reports about problems with certain
         setups. If <filename>darktable-viewer</filename> crashes upon startup, please try to
         use it without OpenCL support:
+      </para>
+      <para>
 <programlisting>darktable-viewer --core --disable-opencl
 </programlisting>
       </para>
