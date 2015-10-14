@@ -13,7 +13,6 @@
   <binary dest="${bundle}/Contents/MacOS/darktable-cli-bin">${prefix:dt}/bin/darktable-cli</binary>
   <binary>${prefix:dt}/lib/darktable</binary>
   <binary>${prefix}/lib/${gtkdir}/modules/*.so</binary>
-  <binary>${prefix}/lib/pango/${pkg:pango:pango_module_version}/modules/*.so</binary>
   <binary>${prefix}/lib/libgphoto2_port/${pkg:libgphoto2_port:VERSION}/*.so</binary>
   <binary>${prefix}/lib/libgphoto2/${pkg:libgphoto2:VERSION}/*.so</binary>
   <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/engines/*.so</binary>

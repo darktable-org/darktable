@@ -12,16 +12,14 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     To have working OpenMP (at least partly, only for C source files) you will also need gcc49:
      sudo port install gcc49
     Configure darktable with this command instead of just "cmake ..":
-     CC=gcc-mp-4.9 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6
-    If you are building on OS X 10.10 Yosemite also add this argument to the command above:
-     -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
+     CC=gcc-mp-4.9 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6 -DCMAKE_OSX_SYSROOT=/
 
 2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
      $ cd ~/src
-     $ curl -O http://ftp.gnome.org/pub/gnome/sources/gtk-mac-bundler/0.6/gtk-mac-bundler-0.6.1.tar.bz2
-     $ tar -xf gtk-mac-bundler-0.6.1.tar.bz2
-     $ cd gtk-mac-bundler-0.6.1
-     $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.6.1.patch
+     $ curl -O http://ftp.gnome.org/pub/gnome/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
+     $ tar -xf gtk-mac-bundler-0.7.4.tar.xz
+     $ cd gtk-mac-bundler-0.7.4
+     $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.7.4.patch
      $ make install
 
 3). You will need to rebuild gtk2 with 'bundle' variant:
@@ -29,7 +27,6 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     The problem is that with this flag gtk2 works reliably only when included in bundle, so if you need working system gtk2 you will need to revert this change
     after you're done with bundle creation. To do that you can just run this command:
      $ sudo port install gtk2 -bundle
-    Otherwise you can just add +bundle to /opt/local/etc/macports/variant.conf
 
 4). Now preparation is done, run image creating script, it should create darktable-<VERSION>.dmg in current (packaging/macosx) directory:
      $ cd ~/src/darktable/packaging/macosx
