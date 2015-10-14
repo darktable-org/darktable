@@ -45,6 +45,7 @@ src/gui/accelerators.c
 src/gui/camera_import_dialog.c
 src/gui/gtk.c
 src/gui/gtkentry.c
+src/gui/guides.c
 src/gui/hist_dialog.c
 src/gui/preferences.c
 src/gui/presets.c
