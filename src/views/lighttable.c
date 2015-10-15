@@ -35,6 +35,8 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
+#include "dtgtk/button.h"
+#include "bauhaus/bauhaus.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -120,6 +122,12 @@ typedef struct dt_library_t
     /* check if the group of the image under the mouse has others, too, ?1: group_id, ?2: imgid */
     sqlite3_stmt *is_grouped;
   } statements;
+
+  struct
+  {
+    gulong destroy_signal_handler;
+    GtkWidget *button, *floating_window;
+  } profile;
 
 } dt_library_t;
 
@@ -2233,6 +2241,220 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "color blue", closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(4), NULL);
   dt_accel_connect_view(self, "color purple", closure);
+}
+
+
+
+static gboolean _profile_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_library_t *lib = (dt_library_t *)user_data;
+  g_signal_handler_disconnect(widget, lib->profile.destroy_signal_handler);
+  lib->profile.destroy_signal_handler = 0;
+  gtk_widget_hide(lib->profile.floating_window);
+  return FALSE;
+}
+
+static gboolean _profile_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  dt_library_t *lib = (dt_library_t *)user_data;
+  /** finally move the window next to the button */
+  gint x, y, wx, wy;
+  gint px, py, window_w, window_h;
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  gtk_widget_show_all(lib->profile.floating_window);
+  gdk_window_get_origin(gtk_widget_get_window(lib->profile.button), &px, &py);
+
+  window_w = gdk_window_get_width(gtk_widget_get_window(lib->profile.floating_window));
+  window_h = gdk_window_get_height(gtk_widget_get_window(lib->profile.floating_window));
+
+  gtk_widget_translate_coordinates(lib->profile.button, window, 0, 0, &wx, &wy);
+  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
+  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
+  gtk_window_move(GTK_WINDOW(lib->profile.floating_window), x, y);
+
+  gtk_window_present(GTK_WINDOW(lib->profile.floating_window));
+
+  // when the mouse moves back over the main window we close the popup.
+  lib->profile.destroy_signal_handler = g_signal_connect(window, "focus-in-event",
+                                                         G_CALLBACK(_profile_close_popup), user_data);
+  return TRUE;
+}
+
+static void display_intent_callback(GtkWidget *combo, gpointer user_data)
+{
+  const int pos = dt_bauhaus_combobox_get(combo);
+
+  dt_iop_color_intent_t new_intent = darktable.color_profiles->display_intent;
+
+  // we are not using the int value directly so it's robust against changes on lcms' side
+  switch(pos)
+  {
+    case 0:
+      new_intent = DT_INTENT_PERCEPTUAL;
+      break;
+    case 1:
+      new_intent = DT_INTENT_RELATIVE_COLORIMETRIC;
+      break;
+    case 2:
+      new_intent = DT_INTENT_SATURATION;
+      break;
+    case 3:
+      new_intent = DT_INTENT_ABSOLUTE_COLORIMETRIC;
+      break;
+  }
+
+  if(new_intent != darktable.color_profiles->display_intent)
+  {
+    darktable.color_profiles->display_intent = new_intent;
+    dt_control_queue_redraw_center();
+  }
+}
+
+static void display_profile_callback(GtkWidget *combo, gpointer user_data)
+{
+  gboolean profile_changed = FALSE;
+  const int pos = dt_bauhaus_combobox_get(combo);
+  for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+    if(pp->display_pos == pos)
+    {
+      if(darktable.color_profiles->display_type != pp->type
+        || (darktable.color_profiles->display_type == DT_COLORSPACE_FILE
+        && strcmp(darktable.color_profiles->display_filename, pp->filename)))
+      {
+        darktable.color_profiles->display_type = pp->type;
+        g_strlcpy(darktable.color_profiles->display_filename, pp->filename,
+                  sizeof(darktable.color_profiles->display_filename));
+        profile_changed = TRUE;
+      }
+      goto end;
+    }
+  }
+
+  // profile not found, fall back to system display profile. shouldn't happen
+  fprintf(stderr, "can't find display profile `%s', using system display profile instead\n", dt_bauhaus_combobox_get_text(combo));
+  profile_changed = darktable.color_profiles->display_type != DT_COLORSPACE_DISPLAY;
+  darktable.color_profiles->display_type = DT_COLORSPACE_DISPLAY;
+  darktable.color_profiles->display_filename[0] = '\0';
+
+end:
+  if(profile_changed)
+  {
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+    dt_colorspaces_update_display_transforms();
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+    dt_control_queue_redraw_center();
+  }
+}
+
+// FIXME: turning off lcms2 in prefs hides the widget but leaves the window sized like before -> ugly-ish
+static void _preference_changed(gpointer instance, gpointer user_data)
+{
+  GtkWidget *display_intent = GTK_WIDGET(user_data);
+
+  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  if(force_lcms2)
+  {
+    gtk_widget_set_no_show_all(display_intent, FALSE);
+    gtk_widget_set_visible(display_intent, TRUE);
+  }
+  else
+  {
+    gtk_widget_set_no_show_all(display_intent, TRUE);
+    gtk_widget_set_visible(display_intent, FALSE);
+  }
+}
+
+void gui_init(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // create display profile button
+  lib->profile.button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  g_object_set(G_OBJECT(lib->profile.button), "tooltip-text", _("set display profile"), (char *)NULL);
+  g_signal_connect(G_OBJECT(lib->profile.button), "button-press-event", G_CALLBACK(_profile_quickbutton_pressed), lib);
+  dt_view_manager_module_toolbox_add(darktable.view_manager, lib->profile.button, DT_VIEW_LIGHTTABLE);
+
+  // and the popup window
+  const int panel_width = dt_conf_get_int("panel_width");
+
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+
+  lib->profile.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_default_size(GTK_WINDOW(lib->profile.floating_window), panel_width, -1);
+  GtkWidget *frame = gtk_frame_new(NULL);
+  GtkWidget *event_box = gtk_event_box_new();
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
+
+  gtk_widget_set_can_focus(lib->profile.floating_window, TRUE);
+  gtk_window_set_decorated(GTK_WINDOW(lib->profile.floating_window), FALSE);
+  gtk_window_set_type_hint(GTK_WINDOW(lib->profile.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+  gtk_window_set_transient_for(GTK_WINDOW(lib->profile.floating_window), GTK_WINDOW(window));
+  gtk_widget_set_opacity(lib->profile.floating_window, 0.9);
+
+  gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
+  gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
+
+  gtk_container_add(GTK_CONTAINER(lib->profile.floating_window), frame);
+  gtk_container_add(GTK_CONTAINER(frame), event_box);
+  gtk_container_add(GTK_CONTAINER(event_box), vbox);
+
+  /** let's fill the encapsulating widgets */
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+
+  GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(display_intent, NULL, _("display intent"));
+  gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_add(display_intent, _("perceptual"));
+  dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
+  dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
+  dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
+
+  if(!force_lcms2)
+  {
+    gtk_widget_set_no_show_all(display_intent, TRUE);
+    gtk_widget_set_visible(display_intent, FALSE);
+  }
+
+  GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(display_profile, NULL, _("display profile"));
+  gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
+
+  for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)profiles->data;
+    if(prof->display_pos > -1)
+    {
+      dt_bauhaus_combobox_add(display_profile, prof->name);
+      if(prof->type == darktable.color_profiles->display_type
+        && (prof->type != DT_COLORSPACE_FILE
+        || !strcmp(prof->filename, darktable.color_profiles->display_filename)))
+      {
+        dt_bauhaus_combobox_set(display_profile, prof->display_pos);
+      }
+    }
+  }
+
+  char tooltip[1024];
+  snprintf(tooltip, sizeof(tooltip), _("display ICC profiles in %s/color/out or %s/color/out"), confdir,
+           datadir);
+  g_object_set(G_OBJECT(display_profile), "tooltip-text", tooltip, (char *)NULL);
+
+  g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), NULL);
+  g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);
+
+  // update the gui when the preferences changed (i.e. show intent when using lcms2)
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                            G_CALLBACK(_preference_changed), (gpointer)display_intent);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
