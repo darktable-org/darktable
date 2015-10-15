@@ -25,8 +25,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-11 06:37+0200\n"
-"PO-Revision-Date: 2015-10-11 21:50+0200\n"
+"POT-Creation-Date: 2015-10-15 20:42+0200\n"
+"PO-Revision-Date: 2015-10-15 22:24+0200\n"
 "Last-Translator: Gustav Ernberg <gustav@exceed-it.se>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -497,7 +497,14 @@ msgid ""
 "though to delete these manually, if you want. light table performance will "
 "be increased greatly when browsing a lot. to generate all thumbnails of your "
 "entire collection offline, run 'darktable-generate-cache'."
-msgstr "aktivering innebär att miniatyrbilder lagras på disk (.cache/darktable/) när de plockas bort från minnes-cachen.  Observera att detta kan ta upp en hel del minne (flera gigabyte för 20k bilder) och aldrig kommer att ta bort cachade miniatyrbilder.  det är dock möjligt att ta bort dem manuellt om man vill.  ljusbordet kommer att fungera snabbare när man tittar på mycket bilder.  för att skapa miniatyrbilder för hela sin samling, kör 'darktable-generate-cache'."
+msgstr ""
+"aktivering innebär att miniatyrbilder lagras på disk (.cache/darktable/) när "
+"de plockas bort från minnes-cachen.  Observera att detta kan ta upp en hel "
+"del minne (flera gigabyte för 20k bilder) och aldrig kommer att ta bort "
+"cachade miniatyrbilder.  det är dock möjligt att ta bort dem manuellt om man "
+"vill.  ljusbordet kommer att fungera snabbare när man tittar på mycket "
+"bilder.  för att skapa miniatyrbilder för hela sin samling, kör 'darktable-"
+"generate-cache'."
 
 #: ../build/src/preferences_gen.h:2190
 msgid "color manage cached thumbnails"
@@ -973,27 +980,27 @@ msgstr "fel uppstod vid utskrift av bild %d på `%s'"
 msgid "printing image %d on `%s'"
 msgstr "skriver ut bild %d på `%s'"
 
-#: ../src/common/darktable.c:320
+#: ../src/common/darktable.c:321
 #, c-format
 msgid "found strange path `%s'"
 msgstr "hittade en konstigt sökväg `%s'"
 
-#: ../src/common/darktable.c:337
+#: ../src/common/darktable.c:338
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "fel uppstod vid läsning av katalog '%s'"
 
-#: ../src/common/darktable.c:360
+#: ../src/common/darktable.c:361
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "`%s' är av okänt format!"
 
-#: ../src/common/darktable.c:373 ../src/libs/import.c:823
+#: ../src/common/darktable.c:374 ../src/libs/import.c:823
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/common/darktable.c:739
+#: ../src/common/darktable.c:740
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "FEL : ogiltig temporär katalog : %s\n"
@@ -1024,7 +1031,7 @@ msgstr ""
 #: ../src/common/history.c:425 ../src/common/history.c:428
 #: ../src/common/history.c:443 ../src/common/styles.c:716
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1825
-#: ../src/develop/develop.c:1295 ../src/libs/live_view.c:409
+#: ../src/develop/develop.c:1295 ../src/libs/live_view.c:439
 msgid "on"
 msgstr "på"
 
@@ -1035,7 +1042,7 @@ msgstr "på"
 #: ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
 #: ../src/iop/colorin.c:1224 ../src/iop/demosaic.c:2218
 #: ../src/iop/vignette.c:1143 ../src/libs/history.c:153
-#: ../src/libs/live_view.c:408
+#: ../src/libs/live_view.c:438
 msgid "off"
 msgstr "av"
 
@@ -1068,11 +1075,11 @@ msgstr "kan inte skapa lokal kopia när originalfilen inte går att nå."
 msgid "cannot create local copy."
 msgstr "kan inte skapa lokal kopia."
 
-#: ../src/common/image.c:1407 ../src/control/jobs/control_jobs.c:626
+#: ../src/common/image.c:1406 ../src/control/jobs/control_jobs.c:626
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "kan inte ta bort lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1559
+#: ../src/common/image.c:1558
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1213,11 +1220,11 @@ msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
 
 #: ../src/common/variables.c:240 ../src/common/variables.c:254
-#: ../src/iop/clipping.c:1576 ../src/iop/clipping.c:1865
-#: ../src/iop/clipping.c:1885 ../src/iop/clipping.c:2023
-#: ../src/iop/clipping.c:2045 ../src/iop/colorreconstruction.c:1314
-#: ../src/iop/lens.c:2037 ../src/libs/export.c:485 ../src/libs/live_view.c:323
-#: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
+#: ../src/iop/clipping.c:1563 ../src/iop/clipping.c:1855
+#: ../src/iop/clipping.c:1875 ../src/iop/clipping.c:2019
+#: ../src/iop/clipping.c:2047 ../src/iop/colorreconstruction.c:1314
+#: ../src/iop/lens.c:2037 ../src/libs/export.c:485 ../src/libs/live_view.c:349
+#: ../src/libs/live_view.c:375 ../src/libs/live_view.c:384
 #: ../src/libs/print_settings.c:1007 ../src/libs/print_settings.c:1276
 msgid "none"
 msgstr "ingen"
@@ -1401,72 +1408,72 @@ msgid_plural "deleting %d images"
 msgstr[0] "raderar %d bild"
 msgstr[1] "raderar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1002
+#: ../src/control/jobs/control_jobs.c:1006
 msgid "failed to parse GPX file"
 msgstr "lyckades inte tolka GPX-filen"
 
-#: ../src/control/jobs/control_jobs.c:1062
+#: ../src/control/jobs/control_jobs.c:1066
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "applicerar tillhörande GPX-läge på %d bild"
 msgstr[1] "applicerar tillhörande GPX-läge på %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1077
+#: ../src/control/jobs/control_jobs.c:1081
 #, c-format
 msgid "moving %d image"
 msgstr "flyttar %d bild"
 
-#: ../src/control/jobs/control_jobs.c:1078
+#: ../src/control/jobs/control_jobs.c:1082
 #, c-format
 msgid "moving %d images"
 msgstr "flyttar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1083
+#: ../src/control/jobs/control_jobs.c:1087
 #, c-format
 msgid "copying %d image"
 msgstr "kopierar %d bild"
 
-#: ../src/control/jobs/control_jobs.c:1084
+#: ../src/control/jobs/control_jobs.c:1088
 #, c-format
 msgid "copying %d images"
 msgstr "kopierar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1100
+#: ../src/control/jobs/control_jobs.c:1104
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "skapa lokala kopia för %d bild"
 msgstr[1] "skapa lokala kopior för %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1103
+#: ../src/control/jobs/control_jobs.c:1107
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "ta bort %d bilds lokala kopia"
 msgstr[1] "ta bort %d bilders lokala kopior"
 
-#: ../src/control/jobs/control_jobs.c:1183
+#: ../src/control/jobs/control_jobs.c:1187
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exporterar %d bild..."
 msgstr[1] "exporterar %d bilder..."
 
-#: ../src/control/jobs/control_jobs.c:1185
+#: ../src/control/jobs/control_jobs.c:1189
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exporterar %d bild till %s"
 msgstr[1] "exporterar %d bilder till %s"
 
-#: ../src/control/jobs/control_jobs.c:1232 ../src/views/darkroom.c:464
+#: ../src/control/jobs/control_jobs.c:1236 ../src/views/darkroom.c:464
 #: ../src/views/print.c:283
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "`%s' är inte tillgänglig"
 
-#: ../src/control/jobs/control_jobs.c:1365
+#: ../src/control/jobs/control_jobs.c:1369
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1474,18 +1481,18 @@ msgid_plural ""
 msgstr[0] "vill du verkligen ta bort %d vald bild från samlingen?"
 msgstr[1] "vill du verkligen ta bort %d valda bilder från samlingen?"
 
-#: ../src/control/jobs/control_jobs.c:1369
+#: ../src/control/jobs/control_jobs.c:1373
 msgid "remove images?"
 msgstr "ta bort bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1408
+#: ../src/control/jobs/control_jobs.c:1412
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
 msgstr[0] "vill du verkligen skicka %d vald bilden till papperskorgen?"
 msgstr[1] "vill du verkligen skicka %d valda bilder till papperskorgen?"
 
-#: ../src/control/jobs/control_jobs.c:1410
+#: ../src/control/jobs/control_jobs.c:1414
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1493,16 +1500,16 @@ msgid_plural ""
 msgstr[0] "vill du verkligen radera %d vald bilder fysiskt från disk?"
 msgstr[1] "vill du verkligen radera %d valda bilder fysiskt från disk?"
 
-#: ../src/control/jobs/control_jobs.c:1414
+#: ../src/control/jobs/control_jobs.c:1418
 msgid "trash images?"
 msgstr "bilder till papperskorg?"
 
-#: ../src/control/jobs/control_jobs.c:1414
+#: ../src/control/jobs/control_jobs.c:1418
 msgid "delete images?"
 msgstr "radera bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1439
-#: ../src/control/jobs/control_jobs.c:1493 ../src/imageio/storage/disk.c:92
+#: ../src/control/jobs/control_jobs.c:1443
+#: ../src/control/jobs/control_jobs.c:1497 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104
 #: ../src/imageio/storage/latex.c:165 ../src/libs/styles.c:208
@@ -1510,8 +1517,8 @@ msgstr "radera bilder?"
 msgid "select directory"
 msgstr "välj katalog"
 
-#: ../src/control/jobs/control_jobs.c:1439
-#: ../src/control/jobs/control_jobs.c:1493 ../src/gui/preferences.c:1012
+#: ../src/control/jobs/control_jobs.c:1443
+#: ../src/control/jobs/control_jobs.c:1497 ../src/gui/preferences.c:1012
 #: ../src/gui/preferences.c:1034 ../src/gui/presets.c:386
 #: ../src/gui/styles_dialog.c:284 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/gallery.c:104 ../src/imageio/storage/latex.c:104
@@ -1522,12 +1529,12 @@ msgstr "välj katalog"
 msgid "_Cancel"
 msgstr "_Avbryt"
 
-#: ../src/control/jobs/control_jobs.c:1440
-#: ../src/control/jobs/control_jobs.c:1494
+#: ../src/control/jobs/control_jobs.c:1444
+#: ../src/control/jobs/control_jobs.c:1498
 msgid "_Select as destination"
 msgstr "_Välj ett mål"
 
-#: ../src/control/jobs/control_jobs.c:1458
+#: ../src/control/jobs/control_jobs.c:1462
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1542,13 +1549,13 @@ msgstr[1] ""
 "vill du verkligen flytta de %d valda bilderna fysiskt till %s?\n"
 "(alla ej valda kopior kommer att flyttas med)"
 
-#: ../src/control/jobs/control_jobs.c:1464
+#: ../src/control/jobs/control_jobs.c:1468
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "flytta bild?"
 msgstr[1] "flytta bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1512
+#: ../src/control/jobs/control_jobs.c:1516
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1556,27 +1563,27 @@ msgstr[0] "vill du verkligen kopiera den %d valda bilden fysiskt till %s?"
 msgstr[1] ""
 "vill du verkligen kopiera de %d valda bilderna fysiskt från till %s?"
 
-#: ../src/control/jobs/control_jobs.c:1515
+#: ../src/control/jobs/control_jobs.c:1519
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopiera bild?"
 msgstr[1] "kopiera bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1601
+#: ../src/control/jobs/control_jobs.c:1605
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "misslyckades att hämta parametrar från lagringsmodul `%s', avbryter "
 "exporten.."
 
-#: ../src/control/jobs/control_jobs.c:1639
+#: ../src/control/jobs/control_jobs.c:1643
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "lägger till tidsförskjutning på %d bild"
 msgstr[1] "lägger till tidsförskjutning på %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1658
+#: ../src/control/jobs/control_jobs.c:1662
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
@@ -1788,7 +1795,7 @@ msgid "add brush"
 msgstr "lägg till pensel"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:1562 ../src/libs/live_view.c:380
+#: ../src/develop/blend_gui.c:1562 ../src/libs/live_view.c:410
 msgctxt "blendmode"
 msgid "normal"
 msgstr "normal"
@@ -1798,17 +1805,17 @@ msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "begränsad normal"
 
-#: ../src/develop/blend_gui.c:1564 ../src/libs/live_view.c:389
+#: ../src/develop/blend_gui.c:1564 ../src/libs/live_view.c:419
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "gör endast ljusare"
 
-#: ../src/develop/blend_gui.c:1565 ../src/libs/live_view.c:388
+#: ../src/develop/blend_gui.c:1565 ../src/libs/live_view.c:418
 msgctxt "blendmode"
 msgid "darken"
 msgstr "gör endast mörkare"
 
-#: ../src/develop/blend_gui.c:1566 ../src/libs/live_view.c:385
+#: ../src/develop/blend_gui.c:1566 ../src/libs/live_view.c:415
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "multiplicera"
@@ -1828,17 +1835,17 @@ msgctxt "blendmode"
 msgid "subtract"
 msgstr "substrahera"
 
-#: ../src/develop/blend_gui.c:1570 ../src/libs/live_view.c:394
+#: ../src/develop/blend_gui.c:1570 ../src/libs/live_view.c:424
 msgctxt "blendmode"
 msgid "difference"
 msgstr "differens"
 
-#: ../src/develop/blend_gui.c:1571 ../src/libs/live_view.c:386
+#: ../src/develop/blend_gui.c:1571 ../src/libs/live_view.c:416
 msgctxt "blendmode"
 msgid "screen"
 msgstr "skärma för"
 
-#: ../src/develop/blend_gui.c:1572 ../src/libs/live_view.c:387
+#: ../src/develop/blend_gui.c:1572 ../src/libs/live_view.c:417
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "överlagring"
@@ -2395,8 +2402,10 @@ msgid ""
 "need to enable disk backend for thumbnail cache\n"
 "no thumbnails to be generated, done."
 msgstr ""
-"varning: lagringen av miniatyrbildscachen på disk är avslagen (cache_disk_backend)\n"
-"om du vill få minityrbilder skapade i förväg och att darktable använder dem måste du slå på lagring av minityrbildscachen på disk\n"
+"varning: lagringen av miniatyrbildscachen på disk är avslagen "
+"(cache_disk_backend)\n"
+"om du vill få minityrbilder skapade i förväg och att darktable använder dem "
+"måste du slå på lagring av minityrbildscachen på disk\n"
 "inga miniatyrbilder att skapa, klar."
 
 #: ../src/generate-cache/main.c:168
@@ -2709,6 +2718,61 @@ msgstr "$(DESKTOP) - skrivbordet"
 #: ../src/gui/gtkentry.c:211
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - titel från metadata"
+
+#: ../src/gui/guides.c:370
+msgid "extra"
+msgstr "extra"
+
+#: ../src/gui/guides.c:371
+msgid "golden sections"
+msgstr "gyllene sektioner"
+
+#: ../src/gui/guides.c:372
+msgid "golden spiral sections"
+msgstr "gyllene spiralsektioner"
+
+#: ../src/gui/guides.c:373
+msgid "golden spiral"
+msgstr "gyllene spiral"
+
+#: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:608
+#: ../src/iop/lens.c:2043 ../src/libs/tools/filter.c:117
+msgid "all"
+msgstr "alla"
+
+#: ../src/gui/guides.c:375
+msgid "show some extra guides"
+msgstr "visa extra guider"
+
+#: ../src/gui/guides.c:407
+msgid "grid"
+msgstr "rutmönster"
+
+#. TODO: make the number of lines configurable with a slider?
+#: ../src/gui/guides.c:408
+msgid "rules of thirds"
+msgstr "tredjedelsregeln"
+
+#: ../src/gui/guides.c:409
+msgid "metering"
+msgstr "mätskala"
+
+#: ../src/gui/guides.c:410
+msgid "perspective"
+msgstr "perspektiv"
+
+#. TODO: make the number of lines configurable with a slider?
+#: ../src/gui/guides.c:411
+msgid "diagonal method"
+msgstr "diagonal metod"
+
+#: ../src/gui/guides.c:412
+msgid "harmonious triangles"
+msgstr "harmoniska trianglar"
+
+#: ../src/gui/guides.c:416
+msgid "golden mean"
+msgstr "gyllene snitt"
 
 #: ../src/gui/hist_dialog.c:137
 msgid "select parts"
@@ -3271,13 +3335,13 @@ msgid "rotate images"
 msgstr "rotera bilder"
 
 #: ../src/imageio/format/pdf.c:595 ../src/imageio/format/pdf.c:621
-#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1896
+#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1886
 #: ../src/libs/export.c:585 ../src/libs/metadata_view.c:251
 msgid "no"
 msgstr "nej"
 
 #: ../src/imageio/format/pdf.c:596 ../src/imageio/format/pdf.c:622
-#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1897
+#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1887
 #: ../src/libs/export.c:586 ../src/libs/metadata_view.c:251
 msgid "yes"
 msgstr "ja"
@@ -3293,12 +3357,6 @@ msgstr ""
 #: ../src/imageio/format/pdf.c:607
 msgid "TODO: pages"
 msgstr "ATT GÖRA: sidor"
-
-#: ../src/imageio/format/pdf.c:608 ../src/iop/clipping.c:2062
-#: ../src/iop/lens.c:2043 ../src/libs/live_view.c:348
-#: ../src/libs/tools/filter.c:117
-msgid "all"
-msgstr "alla"
 
 #: ../src/imageio/format/pdf.c:609
 msgid "single images"
@@ -4192,7 +4250,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:914 ../src/iop/clipping.c:1915
+#: ../src/iop/borders.c:914 ../src/iop/clipping.c:1905
 msgid "golden cut"
 msgstr "gyllene snitt"
 
@@ -4212,7 +4270,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:919 ../src/iop/clipping.c:1905
+#: ../src/iop/borders.c:919 ../src/iop/clipping.c:1895
 msgid "square"
 msgstr "kvadrat"
 
@@ -4248,7 +4306,7 @@ msgstr "kantens storlek"
 msgid "size of the border in percent of the full image"
 msgstr "storlek på kant i procent av hela bilden"
 
-#: ../src/iop/borders.c:984 ../src/iop/clipping.c:2001
+#: ../src/iop/borders.c:984 ../src/iop/clipping.c:1991
 msgid "aspect"
 msgstr "aspekt"
 
@@ -4450,148 +4508,147 @@ msgstr "storlek av detaljer att bevara"
 msgid "strength of the effect"
 msgstr "sluttningen påverkar effektens styrka"
 
-#: ../src/iop/clipping.c:307
+#: ../src/iop/clipping.c:294
 msgid "crop and rotate"
 msgstr "beskär och rotera"
 
-#: ../src/iop/clipping.c:1474
+#: ../src/iop/clipping.c:1462
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "felaktig format för bildförhållande. det borde vara \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:1577 ../src/iop/clipping.c:1867
-#: ../src/iop/clipping.c:1886
+#: ../src/iop/clipping.c:1564 ../src/iop/clipping.c:1857
+#: ../src/iop/clipping.c:1876
 msgid "vertical"
 msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:1578 ../src/iop/clipping.c:1866
-#: ../src/iop/clipping.c:1887
+#: ../src/iop/clipping.c:1565 ../src/iop/clipping.c:1856
+#: ../src/iop/clipping.c:1877
 msgid "horizontal"
 msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:1579 ../src/iop/clipping.c:1888
+#: ../src/iop/clipping.c:1566 ../src/iop/clipping.c:1878
 msgid "full"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1580
+#: ../src/iop/clipping.c:1567
 msgid "old system"
 msgstr "gammalt system"
 
-#: ../src/iop/clipping.c:1581
+#: ../src/iop/clipping.c:1568
 msgid "correction applied"
 msgstr "korrigering gjord"
 
-#: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:2044
-#: ../src/libs/live_view.c:335
+#: ../src/iop/clipping.c:1854 ../src/libs/live_view.c:374
 msgid "flip"
 msgstr "vänd"
 
-#: ../src/iop/clipping.c:1868 ../src/iop/clipping.c:2048
-#: ../src/libs/live_view.c:339
+#: ../src/iop/clipping.c:1858 ../src/iop/clipping.c:2050
+#: ../src/libs/live_view.c:378
 msgid "both"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1870
+#: ../src/iop/clipping.c:1860
 msgid "mirror image horizontally and/or vertically"
 msgstr "vänd bild horisontellt och/eller vertikalt"
 
-#: ../src/iop/clipping.c:1876
+#: ../src/iop/clipping.c:1866
 msgid "angle"
 msgstr "vinkel"
 
-#: ../src/iop/clipping.c:1880
+#: ../src/iop/clipping.c:1870
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "högerklicka och dra en linje på bilden för att dra en rak linje"
 
-#: ../src/iop/clipping.c:1884
+#: ../src/iop/clipping.c:1874
 msgid "keystone"
 msgstr "perspektivkorr"
 
-#: ../src/iop/clipping.c:1889
+#: ../src/iop/clipping.c:1879
 msgid "set perspective correction for your image"
 msgstr "korrigera perspektivet på din bild"
 
-#: ../src/iop/clipping.c:1895
+#: ../src/iop/clipping.c:1885
 msgid "automatic cropping"
 msgstr "automatiskt beskärning"
 
-#: ../src/iop/clipping.c:1898
+#: ../src/iop/clipping.c:1888
 msgid "automatically crop to avoid black edges"
 msgstr "beskär automatiskt för att undvika svarta kanter"
 
-#: ../src/iop/clipping.c:1903
+#: ../src/iop/clipping.c:1893
 msgid "freehand"
 msgstr "frihand"
 
-#: ../src/iop/clipping.c:1904
+#: ../src/iop/clipping.c:1894
 msgid "original image"
 msgstr "originalbild"
 
-#: ../src/iop/clipping.c:1906
+#: ../src/iop/clipping.c:1896
 msgid "10:8 in print"
 msgstr "10:8 för utskrift"
 
-#: ../src/iop/clipping.c:1907
+#: ../src/iop/clipping.c:1897
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:1908
+#: ../src/iop/clipping.c:1898
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:1909
+#: ../src/iop/clipping.c:1899
 msgid "8.5x11, letter"
 msgstr "8.5x11, letter (usa)"
 
-#: ../src/iop/clipping.c:1910
+#: ../src/iop/clipping.c:1900
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:1911
+#: ../src/iop/clipping.c:1901
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:1912
+#: ../src/iop/clipping.c:1902
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:1913
+#: ../src/iop/clipping.c:1903
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:1914
+#: ../src/iop/clipping.c:1904
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:1916
+#: ../src/iop/clipping.c:1906
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:1917
+#: ../src/iop/clipping.c:1907
 msgid "widescreen"
 msgstr "widescreen"
 
-#: ../src/iop/clipping.c:1918
+#: ../src/iop/clipping.c:1908
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:1919
+#: ../src/iop/clipping.c:1909
 msgid "cinemascope"
 msgstr "cinemascope"
 
-#: ../src/iop/clipping.c:1920
+#: ../src/iop/clipping.c:1910
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:1921
+#: ../src/iop/clipping.c:1911
 msgid "anamorphic"
 msgstr "anamorfisk"
 
-#: ../src/iop/clipping.c:1953 ../src/iop/clipping.c:1965
+#: ../src/iop/clipping.c:1943 ../src/iop/clipping.c:1955
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "felaktig bildförhållande `%s'. det borde vara \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:2015
+#: ../src/iop/clipping.c:2005
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -4599,82 +4656,33 @@ msgstr ""
 "sätt önskat bildförhållande\n"
 "listan är sorterad från mest kvadratiska till minst kvadratiska"
 
-#: ../src/iop/clipping.c:2022 ../src/libs/live_view.c:322
+#: ../src/iop/clipping.c:2012 ../src/libs/live_view.c:342
 msgid "guides"
 msgstr "guider"
 
-#: ../src/iop/clipping.c:2025 ../src/libs/live_view.c:324
-msgid "grid"
-msgstr "rutmönster"
-
-#. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:2026 ../src/libs/live_view.c:325
-msgid "rules of thirds"
-msgstr "tredjedelsregeln"
-
-#: ../src/iop/clipping.c:2027
-msgid "metering"
-msgstr "mätskala"
-
-#: ../src/iop/clipping.c:2029
-msgid "perspective"
-msgstr "perspektiv"
-
-#. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:2030 ../src/libs/live_view.c:326
-msgid "diagonal method"
-msgstr "diagonal metod"
-
-#: ../src/iop/clipping.c:2031 ../src/libs/live_view.c:327
-msgid "harmonious triangles"
-msgstr "harmoniska trianglar"
-
-#: ../src/iop/clipping.c:2032 ../src/libs/live_view.c:328
-msgid "golden mean"
-msgstr "gyllene snitt"
-
-#: ../src/iop/clipping.c:2039 ../src/libs/live_view.c:330
+#: ../src/iop/clipping.c:2042 ../src/libs/live_view.c:370
 msgid "display guide lines to help compose your photograph"
 msgstr "visa guider för att hjälpa dig att komponera ditt fotografi"
 
-#: ../src/iop/clipping.c:2046 ../src/libs/live_view.c:337
-msgid "horizontally"
-msgstr "horisontellt"
-
-#: ../src/iop/clipping.c:2047 ../src/libs/live_view.c:338
-msgid "vertically"
-msgstr "vertikalt"
-
-#: ../src/iop/clipping.c:2049 ../src/libs/live_view.c:340
+#: ../src/iop/clipping.c:2046 ../src/iop/clipping.c:2051
+#: ../src/libs/live_view.c:379
 msgid "flip guides"
 msgstr "vänd guider"
 
-#: ../src/iop/clipping.c:2058 ../src/libs/live_view.c:344
-msgid "extra"
-msgstr "extra"
+#: ../src/iop/clipping.c:2048 ../src/libs/live_view.c:376
+msgid "horizontally"
+msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:2059 ../src/libs/live_view.c:345
-msgid "golden sections"
-msgstr "gyllene sektioner"
+#: ../src/iop/clipping.c:2049 ../src/libs/live_view.c:377
+msgid "vertically"
+msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:2060 ../src/libs/live_view.c:346
-msgid "golden spiral sections"
-msgstr "gyllene spiralsektioner"
-
-#: ../src/iop/clipping.c:2061 ../src/libs/live_view.c:347
-msgid "golden spiral"
-msgstr "gyllene spiral"
-
-#: ../src/iop/clipping.c:2063 ../src/libs/live_view.c:349
-msgid "show some extra guides"
-msgstr "visa extra guider"
-
-#: ../src/iop/clipping.c:3191
+#: ../src/iop/clipping.c:3083
 msgctxt "accel"
 msgid "commit"
 msgstr "applicera"
 
-#: ../src/iop/clipping.c:3192
+#: ../src/iop/clipping.c:3084
 msgctxt "accel"
 msgid "angle"
 msgstr "vinkel"
@@ -5007,26 +5015,26 @@ msgstr "utgående avsikt"
 
 #: ../src/iop/colorout.c:639 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261
-#: ../src/views/darkroom.c:1552
+#: ../src/views/darkroom.c:1552 ../src/views/lighttable.c:2417
 msgid "perceptual"
 msgstr "perceptuell"
 
 #: ../src/iop/colorout.c:640 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
-#: ../src/views/darkroom.c:1553
+#: ../src/views/darkroom.c:1553 ../src/views/lighttable.c:2418
 msgid "relative colorimetric"
 msgstr "relativ färgmetri"
 
 #: ../src/iop/colorout.c:641 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
-#: ../src/views/darkroom.c:1554
+#: ../src/views/darkroom.c:1554 ../src/views/lighttable.c:2419
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mättnad"
 
 #: ../src/iop/colorout.c:642 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
-#: ../src/views/darkroom.c:1555
+#: ../src/views/darkroom.c:1555 ../src/views/lighttable.c:2420
 msgid "absolute colorimetric"
 msgstr "absolut färgmetri"
 
@@ -5638,12 +5646,12 @@ msgstr "rotera 90 grader moturs"
 msgid "rotate 90 degrees CW"
 msgstr "rotera 90 grader medurs"
 
-#: ../src/iop/flip.c:531 ../src/libs/live_view.c:145
+#: ../src/iop/flip.c:531 ../src/libs/live_view.c:165
 msgctxt "accel"
 msgid "rotate 90 degrees CCW"
 msgstr "rotera 90 grader moturs"
 
-#: ../src/iop/flip.c:532 ../src/libs/live_view.c:146
+#: ../src/iop/flip.c:532 ../src/libs/live_view.c:166
 msgctxt "accel"
 msgid "rotate 90 degrees CW"
 msgstr "rotera 90 grader medurs"
@@ -8169,173 +8177,173 @@ msgstr "letar efter nya anslutna enheter"
 msgid "edit `%s'"
 msgstr "ändra `%s'"
 
-#: ../src/libs/live_view.c:119
+#: ../src/libs/live_view.c:139
 msgid "live view"
 msgstr "live view"
 
-#: ../src/libs/live_view.c:144
+#: ../src/libs/live_view.c:164
 msgctxt "accel"
 msgid "toggle live view"
 msgstr "växla till live view"
 
-#: ../src/libs/live_view.c:147
+#: ../src/libs/live_view.c:167
 msgctxt "accel"
 msgid "flip horizontally"
 msgstr "vänd horisontellt"
 
-#: ../src/libs/live_view.c:148
+#: ../src/libs/live_view.c:168
 msgctxt "accel"
 msgid "move focus point in (big steps)"
 msgstr "flytta in fokuspunkten (stora steg)"
 
-#: ../src/libs/live_view.c:149
+#: ../src/libs/live_view.c:169
 msgctxt "accel"
 msgid "move focus point in (small steps)"
 msgstr "flytta in fokuspunkten (små steg)"
 
-#: ../src/libs/live_view.c:150
+#: ../src/libs/live_view.c:170
 msgctxt "accel"
 msgid "move focus point out (small steps)"
 msgstr "flytta ut fokuspunkten (små steg)"
 
-#: ../src/libs/live_view.c:151
+#: ../src/libs/live_view.c:171
 msgctxt "accel"
 msgid "move focus point out (big steps)"
 msgstr "flytta ut fokuspunkten (stora steg)"
 
-#: ../src/libs/live_view.c:271
+#: ../src/libs/live_view.c:291
 msgid "toggle live view"
 msgstr "växla till live view"
 
-#: ../src/libs/live_view.c:272
+#: ../src/libs/live_view.c:292
 msgid "zoom live view"
 msgstr "zooma live view"
 
-#: ../src/libs/live_view.c:273
+#: ../src/libs/live_view.c:293
 msgid "rotate 90 degrees ccw"
 msgstr "rotera valda bilder 90 grader moturs"
 
-#: ../src/libs/live_view.c:274
+#: ../src/libs/live_view.c:294
 msgid "rotate 90 degrees cw"
 msgstr "rotera valda bilder 90 grader medurs"
 
-#: ../src/libs/live_view.c:275
+#: ../src/libs/live_view.c:295
 msgid "flip live view horizontally"
 msgstr "vänd live view horisontellt"
 
-#: ../src/libs/live_view.c:301
+#: ../src/libs/live_view.c:321
 msgid "move focus point in (big steps)"
 msgstr "flytta in fokuspunkten (stora steg)"
 
-#: ../src/libs/live_view.c:303
+#: ../src/libs/live_view.c:323
 msgid "move focus point in (small steps)"
 msgstr "flytta in fokuspunkten (små steg)"
 
-#: ../src/libs/live_view.c:305
+#: ../src/libs/live_view.c:325
 msgid "move focus point out (small steps)"
 msgstr "flytta ut fokuspunkten (små steg)"
 
-#: ../src/libs/live_view.c:307
+#: ../src/libs/live_view.c:327
 msgid "move focus point out (big steps)"
 msgstr "flytta ut fokuspunkten (stora steg)"
 
-#: ../src/libs/live_view.c:353
+#: ../src/libs/live_view.c:383
 msgid "overlay"
 msgstr "överlagring"
 
-#: ../src/libs/live_view.c:355
+#: ../src/libs/live_view.c:385
 msgid "selected image"
 msgstr "valda bilder"
 
-#: ../src/libs/live_view.c:356 ../src/libs/tools/filter.c:142
+#: ../src/libs/live_view.c:386 ../src/libs/tools/filter.c:142
 msgid "id"
 msgstr "id"
 
-#: ../src/libs/live_view.c:357
+#: ../src/libs/live_view.c:387
 msgid "overlay another image over the live view"
 msgstr "lägg en annan bild över live view"
 
-#: ../src/libs/live_view.c:363 ../src/libs/metadata_view.c:86
+#: ../src/libs/live_view.c:393 ../src/libs/metadata_view.c:86
 msgid "image id"
 msgstr "bildidentitet"
 
-#: ../src/libs/live_view.c:367
+#: ../src/libs/live_view.c:397
 msgid "enter image id of the overlay manually"
 msgstr "välj bildidentiteten för att lägga över, manuellt"
 
-#: ../src/libs/live_view.c:379
+#: ../src/libs/live_view.c:409
 msgid "overlay mode"
 msgstr "överlagring"
 
-#: ../src/libs/live_view.c:381
+#: ../src/libs/live_view.c:411
 msgctxt "blendmode"
 msgid "xor"
 msgstr "xor"
 
-#: ../src/libs/live_view.c:382
+#: ../src/libs/live_view.c:412
 msgctxt "blendmode"
 msgid "add"
 msgstr "add"
 
-#: ../src/libs/live_view.c:383
+#: ../src/libs/live_view.c:413
 msgctxt "blendmode"
 msgid "saturate"
 msgstr "färgmättnad"
 
-#: ../src/libs/live_view.c:390
+#: ../src/libs/live_view.c:420
 msgctxt "blendmode"
 msgid "color dodge"
 msgstr "färgblekning"
 
-#: ../src/libs/live_view.c:391
+#: ../src/libs/live_view.c:421
 msgctxt "blendmode"
 msgid "color burn"
 msgstr "färgbränning"
 
-#: ../src/libs/live_view.c:392
+#: ../src/libs/live_view.c:422
 msgctxt "blendmode"
 msgid "hard light"
 msgstr "hårt ljus"
 
-#: ../src/libs/live_view.c:393
+#: ../src/libs/live_view.c:423
 msgctxt "blendmode"
 msgid "soft light"
 msgstr "mjukt ljus"
 
-#: ../src/libs/live_view.c:395
+#: ../src/libs/live_view.c:425
 msgctxt "blendmode"
 msgid "exclusion"
 msgstr "uteslutning"
 
-#: ../src/libs/live_view.c:396
+#: ../src/libs/live_view.c:426
 msgctxt "blendmode"
 msgid "HSL hue"
 msgstr "nyans i HSL"
 
-#: ../src/libs/live_view.c:397
+#: ../src/libs/live_view.c:427
 msgctxt "blendmode"
 msgid "HSL saturation"
 msgstr "mättnad i HSL"
 
-#: ../src/libs/live_view.c:398
+#: ../src/libs/live_view.c:428
 msgctxt "blendmode"
 msgid "HSL color"
 msgstr "färg i HSL"
 
-#: ../src/libs/live_view.c:399
+#: ../src/libs/live_view.c:429
 msgctxt "blendmode"
 msgid "HSL luminosity"
 msgstr "ljusstyrka i HSL"
 
-#: ../src/libs/live_view.c:401
+#: ../src/libs/live_view.c:431
 msgid "mode of the overlay"
 msgstr "typ av överlagring"
 
-#: ../src/libs/live_view.c:407
+#: ../src/libs/live_view.c:437
 msgid "split line"
 msgstr "delningslinje"
 
-#: ../src/libs/live_view.c:410
+#: ../src/libs/live_view.c:440
 msgid "only draw part of the overlay"
 msgstr "teckna enbart del av överlagrad bild"
 
@@ -9147,37 +9155,37 @@ msgstr "filmrulle"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2151
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2159
 msgctxt "accel"
 msgid "rate 0"
 msgstr "rang 0"
 
-#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2152
+#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2160
 msgctxt "accel"
 msgid "rate 1"
 msgstr "rang 1"
 
-#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2153
+#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2161
 msgctxt "accel"
 msgid "rate 2"
 msgstr "rang 2"
 
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2154
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2162
 msgctxt "accel"
 msgid "rate 3"
 msgstr "rang 3"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2155
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2163
 msgctxt "accel"
 msgid "rate 4"
 msgstr "rang 4"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2156
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2164
 msgctxt "accel"
 msgid "rate 5"
 msgstr "rang 5"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2157
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2165
 msgctxt "accel"
 msgid "rate reject"
 msgstr "avvisad"
@@ -9215,27 +9223,27 @@ msgstr "duplicerar bild"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2166
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2174
 msgctxt "accel"
 msgid "color red"
 msgstr "röd färg"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2167
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2175
 msgctxt "accel"
 msgid "color yellow"
 msgstr "gul färg"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2168
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2176
 msgctxt "accel"
 msgid "color green"
 msgstr "grön färg"
 
-#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2169
+#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2177
 msgctxt "accel"
 msgid "color blue"
 msgstr "blå färg"
 
-#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2170
+#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2178
 msgctxt "accel"
 msgid "color purple"
 msgstr "lila färg"
@@ -9336,7 +9344,7 @@ msgstr "visa överlappad information"
 msgid "hinter"
 msgstr "tipsare"
 
-#: ../src/libs/tools/lighttable.c:66 ../src/views/lighttable.c:134
+#: ../src/libs/tools/lighttable.c:66 ../src/views/lighttable.c:142
 msgid "lighttable"
 msgstr "ljusbord"
 
@@ -9488,7 +9496,7 @@ msgstr ""
 "växla till/från kontroll av färgskala\n"
 "höger-klicka för profilval"
 
-#: ../src/views/darkroom.c:1550
+#: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2415
 msgid "display intent"
 msgstr "visningsavsikt"
 
@@ -9496,11 +9504,11 @@ msgstr "visningsavsikt"
 msgid "softproof profile"
 msgstr "profil för skärmkorrektur"
 
-#: ../src/views/darkroom.c:1566
+#: ../src/views/darkroom.c:1566 ../src/views/lighttable.c:2429
 msgid "display profile"
 msgstr "skärmprofil"
 
-#: ../src/views/darkroom.c:1597
+#: ../src/views/darkroom.c:1597 ../src/views/lighttable.c:2448
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler för skärm i %s/color/out eller %s/color/out"
@@ -9602,115 +9610,119 @@ msgctxt "accel"
 msgid "full preview"
 msgstr "förhandsvisning i helskärm"
 
-#: ../src/views/lighttable.c:513 ../src/views/slideshow.c:332
+#: ../src/views/lighttable.c:521 ../src/views/slideshow.c:332
 msgid "there are no images in this collection"
 msgstr "det finns inga bilder i den här samlingen"
 
-#: ../src/views/lighttable.c:515
+#: ../src/views/lighttable.c:523
 msgid "if you have not imported any images yet"
 msgstr "om du inte har importerat några bilder ännu"
 
-#: ../src/views/lighttable.c:517
+#: ../src/views/lighttable.c:525
 msgid "you can do so in the import module"
 msgstr "kan du göra det i importmodulen"
 
-#: ../src/views/lighttable.c:524
+#: ../src/views/lighttable.c:532
 msgid "try to relax the filter settings in the top panel"
 msgstr "försök att lätta på filter-inställningarna i den övre panelen"
 
-#: ../src/views/lighttable.c:531
+#: ../src/views/lighttable.c:539
 msgid "or add images in the collection module in the left panel"
 msgstr "eller lägg till bilder i samlingsmodulen i den vänstra panelen"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2160
+#: ../src/views/lighttable.c:2168
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigera upp"
 
-#: ../src/views/lighttable.c:2161
+#: ../src/views/lighttable.c:2169
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigera ner"
 
-#: ../src/views/lighttable.c:2162
+#: ../src/views/lighttable.c:2170
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navigera sida upp"
 
-#: ../src/views/lighttable.c:2163
+#: ../src/views/lighttable.c:2171
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navigera sida ned"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2173
+#: ../src/views/lighttable.c:2181
 msgctxt "accel"
 msgid "scroll up"
 msgstr "skrolla upp"
 
-#: ../src/views/lighttable.c:2174
+#: ../src/views/lighttable.c:2182
 msgctxt "accel"
 msgid "scroll down"
 msgstr "skrolla ner"
 
-#: ../src/views/lighttable.c:2175
+#: ../src/views/lighttable.c:2183
 msgctxt "accel"
 msgid "scroll left"
 msgstr "skrolla vänster"
 
-#: ../src/views/lighttable.c:2176
+#: ../src/views/lighttable.c:2184
 msgctxt "accel"
 msgid "scroll right"
 msgstr "skrolla höger"
 
-#: ../src/views/lighttable.c:2177
+#: ../src/views/lighttable.c:2185
 msgctxt "accel"
 msgid "scroll center"
 msgstr "centrera"
 
 # TODO: could use better translation
-#: ../src/views/lighttable.c:2178
+#: ../src/views/lighttable.c:2186
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "räta upp bilder efter rutnätet"
 
 # Unsure how to translate this one -- Richard Levitte
-#: ../src/views/lighttable.c:2179
+#: ../src/views/lighttable.c:2187
 msgctxt "accel"
 msgid "select toggle image"
 msgstr ""
 
-#: ../src/views/lighttable.c:2180
+#: ../src/views/lighttable.c:2188
 msgctxt "accel"
 msgid "select single image"
 msgstr "välj enskild bild"
 
 #. Preview key
-#: ../src/views/lighttable.c:2183
+#: ../src/views/lighttable.c:2191
 msgctxt "accel"
 msgid "preview"
 msgstr "förhandsvisning"
 
-#: ../src/views/lighttable.c:2184
+#: ../src/views/lighttable.c:2192
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "förhandsvisning med fokusindikation"
 
-#: ../src/views/lighttable.c:2185
+#: ../src/views/lighttable.c:2193
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "fast förhandsvisning"
 
-#: ../src/views/lighttable.c:2186
+#: ../src/views/lighttable.c:2194
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "fast förhandsvisning med fokusindikation"
 
-#: ../src/views/lighttable.c:2187
+#: ../src/views/lighttable.c:2195
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "gå ur fast förhandsvisning"
+
+#: ../src/views/lighttable.c:2375
+msgid "set display profile"
+msgstr "sätt skärmprofil"
 
 #: ../src/views/map.c:112
 msgid "map"
