@@ -1161,7 +1161,7 @@
           these areas with the <link linkend="highlight_reconstruction"><emphasis>highlight
           reconstruction</emphasis></link> module. Additionally the
           <link linkend="color_reconstruction"><emphasis>color reconstruction</emphasis></link>
-          module is able to fill overexposed areas with suited colors from their surroundings.
+          module is able to fill overexposed areas with suitable colors based on their surroundings.
         </para>
 
       </sect3>

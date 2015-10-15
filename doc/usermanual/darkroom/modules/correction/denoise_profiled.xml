@@ -63,7 +63,7 @@
       darktable stores noise profiles in an external json file. This file can be found in
       <filename>$DARKTABLE/share/darktable/noiseprofile.json</filename> where
       <filename>$DARKTABLE</filename> represents the darktable installation directory. The json
-      format is quit straightforward and explained in depth in
+      format is quite straightforward and explained in depth in
       <ulink url="http://json.org/">json.org</ulink>. You can replace the default noise profiles
       by your own ones and specify that file on the command line when starting darktable. For
       more details see <xref linkend="darktable_commandline_parameters"/>. If you generate your

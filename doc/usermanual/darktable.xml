@@ -19,19 +19,21 @@
       <para>
         darktable has been developed with major contribution by Aldric Renaudin, Alexandre
         Prokoudine, Ammon Riley, Andrew Toskin, Andrey Kaminsky, Antony Dovgal, Artur de Sousa
-        Rocha, Brian Teague, Bruce Guenter, Cherrot Luo, Christian Himpel, Christian Tellefsen,
-        Dan Torop, David Bremner, Dennis Gnad, Dimitrios Psychogios, Eckhart Pedersen, Edouard
-        Gomez, Frédéric Grollier, Gaspard Jankowiak, Ger Siemerink, Gianluigi Calcaterra,
-        Guilherme Brondani Torri, Henrik Andersson, Igor Kuzmin, Ivan Tarozzi, James C.
-        McPherson, Jean-Sébastien Pédron, Jérémy Rosen, Jesper Pedersen, Jochen Schröder,
-        Johanes Schneider, José Carlos Casimiro, Jose Carlos Garcia Sogo, Josep Vicenç
-        Moragues Pastor, Kaminsky Andrey, Kanstantsin Shautsou, Karl Mikaelsson, Loic Guibert,
-        Marcel Laubach, Mauro Bartoccelli, Michal Babej, Michel Leblond, Mikko Ruohola, Milan
-        Knížek, Moritz Lipp, Olivier Tribout, Pascal de Bruijn, Pascal Obry, Pedro
-        Côrte-Real, Petr Styblo, Richard Hughes, Richard Levitte, Richard Wonka, Robert Bieber,
-        Roman Lebedev, Rostyslav Pidgornyi, Sergey Pavlov, Simon Spannagel, Stuart Henderson,
-        Tatica Leandro, Thomas Pryds, Tobias Ellinghaus, Ulrich Pegelow, Victor Lamoine,
-        Wolfgang Goetz, Wyatt Olson and many others.
+        Rocha, Axel Burri, Brian Teague, Bruce Guenter, Cherrot Luo, Christian Himpel, Christian
+        Tellefsen, Dan Torop, David Bremner, Dennis Gnad, Dimitrios Psychogios, Du&#353;an
+        Kazik, Eckhart Pedersen, Edouard Gomez, Fr&eacute;d&eacute;ric Grollier, Gaspard
+        Jankowiak, Ger Siemerink, Gianluigi Calcaterra, Guilherme Brondani Torri, Guillaume
+        Benny, Henrik Andersson, Igor Kuzmin, Ivan Tarozzi, James C. McPherson, Jan
+        Kundr&aacute;t, Jean-S&eacute;bastien P&eacute;dron, J&eacute;r&eacute;my Rosen, Jesper
+        Pedersen, Jochen Schr&ouml;der, Johanes Schneider, Johnny Run, Jos&eacute; Carlos
+        Casimiro, Jose Carlos Garcia Sogo, Josep Vicen&ccedil; Moragues Pastor, Kaminsky Andrey,
+        Kanstantsin Shautsou, Karl Mikaelsson, Loic Guibert, Marcel Laubach, Matthias Gehre,
+        Matthieu Volat, Mauro Bartoccelli, Michal Babej, Michel Leblond, Mikko Ruohola, Milan
+        Kn&iacute;&#382;ek, Moritz Lipp, Olivier Tribout, Pascal de Bruijn, Pascal Obry, Pedro
+        C&ocirc;rte-Real, Petr Styblo, Ralf Brown, Richard Hughes, Richard Levitte, Richard
+        Wonka, Robert Bieber, Roman Lebedev, Rostyslav Pidgornyi, Sergey Pavlov, Simon
+        Spannagel, Stuart Henderson, Tatica Leandro, Thomas Pryds, Tobias Ellinghaus, Tom
+        Vijlbrief, Ulrich Pegelow, Victor Lamoine, Wolfgang Goetz, Wyatt Olson and many others.
       </para>
 
       <para>
@@ -80,7 +82,7 @@
 
     <copyright>
       <year>2013-2015</year>
-      <holder>Jérémy Rosen</holder>
+      <holder>J&eacute;r&eacute;my Rosen</holder>
     </copyright>
 
   </bookinfo>
@@ -147,8 +149,8 @@
     <para>
       Many thanks to all contributors to this user manual. Special thanks for proof reading,
       style improvement, constructive criticism, and valuable contributions go to Colin Adams,
-      Mark Garrow, Simon Harhues, István Kovács, Michel Leblond, Rudolf Martin, Ammon Riley,
-      Rob Z. Smith, Andrew Toskin, and David Vincent-Jones.
+      Mark Garrow, Simon Harhues, Istv&aacute;n Kov&aacute;cs, Michel Leblond, Rudolf Martin,
+      Ammon Riley, Rob Z. Smith, Andrew Toskin, and David Vincent-Jones.
     </para>
 
   </preface>

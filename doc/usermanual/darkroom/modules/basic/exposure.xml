@@ -36,7 +36,7 @@
           <row>
             <entry>
               This module is used to tweak the exposure. It is directly linked to the histogram
-              panel. Indeed, if you correct exposure graphically, using the <emphasis>histogram
+              panel. If you correct exposure graphically, using the <emphasis>histogram
               </emphasis> (see <xref linkend="histogram"/>), you automatically activate the
               exposure module. The histogram simply acts as a view for the exposure module.
             </entry>

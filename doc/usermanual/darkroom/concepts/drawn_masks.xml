@@ -121,13 +121,13 @@
         mouse button. Brush size, hardness and opacity can be changed by
         <emphasis>scrolling</emphasis>, <emphasis>shift+scrolling</emphasis>, and
         <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at
-        any time on your way. Likewise you can use keys <emphasis>[&nbsp;|&nbsp;]</emphasis> to
+        any time during the operation. Likewise you can use keys <emphasis>[&nbsp;|&nbsp;]</emphasis> to
         decrease/increase brush size, <emphasis>{&nbsp;|&nbsp;}</emphasis> to decrease/increase
         hardness, and <emphasis>&lt;&nbsp;|&nbsp;&gt;</emphasis> to decrease/increase opacity.
       </para>
 
       <para>
-        If you have a graphic tablet with pen pressure sensitivity, darktable can apply the
+        If you have a graphics tablet with pen pressure sensitivity, darktable can apply the
         recorded pen pressure to certain attributes of the brush stroke. See
         <xref linkend="gui_options"/> for more details.
       </para>

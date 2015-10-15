@@ -47,7 +47,7 @@
 
     <para>
       After importing a new film roll darktable generates thumbnails for new images as they are
-      needed. In case of a larger set of new images this slows down navigation in the lighttable
+      needed. In the case of a larger set of new images this slows down navigation in the lighttable
       view as with each move new thumbnails might need to be produced. Alternatively you may
       terminate darktable and start the <filename>darktable-generate-cache</filename> binary.
       This program will generate all missing thumbnails in one go. For more details see
@@ -85,7 +85,7 @@
 
     <para>
       Starting with darktable 2.0 thumbnails are fully color managed if the corresponding option
-      in activated in the core preferences dialog (see <xref linkend="core_options"/>). Colors
+      is activated in the core preferences dialog (see <xref linkend="core_options"/>). Colors
       are rendered accurately on screen as long as your system is properly set up to hand over
       the right monitor profile to darktable. For more information on color management see
       <xref linkend="color_management"/>.

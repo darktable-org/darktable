@@ -27,9 +27,10 @@
       <tbody>
         <row>
           <entry>
-            Each workflow ends in this panel: the export of your developed images. You can
-            export either to a file on disk, or to various on-line storage places. Tip: you can
-            use <emphasis>ctrl-e</emphasis> from within darkroom mode to export.
+            Workflow ends in this panel with the exporting of your
+            developed images. You can export to a file on disk, email,
+            various on-line storage places, a webalbum, or a book template.
+	    Tip: you can use <emphasis>ctrl-e</emphasis> from within the darkroom mode to export.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
@@ -40,7 +41,7 @@
   </informaltable>
 
   <para>
-    All settings of this panel can be saved for later reuse. Press the
+    All settings in this panel can be saved for later reuse. Press the
     <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" />
     button to manage your presets.
   </para>

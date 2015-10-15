@@ -125,7 +125,7 @@
   <bridgehead renderas="sect4">pixel interpolator</bridgehead>
 
   <para>
-    Pixel interpolator used in rotation, lens correction, up- and downscaling; options are
+    Pixel interpolator used in rotation, lens correction, up-and-down scaling; options are
     <quote>bilinear</quote>, <quote>bicubic</quote>, <quote>lanczos2</quote>,
     <quote>lanczos3</quote> (default).
   </para>

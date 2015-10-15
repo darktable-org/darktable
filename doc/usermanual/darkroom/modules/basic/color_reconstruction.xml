@@ -75,7 +75,7 @@
       <title>threshold</title>
       <para>
         The color reconstruction module replaces the color of all target pixels characterized by
-        luminance values above this threshold. Reversely, only pixels with luminance values
+        luminance values above this threshold. Inversely, only pixels with luminance values
         below this threshold are taken as valid source pixels for replacement colors. Too high
         settings of this parameter will cause the module to have no effect on any pixels. Too
         low values will minimize the <quote>pool</quote> of replacement colors&nbsp;&ndash; if
