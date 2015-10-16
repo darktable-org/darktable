@@ -178,7 +178,11 @@
 <!-- Slideshow  Chapter -->
 
   <xi:include href="slideshow/slideshow.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
+<!-- Printing  Chapter -->
 
+  <xi:include href="print/print.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
 <!-- Preferences and Settings Chapter -->
 
   <xi:include href="preferences/preferences.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
