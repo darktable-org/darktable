@@ -29,4 +29,6 @@
 
   <xi:include href="invert.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="raw_black_white.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
 </sect2>
