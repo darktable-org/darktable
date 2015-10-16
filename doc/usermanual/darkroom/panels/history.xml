@@ -25,9 +25,9 @@
           <entry>
             <para>
               The history stack lists every change of state (activate/de-activated) for all
-              modules. Here you can <emphasis>select</emphasis> a point in the stack to return to
-              a point in the development history. If you then activate a new module or change a
-              module parameter, all modules above the selected point will be discarded.
+              modules. Here you can <emphasis>select</emphasis> a point in the stack to return
+              to a point in the development history. If you then activate a new module or change
+              a module parameter, all modules above the selected point will be discarded.
             </para>
           </entry>
           <entry>
@@ -45,10 +45,10 @@
   </para>
 
   <para>
-    In darktable 2.0 it is safe to quit the program, leave the darkroom mode, or
-    switch to another image while having selected some earlier state in the history stack panel.
-    The history stack remains unchanged. When returning to the image you will find
-    the history stack panel in the state where you left it.
+    In darktable 2.0 it is safe to quit the program, leave the darkroom mode, or switch to
+    another image while having selected some earlier state in the history stack panel. The
+    history stack remains unchanged. When returning to the image you will find the history stack
+    panel in the state where you left it.
   </para>
 
   <para>

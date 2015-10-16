@@ -252,6 +252,14 @@
       </para>
     </sect5>
 
+    <sect5>
+      <title>guides flip</title>
+      <para>
+        In case the chosen guidelines are not symmetrical relative to the image frame, you can
+        flip them on the horizontal,vertical or both axis.
+      </para>
+    </sect5>
+
   </sect4>
 
   <sect4>

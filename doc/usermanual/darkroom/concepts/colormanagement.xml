@@ -17,8 +17,8 @@
 
       <listitem><para>
         Input color specifications are taken from embedded or user supplied ICC profiles
-        or&nbsp;&ndash; in the case of raw files&nbsp;&ndash; from a library of camera
-        specific color matrices.
+        or&nbsp;&ndash; in the case of raw files&nbsp;&ndash; from a library of camera specific
+        color matrices.
       </para></listitem>
 
       <listitem><para>

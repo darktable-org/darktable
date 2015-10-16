@@ -47,10 +47,10 @@
 
     <para>
       After importing a new film roll darktable generates thumbnails for new images as they are
-      needed. In the case of a larger set of new images this slows down navigation in the lighttable
-      view as with each move new thumbnails might need to be produced. Alternatively you may
-      terminate darktable and start the <filename>darktable-generate-cache</filename> binary.
-      This program will generate all missing thumbnails in one go. For more details see
+      needed. In the case of a larger set of new images this slows down navigation in the
+      lighttable view as with each move new thumbnails might need to be produced. Alternatively
+      you may terminate darktable and start the <filename>darktable-generate-cache</filename>
+      binary. This program will generate all missing thumbnails in one go. For more details see
       <xref linkend="darktable_generate_cache_commandline_parameters"/>.
     </para>
 

@@ -27,10 +27,10 @@
       <tbody>
         <row>
           <entry>
-            Workflow ends in this panel with the exporting of your
-            developed images. You can export to a file on disk, email,
-            various on-line storage places, a webalbum, or a book template.
-	    Tip: you can use <emphasis>ctrl-e</emphasis> from within the darkroom mode to export.
+            Workflow ends in this panel with the exporting of your developed images. You can
+            export to a file on disk, email, various on-line storage places, a webalbum, or a
+            book template. Tip: you can use <emphasis>ctrl-e</emphasis> from within the darkroom
+            mode to export.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
@@ -438,6 +438,9 @@
         Pressing this button starts a background job to export all selected images. A bar at the
         bottom of the left side panel displays the progress. Furthermore a notification message
         pops up reporting the export progress. You may click on the pop-up to make it disappear.
+        You may <emphasis>abort</emphasis> the export job by clicking on the
+        <inlinegraphic fileref="&icon_lighttable_abort;" scalefit="1" width="2%" align="center" />
+        icon located close to the progress bar.
       </para>
 
     </sect4>
