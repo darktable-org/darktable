@@ -5,18 +5,10 @@
     <tbody>
       <row>
         <entry>
-          global/darkroom view
+          global/quit
         </entry>
         <entry>
-          d
-        </entry>
-      </row>
-      <row>
-        <entry>
-          global/leave fullscreen
-        </entry>
-        <entry>
-          Escape
+          &lt;Primary&gt;q
         </entry>
       </row>
       <row>
@@ -29,34 +21,10 @@
       </row>
       <row>
         <entry>
-          global/map view
+          global/darkroom view
         </entry>
         <entry>
-          m
-        </entry>
-      </row>
-      <row>
-        <entry>
-          global/quit
-        </entry>
-        <entry>
-          &lt;Primary&gt;q
-        </entry>
-      </row>
-      <row>
-        <entry>
-          global/slideshow view
-        </entry>
-        <entry>
-          s
-        </entry>
-      </row>
-      <row>
-        <entry>
-          global/switch view
-        </entry>
-        <entry>
-          period
+          d
         </entry>
       </row>
       <row>
@@ -69,10 +37,34 @@
       </row>
       <row>
         <entry>
-          global/toggle fullscreen
+          global/map view
         </entry>
         <entry>
-          F11
+          m
+        </entry>
+      </row>
+      <row>
+        <entry>
+          global/slideshow view
+        </entry>
+        <entry>
+          s
+        </entry>
+      </row>
+      <row>
+        <entry>
+          global/print view
+        </entry>
+        <entry>
+          p
+        </entry>
+      </row>
+      <row>
+        <entry>
+          global/switch view
+        </entry>
+        <entry>
+          period
         </entry>
       </row>
       <row>
@@ -89,6 +81,22 @@
         </entry>
         <entry>
           Tab
+        </entry>
+      </row>
+      <row>
+        <entry>
+          global/toggle fullscreen
+        </entry>
+        <entry>
+          F11
+        </entry>
+      </row>
+      <row>
+        <entry>
+          global/leave fullscreen
+        </entry>
+        <entry>
+          Escape
         </entry>
       </row>
       <row>
