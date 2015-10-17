@@ -308,7 +308,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
     if(cl->dev[dev].max_global_mem < opencl_memory_requirement * 1024 * 1024)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[opencl_init] discarding device %d `%s' due to insufficient global memory (%luMB).\n", k,
+               "[opencl_init] discarding device %d `%s' due to insufficient global memory (%" PRIu64 "MB).\n", k,
                infostr, cl->dev[dev].max_global_mem / 1024 / 1024);
       continue;
     }
@@ -321,7 +321,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
 
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr,
              cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %luMB\n",
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %" PRIu64 "MB\n",
              k, infostr, cl->dev[dev].max_mem_alloc / 1024 / 1024);
 
     if(darktable.unmuted & DT_DEBUG_OPENCL)

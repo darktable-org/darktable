@@ -759,8 +759,7 @@ static void *_camera_event_thread(void *data)
 
   const dt_camera_t *camera = camctl->active_camera;
 
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] starting camera event thread 0x%lx of context %p\n",
-           camctl->camera_event_thread, data);
+  dt_print(DT_DEBUG_CAMCTL, "[camera_control] starting camera event thread of context %p\n", data);
 
   while(camera->is_tethering == TRUE)
   {
@@ -775,7 +774,7 @@ static void *_camera_event_thread(void *data)
     if(camera->config_changed == TRUE) _camera_configuration_commit(camctl, camera);
   }
 
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] exiting camera thread 0x%lx.\n", camctl->camera_event_thread);
+  dt_print(DT_DEBUG_CAMCTL, "[camera_control] exiting camera thread.\n");
 
   return NULL;
 }

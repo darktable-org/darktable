@@ -989,7 +989,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
     if(gui->ppd < 0.0)
     {
       gui->ppd = 1.0;
-      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n", gui->ppd);
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n");
     }
     else
       dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", gui->ppd);

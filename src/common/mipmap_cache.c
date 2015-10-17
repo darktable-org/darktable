@@ -369,7 +369,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
               int64_t free_mb = ((vfsbuf.f_frsize * vfsbuf.f_bavail) >> 20);
               if (free_mb < 100)
               {
-                fprintf(stderr, "Aborting image write as only %ld MB free to write %s\n", free_mb, filename);
+                fprintf(stderr, "Aborting image write as only %" PRId64 " MB free to write %s\n", free_mb, filename);
                 goto write_error;
               }
             }
