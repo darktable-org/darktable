@@ -544,24 +544,6 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
 
-    /* minolta and sony have their own rotation */
-    if(((pos = exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs5D.Rotation"))) != exifData.end()
-        && pos->size()) || ((pos = exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs7D.Rotation")))
-                            != exifData.end() && pos->size()))
-    {
-      switch(pos->toLong())
-      {
-        case 76:                                           // 90 cw
-          img->orientation = ORIENTATION_ROTATE_CW_90_DEG; // swap x/y, flip x
-          break;
-        case 82:                                            // 270 cw
-          img->orientation = ORIENTATION_ROTATE_CCW_90_DEG; // swap x/y, flip y
-          break;
-        default:                               // 72, horizontal
-          img->orientation = ORIENTATION_NONE; // do nothing
-      }
-    }
-
     /* read gps location */
     if((pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude"))) != exifData.end() && pos->size())
     {
