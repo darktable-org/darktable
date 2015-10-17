@@ -29,7 +29,7 @@
 #include "colord-gtk.h"
 #endif
 
-#ifdef GDK_WINDOWING_QUARTZ
+#if 0
 #include <Carbon/Carbon.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreServices/CoreServices.h>
@@ -1519,38 +1519,33 @@ void dt_colorspaces_set_display_profile()
 #endif
 
 #elif defined GDK_WINDOWING_QUARTZ
-  // disable automatic color management on OS X 10.10 since we end up applying a profile twice
-  // TODO: check if this issue applies to OS X 10.9, also re-check 10.8 and earlier versions
-#ifndef kCFCoreFoundationVersionNumber10_10
-#define kCFCoreFoundationVersionNumber10_10 1151.16
-#endif
-  if(kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber10_10)
+  (void)widget;
+#if 0
+  GdkScreen *screen = gtk_widget_get_screen(widget);
+  if(screen == NULL) screen = gdk_screen_get_default();
+  int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
+
+  CGDirectDisplayID ids[monitor + 1];
+  uint32_t total_ids;
+  CMProfileRef prof = NULL;
+  if(CGGetOnlineDisplayList(monitor + 1, &ids[0], &total_ids) == kCGErrorSuccess && total_ids == monitor + 1)
+    CMGetProfileByAVID(ids[monitor], &prof);
+  if(prof != NULL)
   {
-    GdkScreen *screen = gtk_widget_get_screen(widget);
-    if(screen == NULL) screen = gdk_screen_get_default();
-    int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
+    CFDataRef data;
+    data = CMProfileCopyICCData(NULL, prof);
+    CMCloseProfile(prof);
 
-    CGDirectDisplayID ids[monitor + 1];
-    uint32_t total_ids;
-    CMProfileRef prof = NULL;
-    if(CGGetOnlineDisplayList(monitor + 1, &ids[0], &total_ids) == kCGErrorSuccess && total_ids == monitor + 1)
-      CMGetProfileByAVID(ids[monitor], &prof);
-    if(prof != NULL)
-    {
-      CFDataRef data;
-      data = CMProfileCopyICCData(NULL, prof);
-      CMCloseProfile(prof);
+    UInt8 *tmp_buffer = (UInt8 *)g_malloc(CFDataGetLength(data));
+    CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
 
-      UInt8 *tmp_buffer = (UInt8 *)g_malloc(CFDataGetLength(data));
-      CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
+    buffer = (guint8 *)tmp_buffer;
+    buffer_size = CFDataGetLength(data);
 
-      buffer = (guint8 *)tmp_buffer;
-      buffer_size = CFDataGetLength(data);
-
-      CFRelease(data);
-    }
-    profile_source = g_strdup("osx color profile api");
+    CFRelease(data);
   }
+  profile_source = g_strdup("osx color profile api");
+#endif
 #elif defined G_OS_WIN32
   (void)widget;
   HDC hdc = GetDC(NULL);
