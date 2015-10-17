@@ -118,11 +118,10 @@ typedef struct basecurve_preset_t
 } basecurve_preset_t;
 
 #define m MONOTONE_HERMITE
-static const basecurve_preset_t basecurve_presets[] = {
+
+static const basecurve_preset_t basecurve_camera_presets[] = {
   // copy paste your measured basecurve line at the top here, like so (note the exif data and the last 1):
 
-  // smoother cubic spline curve
-  { N_("cubic spline"), "", "", 0, 51200, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE } }, 0, 0 },
   // nikon d750 by Edouard Gomez
   {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, 51200, {{{{0.000000, 0.000000}, {0.018124, 0.026126}, {0.143357, 0.370145}, {0.330116, 0.730507}, {0.457952, 0.853462}, {0.734950, 0.965061}, {0.904758, 0.985699}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
   // contributed by Stefan Kauerauf
@@ -147,7 +146,12 @@ static const basecurve_preset_t basecurve_presets[] = {
   {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, 51200, {{{{0.000000, 0.000000}, {0.011702, 0.012659}, {0.122918, 0.289973}, {0.153642, 0.342731}, {0.246855, 0.510114}, {0.448958, 0.733820}, {0.666759, 0.894290}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
   // contributed by Pascal Obry
   { "Nikon D800", "NIKON", "D800", 0, 51200, { { { { 0.000000, 0.000000 }, { 0.001773, 0.001936 }, { 0.009671, 0.009693 }, { 0.016754, 0.020617 }, { 0.024884, 0.037309 }, { 0.048174, 0.107768 }, { 0.056932, 0.139532 }, { 0.085504, 0.233303 }, { 0.130378, 0.349747 }, { 0.155476, 0.405445 }, { 0.175245, 0.445918 }, { 0.217657, 0.516873 }, { 0.308475, 0.668608 }, { 0.375381, 0.754058 }, { 0.459858, 0.839909 }, { 0.509567, 0.881543 }, { 0.654394, 0.960877 }, { 0.783380, 0.999161 }, { 0.859310, 1.000000 }, { 1.000000, 1.000000 } } }, { 20 }, { m } }, 0, 1 },
+};
+static const int basecurve_camera_presets_cnt = sizeof(basecurve_camera_presets) / sizeof(basecurve_preset_t);
 
+static const basecurve_preset_t basecurve_presets[] = {
+  // smoother cubic spline curve
+  { N_("cubic spline"), "", "", 0, 51200, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE } }, 0, 0 },
   { neutral,         "", "",                      0, 51200, { { { { 0.000000, 0.000000 }, { 0.005000, 0.002500 }, { 0.150000, 0.300000 }, { 0.400000, 0.700000 }, { 0.750000, 0.950000 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 0, 1 },
   { canon_eos,       "Canon", "",                 0, 51200, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.120968, 0.232258 }, { 0.459677, 0.747581 }, { 0.858871, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
   { canon_eos_alt,   "Canon", "EOS 5D Mark",      0, 51200, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
@@ -216,30 +220,38 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, int *force_autoapply)
+{
+  // transform presets above to db entries.
+  for(int k = 0; k < count; k++)
+  {
+    // add the preset.
+    dt_gui_presets_add_generic(_(presets[k].name), self->op, self->version(),
+                               &presets[k].params, sizeof(dt_iop_basecurve_params_t), 1);
+    // and restrict it to model, maker, iso, and raw images
+    dt_gui_presets_update_mml(_(presets[k].name), self->op, self->version(),
+                              presets[k].maker, presets[k].model, "");
+    dt_gui_presets_update_iso(_(presets[k].name), self->op, self->version(),
+                              presets[k].iso_min, presets[k].iso_max);
+    dt_gui_presets_update_ldr(_(presets[k].name), self->op, self->version(), FOR_RAW);
+    // make it auto-apply for matching images:
+    dt_gui_presets_update_autoapply(_(presets[k].name), self->op, self->version(),
+                                    force_autoapply ? *force_autoapply : presets[k].autoapply);
+    // hide all non-matching presets in case the model string is set.
+    dt_gui_presets_update_filter(_(presets[k].name), self->op, self->version(),
+                                 presets[k].filter);
+  }
+}
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  // transform presets above to db entries.
   // sql begin
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
-  for(int k = 0; k < basecurve_presets_cnt; k++)
-  {
-    // add the preset.
-    dt_gui_presets_add_generic(_(basecurve_presets[k].name), self->op, self->version(),
-                               &basecurve_presets[k].params, sizeof(dt_iop_basecurve_params_t), 1);
-    // and restrict it to model, maker, iso, and raw images
-    dt_gui_presets_update_mml(_(basecurve_presets[k].name), self->op, self->version(),
-                              basecurve_presets[k].maker, basecurve_presets[k].model, "");
-    dt_gui_presets_update_iso(_(basecurve_presets[k].name), self->op, self->version(),
-                              basecurve_presets[k].iso_min, basecurve_presets[k].iso_max);
-    dt_gui_presets_update_ldr(_(basecurve_presets[k].name), self->op, self->version(), FOR_RAW);
-    // make it auto-apply for matching images:
-    dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, self->version(),
-                                    basecurve_presets[k].autoapply);
-    // hide all non-matching presets in case the model string is set.
-    dt_gui_presets_update_filter(_(basecurve_presets[k].name), self->op, self->version(),
-                                 basecurve_presets[k].filter);
-  }
+
+  set_presets(self, basecurve_presets, basecurve_presets_cnt, NULL);
+  int force_autoapply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
+  set_presets(self, basecurve_camera_presets, basecurve_camera_presets_cnt, &force_autoapply);
+
   // sql commit
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
