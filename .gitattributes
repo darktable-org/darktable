@@ -1,0 +1,2 @@
+/tools/create_version_h.sh export-subst
+/CMakeList.txt export-subst

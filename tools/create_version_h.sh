@@ -5,19 +5,13 @@ set -e
 H_FILE=$1
 
 VERSION_H_NEEDS_UPDATE=1
-
-NEW_VERSION=""
-
-if [ `which git` ]; then
+if [ -z "$2" ]; then 
 	NEW_VERSION=`git describe --tags --dirty | sed 's,^release-,,;s,-,+,;s,-,~,;'`
+else
+	NEW_VERSION=$2
 fi
 
-# if we are not in a git checkout, NEW_VERSION is empty
-if [ -z "${NEW_VERSION}" ]; then
-	NEW_VERSION="archive-$Format:%H$"
-fi
-
-if [ -n  "`echo -e $NEW_VERSION | grep  H`" ]; then
+if [ -n  "`echo -e $NEW_VERSION | grep  Format`" ]; then
 	NEW_VERSION="unknown-version"
 fi
 
