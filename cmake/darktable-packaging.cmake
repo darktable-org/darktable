@@ -18,19 +18,6 @@ if("${CMAKE_BUILD_TYPE}" MATCHES "Release")
 	set(CPACK_STRIP_FILES TRUE)
 endif("${CMAKE_BUILD_TYPE}" MATCHES "Release")
 
-# Set package generator for MacOSX
-if(APPLE)
-	make_directory(${CMAKE_BINARY_DIR}/packaging/macosx)
-	configure_file( ${CMAKE_SOURCE_DIR}/cmake/macosx/Info.plist.in ${CMAKE_BINARY_DIR}/packaging/macosx/Info.plist )
-	configure_file( ${CMAKE_SOURCE_DIR}/cmake/macosx/start.in ${CMAKE_BINARY_DIR}/packaging/macosx/start )
-	set(CPACK_GENERATOR "Bundle")
-	set(CPACK_BUNDLE_PLIST ${CMAKE_BINARY_DIR}/packaging/macosx/Info.plist)
-	set(CPACK_BUNDLE_ICON ${CMAKE_SOURCE_DIR}/cmake/macosx/darktable.icns)
-	set(CPACK_BUNDLE_NAME "darktable")
-	set(CPACK_BUNDLE_STARTUP_COMMAND ${CMAKE_BINARY_DIR}/packaging/macosx/start)
-	set(CPACK_PACKAGE_EXECUTABLES "darktable" "Darktable - Raw Editor")
-endif(APPLE)
-
 # Set package for unix
 if(UNIX)
 	# Try to find architecture
