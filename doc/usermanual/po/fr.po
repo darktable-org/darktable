@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2015-10-14 22:24+0200\n"
-"PO-Revision-Date: 2015-10-14 23:00+0200\n"
+"PO-Revision-Date: 2015-10-16 23:13+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 1.6.10\n"
 "X-Poedit-Bookmarks: 2169,1480,-1,416,182,458,465,290,-1,1846\n"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
@@ -2333,7 +2333,6 @@ msgid "Thumbnail creation"
 msgstr "Création des miniatures"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1764(para)
-#, fuzzy
 msgid ""
 "Thumbnails get created whenever darktable imports an image for the first "
 "time, after an image has been modified in the darkroom, or when revisiting "
@@ -2341,8 +2340,8 @@ msgid ""
 msgstr ""
 "Une miniature est créée quand darktable importe une image pour la première "
 "fois, quand une image a été modifiée dans la chambre noire, ou quand on "
-"revisite une <quote>vieille</quote> image dont la miniature a été supprimée "
-"du cache."
+"revisite une <quote>vieille</quote> image dont la miniature n'est plus "
+"disponible."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1770(para)
 msgid ""
@@ -2435,7 +2434,6 @@ msgstr ""
 "\">xyz</filename> dénote un identificateur alphanumérique du cache."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1814(para)
-#, fuzzy
 msgid ""
 "If you don't activate the disk backend and select a too small cache size you "
 "might observe adverse effects. Continuous regeneration of thumbnails "
@@ -2446,18 +2444,16 @@ msgid ""
 "cache size (see <xref linkend=\"darktable_and_memory\"/> for more details on "
 "these limitations)."
 msgstr ""
-"Comme le cache des miniatures a une taille maximale prédéfinie il finira par "
-"se remplir. Si c'est le cas, et si des nouvelles miniatures sont créées "
-"alors des anciennes devront être supprimées. Généralement l'utilisateur ne "
-"s'en aperçoit pas, sauf si une taille de cache trop petite a été choisie. "
-"Dans ce cas il pourra observer des effets néfastes comme une nouvelle "
-"génération des miniatures chaque fois qu'il se déplace dans sa collection, "
-"un clignotement des miniatures ou même un darktable qui ne répond plus "
-"générant et supprimant continuellement de nouvelles miniatures. Un bon choix "
-"pour la taille du cache est 512MB ou plus. Veuillez noter que les limites "
-"inhérentes aux <emphasis> systèmes 32-bits</emphasis> vous forceront à opter "
-"pour une taille de cache beaucoup plus faible (voyez <xref linkend="
-"\"darktable_and_memory\"/> pour plus de détails sur ces limitations)."
+"Si vous n'activez pas l'utilisation du disque pour le cache secondaire et si "
+"vous choisissez une taille de cache primaire trop petite vous pourrez "
+"observer des effets néfastes. Une continuelle génération des miniatures "
+"chaque fois que vous vous déplacez dans votre collection, un clignotement "
+"des miniatures ou même un darktable qui ne répond plus sont des symptômes "
+"typiques. Un bon choix pour la taille du cache est 512MB ou plus. Veuillez "
+"noter que les limites inhérentes aux <emphasis> systèmes 32-bits</emphasis> "
+"vous forceront à opter pour une taille de cache beaucoup plus faible (voyez "
+"<xref linkend=\"darktable_and_memory\"/> pour plus de détails sur ces "
+"limitations)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1824(para)
 msgid ""
@@ -4165,18 +4161,16 @@ msgstr ""
 "vos fichiers XMP !"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3274(title)
-#, fuzzy
 msgid "delete/trash"
-msgstr "supprimer"
+msgstr "poubelle"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3277(primary)
 msgid "delete images"
 msgstr "supprimer des images"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3281(primary)
-#, fuzzy
 msgid "trash images"
-msgstr "créer des images"
+msgstr "mettre des images à la poubelle"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3284(para)
 msgid ""
@@ -4194,18 +4188,15 @@ msgstr ""
 "les place dans la poubelle de votre système."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3292(para)
-#, fuzzy
 msgid ""
 "See also preference option <quote>ask before erasing images from disk</"
 "quote> (<xref linkend=\"gui_options\"/>). If this configuration option is "
 "not active, darktable will delete/trash the file(s) without further question."
 msgstr ""
-"Supprimer physiquement du système de fichiers les images sélectionnées. "
 "Voyez aussi l’option des préférences <quote>demander avant de supprimer des "
 "images</quote> (<xref linkend=\"gui_options\"/>). Si cette option de "
 "configuration n’est pas active, darktable supprimera les fichiers sans "
-"demander de confirmation ! Ceci est irréversible, et supprimera aussi votre "
-"travail de développement de ces images."
+"demander de confirmation."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3298(para)
 msgid ""
@@ -4744,7 +4735,6 @@ msgstr ""
 ">)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3766(para)
-#, fuzzy
 msgid ""
 "A GPS receiver calculates its current position based on the information it "
 "receives from satellites and records them in a GPX file – together with the "
@@ -4760,8 +4750,8 @@ msgstr ""
 "estampille temporelle définie par les paramètres de l'appareil photo. "
 "darktable prend l'estampille temporelle de l'image, regarde la position dans "
 "le fichier GPX au moment correspondant, et stocke les coordonnées "
-"(latitude / longitude) dans sa base de données et dans le fichier lié XMP "
-"associé à l'image."
+"(latitude / longitude/altitude) dans sa base de données et dans le fichier "
+"lié XMP associé à l'image."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3775(para)
 msgid ""
@@ -4782,13 +4772,12 @@ msgstr ""
 "associée sera mauvaise."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3783(para)
-#, fuzzy
 msgid ""
 "If your image already carries the UTC time stamp you can directly apply the "
 "GPX track without further adjustments."
 msgstr ""
-"Si votre image comporte une estampille temporelle UTC vous pouvez appliquer "
-"directement la trace GPX sans autres ajustements."
+"Si votre image comporte déjà une estampille temporelle UTC vous pouvez "
+"appliquer directement la trace GPX sans autres ajustements."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3788(para)
 msgid ""
@@ -5447,7 +5436,6 @@ msgid "max size"
 msgstr "dimensions maximum"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4368(para)
-#, fuzzy
 msgid ""
 "Set the maximum width and height of the output images in pixels. Set both to "
 "a value of <quote>0</quote> to export with the original dimensions (after "
@@ -5456,9 +5444,10 @@ msgid ""
 "depending on the setting of the following parameter."
 msgstr ""
 "Définit la largeur et la hauteur maximum des images en pixels. Mettre les "
-"deux valeurs à <quote>0</quote> permet d’exporter en pleine résolution. À ce "
-"jour darktable ne peut faire que de la réduction de dimensions, la "
-"résolution maximum de la sortie est définie par l’image parente."
+"deux valeurs à <quote>0</quote> permet d’exporter en pleine résolution. Si "
+"les valeurs sont supérieures aux dimensions originales darktable soit "
+"exporte avec les dimensions originales, soit réalise un agrandissement, "
+"selon le réglage du paramètre suivant."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4376(emphasis)
 msgid ""
@@ -5474,9 +5463,8 @@ msgstr ""
 "avez demandé."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4386(title)
-#, fuzzy
 msgid "allow upscaling"
-msgstr "allow_upscale"
+msgstr "autorise l'agrandissement"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4388(para)
 msgid ""
@@ -5514,7 +5502,6 @@ msgid "intent"
 msgstr "rendu"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4414(para)
-#, fuzzy
 msgid ""
 "This option lets you define the intent, i.e. the way darktable will deal "
 "with out-of-gamut colors. See <xref linkend=\"rendering_intent\"/> for a "
@@ -5522,7 +5509,7 @@ msgid ""
 msgstr ""
 "Cette option vous permet de définir le rendu, c’est-à-dire la manière dont "
 "darktable va prendre en charge les couleurs qui se trouvent hors gamut. "
-"Voyez <xref linkend=\"output_color_profile\"/> pour une description plus "
+"Voyez <xref linkend=\"rendering_intent\"/> pour une description plus "
 "détaillée des options disponibles."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4424(title)
@@ -5538,7 +5525,6 @@ msgid "style"
 msgstr "style"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4426(para)
-#, fuzzy
 msgid ""
 "This option lets you choose a style, i.e. a collection of history stack "
 "items, which darktable combines with the existing history stack to generate "
@@ -5552,16 +5538,17 @@ msgid ""
 "\"/>."
 msgstr ""
 "Cette option vous permet de choisir un style, c’est-à-dire une collection "
-"d’éléments de l’historique de développement que darktable va concaténer à "
+"d’éléments de l’historique de développement que darktable va combiner à "
 "l’historique de développement en cours pour générer l’image de sortie. Ces "
 "éléments d’historique ne sont que temporairement ajoutés ; ils n’écrasent "
 "pas l’historique de développement d’origine. Vous pouvez utiliser cette "
 "fonctionnalité pour ajouter les étapes de traitement et les paramètres que "
 "vous désirez voir appliquer spécifiquement aux images exportées, par exemple "
 "vous pouvez définir un style qui ajoute un niveau d’accentuation plus élevé "
-"lorsque vous produisez des images JPEG de format réduit pour Internet. Vous "
-"en apprendrez davantage sur les styles dans la <xref linkend=\"styles\"/>, "
-"et la <xref linkend=\"history\"/>."
+"lorsque vous produisez des images JPEG de format réduit pour Internet ou "
+"ajouter un certain niveau de compensation d'exposition à toutes vos images "
+"de sortie. Vous en apprendrez davantage sur les styles dans la <xref linkend="
+"\"styles\"/>, et la <xref linkend=\"history\"/>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4441(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8513(title)
@@ -5597,7 +5584,6 @@ msgstr ""
 "de chacune d'elles."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4460(para)
-#, fuzzy
 msgid ""
 "Pressing this button starts a background job to export all selected images. "
 "A bar at the bottom of the left side panel displays the progress. "
@@ -5605,9 +5591,9 @@ msgid ""
 "You may click on the pop-up to make it disappear."
 msgstr ""
 "En pressant ce bouton, vous lancez une tâche en arrière-plan qui exporte les "
-"images sélectionnées. Une barre en bas du panneau de gauche affichera "
-"l’avancement. Dès qu’un fichier est exporté avec succès, un message de "
-"notification apparaît pendant quelques secondes. Vous pouvez cliquer sur ce "
+"images sélectionnées. Une barre en bas du panneau de gauche affiche la "
+"progression de l'exportation. De plus un message de notification apparaît "
+"donnant des informations sur cette progression. Vous devez cliquer sur ce "
 "message pour le faire disparaître."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4482(keyword)
@@ -7121,7 +7107,6 @@ msgstr ""
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> ajoute un coup de pinceau."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5594(para)
-#, fuzzy
 msgid ""
 "Start drawing by <emphasis>left-clicking</emphasis> into the canvas and "
 "moving the mouse while keeping the button pressed. The brush stroke is "
@@ -7140,7 +7125,10 @@ msgstr ""
 "respectivement en utilisant la <emphasis>molette</emphasis> de la souris, un "
 "<emphasis>Majuscule+molette</emphasis>, et un <emphasis>Ctrl+molette</"
 "emphasis>, ou bien avant de commencer à dessiner ou bien à tout moment au "
-"cours du travail."
+"cours du travail. De même vous pouvez utiliser les touches <emphasis>[ | ]</"
+"emphasis> pour diminuer/augmenter la dimension de la brosse, <emphasis>{ | }"
+"</emphasis> pour diminuer/augmenter sa dureté, and <emphasis>&lt; | &gt;</"
+"emphasis> pour diminuer/augmenter son opacité."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5605(para)
 msgid ""
@@ -7313,7 +7301,6 @@ msgstr ""
 "accidentellement supprimer le chemin tout entier."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5775(para)
-#, fuzzy
 msgid ""
 "The size of the complete shape can be modified by scrolling – analogous to "
 "the circle shape. The same holds true for the width of the border, i.e. the "
@@ -8108,22 +8095,20 @@ msgstr ""
 "fourni à darktable par l'utilisateur sous forme de profil ICC."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6390(para)
-#, fuzzy
 msgid "darktable employs a fully color managed workflow: <placeholder-1/>"
 msgstr ""
-"La chambre noire utilise un flux de travail gérant le mode pleine couleur : "
+"darktable utilise un flux de travail géré en mode pleine couleur : "
 "<placeholder-1/>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6419(title)
-#, fuzzy
 msgid "Display profile"
-msgstr "profil (écran)"
+msgstr "Profil d'affichage"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6423(secondary)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6431(primary)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7710(bridgehead)
 msgid "display profile"
-msgstr "profil (écran)"
+msgstr "profil d'affichage"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6427(primary)
 msgid "monitor profile"
@@ -8175,14 +8160,12 @@ msgstr ""
 "<xref linkend=\"gamutcheck\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6461(title)
-#, fuzzy
 msgid "Rendering method"
-msgstr "opérateur de fusion"
+msgstr "Méthode de rendu"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6465(secondary)
-#, fuzzy
 msgid "rendering method"
-msgstr "opérateur de fusion"
+msgstr "méthode de rendu"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6469(primary)
 msgid "LittleCMS2"
@@ -8212,19 +8195,17 @@ msgstr ""
 "interne soit en utilisant la bibliothèque externe <ulink url=\"http://www."
 "littlecms.com/\"><emphasis>LittleCMS2</emphasis></ulink>. La méthode interne "
 "de darktable est plus rapide d'un ordre de grandeur que la méthode externe. "
-"L'option externe vous laisse le choix de l'objectif de rendu et peut offrir "
-"dans certains cas une précision légèrement plus élevée."
+"L'option externe vous laisse le choix du mode de rendu et peut offrir dans "
+"certains cas une précision légèrement plus élevée."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6490(title)
-#, fuzzy
 msgid "Rendering intent"
-msgstr "rendu (écran)"
+msgstr "Mode de rendu"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6494(secondary)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6498(primary)
-#, fuzzy
 msgid "rendering intent"
-msgstr "rendu (écran)"
+msgstr "mode de rendu"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6501(para)
 #, fuzzy
@@ -8674,6 +8655,11 @@ msgid ""
 "truncated. When returning to the image you will find the history stack panel "
 "in the state where you left it."
 msgstr ""
+"À partir de darktable 2.0 vous pouvez sans risque quitter darktable, sortir "
+"du mode chambre noire ou passer à une autre image alors que vous avez "
+"sélectionné un état quelconque de la pile d'historique. Celle-ci ne sera "
+"plus tronquée. Si vous retournez à l'image vous trouverez le panneau de la "
+"pile d'historique dans l'état où vous l'avez laissé."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6881(para)
 msgid ""
@@ -9394,7 +9380,6 @@ msgid "bottom panel"
 msgstr "panneau inférieur"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7546(para)
-#, fuzzy
 msgid ""
 "The bottom panel provides quick access to apply presets and styles to your "
 "image and allows to activate over/underexposure warning as well as "
@@ -9403,8 +9388,9 @@ msgid ""
 msgstr ""
 "Le panneau du bas procure un accès rapide pour appliquer à vos images les "
 "préréglages et les styles. Il permet aussi d’activer l’avertissement de sur "
-"et sous-exposition. Vous pouvez aussi activer le bandeau pour une navigation "
-"rapide au sein de la collection courante."
+"et sous-exposition aussi bien que l'épreuvage et la vérification de gamut. "
+"Vous pouvez aussi activer un bandeau pour une navigation rapide au sein de "
+"la collection courante."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7554(title)
 msgid "Quick access to favorite presets"
@@ -9524,13 +9510,11 @@ msgstr ""
 "pourcentage de la luminosité maximale."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7654(title)
-#, fuzzy
 msgid "Soft proof"
-msgstr "épreuvage"
+msgstr "Épreuvage"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7658(secondary)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7662(primary)
-#, fuzzy
 msgid "soft proof"
 msgstr "épreuvage"
 
@@ -9556,6 +9540,9 @@ msgid ""
 "with LittleCMS2 is activated. See <xref linkend=\"rendering_intent\"/> for "
 "available options."
 msgstr ""
+"Fixe le mode de rendu pour votre écran – disponible uniquement si faire le "
+"rendu avec LittleCMS2 est activé. Voyez <xref linkend=\"rendering_intent\"/> "
+"pour les options disponibles."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7699(bridgehead)
 msgid "softproof profile"
@@ -9590,9 +9577,8 @@ msgstr ""
 "préférences globales (voyez <xref linkend=\"gui_options\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7724(title)
-#, fuzzy
 msgid "Gamut check"
-msgstr "vérification du gamut"
+msgstr "Vérification du gamut"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7728(secondary)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7732(primary)
@@ -10789,7 +10775,6 @@ msgid "threshold"
 msgstr "seuil"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8753(para)
-#, fuzzy
 msgid ""
 "The color reconstruction module replaces the color of all target pixels "
 "characterized by luminance values above this threshold. Reversely, only "
@@ -10801,15 +10786,16 @@ msgid ""
 "exhibits a <quote>sweet spot</quote> characteristic with an optimum setting "
 "depending on the individual image."
 msgstr ""
-"Ce module remplace la couleur de tous les pixels ayant des valeurs de clarté "
-"supérieures au seuil donné. Inversement, seuls les pixels ayant des valeurs "
-"de clarté inférieures à ce seuil sont pris comme sources valides de "
-"remplacement des couleurs. Pour des réglages trop élevés de ce paramètre le "
-"module n'aura d'effet sur aucun pixel. Des valeurs trop faibles réduiront le "
-"<quote>réservoir</quote> des couleurs de remplacement – si aucune valeur "
-"d'ajustement n'est disponible les couleurs d'origine sont conservées. Par "
-"conséquent, ce paramètre présente une caractéristique de <quote>zone idéale</"
-"quote> dont le réglage optimal dépend de l'image concernée."
+"Le module de reconstruction des couleurs remplace la couleur de tous les "
+"pixels cible caractérisés par des valeurs de clarté supérieures à ce seuil. "
+"Inversement, seuls les pixels ayant des valeurs de clarté inférieures à ce "
+"seuil sont pris comme pixels source valides de remplacement des couleurs. "
+"Pour des réglages trop élevés de ce paramètre le module n'aura d'effet sur "
+"aucun pixel. Des valeurs trop faibles réduiront le <quote>réservoir</quote> "
+"des couleurs de remplacement – si aucune valeur d'ajustement n'est "
+"disponible les couleurs d'origine sont conservées. Par conséquent, ce "
+"paramètre présente une caractéristique de <quote>réservoir idéal</quote> "
+"dont le réglage optimal dépend de l'image concernée."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8766(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9916(title)
@@ -12420,14 +12406,13 @@ msgid "Output color profile"
 msgstr "Profil de couleur de sortie"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10506(para)
-#, fuzzy
 msgid ""
 "This module manages the output profiles for export as well as the rendering "
 "intent to be used when mapping between the different color spaces."
 msgstr ""
-"Ce module gère les profils de sortie d’affichage et d’exportation ainsi que "
-"l’objectif de rendu à utiliser lors des conversions entre les différents "
-"espaces colorimétriques."
+"Ce module gère les profils de sortie pour l'’exportation ainsi que le mode "
+"de rendu à utiliser lors des conversions entre les différents espaces "
+"colorimétriques."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10511(para)
 #, fuzzy
@@ -12463,17 +12448,18 @@ msgid ""
 "Sets the rendering intent for output/export. For more details see <xref "
 "linkend=\"rendering_intent\"/>)."
 msgstr ""
+"Fixe le mode de rendu pour exporter/importer. Pour plus de détails voyez "
+"<xref linkend=\"rendering_intent\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10545(para)
-#, fuzzy
 msgid ""
 "Only rendering with LittelCMS2 gives you a choice of rendering intent. The "
 "option is hidden, if darktable's internal rendering routines are used. "
 "Rendering with LittleCMS2 is activated in the preferences dialog (see <xref "
 "linkend=\"core_options\"/>)."
 msgstr ""
-"Seul le rendu avec littlecms2 vous donne le choix de l’objectif de rendu. "
-"Cette option est masquée si on utilise le rendu interne de darktable."
+"Seul le rendu avec LittleCMS2 vous donne le choix du mode de rendu. Cette "
+"option est masquée si on utilise le rendu interne de darktable."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10553(title)
 msgid "output profile"
