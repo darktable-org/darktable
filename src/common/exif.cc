@@ -187,6 +187,22 @@ static void dt_remove_known_keys(Exiv2::XmpData &xmp)
   }
 }
 
+static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterator *pos, string key)
+{
+  try
+  {
+    return (*pos = xmpData.findKey(Exiv2::XmpKey(key))) != xmpData.end() && (*pos)->size();
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return false;
+  }
+}
+#define FIND_XMP_TAG(key) dt_exif_read_xmp_tag(xmpData, &pos, key)
+
+
 // FIXME: according to http://www.exiv2.org/doc/classExiv2_1_1Metadatum.html#63c2b87249ba96679c29e01218169124
 // there is no need to pass xmpData
 static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool look_for_version,
@@ -208,7 +224,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
     // why for they don't get passed to that function.
     if(version > 0)
     {
-      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end())
+      if(FIND_XMP_TAG("Xmp.dc.rights"))
       {
         // rights
         char *rights = strdup(pos->toString().c_str());
@@ -221,7 +237,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
         dt_metadata_set(img->id, "Xmp.dc.rights", rights);
         free(adr);
       }
-      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end())
+      if(FIND_XMP_TAG("Xmp.dc.description"))
       {
         // description
         char *description = strdup(pos->toString().c_str());
@@ -234,7 +250,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
         dt_metadata_set(img->id, "Xmp.dc.description", description);
         free(adr);
       }
-      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end())
+      if(FIND_XMP_TAG("Xmp.dc.title"))
       {
         // title
         char *title = strdup(pos->toString().c_str());
@@ -247,7 +263,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
         dt_metadata_set(img->id, "Xmp.dc.title", title);
         free(adr);
       }
-      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator"))) != xmpData.end())
+      if(FIND_XMP_TAG("Xmp.dc.creator"))
       {
         // creator
         char *creator = strdup(pos->toString().c_str());
@@ -260,7 +276,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
         dt_metadata_set(img->id, "Xmp.dc.creator", creator);
         free(adr);
       }
-      if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher"))) != xmpData.end())
+      if(FIND_XMP_TAG("Xmp.dc.publisher"))
       {
         // publisher
         char *publisher = strdup(pos->toString().c_str());
@@ -275,7 +291,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
       }
     }
 
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"))) != xmpData.end())
+    if(FIND_XMP_TAG("Xmp.xmp.Rating"))
     {
       int stars = pos->toLong();
       if(use_defaul_rating && stars == 0) stars = dt_conf_get_int("ui_last/import_initial_rating");
@@ -284,7 +300,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
 
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Label"))) != xmpData.end())
+    if(FIND_XMP_TAG("Xmp.xmp.Label"))
     {
       std::string label = pos->toString();
       if(label == "Red") // Is it really called like that in XMP files?
@@ -298,7 +314,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
       else if(label == "Purple") // Is it really called like that in XMP files?
         dt_colorlabels_set_label(img->id, 4);
     }
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.colorlabels"))) != xmpData.end())
+    if(FIND_XMP_TAG("Xmp.darktable.colorlabels"))
     {
       // TODO: store these in dc:subject or xmp:Label?
       // color labels
@@ -310,23 +326,23 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
       }
     }
 
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"))) != xmpData.end())
+    if(FIND_XMP_TAG("Xmp.lr.hierarchicalSubject"))
       _exif_import_tags(img, pos);
-    else if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end())
+    else if(FIND_XMP_TAG("Xmp.dc.subject"))
       _exif_import_tags(img, pos);
 
     /* read gps location */
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLatitude"))) != xmpData.end())
+    if(FIND_XMP_TAG("Xmp.exif.GPSLatitude"))
     {
       img->latitude = _gps_string_to_number(pos->toString().c_str());
     }
 
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude"))) != xmpData.end())
+    if(FIND_XMP_TAG("Xmp.exif.GPSLongitude"))
     {
       img->longitude = _gps_string_to_number(pos->toString().c_str());
     }
 
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSAltitude"))) != xmpData.end())
+    if(FIND_XMP_TAG("Xmp.exif.GPSAltitude"))
     {
       Exiv2::XmpData::const_iterator ref = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSAltitudeRef"));
       if(ref != xmpData.end() && ref->size())
@@ -340,7 +356,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
     }
 
     /* read lens type from Xmp.exifEX.LensModel */
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.exifEX.LensModel"))) != xmpData.end())
+    if(FIND_XMP_TAG("Xmp.exifEX.LensModel"))
     {
       // lens model
       char *lens = strdup(pos->toString().c_str());
@@ -364,6 +380,22 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
     return false;
   }
 }
+
+static bool dt_exif_read_iptc_tag(Exiv2::IptcData &iptcData, Exiv2::IptcData::const_iterator *pos, string key)
+{
+  try
+  {
+    return (*pos = iptcData.findKey(Exiv2::IptcKey(key))) != iptcData.end() && (*pos)->size();
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return false;
+  }
+}
+#define FIND_IPTC_TAG(key) dt_exif_read_iptc_tag(iptcData, &pos, key)
+
 
 // FIXME: according to http://www.exiv2.org/doc/classExiv2_1_1Metadatum.html#63c2b87249ba96679c29e01218169124
 // there is no need to pass iptcData
@@ -389,22 +421,22 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
         ++pos;
       }
     }
-    if((pos = iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Caption"))) != iptcData.end())
+    if(FIND_IPTC_TAG("Iptc.Application2.Caption"))
     {
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
     }
-    if((pos = iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Copyright"))) != iptcData.end())
+    if(FIND_IPTC_TAG("Iptc.Application2.Copyright"))
     {
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
     }
-    if((pos = iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer"))) != iptcData.end())
+    if(FIND_IPTC_TAG("Iptc.Application2.Writer"))
     {
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
-    else if((pos = iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Contact"))) != iptcData.end())
+    else if(FIND_IPTC_TAG("Iptc.Application2.Contact"))
     {
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
@@ -420,31 +452,45 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
   }
 }
 
+static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator *pos, string key)
+{
+  try
+  {
+    return (*pos = exifData.findKey(Exiv2::ExifKey(key))) != exifData.end() && (*pos)->size();
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return false;
+  }
+}
+#define FIND_EXIF_TAG(key) dt_exif_read_exif_tag(exifData, &pos, key)
+
 static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 {
   try
   {
     /* List of tag names taken from exiv2's printSummary() in actions.cpp */
     Exiv2::ExifData::const_iterator pos;
+
     /* Read shutter time */
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ExposureTime"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Photo.ExposureTime"))
     {
       // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat();
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.Photo.ShutterSpeedValue"))
     {
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = 1.0 / pos->toFloat();
     }
     /* Read aperture */
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.FNumber"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Photo.FNumber"))
     {
       img->exif_aperture = pos->toFloat();
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ApertureValue"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.Photo.ApertureValue"))
     {
       img->exif_aperture = pos->toFloat();
     }
@@ -479,20 +525,17 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_focal_length = pos->toFloat();
     }
 
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.NikonLd2.FocusDistance"))) != exifData.end()
-       && pos->size())
+    if(FIND_EXIF_TAG("Exif.NikonLd2.FocusDistance"))
     {
       float value = pos->toFloat();
       img->exif_focus_distance = (0.01 * pow(10, value / 40));
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.NikonLd3.FocusDistance"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.NikonLd3.FocusDistance"))
     {
       float value = pos->toFloat();
       img->exif_focus_distance = (0.01 * pow(10, value / 40));
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusFi.FocusDistance"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.OlympusFi.FocusDistance"))
     {
       /* the distance is stored as a rational (fraction). according to
        * http://www.dpreview.com/forums/thread/1173960?page=4
@@ -513,17 +556,14 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int nominator = pos->toRational(0).first;
       img->exif_focus_distance = fmax(0.0, (0.001 * nominator));
     }
-    else if(Exiv2::testVersion(0,25,0)
-            && (pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceUpper"))) != exifData.end()
-            && pos->size())
+    else if(Exiv2::testVersion(0,25,0) && FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceUpper"))
     {
       float FocusDistanceUpper = pos->toFloat();
       if(FocusDistanceUpper <= 0.0f || FocusDistanceUpper >= 0xffff)
       {
         img->exif_focus_distance = 0.0f;
       }
-      else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceLower"))) != exifData.end()
-              && pos->size())
+      else if(FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceLower"))
       {
         float FocusDistanceLower = pos->toFloat();
         img->exif_focus_distance = (FocusDistanceLower + FocusDistanceUpper) / 200;
@@ -534,18 +574,17 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->exif_focus_distance = pos->toFloat();
     }
     /** read image orientation */
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.Orientation"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Image.Orientation"))
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Orientation"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Orientation"))
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
 
     /* read gps location */
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.GPSInfo.GPSLatitude"))
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
       if(ref != exifData.end() && ref->size())
@@ -560,7 +599,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     }
 
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.GPSInfo.GPSLongitude"))
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
       if(ref != exifData.end() && ref->size())
@@ -575,7 +614,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     }
 
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSAltitude"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.GPSInfo.GPSAltitude"))
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSAltitudeRef"));
       if(ref != exifData.end() && ref->size())
@@ -589,26 +628,20 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     /* Read lens name */
-    if((((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()
-         && pos->print(&exifData) != "(0)")
-        || ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095"))) != exifData.end()))
-       && pos->size())
+    if((FIND_EXIF_TAG("Exif.CanonCs.LensType") && pos->print(&exifData) != "(0)")
+       || FIND_EXIF_TAG("Exif.Canon.0x0095"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
-    else if(Exiv2::testVersion(0,25,0)
-    	    && (pos = exifData.findKey(Exiv2::ExifKey("Exif.PentaxDng.LensType"))) != exifData.end()
-	    && pos->size())
+    else if(Exiv2::testVersion(0,25,0) && FIND_EXIF_TAG("Exif.PentaxDng.LensType"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Panasonic.LensType"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.Panasonic.LensType"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensType"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.OlympusEq.LensType"))
     {
       /* For every Olympus camera Exif.OlympusEq.LensType is present. */
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
@@ -621,12 +654,12 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         /* Exif.OlympusEq.LensType contains only digits and spaces.
          * This means that exiv2 couldn't convert it to human readable
          * form. */
-        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end() && pos->size())
+        if(FIND_EXIF_TAG("Exif.OlympusEq.LensModel"))
         {
           dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
         /* Just in case Exif.OlympusEq.LensModel hasn't been found */
-        else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
+        else if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
         {
           dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
@@ -637,7 +670,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
+    else if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
@@ -657,12 +690,11 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 #endif
 
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.Make"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Image.Make"))
     {
       dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Make"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Make"))
     {
       dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
     }
@@ -674,12 +706,11 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         break;
       }
 
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.Model"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Image.Model"))
     {
       dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Model"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Model"))
     {
       dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
     }
@@ -694,42 +725,40 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     // Make sure we copy the exif make and model to the correct place if needed
     dt_image_refresh_makermodel(img);
 
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.DateTimeOriginal"))) != exifData.end()
-       && pos->size())
+    if(FIND_EXIF_TAG("Exif.Image.DateTimeOriginal"))
     {
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
     {
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
     }
 
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.OwnerName"))) != exifData.end() && pos->size())
+    else if(FIND_EXIF_TAG("Exif.Canon.OwnerName"))
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
 
     // FIXME: Should the UserComment go into the description? Or do we need an extra field for this?
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.UserComment"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Photo.UserComment"))
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
     }
 
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Image.Copyright"))
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
     }
 
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.Rating"))) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Image.Rating"))
     {
       int stars = pos->toLong();
       if(stars == 0)
@@ -742,8 +771,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.RatingPercent"))) != exifData.end()
-            && pos->size())
+    else if(FIND_EXIF_TAG("Exif.Image.RatingPercent"))
     {
       int stars = pos->toLong() * 5. / 100;
       if(stars == 0)
@@ -760,13 +788,11 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     // read embedded color matrix as used in DNGs
     {
       int is_1_65 = -1, is_2_65 = -1; // -1: not found, 0: some random type, 1: D65
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.CalibrationIlluminant1"))) != exifData.end()
-         && pos->size())
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1"))
       {
         is_1_65 = (pos->toLong() == 21) ? 1 : 0;
       }
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.CalibrationIlluminant2"))) != exifData.end()
-         && pos->size())
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2"))
       {
         is_2_65 = (pos->toLong() == 21) ? 1 : 0;
       }
@@ -791,8 +817,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     // 0xffff -> Uncalibrated
     //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
     //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
-    if(dt_image_is_ldr(img)
-       && (pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace"))) != exifData.end() && pos->size())
+    if(dt_image_is_ldr(img) && FIND_EXIF_TAG("Exif.Photo.ColorSpace"))
     {
       int colorspace = pos->toLong();
       if(colorspace == 0x01)
@@ -801,8 +826,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->colorspace = DT_IMAGE_COLORSPACE_ADOBE_RGB;
       else if(colorspace == 0xffff)
       {
-        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex"))) != exifData.end()
-           && pos->size())
+        if(FIND_EXIF_TAG("Exif.Iop.InteroperabilityIndex"))
         {
           std::string interop_index = pos->toString();
           if(interop_index == "R03")
@@ -820,8 +844,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 #endif
 
     // Improve lens detection for Sony SAL lenses.
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Sony2.LensID"))) != exifData.end()
-       && pos->size() && pos->toLong() != 65535 && pos->print().find('|') == std::string::npos)
+    if(FIND_EXIF_TAG("Exif.Sony2.LensID") && pos->toLong() != 65535 && pos->print().find('|') == std::string::npos)
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
@@ -833,7 +856,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     else if((!strncmp(img->exif_model, "NEX", 3)) || (!strncmp(img->exif_model, "ILCE", 4)))
     {
       snprintf(img->exif_lens, sizeof(img->exif_lens), "(unknown)");
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
+      if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
       {
         std::string str = pos->print(&exifData);
         snprintf(img->exif_lens, sizeof(img->exif_lens), "%s", str.c_str());
