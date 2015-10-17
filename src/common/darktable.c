@@ -1023,7 +1023,7 @@ void dt_gettime(char *datetime, size_t datetime_len)
 
 void *dt_alloc_align(size_t alignment, size_t size)
 {
-#if defined(__MACH__) || defined(__APPLE__) || (defined(__FreeBSD_version) && __FreeBSD_version < 700013)
+#if defined(__FreeBSD_version) && __FreeBSD_version < 700013
   return malloc(size);
 #elif defined(__WIN32__)
   return _aligned_malloc(size, alignment);
