@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-12 18:55+0200\n"
-"PO-Revision-Date: 2015-10-12 18:55+0100\n"
+"POT-Creation-Date: 2015-10-18 14:56+0200\n"
+"PO-Revision-Date: 2015-10-18 14:57+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1397,72 +1397,72 @@ msgid_plural "deleting %d images"
 msgstr[0] "verwijder %d afbeelding"
 msgstr[1] "verwijderen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1002
+#: ../src/control/jobs/control_jobs.c:1006
 msgid "failed to parse GPX file"
 msgstr "parsen GPX bestand mislukt"
 
-#: ../src/control/jobs/control_jobs.c:1062
+#: ../src/control/jobs/control_jobs.c:1066
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "overeenkomstige GPX locatie toegepast op %d afbeelding"
 msgstr[1] "overeenkomstige GPX locatie toegepast op %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1077
+#: ../src/control/jobs/control_jobs.c:1081
 #, c-format
 msgid "moving %d image"
 msgstr "verplaats %d afbeelding"
 
-#: ../src/control/jobs/control_jobs.c:1078
+#: ../src/control/jobs/control_jobs.c:1082
 #, c-format
 msgid "moving %d images"
 msgstr "verplaats %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1083
+#: ../src/control/jobs/control_jobs.c:1087
 #, c-format
 msgid "copying %d image"
 msgstr "kopieer %d afbeelding"
 
-#: ../src/control/jobs/control_jobs.c:1084
+#: ../src/control/jobs/control_jobs.c:1088
 #, c-format
 msgid "copying %d images"
 msgstr "kopieer %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1100
+#: ../src/control/jobs/control_jobs.c:1104
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "maakt lokale kopie van %d afbeelding"
 msgstr[1] "maakt lokale kopieën van %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1103
+#: ../src/control/jobs/control_jobs.c:1107
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "verwijder de lokale kopie van een afbeelding"
 msgstr[1] "verwijder lokale kopieën van %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1183
+#: ../src/control/jobs/control_jobs.c:1187
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1185
+#: ../src/control/jobs/control_jobs.c:1189
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exporteer %d afbeelding naar %s"
 msgstr[1] "exporteren %d afbeeldingen naar %s"
 
-#: ../src/control/jobs/control_jobs.c:1232 ../src/views/darkroom.c:464
+#: ../src/control/jobs/control_jobs.c:1236 ../src/views/darkroom.c:464
 #: ../src/views/print.c:283
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "afbeelding `%s' is op dit moment niet beschikbaar"
 
-#: ../src/control/jobs/control_jobs.c:1365
+#: ../src/control/jobs/control_jobs.c:1369
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1470,11 +1470,11 @@ msgid_plural ""
 msgstr[0] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 msgstr[1] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 
-#: ../src/control/jobs/control_jobs.c:1369
+#: ../src/control/jobs/control_jobs.c:1373
 msgid "remove images?"
 msgstr "afbeeldingen verplaatsen?"
 
-#: ../src/control/jobs/control_jobs.c:1408
+#: ../src/control/jobs/control_jobs.c:1412
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -1482,7 +1482,7 @@ msgstr[0] "wilt u %d geselecteerde afbeelding verplaatsen naar de prullenbak?"
 msgstr[1] ""
 "wilt u %d geselecteerde afbeeldingen verplaatsen naar de prullenbak?"
 
-#: ../src/control/jobs/control_jobs.c:1410
+#: ../src/control/jobs/control_jobs.c:1414
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1492,16 +1492,16 @@ msgstr[0] ""
 msgstr[1] ""
 "wilt u echt  %d geselecteerde afbeeldingen fysiek van de schijf verwijderen?"
 
-#: ../src/control/jobs/control_jobs.c:1414
+#: ../src/control/jobs/control_jobs.c:1418
 msgid "trash images?"
 msgstr " afbeeldingen naar de prullenbak sturen?"
 
-#: ../src/control/jobs/control_jobs.c:1414
+#: ../src/control/jobs/control_jobs.c:1418
 msgid "delete images?"
 msgstr "afbeelding(en) verwijderen"
 
-#: ../src/control/jobs/control_jobs.c:1439
-#: ../src/control/jobs/control_jobs.c:1493 ../src/imageio/storage/disk.c:92
+#: ../src/control/jobs/control_jobs.c:1443
+#: ../src/control/jobs/control_jobs.c:1497 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104
 #: ../src/imageio/storage/latex.c:165 ../src/libs/styles.c:208
@@ -1509,8 +1509,8 @@ msgstr "afbeelding(en) verwijderen"
 msgid "select directory"
 msgstr "selecteer map"
 
-#: ../src/control/jobs/control_jobs.c:1439
-#: ../src/control/jobs/control_jobs.c:1493 ../src/gui/preferences.c:1012
+#: ../src/control/jobs/control_jobs.c:1443
+#: ../src/control/jobs/control_jobs.c:1497 ../src/gui/preferences.c:1012
 #: ../src/gui/preferences.c:1034 ../src/gui/presets.c:386
 #: ../src/gui/styles_dialog.c:284 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/gallery.c:104 ../src/imageio/storage/latex.c:104
@@ -1521,12 +1521,12 @@ msgstr "selecteer map"
 msgid "_Cancel"
 msgstr "_Annuleer"
 
-#: ../src/control/jobs/control_jobs.c:1440
-#: ../src/control/jobs/control_jobs.c:1494
+#: ../src/control/jobs/control_jobs.c:1444
+#: ../src/control/jobs/control_jobs.c:1498
 msgid "_Select as destination"
 msgstr "_Selecteer als bestemming"
 
-#: ../src/control/jobs/control_jobs.c:1458
+#: ../src/control/jobs/control_jobs.c:1462
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1541,40 +1541,40 @@ msgstr[1] ""
 "wilt u de %d geselecteerde afbeeldingen verplaatsen naar %s?\n"
 "(alle niet geselecteerde afbeeldingen worden niet meegenomen)"
 
-#: ../src/control/jobs/control_jobs.c:1464
+#: ../src/control/jobs/control_jobs.c:1468
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "afbeelding verplaatsen?"
 msgstr[1] "afbeeldingen verplaatsen?"
 
-#: ../src/control/jobs/control_jobs.c:1512
+#: ../src/control/jobs/control_jobs.c:1516
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] "wilt u de %d geselecteerde afbeelding kopiëren naar %s?"
 msgstr[1] "wilt u de %d geselecteerde afbeeldingen kopiëren naar %s?"
 
-#: ../src/control/jobs/control_jobs.c:1515
+#: ../src/control/jobs/control_jobs.c:1519
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopieer afbeelding"
 msgstr[1] "kopieer afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1601
+#: ../src/control/jobs/control_jobs.c:1605
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "het opvragen instellingen van de opslag module `%s' is mislukt, het "
 "exporteren is gestopt"
 
-#: ../src/control/jobs/control_jobs.c:1639
+#: ../src/control/jobs/control_jobs.c:1643
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "pas tijdsverschil toe op %d afbeelding"
 msgstr[1] "pas tijdsverschil toe op %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1658
+#: ../src/control/jobs/control_jobs.c:1662
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
@@ -2554,62 +2554,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "gebruik YYYY-MM-DD voor datum overschrijving"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:850
+#: ../src/gui/gtk.c:852
 msgctxt "accel"
 msgid "tethering view"
 msgstr "tethering weergave"
 
-#: ../src/gui/gtk.c:851
+#: ../src/gui/gtk.c:853
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "weergave bibliotheek"
 
-#: ../src/gui/gtk.c:852
+#: ../src/gui/gtk.c:854
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "weergave ontwikkelen"
 
-#: ../src/gui/gtk.c:853
+#: ../src/gui/gtk.c:855
 msgctxt "accel"
 msgid "map view"
 msgstr "bekijk kaart"
 
-#: ../src/gui/gtk.c:854
+#: ../src/gui/gtk.c:856
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "presentatie weergave"
 
+#: ../src/gui/gtk.c:857
+msgctxt "accel"
+msgid "print view"
+msgstr "printer weergave"
+
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:875
+#: ../src/gui/gtk.c:880
 msgctxt "accel"
 msgid "quit"
 msgstr "verlaat"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:880
+#: ../src/gui/gtk.c:885
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "volledig scherm aan/uit"
 
-#: ../src/gui/gtk.c:881
+#: ../src/gui/gtk.c:886
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "verlaat volledig scherm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:889
+#: ../src/gui/gtk.c:894
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "zijpanelen aan/uit"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:892
+#: ../src/gui/gtk.c:897
 msgctxt "accel"
 msgid "toggle header"
 msgstr "header aan/uit"
 
 #. View-switch
-#: ../src/gui/gtk.c:895
+#: ../src/gui/gtk.c:900
 msgctxt "accel"
 msgid "switch view"
 msgstr "wissel weergave"
@@ -2713,6 +2718,61 @@ msgstr "$(DESKTOP) - bureaublad"
 #: ../src/gui/gtkentry.c:211
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - titel volgens metadata"
+
+#: ../src/gui/guides.c:370
+msgid "extra"
+msgstr "meer"
+
+#: ../src/gui/guides.c:371
+msgid "golden sections"
+msgstr "gulden snede"
+
+#: ../src/gui/guides.c:372
+msgid "golden spiral sections"
+msgstr "gulden snede secties"
+
+#: ../src/gui/guides.c:373
+msgid "golden spiral"
+msgstr "gulden spiraal"
+
+#: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:608
+#: ../src/iop/lens.c:2043 ../src/libs/tools/filter.c:117
+msgid "all"
+msgstr "alles"
+
+#: ../src/gui/guides.c:375
+msgid "show some extra guides"
+msgstr "toon meer hulplijnen"
+
+#: ../src/gui/guides.c:407
+msgid "grid"
+msgstr "raster"
+
+#. TODO: make the number of lines configurable with a slider?
+#: ../src/gui/guides.c:408
+msgid "rules of thirds"
+msgstr "regel van derden"
+
+#: ../src/gui/guides.c:409
+msgid "metering"
+msgstr "meting"
+
+#: ../src/gui/guides.c:410
+msgid "perspective"
+msgstr "perspectief"
+
+#. TODO: make the number of lines configurable with a slider?
+#: ../src/gui/guides.c:411
+msgid "diagonal method"
+msgstr "diagonaal methode"
+
+#: ../src/gui/guides.c:412
+msgid "harmonious triangles"
+msgstr "harmonieuze driehoeken"
+
+#: ../src/gui/guides.c:416
+msgid "golden mean"
+msgstr "gulden snede"
 
 #: ../src/gui/hist_dialog.c:137
 msgid "select parts"
@@ -3303,11 +3363,6 @@ msgstr ""
 #: ../src/imageio/format/pdf.c:607
 msgid "TODO: pages"
 msgstr "TODO: pagina's"
-
-#: ../src/imageio/format/pdf.c:608 ../src/iop/lens.c:2043
-#: ../src/libs/tools/filter.c:117
-msgid "all"
-msgstr "alles"
 
 #: ../src/imageio/format/pdf.c:609
 msgid "single images"
@@ -4973,26 +5028,26 @@ msgstr "voorgenomen output "
 
 #: ../src/iop/colorout.c:639 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261
-#: ../src/views/darkroom.c:1552
+#: ../src/views/darkroom.c:1552 ../src/views/lighttable.c:2417
 msgid "perceptual"
 msgstr "perceptueel"
 
 #: ../src/iop/colorout.c:640 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
-#: ../src/views/darkroom.c:1553
+#: ../src/views/darkroom.c:1553 ../src/views/lighttable.c:2418
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
 #: ../src/iop/colorout.c:641 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
-#: ../src/views/darkroom.c:1554
+#: ../src/views/darkroom.c:1554 ../src/views/lighttable.c:2419
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
 #: ../src/iop/colorout.c:642 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
-#: ../src/views/darkroom.c:1555
+#: ../src/views/darkroom.c:1555 ../src/views/lighttable.c:2420
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
@@ -9132,37 +9187,37 @@ msgstr "fotoreeks"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2151
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2159
 msgctxt "accel"
 msgid "rate 0"
 msgstr "waardering 0"
 
-#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2152
+#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2160
 msgctxt "accel"
 msgid "rate 1"
 msgstr "waardering 1"
 
-#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2153
+#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2161
 msgctxt "accel"
 msgid "rate 2"
 msgstr "waardering 2"
 
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2154
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2162
 msgctxt "accel"
 msgid "rate 3"
 msgstr "waardering 3"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2155
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2163
 msgctxt "accel"
 msgid "rate 4"
 msgstr "waardering 4"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2156
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2164
 msgctxt "accel"
 msgid "rate 5"
 msgstr "waardering 5"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2157
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2165
 msgctxt "accel"
 msgid "rate reject"
 msgstr "waardering afgekeurd"
@@ -9200,27 +9255,27 @@ msgstr "kloon afbeelding"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2166
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2174
 msgctxt "accel"
 msgid "color red"
 msgstr "kleur rood"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2167
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2175
 msgctxt "accel"
 msgid "color yellow"
 msgstr "kleur geel"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2168
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2176
 msgctxt "accel"
 msgid "color green"
 msgstr "kleur groen"
 
-#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2169
+#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2177
 msgctxt "accel"
 msgid "color blue"
 msgstr "kleur blauw"
 
-#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2170
+#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2178
 msgctxt "accel"
 msgid "color purple"
 msgstr "kleur paars"
@@ -9325,7 +9380,7 @@ msgstr "toon overlays"
 msgid "hinter"
 msgstr "'hinter' (achter?)"
 
-#: ../src/libs/tools/lighttable.c:66 ../src/views/lighttable.c:134
+#: ../src/libs/tools/lighttable.c:66 ../src/views/lighttable.c:142
 msgid "lighttable"
 msgstr "bibliotheek"
 
@@ -9477,7 +9532,7 @@ msgstr ""
 "gamma controle aan/uit schakelen\n"
 "opties via de rechtermuis"
 
-#: ../src/views/darkroom.c:1550
+#: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2415
 msgid "display intent"
 msgstr "toon voornemen"
 
@@ -9485,11 +9540,11 @@ msgstr "toon voornemen"
 msgid "softproof profile"
 msgstr "softproof profiel"
 
-#: ../src/views/darkroom.c:1566
+#: ../src/views/darkroom.c:1566 ../src/views/lighttable.c:2429
 msgid "display profile"
 msgstr "weergave profiel"
 
-#: ../src/views/darkroom.c:1597
+#: ../src/views/darkroom.c:1597 ../src/views/lighttable.c:2448
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "toon ICC profielen in %s/kleur/uit van %s/kleur/uit"
@@ -9591,113 +9646,117 @@ msgctxt "accel"
 msgid "full preview"
 msgstr "voorbeeld"
 
-#: ../src/views/lighttable.c:513 ../src/views/slideshow.c:332
+#: ../src/views/lighttable.c:521 ../src/views/slideshow.c:332
 msgid "there are no images in this collection"
 msgstr "er bevinden zich geen afbeeldingen in deze collectie"
 
-#: ../src/views/lighttable.c:515
+#: ../src/views/lighttable.c:523
 msgid "if you have not imported any images yet"
 msgstr "als nog geen afbeeldingen zijn geïmporteerd"
 
-#: ../src/views/lighttable.c:517
+#: ../src/views/lighttable.c:525
 msgid "you can do so in the import module"
 msgstr "dan kan dit worden uitgevoerd vanuit de module importeren"
 
-#: ../src/views/lighttable.c:524
+#: ../src/views/lighttable.c:532
 msgid "try to relax the filter settings in the top panel"
 msgstr "verruim het filter in het top paneel "
 
-#: ../src/views/lighttable.c:531
+#: ../src/views/lighttable.c:539
 msgid "or add images in the collection module in the left panel"
 msgstr "of importeer afbeeldingen naar de catalogus in het linkerpaneel"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2160
+#: ../src/views/lighttable.c:2168
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigeer omhoog"
 
-#: ../src/views/lighttable.c:2161
+#: ../src/views/lighttable.c:2169
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigeer omlaag"
 
-#: ../src/views/lighttable.c:2162
+#: ../src/views/lighttable.c:2170
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "volgende pagina"
 
-#: ../src/views/lighttable.c:2163
+#: ../src/views/lighttable.c:2171
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "vorige pagina"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2173
+#: ../src/views/lighttable.c:2181
 msgctxt "accel"
 msgid "scroll up"
 msgstr "blader omhoog"
 
-#: ../src/views/lighttable.c:2174
+#: ../src/views/lighttable.c:2182
 msgctxt "accel"
 msgid "scroll down"
 msgstr "blader omlaag"
 
-#: ../src/views/lighttable.c:2175
+#: ../src/views/lighttable.c:2183
 msgctxt "accel"
 msgid "scroll left"
 msgstr "blader naar links"
 
-#: ../src/views/lighttable.c:2176
+#: ../src/views/lighttable.c:2184
 msgctxt "accel"
 msgid "scroll right"
 msgstr "blader naar rechts"
 
-#: ../src/views/lighttable.c:2177
+#: ../src/views/lighttable.c:2185
 msgctxt "accel"
 msgid "scroll center"
 msgstr "scroll naar middelpunt"
 
-#: ../src/views/lighttable.c:2178
+#: ../src/views/lighttable.c:2186
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "afbeeldingen opnieuw op raster uitlijnen"
 
-#: ../src/views/lighttable.c:2179
+#: ../src/views/lighttable.c:2187
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "omkeren afbeelding"
 
-#: ../src/views/lighttable.c:2180
+#: ../src/views/lighttable.c:2188
 msgctxt "accel"
 msgid "select single image"
 msgstr "selecteer een  afbeelding"
 
 #. Preview key
-#: ../src/views/lighttable.c:2183
+#: ../src/views/lighttable.c:2191
 msgctxt "accel"
 msgid "preview"
 msgstr "voorbeeld"
 
-#: ../src/views/lighttable.c:2184
+#: ../src/views/lighttable.c:2192
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "voorbeeld met focus detectie"
 
-#: ../src/views/lighttable.c:2185
+#: ../src/views/lighttable.c:2193
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "sticky voorbeeld"
 
-#: ../src/views/lighttable.c:2186
+#: ../src/views/lighttable.c:2194
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "sticky voorbeeld met focus detectie"
 
-#: ../src/views/lighttable.c:2187
+#: ../src/views/lighttable.c:2195
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "verlaat sticky voorbeeld"
+
+#: ../src/views/lighttable.c:2375
+msgid "set display profile"
+msgstr "kies weergave profiel"
 
 #: ../src/views/map.c:112
 msgid "map"
@@ -9744,42 +9803,6 @@ msgstr "nieuwe sessie gestart-'%s'"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "geen camera mer tethering ondersteuning aanwezig"
-
-#~ msgid "grid"
-#~ msgstr "raster"
-
-#~ msgid "rules of thirds"
-#~ msgstr "regel van derden"
-
-#~ msgid "metering"
-#~ msgstr "meting"
-
-#~ msgid "perspective"
-#~ msgstr "perspectief"
-
-#~ msgid "diagonal method"
-#~ msgstr "diagonaal methode"
-
-#~ msgid "harmonious triangles"
-#~ msgstr "harmonieuze driehoeken"
-
-#~ msgid "golden mean"
-#~ msgstr "gulden snede"
-
-#~ msgid "extra"
-#~ msgstr "meer"
-
-#~ msgid "golden sections"
-#~ msgstr "gulden snede"
-
-#~ msgid "golden spiral sections"
-#~ msgstr "gulden snede secties"
-
-#~ msgid "golden spiral"
-#~ msgstr "gulden spiraal"
-
-#~ msgid "show some extra guides"
-#~ msgstr "toon meer hulplijnen"
 
 #~ msgctxt "accel"
 #~ msgid "brush larger"
