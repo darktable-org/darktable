@@ -6257,6 +6257,17 @@
 		<Crop x="0" y="0" width="-26" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
+	<Camera make="SONY" model="ILCE-7SM2">
+		<ID make="Sony" model="ILCE-7SM2">Sony ILCE-7SM2</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-32" height="0"/>
+		<Sensor black="512" white="16300"/>
+	</Camera>
 	<Camera make="SONY" model="DSC-RX1">
 		<ID make="Sony" model="DSC-RX1">Sony DSC-RX1</ID>
 		<CFA width="2" height="2">
