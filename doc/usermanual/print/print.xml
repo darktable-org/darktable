@@ -20,7 +20,7 @@
   </indexterm>
 
   <para>
-    The print view lets you output a slected image to your printer.
+    The print view lets you output a selected image to your printer.
   </para>
 
   <para>
@@ -38,7 +38,7 @@
     <title>Overview</title>
 
     <para>
-      This module is about printing&nbsp;&ndash; or the joy of giving birth to a photography
+      This view is about printing&nbsp;&ndash; or the joy of giving birth to a photography
       which can be put on the wall. Though, printing is not easy, there are many technical
       aspects to take into account.
     </para>
@@ -130,7 +130,7 @@
       <bridgehead renderas="sect4">intent</bridgehead>
 
       <para>
-        The print intent (<quote>perceptual</quote>, <quote>relative colorimetric</quote>,
+        The print rendering intent (<quote>perceptual</quote>, <quote>relative colorimetric</quote>,
         <quote>saturation</quote> or <quote>absolute colorimetric</quote>). See
         <xref linkend="rendering_intent"/> for more information.
       </para>
@@ -175,7 +175,7 @@
         <quote>lock</quote> button.
       </para>
 
-      <bridgehead renderas="sect4">image width/heigt</bridgehead>
+      <bridgehead renderas="sect4">image width/height</bridgehead>
 
       <para>
         This information field displays the actual image width and height (given with the
@@ -208,13 +208,13 @@
       <para>
         This allows you to select the export profile to use. This profile is the entry point
         used for the next transformation using the printer's ICC profile above. Usually it is
-        better to prefer a large gamut like AdobeRGB rather than a small one as sRGB.
+        better to prefer a large gamut like AdobeRGB rather than a smaller one as sRGB.
       </para>
 
       <bridgehead renderas="sect4">intent</bridgehead>
 
       <para>
-        This option sets the intent to use when exporting the image. For more information see
+        This option sets the rendering intent to use when exporting the image. For more information see
         <xref linkend="rendering_intent"/>.
       </para>
 
@@ -223,7 +223,7 @@
       <para>
         Defines a style to apply when exporting the image and defaults to <quote>none</quote>.
         See the <emphasis>export</emphasis> panel (<xref linkend="export_selected"/>) for a more
-        detailled discussion of applying a style during export.
+        detailed discussion of applying a style during export.
       </para>
 
       <bridgehead renderas="sect4">mode</bridgehead>
