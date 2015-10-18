@@ -180,8 +180,6 @@ void dt_control_quit()
   dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
   // let gui pick up the running = 0 state and die
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-  // make sure draw callback is called immediately
-  gdk_window_process_updates(gtk_widget_get_window(dt_ui_center(darktable.gui->ui)), FALSE);
 }
 
 void dt_control_shutdown(dt_control_t *s)
