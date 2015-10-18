@@ -220,7 +220,7 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
-void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, int *force_autoapply)
+static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, int *force_autoapply)
 {
   // transform presets above to db entries.
   for(int k = 0; k < count; k++)
