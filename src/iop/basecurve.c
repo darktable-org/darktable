@@ -238,8 +238,9 @@ void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, in
     dt_gui_presets_update_autoapply(_(presets[k].name), self->op, self->version(),
                                     force_autoapply ? *force_autoapply : presets[k].autoapply);
     // hide all non-matching presets in case the model string is set.
+    // When force_autoapply was given always filter (as these are per-camera presets)
     dt_gui_presets_update_filter(_(presets[k].name), self->op, self->version(),
-                                 presets[k].filter);
+                                 force_autoapply || presets[k].filter);
   }
 }
 
