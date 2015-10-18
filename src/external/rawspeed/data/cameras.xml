@@ -7005,6 +7005,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-60" height="0"/>
 		<Sensor black="511" white="16383"/>
+		<Hints>
+			<Hint name="sr2_format" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Mamiya-OP Co.,Ltd." model="MAMIYA ZD">
 		<ID make="Mamiya" model="ZD">Mamiya ZD</ID>
