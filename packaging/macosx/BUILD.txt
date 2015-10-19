@@ -1,18 +1,29 @@
 How to make disk image with darktable application bundle (64 bit Intel only):
 
-1). Build darktable (and make sure it works) using instructions found in this blog post:
-    http://www.darktable.org/2012/08/bringing-current-darktable-to-os-x/
-    Macports will need some tuning though, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
+1). Install MacPorts (instructions and prerequisites can be found on official website), please use default installation path (/opt/local).
+    They will need some tuning, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
      buildfromsource always
      macosx_deployment_target 10.6
      cxx_stdlib libstdc++
     (practice showed that support for versions older than 10.6 isn't viable)
     and this line to /opt/local/etc/macports/variant.conf:
-     +llvm34 +ld64_236
+     +llvm34 +ld64_236 +no_gnome +no_x11 +quartz -x11 -gnome
+    Install required dependencies (for pugixml port see https://trac.macports.org/ticket/48686):
+     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg15 lua webp libsecret pugixml osm-gps-map adwaita-icon-theme
     To have working OpenMP (at least partly, only for C source files) you will also need gcc49:
-     sudo port install gcc49
-    Configure darktable with this command instead of just "cmake ..":
-     CC=gcc-mp-4.9 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6 -DCMAKE_OSX_SYSROOT=/
+     $ sudo port install gcc49
+    Clone darktable git repository (in this example into ~/src):
+     $ mkdir ~/src
+     $ cd ~/src
+     $ git clone git://github.com/darktable-org/darktable.git
+    Finally build and install darktable:
+     $ cd darktable
+     $ mkdir build
+     $ cd build
+     $ CC=gcc-mp-4.9 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6 -DCMAKE_OSX_SYSROOT=/
+     $ make
+     $ sudo make install
+    After this darktable will be installed in /usr/local directory and can be started by typing "XDG_DATA_DIRS=/opt/local/share darktable" in terminal.
 
 2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
      $ cd ~/src
@@ -22,15 +33,12 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.7.4.patch
      $ make install
 
-3). You will need to rebuild gtk2 with 'bundle' variant:
-     $ sudo port install gtk2 +bundle
-    The problem is that with this flag gtk2 works reliably only when included in bundle, so if you need working system gtk2 you will need to revert this change
-    after you're done with bundle creation. To do that you can just run this command:
-     $ sudo port install gtk2 -bundle
-
-4). Now preparation is done, run image creating script, it should create darktable-<VERSION>.dmg in current (packaging/macosx) directory:
+3). Now preparation is done, run image creating script, it should create darktable-<VERSION>.dmg in current (packaging/macosx) directory:
      $ cd ~/src/darktable/packaging/macosx
      $ ./make-app-bundle
     If you have an Apple Developer ID Application certificate and want to produce signed app then replace the previous command with this one:
      $ CODECERT="Developer ID Application" ./make-app-bundle
     You may have to provide more specific name for a certificate if you have several matching in your keychain.
+
+4). Assuming that darktable is the only program installed into /usr/local you should remove the install directory before doing next build:
+     $ rm -Rf /usr/local

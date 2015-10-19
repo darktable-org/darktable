@@ -1,6 +1,7 @@
 #!/bin/bash
 ~/.local/bin/gtk-mac-bundler darktable.bundle
-sed -i '' 's|/opt/local/share/locale||' package/darktable.app/Contents/Resources/etc/gtk-2.0/gtk.immodules
+sed -i '' 's|/opt/local/share/locale||' package/darktable.app/Contents/Resources/etc/gtk-3.0/gtk.immodules
+glib-compile-schemas package/darktable.app/Contents/Resources/share/glib-2.0/schemas/
 sed -i '' 's|{VERSION}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f2|sed 's/^\([0-9]*\.[0-9]*\)$/\1.0/')'|' package/darktable.app/Contents/Info.plist
 sed -i '' 's|{COMMITS}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f3)'|' package/darktable.app/Contents/Info.plist
 find package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/MacOS/darktable-cli-bin package/darktable.app/Contents/Resources/lib/darktable -type f -exec \
@@ -8,7 +9,7 @@ find package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Co
 ln -s /Applications package/
 #copy gtk-osx-application translations if we can find them
 IFS=""
-port contents gtk-osx-application-common-gtk2 | sed "s|^ */|/|" | grep "\.lproj/GtkosxApplication\.strings$" | while read -r i
+port contents gtk-osx-application-common-gtk\* | sed "s|^ */|/|" | grep "\.lproj/GtkosxApplication\.strings$" | while read -r i
 do
 	mkdir package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"
 	cp "$i" package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"

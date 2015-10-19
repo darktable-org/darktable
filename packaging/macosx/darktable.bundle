@@ -6,22 +6,21 @@
     <destination overwrite="yes">package</destination>
     <run-install-name-tool/>
     <launcher-script>${project}/start</launcher-script>
-    <gtk>gtk+-2.0</gtk>
+    <gtk>gtk+-3.0</gtk>
   </meta>
   <plist>${project}/Info.plist</plist>
   <main-binary>${prefix:dt}/bin/darktable</main-binary>
   <binary dest="${bundle}/Contents/MacOS/darktable-cli-bin">${prefix:dt}/bin/darktable-cli</binary>
   <binary>${prefix:dt}/lib/darktable</binary>
-  <binary>${prefix}/lib/${gtkdir}/modules/*.so</binary>
   <binary>${prefix}/lib/libgphoto2_port/${pkg:libgphoto2_port:VERSION}/*.so</binary>
   <binary>${prefix}/lib/libgphoto2/${pkg:libgphoto2:VERSION}/*.so</binary>
-  <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/engines/*.so</binary>
   <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/printbackends/*.so</binary>
   <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/immodules/*.so</binary>
-  <binary>${prefix}/lib/gdk-pixbuf-2.0/${pkg:${gtk}:gtk_binary_version}/loaders/*.so</binary>
-  <translations name="gtk20">${prefix}/share/locale</translations>
+  <binary>${prefix}/lib/gdk-pixbuf-2.0/${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}/loaders/*.so</binary>
+  <translations name="gtk30">${prefix}/share/locale</translations>
   <translations name="darktable">${prefix:dt}/share/locale</translations>
   <data>${prefix:dt}/share/darktable</data>
+  <data>${prefix}/share/glib-2.0/schemas/org.gtk.Settings.*.gschema.xml</data>
   <data>${prefix}/share/lensfun</data>
   <data>${prefix:dt}/share/icons</data>
   <data>${prefix}/share/mime</data>
@@ -30,4 +29,5 @@
   <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
   <data dest="${bundle}/Contents/Resources/share/applications/open.desktop">${project}/open.desktop</data>
   <data dest="${bundle}/Contents/MacOS/darktable-cli">${project}/darktable-cli.sh</data>
+  <icon-theme icons="all">Adwaita</icon-theme>
 </app-bundle>
