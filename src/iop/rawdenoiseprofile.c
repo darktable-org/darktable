@@ -144,8 +144,8 @@ static void decompose_g(
   // split in H/V passes, for green bayer channel (diagonal)
 
   // H pass, or (+1, +1) really, write to detail buf (iterate over all green pixels only)
-  // for(int j=0;j<height;j++) for(int i=(j&1)?offx:0;i<width;i+=2)
-  for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?offx:0)+2*mult;i<width-2*mult;i+=2)
+  // for(int j=0;j<height;j++) for(int i=(j&1)?1-offx:offx;i<width;i+=2)
+  for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
   {
     detail[j*width+i] = 0.0f;
     for(int k=0;k<5;k++)
@@ -153,8 +153,7 @@ static void decompose_g(
   }
 
   // V pass, or (-1, +1), read detail write to output
-  // for(int j=0;j<height;j++) for(int i=(j&1)?offx:0;i<width;i+=2)
-  for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?offx:0)+2*mult;i<width-2*mult;i+=2)
+  for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
   {
     output[j*width+i] = 0.0f;
     for(int k=0;k<5;k++)
@@ -162,8 +161,7 @@ static void decompose_g(
   }
 
   // final pass, write detail coeffs
-  // for(int j=0;j<height;j++) for(int i=(j&1)?offx:0;i<width;i+=2)
-  for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?offx:0)+2*mult;i<width-2*mult;i+=2)
+  for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
     detail[j*width+i] = input[j*width+i] - output[j*width+i];
 }
 
@@ -255,7 +253,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // dt_iop_rawdenoiseprofile_params_t *d = (dt_iop_rawdenoiseprofile_params_t *)piece->data;
 
   const int max_max_scale = 5; // hard limit
-  int max_scale = 2;
+  int max_scale = 1;
   const float scale = roi_in->scale / piece->iscale;
 #if 0
   // largest desired filter on input buffer (20% of input dim)
@@ -288,13 +286,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
 
   float *buf[max_max_scale];
-  float *tmp = NULL;
-  float *buf1 = NULL, *buf2 = NULL;
+  float *tmp1 = 0, *tmp2 = 0;
+  float *buf1 = 0, *buf2 = 0;
   for(int k = 0; k < max_scale; k++)
     buf[k] = dt_alloc_align(64, sizeof(float) * npixels);
-  tmp = dt_alloc_align(64, sizeof(float) * npixels);
+  tmp1 = dt_alloc_align(64, sizeof(float) * npixels);
+  tmp2 = dt_alloc_align(64, sizeof(float) * npixels);
 
-  precondition((uint16_t *)ivoid, (float *)buf[0], width, height);
+  precondition((uint16_t *)ivoid, tmp1, width, height);
 
 #if 0 // DEBUG: see what variance we have after transform
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
@@ -308,24 +307,26 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
 #endif
 
-  buf1 = (float *)buf[0];
-  buf2 = tmp;
+  buf1 = tmp1;
+  buf2 = tmp2;
+memset(tmp2, 0, sizeof(float)*width*height);
 
   // debug: just do one step to see what it's doing:
-  // FIXME: hardcoded offsets for 5dm2
-  decompose_g (buf2, buf1, buf[1], 1, 0, width, height);
-  decompose_rb(buf2, buf1, buf[1], 1, 0, 0, width, height);
-  decompose_rb(buf2, buf1, buf[1], 0, 1, 0, width, height);
+  // decompose_g (buf2, buf1, buf[1], 1, 0, width, height);
+  // decompose_rb(buf2, buf1, buf[1], 1, 0, 0, width, height);
+  // decompose_rb(buf2, buf1, buf[1], 0, 1, 0, width, height);
 
-#if 0
+  // DEBUG: hardcoded offsets to beginning of cggc quad
+  const int offx = 0;
+#if 1
   for(int scale = 0; scale < max_scale; scale++)
   {
-    const float sigma = 1.0f;
-    const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
-    const float sigma_band = powf(varf, scale) * sigma;
-    eaw_decompose(buf2, buf1, buf[scale], scale, 1.0f / (sigma_band * sigma_band), width, height);
+    // FIXME: hardcoded offsets for 5dm2
+    decompose_g (buf2, buf1, buf[scale],   offx,    scale, width, height);  // green
+    decompose_rb(buf2, buf1, buf[scale], 1-offx, 0, scale, width, height);  // blue
+    decompose_rb(buf2, buf1, buf[scale],   offx, 1, scale, width, height);  // red
 // DEBUG: clean out temporary memory:
-// memset(buf1, 0, sizeof(float)*4*width*height);
+memset(buf1, 0, sizeof(float)*width*height);
 #if 0 // DEBUG: print wavelet scales:
     if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
     {
@@ -349,6 +350,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     buf1 = buf3;
   }
 #endif
+  // DEBUG show coarsest buffer in output:
+  backtransform(buf1, (uint16_t *)ovoid, width, height);
 
 #if 0
   // now do everything backwards, so the result will end up in *ovoid
@@ -388,12 +391,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     buf2 = buf1;
     buf1 = buf3;
   }
-#endif
 
   backtransform(buf2, (uint16_t *)ovoid, width, height);
+#endif
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
-  dt_free_align(tmp);
+  dt_free_align(tmp1);
+  dt_free_align(tmp2);
 
   // if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
