@@ -253,7 +253,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // dt_iop_rawdenoiseprofile_params_t *d = (dt_iop_rawdenoiseprofile_params_t *)piece->data;
 
   const int max_max_scale = 5; // hard limit
-  int max_scale = 1;
+  int max_scale = 3;
   const float scale = roi_in->scale / piece->iscale;
 #if 0
   // largest desired filter on input buffer (20% of input dim)
@@ -513,6 +513,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 {
   dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)params;
   dt_iop_rawdenoiseprofile_data_t *d = (dt_iop_rawdenoiseprofile_data_t *)piece->data;
+
+  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  { // disable for preview pipeline
+    piece->enabled = 0;
+    return;
+  }
 
   // copy everything first and make some changes later
   memcpy(d, p, sizeof(*d));
