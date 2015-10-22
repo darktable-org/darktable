@@ -485,9 +485,6 @@ static gboolean borders_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoin
 
 void dt_gui_gtk_quit()
 {
-  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-  gtk_window_iconify(win);
-
   GtkWidget *widget;
   widget = darktable.gui->widgets.left_border;
   g_signal_handlers_block_by_func(widget, draw_borders, GINT_TO_POINTER(0));
