@@ -178,8 +178,8 @@ void dt_control_quit()
   darktable.control->running = 0;
   dt_pthread_mutex_unlock(&darktable.control->run_mutex);
   dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
-  dt_cleanup();
-  gtk_main_quit();
+  // let gui pick up the running = 0 state and die
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 void dt_control_shutdown(dt_control_t *s)
