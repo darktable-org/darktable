@@ -88,8 +88,11 @@ static inline void precondition(
     const uint16_t *const in,
     float *const buf,
     const int wd,
-    const int ht)
+    const int ht,
+    const float a,
+    const float b)
 {
+  const float sigma2 = (b/a)*(b/a);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
@@ -99,7 +102,8 @@ static inline void precondition(
     const uint16_t *in2 = in + (size_t)j * wd;
     for(int i = 0; i < wd; i++)
     {
-      *buf2 = *in2;
+      // *buf2 = *in2;
+      *buf2 = 2.0f * sqrtf(fmaxf(0.0f, *in2/a + 3./8. + sigma2));
       buf2 ++;
       in2 ++;
     }
@@ -110,8 +114,11 @@ static inline void backtransform(
     const float *const buf,
     uint16_t *const out,
     const int wd,
-    const int ht)
+    const int ht,
+    const float a,
+    const float b)
 {
+  const float sigma2 = (b/a)*(b/a);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
@@ -121,10 +128,66 @@ static inline void backtransform(
     uint16_t *out2 = out + (size_t)j * wd;
     for(int i = 0; i < wd; i++)
     {
-      *out2 = *buf2;
+      // *out2 = *buf2;
+      const float x = *buf2;
+      // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
+      if(x < .5f)
+        *out2 = 0.0f;
+      else
+        *out2 = 1. / 4. * x * x + 1. / 4. * sqrtf(3. / 2.) / x - 11. / 8. * 1.0 / (x * x)
+          + 5. / 8. * sqrtf(3. / 2.) * 1.0 / (x * x * x) - 1. / 8. - sigma2;
+      // asymptotic form:
+      // *out2 = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2);
+      *out2 *= a;
       buf2 ++;
       out2 ++;
     }
+  }
+}
+
+static void analyse_g(
+    float *const coarse,         // blurred buffer
+    const uint16_t *const input, // const input buffer
+    const int offx,              // select channel in bayer pattern
+    const int32_t width,
+    const int32_t height,
+    const float a,
+    const float b)
+{
+  // safety margin:
+  const int mult = 32;
+  int cnt = 0;
+  const float sigma2 = (b/a)*(b/a);
+  for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
+  {
+    const float inp = 2.0f * sqrtf(fmaxf(0.0f, input[width*j+i]/a + 3./8. + sigma2));
+    const float detail = inp - coarse[width*j+i];
+    // fprintf(stdout, "%g %g\n", coarse[width*j+i], fabsf(detail));
+    fprintf(stdout, "%u %g\n", input[width*j+i], fabsf(detail));
+    if(cnt++ > 10000) return;
+  }
+}
+
+static void analyse_rb(
+    float *const coarse,         // blurred buffer
+    const uint16_t *const input, // const input buffer
+    const int offx,              // select channel in bayer pattern
+    const int offy,              // select channel in bayer pattern
+    const int32_t width,
+    const int32_t height,
+    const float a,
+    const float b)
+{
+  const int mult = 32;
+  int cnt = 0;
+  const float sigma2 = (b/a)*(b/a);
+  for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
+  {
+    const float inp = 2.0f * sqrtf(fmaxf(0.0f, input[width*j+i]/a + 3./8. + sigma2));
+    const float detail = inp - coarse[width*j+i];
+    // fprintf(stdout, "%g %g\n", coarse[width*j+i], fabsf(detail));
+    fprintf(stdout, "%u %g\n", input[width*j+i], fabsf(detail));
+    if(cnt++ > 10000) return;
   }
 }
 
@@ -308,7 +371,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   tmp1 = dt_alloc_align(64, sizeof(float) * npixels);
   tmp2 = dt_alloc_align(64, sizeof(float) * npixels);
 
-  precondition((uint16_t *)ivoid, tmp1, width, height);
+  // FIXME: hardcoded preliminary fits for 5dm2 @ ISO 3200
+  // noise std dev ~= sqrt(b + a*input)
+  const float b = -10557.9, a = 9.65444;
+
+  precondition((uint16_t *)ivoid, tmp1, width, height, a, b);
 
 #if 0 // DEBUG: see what variance we have after transform
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
@@ -325,11 +392,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   buf1 = tmp1;
   buf2 = tmp2;
 memset(tmp2, 0, sizeof(float)*width*height);
-
-  // debug: just do one step to see what it's doing:
-  // decompose_g (buf2, buf1, buf[1], 1, 0, width, height);
-  // decompose_rb(buf2, buf1, buf[1], 1, 0, 0, width, height);
-  // decompose_rb(buf2, buf1, buf[1], 0, 1, 0, width, height);
 
   // DEBUG: hardcoded offsets to beginning of cggc quad
   const int offx = 0;
@@ -366,7 +428,17 @@ memset(buf1, 0, sizeof(float)*width*height);
   }
 #endif
   // DEBUG show coarsest buffer in output:
-  // backtransform(buf1, (uint16_t *)ovoid, width, height);
+  // backtransform(buf1, (uint16_t *)ovoid, width, height, a, b);
+#if 0
+  // paint some data on the canvas:
+  dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)module->gui_data;
+  if(g)
+  {
+  }
+#endif
+  analyse_g (buf1, ivoid,   offx,    width, height, a, b);
+  analyse_rb(buf1, ivoid, 1-offx, 0, width, height, a, b);
+  analyse_rb(buf1, ivoid,   offx, 1, width, height, a, b);
 
 #if 1
   // now do everything backwards, so the result will end up in *ovoid
@@ -407,7 +479,7 @@ memset(buf1, 0, sizeof(float)*width*height);
     buf1 = buf3;
   }
 
-  backtransform(buf1, (uint16_t *)ovoid, width, height);
+  backtransform(buf1, (uint16_t *)ovoid, width, height, a, b);
 #endif
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
