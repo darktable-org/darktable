@@ -145,6 +145,9 @@ static void decompose_g(
 
   // H pass, or (+1, +1) really, write to detail buf (iterate over all green pixels only)
   // for(int j=0;j<height;j++) for(int i=(j&1)?1-offx:offx;i<width;i+=2)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
   {
     detail[j*width+i] = 0.0f;
@@ -153,6 +156,9 @@ static void decompose_g(
   }
 
   // V pass, or (-1, +1), read detail write to output
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
   {
     output[j*width+i] = 0.0f;
@@ -161,6 +167,9 @@ static void decompose_g(
   }
 
   // final pass, write detail coeffs
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
     detail[j*width+i] = input[j*width+i] - output[j*width+i];
 }
@@ -184,6 +193,9 @@ static void decompose_rb(
 
   // H pass, write to detail buf
   // for(int j=offy;j<height;j+=2) for(int i=offx;i<width;i+=2)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
   for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
   {
     detail[j*width+i] = 0.0f;
@@ -193,6 +205,9 @@ static void decompose_rb(
 
   // V pass, read detail write to output
   // for(int j=offy;j<height;j+=2) for(int i=offx;i<width;i+=2)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
   for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
   {
     output[j*width+i] = 0.0f;
@@ -202,43 +217,43 @@ static void decompose_rb(
 
   // final pass, write detail coeffs
   // for(int j=offy;j<height;j+=2) for(int i=offx;i<width;i+=2)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
   for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
     detail[j*width+i] = input[j*width+i] - output[j*width+i];
 }
 
-#if 0// TODO: rewrite for single channel bayer patters:
-static void synthesize(float *const out, const float *const in, const float *const detail,
-                       const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+#if 1// TODO: rewrite for single channel bayer patters (need to add channels for thrs+boost depending on pattern)
+static void synthesize(
+    float *const out,
+    const float *const in,
+    const float *const detail,
+    const float *thrsf,
+    const float *boostf,
+    const int32_t width,
+    const int32_t height)
 {
-  const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
-  const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
+  const float threshold = thrsf[0];
+  const float boost = boostf[0];
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
-    // TODO: prefetch? _mm_prefetch()
-    const __m128 *pin = (__m128 *)in + (size_t)j * width;
-    __m128 *pdetail = (__m128 *)detail + (size_t)j * width;
-    float *pout = out + (size_t)4 * j * width;
+    const float *pin = in + (size_t)j * width;
+    const float *pdetail = detail + (size_t)j * width;
+    float *pout = out + (size_t)j * width;
     for(int i = 0; i < width; i++)
     {
-#if 1
-      const __m128i maski = _mm_set1_epi32(0x80000000u);
-      const __m128 *mask = (__m128 *)&maski;
-      const __m128 absamt
-          = _mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(_mm_andnot_ps(*mask, *pdetail), threshold));
-      const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, *mask), absamt);
-      _mm_stream_ps(pout, _mm_add_ps(*pin, _mm_mul_ps(boost, amount)));
-#endif
-      // _mm_stream_ps(pout, _mm_add_ps(*pin, *pdetail));
+      const float d = copysignf(fmaxf(fabsf(*pdetail - threshold), 0.0f), *pdetail);
+      *pout = *pin + boost * d;
       pdetail++;
       pin++;
-      pout += 4;
+      pout++;
     }
   }
-  _mm_sfence();
 }
 #endif
 
@@ -351,13 +366,13 @@ memset(buf1, 0, sizeof(float)*width*height);
   }
 #endif
   // DEBUG show coarsest buffer in output:
-  backtransform(buf1, (uint16_t *)ovoid, width, height);
+  // backtransform(buf1, (uint16_t *)ovoid, width, height);
 
-#if 0
+#if 1
   // now do everything backwards, so the result will end up in *ovoid
   for(int scale = max_scale - 1; scale >= 0; scale--)
   {
-#if 1
+#if 0
     // variance stabilizing transform maps sigma to unity.
     const float sigma = 1.0f;
     // it is then transformed by wavelet scales via the 5 tap a-trous filter:
@@ -382,8 +397,8 @@ memset(buf1, 0, sizeof(float)*width*height);
 // std_x[0], std_x[1], std_x[2]);
 #endif
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    // const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
-    eaw_synthesize(buf2, buf1, buf[scale], thrs, boost, width, height);
+    const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
+    synthesize(buf2, buf1, buf[scale], thrs, boost, width, height);
     // DEBUG: clean out temporary memory:
     // memset(buf1, 0, sizeof(float)*4*width*height);
 
@@ -392,7 +407,7 @@ memset(buf1, 0, sizeof(float)*width*height);
     buf1 = buf3;
   }
 
-  backtransform(buf2, (uint16_t *)ovoid, width, height);
+  backtransform(buf1, (uint16_t *)ovoid, width, height);
 #endif
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
