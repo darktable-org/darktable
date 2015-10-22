@@ -63,7 +63,7 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_ALLOW_TILING;
 }
 
 typedef union floatint_t
