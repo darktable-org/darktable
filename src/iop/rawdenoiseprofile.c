@@ -164,11 +164,12 @@ static void analyse_g(
     const int offx,              // select channel in bayer pattern
     const int32_t width,
     const int32_t height,
-    const float a,
-    const float b)
+    const float aa,
+    const float bb)
 {
   // safety margin:
   const int mult = 32;
+#if 0 // this has way too much variance, fits are pretty much arbitrary
   uint64_t cnt = 0;
   // const float sigma2 = (b/a)*(b/a);
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
@@ -181,6 +182,28 @@ static void analyse_g(
       // fprintf(stdout, "%u %g\n", input[width*j+i], fabsf(detail));
     // if(cnt++ > 10000) return;
   }
+#endif
+  // first bin into a couple brightness slots and average these:
+  // use arithmetic mean to reduce memory cost :/
+  // FIXME: only works in darkroom mode:
+  const float b = darktable.develop->image_storage.raw_black_level;
+  const float w = darktable.develop->image_storage.raw_white_point;
+  const int N = 512;
+  double sum[N], sum2[N];
+  memset(sum, 0, sizeof(double)*N);
+  memset(sum2, 0, sizeof(double)*N);
+  for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
+  {
+    const float v = coarse[width*j+i];
+    const float d = fabsf(input[width*j+i] - v);
+    // const float d = input[width*j+i];
+    const int bin = CLAMP((v - b)/(w - b) * N, 0, N-1);
+    sum[bin] += d;
+    sum2[bin] += d*d;
+  }
+  for(int k=0;k<N;k++)
+    // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, (sum2[k] - sum[k]*sum[k]/N)/(N-1));
+    fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, sum[k]/(1.4826*N));
 }
 
 static void analyse_rb(
@@ -330,7 +353,7 @@ static void synthesize(
     float *pout = out + (size_t)j * width;
     for(int i = 0; i < width; i++)
     {
-      const float d = copysignf(fmaxf(fabsf(*pdetail - threshold), 0.0f), *pdetail);
+      const float d = copysignf(fmaxf(fabsf(*pdetail) - threshold, 0.0f), *pdetail);
       *pout = *pin + boost * d;
       pdetail++;
       pin++;
