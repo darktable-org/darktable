@@ -83,6 +83,8 @@ static inline float fast_mexp2f(const float x)
   return k.f;
 }
 
+// #define ANALYSE
+
 // TODO: adjust those two functions to new noise model!
 static inline void precondition(
     const uint16_t *const in,
@@ -92,7 +94,9 @@ static inline void precondition(
     const float a,
     const float b)
 {
+#ifndef ANALYSE
   const float sigma2 = (b/a)*(b/a);
+#endif
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
@@ -102,8 +106,11 @@ static inline void precondition(
     const uint16_t *in2 = in + (size_t)j * wd;
     for(int i = 0; i < wd; i++)
     {
-      // *buf2 = *in2;
+#ifdef ANALYSE
+      *buf2 = *in2;
+#else
       *buf2 = 2.0f * sqrtf(fmaxf(0.0f, *in2/a + 3./8. + sigma2));
+#endif
       buf2 ++;
       in2 ++;
     }
@@ -118,7 +125,9 @@ static inline void backtransform(
     const float a,
     const float b)
 {
+#ifndef ANALYSE
   const float sigma2 = (b/a)*(b/a);
+#endif
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
@@ -128,7 +137,9 @@ static inline void backtransform(
     uint16_t *out2 = out + (size_t)j * wd;
     for(int i = 0; i < wd; i++)
     {
-      // *out2 = *buf2;
+#ifdef ANALYSE
+      *out2 = *buf2;
+#else
       const float x = *buf2;
       // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
       if(x < .5f)
@@ -139,12 +150,14 @@ static inline void backtransform(
       // asymptotic form:
       // *out2 = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2);
       *out2 *= a;
+#endif
       buf2 ++;
       out2 ++;
     }
   }
 }
 
+#ifdef ANALYSE
 static void analyse_g(
     float *const coarse,         // blurred buffer
     const uint16_t *const input, // const input buffer
@@ -156,15 +169,17 @@ static void analyse_g(
 {
   // safety margin:
   const int mult = 32;
-  int cnt = 0;
-  const float sigma2 = (b/a)*(b/a);
+  uint64_t cnt = 0;
+  // const float sigma2 = (b/a)*(b/a);
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
   {
-    const float inp = 2.0f * sqrtf(fmaxf(0.0f, input[width*j+i]/a + 3./8. + sigma2));
+    // const float inp = 2.0f * sqrtf(fmaxf(0.0f, input[width*j+i]/a + 3./8. + sigma2));
+    const float inp = input[width*j+i];
     const float detail = inp - coarse[width*j+i];
-    // fprintf(stdout, "%g %g\n", coarse[width*j+i], fabsf(detail));
-    fprintf(stdout, "%u %g\n", input[width*j+i], fabsf(detail));
-    if(cnt++ > 10000) return;
+    if(cnt++ % 1033 == 0)
+      fprintf(stdout, "%g %g\n", coarse[width*j+i], fabsf(detail));
+      // fprintf(stdout, "%u %g\n", input[width*j+i], fabsf(detail));
+    // if(cnt++ > 10000) return;
   }
 }
 
@@ -178,18 +193,23 @@ static void analyse_rb(
     const float a,
     const float b)
 {
+#if 0
   const int mult = 32;
-  int cnt = 0;
-  const float sigma2 = (b/a)*(b/a);
+  uint64_t cnt = 0;
+  // const float sigma2 = (b/a)*(b/a);
   for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
   {
-    const float inp = 2.0f * sqrtf(fmaxf(0.0f, input[width*j+i]/a + 3./8. + sigma2));
+    const float inp = input[width*j+i];
+    // const float inp = 2.0f * sqrtf(fmaxf(0.0f, input[width*j+i]/a + 3./8. + sigma2));
     const float detail = inp - coarse[width*j+i];
-    // fprintf(stdout, "%g %g\n", coarse[width*j+i], fabsf(detail));
-    fprintf(stdout, "%u %g\n", input[width*j+i], fabsf(detail));
-    if(cnt++ > 10000) return;
+    if(cnt++ % 1033 == 0)
+      fprintf(stdout, "%g %g\n", coarse[width*j+i], fabsf(detail));
+      // fprintf(stdout, "%u %g\n", input[width*j+i], fabsf(detail));
+    // if(cnt++ > 10000) return;
   }
+#endif
 }
+#endif
 
 static void decompose_g(
     float *const output,      // output buffer
@@ -373,7 +393,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   // FIXME: hardcoded preliminary fits for 5dm2 @ ISO 3200
   // noise std dev ~= sqrt(b + a*input)
-  const float b = -10557.9, a = 9.65444;
+  const float a = 4.22555, b = -4942.72;
+#if 0
+  iso 100
+  Final set of parameters            Asymptotic Standard Error
+  =======================            ==========================
+  a               = 0.486654         +/- 0.01666      (3.424%)
+  b               = -283.6           +/- 53.63        (18.91%)
+
+  Final set of parameters            Asymptotic Standard Error
+  =======================            ==========================
+  a               = 0.809933         +/- 0.1386       (17.11%)
+  b               = 35.3581          +/- 963.6        (2725%)
+
+  iso 1600
+  Final set of parameters            Asymptotic Standard Error
+  =======================            ==========================
+  a               = 4.22555          +/- 0.1109       (2.624%)
+  b               = -4942.72         +/- 156.3        (3.162%)
+#endif
 
   precondition((uint16_t *)ivoid, tmp1, width, height, a, b);
 
@@ -436,15 +474,18 @@ memset(buf1, 0, sizeof(float)*width*height);
   {
   }
 #endif
+#ifdef ANALYSE
   analyse_g (buf1, ivoid,   offx,    width, height, a, b);
   analyse_rb(buf1, ivoid, 1-offx, 0, width, height, a, b);
   analyse_rb(buf1, ivoid,   offx, 1, width, height, a, b);
+#endif
 
 #if 1
   // now do everything backwards, so the result will end up in *ovoid
   for(int scale = max_scale - 1; scale >= 0; scale--)
   {
-#if 0
+#if 1
+    // TODO: separately per channel?
     // variance stabilizing transform maps sigma to unity.
     const float sigma = 1.0f;
     // it is then transformed by wavelet scales via the 5 tap a-trous filter:
@@ -452,24 +493,24 @@ memset(buf1, 0, sizeof(float)*width*height);
     const float sigma_band = powf(varf, scale) * sigma;
     // determine thrs as bayesshrink
     // TODO: parallelize!
-    float sum_y2[3] = { 0.0f };
+    float sum_y2 = 0.0f;
     for(size_t k = 0; k < npixels; k++)
-      for(int c = 0; c < 3; c++) sum_y2[c] += buf[scale][4 * k + c] * buf[scale][4 * k + c];
+      sum_y2 += buf[scale][k] * buf[scale][k];
 
     const float sb2 = sigma_band * sigma_band;
-    const float var_y[3] = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f), sum_y2[2] / (npixels - 1.0f) };
-    const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
-                             sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
+    const float var_y = sum_y2 / (npixels - 1.0f);
+    const float std_x = sqrtf(MAX(1e-6f, var_y - sb2));
     // add 8.0 here because it seemed a little weak
     const float adjt = 8.0f;
-    const float thrs[4] = { adjt * sb2 / std_x[0], adjt * sb2 / std_x[1], adjt * sb2 / std_x[2], 0.0f };
+    const float thrs[4] = { adjt * sb2 / std_x };
 // const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
 // const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
 // fprintf(stderr, "scale %d thrs %f %f %f = %f / %f %f %f \n", scale, thrs[0], thrs[1], thrs[2], sb2,
 // std_x[0], std_x[1], std_x[2]);
+#else
+    const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
 #endif
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
     synthesize(buf2, buf1, buf[scale], thrs, boost, width, height);
     // DEBUG: clean out temporary memory:
     // memset(buf1, 0, sizeof(float)*4*width*height);
