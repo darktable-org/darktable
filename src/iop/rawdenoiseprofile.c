@@ -45,6 +45,10 @@ typedef struct dt_iop_rawdenoiseprofile_gui_data_t
   GtkWidget *strength;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
   GList *profiles;
+
+  // debug stuff:
+  float stddev[512];
+
 } dt_iop_rawdenoiseprofile_gui_data_t;
 
 typedef dt_iop_rawdenoiseprofile_params_t dt_iop_rawdenoiseprofile_data_t;
@@ -165,7 +169,8 @@ static void analyse_g(
     const int32_t width,
     const int32_t height,
     const float aa,
-    const float bb)
+    const float bb,
+    dt_iop_rawdenoiseprofile_gui_data_t *g)
 {
   // safety margin:
   const int mult = 32;
@@ -204,9 +209,12 @@ static void analyse_g(
     sum2[bin] += d*d;
     num[bin]++;
   }
-  for(int k=0;k<N;k++)
-    // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, (sum2[k] - sum[k]*sum[k]/N)/(N-1));
-    fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, sum[k]/(1.4826*num[k]));
+  if(g)
+    for(int k=0;k<N;k++) g->stddev[k] = sum[k] / (1.4826*num[k]);
+  // else
+    // for(int k=0;k<N;k++)
+      // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, (sum2[k] - sum[k]*sum[k]/N)/(N-1));
+      // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, sum[k]/(1.4826*num[k]));
 }
 
 static void analyse_rb(
@@ -493,15 +501,9 @@ memset(buf1, 0, sizeof(float)*width*height);
 #endif
   // DEBUG show coarsest buffer in output:
   // backtransform(buf1, (uint16_t *)ovoid, width, height, a, b);
-#if 0
-  // paint some data on the canvas:
-  dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)module->gui_data;
-  if(g)
-  {
-  }
-#endif
 #ifdef ANALYSE
-  analyse_g (buf1, ivoid,   offx,    width, height, a, b);
+  dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
+  analyse_g (buf1, ivoid,   offx,    width, height, a, b, g);
   analyse_rb(buf1, ivoid, 1-offx, 0, width, height, a, b);
   analyse_rb(buf1, ivoid,   offx, 1, width, height, a, b);
 #endif
@@ -780,6 +782,23 @@ void gui_cleanup(dt_iop_module_t *self)
   // nothing else necessary, gtk will clean up the slider.
   free(self->gui_data);
   self->gui_data = NULL;
+}
+
+void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
+                     int32_t pointerx, int32_t pointery)
+{
+  dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
+
+  const float b = darktable.develop->image_storage.raw_black_level;
+  const float w = darktable.develop->image_storage.raw_white_point;
+  cairo_translate(cr, 0.0, height);
+  cairo_scale(cr, width/16000.0, -height/300.0);
+  cairo_set_source_rgb(cr, .7, .7, .7);
+  cairo_move_to(cr, 0.0, 0.0);
+  for(int k=0;k<512;k++)
+    if(g->stddev[k] == g->stddev[k])
+      cairo_line_to(cr, b + k/512.0*(w-b), g->stddev[k]);
+  cairo_stroke(cr);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
