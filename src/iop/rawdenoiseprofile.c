@@ -35,15 +35,18 @@ DT_MODULE_INTROSPECTION(1, dt_iop_rawdenoiseprofile_params_t)
 
 typedef struct dt_iop_rawdenoiseprofile_params_t
 {
+  // TODO: probably want something for every channel separately (or at least g vs rb)
   float strength;   // noise level after equalization
-  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  float a, b;       // fit for poissonian-gaussian noise per color channel.
 } dt_iop_rawdenoiseprofile_params_t;
 
 typedef struct dt_iop_rawdenoiseprofile_gui_data_t
 {
   GtkWidget *profile;
   GtkWidget *strength;
-  dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
+  GtkWidget *a;
+  GtkWidget *b;
+  // dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
   GList *profiles;
 
   // debug stuff:
@@ -54,7 +57,7 @@ typedef struct dt_iop_rawdenoiseprofile_gui_data_t
 
 typedef dt_iop_rawdenoiseprofile_params_t dt_iop_rawdenoiseprofile_data_t;
 
-static dt_noiseprofile_t dt_iop_rawdenoiseprofile_get_auto_profile(dt_iop_module_t *self);
+// static dt_noiseprofile_t dt_iop_rawdenoiseprofile_get_auto_profile(dt_iop_module_t *self);
 
 const char *name()
 {
@@ -572,6 +575,7 @@ void reload_defaults(dt_iop_module_t *module)
 {
   // our module is disabled by default
   module->default_enabled = 0;
+#if 0
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)module->gui_data;
   if(g)
   {
@@ -594,7 +598,7 @@ void reload_defaults(dt_iop_module_t *module)
       {
         g->interpolated = *current;
         // signal later autodetection in commit_params:
-        g->interpolated.a[0] = -1.0;
+        g->interpolated.a = -1.0;
         snprintf(name, sizeof(name), _("found match for ISO %d"), iso);
         break;
       }
@@ -602,7 +606,7 @@ void reload_defaults(dt_iop_module_t *module)
       {
         dt_noiseprofile_interpolate(last, current, &g->interpolated);
         // signal later autodetection in commit_params:
-        g->interpolated.a[0] = -1.0;
+        g->interpolated.a = -1.0;
         snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"), last->iso, current->iso);
         break;
       }
@@ -617,13 +621,11 @@ void reload_defaults(dt_iop_module_t *module)
     }
 
     ((dt_iop_rawdenoiseprofile_params_t *)module->default_params)->strength = 1.0f;
-    for(int k = 0; k < 3; k++)
-    {
-      ((dt_iop_rawdenoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
-      ((dt_iop_rawdenoiseprofile_params_t *)module->default_params)->b[k] = g->interpolated.b[k];
-    }
+    ((dt_iop_rawdenoiseprofile_params_t *)module->default_params)->a = g->interpolated.a;
+    ((dt_iop_rawdenoiseprofile_params_t *)module->default_params)->b = g->interpolated.b;
     memcpy(module->params, module->default_params, sizeof(dt_iop_rawdenoiseprofile_params_t));
   }
+#endif
 }
 
 /** init, cleanup, commit to pipeline */
@@ -645,6 +647,7 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+#if 0
 static dt_noiseprofile_t dt_iop_rawdenoiseprofile_get_auto_profile(dt_iop_module_t *self)
 {
   GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
@@ -670,6 +673,7 @@ static dt_noiseprofile_t dt_iop_rawdenoiseprofile_get_auto_profile(dt_iop_module
   g_list_free_full(profiles, dt_noiseprofile_free);
   return interpolated;
 }
+#endif
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -687,6 +691,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   // copy everything first and make some changes later
   memcpy(d, p, sizeof(*d));
 
+#if 0
   // compare if a[0] in params is set to "magic value" -1.0 for autodetection
   if(p->a[0] == -1.0)
   {
@@ -700,6 +705,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       d->b[k] = interpolated.b[k];
     }
   }
+#endif
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -716,6 +722,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 static void profile_callback(GtkWidget *w, dt_iop_module_t *self)
 {
+#if 0 // FIXME: these are the wrong profiles
   int i = dt_bauhaus_combobox_get(w);
   dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)self->params;
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
@@ -726,6 +733,22 @@ static void profile_callback(GtkWidget *w, dt_iop_module_t *self)
     p->a[k] = profile->a[k];
     p->b[k] = profile->b[k];
   }
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+#endif
+}
+
+static void a_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)self->params;
+  p->a = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void b_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)self->params;
+  const float b = darktable.develop->image_storage.raw_black_level;
+  p->b = dt_bauhaus_slider_get(w) - b * p->a;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -742,8 +765,12 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)self->params;
   dt_bauhaus_slider_set(g->strength, p->strength);
+  dt_bauhaus_slider_set(g->a, p->a);
+  const float b = darktable.develop->image_storage.raw_black_level;
+  dt_bauhaus_slider_set(g->b, p->b + b*p->a);
   dt_bauhaus_combobox_set(g->profile, -1);
-  if(p->a[0] == -1.0)
+#if 0
+  if(p->a == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
   }
@@ -761,6 +788,7 @@ void gui_update(dt_iop_module_t *self)
       }
     }
   }
+#endif
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -772,15 +800,23 @@ void gui_init(dt_iop_module_t *self)
   g->profiles = NULL;
   g->profile = dt_bauhaus_combobox_new(self);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
+  g->a = dt_bauhaus_slider_new_with_range(self, 0.0001f, 10.0f, .05, 1.f, 4);
+  g->b = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, .05, 0.f, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->a, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->b, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
+  dt_bauhaus_widget_set_label(g->a, NULL, _("poissonian (a)"));
+  dt_bauhaus_widget_set_label(g->b, NULL, _("gaussian (b)"));
   g_object_set(G_OBJECT(g->profile), "tooltip-text", _("profile used for variance stabilization"),
                (char *)NULL);
   g_object_set(G_OBJECT(g->strength), "tooltip-text", _("finetune denoising strength"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
+  g_signal_connect(G_OBJECT(g->a), "value-changed", G_CALLBACK(a_callback), self);
+  g_signal_connect(G_OBJECT(g->b), "value-changed", G_CALLBACK(b_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -796,6 +832,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                      int32_t pointerx, int32_t pointery)
 {
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)self->params;
 
   const float b = darktable.develop->image_storage.raw_black_level;
   const float w = darktable.develop->image_storage.raw_white_point;
@@ -806,6 +843,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   for(int k=0;k<512;k++)
     if(g->stddev[k] == g->stddev[k])
       cairo_line_to(cr, b + k/512.0*(w-b), g->stddev[k]);
+  cairo_stroke(cr);
+
+  // draw a/b fit
+  cairo_set_source_rgb(cr, .1, .7, .1);
+  cairo_move_to(cr, b, 0.0);
+  for(int k=0;k<512;k++)
+    cairo_line_to(cr, b + k/512.0*(w-b), sqrtf(fmaxf(0.0f, p->a * (b + k/512.0*(w-b)) + p->b)));
   cairo_stroke(cr);
 }
 
