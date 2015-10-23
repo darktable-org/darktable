@@ -91,7 +91,7 @@ static inline float fast_mexp2f(const float x)
   return k.f;
 }
 
-#define ANALYSE
+// #define ANALYSE
 
 // TODO: adjust those two functions to new noise model!
 static inline void precondition(
@@ -136,9 +136,9 @@ static inline void backtransform(
 #ifndef ANALYSE
   const float sigma2 = (b/a)*(b/a);
 #endif
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
-#endif
+// #ifdef _OPENMP
+// #pragma omp parallel for schedule(static) default(none)
+// #endif
   for(int j = 0; j < ht; j++)
   {
     const float *buf2 = buf + (size_t)j * wd;
@@ -165,7 +165,7 @@ static inline void backtransform(
   }
 }
 
-#ifdef ANALYSE
+#if 1 //def ANALYSE
 static void analyse_g(
     float *const coarse,         // blurred buffer
     const uint16_t *const input, // const input buffer
@@ -206,9 +206,18 @@ static void analyse_g(
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
   {
     const float v = coarse[width*j+i];
-    const float d = fabsf(input[width*j+i] - v);
+#ifdef ANALYSE
+    const float inp = input[width*j+i];
+    const float vb = v;
+#else
+    const float sigma2 = (bb/aa)*(bb/aa);
+    const float inp = 2.0f * sqrtf(fmaxf(0.0f, input[width*j+i]/aa + 3./8. + sigma2));
+    uint16_t vb;
+    backtransform(coarse+width*j+i, &vb, 1, 1, aa, bb);
+#endif
+    const float d = fabsf(inp - v);
     // const float d = input[width*j+i];
-    const int bin = CLAMP((v - b)/(w - b) * N, 0, N-1);
+    const int bin = CLAMP((vb - b)/(w - b) * N, 0, N-1);
     sum[bin] += d;
     sum2[bin] += d*d;
     num[bin]++;
@@ -219,7 +228,8 @@ static void analyse_g(
     for(int k=0;k<N;k++)
     {
       g->stddev[k] = sum[k] / (1.4826*num[k]);
-      g->stddev_max = fmaxf(g->stddev_max, g->stddev[k]);
+      if(g->stddev[k] > g->stddev_max) g->stddev_max = g->stddev[k];
+      // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, sum[k]/(1.4826*num[k]));
     }
   }
   // else
@@ -393,7 +403,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  // dt_iop_rawdenoiseprofile_params_t *d = (dt_iop_rawdenoiseprofile_params_t *)piece->data;
+  dt_iop_rawdenoiseprofile_params_t *d = (dt_iop_rawdenoiseprofile_params_t *)piece->data;
 
   const int max_max_scale = 5; // hard limit
   int max_scale = 3;
@@ -438,7 +448,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   // FIXME: hardcoded preliminary fits for 5dm2 @ ISO 3200
   // noise std dev ~= sqrt(b + a*input)
-  const float a = 4.22555, b = -4942.72;
+  const float a = d->a, b = d->b;
 #if 0
   iso 100
   Final set of parameters            Asymptotic Standard Error
@@ -512,7 +522,7 @@ memset(buf1, 0, sizeof(float)*width*height);
 #endif
   // DEBUG show coarsest buffer in output:
   // backtransform(buf1, (uint16_t *)ovoid, width, height, a, b);
-#ifdef ANALYSE
+#if 1//def ANALYSE
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
   analyse_g (buf1, ivoid,   offx,    width, height, a, b, g);
   analyse_rb(buf1, ivoid, 1-offx, 0, width, height, a, b);
@@ -539,13 +549,12 @@ memset(buf1, 0, sizeof(float)*width*height);
     const float sb2 = sigma_band * sigma_band;
     const float var_y = sum_y2 / (npixels - 1.0f);
     const float std_x = sqrtf(MAX(1e-6f, var_y - sb2));
-    // add 8.0 here because it seemed a little weak
-    const float adjt = 8.0f;
+    // adjust here because it seemed a little weak
+    const float adjt = d->strength;
     const float thrs[4] = { adjt * sb2 / std_x };
 // const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
 // const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
-// fprintf(stderr, "scale %d thrs %f %f %f = %f / %f %f %f \n", scale, thrs[0], thrs[1], thrs[2], sb2,
-// std_x[0], std_x[1], std_x[2]);
+// fprintf(stderr, "scale %d thrs %f = %f / %f\n", scale, thrs[0], sb2, std_x);
 #else
     const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
 #endif
@@ -836,6 +845,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   const float b = darktable.develop->image_storage.raw_black_level;
   const float w = darktable.develop->image_storage.raw_white_point;
+  // cairo_save(cr); // XXX save restore destroy the image, wtf.
   cairo_translate(cr, 0.0, height);
   cairo_scale(cr, width/w, -height/g->stddev_max);
   cairo_set_source_rgb(cr, .7, .7, .7);
@@ -843,13 +853,19 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   for(int k=0;k<512;k++)
     if(g->stddev[k] == g->stddev[k])
       cairo_line_to(cr, b + k/512.0*(w-b), g->stddev[k]);
+  // cairo_restore(cr);
+  // cairo_set_line_width(cr, 2.0/height*g->stddev_max);
   cairo_stroke(cr);
 
   // draw a/b fit
+  // cairo_save(cr);
+  // cairo_translate(cr, 0.0, height);
+  // cairo_scale(cr, width/w, -height/g->stddev_max);
   cairo_set_source_rgb(cr, .1, .7, .1);
   cairo_move_to(cr, b, 0.0);
   for(int k=0;k<512;k++)
     cairo_line_to(cr, b + k/512.0*(w-b), sqrtf(fmaxf(0.0f, p->a * (b + k/512.0*(w-b)) + p->b)));
+  // cairo_restore(cr);
   cairo_stroke(cr);
 }
 
