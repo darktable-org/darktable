@@ -83,7 +83,7 @@ static inline float fast_mexp2f(const float x)
   return k.f;
 }
 
-// #define ANALYSE
+#define ANALYSE
 
 // TODO: adjust those two functions to new noise model!
 static inline void precondition(
@@ -190,8 +190,10 @@ static void analyse_g(
   const float w = darktable.develop->image_storage.raw_white_point;
   const int N = 512;
   double sum[N], sum2[N];
+  uint64_t num[N];
   memset(sum, 0, sizeof(double)*N);
   memset(sum2, 0, sizeof(double)*N);
+  memset(num, 0, sizeof(uint64_t)*N);
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
   {
     const float v = coarse[width*j+i];
@@ -200,10 +202,11 @@ static void analyse_g(
     const int bin = CLAMP((v - b)/(w - b) * N, 0, N-1);
     sum[bin] += d;
     sum2[bin] += d*d;
+    num[bin]++;
   }
   for(int k=0;k<N;k++)
     // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, (sum2[k] - sum[k]*sum[k]/N)/(N-1));
-    fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, sum[k]/(1.4826*N));
+    fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, sum[k]/(1.4826*num[k]));
 }
 
 static void analyse_rb(
@@ -432,8 +435,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   iso 1600
   Final set of parameters            Asymptotic Standard Error
   =======================            ==========================
-  a               = 4.22555          +/- 0.1109       (2.624%)
-  b               = -4942.72         +/- 156.3        (3.162%)
+  a               = 1.34539          +/- 0.02714      (2.017%)
+  b               = 1435.15          +/- 196.4        (13.69%)
 #endif
 
   precondition((uint16_t *)ivoid, tmp1, width, height, a, b);
