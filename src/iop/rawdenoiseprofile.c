@@ -48,6 +48,7 @@ typedef struct dt_iop_rawdenoiseprofile_gui_data_t
 
   // debug stuff:
   float stddev[512];
+  float stddev_max;
 
 } dt_iop_rawdenoiseprofile_gui_data_t;
 
@@ -210,7 +211,14 @@ static void analyse_g(
     num[bin]++;
   }
   if(g)
-    for(int k=0;k<N;k++) g->stddev[k] = sum[k] / (1.4826*num[k]);
+  {
+    g->stddev_max = 0.0f;
+    for(int k=0;k<N;k++)
+    {
+      g->stddev[k] = sum[k] / (1.4826*num[k]);
+      g->stddev_max = fmaxf(g->stddev_max, g->stddev[k]);
+    }
+  }
   // else
     // for(int k=0;k<N;k++)
       // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, (sum2[k] - sum[k]*sum[k]/N)/(N-1));
@@ -792,9 +800,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float b = darktable.develop->image_storage.raw_black_level;
   const float w = darktable.develop->image_storage.raw_white_point;
   cairo_translate(cr, 0.0, height);
-  cairo_scale(cr, width/16000.0, -height/300.0);
+  cairo_scale(cr, width/w, -height/g->stddev_max);
   cairo_set_source_rgb(cr, .7, .7, .7);
-  cairo_move_to(cr, 0.0, 0.0);
+  cairo_move_to(cr, b, 0.0);
   for(int k=0;k<512;k++)
     if(g->stddev[k] == g->stddev[k])
       cairo_line_to(cr, b + k/512.0*(w-b), g->stddev[k]);
