@@ -38,11 +38,17 @@ typedef struct dt_iop_rawdenoiseprofile_params_t
   // TODO: probably want something for every channel separately (or at least g vs rb)
   float strength;   // noise level after equalization
   float a, b;       // fit for poissonian-gaussian noise per color channel.
+
+  // probably not here to stay, who knows:
+  uint32_t mode;
+  uint32_t algo;
 } dt_iop_rawdenoiseprofile_params_t;
 
 typedef struct dt_iop_rawdenoiseprofile_gui_data_t
 {
   GtkWidget *profile;
+  GtkWidget *mode;
+  GtkWidget *algo;
   GtkWidget *strength;
   GtkWidget *a;
   GtkWidget *b;
@@ -91,8 +97,6 @@ static inline float fast_mexp2f(const float x)
   return k.f;
 }
 
-// #define ANALYSE
-
 // TODO: adjust those two functions to new noise model!
 static inline void precondition(
     const uint16_t *const in,
@@ -100,25 +104,23 @@ static inline void precondition(
     const int wd,
     const int ht,
     const float a,
-    const float b)
+    const float b,
+    const uint32_t mode)
 {
-#ifndef ANALYSE
   const float sigma2 = (b/a)*(b/a);
-#endif
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
-#endif
+// #ifdef _OPENMP
+// #pragma omp parallel for schedule(static) default(none)
+// #endif
   for(int j = 0; j < ht; j++)
   {
     float *buf2 = buf + (size_t)j * wd;
     const uint16_t *in2 = in + (size_t)j * wd;
     for(int i = 0; i < wd; i++)
     {
-#ifdef ANALYSE
-      *buf2 = *in2;
-#else
-      *buf2 = 2.0f * sqrtf(fmaxf(0.0f, *in2/a + 3./8. + sigma2));
-#endif
+      if(mode == 0)
+        *buf2 = *in2;
+      else
+        *buf2 = 2.0f * sqrtf(fmaxf(0.0f, *in2/a + 3./8. + sigma2));
       buf2 ++;
       in2 ++;
     }
@@ -131,11 +133,10 @@ static inline void backtransform(
     const int wd,
     const int ht,
     const float a,
-    const float b)
+    const float b,
+    const uint32_t mode)
 {
-#ifndef ANALYSE
   const float sigma2 = (b/a)*(b/a);
-#endif
 // #ifdef _OPENMP
 // #pragma omp parallel for schedule(static) default(none)
 // #endif
@@ -145,20 +146,23 @@ static inline void backtransform(
     uint16_t *out2 = out + (size_t)j * wd;
     for(int i = 0; i < wd; i++)
     {
-#ifdef ANALYSE
-      *out2 = *buf2;
-#else
-      const float x = *buf2;
-      // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
-      if(x < .5f)
-        *out2 = 0.0f;
+      if(mode == 0)
+      {
+        *out2 = *buf2;
+      }
       else
-        *out2 = 1. / 4. * x * x + 1. / 4. * sqrtf(3. / 2.) / x - 11. / 8. * 1.0 / (x * x)
-          + 5. / 8. * sqrtf(3. / 2.) * 1.0 / (x * x * x) - 1. / 8. - sigma2;
-      // asymptotic form:
-      // *out2 = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2);
-      *out2 *= a;
-#endif
+      {
+        const float x = *buf2;
+        // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
+        if(x < .5f)
+          *out2 = 0.0f;
+        else
+          *out2 = 1. / 4. * x * x + 1. / 4. * sqrtf(3. / 2.) / x - 11. / 8. * 1.0 / (x * x)
+            + 5. / 8. * sqrtf(3. / 2.) * 1.0 / (x * x * x) - 1. / 8. - sigma2;
+        // asymptotic form:
+        // *out2 = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2);
+        *out2 *= a;
+      }
       buf2 ++;
       out2 ++;
     }
@@ -174,6 +178,7 @@ static void analyse_g(
     const int32_t height,
     const float aa,
     const float bb,
+    const uint32_t mode,
     dt_iop_rawdenoiseprofile_gui_data_t *g)
 {
   // safety margin:
@@ -206,15 +211,19 @@ static void analyse_g(
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
   {
     const float v = coarse[width*j+i];
-#ifdef ANALYSE
-    const float inp = input[width*j+i];
-    const float vb = v;
-#else
-    const float sigma2 = (bb/aa)*(bb/aa);
-    const float inp = 2.0f * sqrtf(fmaxf(0.0f, input[width*j+i]/aa + 3./8. + sigma2));
     uint16_t vb;
-    backtransform(coarse+width*j+i, &vb, 1, 1, aa, bb);
-#endif
+    float inp;
+    if(mode == 0)
+    {
+      inp = input[width*j+i];
+      vb = v;
+    }
+    else
+    {
+      precondition(input+width*j+i, &inp, 1, 1, aa, bb, mode);
+      vb = input[width*j+i];
+      //backtransform(coarse+width*j+i, &vb, 1, 1, aa, bb, mode);
+    }
     const float d = fabsf(inp - v);
     // const float d = input[width*j+i];
     const int bin = CLAMP((vb - b)/(w - b) * N, 0, N-1);
@@ -228,6 +237,7 @@ static void analyse_g(
     for(int k=0;k<N;k++)
     {
       g->stddev[k] = sum[k] / (1.4826*num[k]);
+      if(mode) g->stddev[k] *= aa;
       if(g->stddev[k] > g->stddev_max) g->stddev_max = g->stddev[k];
       // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, sum[k]/(1.4826*num[k]));
     }
@@ -246,7 +256,8 @@ static void analyse_rb(
     const int32_t width,
     const int32_t height,
     const float a,
-    const float b)
+    const float b,
+    const uint32_t mode)
 {
 #if 0
   const int mult = 32;
@@ -446,41 +457,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   tmp1 = dt_alloc_align(64, sizeof(float) * npixels);
   tmp2 = dt_alloc_align(64, sizeof(float) * npixels);
 
-  // FIXME: hardcoded preliminary fits for 5dm2 @ ISO 3200
   // noise std dev ~= sqrt(b + a*input)
+  // lacks pixel non-uniformity that kicks in for large values (do we care?)
   const float a = d->a, b = d->b;
-#if 0
-  iso 100
-  Final set of parameters            Asymptotic Standard Error
-  =======================            ==========================
-  a               = 0.486654         +/- 0.01666      (3.424%)
-  b               = -283.6           +/- 53.63        (18.91%)
 
-  Final set of parameters            Asymptotic Standard Error
-  =======================            ==========================
-  a               = 0.809933         +/- 0.1386       (17.11%)
-  b               = 35.3581          +/- 963.6        (2725%)
-
-  iso 1600
-  Final set of parameters            Asymptotic Standard Error
-  =======================            ==========================
-  a               = 1.34539          +/- 0.02714      (2.017%)
-  b               = 1435.15          +/- 196.4        (13.69%)
-#endif
-
-  precondition((uint16_t *)ivoid, tmp1, width, height, a, b);
-
-#if 0 // DEBUG: see what variance we have after transform
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
-  {
-    const int n = width*height;
-    FILE *f = fopen("/tmp/transformed.pfm", "wb");
-    fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-    for(int k=0; k<n; k++)
-      fwrite(((float*)ovoid)+4*k, sizeof(float), 3, f);
-    fclose(f);
-  }
-#endif
+  precondition((uint16_t *)ivoid, tmp1, width, height, a, b, d->mode);
 
   buf1 = tmp1;
   buf2 = tmp2;
@@ -521,12 +502,12 @@ memset(buf1, 0, sizeof(float)*width*height);
   }
 #endif
   // DEBUG show coarsest buffer in output:
-  // backtransform(buf1, (uint16_t *)ovoid, width, height, a, b);
+  // backtransform(buf1, (uint16_t *)ovoid, width, height, a, b, d->mode);
 #if 1//def ANALYSE
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
-  analyse_g (buf1, ivoid,   offx,    width, height, a, b, g);
-  analyse_rb(buf1, ivoid, 1-offx, 0, width, height, a, b);
-  analyse_rb(buf1, ivoid,   offx, 1, width, height, a, b);
+  analyse_g (buf1, ivoid,   offx,    width, height, a, b, d->mode, g);
+  analyse_rb(buf1, ivoid, 1-offx, 0, width, height, a, b, d->mode);
+  analyse_rb(buf1, ivoid,   offx, 1, width, height, a, b, d->mode);
 #endif
 
 #if 1
@@ -568,7 +549,7 @@ memset(buf1, 0, sizeof(float)*width*height);
     buf1 = buf3;
   }
 
-  backtransform(buf1, (uint16_t *)ovoid, width, height, a, b);
+  backtransform(buf1, (uint16_t *)ovoid, width, height, a, b, d->mode);
 #endif
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
@@ -584,6 +565,12 @@ void reload_defaults(dt_iop_module_t *module)
 {
   // our module is disabled by default
   module->default_enabled = 0;
+  dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)module->default_params;
+  p->strength = 1.0f;
+  p->a = 1.0f;
+  p->b = 0.0f;
+  p->mode = 0;
+  p->algo = 0;
 #if 0
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)module->gui_data;
   if(g)
@@ -729,6 +716,22 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
+static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  int i = dt_bauhaus_combobox_get(w);
+  dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)self->params;
+  p->mode = i;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void algo_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  int i = dt_bauhaus_combobox_get(w);
+  dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)self->params;
+  p->algo = i;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void profile_callback(GtkWidget *w, dt_iop_module_t *self)
 {
 #if 0 // FIXME: these are the wrong profiles
@@ -778,6 +781,8 @@ void gui_update(dt_iop_module_t *self)
   const float b = darktable.develop->image_storage.raw_black_level;
   dt_bauhaus_slider_set(g->b, p->b + b*p->a);
   dt_bauhaus_combobox_set(g->profile, -1);
+  dt_bauhaus_combobox_set(g->mode, p->mode);
+  dt_bauhaus_combobox_set(g->algo, p->algo);
 #if 0
   if(p->a == -1.0)
   {
@@ -808,21 +813,33 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->profiles = NULL;
   g->profile = dt_bauhaus_combobox_new(self);
+  g->mode = dt_bauhaus_combobox_new(self);
+  g->algo = dt_bauhaus_combobox_new(self);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   g->a = dt_bauhaus_slider_new_with_range(self, 0.0001f, 10.0f, .05, 1.f, 4);
   g->b = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, .05, 0.f, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->algo, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->a, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->b, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(g->algo, NULL, _("algorithm"));
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
-  dt_bauhaus_widget_set_label(g->a, NULL, _("poissonian (a)"));
-  dt_bauhaus_widget_set_label(g->b, NULL, _("gaussian (b)"));
+  dt_bauhaus_widget_set_label(g->a, NULL, _("shot / poissonian (a)"));
+  dt_bauhaus_widget_set_label(g->b, NULL, _("sensor / gaussian (b)"));
   g_object_set(G_OBJECT(g->profile), "tooltip-text", _("profile used for variance stabilization"),
                (char *)NULL);
   g_object_set(G_OBJECT(g->strength), "tooltip-text", _("finetune denoising strength"), (char *)NULL);
+  dt_bauhaus_combobox_add(g->mode, _("analyze"));
+  dt_bauhaus_combobox_add(g->mode, _("denoise"));
+  dt_bauhaus_combobox_add(g->algo, _("a-trous"));
+  dt_bauhaus_combobox_add(g->algo, _("edge-aware"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
+  g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
+  g_signal_connect(G_OBJECT(g->algo), "value-changed", G_CALLBACK(algo_callback), self);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
   g_signal_connect(G_OBJECT(g->a), "value-changed", G_CALLBACK(a_callback), self);
   g_signal_connect(G_OBJECT(g->b), "value-changed", G_CALLBACK(b_callback), self);
@@ -846,27 +863,41 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float b = darktable.develop->image_storage.raw_black_level;
   const float w = darktable.develop->image_storage.raw_white_point;
   // cairo_save(cr); // XXX save restore destroy the image, wtf.
-  cairo_translate(cr, 0.0, height);
-  cairo_scale(cr, width/w, -height/g->stddev_max);
+  const float sx = width/w, sy = -height/(p->mode?3.0:g->stddev_max);
+  // cairo_translate(cr, 0.0, height);
+  // if(p->mode == 0)
+    // cairo_scale(cr, width/w, -height/g->stddev_max);
+  // else
+    // cairo_scale(cr, width/w, -height/3.0);
   cairo_set_source_rgb(cr, .7, .7, .7);
-  cairo_move_to(cr, b, 0.0);
+  cairo_move_to(cr, b*sx, 0.0*sy+height);
   for(int k=0;k<512;k++)
     if(g->stddev[k] == g->stddev[k])
-      cairo_line_to(cr, b + k/512.0*(w-b), g->stddev[k]);
+      cairo_line_to(cr, (b + k/512.0*(w-b))*sx, g->stddev[k]*sy + height);
   // cairo_restore(cr);
   // cairo_set_line_width(cr, 2.0/height*g->stddev_max);
+  cairo_set_line_width(cr, 2.0);
   cairo_stroke(cr);
 
-  // draw a/b fit
-  // cairo_save(cr);
-  // cairo_translate(cr, 0.0, height);
-  // cairo_scale(cr, width/w, -height/g->stddev_max);
-  cairo_set_source_rgb(cr, .1, .7, .1);
-  cairo_move_to(cr, b, 0.0);
-  for(int k=0;k<512;k++)
-    cairo_line_to(cr, b + k/512.0*(w-b), sqrtf(fmaxf(0.0f, p->a * (b + k/512.0*(w-b)) + p->b)));
-  // cairo_restore(cr);
-  cairo_stroke(cr);
+  if(p->mode == 0)
+  { // analysis stage, draw a/b fit
+    // cairo_save(cr);
+    // cairo_translate(cr, 0.0, height);
+    // cairo_scale(cr, width/w, -height/g->stddev_max);
+    cairo_set_source_rgb(cr, .1, .7, .1);
+    cairo_move_to(cr, b*sx, 0.0*sy+height);
+    for(int k=0;k<512;k++)
+      cairo_line_to(cr, (b + k/512.0*(w-b))*sx, sqrtf(fmaxf(0.0f, p->a * (b + k/512.0*(w-b)) + p->b))*sy+height);
+    // cairo_restore(cr);
+    cairo_stroke(cr);
+  }
+  else
+  { // denoise stage, draw stabilised unit variance (hopefully)
+    cairo_set_source_rgb(cr, .7, .1, .1);
+    cairo_move_to(cr, 0*sx, 1.0*sy + height);
+    cairo_line_to(cr, w*sx, 1.0*sy + height);
+    cairo_stroke(cr);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
