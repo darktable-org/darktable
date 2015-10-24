@@ -702,17 +702,17 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
       GTK_MESSAGE_QUESTION,
       GTK_BUTTONS_NONE,
       modal_dialog->send_to_trash
-        ? _("Could not send %s to trash%s%s")
-        : _("Could not physically delete %s%s%s"),
+        ? _("could not send %s to trash%s%s")
+        : _("could not physically delete %s%s%s"),
       modal_dialog->filename,
       modal_dialog->error_message != NULL ? ": " : "",
       modal_dialog->error_message != NULL ? modal_dialog->error_message : "");
 
   if (modal_dialog->send_to_trash)
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("Physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("Only remove from the collection"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("Skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("Stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the collection"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
 
   gtk_window_set_title(
       GTK_WINDOW(dialog),
@@ -1440,8 +1440,8 @@ void dt_control_move_images()
       = dt_control_generic_images_job_create(&dt_control_move_images_job_run, "move images", 0, dir);
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Cancel"),
-      GTK_RESPONSE_CANCEL, _("_Select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
+      GTK_RESPONSE_CANCEL, _("_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1494,8 +1494,8 @@ void dt_control_copy_images()
       = dt_control_generic_images_job_create(&dt_control_copy_images_job_run, "copy images", 0, dir);
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Cancel"),
-      GTK_RESPONSE_CANCEL, _("_Select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
+      GTK_RESPONSE_CANCEL, _("_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)

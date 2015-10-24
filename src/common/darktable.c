@@ -737,7 +737,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   dt_loc_init_plugindir(moduledir_from_command);
   if(dt_loc_init_tmp_dir(tmpdir_from_command))
   {
-    printf(_("ERROR : invalid temporary directory : %s\n"), darktable.tmpdir);
+    printf(_("error: invalid temporary directory : %s\n"), darktable.tmpdir);
     return usage(argv[0]);
   }
   dt_loc_init_user_config_dir(configdir_from_command);

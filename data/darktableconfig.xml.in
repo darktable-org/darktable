@@ -2330,7 +2330,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>auto-apply per camera basecurve presets</shortdescription>
-    <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs restart)</longdescription>
+    <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs a restart)</longdescription>
   </dtconfig>
   <dtconfig>
     <name>screen_dpi_overwrite</name>

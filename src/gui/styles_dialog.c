@@ -281,8 +281,8 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   }
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *dialog = GTK_DIALOG(
-      gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_Cancel"),
-                                  GTK_RESPONSE_REJECT, _("_Save"), GTK_RESPONSE_ACCEPT, NULL));
+      gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_cancel"),
+                                  GTK_RESPONSE_REJECT, _("_save"), GTK_RESPONSE_ACCEPT, NULL));
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
