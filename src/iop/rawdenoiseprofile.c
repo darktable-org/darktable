@@ -107,7 +107,6 @@ static inline void precondition(
     const float b,
     const uint32_t mode)
 {
-  const float sigma2 = (b/a)*(b/a);
 // #ifdef _OPENMP
 // #pragma omp parallel for schedule(static) default(none)
 // #endif
@@ -120,13 +119,19 @@ static inline void precondition(
       if(mode == 0)
         *buf2 = *in2;
       else
+#if 0 // science
+        const float sigma2 = (b/a)*(b/a);
         *buf2 = 2.0f * sqrtf(fmaxf(0.0f, *in2/a + 3./8. + sigma2));
+#else // custom pre-black point:
+        *buf2 = *in2 / sqrtf(fmaxf(1.f, a* *in2 + b));
+#endif
       buf2 ++;
       in2 ++;
     }
   }
 }
 
+// TODO: pass in constant reference buffer for there/back transform
 static inline void backtransform(
     const float *const buf,
     uint16_t *const out,
@@ -136,7 +141,6 @@ static inline void backtransform(
     const float b,
     const uint32_t mode)
 {
-  const float sigma2 = (b/a)*(b/a);
 // #ifdef _OPENMP
 // #pragma omp parallel for schedule(static) default(none)
 // #endif
@@ -153,6 +157,8 @@ static inline void backtransform(
       else
       {
         const float x = *buf2;
+#if 0 // science
+        const float sigma2 = (b/a)*(b/a);
         // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
         if(x < .5f)
           *out2 = 0.0f;
@@ -162,6 +168,9 @@ static inline void backtransform(
         // asymptotic form:
         // *out2 = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2);
         *out2 *= a;
+#else // custom pre-blackpoint, algebraic inverse
+      *out2 = CLAMP(.5f * (a * x*x + sqrtf(a*a*x*x*x*x + 4.0f*b*x*x)), 0, 0xffff);
+#endif
       }
       buf2 ++;
       out2 ++;
@@ -462,6 +471,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const float a = d->a, b = d->b;
 
   precondition((uint16_t *)ivoid, tmp1, width, height, a, b, d->mode);
+#if 1 // debug: write out preconditioned buffer for external analysis
+  if(self->gui_data)
+  {
+      char filename[512];
+      snprintf(filename, sizeof(filename), "/tmp/preconditioned.pfm");
+      FILE *f = fopen(filename, "wb");
+      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
+      for(size_t k = 0; k < npixels; k++)
+        for(int c=0;c<3;c++)
+          fwrite(tmp1+k, sizeof(float), 1, f);
+      fclose(f);
+  }
+#endif
 
   buf1 = tmp1;
   buf2 = tmp2;
