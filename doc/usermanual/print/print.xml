@@ -38,15 +38,15 @@
     <title>Overview</title>
 
     <para>
-      This view is about printing&nbsp;&ndash; or the joy of giving birth to a photography
-      which can be put on the wall. Though, printing is not easy, there are many technical
-      aspects to take into account.
+      This view is about printing&nbsp;&ndash; or the joy of giving birth to a photograph
+      which can be put on the wall. Because printing is not easy, there are many technical
+      aspects to be taken into account.
     </para>
 
     <para>
       After selecting an image in the lighttable view (see
-      <xref linkend="lighttable_overview"/>) it is possible to enter the print module. You get
-      many options to layout the print and to select the actual printer to use.
+      <xref linkend="lighttable_overview"/>) one can enter the print module where there are
+      several options for the print layout and for selecting which printer to use.
     </para>
 
     <para>
@@ -73,7 +73,7 @@
     </para>
 
     <para>
-      This module supports printer's ICC profile which is somewhat mandatory if you want to get
+      This module supports the printer's ICC profile which is somewhat mandatory if you want to get
       a high quality print close to the image displayed on the screen.
     </para>
 
@@ -81,7 +81,7 @@
       It is important to note that ICC profiles provided by the paper and/or printer
       manufacturers cannot be used on GNU/Linux as they depend on the printer drivers. The
       darktable print module is using <ulink url="http://www.cups.org/">CUPS</ulink> and there
-      is no ready to use ICC profiles for this driver.
+      is no ready-to-use ICC profiles for this driver.
     </para>
 
   </sect1>
