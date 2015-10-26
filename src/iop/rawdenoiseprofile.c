@@ -101,6 +101,7 @@ static inline float fast_mexp2f(const float x)
 static inline void precondition(
     const uint16_t *const in,
     float *const buf,
+    const float *const ref,
     const int wd,
     const int ht,
     const float a,
@@ -113,6 +114,7 @@ static inline void precondition(
   for(int j = 0; j < ht; j++)
   {
     float *buf2 = buf + (size_t)j * wd;
+    const float *ref2 = ref + (size_t)j * wd;
     const uint16_t *in2 = in + (size_t)j * wd;
     for(int i = 0; i < wd; i++)
     {
@@ -123,18 +125,19 @@ static inline void precondition(
         const float sigma2 = (b/a)*(b/a);
         *buf2 = 2.0f * sqrtf(fmaxf(0.0f, *in2/a + 3./8. + sigma2));
 #else // custom pre-black point:
-        *buf2 = *in2 / sqrtf(fmaxf(1.f, a* *in2 + b));
+        *buf2 = *in2 / sqrtf(fmaxf(1.f, a* *ref2 + b));
 #endif
       buf2 ++;
       in2 ++;
+      ref2 ++;
     }
   }
 }
 
-// TODO: pass in constant reference buffer for there/back transform
 static inline void backtransform(
     const float *const buf,
     uint16_t *const out,
+    const float *const ref,
     const int wd,
     const int ht,
     const float a,
@@ -147,6 +150,7 @@ static inline void backtransform(
   for(int j = 0; j < ht; j++)
   {
     const float *buf2 = buf + (size_t)j * wd;
+    const float *ref2 = ref + (size_t)j * wd;
     uint16_t *out2 = out + (size_t)j * wd;
     for(int i = 0; i < wd; i++)
     {
@@ -169,11 +173,13 @@ static inline void backtransform(
         // *out2 = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2);
         *out2 *= a;
 #else // custom pre-blackpoint, algebraic inverse
-      *out2 = CLAMP(.5f * (a * x*x + sqrtf(a*a*x*x*x*x + 4.0f*b*x*x)), 0, 0xffff);
+        // *out2 = CLAMP(.5f * (a * x*x + sqrtf(a*a*x*x*x*x + 4.0f*b*x*x)), 0, 0xffff);
+        *out2 = CLAMP(x * sqrtf(fmaxf(1.f, a* *ref2 + b)), 0, 0xffff);
 #endif
       }
       buf2 ++;
       out2 ++;
+      ref2 ++;
     }
   }
 }
@@ -229,9 +235,10 @@ static void analyse_g(
     }
     else
     {
-      precondition(input+width*j+i, &inp, 1, 1, aa, bb, mode);
+      // precondition(input+width*j+i, &inp, coarse+width*j+i, 1, 1, aa, bb, mode);
+      inp = input[width*j+i];
       vb = input[width*j+i];
-      //backtransform(coarse+width*j+i, &vb, 1, 1, aa, bb, mode);
+      //backtransform(coarse+width*j+i, &vb, coarse+width*j+i, 1, 1, aa, bb, mode);
     }
     const float d = fabsf(inp - v);
     // const float d = input[width*j+i];
@@ -292,6 +299,8 @@ static void decompose_g(
     float *const detail,      // output detail buffer
     const int offx,           // select channel in bayer pattern
     const int scale,          // 0..max wavelet scale
+    const float a,            // noise profile poissonian scale
+    const float b,            // noise profile gaussian part
     const int32_t width,      // width of buffers
     const int32_t height)     // height of buffers (all three same size)
 {
@@ -329,7 +338,9 @@ static void decompose_g(
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
-    detail[j*width+i] = input[j*width+i] - output[j*width+i];
+    // detail[j*width+i] = input[j*width+i] - output[j*width+i];
+    // Fisz transform:
+    detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / sqrtf(fmaxf(1.0f, a*input[j*width+i] + b));
 }
 
 static void decompose_rb(
@@ -339,6 +350,8 @@ static void decompose_rb(
     const int offx,           // select channel in bayer pattern
     const int offy,
     const int scale,          // 0..max wavelet scale
+    const float a,            // noise profile poissonian scale
+    const float b,            // noise profile gaussian part
     const int32_t width,      // width of buffers
     const int32_t height)     // height of buffers (all three same size)
 {
@@ -379,7 +392,9 @@ static void decompose_rb(
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
-    detail[j*width+i] = input[j*width+i] - output[j*width+i];
+    // detail[j*width+i] = input[j*width+i] - output[j*width+i];
+    // Fisz transform:
+    detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / sqrtf(fmaxf(1.0f, a*input[j*width+i] + b));
 }
 
 #if 1// TODO: rewrite for single channel bayer patters (need to add channels for thrs+boost depending on pattern)
@@ -389,6 +404,8 @@ static void synthesize(
     const float *const detail,
     const float *thrsf,
     const float *boostf,
+    const float a,
+    const float b,
     const int32_t width,
     const int32_t height)
 {
@@ -405,7 +422,10 @@ static void synthesize(
     float *pout = out + (size_t)j * width;
     for(int i = 0; i < width; i++)
     {
-      const float d = copysignf(fmaxf(fabsf(*pdetail) - threshold, 0.0f), *pdetail);
+    // inverse Fisz transform:
+      const float d0 = *pdetail * sqrtf(fmaxf(1.0f, a* *pin + b));
+      // const float d0 = *pdetail;
+      const float d = copysignf(fmaxf(fabsf(d0) - threshold, 0.0f), d0);
       *pout = *pin + boost * d;
       pdetail++;
       pin++;
@@ -458,6 +478,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     return;
   }
 
+  // DEBUG: hardcoded offsets to beginning of cggc quad
+  const int offx = 0;
+
   float *buf[max_max_scale];
   float *tmp1 = 0, *tmp2 = 0;
   float *buf1 = 0, *buf2 = 0;
@@ -466,11 +489,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   tmp1 = dt_alloc_align(64, sizeof(float) * npixels);
   tmp2 = dt_alloc_align(64, sizeof(float) * npixels);
 
+#if 0
+  // create reference buffer for noise stabilisation (very wasteful on memory for now, sorry)
+  float *ref = dt_alloc_align(64, sizeof(float) * npixels);
+  for(size_t k=0;k<npixels;k++) tmp1[k] = ((uint16_t *)ivoid)[k];
+  decompose_g (ref, tmp1, tmp2,   offx,    scale, width, height);  // green
+  decompose_rb(ref, tmp1, tmp2, 1-offx, 0, scale, width, height);  // blue
+  decompose_rb(ref, tmp1, tmp2,   offx, 1, scale, width, height);  // red
+#endif
+
   // noise std dev ~= sqrt(b + a*input)
   // lacks pixel non-uniformity that kicks in for large values (do we care?)
   const float a = d->a, b = d->b;
 
-  precondition((uint16_t *)ivoid, tmp1, width, height, a, b, d->mode);
+  // precondition((uint16_t *)ivoid, tmp1, ref, width, height, a, b, d->mode);
+  for(size_t k=0;k<npixels;k++) tmp1[k] = ((uint16_t *)ivoid)[k];
 #if 1 // debug: write out preconditioned buffer for external analysis
   if(self->gui_data)
   {
@@ -489,15 +522,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   buf2 = tmp2;
 memset(tmp2, 0, sizeof(float)*width*height);
 
-  // DEBUG: hardcoded offsets to beginning of cggc quad
-  const int offx = 0;
 #if 1
   for(int scale = 0; scale < max_scale; scale++)
   {
     // FIXME: hardcoded offsets for 5dm2
-    decompose_g (buf2, buf1, buf[scale],   offx,    scale, width, height);  // green
-    decompose_rb(buf2, buf1, buf[scale], 1-offx, 0, scale, width, height);  // blue
-    decompose_rb(buf2, buf1, buf[scale],   offx, 1, scale, width, height);  // red
+    decompose_g (buf2, buf1, buf[scale],   offx,    scale, a, b, width, height);  // green
+    decompose_rb(buf2, buf1, buf[scale], 1-offx, 0, scale, a, b, width, height);  // blue
+    decompose_rb(buf2, buf1, buf[scale],   offx, 1, scale, a, b, width, height);  // red
 // DEBUG: clean out temporary memory:
 memset(buf1, 0, sizeof(float)*width*height);
 #if 0 // DEBUG: print wavelet scales:
@@ -524,7 +555,7 @@ memset(buf1, 0, sizeof(float)*width*height);
   }
 #endif
   // DEBUG show coarsest buffer in output:
-  // backtransform(buf1, (uint16_t *)ovoid, width, height, a, b, d->mode);
+  // backtransform(buf1, (uint16_t *)ovoid, ref, width, height, a, b, d->mode);
 #if 1//def ANALYSE
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
   analyse_g (buf1, ivoid,   offx,    width, height, a, b, d->mode, g);
@@ -557,12 +588,12 @@ memset(buf1, 0, sizeof(float)*width*height);
     const float thrs[4] = { adjt * sb2 / std_x };
 // const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
 // const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
-// fprintf(stderr, "scale %d thrs %f = %f / %f\n", scale, thrs[0], sb2, std_x);
+fprintf(stderr, "scale %d thrs %f = %f / %f\n", scale, thrs[0], sb2, std_x);
 #else
     const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
 #endif
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    synthesize(buf2, buf1, buf[scale], thrs, boost, width, height);
+    synthesize(buf2, buf1, buf[scale], thrs, boost, a, b, width, height);
     // DEBUG: clean out temporary memory:
     // memset(buf1, 0, sizeof(float)*4*width*height);
 
@@ -571,12 +602,14 @@ memset(buf1, 0, sizeof(float)*width*height);
     buf1 = buf3;
   }
 
-  backtransform(buf1, (uint16_t *)ovoid, width, height, a, b, d->mode);
+  // backtransform(buf1, (uint16_t *)ovoid, ref, width, height, a, b, d->mode);
+  for(size_t k=0;k<npixels;k++) ((uint16_t*)ovoid)[k] = CLAMP(buf1[k], 0, 0xffff);
 #endif
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
   dt_free_align(tmp1);
   dt_free_align(tmp2);
+  // dt_free_align(ref);
 
   // if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
@@ -837,7 +870,7 @@ void gui_init(dt_iop_module_t *self)
   g->profile = dt_bauhaus_combobox_new(self);
   g->mode = dt_bauhaus_combobox_new(self);
   g->algo = dt_bauhaus_combobox_new(self);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
+  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 400.0f, .05, 1.f, 3);
   g->a = dt_bauhaus_slider_new_with_range(self, 0.0001f, 10.0f, .05, 1.f, 4);
   g->b = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, .05, 0.f, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
