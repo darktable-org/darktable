@@ -326,8 +326,6 @@ int read_image(dt_imageio_module_data_t *p_tmp, uint8_t *out)
     png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
     return 1;
   }
-  // reflect changes
-  png_read_update_info(png->png_ptr, png->info_ptr);
 
   png_bytep row_pointer = (png_bytep)out;
   unsigned long rowbytes = png_get_rowbytes(png->png_ptr, png->info_ptr);
