@@ -1957,7 +1957,8 @@ int key_released(dt_view_t *self, guint key, guint state)
 
     lib->full_preview_id = -1;
     lib->full_preview_rowid = -1;
-    dt_control_set_mouse_over_id(-1);
+    if(!lib->using_arrows)
+      dt_control_set_mouse_over_id(-1);
 
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (lib->full_preview & 1), FALSE);
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (lib->full_preview & 2), FALSE);
@@ -1992,7 +1993,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   {
     lib->full_preview_id = -1;
     lib->full_preview_rowid = -1;
-    dt_control_set_mouse_over_id(-1);
+    if(!lib->using_arrows)
+      dt_control_set_mouse_over_id(-1);
 
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (lib->full_preview & 1), FALSE);
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (lib->full_preview & 2), FALSE);
