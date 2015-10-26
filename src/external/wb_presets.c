@@ -5633,6 +5633,15 @@ const wb_data wb_preset[] =
   { "Sony", "DSC-RX10", "5500K", 0,            { 2.558594, 1, 1.781250, 0 } },
   { "Sony", "DSC-RX10", "6500K", 0,            { 2.785156, 1, 1.625000, 0 } },
 
+  { "Sony", "DSC-RX10M2", Cloudy, 0, { 2.88671875, 1, 1.65234375, 0 } },
+  { "Sony", "DSC-RX10M2", Daylight, 0,{ 2.66796875, 1, 1.796875, 0 } },
+  { "Sony", "DSC-RX10M2", Flash, 0,  { 3.140625, 1, 1.4609375, 0 } },
+  { "Sony", "DSC-RX10M2", CoolWhiteFluorescent, 0,{ 2.578125, 1, 2.4765625, 0 } },
+  { "Sony", "DSC-RX10M2", DaylightFluorescent, 0,{ 2.921875, 1, 1.62890625, 0 } },
+  { "Sony", "DSC-RX10M2", DayWhiteFluorescent, 0,{ 2.62890625, 1, 1.8125, 0 } },
+  { "Sony", "DSC-RX10M2", WarmWhiteFluorescent, 0,{ 1.99609375, 1, 3.0390625, 0 } },
+  { "Sony", "DSC-RX10M2", Incandescent, 0,{ 1.63671875, 1, 3.1171875, 0 } },
+
   { "Sony", "DSC-RX100", Daylight, 0,		{ 2.0703, 1, 2.1602, 0 } },
   { "Sony", "DSC-RX100", Shade, 0,		{ 2.4531, 1, 1.7852, 0 } },
   { "Sony", "DSC-RX100", Cloudy, 0,		{ 2.2305, 1, 1.9844, 0 } },
