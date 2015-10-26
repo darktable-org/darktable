@@ -12,11 +12,18 @@ do
   if ! [ -f "$FD/$FL" ];
   then
     echo "removing non existent file $FD/$FL with ID = $ID"
-    sqlite3 $DBFILE "delete from images where id=$ID"
-    sqlite3 $DBFILE "delete from tagged_images where imgid=$ID"
+
+    for table in images meta_data; do
+      sqlite3 "$DBFILE" "delete from $table where id=$ID"
+    done
+
+    for table in color_labels history mask selected_images tagged_images; do
+      sqlite3 "$DBFILE" "delete from $table where imgid=$ID"
+    done
+
   fi
 done
 rm $TMPFILE
 
 # delete now-empty filmrolls
-sqlite3 $DBFILE "DELETE FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
+sqlite3 "$DBFILE" "DELETE FROM film_rolls WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=film_rolls.id)=0"
