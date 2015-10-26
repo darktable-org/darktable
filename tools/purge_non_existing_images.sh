@@ -13,6 +13,7 @@ do
   then
     echo "removing non existent file $FD/$FL with ID = $ID"
     sqlite3 $DBFILE "delete from images where id=$ID"
+    sqlite3 $DBFILE "delete from tagged_images where imgid=$ID"
   fi
 done
 rm $TMPFILE
