@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2014 johannes hanika.
+    copyright (c) 2015 LebedevRI
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -163,6 +164,19 @@ restart:
     cache->lru = g_list_remove_link(cache->lru, entry->link);
     cache->lru = g_list_concat(cache->lru, entry->link);
     dt_pthread_mutex_unlock(&cache->lock);
+
+#ifdef _DEBUG
+    const pthread_t writer = dt_pthread_rwlock_get_writer(&entry->lock);
+    if(mode == 'w')
+    {
+      assert(pthread_equal(writer, pthread_self()));
+    }
+    else
+    {
+      assert(!pthread_equal(writer, pthread_self()));
+    }
+#endif
+
     return entry;
   }
 
@@ -184,6 +198,7 @@ restart:
   entry->cost = 1;
   entry->link = g_list_append(0, entry);
   entry->key = key;
+  entry->_lock_demoting = 0;
   g_hash_table_insert(cache->hashtable, GINT_TO_POINTER(key), entry);
   // if allocate callback is given, always return a write lock
   int write = ((mode == 'w') || cache->allocate);
@@ -232,6 +247,15 @@ restart:
     goto restart;
   }
 
+  if(entry->_lock_demoting)
+  {
+    // oops, we are currently demoting (rw -> r) lock to this entry in some thread. do not touch!
+    dt_pthread_rwlock_unlock(&entry->lock);
+    dt_pthread_mutex_unlock(&cache->lock);
+    g_usleep(5);
+    goto restart;
+  }
+
   gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
   (void)removed; // make non-assert compile happy
   assert(removed);
@@ -265,6 +289,13 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 
     // if still locked by anyone else give up:
     if(dt_pthread_rwlock_trywrlock(&entry->lock)) continue;
+
+    if(entry->_lock_demoting)
+    {
+      // oops, we are currently demoting (rw -> r) lock to this entry in some thread. do not touch!
+      dt_pthread_rwlock_unlock(&entry->lock);
+      continue;
+    }
 
     // delete!
     g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(entry->key));

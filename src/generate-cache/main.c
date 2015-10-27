@@ -158,9 +158,9 @@ int main(int argc, char *arg[])
   if(!dt_conf_get_bool("cache_disk_backend"))
   {
     fprintf(stderr,
-            _("Warning: disk backend for mipmap cache is disabled (cache_disk_backend)\nIf you want "
+            _("warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\nif you want "
               "to pre-generate thumbnails and for darktable to use them, you need to enable disk backend "
-              "for mipmap cache\nno thumbnails to be generated, done."));
+              "for thumbnail cache\nno thumbnails to be generated, done."));
     dt_cleanup();
     exit(EXIT_FAILURE);
   }

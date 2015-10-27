@@ -23,10 +23,12 @@
   <para>
     The <quote>local copies</quote> feature of darktable has been designed to directly support
     those use cases. You can create local copies of selected pictures on your computer's local
-    drive. This local copy is then used when the original image file is not accessible. At a
-    later point, when connected again with your main storage medium, you can synchronize the XMP
-    sidecar files, deleting the local copy of your input image. These operations can be found in
-    the <emphasis>selected images</emphasis> panel (see <xref linkend="selected_images"/>).
+    drive. This local copy is always used when present, giving access to the picture if the
+    external storage is no longer connected, and having the advantage of being faster than a
+    slow external drive. At a later point, when connected again with your main storage medium,
+    you can synchronize the XMP sidecar files, deleting the local copy of your input image.
+    These operations can be found in the <emphasis>selected images</emphasis> panel (see
+    <xref linkend="selected_images"/>).
   </para>
 
   <para>
@@ -36,20 +38,12 @@
 
   <para>
     The local copies are stored into the $HOME/.cache/darktable directory and named
-    <quote>img-&lt;N&gt;-&lt;SIGNATURE&gt;.&lt;EXT&gt;</quote>, where:
+    <quote>img-&lt;SIGNATURE&gt;.&lt;EXT&gt;</quote>, where:
     <informaltable frame="none" width="80%">
       <tgroup cols="2" colsep="0" rowsep="0">
         <colspec colwidth='1*'/>
         <colspec colwidth='3*'/>
         <tbody>
-          <row>
-            <entry>
-              <emphasis>N</emphasis>
-            </entry>
-            <entry>
-              is the image number in darktable
-            </entry>
-          </row>
           <row>
             <entry>
               <emphasis>SIGNATURE</emphasis>

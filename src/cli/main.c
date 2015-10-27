@@ -25,6 +25,7 @@
  *  - profit
  */
 
+#include "version.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/collection.h"
@@ -80,7 +81,7 @@ int main(int argc, char *arg[])
       }
       else if(!strcmp(arg[k], "--version"))
       {
-        printf("this is darktable-cli\ncopyright (c) 2012-2014 johannes hanika, tobias ellinghaus\n");
+        printf("this is darktable-cli " PACKAGE_VERSION  "\ncopyright (c) 2012-2015 johannes hanika, tobias ellinghaus\n");
         exit(1);
       }
       else if(!strcmp(arg[k], "--width"))
@@ -110,7 +111,7 @@ int main(int argc, char *arg[])
           high_quality = TRUE;
         else
         {
-          fprintf(stderr, "%s: %s\n", _("Unknown option for --hq"), arg[k]);
+          fprintf(stderr, "%s: %s\n", _("unknown option for --hq"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
@@ -126,7 +127,7 @@ int main(int argc, char *arg[])
           upscale= TRUE;
         else
         {
-          fprintf(stderr, "%s: %s\n", _("Unknown option for --upscale"), arg[k]);
+          fprintf(stderr, "%s: %s\n", _("unknown option for --upscale"), arg[k]);
           usage(arg[0]);
           exit(1);
         }

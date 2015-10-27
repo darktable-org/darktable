@@ -1323,7 +1323,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->style_mode, d->v_style_append?1:0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style_mode), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style is appended to the history or replacing the history"),
+  g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style items are appended to the history or replacing the history"),
                (char *)NULL);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), combo_idx==0?FALSE:TRUE);

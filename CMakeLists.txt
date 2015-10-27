@@ -92,21 +92,33 @@ endif()
 #
 # Set package version
 #
-if(NOT SOURCE_PACKAGE)
-  # this part is setting the corresponding CMake variable which gets used for example when creating a source package
-  EXECUTE_PROCESS(COMMAND git describe --tags HEAD #OUTPUT_VARIABLE PROJECT_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE
-      COMMAND sed "s,^release-,,;s,-,+,;s,-,~,;" OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PROJECT_VERSION
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-  # and here we write out the version into a .h file suitable to be used in the code.
-  # the file only gets written when the version is actually different to avoid unneeded recompiles
-  add_custom_target(
-    generate_version ALL
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
-    COMMENT "Updating version string"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  )
-endif(NOT SOURCE_PACKAGE)
+if(DEFINED PROJECT_VERSION)
+   #project version is defined by -D on the cmake command line
+   # only use that value, do not upate it at make time
+   EXECUTE_PROCESS( COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h ${PROJECT_VERSION}
+		   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		  )
+else(DEFINED PROJECT_VERSION)
+	if(NOT SOURCE_PACKAGE)
+	  # this part is setting the corresponding CMake variable which gets used for example when creating a source package
+	  EXECUTE_PROCESS(COMMAND git describe --tags --dirty
+	      COMMAND sed "s,^release-,,;s,-,+,;s,-,~,;" OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PROJECT_VERSION
+	      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+	  add_custom_target(
+			  generate_version ALL
+			  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
+			  COMMENT "Updating version string"
+			  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			  )
+	else(NOT SOURCE_PACKAGE)
+	  set(PROJECT_VERSION "archive-$Format:%H$")
+	  execute_process( COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h ${PROJECT_VERSION}
+			  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			 )
+	endif(NOT SOURCE_PACKAGE)
+endif(DEFINED PROJECT_VERSION)
+
 
 #
 # Initial cmake/debian/postinst and prerm script for debian package

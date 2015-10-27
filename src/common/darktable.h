@@ -212,6 +212,7 @@ typedef struct darktable_t
   char *configdir;
   char *cachedir;
   dt_lua_state_t lua_state;
+  GList *guides;
 } darktable_t;
 
 typedef struct

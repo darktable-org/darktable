@@ -450,7 +450,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 # Build external deps
 #
 if(USE_LUA)
-  find_package(Lua52 5.2 EXACT)
+  find_package(Lua52 5.2)
   if(LUA52_FOUND)
     message(STATUS "Lua support: Enabled")
     include_directories(SYSTEM ${LUA52_INCLUDE_DIRS})
@@ -470,6 +470,7 @@ if(USE_LUA)
   if(USE_LUA)
     add_definitions("-DUSE_LUA")
     FILE(GLOB SOURCE_FILES_LUA
+      "lua/cairo.c"
       "lua/call.c"
       "lua/configuration.c"
       "lua/database.c"
@@ -479,6 +480,7 @@ if(USE_LUA)
       "lua/gettext.c"
       "lua/glist.c"
       "lua/gui.c"
+      "lua/guides.c"
       "lua/image.c"
       "lua/init.c"
       "lua/lib.c"
@@ -703,7 +705,7 @@ add_library(metadata_dummy ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_CU
 #
 # build libdarktable
 #
-add_library(lib_darktable STATIC SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
+add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES INSTALL_NAME_DIR "@executable_path/../lib/darktable")
 endif(APPLE)

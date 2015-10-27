@@ -22,6 +22,7 @@ src/common/ratings.c
 src/common/styles.c
 src/common/variables.c
 src/common/opencl.c
+src/common/utility.c
 src/control/control.c
 src/control/crawler.c
 src/control/jobs/camera_jobs.c
@@ -39,10 +40,12 @@ src/develop/pixelpipe_hb.c
 src/develop/tiling.c
 src/dtgtk/resetlabel.c
 src/external/wb_presets.c
+src/generate-cache/main.c
 src/gui/accelerators.c
 src/gui/camera_import_dialog.c
 src/gui/gtk.c
 src/gui/gtkentry.c
+src/gui/guides.c
 src/gui/hist_dialog.c
 src/gui/preferences.c
 src/gui/presets.c
@@ -92,6 +95,7 @@ src/iop/denoiseprofile.c
 src/iop/dither.c
 src/iop/equalizer.c
 src/iop/exposure.c
+src/iop/finalscale.c
 src/iop/flip.c
 src/iop/gamma.c
 src/iop/globaltonemap.c
@@ -168,6 +172,7 @@ src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
 src/libs/tools/viewswitcher.c
 src/libs/tools/view_toolbox.c
+src/lua/lualib.c
 src/lua/preferences.c
 src/views/darkroom.c
 src/views/lighttable.c

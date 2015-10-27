@@ -159,10 +159,19 @@
     </para>
 
     <para>
-      While in filemanager mode, you can scroll (not select) up and down through your collection
-      using &uarr;/&darr;. In zoomable lighttable &larr;/&rarr;/&uarr;/&darr; allow you to move
-      left/right/up/down through your collection. Pressing <emphasis>g</emphasis> goes to the
-      top, <emphasis>shift-g</emphasis> to the bottom.
+      In both modes you can navigate left/right/up/down through your collection using
+      &larr;/&rarr;/&uarr;/&darr;. Pressing <emphasis>g</emphasis> in filemanager mode goes to
+      the top, <emphasis>shift-g</emphasis> to the bottom, <emphasis>PageUp</emphasis> brings
+      you one page up and <emphasis>PageDown</emphasis> one page down.
+    </para>
+
+    <para>
+      You can select the image under the pointer by <emphasis>left-clicking</emphasis> on its
+      thumbnail or by pressing <emphasis>return</emphasis>. A range of images is selected by
+      <emphasis>clicking</emphasis> on the first one and then
+      <emphasis>shift-clicking</emphasis> on the last one. Images are added or removed from your
+      selection by <emphasis>ctrl-clicking</emphasis> on their thumbnails or pressing
+      <emphasis>space</emphasis>.
     </para>
 
     <para>

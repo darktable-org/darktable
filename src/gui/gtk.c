@@ -49,9 +49,6 @@
 #include <gtkosxapplication.h>
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
-#include <Carbon/Carbon.h>
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreServices/CoreServices.h>
 #include "osx/osx.h"
 #endif
 #include <pthread.h>
@@ -488,9 +485,6 @@ static gboolean borders_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoin
 
 void dt_gui_gtk_quit()
 {
-  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-  gtk_window_iconify(win);
-
   GtkWidget *widget;
   widget = darktable.gui->widgets.left_border;
   g_signal_handlers_block_by_func(widget, draw_borders, GINT_TO_POINTER(0));
@@ -544,6 +538,11 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group, 
     case DT_GUI_VIEW_SWITCH_TO_SLIDESHOW:
       mode = DT_SLIDESHOW;
       break;
+#ifdef HAVE_PRINT
+    case DT_GUI_VIEW_SWITCH_TO_PRINT:
+      mode = DT_PRINT;
+      break;
+#endif
   }
 
   /* try switch to mode */
@@ -852,6 +851,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_accel_register_global(NC_("accel", "darkroom view"), GDK_KEY_d, 0);
   dt_accel_register_global(NC_("accel", "map view"), GDK_KEY_m, 0);
   dt_accel_register_global(NC_("accel", "slideshow view"), GDK_KEY_s, 0);
+  dt_accel_register_global(NC_("accel", "print view"), GDK_KEY_p, 0);
 
   dt_accel_connect_global("tethering view",
                           g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
@@ -867,6 +867,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_accel_connect_global("slideshow view",
                           g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                                          GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_SLIDESHOW), NULL));
+  dt_accel_connect_global("print view", g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+                                                     GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_PRINT), NULL));
 
   // register_keys for applying styles
   init_styles_key_accels();
@@ -984,7 +986,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
     if(gui->ppd < 0.0)
     {
       gui->ppd = 1.0;
-      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n", gui->ppd);
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n");
     }
     else
       dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", gui->ppd);
@@ -1008,21 +1010,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   else
   {
 #ifdef GDK_WINDOWING_QUARTZ
-    GdkScreen *screen = gtk_widget_get_screen(widget);
-    if(screen == NULL) screen = gdk_screen_get_default();
-    int monitor = gdk_screen_get_primary_monitor(screen);
-    CGDirectDisplayID ids[monitor + 1];
-    uint32_t total_ids;
-    CGSize size_in_mm;
-    GdkRectangle size_in_px;
-    if(CGGetOnlineDisplayList(monitor + 1, &ids[0], &total_ids) == kCGErrorSuccess && total_ids == monitor + 1)
-    {
-      size_in_mm = CGDisplayScreenSize(ids[monitor]);
-      gdk_screen_get_monitor_geometry(screen, monitor, &size_in_px);
-      gdk_screen_set_resolution(
-          screen, 25.4 * sqrt(size_in_px.width * size_in_px.width + size_in_px.height * size_in_px.height)
-                  / sqrt(size_in_mm.width * size_in_mm.width + size_in_mm.height * size_in_mm.height));
-    }
+    dt_osx_autoset_dpi(widget);
 #endif
     gui->dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
     if(gui->dpi < 0.0)
@@ -1235,7 +1223,7 @@ void dt_ui_container_focus_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWid
 {
   g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
 
-  if(GTK_WIDGET(ui->containers[c]) != gtk_widget_get_parent(gtk_widget_get_parent(w))) return;
+  if(GTK_WIDGET(ui->containers[c]) != gtk_widget_get_parent(w)) return;
 
   gtk_container_set_focus_child(GTK_CONTAINER(ui->containers[c]), w);
   gtk_widget_queue_draw(ui->containers[c]);

@@ -349,7 +349,7 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO history (imgid, num, module, operation, op_params, enabled, "
                               "blendop_params, blendop_version, multi_priority, multi_name) "
-                              "VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7, 0, '')",
+                              "VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7, 0, ' ')",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);

@@ -1,6 +1,7 @@
 /*
    This file is part of darktable,
    copyright (c) 2015 Jeremy Rosen
+   copyright (c) 2015 tobias ellinghaus
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -53,6 +54,21 @@ static int selectable_member(lua_State *L)
   return 1;
 }
 
+static int halign_member(lua_State *L)
+{
+  lua_label label;
+  luaA_to(L, lua_label, &label, 1);
+  dt_lua_align_t align;
+  if(lua_gettop(L) > 2) {
+    luaA_to(L, dt_lua_align_t, &align, 3);
+    gtk_widget_set_halign(GTK_WIDGET(label->widget), align);
+    return 0;
+  }
+  align = gtk_widget_get_halign(label->widget);
+  luaA_push(L, dt_lua_align_t, &align);
+  return 1;
+}
+
 int dt_lua_init_widget_label(lua_State* L)
 {
   dt_lua_init_widget_type(L,&label_type,lua_label,GTK_TYPE_LABEL);
@@ -63,6 +79,9 @@ int dt_lua_init_widget_label(lua_State* L)
   lua_pushcfunction(L,selectable_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_label, "selectable");
+  lua_pushcfunction(L, halign_member);
+  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_type_register(L, lua_label, "halign");
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

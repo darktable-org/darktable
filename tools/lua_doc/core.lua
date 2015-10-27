@@ -712,7 +712,7 @@ function M.all_children(node)
     end
 	end
 
-  local collect_data = dt.gui.libs.collect.filter()[1]
+  local collect_data = dt.gui.libs.collect.new_rule()
   document_from_obj(collect_data,toplevel.types.dt_lib_collect_params_rule_t)
 
 

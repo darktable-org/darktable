@@ -97,9 +97,9 @@
     </para></listitem>
 
     <listitem><para>
-      darktable comes with more than 50 image operation modules which cover everything from basic
-      operations, tonal value changes, color manipulation, correction of common image defects to
-      artistic effects.
+      darktable comes with more than 50 image operation modules which cover everything from
+      basic operations, tonal value changes, color manipulation, correction of common image
+      defects to artistic effects.
     </para></listitem>
 
     <listitem><para>
@@ -145,9 +145,10 @@
     </indexterm>
 
     <para>
-      darktable comes with two binaries: the standard GUI variant which is started by calling
-      <filename>darktable</filename> and a command line interface variant which is started by
-      calling <filename>darktable-cli</filename> .
+      darktable comes with two main binaries: the standard GUI variant which is started by
+      calling <filename>darktable</filename> and a command line interface variant which is
+      started by calling <filename>darktable-cli</filename> . Additionally darktable is shipped
+      with some further binaries for special purposes.
     </para>
 
     <sect2 status="final" id="darktable_commandline_parameters">
@@ -163,9 +164,9 @@
         <filename>darktable</filename> is called with the following command line parameters:
       </para>
 
-<synopsis>darktable [-d {all,cache,camctl,control,dev,fswatch,
-               input,lighttable,masks,memory,nan,opencl,
-               perf,pwstorage,sql}]
+<synopsis>darktable [-d {all,cache,camctl,camsupport,control,dev,
+               fswatch,input,lighttable,masks,memory,nan,
+               opencl,perf,pwstorage,print,sql}]
           [IMG_1234.{RAW,..}|image_folder/] 
           [--version]
           [--disable-opencl] 
@@ -177,6 +178,7 @@
           [--cachedir &lt;user cache directory&gt;]
           [--localedir &lt;locale directory&gt;]
           [--luacmd &lt;lua command&gt;]
+          [--noiseprofiles &lt;noiseprofiles json file&gt;]
           [--conf &lt;key&gt;=&lt;value&gt;]</synopsis>
 
       <para>
@@ -319,7 +321,7 @@
             <listitem><para>
               The place where darktable finds its language specific text strings. The default
               place depends on your installation. Typical places are
-              <quote>/opt/darktable/share/locale/</quote> and <quote>/usr/share/locale/</quote>
+              <quote>/opt/darktable/share/locale/</quote> and <quote>/usr/share/locale/</quote>.
             </para></listitem>
 
           </varlistentry>
@@ -334,7 +336,20 @@
             </para>
 
             <para>
-              If lua is not compiled in, this option will be accepted but won't do anything
+              If lua is not compiled in, this option will be accepted but won't do anything.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--noiseprofiles &lt;noiseprofiles json file&gt;</term>
+
+            <listitem><para>
+              The json file that contains the camera specific noise profiles. The default
+              location depends on your installation. Typical places are
+              <quote>/opt/darktable/share/darktable/noiseprofile.json</quote> and
+              <quote>/usr/share/darktable/noiseprofile.json</quote>.
             </para></listitem>
 
           </varlistentry>
@@ -502,6 +517,220 @@
 
     </sect2>
 
+    <sect2 status="draft" id="darktable_generate_cache_commandline_parameters">
+
+      <title><filename>darktable-generate-cache</filename> binary</title>
+
+      <indexterm>
+        <primary>darktable-generate-cache</primary>
+      </indexterm>
+
+      <para>
+        This binary updates darktable's thumbnail cache. You can start this program to generate
+        all missing thumbnails in the background when your computer is idle.
+      </para>
+
+      <para>
+        <filename>darktable-generate-cache</filename> is called with the following command line
+        parameters:
+      </para>
+
+<synopsis>darktable-generate-cache
+              [-h, --help]
+              [--version]
+              [-m, --max-mip &lt;0 - 7&gt;]
+              [--core &lt;darktable options&gt;]</synopsis>
+
+      <para>
+        All parameters are optional. If started without parameters
+        <filename>darktable-generate-cache</filename> uses reasonable defaults.
+        <variablelist>
+
+          <varlistentry>
+
+            <term>-h, --help</term>
+
+            <listitem><para>
+              Gives usage information and terminates.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--version</term>
+
+            <listitem><para>
+              Gives copyright and version information and terminates.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>-m, --max-mip &lt;0 - 7&gt;</term>
+
+            <listitem><para>
+              darktable can handle and store thumbnails with up to eight different resolution
+              steps for each image. This parameter defines which maximum resolution should be
+              generated and defaults to 2. There is normally no need to generate all possible
+              resolutions here; missing ones will be automatically generated by darktable
+              the moment they are needed.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--core &lt;darktable options&gt;</term>
+
+            <listitem><para>
+              All command line parameters following <quote>--core</quote> are passed to the
+              darktable core and handled as standard parameters. See
+              <xref linkend="darktable_commandline_parameters"/> for a detailed description.
+            </para></listitem>
+
+          </varlistentry>
+
+        </variablelist>
+      </para>
+
+    </sect2>
+
+    <sect2 status="draft" id="darktable_viewer_commandline_parameters">
+
+      <title><filename>darktable-viewer</filename> binary</title>
+
+      <indexterm>
+        <primary>darktable-viewer</primary>
+      </indexterm>
+
+      <para>
+        This binary starts a stand-alone slideshow viewer that displays the images of your
+        current collection fullscreen. Press <emphasis>ESC</emphasis> to stop.
+      </para>
+
+      <para>
+        <filename>darktable-viewer</filename> is called with the following command line
+        parameters:
+      </para>
+
+<synopsis>darktable-viewer
+              [-h, --help]
+              [--random]
+              [--repeat]
+              [--core &lt;darktable options&gt;]</synopsis>
+
+      <para>
+        All parameters are optional. If started without parameters
+        <filename>darktable-viewer</filename> uses reasonable defaults.
+        <variablelist>
+
+          <varlistentry>
+
+            <term>-h, --help</term>
+
+            <listitem><para>
+              Gives usage information and terminates.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--random</term>
+
+            <listitem><para>
+              Displays images in random instead of the default sequential order.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--repeat</term>
+
+            <listitem><para>
+              Continues the slideshow in an endless loop instead of terminating after the last
+              image.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--core &lt;darktable options&gt;</term>
+
+            <listitem><para>
+              All command line parameters following <quote>--core</quote> are passed to the
+              darktable core and handled as standard parameters. See
+              <xref linkend="darktable_commandline_parameters"/> for a detailed description.
+            </para></listitem>
+
+          </varlistentry>
+
+        </variablelist>
+      </para>
+
+      <para>
+        <filename>darktable-viewer</filename> uses OpenGL to produce soft transitions between
+        images. Although OpenGL and OpenCL (see <xref linkend="darktable_and_opencl"/>) are
+        designed to cooperate flawlessly, there have been reports about problems with certain
+        setups. If <filename>darktable-viewer</filename> crashes upon startup, please try to use
+        it without OpenCL support:
+      </para>
+
+      <para>
+<programlisting>darktable-viewer --core --disable-opencl
+</programlisting>
+      </para>
+
+    </sect2>
+
+    <sect2 status="draft" id="darktable_cltest_commandline_parameters">
+
+      <title><filename>darktable-cltest</filename> binary</title>
+
+      <indexterm>
+        <primary>darktable-cltest</primary>
+      </indexterm>
+
+      <para>
+        This binary checks if there is a usable OpenCL environment on your system that darktable
+        can use. It emits some debug output that is equivalent to calling <quote>darktable -d
+        opencl</quote> and then terminates.
+      </para>
+
+      <para>
+        <filename>darktable-cltest</filename> is called without command line parameters:
+      </para>
+
+<synopsis>darktable-cltest</synopsis>
+
+    </sect2>
+
+    <sect2 status="draft" id="darktable_cmstest_commandline_parameters">
+
+      <title><filename>darktable-cmstest</filename> binary</title>
+
+      <indexterm>
+        <primary>darktable-cmstest</primary>
+      </indexterm>
+
+      <para>
+        This binary investigates if the color management subsystem of your computer is correctly
+        configured and it displays some useful information about the installed monitor
+        profile(s).
+      </para>
+
+      <para>
+        <filename>darktable-cmstest</filename> is called without command line parameters:
+      </para>
+
+<synopsis>darktable-cmstest</synopsis>
+
+    </sect2>
+
   </sect1>
 
   <sect1 status="final" id="user_interface">
@@ -581,6 +810,14 @@
                   switches to slideshow
                 </entry>
               </row>
+              <row>
+                <entry>
+                  <emphasis>p</emphasis>
+                </entry>
+                <entry>
+                  switches to print
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>
@@ -643,6 +880,17 @@
 
       </sect3>
 
+      <sect3 status="final">
+
+        <title>Print</title>
+
+        <para>
+          This view allows you to send images to your printer (see
+          <xref linkend="print_chapter"/>).
+        </para>
+
+      </sect3>
+
     </sect2>
 
     <sect2 status="final" id="screen_layout">
@@ -690,10 +938,11 @@
         The filmstrip along the bottom shows the same images as lighttable, with respect to
         filters and sort order. It is turned on/off with key accelerator
         <emphasis>ctrl-f</emphasis>. You can navigate along the filmstrip by scrolling with the
-        mouse wheel. The filmstrip allows you to interact with images while you are not in
-        lighttable mode. For example, you can, while developing an image in darkroom mode,
-        switch to another image to develop, by double clicking the thumbnail in the filmstrip.
-        You can also rate the images as you do in lighttable, copy/paste history stack, etc.
+        mouse wheel and change the height of the filmstrip panel by dragging its top. The
+        filmstrip allows you to interact with images while you are not in lighttable mode. For
+        example, you can, while developing an image in darkroom mode, switch to another image to
+        develop, by double clicking the thumbnail in the filmstrip. You can also rate the images
+        as you do in lighttable, copy/paste history stack, etc.
       </para>
 
       <para>
@@ -766,9 +1015,9 @@
         <para>
           Connect your camera to your system. If your distribution tries to automount it, select
           the option to abort the mount operation. Otherwise the camera will be locked and not
-          accessible from within darktable. If you don't see your camera in the import module, hit
-          the <quote>scan for devices</quote> button. Your camera will then appear in the same
-          module with additional choices: <emphasis>import</emphasis> and
+          accessible from within darktable. If you don't see your camera in the import module,
+          hit the <quote>scan for devices</quote> button. Your camera will then appear in the
+          same module with additional choices: <emphasis>import</emphasis> and
           <emphasis>tethering</emphasis>.
         </para>
 
@@ -931,7 +1180,10 @@
           values. Structural details in fully blown-out highlights, by nature of the digital
           sensor, can not be recovered. However, you can correct unfavorable color casts in
           these areas with the <link linkend="highlight_reconstruction"><emphasis>highlight
-          reconstruction</emphasis></link> module.
+          reconstruction</emphasis></link> module. Additionally the
+          <link linkend="color_reconstruction"><emphasis>color reconstruction</emphasis></link>
+          module is able to fill overexposed areas with suitable colors based on their
+          surroundings.
         </para>
 
       </sect3>

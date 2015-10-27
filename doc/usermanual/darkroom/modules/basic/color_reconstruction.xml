@@ -61,9 +61,9 @@
     </para>
 
     <para>
-      As a limitation of the underlying algorithm reconstructed colors may sometimes be rendered
-      incorrectly if you zoom into the image in the darkroom view. If this happens you might
-      observe a magenta shift in highlight areas that are close to high contrast edges, or you
+      As a limitation of the underlying algorithm reconstructed colors may sometimes be
+      displayed incorrectly if you zoom into the image in the darkroom view. If this happens you
+      might observe a magenta shift in highlight areas close to high contrast edges, or you
       might see colorless highlight areas if you combine this module with the <quote>reconstruct
       color</quote> method of the <quote>highlight reconstruction</quote> module (see
       <xref linkend="highlight_reconstruction"/>). These artifacts only influence image
@@ -74,13 +74,14 @@
     <sect5>
       <title>threshold</title>
       <para>
-        This module replaces the color of all target pixels with luminance values above the
-        given threshold. Reversely, only pixels with luminance values below this threshold are
-        taken as valid source pixels for replacement colors. Too high settings of this parameter
-        will cause the module to have no effect on any pixels. Too low values will minimize the
-        <quote>pool</quote> of replacement colors&nbsp;&ndash; if no fitting ones are available
-        the original colors are maintained. Therefore, this parameter exhibits a <quote>sweet
-        spot</quote> characteristic with an optimum setting depending on the individual image.
+        The color reconstruction module replaces the color of all target pixels characterized by
+        luminance values above this threshold. Inversely, only pixels with luminance values
+        below this threshold are taken as valid source pixels for replacement colors. Too high
+        settings of this parameter will cause the module to have no effect on any pixels. Too
+        low values will minimize the <quote>pool</quote> of replacement colors&nbsp;&ndash; if
+        no suited ones are available the original colors are maintained. Therefore, this
+        parameter exhibits a <quote>sweet spot</quote> characteristic with an optimum setting
+        depending on the individual image.
       </para>
     </sect5>
 
@@ -90,7 +91,7 @@
         Defines the spatial distance (x,y-coordinates) that source pixels may have from a target
         pixel in order for them to contribute to color replacement. Higher values cause ever
         more distant pixels to contribute; this increases the chance to find a replacement color
-        but makes that color more averaged and less clear.
+        but makes that color more undefined and less clear.
       </para>
     </sect5>
 
@@ -122,9 +123,9 @@
         This slider is visible if you set the preference combobox to <quote>hue</quote>. It
         allows you to select a preferred hue of replacement colors. This only has an effect if
         the preferred hue is actually present within the selected spatial and range distance of
-        the target pixels (see above). A typical use case is fitting highlights on human skin in
-        situations where diverging colores are in close proximity (e.g. textiles or hair with a
-        luminance close to skin). Setting a hue preference on skin tones avoids these other
+        the target pixels (see above). A typical use case is repairing highlights on human skin
+        in situations where diverging colores are in close proximity (e.g. textiles or hair with
+        a luminance close to skin). Setting a hue preference on skin tones avoids these other
         colors from creeping in.
       </para>
     </sect5>

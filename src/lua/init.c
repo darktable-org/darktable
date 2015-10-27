@@ -17,6 +17,7 @@
  */
 #include "lua/lua.h"
 #include "lua/init.h"
+#include "lua/cairo.h"
 #include "lua/call.h"
 #include "lua/configuration.h"
 #include "lua/database.h"
@@ -39,6 +40,7 @@
 #include "lua/view.h"
 #include "lua/widget/widget.h"
 #include "lua/lualib.h"
+#include "lua/guides.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/jobs.h"
@@ -129,7 +131,8 @@ static lua_CFunction init_funcs[]
         dt_lua_init_configuration, dt_lua_init_preferences, dt_lua_init_database, dt_lua_init_gui,
         dt_lua_init_luastorages,   dt_lua_init_tags,        dt_lua_init_film,     dt_lua_init_call,
         dt_lua_init_view,          dt_lua_init_events,      dt_lua_init_init,     dt_lua_init_widget,
-        dt_lua_init_lualib,        dt_lua_init_gettext,     NULL };
+        dt_lua_init_lualib,        dt_lua_init_gettext,     dt_lua_init_guides,   dt_lua_init_cairo,
+        NULL };
 
 
 void dt_lua_init(lua_State *L, const char *lua_command)

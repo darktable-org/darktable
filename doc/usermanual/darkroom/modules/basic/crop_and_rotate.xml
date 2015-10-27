@@ -70,7 +70,7 @@
       border and corner handles. Use the button right of the aspect box, to swap between
       portrait and landscape mode. You can move around the crop rectangle by holding down left
       mouse button and move around. When you are done and want to execute the crop, just give
-      focus to another module or double-click into the image base. You can at any time change 
+      focus to another module or double-click into the image base. You can at any time change
       your crop area by just revisiting this module.
     </para>
 
@@ -184,9 +184,8 @@
       <para>
         Here you can change what aspect ratio you want to have on the result, thus constraining
         the ability to drag and crop rectangle out of the aspect ratio of your choice. Many
-        common numerical ratios are pre-defined. You can also select any other ratio after
-        opening the combobox and typing it in the form of <quote>x:y</quote>. A few special
-        aspect ratios deserve explanation:
+        common numerical ratios are pre-defined. A few special aspect ratios deserve
+        explanation:
       </para>
       <para>
         <informaltable frame="none">
@@ -229,12 +228,35 @@
           </tgroup>
         </informaltable>
       </para>
+      <para>
+        You can also select any other ratio after opening the combobox and typing it in the form
+        of <quote>x:y</quote>. If you want a certain aspect ratio to be added to the pre-defined
+        ones you can do so by including a line of the form
+      </para>
+      <para>
+<programlisting>plugins/darkroom/clipping/extra_aspect_ratios/foo=x:y
+</programlisting>
+      </para>
+      <para>
+        into darktable's configuration file
+        <filename>$HOME/.config/darktable/darktablerc</filename>. Here <quote>foo</quote>
+        defines the name of the new aspect ratio and <quote>x</quote> and <quote>y</quote> the
+        corresponding numerical values.
+      </para>
     </sect5>
 
     <sect5>
       <title>guides</title>
       <para>
         Many self-explaining guides are available to help you compose your image.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>guides flip</title>
+      <para>
+        In case the chosen guidelines are not symmetrical relative to the image frame, you can
+        flip them on the horizontal,vertical or both axis.
       </para>
     </sect5>
 

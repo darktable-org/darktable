@@ -985,7 +985,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->deflicker_used_EC = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
   g_object_set(G_OBJECT(g->deflicker_used_EC), "tooltip-text",
-               _("what exposure correction have actually been used"), (char *)NULL);
+               _("what exposure correction has actually been used"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
 
   dt_pthread_mutex_lock(&g->lock);

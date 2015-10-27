@@ -47,9 +47,12 @@
 
     <para>
       In its default state, curves will be straight lines, defined by few anchor nodes. You can
-      move the nodes with your mouse to modify the curve. You can also generate new nodes by
-      clicking on the curve. Up to 20 nodes per curve can be defined. To remove a node, move it
-      out of the widget area. A color picker is activated by pressing
+      move the nodes with your mouse to modify the curve. You can generate new nodes by
+      <emphasis>clicking</emphasis> on the curve. With <emphasis>ctrl-click</emphasis> you
+      generate a new node at the x-location of the mouse pointer and the corresponging
+      y-location of the current curve&nbsp;&ndash; this adds a node without risking to
+      accidentally modify the curve. Up to 20 nodes per curve can be defined. To remove a node,
+      move it out of the widget area. A color picker is activated by pressing
       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
       and will show the picked values in the graph. Numerical Lab values of input and output
       (see below) at the selected spot are shown on top left of the widget.

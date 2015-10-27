@@ -7,7 +7,7 @@ sys.path.append('/usr/lib/graphviz/python/')
 sys.path.append('/usr/lib64/graphviz/python/')
 
 # libgv-python
-import gv
+import pygraphviz as gv
 
 # import pygraph
 from pygraph.classes.digraph import digraph
@@ -463,8 +463,8 @@ add_edges(gr)
 # make sure we don't have cycles:
 cycle_list = find_cycle(gr)
 if cycle_list:
-  print "cycles:"
-  print cycle_list
+  print("cycles:")
+  print(cycle_list)
   exit(1)
 
 # get us some sort order!
@@ -473,23 +473,19 @@ length=len(sorted_nodes)
 priority=1000
 for n in sorted_nodes:
   # now that should be the priority in the c file:
-  print "%d %s"%(priority, n)
+  print("%d %s"%(priority, n))
   filename="../src/iop/%s.c"%n
   if not os.path.isfile(filename):
     filename="../src/iop/%s.cc"%n
   if not os.path.isfile(filename):
     if not n == "rawspeed":
-      print "could not find file `%s', maybe you're not running inside tools/?"%filename
+      print("could not find file `%s', maybe you're not running inside tools/?"%filename)
     continue
   replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
   priority -= 1000.0/(length-1.0)
 
 # beauty-print the sorted pipe as pdf:
-gr2 = digraph()
-gr2.add_nodes(sorted_nodes)
-add_edges(gr2)
-
-dot = write(gr2)
-gvv = gv.readstring(dot)
-gv.layout(gvv,'dot')
-gv.render(gvv,'pdf','iop_deps.pdf')
+dot = write(gr)
+gvv = gv.AGraph(dot)
+gvv.layout(prog='dot')
+gvv.draw('iop_deps.pdf')

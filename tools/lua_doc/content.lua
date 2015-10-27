@@ -20,7 +20,7 @@ end
 ---------------------
 -- check for generator functions
 ---------------------
-for _,v in pairs({"node_to_string","para","startlist","listel","endlist","code","emphasis"})   do
+for _,v in pairs({"node_to_string","para","startlist","listel","endlist","code","emphasis","url"})   do
 	if _ENV[v]== nil then
 		error("function '"..v.."' not defined when requiring content")
 	end
@@ -45,7 +45,7 @@ attributes = doc.toplevel.attributes
 
 
 local function my_tostring(obj)
-	if not obj then 
+	if not obj then
 		error("incorrect object")
 	end
 	return tostring(obj)
@@ -118,7 +118,7 @@ tmp_node:set_attribute("optional",true)
 tmp_node:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage object tested.]])
 tmp_node:add_parameter("format",types.dt_imageio_module_format_t,[[The format object to report about.]])
 tmp_node:add_return("boolean",[[True if the corresponding format is supported.]])
-tmp_node = darktable.register_storage:add_parameter("initialize","function",[[A function called before storage happens]]..para().. 
+tmp_node = darktable.register_storage:add_parameter("initialize","function",[[A function called before storage happens]]..para()..
 [[This function can change the list of exported functions]])
 tmp_node:set_attribute("optional",true)
 tmp_node:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage object tested.]])
@@ -160,7 +160,7 @@ tmp =""
 for k,v in sorted_pairs(debug.getregistry().dt_lua_modules.format) do
   tmp = tmp..listel(k)
 end
-darktable.new_format:add_parameter("type","string",[[The type of format object to create, one of : ]]..  startlist().. tmp..endlist()) 
+darktable.new_format:add_parameter("type","string",[[The type of format object to create, one of : ]]..  startlist().. tmp..endlist())
 darktable.new_format:add_return(types.dt_imageio_module_format_t,"The newly created object. Exact type depends on the type passed")
 
 darktable.new_storage:set_text("Creates a new storage object to export images")
@@ -168,7 +168,7 @@ tmp =""
 for k,v in sorted_pairs(debug.getregistry().dt_lua_modules.storage) do
   tmp = tmp..listel(k)
 end
-darktable.new_storage:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist().."(Other, lua-defined, storage types may appear.)") 
+darktable.new_storage:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist().."(Other, lua-defined, storage types may appear.)")
 darktable.new_storage:add_return(types.dt_imageio_module_storage_t,"The newly created object. Exact type depends on the type passed")
 
 darktable.new_widget:set_text("Creates a new widget object to display in the UI")
@@ -176,7 +176,7 @@ tmp =""
 for k,v in sorted_pairs(debug.getregistry().dt_lua_modules.widget) do
   tmp = tmp..listel(k)
 end
-darktable.new_widget:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist()) 
+darktable.new_widget:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist())
 darktable.new_widget:add_return(types.lua_widget,"The newly created object. Exact type depends on the type passed")
 ----------------------
 --  DARKTABLE.GUI   --
@@ -206,6 +206,21 @@ tmp = darktable.gui.create_job:add_parameter("cancel_callback","function",[[A fu
 tmp:set_attribute("optional",true)
 tmp:add_parameter("job",types.dt_lua_backgroundjob_t,[[The job who is being cancelded]])
 darktable.gui.create_job:add_return(types.dt_lua_backgroundjob_t,[[The newly created job object]])
+
+-------------------------
+--  DARKTABLE.GUIDES   --
+-------------------------
+darktable.guides:set_text([[Guide lines to overlay over an image in crop and rotate.]]..para()..[[All guides are clipped to the drawing area.]])
+darktable.guides.register_guide:set_text([[Register a new guide.]])
+darktable.guides.register_guide:add_parameter("name", "string", [[The name of the guide to show in the GUI.]])
+tmp_node = darktable.guides.register_guide:add_parameter("draw_callback", "function", [[The function to call to draw the guide lines. The drawn lines will be stroked by darktable.]]..para()..[[THIS IS RUNNING IN THE GUI THREAD AND HAS TO BE FAST!]])
+tmp_node:add_parameter("cr", types.dt_lua_cairo_t, [[The cairo object used for drawing.]])
+tmp_node:add_parameter("x", "float", [[The x coordinate of the top left corner of the drawing area.]])
+tmp_node:add_parameter("y", "float", [[The y coordinate of the top left corner of the drawing area.]])
+tmp_node:add_parameter("width", "float", [[The width of the drawing area.]])
+tmp_node:add_parameter("height", "float", [[The height of the drawing area.]])
+tmp_node:add_parameter("zoom_scale", "float", [[The current zoom_scale. Only needed when setting the line thickness.]])
+darktable.guides.register_guide:add_parameter("gui_callback", "function", [[A function returning a widget to show when the guide is selected. It takes no arguments.]]):set_attribute("optional",true)
 
 ----------------------
 --  DARKTABLE.TAGS  --
@@ -259,7 +274,7 @@ darktable.configuration.check_version:add_parameter("...","table...","Tables of 
 -----------------------------
 --  DARKTABLE.PREFERENCES  --
 -----------------------------
-darktable.preferences:set_text([[Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.]]..para()..
+darktable.preferences:set_text([[Lua allows you to manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.]]..para()..
 [[Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.]]..para()..
 [[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. ]]..para()..
 [[Note that the directory, enum and file type preferences are stored internally as string. The user can only select valid values, but a lua script can set it to any string]])
@@ -526,7 +541,7 @@ darktable.gettext.bindtextdomain:add_parameter("dirname","string","The base dire
 ----------------------
 --  DARKTABLE.DEBUG --
 ----------------------
-darktable.debug:set_text([[This section must be activated separately by calling 
+darktable.debug:set_text([[This section must be activated separately by calling
 
 require "darktable.debug"
 ]])
@@ -564,6 +579,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.path:set_text([[The file the directory containing the image.]])
 	types.dt_lua_image_t.film:set_text([[The film object that contains this image.]])
 	types.dt_lua_image_t.filename:set_text([[The filename of the image.]])
+  types.dt_lua_image_t.sidecar:set_text([[The filename of the image's sidecar file.]])
 	types.dt_lua_image_t.duplicate_index:set_text([[If there are multiple images based on a same file, each will have a unique number, starting from 0.]])
 
 
@@ -762,6 +778,74 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
   types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
 
+  types.dt_lua_align_t:set_text("The alignment of a label")
+
+  types.dt_lua_cairo_t:set_text("A wrapper around a cairo drawing context."..para().."You probably shouldn't use this after the callback that got it passed returned."..para().."For more details of the member functions have a look at the cairo documentation for "..url("http://www.cairographics.org/manual/cairo-cairo-t.html", "the drawing context")..", "..url("http://www.cairographics.org/manual/cairo-Transformations.html", "transformations").." and "..url("http://www.cairographics.org/manual/cairo-Paths.html", "paths")..".")
+  types.dt_lua_cairo_t.save:set_text("Save the state of the drawing context.")
+  types.dt_lua_cairo_t.save:set_reported_type("function")
+  types.dt_lua_cairo_t.save:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.restore:set_text("Restore a previously saved state.")
+  types.dt_lua_cairo_t.restore:set_reported_type("function")
+  types.dt_lua_cairo_t.restore:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.move_to:set_text("Begin a new sub-path.")
+  types.dt_lua_cairo_t.move_to:set_reported_type("function")
+  types.dt_lua_cairo_t.move_to:add_parameter("self", types.dt_lua_cairo_t, "The context to modify"):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.move_to:add_parameter("x", "float", "The x coordinate of the new position.")
+  types.dt_lua_cairo_t.move_to:add_parameter("y", "float", "The y coordinate of the new position.")
+  types.dt_lua_cairo_t.line_to:set_text("Add a line to the path.")
+  types.dt_lua_cairo_t.line_to:set_reported_type("function")
+  types.dt_lua_cairo_t.line_to:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.line_to:add_parameter("x", "float", "The x coordinate of the end of the new line.")
+  types.dt_lua_cairo_t.line_to:add_parameter("y", "float", "The y coordinate of the end of the new line.")
+  types.dt_lua_cairo_t.rectangle:set_text("Add a closed sub-path rectangle.")
+  types.dt_lua_cairo_t.rectangle:set_reported_type("function")
+  types.dt_lua_cairo_t.rectangle:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.rectangle:add_parameter("x", "float", "The x coordinate of the top left corner of the rectangle.")
+  types.dt_lua_cairo_t.rectangle:add_parameter("y", "float", "The y coordinate of the top left corner of the rectangle.")
+  types.dt_lua_cairo_t.rectangle:add_parameter("width", "float", "The width of the rectangle.")
+  types.dt_lua_cairo_t.rectangle:add_parameter("height", "float", "The height of the rectangle.")
+  types.dt_lua_cairo_t.arc:set_text("Add a circular arc.")
+  types.dt_lua_cairo_t.arc:set_reported_type("function")
+  types.dt_lua_cairo_t.arc:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.arc:add_parameter("x", "float", "The x position of the center of the arc.")
+  types.dt_lua_cairo_t.arc:add_parameter("y", "float", "The y position of the center of the arc.")
+  types.dt_lua_cairo_t.arc:add_parameter("radius", "float", "The radius of the arc.")
+  types.dt_lua_cairo_t.arc:add_parameter("angle1", "float", "The start angle, in radians.")
+  types.dt_lua_cairo_t.arc:add_parameter("angle2", "float", "The end angle, in radians.")
+  types.dt_lua_cairo_t.arc_negative:set_text("Add a circular arc. It only differs in the direction from "..my_tostring(types.dt_lua_cairo_t.arc)..".")
+  types.dt_lua_cairo_t.arc_negative:set_reported_type("function")
+  types.dt_lua_cairo_t.arc_negative:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.arc_negative:add_parameter("x", "float", "The x position of the center of the arc.")
+  types.dt_lua_cairo_t.arc_negative:add_parameter("y", "float", "The y position of the center of the arc.")
+  types.dt_lua_cairo_t.arc_negative:add_parameter("radius", "float", "The radius of the arc.")
+  types.dt_lua_cairo_t.arc_negative:add_parameter("angle1", "float", "The start angle, in radians.")
+  types.dt_lua_cairo_t.arc_negative:add_parameter("angle2", "float", "The end angle, in radians.")
+  types.dt_lua_cairo_t.rotate:set_text("Add a rotation to the transformation matrix.")
+  types.dt_lua_cairo_t.rotate:set_reported_type("function")
+  types.dt_lua_cairo_t.rotate:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.rotate:add_parameter("angle", "float", "The angle (in radians) by which the user-space axes will be rotated.")
+  types.dt_lua_cairo_t.scale:set_text("Add a scaling to the transformation matrix.")
+  types.dt_lua_cairo_t.scale:set_reported_type("function")
+  types.dt_lua_cairo_t.scale:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.scale:add_parameter("x", "float", "The scale factor for the x dimension.")
+  types.dt_lua_cairo_t.scale:add_parameter("y", "float", "The scale factor for the y dimension.")
+  types.dt_lua_cairo_t.translate:set_text("Add a translation to the transformation matrix.")
+  types.dt_lua_cairo_t.translate:set_reported_type("function")
+  types.dt_lua_cairo_t.translate:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.translate:add_parameter("x", "float", "Amount to translate in the x direction")
+  types.dt_lua_cairo_t.translate:add_parameter("y", "float", "Amount to translate in the y direction")
+  types.dt_lua_cairo_t.new_sub_path:set_text("Begin a new sub-path.")
+  types.dt_lua_cairo_t.new_sub_path:set_reported_type("function")
+  types.dt_lua_cairo_t.new_sub_path:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.draw_line:set_text("Helper function to draw a line with a given start and end.")
+  types.dt_lua_cairo_t.draw_line:set_reported_type("function")
+  types.dt_lua_cairo_t.draw_line:add_parameter("self", types.dt_lua_cairo_t, "The context to modify."):set_attribute("is_self", true)
+  types.dt_lua_cairo_t.draw_line:add_parameter("x_start", "float", "The x coordinate of the start of the new line.")
+  types.dt_lua_cairo_t.draw_line:add_parameter("y_start", "float", "The y coordinate of the start of the new line.")
+  types.dt_lua_cairo_t.draw_line:add_parameter("x_end", "float", "The x coordinate of the end of the new line.")
+  types.dt_lua_cairo_t.draw_line:add_parameter("y_end", "float", "The y coordinate of the end of the new line.")
+
+
   types.lua_widget:set_text("Common parent type for all lua-handled widgets");
   types.lua_widget.sensitive:set_text("Set if the widget is enabled/disabled");
   types.lua_widget.tooltip:set_text("Tooltip to display for the widget");
@@ -779,7 +863,7 @@ local widget = dt.new_widget("button"){
     }]]))
   types.lua_widget.__call:add_parameter("attibutes","table","A table of attributes => value to set")
   types.lua_widget.__call:add_return(types.lua_widget,"The object called itself, to allow chaining")
-           
+
 
   types.lua_container:set_text("A widget containing other widgets");
 	types.lua_container["#"]:set_reported_type(types.lua_widget)
@@ -798,6 +882,8 @@ local widget = dt.new_widget("button"){
   types.lua_label:set_text("A label containing some text");
   types.lua_label.label:set_text("The label displayed");
   types.lua_label.selectable:set_text("True if the label content should be selectable");
+  types.lua_label.halign:set_text("The horizontal alignment of the label");
+  types.lua_label.halign:set_reported_type(types.dt_lua_align_t)
 
   types.lua_button:set_text("A clickable button");
   types.lua_button.label:set_reported_type("string")
@@ -807,8 +893,8 @@ local widget = dt.new_widget("button"){
   types.lua_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.lua_box:set_text("A container for widget in a horizontal or vertical list");
-  types.lua_button.label:set_reported_type(types.dt_lua_orientation_t)
   types.lua_box.orientation:set_text("The orientation of the box.")
+  types.lua_box.orientation:set_reported_type(types.dt_lua_orientation_t)
 
   types.lua_entry:set_text("A widget in which the user can input text")
   types.lua_entry.text:set_text("The content of the entry")
@@ -837,7 +923,7 @@ local widget = dt.new_widget("button"){
   types.lua_combobox.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
   types.lua_combobox.editable:set_text("True is the user is allowed to type a string in the combobox")
   types.lua_combobox.label:set_text("The label displayed on the combobox");
-  
+
   types.lua_file_chooser_button:set_text("A button that allows the user to select an existing file")
   types.lua_file_chooser_button.title:set_text("The title of the window when choosing a file")
   types.lua_file_chooser_button.value:set_text("The currently selected file")
@@ -924,7 +1010,7 @@ local widget = dt.new_widget("button"){
 	events["mouse-over-image-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
   events["exit"]:set_text([[This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs]])
 	events["exit"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
-  
+
   events["pre-import"]:set_text("This event is trigger before any import action");
 	events["pre-import"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 	events["pre-import"].callback:add_parameter("images","table of string",[[The files that will be imported. Modifying this table will change the list of files that will be imported"]])

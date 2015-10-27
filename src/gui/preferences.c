@@ -1009,7 +1009,7 @@ static void import_export(GtkButton *button, gpointer data)
   {
     // Non-zero value indicates export
     chooser = gtk_file_chooser_dialog_new(_("select file to export"), NULL, GTK_FILE_CHOOSER_ACTION_SAVE,
-                                          _("_Cancel"), GTK_RESPONSE_CANCEL, _("_Save"), GTK_RESPONSE_ACCEPT,
+                                          _("_cancel"), GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT,
                                           NULL);
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
     gchar *exported_path = dt_conf_get_string("ui_last/exported_path");
@@ -1031,7 +1031,7 @@ static void import_export(GtkButton *button, gpointer data)
   {
     // Zero value indicates import
     chooser = gtk_file_chooser_dialog_new(_("select file to import"), NULL, GTK_FILE_CHOOSER_ACTION_OPEN,
-                                          _("_Cancel"), GTK_RESPONSE_CANCEL, _("_Open"), GTK_RESPONSE_ACCEPT,
+                                          _("_cancel"), GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT,
                                           NULL);
 
     gchar *import_path = dt_conf_get_string("ui_last/import_path");
@@ -1171,7 +1171,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   char title[1024];
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module);
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(_preferences_dialog),
-                                       GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_OK"),
+                                       GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_ok"),
                                        GTK_RESPONSE_NONE, NULL);
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));

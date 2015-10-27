@@ -60,6 +60,7 @@
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
 #include "control/conf.h"
+#include "gui/guides.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "lua/init.h"
@@ -736,7 +737,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   dt_loc_init_plugindir(moduledir_from_command);
   if(dt_loc_init_tmp_dir(tmpdir_from_command))
   {
-    printf(_("ERROR : invalid temporary directory : %s\n"), darktable.tmpdir);
+    fprintf(stderr, "error: invalid temporary directory: %s\n", darktable.tmpdir);
     return usage(argv[0]);
   }
   dt_loc_init_user_config_dir(configdir_from_command);
@@ -868,6 +869,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   // Initialize the password storage engine
   darktable.pwstorage = dt_pwstorage_new();
 
+  darktable.guides = dt_guides_init();
+
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */
   InitializeMagick(darktable.progname);
@@ -930,6 +933,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     dt_control_load_config(darktable.control);
   }
 
+  dt_control_gui_mode_t mode = DT_LIBRARY;
   if(init_gui)
   {
     // init the gui part of views
@@ -980,12 +984,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     if(loaded_images == 1 && only_single_images)
     {
       dt_control_set_mouse_over_id(last_id);
-      dt_ctl_switch_mode_to(DT_DEVELOP);
+      mode = DT_DEVELOP;
     }
-    else
-      dt_ctl_switch_mode_to(DT_LIBRARY);
-#else
-    dt_ctl_switch_mode_to(DT_LIBRARY);
 #endif
   }
 
@@ -1008,6 +1008,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   {
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
+
+  if(init_gui) dt_ctl_switch_mode_to(mode);
 
   return 0;
 }
@@ -1073,6 +1075,8 @@ void dt_cleanup()
   DestroyMagick();
 #endif
 
+  dt_guides_cleanup(darktable.guides);
+
   dt_database_destroy(darktable.db);
 
   if(init_gui)
@@ -1118,7 +1122,7 @@ void dt_gettime(char *datetime, size_t datetime_len)
 
 void *dt_alloc_align(size_t alignment, size_t size)
 {
-#if defined(__MACH__) || defined(__APPLE__) || (defined(__FreeBSD_version) && __FreeBSD_version < 700013)
+#if defined(__FreeBSD_version) && __FreeBSD_version < 700013
   return malloc(size);
 #elif defined(__WIN32__)
   return _aligned_malloc(size, alignment);

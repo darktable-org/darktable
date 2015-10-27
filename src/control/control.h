@@ -180,10 +180,12 @@ typedef struct dt_control_t
   pthread_cond_t cond;
   int32_t num_threads;
   pthread_t *thread, kick_on_workers_thread;
+  dt_job_t **job;
 
   GList *queues[DT_JOB_QUEUE_MAX];
   size_t queue_length[DT_JOB_QUEUE_MAX];
 
+  dt_pthread_mutex_t res_mutex;
   dt_job_t *job_res[DT_CTL_WORKER_RESERVED];
   uint8_t new_res[DT_CTL_WORKER_RESERVED];
   pthread_t thread_res[DT_CTL_WORKER_RESERVED];

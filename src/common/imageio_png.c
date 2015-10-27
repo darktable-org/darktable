@@ -112,6 +112,9 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   if(png->color_type == PNG_COLOR_TYPE_GRAY || png->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
     png_set_gray_to_rgb(png->png_ptr);
 
+  // reflect changes
+  png_read_update_info(png->png_ptr, png->info_ptr);
+
   // png->bytespp = 3*bit_depth/8;
   png->width = png_get_image_width(png->png_ptr, png->info_ptr);
   png->height = png_get_image_height(png->png_ptr, png->info_ptr);
@@ -128,17 +131,18 @@ int read_image(dt_imageio_png_t *png, void *out)
     png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
     return 1;
   }
-  // reflect changes
-  png_read_update_info(png->png_ptr, png->info_ptr);
+
+  png_bytep row_pointers[png->height];
 
   png_bytep row_pointer = (png_bytep)out;
-  unsigned long rowbytes = png_get_rowbytes(png->png_ptr, png->info_ptr);
+  const size_t rowbytes = png_get_rowbytes(png->png_ptr, png->info_ptr);
 
   for(int y = 0; y < png->height; y++)
   {
-    png_read_row(png->png_ptr, row_pointer, NULL);
-    row_pointer += rowbytes;
+    row_pointers[y] = row_pointer + (size_t)y * rowbytes;
   }
+
+  png_read_image(png->png_ptr, row_pointers);
 
   png_read_end(png->png_ptr, png->info_ptr);
   png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
@@ -179,7 +183,8 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  buf = dt_alloc_align(16, (size_t)width * height * 3 * (bpp < 16 ? 1 : 2));
+  buf = dt_alloc_align(16, (size_t)image.height * png_get_rowbytes(image.png_ptr, image.info_ptr));
+
   if(!buf)
   {
     fclose(image.f);

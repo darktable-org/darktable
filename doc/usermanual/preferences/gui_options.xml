@@ -20,10 +20,10 @@
 
   <para>
     This controls the size of side panels in pixels. Side panels are found left and right to the
-    center view (default 300).
+    center view (default 350).
   </para>
 
-  <bridgehead renderas="sect4">don't use embedded preview jpeg but half-size raw</bridgehead>
+  <bridgehead renderas="sect4">don't use embedded preview JPEG but half-size raw</bridgehead>
 
   <para>
     Check this option to not use the embedded jpeg from the raw file but process the raw data.
@@ -40,6 +40,13 @@
 
   <para>
     Always ask the user before any image file is deleted (default on).
+  </para>
+
+  <bridgehead renderas="sect4">send files to trash when erasing images</bridgehead>
+
+  <para>
+    Instead of physically deleting images from disk put them into the system's trash bin
+    (default on).
   </para>
 
   <bridgehead renderas="sect4">ask before moving images from film roll folder</bridgehead>
@@ -60,7 +67,7 @@
     The number of folder levels to show in film roll names, starting from the right (default 1).
   </para>
 
-  <bridgehead renderas="sect4">ignore jpeg images when importing film rolls</bridgehead>
+  <bridgehead renderas="sect4">ignore JPEG images when importing film rolls</bridgehead>
 
   <para>
     When having RAW+JPEG images together in one directory it makes no sense to import both. With
@@ -114,6 +121,14 @@
     Enable the filmstrip in darkroom, tethering and geomapping modes (default on).
   </para>
 
+  <bridgehead renderas="sect4">high quality thumb processing from size</bridgehead>
+
+  <para>
+    If the thumbnails size is greater than this value, it will be processed using the full
+    quality rendering path which is better but slower (default 720p).
+  </para>
+
+<!--  
   <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 
   <para>
@@ -127,7 +142,7 @@
     Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
     screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
   </para>
-
+  
   <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
 
   <para>
@@ -135,6 +150,7 @@
     <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
     (default off).
   </para>
+-->
 
   <bridgehead renderas="sect4">pen pressure control for brush masks</bridgehead>
 
@@ -202,6 +218,13 @@
     <emphasis>shift+click</emphasis> (default on).
   </para>
 
+  <bridgehead renderas="sect4">border around image in darkroom mode</bridgehead>
+
+  <para>
+    Process the image in darkroom mode with a small border of the given number of pixels
+    (default 10).
+  </para>
+
   <bridgehead renderas="sect4">do high quality processing for slideshow</bridgehead>
 
   <para>
@@ -213,9 +236,9 @@
   <bridgehead renderas="sect4">method to use for getting the display profile</bridgehead>
 
   <para>
-    This option allows to force a specific way of getting the current display profile in the
-    output color profile module (see <xref linkend="output_color_profile"/>). In the default
-    setting <quote>all</quote> darktable will either query the X display server's xatom or the
+    This option allows to force a specific way of getting the current display profile for color
+    management (see <xref linkend="rendering_method"/>). In the default setting
+    <quote>all</quote> darktable will either query the X display server's xatom or the
     <emphasis>colord</emphasis> system service. You can set this option to <quote>xatom</quote>
     or <quote>colord</quote> to enforce a specific method if the alternative gives wrong
     results.

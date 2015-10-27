@@ -7,7 +7,7 @@
   <indexterm>
   <primary>Lua API</primary>
   </indexterm>
-  <para>To access the darktable specific functions you must load the darktable environment:</para>
+  <para><ulink url="http://www.darktable.org">http://www.darktable.org</ulink> <ulink url="http://www.darktable.org">darktable</ulink>To access the darktable specific functions you must load the darktable environment:</para>
 
 <para><programlisting language="lua">darktable = require "darktable"</programlisting></para>
 
@@ -1123,7 +1123,7 @@ end</programlisting></para>
 </indexterm>
 <synopsis>function( 
 	[<emphasis><link linkend="darktable_gui_libs_collect_filter_rules">rules</link></emphasis> : array of<link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link>]
-) : <link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
+) : array of<link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
 <para>Allows to get or change the list of visible images</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
@@ -1144,8 +1144,8 @@ end</programlisting></para>
 </listitem></varlistentry>
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis><link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
-<para>The newly created rule</para>
+<synopsis>array of<link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
+<para>The rules that were applied before this call.</para>
 
 </listitem></varlistentry>
 
@@ -1160,10 +1160,17 @@ end</programlisting></para>
 <secondary>new_rule</secondary>
 </indexterm>
 <synopsis>function( 
-)</synopsis>
+) : <link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
 <para>Returns a newly created rule object</para>
 
 <variablelist>
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
+<para>The newly created rule</para>
+
+</listitem></varlistentry>
+
+
 </variablelist>
 </section>
 
@@ -3572,6 +3579,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The filename of the image.</para>
+
+</section>
+
+<section status="final" id="types_dt_lua_image_t_sidecar">
+<title>types.dt_lua_image_t.sidecar</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>sidecar</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The filename of the image's sidecar file.</para>
 
 </section>
 
@@ -6731,7 +6749,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>label</secondary>
 </indexterm>
-<synopsis><link linkend="types_dt_lua_orientation_t">types.dt_lua_orientation_t</link></synopsis>
+<synopsis>string</synopsis>
 <para>The label displayed on the button</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
@@ -6813,7 +6831,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>orientation</secondary>
 </indexterm>
-<synopsis>string</synopsis>
+<synopsis><link linkend="types_dt_lua_orientation_t">types.dt_lua_orientation_t</link></synopsis>
 <para>The orientation of the box.</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>

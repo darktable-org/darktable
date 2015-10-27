@@ -30,10 +30,10 @@
     </para>
 
     <para>
-      darktable’s requirements are no exception. Our decision to not compromise processing
-      quality, has led to all calculations being done on 4 × 32bit floating point numbers. This
-      is slower than “ordinary” 8 or 16bit integer algebra, but eliminates all problems of
-      tonal breaks or loss of information.
+      darktable's requirements are no exception. Our decision to not compromise processing
+      quality, has led to all calculations being done on 4 x 32bit floating point numbers. This
+      is slower than <quote>ordinary</quote> 8 or 16bit integer algebra, but eliminates all
+      problems of tonal breaks or loss of information.
     </para>
 
     <para>
@@ -45,15 +45,15 @@
     </para>
 
     <para>
-      That’s where OpenCL comes in. OpenCL allows us to take advantage of the enormous power
-      of modern graphics cards. Gamer’s demand for high detailed 3D worlds in modern ego
-      shooters has fostered GPU development. ATI, NVIDIA and Co had to put enormous processing
-      power into their GPUs to meet these demands. The result is modern graphics cards with
-      highly parallelized GPUs to quickly calculate surfaces and textures at high frame rates.
+      That's where OpenCL comes in. OpenCL allows us to take advantage of the enormous power of
+      modern graphics cards. Gamer's demand for high detailed 3D worlds in modern ego shooters
+      has fostered GPU development. ATI, NVIDIA and Co had to put enormous processing power into
+      their GPUs to meet these demands. The result is modern graphics cards with highly
+      parallelized GPUs to quickly calculate surfaces and textures at high frame rates.
     </para>
 
     <para>
-      You are not a gamer and you don’t take advantage of that power? Well, then you should at
+      You are not a gamer and you don't take advantage of that power? Well, then you should at
       least use it in darktable! For the task of highly parallel floating point calculations
       modern GPUs are much faster than CPUs. That is especially true, when you want to do the
       same few processing steps over millions of items. Typical use case: processing of
@@ -99,7 +99,7 @@
       and ATI come with full OpenCL support. The OpenCL compiler is normally shipped as part of
       the proprietary graphics driver; it is used as a dynamic library called
       <quote>libOpenCL.so</quote>. This library must be in a folder where it is found by your
-      system’s dynamic linker.
+      system's dynamic linker.
     </para>
 
     <para>
@@ -109,7 +109,7 @@
       GPU. If that is OK, darktable tries to setup its OpenCL environment: a processing context
       needs to be initialized, a calculation pipeline to be started, OpenCL source code files
       (extension is .cl) need to be read and compiled and the included routines (called OpenCL
-      kernels) need to be prepared for darktablele’s modules. If all that is done, the
+      kernels) need to be prepared for darktablele's modules. If all that is done, the
       preparation is finished.
     </para>
 
@@ -334,7 +334,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
     <para>
       This will give additional debugging output about the initialization and use of OpenCL.
-      First see if you find a line that starts with <quote>[opencl_init] FINALLY …</quote>
+      First see if you find a line that starts with <quote>[opencl_init] FINALLY ...</quote>
       This should tell you, if OpenCL support is available for you or not. If initialization
       failed, look at the messages above for anything that reads like <quote>could not be
       detected</quote> or <quote>could not be created</quote>. Check if there is a hint about
@@ -376,7 +376,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
       <listitem><para>
         darktable might crash in very rare cases directly during startup. This can happen if
         your OpenCL setup is completely broken or if driver/library contains a severe bug. If
-        you can’t fix it, you can still use darktable with option
+        you can't fix it, you can still use darktable with option
         <quote>--disable-opencl</quote>, which will skip the entire OpenCL initialization step.
       </para></listitem>
 

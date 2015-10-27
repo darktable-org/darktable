@@ -17,6 +17,8 @@
 <!ENTITY icon_module_mask "images/darkroom_module_icon_mask.png">
 <!ENTITY icon_module_picker "images/darkroom_module_icon_picker.png">
 <!ENTITY icon_module_overexposed "images/darkroom_module_icon_overexposed.png">
+<!ENTITY icon_module_softproof "images/darkroom_module_icon_softproof.png">
+<!ENTITY icon_module_gamutcheck "images/darkroom_module_icon_gamutcheck.png">
 <!ENTITY icon_module_plus "images/darkroom_module_icon_polarity_plus.png">
 <!ENTITY icon_module_minus "images/darkroom_module_icon_polarity_minus.png">
 <!ENTITY icon_module_invert "images/darkroom_module_icon_invert.png">
@@ -35,6 +37,7 @@
 <!ENTITY icon_lighttable_or "images/lighttable_icon_or.png">
 <!ENTITY icon_lighttable_except "images/lighttable_icon_except.png">
 <!ENTITY icon_lighttable_reject "images/lighttable_thumb_reject.png">
+<!ENTITY icon_lighttable_abort "images/lighttable_icon_abort.png">
 <!ENTITY shape_brush "images/shape_brush.png">
 <!ENTITY shape_circle "images/shape_circle.png">
 <!ENTITY shape_ellipse "images/shape_ellipse.png">

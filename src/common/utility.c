@@ -350,6 +350,7 @@ dt_logo_season_t get_logo_season(void)
     easter(lt.tm_year+1900, &easter_sunday.tm_mon, &easter_sunday.tm_mday);
     easter_sunday.tm_mon--;
     easter_sunday.tm_hour = easter_sunday.tm_min = easter_sunday.tm_sec = 0;
+    easter_sunday.tm_isdst = -1;
     time_t easter_sunday_sec = mktime(&easter_sunday);
     // we start at midnight, so it's basically +- 2 days
     if(labs(easter_sunday_sec - now) <= 2 * 24 * 60 * 60) return DT_LOGO_SEASON_EASTER;
@@ -367,8 +368,8 @@ dt_logo_season_t get_logo_season(void)
 #define OSD_COORDINATES_CHR_E  "E"
 #define OSD_COORDINATES_CHR_W  "W"
 
-static const char *OSD_ELEVATION_ASL = N_("Above sea level");
-static const char *OSD_ELEVATION_BSL = N_("Below sea level");
+static const char *OSD_ELEVATION_ASL = N_("above sea level");
+static const char *OSD_ELEVATION_BSL = N_("below sea level");
 
 /* this is the classic geocaching notation */
 gchar *dt_util_latitude_str(float latitude)

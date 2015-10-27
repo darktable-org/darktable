@@ -108,6 +108,7 @@ void dt_control_init(dt_control_t *s)
   pthread_cond_init(&s->cond, NULL);
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
+  dt_pthread_mutex_init(&s->res_mutex, NULL);
   dt_pthread_mutex_init(&s->run_mutex, NULL);
   dt_pthread_mutex_init(&(s->global_mutex), NULL);
   dt_pthread_mutex_init(&(s->progress_system.mutex), NULL);
@@ -212,6 +213,7 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->queue_mutex);
   dt_pthread_mutex_destroy(&s->cond_mutex);
   dt_pthread_mutex_destroy(&s->log_mutex);
+  dt_pthread_mutex_destroy(&s->res_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
   dt_pthread_mutex_destroy(&s->progress_system.mutex);
   if(s->accelerator_list)

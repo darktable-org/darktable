@@ -21,6 +21,14 @@ endlist = function() return "</itemizedlist>\n" end
 listel = function(text) return "<listitem><para>"..text.."</para></listitem>\n" end
 emphasis = function(text) return "<emphasis>"..text.."</emphasis>" end
 
+url = function(text,content) 
+  if content then
+    return "<ulink url=\""..text.."\">"..content.."</ulink>"
+  else
+    return "<ulink url=\""..text.."\">"..text.."</ulink>"
+  end
+end
+
 
 require "content"
 doc = require "core"

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
@@ -134,8 +134,8 @@
         <tbody>
           <row>
             <entry>
-              This screen shows the effect of the edge parameter. It is here pulled down to
-              zero for all bands. This is effectively a regular à trous wavelet, without edge
+              This screen shows the effect of the edge parameter. It is here pulled down to zero
+              for all bands. This is effectively a regular &agrave; trous wavelet, without edge
               detection, and results in the characteristic halos around sharp edges in the
               image.
             </entry>
@@ -166,8 +166,8 @@
     </informaltable>
 
     <para>
-      Note that the edge parameter only affects the wavelet basis, not the image directly.
-      You will have to change some denoise/contrast boost parameters to see an effect following
+      Note that the edge parameter only affects the wavelet basis, not the image directly. You
+      will have to change some denoise/contrast boost parameters to see an effect following
       adjustments to the edge parameter.
     </para>
 

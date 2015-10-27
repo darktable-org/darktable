@@ -71,15 +71,15 @@ RawImage ArwDecoder::decodeRawInternal() {
   TiffIFD* raw = data[0];
   int compression = raw->getEntry(COMPRESSION)->getInt();
   if (1 == compression) {
-    // This is probably the SR2 format, let's pass it on
     try {
-      DecodeSR2(raw);
+      DecodeUncompressed(raw);
     } catch (IOException &e) {
       mRaw->setError(e.what());
     }
 
     return mRaw;
   }
+
   if (32767 != compression)
     ThrowRDE("ARW Decoder: Unsupported compression");
 
@@ -166,7 +166,7 @@ RawImage ArwDecoder::decodeRawInternal() {
   return mRaw;
 }
 
-void ArwDecoder::DecodeSR2(TiffIFD* raw) {
+void ArwDecoder::DecodeUncompressed(TiffIFD* raw) {
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
   uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
   uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
@@ -176,7 +176,10 @@ void ArwDecoder::DecodeSR2(TiffIFD* raw) {
   mRaw->createData();
   ByteStream input(mFile->getData(off), c2);
 
-  Decode14BitRawBEunpacked(input, width, height);
+  if (hints.find("sr2_format") != hints.end())
+    Decode14BitRawBEunpacked(input, width, height);
+  else
+    Decode16BitRawUnpacked(input, width, height);
 }
 
 void ArwDecoder::DecodeARW(ByteStream &input, uint32 w, uint32 h) {

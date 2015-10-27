@@ -27,8 +27,9 @@
         <tbody>
           <row>
             <entry>
-              This module allows the user to modify the orientation of an image. By default it is active for all images
-              and receives its standard settings from the camera's orientation flag stored in the EXIF data.
+              This module allows the user to modify the orientation of an image. By default it
+              is active for all images and receives its standard settings from the camera's
+              orientation flag stored in the EXIF data.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/orientation.png" scalefit="1" width="80%" align="center" />
@@ -47,7 +48,8 @@
     <sect5>
       <title>rotate</title>
       <para>
-        Clicking on one of the buttons causes a counter-clockwise or clockwise rotation in steps of 90 degrees.
+        Clicking on one of the buttons causes a counter-clockwise or clockwise rotation in steps
+        of 90 degrees.
       </para>
     </sect5>
 
