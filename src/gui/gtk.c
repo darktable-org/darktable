@@ -458,12 +458,6 @@ static gboolean draw(GtkWidget *da, cairo_t *cr, gpointer user_data)
     darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
   }
 
-  // test quit cond (thread safe, 2nd pass)
-  if(!dt_control_running())
-  {
-    dt_cleanup();
-    gtk_main_quit();
-  }
   return TRUE;
 }
 
@@ -962,6 +956,8 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 #endif
   /* start the event loop */
   gtk_main();
+
+  dt_cleanup();
 }
 
 static void init_widgets(dt_gui_gtk_t *gui)
