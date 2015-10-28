@@ -207,6 +207,7 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
       snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k);
       new_pos = dt_conf_get_int(confname);
       n = k;
+      g_free(line);
       break;
     }
     g_free(line);
