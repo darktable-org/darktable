@@ -458,12 +458,6 @@ static gboolean draw(GtkWidget *da, cairo_t *cr, gpointer user_data)
     darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
   }
 
-  // test quit cond (thread safe, 2nd pass)
-  if(!dt_control_running())
-  {
-    dt_cleanup();
-    gtk_main_quit();
-  }
   return TRUE;
 }
 
@@ -485,6 +479,9 @@ static gboolean borders_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoin
 
 void dt_gui_gtk_quit()
 {
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  gtk_window_iconify(win);
+
   GtkWidget *widget;
   widget = darktable.gui->widgets.left_border;
   g_signal_handlers_block_by_func(widget, draw_borders, GINT_TO_POINTER(0));
@@ -959,6 +956,8 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 #endif
   /* start the event loop */
   gtk_main();
+
+  dt_cleanup();
 }
 
 static void init_widgets(dt_gui_gtk_t *gui)

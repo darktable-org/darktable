@@ -1474,11 +1474,7 @@ static void create_folders_gui(dt_lib_collect_rule_t *dr)
 
     if(d->trees != NULL)
     {
-      for(guint i = 0; i < d->trees->len; i++)
-      {
-        tree = GTK_TREE_VIEW(g_ptr_array_index(d->trees, i));
-        g_ptr_array_free(d->trees, TRUE); // FIXME: this looks strange, should that be s/d->trees/tree/ ?
-      }
+      g_ptr_array_free(d->trees, TRUE);
       d->trees = NULL;
     }
 
