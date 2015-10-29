@@ -98,9 +98,9 @@ static inline float fast_mexp2f(const float x)
   return k.f;
 }
 
-static inline float noise_stddev_gen_Fisz(const float level, const float black, const float white, const float a, const float b)
+static inline float noise_stddev_gen_Fisz(const float level, const float black, const float white, const float a, const float b, const float c)
 {
-  return sqrtf(fmaxf(1.0f, fmaxf(0.0f, a*(level-black)) + b));
+  return sqrtf(fmaxf(1.0f, fmaxf(0.0f, a*(level-black)) + b + c*c*(level-black)*(level-black)));
 }
 
 static inline float noise_stddev_dxo(
@@ -121,15 +121,15 @@ static inline float noise_stddev_dxo(
   // return 100*G/(white-black) * n;
   // return 100*G * n;
   // return (white-black) * n;
-  // return n/(white-black);
-  return n;
+  return n/100.0;
+  // return n;
   // unfortunately none of the above match the measured noise at all :/
 }
 
 static inline float noise(const float l, const float b, const float w, const float x, const float y, const float z)
 {
-  return noise_stddev_dxo(l, b, w, x, y, z);
-  // return noise_stddev_gen_Fisz(l, b, w, x, y);
+  // return noise_stddev_dxo(l, b, w, x, y, z);
+  return noise_stddev_gen_Fisz(l, b, w, x, y, z);
 }
 
 // TODO: adjust those two functions to new noise model!
@@ -932,9 +932,9 @@ void gui_init(dt_iop_module_t *self)
   g->mode = dt_bauhaus_combobox_new(self);
   g->algo = dt_bauhaus_combobox_new(self);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 400.0f, .05, 1.f, 3);
-  g->a = dt_bauhaus_slider_new_with_range(self, 0.0001f, 10.0f, .05, 1.f, 4);
-  g->b = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, .05, 0.f, 3);
-  g->c = dt_bauhaus_slider_new_with_range(self, 0.0f, .01f, .00001, 0.f, 8);
+  g->a = dt_bauhaus_slider_new_with_range(self, 0.0001f, 200.0f, .05, 1.f, 4);
+  g->b = dt_bauhaus_slider_new_with_range(self, 0.0f, 2000.0f, .05, 0.f, 3);
+  g->c = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.f, .00001, 0.f, 8);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->algo, TRUE, TRUE, 0);
