@@ -23,19 +23,22 @@
 void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
 {
   printf("lua stack at %s:%d", function, line);
-  if(!L) 
+  if(!L)
   {
-    printf("Stack in NULL\n");
+    printf("Stack is NULL\n");
     return;
-  } else {
+  }
+  else
+  {
     printf("\n");
   }
   for(int i = 1; i <= lua_gettop(L); i++)
   {
     printf("\t%d:%s %s\n", i, lua_typename(L, lua_type(L, i)), luaL_tolstring(L, i, NULL));
-    lua_pop(L, 1);
+    lua_pop(L, 1); // remove the result of luaL_tolstring() from the stack
   }
 }
+
 void dt_lua_debug_table_internal(lua_State *L, int t, const char *function, int line)
 {
   /* table is in the stack at index 't' */
