@@ -887,6 +887,7 @@ void dt_lua_type_gpointer_drop(lua_State*L, void* pointer)
   lua_pushlightuserdata(L, pointer);
   lua_gettable(L,-2);
   gpointer *udata = (gpointer*)lua_touserdata(L,-1);
+  if(lua_isnil(L,-1)) return; // this table is weak, the object has been gc
   *udata = NULL;
   lua_pop(L,1);
 
