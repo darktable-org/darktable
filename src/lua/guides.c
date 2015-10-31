@@ -65,6 +65,7 @@ static GtkWidget *_guides_gui_callback(dt_iop_module_t *self, void *user_data)
   lua_widget widget;
   luaA_to(L, lua_widget, &widget, 1);
   dt_lua_widget_bind(L, widget);
+  lua_pop(L,1);
 
   dt_lua_unlock();
 
