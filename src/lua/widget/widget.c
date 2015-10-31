@@ -49,13 +49,16 @@ static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
     widget_type->gui_init(L);
 }
 
-/*
 static void on_destroy(GtkWidget *widget, gpointer user_data)
 {
   lua_widget lwidget = (lua_widget)user_data;
-  printf("%s of type %s destroyed\n",gtk_widget_get_name(widget),lwidget->type->name);
+  //printf("%s of type %s destroyed\n",gtk_widget_get_name(widget),lwidget->type->name);
+  dt_lua_lock_silent();
+  lua_State* L = darktable.lua_state.state;
+  dt_lua_widget_unbind(L,lwidget);
+  dt_lua_type_gpointer_drop(L,widget);
+  dt_lua_unlock();
 }
-*/
 
 static int get_widget_params(lua_State *L)
 {
@@ -80,9 +83,10 @@ static int get_widget_params(lua_State *L)
     lua_pop(L,1);
   }
   lua_pop(L,1);
-  //g_signal_connect(widget->widget,"destroy",G_CALLBACK(on_destroy),widget);
+  g_signal_connect(widget->widget,"destroy",G_CALLBACK(on_destroy),widget);
   return 1;
 }
+
 
 static int widget_gc(lua_State *L)
 {
@@ -95,6 +99,7 @@ static int widget_gc(lua_State *L)
   free(widget);
   return 0;
 }
+
 
 luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget_type,const char* lua_type,GType gtk_type)
 {
@@ -250,13 +255,22 @@ void dt_lua_widget_bind(lua_State *L, lua_widget widget)
 {
   /* check that widget isn't already parented */
   if(gtk_widget_get_parent (widget->widget) != NULL) {
-    luaL_error(L,"Attempting to add a widget which already has a parent\n");
+    luaL_error(L,"Attempting to bind a widget which already has a parent\n");
   }
 
   /* store it as a toplevel widget */
   lua_getfield(L, LUA_REGISTRYINDEX,"dt_lua_widget_bind_table");
   lua_pushlightuserdata(L,widget);
   luaA_push(L,lua_widget,&widget);
+  lua_settable(L,-3);
+  lua_pop(L,1);
+}
+
+void dt_lua_widget_unbind(lua_State *L, lua_widget widget)
+{
+  lua_getfield(L, LUA_REGISTRYINDEX,"dt_lua_widget_bind_table");
+  lua_pushlightuserdata(L,widget);
+  lua_pushnil(L);
   lua_settable(L,-3);
   lua_pop(L,1);
 }
