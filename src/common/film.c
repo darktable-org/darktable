@@ -385,6 +385,9 @@ void dt_film_import1(dt_film_t *film)
       images = g_list_prepend(images, filename);
     }
   }
+
+  lua_pop(L, 1); // remove the table again from the stack
+
   dt_lua_unlock();
 #endif
 
