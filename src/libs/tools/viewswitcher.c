@@ -135,7 +135,8 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
 
   /* set default color for all labels */
   int x = 0;
-  GList *childs = gtk_container_get_children(GTK_CONTAINER(self->widget));
+  GList *childs, *list;
+  childs = list = gtk_container_get_children(GTK_CONTAINER(self->widget));
   while(childs)
   {
     x++;
@@ -157,6 +158,7 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
     /* get next */
     childs = g_list_next(childs);
   }
+  g_list_free(list);
 }
 
 static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *v)
