@@ -641,6 +641,7 @@ static void _show_filmroll_present(GtkTreeViewColumn *column, GtkCellRenderer *r
   else
     g_object_set(renderer, "strikethrough-set", FALSE, NULL);
 
+  g_free(pch);
   g_free(path);
 }
 
