@@ -61,10 +61,24 @@ static int value_member(lua_State *L)
   return 1;
 }
 
+static int tostring_member(lua_State *L)
+{
+  lua_check_button widget;
+  luaA_to(L, lua_check_button, &widget, 1);
+  const gchar *text = gtk_button_get_label(GTK_BUTTON(widget->widget));
+  gchar *res = g_strdup_printf("%s (\"%s\")", G_OBJECT_TYPE_NAME(widget->widget), text ? text : "");
+  lua_pushstring(L, res);
+  g_free(res);
+  return 1;
+}
+
 int dt_lua_init_widget_check_button(lua_State* L)
 {
   dt_lua_init_widget_type(L,&check_button_type,lua_check_button,GTK_TYPE_CHECK_BUTTON);
 
+  lua_pushcfunction(L, tostring_member);
+  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_type_setmetafield(L, lua_check_button, "__tostring");
   lua_pushcfunction(L,value_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_check_button, "value");

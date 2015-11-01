@@ -148,6 +148,10 @@ static int container_numindex(lua_State*L)
 int dt_lua_init_widget_container(lua_State* L)
 {
   dt_lua_init_widget_type(L,&container_type,lua_container,GTK_TYPE_CONTAINER);
+
+  lua_pushcfunction(L, dt_lua_widget_tostring_member);
+  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_type_setmetafield(L, lua_container, "__tostring");
   lua_pushcfunction(L,container_len);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   lua_pushcfunction(L,container_numindex);

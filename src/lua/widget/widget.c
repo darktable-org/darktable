@@ -211,6 +211,14 @@ static int sensitive_member(lua_State *L)
   return 1;
 }
 
+int dt_lua_widget_tostring_member(lua_State *L)
+{
+  lua_widget widget;
+  luaA_to(L, lua_widget, &widget, 1);
+  lua_pushstring(L, G_OBJECT_TYPE_NAME(widget->widget));
+  return 1;
+}
+
 static int gtk_signal_member(lua_State *L)
 {
 
@@ -298,7 +306,10 @@ int dt_lua_init_widget(lua_State* L)
   lua_pushcfunction(L,sensitive_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_widget, "sensitive");
-  
+  lua_pushcfunction(L, dt_lua_widget_tostring_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_setmetafield(L,lua_widget,"__tostring");
+
   dt_lua_init_widget_container(L);
 
   dt_lua_init_widget_box(L);
