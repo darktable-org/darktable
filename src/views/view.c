@@ -201,6 +201,9 @@ out:
 void dt_view_unload_module(dt_view_t *view)
 {
   if(view->cleanup) view->cleanup(view);
+
+  g_slist_free(view->accel_closures);
+
   if(view->module) g_module_close(view->module);
 }
 
