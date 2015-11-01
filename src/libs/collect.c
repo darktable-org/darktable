@@ -792,6 +792,7 @@ static gboolean reveal_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   while(gtk_tree_model_iter_parent(model, &parent, &child))
   {
     gtk_tree_model_get(model, &parent, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
+    g_free(str);
     gtk_tree_store_set(GTK_TREE_STORE(model), &parent, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
     child = parent;
   }
