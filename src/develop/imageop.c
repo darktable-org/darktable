@@ -1652,7 +1652,9 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
   gint flags = CPF_DIRECTION_DOWN;
 
   /* get arrow icon widget */
-  icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(header));
+  icon = g_list_last(childs)->data;
+  g_list_free(childs);
   if(!expanded) flags = CPF_DIRECTION_LEFT;
 
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
