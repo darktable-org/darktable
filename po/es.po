@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-10-26 07:26-0430\n"
-"PO-Revision-Date: 2015-10-26 07:27-0430\n"
+"PO-Revision-Date: 2015-10-29 11:20-0430\n"
 "Last-Translator: Jose Carlos Garcia Sogo <jcsogo@gmail.com>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -381,7 +381,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1996
 msgid "overlay txt sidecar over zoomed images"
-msgstr "solapa el sidecar txt sobre las imágenes aumentadas"
+msgstr "solapa el txt asociado sobre las imágenes aumentadas"
 
 #: ../build/src/preferences_gen.h:2008
 msgid ""
@@ -548,7 +548,8 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2286
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
-msgstr "mínima cantidad de memoria (en MB) para un buffer de proceso en bandas"
+msgstr ""
+"mínima cantidad de memoria (en MB) para un buffer único de proceso en bandas"
 
 #: ../build/src/preferences_gen.h:2307
 msgid ""
@@ -632,7 +633,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2436
 msgid "demosaicing for zoomed out darkroom mode"
-msgstr "demosaico para ampliación fuera del modo cuarto oscuro"
+msgstr "demosaico para ampliación fuera del modo de cuarto oscuro"
 
 #: ../build/src/preferences_gen.h:2447
 msgctxt "preferences"
@@ -663,7 +664,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2478
 msgid "pixel interpolator"
-msgstr "interpolación"
+msgstr "interpolador de pixel"
 
 #: ../build/src/preferences_gen.h:2489
 msgctxt "preferences"
@@ -690,8 +691,8 @@ msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
 msgstr ""
-"interpolador usado para rotación y corrección de lentes (bilineal, bicúbico, "
-"lanczos2, lanczos3)."
+"el interpolador de pixel es usado para la rotación y corrección de lentes "
+"(bilineal, bicúbico, lanczos2, lanczos3)."
 
 #: ../build/src/preferences_gen.h:2525
 msgid "password storage backend to use"
@@ -9726,12 +9727,12 @@ msgstr "seleccionar imagen única"
 #: ../src/views/lighttable.c:2251
 msgctxt "accel"
 msgid "preview"
-msgstr "previsualizar"
+msgstr "vista previa rápida"
 
 #: ../src/views/lighttable.c:2252
 msgctxt "accel"
 msgid "preview with focus detection"
-msgstr "vista previa con detección de foco"
+msgstr "vista previa rápida con detección de foco"
 
 #: ../src/views/lighttable.c:2253
 msgctxt "accel"
@@ -9746,7 +9747,7 @@ msgstr "vista previa con detección de foco"
 #: ../src/views/lighttable.c:2255
 msgctxt "accel"
 msgid "exit sticky preview"
-msgstr "salida de vista previa"
+msgstr "salir de vista previa"
 
 #: ../src/views/lighttable.c:2435
 msgid "set display profile"
