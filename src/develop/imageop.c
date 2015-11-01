@@ -975,7 +975,9 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
 static void _iop_gui_update_label(dt_iop_module_t *module)
 {
   if(!module->header) return;
-  GtkWidget *lab = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)), 5);
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
+  GtkWidget *lab = g_list_nth_data(childs, 5);
+  g_list_free(childs);
   _iop_panel_label(lab, module);
 }
 
