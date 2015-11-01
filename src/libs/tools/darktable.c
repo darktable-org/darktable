@@ -265,6 +265,7 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
 
   /* cleanup */
   g_object_unref(layout);
+  pango_font_description_free(font_desc);
 
   return TRUE;
 }
