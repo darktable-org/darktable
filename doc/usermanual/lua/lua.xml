@@ -179,7 +179,7 @@ print(darktable.debug.dump(darktable.database[1]))</programlisting>
         object. Image objects are complex objects that allow you to manipulate your image in
         various ways (it is all documented in <xref linkend="types_dt_lua_image_t"/>). To
         display our images, we use <link linkend="darktable_debug_dump">
-        <code>darktble.debug.dump</code>
+        <code>darktable.debug.dump</code>
         </link> which is a function that will take anything as its parameter and recursively
         dump its content. Since images are complex objects that indirectly reference other
         complex objects, the resulting output is huge. Below is a cut down example of the
@@ -495,7 +495,7 @@ darktable.register_storage("scp_export","Export via scp",
     if coroutine.yield("RUN_COMMAND","scp "..filename.." "..
       darktable.preferences.read("scp_export",
          "export_path","string")) then
-      darktabpe.print_error("scp failed for "..tostring(image))
+      darktable.print_error("scp failed for "..tostring(image))
     end
 end)</programlisting>
       </para>
