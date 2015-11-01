@@ -677,6 +677,7 @@ static GtkTreeStore *_folder_tree()
 
     root = gtk_tree_path_new_first();
     gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, root);
+    gtk_tree_path_free(root);
 // current = iter; // This needs to be deleted if the following code is enabled
 #if 0
     int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),NULL);
