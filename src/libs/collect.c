@@ -777,6 +777,8 @@ static gboolean match_string(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
     g_free(needle);
   }
 
+  g_free(str);
+
   gtk_tree_store_set(GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
   return FALSE;
 }
