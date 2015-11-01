@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-26 07:26-0430\n"
-"PO-Revision-Date: 2015-10-29 11:20-0430\n"
-"Last-Translator: Jose Carlos Garcia Sogo <jcsogo@gmail.com>\n"
+"POT-Creation-Date: 2015-11-01 18:31+0100\n"
+"PO-Revision-Date: 2015-11-01 18:32+0100\n"
+"Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
 "MIME-Version: 1.0\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Bookmarks: -1,1170,-1,-1,-1,-1,-1,-1,-1,-1\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 1.8.6\n"
 
 #: ../build/src/preferences_gen.h:1410
 msgid "GUI options"
@@ -762,7 +762,7 @@ msgstr "auto-aplicar los pre-ajustes de la curva base de la cámara"
 #: ../build/src/preferences_gen.h:2632
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
-"one if there is one available (needs restart)"
+"one if there is one available (needs a restart)"
 msgstr ""
 "utilice los pre-ajustes de la curva base de la cámara por defecto en vez de "
 "los genérico de los fabricantes si hay uno disponible (se necesita reiniciar)"
@@ -1017,14 +1017,14 @@ msgstr "error cargando archivo '%s'"
 msgid "no supported images were found to be imported"
 msgstr "no se encontraron imágenes soportadas para ser importadas"
 
-#: ../src/common/film.c:404
+#: ../src/common/film.c:407
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importando %d imagen"
 msgstr[1] "importando %d imágenes"
 
-#: ../src/common/film.c:576
+#: ../src/common/film.c:579
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -1258,7 +1258,7 @@ msgstr "bajo nivel del mar"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:355 ../src/control/control.c:358
+#: ../src/control/control.c:349 ../src/control/control.c:352
 msgid "working.."
 msgstr "trabajando .."
 
@@ -2068,12 +2068,12 @@ msgstr "bajar"
 msgid "delete"
 msgstr "borrar"
 
-#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1838
+#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1853
 #, c-format
 msgid "%s is switched on"
 msgstr "%s esta activado"
 
-#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1838
+#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1853
 #, c-format
 msgid "%s is switched off"
 msgstr "%s esta desactivado"
@@ -2082,8 +2082,8 @@ msgstr "%s esta desactivado"
 #: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:188
 #: ../src/gui/presets.c:294 ../src/gui/presets.c:662
-#: ../src/iop/temperature.c:1196 ../src/libs/import.c:543
-#: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1115
+#: ../src/iop/temperature.c:1196 ../src/libs/import.c:543 ../src/libs/lib.c:309
+#: ../src/libs/lib.c:334 ../src/libs/lib.c:1115
 msgid "preset"
 msgstr "predefinido"
 
@@ -2113,15 +2113,15 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "mostrar menú de preestablecidos"
 
-#: ../src/develop/imageop.c:1809
+#: ../src/develop/imageop.c:1824
 msgid "multiple instances actions"
 msgstr "acciones para múltiples instancias"
 
-#: ../src/develop/imageop.c:1817 ../src/libs/lib.c:957
+#: ../src/develop/imageop.c:1832 ../src/libs/lib.c:957
 msgid "reset parameters"
 msgstr "reiniciar parámetros"
 
-#: ../src/develop/imageop.c:1825 ../src/gui/preferences.c:411
+#: ../src/develop/imageop.c:1840 ../src/gui/preferences.c:411
 #: ../src/libs/lib.c:969
 msgid "presets"
 msgstr "preestablecido"
@@ -2574,67 +2574,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "por favor use el formato AAAA-MM-DD para sobrescribir la fecha"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:849
+#: ../src/gui/gtk.c:846
 msgctxt "accel"
 msgid "tethering view"
 msgstr "vista de captura"
 
-#: ../src/gui/gtk.c:850
+#: ../src/gui/gtk.c:847
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "vista de mesa de luz"
 
-#: ../src/gui/gtk.c:851
+#: ../src/gui/gtk.c:848
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "vista de cuarto oscuro"
 
-#: ../src/gui/gtk.c:852
+#: ../src/gui/gtk.c:849
 msgctxt "accel"
 msgid "map view"
 msgstr "vista de mapa"
 
-#: ../src/gui/gtk.c:853
+#: ../src/gui/gtk.c:850
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "vista de diapositivas"
 
-#: ../src/gui/gtk.c:854
+#: ../src/gui/gtk.c:851
 msgctxt "accel"
 msgid "print view"
 msgstr "vista de imprimir"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:877
+#: ../src/gui/gtk.c:874
 msgctxt "accel"
 msgid "quit"
 msgstr "salir"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:882
+#: ../src/gui/gtk.c:879
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activar pantalla completa"
 
-#: ../src/gui/gtk.c:883
+#: ../src/gui/gtk.c:880
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "salir de pantalla completa"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:891
+#: ../src/gui/gtk.c:888
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activar paneles laterales"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:894
+#: ../src/gui/gtk.c:891
 msgctxt "accel"
 msgid "toggle header"
 msgstr "activar cabecera"
 
 #. View-switch
-#: ../src/gui/gtk.c:897
+#: ../src/gui/gtk.c:894
 msgctxt "accel"
 msgid "switch view"
 msgstr "cambiar vista"
@@ -2867,9 +2867,8 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:449 ../src/gui/preferences.c:1260
-#: ../src/gui/presets.c:474 ../src/iop/exposure.c:105
-#: ../src/iop/exposure.c:930 ../src/iop/relight.c:372
-#: ../src/libs/metadata_view.c:100
+#: ../src/gui/presets.c:474 ../src/iop/exposure.c:105 ../src/iop/exposure.c:930
+#: ../src/iop/relight.c:372 ../src/libs/metadata_view.c:100
 msgid "exposure"
 msgstr "exposición"
 
@@ -2971,8 +2970,7 @@ msgstr ""
 msgid "edit `%s' for module `%s'"
 msgstr "editar `%s' para el módulo `%s'"
 
-#: ../src/gui/preferences.c:1200 ../src/gui/presets.c:412
-#: ../src/libs/lib.c:241
+#: ../src/gui/preferences.c:1200 ../src/gui/presets.c:412 ../src/libs/lib.c:241
 msgid "description or further information"
 msgstr "descripción o información adicional"
 
@@ -3242,12 +3240,12 @@ msgstr "Cinema4K, 24FPS"
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
 
-#: ../src/imageio/format/pdf.c:77 ../src/imageio/format/png.c:470
+#: ../src/imageio/format/pdf.c:77 ../src/imageio/format/png.c:468
 #: ../src/imageio/format/tiff.c:413
 msgid "8 bit"
 msgstr "8 bit"
 
-#: ../src/imageio/format/pdf.c:78 ../src/imageio/format/png.c:471
+#: ../src/imageio/format/pdf.c:78 ../src/imageio/format/png.c:469
 #: ../src/imageio/format/tiff.c:414
 msgid "16 bit"
 msgstr "16 bit"
@@ -3393,7 +3391,7 @@ msgstr "incrustar perfiles icc"
 msgid "images can be tagged with their icc profile"
 msgstr "las imágenes pueden ser etiquetadas con su perfil icc"
 
-#: ../src/imageio/format/pdf.c:631 ../src/imageio/format/png.c:469
+#: ../src/imageio/format/pdf.c:631 ../src/imageio/format/png.c:467
 #: ../src/imageio/format/tiff.c:412
 msgid "bit depth"
 msgstr "profundidad de bit"
@@ -3455,7 +3453,7 @@ msgstr ""
 msgid "PFM (float)"
 msgstr "PFM (flotante)"
 
-#: ../src/imageio/format/png.c:440
+#: ../src/imageio/format/png.c:438
 msgid "PNG (8/16-bit)"
 msgstr "PNG (8/16-bit)"
 
@@ -3961,8 +3959,7 @@ msgstr "marcado"
 msgid "dull"
 msgstr "apagado"
 
-#: ../src/iop/atrous.c:1389 ../src/iop/equalizer.c:403
-#: ../src/iop/nlmeans.c:711
+#: ../src/iop/atrous.c:1389 ../src/iop/equalizer.c:403 ../src/iop/nlmeans.c:711
 msgid "luma"
 msgstr "luma"
 
@@ -3970,8 +3967,7 @@ msgstr "luma"
 msgid "change lightness at each feature size"
 msgstr "cambiar luminosidad en cada parte"
 
-#: ../src/iop/atrous.c:1395 ../src/iop/equalizer.c:404
-#: ../src/iop/nlmeans.c:713
+#: ../src/iop/atrous.c:1395 ../src/iop/equalizer.c:404 ../src/iop/nlmeans.c:713
 msgid "chroma"
 msgstr "croma"
 
@@ -4081,8 +4077,8 @@ msgstr "curva base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abcisas: entrada, ordenadas: salida. trabaja en los canales RGB"
 
-#: ../src/iop/basecurve.c:840 ../src/iop/lens.c:2179
-#: ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1308
+#: ../src/iop/basecurve.c:840 ../src/iop/lens.c:2179 ../src/iop/vignette.c:1149
+#: ../src/iop/watermark.c:1308
 msgid "scale"
 msgstr "escala"
 
@@ -5572,8 +5568,8 @@ msgctxt "mode"
 msgid "manual"
 msgstr "manual"
 
-#: ../src/iop/exposure.c:906 ../src/iop/levels.c:555
-#: ../src/iop/tonecurve.c:785 ../src/iop/vignette.c:1140
+#: ../src/iop/exposure.c:906 ../src/iop/levels.c:555 ../src/iop/tonecurve.c:785
+#: ../src/iop/vignette.c:1140
 msgid "automatic"
 msgstr "automático"
 
@@ -7373,44 +7369,44 @@ msgstr "no alterado"
 msgid "not tagged"
 msgstr "sin etiquetar"
 
-#: ../src/libs/collect.c:1514
+#: ../src/libs/collect.c:1510
 msgid "local HDD"
 msgstr "hdd local"
 
-#: ../src/libs/collect.c:1597 ../src/libs/collect.c:1611
-#: ../src/libs/collect.c:1983
+#: ../src/libs/collect.c:1593 ../src/libs/collect.c:1607
+#: ../src/libs/collect.c:1979
 msgid "clear this rule"
 msgstr "eliminar esta regla"
 
-#: ../src/libs/collect.c:1602
+#: ../src/libs/collect.c:1598
 msgid "clear this rule or add new rules"
 msgstr "eliminar esta regla o añadir nuevas reglas"
 
-#: ../src/libs/collect.c:1989
+#: ../src/libs/collect.c:1985
 msgid "narrow down search"
 msgstr "reducir la busqueda"
 
-#: ../src/libs/collect.c:1993
+#: ../src/libs/collect.c:1989
 msgid "add more images"
 msgstr "añadir mas imagenes"
 
-#: ../src/libs/collect.c:1997
+#: ../src/libs/collect.c:1993
 msgid "exclude images"
 msgstr "excluir imágenes"
 
-#: ../src/libs/collect.c:2003
+#: ../src/libs/collect.c:1999
 msgid "change to: and"
 msgstr "cambiar a: y"
 
-#: ../src/libs/collect.c:2007
+#: ../src/libs/collect.c:2003
 msgid "change to: or"
 msgstr "cambiar a: o"
 
-#: ../src/libs/collect.c:2011
+#: ../src/libs/collect.c:2007
 msgid "change to: except"
 msgstr "cambiar a: excepto"
 
-#: ../src/libs/collect.c:2056
+#: ../src/libs/collect.c:2052
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "teclee su ruta, use '%'  como comodín"
@@ -7447,18 +7443,16 @@ msgstr "historia"
 msgid "description"
 msgstr "descripción"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:548
-#: ../src/libs/metadata.c:346 ../src/libs/metadata_view.c:110
+#: ../src/libs/collect.h:30 ../src/libs/import.c:548 ../src/libs/metadata.c:346
+#: ../src/libs/metadata_view.c:110
 msgid "creator"
 msgstr "autor"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:553
-#: ../src/libs/metadata.c:347
+#: ../src/libs/collect.h:30 ../src/libs/import.c:553 ../src/libs/metadata.c:347
 msgid "publisher"
 msgstr "editor"
 
-#: ../src/libs/collect.h:31 ../src/libs/import.c:558
-#: ../src/libs/metadata.c:348
+#: ../src/libs/collect.h:31 ../src/libs/import.c:558 ../src/libs/metadata.c:348
 msgid "rights"
 msgstr "derechos"
 
@@ -9332,23 +9326,19 @@ msgstr "ordenar por"
 msgid "preferences"
 msgstr "preferencias"
 
-#: ../src/libs/tools/global_toolbox.c:81
-#: ../src/libs/tools/global_toolbox.c:124
+#: ../src/libs/tools/global_toolbox.c:81 ../src/libs/tools/global_toolbox.c:124
 msgid "expand grouped images"
 msgstr "expandir imágenes agrupadas"
 
-#: ../src/libs/tools/global_toolbox.c:83
-#: ../src/libs/tools/global_toolbox.c:126
+#: ../src/libs/tools/global_toolbox.c:83 ../src/libs/tools/global_toolbox.c:126
 msgid "collapse grouped images"
 msgstr "colapsar imágenes agrupadas"
 
-#: ../src/libs/tools/global_toolbox.c:93
-#: ../src/libs/tools/global_toolbox.c:143
+#: ../src/libs/tools/global_toolbox.c:93 ../src/libs/tools/global_toolbox.c:143
 msgid "hide image overlays"
 msgstr "esconder información superpuesta"
 
-#: ../src/libs/tools/global_toolbox.c:95
-#: ../src/libs/tools/global_toolbox.c:145
+#: ../src/libs/tools/global_toolbox.c:95 ../src/libs/tools/global_toolbox.c:145
 msgid "show image overlays"
 msgstr "mostrar información superpuesta"
 
@@ -9551,8 +9541,8 @@ msgstr "prueba del perfil ICC en %s/color/out o %s/color/out"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2218 ../src/views/map.c:719
-#: ../src/views/print.c:352 ../src/views/tethering.c:391
+#: ../src/views/darkroom.c:2218 ../src/views/map.c:719 ../src/views/print.c:352
+#: ../src/views/tethering.c:391
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activar o desactivar la tira de imágenes"
