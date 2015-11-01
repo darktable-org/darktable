@@ -640,6 +640,8 @@ static void _show_filmroll_present(GtkTreeViewColumn *column, GtkCellRenderer *r
     g_object_set(renderer, "strikethrough-set", TRUE, NULL);
   else
     g_object_set(renderer, "strikethrough-set", FALSE, NULL);
+
+  g_free(path);
 }
 
 static GtkTreeStore *_folder_tree()
