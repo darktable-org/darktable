@@ -126,18 +126,17 @@ static void update(dt_lib_module_t *self, int which)
 
   if(count > 0 && tags)
   {
+    GList *tag = tags;
     do
     {
       gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_TAGGING_COL_TAG, ((dt_tag_t *)tags->data)->tag,
-                         DT_LIB_TAGGING_COL_ID, ((dt_tag_t *)tags->data)->id, -1);
-    } while((tags = g_list_next(tags)) != NULL);
-
-    // Free result...
-    dt_tag_free_result(&tags);
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_TAGGING_COL_TAG, ((dt_tag_t *)tag->data)->tag,
+                         DT_LIB_TAGGING_COL_ID, ((dt_tag_t *)tag->data)->id, -1);
+    } while((tag = g_list_next(tag)) != NULL);
   }
 
-
+  // Free result...
+  dt_tag_free_result(&tags);
 
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
   g_object_unref(model);
