@@ -186,11 +186,14 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   GList *citem;
 
   /* cleanup of widgets in devices container*/
-  GList *item;
-  if((item = gtk_container_get_children(GTK_CONTAINER(d->devices))) != NULL) do
+  GList *item, *iter;
+
+  if((iter = item = gtk_container_get_children(GTK_CONTAINER(d->devices))) != NULL) do
     {
-      gtk_container_remove(GTK_CONTAINER(d->devices), GTK_WIDGET(item->data));
-    } while((item = g_list_next(item)) != NULL);
+      gtk_container_remove(GTK_CONTAINER(d->devices), GTK_WIDGET(iter->data));
+    } while((iter = g_list_next(iter)) != NULL);
+
+  g_list_free(item);
 
   uint32_t count = 0;
   /* FIXME: Verify that it's safe to access camctl->cameras list here ? */
