@@ -1497,8 +1497,12 @@ static void create_folders_gui(dt_lib_collect_rule_t *dr)
 
     GtkTreePath *root = gtk_tree_path_new_first();
     if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(treemodel_folders), &iter, root))
+    {
       // something went wrong, get out.
+      gtk_tree_path_free(root);
       return;
+    }
+    gtk_tree_path_free(root);
     int children = 1; // To be deleted if the following code in enabled
 #if 0
     int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treemodel_folders), NULL);
