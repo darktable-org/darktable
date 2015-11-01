@@ -1117,10 +1117,13 @@ static void tags_view(dt_lib_collect_rule_t *dr)
 
               if(strcmp(value, pch[j]) == 0)
               {
+                g_free(value);
                 current = iter;
                 found = TRUE;
                 break;
               }
+
+              g_free(value);
             }
           }
 
