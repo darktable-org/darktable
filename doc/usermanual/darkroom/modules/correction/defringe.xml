@@ -32,8 +32,8 @@
           <row>
             <entry>
               This module is designed to remove purple or any other color of fringing which
-              often results from Longitudinal Chromatic Abberations (LCA), also known as Axial
-              Chromatic Abberations.
+              often results from Longitudinal Chromatic Aberrations (LCA), also known as Axial
+              Chromatic Aberrations.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/defringe.png" scalefit="1" width="80%" align="center" />
