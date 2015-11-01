@@ -716,10 +716,13 @@ static GtkTreeStore *_folder_tree()
 
           if(strcmp(value, pch[level]) == 0)
           {
+            g_free(value);
             current = iter;
             found = TRUE;
             break;
           }
+
+          g_free(value);
         }
       }
 
