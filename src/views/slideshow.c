@@ -279,7 +279,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       // if(event == s_blended)
       {
         // start bgjob
-        dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, process_job_create(d));
+        dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, process_job_create(d));
         d->state = s_prefetching;
       }
       break;
