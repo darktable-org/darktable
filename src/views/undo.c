@@ -126,13 +126,14 @@ static void dt_undo_clear_list(GList **list, uint32_t filter)
   while(l)
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    GList *next = l->next;
     if(item->type & filter)
     {
       //  remove this element
       g_free(item->data);
       *list = g_list_remove(*list, item);
     }
-    l = g_list_next(l);
+    l = next;
   };
 }
 
