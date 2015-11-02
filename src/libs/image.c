@@ -281,7 +281,7 @@ void gui_cleanup(dt_lib_module_t *self)
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "remove from collection"), GDK_KEY_Delete, 0);
-  dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "delete from disk or send to trash"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate selected images 90 degrees CW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate selected images 90 degrees CCW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "create HDR"), 0, 0);
@@ -297,7 +297,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
 
   dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
-  dt_accel_connect_button_lib(self, "delete from disk/send to trash", d->delete_button);
+  dt_accel_connect_button_lib(self, "delete from disk or send to trash", d->delete_button);
   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CW", d->rotate_cw_button);
   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CCW", d->rotate_ccw_button);
   dt_accel_connect_button_lib(self, "create HDR", d->create_hdr_button);
