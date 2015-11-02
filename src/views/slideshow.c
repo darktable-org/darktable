@@ -202,8 +202,7 @@ static int32_t process_job_run(dt_job_t *job)
 
 static dt_job_t *process_job_create(dt_slideshow_t *d)
 {
-  static int cnt = 0; // stupid hack to avoid deduplication
-  dt_job_t *job = dt_control_job_create(&process_job_run, "process slideshow image %d", cnt++);
+  dt_job_t *job = dt_control_job_create(&process_job_run, "process slideshow image");
   if(!job) return NULL;
   dt_control_job_set_params(job, d, NULL);
   return job;
