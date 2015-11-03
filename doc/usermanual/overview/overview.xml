@@ -122,7 +122,7 @@
       darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser
       that always just works&trade;. It's designed as a module where the denoising performance
       only depends on camera and ISO setting. A database of profiles contains parameters for
-      over 100 popular camera models.
+      well above 100 popular camera models.
     </para></listitem>
 
     <listitem><para>
@@ -1121,7 +1121,7 @@
           module offers an almost <quote>single-click</quote> solution to fight noise. From a
           user perspective the effect only depends on camera type and ISO value, both derived
           from EXIF data. All other settings are taken from a database of noise profiles that
-          the darktable team has collected&nbsp;&ndash; now covering already over 100 popular
+          the darktable team has collected&nbsp;&ndash; now covering well above 100 popular
           camera models. In addition you have several other options in darktable to reduce
           noise. There is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>,
           <link linkend="denoise_bilateral"><emphasis>denoising based on bilateral
