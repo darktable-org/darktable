@@ -1295,7 +1295,10 @@ dt_colorspaces_t *dt_colorspaces_init()
     while((d_name = g_dir_read_name(dir)))
     {
       snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
-      if(!g_str_has_suffix(filename, ".icc") && !g_str_has_suffix(filename, ".icm")) continue;
+      const char *cc = filename + strlen(filename);
+      for(; *cc != '.' && cc > filename; cc--)
+        ;
+      if(g_ascii_strcasecmp(cc, ".icc") && g_ascii_strcasecmp(cc, ".icm")) continue;
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
@@ -1323,7 +1326,10 @@ dt_colorspaces_t *dt_colorspaces_init()
     while((d_name = g_dir_read_name(dir)))
     {
       snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
-      if(!g_str_has_suffix(filename, ".icc") && !g_str_has_suffix(filename, ".icm")) continue;
+      const char *cc = filename + strlen(filename);
+      for(; *cc != '.' && cc > filename; cc--)
+        ;
+      if(g_ascii_strcasecmp(cc, ".icc") && g_ascii_strcasecmp(cc, ".icm")) continue;
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
