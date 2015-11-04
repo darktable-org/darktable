@@ -182,26 +182,32 @@
                 $(EXIF.DATE.DAY)
               </entry>
               <entry>
-                Day from the image EXIF data
+                Day of month from the image EXIF data (01&nbsp;..&nbsp;31)
               </entry>
             </row>
             <row>
               <entry>
                 $(EXIF.DATE.MONTH)
               </entry>
-              <entry></entry>
+              <entry>
+		Month from the image EXIF data (01&nbsp;..&nbsp;12)
+              </entry>
             </row>
             <row>
               <entry>
                 $(EXIF.DATE.SHORT_MONTH)
               </entry>
-              <entry></entry>
+              <entry>
+		Month from the image EXIF data localized (Jan, Feb,&nbsp;.. Dec)
+	      </entry>
             </row>
             <row>
               <entry>
                 $(EXIF.DATE.LONG_MONTH)
               </entry>
-              <entry></entry>
+              <entry>
+		Month from the image EXIF data localized (January, February,&nbsp;.. December)
+              </entry>
             </row>
             <row>
               <entry>
@@ -264,7 +270,7 @@
                 $(DATE.DAY)
               </entry>
               <entry>
-                Current system time day
+                Current system time day of month (01&nbsp;..&nbsp;31)
               </entry>
             </row>
             <row>
@@ -272,20 +278,24 @@
                 $(DATE.MONTH)
               </entry>
               <entry>
-                Current system time month
+                Current system time month (01&nbsp;..&nbsp;12)
               </entry>
             </row>
             <row>
               <entry>
                 $(DATE.SHORT_MONTH)
               </entry>
-              <entry></entry>
+              <entry>
+		Current system time month localized (Jan, Feb,&nbsp;.. Dec)
+              </entry>
             </row>
             <row>
               <entry>
                 $(DATE.LONG_MONTH)
               </entry>
-              <entry></entry>
+              <entry>
+		Current system time month localized (January, February,&nbsp;.. December)
+              </entry>
             </row>
             <row>
               <entry>
