@@ -412,7 +412,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #else
   int sse3_supported = 0;
 
-#if(__GNUC_PREREQ(4, 8) || __has_builtin(__builtin_cpu_supports))
+#if(__GNUC_PREREQ(4, 8) || (__has_builtin(__builtin_cpu_supports) && !defined(__FreeBSD__)))
   // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
   sse3_supported = __builtin_cpu_supports("sse3");
 #else
