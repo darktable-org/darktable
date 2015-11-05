@@ -98,12 +98,12 @@
     (default on).
   </para>
 
-  <bridgehead renderas="sect4">always try to use LittleCMS 2</bridgehead>
+  <bridgehead renderas="sect4">always use LittleCMS 2 to apply output color profile</bridgehead>
 
   <para>
-    If this option is activated, darktable will use system library littlecms2 instead of its own
-    routines. This is about 28x slower than the default but might give more accurate results in
-    some cases (default off).
+    If this option is activated, darktable will use system library LittleCMS 2 instead of its
+    own routines. This is significantly slower than the default but might give more accurate
+    results in some cases (default off).
   </para>
 
   <bridgehead renderas="sect4">do high quality resampling during export</bridgehead>
