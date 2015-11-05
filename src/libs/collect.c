@@ -1909,6 +1909,7 @@ static void filmrolls_imported(gpointer instance, int film_id, gpointer self)
   d->active_rule = active;
 
   // update tree
+  g_object_unref(d->treemodel_folders);
   d->treemodel_folders = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
   d->rule[active].typing = FALSE;
@@ -1928,6 +1929,7 @@ static void filmrolls_removed(gpointer instance, gpointer self)
   d->active_rule = active;
 
   // update tree
+  g_object_unref(d->treemodel_folders);
   d->treemodel_folders = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
   d->rule[active].typing = FALSE;
@@ -2170,6 +2172,10 @@ void gui_cleanup(dt_lib_module_t *self)
   /* cleanup mem */
   // g_ptr_array_free(d->labels, TRUE);
   if(d->trees != NULL) g_ptr_array_free(d->trees, TRUE);
+
+  g_object_unref(d->treemodel_folders);
+  g_object_unref(d->treemodel_tags);
+  g_object_unref(d->listmodel);
 
   /* TODO: Make sure we are cleaning up all allocations */
 
