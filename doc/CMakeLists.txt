@@ -7,39 +7,33 @@ set(DOC_FILES README AUTHORS TRANSLATORS LICENSE)
 install(FILES ${DOC_FILES} DESTINATION ./share/doc/darktable)
 
 # Build manual page
-add_custom_command(
-	OUTPUT darktable.1
-	SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod
-	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeman.sh ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/darktable.1
-	${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod 
-	${CMAKE_CURRENT_BINARY_DIR}/darktable.1 
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h
-	
-)
-
-add_custom_command(
-	OUTPUT darktable-cli.1
-	SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod
-	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeman.sh ${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/darktable-cli.1
-	${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod 
-	${CMAKE_CURRENT_BINARY_DIR}/darktable-cli.1 
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h
-	
-)
-
-add_custom_target(manpages ALL DEPENDS darktable.1 darktable-cli.1)
+add_custom_target(manpages ALL)
 
 if(NOT MAN_INSTALL_DIR)
-	if(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
-		set(MAN_INSTALL_DIR "./man/man1")
-	else()
-		set(MAN_INSTALL_DIR "./share/man/man1")
-	endif()
+  if(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
+    set(MAN_INSTALL_DIR "./man/man1")
+  else()
+    set(MAN_INSTALL_DIR "./share/man/man1")
+  endif()
 endif(NOT MAN_INSTALL_DIR)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.1 ${CMAKE_CURRENT_BINARY_DIR}/darktable-cli.1 DESTINATION ${MAN_INSTALL_DIR})
+macro (add_manpage _pod)
+  string(REPLACE ".pod" ".1" _manpage ${_pod})
+  add_custom_command(
+    OUTPUT ${_manpage}
+    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/${_pod}
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeman.sh ${CMAKE_CURRENT_SOURCE_DIR}/${_pod} ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/${_manpage}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_pod} ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeman.sh
+  )
+  add_custom_target(man_${_manpage} ALL DEPENDS ${_manpage})
+  add_dependencies(manpages man_${_manpage})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${_manpage} DESTINATION ${MAN_INSTALL_DIR})
+endmacro (add_manpage)
 
+add_manpage(darktable.pod)
+add_manpage(darktable-cli.pod)
 
+# create config docs
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_doc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
