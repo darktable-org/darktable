@@ -36,10 +36,11 @@
   <bridgehead renderas="sect4">color manage cached thumbnails</bridgehead>
 
   <para>
-    If activated darktable generates thumbnails in a general color space (AdobeRGB) in order to render them
-    independently of the individual monitor. Conversion to the monitor color space is done at display time. 
-    If this option is not activated thumbnails are directly stored in the specific monitor color space 
-    valid at generation time and are subsequently displayed without further corrections (default on).
+    If activated darktable generates thumbnails in a general color space (AdobeRGB) in order to
+    render them independently of the individual monitor. Conversion to the monitor color space
+    is done at display time. If this option is not activated thumbnails are directly stored in
+    the specific monitor color space valid at generation time and are subsequently displayed
+    without further corrections (default on).
   </para>
 
   <bridgehead renderas="sect4">number of background threads</bridgehead>

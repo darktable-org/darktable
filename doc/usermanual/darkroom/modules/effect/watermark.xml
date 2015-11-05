@@ -190,7 +190,7 @@
                 $(EXIF.DATE.MONTH)
               </entry>
               <entry>
-		Month from the image EXIF data (01&nbsp;..&nbsp;12)
+                Month from the image EXIF data (01&nbsp;..&nbsp;12)
               </entry>
             </row>
             <row>
@@ -198,15 +198,15 @@
                 $(EXIF.DATE.SHORT_MONTH)
               </entry>
               <entry>
-		Month from the image EXIF data localized (Jan, Feb,&nbsp;.. Dec)
-	      </entry>
+                Month from the image EXIF data localized (Jan, Feb,&nbsp;.. Dec)
+              </entry>
             </row>
             <row>
               <entry>
                 $(EXIF.DATE.LONG_MONTH)
               </entry>
               <entry>
-		Month from the image EXIF data localized (January, February,&nbsp;.. December)
+                Month from the image EXIF data localized (January, February,&nbsp;.. December)
               </entry>
             </row>
             <row>
@@ -286,7 +286,7 @@
                 $(DATE.SHORT_MONTH)
               </entry>
               <entry>
-		Current system time month localized (Jan, Feb,&nbsp;.. Dec)
+                Current system time month localized (Jan, Feb,&nbsp;.. Dec)
               </entry>
             </row>
             <row>
@@ -294,7 +294,7 @@
                 $(DATE.LONG_MONTH)
               </entry>
               <entry>
-		Current system time month localized (January, February,&nbsp;.. December)
+                Current system time month localized (January, February,&nbsp;.. December)
               </entry>
             </row>
             <row>

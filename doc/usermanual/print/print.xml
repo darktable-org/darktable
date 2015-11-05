@@ -38,9 +38,9 @@
     <title>Overview</title>
 
     <para>
-      This view is about printing&nbsp;&ndash; or the joy of giving birth to a photograph
-      which can be put on the wall. Because printing is not easy, there are many technical
-      aspects to be taken into account.
+      This view is about printing&nbsp;&ndash; or the joy of giving birth to a photograph which
+      can be put on the wall. Because printing is not easy, there are many technical aspects to
+      be taken into account.
     </para>
 
     <para>
@@ -73,8 +73,8 @@
     </para>
 
     <para>
-      This module supports the printer's ICC profile which is somewhat mandatory if you want to get
-      a high quality print close to the image displayed on the screen.
+      This module supports the printer's ICC profile which is somewhat mandatory if you want to
+      get a high quality print close to the image displayed on the screen.
     </para>
 
     <para>
@@ -130,9 +130,9 @@
       <bridgehead renderas="sect4">intent</bridgehead>
 
       <para>
-        The print rendering intent (<quote>perceptual</quote>, <quote>relative colorimetric</quote>,
-        <quote>saturation</quote> or <quote>absolute colorimetric</quote>). See
-        <xref linkend="rendering_intent"/> for more information.
+        The print rendering intent (<quote>perceptual</quote>, <quote>relative
+        colorimetric</quote>, <quote>saturation</quote> or <quote>absolute
+        colorimetric</quote>). See <xref linkend="rendering_intent"/> for more information.
       </para>
 
       <bridgehead renderas="sect4">black point compensation</bridgehead>
@@ -214,8 +214,8 @@
       <bridgehead renderas="sect4">intent</bridgehead>
 
       <para>
-        This option sets the rendering intent to use when exporting the image. For more information see
-        <xref linkend="rendering_intent"/>.
+        This option sets the rendering intent to use when exporting the image. For more
+        information see <xref linkend="rendering_intent"/>.
       </para>
 
       <bridgehead renderas="sect4">style</bridgehead>
