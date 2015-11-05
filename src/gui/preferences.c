@@ -1022,8 +1022,9 @@ static void import_export(GtkButton *button, gpointer data)
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
       gtk_accel_map_save(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
-      dt_conf_set_string("ui_last/export_path",
-                         gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser)));
+      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
+      dt_conf_set_string("ui_last/export_path", folder);
+      g_free(folder);
     }
     gtk_widget_destroy(chooser);
   }
@@ -1052,8 +1053,9 @@ static void import_export(GtkButton *button, gpointer data)
         snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", confdir);
         gtk_accel_map_save(accelpath);
 
-        dt_conf_set_string("ui_last/import_path",
-                           gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser)));
+        gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
+        dt_conf_set_string("ui_last/import_path", folder);
+        g_free(folder);
       }
     }
     gtk_widget_destroy(chooser);

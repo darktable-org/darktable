@@ -807,8 +807,10 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    dt_conf_set_string("ui_last/import_last_directory",
-                       gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser)));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/import_last_directory", folder);
+    g_free(folder);
+
     _lib_import_evaluate_extra_widget(&metadata, FALSE);
 
     char *filename = NULL;
@@ -881,8 +883,10 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
   // run the dialog
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    dt_conf_set_string("ui_last/import_last_directory",
-                       gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser)));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/import_last_directory", folder);
+    g_free(folder);
+
     _lib_import_evaluate_extra_widget(&metadata, TRUE);
 
     char *filename = NULL, *first_filename = NULL;
