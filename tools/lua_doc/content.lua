@@ -268,7 +268,7 @@ darktable.configuration.check_version:set_text([[Check that a module is compatib
 code("darktable.configuration.check(...,{M,m,p},{M2,m2,p2})").."To document that your module has been tested with API version M.m.p and M2.m2.p2."..para()..
 "This will raise an error if the user is running a released version of DT and a warning if he is running a developement version"..para().."(the ... here will automatically expand to your module name if used at the top of your script")
 darktable.configuration.check_version:add_parameter("module_name","string","The name of the module to report on error")
-darktable.configuration.check_version:add_parameter("...","table...","Tables of API versions that are known to work with the scrip")
+darktable.configuration.check_version:add_parameter("...","table...","Tables of API versions that are known to work with the script")
 
 
 -----------------------------
@@ -285,7 +285,7 @@ darktable.preferences.register:add_parameter("script","string",[[Invisible prefi
 darktable.preferences.register:add_parameter("name","string",[[A unique name used with the script part to identify the preference.]])
 darktable.preferences.register:add_parameter("type",types.lua_pref_type,[[The type of the preference - one of the string values described above.]])
 darktable.preferences.register:add_parameter("label","string",[[The label displayed in the preference screen.]])
-darktable.preferences.register:add_parameter("tooltip","string",[[The tooltip to display in the preference menue.]])
+darktable.preferences.register:add_parameter("tooltip","string",[[The tooltip to display in the preference menu.]])
 darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitely or by the user.]]..para().."For the enum type of pref, this is mandatory"):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("min","int or float",[[Minimum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("max","int or float",[[Maximum value (integer and float preferences only).]]):set_attribute("optional",true)
@@ -376,7 +376,7 @@ darktable.database.move_image:add_parameter("film",types.dt_lua_film_t,[[The fil
 darktable.database.move_image:set_main_parent(darktable.database)
 darktable.database.copy_image:set_text([[Physically copies an image to another film.]]..para()..
 [[This will copy the image file and the related XMP to the directory of the new film]]..para()..
-[[If there is already a file with the same name as the image file, it wil create a duplicate from that file instead]]..para()..
+[[If there is already a file with the same name as the image file, it will create a duplicate from that file instead]]..para()..
 [[Note that the parameter order is not relevant.]])
 darktable.database.copy_image:add_parameter("image",types.dt_lua_image_t,[[The image to copy]])
 darktable.database.copy_image:add_parameter("film",types.dt_lua_film_t,[[The film to copy to]])
@@ -457,7 +457,7 @@ darktable.gui.libs.metadata_view.register_info:set_text([[Register a function pr
 darktable.gui.libs.metadata_view.register_info:add_parameter("name","string","The name displayed for the new information")
 tmp = darktable.gui.libs.metadata_view.register_info:add_parameter("callback","function","The function providing the info")
 tmp:add_parameter("image",types.dt_lua_image_t,"The image to analyze")
-tmp:add_return("string","The extra information to displa")
+tmp:add_return("string","The extra information to display")
 darktable.gui.libs.metadata:set_text([[The widget allowing modification of metadata fields on the current image]])
 darktable.gui.libs.hinter:set_text([[The small line of text at the top of the UI showing the number of selected images]])
 darktable.gui.libs.modulelist:set_text([[The window allowing to set modules as visible/hidden/favorite]])
