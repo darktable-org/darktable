@@ -288,6 +288,7 @@ static gboolean _combo_box_set_active_text(GtkComboBox *cb, gchar *text)
           found = TRUE;
           break;
         }
+      g_value_unset(&value);
     } while(gtk_tree_model_iter_next(tm, &iter));
   }
   return found;
