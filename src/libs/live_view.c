@@ -457,9 +457,10 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_live_view_t *lib = self->data;
+  // dt_lib_live_view_t *lib = self->data;
 
-  g_list_free(lib->guides_widgets_list);
+  // g_list_free(lib->guides_widgets_list);
+  // INTENTIONAL. it's supposed to be leaky until lua is fixed.
 
   free(self->data);
   self->data = NULL;
