@@ -908,11 +908,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
       = { "GDK_AXIS_IGNORE", "GDK_AXIS_X",     "GDK_AXIS_Y",     "GDK_AXIS_PRESSURE",
           "GDK_AXIS_XTILT",  "GDK_AXIS_YTILT", "GDK_AXIS_WHEEL", "GDK_AXIS_LAST" };
   dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
+
   GList *input_devices = gdk_device_manager_list_devices(
       gdk_display_get_device_manager(gdk_display_get_default()), GDK_DEVICE_TYPE_MASTER);
-  while(input_devices)
+  for(GList *l = input_devices; l != NULL; l = g_list_next(l))
   {
-    GdkDevice *device = (GdkDevice *)input_devices->data;
+    GdkDevice *device = (GdkDevice *)l->data;
     GdkInputSource source = gdk_device_get_source(device);
     gint n_axes = (source == GDK_SOURCE_KEYBOARD ? 0 : gdk_device_get_n_axes(device));
 
@@ -926,8 +927,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
       dt_print(DT_DEBUG_INPUT, "  %s\n", AXIS_NAMES[gdk_device_get_axis_use(device, i)]);
     }
     dt_print(DT_DEBUG_INPUT, "\n");
-    input_devices = g_list_next(input_devices);
   }
+  g_list_free(input_devices);
 
   // finally set the cursor to be the default.
   // for some reason this is needed on some systems to pick up the correctly themed cursor
