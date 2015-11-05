@@ -1092,8 +1092,8 @@
     <name>plugins/lighttable/export/force_lcms2</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>always try to use LittleCMS 2</shortdescription>
-    <longdescription>this is significantly slower than the default.</longdescription>
+    <shortdescription>always use LittleCMS 2 to apply output color profile</shortdescription>
+    <longdescription>this is slower than the default.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/slideshow/high_quality</name>
