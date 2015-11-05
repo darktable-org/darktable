@@ -296,24 +296,28 @@ static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_
     case CAMERA_CONTROL_BUSY:
     {
       /* set all devices as inaccessible */
-      GList *child = gtk_container_get_children(GTK_CONTAINER(d->devices));
+      GList *list, *child;
+      list = child = gtk_container_get_children(GTK_CONTAINER(d->devices));
       if(child) do
       {
         if(!(GTK_IS_TOGGLE_BUTTON(child->data)
           && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(child->data)) == TRUE))
           gtk_widget_set_sensitive(GTK_WIDGET(child->data), FALSE);
       } while((child = g_list_next(child)));
+      g_list_free(list);
     }
     break;
 
     case CAMERA_CONTROL_AVAILABLE:
     {
       /* set all devices as accessible */
-      GList *child = gtk_container_get_children(GTK_CONTAINER(d->devices));
+      GList *list, *child;
+      list = child = gtk_container_get_children(GTK_CONTAINER(d->devices));
       if(child) do
       {
         gtk_widget_set_sensitive(GTK_WIDGET(child->data), TRUE);
       } while((child = g_list_next(child)));
+      g_list_free(list);
     }
     break;
   }

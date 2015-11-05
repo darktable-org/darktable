@@ -37,6 +37,7 @@ static int active_member(lua_State*L)
     if(lua_isnumber(L,3)) {
       int index = lua_tointeger(L,3) ;
       if(index < 1 || index > length) {
+        g_list_free(children);
         return luaL_error(L,"Invalid index for stack widget : %d\n",index);
       }
       gtk_stack_set_visible_child(GTK_STACK(stack->widget),g_list_nth_data(children,index-1));

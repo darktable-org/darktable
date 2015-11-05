@@ -272,11 +272,12 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
 
   /* inactivate all toggle buttons */
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
-  for(guint i = 0; i < g_list_length(children); i++)
+  for(GList *l = children; l != NULL; l = g_list_next(l))
   {
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth_data(children, i));
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(l->data);
     if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (char *)NULL);
   }
+  g_list_free(children);
 
   reset = 0;
   if(darktable.gui->reset) return;

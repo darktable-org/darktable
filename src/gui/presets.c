@@ -759,10 +759,12 @@ void dt_gui_favorite_presets_menu_show()
         sqlite3_finalize(stmt);
 
         /* add submenu to main menu if we got any presets */
-        if(g_list_length(gtk_container_get_children(GTK_CONTAINER(sm))) > 0)
+        GList *childs = gtk_container_get_children(GTK_CONTAINER(sm));
+        if(childs)
         {
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi));
           presets = TRUE;
+          g_list_free(childs);
         }
       }
 
