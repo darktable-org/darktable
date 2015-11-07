@@ -144,7 +144,10 @@
     the meantime by some other software. If updated XMP files are found a menu opens for the
     user to decide which of the XMP files to be reloaded&nbsp;&ndash; replacing darktable's
     database entries by the XMP file contents&nbsp;&ndash; and which of the XMP files to be
-    overwritten by darktable's database (default off).
+    overwritten by darktable's database. Activating this option also causes darktable to check
+    for text sidecar files that have been added after import time&nbsp;&ndash; see option
+    <quote>overlay txt sidecar over zoomed images</quote> in <xref linkend="gui_options"/>
+    (default off).
   </para>
 
   <bridgehead renderas="sect4">executable for playing audio files</bridgehead>
@@ -152,6 +155,13 @@
   <para>
     Defines an external program which is used in the lighttable view to play audio files that
     some cameras record to keep notes for images (default <quote>aplay</quote>).
+  </para>
+
+  <bridgehead renderas="sect4">auto-apply per camera basecurve presets</bridgehead>
+
+  <para>
+    Use the per-camera basecurve by default instead of the generic manufacturer one if there is
+    one available. For more details see <xref linkend="base_curve"/> (default off).
   </para>
 
 <!--

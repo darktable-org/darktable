@@ -183,7 +183,7 @@
 <synopsis>darktable [-d {all,cache,camctl,camsupport,control,dev,
                fswatch,input,lighttable,masks,memory,nan,
                opencl,perf,pwstorage,print,sql}]
-          [IMG_1234.{RAW,..}|image_folder/] 
+          [IMG_1234.{RAW,..}|image_folder] 
           [--version]
           [--disable-opencl] 
           [--library &lt;library file&gt;] 
@@ -217,7 +217,7 @@
 
           <varlistentry>
 
-            <term>IMG_1234.{RAW,..} | image_folder/</term>
+            <term>IMG_1234.{RAW,..} | image_folder</term>
 
             <listitem><para>
               You may optionally supply the filename of an image or the name of a folder

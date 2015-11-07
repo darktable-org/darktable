@@ -30,9 +30,7 @@
               Camera sensors provide data in linear RGB format, the original image appears flat
               and dull. That's the reason why camera manufacturers apply their characteristic
               base curves to the RAW data when they generate in-camera JPEG images with better
-              colors and contrast. darktable comes with base curve presets that mimic the curves
-              of various manufacturers. These are automatically applied to RAW images according
-              to the manufacturer ID found in EXIF data.
+              colors and contrast.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/basecurve.png" scalefit="1" width="80%" align="center" />
@@ -47,6 +45,15 @@
   <sect4>
 
     <title>Usage</title>
+
+    <para>
+      darktable comes with base curve presets that mimic the curves of various manufacturers.
+      These are automatically applied to RAW images according to the manufacturer ID found in
+      EXIF data. For several camera models darktable comes with base curves adapted for that
+      specific model. A configuration option in the core preferences dialog (see
+      <xref linkend="core_options"/>) defines whether darktable by default should apply the
+      per-camera base curve or the manufacturer one.
+    </para>
 
     <para>
       You can adjust an existing base curve or create a new one. The base curve is defined by
