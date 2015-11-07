@@ -499,7 +499,7 @@ void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
   {
     accel = (dt_accel_t *)l->data;
     if(accel) gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
-    l = g_slist_next(l);
+    l = g_slist_delete_link(l, l);
   }
 
   module->accel_closures_local = NULL;
