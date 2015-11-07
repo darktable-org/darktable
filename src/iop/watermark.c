@@ -281,14 +281,16 @@ static gboolean _combo_box_set_active_text(GtkComboBox *cb, gchar *text)
         0,
       };
       gtk_tree_model_get_value(tm, &iter, 0, &value);
-      if(G_VALUE_HOLDS_STRING(&value))
-        if((sv = (gchar *)g_value_get_string(&value)) != NULL && strcmp(sv, text) == 0)
-        {
-          gtk_combo_box_set_active_iter(cb, &iter);
-          found = TRUE;
-          break;
-        }
-      g_value_unset(&value);
+      if(G_VALUE_HOLDS_STRING(&value)
+         && ((sv = (gchar *)g_value_get_string(&value)) != NULL && strcmp(sv, text) == 0))
+      {
+        g_value_unset(&value);
+        gtk_combo_box_set_active_iter(cb, &iter);
+        found = TRUE;
+        break;
+      }
+      else
+        g_value_unset(&value);
     } while(gtk_tree_model_iter_next(tm, &iter));
   }
   return found;
