@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2015-11-06 14:56+0100\n"
-"PO-Revision-Date: 2015-11-07 08:39+0100\n"
+"POT-Creation-Date: 2015-11-07 15:11+0100\n"
+"PO-Revision-Date: 2015-11-07 16:08+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -17928,7 +17928,8 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16641(bridgehead)
 msgid "don't use embedded preview JPEG but half-size raw"
 msgstr ""
-"ne pas utiliser les miniatures JPEG intégrées mais des RAW de demi-taille"
+"ne pas utiliser les miniatures JPEG intégrées, toujours utiliser les RAW "
+"réduits"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16643(para)
 msgid ""
@@ -17964,8 +17965,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16660(bridgehead)
 msgid "send files to trash when erasing images"
-msgstr ""
-"envoie les fichiers vers la poubelle lors de la suppression des images."
+msgstr "déplacer les fichiers vers la poubelle lors de l'effacement"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16662(para)
 msgid ""
@@ -18110,7 +18110,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16739(bridgehead)
 msgid "high quality thumb processing from size"
-msgstr "développement de haute qualité lors du diaporama"
+msgstr "miniature de haute qualité à partir de la taille"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16741(para)
 msgid ""
@@ -18206,7 +18206,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16802(bridgehead)
 msgid "maximum number of images drawn on map"
-msgstr "nombre maximum d’images affichées sur la carte."
+msgstr "nombre maximum d’images affichées sur la carte"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16804(para)
 msgid ""
@@ -18274,7 +18274,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16836(bridgehead)
 msgid "border around image in darkroom mode"
-msgstr "bordure autour de l'image en mode chambre noire."
+msgstr "bordure autour de l'image en mode chambre noire"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16838(para)
 msgid ""
@@ -18586,7 +18586,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17000(bridgehead)
 msgid "look for updated xmp files on startup"
-msgstr "vérifie les fichiers XMP au démarrage"
+msgstr "vérifie les fichiers XMP modifiés au démarrage"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17002(para)
 msgid ""
