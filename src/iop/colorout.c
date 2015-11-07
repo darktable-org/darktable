@@ -580,8 +580,8 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_colorout_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorout_params_t));
+  module->params = alloc_params(dt_iop_colorout_params_t);
+  module->default_params = alloc_params(dt_iop_colorout_params_t);
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
   module->priority = 816; // module order created by iop_dependencies.py, do not edit!

@@ -932,8 +932,8 @@ void init_global(dt_iop_module_so_t *module)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
+  module->params = alloc_params(dt_iop_temperature_params_t);
+  module->default_params = alloc_params(dt_iop_temperature_params_t);
   module->priority = 50; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;

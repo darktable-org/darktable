@@ -435,8 +435,8 @@ void gui_update(struct dt_iop_module_t *self)
 void init(dt_iop_module_t *module)
 {
   // module->data = malloc(sizeof(dt_iop_flip_data_t));
-  module->params = malloc(sizeof(dt_iop_flip_params_t));
-  module->default_params = malloc(sizeof(dt_iop_flip_params_t));
+  module->params = alloc_params(dt_iop_flip_params_t);
+  module->default_params = alloc_params(dt_iop_flip_params_t);
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_flip_params_t);
   module->gui_data = NULL;

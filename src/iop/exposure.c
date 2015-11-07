@@ -552,8 +552,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = malloc(sizeof(dt_iop_exposure_params_t));
-  module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
+  module->params = alloc_params(dt_iop_exposure_params_t);
+  module->default_params = alloc_params(dt_iop_exposure_params_t);
   module->default_enabled = 0;
   module->priority = 183;                      // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);

@@ -1914,8 +1914,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 void init(dt_iop_module_t *module)
 {
-  module->params = malloc(sizeof(dt_iop_demosaic_params_t));
-  module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
+  module->params = alloc_params(dt_iop_demosaic_params_t);
+  module->default_params = alloc_params(dt_iop_demosaic_params_t);
   module->default_enabled = 1;
   module->priority = 133; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
