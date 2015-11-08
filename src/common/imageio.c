@@ -864,8 +864,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     // no need to cancel the export if this fail
   }
 
-
-  if(!thumbnail_export && strcmp(format->mime(format_params), "memory"))
+  if(!thumbnail_export && strcmp(format->mime(format_params), "memory")
+    && !(format->flags(format_params) & FORMAT_FLAGS_NO_TMPFILE))
   {
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
                             format_params, storage, storage_params);

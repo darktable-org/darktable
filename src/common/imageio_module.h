@@ -33,7 +33,11 @@
 
 
 /** Flag for the format modules */
-#define FORMAT_FLAGS_SUPPORT_XMP 1
+typedef enum dt_imageio_format_flags_t
+{
+  FORMAT_FLAGS_SUPPORT_XMP = 1,
+  FORMAT_FLAGS_NO_TMPFILE = 2
+} dt_imageio_format_flags_t;
 
 /**
  * defines the plugin structure for image import and export.

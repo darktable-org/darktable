@@ -347,6 +347,11 @@ const char *name()
   return _("PDF");
 }
 
+int flags(dt_imageio_module_data_t *data)
+{
+  return FORMAT_FLAGS_NO_TMPFILE;
+}
+
 int dimension(struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data, uint32_t *width, uint32_t *height)
 {
   if(data)
