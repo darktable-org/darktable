@@ -1153,10 +1153,19 @@ static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
   gtk_tree_model_get(model, b, P_MODULE_COLUMN, &b_text, -1);
   if(*a_text == '\0' && *b_text == '\0')
   {
+    g_free(a_text);
+    g_free(b_text);
+
     gtk_tree_model_get(model, a, P_NAME_COLUMN, &a_text, -1);
     gtk_tree_model_get(model, b, P_NAME_COLUMN, &b_text, -1);
   }
-  return strcasecmp(a_text, b_text);
+
+  const int res = strcasecmp(a_text, b_text);
+
+  g_free(a_text);
+  g_free(b_text);
+
+  return res;
 }
 
 // FIXME: Mostly c&p from gui/presets.c
