@@ -13,7 +13,7 @@ if [ -n "$d" ]; then
   D="--date=$d"
 fi
 
-pod2man --release="darktable $r" --center="darktable" $D "$input" \
+pod2man --utf8 --release="darktable $r" --center="darktable" $D "$input" \
   | sed -e '/.*DREGGNAUTHORS.*/r '"$authors" | sed -e '/.*DREGGNAUTHORS.*/d' \
   > tmp.$$$$ \
   && mv -f tmp.$$$$ "$output"
