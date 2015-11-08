@@ -20,11 +20,13 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
+#include "gui/presets.h"
 #include "develop/imageop.h"
 #include "libs/lib.h"
 #include "preferences_gen.h"
@@ -40,12 +42,13 @@ typedef struct dt_gui_presets_edit_dialog_t
   GtkLabel *name;
   GtkEntry *description;
   GtkCheckButton *autoapply, *filter;
-  GtkBox *details;
+  GtkWidget *details;
   GtkEntry *model, *maker, *lens;
   GtkSpinButton *iso_min, *iso_max;
-  GtkComboBox *exposure_min, *exposure_max;
-  GtkComboBox *aperture_min, *aperture_max;
+  GtkWidget *exposure_min, *exposure_max;
+  GtkWidget *aperture_min, *aperture_max;
   GtkSpinButton *focal_length_min, *focal_length_max;
+  GtkWidget *format_btn[3];
 } dt_gui_presets_edit_dialog_t;
 
 // FIXME: this is copypasta from gui/presets.c. better put these somewhere so that all places can access the
@@ -66,6 +69,12 @@ static const float dt_gui_presets_aperture_value[]
 static const char *dt_gui_presets_aperture_value_str[]
     = { "f/0",  "f/0.5", "f/0.7", "f/1.0", "f/1.4", "f/2",  "f/2.8", "f/4",   "f/5.6", "f/8",
         "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
+
+// format string and corresponding flag stored into the database
+static const char *dt_gui_presets_format_value_str[3] = { N_("normal images"),
+                                                          N_("raw"),
+                                                          N_("HDR")};
+static const int dt_gui_presets_format_flag[3] = { FOR_LDR, FOR_RAW, FOR_HDR };
 
 // Values for the accelerators/presets treeview
 
@@ -1201,11 +1210,6 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   gtk_container_add(content_area, GTK_WIDGET(box));
   GtkWidget *label;
 
-  GtkWidget *grid = gtk_grid_new();
-  int line = 0;
-  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-
   dt_gui_presets_edit_dialog_t *g
       = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
   // g->module = module;
@@ -1231,9 +1235,11 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
   g_signal_connect(G_OBJECT(g->filter), "toggled", G_CALLBACK(check_buttons_activated), g);
 
-  g->details = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  int line = 0;
+  g->details = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(10));
   gtk_box_pack_start(box, GTK_WIDGET(g->details), FALSE, FALSE, 0);
-  gtk_box_pack_start(g->details, GTK_WIDGET(grid), FALSE, FALSE, 0);
 
   // model, maker, lens
   g->model = GTK_ENTRY(gtk_entry_new());
@@ -1242,8 +1248,8 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
                (char *)NULL);
   label = gtk_label_new(_("model"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->model), label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), GTK_WIDGET(g->model), label, GTK_POS_RIGHT, 2, 1);
 
   g->maker = GTK_ENTRY(gtk_entry_new());
   /* xgettext:no-c-format */
@@ -1251,16 +1257,16 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
                (char *)NULL);
   label = gtk_label_new(_("maker"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->maker), label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), GTK_WIDGET(g->maker), label, GTK_POS_RIGHT, 2, 1);
 
   g->lens = GTK_ENTRY(gtk_entry_new());
   /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("lens"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->lens), label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), GTK_WIDGET(g->lens), label, GTK_POS_RIGHT, 2, 1);
 
   // iso
   label = gtk_label_new(_("ISO"));
@@ -1271,39 +1277,39 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
   g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum ISO value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_max, 0);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->iso_min), label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->iso_max), GTK_WIDGET(g->iso_min), GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), GTK_WIDGET(g->iso_min), label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), GTK_WIDGET(g->iso_max), GTK_WIDGET(g->iso_min), GTK_POS_RIGHT, 1, 1);
 
   // exposure
   label = gtk_label_new(_("exposure"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  g->exposure_min = dt_bauhaus_combobox_new(NULL);
+  g->exposure_max = dt_bauhaus_combobox_new(NULL);
   g_object_set(G_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
   g_object_set(G_OBJECT(g->exposure_max), "tooltip-text", _("maximum exposure time"), (char *)NULL);
   for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_min), dt_gui_presets_exposure_value_str[k]);
+    dt_bauhaus_combobox_add(g->exposure_min, dt_gui_presets_exposure_value_str[k]);
   for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_max), dt_gui_presets_exposure_value_str[k]);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->exposure_min), label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->exposure_max), GTK_WIDGET(g->exposure_min), GTK_POS_RIGHT, 1, 1);
+    dt_bauhaus_combobox_add(g->exposure_max, dt_gui_presets_exposure_value_str[k]);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_min, label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_max, g->exposure_min, GTK_POS_RIGHT, 1, 1);
 
   // aperture
   label = gtk_label_new(_("aperture"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  g->aperture_min = dt_bauhaus_combobox_new(NULL);
+  g->aperture_max = dt_bauhaus_combobox_new(NULL);
   g_object_set(G_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
   g_object_set(G_OBJECT(g->aperture_max), "tooltip-text", _("maximum aperture value"), (char *)NULL);
   for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_min), dt_gui_presets_aperture_value_str[k]);
+    dt_bauhaus_combobox_add(g->aperture_min, dt_gui_presets_aperture_value_str[k]);
   for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_max), dt_gui_presets_aperture_value_str[k]);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->aperture_min), label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->aperture_max), GTK_WIDGET(g->aperture_min), GTK_POS_RIGHT, 1, 1);
+    dt_bauhaus_combobox_add(g->aperture_max, dt_gui_presets_aperture_value_str[k]);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_min, label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_max, g->aperture_min, GTK_POS_RIGHT, 1, 1);
 
   // focal length
   label = gtk_label_new(_("focal length"));
@@ -1314,18 +1320,30 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   g_object_set(G_OBJECT(g->focal_length_min), "tooltip-text", _("minimum focal length"), (char *)NULL);
   g_object_set(G_OBJECT(g->focal_length_max), "tooltip-text", _("maximum focal length"), (char *)NULL);
   gtk_spin_button_set_digits(g->focal_length_max, 0);
-  gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->focal_length_min), label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->focal_length_max), GTK_WIDGET(g->focal_length_min), GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), GTK_WIDGET(g->focal_length_min), label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), GTK_WIDGET(g->focal_length_max), GTK_WIDGET(g->focal_length_min), GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_hexpand(GTK_WIDGET(g->focal_length_min), TRUE);
   gtk_widget_set_hexpand(GTK_WIDGET(g->focal_length_max), TRUE);
+
+  // raw/hdr/ldr
+  label = gtk_label_new(_("format"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line, 1, 1);
+
+  for(int i = 0; i < 3; i++)
+  {
+    g->format_btn[i] = gtk_check_button_new_with_label(_(dt_gui_presets_format_value_str[i]));
+    gtk_grid_attach(GTK_GRID(g->details), g->format_btn[i], 1, line + i, 2, 1);
+  }
+
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select description, model, maker, lens, iso_min, iso_max, exposure_min, "
                               "exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, "
-                              "autoapply, filter from presets where rowid = ?1",
+                              "autoapply, filter, format from presets where rowid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1341,23 +1359,26 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
     int k = 0;
     for(; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->exposure_min, k);
+    dt_bauhaus_combobox_set(g->exposure_min, k);
     val = sqlite3_column_double(stmt, 7);
     for(k = 0; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->exposure_max, k);
+    dt_bauhaus_combobox_set(g->exposure_max, k);
     val = sqlite3_column_double(stmt, 8);
     for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->aperture_min, k);
+    dt_bauhaus_combobox_set(g->aperture_min, k);
     val = sqlite3_column_double(stmt, 9);
     for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->aperture_max, k);
+    dt_bauhaus_combobox_set(g->aperture_max, k);
     gtk_spin_button_set_value(g->focal_length_min, sqlite3_column_double(stmt, 10));
     gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 11));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), sqlite3_column_int(stmt, 12));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), sqlite3_column_int(stmt, 13));
+    const int format = sqlite3_column_int(stmt, 14);
+    for(k = 0; k < 3; k++)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), format & (dt_gui_presets_format_flag[k]));
   }
   sqlite3_finalize(stmt);
 
@@ -1374,8 +1395,8 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
                               "model = ?2, maker = ?3, lens = ?4, iso_min = ?5, iso_max = ?6, exposure_min = "
                               "?7, exposure_max = ?8, aperture_min = ?9, "
                               "aperture_max = ?10, focal_length_min = ?11, focal_length_max = ?12, autoapply "
-                              "= ?13, filter = ?14, def = 0 "
-                              "where rowid = ?15",
+                              "= ?13, filter = ?14, def = 0, format = ?15 "
+                              "where rowid = ?16",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->model), -1, SQLITE_TRANSIENT);
@@ -1384,18 +1405,22 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, gtk_spin_button_get_value(g->iso_min));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, gtk_spin_button_get_value(g->iso_max));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7,
-                               dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_min)]);
+                               dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_min)]);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8,
-                               dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_max)]);
+                               dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_max)]);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9,
-                               dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_min)]);
+                               dt_gui_presets_aperture_value[dt_bauhaus_combobox_get(g->aperture_min)]);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10,
-                               dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_max)]);
+                               dt_gui_presets_aperture_value[dt_bauhaus_combobox_get(g->aperture_max)]);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, gtk_spin_button_get_value(g->focal_length_min));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, gtk_spin_button_get_value(g->focal_length_max));
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, g->rowid);
+  int format = 0;
+  for(int k = 0; k < 3; k++)
+    format += gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[k])) * dt_gui_presets_format_flag[k];
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, format);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, g->rowid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 

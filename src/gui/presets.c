@@ -21,6 +21,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "bauhaus/bauhaus.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
@@ -48,23 +49,25 @@ static const char *dt_gui_presets_aperture_value_str[]
         "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
 
 // format string and corresponding flag stored into the database
-const char *dt_gui_presets_format_value_str[3] = { 0, 0, 0 };
-const int dt_gui_presets_format_flag[3] = { FOR_LDR, FOR_RAW, FOR_HDR };
+static const char *dt_gui_presets_format_value_str[3] = { N_("normal images"),
+                                                          N_("raw"),
+                                                          N_("HDR")};
+static const int dt_gui_presets_format_flag[3] = { FOR_LDR, FOR_RAW, FOR_HDR };
 
 typedef struct dt_gui_presets_edit_dialog_t
 {
   dt_iop_module_t *module;
   GtkEntry *name, *description;
   GtkCheckButton *autoapply, *filter;
-  GtkBox *details;
-  GtkEntry *model, *maker, *lens;
-  GtkSpinButton *iso_min, *iso_max;
-  GtkComboBox *exposure_min, *exposure_max;
-  GtkComboBox *aperture_min, *aperture_max;
-  GtkSpinButton *focal_length_min, *focal_length_max;
+  GtkWidget *details;
+  GtkWidget *model, *maker, *lens;
+  GtkWidget *iso_min, *iso_max;
+  GtkWidget *exposure_min, *exposure_max;
+  GtkWidget *aperture_min, *aperture_max;
+  GtkWidget *focal_length_min, *focal_length_max;
   gchar *original_name;
   gint old_id;
-  GtkToggleButton *format_btn[3];
+  GtkWidget *format_btn[3];
 } dt_gui_presets_edit_dialog_t;
 
 // this is also called for non-gui applications linking to libdarktable!
@@ -312,26 +315,26 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, g->module->blend_params, sizeof(dt_develop_blend_params_t),
                                SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, dt_develop_blend_version());
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 9, gtk_entry_get_text(g->model), -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, gtk_entry_get_text(g->maker), -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 11, gtk_entry_get_text(g->lens), -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, gtk_spin_button_get_value(g->iso_min));
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 13, gtk_spin_button_get_value(g->iso_max));
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 9, gtk_entry_get_text(GTK_ENTRY(g->model)), -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, gtk_entry_get_text(GTK_ENTRY(g->maker)), -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 11, gtk_entry_get_text(GTK_ENTRY(g->lens)), -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->iso_min)));
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 13, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->iso_max)));
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 14,
-                                 dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_min)]);
+                                 dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_min)]);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 15,
-                                 dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_max)]);
+                                 dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_max)]);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 16,
-                                 dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_min)]);
+                                 dt_gui_presets_aperture_value[dt_bauhaus_combobox_get(g->aperture_min)]);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 17,
-                                 dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_max)]);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, gtk_spin_button_get_value(g->focal_length_min));
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, gtk_spin_button_get_value(g->focal_length_max));
+                                 dt_gui_presets_aperture_value[dt_bauhaus_combobox_get(g->aperture_max)]);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->focal_length_min)));
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->focal_length_max)));
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 21, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
     int format = 0;
     for(int k = 0; k < 3; k++)
-      format += gtk_toggle_button_get_active(g->format_btn[k]) * dt_gui_presets_format_flag[k];
+      format += gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[k])) * dt_gui_presets_format_flag[k];
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, format);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -369,14 +372,6 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   else
     name = g_strdup(name_in);
 
-  //  make sure the format values are initialized in the proper order: LDR, RAW, HDR
-  if(!dt_gui_presets_format_value_str[0])
-  {
-    dt_gui_presets_format_value_str[0] = _("normal images");
-    dt_gui_presets_format_value_str[1] = _("raw");
-    dt_gui_presets_format_value_str[2] = _("HDR");
-  }
-
   GtkWidget *dialog;
   /* Create the widgets */
   char title[1024];
@@ -386,16 +381,12 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
                                        GTK_RESPONSE_ACCEPT, _("_cancel"), GTK_RESPONSE_REJECT, NULL);
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
   gtk_container_add(content_area, GTK_WIDGET(box));
   GtkWidget *label;
-
-  GtkBox *vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  GtkBox *vbox3 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  GtkBox *vbox4 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
   dt_gui_presets_edit_dialog_t *g
       = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
@@ -424,113 +415,103 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
   g_signal_connect(G_OBJECT(g->filter), "toggled", G_CALLBACK(check_buttons_activated), g);
 
-  g->details = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
-  gtk_box_pack_start(box, GTK_WIDGET(g->details), FALSE, FALSE, 0);
-  gtk_box_pack_start(g->details, GTK_WIDGET(hbox), FALSE, FALSE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox3), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox4), TRUE, TRUE, 0);
+  int line = 0;
+  g->details = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(10));
+  gtk_box_pack_start(box, GTK_WIDGET(g->details), TRUE, TRUE, 0);
 
   // model, maker, lens
-  g->model = GTK_ENTRY(gtk_entry_new());
+  g->model = gtk_entry_new();
+  gtk_widget_set_hexpand(GTK_WIDGET(g->model), TRUE);
   g_object_set(G_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"),
                (char *)NULL);
   label = gtk_label_new(_("model"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->model), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
-  g->maker = GTK_ENTRY(gtk_entry_new());
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->model, label, GTK_POS_RIGHT, 2, 1);
+
+  g->maker = gtk_entry_new();
   g_object_set(G_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"),
                (char *)NULL);
   label = gtk_label_new(_("maker"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->maker), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
-  g->lens = GTK_ENTRY(gtk_entry_new());
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->maker, label, GTK_POS_RIGHT, 2, 1);
+
+  g->lens = gtk_entry_new();
   g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("lens"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->lens), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->lens, label, GTK_POS_RIGHT, 2, 1);
 
   // iso
   label = gtk_label_new(_("ISO"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
+  g->iso_min = gtk_spin_button_new_with_range(0, 51200, 100);
   g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum ISO value"), (char *)NULL);
-  gtk_spin_button_set_digits(g->iso_min, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->iso_min), FALSE, FALSE, 0);
-  g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->iso_min), 0);
+  g->iso_max = gtk_spin_button_new_with_range(0, 51200, 100);
   g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum ISO value"), (char *)NULL);
-  gtk_spin_button_set_digits(g->iso_max, 0);
-  gtk_box_pack_start(vbox4, GTK_WIDGET(g->iso_max), FALSE, FALSE, 0);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->iso_max), 0);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->iso_min, label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->iso_max, g->iso_min, GTK_POS_RIGHT, 1, 1);
 
   // exposure
   label = gtk_label_new(_("exposure"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  g->exposure_min = dt_bauhaus_combobox_new(NULL);
+  g->exposure_max = dt_bauhaus_combobox_new(NULL);
   g_object_set(G_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
   g_object_set(G_OBJECT(g->exposure_max), "tooltip-text", _("maximum exposure time"), (char *)NULL);
   for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_min), dt_gui_presets_exposure_value_str[k]);
+    dt_bauhaus_combobox_add(g->exposure_min, dt_gui_presets_exposure_value_str[k]);
   for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_max), dt_gui_presets_exposure_value_str[k]);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->exposure_min), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, GTK_WIDGET(g->exposure_max), FALSE, FALSE, 0);
+    dt_bauhaus_combobox_add(g->exposure_max, dt_gui_presets_exposure_value_str[k]);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_min, label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_max, g->exposure_min, GTK_POS_RIGHT, 1, 1);
 
   // aperture
   label = gtk_label_new(_("aperture"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  g->aperture_min = dt_bauhaus_combobox_new(NULL);
+  g->aperture_max = dt_bauhaus_combobox_new(NULL);
   g_object_set(G_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
   g_object_set(G_OBJECT(g->aperture_max), "tooltip-text", _("maximum aperture value"), (char *)NULL);
   for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_min), dt_gui_presets_aperture_value_str[k]);
+    dt_bauhaus_combobox_add(g->aperture_min, dt_gui_presets_aperture_value_str[k]);
   for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_max), dt_gui_presets_aperture_value_str[k]);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->aperture_min), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, GTK_WIDGET(g->aperture_max), FALSE, FALSE, 0);
+    dt_bauhaus_combobox_add(g->aperture_max, dt_gui_presets_aperture_value_str[k]);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_min, label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_max, g->aperture_min, GTK_POS_RIGHT, 1, 1);
 
   // focal length
   label = gtk_label_new(_("focal length"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  g->focal_length_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
-  gtk_spin_button_set_digits(g->focal_length_min, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->focal_length_min), FALSE, FALSE, 0);
-  g->focal_length_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
+  g->focal_length_min = gtk_spin_button_new_with_range(0, 1000, 10);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->focal_length_min), 0);
+  g->focal_length_max = gtk_spin_button_new_with_range(0, 1000, 10);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->focal_length_max), 0);
   g_object_set(G_OBJECT(g->focal_length_min), "tooltip-text", _("minimum focal length"), (char *)NULL);
   g_object_set(G_OBJECT(g->focal_length_max), "tooltip-text", _("maximum focal length"), (char *)NULL);
-  gtk_spin_button_set_digits(g->focal_length_max, 0);
-  gtk_box_pack_start(vbox4, GTK_WIDGET(g->focal_length_max), FALSE, FALSE, 0);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->focal_length_min, label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->focal_length_max, g->focal_length_min, GTK_POS_RIGHT, 1, 1);
 
   // raw/hdr/ldr
   label = gtk_label_new(_("format"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  gtk_grid_attach(GTK_GRID(g->details), label, 0, line, 1, 1);
 
-  g->format_btn[0] = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(dt_gui_presets_format_value_str[0]));
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->format_btn[0]), TRUE, FALSE, 0);
-  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
-
-  g->format_btn[1] = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(dt_gui_presets_format_value_str[1]));
-  gtk_box_pack_start(vbox2, gtk_label_new(""), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->format_btn[1]), TRUE, FALSE, 0);
-  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
-
-  g->format_btn[2] = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(dt_gui_presets_format_value_str[2]));
-  gtk_box_pack_start(vbox2, gtk_label_new(""), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->format_btn[2]), TRUE, FALSE, 0);
-  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+  for(int i = 0; i < 3; i++)
+  {
+    g->format_btn[i] = gtk_check_button_new_with_label(_(dt_gui_presets_format_value_str[i]));
+    gtk_grid_attach(GTK_GRID(g->details), g->format_btn[i], 1, line + i, 2, 1);
+  }
 
   gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
 
@@ -547,69 +528,69 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     g->old_id = sqlite3_column_int(stmt, 0);
-    gtk_entry_set_text(g->description, (const char *)sqlite3_column_text(stmt, 1));
-    gtk_entry_set_text(g->model, (const char *)sqlite3_column_text(stmt, 2));
-    gtk_entry_set_text(g->maker, (const char *)sqlite3_column_text(stmt, 3));
-    gtk_entry_set_text(g->lens, (const char *)sqlite3_column_text(stmt, 4));
-    gtk_spin_button_set_value(g->iso_min, sqlite3_column_double(stmt, 5));
-    gtk_spin_button_set_value(g->iso_max, sqlite3_column_double(stmt, 6));
+    gtk_entry_set_text(GTK_ENTRY(g->description), (const char *)sqlite3_column_text(stmt, 1));
+    gtk_entry_set_text(GTK_ENTRY(g->model), (const char *)sqlite3_column_text(stmt, 2));
+    gtk_entry_set_text(GTK_ENTRY(g->maker), (const char *)sqlite3_column_text(stmt, 3));
+    gtk_entry_set_text(GTK_ENTRY(g->lens), (const char *)sqlite3_column_text(stmt, 4));
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_min), sqlite3_column_double(stmt, 5));
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_max), sqlite3_column_double(stmt, 6));
 
     float val = sqlite3_column_double(stmt, 7);
     int k = 0;
     for(; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->exposure_min, k);
+    dt_bauhaus_combobox_set(g->exposure_min, k);
     val = sqlite3_column_double(stmt, 8);
     for(k = 0; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->exposure_max, k);
+    dt_bauhaus_combobox_set(g->exposure_max, k);
     val = sqlite3_column_double(stmt, 9);
     for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->aperture_min, k);
+    dt_bauhaus_combobox_set(g->aperture_min, k);
     val = sqlite3_column_double(stmt, 10);
     for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->aperture_max, k);
-    gtk_spin_button_set_value(g->focal_length_min, sqlite3_column_double(stmt, 11));
-    gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 12));
+    dt_bauhaus_combobox_set(g->aperture_max, k);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_min), sqlite3_column_double(stmt, 11));
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), sqlite3_column_double(stmt, 12));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), sqlite3_column_int(stmt, 13));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), sqlite3_column_int(stmt, 14));
     const int format = sqlite3_column_int(stmt, 15);
     for(k = 0; k < 3; k++)
-      gtk_toggle_button_set_active(g->format_btn[k], format & (dt_gui_presets_format_flag[k]));
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), format & (dt_gui_presets_format_flag[k]));
   }
   else
   {
-    gtk_entry_set_text(g->description, "");
-    gtk_entry_set_text(g->model, "%");
-    gtk_entry_set_text(g->maker, "%");
-    gtk_entry_set_text(g->lens, "%");
-    gtk_spin_button_set_value(g->iso_min, 0);
-    gtk_spin_button_set_value(g->iso_max, 51200);
+    gtk_entry_set_text(GTK_ENTRY(g->description), "");
+    gtk_entry_set_text(GTK_ENTRY(g->model), "%");
+    gtk_entry_set_text(GTK_ENTRY(g->maker), "%");
+    gtk_entry_set_text(GTK_ENTRY(g->lens), "%");
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_min), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_max), 51200);
 
     float val = 0;
     int k = 0;
     for(; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->exposure_min, k);
+    dt_bauhaus_combobox_set(g->exposure_min, k);
     val = 100000000;
     for(k = 0; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->exposure_max, k);
+    dt_bauhaus_combobox_set(g->exposure_max, k);
     val = 0;
     for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->aperture_min, k);
+    dt_bauhaus_combobox_set(g->aperture_min, k);
     val = 100000000;
     for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
       ;
-    gtk_combo_box_set_active(g->aperture_max, k);
-    gtk_spin_button_set_value(g->focal_length_min, 0);
-    gtk_spin_button_set_value(g->focal_length_max, 1000);
+    dt_bauhaus_combobox_set(g->aperture_max, k);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_min), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), 1000);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), 0);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), 0);
-    for(k = 0; k < 3; k++) gtk_toggle_button_set_active(g->format_btn[k], TRUE);
+    for(k = 0; k < 3; k++) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), TRUE);
   }
   sqlite3_finalize(stmt);
 
