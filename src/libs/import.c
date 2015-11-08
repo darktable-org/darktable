@@ -744,6 +744,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
         cr = cairo_create(surface);
         cairo_scale(cr, factor, factor);
         rsvg_handle_render_cairo(svg, cr);
+        cairo_destroy(cr);
         cairo_surface_flush(surface);
         pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, final_width / darktable.gui->ppd,
                                              final_height / darktable.gui->ppd);

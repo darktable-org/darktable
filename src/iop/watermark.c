@@ -900,6 +900,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   rsvg_handle_render_cairo(svg, cr);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
+  cairo_destroy(cr);
+
   /* ensure that all operations on surface finishing up */
   cairo_surface_flush(surface);
 

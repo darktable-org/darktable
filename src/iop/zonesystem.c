@@ -499,6 +499,7 @@ void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation, gpoint
       cr = cairo_create(surface);
       cairo_scale(cr, factor, factor);
       rsvg_handle_render_cairo(svg, cr);
+      cairo_destroy(cr);
       cairo_surface_flush(surface);
       g->image = surface;
       g->image_width = final_width / darktable.gui->ppd;

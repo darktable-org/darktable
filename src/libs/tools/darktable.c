@@ -143,6 +143,7 @@ void gui_init(dt_lib_module_t *self)
     cr = cairo_create(surface);
     cairo_scale(cr, darktable.gui->dpi_factor, darktable.gui->dpi_factor);
     rsvg_handle_render_cairo(svg, cr);
+    cairo_destroy(cr);
     cairo_surface_flush(surface);
 
     d->image = surface;
@@ -191,6 +192,7 @@ png_fallback:
     cairo_scale(cr, darktable.gui->dpi_factor, darktable.gui->dpi_factor);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_fill(cr);
+    cairo_destroy(cr);
     cairo_surface_flush(d->image);
 
     cairo_surface_destroy(surface);

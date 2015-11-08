@@ -1575,6 +1575,7 @@ void gui_init(dt_lib_module_t *self)
   cairo_t *inverse_cr = cairo_create(inverse_cst);
   cairo_set_source_rgb(inverse_cr, 0.7, 0.7, 0.7);
   dtgtk_cairo_paint_masks_inverse(inverse_cr, 0, 0, bs2, bs2, 0);
+  cairo_destroy(inverse_cr);
   data = cairo_image_surface_get_data(inverse_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
   d->ic_inverse = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
@@ -1584,6 +1585,7 @@ void gui_init(dt_lib_module_t *self)
   cairo_t *union_cr = cairo_create(union_cst);
   cairo_set_source_rgb(union_cr, 0.7, 0.7, 0.7);
   dtgtk_cairo_paint_masks_union(union_cr, 0, 0, bs2, bs2, 0);
+  cairo_destroy(union_cr);
   data = cairo_image_surface_get_data(union_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
   d->ic_union = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
@@ -1593,6 +1595,7 @@ void gui_init(dt_lib_module_t *self)
   cairo_t *intersection_cr = cairo_create(intersection_cst);
   cairo_set_source_rgb(intersection_cr, 0.7, 0.7, 0.7);
   dtgtk_cairo_paint_masks_intersection(intersection_cr, 0, 0, bs2, bs2, 0);
+  cairo_destroy(intersection_cr);
   data = cairo_image_surface_get_data(intersection_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
   d->ic_intersection = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
@@ -1602,6 +1605,7 @@ void gui_init(dt_lib_module_t *self)
   cairo_t *difference_cr = cairo_create(difference_cst);
   cairo_set_source_rgb(difference_cr, 0.7, 0.7, 0.7);
   dtgtk_cairo_paint_masks_difference(difference_cr, 0, 0, bs2, bs2, 0);
+  cairo_destroy(difference_cr);
   data = cairo_image_surface_get_data(difference_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
   d->ic_difference = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
@@ -1611,6 +1615,7 @@ void gui_init(dt_lib_module_t *self)
   cairo_t *exclusion_cr = cairo_create(exclusion_cst);
   cairo_set_source_rgb(exclusion_cr, 0.7, 0.7, 0.7);
   dtgtk_cairo_paint_masks_exclusion(exclusion_cr, 0, 0, bs2, bs2, 0);
+  cairo_destroy(exclusion_cr);
   data = cairo_image_surface_get_data(exclusion_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
   d->ic_exclusion = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
@@ -1620,6 +1625,7 @@ void gui_init(dt_lib_module_t *self)
   cairo_t *used_cr = cairo_create(used_cst);
   cairo_set_source_rgb(used_cr, 0.7, 0.7, 0.7);
   dtgtk_cairo_paint_masks_used(used_cr, 0, 0, bs2, bs2, 0);
+  cairo_destroy(used_cr);
   data = cairo_image_surface_get_data(used_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
   d->ic_used = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
