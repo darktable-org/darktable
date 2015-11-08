@@ -10,6 +10,6 @@ Translators
 
 For translating man pages we use `po4a`.
 
-To add a new translation just add your language code to po/LINGUAS and rerun cmake. Then run `make update-manpage-<language code>` from the toplevel `build/` directory. The same command has to be used to update the .po file later when the .pod was changed.
+To add a new translation just add your language code to `doc/man/po/LINGUAS` and re-run cmake. Then run `make update-manpage-<language code>` from the toplevel `build/` directory. The same command has to be used to update the .po file later when a .pod was changed.
 
 To build the manpage without compiling darktable you can run `make manpages` to generate all of them or just `make man_<language code>` for one of the translations. The result will be in `build/doc/man/*.1` for the untranslated man pages and `build/doc/man/<language code>/*.1` for the translated ones. You can look at them by pointing `man` to the file, for example `man build/doc/man/<language code>/darktable.1`.
