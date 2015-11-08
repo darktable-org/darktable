@@ -121,6 +121,35 @@ typedef struct dt_imageio_pdf_t
 void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
+  lua_State* L = darktable.lua_state.state ;
+  luaA_enum(L, _pdf_orientation_t);
+  luaA_enum_value_name(L, _pdf_orientation_t, ORIENTATION_PORTRAIT, "portrait");
+  luaA_enum_value_name(L, _pdf_orientation_t, ORIENTATION_LANDSCAPE, "landscape");
+
+  luaA_enum(L, _pdf_pages_t);
+  luaA_enum_value_name(L, _pdf_pages_t, PAGES_ALL, "all");
+  luaA_enum_value_name(L, _pdf_pages_t, PAGES_SINGLE, "single");
+  luaA_enum_value_name(L, _pdf_pages_t, PAGES_CONTACT, "contact");
+
+  luaA_enum(L, _pdf_mode_t);
+  luaA_enum_value_name(L, _pdf_mode_t, MODE_NORMAL, "normal");
+  luaA_enum_value_name(L, _pdf_mode_t, MODE_DRAFT, "draft");
+  luaA_enum_value_name(L, _pdf_mode_t, MODE_DEBUG, "debug");
+
+  luaA_enum(L, dt_pdf_stream_encoder_t);
+  luaA_enum_value_name(L, dt_pdf_stream_encoder_t, DT_PDF_STREAM_ENCODER_ASCII_HEX, "uncompressed");
+  luaA_enum_value_name(L, dt_pdf_stream_encoder_t, DT_PDF_STREAM_ENCODER_FLATE, "deflate");
+
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,title, char_128);
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,size, char_64);
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,orientation, _pdf_orientation_t);
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,border, char_64);
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,dpi, float);
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,rotate, bool);
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,pages, _pdf_pages_t);
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,icc, bool);
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,mode, _pdf_mode_t);
+  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,compression, dt_pdf_stream_encoder_t);
   // TODO
 #endif
 }
