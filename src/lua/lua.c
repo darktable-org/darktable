@@ -25,7 +25,7 @@ void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
   printf("lua stack at %s:%d", function, line);
   if(!L)
   {
-    printf("Stack is NULL\n");
+    printf(" Stack is NULL\n");
     return;
   }
   else

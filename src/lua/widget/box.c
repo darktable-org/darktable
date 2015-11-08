@@ -55,9 +55,6 @@ int dt_lua_init_widget_box(lua_State* L)
 {
   dt_lua_init_widget_type(L,&box_type,lua_box,GTK_TYPE_BOX);
 
-  lua_pushcfunction(L, dt_lua_widget_tostring_member);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
-  dt_lua_type_setmetafield(L, lua_box, "__tostring");
   lua_pushcfunction(L,orientation_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_box, "orientation");

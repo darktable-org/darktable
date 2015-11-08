@@ -341,6 +341,22 @@ static int autotype_newindex(lua_State *L)
   return (lua_gettop(L) - pos_set + 1);
 }
 
+
+static int autotype_tostring(lua_State *L)
+{
+  if(luaL_getmetafield(L,1,"__real_tostring")) {
+    lua_insert(L,1);
+    lua_call(L,1,1);
+    return 1;
+  } else {
+    char tmp[256];
+    luaL_getmetafield(L,1,"__luaA_TypeName");
+    snprintf(tmp,sizeof(tmp),"aa %s (%p)",lua_tostring(L,-1),lua_topointer(L,1));
+    lua_pushstring(L,tmp);
+    return 1;
+  }
+}
+
 /*************************/
 /* PUSH AND TO FUNCTIONS */
 /*************************/
@@ -694,6 +710,11 @@ static void init_metatable(lua_State *L, luaA_Type type_id)
 
   lua_newtable(L);
   lua_setfield(L, -2, "__set");
+
+  lua_pushvalue(L, -1);
+  lua_pushcclosure(L, autotype_tostring, 1);
+  lua_setfield(L, -2, "__tostring");
+
   // leave metatable on top of stack
 }
 
@@ -837,6 +858,10 @@ luaA_Type dt_lua_init_gpointer_type_type(lua_State *L, luaA_Type type_id)
 {
   init_metatable(L, type_id);
 
+  lua_getfield(L,-1,"__next");
+  lua_pushcclosure(L, gpointer_wrapper,1);
+  lua_setfield(L, -2, "__next");
+
   lua_getfield(L,-1,"__index");
   lua_pushcclosure(L, gpointer_wrapper,1);
   lua_setfield(L, -2, "__index");
@@ -925,6 +950,39 @@ gboolean dt_lua_typeisa_type(lua_State *L, luaA_Type obj_type, luaA_Type type_id
 
 void dt_lua_type_setmetafield_type(lua_State*L,luaA_Type type_id,const char* method_name)
 {
+  // These metafields should never be overridden by user code
+  if( 
+      !strcmp(method_name,"__index") ||
+      !strcmp(method_name,"__newindex") ||
+      !strcmp(method_name,"__number_index") ||
+      !strcmp(method_name,"__number_newindex") ||
+      !strcmp(method_name,"__pairs") ||
+      !strcmp(method_name,"__ipairs") ||
+      !strcmp(method_name,"__next") ||
+      !strcmp(method_name,"__inext") ||
+      !strcmp(method_name,"__get") ||
+      !strcmp(method_name,"__set") ||
+      !strcmp(method_name,"__len") ||
+      !strcmp(method_name,"__luaA_Type") ||
+      !strcmp(method_name,"__luaA_TypeName") ||
+      !strcmp(method_name,"__luaA_ParentMetatable") ||
+      !strcmp(method_name,"__init") ||
+      !strcmp(method_name,"__values") ||
+      !strcmp(method_name,"__singleton") ||
+      !strcmp(method_name,"__pusher") ||
+      !strcmp(method_name,"__getter") ||
+      !strcmp(method_name,"__mode") ||
+      0) {
+        luaL_error(L,"non-core lua code is not allowed to change meta-field %s\n",method_name);
+  } else if(!strcmp(method_name,"__tostring")) {
+    luaL_getmetatable(L, luaA_typename(L, type_id));
+    lua_pushvalue(L,-2);
+    lua_setfield(L, -2, "__real_tostring");
+    lua_pop(L, 2); // pop the metatable and the value
+    return;
+  } else {
+    //printf("metafield not handled :%s\n",method_name);
+  }
   luaL_getmetatable(L, luaA_typename(L, type_id));
   lua_pushvalue(L,-2);
   lua_setfield(L, -2, method_name);

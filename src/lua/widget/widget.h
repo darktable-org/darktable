@@ -83,9 +83,6 @@ void dt_lua_widget_unbind(lua_State *L, lua_widget widget);
 
 int dt_lua_init_widget(lua_State *L);
 
-/** a generic tostring implementation for widgets, returning the GObject type name (for example "GtkBox") */
-int dt_lua_widget_tostring_member(lua_State *L);
-
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
