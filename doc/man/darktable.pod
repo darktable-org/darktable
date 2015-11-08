@@ -40,7 +40,7 @@ B<darktable> is also fully color managed, which gives you full control over the 
 
 The application relies on a modern plug-in architecture thus making it easy for
 3rd party developers to extend the existing capabilities of the application.
-All light-table and darkroom features are implemented as plug-ins, so you can
+All lighttable and darkroom features are implemented as plug-ins, so you can
 create your plug-ins reusing existing code.
 Most workflow specific things can also be scripted in B<Lua>.
 
@@ -56,13 +56,13 @@ If a folder is given darktable starts in lighttable view with the content of tha
 If there is already an instance of darktable running (using the same library) the image or folder will be opened
 there, using B<D-Bus> to communicate between the two processes.
 
-=item B<< -d <debugoption> >>
+=item B<< -d <debug option> >>
 
 This option enables debug output to the terminal.
 There are several subsystems of darktable and debugging of each of them can be activated separately.
 You can use this option multiple times if you want debugging output of more than one subsystem.
 
-A few of those debugoptions are:
+A few of those debug options are:
 
 =over
 
@@ -74,7 +74,7 @@ you will get a nice B<control.svg> with a visualization of the threads' work.
 
 =item B<cache>
 
-This will give you a lot of debugging info about the thumbnail cache for light table mode.
+This will give you a lot of debugging info about the thumbnail cache for lighttable mode.
 If compiled in debug mode, this will also tell you where in the code a certain buffer has last been locked.
 
 =item B<perf>
