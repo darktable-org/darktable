@@ -1134,7 +1134,13 @@ static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
   // Otherwise just return alphabetical order
   gtk_tree_model_get(model, a, A_TRANS_COLUMN, &a_text, -1);
   gtk_tree_model_get(model, b, A_TRANS_COLUMN, &b_text, -1);
-  return strcasecmp(a_text, b_text);
+
+  const int res = strcasecmp(a_text, b_text);
+
+  g_free(a_text);
+  g_free(b_text);
+
+  return res;
 }
 
 // Custom sort function for TreeModel entries for presets list
