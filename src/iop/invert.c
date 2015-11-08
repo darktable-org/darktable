@@ -336,8 +336,8 @@ void init_global(dt_iop_module_so_t *module)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = alloc_params(dt_iop_invert_params_t);
-  module->default_params = alloc_params(dt_iop_invert_params_t);
+  module->params = calloc(1, sizeof(dt_iop_invert_params_t));
+  module->default_params = calloc(1, sizeof(dt_iop_invert_params_t));
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_invert_params_t);
   module->gui_data = NULL;

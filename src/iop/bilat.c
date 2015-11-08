@@ -184,8 +184,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
-  module->params = alloc_params(dt_iop_bilat_params_t);
-  module->default_params = alloc_params(dt_iop_bilat_params_t);
+  module->params = calloc(1, sizeof(dt_iop_bilat_params_t));
+  module->default_params = calloc(1, sizeof(dt_iop_bilat_params_t));
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;

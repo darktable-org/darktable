@@ -429,8 +429,8 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->init(module);
 
   /* initialize blendop params and default values */
-  module->blend_params = alloc_params(dt_develop_blend_params_t);
-  module->default_blendop_params = alloc_params(dt_develop_blend_params_t);
+  module->blend_params = calloc(1, sizeof(dt_develop_blend_params_t));
+  module->default_blendop_params = calloc(1, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
 

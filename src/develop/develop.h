@@ -29,8 +29,6 @@
 #include "develop/imageop.h"
 #include "common/image.h"
 
-#define alloc_params(struct) calloc(1, sizeof(struct))
-
 struct dt_iop_module_t;
 
 typedef struct dt_dev_history_item_t
