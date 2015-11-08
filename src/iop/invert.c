@@ -348,7 +348,7 @@ void cleanup(dt_iop_module_t *module)
 {
   g_free(module->gui_data);
   module->gui_data = NULL;
-  g_free(module->params);
+  free(module->params);
   module->params = NULL;
 }
 
