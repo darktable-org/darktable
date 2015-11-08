@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2015-11-08 17:18+0100\n"
-"PO-Revision-Date: 2015-11-08 17:22+0100\n"
+"POT-Creation-Date: 2015-11-08 23:16+0100\n"
+"PO-Revision-Date: 2015-11-08 23:18+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -129,7 +129,7 @@ msgstr ""
 msgid ""
 "The application relies on a modern plug-in architecture thus making it easy "
 "for 3rd party developers to extend the existing capabilities of the "
-"application.  All light-table and darkroom features are implemented as plug-"
+"application.  All lighttable and darkroom features are implemented as plug-"
 "ins, so you can create your plug-ins reusing existing code.  Most workflow "
 "specific things can also be scripted in B<Lua>."
 msgstr ""
@@ -171,7 +171,7 @@ msgstr ""
 
 #. type: =item
 #: darktable.pod:59
-msgid "B<< -d <debugoption> >>"
+msgid "B<< -d <debug option> >>"
 msgstr "B<< -d <Debugoption> >>"
 
 #. type: textblock
@@ -189,7 +189,7 @@ msgstr ""
 
 #. type: textblock
 #: darktable.pod:65
-msgid "A few of those debugoptions are:"
+msgid "A few of those debug options are:"
 msgstr "Einige dieser Debug-Optionen sind:"
 
 #. type: =item
@@ -219,7 +219,7 @@ msgstr "B<cache>"
 #: darktable.pod:77
 msgid ""
 "This will give you a lot of debugging info about the thumbnail cache for "
-"light table mode.  If compiled in debug mode, this will also tell you where "
+"lighttable mode.  If compiled in debug mode, this will also tell you where "
 "in the code a certain buffer has last been locked."
 msgstr ""
 "Dies gibt eine Menge and Debug-Informationen über den Vorschaubild-Cache des "
