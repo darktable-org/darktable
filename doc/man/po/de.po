@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2015-11-08 23:16+0100\n"
-"PO-Revision-Date: 2015-11-08 23:18+0100\n"
+"POT-Creation-Date: 2015-11-09 23:30+0100\n"
+"PO-Revision-Date: 2015-11-09 23:30+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -473,7 +473,7 @@ msgstr "B<l>"
 
 #. type: textblock
 #: darktable.pod:172
-msgid "Switch to lightroom view"
+msgid "Switch to lighttable view"
 msgstr "Zur Leuchttisch-Ansicht wechseln"
 
 #. type: =item
@@ -898,8 +898,8 @@ msgid "B<Ctrl-f>"
 msgstr "B<Strg-f>"
 
 #. type: textblock
-#: darktable.pod:352
-msgid "show/hide film strip"
+#: darktable.pod:352 darktable.pod:410 darktable.pod:424
+msgid "Show/hide filmstrip"
 msgstr "Filmstreifen anzeigen/verstecken"
 
 #. type: =item
@@ -997,11 +997,6 @@ msgstr "Verringere, erhöhe die Pinselgröße beim Malen von Masken"
 msgid "Tethered mode"
 msgstr "Tethering-Ansicht"
 
-#. type: textblock
-#: darktable.pod:410 darktable.pod:424
-msgid "Show/hide film strip"
-msgstr "Filmstreifen anzeigen/verstecken"
-
 #. type: =item
 #: darktable.pod:412
 msgid "B<v>"
@@ -1034,7 +1029,7 @@ msgstr "Wiederholen"
 
 #. type: =head3
 #: darktable.pod:436
-msgid "Film strip (when the cursor is on top of the film strip)"
+msgid "Filmstrip (when the cursor is on top of the filmstrip)"
 msgstr "Filmstreifen (wenn der Cursor über dem Filmstreifen ist)"
 
 #. type: =head3
@@ -1435,3 +1430,6 @@ msgstr ""
 "\n"
 "Die deutsche Übersetzung wurde von Tobias Ellinghaus E<lt>me@houz.orgE<gt> "
 "erstellt."
+
+#~ msgid "show/hide film strip"
+#~ msgstr "Filmstreifen anzeigen/verstecken"
