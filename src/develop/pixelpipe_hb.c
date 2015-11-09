@@ -50,6 +50,12 @@ typedef enum dt_pixelpipe_flow_t
   PIXELPIPE_FLOW_BLENDED_ON_GPU = 1 << 7
 } dt_pixelpipe_flow_t;
 
+typedef enum dt_pixelpipe_picker_source_t
+{
+  PIXELPIPE_PICKER_INPUT = 0,
+  PIXELPIPE_PICKER_OUTPUT = 1
+} dt_pixelpipe_picker_source_t;
+
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
 
@@ -408,7 +414,8 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
 
 // helper for color picking
 static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *roi,
-                             float *picked_color, float *picked_color_min, float *picked_color_max)
+                             float *picked_color, float *picked_color_min, float *picked_color_max,
+                             dt_pixelpipe_picker_source_t picker_source)
 {
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -435,7 +442,8 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt
     for(int k = 1; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * ht;
 
     // transform back to current module coordinates
-    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->priority,
+    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
+                                      module->priority + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
                                       99999, fbox, 2);
 
     fbox[0] -= roi->x;
@@ -518,7 +526,8 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt
     fpoint[1] = module->color_picker_point[1] * ht;
 
     // transform back to current module coordinates
-    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->priority,
+    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
+                                      module->priority  + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
                                       99999, fpoint, 1);
 
     point[0] = fpoint[0] - roi->x;
@@ -541,7 +550,7 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt
 // as long as we work on small image sizes like in image preview
 static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
                                 float *picked_color, float *picked_color_min, float *picked_color_max,
-                                float *buffer, size_t bufsize)
+                                float *buffer, size_t bufsize, dt_pixelpipe_picker_source_t picker_source)
 {
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -576,7 +585,8 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
   }
 
   // transform back to current module coordinates
-  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->priority,
+  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
+                                    module->priority  + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
                                     99999, fbox, 2);
 
   fbox[0] -= roi->x;
@@ -1108,10 +1118,11 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             size_t outbufsize = roi_out->width * roi_out->height * bpp;
 
             pixelpipe_picker_cl(pipe->devid, module, cl_mem_input, &roi_in, module->picked_color,
-                                module->picked_color_min, module->picked_color_max, *output, outbufsize);
+                                module->picked_color_min, module->picked_color_max, *output, outbufsize,
+                                PIXELPIPE_PICKER_INPUT);
             pixelpipe_picker_cl(pipe->devid, module, (*cl_mem_output), roi_out, module->picked_output_color,
                                 module->picked_output_color_min, module->picked_output_color_max, *output,
-                                outbufsize);
+                                outbufsize, PIXELPIPE_PICKER_OUTPUT);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1240,9 +1251,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
             pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                             module->picked_color_max);
+                             module->picked_color_max, PIXELPIPE_PICKER_INPUT);
             pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
-                             module->picked_output_color_min, module->picked_output_color_max);
+                             module->picked_output_color_min, module->picked_output_color_max,
+                             PIXELPIPE_PICKER_OUTPUT);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1453,9 +1465,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
             pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                             module->picked_color_max);
+                             module->picked_color_max, PIXELPIPE_PICKER_INPUT);
             pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
-                             module->picked_output_color_min, module->picked_output_color_max);
+                             module->picked_output_color_min, module->picked_output_color_max,
+                             PIXELPIPE_PICKER_OUTPUT);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1585,9 +1598,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
            module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
         {
           pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                           module->picked_color_max);
+                           module->picked_color_max, PIXELPIPE_PICKER_INPUT);
           pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
-                           module->picked_output_color_min, module->picked_output_color_max);
+                           module->picked_output_color_min, module->picked_output_color_max,
+                           PIXELPIPE_PICKER_OUTPUT);
 
           dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1682,9 +1696,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
          module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
       {
         pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                         module->picked_color_max);
+                         module->picked_color_max, PIXELPIPE_PICKER_INPUT);
         pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
-                         module->picked_output_color_min, module->picked_output_color_max);
+                         module->picked_output_color_min, module->picked_output_color_max,
+                         PIXELPIPE_PICKER_OUTPUT);
 
         dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1766,9 +1781,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
        module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
     {
       pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                       module->picked_color_max);
+                       module->picked_color_max, PIXELPIPE_PICKER_INPUT);
       pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
-                       module->picked_output_color_min, module->picked_output_color_max);
+                       module->picked_output_color_min, module->picked_output_color_max,
+                       PIXELPIPE_PICKER_OUTPUT);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
