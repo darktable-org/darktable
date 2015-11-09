@@ -76,7 +76,7 @@ local function document_type_sub(node,result,parent,prev_name)
 			set_attribute(result,"has_ipairs",true)
 		elseif field == "__len" then
 			set_attribute(result,"has_length",true)
-		elseif field == "__tostring" then
+		elseif field == "__real_tostring" then
 			set_attribute(result,"has_tostring",true)
 		elseif field == "__singleton" then
 			set_attribute(result,"is_singleton",true)
@@ -139,6 +139,7 @@ local function document_type_sub(node,result,parent,prev_name)
 			or field == "__init"
 			or field == "__introspection_data_type"
 			or field == "__gtk_signals"
+			or field == "__tostring"
 			)	then
 			-- nothing
 		else

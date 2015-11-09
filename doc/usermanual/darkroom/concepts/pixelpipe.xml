@@ -27,7 +27,7 @@
 
   <para>
     Modules are applied in a fixed order. This differentiates darktable, as a non-destructive
-    image editor, from classical image manipulation programs like The Gimp. As module order is
+    image editor, from classical image manipulation programs like GIMP. As module order is
     fixed, you are free to activate, deactivate or change the parameters of a module at
     arbitrary points in time; the order of activation in your workflow does not have any impact
     on the outcome.

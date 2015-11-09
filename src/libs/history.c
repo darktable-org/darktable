@@ -157,7 +157,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   widget = gtk_toggle_button_new_with_label(numlabel);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
-  g_object_set_data(G_OBJECT(widget), "label", (gpointer)g_strdup(label));
+  g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 
   /* set callback when clicked */
@@ -272,11 +272,12 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
 
   /* inactivate all toggle buttons */
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
-  for(guint i = 0; i < g_list_length(children); i++)
+  for(GList *l = children; l != NULL; l = g_list_next(l))
   {
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth_data(children, i));
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(l->data);
     if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (char *)NULL);
   }
+  g_list_free(children);
 
   reset = 0;
   if(darktable.gui->reset) return;

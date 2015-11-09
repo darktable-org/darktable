@@ -281,13 +281,16 @@ static gboolean _combo_box_set_active_text(GtkComboBox *cb, gchar *text)
         0,
       };
       gtk_tree_model_get_value(tm, &iter, 0, &value);
-      if(G_VALUE_HOLDS_STRING(&value))
-        if((sv = (gchar *)g_value_get_string(&value)) != NULL && strcmp(sv, text) == 0)
-        {
-          gtk_combo_box_set_active_iter(cb, &iter);
-          found = TRUE;
-          break;
-        }
+      if(G_VALUE_HOLDS_STRING(&value)
+         && ((sv = (gchar *)g_value_get_string(&value)) != NULL && strcmp(sv, text) == 0))
+      {
+        g_value_unset(&value);
+        gtk_combo_box_set_active_iter(cb, &iter);
+        found = TRUE;
+        break;
+      }
+      else
+        g_value_unset(&value);
     } while(gtk_tree_model_iter_next(tm, &iter));
   }
   return found;
@@ -897,6 +900,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   rsvg_handle_render_cairo(svg, cr);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
+  cairo_destroy(cr);
+
   /* ensure that all operations on surface finishing up */
   cairo_surface_flush(surface);
 
@@ -1202,9 +1207,9 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = malloc(sizeof(dt_iop_watermark_params_t));
+  module->params = calloc(1, sizeof(dt_iop_watermark_params_t));
   module->params_size = sizeof(dt_iop_watermark_params_t);
-  module->default_params = malloc(sizeof(dt_iop_watermark_params_t));
+  module->default_params = calloc(1, sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
   module->priority = 966; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_watermark_params_t);

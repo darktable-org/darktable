@@ -1,6 +1,6 @@
 #!/bin/sh
 
-git log ^release-1.4.2 HEAD| grep ^Author: | sed 's/ <.*//; s/^Author: //' | sort | uniq -c | sort -nr
+git log ^release-1.6.9 HEAD| grep ^Author: | sed 's/ <.*//; s/^Author: //' | sort | uniq -c | sort -nr
 
 echo "are you sure these guys received proper credit in the about dialog?"
 read answer

@@ -150,9 +150,9 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
   }
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
     if(sqlite3_column_bytes(stmt, 1))
     {
+      char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
       switch(sqlite3_column_int(stmt, 0))
       {
         case DT_METADATA_XMP_DC_CREATOR:
@@ -186,11 +186,11 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
   fill_combo_box_entry(&(d->creator), creator_count, &creator, &(d->multi_creator));
   fill_combo_box_entry(&(d->publisher), publisher_count, &publisher, &(d->multi_publisher));
 
-  g_list_free(g_list_first(title));
-  g_list_free(g_list_first(description));
-  g_list_free(g_list_first(creator));
-  g_list_free(g_list_first(publisher));
-  g_list_free(g_list_first(rights));
+  g_list_free_full(g_list_first(title), g_free);
+  g_list_free_full(g_list_first(description), g_free);
+  g_list_free_full(g_list_first(creator), g_free);
+  g_list_free_full(g_list_first(publisher), g_free);
+  g_list_free_full(g_list_first(rights), g_free);
 }
 
 

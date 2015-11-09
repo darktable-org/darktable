@@ -36,10 +36,11 @@
   <bridgehead renderas="sect4">color manage cached thumbnails</bridgehead>
 
   <para>
-    If activated darktable generates thumbnails in a general color space (AdobeRGB) in order to render them
-    independently of the individual monitor. Conversion to the monitor color space is done at display time. 
-    If this option is not activated thumbnails are directly stored in the specific monitor color space 
-    valid at generation time and are subsequently displayed without further corrections (default on).
+    If activated darktable generates thumbnails in a general color space (AdobeRGB) in order to
+    render them independently of the individual monitor. Conversion to the monitor color space
+    is done at display time. If this option is not activated thumbnails are directly stored in
+    the specific monitor color space valid at generation time and are subsequently displayed
+    without further corrections (default on).
   </para>
 
   <bridgehead renderas="sect4">number of background threads</bridgehead>
@@ -97,12 +98,12 @@
     (default on).
   </para>
 
-  <bridgehead renderas="sect4">always try to use LittleCMS 2</bridgehead>
+  <bridgehead renderas="sect4">always use LittleCMS 2 to apply output color profile</bridgehead>
 
   <para>
-    If this option is activated, darktable will use system library littlecms2 instead of its own
-    routines. This is about 28x slower than the default but might give more accurate results in
-    some cases (default off).
+    If this option is activated, darktable will use system library LittleCMS 2 instead of its
+    own routines. This is significantly slower than the default but might give more accurate
+    results in some cases (default off).
   </para>
 
   <bridgehead renderas="sect4">do high quality resampling during export</bridgehead>
@@ -143,7 +144,10 @@
     the meantime by some other software. If updated XMP files are found a menu opens for the
     user to decide which of the XMP files to be reloaded&nbsp;&ndash; replacing darktable's
     database entries by the XMP file contents&nbsp;&ndash; and which of the XMP files to be
-    overwritten by darktable's database (default off).
+    overwritten by darktable's database. Activating this option also causes darktable to check
+    for text sidecar files that have been added after import time&nbsp;&ndash; see option
+    <quote>overlay txt sidecar over zoomed images</quote> in <xref linkend="gui_options"/>
+    (default off).
   </para>
 
   <bridgehead renderas="sect4">executable for playing audio files</bridgehead>
@@ -151,6 +155,13 @@
   <para>
     Defines an external program which is used in the lighttable view to play audio files that
     some cameras record to keep notes for images (default <quote>aplay</quote>).
+  </para>
+
+  <bridgehead renderas="sect4">auto-apply per camera basecurve presets</bridgehead>
+
+  <para>
+    Use the per-camera basecurve by default instead of the generic manufacturer one if there is
+    one available. For more details see <xref linkend="base_curve"/> (default off).
   </para>
 
 <!--

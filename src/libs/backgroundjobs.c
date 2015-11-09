@@ -198,8 +198,10 @@ static gboolean _destroyed_gui_thread(gpointer user_data)
   params->instance->widget = NULL;
 
   /* if jobbox is empty lets hide */
-  if(g_list_length(gtk_container_get_children(GTK_CONTAINER(params->self->widget))) == 0)
-    gtk_widget_hide(params->self->widget);
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(params->self->widget));
+  if(!childs) gtk_widget_hide(params->self->widget);
+
+  g_list_free(childs);
 
   // free data
   free(params->instance);

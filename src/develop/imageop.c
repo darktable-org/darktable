@@ -429,8 +429,8 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->init(module);
 
   /* initialize blendop params and default values */
-  module->blend_params = g_malloc0(sizeof(dt_develop_blend_params_t));
-  module->default_blendop_params = g_malloc0(sizeof(dt_develop_blend_params_t));
+  module->blend_params = calloc(1, sizeof(dt_develop_blend_params_t));
+  module->default_blendop_params = calloc(1, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
 
@@ -942,10 +942,14 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
 {
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
+
   /* get the enable button spacer and button */
-  GtkWidget *eb = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)), 0);
-  GtkWidget *ebs = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)), 1);
-  GtkWidget *lab = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)), 5);
+  GtkWidget *eb = g_list_nth_data(childs, 0);
+  GtkWidget *ebs = g_list_nth_data(childs, 1);
+  GtkWidget *lab = g_list_nth_data(childs, 5);
+
+  g_list_free(childs);
 
   // set panel name to display correct multi-instance
   _iop_panel_label(lab, module);
@@ -971,7 +975,9 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
 static void _iop_gui_update_label(dt_iop_module_t *module)
 {
   if(!module->header) return;
-  GtkWidget *lab = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)), 5);
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
+  GtkWidget *lab = g_list_nth_data(childs, 5);
+  g_list_free(childs);
   _iop_panel_label(lab, module);
 }
 
@@ -1563,7 +1569,9 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
   gint flags = CPF_DIRECTION_DOWN;
 
   /* get arrow icon widget */
-  icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(header));
+  icon = g_list_last(childs)->data;
+  g_list_free(childs);
   if(!expanded) flags = CPF_DIRECTION_LEFT;
 
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
@@ -1646,7 +1654,9 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
   gint flags = CPF_DIRECTION_DOWN;
 
   /* get arrow icon widget */
-  icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(header));
+  icon = g_list_last(childs)->data;
+  g_list_free(childs);
   if(!expanded) flags = CPF_DIRECTION_LEFT;
 
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);

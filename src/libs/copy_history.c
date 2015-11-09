@@ -73,6 +73,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.xmp");
+  gtk_file_filter_add_pattern(filter, "*.XMP");
   gtk_file_filter_set_name(filter, _("XMP sidecar files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 

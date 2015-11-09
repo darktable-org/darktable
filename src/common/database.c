@@ -1202,8 +1202,11 @@ error:
 void dt_database_destroy(const dt_database_t *db)
 {
   sqlite3_close(db->handle);
-  unlink(db->lockfile);
-  g_free(db->lockfile);
+  if (db->lockfile)
+  {
+    unlink(db->lockfile);
+    g_free(db->lockfile);
+  }
   g_free(db->dbfilename);
   g_free((dt_database_t *)db);
 }

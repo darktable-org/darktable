@@ -413,7 +413,7 @@ GList *dt_guides_init()
   {
     _golden_mean_t *user_data = (_golden_mean_t *)malloc(sizeof(_golden_mean_t));
     _golden_mean_set_data(user_data, dt_conf_get_int("plugins/darkroom/clipping/golden_extras"));
-    _guides_add_guide(&guides, _("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, user_data, NULL);
+    _guides_add_guide(&guides, _("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, user_data, free);
   }
 
   return guides;

@@ -640,6 +640,9 @@ static void _show_filmroll_present(GtkTreeViewColumn *column, GtkCellRenderer *r
     g_object_set(renderer, "strikethrough-set", TRUE, NULL);
   else
     g_object_set(renderer, "strikethrough-set", FALSE, NULL);
+
+  g_free(pch);
+  g_free(path);
 }
 
 static GtkTreeStore *_folder_tree()
@@ -674,6 +677,7 @@ static GtkTreeStore *_folder_tree()
 
     root = gtk_tree_path_new_first();
     gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, root);
+    gtk_tree_path_free(root);
 // current = iter; // This needs to be deleted if the following code is enabled
 #if 0
     int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),NULL);
@@ -716,10 +720,13 @@ static GtkTreeStore *_folder_tree()
 
           if(strcmp(value, pch[level]) == 0)
           {
+            g_free(value);
             current = iter;
             found = TRUE;
             break;
           }
+
+          g_free(value);
         }
       }
 
@@ -772,6 +779,8 @@ static gboolean match_string(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
     g_free(needle);
   }
 
+  g_free(str);
+
   gtk_tree_store_set(GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
   return FALSE;
 }
@@ -784,11 +793,13 @@ static gboolean reveal_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   gchar *str;
 
   gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
+  g_free(str);
   if(!state) return FALSE;
 
   while(gtk_tree_model_iter_parent(model, &parent, &child))
   {
     gtk_tree_model_get(model, &parent, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
+    g_free(str);
     gtk_tree_store_set(GTK_TREE_STORE(model), &parent, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
     child = parent;
   }
@@ -1108,10 +1119,13 @@ static void tags_view(dt_lib_collect_rule_t *dr)
 
               if(strcmp(value, pch[j]) == 0)
               {
+                g_free(value);
                 current = iter;
                 found = TRUE;
                 break;
               }
+
+              g_free(value);
             }
           }
 
@@ -1483,8 +1497,12 @@ static void create_folders_gui(dt_lib_collect_rule_t *dr)
 
     GtkTreePath *root = gtk_tree_path_new_first();
     if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(treemodel_folders), &iter, root))
+    {
       // something went wrong, get out.
+      gtk_tree_path_free(root);
       return;
+    }
+    gtk_tree_path_free(root);
     int children = 1; // To be deleted if the following code in enabled
 #if 0
     int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treemodel_folders), NULL);
@@ -1891,6 +1909,7 @@ static void filmrolls_imported(gpointer instance, int film_id, gpointer self)
   d->active_rule = active;
 
   // update tree
+  g_object_unref(d->treemodel_folders);
   d->treemodel_folders = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
   d->rule[active].typing = FALSE;
@@ -1910,6 +1929,7 @@ static void filmrolls_removed(gpointer instance, gpointer self)
   d->active_rule = active;
 
   // update tree
+  g_object_unref(d->treemodel_folders);
   d->treemodel_folders = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
   d->rule[active].typing = FALSE;
@@ -2152,6 +2172,10 @@ void gui_cleanup(dt_lib_module_t *self)
   /* cleanup mem */
   // g_ptr_array_free(d->labels, TRUE);
   if(d->trees != NULL) g_ptr_array_free(d->trees, TRUE);
+
+  g_object_unref(d->treemodel_folders);
+  g_object_unref(d->treemodel_tags);
+  g_object_unref(d->listmodel);
 
   /* TODO: Make sure we are cleaning up all allocations */
 

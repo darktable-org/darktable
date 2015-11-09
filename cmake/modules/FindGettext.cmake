@@ -10,12 +10,14 @@
 
 include(LibFindMacros)
 
-# On Linux there is no pkgconfig script, but with this we force Gettext_PKGCONF_INCLUDE_DIRS to ""
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+# On Linux there is no pkgconfig script, but with this we force
+# Gettext_PKGCONF_INCLUDE_DIRS to "". The situation is the same on
+# FreeBSD: Gettext comes without a pkgconfig file.
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|FreeBSD)$")
   set(Gettext_PKGCONF_INCLUDE_DIRS "")
-else(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+else(CMAKE_SYSTEM_NAME MATCHES "^(Linux|FreeBSD)$")
   libfind_pkg_check_modules(Gettext_PKGCONF Gettext)
-endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+endif(CMAKE_SYSTEM_NAME MATCHES "^(Linux|FreeBSD)$")
 
 if(WIN32 OR APPLE)
   set(Gettext_LIBRARY_SEARCH_DIRS

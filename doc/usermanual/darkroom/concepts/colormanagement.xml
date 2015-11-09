@@ -94,9 +94,9 @@
     </indexterm>
 
     <para>
-      A configuration parameter <quote>always try to use LittleCMS 2</quote> in darktable's
-      <emphasis>core options</emphasis> (see <xref linkend="core_options"/>) defines how colors
-      are rendered.
+      A configuration parameter <quote>always use LittleCMS 2 to apply output color
+      profile</quote> in darktable's <emphasis>core options</emphasis> (see
+      <xref linkend="core_options"/>) defines how colors are rendered.
     </para>
 
     <para>

@@ -802,17 +802,22 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   gint flags = CPF_DIRECTION_DOWN;
   int c = module->container(module);
 
+  GList *header_childs = gtk_container_get_children(GTK_CONTAINER(header));
+
   if((c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
      || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
   {
-    icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(header)), 0);
+    icon = g_list_nth_data(header_childs, 0);
     if(!expanded) flags = CPF_DIRECTION_RIGHT;
   }
   else
   {
-    icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
+    icon = g_list_last(header_childs)->data;
     if(!expanded) flags = CPF_DIRECTION_LEFT;
   }
+
+  g_list_free(header_childs);
+
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
 
   /* show / hide plugin widget */

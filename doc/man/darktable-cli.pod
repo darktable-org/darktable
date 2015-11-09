@@ -13,21 +13,21 @@ Options:
     --height <max height>
     --bpp <bpp>
     --hq <0|1|true|false>
+    --upscale <0|1|true|false>
     --verbose
 
 =head1 DESCRIPTION
 
-B<darktable> is a digital photography workflow application for B<Linux> 
-and B<Mac OS X> in the lines of B<Adobe Lightroom> and B<Apple Aperture>.
+B<darktable> is a digital photography workflow application for B<Linux>, B<Mac OS X> and several other B<Unices>.
 It's described further in L<darktable(1)|darktable(1)>.
 
 B<darktable-cli> is a command line variant to be used to export images
 given the raw file and the accompanying xmp file.
 
-=head1 COMMAND LINE ARGUMENTS
+=head1 OPTIONS
 
-The user needs to supply an input filename and an output filename. All
-other parameters are optional.
+The user needs to supply an input filename and an output filename.
+All other parameters are optional.
 
 =over
 
@@ -38,14 +38,14 @@ The name of the input file to export.
 =item B<< <xmp file>  >>
 
 The optional name of an XMP sidecar file containing the history stack
-data to be applied during export. If this option is not given
-darktable will search for an XMP file that belongs to the given input
-file.
+data to be applied during export.
+If this option is not given darktable will search for an XMP file that
+belongs to the given input file.
 
 =item B<< <output file>  >>
 
-The name of the output file. darktable derives the export file format
-from the file extension.
+The name of the output file.
+darktable derives the export file format from the file extension.
 
 =item B<< --width <max width>  >>
 
@@ -60,9 +60,9 @@ image to that number of pixels.
 =item B<< --bpp <bpp>  >>
 
 An optional parameter to define the bit depth of the exported image;
-allowed values depend on the file format.  Currently this option is
-not yet functional. If you need to define the bit depth you need to
-use the following workaround:
+allowed values depend on the file format.
+Currently this option is not yet functional.
+If you need to define the bit depth you need to use the following workaround:
 
     --core --conf plugins/imageio/format/<FORMAT>/bpp=<VALUE>
 
@@ -70,8 +70,13 @@ where B<FORMAT> is the name of the selected output format, for example B<png>.
 
 =item B<< --hq <0|1|true|false>  >>
 
-A flag that defines whether to use high quality resampling during
-export. Defaults to true.
+A flag that defines whether to use high quality resampling during export.
+Defaults to true.
+
+=item B<< --upscale <0|1|true|false>  >>
+
+A flag that defines whether to allow upscaling during export.
+Defaults to false.
 
 =item B<< --verbose  >>
 
@@ -80,8 +85,8 @@ Enables verbose output.
 =item B<< --core <darktable options>  >>
 
 All command line parameters following B<--core> are passed
-to the darktable core and handled as standard parameters. See
-L<darktable(1)|darktable(1)> for a detailed description of the options.
+to the darktable core and handled as standard parameters.
+See L<darktable(1)|darktable(1)> for a detailed description of the options.
 
 =back
 
@@ -91,20 +96,22 @@ L<darktable(1)|darktable(1)>
 
 =head1 AUTHORS
 
-The principal developer of darktable is Johannes Hanika. The (hopefully)
-complete list of contributors to the project is:
+The principal developer of darktable is Johannes Hanika.
+The (hopefully) complete list of contributors to the project is:
 
-DREGGNAUTHORS
+DREGGNAUTHORS -- don't translate this line!
 
-This man page was written by Richard Levitte
-E<lt>richard@levittr.orgE<gt>.
+This man page was written by Richard Levitte E<lt>richard@levittr.orgE<gt>.
+Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>.
+
 
 =head1 COPYRIGHT AND LICENSE
 
-B<Copyright (C)> 2009-2013 by Authors.
+B<Copyright (C)> 2009-2015 by Authors.
 
 B<darktable> is free software; you can redistribute it and/or modify it
 under the terms of the GPL v3 or (at your option) any later version.
 
 =for comment
-$Date$
+$Date: 2015-11-08$
+$Release: 2.0$

@@ -245,6 +245,7 @@ static GdkPixbuf *init_pin()
   cairo_t *cr = cairo_create(cst);
   cairo_set_source_rgba(cr, r, g, b, a);
   dtgtk_cairo_paint_map_pin(cr, 0, 0, w, h, 0);
+  cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
   return gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,

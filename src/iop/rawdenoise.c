@@ -420,8 +420,8 @@ end:
 void init(dt_iop_module_t *module)
 {
   module->data = NULL;
-  module->params = malloc(sizeof(dt_iop_rawdenoise_params_t));
-  module->default_params = malloc(sizeof(dt_iop_rawdenoise_params_t));
+  module->params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
+  module->default_params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.

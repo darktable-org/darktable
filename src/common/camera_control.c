@@ -1111,8 +1111,12 @@ void _camera_build_property_menu(CameraWidget *widget, GtkMenu *menu, GCallback 
                                     user_data);
 
         /* add submenu item to menu if not empty*/
-        if(gtk_container_get_children(GTK_CONTAINER(gtk_menu_item_get_submenu(item))) != NULL)
+        GList *childs = gtk_container_get_children(GTK_CONTAINER(gtk_menu_item_get_submenu(item)));
+        if(childs)
+        {
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(item));
+          g_list_free(childs);
+        }
       }
       else
       {

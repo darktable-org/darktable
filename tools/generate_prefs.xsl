@@ -219,7 +219,9 @@
 		<xsl:text>    widget = gtk_entry_new();
 		gtk_widget_set_hexpand(widget, TRUE);
 		gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
-    gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
+    gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
+    gtk_entry_set_text(GTK_ENTRY(widget), setting);
+    g_free(setting);
     g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
@@ -307,7 +309,11 @@
           </xsl:text>
         </xsl:if>
     </xsl:for-each>
-    <xsl:text>    widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    <xsl:text>
+
+    g_free(str);
+
+    widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     g_object_unref(store);
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, TRUE);

@@ -186,11 +186,14 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   GList *citem;
 
   /* cleanup of widgets in devices container*/
-  GList *item;
-  if((item = gtk_container_get_children(GTK_CONTAINER(d->devices))) != NULL) do
+  GList *item, *iter;
+
+  if((iter = item = gtk_container_get_children(GTK_CONTAINER(d->devices))) != NULL) do
     {
-      gtk_container_remove(GTK_CONTAINER(d->devices), GTK_WIDGET(item->data));
-    } while((item = g_list_next(item)) != NULL);
+      gtk_container_remove(GTK_CONTAINER(d->devices), GTK_WIDGET(iter->data));
+    } while((iter = g_list_next(iter)) != NULL);
+
+  g_list_free(item);
 
   uint32_t count = 0;
   /* FIXME: Verify that it's safe to access camctl->cameras list here ? */
@@ -293,24 +296,28 @@ static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_
     case CAMERA_CONTROL_BUSY:
     {
       /* set all devices as inaccessible */
-      GList *child = gtk_container_get_children(GTK_CONTAINER(d->devices));
+      GList *list, *child;
+      list = child = gtk_container_get_children(GTK_CONTAINER(d->devices));
       if(child) do
       {
         if(!(GTK_IS_TOGGLE_BUTTON(child->data)
           && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(child->data)) == TRUE))
           gtk_widget_set_sensitive(GTK_WIDGET(child->data), FALSE);
       } while((child = g_list_next(child)));
+      g_list_free(list);
     }
     break;
 
     case CAMERA_CONTROL_AVAILABLE:
     {
       /* set all devices as accessible */
-      GList *child = gtk_container_get_children(GTK_CONTAINER(d->devices));
+      GList *list, *child;
+      list = child = gtk_container_get_children(GTK_CONTAINER(d->devices));
       if(child) do
       {
         gtk_widget_set_sensitive(GTK_WIDGET(child->data), TRUE);
       } while((child = g_list_next(child)));
+      g_list_free(list);
     }
     break;
   }
@@ -737,6 +744,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
         cr = cairo_create(surface);
         cairo_scale(cr, factor, factor);
         rsvg_handle_render_cairo(svg, cr);
+        cairo_destroy(cr);
         cairo_surface_flush(surface);
         pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, final_width / darktable.gui->ppd,
                                              final_height / darktable.gui->ppd);
@@ -800,8 +808,10 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    dt_conf_set_string("ui_last/import_last_directory",
-                       gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser)));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/import_last_directory", folder);
+    g_free(folder);
+
     _lib_import_evaluate_extra_widget(&metadata, FALSE);
 
     char *filename = NULL;
@@ -874,8 +884,10 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
   // run the dialog
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    dt_conf_set_string("ui_last/import_last_directory",
-                       gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser)));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/import_last_directory", folder);
+    g_free(folder);
+
     _lib_import_evaluate_extra_widget(&metadata, TRUE);
 
     char *filename = NULL, *first_filename = NULL;

@@ -279,15 +279,15 @@
 
     <sect4>
 
-      <title>overwrite</title>
+      <title>on conflict</title>
 
       <para>
-        Enabling the
-        <inlinegraphic fileref="&icon_general_checkbox;" scalefit="1" width="2%" align="center" />
-        checkbox allows darktable to overwrite existing images during export. If this option is
-        not checked darktable automatically selects a unique new file name in case of naming
-        conflicts. The overwrite option gets reset after each export in order to protect you
-        from accidental data loss.
+        If this option is set to <quote>create unique filename</quote> darktable automatically
+        choses a unique new file name in case of naming conflicts with existing files. The
+        alternative <quote>overwrite</quote> setting forces darktable to exactly adhere to the
+        selected filename template, overwriting any existing files on conflict. This option gets
+        reset to <quote>create unique filename</quote> after each export job in order to protect
+        you from accidental data loss.
       </para>
 
     </sect4>

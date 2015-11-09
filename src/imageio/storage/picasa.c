@@ -780,6 +780,7 @@ static gboolean combobox_separator(GtkTreeModel *model, GtkTreeIter *iter, gpoin
   {
     if((v = (gchar *)g_value_get_string(&value)) != NULL && *v == '\0') return TRUE;
   }
+  g_value_unset(&value);
   return FALSE;
 }
 

@@ -14,8 +14,8 @@
   <para>
     There are several blend modes implemented and more might be added in future. For now all of
     the most commonly used ones are included and you will recognize a few of them from other
-    imaging software. A good introduction on many common blend modes is given in
-    <ulink url="http://docs.gimp.org/2.8/en/gimp-concepts-layer-modes.html"> <emphasis>The Gimp
+    imaging software. A good introduction on many common blend modes is given in the
+    <ulink url="http://docs.gimp.org/2.8/en/gimp-concepts-layer-modes.html"> <emphasis>GIMP
     Manual (Chapter 8.2, <quote>Layer Modes</quote>)</emphasis></ulink>. Therefore we only
     discuss a few blend modes here in more detail.
   </para>

@@ -410,8 +410,8 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = malloc(sizeof(dt_iop_zonesystem_params_t));
-  module->default_params = malloc(sizeof(dt_iop_zonesystem_params_t));
+  module->params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
+  module->default_params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
   module->default_enabled = 0;
   module->priority = 650; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_zonesystem_params_t);
@@ -499,6 +499,7 @@ void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation, gpoint
       cr = cairo_create(surface);
       cairo_scale(cr, factor, factor);
       rsvg_handle_render_cairo(svg, cr);
+      cairo_destroy(cr);
       cairo_surface_flush(surface);
       g->image = surface;
       g->image_width = final_width / darktable.gui->ppd;

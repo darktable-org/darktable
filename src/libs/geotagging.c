@@ -430,6 +430,20 @@ static void _lib_geotagging_apply_offset_callback(GtkWidget *widget, gpointer us
   dt_control_time_offset(offset, -1);
 }
 
+static gboolean _lib_geotagging_filter_gpx(const GtkFileFilterInfo *filter_info, gpointer data)
+{
+  if(!g_ascii_strcasecmp(filter_info->mime_type, "application/gpx+xml")) return TRUE;
+
+  const gchar *filename = filter_info->filename;
+  const char *cc = filename + strlen(filename);
+  for(; *cc != '.' && cc > filename; cc--)
+    ;
+
+  if(!g_ascii_strcasecmp(cc, ".gpx")) return TRUE;
+
+  return FALSE;
+}
+
 static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
@@ -448,7 +462,8 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  gtk_file_filter_add_pattern(filter, "*.gpx");
+  gtk_file_filter_add_custom(filter, GTK_FILE_FILTER_FILENAME | GTK_FILE_FILTER_MIME_TYPE,
+                             _lib_geotagging_filter_gpx, NULL, NULL);
   gtk_file_filter_set_name(filter, _("GPS data exchange format"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
@@ -489,8 +504,10 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    dt_conf_set_string("ui_last/gpx_last_directory",
-                       gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser)));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/gpx_last_directory", folder);
+    g_free(folder);
+
     gchar *tz = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(tz_selection));
     dt_conf_set_string("plugins/lighttable/geotagging/tz", tz);
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));

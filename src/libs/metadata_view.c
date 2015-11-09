@@ -500,7 +500,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         _metadata_update_value(d->metadata[md_geotagging_lon], value);
       }
     }
-    /* longitude */
+    /* elevation */
     if(isnan(img->elevation))
     {
       _metadata_update_value(d->metadata[md_geotagging_ele], NODATA_STRING);

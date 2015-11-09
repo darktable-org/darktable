@@ -383,8 +383,8 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
       if(dt_control_job_equal(job, other_job))
       {
         dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in scheduled: ");
-        dt_control_job_print(job);
         dt_print(DT_DEBUG_CONTROL, "\n");
+        dt_control_job_print(other_job);
 
         dt_pthread_mutex_unlock(&control->queue_mutex);
 
@@ -402,7 +402,7 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
       if(dt_control_job_equal(job, other_job))
       {
         dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue: ");
-        dt_control_job_print(job);
+        dt_control_job_print(other_job);
         dt_print(DT_DEBUG_CONTROL, "\n");
 
         *queue = g_list_delete_link(*queue, iter);

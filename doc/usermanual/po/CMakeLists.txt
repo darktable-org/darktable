@@ -47,5 +47,5 @@ if(can_update_usermanual )
 	endforeach(language)
 
 else(can_update_usermanual )
-	message("Can NOT update usermanual")
+	message("Can NOT update usermanual translations")
 endif(can_update_usermanual )

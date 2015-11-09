@@ -86,8 +86,9 @@
       <para>
         This tool corrects the rotation angle helping you level an image. You can either set a
         numerical value or use your mouse directly on the image. To use your mouse, right-click,
-        hold it down and draw a line along the horizon; as soon as you release the mouse button
-        the image is rotated so the line you drew matches the horizontal axis.
+        hold it down and draw a line along a suited horizontal or vertical feature; as soon as
+        you release the mouse button the image is rotated so the line you drew matches the
+        horizontal/vertical axis.
       </para>
     </sect5>
 

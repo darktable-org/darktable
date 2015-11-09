@@ -198,6 +198,16 @@
     (default on).
   </para>
 
+  <bridgehead renderas="sect4">overlay txt sidecar over zoomed images</bridgehead>
+
+  <para>
+    When there is a text file next to an image it can be shown as an overlay over zoomed images
+    on the lighttable. The text file has the same base name as the image file with file
+    extension <quote>.txt</quote>. It either has to be there at import time or the crawler has
+    to be enabled&nbsp;&ndash; see option <quote>look for updated xmp files on startup</quote>
+    in <xref linkend="core_options"/> (default off).
+  </para>
+
   <bridgehead renderas="sect4">expand a single lighttable module at a time</bridgehead>
 
   <para>

@@ -59,6 +59,8 @@ local function require51 (name)
         module = res
     elseif p_loaded[name] == sentinel or not p_loaded[name] then
         module = true
+    else
+	module = p_loaded[name]
     end
 
     p_loaded[name] = module

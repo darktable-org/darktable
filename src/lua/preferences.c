@@ -375,7 +375,9 @@ static void callback_dir(GtkWidget *widget, pref_element *cur_elt)
 {
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  dt_conf_set_string(pref_name, gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(widget)));
+  gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(widget));
+  dt_conf_set_string(pref_name, folder);
+  g_free(folder);
 }
 static void callback_file(GtkWidget *widget, pref_element *cur_elt)
 {
@@ -425,7 +427,9 @@ static void response_callback_dir(GtkDialog *dialog, gint response_id, pref_elem
   {
     char pref_name[1024];
     get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-    dt_conf_set_string(pref_name, gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(cur_elt->widget)));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(cur_elt->widget));
+    dt_conf_set_string(pref_name, folder);
+    g_free(folder);
   }
 }
 static void response_callback_file(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
