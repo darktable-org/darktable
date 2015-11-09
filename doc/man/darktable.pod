@@ -169,7 +169,7 @@ C</opt/darktable/share/darktable/> or C</usr/share/darktable/>.
 
 =item B<l>
 
-Switch to lightroom view
+Switch to lighttable view
 
 =item B<d>
 
@@ -349,7 +349,7 @@ Zoom to 1:1, fill, and fit, respectively
 
 =item B<Ctrl-f>
 
-show/hide film strip
+Show/hide filmstrip
 
 =item B<Space, Backspace>
 
@@ -407,7 +407,7 @@ When drawing masks, decrease, increase brush size, respectively
 
 =item B<Ctrl-f>
 
-Show/hide film strip
+Show/hide filmstrip
 
 =item B<v>
 
@@ -421,7 +421,7 @@ Toggle live view
 
 =item B<Ctrl-f>
 
-Show/hide film strip
+Show/hide filmstrip
 
 =item B<Ctrl-z>
 
@@ -433,7 +433,7 @@ Redo
 
 =back
 
-=head3 Film strip (when the cursor is on top of the film strip)
+=head3 Filmstrip (when the cursor is on top of the filmstrip)
 
 =over
 
