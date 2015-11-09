@@ -31,7 +31,7 @@
     <title>General Features</title>
 
     <listitem><para>
-      darktable runs on GNU/Linux / GNOME, Mac OS X / macports and Solaris 11 / GNOME.
+      darktable runs on GNU/Linux / GTK3, Mac OS X / macports and Solaris 11 / GTK3.
     </para></listitem>
 
     <listitem><para>
@@ -87,7 +87,7 @@
     <listitem><para>
       The powerful export system supports Picasa webalbum, flickr upload, disk storage, 1:1
       copy, email attachments and can generate a simple html-based web gallery. darktable allows
-      you to export to low dynamic range (JPEG, JPEG2000, PNG, TIFF), 16-bit (PPM, TIFF), or
+      you to export to low dynamic range (JPEG, JPEG2000, PNG, TIFF, PDF), 16-bit (PPM, TIFF), or
       linear high dynamic range (PFM, EXR) images.
     </para></listitem>
 
