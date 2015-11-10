@@ -472,6 +472,7 @@ GList *dt_collection_get_all(const dt_collection_t *collection, int limit)
     list = g_list_append(list, GINT_TO_POINTER(imgid));
   }
 
+  sqlite3_finalize(stmt);
 
   /* free allocated strings */
   g_free(sq);
@@ -512,6 +513,7 @@ GList *dt_collection_get_selected(const dt_collection_t *collection, int limit)
     list = g_list_append(list, GINT_TO_POINTER(imgid));
   }
 
+  sqlite3_finalize(stmt);
 
   /* free allocated strings */
   g_free(sq);

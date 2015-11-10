@@ -1051,19 +1051,19 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
     // get current local copy if any
     _image_local_copy_full_path(imgid, copysrcpath, sizeof(copysrcpath));
 
-    // statement for getting ids of the image to be moved and it's duplicates
-    sqlite3_stmt *duplicates_stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "select id from images where filename in (select filename from images "
-                                "where id = ?1) and film_id in (select film_id from images where id = ?1)",
-                                -1, &duplicates_stmt, NULL);
-
     // move image
     GFile *old, *new;
     old = g_file_new_for_path(oldimg);
     new = g_file_new_for_path(newimg);
     if(!g_file_test(newimg, G_FILE_TEST_EXISTS) && (g_file_move(old, new, 0, NULL, NULL, NULL, NULL) == TRUE))
     {
+      // statement for getting ids of the image to be moved and it's duplicates
+      sqlite3_stmt *duplicates_stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "select id from images where filename in (select filename from images "
+                                  "where id = ?1) and film_id in (select film_id from images where id = ?1)",
+                                  -1, &duplicates_stmt, NULL);
+
       // first move xmp files of image and duplicates
       GList *dup_list = NULL;
       DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
@@ -1088,8 +1088,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
         g_object_unref(goldxmp);
         g_object_unref(gnewxmp);
       }
-      sqlite3_reset(duplicates_stmt);
-      sqlite3_clear_bindings(duplicates_stmt);
+      sqlite3_finalize(duplicates_stmt);
 
       // then update database and cache
       // if update was performed in above loop, dt_image_path_append_version()

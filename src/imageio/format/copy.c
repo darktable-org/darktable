@@ -82,6 +82,7 @@ int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void 
 
   status = 0;
 END:
+  sqlite3_finalize(stmt);
   g_free(sourcefile);
   g_free(targetfile);
   g_free(xmpfile);

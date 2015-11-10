@@ -220,6 +220,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, (MAX(sr, er) - MIN(sr, er)) + 1);
 
   sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
   /* reset filter */
   dt_collection_set_query_flags(selection->collection, old_flags);

@@ -925,6 +925,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
       if(type && filename) p = dt_colorspaces_get_profile(*type, filename,
                                                           DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
     }
+    sqlite3_finalize(stmt);
 
     // couldn't get it from colorout -> fall back to sRGB
     if(!p) p = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT);

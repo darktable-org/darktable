@@ -468,6 +468,7 @@ int get_group(lua_State *L)
     luaA_push(L, dt_lua_image_t, &imgid);
     luaL_ref(L, -2);
   }
+  sqlite3_finalize(stmt);
   luaA_push(L, dt_lua_image_t, &group_id);
   lua_setfield(L, -2, "leader");
   return 1;

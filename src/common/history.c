@@ -434,6 +434,7 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled)
       g_free(mname);
     }
   }
+  sqlite3_finalize(stmt);
   return result;
 }
 
@@ -460,6 +461,7 @@ char *dt_history_get_items_as_string(int32_t imgid)
     items = g_list_append(items, name);
     g_free(multi_name);
   }
+  sqlite3_finalize(stmt);
   char *result = dt_util_glist_to_str("\n", items);
   g_list_free_full(items, g_free);
   return result;

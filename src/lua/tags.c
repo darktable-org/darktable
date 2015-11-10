@@ -54,7 +54,11 @@ static int tag_length(lua_State *L)
                               "SELECT count() FROM tagged_images WHERE tagid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   rv = sqlite3_step(stmt);
-  if(rv != SQLITE_ROW) return luaL_error(L, "unknown SQL error");
+  if(rv != SQLITE_ROW)
+  {
+    sqlite3_finalize(stmt);
+    return luaL_error(L, "unknown SQL error");
+  }
   count = sqlite3_column_int(stmt, 0);
   lua_pushnumber(L, count);
   sqlite3_finalize(stmt);
@@ -85,6 +89,7 @@ static int tag_index(lua_State *L)
     sqlite3_finalize(stmt);
     luaL_error(L, "incorrect index in database");
   }
+  sqlite3_finalize(stmt);
   return 1;
 }
 
@@ -96,7 +101,11 @@ static int tag_lib_length(lua_State *L)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT count() FROM tags", -1, &stmt, NULL);
   rv = sqlite3_step(stmt);
-  if(rv != SQLITE_ROW) return luaL_error(L, "unknown SQL error");
+  if(rv != SQLITE_ROW)
+  {
+    sqlite3_finalize(stmt);
+    return luaL_error(L, "unknown SQL error");
+  }
   count = sqlite3_column_int(stmt, 0);
   lua_pushnumber(L, count);
   sqlite3_finalize(stmt);
@@ -119,6 +128,7 @@ static int tag_lib_index(lua_State *L)
     sqlite3_finalize(stmt);
     luaL_error(L, "incorrect index in database");
   }
+  sqlite3_finalize(stmt);
   return 1;
 }
 

@@ -296,6 +296,7 @@ static void _update_collected_images(dt_view_t *self)
     {
       min_before = sqlite3_column_int(stmt, 0);
     }
+    sqlite3_finalize(stmt);
   }
 
   // 1. drop previous data
@@ -328,6 +329,7 @@ static void _update_collected_images(dt_view_t *self)
     {
       min_after = sqlite3_column_int(stmt, 0);
     }
+    sqlite3_finalize(stmt);
 
     // note that this adjustement is needed as for a memory table the rowid doesn't start to 1 after the DELETE
     // above,
@@ -346,6 +348,7 @@ static void _update_collected_images(dt_view_t *self)
         dt_control_set_mouse_over_id(lib->full_preview_id);
       }
     }
+    sqlite3_finalize(stmt);
   }
 
   /* if we have a statment lets clean it */

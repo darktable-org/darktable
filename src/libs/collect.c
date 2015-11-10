@@ -475,6 +475,7 @@ void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userdata)
         sqlite3_step(stmt2);
         sqlite3_finalize(stmt2);
       }
+      sqlite3_finalize(stmt);
       g_free(query);
 
       /* reset filter so that view isn't empty */
@@ -755,6 +756,7 @@ static GtkTreeStore *_folder_tree()
     }
     g_strfreev(pch);
   }
+  sqlite3_finalize(stmt);
   return store;
 }
 
