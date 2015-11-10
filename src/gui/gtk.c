@@ -1368,6 +1368,20 @@ static gboolean _ui_init_panel_container_center_scroll_event(GtkWidget *widget, 
   return TRUE;
 }
 
+// this should work as long as everything happens in the gui thread
+static void _ui_panel_size_changed(GtkAdjustment *adjustment, GParamSpec *pspec, gpointer user_data)
+{
+  int side = GPOINTER_TO_INT(user_data);
+
+  if(!darktable.gui->scroll_to[side]) return;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(darktable.gui->scroll_to[side], &allocation);
+  gtk_adjustment_set_value(adjustment, allocation.y);
+
+  darktable.gui->scroll_to[side] = NULL;
+}
+
 static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean left)
 {
   GtkWidget *widget;
@@ -1385,6 +1399,9 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
                                     left ? GTK_CORNER_TOP_LEFT : GTK_CORNER_TOP_RIGHT);
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
+
+  g_signal_connect(G_OBJECT(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(widget))), "notify::lower",
+                   G_CALLBACK(_ui_panel_size_changed), GINT_TO_POINTER(left ? 1 : 0));
 
   /* create the scrolled viewport */
   container = widget;

@@ -85,6 +85,9 @@ typedef struct dt_gui_gtk_t
 
   // store which gtkrc we loaded:
   char gtkrc[PATH_MAX];
+
+  GtkWidget *scroll_to[2]; // one for left, one for right
+
 } dt_gui_gtk_t;
 
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 14, 0))

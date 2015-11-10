@@ -871,11 +871,20 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     /* bail out if module is static */
     if(!module->expandable(module)) return FALSE;
 
+    // make gtk scroll to the module once it updated its allocation size
+    uint32_t container = module->container(module);
+    if(dt_conf_get_bool("lighttable/ui/scroll_to_module"))
+    {
+      if(container == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
+        darktable.gui->scroll_to[0] = module->expander;
+      else if(container == DT_UI_CONTAINER_PANEL_RIGHT_CENTER)
+        darktable.gui->scroll_to[1] = module->expander;
+    }
+
     /* handle shiftclick on expander, hide all except this */
     if(!dt_conf_get_bool("lighttable/ui/single_module") != !(e->state & GDK_SHIFT_MASK))
     {
       GList *it = g_list_first(darktable.lib->plugins);
-      uint32_t container = module->container(module);
       const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
       gboolean all_other_closed = TRUE;
       while(it)

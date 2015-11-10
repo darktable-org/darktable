@@ -1047,6 +1047,20 @@
     <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>lighttable/ui/scroll_to_module</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>scroll to lighttable modules when expanded/collapsed</shortdescription>
+    <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
+    <name>darkroom/ui/scroll_to_module</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>scroll to darkroom modules when expanded/collapsed</shortdescription>
+    <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>plugins/darkroom/ui/border_size</name>
     <type>int</type>
     <default>20</default>
