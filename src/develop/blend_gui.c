@@ -816,7 +816,7 @@ static gboolean _blendop_blendif_draw(GtkWidget *widget, cairo_t *cr, dt_iop_mod
   }
 
   darktable.gui->reset = 1;
-  if(module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  if((module->request_color_pick != DT_REQUEST_COLORPICK_OFF) && (raw_min[0] != INFINITY))
   {
     _blendif_scale(data->csp, raw_mean, picker_mean);
     _blendif_scale(data->csp, raw_min, picker_min);
