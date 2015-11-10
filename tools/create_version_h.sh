@@ -3,16 +3,15 @@
 set -e
 
 H_FILE=$1
+NEW_VERSION=$2
 
 VERSION_H_NEEDS_UPDATE=1
-if [ -z "$2" ]; then 
-	NEW_VERSION=`git describe --tags --dirty | sed 's,^release-,,;s,-,+,;s,-,~,;'`
-else
-	NEW_VERSION=$2
+if [ -z "$NEW_VERSION" ]; then
+  NEW_VERSION=`git describe --tags --dirty | sed 's,^release-,,;s,-,+,;s,-,~,;'`
 fi
 
 if [ -n  "`echo -e $NEW_VERSION | grep  Format`" ]; then
-	NEW_VERSION="unknown-version"
+  NEW_VERSION="unknown-version"
 fi
 
 # version.h exists => check if it containts the up-to-date version

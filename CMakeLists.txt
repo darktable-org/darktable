@@ -86,37 +86,43 @@ endif(WIN32)
 
 # Check if this is source package build
 if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-	set(SOURCE_PACKAGE 1)
+  set(SOURCE_PACKAGE 1)
+else()
+  set(SOURCE_PACKAGE 0)
 endif()
 
 #
 # Set package version
 #
-
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/") # the src/ subdirectory won't exist yet
 if(DEFINED PROJECT_VERSION)
-   #project version is defined by -D on the cmake command line
-   # only use that value, do not upate it at make time
-   EXECUTE_PROCESS( COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h ${PROJECT_VERSION}
-		   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		  )
+  #project version is defined by -D on the cmake command line
+  # only use that value, do not upate it at make time
+  execute_process(
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h ${PROJECT_VERSION}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
 else(DEFINED PROJECT_VERSION)
-	if(NOT SOURCE_PACKAGE)
-	  # this part is setting the corresponding CMake variable which gets used for example when creating a source package
-	  EXECUTE_PROCESS(COMMAND git describe --tags --dirty
-	      COMMAND sed "s,^release-,,;s,-,+,;s,-,~,;" OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PROJECT_VERSION
-	      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-	  add_custom_target(
-			  generate_version ALL
-			  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
-			  COMMENT "Updating version string"
-			  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-			  )
-	else(NOT SOURCE_PACKAGE)
-	  set(PROJECT_VERSION "archive-$Format:%H$")
-	  execute_process( COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h ${PROJECT_VERSION}
-			  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-			 )
-	endif(NOT SOURCE_PACKAGE)
+  if(NOT SOURCE_PACKAGE) # i.e., a git checkout
+    # this part is setting the corresponding CMake variable which gets used for example when creating a source package
+    execute_process(
+      COMMAND git describe --tags --dirty
+      COMMAND sed "s,^release-,,;s,-,+,;s,-,~,;" OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PROJECT_VERSION
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    add_custom_target(generate_version ALL
+      COMMAND ${CMAKE_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
+      COMMENT "Updating version string"
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  elseif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
+  # no need to create version_gen.h if it's already shipped. that is for example the case with our release tarballs
+#   else(NOT SOURCE_PACKAGE)
+    set(PROJECT_VERSION "archive-$Format:%H$")
+    execute_process(
+      COMMAND ${CMAKE_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h ${PROJECT_VERSION}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  endif(NOT SOURCE_PACKAGE)
 endif(DEFINED PROJECT_VERSION)
 
 
