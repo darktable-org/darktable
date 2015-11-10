@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Traduction des manpages de darktable\n"
-"POT-Creation-Date: 2015-11-09 13:16+0100\n"
-"PO-Revision-Date: 2015-11-10 11:22+0100\n"
+"POT-Creation-Date: 2015-11-10 15:21+0100\n"
+"PO-Revision-Date: 2015-11-10 15:22+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language: fr\n"
@@ -478,7 +478,7 @@ msgstr "B<l>"
 
 #. type: textblock
 #: darktable.pod:172
-msgid "Switch to lightroom view"
+msgid "Switch to lighttable view"
 msgstr "Passer à la vue table lumineuse"
 
 #. type: =item
@@ -905,9 +905,9 @@ msgid "B<Ctrl-f>"
 msgstr "B<Ctrl-f>"
 
 #. type: textblock
-#: darktable.pod:352
-msgid "show/hide film strip"
-msgstr "Montrer, cacher le bandeau"
+#: darktable.pod:352 darktable.pod:410 darktable.pod:424
+msgid "Show/hide filmstrip"
+msgstr "Montrer/cacher le bandeau"
 
 #. type: =item
 #: darktable.pod:354
@@ -1012,11 +1012,6 @@ msgstr ""
 msgid "Tethered mode"
 msgstr "Mode capture"
 
-#. type: textblock
-#: darktable.pod:410 darktable.pod:424
-msgid "Show/hide film strip"
-msgstr "Montrer/cacher le bandeau"
-
 #. type: =item
 #: darktable.pod:412
 msgid "B<v>"
@@ -1049,7 +1044,7 @@ msgstr "Refaire"
 
 #. type: =head3
 #: darktable.pod:436
-msgid "Film strip (when the cursor is on top of the film strip)"
+msgid "Filmstrip (when the cursor is on top of the filmstrip)"
 msgstr "Bandeau (quand le curseur est en haut du bandeau)"
 
 #. type: =head3
@@ -1443,3 +1438,6 @@ msgid ""
 msgstr ""
 "Ce manpage a été écrit par Richard Levitte E<lt>richard@levittr.orgE<gt>.  "
 "Des compléments ont été ajoutés par Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
+
+#~ msgid "show/hide film strip"
+#~ msgstr "Montrer, cacher le bandeau"
