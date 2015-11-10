@@ -701,7 +701,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // force gtk3 to use normal scroll bars instead of the popup thing. they get in the way of controls
   // the alternative would be to gtk_scrolled_window_set_overlay_scrolling(..., FALSE); every single widget
   // that might have scroll bars
-  g_setenv("GTK_OVERLAY_SCROLLING", "0", 1);
+  g_setenv("GTK_OVERLAY_SCROLLING", "0", 0);
 
   // unset gtk rc from kde:
   char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
