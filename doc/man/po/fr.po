@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Traduction des manpages de darktable\n"
 "POT-Creation-Date: 2015-11-09 13:16+0100\n"
-"PO-Revision-Date: 2015-11-10 09:40+0100\n"
+"PO-Revision-Date: 2015-11-10 11:22+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language: fr\n"
@@ -168,7 +168,7 @@ msgstr ""
 "répertoire est donné darktable démarre en mode table lumineuse avec le "
 "contenu de ce répertoire comme collection courante. Si une instance de "
 "darktable est déjà en cours d'exécution (utilisant la même bibliothèque) "
-"l'image ou le répertoire y sera ouvert , en utilisant B<D-Bus> pour "
+"l'image ou le répertoire y sera ouvert, en utilisant B<D-Bus> pour "
 "communiquer entre les deux processus."
 
 #. type: =item
@@ -192,7 +192,7 @@ msgstr ""
 #. type: textblock
 #: darktable.pod:65
 msgid "A few of those debug options are:"
-msgstr "Voici quelques unes de ces options de débogage /"
+msgstr "Voici quelques unes de ces options de débogage :"
 
 #. type: =item
 #: darktable.pod:69
