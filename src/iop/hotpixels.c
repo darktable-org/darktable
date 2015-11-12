@@ -409,13 +409,14 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   if(g->pixels_fixed < 0) return FALSE;
 
-  char buf[256];
-  snprintf(buf, sizeof buf, _("fixed %d pixels"), g->pixels_fixed);
+  char *str = g_strdup_printf(ngettext("fixed %d pixel", "fixed %d pixels", g->pixels_fixed), g->pixels_fixed);
   g->pixels_fixed = -1;
 
   darktable.gui->reset = 1;
-  gtk_label_set_text(g->message, buf);
+  gtk_label_set_text(g->message, str);
   darktable.gui->reset = 0;
+
+  g_free(str);
 
   return FALSE;
 }

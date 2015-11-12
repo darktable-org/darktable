@@ -1484,7 +1484,7 @@ cleanup:
   if(result)
   {
     // this makes sense only if the export was successful
-    dt_control_log(_("%d/%d exported to google+ album"), num, total);
+    dt_control_log(ngettext("%d/%d exported to google+ album", "%d/%d exported to google+ album", num), num, total);
   }
   return 0;
 }
