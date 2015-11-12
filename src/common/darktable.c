@@ -406,13 +406,23 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #define __has_builtin(x) false
 #endif
 
+#if defined(__clang__) && (defined(__FreeBSD__) || defined(__APPLE__))
+// clang versions 3.7 and 3.8 for OSX and FreeBSD say that
+// __builtin_cpu_supports is available, but we get failure when linking because
+// the symbol __cpu_model can not be found.
+// See https://llvm.org/bugs/show_bug.cgi?id=25510.
+#define BAD_CPU_MODEL_LINKING 1
+#else
+#define BAD_CPU_MODEL_LINKING 0
+#endif
+
 #ifndef __SSE3__
 #error "Unfortunately we depend on SSE3 instructions at this time."
 #error "Please contribute a backport patch (or buy a newer processor)."
 #else
   int sse3_supported = 0;
 
-#if(__GNUC_PREREQ(4, 8) || (__has_builtin(__builtin_cpu_supports) && !defined(__FreeBSD__) && !defined(__APPLE__)))
+#if(__GNUC_PREREQ(4, 8) || (__has_builtin(__builtin_cpu_supports) && !BAD_CPU_MODEL_LINKING))
   // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
   sse3_supported = __builtin_cpu_supports("sse3");
 #else
