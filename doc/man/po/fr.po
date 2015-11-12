@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Traduction des manpages de darktable\n"
 "POT-Creation-Date: 2015-11-10 15:21+0100\n"
-"PO-Revision-Date: 2015-11-10 15:22+0100\n"
+"PO-Revision-Date: 2015-11-11 22:17+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language: fr\n"
@@ -25,8 +25,8 @@ msgstr "NOM"
 #: darktable.pod:4
 msgid "darktable - a digital photography workflow application"
 msgstr ""
-"darktable - une application fournissant un flot de traitement des photos "
-"numériques"
+"darktable - une application fournissant un flux de travail de traitement des "
+"photos numériques"
 
 #. type: =head1
 #: darktable.pod:6 darktable-cli.pod:6
@@ -99,8 +99,9 @@ msgid ""
 "B<darktable> is a digital photography workflow application for B<Linux>, "
 "B<Mac OS X> and several other B<Unices>."
 msgstr ""
-"B<darktable> est une application fournissant un flot de traitement des "
-"photos numériques pour B<Linux>, B<Mac OS X> et plusieurs autres B<Unix>."
+"B<darktable> est une application fournissant un flux de travail pour le "
+"traitement des photos numériques sous B<Linux>, B<Mac OS X> et plusieurs "
+"autres B<Unix>."
 
 #. type: textblock
 #: darktable.pod:33
@@ -139,7 +140,7 @@ msgstr ""
 "tiers. Toutes les fonctionnalités de la table lumineuse et de la chambre "
 "noire sont implémentées sous forme de plugins. Vous pouvez ainsi créer vos "
 "plugins en réutilisant le code existant. La plupart des actions spécifiques "
-"du flot de traitement peuvent être écrites dans un script B<Lua>."
+"du flux de travail peuvent être écrites dans un script B<Lua>."
 
 #. type: =head1
 #: darktable.pod:47 darktable-cli.pod:27
@@ -1173,9 +1174,9 @@ msgid ""
 "The project was started by Johannes Hanika in early 2009 to fill the gap "
 "(or, rather, a black hole) of a digital photography workflow tool on Linux."
 msgstr ""
-"Le projet a été lancé au début de 2009 par Johannes Hanika pour combler le "
-"fossé (ou, plutôt le trou noir), sous Linux, d'un outil de  traitement de "
-"photos numériques. "
+"Le projet a été lancé au début de 2009 par Johannes Hanika pour combler un "
+"fossé (ou plutôt un trou noir) ; le manque sous Linux d'un outil fournissant "
+"un flux de travail pour le traitement des photos numériques. "
 
 #. type: =head1
 #: darktable.pod:539 darktable-cli.pod:108
@@ -1244,9 +1245,9 @@ msgid ""
 "B<Mac OS X> and several other B<Unices>.  It's described further in "
 "L<darktable(1)|darktable(1)>."
 msgstr ""
-"B<darktable> est une application fournissant un flot de traitement des "
-"photos numériques pour B<Linux>, B<Mac OS X> et plusieurs autres B<Unix>. Il "
-"est décrit plus loin dans L<darktable(1)|darktable(1)>."
+"B<darktable> est une application fournissant un flux de travail pour le "
+"traitement des photos numériques sous B<Linux>, B<Mac OS X> et plusieurs "
+"autres B<Unix>. Il est décrit plus loin dans L<darktable(1)|darktable(1)>"
 
 #. type: textblock
 #: darktable-cli.pod:24
