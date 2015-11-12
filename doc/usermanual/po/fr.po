@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2015-11-10 11:43+0100\n"
+"POT-Creation-Date: 2015-11-11 22:29+0100\n"
 "PO-Revision-Date: 2015-11-11 21:49+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
@@ -12716,11 +12716,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#. by their specification. However, there is an established de-facto standard to embed
-#. profiles which darktable adheres to. Beware that some applications might fail to correctly
-#. handle those profiles and render colors incorrectly.
-#. </para>
+#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles 
+#.         by their specification. However, there is an established de-facto standard to embed
+#.         profiles which darktable adheres to. Beware that some applications might fail to correctly 
+#.         handle those profiles and render colors incorrectly.
+#.       </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10689(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -18137,25 +18137,25 @@ msgstr ""
 
 #. <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 #.
-#. <para>
-#. Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
-#. Needs a restart and will invalidate current thumbnail caches (default 1300).
-#. </para>
+#.   <para>
+#.     Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
+#.     Needs a restart and will invalidate current thumbnail caches (default 1300).
+#.   </para>
 #.
-#. <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
+#.   <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
 #.
-#. <para>
-#. Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
-#. screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
-#. </para>
+#.   <para>
+#.     Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
+#.     screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
+#.   </para>
+#.   
+#.   <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
 #.
-#. <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
-#.
-#. <para>
-#. Controls the compression of thumbnail images in memory and on disk. Options:
-#. <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
-#. (default off).
-#. </para>
+#.   <para>
+#.     Controls the compression of thumbnail images in memory and on disk. Options:
+#.     <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
+#.     (default off).
+#.   </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16777(bridgehead)
 msgid "pen pressure control for brush masks"
 msgstr "contrôle de la pression du pinceau du masque"
