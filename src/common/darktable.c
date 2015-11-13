@@ -393,36 +393,13 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   _dt_sigsegv_old_handler = signal(SIGSEGV, &_dt_sigsegv_handler);
 #endif
 
-#ifndef __GNUC_PREREQ
-// on OSX, gcc-4.6 and clang chokes if this is not here.
-#if defined __GNUC__ && defined __GNUC_MINOR__
-#define __GNUC_PREREQ(maj, min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
-#else
-#define __GNUC_PREREQ(maj, min) 0
-#endif
-#endif
-#ifndef __has_builtin
-// http://clang.llvm.org/docs/LanguageExtensions.html#feature-checking-macros
-#define __has_builtin(x) false
-#endif
-
-#if defined(__clang__) && (defined(__FreeBSD__) || defined(__APPLE__))
-// clang versions 3.7 and 3.8 for OSX and FreeBSD say that
-// __builtin_cpu_supports is available, but we get failure when linking because
-// the symbol __cpu_model can not be found.
-// See https://llvm.org/bugs/show_bug.cgi?id=25510.
-#define BAD_CPU_MODEL_LINKING 1
-#else
-#define BAD_CPU_MODEL_LINKING 0
-#endif
-
 #ifndef __SSE3__
 #error "Unfortunately we depend on SSE3 instructions at this time."
 #error "Please contribute a backport patch (or buy a newer processor)."
 #else
   int sse3_supported = 0;
 
-#if(__GNUC_PREREQ(4, 8) || (__has_builtin(__builtin_cpu_supports) && !BAD_CPU_MODEL_LINKING))
+#ifdef HAVE_BUILTIN_CPU_SUPPORTS
   // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
   sse3_supported = __builtin_cpu_supports("sse3");
 #else
