@@ -359,8 +359,10 @@ endif(GPHOTO2_FOUND)
 # compiler will say it's available; however the linker cannot find the symbols.
 # So do a quick test compile to see if it's actually available.
 # See https://llvm.org/bugs/show_bug.cgi?id=25510
-check_c_source_compiles("int main() { __builtin_cpu_supports(\"sse3\"); }"
-                        HAVE_BUILTIN_CPU_SUPPORTS)
+check_c_source_compiles("#include <stdio.h>
+int main() {
+  printf(\"%d\", __builtin_cpu_supports(\"sse3\"));
+}" HAVE_BUILTIN_CPU_SUPPORTS)
 if(HAVE_BUILTIN_CPU_SUPPORTS)
   add_definitions("-DHAVE_BUILTIN_CPU_SUPPORTS")
 endif(HAVE_BUILTIN_CPU_SUPPORTS)
