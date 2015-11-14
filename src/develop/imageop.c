@@ -1715,7 +1715,7 @@ static GdkPixbuf *load_image(const char *filename, int size)
   GError *error = NULL;
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return NULL;
 
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(filename, size, size, &error);
+  GdkPixbuf *pixbuf = dt_gdk_pixbuf_new_from_file_at_size(filename, size, size, &error);
   if(!pixbuf)
   {
     fprintf(stderr, "error loading file `%s': %s\n", filename, error->message);
@@ -1772,6 +1772,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* add module icon */
   GdkPixbuf *pixbuf;
+  cairo_surface_t *surface;
   char filename[PATH_MAX] = { 0 };
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
@@ -1801,9 +1802,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   pixbuf = gdk_pixbuf_new_from_data(fallback_pixel, GDK_COLORSPACE_RGB, TRUE, 8, 1, 1, 4, NULL, NULL);
 
 got_image:
-  hw[idx] = gtk_image_new_from_pixbuf(pixbuf);
+  surface = dt_gdk_cairo_surface_create_from_pixbuf(pixbuf, 1, NULL);
+  hw[idx] = gtk_image_new_from_surface(surface);
   gtk_widget_set_margin_start(GTK_WIDGET(hw[idx]), DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  cairo_surface_destroy(surface);
   g_object_unref(pixbuf);
 
   /* add module label */

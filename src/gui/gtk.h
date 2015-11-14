@@ -116,12 +116,24 @@ static inline int dt_cairo_image_surface_get_width(cairo_surface_t *surface) {
 static inline int dt_cairo_image_surface_get_height(cairo_surface_t *surface) {
   return cairo_image_surface_get_height(surface) / darktable.gui->ppd;
 }
+
+static inline cairo_surface_t *dt_gdk_cairo_surface_create_from_pixbuf(const GdkPixbuf *pixbuf, int scale, GdkWindow *for_window) {
+  cairo_surface_t *cst = gdk_cairo_surface_create_from_pixbuf(pixbuf, scale, for_window);;
+  cairo_surface_set_device_scale(cst, darktable.gui->ppd, darktable.gui->ppd);
+  return cst;
+}
+
+static inline GdkPixbuf *dt_gdk_pixbuf_new_from_file_at_size(const char *filename, int width, int height, GError **error) {
+  return gdk_pixbuf_new_from_file_at_size(filename, width * darktable.gui->ppd, height * darktable.gui->ppd, error);
+}
 #else
 #define dt_cairo_image_surface_create cairo_image_surface_create
 #define dt_cairo_image_surface_create_for_data cairo_image_surface_create_for_data
 #define dt_cairo_image_surface_create_from_png cairo_image_surface_create_from_png
 #define dt_cairo_image_surface_get_width cairo_image_surface_get_width
 #define dt_cairo_image_surface_get_height cairo_image_surface_get_height
+#define dt_gdk_cairo_surface_create_from_pixbuf gdk_cairo_surface_create_from_pixbuf
+#define dt_gdk_pixbuf_new_from_file_at_size gdk_pixbuf_new_from_file_at_size
 #endif
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);

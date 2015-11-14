@@ -112,12 +112,15 @@ static void image_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *ren
                                     GtkTreeIter *iter, gpointer user_data)
 {
   // FIXME: is that correct?
-  GtkImage *pixbuf;
+  GdkPixbuf *pixbuf;
+  cairo_surface_t *surface;
   dt_iop_module_so_t *module;
   gtk_tree_model_get(model, iter, COL_IMAGE, &pixbuf, -1);
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
-  g_object_set(renderer, "pixbuf", pixbuf, NULL);
+  surface = dt_gdk_cairo_surface_create_from_pixbuf(pixbuf, 1, NULL);
+  g_object_set(renderer, "surface", surface, NULL);
   g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, NULL);
+  cairo_surface_destroy(surface);
   g_object_unref(pixbuf);
 }
 static void favorite_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
@@ -144,7 +147,7 @@ static GdkPixbuf *load_image(const char *filename)
   GError *error = NULL;
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return NULL;
 
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(filename, ICON_SIZE, ICON_SIZE, &error);
+  GdkPixbuf *pixbuf = dt_gdk_pixbuf_new_from_file_at_size(filename, ICON_SIZE, ICON_SIZE, &error);
   if(!pixbuf)
   {
     fprintf(stderr, "error loading file `%s': %s\n", filename, error->message);
