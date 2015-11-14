@@ -542,13 +542,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
       else
       {
-        std::ostringstream os;
-        pos->write(os, &exifData);
-        std::string os_str = os.str();
-        const char *exifstr = os_str.c_str();
-        img->exif_iso = (float)std::atof(exifstr);
-        // beware the following does not result in the same!:
-        // img->exif_iso = (float) std::atof( pos->toString().c_str() );
+        std::string str = pos->print();
+        img->exif_iso = (float)std::atof(str.c_str());
       }
     }
     // some newer cameras support iso settings that exceed the 16 bit of exif's ISOSpeedRatings
@@ -556,11 +551,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       if(FIND_EXIF_TAG("Exif.PentaxDng.ISO") || FIND_EXIF_TAG("Exif.Pentax.ISO"))
       {
-        std::ostringstream os;
-        pos->write(os, &exifData);
-        std::string os_str = os.str();
-        const char *exifstr = os_str.c_str();
-        img->exif_iso = (float)std::atof(exifstr);
+        std::string str = pos->print();
+        img->exif_iso = (float)std::atof(str.c_str());
       }
       else if((!g_strcmp0(img->exif_maker, "SONY") || !g_strcmp0(img->exif_maker, "Canon"))
         && FIND_EXIF_TAG("Exif.Photo.RecommendedExposureIndex"))
