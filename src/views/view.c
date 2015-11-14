@@ -1027,6 +1027,13 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   {
     if(draw_metadata && width > DECORATION_SIZE_LIMIT)
     {
+      if (zoom == 1)
+      {
+        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+        cairo_rectangle(cr, 0, 0, width, 0.045 * fscale);
+        cairo_fill(cr);
+      }
+
       // draw mouseover hover effects, set event hook for mouse button down!
       cairo_set_line_width(cr, 1.5);
       cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
@@ -1219,7 +1226,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     {
       // color labels:
       const float x = zoom == 1 ? 0.43 * fscale : .21 * width;
-      const float y = zoom == 1 ? 0.02 * fscale : 0.1 * height;
+      const float y = zoom == 1 ? 0.025 * fscale : 0.1 * height;
       const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
 
       /* clear and reset prepared statement */
