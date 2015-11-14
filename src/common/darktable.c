@@ -1002,14 +1002,14 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   dt_lua_init(darktable.lua_state.state, lua_command);
 #endif
 
+  if(init_gui) dt_ctl_switch_mode_to(mode);
+
   // last but not least construct the popup that asks the user about images whose xmp files are newer than the
   // db entry
   if(init_gui && changed_xmp_files)
   {
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
-
-  if(init_gui) dt_ctl_switch_mode_to(mode);
 
   return 0;
 }
