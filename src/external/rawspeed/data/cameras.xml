@@ -1287,6 +1287,9 @@
 			<Vertical x="0" width="80"/>
 			<Horizontal y="0" height="16"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot SX1 IS">
 		<ID make="Canon" model="PowerShot SX1 IS">Canon PowerShot SX1 IS</ID>
