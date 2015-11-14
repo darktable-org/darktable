@@ -474,6 +474,42 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /* List of tag names taken from exiv2's printSummary() in actions.cpp */
     Exiv2::ExifData::const_iterator pos;
 
+    // look for maker & model first so we can use that info later
+    if(FIND_EXIF_TAG("Exif.Image.Make"))
+    {
+      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
+    }
+    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Make"))
+    {
+      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
+    }
+
+    for(char *c = img->exif_maker + sizeof(img->exif_maker) - 1; c > img->exif_maker; c--)
+      if(*c != ' ' && *c != '\0')
+      {
+        *(c + 1) = '\0';
+        break;
+      }
+
+    if(FIND_EXIF_TAG("Exif.Image.Model"))
+    {
+      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
+    }
+    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Model"))
+    {
+      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
+    }
+
+    for(char *c = img->exif_model + sizeof(img->exif_model) - 1; c > img->exif_model; c--)
+      if(*c != ' ' && *c != '\0')
+      {
+        *(c + 1) = '\0';
+        break;
+      }
+
+    // Make sure we copy the exif make and model to the correct place if needed
+    dt_image_refresh_makermodel(img);
+
     /* Read shutter time */
     if(FIND_EXIF_TAG("Exif.Photo.ExposureTime"))
     {
@@ -494,6 +530,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->exif_aperture = pos->toFloat();
     }
+
     /* Read ISO speed - Nikon happens to return a pair for Lo and Hi modes */
     if((pos = Exiv2::isoSpeed(exifData)) != exifData.end() && pos->size())
     {
@@ -514,6 +551,24 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         // img->exif_iso = (float) std::atof( pos->toString().c_str() );
       }
     }
+    // some newer cameras support iso settings that exceed the 16 bit of exif's ISOSpeedRatings
+    if(img->exif_iso == 65535 || img->exif_iso == 0)
+    {
+      if(FIND_EXIF_TAG("Exif.PentaxDng.ISO") || FIND_EXIF_TAG("Exif.Pentax.ISO"))
+      {
+        std::ostringstream os;
+        pos->write(os, &exifData);
+        std::string os_str = os.str();
+        const char *exifstr = os_str.c_str();
+        img->exif_iso = (float)std::atof(exifstr);
+      }
+      else if((!g_strcmp0(img->exif_maker, "SONY") || !g_strcmp0(img->exif_maker, "Canon"))
+        && FIND_EXIF_TAG("Exif.Photo.RecommendedExposureIndex"))
+      {
+        img->exif_iso = pos->toFloat();
+      }
+    }
+
     /* Read focal length  */
     if((pos = Exiv2::focalLength(exifData)) != exifData.end() && pos->size())
     {
@@ -689,41 +744,6 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       uf_strlcpy_to_utf8(uf->conf->whiteBalanceText, max_name, pos, exifData);
     }
 #endif
-
-    if(FIND_EXIF_TAG("Exif.Image.Make"))
-    {
-      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
-    }
-    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Make"))
-    {
-      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
-    }
-
-    for(char *c = img->exif_maker + sizeof(img->exif_maker) - 1; c > img->exif_maker; c--)
-      if(*c != ' ' && *c != '\0')
-      {
-        *(c + 1) = '\0';
-        break;
-      }
-
-    if(FIND_EXIF_TAG("Exif.Image.Model"))
-    {
-      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
-    }
-    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Model"))
-    {
-      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
-    }
-
-    for(char *c = img->exif_model + sizeof(img->exif_model) - 1; c > img->exif_model; c--)
-      if(*c != ' ' && *c != '\0')
-      {
-        *(c + 1) = '\0';
-        break;
-      }
-
-    // Make sure we copy the exif make and model to the correct place if needed
-    dt_image_refresh_makermodel(img);
 
     if(FIND_EXIF_TAG("Exif.Image.DateTimeOriginal"))
     {
