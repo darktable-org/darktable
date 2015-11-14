@@ -272,12 +272,21 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
 {
-  if(img->exif_exposure >= 0.1f)
-    snprintf(line, line_len, "%.1f'' f/%.1f %dmm iso %d", img->exif_exposure, img->exif_aperture,
+  if(img->exif_exposure >= 4.0f) // Use whole seconds (e.g., 5" for exposures >= 4s)
+    snprintf(line, line_len, "%.0f″ f/%.0f %dmm iso %d", img->exif_exposure, img->exif_aperture,
              (int)img->exif_focal_length, (int)img->exif_iso);
-  else
+  else if(img->exif_exposure < 0.35f) // Use fractions (e.g., 1/200 all the way up to 1/3)
     snprintf(line, line_len, "1/%.0f f/%.1f %dmm iso %d", 1.0 / img->exif_exposure, img->exif_aperture,
              (int)img->exif_focal_length, (int)img->exif_iso);
+  else // Use seconds and tenths (e.g., 1"2 for 1.2s exposure)
+  {
+    // Round first so we don't end up showing 0"10 instead of 1"0
+    float exposure = roundf(img->exif_exposure*10.0f)/10.0f;
+    float integral = 0.0f;
+    float fractional = modff(exposure, &integral) * 10.0f;
+    snprintf(line, line_len, "%.0f″%.0f f/%.1f %dmm iso %d", integral, fractional, img->exif_aperture,
+             (int)img->exif_focal_length, (int)img->exif_iso);
+  }
 }
 
 void dt_image_set_location(const int32_t imgid, double lon, double lat)
