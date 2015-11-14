@@ -974,6 +974,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
 
   // Creating the main window
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 
   // check if in HiDPI mode
