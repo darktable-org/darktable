@@ -317,7 +317,7 @@ GtkFrame > GtkEventBox * {
   background-image:none;
 }
 
-*:insensitive {
+#main_window *:insensitive {
   color: black;
 }
 
