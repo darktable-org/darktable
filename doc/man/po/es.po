@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2015-11-10 09:24-0430\n"
-"PO-Revision-Date: 2015-11-10 08:33-0430\n"
+"PO-Revision-Date: 2015-11-15 17:56-0430\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -474,8 +474,6 @@ msgstr "B<l>"
 
 #. type: textblock
 #: darktable.pod:172
-#, fuzzy
-#| msgid "Switch to lightroom view"
 msgid "Switch to lighttable view"
 msgstr "Cambiar a la vista de mesa de luz"
 
@@ -904,8 +902,6 @@ msgstr "B<Ctrl-f>"
 
 #. type: textblock
 #: darktable.pod:352 darktable.pod:410 darktable.pod:424
-#, fuzzy
-#| msgid "Show/hide film strip"
 msgid "Show/hide filmstrip"
 msgstr "Mostrar/esconder tira de imágenes"
 
@@ -1042,8 +1038,6 @@ msgstr "Rehacer"
 
 #. type: =head3
 #: darktable.pod:436
-#, fuzzy
-#| msgid "Film strip (when the cursor is on top of the film strip)"
 msgid "Filmstrip (when the cursor is on top of the filmstrip)"
 msgstr "Tira de imágenes (cuando el puntero está sobre la tira de imágenes)"
 
