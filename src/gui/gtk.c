@@ -1040,6 +1040,12 @@ static void init_widgets(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "delete_event", G_CALLBACK(dt_gui_quit_callback), NULL);
   g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(key_pressed_override), NULL);
   g_signal_connect(G_OBJECT(widget), "key-release-event", G_CALLBACK(key_released), NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  if(gtk_widget_get_realized(widget))
+    dt_osx_allow_fullscreen(widget);
+  else
+    g_signal_connect(G_OBJECT(widget), "realize", G_CALLBACK(dt_osx_allow_fullscreen), NULL);
+#endif
 
   container = widget;
 
