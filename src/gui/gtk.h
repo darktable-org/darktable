@@ -118,7 +118,7 @@ static inline int dt_cairo_image_surface_get_height(cairo_surface_t *surface) {
 }
 
 static inline cairo_surface_t *dt_gdk_cairo_surface_create_from_pixbuf(const GdkPixbuf *pixbuf, int scale, GdkWindow *for_window) {
-  cairo_surface_t *cst = gdk_cairo_surface_create_from_pixbuf(pixbuf, scale, for_window);;
+  cairo_surface_t *cst = gdk_cairo_surface_create_from_pixbuf(pixbuf, scale, for_window);
   cairo_surface_set_device_scale(cst, darktable.gui->ppd, darktable.gui->ppd);
   return cst;
 }
