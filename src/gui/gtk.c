@@ -166,21 +166,17 @@ static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObjec
   if(data)
   {
     widget = dt_ui_main_window(darktable.gui->ui);
-    fullscreen = dt_conf_get_bool("ui_last/fullscreen");
+    fullscreen = gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN;
     if(fullscreen)
       gtk_window_unfullscreen(GTK_WINDOW(widget));
     else
       gtk_window_fullscreen(GTK_WINDOW(widget));
-    fullscreen ^= 1;
-    dt_conf_set_bool("ui_last/fullscreen", fullscreen);
     dt_dev_invalidate(darktable.develop);
   }
   else
   {
     widget = dt_ui_main_window(darktable.gui->ui);
     gtk_window_unfullscreen(GTK_WINDOW(widget));
-    fullscreen = 0;
-    dt_conf_set_bool("ui_last/fullscreen", fullscreen);
     dt_dev_invalidate(darktable.develop);
   }
 
