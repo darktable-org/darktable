@@ -187,7 +187,6 @@ typedef struct dt_develop_t
   struct
   {
     guint timeout;
-    gulong destroy_signal_handler;
     GtkWidget *floating_window, *button; // yes, having gtk stuff in here is ugly. live with it.
 
     gboolean enabled;
@@ -200,7 +199,6 @@ typedef struct dt_develop_t
   struct
   {
     guint timeout;
-    gulong destroy_signal_handler;
     GtkWidget *floating_window, *softproof_button, *gamut_button;
   } profile;
 

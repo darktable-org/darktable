@@ -125,7 +125,6 @@ typedef struct dt_library_t
 
   struct
   {
-    gulong destroy_signal_handler;
     GtkWidget *button, *floating_window;
   } profile;
 
@@ -2308,12 +2307,12 @@ void connect_key_accels(dt_view_t *self)
 
 
 
+// ugly hack. we lose focus when moving the mouse over the main window, but also when opening the bauhaus popup
 static gboolean _profile_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_library_t *lib = (dt_library_t *)user_data;
-  g_signal_handler_disconnect(widget, lib->profile.destroy_signal_handler);
-  lib->profile.destroy_signal_handler = 0;
-  gtk_widget_hide(lib->profile.floating_window);
+  if(!gtk_widget_is_visible(darktable.bauhaus->popup_window))
+    gtk_widget_hide(lib->profile.floating_window);
   return FALSE;
 }
 
@@ -2338,8 +2337,7 @@ static gboolean _profile_quickbutton_pressed(GtkWidget *widget, GdkEvent *event,
   gtk_window_present(GTK_WINDOW(lib->profile.floating_window));
 
   // when the mouse moves back over the main window we close the popup.
-  lib->profile.destroy_signal_handler = g_signal_connect(window, "focus-in-event",
-                                                         G_CALLBACK(_profile_close_popup), user_data);
+  g_signal_connect(lib->profile.floating_window, "focus-out-event", G_CALLBACK(_profile_close_popup), user_data);
   return TRUE;
 }
 
