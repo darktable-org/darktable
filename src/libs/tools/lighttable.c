@@ -25,6 +25,9 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
+#define DT_LIBRARY_MIN_ZOOM 2
+#define DT_LIBRARY_MAX_ZOOM 13
+
 DT_MODULE(1)
 
 typedef struct dt_lib_tool_lighttable_t
@@ -109,7 +112,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   /* create horizontal zoom slider */
-  d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, 21, 1);
+  d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, DT_LIBRARY_MIN_ZOOM, DT_LIBRARY_MAX_ZOOM, 1);
   gtk_widget_set_size_request(GTK_WIDGET(d->zoom), DT_PIXEL_APPLY_DPI(140), -1);
   gtk_scale_set_draw_value(GTK_SCALE(d->zoom), FALSE);
   gtk_range_set_increments(GTK_RANGE(d->zoom), 1, 1);
@@ -275,7 +278,6 @@ static void _lib_lighttable_layout_changed(GtkComboBox *widget, gpointer user_da
   dt_control_queue_redraw_center();
 }
 
-#define DT_LIBRARY_MAX_ZOOM 13
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
@@ -288,7 +290,7 @@ static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  gtk_range_set_value(GTK_RANGE(d->zoom), 1);
+  gtk_range_set_value(GTK_RANGE(d->zoom), DT_LIBRARY_MIN_ZOOM);
   // FIXME: scroll to active image
   return TRUE;
 }
@@ -310,8 +312,8 @@ static gboolean _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  if(zoom <= 1)
-    zoom = 1;
+  if(zoom <= DT_LIBRARY_MIN_ZOOM)
+    zoom = DT_LIBRARY_MIN_ZOOM;
   else
     zoom--;
   gtk_range_set_value(GTK_RANGE(d->zoom), zoom);

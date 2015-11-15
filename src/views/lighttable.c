@@ -934,7 +934,7 @@ after_drawing:
 
 // TODO: this is also defined in lib/tools/lighttable.c
 //       fix so this value is shared.. DT_CTL_SET maybe ?
-
+#define DT_LIBRARY_MIN_ZOOM 2
 #define DT_LIBRARY_MAX_ZOOM 13
 
 static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
@@ -2253,8 +2253,8 @@ void init_key_accels(dt_view_t *self)
   // Preview key
   dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_z, 0);
   dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_z, GDK_CONTROL_MASK);
-  dt_accel_register_view(self, NC_("accel", "sticky preview"), 0, 0);
-  dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), 0, 0);
+  dt_accel_register_view(self, NC_("accel", "sticky preview"), GDK_KEY_f, 0);
+  dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), GDK_KEY_f, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "exit sticky preview"), 0, 0);
 }
 
