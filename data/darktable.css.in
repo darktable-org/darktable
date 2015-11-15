@@ -19,6 +19,7 @@
   text-shadow:none;
   margin: 0;
   padding: 0;
+  background-image: none;
 }
 
 GtkAlignment
