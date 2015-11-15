@@ -1264,7 +1264,7 @@ int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
     dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
 
   lib->image_over = DT_VIEW_DESERT;
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
   cairo_paint(cr);
 
   const int frows = 5, fcols = 5;
