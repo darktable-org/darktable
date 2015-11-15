@@ -94,6 +94,7 @@ endif()
 #
 # Set package version
 #
+set(DO_GENERATE_VERSION Off)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/") # the src/ subdirectory won't exist yet
 if(DEFINED PROJECT_VERSION)
   #project version is defined by -D on the cmake command line
@@ -114,6 +115,7 @@ else(DEFINED PROJECT_VERSION)
       COMMENT "Updating version string"
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
+    set(DO_GENERATE_VERSION On)
   elseif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
   # no need to create version_gen.h if it's already shipped. that is for example the case with our release tarballs
 #   else(NOT SOURCE_PACKAGE)

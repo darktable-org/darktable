@@ -19,6 +19,7 @@
   text-shadow:none;
   margin: 0;
   padding: 0;
+  background-image: none;
 }
 
 GtkAlignment
@@ -317,7 +318,7 @@ GtkFrame > GtkEventBox * {
   background-image:none;
 }
 
-*:insensitive {
+#main_window *:insensitive {
   color: black;
 }
 
@@ -413,7 +414,7 @@ GtkDialog *
   margin:0;
   border:0;
   background-color: @selected_bg_color;
-  background-image: none;
+/*  background-image: none; */
   border-color:  shade(@selected_bg_color, 1.2);
 }
 
@@ -438,6 +439,11 @@ GtkDialog GtkEventBox *
 GtkDialog GtkTreeView *:selected
 {
    background-color: shade(@selected_bg_color, 1.7);
+}
+
+GtkDialog GtkScrolledWindow
+{
+  background-color: transparent;
 }
 
 GtkColorSwatch

@@ -965,9 +965,8 @@ static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 static gboolean _overexposed_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
-  g_signal_handler_disconnect(widget, d->overexposed.destroy_signal_handler);
-  d->overexposed.destroy_signal_handler = 0;
-  gtk_widget_hide(d->overexposed.floating_window);
+  if(!gtk_widget_is_visible(darktable.bauhaus->popup_window))
+    gtk_widget_hide(d->overexposed.floating_window);
   return FALSE;
 }
 
@@ -992,8 +991,7 @@ static gboolean _overexposed_show_popup(gpointer user_data)
   gtk_window_present(GTK_WINDOW(d->overexposed.floating_window));
 
   // when the mouse moves back over the main window we close the popup.
-  d->overexposed.destroy_signal_handler
-      = g_signal_connect(window, "focus-in-event", G_CALLBACK(_overexposed_close_popup), user_data);
+  g_signal_connect(d->overexposed.floating_window, "focus-out-event", G_CALLBACK(_overexposed_close_popup), user_data);
 
   return FALSE;
 }
@@ -1079,9 +1077,8 @@ static void _softproof_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 static gboolean _profile_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
-  g_signal_handler_disconnect(widget, d->profile.destroy_signal_handler);
-  d->profile.destroy_signal_handler = 0;
-  gtk_widget_hide(d->profile.floating_window);
+  if(!gtk_widget_is_visible(darktable.bauhaus->popup_window))
+    gtk_widget_hide(d->profile.floating_window);
   return FALSE;
 }
 
@@ -1106,8 +1103,7 @@ static gboolean _softproof_show_popup(gpointer user_data)
   gtk_window_present(GTK_WINDOW(d->profile.floating_window));
 
   // when the mouse moves back over the main window we close the popup.
-  d->profile.destroy_signal_handler
-  = g_signal_connect(window, "focus-in-event", G_CALLBACK(_profile_close_popup), user_data);
+  g_signal_connect(d->profile.floating_window, "focus-out-event", G_CALLBACK(_profile_close_popup), user_data);
 
   return FALSE;
 }
@@ -1171,8 +1167,7 @@ static gboolean _gamut_show_popup(gpointer user_data)
   gtk_window_present(GTK_WINDOW(d->profile.floating_window));
 
   // when the mouse moves back over the main window we close the popup.
-  d->profile.destroy_signal_handler
-  = g_signal_connect(window, "focus-in-event", G_CALLBACK(_profile_close_popup), user_data);
+  g_signal_connect(d->profile.floating_window, "focus-out-event", G_CALLBACK(_profile_close_popup), user_data);
 
   return FALSE;
 }
@@ -1807,12 +1802,8 @@ void leave(dt_view_t *self)
 
   // take care of the overexposed window
   if(dev->overexposed.timeout > 0) g_source_remove(dev->overexposed.timeout);
-  if(dev->overexposed.destroy_signal_handler > 0)
-  {
-    g_signal_handler_disconnect(dt_ui_main_window(darktable.gui->ui), dev->overexposed.destroy_signal_handler);
-    dev->overexposed.destroy_signal_handler = 0;
-    gtk_widget_hide(dev->overexposed.floating_window);
-  }
+  gtk_widget_hide(dev->overexposed.floating_window);
+  gtk_widget_hide(dev->profile.floating_window);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }

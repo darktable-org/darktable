@@ -84,6 +84,8 @@ int dt_control_write_config(dt_control_t *c)
   dt_conf_set_int("ui_last/window_h", allocation.height);
   dt_conf_set_bool("ui_last/maximized",
                    (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_MAXIMIZED));
+  dt_conf_set_bool("ui_last/fullscreen",
+                   (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN));
 
   return 0;
 }

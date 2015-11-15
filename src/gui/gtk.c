@@ -166,21 +166,17 @@ static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObjec
   if(data)
   {
     widget = dt_ui_main_window(darktable.gui->ui);
-    fullscreen = dt_conf_get_bool("ui_last/fullscreen");
+    fullscreen = gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN;
     if(fullscreen)
       gtk_window_unfullscreen(GTK_WINDOW(widget));
     else
       gtk_window_fullscreen(GTK_WINDOW(widget));
-    fullscreen ^= 1;
-    dt_conf_set_bool("ui_last/fullscreen", fullscreen);
     dt_dev_invalidate(darktable.develop);
   }
   else
   {
     widget = dt_ui_main_window(darktable.gui->ui);
     gtk_window_unfullscreen(GTK_WINDOW(widget));
-    fullscreen = 0;
-    dt_conf_set_bool("ui_last/fullscreen", fullscreen);
     dt_dev_invalidate(darktable.develop);
   }
 
@@ -789,8 +785,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   //  dt_gui_background_jobs_init();
 
   /* Have the delete event (window close) end the program */
-  dt_loc_get_datadir(datadir, sizeof(datadir));
   snprintf(path, sizeof(path), "%s/icons", datadir);
+  gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
+  snprintf(path, sizeof(path), "%s/icons", DARKTABLE_SHAREDIR);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
 
   widget = dt_ui_center(darktable.gui->ui);
@@ -974,6 +971,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
 
   // Creating the main window
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 
   // check if in HiDPI mode
@@ -1038,6 +1036,12 @@ static void init_widgets(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "delete_event", G_CALLBACK(dt_gui_quit_callback), NULL);
   g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(key_pressed_override), NULL);
   g_signal_connect(G_OBJECT(widget), "key-release-event", G_CALLBACK(key_released), NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  if(gtk_widget_get_realized(widget))
+    dt_osx_allow_fullscreen(widget);
+  else
+    g_signal_connect(G_OBJECT(widget), "realize", G_CALLBACK(dt_osx_allow_fullscreen), NULL);
+#endif
 
   container = widget;
 

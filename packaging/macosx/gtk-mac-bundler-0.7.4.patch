@@ -5,7 +5,7 @@ diff -uNr gtk-mac-bundler-0.7.4-orig/bundler/bundler.py gtk-mac-bundler-0.7.4/bu
                  if not "(compatibility" in line:
                      return False
  
-+                if line.startswith("@executable_path/"):
++                if line.startswith("@rpath/"):
 +                    return False
 +
                  if line.startswith("/usr/X11"):
