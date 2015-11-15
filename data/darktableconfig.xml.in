@@ -606,6 +606,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/fullscreen_image</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>fullscreen image mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/camera/expanded</name>
     <type>bool</type>
     <default>false</default>

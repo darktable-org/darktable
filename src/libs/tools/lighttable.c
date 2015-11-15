@@ -24,6 +24,7 @@
 #include "libs/lib.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
 
 #define DT_LIBRARY_MIN_ZOOM 2
 #define DT_LIBRARY_MAX_ZOOM 13
@@ -34,6 +35,7 @@ typedef struct dt_lib_tool_lighttable_t
 {
   GtkWidget *zoom;
   GtkWidget *zoom_entry;
+  GtkWidget *fullscreen_button;
 } dt_lib_tool_lighttable_t;
 
 /* set zoom proxy function */
@@ -89,6 +91,12 @@ int position()
   return 1001;
 }
 
+static void _lib_lighttable_fullscreen_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_conf_set_bool("plugins/lighttable/fullscreen_image", TRUE);
+  dt_control_queue_redraw_center();
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -109,7 +117,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(_lib_lighttable_layout_changed), (gpointer)self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
-
 
   /* create horizontal zoom slider */
   d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, DT_LIBRARY_MIN_ZOOM, DT_LIBRARY_MAX_ZOOM, 1);
@@ -136,6 +143,14 @@ void gui_init(dt_lib_module_t *self)
   _lib_lighttable_zoom_slider_changed(GTK_RANGE(d->zoom), self); // the slider defaults to 1 and GTK doesn't
                                                                  // fire a value-changed signal when setting
                                                                  // it to 1 => empty text box
+
+  /* Create fullscreen button */
+  d->fullscreen_button = dtgtk_button_new(dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  g_object_set(G_OBJECT(d->fullscreen_button), "tooltip-text",
+                 _("toggle single image mode"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->fullscreen_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->fullscreen_button), "clicked",
+                   G_CALLBACK(_lib_lighttable_fullscreen_clicked), (gpointer)self);
 
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;

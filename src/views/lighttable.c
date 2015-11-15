@@ -131,6 +131,7 @@ typedef struct dt_library_t
 
 } dt_library_t;
 
+int is_fullscreen(dt_library_t *lib);
 int enter_fullscreen(dt_library_t *lib);
 int leave_fullscreen(dt_library_t *lib);
 
@@ -1380,6 +1381,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   // Let's show full preview if in that state...
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  if (dt_conf_get_bool("plugins/lighttable/fullscreen_image") && !is_fullscreen(lib))
+    enter_fullscreen(lib);
+
   /* TODO: instead of doing a check here, the call to switch_layout_to
      should be done in the place where the layout was actually changed. */
   const int new_layout = dt_conf_get_int("plugins/lighttable/layout");
@@ -1966,9 +1970,14 @@ int key_released(dt_view_t *self, guint key, guint state)
   return 1;
 }
 
+int is_fullscreen(dt_library_t *lib)
+{
+  return (lib->full_preview_id != -1);
+}
+
 int leave_fullscreen(dt_library_t *lib)
 {
-  if (lib->full_preview_id == -1)
+  if (!is_fullscreen(lib))
     return 1;
 
   lib->full_preview_id = -1;
@@ -1984,19 +1993,31 @@ int leave_fullscreen(dt_library_t *lib)
 
   lib->full_preview = 0;
   lib->display_focus = 0;
+  dt_conf_set_bool("plugins/lighttable/fullscreen_image", FALSE);
 
   return 1;
 }
 
 int enter_fullscreen(dt_library_t *lib)
 {
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
-  if(lib->full_preview_id != -1 || mouse_over_id == -1)
+  int32_t selected_id = dt_control_get_mouse_over_id();
+  if (selected_id == -1) {
+    if(lib->layout == 1)
+      selected_id = lib->first_visible_filemanager;
+    else
+      selected_id = lib->first_visible_zoomable;
+  }
+
+  if(is_fullscreen(lib) || selected_id == -1) {
+    // We couldn't enter fullscreen for some reason so set back the toggle to not loop infinitely
+    dt_conf_set_bool("plugins/lighttable/fullscreen_image", FALSE);
     return 0;
+  }
 
   // encode panel visibility into full_preview
   lib->full_preview = 0;
-  lib->full_preview_id = mouse_over_id;
+  lib->full_preview_id = selected_id;
+  dt_conf_set_bool("plugins/lighttable/fullscreen_image", TRUE);
 
   // set corresponding rowid in the collected images
   sqlite3_stmt *stmt;
@@ -2046,7 +2067,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if (key == accels->lighttable_preview_sticky.accel_key &&
       state == accels->lighttable_preview_sticky.accel_mods)
   {
-    if (lib->display_focus == 1 || lib->full_preview_id == -1)
+    if (lib->display_focus == 1 || !is_fullscreen(lib))
     {
       lib->display_focus = 0;
       return enter_fullscreen(lib);
@@ -2059,7 +2080,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if (key == accels->lighttable_preview_sticky_focus.accel_key &&
       state == accels->lighttable_preview_sticky_focus.accel_mods)
   {
-    if (lib->display_focus == 0 || lib->full_preview_id == -1)
+    if (lib->display_focus == 0 || !is_fullscreen(lib))
     {
       lib->display_focus = 1;
       return enter_fullscreen(lib);
