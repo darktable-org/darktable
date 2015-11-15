@@ -789,8 +789,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   //  dt_gui_background_jobs_init();
 
   /* Have the delete event (window close) end the program */
-  dt_loc_get_datadir(datadir, sizeof(datadir));
   snprintf(path, sizeof(path), "%s/icons", datadir);
+  gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
+  snprintf(path, sizeof(path), "%s/icons", DARKTABLE_SHAREDIR);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
 
   widget = dt_ui_center(darktable.gui->ui);
