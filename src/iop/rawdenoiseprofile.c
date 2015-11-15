@@ -980,6 +980,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_rawdenoiseprofile_params_t *p = (dt_iop_rawdenoiseprofile_params_t *)self->params;
 
+  if(p->mode != 0) return; // actually the stabilised variance is not easy to plot with a Fisz transform.
+
   const float b = darktable.develop->image_storage.raw_black_level;
   const float w = darktable.develop->image_storage.raw_white_point;
   // cairo_save(cr); // XXX save restore destroy the image, wtf.
