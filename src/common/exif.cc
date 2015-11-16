@@ -1059,9 +1059,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
     Exiv2::ExifData::const_iterator end = blobExifData.end();
     for(Exiv2::ExifData::const_iterator i = blobExifData.begin(); i != end; ++i)
     {
-      Exiv2::ExifKey key(i->key());
-      if(imgExifData.findKey(key) == imgExifData.end())
-        imgExifData.add(Exiv2::ExifKey(i->key()), &i->value());
+      imgExifData.add(Exiv2::ExifKey(i->key()), &i->value());
     }
     // Remove thumbnail
     Exiv2::ExifData::iterator it;
@@ -1114,8 +1112,6 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
     assert(image.get() != 0);
     image->readMetadata();
     Exiv2::ExifData &exifData = image->exifData();
-    // needs to be reset, even in dng mode, as the buffers are flipped during raw import
-    exifData["Exif.Image.Orientation"] = uint16_t(1);
 
     // get rid of thumbnails
     Exiv2::ExifThumb(exifData).erase();
@@ -1153,6 +1149,8 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
     if(!dng_mode)
     {
       /* Delete various MakerNote fields only applicable to the raw file */
+
+      exifData["Exif.Image.Orientation"] = uint16_t(1);
 
       // Canon color space info
       if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.ColorSpace"))) != exifData.end())
