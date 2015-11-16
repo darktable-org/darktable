@@ -8,7 +8,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     (practice showed that support for versions older than 10.6 isn't viable)
     and this line to /opt/local/etc/macports/variant.conf:
      +llvm34 +ld64_236 +no_gnome +no_x11 +quartz -x11 -gnome
-    Install required dependencies (for pugixml port see https://trac.macports.org/ticket/48686):
+    Install required dependencies:
      $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg15 lua webp libsecret pugixml osm-gps-map adwaita-icon-theme
     To have working OpenMP (at least partly, only for C source files) you will also need gcc49:
      $ sudo port install gcc49
