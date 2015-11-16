@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0011 NEW)
 
 include(CheckCCompilerFlag)
+include(CheckCSourceCompiles)
 
 #
 # Add files for libdarktable
@@ -353,6 +354,18 @@ if(GPHOTO2_FOUND)
   endif()
 endif(GPHOTO2_FOUND)
 
+# Check for __builtin_cpu_supports here due to a bug in clang/llvm. LLVM uses
+# libgcc to provide the symbols, so if clang wasn't compiled with libgcc, the
+# compiler will say it's available; however the linker cannot find the symbols.
+# So do a quick test compile to see if it's actually available.
+# See https://llvm.org/bugs/show_bug.cgi?id=25510
+check_c_source_compiles("#include <stdio.h>
+int main() {
+  printf(\"%d\", __builtin_cpu_supports(\"sse3\"));
+}" HAVE_BUILTIN_CPU_SUPPORTS)
+if(HAVE_BUILTIN_CPU_SUPPORTS)
+  add_definitions("-DHAVE_BUILTIN_CPU_SUPPORTS")
+endif(HAVE_BUILTIN_CPU_SUPPORTS)
 
 #
 # Set default compile flags for GCC
