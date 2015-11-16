@@ -663,13 +663,16 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
                              buf.pre_monochrome_demosaiced);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
-  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
-                                  &pipe.processed_height);
+
   if(filter)
   {
     if(!strncmp(filter, "pre:", 4)) dt_dev_pixelpipe_disable_after(&pipe, filter + 4);
     if(!strncmp(filter, "post:", 5)) dt_dev_pixelpipe_disable_before(&pipe, filter + 5);
   }
+
+  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
+                                  &pipe.processed_height);
+
   dt_show_times(&start, "[export] creating pixelpipe", NULL);
 
   // find output color profile for this image:
