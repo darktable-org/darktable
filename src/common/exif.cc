@@ -1057,12 +1057,16 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
     Exiv2::ExifData blobExifData;
     Exiv2::ExifParser::decode(blobExifData, blob + 6, size);
     Exiv2::ExifData::const_iterator end = blobExifData.end();
+    Exiv2::ExifData::iterator it;
     for(Exiv2::ExifData::const_iterator i = blobExifData.begin(); i != end; ++i)
     {
+      // add() does not override! we need to delete existing key first.
+      Exiv2::ExifKey key(i->key());
+      if((it = imgExifData.findKey(key)) != imgExifData.end()) imgExifData.erase(it);
+
       imgExifData.add(Exiv2::ExifKey(i->key()), &i->value());
     }
     // Remove thumbnail
-    Exiv2::ExifData::iterator it;
     if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.Compression"))) != imgExifData.end())
       imgExifData.erase(it);
     if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.XResolution"))) != imgExifData.end())
