@@ -89,7 +89,7 @@ static inline int dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex,
                                                     const int line, const char *function)
 {
   memset(mutex, 0x0, sizeof(dt_pthread_mutex_t));
-  snprintf(mutex->name, 256, "%s:%d (%s)", file, line, function);
+  snprintf(mutex->name, sizeof(mutex->name), "%s:%d (%s)", file, line, function);
 #if defined(__OpenBSD__)
   if(attr == NULL)
   {
@@ -116,8 +116,8 @@ static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, c
   mutex->time_locked = dt_pthread_get_wtime();
   double wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
-  char name[256];
-  snprintf(name, sizeof(name), "%s:%d (%s)", file, line, function);
+  char *name = mutex->name;
+  snprintf(mutex->name, sizeof(mutex->name), "%s:%d (%s)", file, line, function);
   int min_wait_slot = 0;
   for(int k = 0; k < TOPN; k++)
   {
@@ -144,8 +144,8 @@ static inline int dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex
   mutex->time_locked = dt_pthread_get_wtime();
   double wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
-  char name[256];
-  snprintf(name, sizeof(name), "%s:%d (%s)", file, line, function);
+  char *name = mutex->name;
+  snprintf(mutex->name, sizeof(mutex->name), "%s:%d (%s)", file, line, function);
   int min_wait_slot = 0;
   for(int k = 0; k < TOPN; k++)
   {
@@ -169,8 +169,8 @@ static inline int dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex,
   const double locked = t0 - mutex->time_locked;
   mutex->time_sum_locked += locked;
 
-  char name[256];
-  snprintf(name, sizeof(name), "%s:%d (%s)", file, line, function);
+  char *name = mutex->name;
+  snprintf(mutex->name, sizeof(mutex->name), "%s:%d (%s)", file, line, function);
   int min_locked_slot = 0;
   for(int k = 0; k < TOPN; k++)
   {

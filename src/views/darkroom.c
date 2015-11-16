@@ -1760,10 +1760,10 @@ void leave(dt_view_t *self)
 
   // clear gui.
   dev->gui_leaving = 1;
-  dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
 
+  dt_pthread_mutex_lock(&dev->history_mutex);
   while(dev->history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
