@@ -37,6 +37,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "dtgtk/resetlabel.h"
+#include "dtgtk/paint.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/pixelpipe.h"
 #include "common/histogram.h"
@@ -74,7 +75,6 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkWidget *black;
   GtkWidget *mode_stack;
   GtkWidget *exposure;
-  GtkCheckButton *autoexp;
   GtkWidget *autoexpp;
   GtkWidget *deflicker_percentile;
   GtkWidget *deflicker_target_level;
@@ -475,12 +475,6 @@ static void autoexp_disable(dt_iop_module_t *self)
 {
   if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return;
 
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
-
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 }
 
@@ -505,9 +499,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->black, p->black);
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
 
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
   dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
@@ -545,9 +537,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   // switch off auto exposure when we lose focus (switching images etc)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
 }
 
 void init(dt_iop_module_t *module)
@@ -730,14 +720,15 @@ static float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
   return p->black;
 }
 
-static void autoexp_callback(GtkToggleButton *button, gpointer user_data)
+static void autoexp_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
 
-  self->request_color_pick = gtk_toggle_button_get_active(button) ? DT_REQUEST_COLORPICK_MODULE
-                                                                  : DT_REQUEST_COLORPICK_OFF;
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+  else
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   dt_iop_request_focus(self);
 
@@ -748,8 +739,6 @@ static void autoexp_callback(GtkToggleButton *button, gpointer user_data)
   }
   else
     dt_control_queue_redraw();
-
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -931,19 +920,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
-  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-
-  g->autoexp = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoexp), FALSE, TRUE, 0);
-
   g->autoexpp = dt_bauhaus_slider_new_with_range(self, 0.0, 0.2, .001, 0.01, 3);
-  g_object_set(G_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out"),
-               (char *)NULL);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out, toggle color picker to activate"), (char *)0);
+  dt_bauhaus_slider_set_format(g->autoexpp, "%.3f%%");
+  dt_bauhaus_widget_set_label(g->autoexpp, NULL, _("clipping threshold"));
+  dt_bauhaus_widget_set_quad_paint(g->autoexpp, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
+  gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_widget_show_all(vbox_manual);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_manual, "manual");
 
@@ -1001,7 +984,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->black), "value-changed", G_CALLBACK(black_callback), self);
   g_signal_connect(G_OBJECT(g->exposure), "value-changed", G_CALLBACK(exposure_callback), self);
   g_signal_connect(G_OBJECT(g->autoexpp), "value-changed", G_CALLBACK(autoexpp_callback), self);
-  g_signal_connect(G_OBJECT(g->autoexp), "toggled", G_CALLBACK(autoexp_callback), self);
+  g_signal_connect(G_OBJECT(g->autoexpp), "quad-pressed", G_CALLBACK(autoexp_callback), self);
   g_signal_connect(G_OBJECT(g->deflicker_percentile), "value-changed", G_CALLBACK(deflicker_params_callback),
                    self);
   g_signal_connect(G_OBJECT(g->deflicker_target_level), "value-changed",
