@@ -13,7 +13,7 @@ B<darktable> is a digital photography workflow application for B<Linux>, B<Mac O
 It's described further in L<darktable(1)|darktable(1)>.
 
 B<darktable-viewer> is a stand-alone slideshow viewer that displays the images of your current collection fullscreen.
-Press B<ESC> to stop.
+Press B<Esc> to stop.
 
 =head1 OPTIONS
 
