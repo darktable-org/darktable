@@ -724,22 +724,11 @@ static void autoexp_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF) return;
 
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-  else
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
-  dt_iop_request_focus(self);
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-    dt_control_queue_redraw();
-
+  self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+  dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+  dt_dev_reprocess_all(self->dev);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
