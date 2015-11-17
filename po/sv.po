@@ -25,8 +25,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-11 03:03+0100\n"
-"PO-Revision-Date: 2015-11-11 03:11+0100\n"
+"POT-Creation-Date: 2015-11-17 17:33+0100\n"
+"PO-Revision-Date: 2015-11-17 18:37+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -431,7 +431,9 @@ msgstr "scrolla till ljusbordsmoduler när den öppnas/stängs"
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
-msgstr "när detta val är påslaget kommer darktable att försöka scrolla modulen så den hamnar högst upp i det synliga området"
+msgstr ""
+"när detta val är påslaget kommer darktable att försöka scrolla modulen så "
+"den hamnar högst upp i det synliga området"
 
 #: ../build/src/preferences_gen.h:2142
 msgid "scroll to darkroom modules when expanded/collapsed"
@@ -1270,7 +1272,7 @@ msgstr "under havsytan"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:349 ../src/control/control.c:352
+#: ../src/control/control.c:351 ../src/control/control.c:354
 msgid "working.."
 msgstr "arbetar.."
 
@@ -1324,13 +1326,15 @@ msgstr "var god att ställa om kameran till manuellt läge först!"
 #: ../src/control/jobs/camera_jobs.c:285
 #, c-format
 msgid "%d/%d imported to %s"
-msgstr "%d/%d importerad som %s"
+msgid_plural "%d/%d imported to %s"
+msgstr[0] "%d/%d importerad till %s"
+msgstr[1] "%d/%d importerade till %s"
 
-#: ../src/control/jobs/camera_jobs.c:321
+#: ../src/control/jobs/camera_jobs.c:322
 msgid "starting to import images from camera"
 msgstr "börjar importera bilder från kamera"
 
-#: ../src/control/jobs/camera_jobs.c:332
+#: ../src/control/jobs/camera_jobs.c:333
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
@@ -2079,12 +2083,12 @@ msgstr "flytta ner"
 msgid "delete"
 msgstr "radera"
 
-#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1852
+#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1855
 #, c-format
 msgid "%s is switched on"
 msgstr "%s är påslagen"
 
-#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1852
+#: ../src/develop/imageop.c:885 ../src/develop/imageop.c:1855
 #, c-format
 msgid "%s is switched off"
 msgstr "%s är avslagen"
@@ -2124,15 +2128,15 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "ny förinställningar"
 
-#: ../src/develop/imageop.c:1823
+#: ../src/develop/imageop.c:1826
 msgid "multiple instances actions"
 msgstr "hantera multipla instanser"
 
-#: ../src/develop/imageop.c:1831 ../src/libs/lib.c:971
+#: ../src/develop/imageop.c:1834 ../src/libs/lib.c:971
 msgid "reset parameters"
 msgstr "återställ parametrar"
 
-#: ../src/develop/imageop.c:1839 ../src/gui/preferences.c:422
+#: ../src/develop/imageop.c:1842 ../src/gui/preferences.c:422
 #: ../src/libs/lib.c:983
 msgid "presets"
 msgstr "fördefinierade"
@@ -2382,7 +2386,7 @@ msgstr "kvällssol"
 msgid "underwater"
 msgstr "under vatten"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1455
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1450
 msgid "black & white"
 msgstr "svart & vitt"
 
@@ -2582,67 +2586,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:851
+#: ../src/gui/gtk.c:848
 msgctxt "accel"
 msgid "tethering view"
 msgstr "tjudringsvy"
 
-#: ../src/gui/gtk.c:852
+#: ../src/gui/gtk.c:849
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "ljusbordsy"
 
-#: ../src/gui/gtk.c:853
+#: ../src/gui/gtk.c:850
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "mörkrumsvy"
 
-#: ../src/gui/gtk.c:854
+#: ../src/gui/gtk.c:851
 msgctxt "accel"
 msgid "map view"
 msgstr "kartvy"
 
-#: ../src/gui/gtk.c:855
+#: ../src/gui/gtk.c:852
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "bildspelsvy"
 
-#: ../src/gui/gtk.c:856
+#: ../src/gui/gtk.c:853
 msgctxt "accel"
 msgid "print view"
 msgstr "utskriftsvy"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:879
+#: ../src/gui/gtk.c:876
 msgctxt "accel"
 msgid "quit"
 msgstr "avsluta"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:884
+#: ../src/gui/gtk.c:881
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "växla fullskärm"
 
-#: ../src/gui/gtk.c:885
+#: ../src/gui/gtk.c:882
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "lämna fullskärm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:893
+#: ../src/gui/gtk.c:890
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "växla visning av paneler"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:896
+#: ../src/gui/gtk.c:893
 msgctxt "accel"
 msgid "toggle header"
 msgstr "växla visning av huvud"
 
 #. View-switch
-#: ../src/gui/gtk.c:899
+#: ../src/gui/gtk.c:896
 msgctxt "accel"
 msgid "switch view"
 msgstr "byt vy"
@@ -2889,7 +2893,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:460 ../src/gui/preferences.c:1285
-#: ../src/gui/presets.c:463 ../src/iop/exposure.c:105 ../src/iop/exposure.c:930
+#: ../src/gui/presets.c:463 ../src/iop/exposure.c:105 ../src/iop/exposure.c:919
 #: ../src/iop/relight.c:372 ../src/libs/metadata_view.c:100
 msgid "exposure"
 msgstr "exponering"
@@ -2909,7 +2913,7 @@ msgid "focal length"
 msgstr "brännvidd"
 
 #: ../src/gui/preferences.c:473 ../src/iop/borders.c:996
-#: ../src/iop/exposure.c:936 ../src/iop/levels.c:583
+#: ../src/iop/levels.c:583
 msgid "auto"
 msgstr "automatisk"
 
@@ -3586,18 +3590,20 @@ msgstr "kunde inte skriva till katalog `%s'!"
 #: ../src/imageio/storage/gallery.c:374 ../src/imageio/storage/latex.c:350
 #, c-format
 msgid "%d/%d exported to `%s%s'"
-msgstr "%d/%d exporterad till `%s%s'"
+msgid_plural "%d/%d exported to `%s%s'"
+msgstr[0] "%d/%d exporterad till `%s%s'"
+msgstr[1] "%d/%d exporterade till `%s%s'"
 
 #: ../src/imageio/storage/email.c:51
 msgid "send as email"
 msgstr "skicka som epost"
 
 #. subject, body format
-#: ../src/imageio/storage/email.c:190
+#: ../src/imageio/storage/email.c:191
 msgid "images exported from darktable"
 msgstr "bilder exporterade från darktable"
 
-#: ../src/imageio/storage/email.c:223
+#: ../src/imageio/storage/email.c:224
 msgid "could not launch email client!"
 msgstr "kunde inte starta email-klienten!"
 
@@ -3735,7 +3741,9 @@ msgstr "kunde inte exportera bild till webbalbum"
 #: ../src/imageio/storage/facebook.c:1334
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
-msgstr "%d/%d exporterad till facebook-album"
+msgid_plural "%d/%d exported to facebook webalbum"
+msgstr[0] "%d/%d exporterad till facebook-album"
+msgstr[1] "%d/%d exporterade till facebook-album"
 
 #: ../src/imageio/storage/flickr.c:113
 #, c-format
@@ -3765,11 +3773,11 @@ msgid "flickr webalbum"
 msgstr "flickr-album"
 
 #: ../src/imageio/storage/flickr.c:331 ../src/imageio/storage/flickr.c:371
-#: ../src/imageio/storage/flickr.c:822 ../src/imageio/storage/flickr.c:828
+#: ../src/imageio/storage/flickr.c:823 ../src/imageio/storage/flickr.c:829
 msgid "not authenticated"
 msgstr "inte autentiserad"
 
-#: ../src/imageio/storage/flickr.c:367 ../src/imageio/storage/flickr.c:818
+#: ../src/imageio/storage/flickr.c:367 ../src/imageio/storage/flickr.c:819
 msgid "authenticated"
 msgstr "autentiserad"
 
@@ -3839,7 +3847,9 @@ msgstr "kunde inte exportera till flickr!"
 #: ../src/imageio/storage/flickr.c:717
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
-msgstr "%d/%d exporterad till flickr-album"
+msgid_plural "%d/%d exported to flickr webalbum"
+msgstr[0] "%d/%d exporterad till flickr-album"
+msgstr[1] "%d/%d exporterade till flickr-album"
 
 #: ../src/imageio/storage/gallery.c:68
 msgid "website gallery"
@@ -3901,7 +3911,9 @@ msgstr "kunde inte exportera bild till google+-album"
 #: ../src/imageio/storage/picasa.c:1487
 #, c-format
 msgid "%d/%d exported to google+ album"
-msgstr "%d/%d exporterad till google+-album"
+msgid_plural "%d/%d exported to google+ album"
+msgstr[0] "%d/%d exporterad till google+-album"
+msgstr[1] "%d/%d exporterade till google+-album"
 
 #: ../src/iop/atrous.c:110
 msgid "equalizer"
@@ -4201,7 +4213,7 @@ msgid "the size of bloom"
 msgstr "överstrålningens storlek"
 
 #: ../src/iop/bloom.c:536 ../src/iop/colorreconstruction.c:1308
-#: ../src/iop/defringe.c:464 ../src/iop/hotpixels.c:438
+#: ../src/iop/defringe.c:464 ../src/iop/hotpixels.c:439
 #: ../src/iop/sharpen.c:593
 msgid "threshold"
 msgstr "tröskel"
@@ -4211,7 +4223,7 @@ msgid "the threshold of light"
 msgstr "tröskelnivå för ljuset"
 
 #: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:1661
-#: ../src/iop/grain.c:546 ../src/iop/hotpixels.c:446 ../src/iop/nlmeans.c:709
+#: ../src/iop/grain.c:546 ../src/iop/hotpixels.c:447 ../src/iop/nlmeans.c:709
 #: ../src/iop/velvia.c:347
 msgid "strength"
 msgstr "styrka"
@@ -5038,26 +5050,26 @@ msgstr "utgående avsikt"
 
 #: ../src/iop/colorout.c:639 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261
-#: ../src/views/darkroom.c:1552 ../src/views/lighttable.c:2480
+#: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2478
 msgid "perceptual"
 msgstr "perceptuell"
 
 #: ../src/iop/colorout.c:640 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
-#: ../src/views/darkroom.c:1553 ../src/views/lighttable.c:2481
+#: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2479
 msgid "relative colorimetric"
 msgstr "relativ färgmetri"
 
 #: ../src/iop/colorout.c:641 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
-#: ../src/views/darkroom.c:1554 ../src/views/lighttable.c:2482
+#: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2480
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mättnad"
 
 #: ../src/iop/colorout.c:642 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
-#: ../src/views/darkroom.c:1555 ../src/views/lighttable.c:2483
+#: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2481
 msgid "absolute colorimetric"
 msgstr "absolut färgmetri"
 
@@ -5394,7 +5406,7 @@ msgstr "fann motsvarighet till ISO %d"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolerat från ISO %d och %d"
 
-#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:901
+#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:890
 #: ../src/iop/lens.c:2187 ../src/iop/levels.c:550 ../src/libs/export.c:635
 #: ../src/libs/print_settings.c:1317
 msgid "mode"
@@ -5567,60 +5579,63 @@ msgstr "nästan ingen klippning"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "misslyckades med att läsa råbuffer från bild `%s'"
 
-#: ../src/iop/exposure.c:903 ../src/iop/levels.c:552
+#: ../src/iop/exposure.c:892 ../src/iop/levels.c:552
 msgctxt "mode"
 msgid "manual"
 msgstr "manuell"
 
-#: ../src/iop/exposure.c:906 ../src/iop/levels.c:555 ../src/iop/tonecurve.c:785
+#: ../src/iop/exposure.c:895 ../src/iop/levels.c:555 ../src/iop/tonecurve.c:785
 #: ../src/iop/vignette.c:1140
 msgid "automatic"
 msgstr "automatisk"
 
-#: ../src/iop/exposure.c:915
+#: ../src/iop/exposure.c:904
 msgid "adjust the black level"
 msgstr "justeringen av svart nivå"
 
-#: ../src/iop/exposure.c:917 ../src/iop/levels.c:618
+#: ../src/iop/exposure.c:906 ../src/iop/levels.c:618
 msgid "black"
 msgstr "svärta"
 
-#: ../src/iop/exposure.c:928
+#: ../src/iop/exposure.c:917
 msgid "adjust the exposure correction"
 msgstr "justera exponeringskompensation [EV]"
 
-#: ../src/iop/exposure.c:941
-msgid "percentage of bright values clipped out"
-msgstr ""
-"procentdel av ljusa värden\n"
-"som kapas bort"
+#: ../src/iop/exposure.c:924
+msgid ""
+"percentage of bright values clipped out, toggle color picker to activate"
+msgstr "procentdel av ljusa värden som kapats bort, använd färgväljaren för att aktivera"
+
+#: ../src/iop/exposure.c:926 ../src/iop/highlights.c:746
+msgid "clipping threshold"
+msgstr "kapningströskel"
 
 #. FIXME: this needs a better tooltip!
-#: ../src/iop/exposure.c:954 ../src/iop/exposure.c:956
+#: ../src/iop/exposure.c:937 ../src/iop/exposure.c:939
 msgid "percentile"
 msgstr "percentil"
 
-#: ../src/iop/exposure.c:961 ../src/iop/exposure.c:963
+#: ../src/iop/exposure.c:944 ../src/iop/exposure.c:946
 msgid "target level"
 msgstr "målnivå"
 
-#: ../src/iop/exposure.c:967
+#: ../src/iop/exposure.c:950
 msgid "histogram of"
 msgstr "histogram för"
 
-#: ../src/iop/exposure.c:969
+#: ../src/iop/exposure.c:952
 msgid "pre-processed image"
 msgstr "förprocessad bild"
 
-#: ../src/iop/exposure.c:973
+#: ../src/iop/exposure.c:956
 msgid "source raw data"
 msgstr "källans rådata"
 
-#: ../src/iop/exposure.c:983
+#: ../src/iop/exposure.c:966
 msgid "computed EC: "
 msgstr "beräknad EK: "
 
-#: ../src/iop/exposure.c:988
+#: ../src/iop/exposure.c:971
 msgid "what exposure correction has actually been used"
 msgstr "vilken exponeringskorrigering som faktiskt användes"
 
@@ -5860,10 +5875,6 @@ msgstr ""
 "justera kapningströskeln mot högdagrar i magenta (du borde inte behöva röra "
 "det här)"
 
-#: ../src/iop/highlights.c:746
-msgid "clipping threshold"
-msgstr "kapningströskel"
-
 #: ../src/iop/highpass.c:79
 msgid "highpass"
 msgstr "högpass"
@@ -5898,29 +5909,31 @@ msgstr "kontrast för högpass-filter"
 msgid "hot pixels"
 msgstr "heta pixlar"
 
-#: ../src/iop/hotpixels.c:413
+#: ../src/iop/hotpixels.c:412
 #, c-format
-msgid "fixed %d pixels"
-msgstr "fast %d pixlar"
+msgid "fixed %d pixel"
+msgid_plural "fixed %d pixels"
+msgstr[0] "fast %d pixel"
+msgstr[1] "fast %d pixlar"
 
-#: ../src/iop/hotpixels.c:439
+#: ../src/iop/hotpixels.c:440
 msgid "lower threshold for hot pixel"
 msgstr "undre tröskel för heta pixlar"
 
-#: ../src/iop/hotpixels.c:447
+#: ../src/iop/hotpixels.c:448
 msgid "strength of hot pixel correction"
 msgstr "styrka för korrigering av heta pixlar"
 
 #. 3 neighbours
-#: ../src/iop/hotpixels.c:452
+#: ../src/iop/hotpixels.c:453
 msgid "detect by 3 neighbors"
 msgstr "hitta via 3 grannar"
 
-#: ../src/iop/hotpixels.c:459
+#: ../src/iop/hotpixels.c:460
 msgid "mark fixed pixels"
 msgstr "markera pixlar"
 
-#: ../src/iop/hotpixels.c:471
+#: ../src/iop/hotpixels.c:472
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
@@ -7767,7 +7780,7 @@ msgstr "exportera med nuvarande inställningar (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1180 ../src/libs/styles.c:66
-#: ../src/views/darkroom.c:2226
+#: ../src/views/darkroom.c:2217
 msgctxt "accel"
 msgid "export"
 msgstr "exportera"
@@ -9180,37 +9193,37 @@ msgstr "filmrulle"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2222
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2221
 msgctxt "accel"
 msgid "rate 0"
 msgstr "rang 0"
 
-#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2223
+#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2222
 msgctxt "accel"
 msgid "rate 1"
 msgstr "rang 1"
 
-#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2224
+#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2223
 msgctxt "accel"
 msgid "rate 2"
 msgstr "rang 2"
 
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2225
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2224
 msgctxt "accel"
 msgid "rate 3"
 msgstr "rang 3"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2226
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2225
 msgctxt "accel"
 msgid "rate 4"
 msgstr "rang 4"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2227
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2226
 msgctxt "accel"
 msgid "rate 5"
 msgstr "rang 5"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2228
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2227
 msgctxt "accel"
 msgid "rate reject"
 msgstr "avvisad"
@@ -9248,27 +9261,27 @@ msgstr "duplicerar bild"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2237
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2236
 msgctxt "accel"
 msgid "color red"
 msgstr "röd färg"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2238
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2237
 msgctxt "accel"
 msgid "color yellow"
 msgstr "gul färg"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2239
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2238
 msgctxt "accel"
 msgid "color green"
 msgstr "grön färg"
 
-#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2240
+#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2239
 msgctxt "accel"
 msgid "color blue"
 msgstr "blå färg"
 
-#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2241
+#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2240
 msgctxt "accel"
 msgid "color purple"
 msgstr "lila färg"
@@ -9369,7 +9382,7 @@ msgstr "visa överlappad information"
 msgid "hinter"
 msgstr "tipsare"
 
-#: ../src/libs/tools/lighttable.c:66 ../src/views/lighttable.c:142
+#: ../src/libs/tools/lighttable.c:66 ../src/views/lighttable.c:141
 msgid "lighttable"
 msgstr "ljusbord"
 
@@ -9457,15 +9470,15 @@ msgstr "applicerar stil `%s' på aktiv bild"
 msgid "no styles have been created yet"
 msgstr "det finns inga stilar skapade ännu"
 
-#: ../src/views/darkroom.c:1394
+#: ../src/views/darkroom.c:1389
 msgid "quick access to presets of your favorites"
 msgstr "snabbtillgång av förinställningar av dina favoriter"
 
-#: ../src/views/darkroom.c:1403
+#: ../src/views/darkroom.c:1398
 msgid "quick access for applying any of your styles"
 msgstr "snabbtillgång för applicering av dina stilar"
 
-#: ../src/views/darkroom.c:1413
+#: ../src/views/darkroom.c:1408
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -9473,39 +9486,39 @@ msgstr ""
 "växla visning av indikation på över-/underexponering\n"
 "höger-klicka för alternativ"
 
-#: ../src/views/darkroom.c:1454
+#: ../src/views/darkroom.c:1449
 msgid "color scheme"
 msgstr "färgschema"
 
-#: ../src/views/darkroom.c:1456
+#: ../src/views/darkroom.c:1451
 msgid "red & blue"
 msgstr "rött & blått"
 
-#: ../src/views/darkroom.c:1457
+#: ../src/views/darkroom.c:1452
 msgid "purple & green"
 msgstr "lila & grönt"
 
-#: ../src/views/darkroom.c:1459
+#: ../src/views/darkroom.c:1454
 msgid "select colors to indicate over/under exposure"
 msgstr "välj färger som ska ange över- och underexponering"
 
-#: ../src/views/darkroom.c:1469
+#: ../src/views/darkroom.c:1464
 msgid "lower threshold"
 msgstr "undre tröskel"
 
-#: ../src/views/darkroom.c:1470
+#: ../src/views/darkroom.c:1465
 msgid "threshold of what shall be considered underexposed"
 msgstr "tröskelvärde för underexponerade områden"
 
-#: ../src/views/darkroom.c:1479
+#: ../src/views/darkroom.c:1474
 msgid "upper threshold"
 msgstr "övre tröskel"
 
-#: ../src/views/darkroom.c:1480
+#: ../src/views/darkroom.c:1475
 msgid "threshold of what shall be considered overexposed"
 msgstr "tröskelvärde för överexponerade områden"
 
-#: ../src/views/darkroom.c:1492
+#: ../src/views/darkroom.c:1487
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -9513,7 +9526,7 @@ msgstr ""
 "växla till/från färggodkännande på skärm\n"
 "höger-klicka för profilval"
 
-#: ../src/views/darkroom.c:1505
+#: ../src/views/darkroom.c:1500
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -9521,231 +9534,231 @@ msgstr ""
 "växla till/från kontroll av färgskala\n"
 "höger-klicka för profilval"
 
-#: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2478
+#: ../src/views/darkroom.c:1545 ../src/views/lighttable.c:2476
 msgid "display intent"
 msgstr "visningsavsikt"
 
-#: ../src/views/darkroom.c:1565
+#: ../src/views/darkroom.c:1560
 msgid "softproof profile"
 msgstr "profil för skärmkorrektur"
 
-#: ../src/views/darkroom.c:1566 ../src/views/lighttable.c:2492
+#: ../src/views/darkroom.c:1561 ../src/views/lighttable.c:2490
 msgid "display profile"
 msgstr "skärmprofil"
 
-#: ../src/views/darkroom.c:1597 ../src/views/lighttable.c:2511
+#: ../src/views/darkroom.c:1592 ../src/views/lighttable.c:2509
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler för skärm i %s/color/out eller %s/color/out"
 
-#: ../src/views/darkroom.c:1600
+#: ../src/views/darkroom.c:1595
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler för skärmkorrektur i %s/color/out eller %s/color/out"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2218 ../src/views/map.c:720 ../src/views/print.c:352
+#: ../src/views/darkroom.c:2209 ../src/views/map.c:720 ../src/views/print.c:352
 #: ../src/views/tethering.c:391
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "växla visning av filmrulle"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2221
+#: ../src/views/darkroom.c:2212
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom close-up"
 
-#: ../src/views/darkroom.c:2222
+#: ../src/views/darkroom.c:2213
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "fyll zoom"
 
-#: ../src/views/darkroom.c:2223
+#: ../src/views/darkroom.c:2214
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "anpassa zoom"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2229
+#: ../src/views/darkroom.c:2220
 msgctxt "accel"
 msgid "image forward"
 msgstr "nästa bild"
 
-#: ../src/views/darkroom.c:2230
+#: ../src/views/darkroom.c:2221
 msgctxt "accel"
 msgid "image back"
 msgstr "föregående bild"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2233
+#: ../src/views/darkroom.c:2224
 msgctxt "accel"
 msgid "overexposed"
 msgstr "överexponerad"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2236
+#: ../src/views/darkroom.c:2227
 msgctxt "accel"
 msgid "softproof"
 msgstr "färggodkännande"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2239
+#: ../src/views/darkroom.c:2230
 msgctxt "accel"
 msgid "gamut check"
 msgstr "kontroll av tonskala"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2242
+#: ../src/views/darkroom.c:2233
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "öka penselns storlek"
 
-#: ../src/views/darkroom.c:2243
+#: ../src/views/darkroom.c:2234
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "minska penselns storlek"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2246
+#: ../src/views/darkroom.c:2237
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "öka penselns hårdhet"
 
-#: ../src/views/darkroom.c:2247
+#: ../src/views/darkroom.c:2238
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "minska penselns hårdhet"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2250
+#: ../src/views/darkroom.c:2241
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "öka penselns ogenomskinlighet"
 
-#: ../src/views/darkroom.c:2251
+#: ../src/views/darkroom.c:2242
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "minska penselns ogenomskinlighet"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2254
+#: ../src/views/darkroom.c:2245
 msgctxt "accel"
 msgid "full preview"
 msgstr "förhandsvisning i helskärm"
 
-#: ../src/views/lighttable.c:527 ../src/views/slideshow.c:332
+#: ../src/views/lighttable.c:526 ../src/views/slideshow.c:332
 msgid "there are no images in this collection"
 msgstr "det finns inga bilder i den här samlingen"
 
-#: ../src/views/lighttable.c:529
+#: ../src/views/lighttable.c:528
 msgid "if you have not imported any images yet"
 msgstr "om du inte har importerat några bilder ännu"
 
-#: ../src/views/lighttable.c:531
+#: ../src/views/lighttable.c:530
 msgid "you can do so in the import module"
 msgstr "kan du göra det i importmodulen"
 
-#: ../src/views/lighttable.c:538
+#: ../src/views/lighttable.c:537
 msgid "try to relax the filter settings in the top panel"
 msgstr "försök att lätta på filter-inställningarna i den övre panelen"
 
-#: ../src/views/lighttable.c:545
+#: ../src/views/lighttable.c:544
 msgid "or add images in the collection module in the left panel"
 msgstr "eller lägg till bilder i samlingsmodulen i den vänstra panelen"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2231
+#: ../src/views/lighttable.c:2230
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigera upp"
 
-#: ../src/views/lighttable.c:2232
+#: ../src/views/lighttable.c:2231
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigera ner"
 
-#: ../src/views/lighttable.c:2233
+#: ../src/views/lighttable.c:2232
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navigera sida upp"
 
-#: ../src/views/lighttable.c:2234
+#: ../src/views/lighttable.c:2233
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navigera sida ned"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2244
+#: ../src/views/lighttable.c:2243
 msgctxt "accel"
 msgid "scroll up"
 msgstr "skrolla upp"
 
-#: ../src/views/lighttable.c:2245
+#: ../src/views/lighttable.c:2244
 msgctxt "accel"
 msgid "scroll down"
 msgstr "skrolla ner"
 
-#: ../src/views/lighttable.c:2246
+#: ../src/views/lighttable.c:2245
 msgctxt "accel"
 msgid "scroll left"
 msgstr "skrolla vänster"
 
-#: ../src/views/lighttable.c:2247
+#: ../src/views/lighttable.c:2246
 msgctxt "accel"
 msgid "scroll right"
 msgstr "skrolla höger"
 
-#: ../src/views/lighttable.c:2248
+#: ../src/views/lighttable.c:2247
 msgctxt "accel"
 msgid "scroll center"
 msgstr "centrera"
 
 # TODO: could use better translation
-#: ../src/views/lighttable.c:2249
+#: ../src/views/lighttable.c:2248
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "räta upp bilder efter rutnätet"
 
 # Unsure how to translate this one -- Richard Levitte
-#: ../src/views/lighttable.c:2250
+#: ../src/views/lighttable.c:2249
 msgctxt "accel"
 msgid "select toggle image"
 msgstr ""
 
-#: ../src/views/lighttable.c:2251
+#: ../src/views/lighttable.c:2250
 msgctxt "accel"
 msgid "select single image"
 msgstr "välj enskild bild"
 
 #. Preview key
-#: ../src/views/lighttable.c:2254
+#: ../src/views/lighttable.c:2253
 msgctxt "accel"
 msgid "preview"
 msgstr "förhandsvisning"
 
-#: ../src/views/lighttable.c:2255
+#: ../src/views/lighttable.c:2254
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "förhandsvisning med fokusindikation"
 
-#: ../src/views/lighttable.c:2256
+#: ../src/views/lighttable.c:2255
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "fast förhandsvisning"
 
-#: ../src/views/lighttable.c:2257
+#: ../src/views/lighttable.c:2256
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "fast förhandsvisning med fokusindikation"
 
-#: ../src/views/lighttable.c:2258
+#: ../src/views/lighttable.c:2257
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "gå ur fast förhandsvisning"
 
-#: ../src/views/lighttable.c:2438
+#: ../src/views/lighttable.c:2436
 msgid "set display profile"
 msgstr "sätt skärmprofil"
 
