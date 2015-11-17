@@ -1728,9 +1728,6 @@
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
 		<Sensor black="0" white="16383"/>
-		<BlackAreas>
-			<Vertical x="4984" width="8"/>
-		</BlackAreas>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON Df">
 		<ID make="Nikon" model="Df">Nikon Df</ID>
