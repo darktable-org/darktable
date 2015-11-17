@@ -19,6 +19,7 @@ find_program(Fop_BIN fop)
 find_program(Xml2po_BIN xml2po)
 find_package(Saxon)
 find_program(Xslt_BIN xsltproc)
+find_program(Convert_BIN convert)
 
 if(${Fop_BIN} STREQUAL "Fop_BIN-NOTFOUND")
 	message("Missing fop")
@@ -41,6 +42,10 @@ if(${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
 # 	set(can_build_usermanual OFF)
 endif()
 
+if(${Convert_BIN} STREQUAL "Convert_BIN-NOTFOUND")
+	message("Missing convert from ImageMagick")
+	set(can_build_usermanual OFF)
+endif()
 
 
 if(can_build_usermanual)
@@ -71,7 +76,7 @@ if(can_build_usermanual)
 		set(TARGET_MEDIA_IMAGES ${TARGET_MEDIA_IMAGES} "${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg")
 		add_custom_command(
 			OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg"
-			COMMAND convert -resize ${TARGET_MEDIA_RESIZE} -quality ${TARGET_MEDIA_COMPRESSION_QUALITY} -filter Lanczos ${CMAKE_CURRENT_SOURCE_DIR}/${image}.png ${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg
+			COMMAND ${Convert_BIN} -resize ${TARGET_MEDIA_RESIZE} -quality ${TARGET_MEDIA_COMPRESSION_QUALITY} -filter Lanczos ${CMAKE_CURRENT_SOURCE_DIR}/${image}.png ${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg
 			COMMENT "Transforming image ${image}.png into media target" VERBATIM
 		)
 	endforeach()
