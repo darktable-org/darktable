@@ -588,7 +588,7 @@
 			<Horizontal y="2" height="60"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS 5DS R</Alias>
+			<Alias id="EOS 5DS R">Canon EOS 5DS R</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 6D" decoder_version="2">
