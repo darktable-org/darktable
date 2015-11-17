@@ -307,15 +307,6 @@ if(USE_GRAPHICSMAGICK)
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
 
-# needed for the file manager
-if(APRIL_FOOLS)
-  find_package(VTE)
-  if(VTE_FOUND)
-    include_directories(SYSTEM ${VTE_INCLUDE_DIRS})
-    list(APPEND LIBS ${VTE_LIBRARIES})
-  endif(VTE_FOUND)
-endif(APRIL_FOOLS)
-
 #
 # Add HAVE_xxx defines used by darktable
 #
