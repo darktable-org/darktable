@@ -1012,6 +1012,19 @@
     <longdescription>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>plugins/lighttable/metadata/layout</name>
+    <type>
+      <enum>
+        <option>overlay</option>
+        <option>top</option>
+        <option>bottom</option>
+      </enum>
+    </type>
+    <default>overlay</default>
+    <shortdescription>layout of metadata in lighttable view</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>plugins/lighttable/metadata_view/pretty_location</name>
     <type>bool</type>
     <default>true</default>

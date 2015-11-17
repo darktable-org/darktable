@@ -786,8 +786,14 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   const int imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
 
   const float fscale = fminf(width, height);
-  const int metadata_height = 0; //0.045f * fscale;
-  const int metadata_pos = 0; //height-metadata_height;
+  int metadata_height = 0;
+  int metadata_pos = 0;
+  gchar *str = dt_conf_get_string("plugins/lighttable/metadata/layout");
+  if(strcmp("overlay", str)) // We are either in top or bottom
+    metadata_height = 0.045f * fscale;
+  if(!strcmp("bottom", str))
+    metadata_pos = height-metadata_height;
+  g_free(str);
 
   if (draw_selected)
   {
