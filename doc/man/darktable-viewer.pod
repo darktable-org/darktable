@@ -1,0 +1,73 @@
+
+=head1 NAME
+
+darktable-viewer - a stand-alone slideshow viewer that displays the images of your current collection fullscreen
+
+=head1 SYNOPSIS
+
+    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--core <darktable options>]
+
+=head1 DESCRIPTION
+
+B<darktable> is a digital photography workflow application for B<Linux>, B<Mac OS X> and several other B<Unices>.
+It's described further in L<darktable(1)|darktable(1)>.
+
+B<darktable-viewer> is a stand-alone slideshow viewer that displays the images of your current collection fullscreen.
+Press B<ESC> to stop.
+
+=head1 OPTIONS
+
+All parameters are optional.
+If started without parameters B<darktable-viewer> uses reasonable defaults.
+
+=over
+
+=item B<-h, --help>
+
+Gives usage information and terminates.
+
+=item B<--version>
+
+Gives copyright and version information and terminates.
+
+=item B<--random>
+
+Displays images in random instead of the default sequential order.
+
+=item B<--repeat>
+
+Continues the slideshow in an endless loop instead of terminating after the last image.
+
+=item B<< --core <darktable options>  >>
+
+All command line parameters following B<--core> are passed
+to the darktable core and handled as standard parameters.
+See L<darktable(1)|darktable(1)> for a detailed description of the options.
+
+=back
+
+=head1 SEE ALSO
+
+L<darktable(1)|darktable(1)>
+
+=head1 AUTHORS
+
+The principal developer of darktable is Johannes Hanika.
+The (hopefully) complete list of contributors to the project is:
+
+DREGGNAUTHORS -- don't translate this line!
+
+This man page was written by Ulrich Pegelow E<lt>ulrich.pegelow@tongareva.deE<gt> as part of the usermanual.
+It was turned into a man page by Tobias Ellinghaus E<lt>me@houz.orgE<gt>.
+
+
+=head1 COPYRIGHT AND LICENSE
+
+B<Copyright (C)> 2009-2015 by Authors.
+
+B<darktable> is free software; you can redistribute it and/or modify it
+under the terms of the GPL v3 or (at your option) any later version.
+
+=for comment
+$Date: 2015-11-17$
+$Release: 2.0$

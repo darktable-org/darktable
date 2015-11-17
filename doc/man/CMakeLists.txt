@@ -6,6 +6,10 @@ cmake_minimum_required(VERSION 2.6)
 set(MANPAGES
   "darktable.pod"
   "darktable-cli.pod"
+  "darktable-viewer.pod"
+  "darktable-generate-cache.pod"
+  "darktable-cltest.pod"
+  "darktable-cmstest.pod"
 )
 ###################################
 # THAT'S IT, NO MORE CHANGES NEEDED

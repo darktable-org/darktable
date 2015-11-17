@@ -104,7 +104,6 @@ DREGGNAUTHORS -- don't translate this line!
 This man page was written by Richard Levitte E<lt>richard@levittr.orgE<gt>.
 Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>.
 
-
 =head1 COPYRIGHT AND LICENSE
 
 B<Copyright (C)> 2009-2015 by Authors.
