@@ -145,14 +145,14 @@
     </sect5>
 
     <sect5>
-      <title>auto</title>
+      <title>clipping threshold</title>
       <para>
-        Activating this checkbox makes darktable calculate a correct exposure for the
-        rectangular view appearing in the centre of the image. You can draw your own selection
-        using your mouse. An adjustment slider to the right of the auto exposure checkbox lets
-        you define what percentage of bright values are to be clipped out in the calculation.
-        This feature is not to be confused with the <quote>automatic</quote> mode of the
-        exposure module and is only available in <quote>manual</quote> mode.
+        darktable can calculate correct black level and exposure values for your image based on
+        the content of a rectangular area. The adjustment slider lets you define what percentage
+        of bright values are to be clipped out in the calculation. Pressing the
+        <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+        icon starts the calculation and lets you draw a rectangular area of your choice using
+        your mouse. This feature is only available in <quote>manual</quote> mode.
       </para>
     </sect5>
 

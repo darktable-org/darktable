@@ -184,7 +184,7 @@
       <title>aspect</title>
       <para>
         Here you can change what aspect ratio you want to have on the result, thus constraining
-        the ability to drag and crop rectangle out of the aspect ratio of your choice. Many
+        the proportion of width and height of the crop rectangle to the aspect ratio of your choice. Many
         common numerical ratios are pre-defined. A few special aspect ratios deserve
         explanation:
       </para>

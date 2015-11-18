@@ -227,7 +227,21 @@
     Disabling this option reverts the meaning of <emphasis>click</emphasis> and
     <emphasis>shift+click</emphasis> (default on).
   </para>
+  
+  <bridgehead renderas="sect4">scroll to lighttable modules when expanded/collapsed</bridgehead>
 
+  <para>
+    With this option enabled the lighttable side panels will scroll a module to the top when
+    it is expanded or collapsed (default off).
+  </para>
+
+  <bridgehead renderas="sect4">scroll to darkroom modules when expanded/collapsed</bridgehead>    
+
+  <para>
+    With this option enabled the darkroom side panel will scroll a module to the top when
+    it is expanded or collapsed (default on).
+  </para>
+  
   <bridgehead renderas="sect4">border around image in darkroom mode</bridgehead>
 
   <para>

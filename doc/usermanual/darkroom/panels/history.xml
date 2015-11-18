@@ -53,7 +53,7 @@
 
   <para>
     Hitting <quote>compress history stack</quote> generates the shortest history stack that
-    produces the current image, i.e. suppressing all de-activated modules. This also will
+    produces the current image, i.e. suppressing all obsolete stack items. This also will
     discard all modules above the currently selected one.
   </para>
 

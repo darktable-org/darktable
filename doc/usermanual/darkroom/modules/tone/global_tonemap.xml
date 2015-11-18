@@ -27,7 +27,7 @@
         <tbody>
           <row>
             <entry>
-              This modules implements another approach to compressing the tonal range of an HDR
+              This module implements another approach to compressing the tonal range of an HDR
               image into the limited tonal range of a typical LDR output file. It offers several
               implementations of global tonemap operators.
             </entry>
