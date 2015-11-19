@@ -24,6 +24,9 @@ else()
   set(SOURCE_PACKAGE 0)
 endif()
 
+# Include GNUInstallDirs, which sets sensible defaults for install directories
+include(GNUInstallDirs)
+
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
 option(USE_COLORD "Enable colord support" ON)
@@ -230,12 +233,6 @@ if(CMAKE_BUILD_TYPE MATCHES "^[Dd][Ee][Bb][Uu][Gg]$" AND SOURCE_PACKAGE)
   message(FATAL_ERROR "ERROR: Debug build type most likely isn't what you want, use RelWithDebInfo instead. If you're absolutely sure that this is what you want then just comment out this line.")
 endif()
 
-if(NOT SHARE_INSTALL)
-  set(SHARE_INSTALL "share" CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-endif(NOT SHARE_INSTALL)
-
-mark_as_advanced(SHARE_INSTALL)
-
 if(NOT LIB_INSTALL)
   set( LIB_INSTALL lib${LIB_SUFFIX} CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
 endif(NOT LIB_INSTALL)
@@ -315,7 +312,7 @@ if(USE_NLS)
 find_package(Gettext)
 if(Gettext_FOUND)
 	if(NOT LOCALE_DIR)
-    SET(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale")
+    SET(LOCALE_DIR "${CMAKE_INSTALL_DATAROOTDIR}/locale")
 	endif(NOT LOCALE_DIR)
 
 	if(NOT LOCALE_DIR)
@@ -387,7 +384,7 @@ endif(USE_OPENCL)
 
 # setup some theme specific variables
 set(THEME hicolor)
-set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
+set(THEME_DIRECTORY "${CMAKE_INSTALL_DATAROOTDIR}/icons/${THEME}")
 
 # we need some specific functions:
 if(NOT WIN32)

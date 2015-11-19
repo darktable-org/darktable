@@ -135,7 +135,7 @@ if(can_build_usermanual)
 	add_custom_target(darktable-usermanual DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf)
   add_dependencies(usermanual darktable-usermanual)
 	add_dependencies(darktable-usermanual target_media_images darktable_single_xml )
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/darktable/usermanual OPTIONAL)
 
 	#
 	# draft chunked html usermanual for web
@@ -172,7 +172,7 @@ if(can_build_usermanual)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-usermanual-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html )
 	add_dependencies(darktable-usermanual-html target_media_images darktable_single_xml )
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/darktable/usermanual OPTIONAL)
 
 	#
 	# draft chunked usermanual for wordpress
@@ -215,7 +215,7 @@ if(can_build_usermanual)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-usermanual-wordpress DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php )
 	add_dependencies(darktable-usermanual-wordpress target_media_images darktable_single_xml )
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/darktable/usermanual OPTIONAL)
 
 #	#
 #	# final translated usermanual's
@@ -231,7 +231,7 @@ if(can_build_usermanual)
 #	add_custom_target(darktable-usermanual-final DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-en.pdf )
 #	add_dependencies(darktable-usermanual-final target_media_images darktable_single_final_xml )
 #	add_dependencies(usermanual darktable-usermanual-final)
-#	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-final.pdf DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+#	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-final.pdf DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/darktable/usermanual OPTIONAL)
 #
 #	if(NOT ${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
 #		# localized final usermanuals
@@ -256,7 +256,7 @@ if(can_build_usermanual)
 #			add_custom_target(darktable-usermanual-${language} DEPENDS ${pdffile})
 #			add_dependencies(usermanual darktable-usermanual-${language})
 #			add_dependencies(darktable-usermanual-${language} target_media_images darktable_single_final_xml )
-#			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+#			install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/darktable/usermanual OPTIONAL)
 #		endforeach(language)
 #	endif()
 
@@ -286,7 +286,7 @@ if(can_build_usermanual)
 			add_custom_target(darktable-usermanual-${language} DEPENDS ${pdffile})
 			add_dependencies(usermanual darktable-usermanual-${language})
 			add_dependencies(darktable-usermanual-${language} target_media_images darktable_profile_xml )
-			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+            install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/darktable/usermanual OPTIONAL)
 		endforeach(language)
 	endif()
 #
