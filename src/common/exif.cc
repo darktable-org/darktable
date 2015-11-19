@@ -376,7 +376,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, bool
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2] " << img->filename << ": " << s << std::endl;
     return false;
   }
 }
@@ -447,7 +447,7 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2] " << img->filename << ": " << s << std::endl;
     return false;
   }
 }
@@ -881,7 +881,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2] " << img->filename << ": " << s << std::endl;
     return false;
   }
 }
@@ -924,7 +924,7 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2] " << img->filename << ": " << s << std::endl;
     return 1;
   }
 }
@@ -1096,7 +1096,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2] " << path << ": " << s << std::endl;
     return 0;
   }
   return 1;
@@ -1375,7 +1375,7 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
   {
     // std::cerr.rdbuf(savecerr);
     std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    std::cerr << "[exiv2] " << path << ": " << s << std::endl;
     return 0;
   }
 }
@@ -1921,7 +1921,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
   {
     // actually nobody's interested in that if the file doesn't exist:
     // std::string s(e.what());
-    // std::cerr << "[exiv2] " << s << std::endl;
+    // std::cerr << "[exiv2] " << filename << ": " << s << std::endl;
     return 1;
   }
   return 0;
@@ -2314,7 +2314,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
   }
   catch(Exiv2::AnyError &e)
   {
-    std::cerr << "[xmp_attach] caught exiv2 exception '" << e << "'\n";
+    std::cerr << "[xmp_attach] " << filename << ": caught exiv2 exception '" << e << "'\n";
     return -1;
   }
 }
@@ -2363,7 +2363,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
   }
   catch(Exiv2::AnyError &e)
   {
-    std::cerr << "[xmp_write] caught exiv2 exception '" << e << "'\n";
+    std::cerr << "[xmp_write] " << filename << ": caught exiv2 exception '" << e << "'\n";
     return -1;
   }
 }
