@@ -22,7 +22,7 @@ if(NOT MAN_INSTALL_DIR)
   if(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
     set(MAN_INSTALL_DIR "./man/man1")
   else()
-    set(MAN_INSTALL_DIR "./share/man/man1")
+    set(MAN_INSTALL_DIR ${CMAKE_INSTALL_DATAROOTDIR}/man/man1)
   endif()
 endif(NOT MAN_INSTALL_DIR)
 

@@ -10,7 +10,7 @@ if(USE_XMLLINT)
 	)
 endif(USE_XMLLINT)
 
-install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${SHARE_INSTALL}/darktable/rawspeed)
+install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/rawspeed)
 
 FILE(GLOB RAWSPEED_SOURCES "RawSpeed/*.cpp")
 LIST(REMOVE_ITEM RAWSPEED_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/RawSpeed/RawSpeed.cpp")
@@ -45,7 +45,7 @@ target_link_libraries(rawspeed ${RAWSPEED_LIBS})
 
 # Adapted from src/cli/CMakeLists.txt
 if (BUILD_RS_IDENTIFY)
-  add_definitions(-DRS_CAMERAS_XML_PATH="@RUNTIME_INSTALL_PREFIX@/@SHARE_INSTALL@/darktable/rawspeed/cameras.xml")
+    add_definitions(-DRS_CAMERAS_XML_PATH="@CMAKE_INSTALL_DATAROOTDIR@/darktable/rawspeed/cameras.xml")
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../..)
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
