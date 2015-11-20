@@ -609,7 +609,9 @@ static gboolean configure(GtkWidget *da, GdkEventConfigure *event, gpointer user
   oldw = event->width;
   oldh = event->height;
 
+#ifndef GDK_WINDOWING_QUARTZ
   configure_ppd_dpi((dt_gui_gtk_t *) user_data);
+#endif
 
   return dt_control_configure(da, event, user_data);
 }
