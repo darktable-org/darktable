@@ -43,20 +43,6 @@ void dt_osx_autoset_dpi(GtkWidget *widget)
     }
 }
 
-float dt_osx_get_ppd()
-{
-  NSScreen *nsscreen = [NSScreen mainScreen];
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-  if([nsscreen respondsToSelector: NSSelectorFromString(@"backingScaleFactor")]) {
-    return [[nsscreen valueForKey: @"backingScaleFactor"] floatValue];
-  } else {
-    return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
-  }
-#else
-  return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
-#endif
-}
-
 void dt_osx_allow_fullscreen(GtkWidget *widget)
 {
 #ifdef GDK_WINDOWING_QUARTZ

@@ -90,7 +90,7 @@ typedef struct dt_gui_gtk_t
 
 } dt_gui_gtk_t;
 
-#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 14, 0))
+#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
 static inline cairo_surface_t *dt_cairo_image_surface_create(cairo_format_t format, int width, int height) {
   cairo_surface_t *cst = cairo_image_surface_create(format, width * darktable.gui->ppd, height * darktable.gui->ppd);
   cairo_surface_set_device_scale(cst, darktable.gui->ppd, darktable.gui->ppd);

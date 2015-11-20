@@ -975,7 +975,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gui->ui->main_window = widget;
 
   // check if in HiDPI mode
-#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 14, 0))
+#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
   float screen_ppd_overwrite = dt_conf_get_float("screen_ppd_overwrite");
   if(screen_ppd_overwrite > 0.0)
   {
@@ -984,8 +984,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   }
   else
   {
-#ifdef GDK_WINDOWING_QUARTZ
-    gui->ppd = dt_osx_get_ppd();
+    gui->ppd = gtk_widget_get_scale_factor(gui->ui->main_window);
     if(gui->ppd < 0.0)
     {
       gui->ppd = 1.0;
@@ -993,9 +992,6 @@ static void init_widgets(dt_gui_gtk_t *gui)
     }
     else
       dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", gui->ppd);
-#else
-    gui->ppd = 1.0;
-#endif
   }
 #else
   gui->ppd = 1.0;
