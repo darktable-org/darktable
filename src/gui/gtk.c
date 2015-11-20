@@ -101,6 +101,9 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container);
 /* generic callback for redraw widget signals */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
 
+/* Set the HiDPI stuff */
+static void configure_ppd_dpi(dt_gui_gtk_t *gui);
+
 /*
  * OLD UI API
  */
@@ -606,6 +609,8 @@ static gboolean configure(GtkWidget *da, GdkEventConfigure *event, gpointer user
   oldw = event->width;
   oldh = event->height;
 
+  configure_ppd_dpi((dt_gui_gtk_t *) user_data);
+
   return dt_control_configure(da, event, user_data);
 }
 
@@ -793,7 +798,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = dt_ui_center(darktable.gui->ui);
 
   g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(key_pressed), NULL);
-  g_signal_connect(G_OBJECT(widget), "configure-event", G_CALLBACK(configure), NULL);
+  g_signal_connect(G_OBJECT(widget), "configure-event", G_CALLBACK(configure), gui);
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw), NULL);
   g_signal_connect(G_OBJECT(widget), "motion-notify-event", G_CALLBACK(mouse_moved), NULL);
   g_signal_connect(G_OBJECT(widget), "leave-notify-event", G_CALLBACK(center_leave), NULL);
@@ -963,16 +968,9 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_cleanup();
 }
 
-static void init_widgets(dt_gui_gtk_t *gui)
+static void configure_ppd_dpi(dt_gui_gtk_t *gui)
 {
-
-  GtkWidget *container;
-  GtkWidget *widget;
-
-  // Creating the main window
-  widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_widget_set_name(widget, "main_window");
-  gui->ui->main_window = widget;
+  GtkWidget *widget = gui->ui->main_window;
 
   // check if in HiDPI mode
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
@@ -984,7 +982,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   }
   else
   {
-    gui->ppd = gtk_widget_get_scale_factor(gui->ui->main_window);
+    gui->ppd = gtk_widget_get_scale_factor(widget);
     if(gui->ppd < 0.0)
     {
       gui->ppd = 1.0;
@@ -1023,6 +1021,20 @@ static void init_widgets(dt_gui_gtk_t *gui)
   }
   gui->dpi_factor
       = gui->dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
+}
+
+static void init_widgets(dt_gui_gtk_t *gui)
+{
+
+  GtkWidget *container;
+  GtkWidget *widget;
+
+  // Creating the main window
+  widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_widget_set_name(widget, "main_window");
+  gui->ui->main_window = widget;
+
+  configure_ppd_dpi(gui);
 
   gtk_window_set_default_size(GTK_WINDOW(widget), DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(500));
 
