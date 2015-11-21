@@ -118,7 +118,7 @@
 
   </sect3>
 
-  <sect3 status="draft" id="softproof">
+  <sect3 status="final" id="softproof">
 
     <title>Soft proof</title>
 
@@ -188,7 +188,7 @@
 
   </sect3>
 
-  <sect3 status="draft" id="gamutcheck">
+  <sect3 status="final" id="gamutcheck">
 
     <title>Gamut check</title>
 

@@ -87,8 +87,8 @@
     <listitem><para>
       The powerful export system supports Picasa webalbum, flickr upload, disk storage, 1:1
       copy, email attachments and can generate a simple html-based web gallery. darktable allows
-      you to export to low dynamic range (JPEG, JPEG2000, PNG, TIFF, PDF), 16-bit (PPM, TIFF), or
-      linear high dynamic range (PFM, EXR) images.
+      you to export to low dynamic range (JPEG, JPEG2000, PNG, TIFF, PDF), 16-bit (PPM, TIFF),
+      or linear high dynamic range (PFM, EXR) images.
     </para></listitem>
 
     <listitem><para>
@@ -533,7 +533,7 @@
 
     </sect2>
 
-    <sect2 status="draft" id="darktable_generate_cache_commandline_parameters">
+    <sect2 status="final" id="darktable_generate_cache_commandline_parameters">
 
       <title><filename>darktable-generate-cache</filename> binary</title>
 
@@ -613,7 +613,7 @@
 
     </sect2>
 
-    <sect2 status="draft" id="darktable_viewer_commandline_parameters">
+    <sect2 status="final" id="darktable_viewer_commandline_parameters">
 
       <title><filename>darktable-viewer</filename> binary</title>
 
@@ -703,7 +703,7 @@
 
     </sect2>
 
-    <sect2 status="draft" id="darktable_cltest_commandline_parameters">
+    <sect2 status="final" id="darktable_cltest_commandline_parameters">
 
       <title><filename>darktable-cltest</filename> binary</title>
 
@@ -725,7 +725,7 @@
 
     </sect2>
 
-    <sect2 status="draft" id="darktable_cmstest_commandline_parameters">
+    <sect2 status="final" id="darktable_cmstest_commandline_parameters">
 
       <title><filename>darktable-cmstest</filename> binary</title>
 

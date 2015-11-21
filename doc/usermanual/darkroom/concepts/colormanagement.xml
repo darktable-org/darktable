@@ -38,7 +38,7 @@
     </itemizedlist>
   </para>
 
-  <sect3 status="draft" id="display_profile">
+  <sect3 status="final" id="display_profile">
 
     <title>Display profile</title>
 
@@ -81,7 +81,7 @@
 
   </sect3>
 
-  <sect3 status="draft" id="rendering_method">
+  <sect3 status="final" id="rendering_method">
 
     <title>Rendering method</title>
 
@@ -110,7 +110,7 @@
 
   </sect3>
 
-  <sect3 status="draft" id="rendering_intent">
+  <sect3 status="final" id="rendering_intent">
 
     <title>Rendering intent</title>
 

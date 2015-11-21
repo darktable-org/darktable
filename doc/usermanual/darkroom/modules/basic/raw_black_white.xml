@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="raw_black_white_point">
+<sect3 status="final" id="raw_black_white_point">
 
   <title>Raw black/white point</title>
 
