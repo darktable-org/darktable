@@ -148,10 +148,36 @@
       <xref linkend="darkroom_filmstrip"/>).
     </para>
 
+    <indexterm>
+      <primary>color management</primary>
+      <secondary>display profile</secondary>
+    </indexterm>
+
+    <indexterm>
+      <primary>monitor profile</primary>
+    </indexterm>
+
+    <indexterm>
+      <primary>display profile</primary>
+    </indexterm>
+
     <para>
-      In the bottom panel you have an option to choose between zoomable lighttable view or
-      filemanager view of the thumbnails. In zoomable lighttable view, scroll with your mouse
-      wheel to zoom in and out. Moving the mouse while <emphasis>pressing the left mouse
+      Pressing the
+      <inlinegraphic fileref="&icon_lighttable_displayprofile;" scalefit="1" width="2%" align="center" />
+      button on the right side of the bottom panel lets you define the color profile of your
+      monitor. You can either set this to <quote>system display profile</quote> (default) and
+      let darktable enquire the system's display profile, or alternatively set it to one of the
+      ICC profiles located in <filename>$DARKTABLE/share/darktable/color/out</filename> and
+      <filename>$HOME/.config/darktable/color/out</filename>. <filename>$DARKTABLE</filename> is
+      used here to represent your chosen darktable installation directory and
+      <filename>$HOME</filename> your home directory. For more details on color management see
+      <xref linkend="color_management"/>.
+    </para>
+
+    <para>
+      In the center of the bottom panel you have an option to choose between zoomable lighttable
+      view or filemanager view of the thumbnails. In zoomable lighttable view, scroll with your
+      mouse wheel to zoom in and out. Moving the mouse while <emphasis>pressing the left mouse
       button</emphasis> allows you to navigate through your collection. In filemanager view, you
       can can change the number of images in each row, using the slider next to the filemanager
       option, or by using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to
@@ -215,9 +241,9 @@
           <row>
             <entry>
               Fully zoomed-in image view while holding down the <emphasis>ctrl-z</emphasis> key
-              with indication of the sharp areas in focus. Sharpness detection is based on an embedded
-              JPEG thumbnail of the original RAW file independent of any processing steps within
-              darktable.
+              with indication of the sharp areas in focus. Sharpness detection is based on an
+              embedded JPEG thumbnail of the original RAW file independent of any processing
+              steps within darktable.
             </entry>
             <entry>
               <graphic fileref="images/lighttable_focus_detection.png" scalefit="1" width="80%" align="center" />

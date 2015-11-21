@@ -32,6 +32,7 @@
 <!ENTITY icon_group_color "images/darkroom_group_color.png">
 <!ENTITY icon_group_correction "images/darkroom_group_correction.png">
 <!ENTITY icon_group_effect "images/darkroom_group_effect.png">
+<!ENTITY icon_lighttable_displayprofile "images/lighttable_icon_displayprofile.png">
 <!ENTITY icon_lighttable_group "images/lighttable_icon_group.png">
 <!ENTITY icon_lighttable_and "images/lighttable_icon_and.png">
 <!ENTITY icon_lighttable_or "images/lighttable_icon_or.png">
