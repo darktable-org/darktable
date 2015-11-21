@@ -335,11 +335,11 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
     int focal_length_max = sqlite3_column_double(stmt, 14);
     const gboolean writeprotect = (sqlite3_column_int(stmt, 15) == 0 ? FALSE : TRUE);
 
-    gchar *iso, *exposure, *aperture, *focal_length;
+    gchar *iso = NULL, *exposure = NULL, *aperture = NULL, *focal_length = NULL;
     int min, max;
 
-    gchar *module = dt_iop_get_localized_name(operation);
-    if(module == NULL) module = dt_lib_get_localized_name(operation);
+    gchar *module = g_strdup(dt_iop_get_localized_name(operation));
+    if(module == NULL) module = g_strdup(dt_lib_get_localized_name(operation));
     if(module == NULL) module = g_strdup(operation);
 
     if(iso_min == 0.0 && iso_max == 51200.0)
@@ -393,7 +393,14 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
                        P_ISO_COLUMN, iso, P_EXPOSURE_COLUMN, exposure, P_APERTURE_COLUMN, aperture,
                        P_FOCAL_LENGTH_COLUMN, focal_length, P_AUTOAPPLY_COLUMN,
                        autoapply ? check_pixbuf : NULL, -1);
+
+    g_free(focal_length);
+    g_free(aperture);
+    g_free(exposure);
+    g_free(iso);
+    g_free(module);
   }
+  g_free(last_module);
   sqlite3_finalize(stmt);
 
   g_object_unref(lock_pixbuf);
