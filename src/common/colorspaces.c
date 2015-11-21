@@ -1389,6 +1389,12 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   dt_conf_set_int("ui_last/color/softproof_intent", self->softproof_intent);
   dt_conf_set_int("ui_last/color/mode", self->mode);
 
+  if(self->transform_srgb_to_display) cmsDeleteTransform(self->transform_srgb_to_display);
+  self->transform_srgb_to_display = NULL;
+
+  if(self->transform_adobe_rgb_to_display) cmsDeleteTransform(self->transform_adobe_rgb_to_display);
+  self->transform_adobe_rgb_to_display = NULL;
+
   for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
