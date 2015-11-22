@@ -130,6 +130,7 @@ typedef struct dt_dev_pixelpipe_t
   int devid;
   // image struct as it was when the pixelpipe was initialized. copied to avoid race conditions.
   dt_image_t image;
+  float overprocess;
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;

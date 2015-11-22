@@ -189,19 +189,22 @@ void expose(
     ht = dev->pipe->backbuf_height;
     stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
     surface = dt_cairo_image_surface_create_for_data(dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+
     wd /= darktable.gui->ppd;
     ht /= darktable.gui->ppd;
+
     if(dev->full_preview)
       cairo_set_source_rgb(cr, .1, .1, .1);
     else
       cairo_set_source_rgb(cr, .2, .2, .2);
     cairo_paint(cr);
-    cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
+    cairo_translate(cr, .5f * (width - wd/dev->pipe->overprocess), .5f * (height - ht/dev->pipe->overprocess));
     if(closeup)
     {
       cairo_scale(cr, 2.0, 2.0);
       cairo_translate(cr, -.25f * wd, -.25f * ht);
     }
+    cairo_scale(cr, 1.0f/dev->pipe->overprocess, 1.0f/dev->pipe->overprocess);
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);

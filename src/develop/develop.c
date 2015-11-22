@@ -353,6 +353,12 @@ restart:
   }
 
   scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
+
+  dev->pipe->overprocess = 1.0f;
+  if(!strcmp(dev->image_storage.camera_makermodel, "Nikon D1X"))
+    dev->pipe->overprocess = MIN(1.0f, scale*2.0f)/scale;
+  scale *= dev->pipe->overprocess;
+
   window_width = dev->width * darktable.gui->ppd;
   window_height = dev->height * darktable.gui->ppd;
   if(closeup)
@@ -360,8 +366,8 @@ restart:
     window_width /= 2;
     window_height /= 2;
   }
-  const int wd = MIN(window_width, dev->pipe->processed_width * scale);
-  const int ht = MIN(window_height, dev->pipe->processed_height * scale);
+  const int wd = MIN(window_width*dev->pipe->overprocess, dev->pipe->processed_width * scale);
+  const int ht = MIN(window_height*dev->pipe->overprocess, dev->pipe->processed_height * scale);
   x = MAX(0, scale * dev->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
   y = MAX(0, scale * dev->pipe->processed_height * (.5 + zoom_y) - ht / 2);
 
