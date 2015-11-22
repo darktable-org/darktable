@@ -675,6 +675,23 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use.]]):set_reported_type(types.dt_imageio_j2k_preset_t)
 
 
+	types.dt_imageio_module_format_data_pdf:set_text([[Type object describing parameters to export to pdf.]])
+  types.dt_imageio_module_format_data_pdf.dpi:set_text([[The dot per inch value to use at export]])
+  types.dt_imageio_module_format_data_pdf.icc:set_text([[Should the images be tagged with their embedded profile]])
+  types.dt_imageio_module_format_data_pdf.border:set_text([[Empty space around the PDF images]])
+  types.dt_imageio_module_format_data_pdf.orientation:set_text([[Orientation of the pages in the document]])
+  types.dt_imageio_module_format_data_pdf.title:set_text([[The title for the document
+  types.dt_imageio_module_format_data_pdf.rotate:set_text([[Should the images be rotated to match the PDF orientation]])
+  types.dt_imageio_module_format_data_pdf.mode:set_text([[The image mode to use at export time]])
+  types.dt_imageio_module_format_data_pdf.size:set_text([[The paper size to use]])
+  types.dt_imageio_module_format_data_pdf.compression:set_text([[Compression mode to use for images]])
+  types.dt_imageio_module_format_data_pdf.pages:set_text([[The page type to use]])
+  types.dt_imageio_module_format_data_pdf.rotate:set_text([[Should the images be rotated in the resulting PDF]])
+  types._pdf_mode_t:set_text([[The export mode to use for PDF document]])
+  types._pdf_pages_t:set_text([[The different page types for PDF export]])
+  types.dt_pdf_stream_encoder_t:set_text([[The compression mode for PDF document]])
+
+
 	types.dt_imageio_module_storage_t:set_text([[A virtual type representing all storage types.]])
 	types.dt_imageio_module_storage_t.plugin_name:set_text([[A unique name for the plugin.]])
 	types.dt_imageio_module_storage_t.name:set_text([[A human readable name for the plugin.]])

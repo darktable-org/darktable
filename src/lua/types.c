@@ -351,7 +351,7 @@ static int autotype_tostring(lua_State *L)
   } else {
     char tmp[256];
     luaL_getmetafield(L,1,"__luaA_TypeName");
-    snprintf(tmp,sizeof(tmp),"aa %s (%p)",lua_tostring(L,-1),lua_topointer(L,1));
+    snprintf(tmp,sizeof(tmp),"%s (%p)",lua_tostring(L,-1),lua_topointer(L,1));
     lua_pushstring(L,tmp);
     return 1;
   }
@@ -1026,6 +1026,17 @@ int dt_lua_init_early_types(lua_State *L)
   lua_setmetatable(L, -2);
 
   lua_setfield(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
+
+  luaA_enum(L,dt_lua_orientation_t);
+  luaA_enum_value_name(L,dt_lua_orientation_t,GTK_ORIENTATION_HORIZONTAL,"horizontal");
+  luaA_enum_value_name(L,dt_lua_orientation_t,GTK_ORIENTATION_VERTICAL,"vertical");
+
+  luaA_enum(L, dt_lua_align_t);
+  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_FILL, "fill");
+  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_START, "start");
+  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_END, "end");
+  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_CENTER, "center");
+  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_BASELINE, "baseline");
 
   return 0;
 }

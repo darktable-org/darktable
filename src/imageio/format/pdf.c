@@ -118,13 +118,37 @@ typedef struct dt_imageio_pdf_t
 
 // clang-format on
 
+#ifdef USE_LUA
+int orientation_member(lua_State*L)
+{
+  dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)lua_touserdata(L,1);
+  dt_lua_orientation_t orientation;
+  if(lua_gettop(L) != 3)
+  {
+    if(d->params.orientation == ORIENTATION_LANDSCAPE) {
+      orientation = GTK_ORIENTATION_HORIZONTAL;
+    } else {
+      orientation = GTK_ORIENTATION_VERTICAL;
+    }
+    luaA_push(L,dt_lua_orientation_t,&orientation);
+    return 1;
+  }
+  else
+  {
+    luaA_to(L,dt_lua_orientation_t,&orientation,3);
+    if(orientation == GTK_ORIENTATION_HORIZONTAL) {
+      d->params.orientation = ORIENTATION_LANDSCAPE;
+    } else {
+      d->params.orientation = ORIENTATION_PORTRAIT;
+    }
+    return 0;
+  }
+}
+
+
 void init(dt_imageio_module_format_t *self)
 {
-#ifdef USE_LUA
   lua_State* L = darktable.lua_state.state ;
-  luaA_enum(L, _pdf_orientation_t);
-  luaA_enum_value_name(L, _pdf_orientation_t, ORIENTATION_PORTRAIT, "portrait");
-  luaA_enum_value_name(L, _pdf_orientation_t, ORIENTATION_LANDSCAPE, "landscape");
 
   luaA_enum(L, _pdf_pages_t);
   luaA_enum_value_name(L, _pdf_pages_t, PAGES_ALL, "all");
@@ -142,7 +166,6 @@ void init(dt_imageio_module_format_t *self)
 
   dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,title, char_128);
   dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,size, char_64);
-  dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,orientation, _pdf_orientation_t);
   dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,border, char_64);
   dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,dpi, float);
   dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,rotate, bool);
@@ -150,9 +173,13 @@ void init(dt_imageio_module_format_t *self)
   dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,icc, bool);
   dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,mode, _pdf_mode_t);
   dt_lua_register_module_member_indirect(L, self, dt_imageio_pdf_t, params,dt_imageio_pdf_params_t,compression, dt_pdf_stream_encoder_t);
-  // TODO
-#endif
+
+
+
+  lua_pushcfunction(L, orientation_member);
+  dt_lua_type_register_type(L, self->parameter_lua_type, "orientation");
 }
+#endif
 
 void cleanup(dt_imageio_module_format_t *self)
 {

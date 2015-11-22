@@ -323,17 +323,6 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_slider(L);
   dt_lua_init_widget_stack(L);
 
-  luaA_enum(L,dt_lua_orientation_t);
-  luaA_enum_value_name(L,dt_lua_orientation_t,GTK_ORIENTATION_HORIZONTAL,"horizontal");
-  luaA_enum_value_name(L,dt_lua_orientation_t,GTK_ORIENTATION_VERTICAL,"vertical");
-
-  luaA_enum(L, dt_lua_align_t);
-  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_FILL, "fill");
-  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_START, "start");
-  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_END, "end");
-  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_CENTER, "center");
-  luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_BASELINE, "baseline");
-
   dt_lua_push_darktable_lib(L);
   lua_pushstring(L, "new_widget");
   lua_pushcfunction(L, &new_widget);

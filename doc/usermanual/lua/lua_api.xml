@@ -4974,6 +4974,318 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_dt_imageio_module_format_data_pdf">
+<title>types.dt_imageio_module_format_data_pdf</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_pdf</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to pdf.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="types_dt_imageio_module_format_data_pdf_dpi">
+<title>types.dt_imageio_module_format_data_pdf.dpi</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dpi</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The dot per inch value to use at export</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_pdf_icc">
+<title>types.dt_imageio_module_format_data_pdf.icc</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>icc</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>Should the images be tagged with their embedded profile</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_pdf_border">
+<title>types.dt_imageio_module_format_data_pdf.border</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>border</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>Empty space around the PDF images</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_pdf_orientation">
+<title>types.dt_imageio_module_format_data_pdf.orientation</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>orientation</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>Orientation of the pages in the document</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_pdf_title">
+<title>types.dt_imageio_module_format_data_pdf.title</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>title</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The title for the document
+  types.dt_imageio_module_format_data_pdf.rotate:set_text([[Should the images be rotated to match the PDF orientation</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_pdf_mode">
+<title>types.dt_imageio_module_format_data_pdf.mode</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mode</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The image mode to use at export time</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_pdf_size">
+<title>types.dt_imageio_module_format_data_pdf.size</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>size</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The paper size to use</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_pdf_compression">
+<title>types.dt_imageio_module_format_data_pdf.compression</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>compression</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>Compression mode to use for images</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_pdf_pages">
+<title>types.dt_imageio_module_format_data_pdf.pages</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>pages</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The page type to use</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_pdf_rotate">
+<title>types.dt_imageio_module_format_data_pdf.rotate</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>rotate</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>Should the images be rotated in the resulting PDF</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+</section>
+
+<section status="final" id="types__pdf_mode_t">
+<title>types._pdf_mode_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>_pdf_mode_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The export mode to use for PDF document</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>normal</para></listitem>
+<listitem><para>draft</para></listitem>
+<listitem><para>debug</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types__pdf_pages_t">
+<title>types._pdf_pages_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>_pdf_pages_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different page types for PDF export</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>all</para></listitem>
+<listitem><para>single</para></listitem>
+<listitem><para>contact</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_pdf_stream_encoder_t">
+<title>types.dt_pdf_stream_encoder_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_pdf_stream_encoder_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The compression mode for PDF document</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>uncompressed</para></listitem>
+<listitem><para>deflate</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_dt_imageio_module_storage_t">
 <title>types.dt_imageio_module_storage_t</title>
 <indexterm>
@@ -8090,27 +8402,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-</section>
-
-<section status="final" id="types_dt_imageio_module_format_data_pdf">
-<title>types.dt_imageio_module_format_data_pdf</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>dt_imageio_module_format_data_pdf</secondary>
-</indexterm>
-<synopsis>dt_type</synopsis>
-<para>undocumented</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
 </section>
 
 </section>

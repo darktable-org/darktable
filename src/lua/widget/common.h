@@ -23,10 +23,6 @@
 
 
 
-// Types added to the lua type system and useable externally
-typedef GtkOrientation dt_lua_orientation_t;
-typedef GtkAlign dt_lua_align_t;
-
 typedef dt_lua_widget_t* lua_separator;
 typedef dt_lua_widget_t* lua_label;
 typedef dt_lua_widget_t* lua_file_chooser_button;

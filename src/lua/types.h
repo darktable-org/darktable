@@ -22,6 +22,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lautoc.h>
+#include <gtk/gtk.h>
 
 /**
   these defines can be used with luaA_struct_member to have checks on read added
@@ -40,6 +41,10 @@ typedef const char *const_string; // string that has no push function
 typedef double protected_double;  // like double, but NAN is mapped to nil
 typedef double progress_double; // a double in [0.0,1.0] any value out of bound will be silently converted to
                                 // the bound both at push and pull time
+
+// Types added to the lua type system and useable externally
+typedef GtkOrientation dt_lua_orientation_t;
+typedef GtkAlign dt_lua_align_t;
 
 
 
