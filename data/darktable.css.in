@@ -431,6 +431,11 @@ GtkDialog .button:hover *
   border-color:  shade(@selected_bg_color, 1.7);
 }
 
+GtkDialog .button GtkLabel
+{
+  background-color: transparent;
+}
+
 GtkDialog GtkEventBox *
 {
    background-color: transparent;
@@ -491,4 +496,20 @@ GtkNotebook GtkMenuItem:hover
 .undershoot.right
 {
   background: none;
+}
+
+GtkAboutDialog
+{
+  background-color: @bg_color;
+}
+
+GtkAboutDialog GtkBox,
+GtkAboutDialog GtkBox *
+{
+  background-color: @bg_color;
+}
+
+GtkAboutDialog GtkHeaderBar
+{
+  padding: 2px;
 }
