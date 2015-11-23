@@ -136,8 +136,6 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   if(roi_out->y < 0) roi_out->y = 0;
   if(roi_out->width < 1) roi_out->width = 1;
   if(roi_out->height < 1) roi_out->height = 1;
-
-  fprintf(stderr, "Ended modify_roi_out with %dx%d from %dx%d\n", roi_out->width, roi_out->height, roi_in->width, roi_in->height);
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -165,8 +163,6 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->scale = roi_out->scale * MAX(d->x_scale, d->y_scale);
   roi_in->x = roi_out->x * d->x_scale;
   roi_in->y = roi_out->y * d->y_scale;
-
-  fprintf(stderr, "Ended modify_roi_in with %dx%d from %dx%d with scale %f from scale %f\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height, roi_in->scale, roi_out->scale);
 }
 
 void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, const void *const ivoid,
@@ -176,9 +172,6 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
   const int ch_width = ch * roi_in->width;
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_iop_scalepixels_data_t *d = piece->data;
-
-  fprintf(stderr, "scales are %f and %f\n", d->x_scale, d->y_scale);
-  fprintf(stderr, "Going to convert %dx%d into %dx%d\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height);
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation, d)
