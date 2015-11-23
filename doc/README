@@ -1,10 +1,16 @@
 this is darktable, a free raw photo viewer and organizer.
 
-to build it, you need:
+build dependencies for many platforms are listed here:
 
- - gtk+-2.0 (and dependencies, e.g. cairo, gdkpixbuf, etc.)
- - png, jpeg, tiff libraries (should be pulled by gdkpixbuf)
- - exiv2, OpenEXR, lensfun, lcms2, curl
+http://redmine.darktable.org/projects/darktable/wiki/Building_darktable_20
+
+in summary, you'll need:
+
+ - gcc, g++, GNU make and cmake
+ - gtk+-3.0 (and dependencies, e.g. cairo, gdkpixbuf, etc.)
+ - xml, xslt and json libraries
+ - png, jpeg, tiff, rsvg2 libraries
+ - sqlite3, exiv2, lensfun, lcms2, curl
 
 optionally, you might need for special features:
 
@@ -14,22 +20,46 @@ optionally, you might need for special features:
  - flickcurl (for Flickr support)
  - libGL/sdl12 (to build slideshow viewer)
  - dbus-glib, gnome-keyring (kwallet/gnome keyring support)
- - osm-gps-map for geo tagging view
+ - osm-gps-map and libsoup for geo tagging view
  - lensfun (lens distortion plugin)
  - OpenEXR for HDR export
-
-other used packages (supplied in the source tree):
-
- - LibRaw nikon_curve (taken from ufraw)
- - RawSpeed
- - squish
+ - SDL, SDL-image and Mesa OpenGL for the slideshow view
+ - flickcurl for uploading direct to Flickr
+ - libsecret for storing passwords
+ - libcolord-dev libcolord-gtk-dev for colour profile support
+ - webp and openjpeg libraries for WebP and JPEG 2000 support
+ - GraphicsMagick library for TIFF EXIF and LDR image format support
 
 then, type:
 $ ./build.sh --prefix /usr --buildtype Release
 $ cd build && make install (or sudo make install)
 $ darktable
 
-and enjoy!
+optionally, to build the user manual:
 
-send any bug reports to the mailing list: darktable-devel@lists.sf.net
+ - Java JDK, gnome-doc-utils, Saxon 6.5.x, FOP and ImageMagick
+
+then, type:
+$ cd build
+$ make darktable-usermanual
+$ evince doc/usermanual/darktable-usermanual.pdf
+
+optionally, to build translations of the manual pages:
+
+ - PO for anything (po4a)
+
+other used packages (supplied in the source tree):
+
+ - RawSpeed
+ - Lua 5.2 and LuaAutoc
+
+darktable has OpenCL support for cards with:
+
+ - > 1GB graphics RAM (more is better)
+ - a modern AMD or nVidia chipset
+ - proprietary drivers from the manufacturer loaded 
+
+enjoy!
+
+send any bug reports to the mailing list: darktable-dev@lists.darktable.org
 find more information on the web: http://www.darktable.org/
