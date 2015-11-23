@@ -43,7 +43,11 @@ typedef struct dt_iop_scalepixels_gui_data_t
   GtkWidget *pixel_aspect_ratio;
 } dt_iop_scalepixels_gui_data_t;
 
-typedef struct dt_iop_scalepixels_params_t dt_iop_scalepixels_data_t;
+typedef struct dt_iop_scalepixels_data_t {
+  float pixel_aspect_ratio;
+  float x_scale;
+  float y_scale;
+} dt_iop_scalepixels_data_t;
 
 const char *name()
 {
@@ -84,25 +88,14 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
   }
 }
 
-static void backtransform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_scalepixels_data_t *d = piece->data;
 
-  if(d->pixel_aspect_ratio < 1.0f)
-  {
-    p[1] *= d->pixel_aspect_ratio;
-  }
-  else
-  {
-    p[0] /= d->pixel_aspect_ratio;
-  }
-}
-
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
-{
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    transform(piece, &(points[i]));
+    points[i] /= d->x_scale;
+    points[i+1] /= d->y_scale;
   }
 
   return 1;
@@ -111,9 +104,12 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count)
 {
+  dt_iop_scalepixels_data_t *d = piece->data;
+
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    backtransform(piece, &(points[i]));
+    points[i] *= d->x_scale;
+    points[i+1] *= d->y_scale;
   }
 
   return 1;
@@ -162,6 +158,13 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
     roi_in->width /= reduction_ratio;
   }
 
+  dt_iop_scalepixels_data_t *d = piece->data;
+  d->x_scale = (roi_in->width * 1.0f) / (roi_out->width * 1.0f);
+  d->y_scale = (roi_in->height * 1.0f) / (roi_out->height * 1.0f);
+
+  roi_in->x = roi_out->x * d->x_scale;
+  roi_in->y = roi_out->y * d->y_scale;
+
   fprintf(stderr, "Ended modify_roi_in with %dx%d from %dx%d\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height);
 }
 
@@ -171,15 +174,13 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_iop_scalepixels_data_t *d = piece->data;
 
-  float x_scale = (roi_in->width * 1.0f) / (roi_out->width * 1.0f);
-  float y_scale = (roi_in->height * 1.0f) / (roi_out->height * 1.0f);
-
-  fprintf(stderr, "scales are %f and %f\n", x_scale, y_scale);
+  fprintf(stderr, "scales are %f and %f\n", d->x_scale, d->y_scale);
   fprintf(stderr, "Going to convert %dx%d into %dx%d\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation, x_scale, y_scale)
+#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation, d)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
@@ -188,8 +189,8 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
     float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
     for(int i = 0; i < roi_out->width; i++, out += 4)
     {
-      float x = MIN(i*x_scale, roi_in->width);
-      float y = MIN(j*y_scale, roi_in->height);
+      float x = MIN(i*d->x_scale, roi_in->width);
+      float y = MIN(j*d->y_scale, roi_in->height);
 
       dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, x, y, roi_in->width,
                                        roi_in->height, ch_width);
@@ -201,8 +202,11 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_scalepixels_params_t *p = self->params;
+  dt_iop_scalepixels_data_t *d = piece->data;
 
-  memcpy(piece->data, params, sizeof(dt_iop_scalepixels_data_t));
+  d->pixel_aspect_ratio = p->pixel_aspect_ratio;
+  d->x_scale = 1.0f;
+  d->y_scale = 1.0f;
 
   if(isnan(p->pixel_aspect_ratio) || p->pixel_aspect_ratio <= 0.0f || p->pixel_aspect_ratio == 1.0f)
     piece->enabled = 0;
