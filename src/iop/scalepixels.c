@@ -151,12 +151,16 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
   // If possible try to get an image that's strictly larger than what we want to output
   float hw[2] = {roi_out->height, roi_out->width};
-  transform(piece, hw);
+  transform(piece, hw); // transform() is used reversed here intentionally
+  roi_in->height = hw[0];
+  roi_in->width = hw[1];
 
-  // Now restrict it to something we can actually produce if that's too big
-  // FIXME: For some reason piece->iwidth is sometimes larger than roi_out->width
-  roi_in->height = MIN(piece->iheight, (int) ceilf(hw[0]));
-  roi_in->width = MIN(piece->iwidth, (int) ceilf(hw[1]));
+  float reduction_ratio = MAX(hw[0] / (piece->iheight * 1.0f), hw[1] / (piece->iwidth * 1.0f));
+  if (reduction_ratio > 1.0f)
+  {
+    roi_in->height /= reduction_ratio;
+    roi_in->width /= reduction_ratio;
+  }
 
   fprintf(stderr, "Ended modify_roi_in with %dx%d from %dx%d\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height);
 }
