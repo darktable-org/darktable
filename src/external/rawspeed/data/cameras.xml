@@ -2757,6 +2757,17 @@
 		<Crop x="0" y="0" width="4096" height="3072"/>
 		<Sensor black="64" white="4095"/>
 	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="SP320">
+		<ID make="Olympus" model="SP320">Olympus SP320</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="SP350">
 		<ID make="Olympus" model="SP350">Olympus SP350</ID>
 		<CFA width="2" height="2">
