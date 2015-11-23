@@ -541,8 +541,11 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, imgid);
 
+  const int buf_is_downscaled
+      = (thumbnail_export && dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"));
+
   dt_mipmap_buffer_t buf;
-  if(thumbnail_export && dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
+  if(buf_is_downscaled)
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');
   else
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
@@ -659,7 +662,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     g_list_free(stls);
   }
 
-  dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0,
+  dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height,
+                             buf_is_downscaled ? dev.image_storage.width / (float)buf.width : 1.0f,
                              buf.pre_monochrome_demosaiced);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);

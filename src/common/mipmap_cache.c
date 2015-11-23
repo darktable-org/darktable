@@ -327,6 +327,21 @@ read_error:
   else entry->cost = cache->buffer_size[mip];
 }
 
+static void dt_mipmap_cache_unlink_ondisk_thumbnail(void *data, uint32_t imgid, dt_mipmap_size_t mip)
+{
+  dt_mipmap_cache_t *cache = (dt_mipmap_cache_t *)data;
+
+  // also remove jpg backing (always try to do that, in case user just temporarily switched it off,
+  // to avoid inconsistencies.
+  // if(dt_conf_get_bool("cache_disk_backend"))
+  if(cache->cachedir[0])
+  {
+    char filename[PATH_MAX] = { 0 };
+    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, imgid);
+    g_unlink(filename);
+  }
+}
+
 void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
 {
   dt_mipmap_cache_t *cache = (dt_mipmap_cache_t *)data;
@@ -339,15 +354,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
     {
       if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE)
       {
-        // also remove jpg backing (always try to do that, in case user just temporarily switched it off,
-        // to avoid inconsistencies.
-        // if(dt_conf_get_bool("cache_disk_backend"))
-        if(cache->cachedir[0])
-        {
-          char filename[PATH_MAX] = {0};
-          snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
-          g_unlink(filename);
-        }
+        dt_mipmap_cache_unlink_ondisk_thumbnail(data, get_imgid(entry->key), mip);
       }
       else if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
       {
@@ -851,16 +858,24 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
 {
   // get rid of all ldr thumbnails:
 
-  for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
+  for(dt_mipmap_size_t k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
     const uint32_t key = get_key(imgid, k);
-    dt_cache_entry_t *entry = dt_cache_get(&_get_cache(cache, k)->cache, key, 'w');
-    struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
-    dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
-    dt_cache_release(&_get_cache(cache, k)->cache, entry);
+    dt_cache_entry_t *entry = dt_cache_testget(&_get_cache(cache, k)->cache, key, 'w');
+    if(entry)
+    {
+      struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
+      dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
+      dt_cache_release(&_get_cache(cache, k)->cache, entry);
 
-    // due to DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE, removes thumbnail from disc
-    dt_cache_remove(&_get_cache(cache, k)->cache, key);
+      // due to DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE, removes thumbnail from disc
+      dt_cache_remove(&_get_cache(cache, k)->cache, key);
+    }
+    else
+    {
+      // ugly, but avoids alloc'ing thumb if it is not there.
+      dt_mipmap_cache_unlink_ondisk_thumbnail(&(&_get_cache(cache, k)->cache)->cleanup_data, imgid, k);
+    }
   }
 }
 
