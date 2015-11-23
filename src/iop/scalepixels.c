@@ -162,10 +162,11 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   d->x_scale = (roi_in->width * 1.0f) / (roi_out->width * 1.0f);
   d->y_scale = (roi_in->height * 1.0f) / (roi_out->height * 1.0f);
 
+  roi_in->scale = roi_out->scale * MAX(d->x_scale, d->y_scale);
   roi_in->x = roi_out->x * d->x_scale;
   roi_in->y = roi_out->y * d->y_scale;
 
-  fprintf(stderr, "Ended modify_roi_in with %dx%d from %dx%d\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height);
+  fprintf(stderr, "Ended modify_roi_in with %dx%d from %dx%d with scale %f from scale %f\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height, roi_in->scale, roi_out->scale);
 }
 
 void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, const void *const ivoid,
