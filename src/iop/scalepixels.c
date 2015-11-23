@@ -140,6 +140,8 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   if(roi_out->y < 0) roi_out->y = 0;
   if(roi_out->width < 1) roi_out->width = 1;
   if(roi_out->height < 1) roi_out->height = 1;
+
+  fprintf(stderr, "Ended modify_roi_out with %dx%d from %dx%d\n", roi_out->width, roi_out->height, roi_in->width, roi_in->height);
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -147,16 +149,16 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 {
   *roi_in = *roi_out;
 
-  float xy[2] = { roi_in->x, roi_in->y };
-  float wh[2] = { roi_in->width, roi_in->height };
+  // If possible try to get an image that's strictly larger than what we want to output
+  float hw[2] = {roi_out->height, roi_out->width};
+  transform(piece, hw);
 
-  backtransform(piece, xy);
-  backtransform(piece, wh);
+  // Now restrict it to something we can actually produce if that's too big
+  // FIXME: For some reason piece->iwidth is sometimes larger than roi_out->width
+  roi_in->height = MIN(piece->iheight, (int) ceilf(hw[0]));
+  roi_in->width = MIN(piece->iwidth, (int) ceilf(hw[1]));
 
-  roi_in->x = (int)floorf(xy[0]);
-  roi_in->y = (int)floorf(xy[1]);
-  roi_in->width = (int)ceilf(wh[0]);
-  roi_in->height = (int)ceilf(wh[1]);
+  fprintf(stderr, "Ended modify_roi_in with %dx%d from %dx%d\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height);
 }
 
 void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, const void *const ivoid,
@@ -164,11 +166,16 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
 {
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
-
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
+  float x_scale = (roi_in->width * 1.0f) / (roi_out->width * 1.0f);
+  float y_scale = (roi_in->height * 1.0f) / (roi_out->height * 1.0f);
+
+  fprintf(stderr, "scales are %f and %f\n", x_scale, y_scale);
+  fprintf(stderr, "Going to convert %dx%d into %dx%d\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height);
+
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation)
+#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation, x_scale, y_scale)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
@@ -177,11 +184,10 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
     float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
     for(int i = 0; i < roi_out->width; i++, out += 4)
     {
-      float po[2] = { i, j };
+      float x = MIN(i*x_scale, roi_in->width);
+      float y = MIN(j*y_scale, roi_in->height);
 
-      backtransform(piece, po);
-
-      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, po[0], po[1], roi_in->width,
+      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, x, y, roi_in->width,
                                        roi_in->height, ch_width);
     }
   }
