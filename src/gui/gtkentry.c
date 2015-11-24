@@ -203,6 +203,8 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "EXIF_MINUTE", N_("$(EXIF_MINUTE) - EXIF minute") },
           { "EXIF_SECOND", N_("$(EXIF_SECOND) - EXIF second") },
           { "EXIF_ISO", N_("$(EXIF_ISO) - ISO value") },
+          { "MAKER", N_("$(MAKER) - camera maker") },
+          { "MODEL", N_("$(MODEL) - camera model") },
           { "STARS", N_("$(STARS) - star rating") },
           { "LABELS", N_("$(LABELS) - colorlabels") },
           { "PICTURES_FOLDER", N_("$(PICTURES_FOLDER) - pictures folder") },
