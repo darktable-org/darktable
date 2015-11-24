@@ -265,7 +265,8 @@ static int compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
   const size_t total = (size_t)histogram_stats->ch * histogram_stats->pixels;
 
-  const float thr = (float)total * d->deflicker_percentile / 100.0f;
+  const double thr
+      = CLAMP(((double)total * (double)d->deflicker_percentile / (double)100.0), 0.0, (double)total);
   size_t n = 0;
   uint32_t raw = 0;
   gboolean found = FALSE;
@@ -274,7 +275,7 @@ static int compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   {
     for(uint32_t k = 0; k < histogram_stats->ch; k++) n += histogram[4 * i + k];
 
-    if(!found && (n >= thr))
+    if(!found && ((double)n >= thr))
     {
       raw = i;
       found = TRUE;
