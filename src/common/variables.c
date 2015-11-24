@@ -118,7 +118,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
   gboolean have_exif_tm = FALSE;
   int exif_iso = 100;
   char camera_maker[64];
-  char camera_model[64];
+  char camera_alias[64];
   int version = 0;
   int stars = 0;
   struct tm exif_tm = { 0 };
@@ -134,7 +134,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
     }
     exif_iso = img->exif_iso;
     g_strlcpy(camera_maker, img->camera_maker, sizeof(camera_maker));
-    g_strlcpy(camera_model, img->camera_model, sizeof(camera_model));
+    g_strlcpy(camera_alias, img->camera_alias, sizeof(camera_alias));
     version = img->version;
     stars = (img->flags & 0x7);
     if(stars == 6) stars = -1;
@@ -172,7 +172,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
   else if(g_strcmp0(variable, "$(MAKER)") == 0 && (got_value = TRUE))
     snprintf(value, value_len, "%s", camera_maker);
   else if(g_strcmp0(variable, "$(MODEL)") == 0 && (got_value = TRUE))
-    snprintf(value, value_len, "%s", camera_model);
+    snprintf(value, value_len, "%s", camera_alias);
   else if(g_strcmp0(variable, "$(ID)") == 0 && (got_value = TRUE))
     snprintf(value, value_len, "%d", params->imgid);
   else if(g_strcmp0(variable, "$(VERSION)") == 0 && (got_value = TRUE))
