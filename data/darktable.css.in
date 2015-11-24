@@ -328,6 +328,23 @@ GtkFrame > GtkEventBox * {
   background-color: transparent;
 }
 
+.context-menu
+{
+  background-color: @really_dark_bg_color;
+}
+
+.context-menu .menuitem *
+{
+  background-color: transparent;
+}
+
+#main_window .context-menu .menuitem *:insensitive,
+.context-menu .menuitem *:insensitive
+{
+  color: @selected_bg_color;
+  background-color: @really_dark_bg_color;
+}
+
 GtkMenuItem *
 {
   background-color: transparent;
