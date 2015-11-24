@@ -514,6 +514,7 @@ static int dt_lib_load_module(dt_lib_module_t *module, const char *libname, cons
   module->widget = NULL;
   module->expander = NULL;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
+  dt_print(DT_DEBUG_CONTROL, "[lib_load_module] loading lib `%s' from %s\n", plugin_name, libname);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();

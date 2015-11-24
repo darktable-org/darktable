@@ -132,6 +132,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/views", sizeof(plugindir));
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
+  dt_print(DT_DEBUG_CONTROL, "[view_load_module] loading view `%s' from %s\n", module, libname);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!view->module)
   {
