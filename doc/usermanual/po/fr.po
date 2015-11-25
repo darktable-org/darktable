@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2015-11-24 13:09+0100\n"
-"PO-Revision-Date: 2015-11-24 17:18+0100\n"
+"PO-Revision-Date: 2015-11-25 16:04+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -17777,7 +17777,7 @@ msgstr "taille papier"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16517(para)
 msgid "The size of the paper on which to print."
-msgstr "La taille du papier pour l'impression"
+msgstr "La taille du papier pour l'impression."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16523(para)
 msgid ""
