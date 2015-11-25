@@ -195,6 +195,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
 {
   g_strlcpy(module->op, op, 20);
   module->data = NULL;
+  dt_print(DT_DEBUG_CONTROL, "[iop_load_module] loading iop `%s' from %s\n", op, libname);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();

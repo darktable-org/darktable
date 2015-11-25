@@ -2367,4 +2367,11 @@
     <shortdescription>preload images for full-size preview</shortdescription>
     <longdescription>number of images to load in advance in the background when showing full-size preview</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>please_let_me_suffer_by_using_32bit_darktable</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>if using a 32-bit build, hide the message recommending a 64-bit build</shortdescription>
+    <longdescription>the 32-bit build of darktable is known to exhibit sporadic issues and crashes. we show a warning message hinting at this issue. with this option, you can suppress the warning.</longdescription>
+  </dtconfig>
 </dtconfiglist>

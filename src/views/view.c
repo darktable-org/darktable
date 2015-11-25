@@ -132,6 +132,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/views", sizeof(plugindir));
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
+  dt_print(DT_DEBUG_CONTROL, "[view_load_module] loading view `%s' from %s\n", module, libname);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!view->module)
   {
@@ -294,6 +295,37 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 
   if(!error)
   {
+    {
+      const int bits = (sizeof(void *) == 4) ? 32 : 64;
+      if((bits < 64) && !dt_conf_get_bool("please_let_me_suffer_by_using_32bit_darktable"))
+      {
+        fprintf(stderr, "warning: 32-bit build!\n");
+
+        GtkWidget *dialog, *content_area;
+        GtkDialogFlags flags;
+
+        // Create the widgets
+        flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+        dialog = gtk_dialog_new_with_buttons(
+            _("you are making a mistake!"), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), flags,
+            _("_yes, i understood. please let me suffer by using 32-bit darktable."), GTK_RESPONSE_NONE,
+            NULL);
+        content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+        const gchar *msg = _("warning!\nyou are using a 32-bit build of darktable.\nthe 32-bit build has "
+                             "severely limited virtual address space.\nwe have had numerous reports that "
+                             "darktable exhibits sporadic issues and crashes when using 32-bit builds.\nwe "
+                             "strongly recommend you switch to a proper 64-bit build.\notherwise, you are "
+                             "GUARANTEED to experience issues which cannot be fixed.\n");
+
+        gtk_container_add(GTK_CONTAINER(content_area), gtk_label_new(msg));
+        gtk_widget_show_all(dialog);
+
+        (void)gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+      }
+    }
+
     GList *plugins;
     dt_view_t *v;
     if(vm->current_view >=0)
