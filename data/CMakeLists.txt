@@ -36,8 +36,8 @@ if(USE_LUA)
 #
 # lua system scripts
 #
-install(DIRECTORY "lua" DESTINATION ${SHARE_INSTALL}/darktable/)
-install(FILES luarc DESTINATION ${SHARE_INSTALL}/darktable/)
+install(DIRECTORY "lua" DESTINATION ${SHARE_INSTALL}/darktable)
+install(FILES luarc DESTINATION ${SHARE_INSTALL}/darktable)
 endif(USE_LUA)
 #
 # Install (and generate when necessary) other system shares
@@ -123,5 +123,5 @@ add_custom_target(darktablerc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktabler
 # first of all install darktablerc file into share as template
 # postinst script should copy this into users homedirectory
 # $HOME/.config/darktable/darktable.rc
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/darktable/)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/darktable)
 
