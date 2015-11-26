@@ -669,8 +669,8 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(d->pages, _("all"));
   dt_bauhaus_combobox_add(d->pages, _("single images"));
   dt_bauhaus_combobox_add(d->pages, _("contact sheet"));
-  gtk_grid_attach(grid, GTK_WIDGET(d->pages), 0, ++line, 2, 1);
-  g_signal_connect(G_OBJECT(d->pages), "value-changed", G_CALLBACK(pages_toggle_callback), self);
+//   gtk_grid_attach(grid, GTK_WIDGET(d->pages), 0, ++line, 2, 1);
+//   g_signal_connect(G_OBJECT(d->pages), "value-changed", G_CALLBACK(pages_toggle_callback), self);
   g_object_set(G_OBJECT(d->pages), "tooltip-text", _("what pages should be added to the pdf"), (char *)NULL);
   dt_bauhaus_combobox_set(d->pages, dt_conf_get_int("plugins/imageio/format/pdf/pages"));
   gtk_widget_set_sensitive(d->pages, FALSE); // TODO
