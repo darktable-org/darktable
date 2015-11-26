@@ -35,6 +35,8 @@
 #include "lua/call.h"
 #endif
 
+#define SHOW_FLAGS 0
+
 DT_MODULE(1)
 
 enum
@@ -47,7 +49,9 @@ enum
   md_internal_version,
   md_internal_fullpath,
   md_internal_local_copy,
+#if SHOW_FLAGS
   md_internal_flags,
+#endif
 
   /* exif */
   md_exif_model,
@@ -89,8 +93,9 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_internal_version] = _("version");
   _md_labels[md_internal_fullpath] = _("full path");
   _md_labels[md_internal_local_copy] = _("local copy");
+#if SHOW_FLAGS
   _md_labels[md_internal_flags] = _("flags");
-
+#endif
 
   /* exif */
   _md_labels[md_exif_model] = _("model");
@@ -254,6 +259,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
 
     // the bits of the flags
+#if SHOW_FLAGS
     {
       #define EMPTY_FIELD '.'
       #define FALSE_FIELD '.'
@@ -375,6 +381,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       #undef FALSE_FIELD
       #undef TRUE_FIELD
     }
+#endif // SHOW_FLAGS
 
     /* EXIF */
     _metadata_update_value_end(d->metadata[md_exif_model], img->camera_alias);

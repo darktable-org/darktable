@@ -551,6 +551,14 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
 
   const dt_image_t *img = &dev.image_storage;
+
+  if(!buf.buf || !buf.width || !buf.height)
+  {
+    fprintf(stderr, "allocation failed???\n");
+    dt_control_log(_("image `%s' is not available!"), img->filename);
+    goto error_early;
+  }
+
   const int wd = img->width;
   const int ht = img->height;
   const float max_scale = upscale ? 100.0 : 1.0;
@@ -567,13 +575,6 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     dt_control_log(
         _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
         thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
-    goto error;
-  }
-
-  if(!buf.buf)
-  {
-    fprintf(stderr, "allocation failed???\n");
-    dt_control_log(_("image `%s' is not available!"), img->filename);
     goto error;
   }
 
@@ -882,6 +883,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
 error:
   dt_dev_pixelpipe_cleanup(&pipe);
+error_early:
   dt_dev_cleanup(&dev);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   return 1;
