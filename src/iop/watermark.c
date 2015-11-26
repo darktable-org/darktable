@@ -1247,12 +1247,10 @@ void gui_init(struct dt_iop_module_t *self)
   label = dtgtk_reset_label_new(_("text"), self, &g->text, 0);
   g->text = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
-  GtkGrid *ent = GTK_GRID(gtk_grid_new());
-  gtk_grid_attach(ent, g->text, 0, 0, 1, 1);
   g_object_set(G_OBJECT(g->text), "tooltip-text", _("text string, tag:\n$(WATERMARK_TEXT)"), (char *)NULL);
   dt_gui_key_accel_block_on_focus_connect(g->text);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(ent), label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), g->text, label, GTK_POS_RIGHT, 2, 1);
 
   gchar *str = dt_conf_get_string("plugins/darkroom/watermark/text");
   gtk_entry_set_text(GTK_ENTRY(g->text), str);
