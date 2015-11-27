@@ -18,12 +18,10 @@ optionally, you might need for special features:
  - gphoto2 (for camera support, recommended)
  - librsvg2 (for watermark plugin)
  - flickcurl (for Flickr support)
- - libGL/sdl12 (to build slideshow viewer)
- - dbus-glib
+ - SDL, SDL-image and Mesa OpenGL (to build darktable-viewer)
  - osm-gps-map and libsoup for geo tagging view
  - lensfun (lens distortion plugin)
  - OpenEXR for HDR export
- - SDL, SDL-image and Mesa OpenGL for the slideshow view
  - flickcurl for uploading direct to Flickr
  - libsecret for storing passwords
  - libcolord-dev libcolord-gtk-dev for colour profile support
@@ -52,7 +50,7 @@ optionally, to build translations of the manual pages:
 other used packages (supplied in the source tree):
 
  - RawSpeed
- - Lua 5.2 and LuaAutoc
+ - Lua 5.2 and LuaAutoc (although the local system version can be used instead)
 
 darktable has OpenCL support for graphics cards with:
 
