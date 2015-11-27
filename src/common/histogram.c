@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 LebedevRI.
+    copyright (c) 2014-2015 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,15 +26,19 @@
 #include "develop/imageop.h"
 #include "common/histogram.h"
 
+#define S(V, params) ((params->mul) * ((float)V))
+#define P(V, params) (CLAMP((V), 0, (params->bins_count - 1)))
+#define PU(V, params) (MIN((V), (params->bins_count - 1)))
+#define PS(V, params) (P(S(V, params), params))
+
 //------------------------------------------------------------------------------
 
 static void inline histogram_helper_cs_RAW_helper_process_pixel_float(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
     uint32_t *histogram)
 {
-  const uint32_t V
-      = CLAMP((float)(histogram_params->bins_count) * *pixel, 0, histogram_params->bins_count - 1);
-  histogram[4 * V]++;
+  const uint32_t i = PS(*pixel, histogram_params);
+  histogram[4 * i]++;
 }
 
 static void inline histogram_helper_cs_RAW(const dt_dev_histogram_collection_params_t *const histogram_params,
@@ -50,12 +54,13 @@ static void inline histogram_helper_cs_RAW(const dt_dev_histogram_collection_par
 
 //------------------------------------------------------------------------------
 
+// WARNING: you must ensure that bins_count is big enough
 static void inline histogram_helper_cs_RAW_helper_process_pixel_uint16(
     const dt_dev_histogram_collection_params_t *const histogram_params, const uint16_t *pixel,
     uint32_t *histogram)
 {
-  const uint16_t V = *pixel;
-  histogram[4 * V]++;
+  const uint16_t i = PU(*pixel, histogram_params);
+  histogram[4 * i]++;
 }
 
 void inline dt_histogram_helper_cs_RAW_uint16(
@@ -76,12 +81,9 @@ static void inline __attribute__((__unused__)) histogram_helper_cs_rgb_helper_pr
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
     uint32_t *histogram)
 {
-  const float Rv = pixel[0];
-  const float Gv = pixel[1];
-  const float Bv = pixel[2];
-  const uint32_t R = CLAMP((float)(histogram_params->bins_count) * Rv, 0, histogram_params->bins_count - 1);
-  const uint32_t G = CLAMP((float)(histogram_params->bins_count) * Gv, 0, histogram_params->bins_count - 1);
-  const uint32_t B = CLAMP((float)(histogram_params->bins_count) * Bv, 0, histogram_params->bins_count - 1);
+  const uint32_t R = PS(pixel[0], histogram_params);
+  const uint32_t G = PS(pixel[1], histogram_params);
+  const uint32_t B = PS(pixel[2], histogram_params);
   histogram[4 * R]++;
   histogram[4 * G + 1]++;
   histogram[4 * B + 2]++;
@@ -91,9 +93,7 @@ static void inline histogram_helper_cs_rgb_helper_process_pixel_m128(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
     uint32_t *histogram)
 {
-  const float fscale = (float)(histogram_params->bins_count);
-
-  const __m128 scale = _mm_set1_ps(fscale);
+  const __m128 scale = _mm_set1_ps(histogram_params->mul);
   const __m128 val_min = _mm_setzero_ps();
   const __m128 val_max = _mm_set1_ps(histogram_params->bins_count - 1);
 
@@ -134,12 +134,10 @@ static void inline __attribute__((__unused__)) histogram_helper_cs_Lab_helper_pr
   const float Lv = pixel[0];
   const float av = pixel[1];
   const float bv = pixel[2];
-  const uint32_t L
-      = CLAMP((float)(histogram_params->bins_count) / 100.0f * (Lv), 0, histogram_params->bins_count - 1);
-  const uint32_t a = CLAMP((float)(histogram_params->bins_count) / 256.0f * (av + 128.0f), 0,
-                           histogram_params->bins_count - 1);
-  const uint32_t b = CLAMP((float)(histogram_params->bins_count) / 256.0f * (bv + 128.0f), 0,
-                           histogram_params->bins_count - 1);
+  const float max = histogram_params->bins_count - 1;
+  const uint32_t L = CLAMP(histogram_params->mul / 100.0f * (Lv), 0, max);
+  const uint32_t a = CLAMP(histogram_params->mul / 256.0f * (av + 128.0f), 0, max);
+  const uint32_t b = CLAMP(histogram_params->mul / 256.0f * (bv + 128.0f), 0, max);
   histogram[4 * L]++;
   histogram[4 * a + 1]++;
   histogram[4 * b + 2]++;
@@ -149,7 +147,7 @@ static void inline histogram_helper_cs_Lab_helper_process_pixel_m128(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
     uint32_t *histogram)
 {
-  const float fscale = (float)(histogram_params->bins_count);
+  const float fscale = histogram_params->mul;
 
   const __m128 shift = _mm_set_ps(0.0f, 128.0f, 128.0f, 0.0f);
   const __m128 scale = _mm_set_ps(fscale / 1.0f, fscale / 256.0f, fscale / 256.0f, fscale / 100.0f);
@@ -187,15 +185,17 @@ static void inline histogram_helper_cs_Lab(const dt_dev_histogram_collection_par
 
 //==============================================================================
 
-void dt_histogram_worker(const dt_dev_histogram_collection_params_t *const histogram_params,
+void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_params,
                          dt_dev_histogram_stats_t *histogram_stats, const void *const pixel,
                          uint32_t **histogram, const dt_worker Worker)
 {
   const int nthreads = omp_get_max_threads();
 
-  const size_t bins_total = histogram_params->bins_count * 4;
+  const size_t bins_total = (size_t)4 * histogram_params->bins_count;
   const size_t buf_size = bins_total * sizeof(uint32_t);
   void *partial_hists = calloc(nthreads, buf_size);
+
+  if(histogram_params->mul == 0) histogram_params->mul = (double)(histogram_params->bins_count - 1);
 
   const dt_histogram_roi_t *const roi = histogram_params->roi;
 
@@ -235,7 +235,7 @@ void dt_histogram_worker(const dt_dev_histogram_collection_params_t *const histo
 
 //------------------------------------------------------------------------------
 
-void dt_histogram_helper(const dt_dev_histogram_collection_params_t *const histogram_params,
+void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
                          dt_dev_histogram_stats_t *histogram_stats, dt_iop_colorspace_type_t cst,
                          const void *pixel, uint32_t **histogram)
 {

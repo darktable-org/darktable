@@ -42,11 +42,11 @@ void dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_params_
 typedef void((*dt_worker)(const dt_dev_histogram_collection_params_t *const histogram_params,
                           const void *pixel, uint32_t *histogram, int j));
 
-void dt_histogram_worker(const dt_dev_histogram_collection_params_t *const histogram_params,
+void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_params,
                          dt_dev_histogram_stats_t *histogram_stats, const void *const pixel,
                          uint32_t **histogram, const dt_worker Worker);
 
-void dt_histogram_helper(const dt_dev_histogram_collection_params_t *histogram_params,
+void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
                          dt_dev_histogram_stats_t *histogram_stats, dt_iop_colorspace_type_t cst,
                          const void *pixel, uint32_t **histogram);
 
