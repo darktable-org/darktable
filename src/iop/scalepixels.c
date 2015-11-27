@@ -149,7 +149,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->height = hw[0];
   roi_in->width = hw[1];
 
-  float reduction_ratio = MAX(hw[0] / (piece->iheight * 1.0f), hw[1] / (piece->iwidth * 1.0f));
+  float reduction_ratio = MAX(hw[0] / (piece->buf_in.height * 1.0f), hw[1] / (piece->buf_in.width * 1.0f));
   if (reduction_ratio > 1.0f)
   {
     roi_in->height /= reduction_ratio;
