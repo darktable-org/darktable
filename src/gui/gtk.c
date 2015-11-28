@@ -1385,11 +1385,18 @@ static gboolean _ui_init_panel_container_center_scroll_event(GtkWidget *widget, 
 // this should work as long as everything happens in the gui thread
 static void _ui_panel_size_changed(GtkAdjustment *adjustment, GParamSpec *pspec, gpointer user_data)
 {
+  GtkAllocation allocation;
+  static float last_height[2] = { 0 };
+
   int side = GPOINTER_TO_INT(user_data);
+
+  // don't do anything when the size didn't actually change.
+  float height = gtk_adjustment_get_upper(adjustment) - gtk_adjustment_get_lower(adjustment);
+  if(height == last_height[side]) return;
+  last_height[side] = height;
 
   if(!darktable.gui->scroll_to[side]) return;
 
-  GtkAllocation allocation;
   gtk_widget_get_allocation(darktable.gui->scroll_to[side], &allocation);
   gtk_adjustment_set_value(adjustment, allocation.y);
 
