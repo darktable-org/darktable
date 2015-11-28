@@ -88,8 +88,20 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
   }
 }
 
+static void precalculate_scale(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+{
+  // Since the scaling is calculated by modify_roi_in use that to get them
+  // This doesn't seem strictly needed but since clipping.c also does it we try
+  // and avoid breaking any assumptions elsewhere in the code
+  dt_iop_roi_t roi_out, roi_in;
+  roi_out.width = piece->buf_in.width;
+  roi_out.height = piece->buf_in.height;
+  self->modify_roi_in(self, piece, &roi_out, &roi_in);
+}
+
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
+  precalculate_scale(self, piece);
   dt_iop_scalepixels_data_t *d = piece->data;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -104,6 +116,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count)
 {
+  precalculate_scale(self, piece);
   dt_iop_scalepixels_data_t *d = piece->data;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
