@@ -195,7 +195,7 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
 void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_scalepixels_params_t *p = self->params;
+  const dt_iop_scalepixels_params_t *p = params;
   dt_iop_scalepixels_data_t *d = piece->data;
 
   d->pixel_aspect_ratio = p->pixel_aspect_ratio;
