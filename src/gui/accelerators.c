@@ -319,7 +319,7 @@ static gboolean _press_button_callback(GtkAccelGroup *accel_group, GObject *acce
 {
   if(!(GTK_IS_BUTTON(data))) return FALSE;
 
-  g_signal_emit_by_name(G_OBJECT(data), "activate");
+  gtk_button_clicked(GTK_BUTTON(data));
   return TRUE;
 }
 
@@ -331,7 +331,7 @@ void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, Gtk
 
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button)
 {
-  GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback), (gpointer)button, NULL);
+  GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback), button, NULL);
   dt_accel_connect_lib(module, path, closure);
 }
 
