@@ -184,10 +184,10 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_iop_scalepixels_data_t *d = piece->data;
+  const dt_iop_scalepixels_data_t * const d = piece->data;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation, d)
+#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
@@ -196,8 +196,8 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
     float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
     for(int i = 0; i < roi_out->width; i++, out += 4)
     {
-      float x = MIN(i*d->x_scale, roi_in->width);
-      float y = MIN(j*d->y_scale, roi_in->height);
+      float x = i*d->x_scale;
+      float y = j*d->y_scale;
 
       dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, x, y, roi_in->width,
                                        roi_in->height, ch_width);
