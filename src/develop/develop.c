@@ -1154,7 +1154,8 @@ void dt_dev_read_history(dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
   {
-    dev->history_end = sqlite3_column_int(stmt, 0);
+    if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
+      dev->history_end = sqlite3_column_int(stmt, 0);
   }
 
   if(dev->gui_attached)

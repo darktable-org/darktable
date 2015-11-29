@@ -45,7 +45,7 @@
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(0.001, x))
 
-DT_MODULE_INTROSPECTION(4, dt_iop_exposure_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_exposure_params_t)
 
 typedef enum dt_iop_exposure_mode_t
 {
@@ -53,11 +53,9 @@ typedef enum dt_iop_exposure_mode_t
   EXPOSURE_MODE_DEFLICKER
 } dt_iop_exposure_mode_t;
 
-typedef enum dt_iop_exposure_deflicker_histogram_source_t
-{
-  DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL,
-  DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE
-} dt_iop_exposure_deflicker_histogram_source_t;
+// uint16_t pixel can have any value in range [0, 65535], thus, there is
+// 65536 possible values.
+#define DEFLICKER_BINS_COUNT (UINT16_MAX + 1)
 
 typedef struct dt_iop_exposure_params_t
 {
@@ -65,7 +63,6 @@ typedef struct dt_iop_exposure_params_t
   float black;
   float exposure;
   float deflicker_percentile, deflicker_target_level;
-  dt_iop_exposure_deflicker_histogram_source_t deflicker_histogram_source;
 } dt_iop_exposure_params_t;
 
 typedef struct dt_iop_exposure_gui_data_t
@@ -78,8 +75,6 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkWidget *autoexpp;
   GtkWidget *deflicker_percentile;
   GtkWidget *deflicker_target_level;
-  GList *deflicker_histogram_sources;
-  GtkWidget *deflicker_histogram_source;
   uint32_t *deflicker_histogram; // used to cache histogram of source file
   dt_dev_histogram_stats_t deflicker_histogram_stats;
   GtkLabel *deflicker_used_EC;
@@ -89,10 +84,8 @@ typedef struct dt_iop_exposure_gui_data_t
 
 typedef struct dt_iop_exposure_data_t
 {
-  dt_iop_exposure_mode_t mode;
   float black;
   float exposure;
-  float deflicker_percentile, deflicker_target_level;
 } dt_iop_exposure_data_t;
 
 typedef struct dt_iop_exposure_global_data_t
@@ -123,7 +116,6 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "auto-exposure"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "percentile"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target level"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "histogram source"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -136,7 +128,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "auto-exposure", GTK_WIDGET(g->autoexpp));
   dt_accel_connect_slider_iop(self, "percentile", GTK_WIDGET(g->deflicker_percentile));
   dt_accel_connect_slider_iop(self, "target level", GTK_WIDGET(g->deflicker_target_level));
-  dt_accel_connect_slider_iop(self, "histogram source", GTK_WIDGET(g->deflicker_histogram_source));
 }
 
 int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -147,7 +138,7 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2 && new_version == 5)
   {
     typedef struct dt_iop_exposure_params_v2_t
     {
@@ -164,7 +155,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->exposure = o->exposure;
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3 && new_version == 5)
   {
     typedef struct dt_iop_exposure_params_v3_t
     {
@@ -186,6 +177,37 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->deflicker_target_level = o->deflicker_target_level;
     return 0;
   }
+  if(old_version == 4 && new_version == 5)
+  {
+    typedef enum dt_iop_exposure_deflicker_histogram_source_t {
+      DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL,
+      DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE
+    } dt_iop_exposure_deflicker_histogram_source_t;
+
+    typedef struct dt_iop_exposure_params_v4_t
+    {
+      dt_iop_exposure_mode_t mode;
+      float black;
+      float exposure;
+      float deflicker_percentile, deflicker_target_level;
+      dt_iop_exposure_deflicker_histogram_source_t deflicker_histogram_source;
+    } dt_iop_exposure_params_v4_t;
+
+    dt_iop_exposure_params_v4_t *o = (dt_iop_exposure_params_v4_t *)old_params;
+    dt_iop_exposure_params_t *n = (dt_iop_exposure_params_t *)new_params;
+    dt_iop_exposure_params_t *d = (dt_iop_exposure_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->mode = o->mode;
+    n->black = o->black;
+    n->exposure = o->exposure;
+    n->deflicker_percentile = o->deflicker_percentile;
+    n->deflicker_target_level = o->deflicker_target_level;
+    // deflicker_histogram_source is dropped. this does change output,
+    // but deflicker still was not publicly released at that point
+    return 0;
+  }
   return 1;
 }
 
@@ -194,14 +216,12 @@ void init_presets (dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("magic lantern defaults"), self->op, self->version(),
-&(dt_iop_exposure_params_t)
-  {
-    EXPOSURE_MODE_DEFLICKER, 0.0f, 0.0f, 50.0f, -4.0f, DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE
-  }, sizeof(dt_iop_exposure_params_t), 1);
-  dt_gui_presets_add_generic(_("almost no clipping"), self->op, self->version(), &(dt_iop_exposure_params_t)
-  {
-    EXPOSURE_MODE_DEFLICKER, 0.0f, 0.0f, 100.0f, -1.0f, DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL
-  }, sizeof(dt_iop_exposure_params_t), 1);
+                             &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_DEFLICKER,
+                                                         .black = 0.0f,
+                                                         .exposure = 0.0f,
+                                                         .deflicker_percentile = 50.0f,
+                                                         .deflicker_target_level = -4.0f },
+                             sizeof(dt_iop_exposure_params_t), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
@@ -209,12 +229,15 @@ void init_presets (dt_iop_module_so_t *self)
 static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
                                         dt_dev_histogram_stats_t *histogram_stats)
 {
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, self->dev->image_storage.id, DT_MIPMAP_FULL,
-                      DT_MIPMAP_BLOCKING, 'r');
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'r');
   dt_image_t image = *img;
   dt_image_cache_read_release(darktable.image_cache, img);
+
+  if(image.bpp != sizeof(uint16_t)) return;
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, self->dev->image_storage.id, DT_MIPMAP_FULL,
+                      DT_MIPMAP_BLOCKING, 'r');
   if(!buf.buf)
   {
     dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);
@@ -234,7 +257,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
                                       .crop_height = image.crop_height };
 
   histogram_params.roi = &histogram_roi;
-  histogram_params.bins_count = 16384;
+  histogram_params.bins_count = DEFLICKER_BINS_COUNT;
 
   dt_histogram_worker(&histogram_params, histogram_stats, buf.buf, histogram,
                       dt_histogram_helper_cs_RAW_uint16);
@@ -243,89 +266,49 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
 
-/* input: 0 - 16384 (valid range: from black level to white level) */
-/* output: -14 ... 0 */
-static float raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level)
+/* input: 0 - 65535 (valid range: from black level to white level) */
+/* output: -16 ... 0 */
+static double raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level)
 {
-  uint32_t raw_max = white_level - black_level;
-  float raw_ev = -log2f(raw_max) + log2f(CLAMP(raw, 0.0f, 16384.0f));
+  const uint32_t raw_max = white_level - black_level;
+
+  const double raw_ev = -log2(raw_max) + log2(MAX(raw - black_level, 1));
 
   return raw_ev;
 }
 
-static int compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                              const uint32_t *const histogram,
-                              const dt_dev_histogram_stats_t *const histogram_stats, float *correction)
+static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, const uint32_t *const histogram,
+                               const dt_dev_histogram_stats_t *const histogram_stats, float *correction)
 {
-  dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
+  const dt_iop_exposure_params_t *const p = (const dt_iop_exposure_params_t *const)p1;
 
   *correction = NAN;
 
-  if(histogram == NULL) return 1;
+  if(histogram == NULL) return;
 
   const size_t total = (size_t)histogram_stats->ch * histogram_stats->pixels;
 
   const double thr
-      = CLAMP(((double)total * (double)d->deflicker_percentile / (double)100.0), 0.0, (double)total);
+      = CLAMP(((double)total * (double)p->deflicker_percentile / (double)100.0), 0.0, (double)total);
+
   size_t n = 0;
   uint32_t raw = 0;
-  gboolean found = FALSE;
 
   for(uint32_t i = 0; i < histogram_stats->bins_count; i++)
   {
     for(uint32_t k = 0; k < histogram_stats->ch; k++) n += histogram[4 * i + k];
 
-    if(!found && ((double)n >= thr))
+    if((double)n >= thr)
     {
       raw = i;
-      found = TRUE;
       break;
     }
   }
 
-  if(found)
-  {
-    // FIXME: get those from rawprepare IOP somehow !!!
-    const float ev
-        = raw_to_ev(raw, self->dev->image_storage.raw_black_level, self->dev->image_storage.raw_white_point);
-    *correction = d->deflicker_target_level - ev;
-
-    return 0;
-  }
-
-  return 1;
-}
-
-/*
- * WARNING: unlike commit_params, which is thread safe wrt gui thread and
- * pipes, this function lives in the pipeline thread, and NOT thread safe!
- */
-static void commit_params_late(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-
-  if(d->mode == EXPOSURE_MODE_DEFLICKER)
-  {
-    if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
-    {
-      dt_pthread_mutex_lock(&g->lock);
-      d->exposure = g->deflicker_computed_exposure;
-      dt_pthread_mutex_unlock(&g->lock);
-    }
-
-    if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || isnan(d->exposure))
-    {
-      compute_correction(self, piece, piece->histogram, &piece->histogram_stats, &d->exposure);
-    }
-  }
-
-  if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-  {
-    dt_pthread_mutex_lock(&g->lock);
-    g->deflicker_computed_exposure = d->exposure;
-    dt_pthread_mutex_unlock(&g->lock);
-  }
+  // FIXME: get those from rawprepare IOP somehow !!!
+  const double ev
+      = raw_to_ev(raw, self->dev->image_storage.raw_black_level, self->dev->image_storage.raw_white_point);
+  *correction = p->deflicker_target_level - ev;
 }
 
 #ifdef HAVE_OPENCL
@@ -334,8 +317,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
-
-  commit_params_late(self, piece);
 
   cl_int err = -999;
   const float black = d->black;
@@ -369,8 +350,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
 
-  commit_params_late(self, piece);
-
   const float black = d->black;
   const float white = exposure2white(d->exposure);
   const int ch = piece->colors;
@@ -403,60 +382,31 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->black = p->black;
   d->exposure = p->exposure;
 
-  piece->request_histogram &= ~(DT_REQUEST_ON);
-  piece->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
-
-  d->deflicker_percentile = p->deflicker_percentile;
-  d->deflicker_target_level = p->deflicker_target_level;
-
-  if(p->mode == EXPOSURE_MODE_DEFLICKER && dt_image_is_raw(&self->dev->image_storage))
+  if(p->mode == EXPOSURE_MODE_DEFLICKER && dt_image_is_raw(&self->dev->image_storage)
+     && self->dev->image_storage.bpp == sizeof(uint16_t))
   {
-    if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE)
+    // first, compute correction.
+    if(g)
     {
-      if(g)
-      {
-        // histogram is precomputed and cached
-        compute_correction(self, piece, g->deflicker_histogram, &g->deflicker_histogram_stats, &d->exposure);
-      }
-      else
-      {
-        uint32_t *histogram = NULL;
-        dt_dev_histogram_stats_t histogram_stats;
-        deflicker_prepare_histogram(self, &histogram, &histogram_stats);
-        compute_correction(self, piece, histogram, &histogram_stats, &d->exposure);
-        free(histogram);
-      }
-      d->mode = EXPOSURE_MODE_MANUAL;
+      // histogram is precomputed and cached
+      compute_correction(self, p1, g->deflicker_histogram, &g->deflicker_histogram_stats, &d->exposure);
     }
     else
     {
-      if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL)
-      {
-        d->mode = EXPOSURE_MODE_DEFLICKER;
-
-        piece->request_histogram |= (DT_REQUEST_ON);
-
-        if(!self->dev->gui_attached) piece->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
-
-        piece->histogram_params.bins_count = 16384;
-
-        /*
-         * in principle, we do not need/want histogram in FULL pipe
-         * because we will use histogram from preview pipe there,
-         * but it might happen that for some reasons we do not have
-         * histogram of preview pipe yet - e.g. on first pipe run
-         * (just after setting mode to automatic)
-         */
-
-        d->exposure = NAN;
-
-        // commit_params_late() will compute exposure later
-      }
+      uint32_t *histogram = NULL;
+      dt_dev_histogram_stats_t histogram_stats;
+      deflicker_prepare_histogram(self, &histogram, &histogram_stats);
+      compute_correction(self, p1, histogram, &histogram_stats, &d->exposure);
+      free(histogram);
     }
-  }
-  else
-  {
-    d->mode = EXPOSURE_MODE_MANUAL;
+
+    // second, show computed correction in UI.
+    if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    {
+      dt_pthread_mutex_lock(&g->lock);
+      g->deflicker_computed_exposure = d->exposure;
+      dt_pthread_mutex_unlock(&g->lock);
+    }
   }
 }
 
@@ -484,7 +434,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  if(!dt_image_is_raw(&self->dev->image_storage))
+  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.bpp != sizeof(uint16_t))
   {
     gtk_widget_hide(GTK_WIDGET(g->mode));
     p->mode = EXPOSURE_MODE_MANUAL;
@@ -504,9 +454,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
   dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
-  dt_bauhaus_combobox_set(
-      g->deflicker_histogram_source,
-      g_list_index(g->deflicker_histogram_sources, GUINT_TO_POINTER(p->deflicker_histogram_source)));
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
@@ -523,8 +470,7 @@ void gui_update(struct dt_iop_module_t *self)
     case EXPOSURE_MODE_DEFLICKER:
       autoexp_disable(self);
       gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "deflicker");
-      if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE)
-        deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
+      deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
       break;
     case EXPOSURE_MODE_MANUAL:
     default:
@@ -553,15 +499,12 @@ void init(dt_iop_module_t *module)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){ EXPOSURE_MODE_MANUAL, 0.0f, 0.0f, 100.0f, -1.0f,
-                                                             DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL };
-
-  tmp.mode = EXPOSURE_MODE_MANUAL;
-  tmp.black = 0.0f;
-  tmp.exposure = 0.0f;
-  tmp.deflicker_percentile = 100.0f;
-  tmp.deflicker_target_level = -1.0f;
-  tmp.deflicker_histogram_source = DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL;
+  dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
+                                                            .black = 0.0f,
+                                                            .exposure = 0.0f,
+                                                            .deflicker_percentile = 50.0f,
+                                                            .deflicker_target_level = -4.0f
+  };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
@@ -611,7 +554,7 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
   {
     case EXPOSURE_MODE_DEFLICKER:
       autoexp_disable(self);
-      if(!dt_image_is_raw(&self->dev->image_storage))
+      if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.bpp != sizeof(uint16_t))
       {
         dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL)));
         gtk_widget_hide(GTK_WIDGET(g->mode));
@@ -619,8 +562,7 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
       }
       p->mode = EXPOSURE_MODE_DEFLICKER;
       gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "deflicker");
-      if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE)
-        deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
+      deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
       break;
     case EXPOSURE_MODE_MANUAL:
     default:
@@ -761,7 +703,7 @@ static void deflicker_params_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
-  if(!dt_image_is_raw(&self->dev->image_storage)) return;
+  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.bpp != sizeof(uint16_t)) return;
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
@@ -770,37 +712,6 @@ static void deflicker_params_callback(GtkWidget *slider, gpointer user_data)
 
   p->deflicker_percentile = dt_bauhaus_slider_get(g->deflicker_percentile);
   p->deflicker_target_level = dt_bauhaus_slider_get(g->deflicker_target_level);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void deflicker_histogram_source_callback(GtkWidget *combo, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-
-  if(self->dt->gui->reset) return;
-
-  if(!dt_image_is_raw(&self->dev->image_storage)) return;
-
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-
-  const dt_iop_exposure_deflicker_histogram_source_t new_mode
-      = GPOINTER_TO_UINT(g_list_nth_data(g->deflicker_histogram_sources, dt_bauhaus_combobox_get(combo)));
-
-  switch(new_mode)
-  {
-    case DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE:
-      p->deflicker_histogram_source = DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE;
-      deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
-      break;
-    case DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL:
-    default:
-      p->deflicker_histogram_source = DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL;
-      free(g->deflicker_histogram);
-      g->deflicker_histogram = NULL;
-      break;
-  }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -865,7 +776,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
   g->modes = NULL;
-  g->deflicker_histogram_sources = NULL;
 
   g->deflicker_histogram = NULL;
 
@@ -933,35 +843,21 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *vbox_deflicker = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->deflicker_percentile = dt_bauhaus_slider_new_with_range(self, 0, 100, .01, p->deflicker_percentile, 3);
-  // FIXME: this needs a better tooltip!
-  g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text", _("percentile"), (char *)NULL);
-  dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
+  g->deflicker_percentile = dt_bauhaus_slider_new_with_range(self, 0, 100, 1.0, p->deflicker_percentile, 3);
   dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("percentile"));
+  dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
+  g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text",
+               _("where in the histogram to meter for deflicking. E.g. 50% is median"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_percentile), TRUE, TRUE, 0);
 
   g->deflicker_target_level
       = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .01, p->deflicker_target_level, 3);
-  g_object_set(G_OBJECT(g->deflicker_target_level), "tooltip-text", _("target level"), (char *)NULL);
-  dt_bauhaus_slider_set_format(g->deflicker_target_level, "%.2fEV");
   dt_bauhaus_widget_set_label(g->deflicker_target_level, NULL, _("target level"));
+  dt_bauhaus_slider_set_format(g->deflicker_target_level, "%.2fEV");
+  g_object_set(G_OBJECT(g->deflicker_target_level), "tooltip-text",
+               _("where to place the exposure level for processed pics, EV below overexposure."),
+               (char *)NULL);
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_target_level), TRUE, TRUE, 0);
-
-  g->deflicker_histogram_source = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->deflicker_histogram_source, NULL, _("histogram of"));
-
-  dt_bauhaus_combobox_add(g->deflicker_histogram_source, _("pre-processed image"));
-  g->deflicker_histogram_sources
-      = g_list_append(g->deflicker_histogram_sources, GUINT_TO_POINTER(DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL));
-
-  dt_bauhaus_combobox_add(g->deflicker_histogram_source, _("source raw data"));
-  g->deflicker_histogram_sources = g_list_append(g->deflicker_histogram_sources,
-                                                 GUINT_TO_POINTER(DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE));
-
-  dt_bauhaus_combobox_set_default(g->deflicker_histogram_source, DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL);
-  dt_bauhaus_combobox_set(g->deflicker_histogram_source,
-                          g_list_index(g->modes, GUINT_TO_POINTER(p->deflicker_histogram_source)));
-  gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_histogram_source), TRUE, TRUE, 0);
 
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkLabel *label = GTK_LABEL(gtk_label_new(_("computed EC: ")));
@@ -990,8 +886,6 @@ void gui_init(struct dt_iop_module_t *self)
                    self);
   g_signal_connect(G_OBJECT(g->deflicker_target_level), "value-changed",
                    G_CALLBACK(deflicker_params_callback), self);
-  g_signal_connect(G_OBJECT(g->deflicker_histogram_source), "value-changed",
-                   G_CALLBACK(deflicker_histogram_source_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
 
@@ -1014,7 +908,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
-  g_list_free(g->deflicker_histogram_sources);
   g_list_free(g->modes);
 
   dt_pthread_mutex_destroy(&g->lock);
