@@ -85,7 +85,7 @@ if(APPLE)
   set(DEFCONFIG_AUDIOPLAYER "afplay")
 endif(APPLE)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml )
-execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd)
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd.in ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd )
 
 
 if(USE_XMLLINT)
