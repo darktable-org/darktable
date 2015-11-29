@@ -65,47 +65,36 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static void fill_combo_box_entry(GtkComboBox **box, uint32_t count, GList **items, gboolean *multi)
+static void fill_combo_box_entry(GtkComboBox *box, uint32_t count, GList *items, gboolean *multi)
 {
-  GList *iter;
+  gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(box));
 
-  // FIXME: use gtk_combo_box_text_remove_all() in future (gtk 3.0)
-  // https://bugzilla.gnome.org/show_bug.cgi?id=324899
-  gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(*box))));
-
-  // FIXME: how to make a nice empty combo box without the append/remove?
   if(count == 0)
   {
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(*box), "");
-    gtk_combo_box_set_active(GTK_COMBO_BOX(*box), 0);
-    gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(*box), 0);
-
+    gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(box))), "");
     *multi = FALSE;
     return;
   }
 
   if(count > 1)
   {
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(*box),
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(box),
                                    _("<leave unchanged>")); // FIXME: should be italic!
-    gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(*box), GTK_SENSITIVITY_AUTO);
+    gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(box), GTK_SENSITIVITY_AUTO);
     *multi = TRUE;
   }
   else
   {
-    gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(*box), GTK_SENSITIVITY_OFF);
+    gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(box), GTK_SENSITIVITY_OFF);
     *multi = FALSE;
   }
-  if((iter = g_list_first(*items)) != NULL)
+  for(GList *iter = items; iter; iter = g_list_next(iter))
   {
-    do
-    {
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(*box), iter->data); // FIXME: dt segfaults when there
-                                                                            // are illegal characters in the
-                                                                            // string.
-    } while((iter = g_list_next(iter)) != NULL);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(box), iter->data); // FIXME: dt segfaults when there
+                                                                         // are illegal characters in the
+                                                                         // string.
   }
-  gtk_combo_box_set_active(GTK_COMBO_BOX(*box), 0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(box), 0);
 }
 
 static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
@@ -180,17 +169,17 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
   }
   sqlite3_finalize(stmt);
 
-  fill_combo_box_entry(&(d->title), title_count, &title, &(d->multi_title));
-  fill_combo_box_entry(&(d->description), description_count, &description, &(d->multi_description));
-  fill_combo_box_entry(&(d->rights), rights_count, &rights, &(d->multi_rights));
-  fill_combo_box_entry(&(d->creator), creator_count, &creator, &(d->multi_creator));
-  fill_combo_box_entry(&(d->publisher), publisher_count, &publisher, &(d->multi_publisher));
+  fill_combo_box_entry(d->title, title_count, title, &(d->multi_title));
+  fill_combo_box_entry(d->description, description_count, description, &(d->multi_description));
+  fill_combo_box_entry(d->rights, rights_count, rights, &(d->multi_rights));
+  fill_combo_box_entry(d->creator, creator_count, creator, &(d->multi_creator));
+  fill_combo_box_entry(d->publisher, publisher_count, publisher, &(d->multi_publisher));
 
-  g_list_free_full(g_list_first(title), g_free);
-  g_list_free_full(g_list_first(description), g_free);
-  g_list_free_full(g_list_first(creator), g_free);
-  g_list_free_full(g_list_first(publisher), g_free);
-  g_list_free_full(g_list_first(rights), g_free);
+  g_list_free_full(title, g_free);
+  g_list_free_full(description, g_free);
+  g_list_free_full(creator, g_free);
+  g_list_free_full(publisher, g_free);
+  g_list_free_full(rights, g_free);
 }
 
 
@@ -341,17 +330,17 @@ void gui_init(dt_lib_module_t *self)
     GtkComboBox **box;
   } entries[] = {
     // clang-format off
-    {_("title"), &d->title},
-    {_("description"), &d->description},
-    {_("creator"), &d->creator},
-    {_("publisher"), &d->publisher},
-    {_("rights"), &d->rights}
+    {N_("title"), &d->title},
+    {N_("description"), &d->description},
+    {N_("creator"), &d->creator},
+    {N_("publisher"), &d->publisher},
+    {N_("rights"), &d->rights}
     // clang-format on
   };
 
   for(line = 0; line < sizeof(entries) / sizeof(entries[0]); line++)
   {
-    label = gtk_label_new(entries[line].name);
+    label = gtk_label_new(_(entries[line].name));
     g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
 
     GtkWidget *combobox = gtk_combo_box_text_new_with_entry();
@@ -362,7 +351,7 @@ void gui_init(dt_lib_module_t *self)
     GtkWidget *entry = gtk_bin_get_child(GTK_BIN(combobox));
     dt_gui_key_accel_block_on_focus_connect(entry);
     completion = gtk_entry_completion_new();
-    gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->title)));
+    gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(combobox)));
     gtk_entry_completion_set_text_column(completion, 0);
     gtk_entry_completion_set_inline_completion(completion, TRUE);
     gtk_entry_set_completion(GTK_ENTRY(entry), completion);
