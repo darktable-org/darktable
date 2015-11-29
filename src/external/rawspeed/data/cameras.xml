@@ -133,9 +133,6 @@
 		</CFA>
 		<Crop x="48" y="6" width="0" height="-2"/>
 		<Sensor black="126" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2093285,1000000,1055975"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="46"/>
 		</BlackAreas>
@@ -853,7 +850,6 @@
 		<Sensor black="96" white="4095"/>
 		<Hints>
 			<Hint name="old_format" value=""/>
-			<Hint name="override_whitebalance" value="1003807,1000000,2468898"/>
 		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS-1D Mark II">
@@ -1025,9 +1021,6 @@
 		</CFA>
 		<Crop x="4" y="6" width="-52" height="-6"/>
 		<Sensor black="129" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2185173,1000000,1342573"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="3294" width="50"/>
 		</BlackAreas>
@@ -1080,9 +1073,6 @@
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-2"/>
 		<Sensor black="0" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="1757692,1000000,2071795"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="2326" width="50"/>
 			<Horizontal y="0" height="10"/>
@@ -1113,9 +1103,6 @@
 		</CFA>
 		<Crop x="12" y="6" width="-44" height="-2"/>
 		<Sensor black="0" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="1984870,1000000,1237501"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -1145,9 +1132,6 @@
 		</CFA>
 		<Crop x="44" y="12" width="-4" height="-4"/>
 		<Sensor black="128" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2340268,1000000,1351293"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -1368,9 +1352,6 @@
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-2"/>
 		<Sensor black="129" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2466639,1000000,1153626"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="2326" width="50"/>
 		</BlackAreas>
@@ -1385,9 +1366,6 @@
 		</CFA>
 		<Crop x="12" y="6" width="-44" height="-2"/>
 		<Sensor black="129" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2168080,1000000,1356259"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -1403,9 +1381,6 @@
 		</CFA>
 		<Crop x="12" y="6" width="-44" height="-2"/>
 		<Sensor black="129" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2143041,1000000,1136598"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -1421,9 +1396,6 @@
 		</CFA>
 		<Crop x="44" y="12" width="-4" height="-4"/>
 		<Sensor black="129" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2279613,1000000,1245660"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -1568,9 +1540,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="2000" height="1312"/>
 		<Sensor black="0" white="4095"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="960152,1000000,1041009"/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D1H">
 		<ID make="Nikon" model="D1H">Nikon D1H</ID>
@@ -7121,9 +7090,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4000"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="12740092,10000000,11964914"/>
-		</Hints>
 	</Camera>
 	<Camera make="Creo/Leaf" model="Leaf Aptus 22(LF3779     )/Hasselblad H1">
 		<ID make="Leaf" model="Aptus 22">Leaf Aptus 22</ID>
@@ -7599,7 +7565,6 @@
 			<Hint name="filesize" value="6573120"/>
 			<Hint name="full_width" value="2672"/>
 			<Hint name="full_height" value="1968"/>
-			<Hint name="override_whitebalance" value="1564987,1000000,1710746"/>
 		</Hints>
 		<BlackAreas>
 			<Vertical x="2632" width="40"/>
@@ -7629,7 +7594,6 @@
 			<Hint name="filesize" value="7710960"/>
 			<Hint name="full_width" value="2888"/>
 			<Hint name="full_height" value="2136"/>
-			<Hint name="override_whitebalance" value="1582762,1000000,1718605"/>
 		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="40"/>
@@ -7646,7 +7610,6 @@
 			<Hint name="filesize" value="9219600"/>
 			<Hint name="full_width" value="3152"/>
 			<Hint name="full_height" value="2340"/>
-			<Hint name="override_whitebalance" value="1568679,1000000,1602855"/>
 		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="30"/>
@@ -7676,7 +7639,6 @@
 			<Hint name="filesize" value="10341600"/>
 			<Hint name="full_width" value="3336"/>
 			<Hint name="full_height" value="2480"/>
-			<Hint name="override_whitebalance" value="1524730,1000000,2009988"/>
 		</Hints>
 		<BlackAreas>
 			<Vertical x="3306" width="30"/>
@@ -7693,7 +7655,6 @@
 			<Hint name="filesize" value="10383120"/>
 			<Hint name="full_width" value="3344"/>
 			<Hint name="full_height" value="2484"/>
-			<Hint name="override_whitebalance" value="1593248,957204,1460876"/>
 		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="30"/>
@@ -7710,7 +7671,6 @@
 			<Hint name="filesize" value="12945240"/>
 			<Hint name="full_width" value="3736"/>
 			<Hint name="full_height" value="2772"/>
-			<Hint name="override_whitebalance" value="1838080,1000000,1556674"/>
 		</Hints>
 		<BlackAreas>
 			<Vertical x="3686" width="50"/>
@@ -7727,7 +7687,6 @@
 			<Hint name="filesize" value="15636240"/>
 			<Hint name="full_width" value="4104"/>
 			<Hint name="full_height" value="3048"/>
-			<Hint name="override_whitebalance" value="2110416,1000000,1770211"/>
 		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="45"/>
@@ -7744,7 +7703,6 @@
 			<Hint name="filesize" value="15467760"/>
 			<Hint name="full_width" value="3720"/>
 			<Hint name="full_height" value="2772"/>
-			<Hint name="override_whitebalance" value="1614148,979180,2115417"/>
 		</Hints>
 		<BlackAreas>
 			<Vertical x="3690" width="30"/>
