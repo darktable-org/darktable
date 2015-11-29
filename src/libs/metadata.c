@@ -346,7 +346,7 @@ void gui_init(dt_lib_module_t *self)
     GtkWidget *combobox = gtk_combo_box_text_new_with_entry();
     *(entries[line].box) = GTK_COMBO_BOX(combobox);
 
-    // gtk_widget_set_hexpand(combobox, TRUE);
+    gtk_widget_set_hexpand(combobox, TRUE);
 
     GtkWidget *entry = gtk_bin_get_child(GTK_BIN(combobox));
     dt_gui_key_accel_block_on_focus_connect(entry);
