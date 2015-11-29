@@ -262,6 +262,22 @@ static inline void *dt_introspection_get_child(dt_introspection_field_t *self, v
   return NULL;
 }
 
+/** helper function to get the symbolic name of an enum value
+ *
+ * @param self field description of the enum
+ * @param value the value that should be looked up
+ * @return the pointer to the name string, or %NULL if not found
+ **/
+static inline const char *dt_introspection_get_enum_name(dt_introspection_field_t *self, int value)
+{
+  if(!(self && self->header.type == DT_INTROSPECTION_TYPE_ENUM)) return NULL;
+
+  for(dt_introspection_type_enum_tuple_t *iter = self->Enum.values; iter->name; iter++)
+    if(iter->value == value)
+      return iter->name;
+
+  return NULL;
+}
 
 #endif // __INTROSPECTION_H__
 
