@@ -847,7 +847,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("percentile"));
   dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
   g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text",
-               _("Where in the histogram to meter for deflicking. E.g. 50% is median"), (char *)NULL);
+               _("where in the histogram to meter for deflicking. E.g. 50% is median"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_percentile), TRUE, TRUE, 0);
 
   g->deflicker_target_level
@@ -855,7 +855,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->deflicker_target_level, NULL, _("target level"));
   dt_bauhaus_slider_set_format(g->deflicker_target_level, "%.2fEV");
   g_object_set(G_OBJECT(g->deflicker_target_level), "tooltip-text",
-               _("Where to place the exposure level for processed pics, EV below overexposure."),
+               _("where to place the exposure level for processed pics, EV below overexposure."),
                (char *)NULL);
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_target_level), TRUE, TRUE, 0);
 
