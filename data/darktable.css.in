@@ -17,7 +17,7 @@
   background-color: @bg_color;
   border-color: #111111;
   text-shadow:none;
-  margin: 0;
+/*  margin: 0; */ /* this makes scroll bars super wide. */
   padding: 0;
   background-image: none;
 }
@@ -428,7 +428,7 @@ GtkDialog *
   outline-width:0;
   border-image:none;
   padding:0;
-  margin:0;
+/*  margin: 0; */ /* this makes scroll bars super wide. */
   border:0;
   background-color: @selected_bg_color;
 /*  background-image: none; */
