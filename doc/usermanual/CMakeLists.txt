@@ -9,8 +9,10 @@ message(STATUS ${IMAGES_PATHS})
 
 if(BUILD_USERMANUAL)
 	add_custom_target(usermanual ALL)
+	add_custom_target(lua-api ALL)
 else(BUILD_USERMANUAL)
 	add_custom_target(usermanual)
+	add_custom_target(lua-api)
 endif(BUILD_USERMANUAL)
 
 set(can_build_usermanual ON)
@@ -286,9 +288,137 @@ if(can_build_usermanual)
 			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
 		endforeach(language)
 	endif()
+#
+# LUA API GENERATION
+#
 
+	#
+	# draft pdf API
+	#
+	add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf
+		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.fo xsl/darktable_fo.xsl  ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
+		COMMAND fop -c fopconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.fo -pdf ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
+		COMMENT "Building Lua API" VERBATIM
+	)
+	add_custom_target(darktable-lua-api DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf)
+	add_dependencies(darktable-lua-api target_media_images )
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf DESTINATION ./share/doc/darktable/lua-api OPTIONAL)
+
+	#
+	# draft chunked html api for web
+	#
+	add_custom_command(
+		OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/usermanual.css
+		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/usermanual.css ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/usermanual.css
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/usermanual.css
+		COMMENT "Updating usermanual.css" VERBATIM
+	)
+
+        if (Saxon_FOUND)
+	    add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/index.html
+                COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml xsl/darktable_html_single_ext.xsl chunker.output.encoding=UTF-8 base.dir=${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api -name *.html -exec sed -n -i "1h;1!H;\${;g;s/${binary_path}\\/media\\///g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<body[^>]*>/<body class='usermanual' onLoad='parent.onContentLoad(this);'>/g;p;}" {} \;
+		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/usermanual.css
+		COMMENT "Building html Lua API" VERBATIM
+	)
+        else (Saxon_FOUND)
+            add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/index.html
+                COMMAND ${XSLT_XSLTPROC_EXECUTABLE} --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/ xsl/darktable_html_single.xsl ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api -name *.html -exec sed -i "s/<body[^>]*>/<body class='usermanual' onLoad='parent.onContentLoad(this);'>/g" {} \;
+		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/usermanual.css
+		COMMENT "Building html Lua API" VERBATIM
+	)
+        endif (Saxon_FOUND)
+	add_custom_target(darktable-lua-api-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/index.html )
+	add_dependencies(darktable-lua-api-html target_media_images)
+	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api DESTINATION ./share/doc/darktable/lua-api OPTIONAL)
+
+	#
+	# draft chunked usermanual for wordpress
+	#
+
+        if (Saxon_FOUND)
+            add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api/index.html.php
+                COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml xsl/darktable_html_ext.xsl chunker.output.encoding=UTF-8 base.dir=${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api/
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -n -i "1h;1!H;\${;g;s/${binary_path}\\/media\\///g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<html>.*<title>/<?php define('WP_USE_THEMES', false);require('\\.\\.\\/wp-config\\.php'); add_filter('wp_title', 'set_title_page'); function set_title_page(){echo '/g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<\\/title>.*<\\/head>/ | user manual | ';}?>/g;p;}" {} \;
+
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<body[^>]*>/<?php get_header(); ?><div id=\"primary\"><div id=\"content\" role=\"main\"><div class=\"usermanual\">/g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<\\/body><\\/html>/<\\/div><\\/div><\\/div><?php get_footer(); ?>/g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -n -i "1h;1!H;\${;g;s|\"\\([^\":]*\\.html\\)|\"\\1.php|g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec mv {} {}.php \;
+		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api/
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
+		COMMENT "Building php Lua API" VERBATIM
+	)
+        else (Saxon_FOUND)
+            add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api/index.html.php
+                COMMAND ${XSLT_XSLTPROC_EXECUTABLE} --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api/ xsl/darktable_html.xsl ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -i "s/<html>.*<title>/<?php define('WP_USE_THEMES', false);require('\\.\\.\\/wp-config\\.php'); add_filter('wp_title', 'set_title_page'); function set_title_page(){echo '/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -i "s/<\\/title>.*<\\/head>/ | user manual | ';}?>/g" {} \;
+
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -i "s/<body[^>]*>/<?php get_header(); ?><div id=\"primary\"><div id=\"content\" role=\"main\"><div class=\"usermanual\">/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -i "s/<\\/body><\\/html>/<\\/div><\\/div><\\/div><?php get_footer(); ?>/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec sed -i "s|\"\\([^\":]*\\.html\\)|\"\\1.php|g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api -name *.html -exec mv {} {}.php \;
+		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api/
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
+		COMMENT "Building php Lua API" VERBATIM
+	)
+        endif (Saxon_FOUND)
+	add_custom_target(darktable-lua-api-wordpress DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api/index.html.php )
+	add_dependencies(darktable-lua-api-wordpress target_media_images)
+	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api DESTINATION ./share/doc/darktable/lua-api OPTIONAL)
+
+
+	#
+	# draft translated API
+	#
+	if(NOT ${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
+		# localized draft usermanuals
+		file(STRINGS "po/LINGUAS" LANGUAGES)
+		foreach(language ${LANGUAGES})
+			set(pofile "po/${language}.po")
+			set(pdffile "${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api-${language}.pdf")
+			set(fofile "${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api-${language}.fo")
+			set(xmlfile "${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml")
+			set(xmllangfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_lua_api-${language}.xml")
+			set(xmllangtmp "${CMAKE_CURRENT_BINARY_DIR}/darktable_lua_api-${language}.tmp")
+			add_custom_command(
+				OUTPUT ${pdffile}
+				COMMAND xml2po -e -p ${pofile} -l ${language} ${xmlfile} > ${xmllangtmp}
+		                COMMAND cat ${xmllangtmp} | sed "s/fileref=\"\\([^>]*\\)\\(\\/images\\/\\)\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1\\/\\3.jpg\"/g ; s/fileref=\"images\\/\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1.jpg\"/g" > ${xmllangfile}
+				COMMAND xsltproc --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
+				COMMAND fop -c fopconfig.xml ${fofile} -pdf ${pdffile}
+				DEPENDS ${pofile} ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
+				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+				COMMENT "Building ${language} API" VERBATIM
+			)
+			add_custom_target(darktable-lua-api-${language} DEPENDS ${pdffile})
+			add_dependencies(lua-api darktable-lua-api-${language})
+			add_dependencies(darktable-lua-api-${language} target_media_images darktable_profile_xml )
+			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/lua-api OPTIONAL)
+		endforeach(language)
+	endif()
 else(can_build_usermanual)
-	message("Can NOT build usermanual")
+	message("Can NOT build Lua API")
 endif(can_build_usermanual)
 
 add_subdirectory(po)

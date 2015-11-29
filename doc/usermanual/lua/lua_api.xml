@@ -1,9 +1,9 @@
-<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
   <!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
   %darktable_dtd;
   ]>
-  <section status="draft" id="lua_api"><title>Lua API</title>
+  <article status="draft" id="lua_api"><title>Lua API</title>
   <indexterm>
   <primary>Lua API</primary>
   </indexterm>
@@ -9027,4 +9027,4 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-</section>
+</article>
