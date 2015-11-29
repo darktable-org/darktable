@@ -1273,7 +1273,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), g->colorpick, label, GTK_POS_RIGHT, 2, 1);
 
   // Text font
-  label = dtgtk_reset_label_new(_("font"), self, &g->fontsel, 3 * sizeof(float));
+  label = dtgtk_reset_label_new(_("font"), self, &g->fontsel, 0);
   str = dt_conf_get_string("plugins/darkroom/watermark/font");
   g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
   g_object_set(G_OBJECT(g->fontsel), "tooltip-text",
