@@ -748,8 +748,8 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent, gc
   {
     // Leaf node, update the text
 
-    gchar *name = gtk_accelerator_get_label(key.accel_key, key.accel_mods);
     gtk_accel_map_lookup_entry(path, &key);
+    gchar *name = gtk_accelerator_get_label(key.accel_key, key.accel_mods);
     gtk_tree_store_set(GTK_TREE_STORE(model), parent, A_BINDING_COLUMN, name, -1);
     g_free(name);
   }
@@ -868,8 +868,8 @@ static void tree_selection_changed(GtkTreeSelection *selection, gpointer data)
   gtk_tree_model_get_iter(model, &iter, darktable.control->accel_remap_path);
 
   // Restoring the A_BINDING_COLUMN text
-  gchar *name = gtk_accelerator_get_label(key.accel_key, key.accel_mods);
   gtk_accel_map_lookup_entry(darktable.control->accel_remap_str, &key);
+  gchar *name = gtk_accelerator_get_label(key.accel_key, key.accel_mods);
   gtk_tree_store_set(GTK_TREE_STORE(model), &iter, A_BINDING_COLUMN, name, -1);
   g_free(name);
 
