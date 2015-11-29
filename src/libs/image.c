@@ -370,7 +370,7 @@ static int lua_register_action(lua_State *L)
   data->key = strdup(key);
   data->self = self;
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
-  gtk_widget_show_all(self->widget);
+  gtk_widget_show_all(button);
   return 0;
 }
 
