@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE dtconfiglist SYSTEM "file://${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd">
+<!DOCTYPE dtconfiglist SYSTEM "darktableconfig.dtd">
 <dtconfiglist>
   <dtconfig>
     <name>bauhaus/scale</name>
