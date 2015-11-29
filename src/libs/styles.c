@@ -279,6 +279,13 @@ static gboolean duplicate_callback(GtkEntry *entry, gpointer user_data)
   return FALSE;
 }
 
+
+static void _styles_changed_callback(gpointer instance, gpointer user_data)
+{
+  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+  _gui_styles_update_view(d);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)malloc(sizeof(dt_lib_styles_t));
@@ -380,11 +387,14 @@ void gui_init(dt_lib_module_t *self)
 
   /* update filtered list */
   _gui_styles_update_view(d);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_STYLE_CHANGED, G_CALLBACK(_styles_changed_callback), d);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_styles_changed_callback), self);
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   free(self->data);
   self->data = NULL;

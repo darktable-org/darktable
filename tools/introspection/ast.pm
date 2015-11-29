@@ -434,6 +434,7 @@ sub set_signed
 
 sub get_type
 {
+  return "UShort" if($self->{unsigned});
   return "Short";
 }
 

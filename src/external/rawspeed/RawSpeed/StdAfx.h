@@ -80,6 +80,10 @@
 #endif
 #endif
 
+#ifdef _MSC_VER
+#define __attribute__(p)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -180,7 +180,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
     goto icc_end;
 
 icc_error:
-    dt_control_log(_("the selected output profile doesn't work well with exr"));
+    dt_control_log("%s", _("the selected output profile doesn't work well with exr"));
     fprintf(stderr, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong results when opening the image\n");
   }
 icc_end:

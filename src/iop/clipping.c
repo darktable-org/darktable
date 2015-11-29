@@ -1909,6 +1909,7 @@ void gui_init(struct dt_iop_module_t *self)
                                          { _("cinemascope"), 235, 100 },
                                          { _("21:9"), 237, 100 },
                                          { _("anamorphic"), 239, 100 },
+                                         { _("3:1, panorama"), 300, 100 },
   };
 
   const int aspects_count = sizeof(aspects) / sizeof(dt_iop_clipping_aspect_t);

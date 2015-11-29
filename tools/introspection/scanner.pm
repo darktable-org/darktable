@@ -24,7 +24,7 @@ our @ISA = 'Exporter';
 our @EXPORT = qw( @token @comments
                   $P_LINENO $P_FILENAME $P_TYPE $P_VALUE
                   $T_NONE $T_IDENT $T_KEYWORD $T_INTEGER_LITERAL $T_OPERATOR
-                  $K_UNSIGNED $K_SIGNED $K_GBOOLEAN $K_CHAR $K_SHORT $K_INT $K_UINT $K_LONG $K_FLOAT $K_DOUBLE $K_TYPEDEF $K_STRUCT $K_UNION $K_CONST $K_VOLATILE $K_STATIC $K_ENUM $K_VOID $K_DT_MODULE_INTROSPECTION
+                  $K_UNSIGNED $K_SIGNED $K_GBOOLEAN $K_CHAR $K_SHORT $K_USHORT $K_INT $K_UINT $K_LONG $K_FLOAT $K_DOUBLE $K_TYPEDEF $K_STRUCT $K_UNION $K_CONST $K_VOLATILE $K_STATIC $K_ENUM $K_VOID $K_DT_MODULE_INTROSPECTION
                   $O_ASTERISK $O_AMPERSAND $O_SEMICOLON $O_COMMA $O_COLON $O_SLASH $O_LEFTROUND $O_RIGHTROUND $O_LEFTCURLY $O_RIGHTCURLY $O_LEFTSQUARE $O_RIGHTSQUARE $O_EQUAL
                   read_file get_token look_ahead token2string
                   isid isinteger issemicolon istypedef isstruct isunion isenum isleftcurly isrightcurly isleftround isrightround isleftsquare isrightsquare 
@@ -67,6 +67,7 @@ our $K_SIGNED = $i++; push(@K_readable, 'signed');
 our $K_GBOOLEAN = $i++; push(@K_readable, 'gboolean');
 our $K_CHAR = $i++; push(@K_readable, 'char');
 our $K_SHORT = $i++; push(@K_readable, 'short');
+our $K_USHORT = $i++; push(@K_readable, 'ushort');
 our $K_INT = $i++; push(@K_readable, 'int');
 our $K_UINT = $i++; push(@K_readable, 'uint');
 our $K_LONG = $i++; push(@K_readable, 'long');
@@ -88,6 +89,8 @@ my  @keywords = (
       ['char', $K_CHAR],
       ['gchar', $K_CHAR],
       ['short', $K_SHORT],
+      ['int16_t', $K_SHORT],
+      ['uint16_t', $K_USHORT],
       ['int', $K_INT],
       ['gint', $K_INT],
       ['uint', $K_UINT],

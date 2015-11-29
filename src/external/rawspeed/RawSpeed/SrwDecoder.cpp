@@ -458,7 +458,6 @@ void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {
     ThrowRDE("SRW Support: Make name not found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
-
   string mode = getMode();
   if (meta->hasCamera(make, model, mode))
     this->checkCameraSupported(meta, make, model, getMode());

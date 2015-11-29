@@ -592,21 +592,6 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
       }
     }
   }
-
-  // Allow overriding the whitebalance. Values are R,G,B multipliers
-  // A hint could be:
-  // <Hint name="override_whitebalance" value="10,20,30"/>
-  if (cam->hints.find(string("override_whitebalance")) != cam->hints.end()) {
-    string rgb = cam->hints.find(string("override_whitebalance"))->second;
-    vector<string> v = split_string(rgb, ',');
-    if (v.size() != 3) {
-      mRaw->setError("Expected 3 values '10,20,30' as values for override_whitebalance hint.");
-    } else {
-      for (int i = 0; i < 3; i++) {
-        mRaw->metadata.wbCoeffs[i] = (float) atoi(v[i].c_str());
-      }
-    }
-  }
 }
 
 

@@ -504,9 +504,9 @@ void LJpegDecompressor::createBigTable(HuffmanTable *htbl) {
 
     if (rv == 16) {
       if (mDNGCompatible)
-        htbl->bigTable[i] = (-32768 << 8) | (16 + l);
+        htbl->bigTable[i] = (-(32768 << 8)) | (16 + l);
       else
-        htbl->bigTable[i] = (-32768 << 8) | l;
+        htbl->bigTable[i] = (-(32768 << 8)) | l;
       continue;
     }
 
