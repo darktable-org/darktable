@@ -89,7 +89,7 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRE
 
 if(USE_XMLLINT)
 	execute_process(
-		COMMAND ${Xmllint_BIN} --path ${CMAKE_CURRENT_SOURCE_DIR} --valid ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
+		COMMAND ${Xmllint_BIN} --valid ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
 		OUTPUT_QUIET ERROR_QUIET
 		RESULT_VARIABLE Xmllint_RES
