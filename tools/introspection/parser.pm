@@ -134,6 +134,7 @@ sub parse_type
     elsif($token[$P_VALUE] == $K_GBOOLEAN) { $ast = ast_type_gboolean_node->new(\@token); advance_token(); }
     elsif($token[$P_VALUE] == $K_CHAR) { $ast = ast_type_char_node->new(\@token); advance_token(); }
     elsif($token[$P_VALUE] == $K_SHORT) { $ast = ast_type_short_node->new(\@token); advance_token(); }
+    elsif($token[$P_VALUE] == $K_USHORT) { $ast = ast_type_short_node->new(\@token); $ast->set_unsigned(); advance_token(); }
     elsif($token[$P_VALUE] == $K_INT) { $ast = ast_type_int_node->new(\@token); advance_token(); }
     elsif($token[$P_VALUE] == $K_UINT) { $ast = ast_type_int_node->new(\@token); $ast->set_unsigned(); advance_token(); }
     elsif($token[$P_VALUE] == $K_LONG) { $ast = ast_type_long_node->new(\@token); advance_token(); }
