@@ -236,6 +236,9 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
   // Before switching views, restore accelerators if disabled
   if(!darktable.control->key_accelerators_on) dt_control_key_accelerators_on(darktable.control);
 
+  // reset the cursor to the default one
+  dt_control_change_cursor(GDK_LEFT_PTR);
+
   // destroy old module list
   int error = 0;
 
