@@ -1276,6 +1276,9 @@ void gui_init(struct dt_iop_module_t *self)
   label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font));
   str = dt_conf_get_string("plugins/darkroom/watermark/font");
   g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
+  gtk_label_set_ellipsize(GTK_LABEL(childs->data), PANGO_ELLIPSIZE_MIDDLE);
+  g_list_free(childs);
   g_object_set(G_OBJECT(g->fontsel), "tooltip-text",
                _("text font, tags:\n$(WATERMARK_FONT_FAMILY)\n$(WATERMARK_FONT_STYLE)\n$(WATERMARK_FONT_WEIGHT)"),
                (char *)NULL);
