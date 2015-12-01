@@ -144,10 +144,8 @@ static void _update_picker_output(dt_lib_module_t *self)
 
     // always adjust picked color:
     int m = dt_conf_get_int("ui_last/colorpicker_mode");
-    float fallback_col[] = { 0, 0, 0 };
-    uint8_t fallback_rgb[] = { 0, 0, 0 };
-    uint8_t *rgb = fallback_rgb;
-    float *lab = fallback_col;
+    uint8_t *rgb;
+    float *lab;
     switch(m)
     {
       case 0: // mean

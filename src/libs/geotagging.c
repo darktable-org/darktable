@@ -129,7 +129,7 @@ static gboolean _lib_geotagging_parse_offset(const char *str, long int *seconds)
   {
     numbers[fields++] = 10 * (str[0] - '0') + (str[1] - '0');
     str += 2;
-    len -= 2;
+//     len -= 2;
   }
 
   // end

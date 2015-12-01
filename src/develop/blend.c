@@ -2780,8 +2780,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
   const int downsampled = dt_dev_pixelpipe_uses_downsampled_input(piece->pipe);
-  int kernel_mask = darktable.blendop->kernel_blendop_mask_Lab;
-  int kernel = darktable.blendop->kernel_blendop_Lab;
+  int kernel_mask;
+  int kernel;
   int kernel_set_mask = darktable.blendop->kernel_blendop_set_mask;
 
   switch(cst)

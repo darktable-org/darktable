@@ -583,7 +583,6 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   {
     GList *stls;
 
-    GList *modules = dev.iop;
     dt_iop_module_t *m = NULL;
 
     if((stls = dt_styles_get_item_list(format_params->style, TRUE, -1)) == 0)
@@ -611,7 +610,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       dt_style_item_t *s = (dt_style_item_t *)stls->data;
       gboolean module_found = FALSE;
 
-      modules = dev.iop;
+      GList *modules = dev.iop;
       while(modules)
       {
         m = (dt_iop_module_t *)modules->data;
