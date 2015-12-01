@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2015-11-29 21:49+0100\n"
-"PO-Revision-Date: 2015-11-29 22:52+0100\n"
+"PO-Revision-Date: 2015-11-30 17:31+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -3919,11 +3919,11 @@ msgstr "valeur de la sensibilité ISO déduite des données EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3008(para)
 msgid "the aperture value, as derived from EXIF data"
-msgstr "valeur de l’ouverture déduite des données EXIF ."
+msgstr "valeur de l’ouverture déduite des données EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3018(para)
 msgid "the filename of the physical input image"
-msgstr "nom de fichier de l’image physique en entrée.modèle"
+msgstr "nom de fichier de l’image physique en entrée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2838(para)
 msgid ""
