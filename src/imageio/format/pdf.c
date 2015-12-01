@@ -179,7 +179,12 @@ void init(dt_imageio_module_format_t *self)
   lua_pushcfunction(L, orientation_member);
   dt_lua_type_register_type(L, self->parameter_lua_type, "orientation");
 }
-#endif
+#else // USE_LUA
+void init(dt_imageio_module_format_t *self)
+{
+  // we need an empty init, even when compiled without Lua
+}
+#endif // USE_LUA
 
 void cleanup(dt_imageio_module_format_t *self)
 {
