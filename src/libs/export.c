@@ -1031,7 +1031,7 @@ void *get_params(dt_lib_module_t *self, int *size)
     g_free(iccfilename);
     iccfilename = NULL;
   }
-  if(!iccfilename) iccfilename = (char *)calloc(1, sizeof(char));
+  if(!iccfilename) iccfilename = g_strdup("");
 
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
