@@ -9812,7 +9812,7 @@ msgstr ""
 "du kör 32-bitars darktable.\n"
 "32-bitars darktable har extremt begränsat virtuellt minne.\n"
 "vi har fått ett stort antal felrapporter som visar på sporadiska problem och krascher med 32-bitars darktable.\n"
-"vi rekommenderar starkt att du byter till 64-bitars darktable."
+"vi rekommenderar starkt att du byter till 64-bitars darktable.\n"
 
 #~ msgctxt "accel"
 #~ msgid "histogram source"
