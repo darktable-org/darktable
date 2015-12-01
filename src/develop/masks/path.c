@@ -699,7 +699,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       if(darktable.unmuted & DT_DEBUG_PERF)
         dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n", form->name,
                  dt_get_wtime() - start2);
-      start2 = dt_get_wtime();
+//       start2 = dt_get_wtime();
       return 1;
     }
   }

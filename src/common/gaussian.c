@@ -84,9 +84,11 @@ size_t dt_gaussian_memory_use(const int width,    // width of input image
                               const int height,   // height of input image
                               const int channels) // channels per pixel
 {
-  size_t mem_use = (size_t)width * height * channels * sizeof(float);
+  size_t mem_use;
 #ifdef HAVE_OPENCL
   mem_use = (size_t)(width + BLOCKSIZE) * (height + BLOCKSIZE) * channels * sizeof(float) * 2;
+#else
+  mem_use = (size_t)width * height * channels * sizeof(float);
 #endif
   return mem_use;
 }
@@ -95,9 +97,11 @@ size_t dt_gaussian_singlebuffer_size(const int width,    // width of input image
                                      const int height,   // height of input image
                                      const int channels) // channels per pixel
 {
-  size_t mem_use = (size_t)width * height * channels * sizeof(float);
+  size_t mem_use;
 #ifdef HAVE_OPENCL
   mem_use = (size_t)(width + BLOCKSIZE) * (height + BLOCKSIZE) * channels * sizeof(float);
+#else
+  mem_use = (size_t)width * height * channels * sizeof(float);
 #endif
   return mem_use;
 }

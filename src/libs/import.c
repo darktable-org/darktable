@@ -700,8 +700,6 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   }
   if(no_preview_fallback || !have_preview)
   {
-    guint8 *image_buffer = NULL;
-
     /* load the dt logo as a brackground */
     char filename[PATH_MAX] = { 0 };
     char datadir[PATH_MAX] = { 0 };
@@ -731,7 +729,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
             final_height = dimension.height * factor * darktable.gui->ppd;
       int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
 
-      image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+      guint8 *image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
       surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
                                                        final_height, stride);
       if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
@@ -748,6 +746,8 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
         cairo_surface_flush(surface);
         pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, final_width / darktable.gui->ppd,
                                              final_height / darktable.gui->ppd);
+        cairo_surface_destroy(surface);
+        free(image_buffer);
       }
       g_object_unref(svg);
     }

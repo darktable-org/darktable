@@ -1584,7 +1584,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(double);
 
   const int32_t alignment = *(int32_t *)buf;
-  buf += sizeof(int32_t);
+//   buf += sizeof(int32_t);
 
   // ensure that the size is correct
   if(size != printer_len + paper_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double))

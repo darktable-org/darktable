@@ -1210,57 +1210,63 @@ int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
     sqlite3_finalize(stmt);
   }
 
-  sqlite3_stmt *stmt;
-  gchar *stmt_string = NULL;
   /* How many images to preload in advance. */
   int preload_num = dt_conf_get_int("plugins/lighttable/preview/full_size_preload_count");
   preload_num = CLAMPS(preload_num, 0, 99999);
-  stmt_string = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
-                                (sel_img_count <= 1) ?
-                                  /* We want to operate on the currently collected images, so there's no need to match against the selection */
-                                  "" :
-                                  /* Limit the matches to the current selection */
-                                  "INNER JOIN selected_images AS sel ON col.imgid = sel.imgid",
-                                (offset >= 0) ? ">" : "<",
-                                lib->full_preview_rowid,
-                                /* Direction of our navigation -- when showing for the first time, i.e. when offset == 0, assume forward navigation */
-                                (offset >= 0) ? "ASC" : "DESC",
-                                preload_num);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
-
-  /* Walk through the "next" images, activate preload and find out where to go if moving */
-  int preload_stack[preload_num];
-  for(int i = 0; i < preload_num; ++i)
+  if(preload_num > 0)
   {
-    preload_stack[i] = -1;
-  }
-  int count = 0;
+    sqlite3_stmt *stmt;
+    gchar *stmt_string = NULL;
+    stmt_string = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s "
+                                  "WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
+                                  (sel_img_count <= 1) ?
+                                    /* We want to operate on the currently collected images,
+                                     * so there's no need to match against the selection */
+                                    "" :
+                                    /* Limit the matches to the current selection */
+                                    "INNER JOIN selected_images AS sel ON col.imgid = sel.imgid",
+                                  (offset >= 0) ? ">" : "<",
+                                  lib->full_preview_rowid,
+                                  /* Direction of our navigation -- when showing for the first time,
+                                   * i.e. when offset == 0, assume forward navigation */
+                                  (offset >= 0) ? "ASC" : "DESC",
+                                  preload_num);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
 
-  while (sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    /* Check if we're about to move */
-    if(count == 0 && offset != 0)
+    /* Walk through the "next" images, activate preload and find out where to go if moving */
+    int preload_stack[preload_num];
+    for(int i = 0; i < preload_num; ++i)
     {
-      /* We're moving, so let's update the "next image" bits */
-      lib->full_preview_id = sqlite3_column_int(stmt, 0);
-      lib->full_preview_rowid = sqlite3_column_int(stmt, 1);
-      dt_control_set_mouse_over_id(lib->full_preview_id);
+      preload_stack[i] = -1;
     }
-    /* Store the image details for preloading, see below. */
-    preload_stack[count] = sqlite3_column_int(stmt, 0);
-    ++count;
-  }
-  g_free(stmt_string);
-  sqlite3_finalize(stmt);
+    int count = 0;
 
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
-  /* Preload these images.
-   * The job queue is not a queue, but a stack, so we have to do it backwards.
-   * Simply swapping DESC and ASC in the SQL won't help because we rely on the LIMIT clause, and
-   * that LIMIT has to work with the "correct" sort order. One could use a subquery, but I don't
-   * think that would be terribly elegant, either. */
-  while(--count >= 0 && preload_stack[count] != -1)
-    dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      /* Check if we're about to move */
+      if(count == 0 && offset != 0)
+      {
+        /* We're moving, so let's update the "next image" bits */
+        lib->full_preview_id = sqlite3_column_int(stmt, 0);
+        lib->full_preview_rowid = sqlite3_column_int(stmt, 1);
+        dt_control_set_mouse_over_id(lib->full_preview_id);
+      }
+      /* Store the image details for preloading, see below. */
+      preload_stack[count] = sqlite3_column_int(stmt, 0);
+      ++count;
+    }
+    g_free(stmt_string);
+    sqlite3_finalize(stmt);
+
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
+    /* Preload these images.
+    * The job queue is not a queue, but a stack, so we have to do it backwards.
+    * Simply swapping DESC and ASC in the SQL won't help because we rely on the LIMIT clause, and
+    * that LIMIT has to work with the "correct" sort order. One could use a subquery, but I don't
+    * think that would be terribly elegant, either. */
+    while(--count >= 0 && preload_stack[count] != -1)
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
+  }
 
   lib->image_over = DT_VIEW_DESERT;
   cairo_set_source_rgb(cr, .1, .1, .1);

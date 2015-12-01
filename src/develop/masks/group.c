@@ -315,7 +315,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
         _inverse_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
         if(darktable.unmuted & DT_DEBUG_PERF)
           dt_print(DT_DEBUG_MASKS, "[masks %s] inverse took %0.04f sec\n", sel->name, dt_get_wtime() - start2);
-        start2 = dt_get_wtime();
+//         start2 = dt_get_wtime();
       }
       op[pos] = fpt->opacity;
       states[pos] = fpt->state;
@@ -423,7 +423,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     free(bufs[i]);
     if(darktable.unmuted & DT_DEBUG_PERF)
       dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", i, dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
+//     start2 = dt_get_wtime();
   }
 
   return 1;

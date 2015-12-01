@@ -101,11 +101,10 @@ static gboolean on_match_func(GtkEntryCompletion *completion, const gchar *key, 
 
   GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
   gint cur_pos = gtk_editable_get_position(e); /* returns 1..* */
-  gint p = cur_pos;
   gint var_start;
   gboolean var_present = FALSE;
 
-  for(p = cur_pos; p >= 0; p--)
+  for(gint p = cur_pos; p >= 0; p--)
   {
     gchar *ss = gtk_editable_get_chars(e, p, cur_pos);
     if(strncmp(ss, "$(", 2) == 0)

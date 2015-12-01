@@ -133,8 +133,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     float *inp = ((float *)ivoid) + ch * k;
     const float L = inp[0] * scale;
     if(L > data->threshold) blurlightness[k] = L;
-
-    inp += ch;
   }
 
 

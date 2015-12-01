@@ -1056,7 +1056,7 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
   float *scratchpad = scratchreq ? (float *)blob : NULL;
   blob = (char *)blob + scratchreq;
   int *meta = metareq ? (int *)blob : NULL;
-  blob = (char *)blob + metareq;
+//   blob = (char *)blob + metareq;
 
   /* setting this as a const should help the compilers trim all unnecessary
    * codepaths */
@@ -1323,8 +1323,8 @@ void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
     }
 
     // Progress in vertical context
-    viidx += vl;
-    vkidx += vl;
+//     viidx += vl;
+//     vkidx += vl;
   }
 
   _mm_sfence();
