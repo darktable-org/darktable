@@ -351,6 +351,12 @@ void cleanup(dt_view_t *self)
   {
     g_object_unref(G_OBJECT(lib->pin));
     g_object_unref(G_OBJECT(lib->osd));
+    osm_gps_map_image_remove_all(lib->map);
+    if(lib->images)
+    {
+      g_slist_free_full(lib->images, g_free);
+      lib->images = NULL;
+    }
     // FIXME: it would be nice to cleanly destroy the object, but we are doing this inside expose() so
     // removing the widget can cause segfaults.
     //     g_object_unref(G_OBJECT(lib->map));
