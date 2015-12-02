@@ -217,6 +217,7 @@
 			<Alias id="Digital Rebel XT">Canon EOS DIGITAL REBEL XT</Alias>
 			<Alias id="Kiss Digital N">Canon EOS Kiss Digital N</Alias>
 			<Alias id="EOS 350D">Canon EOS 350D</Alias>
+			<Alias id="EOS 350D">Canon EOS 350D Digital</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 40D" decoder_version="2">
