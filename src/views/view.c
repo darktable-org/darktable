@@ -927,7 +927,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
       if(rgbbuf)
       {
-        gboolean do_copy = TRUE;
+        cmsHTRANSFORM transform = NULL;
 
         if(dt_conf_get_bool("cache_color_managed"))
         {
@@ -937,32 +937,39 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           if(buf.color_space == DT_COLORSPACE_SRGB &&
              darktable.color_profiles->transform_srgb_to_display)
           {
-            cmsDoTransform(darktable.color_profiles->transform_srgb_to_display,
-                           buf.buf, rgbbuf, buf.width * buf.height);
-            do_copy = FALSE;
+            transform = darktable.color_profiles->transform_srgb_to_display;
           }
           else if(buf.color_space == DT_COLORSPACE_ADOBERGB &&
                   darktable.color_profiles->transform_adobe_rgb_to_display)
           {
-            cmsDoTransform(darktable.color_profiles->transform_adobe_rgb_to_display,
-                           buf.buf, rgbbuf, buf.width * buf.height);
-            do_copy = FALSE;
+            transform = darktable.color_profiles->transform_srgb_to_display;
           }
           else if(buf.color_space == DT_COLORSPACE_NONE)
           {
+            pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
             fprintf(stderr, "oops, there seems to be a code path not setting the color space of thumbnails!\n");
           }
-
-          pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+          else
+          {
+            pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+            fprintf(stderr, "oops, there seems to be a code path setting an unhandled color space of thumbnails!\n");
+          }
         }
 
-        if(do_copy)
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(buf, rgbbuf, transform)
+#endif
+        for(int i = 0; i < buf.height; i++)
         {
-          for(int i = 0; i < buf.height; i++)
-          {
-            uint8_t *in = buf.buf + i * buf.width * 4;
-            uint8_t *out = rgbbuf + i * buf.width * 4;
+          const uint8_t *in = buf.buf + i * buf.width * 4;
+          uint8_t *out = rgbbuf + i * buf.width * 4;
 
+          if(transform)
+          {
+            cmsDoTransform(transform, in, out, buf.width);
+          }
+          else
+          {
             for(int j = 0; j < buf.width; j++, in += 4, out += 4)
             {
               out[0] = in[2];
@@ -971,6 +978,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
             }
           }
         }
+        if(transform) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
         const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
         surface
