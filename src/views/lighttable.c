@@ -470,7 +470,6 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
                                int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-
   gboolean offset_changed = FALSE;
   int missing = 0;
 
@@ -1191,46 +1190,42 @@ int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   int offset = 0;
-  if(lib->track > 2) offset++;
-  if(lib->track < -2) offset--;
+  if(lib->track > 2) offset = 1;
+  if(lib->track < -2) offset = -1;
   lib->track = 0;
 
-  /* If more than one image is selected, iterate over these. */
-  /* If only one image is selected, scroll through all known images. */
-
-  int sel_img_count = 0;
+  // only look for images to preload or update the one shown when we moved to another image
+  if(offset != 0)
   {
+    /* If more than one image is selected, iterate over these. */
+    /* If only one image is selected, scroll through all known images. */
     sqlite3_stmt *stmt;
+    int sel_img_count = 0;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select COUNT(*) from selected_images", -1,
                                 &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      sel_img_count = sqlite3_column_int(stmt, 0);
-    }
+    if(sqlite3_step(stmt) == SQLITE_ROW) sel_img_count = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-  }
 
-  /* How many images to preload in advance. */
-  int preload_num = dt_conf_get_int("plugins/lighttable/preview/full_size_preload_count");
-  preload_num = CLAMPS(preload_num, 0, 99999);
-  if(preload_num > 0)
-  {
-    sqlite3_stmt *stmt;
-    gchar *stmt_string = NULL;
-    stmt_string = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s "
-                                  "WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
-                                  (sel_img_count <= 1) ?
-                                    /* We want to operate on the currently collected images,
-                                     * so there's no need to match against the selection */
-                                    "" :
-                                    /* Limit the matches to the current selection */
-                                    "INNER JOIN selected_images AS sel ON col.imgid = sel.imgid",
-                                  (offset >= 0) ? ">" : "<",
-                                  lib->full_preview_rowid,
-                                  /* Direction of our navigation -- when showing for the first time,
-                                   * i.e. when offset == 0, assume forward navigation */
-                                  (offset >= 0) ? "ASC" : "DESC",
-                                  preload_num);
+    /* How many images to preload in advance. */
+    int preload_num = dt_conf_get_int("plugins/lighttable/preview/full_size_preload_count");
+    preload_num = 0;
+    gboolean preload = preload_num > 0;
+    preload_num = CLAMPS(preload_num, 1, 99999);
+
+    gchar *stmt_string = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s "
+                                         "WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
+                                         (sel_img_count <= 1) ?
+                                           /* We want to operate on the currently collected images,
+                                            * so there's no need to match against the selection */
+                                           "" :
+                                           /* Limit the matches to the current selection */
+                                           "INNER JOIN selected_images AS sel ON col.imgid = sel.imgid",
+                                         (offset >= 0) ? ">" : "<",
+                                         lib->full_preview_rowid,
+                                         /* Direction of our navigation -- when showing for the first time,
+                                          * i.e. when offset == 0, assume forward navigation */
+                                         (offset >= 0) ? "ASC" : "DESC",
+                                         preload_num);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
 
     /* Walk through the "next" images, activate preload and find out where to go if moving */
@@ -1258,14 +1253,17 @@ int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
     g_free(stmt_string);
     sqlite3_finalize(stmt);
 
-    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
-    /* Preload these images.
-    * The job queue is not a queue, but a stack, so we have to do it backwards.
-    * Simply swapping DESC and ASC in the SQL won't help because we rely on the LIMIT clause, and
-    * that LIMIT has to work with the "correct" sort order. One could use a subquery, but I don't
-    * think that would be terribly elegant, either. */
-    while(--count >= 0 && preload_stack[count] != -1)
-      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
+    if(preload)
+    {
+      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
+      /* Preload these images.
+      * The job queue is not a queue, but a stack, so we have to do it backwards.
+      * Simply swapping DESC and ASC in the SQL won't help because we rely on the LIMIT clause, and
+      * that LIMIT has to work with the "correct" sort order. One could use a subquery, but I don't
+      * think that would be terribly elegant, either. */
+      while(--count >= 0 && preload_stack[count] != -1)
+        dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
+    }
   }
 
   lib->image_over = DT_VIEW_DESERT;
