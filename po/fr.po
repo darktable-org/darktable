@@ -28,7 +28,7 @@ msgstr "taille des panneaux latéraux en pixels"
 #: ../src/lua/preferences.c:663
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "double-cliquer pour réinitialiser à «%d»"
+msgstr "double-cliquer pour réinitialiser à « %d »"
 
 #: ../build/src/preferences_gen.h:1482
 msgid "(needs a restart)"
@@ -63,7 +63,7 @@ msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
 #: ../src/lua/preferences.c:632 ../src/lua/preferences.c:643 ../src/lua/preferences.c:652
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "double-cliquer pour réinitialiser à «%s»"
+msgstr "double-cliquer pour réinitialiser à « %s »"
 
 #: ../build/src/preferences_gen.h:1498 ../build/src/preferences_gen.h:1638
 #: ../build/src/preferences_gen.h:1657 ../build/src/preferences_gen.h:2011
@@ -543,7 +543,7 @@ msgid ""
 msgstr ""
 "si une valeur strictement positive est entrée, elle est utilisée comme quantité de mémoire "
 "minimale (en Mo) que le tuilage doit utiliser pour la mémoire-tampon. surcharge "
-"«host_memory_limit». nécessite un redémarrage."
+"« host_memory_limit ». nécessite un redémarrage."
 
 #: ../build/src/preferences_gen.h:2426
 msgid "write sidecar file for each image"
@@ -799,7 +799,7 @@ msgstr "ficher de sortie existant, il va être renommé"
 #: ../src/cli/main.c:199
 #, c-format
 msgid "error: can't open file %s"
-msgstr "erreur : impossible d'ouvrir le fichier «%s»"
+msgstr "erreur : impossible d'ouvrir le fichier « %s »"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
 #: ../src/cli/main.c:221
@@ -820,7 +820,7 @@ msgstr "impossible d'obtenir les paramètres du module de stockage, exportation 
 #: ../src/cli/main.c:263
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr "extension inconnue «.%s»"
+msgstr "extension inconnue « .%s »"
 
 #: ../src/cli/main.c:271
 msgid "failed to get parameters from format module, aborting export ..."
@@ -942,37 +942,37 @@ msgstr "sRGB (web)"
 #: ../src/common/cups_print.c:309
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
-msgstr "fichier «%s» à imprimer non trouvé pour l'image %d sur «%s»"
+msgstr "fichier « %s » à imprimer non trouvé pour l'image %d sur « %s »"
 
 #: ../src/common/cups_print.c:371
 #, c-format
 msgid "error while printing image %d on `%s'"
-msgstr "erreur pendant l'impression de l'image %d sur «%s»"
+msgstr "erreur pendant l'impression de l'image %d sur « %s »"
 
 #: ../src/common/cups_print.c:373
 #, c-format
 msgid "printing image %d on `%s'"
-msgstr "impression de l'image %d sur «%s»"
+msgstr "impression de l'image %d sur « %s »"
 
 #: ../src/common/darktable.c:321
 #, c-format
 msgid "found strange path `%s'"
-msgstr "chemin étrange «%s»"
+msgstr "chemin étrange « %s »"
 
 #: ../src/common/darktable.c:338
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "erreur de chargement du dossier «%s»"
+msgstr "erreur de chargement du dossier « %s »"
 
 #: ../src/common/darktable.c:361
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "le fichier «%s» possède un format inconnu !"
+msgstr "le fichier « %s » possède un format inconnu !"
 
 #: ../src/common/darktable.c:374 ../src/libs/import.c:833
 #, c-format
 msgid "error loading file `%s'"
-msgstr "erreur de chargement du fichier «%s»"
+msgstr "erreur de chargement du fichier « %s »"
 
 #: ../src/common/film.c:353
 msgid "no supported images were found to be imported"
@@ -1052,7 +1052,7 @@ msgstr[1] "%d copies locales ont été synchronisées"
 #: ../src/common/imageio.c:558 ../src/common/mipmap_cache.c:1011
 #, c-format
 msgid "image `%s' is not available!"
-msgstr "image «%s» non disponible!"
+msgstr "image « %s » non disponible!"
 
 #: ../src/common/imageio.c:576
 #, c-format
@@ -1075,7 +1075,7 @@ msgstr "l'image"
 #: ../src/common/imageio.c:591
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr "impossible de trouver le style «%s» à appliquer pendant l'exportation."
+msgstr "impossible de trouver le style « %s » à appliquer pendant l'exportation."
 
 #: ../src/common/import_session.c:270
 msgid "couldn't expand to a unique filename for session, please check your import session settings."
@@ -1138,7 +1138,7 @@ msgstr "aucune image sélectionnée pour appliquer les étoiles"
 #: ../src/common/styles.c:179
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "le style «%s» existe déjà"
+msgstr "le style « %s » existe déjà"
 
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:305 ../src/common/styles.c:309 ../src/common/styles.c:389
@@ -1152,7 +1152,7 @@ msgstr "styles/appliquer %s"
 #: ../src/common/styles.c:395 ../src/gui/styles_dialog.c:141
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr "le style «%s» a été créé"
+msgstr "le style « %s » a été créé"
 
 #. fail :(
 #: ../src/common/styles.c:491 ../src/common/styles.c:508 ../src/views/darkroom.c:451
@@ -1168,12 +1168,12 @@ msgstr "impossible de remplacer le style %s"
 #: ../src/common/styles.c:809
 #, c-format
 msgid "style file for %s exists"
-msgstr "le fichier du style «%s» existe"
+msgstr "le fichier du style « %s » existe"
 
 #: ../src/common/styles.c:1038
 #, c-format
 msgid "style %s was successfully imported"
-msgstr "le style «%s» a été importé"
+msgstr "le style « %s » a été importé"
 
 #: ../src/common/variables.c:248 ../src/common/variables.c:262 ../src/iop/clipping.c:1563
 #: ../src/iop/clipping.c:1855 ../src/iop/clipping.c:1875 ../src/iop/clipping.c:2020
@@ -1290,7 +1290,7 @@ msgstr[1] "fusion  de %d images"
 #: ../src/control/jobs/control_jobs.c:473
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "image HDR «%s» écrite"
+msgstr "image HDR « %s » écrite"
 
 #: ../src/control/jobs/control_jobs.c:500
 #, c-format
@@ -1316,7 +1316,7 @@ msgstr[1] "enlèvement de %d images"
 #: ../src/control/jobs/control_jobs.c:705
 #, c-format
 msgid "could not send %s to trash%s%s"
-msgstr "impossible de placer «%s» dans la poubelle%s%s"
+msgstr "impossible de placer « %s » dans la poubelle%s%s"
 
 #: ../src/control/jobs/control_jobs.c:706
 #, c-format
@@ -1423,7 +1423,7 @@ msgstr[1] "exportation de %d images vers %s"
 #: ../src/control/jobs/control_jobs.c:1236 ../src/views/darkroom.c:464 ../src/views/print.c:283
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "image «%s» non disponible actuellement"
+msgstr "image « %s » non disponible actuellement"
 
 #: ../src/control/jobs/control_jobs.c:1369
 #, c-format
@@ -1517,7 +1517,7 @@ msgstr[1] "copier les images ?"
 #: ../src/control/jobs/control_jobs.c:1605
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
-msgstr "impossible d'obtenir les paramètres du module de stockage «%s», exportation abandonnée."
+msgstr "impossible d'obtenir les paramètres du module de stockage « %s », exportation abandonnée."
 
 #: ../src/control/jobs/control_jobs.c:1643
 #, c-format
@@ -1547,7 +1547,7 @@ msgstr "importation de l'image %s"
 #: ../src/develop/blend.c:2461 ../src/develop/blend.c:2777
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "fusion ignorée dans le module «%s»: paramètres incompatibles"
+msgstr "fusion ignorée dans le module « %s »: paramètres incompatibles"
 
 #: ../src/develop/blend.c:2573 ../src/develop/blend.c:2830
 msgid "could not allocate buffer for blending"
@@ -1966,7 +1966,7 @@ msgstr "désactive temporairement le masque de fusion. uniquement pour le module
 #: ../src/develop/develop.c:1103
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s: module «%s» version non cohérente: %d != %d"
+msgstr "%s: module « %s » version non cohérente: %d != %d"
 
 #: ../src/develop/imageop.c:839
 msgid "new instance"
@@ -2055,7 +2055,7 @@ msgstr "impossible de trouver un XMP venant de Lightroom !"
 #: ../src/develop/lightroom.c:464 ../src/develop/lightroom.c:481
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "«%s» n'est pas un XMP de Lightroom !"
+msgstr "« %s » n'est pas un XMP de Lightroom !"
 
 #: ../src/develop/lightroom.c:1383 ../src/libs/import.c:570
 msgid "tags"
@@ -2174,7 +2174,7 @@ msgstr ""
 #: ../src/develop/tiling.c:810 ../src/develop/tiling.c:1141
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
-msgstr "tuilage impossible pour le module «%s». la sortie est probablement corrompue."
+msgstr "tuilage impossible pour le module « %s ». la sortie est probablement corrompue."
 
 #: ../src/dtgtk/resetlabel.c:58
 msgid "double-click to reset"
@@ -2310,12 +2310,12 @@ msgstr "création des dossiers pour le cache\n"
 #: ../src/generate-cache/main.c:47
 #, c-format
 msgid "creating cache directory '%s'\n"
-msgstr "création du dossier de cache «%s»\n"
+msgstr "création du dossier de cache « %s »\n"
 
 #: ../src/generate-cache/main.c:50
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "impossible de créer le dossier «%s» !\n"
+msgstr "impossible de créer le dossier « %s » !\n"
 
 #: ../src/generate-cache/main.c:161
 #, c-format
@@ -2846,7 +2846,7 @@ msgstr "entrer la nouvelle combinaison de touches"
 #: ../src/gui/preferences.c:994 ../src/gui/presets.c:186 ../src/libs/lib.c:329
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "voulez-vous réellement supprimer le pré-réglage «%s» ?"
+msgstr "voulez-vous réellement supprimer le pré-réglage « %s » ?"
 
 #: ../src/gui/preferences.c:995 ../src/gui/presets.c:187 ../src/libs/lib.c:330
 msgid "delete preset?"
@@ -2883,7 +2883,7 @@ msgstr ""
 #: ../src/gui/preferences.c:1209 ../src/gui/presets.c:379
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "éditer «%s» pour le module «%s»"
+msgstr "éditer « %s » pour le module « %s »"
 
 #: ../src/gui/preferences.c:1232 ../src/gui/presets.c:403 ../src/libs/lib.c:241
 msgid "description or further information"
@@ -2980,7 +2980,7 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"le pré-réglage «%s» existe déjà.\n"
+"le pré-réglage « %s » existe déjà.\n"
 "voulez-vous le remplacer ?"
 
 #: ../src/gui/presets.c:253 ../src/libs/lib.c:143
@@ -3014,7 +3014,7 @@ msgstr "mettre à jour le pré-réglage"
 #: ../src/gui/styles_dialog.c:165 ../src/gui/styles_dialog.c:171 ../src/libs/styles.c:216
 #, c-format
 msgid "style %s was successfully saved"
-msgstr "le style «%s» a été sauvegardé"
+msgstr "le style « %s » a été sauvegardé"
 
 #: ../src/gui/styles_dialog.c:269
 msgid "edit style"
@@ -3160,7 +3160,7 @@ msgstr "taille des bords non valide, 0 est utilisé"
 #: ../src/imageio/storage/gallery.c:364 ../src/imageio/storage/picasa.c:1447
 #, c-format
 msgid "could not export to file `%s'!"
-msgstr "impossible d'exporter le fichier «%s» !"
+msgstr "impossible d'exporter le fichier « %s » !"
 
 #: ../src/imageio/format/pdf.c:403
 msgid "PDF"
@@ -3454,20 +3454,20 @@ msgstr "écraser"
 #: ../src/imageio/storage/latex.c:260
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "impossible de créer le répertoire «%s» !"
+msgstr "impossible de créer le répertoire « %s » !"
 
 #: ../src/imageio/storage/disk.c:258
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "impossible d'écrire dans le répertoire «%s» !"
+msgstr "impossible d'écrire dans le répertoire « %s » !"
 
 #: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:142
 #: ../src/imageio/storage/gallery.c:374 ../src/imageio/storage/latex.c:350
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgid_plural "%d/%d exported to `%s%s'"
-msgstr[0] "%d/%d exportée vers «%s%s»"
-msgstr[1] "%d/%d exportées vers «%s%s»"
+msgstr[0] "%d/%d exportée vers « %s%s »"
+msgstr[1] "%d/%d exportées vers « %s%s »"
 
 #: ../src/imageio/storage/email.c:51
 msgid "send as email"
@@ -4538,7 +4538,7 @@ msgstr "3:1, panorama"
 #: ../src/iop/clipping.c:1944 ../src/iop/clipping.c:1956
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr "format de dimension non reconnu «%s». il devrait être  \"nombre:nombre\""
+msgstr "format de dimension non reconnu « %s ». il devrait être  \"nombre:nombre\""
 
 #: ../src/iop/clipping.c:2006
 msgid ""
@@ -4753,7 +4753,7 @@ msgstr "profil de couleur d'entrée"
 #: ../src/iop/colorin.c:788
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "matrice couleur «%s» non trouvée!"
+msgstr "matrice couleur « %s » non trouvée!"
 
 #: ../src/iop/colorin.c:822
 msgid "input profile could not be generated!"
@@ -5414,7 +5414,7 @@ msgstr "défauts de magic lantern"
 #: ../src/iop/exposure.c:243
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "échec de l'obtention du cache pour l'image «%s»"
+msgstr "échec de l'obtention du cache pour l'image « %s »"
 
 #: ../src/iop/exposure.c:803 ../src/iop/levels.c:552
 msgctxt "mode"
@@ -7126,7 +7126,7 @@ msgstr "active/désactive le mode séquence"
 
 #: ../src/libs/camera.c:482
 msgid "toggle bracketed capture mode"
-msgstr "active/désactive le mode bracketing d'exposition»"
+msgstr "active/désactive le mode bracketing d'exposition »"
 
 #: ../src/libs/camera.c:484
 msgid "the count of seconds before actually doing a capture"
@@ -7256,22 +7256,22 @@ msgstr "exclure des images"
 
 #: ../src/libs/collect.c:2021
 msgid "change to: and"
-msgstr "changer en «et»"
+msgstr "changer en « et »"
 
 #: ../src/libs/collect.c:2025
 msgid "change to: or"
-msgstr "changer en «ou»"
+msgstr "changer en « ou »"
 
 #: ../src/libs/collect.c:2029
 msgid "change to: except"
-msgstr "changer en «sauf»"
+msgstr "changer en « sauf »"
 
 #: ../src/libs/collect.c:2074
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
 "saisissez votre requête,\n"
-"utilisez «%» en caractère joker"
+"utilisez « % » en caractère joker"
 
 #: ../src/libs/collect.h:27
 msgid "film roll"
@@ -7401,7 +7401,7 @@ msgstr "tous les fichiers"
 #: ../src/libs/copy_history.c:94
 #, c-format
 msgid "error loading file '%s'"
-msgstr "erreur de chargement du fichier «%s»"
+msgstr "erreur de chargement du fichier « %s »"
 
 #: ../src/libs/copy_history.c:241
 msgid ""
@@ -7963,7 +7963,7 @@ msgstr "importer un dossier"
 #: ../src/libs/import.c:221
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
-msgstr "appareil «%s» connecté sur le port «%s»"
+msgstr "appareil « %s » connecté sur le port « %s »"
 
 #: ../src/libs/import.c:231
 msgid "import from camera"
@@ -8047,7 +8047,7 @@ msgstr "recherche des appareils branchés récemment"
 #: ../src/libs/lib.c:214
 #, c-format
 msgid "edit `%s'"
-msgstr "modifier «%s»"
+msgstr "modifier « %s »"
 
 #: ../src/libs/live_view.c:139
 msgid "live view"
@@ -8528,7 +8528,7 @@ msgstr "groupes de modules"
 
 #: ../src/libs/modulegroups.c:108
 msgid "show only your favourite modules (selected in `more modules' below)"
-msgstr "affiche uniquement les modules favoris (sélectionner dans «plus de modules» ci-dessous)"
+msgstr "affiche uniquement les modules favoris (sélectionner dans « plus de modules » ci-dessous)"
 
 #: ../src/libs/modulegroups.c:114
 msgid "show only active modules"
@@ -8598,12 +8598,12 @@ msgstr "impossible d'imprimer tant qu'un papier n'est pas sélectionné"
 #: ../src/libs/print_settings.c:189
 #, c-format
 msgid "prepare printing image %d on `%s'"
-msgstr "préparation de l'impression de l'image %d sur «%s»"
+msgstr "préparation de l'impression de l'image %d sur « %s »"
 
 #: ../src/libs/print_settings.c:284
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "impossible d'appliquer le profil d'impression «%s» !"
+msgstr "impossible d'appliquer le profil d'impression « %s » !"
 
 #: ../src/libs/print_settings.c:525
 #, c-format
@@ -8909,10 +8909,10 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"voulez-vous réellement supprimer le mot-clé «%s«?\n"
+"voulez-vous réellement supprimer le mot-clé « %s« ?\n"
 "ce mot-clé est assigné à %d image"
 msgstr[1] ""
-"voulez-vous réellement supprimer le mot-clé «%s»?\n"
+"voulez-vous réellement supprimer le mot-clé « %s »?\n"
 "ce mot-clé est assigné à %d images"
 
 #: ../src/libs/tagging.c:306
@@ -9309,7 +9309,7 @@ msgstr "sélectionner un fichier"
 #: ../src/lua/preferences.c:675
 #, c-format
 msgid "double click to reset to `%f'"
-msgstr "double-cliquer pour réinitialiser à «%f»"
+msgstr "double-cliquer pour réinitialiser à « %f »"
 
 #: ../src/views/darkroom.c:86
 msgid "darkroom"
@@ -9330,7 +9330,7 @@ msgstr "aucun pré-réglage trouvé pour les modules favoris"
 #: ../src/views/darkroom.c:896
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "applique le style «%s» à l'image actuelle"
+msgstr "applique le style « %s » à l'image actuelle"
 
 #: ../src/views/darkroom.c:951
 msgid "no styles have been created yet"
@@ -9524,7 +9524,7 @@ msgstr "si vous n'avez pas encore importé d'images"
 
 #: ../src/views/lighttable.c:530
 msgid "you can do so in the import module"
-msgstr "vous pouvez le faire dans le module «importer»"
+msgstr "vous pouvez le faire dans le module « importer »"
 
 #: ../src/views/lighttable.c:537
 msgid "try to relax the filter settings in the top panel"
@@ -9665,7 +9665,7 @@ msgstr "capture"
 #: ../src/views/tethering.c:148
 #, c-format
 msgid "new session initiated '%s'"
-msgstr "nouvelle session initiée «%s»"
+msgstr "nouvelle session initiée « %s »"
 
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
@@ -9952,7 +9952,7 @@ msgstr ""
 #~ msgstr "netteté des bords pour chaque taille"
 
 #~ msgid "double click to reset to `%"
-#~ msgstr "double-cliquer pour réinitialiser «%d»XXXXXXXXX"
+#~ msgstr "double-cliquer pour réinitialiser « %d »XXXXXXXXX"
 
 #~ msgid "double click to reset to `%<PRId64>'"
 #~ msgstr "double-cliquer pour réinitialiser '%<PRId64>'"
