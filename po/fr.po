@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-11-30 22:35+0100\n"
-"PO-Revision-Date: 2015-11-30 22:48+0100\n"
+"PO-Revision-Date: 2015-12-02 09:40+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -7264,7 +7264,7 @@ msgstr "changer en «ou»"
 
 #: ../src/libs/collect.c:2029
 msgid "change to: except"
-msgstr "changer en «mais sans»"
+msgstr "changer en «sauf»"
 
 #: ../src/libs/collect.c:2074
 #, no-c-format
