@@ -927,11 +927,13 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
       if(rgbbuf)
       {
+        gboolean have_lock = FALSE;
         cmsHTRANSFORM transform = NULL;
 
         if(dt_conf_get_bool("cache_color_managed"))
         {
           pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+          have_lock = TRUE;
 
           // we only color manage when a thumbnail is sRGB or AdobeRGB. everything else just gets dumped to the screen
           if(buf.color_space == DT_COLORSPACE_SRGB &&
@@ -944,16 +946,19 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           {
             transform = darktable.color_profiles->transform_srgb_to_display;
           }
-          else if(buf.color_space == DT_COLORSPACE_NONE)
+          else
           {
             pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-            fprintf(stderr, "oops, there seems to be a code path not setting the color space of thumbnails!\n");
-          }
-          else if(buf.color_space != DT_COLORSPACE_DISPLAY)
-          {
-            pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-            fprintf(stderr, "oops, there seems to be a code path setting an unhandled color space of thumbnails (%s)!\n",
-                    dt_colorspaces_get_name(buf.color_space, "from file"));
+            have_lock = FALSE;
+            if(buf.color_space == DT_COLORSPACE_NONE)
+            {
+              fprintf(stderr, "oops, there seems to be a code path not setting the color space of thumbnails!\n");
+            }
+            else if(buf.color_space != DT_COLORSPACE_DISPLAY)
+            {
+              fprintf(stderr, "oops, there seems to be a code path setting an unhandled color space of thumbnails (%s)!\n",
+                      dt_colorspaces_get_name(buf.color_space, "from file"));
+            }
           }
         }
 
@@ -979,7 +984,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
             }
           }
         }
-        if(transform) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+        if(have_lock) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
         const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
         surface
