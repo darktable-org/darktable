@@ -949,10 +949,11 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
             pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
             fprintf(stderr, "oops, there seems to be a code path not setting the color space of thumbnails!\n");
           }
-          else
+          else if(buf.color_space != DT_COLORSPACE_DISPLAY)
           {
             pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-            fprintf(stderr, "oops, there seems to be a code path setting an unhandled color space of thumbnails!\n");
+            fprintf(stderr, "oops, there seems to be a code path setting an unhandled color space of thumbnails (%s)!\n",
+                    dt_colorspaces_get_name(buf.color_space, "from file"));
           }
         }
 
