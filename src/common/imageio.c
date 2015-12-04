@@ -63,6 +63,7 @@
 #include <string.h>
 #include <strings.h>
 #include <glib/gstdio.h>
+#include <stdbool.h>
 
 // load a full-res thumbnail:
 int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
@@ -438,14 +439,16 @@ gboolean dt_imageio_is_ldr(const char *filename)
 
 int dt_imageio_is_hdr(const char *filename)
 {
+  bool check_string_case;
   const char *c = filename + strlen(filename);
+
   while(c > filename && *c != '.') c--;
   if(*c == '.')
-    if(!strcasecmp(c, ".pfm") || !strcasecmp(c, ".hdr")
+    check_string_case = (!strcasecmp(c, ".pfm") || !strcasecmp(c, ".hdr"));
 #ifdef HAVE_OPENEXR
-       || !strcasecmp(c, ".exr")
+    check_string_case = (check_string_case || !strcasecmp(c, ".exr"));
 #endif
-           )
+    if (check_string_case)
       return 1;
   return 0;
 }
@@ -929,13 +932,13 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   /* silly check using file extensions: */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))
     ret = dt_imageio_open_hdr(img, filename, buf);
-  
+
   /* use rawspeed to load the raw */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) 
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_rawspeed(img, filename, buf);
 
   /* fallback that tries to open file via GraphicsMagick */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) 
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_exotic(img, filename, buf);
 
   return ret;
