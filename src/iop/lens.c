@@ -980,7 +980,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lens
-        = lf_db_find_lenses_hd(dt_iop_lensfun_db, camera, NULL, p->lens, LF_SEARCH_SORT_AND_UNIQUIFY);
+        = lf_db_find_lenses_hd(dt_iop_lensfun_db, camera, NULL, p->lens, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(lens)
     {
@@ -1145,7 +1145,7 @@ void reload_defaults(dt_iop_module_t *module)
     if(cam)
     {
       dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-      const lfLens **lens = lf_db_find_lenses_hd(gd->db, cam[0], NULL, tmp.lens, LF_SEARCH_SORT_AND_UNIQUIFY);
+      const lfLens **lens = lf_db_find_lenses_hd(gd->db, cam[0], NULL, tmp.lens, 0);
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
       if(!lens && islower(cam[0]->Mount[0]))
@@ -1160,7 +1160,7 @@ void reload_defaults(dt_iop_module_t *module)
         g_strlcpy(tmp.lens, "", sizeof(tmp.lens));
 
         dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-        lens = lf_db_find_lenses_hd(gd->db, cam[0], NULL, tmp.lens, LF_SEARCH_SORT_AND_UNIQUIFY);
+        lens = lf_db_find_lenses_hd(gd->db, cam[0], NULL, tmp.lens, 0);
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
       }
 
@@ -1958,7 +1958,7 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lenslist
-        = lf_db_find_lenses_hd(dt_iop_lensfun_db, camera, NULL, p->lens, LF_SEARCH_SORT_AND_UNIQUIFY);
+        = lf_db_find_lenses_hd(dt_iop_lensfun_db, camera, NULL, p->lens, 0);
     if(lenslist)
     {
       const dt_image_t *img = &(self->dev->image_storage);
@@ -2145,7 +2145,7 @@ void gui_init(struct dt_iop_module_t *self)
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
                               make [0] ? make : NULL,
-                              model [0] ? model : NULL, LF_SEARCH_SORT_AND_UNIQUIFY);
+                              model [0] ? model : NULL, 0);
     if(lenslist) lens_set (self, lenslist[0]);
     lf_free (lenslist);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -2295,7 +2295,7 @@ void gui_update(struct dt_iop_module_t *self)
     parse_maker_model(p->lens, make, sizeof(make), model, sizeof(model));
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lenslist = lf_db_find_lenses_hd(dt_iop_lensfun_db, g->camera, make[0] ? make : NULL,
-                                                   model[0] ? model : NULL, LF_SEARCH_SORT_AND_UNIQUIFY);
+                                                   model[0] ? model : NULL, 0);
     if(lenslist)
       lens_set(self, lenslist[0]);
     else
