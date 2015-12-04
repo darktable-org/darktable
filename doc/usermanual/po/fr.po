@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2015-12-01 11:04+0100\n"
-"PO-Revision-Date: 2015-12-02 10:30+0100\n"
+"POT-Creation-Date: 2015-12-03 22:44+0100\n"
+"PO-Revision-Date: 2015-12-03 09:20+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -1595,8 +1595,7 @@ msgstr ""
 "sur la ligne correspondante, et voir à quoi ressemble l’image en ce point. "
 "La pile peut être compressée : elle sera optimisée et les modifications "
 "redondantes seront supprimées. Lorsque vous pensez en avoir terminé et que "
-"vous êtes satisfait de votre travail, compressez l’historique de "
-"développement."
+"vous êtes satisfait de votre travail, compressez la pile de l’historique."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1235(para)
 msgid ""
@@ -2979,9 +2978,9 @@ msgid ""
 "only one RAW file, so you don't waste a lot of disk space."
 msgstr ""
 "Veuillez noter que <quote>cloner une image</quote> ne fait que générer une "
-"copie de votre pile d'historique de développement, stockée dans un autre "
+"copie de votre pile de l'historique. Cette copie est stockée dans un autre "
 "petit fichier lié XMP. Il n'y a toujours qu'un seul fichier RAW, ainsi vous "
-"ne  gaspillez pas beaucoup d'espace disque."
+"ne gaspillez pas beaucoup d'espace disque."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2254(title)
 msgid "Sidecar files"
@@ -3013,12 +3012,13 @@ msgid ""
 msgstr ""
 "darktable est un éditeur d’images non destructif : il ouvre les images en "
 "lecture seule. Tout nouvel ajout de métadonnées, de mots-clés et de "
-"paramètres d'édition de l'image (la <quote>pile d’historique</quote>) sont "
-"enregistrés dans un fichier séparé, appelé fichier lié ou fichier XMP vous "
-"permettant de stocker des informations sur les images ainsi que l'historique "
-"complet d'édition sans toucher aux fichiers RAW originaux. Lorsque vous "
-"importez une image pour la première fois dans darktable, un fichier XMP avec "
-"les paramètres par défaut est automatiquement créé ."
+"paramètres de développement de l'image (la <quote>pile de l’historique</"
+"quote>) sont enregistrés dans un fichier séparé, appelé fichier lié ou "
+"fichier XMP vous permettant de stocker des informations sur les images ainsi "
+"que l'historique complet de développement sans toucher aux fichiers RAW "
+"originaux. Lorsque vous importez une image pour la première fois dans "
+"darktable, un fichier XMP avec les paramètres par défaut est automatiquement "
+"créé ."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2277(para)
 msgid ""
@@ -4385,7 +4385,7 @@ msgstr ""
 "réinitialiser la rotation à la valeur des données EXIF. Cette fonctionnalité "
 "est directement liée au module orientation (voyez la <xref linkend="
 "\"orientation\"/>) – les ajustements sont convertis en éléments de la pile "
-"d'historique de développement de ce module. "
+"de l'historique de ce module. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3451(title)
 msgid "copy locally"
@@ -4515,10 +4515,10 @@ msgid ""
 "previous history stack, whereas <quote>append</quote> will concatenate the "
 "two history stacks."
 msgstr ""
-"Ce paramètre décrit comment un nouvel historique de développement se "
-"comporte s’il est collé sur une image en ayant déjà un. <quote>écraser</"
-"quote> effacera l’historique de développement précédent alors que "
-"<quote>empiler</quote> concaténera les deux historiques de développement."
+"Ce paramètre décrit comment une nouvelle pile d'historique se comporte quand "
+"elle est collée sur une image en ayant déjà une. <quote>écraser</quote> "
+"effacera la pile de l’historique précédente alors que <quote>empiler</quote> "
+"concaténera les deux piles d'historique."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3588(quote)
 msgid "append"
@@ -4536,10 +4536,10 @@ msgid ""
 "parameter remains effective when you quit darktable."
 msgstr ""
 "Attention : c'est seulement dans le  mode <placeholder-1/> que vous gardez "
-"la possibilité de reconstruire votre pile d'historique de développement "
-"existante alors que dans le mode <placeholder-2/> votre développement "
-"antérieur sera irrémédiablement perdu. Attention, le réglage de ce paramètre "
-"reste effectif lorsque vous quittez darktable."
+"la possibilité de reconstruire plus tard votre pile d'historique existante "
+"alors que dans le mode <placeholder-2/> votre développement antérieur sera "
+"irrémédiablement perdu. Attention, le réglage de ce paramètre reste effectif "
+"lorsque vous quittez darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3598(title)
 msgid "paste"
@@ -4701,12 +4701,12 @@ msgid ""
 "have the option to de-select those history stack items which you want to not "
 "be part of the newly created style."
 msgstr ""
-"Ceci crée de nouveaux styles à partir des piles d’historique de "
-"développement des images sélectionnées. Pour chaque image une fenêtre de "
-"création de style apparaît. Vous devez fournir un nom unique pour le nouveau "
-"style et vous pouvez aussi ajouter un texte descriptif. Vous avez l’option "
-"de dé-sélectionner les éléments de la pile d’historique de développement que "
-"vous ne désirez pas inclure dans le style nouvellement créé."
+"Ceci crée de nouveaux styles à partir des piles d’historique des images "
+"sélectionnées. Pour chaque image une fenêtre de création de style apparaît. "
+"Vous devez fournir un nom unique pour le nouveau style et vous pouvez aussi "
+"ajouter un texte descriptif. Vous avez l’option de dé-sélectionner les "
+"éléments de la pile d’historique que vous ne désirez pas inclure dans le "
+"style nouvellement créé."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3744(title)
 msgid "edit"
@@ -4720,12 +4720,12 @@ msgid ""
 "create a new style, instead of overwriting the existing one; you need to "
 "provide a new unique style name in this case."
 msgstr ""
-"Les styles sont des collections d’éléments des piles d’historique de "
-"développement. Après avoir pressé <quote>modifier</quote>, il vous sera "
-"demandé dans une boîte de dialogue d’inclure ou d’exclure des éléments "
-"spécifiques de la pile. Cochez l’option <quote>cloner</quote> si vous "
-"désirez créer un nouveau style plutôt que d’écraser celui qui existe, dans "
-"ce cas vous devez indiquer un nouveau nom de style."
+"Les styles sont des collections d’éléments des piles d’historique. Après "
+"avoir pressé <quote>modifier</quote>, il vous sera demandé dans une boîte de "
+"dialogue d’inclure ou d’exclure des éléments spécifiques de la pile. Cochez "
+"l’option <quote>cloner</quote> si vous désirez créer un nouveau style plutôt "
+"que d’écraser celui qui existe, dans ce cas vous devez indiquer un nouveau "
+"nom de style."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3757(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4077(title)
@@ -5602,16 +5602,16 @@ msgid ""
 "the settings of each individual image."
 msgstr ""
 "Lors de l'application d'un style durant l'exportation, cette option définit "
-"si les éléments de la pile d'historique de développement de ce style "
-"remplacent la pile d'historique originale de l'image ou s'ils lui sont "
-"ajoutés. Techniquement parlant, dans le mode ajout, les éléments de la pile "
-"d'historique de développement du style constitueront des instances séparées "
-"des modules respectifs au-dessus de ceux qui existent (voyez aussi la <xref "
-"linkend=\"multiple_instances\"/>). En conséquence, la pile d'historique "
-"développement originale restera totalement en vigueur avec les nouveaux "
-"éléments appliqués en plus. De cette manière vous pouvez appliquer un "
-"ajustement global (par exemple une modification de l'exposition) à un groupe "
-"d'images exportées tout en respectant les réglages de chacune d'elles."
+"si les éléments de la pile de l'historique de ce style remplacent la pile de "
+"l'historique originale de l'image ou s'ils lui sont ajoutés. Techniquement "
+"parlant, dans le mode ajout, les éléments de la pile de l'historique du "
+"style constitueront des instances séparées des modules respectifs au-dessus "
+"de ceux qui existent (voyez aussi la <xref linkend=\"multiple_instances\"/"
+">). En conséquence, la pile de l'historique originale restera totalement en "
+"vigueur avec les nouveaux éléments appliqués en plus. De cette manière vous "
+"pouvez appliquer un ajustement global (par exemple une modification de "
+"l'exposition) à un groupe d'images exportées tout en respectant les réglages "
+"de chacune d'elles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4522(para)
 msgid ""
@@ -5667,11 +5667,11 @@ msgid ""
 "modules."
 msgstr ""
 "Sur la gauche, vous avez les panneaux navigation, instantanés, historique, "
-"pipette, mots-clés, informations de l'image et gestionnaire des masques. Ils "
-"sont décrits dans la <xref linkend=\"darkroom_panels\"/>. Sur la droite, "
-"vous pouvez voir l’histogramme ainsi qu’une liste des modules disponibles "
-"pour le développement de l'image. En bas du panneau de droite, vous pouvez "
-"activer/désactiver l’affichage de chacun des modules."
+"pipette, mots-clés, informations de l'image et gestion des masques. Ils sont "
+"décrits dans la <xref linkend=\"darkroom_panels\"/>. Sur la droite, vous "
+"pouvez voir l’histogramme ainsi qu’une liste des modules disponibles pour le "
+"développement de l'image. En bas du panneau de droite, vous pouvez activer/"
+"désactiver l’affichage de chacun des modules."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4590(primary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6830(primary)
@@ -5733,8 +5733,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4630(title)
 msgid "Pixelpipe, module order, and history stack"
-msgstr ""
-"Pipeline graphique, ordre des modules et pile d'historique développement"
+msgstr "Pipeline graphique, ordre des modules et pile de l'historique"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4633(primary)
 msgid "pixelpipe"
@@ -8676,10 +8675,9 @@ msgid ""
 msgstr ""
 "Dans darktable 2.0 vous pouvez sans risque quitter le programme, sortir du "
 "mode chambre noire ou passer à une autre image alors que vous avez "
-"sélectionné un état quelconque de la pile d'historique développement. La "
-"pile de l'historique développement reste inchangée. Si vous retournez à "
-"l'image vous trouverez le panneau de la pile d'historique développement dans "
-"l'état où vous l'avez laissé."
+"sélectionné un état quelconque de la pile de l'historique. La pile de "
+"l'historique reste inchangée. Si vous retournez à l'image vous trouverez le "
+"panneau de la pile de l'historique dans l'état où vous l'avez laissé."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6948(para)
 msgid ""
@@ -8688,10 +8686,9 @@ msgid ""
 "items. This also will discard all modules above the currently selected one."
 msgstr ""
 "Cliquer <quote>compresser l’historique</quote> va générer la plus petite "
-"pile d'historique développement produisant l’image courante. Par exemple "
-"tous les éléments de la pile qui ne sont plus utilisés seront supprimés. "
-"Ceci va aussi supprimer les modules qui se trouvent au-dessus de celui qui "
-"est sélectionné."
+"pile d'historique produisant l’image courante. Par exemple tous les éléments "
+"de la pile qui ne sont plus utilisés seront supprimés. Ceci va aussi "
+"supprimer les modules qui se trouvent au-dessus de celui qui est sélectionné."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6954(para)
 msgid ""
@@ -12613,11 +12610,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#. by their specification. However, there is an established de-facto standard to embed
-#. profiles which darktable adheres to. Beware that some applications might fail to correctly
-#. handle those profiles and render colors incorrectly.
-#. </para>
+#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles 
+#.         by their specification. However, there is an established de-facto standard to embed
+#.         profiles which darktable adheres to. Beware that some applications might fail to correctly 
+#.         handle those profiles and render colors incorrectly.
+#.       </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10716(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -17725,9 +17722,9 @@ msgid ""
 "replacing it completely. See <xref linkend=\"export_selected\"/> for more "
 "details."
 msgstr ""
-"Indique si le style sera ajouté à la pile d'historique développement "
-"existante ou s'il la remplacera complètement. Voyez la <xref linkend="
-"\"export_selected\"/> pour plus de détails."
+"Indique si le style sera ajouté à la pile de l'historique existante ou s'il "
+"la remplacera complètement. Voyez la <xref linkend=\"export_selected\"/> "
+"pour plus de détails."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16603(title)
 msgid "Print button"
@@ -18013,25 +18010,25 @@ msgstr ""
 
 #. <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 #.
-#. <para>
-#. Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
-#. Needs a restart and will invalidate current thumbnail caches (default 1300).
-#. </para>
+#.   <para>
+#.     Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
+#.     Needs a restart and will invalidate current thumbnail caches (default 1300).
+#.   </para>
 #.
-#. <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
+#.   <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
 #.
-#. <para>
-#. Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
-#. screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
-#. </para>
+#.   <para>
+#.     Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
+#.     screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
+#.   </para>
+#.   
+#.   <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
 #.
-#. <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
-#.
-#. <para>
-#. Controls the compression of thumbnail images in memory and on disk. Options:
-#. <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
-#. (default off).
-#. </para>
+#.   <para>
+#.     Controls the compression of thumbnail images in memory and on disk. Options:
+#.     <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
+#.     (default off).
+#.   </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16804(bridgehead)
 msgid "pen pressure control for brush masks"
 msgstr "contrôle de la pression du pinceau du masque"
