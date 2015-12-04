@@ -874,7 +874,7 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
     else
     {
       // ugly, but avoids alloc'ing thumb if it is not there.
-      dt_mipmap_cache_unlink_ondisk_thumbnail(&(&_get_cache(cache, k)->cache)->cleanup_data, imgid, k);
+      dt_mipmap_cache_unlink_ondisk_thumbnail((&_get_cache(cache, k)->cache)->cleanup_data, imgid, k);
     }
   }
 }
