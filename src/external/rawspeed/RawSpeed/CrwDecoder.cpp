@@ -138,8 +138,12 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if(mRootIFD->hasEntryRecursive((CiffTag)0x0032)) {
     CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x0032);
     if (entry->type == CIFF_BYTE && entry->count == 768) {
-      // We're in a D30 file
-    } else if (entry->type == CIFF_BYTE && entry->count > 768) { // Other G series and S series cameras
+      // We're in a D30 file, values are RGGB
+      const ushort16 *values = (ushort16*) (entry->getData()+72);
+      mRaw->metadata.wbCoeffs[0] = (float) (1024.0 / values[0]);
+      mRaw->metadata.wbCoeffs[1] = (float) ((1024.0/values[1])+(1024.0/values[2]))/2.0f;
+      mRaw->metadata.wbCoeffs[2] = (float) (1024.0 / values[3]);
+    } else if (entry->type == CIFF_BYTE && entry->count == 2048) { // Other G series and S series cameras
       const uchar8 *data = entry->getData();
       // correct offset for most cameras
       int offset = 120;
