@@ -147,7 +147,8 @@ typedef  enum _channelmixer_output_t
 
 __kernel void
 channelmixer (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              const int gray_mix_mode, global const float *red, global const float *green, global const float *blue)
+              const int gray_mix_mode, global const float *red, global const float *green, global const float *blue,
+              global const float *weights)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -169,11 +170,11 @@ channelmixer (read_only image2d_t in, write_only image2d_t out, const int width,
     pixel = HSL_2_RGB(hsl);
   }
 
-  float graymix = clamp(pixel.x * red[CHANNEL_GRAY]+ pixel.y * green[CHANNEL_GRAY] + pixel.z * blue[CHANNEL_GRAY], 0.0f, 1.0f);
+  float graymix = clamp((pixel.x * red[CHANNEL_GRAY] + pixel.y * green[CHANNEL_GRAY] + pixel.z * blue[CHANNEL_GRAY]) / weights[CHANNEL_GRAY], 0.0f, 1.0f);
 
-  float rmix = clamp(pixel.x * red[CHANNEL_RED] + pixel.y * green[CHANNEL_RED] + pixel.z * blue[CHANNEL_RED], 0.0f, 1.0f);
-  float gmix = clamp(pixel.x * red[CHANNEL_GREEN] + pixel.y * green[CHANNEL_GREEN] + pixel.z * blue[CHANNEL_GREEN], 0.0f, 1.0f);
-  float bmix = clamp(pixel.x * red[CHANNEL_BLUE] + pixel.y * green[CHANNEL_BLUE] + pixel.z * blue[CHANNEL_BLUE], 0.0f, 1.0f);
+  float rmix = clamp((pixel.x * red[CHANNEL_RED] + pixel.y * green[CHANNEL_RED] + pixel.z * blue[CHANNEL_RED]) / weights[CHANNEL_RED], 0.0f, 1.0f);
+  float gmix = clamp((pixel.x * red[CHANNEL_GREEN] + pixel.y * green[CHANNEL_GREEN] + pixel.z * blue[CHANNEL_GREEN]) / weights[CHANNEL_GREEN], 0.0f, 1.0f);
+  float bmix = clamp((pixel.x * red[CHANNEL_BLUE] + pixel.y * green[CHANNEL_BLUE] + pixel.z * blue[CHANNEL_BLUE]) / weights[CHANNEL_BLUE], 0.0f, 1.0f);
 
   pixel = gray_mix_mode ? (float4)(graymix, graymix, graymix, pixel.w) : (float4)(rmix, gmix, bmix, pixel.w);
 
