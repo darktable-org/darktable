@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-11-30 22:35+0100\n"
-"PO-Revision-Date: 2015-12-02 09:40+0100\n"
+"PO-Revision-Date: 2015-12-05 10:23+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -394,7 +394,7 @@ msgstr "cette option échange le comportement du shift-clic de la chambre noire"
 
 #: ../build/src/preferences_gen.h:2123
 msgid "scroll to lighttable modules when expanded/collapsed"
-msgstr "positionne les modules de la table lumineuse lorsque qu'ils sont déployés/repliés"
+msgstr "positionne les modules de la table lumineuse lorsque qu'ils sont déplier/repliés"
 
 #: ../build/src/preferences_gen.h:2135 ../build/src/preferences_gen.h:2154
 msgid ""
@@ -406,7 +406,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2142
 msgid "scroll to darkroom modules when expanded/collapsed"
-msgstr "positionne les modules de la chambre noire lorsque qu'ils sont déployés/repliés"
+msgstr "positionne les modules de la chambre noire lorsque qu'ils sont dépliés/repliés"
 
 #: ../build/src/preferences_gen.h:2161
 msgid "border around image in darkroom mode"
@@ -542,8 +542,8 @@ msgid ""
 "host_memory_limit (needs a restart)."
 msgstr ""
 "si une valeur strictement positive est entrée, elle est utilisée comme quantité de mémoire "
-"minimale (en Mo) que le tuilage doit utiliser pour la mémoire-tampon. surcharge "
-"« host_memory_limit ». nécessite un redémarrage."
+"minimale (en Mo) que le tuilage doit utiliser pour la mémoire-tampon. surcharge « "
+"host_memory_limit ». nécessite un redémarrage."
 
 #: ../build/src/preferences_gen.h:2426
 msgid "write sidecar file for each image"
