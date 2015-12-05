@@ -143,7 +143,7 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
       mRaw->metadata.wbCoeffs[0] = (float) (1024.0 / values[0]);
       mRaw->metadata.wbCoeffs[1] = (float) ((1024.0/values[1])+(1024.0/values[2]))/2.0f;
       mRaw->metadata.wbCoeffs[2] = (float) (1024.0 / values[3]);
-    } else if (entry->type == CIFF_BYTE && entry->count == 2048) { // Other G series and S series cameras
+    } else if (entry->type == CIFF_BYTE && entry->count > 768) { // Other G series and S series cameras
       const uchar8 *data = entry->getData();
       // correct offset for most cameras
       int offset = 120;
@@ -153,12 +153,17 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
         wb_offset >> offset;
       }
 
+      ushort16 key[] = { 0x410, 0x45f3 };
+      if (hints.find("wb_mangle") == hints.end())
+        key[0] = key[1] = 0;
+
       const ushort16 *values = (ushort16*) (data+offset);
-      if (values[0] == values[3]) { // Both greens should be equal
-        mRaw->metadata.wbCoeffs[0] = (float) values[1];
-        mRaw->metadata.wbCoeffs[1] = (float) values[0];
-        mRaw->metadata.wbCoeffs[2] = (float) values[2];
-      }
+      if ((values[0]^key[0]) == (values[3]^key[1])) { // Both greens should be equal
+        mRaw->metadata.wbCoeffs[0] = (float) (values[1] ^ key[1]);
+        mRaw->metadata.wbCoeffs[1] = (float) (values[0] ^ key[0]);
+        mRaw->metadata.wbCoeffs[2] = (float) (values[2] ^ key[0]);
+      } else
+        writeLog(DEBUG_PRIO_INFO, "CRW Decoder: WB greens in 0x0032 tag should be equal");
     }
   }
 

@@ -1025,6 +1025,10 @@
 		<BlackAreas>
 			<Vertical x="3294" width="50"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="96"/>
+			<Hint name="wb_mangle" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot Pro70" supported="no">
 		<ID make="Canon" model="PowerShot Pro70">Canon PowerShot Pro70</ID>
@@ -1137,6 +1141,10 @@
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="96"/>
+			<Hint name="wb_mangle" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G7 X">
 		<ID make="Canon" model="PowerShot G7 X">Canon PowerShot G7 X</ID>
@@ -1386,6 +1394,10 @@
 			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="96"/>
+			<Hint name="wb_mangle" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S70">
 		<ID make="Canon" model="PowerShot S70">Canon PowerShot S70</ID>
@@ -1401,6 +1413,10 @@
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="96"/>
+			<Hint name="wb_mangle" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S90">
 		<ID make="Canon" model="PowerShot S90">Canon PowerShot S90</ID>
