@@ -1560,6 +1560,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="2000" height="1312"/>
 		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="nikon_wb_adjustment" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D1H">
 		<ID make="Nikon" model="D1H">Nikon D1H</ID>

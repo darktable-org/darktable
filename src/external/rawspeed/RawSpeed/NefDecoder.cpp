@@ -561,6 +561,11 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     }
   }
 
+  if (hints.find(string("nikon_wb_adjustment")) != hints.end()) {
+    mRaw->metadata.wbCoeffs[0] *= 256/527.0;
+    mRaw->metadata.wbCoeffs[2] *= 256/317.0;
+  }
+
   string mode = getMode();
   string extended_mode = getExtendedMode(mode);
   if (meta->hasCamera(make, model, extended_mode)) {
