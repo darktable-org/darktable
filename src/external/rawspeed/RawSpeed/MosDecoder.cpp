@@ -71,7 +71,7 @@ RawImage MosDecoder::decodeRawInternal() {
     uint32 entries = get4LE(insideTiff, offset);
     uint32 pos = 8; // Skip another 4 bytes
 
-    uint32 width=0, height=0, strip_offset=0, data_offset=0;
+    uint32 width=0, height=0, strip_offset=0, data_offset=0, wb_offset=0;
     while (entries--) {
       if (offset+base+pos+16 > mFile->getSize())
         ThrowRDE("MOS: PhaseOneC offset out of bounds");
@@ -82,6 +82,7 @@ RawImage MosDecoder::decodeRawInternal() {
       uint32 data = get4LE(insideTiff, offset+pos+12);
       pos += 16;
       switch(tag) {
+      case 0x107: wb_offset    = data+base;      break;
       case 0x108: width        = data;      break;
       case 0x109: height       = data;      break;
       case 0x10f: data_offset  = data+base; break;
@@ -100,6 +101,15 @@ RawImage MosDecoder::decodeRawInternal() {
     mRaw->createData();
 
     DecodePhaseOneC(data_offset, strip_offset, width, height);
+
+    if (wb_offset > 0 && wb_offset+12 < mFile->getSize()) {
+      const uchar8 *data = mFile->getData(wb_offset);
+      for(int i=0; i<3; i++) {
+        // Use get4LE instead of going straight to float so this is endian clean
+        uint32 value = get4LE(data, i*4);
+        mRaw->metadata.wbCoeffs[i] = *((float *) &value);
+      }
+    }
 
     return mRaw;
   } else {
