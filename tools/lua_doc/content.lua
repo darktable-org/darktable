@@ -635,7 +635,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.local_copy:set_text([[True if the image has a copy in the local cache]])
 	types.dt_lua_image_t.drop_cache:set_text("drops the cached version of this image."..para()..
 	"This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail"..para()..
-	"Darktable will regenerate the thumbnail by itself when it is needed")
+	"darktable will regenerate the thumbnail by itself when it is needed")
 	types.dt_lua_image_t.drop_cache:add_parameter("self",types.dt_lua_image_t,[[The image whose cache must be droped.]]):set_attribute("is_self",true)
 
 	types.dt_imageio_module_format_t:set_text([[A virtual type representing all format types.]])
