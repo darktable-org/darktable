@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2015-12-03 22:44+0100\n"
-"PO-Revision-Date: 2015-12-03 09:20+0100\n"
+"PO-Revision-Date: 2015-12-05 16:53+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -5828,7 +5828,7 @@ msgid ""
 msgstr ""
 "Chaque fois que vous activez ou désactivez un module, ou chaque fois que "
 "vous revenez dans un module et changez ses paramètres, un élément est ajouté "
-"au sommet de l'<quote>his-torique</quote>."
+"au sommet de la pile de l'<quote>historique</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4692(para)
 msgid ""
@@ -5844,18 +5844,18 @@ msgid ""
 "then <link linkend=\"denoise_bilateral\"><emphasis>bilateral filtering</"
 "emphasis></link> (if enabled), as shown bottom to top on the right panel."
 msgstr ""
-"Par exemple, quand vous travaillez sur un fichier RAW, l'historique sur le "
-"panneau de gauche peut dire que vous avez tout d'abord activé <link linkend="
-"\"denoise_bilateral\"><emphasis>réduction du bruit (bilatéral)</emphasis></"
-"link>, puis désactivé <link linkend=\"base_curve\"><emphasis>courbe de base</"
-"emphasis></link>, puis ajusté <link linkend=\"whitebalance"
-"\"><emphasis>balance des blancs</emphasis></link>. Mais à tout moment, le "
-"traitement prend l'image RAW, applique <link linkend=\"whitebalance"
-"\"><emphasis>balance des blancs</emphasis></link>, puis <link linkend="
-"\"demosaic\"><emphasis>dématriçage</emphasis></link>, puis <link linkend="
-"\"base_curve\"><emphasis>courbe de base</emphasis></link> (si activé), puis "
-"<link linkend=\"denoise_bilateral\"><emphasis> réduction du bruit "
-"(bilatéral)</emphasis></link> (si activé), dans l'ordre où ces modules "
+"Par exemple, quand vous travaillez sur un fichier RAW, la pile de "
+"l'historique sur le panneau de gauche peut dire que vous avez tout d'abord "
+"activé <link linkend=\"denoise_bilateral\"><emphasis>réduction du bruit "
+"(bilatéral)</emphasis></link>, puis désactivé <link linkend=\"base_curve"
+"\"><emphasis>courbe de base</emphasis></link>, puis ajusté <link linkend="
+"\"whitebalance\"><emphasis>balance des blancs</emphasis></link>. Mais à tout "
+"moment, le traitement prend l'image RAW, applique <link linkend="
+"\"whitebalance\"><emphasis>balance des blancs</emphasis></link>, puis <link "
+"linkend=\"demosaic\"><emphasis>dématriçage</emphasis></link>, puis <link "
+"linkend=\"base_curve\"><emphasis>courbe de base</emphasis></link> (si "
+"activé), puis <link linkend=\"denoise_bilateral\"><emphasis> réduction du "
+"bruit (bilatéral)</emphasis></link> (si activé), dans l'ordre où ces modules "
 "apparaissent de bas en haut sur le panneau de droite."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4705(para)
@@ -5867,13 +5867,13 @@ msgid ""
 "the pixelpipe (see above). For more details on the history stack see <xref "
 "linkend=\"history\"/>."
 msgstr ""
-"L'historique enregistre votre flux de travail dans l'ordre dans lequel vous "
-"faites les modifications du pipeline graphique. Il vous autorise à revenir à "
-"un état antérieur du développement si c'est nécessaire. L'historique "
+"La pile de l'historique enregistre les actions de votre flux de travail dans "
+"l'ordre dans lequel vous les introduisez. Elle vous autorise à revenir à un "
+"état antérieur du développement si c'est nécessaire. La pile de l'historique "
 "représente votre flux de travail personnel et ne doit pas être confondu avec "
 "la séquence d'application des modules dans le pipeline graphique (voyez ci-"
-"dessus). Pour plus de détails sur l'historique voyez la <xref linkend="
-"\"history\"/>."
+"dessus). Pour plus de détails sur la pile de l'historique voyez la <xref "
+"linkend=\"history\"/>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4719(title)
 msgid "Interacting with modules"
@@ -6184,7 +6184,7 @@ msgstr ""
 "Dans l’exemple ci-dessus l’option d’application automatique est aussi "
 "cochée. Ceci affiche des champs de sélection supplémentaires où vous pouvez "
 "définir un filtre utilisé pour décider si le préréglage devra être appliqué "
-"automatiquement à l’ouverture dans la chambre noire d’images semblables. "
+"automatiquement à l’ouverture d’images semblables dans la chambre noire. "
 "L’exemple de boîte de dialogue ci-dessus fixe les règles suivantes : si le "
 "nom de l’objectif correspond, si l’ouverture est supérieure ou égale à f/8 "
 "et si la longueur focale est entre 24 et 35 mm, alors le préréglage "
@@ -6477,7 +6477,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5168(title)
 msgid "off"
-msgstr "off"
+msgstr "désactivé(e)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5169(para)
 msgid ""
@@ -6530,7 +6530,7 @@ msgstr ""
 "aura l’opacité maximum, il sera entouré d’une zone de transition ou bordure "
 "dont l'opacité décroît progressivement et le reste de l’image aura une "
 "opacité de 0%. Différentes formes graphiques peuvent être utilisées. Voyez "
-"<xref linkend=\"drawn_mask\"/> pour davantage d’informations."
+"la <xref linkend=\"drawn_mask\"/> pour davantage d’informations."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5198(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6048(emphasis)
@@ -6550,7 +6550,7 @@ msgstr ""
 "contrôles supplémentaires sont affichés qui vous permettent d’ajuster "
 "l’opacité pixel par pixel suivant les valeurs des pixels. Dans des "
 "précédentes versions de darktable ceci s’appelait <quote>fusion "
-"conditionnelle</quote>. Voyez <xref linkend=\"parametric_mask\"/> pour "
+"conditionnelle</quote>. Voyez la <xref linkend=\"parametric_mask\"/> pour "
 "davantage d’informations."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5208(title)
@@ -6564,8 +6564,8 @@ msgid ""
 "use this combination."
 msgstr ""
 "Cette option combine les masques dessiné et paramétrique et affiche le jeu "
-"complet des contrôles des deux modes. Voyez <xref linkend=\"combined_masks\"/"
-"> afin d’apprendre comment utiliser au mieux cette combinaison."
+"complet des contrôles des deux modes. Voyez la <xref linkend=\"combined_masks"
+"\"/> afin d’apprendre comment utiliser au mieux cette combinaison."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5220(title)
 msgid "Mask combination and inversion"
@@ -7003,7 +7003,7 @@ msgstr ""
 "link> et <link linkend=\"tone_curve\"><emphasis>courbe des tonalités</"
 "emphasis></link>. Ce mode de fusion prend la clarté uniquement dans les "
 "données de sortie et, en activant le contrôle des ajustements des couleurs "
-"du module, il mélange les couleurs de l’entrée et de la sortie ."
+"du module, il mélange les couleurs de l’entrée et de la sortie."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5549(title)
 msgid "Drawn mask"
@@ -12610,11 +12610,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles 
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly 
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10716(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -18010,25 +18010,25 @@ msgstr ""
 
 #. <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 #.
-#.   <para>
-#.     Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
-#.     Needs a restart and will invalidate current thumbnail caches (default 1300).
-#.   </para>
+#. <para>
+#. Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
+#. Needs a restart and will invalidate current thumbnail caches (default 1300).
+#. </para>
 #.
-#.   <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
+#. <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
 #.
-#.   <para>
-#.     Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
-#.     screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
-#.   </para>
-#.   
-#.   <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
+#. <para>
+#. Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
+#. screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
+#. </para>
 #.
-#.   <para>
-#.     Controls the compression of thumbnail images in memory and on disk. Options:
-#.     <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
-#.     (default off).
-#.   </para>
+#. <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
+#.
+#. <para>
+#. Controls the compression of thumbnail images in memory and on disk. Options:
+#. <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
+#. (default off).
+#. </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16804(bridgehead)
 msgid "pen pressure control for brush masks"
 msgstr "contrôle de la pression du pinceau du masque"
@@ -18182,7 +18182,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16880(bridgehead)
 msgid "scroll to lighttable modules when expanded/collapsed"
 msgstr ""
-"positionne les modules de la table lumineuse lorsqu'ils sont déployés/repliés"
+"positionne les modules de la table lumineuse lorsqu'ils sont dépliés/repliés"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16882(para)
 msgid ""
@@ -18190,13 +18190,13 @@ msgid ""
 "the top when it is expanded or collapsed (default off)."
 msgstr ""
 "Avec cette option activée les panneaux de côté de la table lumineuse feront "
-"défiler un module vers le haut quand il sera déployé ou replié (non activé "
+"défiler un module vers le haut quand il sera déplié ou replié (non activé "
 "par défaut)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16887(bridgehead)
 msgid "scroll to darkroom modules when expanded/collapsed"
 msgstr ""
-"positionne les modules de la chambre noire lorsqu'ils sont déployés/repliés"
+"positionne les modules de la chambre noire lorsqu'ils sont dépliés/repliés"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16889(para)
 msgid ""
@@ -18204,7 +18204,7 @@ msgid ""
 "top when it is expanded or collapsed (default on)."
 msgstr ""
 "Avec cette option activée le panneau de côté de la chambre noire fera "
-"défiler un module vers le haut quand il sera déployé ou replié (activé par "
+"défiler un module vers le haut quand il sera déplié ou replié (activé par "
 "défaut)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16894(bridgehead)
