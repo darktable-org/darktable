@@ -4,7 +4,9 @@
 Takes two mandatory and one optiona argument
 * a file containing a dump of the old API
 * a file containing a dump of the new API
-* optionally "true" to have verbose output
+* optionally "true" or "nodes"
+  true : show differences
+  nodes : also dump the content of added nodes
 
 This script will compare the two API and report any differences it sees
 optionnaly printing details of the difference

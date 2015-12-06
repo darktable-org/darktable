@@ -20,6 +20,13 @@ startlist = function() return "\n" end
 endlist = function() return "\n" end
 listel = function(text) return "\n* "..text end
 
+url = function(text,content) 
+  if content then
+    return "<ulink url=\""..text.."\">"..content.."</ulink>"
+  else
+    return text
+  end
+end
 
 require "content"
 doc = require "core"
@@ -50,7 +57,7 @@ local function print_content(obj,obj_name)
   if(type(obj) == "boolean") then
     result = tostring(obj)
   elseif type(obj) == "string" then
-    result = "[["..obj.."]]"
+    result = "[==["..obj.."]==]"
   elseif type(obj) == "table" and obj._luadoc_type then
     result = print_node(obj,obj_name)
   elseif type(obj) == "table" then
@@ -110,10 +117,10 @@ function M.get_doc()
       result = result..target.." = "..known_entry["target"].."\n"
     end
   end
-  return result..[[return API
+  return result..[==[return API
 --
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
-]]
+]==]
 
 end
 
