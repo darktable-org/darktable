@@ -83,6 +83,36 @@ typedef struct dt_iop_temperature_global_data_t
   int kernel_whitebalance_1f;
 } dt_iop_temperature_global_data_t;
 
+static int ignore_missing_wb(dt_image_t *img)
+{
+  // Ignore files that end with "-hdr.dng" since these are broken files we
+  // generated without any proper WB tagged
+  if(g_str_has_suffix(img->filename,"-hdr.dng"))
+    return TRUE;
+
+  static const char * const ignored_cameras[] = {
+    "Canon PowerShot A610",
+    "Canon PowerShot S3 IS",
+    "Canon PowerShot A620",
+    "Canon PowerShot A720 IS",
+    "Canon PowerShot A630",
+    "Canon PowerShot A640",
+    "Canon PowerShot A650",
+    "Canon PowerShot SX110 IS",
+    "Mamiya ZD",
+    "Canon EOS D2000C",
+    "Kodak EOS DCS 1",
+    "Kodak DCS560C",
+    "Kodak DCS460D",
+  };
+
+  for(int i=0; i < sizeof(ignored_cameras)/sizeof(ignored_cameras[1]); i++)
+    if(!strcmp(img->camera_makermodel, ignored_cameras[i]))
+      return TRUE;
+
+  return FALSE;
+}
+
 const char *name()
 {
   return C_("modulename", "white balance");
@@ -826,9 +856,12 @@ void reload_defaults(dt_iop_module_t *module)
       if(!(!strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15)
            && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12)))
       {
-        dt_control_log(_("failed to read camera white balance information!"));
-        fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
-                module->dev->image_storage.filename);
+        if(!ignore_missing_wb(&(module->dev->image_storage)))
+        {
+          dt_control_log(_("failed to read camera white balance information!"));
+          fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
+                  module->dev->image_storage.filename);
+        }
       }
       else
       {
