@@ -30,19 +30,27 @@ void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
   }
   else
   {
-    printf("\n");
+    printf("(size %d),\n",lua_gettop(L)); //usefull to detect underflows
   }
   for(int i = 1; i <= lua_gettop(L); i++)
   {
+#if 1
     printf("\t%d:%s %s\n", i, lua_typename(L, lua_type(L, i)), luaL_tolstring(L, i, NULL));
     lua_pop(L, 1); // remove the result of luaL_tolstring() from the stack
+#else
+    // no tolstring when stack is really screwed up 
+    printf("\t%d:%s %p\n", i, lua_typename(L, lua_type(L, i)),lua_topointer(L,i));
+#endif
   }
 }
 
 void dt_lua_debug_table_internal(lua_State *L, int t, const char *function, int line)
 {
+  t = lua_absindex(L,t);
   /* table is in the stack at index 't' */
-  printf("lua table at index %d at %s:%d\n", t, function, line);
+  lua_len(L,t);
+  printf("lua table at index %d at %s:%d (length %f)\n", t, function, line,lua_tonumber(L,-1));
+  lua_pop(L,1);
   if(lua_type(L, t) != LUA_TTABLE)
   {
     printf("\tnot a table: %s\n", lua_typename(L, lua_type(L, t)));
@@ -52,7 +60,12 @@ void dt_lua_debug_table_internal(lua_State *L, int t, const char *function, int 
   while(lua_next(L, t ) != 0)
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
-    printf("%s - %s\n", luaL_checkstring(L, -2), lua_typename(L, lua_type(L, -1)));
+    if(lua_type(L,-2) != LUA_TNUMBER) {
+      printf("%s - %s\n", lua_tostring(L, -2), lua_typename(L, lua_type(L, -1)));
+    } else {
+      printf("%f - %s\n", luaL_checknumber(L, -2), lua_typename(L, lua_type(L, -1)));
+    }
+
     /* removes 'value'; keeps 'key' for next iteration */
     lua_pop(L, 1);
   }
