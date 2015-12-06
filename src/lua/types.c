@@ -476,8 +476,11 @@ static void gpointer_tofunc(lua_State *L, luaA_Type type_id, void *cout, int ind
     snprintf(error_msg,sizeof(error_msg),"%s expected",luaA_typename(L,type_id));
     luaL_argerror(L,index,error_msg);
   } 
-  void* udata = lua_touserdata(L,index);
+  gpointer* udata = lua_touserdata(L,index);
   memcpy(cout, udata, sizeof(gpointer));
+  if(!*udata) {
+    luaL_error(L,"Attempting to access of type %s after its destruction\n",luaA_typename(L,type_id));
+  }
 }
 
 static int unknown_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
