@@ -109,6 +109,36 @@ typedef struct dt_iop_channelmixer_global_data_t
   int kernel_channelmixer;
 } dt_iop_channelmixer_global_data_t;
 
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
+{
+  if (old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_channelmixer_params_v1_t
+    {
+      float red[7];
+      float green[7];
+      float blue[7];
+    } dt_iop_channelmixer_params_v1_t;
+
+    dt_iop_channelmixer_params_v1_t *params_v1 = (dt_iop_channelmixer_params_v1_t *) old_params;
+    dt_iop_channelmixer_params_t params = (dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },
+                                                                          { 0, 0, 0, 0, 1, 0, 0 },
+                                                                          { 0, 0, 0, 0, 0, 1, 0 },
+                                                                          { 0, 0, 0, 0, 0, 0, 0 } };
+    for (int i = 0; i < 7; i++) // Better not use CHANNEL_SIZE for further compatibility
+    {
+      params.red[i] = params_v1->red[i];
+      params.green[i] = params_v1->green[i];
+      params.blue[i] = params_v1->blue[i];
+    }
+
+    memcpy(new_params, &params, sizeof(dt_iop_channelmixer_params_t));
+    return 0;
+  }
+
+  return 1;
+}
 
 const char *name()
 {
