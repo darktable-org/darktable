@@ -1025,6 +1025,10 @@
 		<BlackAreas>
 			<Vertical x="3294" width="50"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="96"/>
+			<Hint name="wb_mangle" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot Pro70" supported="no">
 		<ID make="Canon" model="PowerShot Pro70">Canon PowerShot Pro70</ID>
@@ -1093,6 +1097,9 @@
 			<Vertical x="0" width="90"/>
 			<Horizontal y="0" height="16"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G5">
 		<ID make="Canon" model="PowerShot G5">Canon PowerShot G5</ID>
@@ -1137,6 +1144,10 @@
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="96"/>
+			<Hint name="wb_mangle" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G7 X">
 		<ID make="Canon" model="PowerShot G7 X">Canon PowerShot G7 X</ID>
@@ -1386,6 +1397,10 @@
 			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="96"/>
+			<Hint name="wb_mangle" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S70">
 		<ID make="Canon" model="PowerShot S70">Canon PowerShot S70</ID>
@@ -1401,6 +1416,10 @@
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="96"/>
+			<Hint name="wb_mangle" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S90">
 		<ID make="Canon" model="PowerShot S90">Canon PowerShot S90</ID>
@@ -1416,6 +1435,9 @@
 			<Vertical x="0" width="6"/>
 			<Horizontal y="0" height="14"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S95">
 		<ID make="Canon" model="PowerShot S95">Canon PowerShot S95</ID>
@@ -1541,6 +1563,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="2000" height="1312"/>
 		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="nikon_wb_adjustment" value="true"/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D1H">
 		<ID make="Nikon" model="D1H">Nikon D1H</ID>
@@ -3162,7 +3187,7 @@
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="15" white="3956"/>
 	</Camera>
-	<Camera make="Panasonic" model = "DMC-FZ150" mode="4:3">
+	<Camera make="Panasonic" model="DMC-FZ150" mode="4:3">
 		<ID make="Panasonic" model="DMC-FZ150">Panasonic DMC-FZ150</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -3171,7 +3196,18 @@
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-128" height="0"/>
-		<Sensor black="15" white="3956"/>
+		<Sensor black="145" white="3956"/>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ150" mode="3:2">
+		<ID make="Panasonic" model="DMC-FZ150">Panasonic DMC-FZ150</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-128" height="0"/>
+		<Sensor black="143" white="3971"/>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-FZ200">
 		<ID make="Panasonic" model="DMC-FZ200">Panasonic DMC-FZ200</ID>

@@ -99,6 +99,38 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   string mode = "";
 
   // Fetch the white balance
+  if(mRootIFD->hasEntryRecursive((CiffTag)0x0032)) {
+    CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x0032);
+    if (entry->type == CIFF_BYTE && entry->count == 768) {
+      // We're in a D30 file, values are RGGB
+      // This will probably not get used anyway as a 0x102c tag should exist
+      const ushort16 *values = (ushort16*) (entry->getData()+72);
+      mRaw->metadata.wbCoeffs[0] = (float) (1024.0 / values[0]);
+      mRaw->metadata.wbCoeffs[1] = (float) ((1024.0/values[1])+(1024.0/values[2]))/2.0f;
+      mRaw->metadata.wbCoeffs[2] = (float) (1024.0 / values[3]);
+    } else if (entry->type == CIFF_BYTE && entry->count > 768) { // Other G series and S series cameras
+      const uchar8 *data = entry->getData();
+      // correct offset for most cameras
+      int offset = 120;
+      // check for the hint that we need to use other offset
+      if (hints.find("wb_offset") != hints.end()) {
+        stringstream wb_offset(hints.find("wb_offset")->second);
+        wb_offset >> offset;
+      }
+
+      ushort16 key[] = { 0x410, 0x45f3 };
+      if (hints.find("wb_mangle") == hints.end())
+        key[0] = key[1] = 0;
+
+      const ushort16 *values = (ushort16*) (data+offset);
+      if ((values[0]^key[0]) == (values[3]^key[1])) { // Both greens should be equal
+        mRaw->metadata.wbCoeffs[0] = (float) (values[1] ^ key[1]);
+        mRaw->metadata.wbCoeffs[1] = (float) (values[0] ^ key[0]);
+        mRaw->metadata.wbCoeffs[2] = (float) (values[2] ^ key[0]);
+      } else
+        writeLog(DEBUG_PRIO_INFO, "CRW Decoder: WB greens in 0x0032 tag should be equal");
+    }
+  }
   if(mRootIFD->hasEntryRecursive((CiffTag)0x102c)) {
     CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x102c);
     if (entry->type == CIFF_SHORT && entry->getShort() > 512) {

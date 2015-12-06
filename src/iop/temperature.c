@@ -806,7 +806,7 @@ void reload_defaults(dt_iop_module_t *module)
     // raw images need wb:
     module->default_enabled = 1;
 
-    int found = 1, is_monochrom = 0;
+    int found = 1;
 
     for(int k = 0; k < 3; k++)
     {
@@ -829,31 +829,18 @@ void reload_defaults(dt_iop_module_t *module)
         dt_control_log(_("failed to read camera white balance information!"));
         fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
                 module->dev->image_storage.filename);
-
-        // could not get useful info, try presets:
-        for(int i = 0; i < wb_preset_count; i++)
-        {
-          if(!strcmp(wb_preset[i].make, module->dev->image_storage.camera_maker) 
-             && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model))
-          {
-            // just take the first preset we find for this camera
-            for(int k = 0; k < 3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];
-            found = 1;
-            break;
-          }
-        }
       }
       else
       {
         // nop white balance is valid for monochrome sraws (like the leica monochrom produces)
-        is_monochrom = 1;
+        goto gui;
       }
     }
 
-    // did not find preset either?
+    if(!found)
     {
       double bwb[3];
-      if(!is_monochrom && !found && !calculate_bogus_daylight_wb(module, bwb))
+      if(!calculate_bogus_daylight_wb(module, bwb))
       {
         // found camera matrix and used it to calculate bogus daylight wb
         for(int c = 0; c < 3; c++) tmp.coeffs[c] = bwb[c];
@@ -861,8 +848,24 @@ void reload_defaults(dt_iop_module_t *module)
       }
     }
 
-    // and no cam matrix too???
-    if(!found && !is_monochrom)
+    // no cam matrix??? try presets:
+    if(!found)
+    {
+      for(int i = 0; i < wb_preset_count; i++)
+      {
+        if(!strcmp(wb_preset[i].make, module->dev->image_storage.camera_maker)
+           && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model))
+        {
+          // just take the first preset we find for this camera
+          for(int k = 0; k < 3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];
+          found = 1;
+          break;
+        }
+      }
+    }
+
+    // did not find preset either?
+    if(!found)
     {
       // final security net: hardcoded default that fits most cams.
       tmp.coeffs[0] = 2.0f;
@@ -875,6 +878,7 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.coeffs[1] = 1.0f;
   }
 
+gui:
   // remember daylight wb used for temperature/tint conversion,
   // assuming it corresponds to CIE daylight (D65)
   if(module->gui_data)
