@@ -332,6 +332,13 @@ const wb_data wb_preset[] =
   { "Canon", "PowerShot G12", Flash, 0,		{ 2.102157, 1, 1.706016, 0 } },
   { "Canon", "PowerShot G12", Underwater, 0,	{ 1.807650, 1, 2.112568, 0 } },
 
+  { "Canon", "PowerShot G15", Daylight, 0,    { 2.32114882506527, 1, 2.35770234986945, 0 } },
+  { "Canon", "PowerShot G15", Shade, 0,       { 2.73360107095047, 1, 2.11646586345382, 0 } },
+  { "Canon", "PowerShot G15", Cloudy, 0,      { 2.73360107095047, 1, 2.11646586345382, 0 } },
+  { "Canon", "PowerShot G15", Tungsten, 0,    { 1.5990639625585, 1, 4.38689547581903, 0 } },
+  { "Canon", "PowerShot G15", Fluorescent, 0, { 2.23393316195373, 1, 2.72879177377892, 0 } },
+  { "Canon", "PowerShot G15", Flash, 0,       { 2.91902834008097, 1, 1.98785425101215, 0 } },
+
   /* Canon PowerShot S3 IS does not support native WB presets. These are made
      as custom WB presets. */
   { "Canon", "PowerShot S3 IS", Daylight, 0,	{ 1.627271, 1, 1.823491, 0 } },
