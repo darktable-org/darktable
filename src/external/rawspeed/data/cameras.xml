@@ -1285,6 +1285,9 @@
 			<Vertical x="0" width="100"/>
 			<Horizontal y="3062" height="60"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G16" decoder_version="4">
 		<ID make="Canon" model="PowerShot G16">Canon PowerShot G16</ID>
