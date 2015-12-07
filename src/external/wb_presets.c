@@ -1475,6 +1475,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS-1D Mark III", Fluorescent, 0,{ 1.74261201143947, 1, 2.22211630123928, 0 } },
   { "Canon", "EOS-1D Mark III", Flash, 0,     { 2.173828125, 1, 1.2880859375, 0 } },
 
+  { "Canon", "EOS-1Ds Mark III", Daylight, 0,    { 2.09375, 1, 1.521484375, 0 } },
+  { "Canon", "EOS-1Ds Mark III", Shade, 0,       { 2.4208984375, 1, 1.23828125, 0 } },
+  { "Canon", "EOS-1Ds Mark III", Cloudy, 0,      { 2.2509765625, 1, 1.361328125, 0 } },
+  { "Canon", "EOS-1Ds Mark III", Tungsten, 0,    { 1.45538178472861, 1, 2.40478380864765, 0 } },
+  { "Canon", "EOS-1Ds Mark III", Fluorescent, 0, { 1.84271844660194, 1, 2.33009708737864, 0 } },
+  { "Canon", "EOS-1Ds Mark III", Flash, 0,       { 2.3115234375, 1, 1.31640625, 0 } },
+
   { "Canon", "EOS-1D Mark II N", Cloudy, 0,	{ 2.183594, 1, 1.220703, 0 } },
   { "Canon", "EOS-1D Mark II N", Daylight, 0,	{ 2.019531, 1, 1.349609, 0 } },
   { "Canon", "EOS-1D Mark II N", Flash, 0,	{ 2.291016, 1, 1.149414, 0 } },
