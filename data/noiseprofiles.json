@@ -3494,7 +3494,7 @@
       "maker": "Sony",
       "models": [
         {
-          "comment": "dsc-rx10m2 contributed by pedrocr",
+          "comment": "dsc-rx10m2 contributed by Martin Vollrathson",
           "model": "DSC-RX10M2",
           "profiles": [
             {"name": "DSC-RX10M2 iso 64", "iso": 64, "a": [1.03474055325134e-05, 6.43617903467727e-06, 2.46173058271767e-05], "b": [2.50143172840678e-08, 1.89000341966691e-08, 3.63448340639204e-08]},
