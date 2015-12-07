@@ -4385,7 +4385,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 )</synopsis>
 <para>drops the cached version of this image.</para>
 <para>This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail</para>
-<para>Darktable will regenerate the thumbnail by itself when it is needed</para>
+<para>darktable will regenerate the thumbnail by itself when it is needed</para>
 
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_drop_cache_self"><term>self</term><listitem>

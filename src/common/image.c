@@ -631,7 +631,6 @@ int dt_image_altered(const uint32_t imgid)
     break;
   }
   sqlite3_finalize(stmt);
-  if(altered) return 1;
 
   return altered;
 }

@@ -386,8 +386,8 @@ darktable.register_event("shortcut",function(event,shortcut)
 
           <listitem><para>
             <code>darktable.gui.action_images</code>
-            is a table containing all the images of interest. Darktable will act on selected
-            images if any image is seleced, and on the image under the mouse if no image is
+            is a table containing all the images of interest. darktable will act on selected
+            images if any image is selected, and on the image under the mouse if no image is
             selected. This function allows to easily follow darktable's UI logic in lua.
           </para></listitem>
 
@@ -460,7 +460,7 @@ end,"Increase the rating of an image")</programlisting>
 
       <para>
         We have learned to use lua to adapt darktable to our particular workflow, let's look at
-        how to use lua to easily export images. Darktable can easily export images to quite a
+        how to use lua to easily export images. darktable can easily export images to quite a
         few online services but there are always more. If you are able to upload an image to a
         service via the command line then you can use lua to integrate it into darktable's user
         interface.
@@ -701,7 +701,7 @@ darktable.register_storage("scp_export","Export via scp",
       </para>
 
       <para>
-        Darktable will look for scripts (following the normal lua rules) in the standard
+        darktable will look for scripts (following the normal lua rules) in the standard
         directories plus
         <code>$CONFIGDIR/lua/?.lua</code>
         . So our script can be called by simply adding
@@ -712,7 +712,7 @@ darktable.register_storage("scp_export","Export via scp",
           <listitem><para>
             The function
             <code>darktable.configuration.check_version</code>
-            will check compatibility for you. the
+            will check compatibility for you. The
             <code>...</code>
             will turn into your script's name and
             <code>{2,0,0}</code>
@@ -768,7 +768,7 @@ darktable.register_storage("scp_export","Export via scp",
 
     <sect2 id="lua_lib">
 
-      <title>Using Darktable from a lua script</title>
+      <title>Using darktable from a lua script</title>
 
       <para>
         <emphasis>Warning: This feature is very experimental. It is known that several elements

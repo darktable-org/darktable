@@ -4601,19 +4601,24 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-GX1", "5500K", 0,		{ 2.611321, 1, 1.615094, 0 } },
   { "Panasonic", "DMC-GX1", "6500K", 0,		{ 2.860377, 1, 1.490566, 0 } },
 
-  { "Panasonic", "DMC-GX7", "Daylight", 0,	{ 2.539623, 1, 1.611321, 0 } },
-  { "Panasonic", "DMC-GX7", "Cloudy", 0,	{ 2.667925, 1, 1.509434, 0 } },
-  { "Panasonic", "DMC-GX7", "Shade", 0,		{ 2.879245, 1, 1.422642, 0 } },
-  { "Panasonic", "DMC-GX7", "Incandescent", 0,	{ 1.758491, 1, 2.320755, 0 } },
-  { "Panasonic", "DMC-GX7", "Flash", 0,		{ 2.607547, 1, 1.479245, 0 } },
+  { "Panasonic", "DMC-GX7", Daylight, 0,	{ 2.539623, 1, 1.611321, 0 } },
+  { "Panasonic", "DMC-GX7", Cloudy, 0,	{ 2.667925, 1, 1.509434, 0 } },
+  { "Panasonic", "DMC-GX7", Shade, 0,		{ 2.879245, 1, 1.422642, 0 } },
+  { "Panasonic", "DMC-GX7", Incandescent, 0,	{ 1.758491, 1, 2.320755, 0 } },
+  { "Panasonic", "DMC-GX7", Flash, 0,		{ 2.607547, 1, 1.479245, 0 } },
+
+  { "Panasonic", "DMC-GX8", Daylight, 0,     { 2.296875, 1, 1.914063, 0 } },
+  { "Panasonic", "DMC-GX8", Cloudy, 0,       { 2.4375, 1, 1.761719, 0 } },
+  { "Panasonic", "DMC-GX8", Shade, 0,        { 2.605469, 1, 1.65625, 0 } },
+  { "Panasonic", "DMC-GX8", Incandescent, 0, { 1.664063, 1, 2.800781, 0 } },
+  { "Panasonic", "DMC-GX8", Flash, 0,        { 2.320313, 1, 1.824219, 0 } },
 
   /* Firmware version 1.1 */
-  { "Panasonic", "DMC-GM1", "Daylight", 0,	{ 2.469697, 1, 1.659091, 0 } },
-  { "Panasonic", "DMC-GM1", "Cloudy", 0,	{ 2.609848, 1, 1.553030, 0 } },
-  { "Panasonic", "DMC-GM1", "Shade", 0,		{ 2.840909, 1, 1.465909, 0 } },
-  { "Panasonic", "DMC-GM1", "Incandescent", 0,	{ 1.613636, 1, 2.386364, 0 } },
-  { "Panasonic", "DMC-GM1", "Flash", 0,		{ 2.530303, 1, 1.496212, 0 } },
-  { "Panasonic", "DMC-GM1", "Kelvin", 0,	{ 1.212121, 1, 2.935606, 0 } },
+  { "Panasonic", "DMC-GM1", Daylight, 0,	{ 2.469697, 1, 1.659091, 0 } },
+  { "Panasonic", "DMC-GM1", Cloudy, 0,	{ 2.609848, 1, 1.553030, 0 } },
+  { "Panasonic", "DMC-GM1", Shade, 0,		{ 2.840909, 1, 1.465909, 0 } },
+  { "Panasonic", "DMC-GM1", Incandescent, 0,	{ 1.613636, 1, 2.386364, 0 } },
+  { "Panasonic", "DMC-GM1", Flash, 0,		{ 2.530303, 1, 1.496212, 0 } },
 
   /* Firmware version 1.1 */
   { "Panasonic", "DMC-GM5", Daylight, 0,        { 2.394531, 1, 1.554687, 0 } },
