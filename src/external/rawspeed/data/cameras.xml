@@ -809,6 +809,9 @@
 			<Vertical x="2" width="68"/>
 			<Horizontal y="2" height="30"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS-1D" decoder_version="5">
 		<ID make="Canon" model="EOS-1D">Canon EOS-1D</ID>
