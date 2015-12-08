@@ -549,8 +549,8 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       const dt_image_t *img = dt_image_cache_get(darktable.image_cache, newid, 'r');
       darktable.gui->expanded_group_id = img->group_id;
       dt_image_cache_read_release(darktable.image_cache, img);
-      dt_collection_update_query(darktable.collection);
     }
+    dt_collection_update_query(darktable.collection);
   }
   return newid;
 }
