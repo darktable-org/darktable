@@ -244,7 +244,7 @@ class CameraSupportState
          from.rawspeed_modes[al] != @rawspeed_modes[al] # Or it has new modes
         modes = (@rawspeed_modes[al]||[]).dup
         (from.rawspeed_modes[al]||[]).each {|m| modes.delete m}
-        new_basics << al+(modes.size>0 ? " ("+modes.join(" ,")+")" : "")
+        new_basics << al+(modes.size>0 ? " ("+modes.join(", ")+")" : "")
       end
 
       def test_camera(to_cameras, al, from_cameras, fromals)
@@ -257,7 +257,7 @@ class CameraSupportState
       new_profiles << al if test_camera(@noiseprofiles_cameras, al, from.noiseprofiles_cameras, fromals)
       new_matrices << al if test_camera(@colormatrices_cameras, al, from.colormatrices_cameras, fromals)
     end
-    
+
     def print_list(name, list)
       return if list.size == 0
       puts name
@@ -267,7 +267,7 @@ class CameraSupportState
       puts
     end
 
-    print_list "Basic Support", new_basics
+    print_list "Base Support", new_basics
     print_list "White Balance Presets", new_presets
     print_list "Noise Profiles", new_profiles
     print_list "Custom Color matrices", new_matrices
