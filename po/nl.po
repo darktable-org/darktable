@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-12-07 14:08+0100\n"
-"PO-Revision-Date: 2015-12-07 14:15+0100\n"
+"PO-Revision-Date: 2015-12-08 11:18+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2548,11 +2548,11 @@ msgstr "selecteer delen"
 
 #: ../src/gui/hist_dialog.c:138
 msgid "select _all"
-msgstr "selecteer_alles"
+msgstr "selecteer _alles"
 
 #: ../src/gui/hist_dialog.c:138
 msgid "select _none"
-msgstr "selecteer_niets"
+msgstr "selecteer _niets"
 
 #: ../src/gui/hist_dialog.c:138 ../src/gui/preferences.c:1211 ../src/gui/presets.c:380 ../src/libs/lib.c:215
 msgid "_ok"
@@ -6381,7 +6381,7 @@ msgstr "spot"
 
 #: ../src/iop/temperature.c:861
 msgid "failed to read camera white balance information!"
-msgstr "inlezen informatie van de camerawitbalans is mislukt"
+msgstr "het inlezen van de camerawitbalans informatie is mislukt"
 
 #: ../src/iop/temperature.c:1219
 msgid "tint"
