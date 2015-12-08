@@ -14,14 +14,14 @@ FL_PRESET_REPLACE={
   "FluorescentP2" => "DaylightFluorescent",
   "FluorescentM1" => "WarmWhiteFluorescent",
 }
-PRESET_ORDER=["Daylight","Shade","Cloudy","Tungsten","Incandescent","Fluorescent",
+PRESET_ORDER=["Unknown", "Daylight","Shade","Cloudy","Tungsten","Incandescent","Fluorescent",
               "WarmWhiteFluorescent","CoolWhiteFluorescent","DayWhiteFluorescent","DaylightFluorescent",
               "Flash"]
 
 PRESET_SORT_MAPPING={}
 PRESET_ORDER.each_with_index {|name, index| PRESET_SORT_MAPPING[name]=index+1}
 
-CAMERAS=File.expand_path("/home/pedrocr/Projects/darktable/src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
+CAMERAS=File.expand_path("../src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
 
 # Create a map between EXIF maker/model and our cleaned up maker/model
 require 'nokogiri'
@@ -66,13 +66,14 @@ IO.popen("exiftool \"-WB_RG*B*\" -WhiteBalance -Make -Model #{ARGV[0]}") do |io|
     elsif tag == "White Balance"
       preset = values[0]
     elsif tag.split[0..2].join(" ") == "WB RGB Levels"
-      preset = tag.split[3..-1].join
-      green = values[1].to_f
-      red = values[0].to_f/green
-      blue = values[2].to_f/green
-      green = 1
-      fl_count += 1 if preset[0..."Fluorescent".size] == "Fluorescent"
-      listed_presets << [preset,red,green,blue]
+      p = tag.split[3..-1].join
+      g = values[1].to_f
+      r = values[0].to_f/g
+      b = values[2].to_f/g
+      g = 1
+      fl_count += 1 if p[0..."Fluorescent".size] == "Fluorescent"
+      p = "Unknown" if !p || p==""
+      listed_presets << [p,r,g,b]
     end
   end
 end

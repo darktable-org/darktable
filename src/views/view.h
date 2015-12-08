@@ -97,8 +97,6 @@ typedef struct dt_view_t
   int (*key_released)(struct dt_view_t *self, guint key, guint state);
   void (*configure)(struct dt_view_t *self, int width, int height);
   void (*scrolled)(struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
-  void (*border_scrolled)(struct dt_view_t *self, double x, double y, int which,
-                          int up); // mouse scrolled on left/right/top/bottom border (which 0123).
 
   // keyboard accel callbacks
   void (*init_key_accels)(struct dt_view_t *self);
@@ -299,7 +297,6 @@ int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state);
 int dt_view_manager_key_released(dt_view_manager_t *vm, guint key, guint state);
 void dt_view_manager_configure(dt_view_manager_t *vm, int width, int height);
 void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up, int state);
-void dt_view_manager_border_scrolled(dt_view_manager_t *vm, double x, double y, int which, int up);
 
 /** add widget to the current view toolbox */
 void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t view);

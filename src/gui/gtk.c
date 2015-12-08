@@ -470,9 +470,10 @@ static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user
 
 static gboolean borders_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  dt_view_manager_border_scrolled(darktable.view_manager, event->x, event->y, GPOINTER_TO_INT(user_data),
-                                  event->direction == GDK_SCROLL_UP);
-  gtk_widget_queue_draw(widget);
+  // pass the scroll event to the matching side panel
+  gboolean res;
+  g_signal_emit_by_name(G_OBJECT(user_data), "scroll-event", event, &res);
+
   return TRUE;
 }
 
@@ -815,25 +816,21 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw_borders), GINT_TO_POINTER(0));
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(borders_button_pressed),
                    darktable.gui->ui);
-  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(borders_scrolled), GINT_TO_POINTER(0));
   g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(0));
   widget = darktable.gui->widgets.right_border;
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw_borders), GINT_TO_POINTER(1));
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(borders_button_pressed),
                    darktable.gui->ui);
-  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(borders_scrolled), GINT_TO_POINTER(1));
   g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(1));
   widget = darktable.gui->widgets.top_border;
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw_borders), GINT_TO_POINTER(2));
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(borders_button_pressed),
                    darktable.gui->ui);
-  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(borders_scrolled), GINT_TO_POINTER(2));
   g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(2));
   widget = darktable.gui->widgets.bottom_border;
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw_borders), GINT_TO_POINTER(3));
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(borders_button_pressed),
                    darktable.gui->ui);
-  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(borders_scrolled), GINT_TO_POINTER(3));
   g_object_set_data(G_OBJECT(widget), "border", GINT_TO_POINTER(3));
   dt_gui_presets_init();
 
@@ -1423,6 +1420,9 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
 
   g_signal_connect(G_OBJECT(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(widget))), "notify::lower",
                    G_CALLBACK(_ui_panel_size_changed), GINT_TO_POINTER(left ? 1 : 0));
+  // we want the left/right window border to scroll the module lists
+  g_signal_connect(G_OBJECT(left ? darktable.gui->widgets.right_border : darktable.gui->widgets.left_border),
+                   "scroll-event", G_CALLBACK(borders_scrolled), widget);
 
   /* create the scrolled viewport */
   container = widget;

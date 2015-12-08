@@ -2182,41 +2182,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   return 0;
 }
 
-void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
-{
-  dt_library_t *lib = (dt_library_t *)view->data;
-  int layout = lib->layout;
-  if(layout == 1)
-  {
-    if(which == 0 || which == 1)
-    {
-      if(up)
-        move_view(lib, UP);
-      else
-        move_view(lib, DOWN);
-    }
-  }
-  else
-  {
-    if(which == 0 || which == 1)
-    {
-      if(up)
-        lib->track = -DT_LIBRARY_MAX_ZOOM;
-      else
-        lib->track = DT_LIBRARY_MAX_ZOOM;
-    }
-    else if(which == 2 || which == 3)
-    {
-      if(up)
-        lib->track = -1;
-      else
-        lib->track = 1;
-    }
-  }
-
-  dt_control_queue_redraw();
-}
-
 void init_key_accels(dt_view_t *self)
 {
   // Initializing accelerators
