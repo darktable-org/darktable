@@ -174,8 +174,6 @@ int dt_view_load_module(dt_view_t *view, const char *module)
     view->key_released = NULL;
   if(!g_module_symbol(view->module, "configure", (gpointer) & (view->configure))) view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled", (gpointer) & (view->scrolled))) view->scrolled = NULL;
-  if(!g_module_symbol(view->module, "border_scrolled", (gpointer) & (view->border_scrolled)))
-    view->border_scrolled = NULL;
   if(!g_module_symbol(view->module, "init_key_accels", (gpointer) & (view->init_key_accels)))
     view->init_key_accels = NULL;
   if(!g_module_symbol(view->module, "connect_key_accels", (gpointer) & (view->connect_key_accels)))
@@ -676,13 +674,6 @@ void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up,
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->scrolled) v->scrolled(v, x, y, up, state);
-}
-
-void dt_view_manager_border_scrolled(dt_view_manager_t *vm, double x, double y, int which, int up)
-{
-  if(vm->current_view < 0) return;
-  dt_view_t *v = vm->view + vm->current_view;
-  if(v->border_scrolled) v->border_scrolled(v, x, y, which, up);
 }
 
 void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize,

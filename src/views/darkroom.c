@@ -2097,36 +2097,6 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_control_queue_redraw();
 }
 
-
-void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
-{
-  dt_develop_t *dev = (dt_develop_t *)view->data;
-  float zoom_x, zoom_y;
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  zoom_x = dt_control_get_dev_zoom_x();
-  zoom_y = dt_control_get_dev_zoom_y();
-  if(which > 1)
-  {
-    if(up)
-      zoom_x -= 0.02;
-    else
-      zoom_x += 0.02;
-  }
-  else
-  {
-    if(up)
-      zoom_y -= 0.02;
-    else
-      zoom_y += 0.02;
-  }
-  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-  dt_control_set_dev_zoom_x(zoom_x);
-  dt_control_set_dev_zoom_y(zoom_y);
-  dt_dev_invalidate(dev);
-  dt_control_queue_redraw();
-}
-
 int key_released(dt_view_t *self, guint key, guint state)
 {
   const dt_control_accels_t *accels = &darktable.control->accels;
