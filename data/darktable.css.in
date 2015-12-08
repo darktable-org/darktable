@@ -530,3 +530,8 @@ GtkAboutDialog GtkHeaderBar
 {
   padding: 2px;
 }
+
+GtkProgressBar *
+{
+  background-color: @text_color;
+}
