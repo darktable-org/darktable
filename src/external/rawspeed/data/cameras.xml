@@ -4300,6 +4300,48 @@
 			<Alias>DMC-FZ72</Alias>
 		</Aliases>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ70" mode="1:1">
+		<ID make="Panasonic" model="DMC-FZ70">Panasonic DMC-FZ70</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="144" white="3956"/>
+		<Aliases>
+			<Alias>DMC-FZ72</Alias>
+		</Aliases>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ70" mode="3:2">
+		<ID make="Panasonic" model="DMC-FZ70">Panasonic DMC-FZ70</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-182" height="0"/>
+		<Sensor black="144" white="3956"/>
+		<Aliases>
+			<Alias>DMC-FZ72</Alias>
+		</Aliases>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ70" mode="16:9">
+		<ID make="Panasonic" model="DMC-FZ70">Panasonic DMC-FZ70</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-182" height="0"/>
+		<Sensor black="144" white="3956"/>
+		<Aliases>
+			<Alias>DMC-FZ72</Alias>
+		</Aliases>
+	</Camera>
 	<Camera make="Panasonic" model = "DMC-FZ100">
 		<ID make="Panasonic" model="DMC-FZ100">Panasonic DMC-FZ100</ID>
 		<CFA width="2" height="2">
