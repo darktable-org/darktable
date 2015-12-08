@@ -5986,6 +5986,21 @@ const wb_data wb_preset[] =
   { "Sony", "DSLR-A550", Fluorescent, 0,	{ 1.902344, 1, 2.117188, 0 } },
   { "Sony", "DSLR-A550", Flash, 0,		{ 2.390625, 1, 1.335938, 0 } },
 
+  { "Sony", "DSLR-A580", Daylight, 0, { 2.5703125, 1, 1.578125, 0 } },
+  { "Sony", "DSLR-A580", Shade, 0, { 3.015625, 1, 1.3046875, 0 } },
+  { "Sony", "DSLR-A580", Cloudy, 0, { 2.7578125, 1, 1.453125, 0 } },
+  { "Sony", "DSLR-A580", Tungsten, 0, { 1.59375, 1, 2.78125, 0 } },
+  { "Sony", "DSLR-A580", WarmWhiteFluorescent, 0, { 1.82421875, 1, 2.78515625, 0 } },
+  { "Sony", "DSLR-A580", CoolWhiteFluorescent, 0, { 2.25390625, 1, 2.2109375, 0 } },
+  { "Sony", "DSLR-A580", DayWhiteFluorescent, 0, { 2.48828125, 1, 1.62109375, 0 } },
+  { "Sony", "DSLR-A580", DaylightFluorescent, 0, { 2.8203125, 1, 1.4453125, 0 } },
+  { "Sony", "DSLR-A580", Flash, 0, { 2.8671875, 1, 1.39453125, 0 } },
+  { "Sony", "DSLR-A580", "2500K", 0, { 1.375, 1, 3.30859375, 0 } },
+  { "Sony", "DSLR-A580", "3200K", 0, { 1.78125, 1, 2.4296875, 0 } },
+  { "Sony", "DSLR-A580", "4500K", 0, { 2.32421875, 1, 1.76953125, 0 } },
+  { "Sony", "DSLR-A580", "6000K", 0, { 2.734375, 1, 1.46484375, 0 } },
+  { "Sony", "DSLR-A580", "8500K", 0, { 3.15625, 1, 1.23828125, 0 } },
+
   /* Sony A700 presets - firmware v4 */
   { "Sony", "DSLR-A700", Daylight, -3,		{ 1.972656, 1, 1.777344, 0 } },
   { "Sony", "DSLR-A700", Daylight, -2,		{ 2.027344, 1, 1.718750, 0 } },
