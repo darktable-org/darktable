@@ -11,26 +11,36 @@ NOISEPROFILES=File.expand_path("../data/noiseprofiles.json", File.dirname(__FILE
 PANASONIC_NEEDED_FORMATS = ["4:3", "3:2", "16:9", "1:1"]
 
 samplesdir = nil
-list_mode = false
-matrix_mode = false
+program_mode = nil
 verbose_mode = false
 quiet_mode = false
+compare_file = nil
 
-ARGV.each do |arg|
-  if arg == "--list" && ARGV.size == 1
-    list_mode = true
-  elsif arg == "--matrix"
-    matrix_mode = true
-  elsif arg == "--verbose"
-    verbose_mode = true
-  elsif arg == "--quiet"
-    quiet_mode = true
-  elsif samplesdir == nil && File.exists?(arg)
-    samplesdir = arg
-  else
-    $stderr.puts "Usage: check_camera_support [--verbose] [--matrix] <samples dir>"
-    $stderr.puts "       check_camera_support --list"
-    exit 2
+if ARGV[0] == "--list" && ARGV.size == 1
+  program_mode = :list
+elsif ARGV[0] == "--compare" && ARGV.size == 2
+  program_mode = :compare
+  compare_file = File.expand_path("./camera_support_digests/#{ARGV[1]}", File.dirname(__FILE__))
+  if !File.exists?(compare_file)
+    $stderr.puts "ERROR: Couldn't find '#{compare_file}'"
+    exit 3
+  end
+else
+  ARGV.each do |arg|
+    if arg == "--matrix"
+      program_mode = :matrix
+    elsif arg == "--verbose"
+      verbose_mode = true
+    elsif arg == "--quiet"
+      quiet_mode = true
+    elsif samplesdir == nil && File.exists?(arg)
+      samplesdir = arg
+    else
+      $stderr.puts "Usage: check_camera_support [--verbose] [--matrix] <samples dir>"
+      $stderr.puts "       check_camera_support --list"
+      $stderr.puts "       check_camera_support --compare <from version>"
+      exit 2
+    end
   end
 end
 
@@ -60,7 +70,7 @@ File.open(CAMERAS) do |f|
       exif_alias_map[exif_id] = id
       mode = ""
       mode = c.attribute("mode").value if c.attribute("mode")
-      if mode != "" && mode != "dng"
+      if mode != ""
         rawspeed_modes[id] ||= []
         rawspeed_modes[id] <<= mode
       end
@@ -77,7 +87,7 @@ File.open(CAMERAS) do |f|
         rawspeed_aliases[id] << aliasid if aliasid != id
         exif_name_map[exif_id] = id
         exif_alias_map[exif_id] = aliasid
-        if mode != "" && mode != "dng"
+        if mode != ""
           rawspeed_modes[aliasid] ||= []
           rawspeed_modes[aliasid] <<= mode
         end
@@ -170,22 +180,76 @@ def compare_lists(name, cameras, db, verbose_miss, verbose_nomatch)
   miss_db.each {|c| puts "  NOMATCH: #{c}"} if verbose_nomatch
 end
 
-if list_mode
+case program_mode
+when :list, :compare
+  lines = []
   rawspeed_cameras.sort.each do |camera|
     rawspeed_aliases[camera].sort.each do |al|
       {"basic"           => true,
        "wb_presets"      => presets_cameras[camera],
        "noise_profile"   => noiseprofiles_cameras[camera],
        "extended_matrix" => colormatrices_cameras[camera],
-      }.each{|type, exists| puts type+": "+al if exists}
+      }.each{|type, exists| lines << type+": "+al if exists}
       if modes = rawspeed_modes[al]
         modes.each do |mode|
-          puts "mode: "+mode+","+al
+          lines << "mode: "+mode+","+al
         end
       end
     end
   end
-elsif matrix_mode
+  if program_mode == :list
+    lines.each{|line| puts line}
+  else # :compare
+    # Lets remove the lines that are duplicates
+    lineshash = Hash[lines.map{|line| [line.strip,true]}]
+    File.open(compare_file).each do |line|
+      lineshash.delete(line.strip)
+    end
+    basics = {}
+    wb_presets = []
+    noise_profiles = []
+    extended_matrices = []
+
+    lineshash.keys.each do |line|
+      linename = line.split(":")[0].strip
+      lineval = line.split(":")[1..-1].join(":").strip
+      case linename
+      when "basic"
+        basics[lineval] ||= []
+      when "mode"
+        mode = lineval.split(",")[0].strip
+        camera = lineval.split(",")[1..-1].join(",").strip
+        basics[camera] ||= []
+        basics[camera] <<= mode
+      when "wb_presets"
+        wb_presets << lineval
+      when "noise_profile"
+        noise_profiles << lineval
+      when "extended_matrix"
+        extended_matrices << lineval
+      else
+        $stderr.puts "Don't know how to parse '#{line}'"
+        exit 4
+      end
+    end
+
+    basics = basics.map{|camera, modes| camera+(modes.size>0 ? " ("+modes.join(" ,")+")" : "")}
+
+    def print_list(name, list)
+      return if list.size == 0
+      puts name
+      list.each do |item|
+        puts " - "+item
+      end
+      puts
+    end
+
+    print_list "Basic Support", basics
+    print_list "White Balance Presets", wb_presets
+    print_list "Noise Profiles", noise_profiles
+    print_list "Custom Color matrices", extended_matrices
+  end
+when :matrix
   puts "<table><tbody>"
 
   counts = [0, 0, 0, 0, 0]
