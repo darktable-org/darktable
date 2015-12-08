@@ -530,3 +530,28 @@ GtkAboutDialog GtkHeaderBar
 {
   padding: 2px;
 }
+
+GtkProgressBar *
+{
+  background-color: @text_color;
+}
+
+GtkFileChooserDialog GtkEventBox
+{
+  background-color: transparent;
+}
+
+GtkFileChooserDialog .sidebar-icon
+{
+  padding: 0px 5px 0px 10px;
+}
+
+GtkFileChooserDialog .sidebar-row
+{
+  padding-top: 3px;
+}
+
+GtkFileChooserDialog .sidebar-row:hover
+{
+  background-color: shade(@selected_bg_color, 1.7);
+}
