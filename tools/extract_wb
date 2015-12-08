@@ -21,7 +21,7 @@ PRESET_ORDER=["Daylight","Shade","Cloudy","Tungsten","Incandescent","Fluorescent
 PRESET_SORT_MAPPING={}
 PRESET_ORDER.each_with_index {|name, index| PRESET_SORT_MAPPING[name]=index+1}
 
-CAMERAS=File.expand_path("/home/pedrocr/Projects/darktable/src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
+CAMERAS=File.expand_path("../src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
 
 # Create a map between EXIF maker/model and our cleaned up maker/model
 require 'nokogiri'
