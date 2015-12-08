@@ -177,20 +177,6 @@
       </para>
     </sect5>
 
-    <sect5>
-      <title>histogram of</title>
-      <para>
-        Defines what image data to take as a histogram for the <quote>automatic</quote> exposure
-        correction&nbsp;&ndash; either <quote>pre-processed image</quote> which is the input
-        that the exposure module receives with some modules like <emphasis>demosaic</emphasis>
-        and <emphasis>white balance</emphasis> already applied, or <quote>source raw
-        data</quote> which is the unprocessed data of your raw file. Note that this option does
-        not relate to the histogram you see in the <emphasis>histogram</emphasis> panel (see
-        <xref linkend="histogram"/>)&nbsp;&ndash; the latter representing the final result of
-        the pixelpipe with <emphasis>all</emphasis> the active modules being applied.
-      </para>
-    </sect5>
-
   </sect4>
 
 </sect3>
