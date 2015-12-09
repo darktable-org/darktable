@@ -457,7 +457,8 @@ static int32_t async_callback_job(dt_job_t *job)
     nargs++;
   }
   dt_lua_do_chunk_silent(L,nargs,0);
-  dt_lua_redraw_screen();
+  // the following redraw triggers a loop with filmroll, see bug #10765.
+  // dt_lua_redraw_screen();
   dt_lua_unlock();
   return 0;
 }
