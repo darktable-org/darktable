@@ -83,7 +83,7 @@ typedef struct dt_iop_channelmixer_params_t
   /** amount of blue to mix value -1.0 - 1.0 */
   float blue[CHANNEL_SIZE];
   /** preserve or not luminosity */
-  bool luminosity[CHANNEL_SIZE];
+  int luminosity[CHANNEL_SIZE];
 } dt_iop_channelmixer_params_t;
 
 typedef struct dt_iop_channelmixer_gui_data_t
@@ -101,7 +101,7 @@ typedef struct dt_iop_channelmixer_data_t
   float red[CHANNEL_SIZE];
   float green[CHANNEL_SIZE];
   float blue[CHANNEL_SIZE];
-  bool luminosity[CHANNEL_SIZE];
+  int luminosity[CHANNEL_SIZE];
 } dt_iop_channelmixer_data_t;
 
 typedef struct dt_iop_channelmixer_global_data_t
@@ -121,19 +121,23 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float blue[7];
     } dt_iop_channelmixer_params_v1_t;
 
-    dt_iop_channelmixer_params_v1_t *params_v1 = (dt_iop_channelmixer_params_v1_t *) old_params;
-    dt_iop_channelmixer_params_t params = (dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },
-                                                                          { 0, 0, 0, 0, 1, 0, 0 },
-                                                                          { 0, 0, 0, 0, 0, 1, 0 },
-                                                                          { 0, 0, 0, 0, 0, 0, 0 } };
+    dt_iop_channelmixer_params_v1_t *o = (dt_iop_channelmixer_params_v1_t *) old_params;
+    dt_iop_channelmixer_params_t *n = (dt_iop_channelmixer_params_t *) new_params;
+
+    // start with a fresh copy of default parameters
+    *n = (dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },
+                                         { 0, 0, 0, 0, 1, 0, 0 },
+                                         { 0, 0, 0, 0, 0, 1, 0 },
+                                         { 0, 0, 0, 0, 0, 0, 0 } };
+
+    // Copy old values
     for (int i = 0; i < 7; i++) // Better not use CHANNEL_SIZE for further compatibility
     {
-      params.red[i] = params_v1->red[i];
-      params.green[i] = params_v1->green[i];
-      params.blue[i] = params_v1->blue[i];
+      n->red[i] = o->red[i];
+      n->green[i] = o->green[i];
+      n->blue[i] = o->blue[i];
     }
 
-    memcpy(new_params, &params, sizeof(dt_iop_channelmixer_params_t));
     return 0;
   }
 
