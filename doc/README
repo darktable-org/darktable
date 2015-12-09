@@ -16,17 +16,15 @@ optionally, you might need for special features:
 
  - libcups2 (for the print module)
  - gphoto2 (for camera support, recommended)
- - librsvg2 (for watermark plugin)
  - flickcurl (for Flickr support)
  - SDL, SDL-image and Mesa OpenGL (to build darktable-viewer)
  - osm-gps-map and libsoup for geo tagging view
  - lensfun (lens distortion plugin)
  - OpenEXR for HDR export
- - flickcurl for uploading direct to Flickr
  - libsecret for storing passwords
  - libcolord-dev libcolord-gtk-dev for colour profile support
  - webp and openjpeg libraries for WebP and JPEG 2000 support
- - GraphicsMagick library for TIFF EXIF and LDR image format support
+ - GraphicsMagick library for TIFF-encoded EXIF thumbnails and LDR image format support
 
 then, type:
 $ ./build.sh --prefix /usr --buildtype Release
