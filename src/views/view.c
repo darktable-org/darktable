@@ -935,7 +935,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           else if(buf.color_space == DT_COLORSPACE_ADOBERGB &&
                   darktable.color_profiles->transform_adobe_rgb_to_display)
           {
-            transform = darktable.color_profiles->transform_srgb_to_display;
+            transform = darktable.color_profiles->transform_adobe_rgb_to_display;
           }
           else
           {
