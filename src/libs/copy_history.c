@@ -29,13 +29,14 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
+#include "bauhaus/bauhaus.h"
 
 DT_MODULE(1)
 
 typedef struct dt_lib_copy_history_t
 {
   int32_t imageid;
-  GtkComboBoxText *pastemode;
+  GtkWidget *pastemode;
   GtkButton *paste, *paste_parts;
   GtkWidget *copy_button, *delete_button, *load_button, *write_button;
   GtkWidget *copy_parts_button;
@@ -177,7 +178,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   /* get past mode and store, overwrite / merge */
-  int mode = gtk_combo_box_get_active(GTK_COMBO_BOX(d->pastemode));
+  int mode = dt_bauhaus_combobox_get(d->pastemode);
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from d->imageid and past onto selection */
@@ -206,7 +207,7 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int mode = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  int mode = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 }
 
@@ -259,21 +260,21 @@ void gui_init(dt_lib_module_t *self)
                _("paste part history stack to\nall selected images (ctrl-shift-v)"), (char *)NULL);
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), FALSE);
-  gtk_grid_attach(grid, GTK_WIDGET(d->paste_parts), 0, line, 2, 1);
+  gtk_grid_attach(grid, GTK_WIDGET(d->paste_parts), 0, line, 3, 1);
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste all")));
   g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"),
                (char *)NULL);
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
-  gtk_grid_attach(grid, GTK_WIDGET(d->paste), 2, line, 2, 1);
+  gtk_grid_attach(grid, GTK_WIDGET(d->paste), 3, line++, 3, 1);
 
-  d->pastemode = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  gtk_combo_box_text_append_text(d->pastemode, _("append"));
-  gtk_combo_box_text_append_text(d->pastemode, _("overwrite"));
+  d->pastemode = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->pastemode, NULL, _("mode"));
+  dt_bauhaus_combobox_add(d->pastemode, _("append"));
+  dt_bauhaus_combobox_add(d->pastemode, _("overwrite"));
   g_object_set(G_OBJECT(d->pastemode), "tooltip-text", _("how to handle existing history"), (char *)NULL);
-  gtk_grid_attach(grid, GTK_WIDGET(d->pastemode), 4, line++, 2, 1);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(d->pastemode),
-                           dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
+  gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
+  dt_bauhaus_combobox_set(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
 
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
@@ -297,7 +298,7 @@ void gui_init(dt_lib_module_t *self)
                    (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste), "clicked", G_CALLBACK(paste_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(loadbutton), "clicked", G_CALLBACK(load_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(d->pastemode), "changed", G_CALLBACK(pastemode_combobox_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), (gpointer)self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
