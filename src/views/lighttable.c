@@ -1208,7 +1208,6 @@ int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
 
     /* How many images to preload in advance. */
     int preload_num = dt_conf_get_int("plugins/lighttable/preview/full_size_preload_count");
-    preload_num = 0;
     gboolean preload = preload_num > 0;
     preload_num = CLAMPS(preload_num, 1, 99999);
 
