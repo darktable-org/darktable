@@ -46,6 +46,7 @@ typedef enum _camctl_camera_job_type_t
   _JOB_TYPE_WRITE_CONFIG,
   /** Set's a property in config cache. \todo This shouldn't be a job in jobqueue !? */
   _JOB_TYPE_SET_PROPERTY_STRING,
+  _JOB_TYPE_SET_PROPERTY_CHOICE,
   /** For some reason stopping live view needs to pass an int, not a string. */
   _JOB_TYPE_SET_PROPERTY_INT,
   /** get's a property from config cache. \todo This shouldn't be a job in jobqueue !?  */
@@ -63,6 +64,13 @@ typedef struct _camctl_camera_set_property_string_job_t
   char *name;
   char *value;
 } _camctl_camera_set_property_string_job_t;
+
+typedef struct _camctl_camera_set_property_choice_job_t
+{
+  _camctl_camera_job_type_t type;
+  char *name;
+  int value;
+} _camctl_camera_set_property_choice_job_t;
 
 typedef struct _camctl_camera_set_property_int_job_t
 {
@@ -385,6 +393,40 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
        dt_pthread_mutex_unlock( &cam->config_lock);*/
       g_free(spj->name);
       g_free(spj->value);
+    }
+    break;
+
+    case _JOB_TYPE_SET_PROPERTY_CHOICE:
+    {
+      _camctl_camera_set_property_choice_job_t *spj = (_camctl_camera_set_property_choice_job_t *)job;
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing set camera config job %s=%d", spj->name, spj->value);
+
+      CameraWidget *config; // Copy of camera configuration
+      CameraWidget *widget;
+      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
+      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      {
+        if(spj->value >= 0 && spj->value < gp_widget_count_choices(widget))
+        {
+          const char *choice;
+          gp_widget_get_choice(widget, spj->value, &choice);
+          dt_print(DT_DEBUG_CAMCTL, " (%s)", choice);
+
+          gp_widget_set_value(widget, choice);
+          gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        }
+      }
+      /* dt_pthread_mutex_lock( &cam->config_lock );
+       CameraWidget *widget;
+       if(  gp_widget_get_child_by_name ( camera->configuration, spj->name, &widget) == GP_OK) {
+         gp_widget_set_value ( widget , spj->value);
+         //gp_widget_set_changed( widget, 1 );
+         cam->config_changed=TRUE;
+       }
+
+       dt_pthread_mutex_unlock( &cam->config_lock);*/
+      dt_print(DT_DEBUG_CAMCTL, "\n");
+      g_free(spj->name);
     }
     break;
 
@@ -812,8 +854,8 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     gp_camera_get_config(cam->gpcam, &cam->configuration, c->gpcontext);
 
     // TODO: find a more robust way for this, once we find out how to do it with non-EOS cameras
-    if(cam->can_live_view && dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition"))
-      cam->can_live_view_advanced = TRUE;
+    cam->can_live_view_advanced = cam->can_live_view &&
+                                  dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition");
 
     // initialize timeout callbacks eg. keep alive, some cameras needs it.
     cam->gpcontext = camctl->gpcontext;
@@ -1175,6 +1217,26 @@ void dt_camctl_camera_set_property_string(const dt_camctl_t *c, const dt_camera_
   job->type = _JOB_TYPE_SET_PROPERTY_STRING;
   job->name = g_strdup(property_name);
   job->value = g_strdup(value);
+
+  // Push the job on the jobqueue
+  _camera_add_job(camctl, camera, job);
+}
+
+void dt_camctl_camera_set_property_choice(const dt_camctl_t *c, const dt_camera_t *cam,
+                                          const char *property_name, const int value)
+{
+  dt_camctl_t *camctl = (dt_camctl_t *)c;
+  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
+    return;
+  }
+  dt_camera_t *camera = (dt_camera_t *)cam;
+
+  _camctl_camera_set_property_choice_job_t *job = g_malloc(sizeof(_camctl_camera_set_property_choice_job_t));
+  job->type = _JOB_TYPE_SET_PROPERTY_CHOICE;
+  job->name = g_strdup(property_name);
+  job->value = value;
 
   // Push the job on the jobqueue
   _camera_add_job(camctl, camera, job);

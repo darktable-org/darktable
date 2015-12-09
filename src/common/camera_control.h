@@ -238,6 +238,8 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c, const dt_camera_t *
 /** Set a property value \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
 void dt_camctl_camera_set_property_string(const dt_camctl_t *c, const dt_camera_t *cam,
                                           const char *property_name, const char *value);
+void dt_camctl_camera_set_property_choice(const dt_camctl_t *c, const dt_camera_t *cam,
+                                          const char *property_name, const int value);
 void dt_camctl_camera_set_property_int(const dt_camctl_t *c, const dt_camera_t *cam,
                                        const char *property_name, const int value);
 /** Get a property value from cached configuration. \param cam Pointer to dt_camera_t if NULL the
