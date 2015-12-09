@@ -25,19 +25,18 @@
 #include "gui/gtk.h"
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
+#include "bauhaus/bauhaus.h"
 
 DT_MODULE(1)
 
 typedef struct dt_lib_camera_property_t
 {
-  /** label of property */
-  GtkLabel *label;
   /** the visual property name */
   gchar *name;
   /** the property name */
   gchar *property_name;
   /**Combobox of values available for the property*/
-  GtkComboBox *values;
+  GtkWidget *values;
   /** Show property OSD */
   GtkDarktableToggleButton *osd;
 } dt_lib_camera_property_t;
@@ -116,7 +115,7 @@ void property_changed_callback(GtkComboBox *cb, gpointer data)
 {
   dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)data;
   dt_camctl_camera_set_property_string(darktable.camctl, NULL, prop->property_name,
-                                       gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(prop->values)));
+                                       dt_bauhaus_combobox_get_text(prop->values));
 }
 
 /** Add  a new property of camera to the gui */
@@ -134,10 +133,8 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gcha
       dt_lib_camera_property_t *prop = calloc(1, sizeof(dt_lib_camera_property_t));
       prop->name = strdup(label);
       prop->property_name = strdup(propertyname);
-      prop->label = GTK_LABEL(gtk_label_new(prop->name));
-      g_object_ref_sink(prop->label);
-      gtk_widget_set_halign(GTK_WIDGET(prop->label), GTK_ALIGN_START);
-      prop->values = GTK_COMBO_BOX(gtk_combo_box_text_new());
+      prop->values = dt_bauhaus_combobox_new(NULL);
+      dt_bauhaus_widget_set_label(prop->values, NULL, label);
       g_object_ref_sink(prop->values);
 
       prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
@@ -147,15 +144,15 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gcha
                    (char *)NULL);
       do
       {
-        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(prop->values), g_dgettext("libgphoto2-2", value));
+        dt_bauhaus_combobox_add(prop->values, g_dgettext("libgphoto2-2", value));
         if(!strcmp(current_value, g_dgettext("libgphoto2-2", value)))
-          gtk_combo_box_set_active(prop->values, i);
+          dt_bauhaus_combobox_set(prop->values, i);
         i++;
       } while((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, propertyname))
               != NULL);
       lib->gui.properties = g_list_append(lib->gui.properties, prop);
       // Does dead lock!!!
-      g_signal_connect(G_OBJECT(prop->values), "changed", G_CALLBACK(property_changed_callback),
+      g_signal_connect(G_OBJECT(prop->values), "value-changed", G_CALLBACK(property_changed_callback),
                        (gpointer)prop);
       return prop;
     }
@@ -166,7 +163,6 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gcha
 void _lib_property_free(gpointer data)
 {
   dt_lib_camera_property_t * prop = (dt_lib_camera_property_t *)data;
-  g_object_unref(prop->label);
   g_object_unref(prop->osd);
   g_object_unref(prop->values);
   free(prop->name);
@@ -189,21 +185,15 @@ static void _camera_property_value_changed(const dt_camera_t *camera, const char
   if((citem = g_list_find_custom(lib->gui.properties, name, _compare_property_by_name)) != NULL)
   {
     dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)citem->data;
-    GtkTreeModel *model = gtk_combo_box_get_model(prop->values);
-    GtkTreeIter iter;
-    uint32_t index = 0;
-    if(gtk_tree_model_get_iter_first(model, &iter) == TRUE) do
+    int i = 0;
+    for(const GList *iter = dt_bauhaus_combobox_get_labels(prop->values); iter; iter = g_list_next(iter), i++)
+    {
+      if(!g_strcmp0((gchar*)iter->data, value))
       {
-        gchar *str;
-        gtk_tree_model_get(model, &iter, 0, &str, -1);
-        if(strcmp(str, value) == 0)
-        {
-          gtk_combo_box_set_active(prop->values, index);
-
-          break;
-        }
-        index++;
-      } while(gtk_tree_model_iter_next(model, &iter) == TRUE);
+        dt_bauhaus_combobox_set(prop->values, i);
+        return;
+      }
+    }
   }
 }
 
@@ -281,10 +271,8 @@ static void _lib_property_add_to_gui(dt_lib_camera_property_t *prop, dt_lib_came
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
   gtk_grid_insert_row(lib->gui.main_grid, lib->gui.prop_end); // make space for the new row
-  gtk_grid_attach(lib->gui.main_grid, GTK_WIDGET(prop->label), 0, lib->gui.prop_end, 1, 1);
-  gtk_grid_attach_next_to(lib->gui.main_grid, GTK_WIDGET(hbox), GTK_WIDGET(prop->label), GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(lib->gui.main_grid, GTK_WIDGET(hbox), 0, lib->gui.prop_end, 2, 1);
   g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  gtk_widget_show_all(GTK_WIDGET(prop->label));
   gtk_widget_show_all(GTK_WIDGET(hbox));
   lib->gui.rows++;
   lib->gui.prop_end++;
@@ -378,7 +366,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
       g_strlcat(center, "      ", sizeof(center));
       g_strlcat(center, prop->name, sizeof(center));
       g_strlcat(center, ": ", sizeof(center));
-      g_strlcat(center, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(prop->values)), sizeof(center));
+      g_strlcat(center, dt_bauhaus_combobox_get_text(prop->values), sizeof(center));
     }
   }
   g_strlcat(center, "      ", sizeof(center));
@@ -425,10 +413,11 @@ void gui_init(dt_lib_module_t *self)
   lib->gui.rows = 0;
   lib->gui.prop_end = 0;
   self->widget = gtk_grid_new();
+  gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
   lib->gui.main_grid = GTK_GRID(self->widget);
   gtk_grid_set_row_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
 
-  GtkBox *hbox/*, *vbox1, *vbox2*/;
+  GtkBox *hbox;
 
   // Camera control
   GtkWidget *label = dt_ui_section_label_new(_("camera control"));
@@ -517,6 +506,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
 
   label = gtk_label_new(_("label"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   lib->gui.plabel = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.plabel), 0);
   dt_gui_key_accel_block_on_focus_connect(lib->gui.plabel);
@@ -525,6 +515,7 @@ void gui_init(dt_lib_module_t *self)
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
   label = gtk_label_new(_("property"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   GtkWidget *widget = gtk_button_new_with_label("O");
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_show_property_popupmenu_clicked), lib);
   lib->gui.pname = gtk_entry_new();
