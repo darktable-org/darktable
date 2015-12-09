@@ -12,7 +12,7 @@ Contributing
 * Create a tutorial for darktable
 * Help expand the [user wiki](http://www.darktable.org/redmine/projects/users/wiki)
 * Answer questions on the [user mailing list](http://sourceforge.net/mailarchive/forum.php?forum_name=darktable-users)
-* Share your ideas on the [developer mailing list](http://sourceforge.net/mailarchive/forum.php?forum_name=darktable-devel)
+* Share your ideas on the [developer mailing list](http://news.gmane.org/gmane.comp.graphics.darktable.devel)
 * Test [releases](http://www.darktable.org/install/)
 * Review [pull requests](http://github.com/darktable-org/darktable/pulls)
 * Start [hacking on darktable](http://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code)
@@ -50,6 +50,5 @@ Wiki
 Mailing lists
 -------------
 
-* Announcements [[subscribe](https://lists.sourceforge.net/lists/listinfo/darktable-announcements) | [archive](http://sourceforge.net/mailarchive/forum.php?forum_name=darktable-announcements)]
 * Users [[subscribe](https://lists.sourceforge.net/lists/listinfo/darktable-users) | [archive](http://sourceforge.net/mailarchive/forum.php?forum_name=darktable-users)]
-* Developer [[subscribe](https://lists.sourceforge.net/lists/listinfo/darktable-devel) | [archive](http://sourceforge.net/mailarchive/forum.php?forum_name=darktable-devel)]
+* Developer [[subscribe](mailto:darktable-dev+subscribe@lists.darktable.org) | [archive](http://news.gmane.org/gmane.comp.graphics.darktable.devel)]
