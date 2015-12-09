@@ -162,6 +162,7 @@ int position()
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "toggle live view"), GDK_KEY_v, 0);
+  dt_accel_register_lib(self, NC_("accel", "zoom live view"), GDK_KEY_z, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CCW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "flip horizontally"), 0, 0);
@@ -176,6 +177,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
 
   dt_accel_connect_button_lib(self, "toggle live view", GTK_WIDGET(lib->live_view));
+  dt_accel_connect_button_lib(self, "zoom live view", GTK_WIDGET(lib->live_view_zoom));
   dt_accel_connect_button_lib(self, "rotate 90 degrees CCW", GTK_WIDGET(lib->rotate_ccw));
   dt_accel_connect_button_lib(self, "rotate 90 degrees CW", GTK_WIDGET(lib->rotate_cw));
   dt_accel_connect_button_lib(self, "flip horizontally", GTK_WIDGET(lib->flip));
