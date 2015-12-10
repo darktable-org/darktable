@@ -166,8 +166,6 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->gui_data);
-  module->gui_data = NULL; // just to be sure
   free(module->params);
   module->params = NULL;
   free(module->data); // just to be sure
