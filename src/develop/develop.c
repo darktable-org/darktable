@@ -188,7 +188,6 @@ void dt_dev_invalidate_all(dt_develop_t *dev)
 
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
-  dt_mipmap_buffer_t buf;
   if(dev->image_loading)
   {
     // raw is already loading, no use starting another file access, we wait.
@@ -196,11 +195,19 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   }
 
   dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+
+  if(dev->gui_leaving)
+  {
+    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+    return;
+  }
+
   dt_control_log_busy_enter();
   dev->preview_pipe->input_timestamp = dev->timestamp;
   dev->preview_status = DT_DEV_PIXELPIPE_RUNNING;
 
   // lock if there, issue a background load, if not (best-effort for mip f).
+  dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_F, DT_MIPMAP_BEST_EFFORT,
                       'r');
   if(!buf.buf)
@@ -276,6 +283,13 @@ restart:
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->pipe_mutex);
+
+  if(dev->gui_leaving)
+  {
+    dt_pthread_mutex_unlock(&dev->pipe_mutex);
+    return;
+  }
+
   dt_control_log_busy_enter();
   // let gui know to draw preview instead of us, if it's there:
   dev->image_status = DT_DEV_PIXELPIPE_RUNNING;

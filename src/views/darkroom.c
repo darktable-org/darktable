@@ -1759,7 +1759,12 @@ void leave(dt_view_t *self)
   }
 
   // clear gui.
+
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&dev->pipe_mutex);
+
   dev->gui_leaving = 1;
+
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
 
@@ -1790,6 +1795,9 @@ void leave(dt_view_t *self)
   }
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
+
+  dt_pthread_mutex_unlock(&dev->pipe_mutex);
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
 
   // cleanup visible masks
   if(dev->form_gui)
