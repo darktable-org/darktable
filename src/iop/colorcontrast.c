@@ -273,8 +273,6 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL; // just to be sure
   free(module->params);
   module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
