@@ -13,10 +13,13 @@ FL_PRESET_REPLACE={
   "FluorescentP1" => "DayWhiteFluorescent",
   "FluorescentP2" => "DaylightFluorescent",
   "FluorescentM1" => "WarmWhiteFluorescent",
+  "FluorescentD"  => "DaylightFluorescent",
+  "FluorescentN"  => "NeutralFluorescent",
+  "FluorescentW"  => "WhiteFluorescent",
 }
 PRESET_ORDER=["Unknown", "Daylight","Shade","Cloudy","Tungsten","Incandescent","Fluorescent",
               "WarmWhiteFluorescent","CoolWhiteFluorescent","DayWhiteFluorescent","DaylightFluorescent",
-              "Flash"]
+              "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent", "Flash"]
 
 PRESET_SORT_MAPPING={}
 PRESET_ORDER.each_with_index {|name, index| PRESET_SORT_MAPPING[name]=index+1}
