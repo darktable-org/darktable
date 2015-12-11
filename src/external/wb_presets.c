@@ -110,6 +110,13 @@ const wb_data wb_preset[] =
   { "Canon", "PowerShot G1 X", Fluorescent, 0, { 1.67480577136515, 1, 2.21642619311876, 0 } },
   { "Canon", "PowerShot G1 X", Flash, 0,       { 2.46899661781285, 1, 1.29988726042841, 0 } },
 
+  { "Canon", "PowerShot G1 X Mark II", Daylight, 0, { 1.9815217391304347, 1, 1.5793478260869565, 0 } },
+  { "Canon", "PowerShot G1 X Mark II", Shade, 0, { 2.258771929824561, 1, 1.3508771929824561, 0 } },
+  { "Canon", "PowerShot G1 X Mark II", Cloudy, 0, { 2.1383442265795205, 1, 1.4357298474945535, 0 } },
+  { "Canon", "PowerShot G1 X Mark II", Tungsten, 0, { 1.3710359408033828, 1, 2.464059196617336, 0 } },
+  { "Canon", "PowerShot G1 X Mark II", Fluorescent, 0, { 1.8006795016987542, 1, 2.060022650056625, 0 } },
+  { "Canon", "PowerShot G1 X Mark II", Flash, 0, { 2.44296788482835, 1, 1.221483942414175, 0 } },
+
   { "Canon", "PowerShot G2", Daylight, 0,	{ 2.011483, 1, 1.299522, 0 } },
   { "Canon", "PowerShot G2", Cloudy, 0,		{ 2.032505, 1, 1.285851, 0 } },
   { "Canon", "PowerShot G2", Tungsten, 0,	{ 1.976008, 1, 1.332054, 0 } },
