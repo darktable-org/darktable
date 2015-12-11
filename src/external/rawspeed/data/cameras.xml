@@ -1198,6 +1198,9 @@
 			<Vertical x="0" width="68"/>
 			<Horizontal y="0" height="46"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G12">
 		<ID make="Canon" model="PowerShot G12">Canon PowerShot G12</ID>
