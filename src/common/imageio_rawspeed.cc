@@ -355,8 +355,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
-  uint16_t *raw_img = (uint16_t *)r->getDataUncropped(0, 0);
-
   if(img->cpp == 1)
   {
 /*
@@ -365,12 +363,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
  */
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(raw_img, img, dimUncropped, cropTL, buf)
+#pragma omp parallel for default(none) schedule(static) shared(r, img, dimUncropped, cropTL, buf)
 #endif
     for(int j = 0; j < img->height; j++)
     {
-      const uint16_t *in = ((uint16_t *)raw_img)
-                           + (size_t)(img->cpp * (dimUncropped.x * (j + cropTL.y) + cropTL.x));
+      const uint16_t *in = (uint16_t *)(r->getDataUncropped(0, j+cropTL.y)) + (size_t)(img->cpp * cropTL.x);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
       for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
@@ -390,12 +387,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
  */
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(raw_img, img, dimUncropped, cropTL, buf)
+#pragma omp parallel for default(none) schedule(static) shared(r, img, dimUncropped, cropTL, buf)
 #endif
     for(int j = 0; j < img->height; j++)
     {
-      const uint16_t *in = ((uint16_t *)raw_img)
-                           + (size_t)(img->cpp * (dimUncropped.x * (j + cropTL.y) + cropTL.x));
+      const uint16_t *in = (uint16_t *)(r->getDataUncropped(0, j+cropTL.y)) + (size_t)(img->cpp * cropTL.x);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
       for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
