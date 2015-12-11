@@ -5665,6 +5665,21 @@ const wb_data wb_preset[] =
   { "Samsung", "NX3000", Tungsten, 0,			{ 1.539063, 1, 2.816406, 0 } },
   { "Samsung", "NX3000", Flash, 0,			{ 2.597656, 1, 1.566406, 0 } },
 
+  { "Sony", "DSC-RX1", Daylight, 0, { 2.38671875, 1, 1.55078125, 0 } },
+  { "Sony", "DSC-RX1", Shade, 0, { 2.84375, 1, 1.2734375, 0 } },
+  { "Sony", "DSC-RX1", Cloudy, 0, { 2.578125, 1, 1.41796875, 0 } },
+  { "Sony", "DSC-RX1", Tungsten, 0, { 1.47265625, 1, 2.87109375, 0 } },
+  { "Sony", "DSC-RX1", WarmWhiteFluorescent, 0, { 1.703125, 1, 2.8515625, 0 } },
+  { "Sony", "DSC-RX1", CoolWhiteFluorescent, 0, { 2.1484375, 1, 2.33984375, 0 } },
+  { "Sony", "DSC-RX1", DayWhiteFluorescent, 0, { 2.30859375, 1, 1.6953125, 0 } },
+  { "Sony", "DSC-RX1", DaylightFluorescent, 0, { 2.60546875, 1, 1.484375, 0 } },
+  { "Sony", "DSC-RX1", Flash, 0, { 2.8359375, 1, 1.30078125, 0 } },
+  { "Sony", "DSC-RX1", "2500K", 0, { 1.27734375, 1, 3.5078125, 0 } },
+  { "Sony", "DSC-RX1", "3200K", 0, { 1.64453125, 1, 2.46875, 0 } },
+  { "Sony", "DSC-RX1", "4500K", 0, { 2.15234375, 1, 1.75390625, 0 } },
+  { "Sony", "DSC-RX1", "6000K", 0, { 2.55859375, 1, 1.43359375, 0 } },
+  { "Sony", "DSC-RX1", "8500K", 0, { 2.9921875, 1, 1.203125, 0 } },
+
   /* Firmware version 2.00 */
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "Sony", "DSC-RX10", Daylight, -7,          { 2.035156, 1, 2.292969, 0 } },
