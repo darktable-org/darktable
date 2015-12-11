@@ -4787,6 +4787,15 @@ const wb_data wb_preset[] =
   { "Pentax", "*ist DL", Tungsten, 0,		{ 1.000000, 1, 2.074219, 0 } },
   { "Pentax", "*ist DL", Flash, 0,		{ 1.621094, 1, 1.027344, 0 } },
 
+  { "Pentax", "*ist DL2", Daylight, 0, { 1.4913330078125, 1, 1.0, 0 } },
+  { "Pentax", "*ist DL2", Shade, 0, { 1.7974853515625, 1, 0.76318359375, 0 } },
+  { "Pentax", "*ist DL2", Cloudy, 0, { 1.6123046875, 1, 0.896728515625, 0 } },
+  { "Pentax", "*ist DL2", Tungsten, 0, { 0.846923828125, 1, 2.078125, 0 } },
+  { "Pentax", "*ist DL2", DaylightFluorescent, 0, { 1.7481689453125, 1, 1.01513671875, 0 } },
+  { "Pentax", "*ist DL2", NeutralFluorescent, 0, { 1.4468994140625, 1, 1.133544921875, 0 } },
+  { "Pentax", "*ist DL2", WhiteFluorescent, 0, { 1.286376953125, 1, 1.3778076171875, 0 } },
+  { "Pentax", "*ist DL2", Flash, 0, { 1.5531005859375, 1, 0.93701171875, 0 } },
+
   /* It seems that the *ist DS WB settings are not really presets. */
   { "Pentax", "*ist DS", Daylight, 0,		{ 1.632812, 1, 1.000000, 0 } },
   { "Pentax", "*ist DS", Shade, 0,		{ 1.964844, 1, 1.000000, 0 } },
