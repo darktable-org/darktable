@@ -545,7 +545,7 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
 
   // how many points do we need ?
   float r = radius * MIN(wd, ht);
-  int l = (int)(2.0 * M_PI * r);
+  int l = MAX(100, (int)(2.0 * M_PI * r));
 
   // buffer allocations
   *points = calloc(2 * (l + 1), sizeof(float));
