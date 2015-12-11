@@ -1480,6 +1480,9 @@
 			<Horizontal y="0" height="10"/>
 			<Horizontal y="3062" height="60"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S110">
 		<ID make="Canon" model="PowerShot S110">Canon PowerShot S110</ID>
