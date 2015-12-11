@@ -6370,6 +6370,21 @@ const wb_data wb_preset[] =
   { "Sony", "NEX-5R", DaylightFluorescent, 0,	{ 2.8555, 1, 1.4648, 0 } },
   { "Sony", "NEX-5R", Flash, 0,			{ 2.8828, 1, 1.3906, 0 } },
 
+  { "Sony", "NEX-5T", Daylight, 0, { 2.44140625, 1, 1.55078125, 0 } },
+  { "Sony", "NEX-5T", Shade, 0, { 2.94140625, 1, 1.2734375, 0 } },
+  { "Sony", "NEX-5T", Cloudy, 0, { 2.6484375, 1, 1.421875, 0 } },
+  { "Sony", "NEX-5T", Tungsten, 0, { 1.46875, 1, 2.8359375, 0 } },
+  { "Sony", "NEX-5T", WarmWhiteFluorescent, 0, { 1.7734375, 1, 2.80078125, 0 } },
+  { "Sony", "NEX-5T", CoolWhiteFluorescent, 0, { 2.25390625, 1, 2.23046875, 0 } },
+  { "Sony", "NEX-5T", DayWhiteFluorescent, 0, { 2.421875, 1, 1.609375, 0 } },
+  { "Sony", "NEX-5T", DaylightFluorescent, 0, { 2.78515625, 1, 1.50390625, 0 } },
+  { "Sony", "NEX-5T", Flash, 0, { 2.8125, 1, 1.4296875, 0 } },
+  { "Sony", "NEX-5T", "2500K", 0, { 1.26953125, 1, 3.4453125, 0 } },
+  { "Sony", "NEX-5T", "3200K", 0, { 1.6484375, 1, 2.44921875, 0 } },
+  { "Sony", "NEX-5T", "4500K", 0, { 2.1875, 1, 1.75, 0 } },
+  { "Sony", "NEX-5T", "6000K", 0, { 2.625, 1, 1.43359375, 0 } },
+  { "Sony", "NEX-5T", "8500K", 0, { 3.10546875, 1, 1.20703125, 0 } },
+
   // copied from NEX-5R
   { "Sony", "NEX-6", Daylight, 0,		{ 2.5000, 1, 1.5117, 0 } },
   { "Sony", "NEX-6", Shade, 0,			{ 3.0156, 1, 1.2422, 0 } },
