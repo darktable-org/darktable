@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2015-11-24 15:59-0430\n"
+"POT-Creation-Date: 2015-11-28 07:59-0430\n"
 "PO-Revision-Date: 2015-11-27 21:15-0430\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1512,7 +1512,6 @@ msgstr "Da información sobre el uso y se cierra."
 
 #. type: =item
 #: darktable-viewer.pod:29 darktable-generate-cache.pod:29
-#| msgid "B<< --verbose >>"
 msgid "B<--version>"
 msgstr "B<--version>"
 
@@ -1562,7 +1561,6 @@ msgstr ""
 #. type: =for
 #: darktable-viewer.pod:71 darktable-generate-cache.pod:69
 #: darktable-cltest.pod:40 darktable-cmstest.pod:38
-#| msgid "comment $Date: 2015-11-08$ $Release: 2.0$"
 msgid "comment $Date: 2015-11-17$ $Release: 2.0$"
 msgstr "comment $Date: 2015-11-17$ $Release: 2.0$"
 
