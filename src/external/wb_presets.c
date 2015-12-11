@@ -5680,6 +5680,21 @@ const wb_data wb_preset[] =
   { "Sony", "DSC-RX1", "6000K", 0, { 2.55859375, 1, 1.43359375, 0 } },
   { "Sony", "DSC-RX1", "8500K", 0, { 2.9921875, 1, 1.203125, 0 } },
 
+  { "Sony", "DSC-RX1R", Daylight, 0, { 2.390625, 1, 1.59765625, 0 } },
+  { "Sony", "DSC-RX1R", Shade, 0, { 2.84375, 1, 1.3125, 0 } },
+  { "Sony", "DSC-RX1R", Cloudy, 0, { 2.58203125, 1, 1.46484375, 0 } },
+  { "Sony", "DSC-RX1R", Tungsten, 0, { 1.4765625, 1, 2.9140625, 0 } },
+  { "Sony", "DSC-RX1R", WarmWhiteFluorescent, 0, { 1.70703125, 1, 2.89453125, 0 } },
+  { "Sony", "DSC-RX1R", CoolWhiteFluorescent, 0, { 2.15234375, 1, 2.38671875, 0 } },
+  { "Sony", "DSC-RX1R", DayWhiteFluorescent, 0, { 2.3125, 1, 1.7421875, 0 } },
+  { "Sony", "DSC-RX1R", DaylightFluorescent, 0, { 2.60546875, 1, 1.53125, 0 } },
+  { "Sony", "DSC-RX1R", Flash, 0, { 2.81640625, 1, 1.3125, 0 } },
+  { "Sony", "DSC-RX1R", "2500K", 0, { 1.28125, 1, 3.53515625, 0 } },
+  { "Sony", "DSC-RX1R", "3200K", 0, { 1.6484375, 1, 2.515625, 0 } },
+  { "Sony", "DSC-RX1R", "4500K", 0, { 2.15625, 1, 1.80078125, 0 } },
+  { "Sony", "DSC-RX1R", "6000K", 0, { 2.55859375, 1, 1.4765625, 0 } },
+  { "Sony", "DSC-RX1R", "8500K", 0, { 2.9921875, 1, 1.2421875, 0 } },
+
   /* Firmware version 2.00 */
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "Sony", "DSC-RX10", Daylight, -7,          { 2.035156, 1, 2.292969, 0 } },
