@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-12-09 22:07+0900\n"
-"PO-Revision-Date: 2015-12-12 15:04+0900\n"
+"PO-Revision-Date: 2015-12-12 19:43+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -982,7 +982,7 @@ msgstr "画像 %d `%s'の印刷中にエラーが発生しました"
 #: ../src/common/cups_print.c:373
 #, c-format
 msgid "printing image %d on `%s'"
-msgstr "%d 枚の画像 `%s' を印刷しています"
+msgstr "%d の画像を `%s' で印刷しています"
 
 #: ../src/common/darktable.c:321
 #, c-format
@@ -9713,7 +9713,7 @@ msgstr "やり直す"
 #: ../src/views/print.c:51
 msgctxt "view"
 msgid "print"
-msgstr "印刷"
+msgstr "プリント"
 
 #: ../src/views/slideshow.c:165
 msgid "end of images. press any key to return to lighttable mode"
