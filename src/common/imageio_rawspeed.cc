@@ -341,9 +341,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->width = r->dim.x;
   img->height = r->dim.y;
 
-  iPoint2D dimUncropped = r->getUncroppedDim();
-  iPoint2D cropTL = r->getCropOffset();
-
   // actually we want to store full floats here:
   img->bpp = 4 * sizeof(float);
   img->cpp = r->getCpp();
@@ -363,11 +360,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
  */
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(r, img, dimUncropped, cropTL, buf)
+#pragma omp parallel for default(none) schedule(static) shared(r, img, buf)
 #endif
     for(int j = 0; j < img->height; j++)
     {
-      const uint16_t *in = (uint16_t *)(r->getDataUncropped(0, j+cropTL.y)) + (size_t)(img->cpp * cropTL.x);
+      const uint16_t *in = (uint16_t *) r->getData(0, j);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
       for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
@@ -387,11 +384,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
  */
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(r, img, dimUncropped, cropTL, buf)
+#pragma omp parallel for default(none) schedule(static) shared(r, img, buf)
 #endif
     for(int j = 0; j < img->height; j++)
     {
-      const uint16_t *in = (uint16_t *)(r->getDataUncropped(0, j+cropTL.y)) + (size_t)(img->cpp * cropTL.x);
+      const uint16_t *in = (uint16_t *) r->getData(0, j);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
       for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
