@@ -1,12 +1,5 @@
 require 'fileutils'
 
-def runsh(cmd)
-  if system(cmd) == nil
-    $stderr.puts "== Error running command '#{cmd}'"
-    exit 1
-  end
-end
-
 def build_c_util(name)
   src = File.expand_path "../progs/#{name}.c", File.dirname(__FILE__)
   bin = File.expand_path "../../bin/#{name}", File.dirname(__FILE__)
