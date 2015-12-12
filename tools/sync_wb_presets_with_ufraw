@@ -17,7 +17,7 @@ MANUAL_MUNGERS = {
   ["Leica Camera AG", "M8 Digital Camera"] => ["LEICA", "M8"],
 }
 
-$stderr.puts "Fetching ufraw presets from their CVS, may take a moment..."
+puts "Fetching ufraw presets from their CVS, may take a moment..."
 ufraw_presets = {}
 Net::HTTP.get(UFRAWPRESETS).each_line do |line|
   if line[0..2] == "  {"
@@ -106,7 +106,7 @@ def change_makermodel(line, make, model)
   lineparts.join('"')
 end
 
-$stderr.puts "Found #{grab_from_ufraw.size} cameras to copy ufraw->darktable"
+puts "Found #{grab_from_ufraw.size} cameras to copy ufraw->darktable"
 grab_from_ufraw.each do |exif_name, clean_name|
   ufraw_presets[exif_name].each do |line|
     puts change_makermodel(line, *clean_name)
@@ -114,7 +114,7 @@ grab_from_ufraw.each do |exif_name, clean_name|
   puts ""
 end
 
-$stderr.puts "Found #{submit_to_ufraw.size} cameras to submit darktable->ufraw"
+puts "Found #{submit_to_ufraw.size} cameras to submit darktable->ufraw"
 submit_to_ufraw.each do |clean_name, exif_name|
   dt_presets[clean_name].each do |line|
     puts change_makermodel(line, *exif_name)
