@@ -52,12 +52,28 @@ static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
 static void on_destroy(GtkWidget *widget, gpointer user_data)
 {
   lua_widget lwidget = (lua_widget)user_data;
-  //printf("%s of type %s destroyed\n",gtk_widget_get_name(widget),lwidget->type->name);
   dt_lua_lock_silent();
   lua_State* L = darktable.lua_state.state;
+  if(lwidget->type->gui_cleanup) {
+    lwidget->type->gui_cleanup(L,lwidget);
+  }
   dt_lua_widget_unbind(L,lwidget);
-  dt_lua_type_gpointer_drop(L,widget);
+  dt_lua_type_gpointer_drop(L,lwidget);
+  dt_lua_type_gpointer_drop(L,lwidget->widget);
+  free(lwidget);
   dt_lua_unlock();
+}
+
+static int widget_gc(lua_State *L)
+{
+  lua_widget lwidget;
+  luaA_to(L,lua_widget,&lwidget,1);
+  if(!lwidget) return 0; // object has been destroyed
+  if(gtk_widget_get_parent(lwidget->widget)) {
+    luaL_error(L,"Destroying a widget which is still parented, this should never happen\n");
+  }
+  gtk_widget_destroy(lwidget->widget);
+  return 0;
 }
 
 static int get_widget_params(lua_State *L)
@@ -87,18 +103,6 @@ static int get_widget_params(lua_State *L)
   return 1;
 }
 
-
-static int widget_gc(lua_State *L)
-{
-  lua_widget widget;
-  luaA_to(L,lua_widget,&widget,1);
-  if(widget->type->gui_cleanup) {
-    widget->type->gui_cleanup(L,widget);
-  }
-  g_object_unref(widget->widget);
-  free(widget);
-  return 0;
-}
 
 
 luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget_type,const char* lua_type,GType gtk_type)
@@ -151,7 +155,7 @@ void dt_lua_widget_get_callback(lua_State *L,int index,const char* name)
 int dt_lua_widget_trigger_callback(lua_State *L)
 {
   int nargs = lua_gettop(L) -2;
-  lua_widget * widget;
+  lua_widget widget;
   luaA_to(L,lua_widget,&widget,1);
   const char* name = lua_tostring(L,2);
   lua_getuservalue(L,1);
