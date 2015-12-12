@@ -1,0 +1,49 @@
+namespace :build do
+  ## Compilation of C utilities
+  PROGS = ["imgcmp"].map{|p| "bin/"+p}
+  PROGS.each do |prog|
+    src = "src/progs/"+File.basename(prog)+".c"
+    file prog => src do
+      sh "libtool --quiet --mode=link gcc -lm $(pkg-config --libs --cflags GraphicsMagick) #{src} -o #{prog}"
+    end
+  end
+  desc "Build all C utilities"
+  task :progs => PROGS
+
+  ## Building of darktable branches
+  BUILDS = {
+    "master" => ["https://github.com/darktable-org/darktable.git", "master"],
+    "1.6.x" => ["https://github.com/darktable-org/darktable.git", "darktable-1.6.x"],
+  }
+  require 'fileutils'
+  build_tasks = []
+  BUILDS.each do |build, opts|
+    builddir = File.expand_path "./bin/builds/#{build}/src/", File.dirname(__FILE__)
+    instdir = File.expand_path "./bin/builds/#{build}/inst/", File.dirname(__FILE__)
+    bin = File.expand_path "./bin/darktable-cli", instdir
+    file bin do
+      $stderr.puts "Building '#{build}'"
+      FileUtils.rm_rf builddir
+      FileUtils.mkdir_p builddir
+      url, branch = opts
+      sh "git clone '#{url}' --reference ../../ -b '#{branch}' #{builddir}"
+      prefixdir = "/opt/darktable-clean-builds/#{build}/"
+      FileUtils.rm_rf instdir
+      FileUtils.mkdir_p instdir
+      sh "cd #{builddir} && ./build.sh --prefix '#{instdir}' --buildtype Release"
+      sh "cd #{builddir}/build && make install"
+    end
+
+    build_task = "branch_#{build}".to_sym
+    task build_task => bin
+    build_tasks << build_task
+  end
+  desc "Build all darktable branches"
+  task :branches => build_tasks
+end
+desc "Build everything"
+task :build => ["build:progs", "build:branches"]
+
+## Default task
+desc "Run the whole shebang"
+task :default => [:build]

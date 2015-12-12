@@ -1,0 +1,35 @@
+<div class="row">
+  <div class="span12">
+    <h1>Regression in <%= @brand %> <%= @camera %></h1>
+    <% opts = TYPEHASH[@type] %>
+    <div class="panel panel-<%= opts[:class] ? opts[:class] : "default" %>">
+      <div class="panel-heading"><%= opts[:longname] %></div>
+      <table class="table">
+        <tbody>
+          <tr><th>File</th><td><%= @file %></td></tr>
+          <tr><th>XMP</th><td><%= @xmp %></td></tr>
+          <tr><th>From</th><td><%= @version1 %></td></tr>
+          <tr><th>To</th><td><%= @version2 %></td></tr>
+        </tbody>
+      </table>
+    </div>
+</div>
+
+<div class="row">
+  <div class="span12">
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#tab_from" data-toggle="tab">From</a></li>
+      <li><a href="#tab_to" data-toggle="tab">To</a></li>
+      <li><a href="#tab_diff" data-toggle="tab">Diff</a></li>
+      <li><a href="#tab_stretch-diff" data-toggle="tab">Stretch Diff</a></li>
+    </ul>
+  </div>
+</div>
+<div class="row">
+  <div class="span12 tab-content">
+    <div class="tab-pane active" id="tab_from"><img src="<%= @name %>-1.jpg"></div>
+    <div class="tab-pane" id="tab_to"><img src="<%= @name %>-2.jpg"></div>
+    <div class="tab-pane" id="tab_diff"><img src="<%= @name %>-diff.jpg"></div>
+    <div class="tab-pane" id="tab_stretch-diff"><img src="<%= @name %>-diff-stretch.jpg"></div>
+  </div>
+</div>
