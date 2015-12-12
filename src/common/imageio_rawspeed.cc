@@ -352,53 +352,37 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
+  #ifdef _OPENMP
+    #define DO_PRAGMA(x) _Pragma (#x)
+  #else
+    #define DO_PRAGMA(x)
+  #endif
+
+  #define FOR_ALL_SRAW_PIXELS(op) \
+  DO_PRAGMA(omp parallel for default(none) schedule(static) shared(r, img, buf))\
+  for(int j = 0; j < img->height; j++) \
+  { \
+    const uint16_t *in = (uint16_t *) r->getData(0, j); \
+    float *out = ((float *)buf) + (size_t)4 * j * img->width; \
+    for(int i = 0; i < img->width; i++, in += img->cpp, out += 4) \
+    { \
+      for(int k = 0; k < 3; k++) \
+      { \
+        (op); \
+      } \
+    } \
+  }
+
   if(img->cpp == 1)
   {
-/*
- * monochrome image (e.g. Leica M9 monochrom),
- * we need to copy data from only channel to each of 3 channels
- */
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(r, img, buf)
-#endif
-    for(int j = 0; j < img->height; j++)
-    {
-      const uint16_t *in = (uint16_t *) r->getData(0, j);
-      float *out = ((float *)buf) + (size_t)4 * j * img->width;
-
-      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
-      {
-        for(int k = 0; k < 3; k++)
-        {
-          out[k] = (float)*in / (float)UINT16_MAX;
-        }
-      }
-    }
+    // monochrome image (e.g. Leica M9 monochrom),
+    // we need to copy data from only channel to each of 3 channels
+    FOR_ALL_SRAW_PIXELS(out[k] = (float)*in / (float)UINT16_MAX);
   }
   else if(img->cpp == 3)
   {
-/*
- * standard 3-ch image
- * just copy 3 ch to 3 ch
- */
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(r, img, buf)
-#endif
-    for(int j = 0; j < img->height; j++)
-    {
-      const uint16_t *in = (uint16_t *) r->getData(0, j);
-      float *out = ((float *)buf) + (size_t)4 * j * img->width;
-
-      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
-      {
-        for(int k = 0; k < 3; k++)
-        {
-          out[k] = (float)in[k] / (float)UINT16_MAX;
-        }
-      }
-    }
+    // standard 3-ch image, just copy 3 ch to 3 ch
+    FOR_ALL_SRAW_PIXELS(out[k] = (float)in[k] / (float)UINT16_MAX);
   }
 
   return DT_IMAGEIO_OK;
