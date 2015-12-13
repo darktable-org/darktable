@@ -1,15 +1,60 @@
+require 'nokogiri'
+
 class Runner
   EXT_IGNORES = ["xmp", "zip", "txt", "7z"]
   XMPS = [nil] # ["minimal"] # nil, minimal, standard_matrix
   WARN_LEVEL = 3
   DIFF_LEVEL = 5
   SAMPLEDIR = File.expand_path("../../data/samples/", File.dirname(__FILE__))
+  CAMERAS = File.expand_path("../../../../src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
 
   def initialize(opts={})
     @dir           = opts[:dir] || SAMPLEDIR
-    @camera        = opts[:camera] || "*"
-    @brand         = opts[:brand] || "*"
+    @camera        = opts[:camera]
+    @brand         = opts[:brand]
     @camera_limit  = opts[:camera_limit]
+
+    # Create a map between EXIF and proper camera names
+    @exif_alias_map = {}
+    xml_doc  = Nokogiri::XML(File.open(CAMERAS))
+    xml_doc.css("Camera").each do |c|
+      maker = exif_maker = c.attribute("make").value
+      model = exif_model = c.attribute("model").value
+      exif_id = [exif_maker, exif_model]
+      if c.css("ID")[0]
+        maker = c.css("ID")[0].attribute("make").value
+        model = c.css("ID")[0].attribute("model").value
+      end
+      @exif_alias_map[exif_id] = [maker,model]
+      c.css("Alias").each do |a|
+        exif_model = model = a.content
+        exif_id = [exif_maker, exif_model]
+        model = a.attribute("id").value if a.attribute("id")
+        @exif_alias_map[exif_id] = [maker,model]
+      end
+    end
+  end
+
+  def get_exif_key(key, file)
+    out = IO.popen("exiftool -S -#{key} \"#{file}\" 2>/dev/null","r").read
+    if out && out.size > 0
+      return (out.split(":")[1..-1]||[]).join(":").strip
+    else
+      return ""
+    end
+  end
+
+  def get_makermodel(file)
+    exif_maker = get_exif_key("Make", file)
+    exif_model = get_exif_key("Model", file)
+    if makermodel = @exif_alias_map[[exif_maker, exif_model]]
+      return makermodel
+    else
+      $stderr.puts "Warning: Couldn't find make and model for '#{exif_maker}' '#{exif_model}'"
+      exif_maker = "Unknown" if !exif_maker || exif_maker == ''
+      exif_model = File.basename(file) if !exif_model || exif_model == ''
+      return [exif_maker, exif_model]
+    end
   end
 
   def run_images
@@ -18,13 +63,15 @@ class Runner
       if File.file?(file) &&
          file.split(".").size > 1 &&
          !(EXT_IGNORES.include?(file.split(".")[-1].downcase))
-        brandname = file.split("/")[-3]
-        cameraname = file.split("/")[-2]
-        counts[brandname+cameraname] ||= 0
-        if !@camera_limit || (counts[brandname+cameraname] += 1) < @camera_limit+1
-          XMPS.each do |xmp|
-            xmpfile = xmp ? File.expand_path("../../data/xmps/#{xmp}.xmp", File.dirname(__FILE__)) : nil
-            yield file, xmpfile, xmp ? xmp : "none" , brandname, cameraname
+        brandname, cameraname = get_makermodel(file)
+        if ((!@brand || brandname.downcase == @brand.downcase) &&
+            (!@camera || cameraname.downcase == @camera.downcase))
+          counts[brandname+cameraname] ||= 0
+          if !@camera_limit || (counts[brandname+cameraname] += 1) < @camera_limit+1
+            XMPS.each do |xmp|
+              xmpfile = xmp ? File.expand_path("../../data/xmps/#{xmp}.xmp", File.dirname(__FILE__)) : nil
+              yield file, xmpfile, xmp ? xmp : "none" , brandname, cameraname
+            end
           end
         end
       end
@@ -34,7 +81,7 @@ class Runner
   def mean_pixel_error(image1, image2)
     imgcmp = File.expand_path "../../bin/imgcmp", File.dirname(__FILE__)
     values = {}
-    IO.popen("#{imgcmp} #{image1} #{image2}") do |io|
+    IO.popen("#{imgcmp} \"#{image1}\" \"#{image2}\"") do |io|
       while !io.eof?
         lineparts = io.readline.split(" ")
         if lineparts.size == 2
@@ -46,11 +93,11 @@ class Runner
   end
 
   def calc_image_diff(image1, image2, diff)
-    run_cmd_test_file "composite #{image1} #{image2} -compose difference #{diff}", diff
+    run_cmd_test_file "composite \"#{image1}\" \"#{image2}\" -compose difference \"#{diff}\"", diff
   end
 
   def constrast_stretch_image(image, output)
-    run_cmd_test_file "convert #{image} -contrast-stretch 0%0% #{output}", output
+    run_cmd_test_file "convert \"#{image}\" -contrast-stretch 0%0% \"#{output}\"", output
   end
 
   def dcraw_export(dcraw, file, outfile)

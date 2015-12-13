@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-if ARGV.size != 2
-  $stderr.puts "Usage: compare <from branch> <to branch>"
+if ARGV.size < 2
+  $stderr.puts "Usage: compare <from branch> <to branch> [brand] [camera]"
   exit 2
 end
 
@@ -15,6 +15,6 @@ build_c_util("imgcmp")
 from = DTBuild.new ARGV[0]
 to = DTBuild.new ARGV[1]
 fetch_samples
-runner = Runner.new(:camera_limit => PER_CAMERA_LIMIT)
+runner = Runner.new(:brand => ARGV[2], :camera => ARGV[3], :camera_limit => PER_CAMERA_LIMIT)
 
 runner.compare_web(from, to, "comparison")
