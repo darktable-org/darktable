@@ -476,8 +476,11 @@ static void gpointer_tofunc(lua_State *L, luaA_Type type_id, void *cout, int ind
     snprintf(error_msg,sizeof(error_msg),"%s expected",luaA_typename(L,type_id));
     luaL_argerror(L,index,error_msg);
   } 
-  void* udata = lua_touserdata(L,index);
+  gpointer* udata = lua_touserdata(L,index);
   memcpy(cout, udata, sizeof(gpointer));
+  if(!*udata) {
+    luaL_error(L,"Attempting to access of type %s after its destruction\n",luaA_typename(L,type_id));
+  }
 }
 
 static int unknown_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
@@ -912,7 +915,10 @@ void dt_lua_type_gpointer_drop(lua_State*L, void* pointer)
   lua_pushlightuserdata(L, pointer);
   lua_gettable(L,-2);
   gpointer *udata = (gpointer*)lua_touserdata(L,-1);
-  if(lua_isnil(L,-1)) return; // this table is weak, the object has been gc
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,2);
+    return; // this table is weak, the object has been gc
+  }
   *udata = NULL;
   lua_pop(L,1);
 
@@ -980,8 +986,21 @@ void dt_lua_type_setmetafield_type(lua_State*L,luaA_Type type_id,const char* met
     lua_setfield(L, -2, "__real_tostring");
     lua_pop(L, 2); // pop the metatable and the value
     return;
+  // whitelist for specific types
+  } else if(
+      // if you add a type here, make sure it handles inheritence of metamethods itself
+      // typically, set the metamethod not for the parent type but just after inheritence
+      ( !strcmp(method_name,"__associated_object")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"dt_imageio_module_format_t"))) ||
+      ( !strcmp(method_name,"__associated_object")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"dt_imageio_module_storage_t"))) ||
+      ( !strcmp(method_name,"__gc")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"dt_style_t"))) ||
+      ( !strcmp(method_name,"__gc")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"dt_style_item_t"))) ||
+      ( !strcmp(method_name,"__gc")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"lua_widget"))) ||
+      ( !strcmp(method_name,"__call")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"lua_widget"))) ||
+      ( !strcmp(method_name,"__gtk_signals")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"lua_widget"))) ||
+      0) {
+    // Nothign to be done
   } else {
-    //printf("metafield not handled :%s\n",method_name);
+    luaL_error(L,"metafield not handled :%s for type %s\n",method_name,luaA_typename(L,type_id));
   }
   luaL_getmetatable(L, luaA_typename(L, type_id));
   lua_pushvalue(L,-2);

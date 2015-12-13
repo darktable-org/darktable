@@ -294,7 +294,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
-  const int gamutcheck = (darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK);
+  const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
 
   if(!isnan(d->cmatrix[0]))
   {
