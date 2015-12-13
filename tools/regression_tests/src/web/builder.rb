@@ -21,7 +21,7 @@ end
 
 def reduce_image(outputdir, image)
   outfile = "#{outputdir}/#{File.basename(image)}"
-  run_cmd_test_file "convert #{image} -geometry 1000x500 #{outfile}", outfile
+  run_cmd_test_file "convert '#{image}' -geometry 1000x500 '#{outfile}'", outfile
 end
 
 def build_diffpage(outputdir, values)
