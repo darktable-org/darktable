@@ -51,6 +51,8 @@ def munge_make_model(make, model)
     [make.split[0], model[7..-1].strip]
   elsif make.split[0..1].join(" ").upcase == "KONICA MINOLTA"
     [make.split[1], model.strip]
+  elsif make.split[0].upcase == "RICOH" && model.split[0].upcase == "PENTAX"
+    [model.split[0], model.split[1..-1].join.strip]
   else
     [make.split[0], model.strip]
   end
