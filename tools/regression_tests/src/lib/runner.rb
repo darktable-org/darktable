@@ -120,8 +120,8 @@ class Runner
   end
 
   def compare(dtbuildfrom, dtbuildto, outputdir)
-    FileUtils.mkdir_p outputdir
     run_images do |file, xmpfile, xmpname, brandname, cameraname|
+      FileUtils.mkdir_p outputdir
       basename = File.basename file
       values = {}
 
@@ -182,12 +182,15 @@ class Runner
   end
 
   def compare_web(dtbuildfrom, dtbuildto, outputdir)
+    FileUtils.rm_rf outputdir
     FileUtils.mkdir_p outputdir
     copy_web_basics(outputdir)
     brand_stats = {}
     brand_results = {}
 
-    compare(dtbuildfrom, dtbuildto, outputdir) do |type, values|
+    comparedir = outputdir+"/originals/"
+
+    compare(dtbuildfrom, dtbuildto, comparedir) do |type, values|
       brand_stats[values["brand"]] ||= {}
       brand_stats[values["brand"]][type] ||= 0
       brand_stats[values["brand"]][type] += 1
@@ -200,6 +203,8 @@ class Runner
       if type == :diff || type == :warn
         build_diffpage(outputdir, values)
       end
+
+      FileUtils.rm_rf comparedir
 
       # Rebuild the index after each image so we get the partial output as it happens
       build_indexpage(outputdir, brand_stats, brand_results)
