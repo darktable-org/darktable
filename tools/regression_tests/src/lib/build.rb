@@ -10,10 +10,7 @@ def build_c_util(name)
 end
 
 class DTBuild
-  DT_REPO="https://github.com/darktable-org/darktable.git"
-  
-  def initialize(build, opts={})
-    @repo = opts[:repo] || DT_REPO
+  def initialize(build)
     @build = build
     @already_built = false
   end
@@ -23,10 +20,9 @@ class DTBuild
 
     @repodir = File.expand_path "../../bin/repos/#{@build}/", File.dirname(__FILE__)
 
-    $stderr.puts "== Building '#{@build}' from '#{@repo}'"
     FileUtils.rm_rf @repodir
     FileUtils.mkdir_p @repodir
-    runsh "git clone '#{DT_REPO}' --reference ../../ -b '#{@build}' #{@repodir}"
+    runsh "git clone ../../.git/ -b '#{@build}' #{@repodir} 2>/dev/null 1>/dev/null"
     
     @ref = IO.popen("git -C #{@repodir} rev-parse HEAD").read.strip
 
@@ -35,6 +31,7 @@ class DTBuild
 
     if !File.exists? @bin
       # We need to actually build this thing
+      $stderr.puts "== Building '#{@build}'"
       FileUtils.rm_rf @instdir
       FileUtils.mkdir_p @instdir
       runsh "cd #{@repodir} && ./build.sh --prefix '#{@instdir}' --buildtype Release"
