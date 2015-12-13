@@ -55,4 +55,8 @@ class DTBuild
     command += " --conf write_sidecar_files=false"
     run_cmd_test_file command, outfile
   end
+
+  def version
+    @build+" (at "+@ref+")"
+  end
 end
