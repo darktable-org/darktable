@@ -229,12 +229,12 @@ msgstr "disabilitato"
 #: ../build/src/preferences_gen.h:1893
 msgctxt "preferences"
 msgid "hardness (relative)"
-msgstr "durezza (relativa)"
+msgstr "Durezza (relativa)"
 
 #: ../build/src/preferences_gen.h:1898
 msgctxt "preferences"
 msgid "hardness (absolute)"
-msgstr "durezza (assoluta)"
+msgstr "Durezza (assoluta)"
 
 #: ../build/src/preferences_gen.h:1903
 msgctxt "preferences"
@@ -676,11 +676,11 @@ msgstr "TODO: spiacenti, a causa delle restrizioni delle api al momento non è p
 
 #: ../src/cli/main.c:114
 msgid "unknown option for --hq"
-msgstr "opzione sconosciuta per --hq"
+msgstr "Opzione sconosciuta per --hq"
 
 #: ../src/cli/main.c:130
 msgid "unknown option for --upscale"
-msgstr "opzione sconosciuta per --upscale"
+msgstr "Opzione sconosciuta per --upscale"
 
 #: ../src/cli/main.c:184
 msgid "output file already exists, it will get renamed"
@@ -1198,15 +1198,15 @@ msgstr "Salta al file successivo"
 
 #: ../src/control/jobs/control_jobs.c:715
 msgid "stop process"
-msgstr "ferma il processo"
+msgstr "Ferma il processo"
 
 #: ../src/control/jobs/control_jobs.c:720
 msgid "trashing error"
-msgstr "errore durante l'eliminazione"
+msgstr "Errore durante l'eliminazione"
 
 #: ../src/control/jobs/control_jobs.c:721
 msgid "deletion error"
-msgstr "errore di cancellazione"
+msgstr "Errore di cancellazione"
 
 #: ../src/control/jobs/control_jobs.c:842
 #, c-format
@@ -1303,8 +1303,8 @@ msgstr "Rimuovere le immagini?"
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
-msgstr[0] "Vuoi veramente cestinare %d ?"
-msgstr[1] "Vuoi veramente cestinare %d ?"
+msgstr[0] "Vuoi veramente cestinare la %d foto selezionata?"
+msgstr[1] "Vuoi veramente cestinare le %d foto selezionate?"
 
 #: ../src/control/jobs/control_jobs.c:1414
 #, c-format
@@ -2317,7 +2317,7 @@ msgstr "Usa il formato AAAA-MM-GG per sovrascrivere la data"
 #: ../src/gui/gtk.c:848
 msgctxt "accel"
 msgid "tethering view"
-msgstr "vista tethering"
+msgstr "Vista tethering"
 
 #: ../src/gui/gtk.c:849
 msgctxt "accel"
@@ -3076,7 +3076,7 @@ msgstr "immagini singole"
 
 #: ../src/imageio/format/pdf.c:644
 msgid "contact sheet"
-msgstr "foglio contatto"
+msgstr "Foglio contatto"
 
 #: ../src/imageio/format/pdf.c:647
 msgid "what pages should be added to the pdf"
@@ -3092,7 +3092,7 @@ msgstr "Le immagini possono essere taggate con il loro profilo icc"
 
 #: ../src/imageio/format/pdf.c:665 ../src/imageio/format/png.c:467 ../src/imageio/format/tiff.c:412
 msgid "bit depth"
-msgstr "profondità di bit"
+msgstr "Profondità di bit"
 
 #: ../src/imageio/format/pdf.c:675
 msgid "bits per channel of the embedded images"
@@ -4166,7 +4166,7 @@ msgstr "Ritaglia e ruota"
 
 #: ../src/iop/clipping.c:1462
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr "rapporto di formato non valido. Dovrebbe essere \"numero:numero\""
+msgstr "Rapporto di formato non valido. Dovrebbe essere \"numero:numero\""
 
 #: ../src/iop/clipping.c:1564 ../src/iop/clipping.c:1857 ../src/iop/clipping.c:1876
 msgid "vertical"
@@ -5239,7 +5239,7 @@ msgstr "Ruota di 180°"
 
 #: ../src/iop/flip.c:508
 msgid "rotate"
-msgstr "ruota"
+msgstr "Ruota"
 
 #: ../src/iop/flip.c:513
 msgid "rotate 90 degrees CCW"
@@ -6089,11 +6089,11 @@ msgstr "Cambia strumento per prelevare la luminosità media nell'immagine"
 #: ../src/iop/rotatepixels.c:68
 msgctxt "modulename"
 msgid "rotate pixels"
-msgstr "ruota pixel"
+msgstr "Ruota pixel"
 
 #: ../src/iop/rotatepixels.c:336
 msgid "automatic pixel rotation"
-msgstr "rotazione automatica pixel"
+msgstr "Rotazione automatica pixel"
 
 #: ../src/iop/rotatepixels.c:339
 msgid ""
@@ -7302,7 +7302,7 @@ msgstr "Stile temporaneo da usare durante l'esportazione"
 
 #: ../src/libs/export.c:639 ../src/libs/print_settings.c:1319
 msgid "replace history"
-msgstr "rimpiazza cronologia"
+msgstr "Rimpiazza cronologia"
 
 #: ../src/libs/export.c:640 ../src/libs/print_settings.c:1320
 msgid "append history"
@@ -7500,7 +7500,7 @@ msgstr "Immagini selezionate"
 
 #: ../src/libs/image.c:138
 msgid "trash"
-msgstr "elimina"
+msgstr "Elimina"
 
 #: ../src/libs/image.c:146
 msgid "send file to trash"
@@ -8088,7 +8088,7 @@ msgstr "Rullino"
 
 #: ../src/libs/metadata_view.c:87
 msgid "group id"
-msgstr "identificatore gruppo"
+msgstr "Identificatore gruppo"
 
 #: ../src/libs/metadata_view.c:89
 msgid "version"
@@ -8104,7 +8104,7 @@ msgstr "Copia locale"
 
 #: ../src/libs/metadata_view.c:92
 msgid "flags"
-msgstr "etichette"
+msgstr "Etichette"
 
 #: ../src/libs/metadata_view.c:102
 msgid "focus distance"
@@ -8133,7 +8133,7 @@ msgstr "Longitudine"
 
 #: ../src/libs/metadata_view.c:116
 msgid "elevation"
-msgstr "elevazione"
+msgstr "Elevazione"
 
 #: ../src/libs/metadata_view.c:127
 msgid "image information"
@@ -8174,7 +8174,7 @@ msgstr "applicato preset auto-applicante"
 
 #: ../src/libs/metadata_view.c:270
 msgid "legacy flag. set for all new images"
-msgstr "etichetta ricorsiva. impostata per tutte le nuove immagini"
+msgstr "Etichetta ricorsiva. impostata per tutte le nuove immagini"
 
 #: ../src/libs/metadata_view.c:272
 msgid "has .txt"
@@ -8206,11 +8206,11 @@ msgstr "Moduli di gruppo"
 
 #: ../src/libs/modulegroups.c:108
 msgid "show only your favourite modules (selected in `more modules' below)"
-msgstr "mostra soltanto i moduli preferiti (selezionati nei successivi `ulteriori moduli')"
+msgstr "Mostra soltanto i moduli preferiti (selezionati nei successivi `ulteriori moduli')"
 
 #: ../src/libs/modulegroups.c:114
 msgid "show only active modules"
-msgstr "mostra solo i moduli attivi"
+msgstr "Mostra solo i moduli attivi"
 
 #: ../src/libs/modulegroups.c:120
 msgid "basic group"
@@ -8259,7 +8259,7 @@ msgstr "200%"
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1206
 msgid "print settings"
-msgstr "opzioni di stampa"
+msgstr "Opzioni di stampa"
 
 #: ../src/libs/print_settings.c:175
 msgid "cannot print until a picture is selected"
@@ -8320,7 +8320,7 @@ msgstr " x "
 
 #: ../src/libs/print_settings.c:1124
 msgid "scale factor"
-msgstr "fattore di scala"
+msgstr "Fattore di scala"
 
 #: ../src/libs/print_settings.c:1129
 msgid ""
@@ -8369,7 +8369,7 @@ msgstr "Stile temporaneo da utilizzare durante la stampa"
 #. Print button
 #: ../src/libs/print_settings.c:1335
 msgid "print"
-msgstr "stampa"
+msgstr "Stampa"
 
 #: ../src/libs/print_settings.c:1337
 msgid "print with current settings (ctrl-p)"
@@ -9280,7 +9280,7 @@ msgstr "anteprima adesiva con il rilevamento della messa a fuoco"
 #: ../src/views/lighttable.c:2257
 msgctxt "accel"
 msgid "exit sticky preview"
-msgstr "esci da anteprima adesiva"
+msgstr "Esci da anteprima adesiva"
 
 #: ../src/views/lighttable.c:2436
 msgid "set display profile"
@@ -9303,7 +9303,7 @@ msgstr "Ripristina"
 #: ../src/views/print.c:51
 msgctxt "view"
 msgid "print"
-msgstr "stampa"
+msgstr "Stampa"
 
 #: ../src/views/slideshow.c:165
 msgid "end of images. press any key to return to lighttable mode"
