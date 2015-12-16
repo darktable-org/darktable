@@ -1204,27 +1204,48 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       c->mouse_y = CLAMP(event->y - inset, 0, height);
 
       const float mx = c->mouse_x / (float)width;
-      const float my = 1.0f - c->mouse_y / (float)height;
 
-      // evaluate the curve at the current x position
-      const float y = dt_draw_curve_calc_value(c->minmax_curve[ch], mx);
-
-      if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
+      // don't add a node too close to others in x direction, it can crash dt
+      int selected = -1;
+      if(tonecurve[0].x > mx)
+        selected = 0;
+      else
       {
-        // create a new node
-        int selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], mx, y);
-
-        // maybe set the new one as being selected
-        float min = .04f;
-        min *= min; // comparing against square
-        for(int k = 0; k < nodes; k++)
+        for(int k = 1; k < nodes; k++)
         {
-          float dist = (my - y) * (my - y);
-          if(dist < min) c->selected = selected;
+          if(tonecurve[k].x > mx)
+          {
+            selected = k;
+            break;
+          }
         }
+      }
+      if(selected == -1) selected = nodes;
+      // > 0 -> check distance to left neighbour
+      // < nodes -> check distance to right neighbour
+      if(!((selected > 0 && mx - tonecurve[selected - 1].x <= 0.025) ||
+           (selected < nodes && tonecurve[selected].x - mx <= 0.025)))
+      {
+        // evaluate the curve at the current x position
+        const float y = dt_draw_curve_calc_value(c->minmax_curve[ch], mx);
 
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
-        gtk_widget_queue_draw(self->widget);
+        if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
+        {
+          // create a new node
+          int selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], mx, y);
+
+          // maybe set the new one as being selected
+          float min = .04f;
+          min *= min; // comparing against square
+          for(int k = 0; k < nodes; k++)
+          {
+            float dist = (y - tonecurve[k].y) * (y - tonecurve[k].y);
+            if(dist < min) c->selected = selected;
+          }
+
+          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          gtk_widget_queue_draw(self->widget);
+        }
       }
       return TRUE;
     }
