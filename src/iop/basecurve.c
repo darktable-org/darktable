@@ -736,7 +736,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
       {
         for(int k = 1; k < nodes; k++)
         {
-          if(basecurve[k].x > mx)
+          if(basecurve[k].x > linx)
           {
             selected = k;
             break;
