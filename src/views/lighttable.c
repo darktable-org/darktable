@@ -569,7 +569,9 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   }
 
   /* update scroll borders */
-  dt_view_set_scrollbar(self, 0, 1, 1, offset, lib->collection_count, max_rows * iir);
+  int shown_rows = ceilf((float)lib->collection_count / iir);
+  if(iir > 1) shown_rows += max_rows - 2;
+  dt_view_set_scrollbar(self, 0, 1, 1, offset, shown_rows * iir, (max_rows - 1) * iir);
 
   /* let's reset and reuse the main_query statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
