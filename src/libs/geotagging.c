@@ -563,8 +563,17 @@ static GList *_lib_geotagging_get_timezones(void)
   while(fgets(line, MAX_LINE_LENGTH, fp))
   {
     if(line[0] == '#' || line[0] == '\0') continue;
-    gchar **tokens = g_strsplit(line, "\t", 0);
-    gchar *name = g_strdup(tokens[2]);
+    gchar **tokens = g_strsplit_set(line, " \t\n", 0);
+    // sometimes files are not separated by single tabs but multiple spaces, resulting in empty strings in tokens
+    // so we have to look for the 3rd non-empty entry
+    int n_found = -1, i;
+    for(i = 0; tokens[i] && n_found < 2; i++) if(*tokens[i]) n_found++;
+    if(n_found != 2)
+    {
+      g_strfreev(tokens);
+      continue;
+    }
+    gchar *name = g_strdup(tokens[i - 1]);
     g_strfreev(tokens);
     if(name[0] == '\0')
     {

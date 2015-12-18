@@ -627,6 +627,7 @@ static inline int _add_node(dt_iop_basecurve_node_t *basecurve, int *nodes, floa
   (*nodes)++;
   return selected;
 }
+
 static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -725,28 +726,50 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
       c->mouse_y = CLAMP(event->y - inset, 0, height);
 
       const float mx = c->mouse_x / (float)width;
-      const float my = 1.0f - c->mouse_y / (float)height;
       const float linx = to_lin(mx, c->loglogscale);
 
-      // evaluate the curve at the current x position
-      const float y = dt_draw_curve_calc_value(c->minmax_curve, linx);
-
-      if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
+      // don't add a node too close to others in x direction, it can crash dt
+      int selected = -1;
+      if(basecurve[0].x > linx)
+        selected = 0;
+      else
       {
-        // create a new node
-        int selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, y);
-
-        // maybe set the new one as being selected
-        float min = .04f;
-        min *= min; // comparing against square
-        for(int k = 0; k < nodes; k++)
+        for(int k = 1; k < nodes; k++)
         {
-          float dist = (my - to_log(y, c->loglogscale)) * (my - to_log(y, c->loglogscale));
-          if(dist < min) c->selected = selected;
+          if(basecurve[k].x > linx)
+          {
+            selected = k;
+            break;
+          }
         }
+      }
+      if(selected == -1) selected = nodes;
+      // > 0 -> check distance to left neighbour
+      // < nodes -> check distance to right neighbour
+      if(!((selected > 0 && linx - basecurve[selected - 1].x <= 0.025) ||
+           (selected < nodes && basecurve[selected].x - linx <= 0.025)))
+      {
+        // evaluate the curve at the current x position
+        const float y = dt_draw_curve_calc_value(c->minmax_curve, linx);
 
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
-        gtk_widget_queue_draw(self->widget);
+        if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
+        {
+          // create a new node
+          int selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, y);
+
+          // maybe set the new one as being selected
+          float min = .04f;
+          min *= min; // comparing against square
+          for(int k = 0; k < nodes; k++)
+          {
+            float other_y = to_log(basecurve[k].y, c->loglogscale);
+            float dist = (y - other_y) * (y - other_y);
+            if(dist < min) c->selected = selected;
+          }
+
+          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          gtk_widget_queue_draw(self->widget);
+        }
       }
       return TRUE;
     }

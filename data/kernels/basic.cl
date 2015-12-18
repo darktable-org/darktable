@@ -811,7 +811,7 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
   ry = ppi[5] - roi_in_y;
   pixel.z = (rx >= 0 && ry >= 0 && rx <= iwidth - 1 && ry <= iheight - 1) ? read_imagef(in, samplerf, (float2)(rx, ry)).z : NAN;
 
-  pixel = (isnormal(pixel.x) && isnormal(pixel.y) && isnormal(pixel.z)) ? pixel : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -923,8 +923,8 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
     weight += w;
   }
   pixel.z = sum/weight;
-
-  pixel = (isnormal(pixel.x) && isnormal(pixel.y) && isnormal(pixel.z)) ? pixel : (float4)0.0f;
+  
+  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -1038,8 +1038,8 @@ lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const i
   }
   pixel.z = sum/weight;
 
-  pixel = (isnormal(pixel.x) && isnormal(pixel.y) && isnormal(pixel.z)) ? pixel : (float4)0.0f;
-
+  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
+  
   write_imagef (out, (int2)(x, y), pixel); 
 }
 
@@ -1151,7 +1151,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
   }
   pixel.z = sum/weight;
 
-  pixel = (isnormal(pixel.x) && isnormal(pixel.y) && isnormal(pixel.z)) ? pixel : (float4)0.0f;
+  pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }

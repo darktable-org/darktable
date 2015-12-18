@@ -69,6 +69,21 @@ static int halign_member(lua_State *L)
   return 1;
 }
 
+static int ellipsize_member(lua_State *L)
+{
+  lua_label label;
+  luaA_to(L, lua_label, &label, 1);
+  dt_lua_ellipsize_mode_t ellipsize;
+  if(lua_gettop(L) > 2) {
+    luaA_to(L, dt_lua_ellipsize_mode_t, &ellipsize, 3);
+    gtk_label_set_ellipsize(GTK_LABEL(label->widget), ellipsize);
+    return 0;
+  }
+  ellipsize = gtk_label_get_ellipsize(GTK_LABEL(label->widget));
+  luaA_push(L, dt_lua_ellipsize_mode_t, &ellipsize);
+  return 1;
+}
+
 static int tostring_member(lua_State *L)
 {
   lua_label widget;
@@ -96,6 +111,9 @@ int dt_lua_init_widget_label(lua_State* L)
   lua_pushcfunction(L, halign_member);
   lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
   dt_lua_type_register(L, lua_label, "halign");
+  lua_pushcfunction(L,ellipsize_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_label, "ellipsize");
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

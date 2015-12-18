@@ -797,6 +797,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
   types.dt_lua_align_t:set_text("The alignment of a label")
 
+  types.dt_lua_ellipsize_mode_t:set_text("The ellipsize mode of a label")
+
   types.dt_lua_cairo_t:set_text("A wrapper around a cairo drawing context."..para().."You probably shouldn't use this after the callback that got it passed returned."..para().."For more details of the member functions have a look at the cairo documentation for "..url("http://www.cairographics.org/manual/cairo-cairo-t.html", "the drawing context")..", "..url("http://www.cairographics.org/manual/cairo-Transformations.html", "transformations").." and "..url("http://www.cairographics.org/manual/cairo-Paths.html", "paths")..".")
   types.dt_lua_cairo_t.save:set_text("Save the state of the drawing context.")
   types.dt_lua_cairo_t.save:set_reported_type("function")
@@ -901,6 +903,8 @@ local widget = dt.new_widget("button"){
   types.lua_label.selectable:set_text("True if the label content should be selectable");
   types.lua_label.halign:set_text("The horizontal alignment of the label");
   types.lua_label.halign:set_reported_type(types.dt_lua_align_t)
+  types.lua_label.ellipsize:set_text("The ellipsize mode of the label");
+  types.lua_label.ellipsize:set_reported_type(types.dt_lua_ellipsize_mode_t)
 
   types.lua_button:set_text("A clickable button");
   types.lua_button.label:set_reported_type("string")

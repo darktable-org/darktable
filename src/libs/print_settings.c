@@ -408,7 +408,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
     const dt_paper_info_t *p = (dt_paper_info_t *)papers->data;
     dt_bauhaus_combobox_add(ps->papers, p->common_name);
 
-    if (ispaperset == FALSE && (!strcmp(default_paper, p->common_name) || default_paper[0] == '\0'))
+    if (ispaperset == FALSE && (!g_strcmp0(default_paper, p->common_name) || default_paper[0] == '\0'))
     {
       dt_bauhaus_combobox_set(ps->papers, np);
       ispaperset = TRUE;
@@ -902,7 +902,7 @@ static void _new_printer_callback(dt_printer_info_t *printer, void *user_data)
 
   dt_bauhaus_combobox_add(d->printers, printer->name);
 
-  if (!strcmp(default_printer, printer->name) || default_printer[0]=='\0')
+  if (!g_strcmp0(default_printer, printer->name) || default_printer[0]=='\0')
   {
     dt_bauhaus_combobox_set(d->printers, count);
     _set_printer(self, printer->name);
@@ -1014,7 +1014,7 @@ gui_init (dt_lib_module_t *self)
       dt_bauhaus_combobox_add(d->pprofile, prof->name);
       prof->ppos = ++n;
       if(prof->type == printer_profile_type &&
-        (prof->type != DT_COLORSPACE_FILE || !strcmp(prof->filename, printer_profile)))
+        (prof->type != DT_COLORSPACE_FILE || !g_strcmp0(prof->filename, printer_profile)))
       {
         g_free(d->v_piccprofile);
         d->v_picctype = printer_profile_type;
@@ -1225,7 +1225,7 @@ gui_init (dt_lib_module_t *self)
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
     dt_bauhaus_combobox_add(d->profile, prof->name);
     prof->pos = ++n;
-    if(prof->type == icctype && (prof->type != DT_COLORSPACE_FILE || !strcmp(prof->filename, iccprofile)))
+    if(prof->type == icctype && (prof->type != DT_COLORSPACE_FILE || !g_strcmp0(prof->filename, iccprofile)))
     {
       g_free(d->v_iccprofile);
       d->v_icctype = icctype;
@@ -1284,7 +1284,7 @@ gui_init (dt_lib_module_t *self)
     dt_style_t *style=(dt_style_t *)styles->data;
     dt_bauhaus_combobox_add(d->style, style->name);
     n++;
-    if (strcmp(style->name,current_style)==0)
+    if (g_strcmp0(style->name,current_style)==0)
     {
       if(d->v_style) g_free(d->v_style);
       d->v_style = g_strdup(current_style);
@@ -1434,15 +1434,15 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     dt_colorspaces_color_profile_type_t profile_type, pprofile_type;
     const char *profile_filename = "", *pprofile_filename = "";
 
-    if(*profile == '\0' || !strcmp(profile, "none"))
+    if(*profile == '\0' || !g_strcmp0(profile, "none"))
     {
       profile_type = DT_COLORSPACE_NONE;
     }
-    else if(!strcmp(profile, "sRGB"))
+    else if(!g_strcmp0(profile, "sRGB"))
     {
       profile_type = DT_COLORSPACE_SRGB;
     }
-    else if(!strcmp(profile, "adobergb"))
+    else if(!g_strcmp0(profile, "adobergb"))
     {
       profile_type = DT_COLORSPACE_ADOBERGB;
     }
@@ -1453,15 +1453,15 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     }
 
     // in theory pprofile can't be srgb or adobergb, but checking for them won't hurt
-    if(*pprofile == '\0' || !strcmp(pprofile, "none"))
+    if(*pprofile == '\0' || !g_strcmp0(pprofile, "none"))
     {
       pprofile_type = DT_COLORSPACE_NONE;
     }
-    else if(!strcmp(pprofile, "sRGB"))
+    else if(!g_strcmp0(pprofile, "sRGB"))
     {
       pprofile_type = DT_COLORSPACE_SRGB;
     }
-    else if(!strcmp(pprofile, "adobergb"))
+    else if(!g_strcmp0(pprofile, "adobergb"))
     {
       pprofile_type = DT_COLORSPACE_ADOBERGB;
     }
@@ -1603,7 +1603,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   for(GList *iter = ps->profiles; iter; iter = g_list_next(iter))
   {
     dt_lib_export_profile_t *p = (dt_lib_export_profile_t *)iter->data;
-    if(f_profile_type == p->type && (f_profile_type != DT_COLORSPACE_FILE || !strcmp(f_profile, p->filename)))
+    if(f_profile_type == p->type && (f_profile_type != DT_COLORSPACE_FILE || !g_strcmp0(f_profile, p->filename)))
     {
       dt_bauhaus_combobox_set(ps->profile, p->pos);
       break;
@@ -1616,7 +1616,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   for(GList *iter = ps->profiles; iter; iter = g_list_next(iter))
   {
     dt_lib_export_profile_t *p = (dt_lib_export_profile_t *)iter->data;
-    if(f_pprofile_type == p->type && (f_pprofile_type != DT_COLORSPACE_FILE || !strcmp(f_pprofile, p->filename)))
+    if(f_pprofile_type == p->type && (f_pprofile_type != DT_COLORSPACE_FILE || !g_strcmp0(f_pprofile, p->filename)))
     {
       dt_bauhaus_combobox_set(ps->pprofile, p->ppos);
       break;

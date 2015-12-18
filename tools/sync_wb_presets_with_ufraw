@@ -22,7 +22,7 @@ ufraw_presets = {}
 Net::HTTP.get(UFRAWPRESETS).each_line do |line|
   if line[0..2] == "  {"
     lineparts = line.split('"')
-    cameraname = [lineparts[1], lineparts[3]]
+    cameraname = [lineparts[1].upcase, lineparts[3].upcase]
     if cameraname.join.strip != ""
       ufraw_presets[cameraname] ||= []
       ufraw_presets[cameraname] << line
@@ -43,17 +43,22 @@ File.open(DTPRESETS) do |f|
 end
 
 def munge_make_model(make, model)
-  return MANUAL_MUNGERS[[make,model]] if MANUAL_MUNGERS[[make,model]]
-
-  if make.split[0] == model.split[0]
+  makemodel = if MANUAL_MUNGERS[[make,model]]
+    MANUAL_MUNGERS[[make,model]]
+  elsif make.split[0] == model.split[0]
     [make.split[0], model[make.split[0].size..-1].strip]
   elsif model[0..6] == "FinePix"
     [make.split[0], model[7..-1].strip]
   elsif make.split[0..1].join(" ").upcase == "KONICA MINOLTA"
     [make.split[1], model.strip]
+  elsif make.split[0].upcase == "RICOH" && model.split[0].upcase == "PENTAX"
+    [model.split[0], model.split[1..-1].join.strip]
+  elsif make.upcase == "KODAK"
+    [make.upcase, model]
   else
     [make.split[0], model.strip]
   end
+  return [makemodel[0].upcase, makemodel[1].upcase]
 end
 
 forward_hash = {} # From EXIF to clean name (1:1)

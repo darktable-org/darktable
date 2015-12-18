@@ -306,10 +306,10 @@ GtkFrame > GtkEventBox * {
 
 .scale
 {
-  -GtkRange-slider-width:13;
-  -GtkRange-trough-border:1;
-  -GtkScale-slider-length:13;
-  margin:5px 0;
+  -GtkRange-slider-width: 11;
+  -GtkRange-trough-border: -3;
+  -GtkScale-slider-length: 11;
+  margin:0px;
 }
 
 .scale.trough.highlight

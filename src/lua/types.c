@@ -1057,6 +1057,12 @@ int dt_lua_init_early_types(lua_State *L)
   luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_CENTER, "center");
   luaA_enum_value_name(L, dt_lua_align_t, GTK_ALIGN_BASELINE, "baseline");
 
+  luaA_enum(L, dt_lua_ellipsize_mode_t);
+  luaA_enum_value_name(L, dt_lua_ellipsize_mode_t, PANGO_ELLIPSIZE_NONE, "none");
+  luaA_enum_value_name(L, dt_lua_ellipsize_mode_t, PANGO_ELLIPSIZE_START, "start");
+  luaA_enum_value_name(L, dt_lua_ellipsize_mode_t, PANGO_ELLIPSIZE_MIDDLE, "middle");
+  luaA_enum_value_name(L, dt_lua_ellipsize_mode_t, PANGO_ELLIPSIZE_END, "end");
+
   return 0;
 }
 
