@@ -493,6 +493,7 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
                      _("select the images from the list below that you want to import into a new filmroll"));
   gboolean all_good = FALSE;
   g_signal_connect(G_OBJECT(data->dialog), "delete-event", G_CALLBACK(_dialog_close), data);
+  data->params->result = NULL;
   while(!all_good)
   {
     gint result = gtk_dialog_run(GTK_DIALOG(data->dialog));
