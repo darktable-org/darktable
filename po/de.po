@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-14 11:54+0100\n"
-"PO-Revision-Date: 2015-12-14 12:14+0100\n"
+"POT-Creation-Date: 2015-12-19 13:10+0100\n"
+"PO-Revision-Date: 2015-12-19 13:08+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -1397,49 +1397,45 @@ msgstr[0] "%d Bild entfernen"
 msgstr[1] "%d Bilder entfernen"
 
 #: ../src/control/jobs/control_jobs.c:705
-#, fuzzy, c-format
+#, c-format
 msgid "could not send %s to trash%s%s"
-msgstr "konnte %s nicht in den Papierkorb verschieben%s%s"
+msgstr "Konnte %s nicht in den Papierkorb verschieben%s%s"
 
 #: ../src/control/jobs/control_jobs.c:706
-#, fuzzy, c-format
+#, c-format
 msgid "could not physically delete %s%s%s"
-msgstr "physikalisch von der Festplatte löschen"
+msgstr "Konnte %s nicht physikalisch von der Festplatte löschen%s%s"
 
 #: ../src/control/jobs/control_jobs.c:712
-#, fuzzy
 msgid "physically delete"
 msgstr "physikalisch von der Festplatte löschen"
 
 #: ../src/control/jobs/control_jobs.c:713
-#, fuzzy
 msgid "only remove from the collection"
-msgstr "aus der Sammlung entfernen"
+msgstr "nur aus der Sammlung entfernen"
 
 #: ../src/control/jobs/control_jobs.c:714
-#, fuzzy
 msgid "skip to next file"
-msgstr "Dateiname"
+msgstr "zur nächsten Datei gehen"
 
 #: ../src/control/jobs/control_jobs.c:715
 msgid "stop process"
-msgstr ""
+msgstr "Prozess abbrechen"
 
 #: ../src/control/jobs/control_jobs.c:720
 msgid "trashing error"
-msgstr ""
+msgstr "Fehler beim Verschieben in den Papierkorb"
 
 #: ../src/control/jobs/control_jobs.c:721
-#, fuzzy
 msgid "deletion error"
-msgstr "löschen"
+msgstr "Fehler beim Löschen"
 
 #: ../src/control/jobs/control_jobs.c:842
-#, fuzzy, c-format
+#, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
-msgstr[0] "%d Bild aufnehmen"
-msgstr[1] "%d Bilder aufnehmen"
+msgstr[0] "%d Bild in den Papierkorb verschieben"
+msgstr[1] "%d Bilder in den Papierkorb verschieben"
 
 #: ../src/control/jobs/control_jobs.c:844
 #, c-format
@@ -4151,25 +4147,25 @@ msgstr "kubischer Spline"
 msgid "base curve"
 msgstr "Basiskurve"
 
-#: ../src/iop/basecurve.c:833
+#: ../src/iop/basecurve.c:856
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-Wert: Eingabe, y-Wert: Ausgabe. Arbeitet auf den RGB-Kanälen."
 
-#: ../src/iop/basecurve.c:838 ../src/iop/lens.c:2189 ../src/iop/vignette.c:1147
+#: ../src/iop/basecurve.c:861 ../src/iop/lens.c:2189 ../src/iop/vignette.c:1147
 #: ../src/iop/watermark.c:1297
 msgid "scale"
 msgstr "Skalierung"
 
-#: ../src/iop/basecurve.c:839 ../src/iop/profile_gamma.c:319
+#: ../src/iop/basecurve.c:862 ../src/iop/profile_gamma.c:319
 #: ../src/iop/tonecurve.c:413
 msgid "linear"
 msgstr "linear"
 
-#: ../src/iop/basecurve.c:840
+#: ../src/iop/basecurve.c:863
 msgid "logarithmic"
 msgstr "logarithmisch"
 
-#: ../src/iop/basecurve.c:842
+#: ../src/iop/basecurve.c:865
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -5122,26 +5118,26 @@ msgstr "Ausgabevorsatz"
 
 #: ../src/iop/colorout.c:637 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261
-#: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2446
+#: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2448
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
 #: ../src/iop/colorout.c:638 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
-#: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2447
+#: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2449
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
 #: ../src/iop/colorout.c:639 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
-#: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2448
+#: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2450
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
 #: ../src/iop/colorout.c:640 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
-#: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2449
+#: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2451
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
@@ -6519,20 +6515,20 @@ msgstr "linearer Teil"
 msgid "gamma exponential factor"
 msgstr "Gamma-Exponent"
 
-#: ../src/iop/rawdenoise.c:59
+#: ../src/iop/rawdenoise.c:60
 msgid "raw denoise"
 msgstr "Raw-Entrauschen"
 
-#: ../src/iop/rawdenoise.c:80
+#: ../src/iop/rawdenoise.c:81
 msgctxt "accel"
 msgid "noise threshold"
 msgstr "Rausch-Schwellwert"
 
-#: ../src/iop/rawdenoise.c:506
+#: ../src/iop/rawdenoise.c:502
 msgid "noise threshold"
 msgstr "Rausch-Schwellwert"
 
-#: ../src/iop/rawdenoise.c:511
+#: ../src/iop/rawdenoise.c:508
 msgid ""
 "raw denoising\n"
 "only works for raw images."
@@ -7914,11 +7910,11 @@ msgstr ""
 "die korrekte Zeitzone angegeben werden, damit die GPX-Daten richtig "
 "zugeordnet werden können"
 
-#: ../src/libs/geotagging.c:599
+#: ../src/libs/geotagging.c:608
 msgid "time offset"
 msgstr "Zeitversatz"
 
-#: ../src/libs/geotagging.c:610
+#: ../src/libs/geotagging.c:619
 msgid ""
 "time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
@@ -7926,20 +7922,20 @@ msgstr ""
 "Zeitversatz\n"
 "Format: [+-]?[[hh:]mm:]ss"
 
-#: ../src/libs/geotagging.c:621
+#: ../src/libs/geotagging.c:630
 msgid "calculate the time offset from an image"
 msgstr "Zeitversatz anhand eines Bildes berechnen"
 
-#: ../src/libs/geotagging.c:626
+#: ../src/libs/geotagging.c:635
 msgid "apply time offset to selected images"
 msgstr "Zeitversatz auf ausgewählte Bilder anwenden"
 
 #. gpx
-#: ../src/libs/geotagging.c:634
+#: ../src/libs/geotagging.c:643
 msgid "apply GPX track file"
 msgstr "GPX-Track-Datei anwenden"
 
-#: ../src/libs/geotagging.c:636
+#: ../src/libs/geotagging.c:645
 msgid "parses a GPX file and updates location of selected images"
 msgstr "liest eine GPX-Datei und setzt die Position der ausgewählten Bilder"
 
@@ -9287,37 +9283,37 @@ msgstr "Filmstreifen"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2189
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2191
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 Sterne"
 
-#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2190
+#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2192
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 Stern"
 
-#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2191
+#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2193
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 Sterne"
 
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2192
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2194
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 Sterne"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2193
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2195
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 Sterne"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2194
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2196
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 Sterne"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2195
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2197
 msgctxt "accel"
 msgid "rate reject"
 msgstr "Abgelehnt"
@@ -9355,27 +9351,27 @@ msgstr "Bild duplizieren"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2204
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2206
 msgctxt "accel"
 msgid "color red"
 msgstr "Farbmarkierung Rot"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2205
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2207
 msgctxt "accel"
 msgid "color yellow"
 msgstr "Farbmarkierung Gelb"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2206
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2208
 msgctxt "accel"
 msgid "color green"
 msgstr "Farbmarkierung Grün"
 
-#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2207
+#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2209
 msgctxt "accel"
 msgid "color blue"
 msgstr "Farbmarkierung Blau"
 
-#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2208
+#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2210
 msgctxt "accel"
 msgid "color purple"
 msgstr "Farbmarkierung Violett"
@@ -9636,7 +9632,7 @@ msgstr ""
 "Gamutüberprüfung umschalten\n"
 "Rechtsklick für Einstellungen"
 
-#: ../src/views/darkroom.c:1545 ../src/views/lighttable.c:2444
+#: ../src/views/darkroom.c:1545 ../src/views/lighttable.c:2446
 msgid "display intent"
 msgstr "Anzeigevorsatz"
 
@@ -9644,11 +9640,11 @@ msgstr "Anzeigevorsatz"
 msgid "softproof profile"
 msgstr "Softproof-Profil"
 
-#: ../src/views/darkroom.c:1561 ../src/views/lighttable.c:2458
+#: ../src/views/darkroom.c:1561 ../src/views/lighttable.c:2460
 msgid "display profile"
 msgstr "Anzeigeprofil"
 
-#: ../src/views/darkroom.c:1592 ../src/views/lighttable.c:2477
+#: ../src/views/darkroom.c:1592 ../src/views/lighttable.c:2479
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "Anzeige-ICC-Profile in %s/color/out oder %s/color/out"
@@ -9771,94 +9767,94 @@ msgid "or add images in the collection module in the left panel"
 msgstr "oder Bilder links im Sammlungs-Plugin hinzufügen."
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2198
+#: ../src/views/lighttable.c:2200
 msgctxt "accel"
 msgid "navigate up"
 msgstr "Navigiere hoch"
 
-#: ../src/views/lighttable.c:2199
+#: ../src/views/lighttable.c:2201
 msgctxt "accel"
 msgid "navigate down"
 msgstr "Navigiere runter"
 
-#: ../src/views/lighttable.c:2200
+#: ../src/views/lighttable.c:2202
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "Navigiere Seite hoch"
 
-#: ../src/views/lighttable.c:2201
+#: ../src/views/lighttable.c:2203
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "Navigiere Seite runter"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2211
+#: ../src/views/lighttable.c:2213
 msgctxt "accel"
 msgid "scroll up"
 msgstr "Scrolle nach oben"
 
-#: ../src/views/lighttable.c:2212
+#: ../src/views/lighttable.c:2214
 msgctxt "accel"
 msgid "scroll down"
 msgstr "Scrolle nach unten"
 
-#: ../src/views/lighttable.c:2213
+#: ../src/views/lighttable.c:2215
 msgctxt "accel"
 msgid "scroll left"
 msgstr "Scrolle nach links"
 
-#: ../src/views/lighttable.c:2214
+#: ../src/views/lighttable.c:2216
 msgctxt "accel"
 msgid "scroll right"
 msgstr "Scrolle nach rechts"
 
-#: ../src/views/lighttable.c:2215
+#: ../src/views/lighttable.c:2217
 msgctxt "accel"
 msgid "scroll center"
 msgstr "Scrolle in die Mitte"
 
-#: ../src/views/lighttable.c:2216
+#: ../src/views/lighttable.c:2218
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "Bilder wieder am Raster ausrichten"
 
-#: ../src/views/lighttable.c:2217
+#: ../src/views/lighttable.c:2219
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "Bildauswahl umschalten"
 
-#: ../src/views/lighttable.c:2218
+#: ../src/views/lighttable.c:2220
 msgctxt "accel"
 msgid "select single image"
 msgstr "Einzelnes Bild auswählen"
 
 #. Preview key
-#: ../src/views/lighttable.c:2221
+#: ../src/views/lighttable.c:2223
 msgctxt "accel"
 msgid "preview"
 msgstr "Kurzvorschau"
 
-#: ../src/views/lighttable.c:2222
+#: ../src/views/lighttable.c:2224
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "Kurzvorschau mit Fokuserkennung"
 
-#: ../src/views/lighttable.c:2223
+#: ../src/views/lighttable.c:2225
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "Vorschau"
 
-#: ../src/views/lighttable.c:2224
+#: ../src/views/lighttable.c:2226
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "Vorschau mit Fokuserkennung"
 
-#: ../src/views/lighttable.c:2225
+#: ../src/views/lighttable.c:2227
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "Vorschau beenden"
 
-#: ../src/views/lighttable.c:2404
+#: ../src/views/lighttable.c:2406
 msgid "set display profile"
 msgstr "Anzeigeprofil setzen"
 
