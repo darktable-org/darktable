@@ -1243,6 +1243,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Simple text
   label = gtk_label_new(_("text"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   g->text = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
   g_object_set(G_OBJECT(g->text), "tooltip-text", _("text string, tag:\n$(WATERMARK_TEXT)"), (char *)NULL);
