@@ -482,10 +482,11 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-static inline void gui_init_tab(struct dt_iop_module_t *self, const char *name, GtkWidget **ppcolor,
+static inline int gui_init_tab(struct dt_iop_module_t *self, int line, const char *name, GtkWidget **ppcolor,
                                 const GdkRGBA *c, GtkWidget **pphue, GtkWidget **ppsaturation)
 {
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(name), FALSE, FALSE, 5);
+  GtkGrid *grid = GTK_GRID(self->widget);
+  gtk_grid_attach(grid, dt_ui_section_label_new(name), 0, line++, 2, 1);
 
   // color button
   GtkWidget *color;
@@ -516,15 +517,12 @@ static inline void gui_init_tab(struct dt_iop_module_t *self, const char *name, 
   g_object_set(G_OBJECT(saturation), "tooltip-text", _("select the saturation tone"), (char *)NULL);
 
   // pack the widgets
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hue), FALSE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(vbox), GTK_WIDGET(saturation), FALSE, TRUE, 0);
+  gtk_widget_set_hexpand(hue, TRUE); // make sure that the color picker doesn't become HUGE
+  gtk_grid_attach(grid, hue, 0, line, 1, 1);
+  gtk_grid_attach(grid, color, 1, line++, 1, 2);
+  gtk_grid_attach(grid, saturation, 0, line++, 1, 1);
 
-  GtkWidget *hbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox), TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(color), FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  return line;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -533,37 +531,39 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  int line = 0;
+  self->widget = gtk_grid_new();
+  GtkGrid *grid = GTK_GRID(self->widget);
+  gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_spacing(grid, DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_homogeneous(grid, FALSE);
 
   float rgb[3];
 
   // Shadows
   hsl2rgb(rgb, p->shadow_hue, p->shadow_saturation, 0.5f);
   GdkRGBA sh_color = (GdkRGBA){.red = rgb[0], .green = rgb[1], .blue = rgb[2], .alpha = 1.0 };
-  gui_init_tab(self, _("shadows"), &g->colorpick1, &sh_color, &g->gslider1, &g->gslider2);
+  line = gui_init_tab(self, line, _("shadows"), &g->colorpick1, &sh_color, &g->gslider1, &g->gslider2);
 
   // Highlights
   hsl2rgb(rgb, p->highlight_hue, p->highlight_saturation, 0.5f);
   GdkRGBA hi_color = (GdkRGBA){.red = rgb[0], .green = rgb[1], .blue = rgb[2], .alpha = 1.0 };
-  gui_init_tab(self, _("highlights"), &g->colorpick2, &hi_color, &g->gslider3, &g->gslider4);
+  line = gui_init_tab(self, line, _("highlights"), &g->colorpick2, &hi_color, &g->gslider3, &g->gslider4);
 
   // Additional parameters
-  GtkWidget *hbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkWidget *vbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
   g->scale1 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 100.0, 0.1, p->balance * 100.0, 2, 0);
   dt_bauhaus_slider_set_format(g->scale1, "%.2f");
   dt_bauhaus_slider_set_stop(g->scale1, 0.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_slider_set_stop(g->scale1, 1.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("balance"));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_widget_set_margin_top(g->scale1, 6 * DT_BAUHAUS_SPACE);
+  gtk_grid_attach(grid, g->scale1, 0, line++, 2, 1);
+
 
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compress, 2);
   dt_bauhaus_slider_set_format(g->scale2, "%.2f%%");
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("compress"));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_grid_attach(grid, g->scale2, 0, line++, 2, 1);
 
 
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the balance of center of splittoning"), (char *)NULL);
