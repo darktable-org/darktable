@@ -132,16 +132,25 @@ static int _detect_printers_callback(dt_job_t *job)
   dt_prtctl_t *pctl = dt_control_job_get_params(job);
   int res;
 #if ((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 6)) || CUPS_VERSION_MAJOR > 1
-  res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 30000, &_cancel, 0, 0, _dest_cb, pctl);
-#else
-  cups_dest_t *dests;
-  const int num_dests = cupsGetDests(&dests);
-  for (int k=0; k<num_dests; k++)
+#ifdef __APPLE__
+  if (cupsEnumDests != NULL)
+#endif
+    res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 30000, &_cancel, 0, 0, _dest_cb, pctl);
+#ifdef __APPLE__
+  else
+#endif
+#endif
+#if defined(__APPLE__) || !(((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 6)) || CUPS_VERSION_MAJOR > 1)
   {
-    _dest_cb((void *)pctl, 0, &dests[k]);
+    cups_dest_t *dests;
+    const int num_dests = cupsGetDests(&dests);
+    for (int k=0; k<num_dests; k++)
+    {
+      _dest_cb((void *)pctl, 0, &dests[k]);
+    }
+    cupsFreeDests(num_dests, dests);
+    res=1;
   }
-  cupsFreeDests(num_dests, dests);
-  res=1;
 #endif
   return !res;
 }
@@ -215,58 +224,64 @@ GList *dt_get_papers(const char *printer_name)
 {
   GList *result = NULL;
 
-#if ((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 6)) || CUPS_VERSION_MAJOR > 1
-  cups_dest_t *dests;
-  int num_dests = cupsGetDests(&dests);
-  cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
-
-  int cancel;
-  const size_t ressize = 1024;
-  char resource[ressize];
-
-  cancel = 0; // important
-
-  if (dest)
+#if ((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 7)) || CUPS_VERSION_MAJOR > 1
+#ifdef __APPLE__
+  if (cupsConnectDest != NULL && cupsCopyDestInfo != NULL && cupsGetDestMediaCount != NULL &&
+      cupsGetDestMediaByIndex != NULL && cupsFreeDestInfo != NULL)
+#endif
   {
-    http_t *hcon = cupsConnectDest (dest, 0, 2000, &cancel, resource, ressize, NULL, (void *)NULL);
+    cups_dest_t *dests;
+    int num_dests = cupsGetDests(&dests);
+    cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
 
-    if (hcon)
+    int cancel;
+    const size_t ressize = 1024;
+    char resource[ressize];
+
+    cancel = 0; // important
+
+    if (dest)
     {
-      cups_size_t size;
-      cups_dinfo_t *info = cupsCopyDestInfo (hcon, dest);
-      const int count = cupsGetDestMediaCount(hcon, dest, info, CUPS_MEDIA_FLAGS_DEFAULT);
-      for (int k=0; k<count; k++)
+      http_t *hcon = cupsConnectDest (dest, 0, 2000, &cancel, resource, ressize, NULL, (void *)NULL);
+
+      if (hcon)
       {
-        if (cupsGetDestMediaByIndex(hcon, dest, info, k, CUPS_MEDIA_FLAGS_DEFAULT, &size))
+        cups_size_t size;
+        cups_dinfo_t *info = cupsCopyDestInfo (hcon, dest);
+        const int count = cupsGetDestMediaCount(hcon, dest, info, CUPS_MEDIA_FLAGS_DEFAULT);
+        for (int k=0; k<count; k++)
         {
-          if (!paper_exists(result,size.media))
+          if (cupsGetDestMediaByIndex(hcon, dest, info, k, CUPS_MEDIA_FLAGS_DEFAULT, &size))
           {
-            pwg_media_t *med = pwgMediaForPWG (size.media);
-            char common_name[MAX_NAME] = { 0 };
+            if (!paper_exists(result,size.media))
+            {
+              pwg_media_t *med = pwgMediaForPWG (size.media);
+              char common_name[MAX_NAME] = { 0 };
 
-            if (med->ppd)
-              g_strlcpy(common_name, med->ppd, sizeof(common_name));
-            else
-              g_strlcpy(common_name, size.media, sizeof(common_name));
+              if (med->ppd)
+                g_strlcpy(common_name, med->ppd, sizeof(common_name));
+              else
+                g_strlcpy(common_name, size.media, sizeof(common_name));
 
-            dt_paper_info_t *paper = (dt_paper_info_t*)malloc(sizeof(dt_paper_info_t));
-            g_strlcpy(paper->name, size.media, sizeof(paper->name));
-            g_strlcpy(paper->common_name, common_name, sizeof(paper->common_name));
-            paper->width = (double)size.width / 100.0;
-            paper->height = (double)size.length / 100.0;
-            result = g_list_append (result, paper);
+              dt_paper_info_t *paper = (dt_paper_info_t*)malloc(sizeof(dt_paper_info_t));
+              g_strlcpy(paper->name, size.media, sizeof(paper->name));
+              g_strlcpy(paper->common_name, common_name, sizeof(paper->common_name));
+              paper->width = (double)size.width / 100.0;
+              paper->height = (double)size.length / 100.0;
+              result = g_list_append (result, paper);
+            }
           }
         }
+
+        cupsFreeDestInfo(info);
+        httpClose(hcon);
       }
-
-      cupsFreeDestInfo(info);
-      httpClose(hcon);
+      else
+        dt_print(DT_DEBUG_PRINT, "[print] cannot connect to printer %s (cancel=%d)\n", printer_name, cancel);
     }
-    else
-      dt_print(DT_DEBUG_PRINT, "[print] cannot connect to printer %s (cancel=%d)\n", printer_name, cancel);
-  }
 
-  cupsFreeDests(num_dests, dests);
+    cupsFreeDests(num_dests, dests);
+  }
 #endif
 
   // check now PPD page sizes
