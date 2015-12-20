@@ -468,6 +468,11 @@ GtkDialog GtkScrolledWindow
   background-color: transparent;
 }
 
+GtkDialog .slider.vertical
+{
+  background-color: shade(@selected_bg_color, 1.7);
+}
+
 GtkColorSwatch
 {
     background-color: transparent;
