@@ -65,8 +65,6 @@ if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
 	add_definitions("-DOS_OBJECT_USE_OBJC=0")
-	# Make sure we don't use functions unavailable in OS X 10.6 and later (only works with system compiler, vanilla gcc from macports ignores this)
-	add_definitions("-D__MAC_OS_X_VERSION_MAX_ALLOWED=1060")
 endif(APPLE)
 
 if(CMAKE_COMPILER_IS_GNUCC)
