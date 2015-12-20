@@ -561,6 +561,7 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
 void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *params)
 {
   _camera_import_dialog_t data;
+  memset(&data, 0, sizeof(_camera_import_dialog_t)); // needed to initialize pointers to null
   data.params = params;
   _camera_import_dialog_new(&data);
   _camera_import_dialog_run(&data);

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-12-09 22:07+0900\n"
-"PO-Revision-Date: 2015-12-12 19:43+0900\n"
+"PO-Revision-Date: 2015-12-20 09:59+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -528,7 +528,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2372
 msgid "host memory limit (in MB) for tiling"
-msgstr "タイリング用ホストメモリの制限（MB単位）"
+msgstr "タイリング用ホストメモリの制限 (MB単位)"
 
 #: ../build/src/preferences_gen.h:2391
 msgid ""
@@ -537,13 +537,13 @@ msgid ""
 "process image with increasing number of tiles. setting this to 0 will omit "
 "any limit. values below 500 will be treated as 500 (needs a restart)."
 msgstr ""
-"この値は、画像処理中に使用できるメモリの最大量（MB）を制御します。低い値は、"
+"この値は、画像処理中に使用できるメモリの最大量(MB)を制御します。低い値は、"
 "タイル数を増加しながら画像処理し、少ないメモリモジュールで強制的に行われま"
 "す。0は無制限、500以下の値は500として扱われます (要再起動)."
 
 #: ../build/src/preferences_gen.h:2398
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
-msgstr "タイリング用バッファのメモリの最小量（MB単位)"
+msgstr "タイリング用バッファのメモリの最小量 (MB単位)"
 
 #: ../build/src/preferences_gen.h:2419
 msgid ""
@@ -755,7 +755,7 @@ msgid ""
 "one if there is one available (needs a restart)"
 msgstr ""
 "利用可能なものがある場合、汎用メーカーの物に代わりカメラ専用のベースカーブを"
-"デフォルトで使用します(要再起動)"
+"デフォルトで使用します (要再起動)"
 
 #: ../build/src/preferences_gen.h:2795
 msgid "session options"
@@ -1235,7 +1235,7 @@ msgstr "なし"
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
-"OpenCLが非アクティブ化し、低速なGPUハードウェアアクセラレーションが原因です"
+"OpenCLが非アクティブ化された低速なGPUハードウェアアクセラレーションが原因です"
 
 #: ../src/common/utility.c:371
 msgid "above sea level"
@@ -1305,7 +1305,7 @@ msgstr "先にカメラをマニュアルモードに設定して下さい!"
 msgid "%d/%d imported to %s"
 msgid_plural "%d/%d imported to %s"
 msgstr[0] "%d/%d 画像を %s にインポートしました"
-msgstr[1] "%d/%d を %s にインポートしました"
+msgstr[1] "%d/%d 画像を %s にインポートしました"
 
 #: ../src/control/jobs/camera_jobs.c:322
 msgid "starting to import images from camera"
@@ -1325,7 +1325,7 @@ msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:313
 msgid "exposure bracketing only works on Bayer raw images."
-msgstr "露出ブラケティングは、ベイヤーRAW画像でのみ動作します"
+msgstr "露光ブラケティングは、ベイヤーRAW画像でのみ動作します"
 
 #: ../src/control/jobs/control_jobs.c:320
 msgid "images have to be of same size and orientation!"
@@ -1548,10 +1548,10 @@ msgid_plural ""
 "(all unselected duplicates will be moved along)"
 msgstr[0] ""
 "選択画像 %d 枚を%sに本当に移動しますか？\n"
-"(すべて未選択の複製が一緒に移動されます）"
+"(すべて未選択の複製が一緒に移動されます)"
 msgstr[1] ""
 "選択画像 %d 枚を%sに本当に移動しますか？\n"
-"(すべて未選択の複製が一緒に移動されます）"
+"(すべて未選択の複製が一緒に移動されます)"
 
 #: ../src/control/jobs/control_jobs.c:1468
 msgid "move image?"
@@ -1811,12 +1811,12 @@ msgstr "正常範囲内"
 #: ../src/develop/blend_gui.c:1564 ../src/libs/live_view.c:419
 msgctxt "blendmode"
 msgid "lighten"
-msgstr "比較(明)"
+msgstr "比較 (明)"
 
 #: ../src/develop/blend_gui.c:1565 ../src/libs/live_view.c:418
 msgctxt "blendmode"
 msgid "darken"
-msgstr "比較(暗)"
+msgstr "比較 (暗)"
 
 #: ../src/develop/blend_gui.c:1566 ../src/libs/live_view.c:415
 msgctxt "blendmode"
@@ -1927,22 +1927,22 @@ msgstr "HSV カラー"
 #: ../src/develop/blend_gui.c:1592
 msgctxt "blendmode"
 msgid "difference (deprecated)"
-msgstr "差の絶対値 （非推奨）"
+msgstr "差の絶対値 (非推奨)"
 
 #: ../src/develop/blend_gui.c:1594
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
-msgstr "反転 （非推奨）"
+msgstr "反転 (非推奨)"
 
 #: ../src/develop/blend_gui.c:1596
 msgctxt "blendmode"
 msgid "normal (deprecated)"
-msgstr "標準 （非推奨）"
+msgstr "標準 (非推奨)"
 
 #: ../src/develop/blend_gui.c:1597
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
-msgstr "範囲限定無し （非推奨）"
+msgstr "範囲限定無し (非推奨)"
 
 #: ../src/develop/blend_gui.c:1607
 msgid "uniformly"
@@ -2060,12 +2060,12 @@ msgstr "削除"
 #: ../src/develop/imageop.c:886 ../src/develop/imageop.c:1856
 #, c-format
 msgid "%s is switched on"
-msgstr "%s は スイッチオン"
+msgstr "%s 有効"
 
 #: ../src/develop/imageop.c:886 ../src/develop/imageop.c:1856
 #, c-format
 msgid "%s is switched off"
-msgstr "%s は スイッチオフ"
+msgstr "%s 無効"
 
 #: ../src/develop/imageop.c:1208 ../src/gui/accelerators.c:596
 #: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847
@@ -2124,7 +2124,7 @@ msgstr "Lightroom XMP を見つけることができません!"
 #: ../src/develop/lightroom.c:481
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "`%s'  は lightroom XMPではありません!"
+msgstr "`%s' は lightroom XMPではありません!"
 
 #: ../src/develop/lightroom.c:1383 ../src/libs/import.c:570
 msgid "tags"
@@ -2349,7 +2349,7 @@ msgstr "フラッシュ"
 #. For Olympus with no real "Flash" preset:
 #: ../src/external/wb_presets.c:70
 msgid "flash (auto mode)"
-msgstr "フラッシュ(オートモード)"
+msgstr "フラッシュ (オートモード)"
 
 #: ../src/external/wb_presets.c:71
 msgid "evening sun"
@@ -2672,7 +2672,7 @@ msgstr "$(SECOND) - 秒"
 
 #: ../src/gui/gtkentry.c:198
 msgid "$(EXIF_YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) -  EXIF 年"
+msgstr "$(EXIF_YEAR) - EXIF 年"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(EXIF_MONTH) - EXIF month"
@@ -3293,7 +3293,7 @@ msgid ""
 "example: 210 mm x 2.97 cm"
 msgstr ""
 "PDF用紙サイズ\n"
-"リストから選択 または  \"<幅> [単位] x <高さ> <単位>\n"
+"リストから選択 または \"<幅> [単位] x <高さ> <単位>\n"
 "例: 210 mm x 2.97 cm"
 
 #: ../src/imageio/format/pdf.c:614
@@ -3590,7 +3590,7 @@ msgstr "Eメール・クライアントを起動することができません�
 #: ../src/imageio/storage/facebook.c:250
 #, c-format
 msgid "[facebook] unexpected URL format\n"
-msgstr "[Facebook] 想定外の URL 形式\n"
+msgstr "[Facebook] 予期しない URL 形式\n"
 
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/facebook.c:614
@@ -3638,8 +3638,9 @@ msgid ""
 "login into your facebook account there and authorize darktable to upload "
 "photos before continuing."
 msgstr ""
-"Facebookのアカウントにログインし認証し、darktableで写真をアップロードする前"
-"に、お使いのブラウザのウインドウまたはタブが開いている必要があります"
+"お使いのブラウザのウインドウまたはタブが開いている必要があります。darktableで"
+"写真をアップロードする前に、ブラウザでFacebookのアカウントにログインし認証す"
+"る必要があります"
 
 #: ../src/imageio/storage/facebook.c:839 ../src/imageio/storage/picasa.c:1007
 msgid "new account"
@@ -3872,7 +3873,7 @@ msgstr "識別コード:"
 
 #: ../src/imageio/storage/picasa.c:865
 msgid "please enter the verification code"
-msgstr "バリデーションコードを入力してください"
+msgstr "識別コードを入力してください"
 
 #: ../src/imageio/storage/picasa.c:1287
 msgid "google+ photos"
@@ -4027,7 +4028,7 @@ msgstr "PENTAX 調"
 
 #: ../src/iop/basecurve.c:98
 msgid "ricoh like"
-msgstr "Ricoh  調"
+msgstr "Ricoh 調"
 
 #: ../src/iop/basecurve.c:99
 msgid "olympus like"
@@ -4117,7 +4118,7 @@ msgstr "ディテール"
 
 #: ../src/iop/bilateral.cc:67
 msgid "denoise (bilateral filter)"
-msgstr "ノイズ低減（バイラテラル フィルタ）"
+msgstr "ノイズ低減 (バイラテラル フィルタ)"
 
 #: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:193 ../src/iop/shadhi.c:277
 #: ../src/iop/sharpen.c:97
@@ -4323,7 +4324,7 @@ msgstr "縦横比"
 
 #: ../src/iop/borders.c:992
 msgid "select the aspect ratio or right click and type your own (w:h)"
-msgstr "縦横比を選択するか、右クリックで（W：H）を入力します"
+msgstr "縦横比を選択するか、右クリックで(W：H)を入力します"
 
 #: ../src/iop/borders.c:995 ../src/iop/flip.c:73
 #: ../src/libs/print_settings.c:1089
@@ -5298,9 +5299,9 @@ msgid ""
 "set to 0.0 to switch off.\n"
 "set to 1.0 to ignore edges."
 msgstr ""
-"エッジのメディアンパスのしきい値. \n"
-"0.0 の設定でスイッチオフ. \n"
-"1.0 の設定でエッジを無視."
+"エッジのメディアンパスのしきい値\n"
+"0.0 の設定で無効\n"
+"1.0 の設定でエッジを無視"
 
 #: ../src/iop/demosaic.c:2212
 msgid "edge threshold"
@@ -5368,7 +5369,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:132
 msgid "denoise (profiled)"
-msgstr "ノイズ低減（プロファイル）"
+msgstr "ノイズ低減 (プロファイル)"
 
 #: ../src/iop/denoiseprofile.c:1414
 #, c-format
@@ -5378,7 +5379,7 @@ msgstr "ISO %dで一致検出"
 #: ../src/iop/denoiseprofile.c:1422
 #, c-format
 msgid "interpolated from ISO %d and %d"
-msgstr "ISO  %d と %d から補間"
+msgstr "ISO %d と %d から補間"
 
 #: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:801
 #: ../src/iop/lens.c:2199 ../src/iop/levels.c:550 ../src/libs/export.c:635
@@ -5478,7 +5479,7 @@ msgstr "旧イコライザ"
 
 #: ../src/iop/equalizer.c:319
 msgid "sharpen (strong)"
-msgstr "シャープ化（強)"
+msgstr "シャープ化 (強)"
 
 #: ../src/iop/equalizer.c:329
 msgctxt "equalizer"
@@ -5491,7 +5492,7 @@ msgstr "Null"
 
 #: ../src/iop/equalizer.c:355
 msgid "denoise (strong)"
-msgstr "ノイズ低減（強）"
+msgstr "ノイズ低減 (強)"
 
 #: ../src/iop/equalizer.c:363
 msgid ""
@@ -5535,7 +5536,7 @@ msgstr "ターゲット レベル"
 
 #: ../src/iop/exposure.c:218
 msgid "magic lantern defaults"
-msgstr "magic lantern  デフォルト"
+msgstr "magic lantern デフォルト"
 
 #: ../src/iop/exposure.c:243
 #, c-format
@@ -5670,7 +5671,7 @@ msgstr "オペレータ"
 
 #: ../src/iop/globaltonemap.c:680
 msgid "the global tonemap operator"
-msgstr "グローバル・トーンマップの演算子"
+msgstr "グローバル・トーンマップの処理手法"
 
 #: ../src/iop/globaltonemap.c:686
 msgid "bias"
@@ -6350,7 +6351,7 @@ msgstr "ハイライト"
 
 #: ../src/iop/nlmeans.c:78
 msgid "denoise (non-local means)"
-msgstr "ノイズ低減（非局所平均）"
+msgstr "ノイズ低減 (非局所平均)"
 
 #: ../src/iop/nlmeans.c:109
 msgctxt "accel"
@@ -7186,7 +7187,7 @@ msgstr "カメラの設定"
 #: ../src/libs/camera.c:104
 msgctxt "accel"
 msgid "capture image(s)"
-msgstr "キャプチャー画像（複数可）"
+msgstr "キャプチャー画像 (複数可)"
 
 #: ../src/libs/camera.c:146
 msgid "toggle view property in center view"
@@ -7216,7 +7217,7 @@ msgstr "モード"
 
 #: ../src/libs/camera.c:438
 msgid "timer (s)"
-msgstr "タイマー（秒）"
+msgstr "タイマー (秒)"
 
 #: ../src/libs/camera.c:439
 msgid "count"
@@ -7232,7 +7233,7 @@ msgstr "ブラケット・ステップ"
 
 #: ../src/libs/camera.c:477
 msgid "capture image(s)"
-msgstr "キャプチャー画像（複数可）"
+msgstr "キャプチャー画像 (複数可)"
 
 #: ../src/libs/camera.c:480
 msgid "toggle delayed capture mode"
@@ -7265,8 +7266,8 @@ msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
 msgstr ""
-"撮影の基準画像の各側のブラケット撮影枚数、撮影枚数=（ブラケット*2）+1(基準画"
-"像）"
+"撮影の基準画像の各側のブラケット撮影枚数、撮影枚数=(ブラケット*2)+1(基準画"
+"像)"
 
 #: ../src/libs/camera.c:493
 msgid ""
@@ -7276,7 +7277,7 @@ msgid ""
 msgstr ""
 "ブラケットあたりのステップ数、ステップはカメラの設定と通常ストップあたり3ス"
 "テップです\n"
-"言い換えれば、３ステップは、ブラケット間 1EVの露出ステップです"
+"言い換えれば、３ステップは、ブラケット間 1EVの露光ステップです"
 
 #. user specified properties
 #: ../src/libs/camera.c:516
@@ -7531,7 +7532,7 @@ msgid ""
 "first selected image (ctrl-shift-c)"
 msgstr ""
 "最初に選択された画像の\n"
-"履歴スタックをコピーします（CTRL - C)"
+"履歴スタックをコピーします (CTRL - C)"
 
 #: ../src/libs/copy_history.c:244
 msgid "copy all"
@@ -7543,7 +7544,7 @@ msgid ""
 "first selected image (ctrl-c)"
 msgstr ""
 "最初に選択された画像に\n"
-"履歴スタックをコピーします（CTRL - C)"
+"履歴スタックをコピーします (CTRL - C)"
 
 #: ../src/libs/copy_history.c:250
 msgid "discard"
@@ -7579,7 +7580,7 @@ msgid ""
 "all selected images (ctrl-v)"
 msgstr ""
 "すべて選択された画像に\n"
-"履歴スタックの貼り付け(ctrl-v)"
+"履歴スタックの貼り付け (ctrl-v)"
 
 #: ../src/libs/copy_history.c:271
 msgid "append"
@@ -8067,7 +8068,7 @@ msgstr "インポート フォルダ"
 #: ../src/libs/import.c:221
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
-msgstr "デバイス \"%s\"  をポート \"%s\"に 接続しました"
+msgstr "デバイス \"%s\" をポート \"%s\"に 接続しました"
 
 #: ../src/libs/import.c:231
 msgid "import from camera"
@@ -8234,7 +8235,7 @@ msgstr "選択画像"
 
 #: ../src/libs/live_view.c:386 ../src/libs/tools/filter.c:142
 msgid "id"
-msgstr "ID"
+msgstr "id"
 
 #: ../src/libs/live_view.c:387
 msgid "overlay another image over the live view"
@@ -8242,7 +8243,7 @@ msgstr "ライブビューで別の画像をオーバーレイする"
 
 #: ../src/libs/live_view.c:393 ../src/libs/metadata_view.c:90
 msgid "image id"
-msgstr "画像 ID"
+msgstr "画像 id"
 
 #: ../src/libs/live_view.c:397
 msgid "enter image id of the overlay manually"
@@ -8334,7 +8335,7 @@ msgstr "マップの設定"
 
 #: ../src/libs/map_settings.c:91
 msgid "show OSD"
-msgstr " OSDを表示"
+msgstr "OSDを表示"
 
 #: ../src/libs/map_settings.c:93
 msgid "toggle the visibility of the map overlays"
@@ -8608,11 +8609,11 @@ msgstr "モジュール グループ"
 
 #: ../src/libs/modulegroups.c:108
 msgid "show only your favourite modules (selected in `more modules' below)"
-msgstr "お好みのモジュールを表示します (下の`他のモジュール'で複数選択 )"
+msgstr "お気に入り モジュール (下の「他のモジュール」で複数選択 )"
 
 #: ../src/libs/modulegroups.c:114
 msgid "show only active modules"
-msgstr "アクティブなモジュールのみ表示"
+msgstr "アクティブ モジュール"
 
 #: ../src/libs/modulegroups.c:120
 msgid "basic group"
@@ -8732,7 +8733,7 @@ msgid ""
 " a too large value may result in poor print quality"
 msgstr ""
 "使用プリンターからの画像倍率 DPI:\n"
-" < 0 は画像が縮小されることを意味し(最高品質) \n"
+" < 0 は画像が縮小されることを意味し (最高品質) \n"
 " > 0 は画像が拡大されることを意味します\n"
 "大き過ぎる値は低品質な印刷結果をもたらします"
 
@@ -8988,7 +8989,7 @@ msgid_plural ""
 "%d images are assigned this tag!"
 msgstr[0] ""
 "タグ `%s' を削除しますか?\n"
-"%d 枚の画像にこのタグが割り当てられています！"
+"%d 画像にこのタグが割り当てられています！"
 msgstr[1] ""
 "タグ `%s' を削除しますか?\n"
 "%d 枚の画像にこのタグが割り当てられています！"
@@ -9379,7 +9380,7 @@ msgstr "ファイルを選択"
 #: ../src/lua/preferences.c:675
 #, c-format
 msgid "double click to reset to `%f'"
-msgstr "ダブルクリックで  `%f' にリセット"
+msgstr "ダブルクリックで `%f' にリセット"
 
 #: ../src/views/darkroom.c:86
 msgid "darkroom"
@@ -9436,7 +9437,7 @@ msgstr "パープル & グリーン"
 
 #: ../src/views/darkroom.c:1454
 msgid "select colors to indicate over/under exposure"
-msgstr "露出 オーバー/アンダー を示すカラーを選択"
+msgstr "露光 オーバー/アンダー を示すカラーを選択"
 
 #: ../src/views/darkroom.c:1464
 msgid "lower threshold"
@@ -9773,19 +9774,15 @@ msgstr ""
 #~ msgid "ERROR : invalid temporary directory : %s\n"
 #~ msgstr "エラー：無効な一時ディレクトリ : %s\n"
 
-#, fuzzy
 #~ msgid "_Close"
 #~ msgstr "閉じる"
 
-#, fuzzy
 #~ msgid "_Cancel"
 #~ msgstr "キャンセル"
 
-#, fuzzy
 #~ msgid "Select _All"
 #~ msgstr "全選択"
 
-#, fuzzy
 #~ msgid "_Clear"
 #~ msgstr "クリア"
 
@@ -9801,7 +9798,6 @@ msgstr ""
 #~ msgid "histogram source"
 #~ msgstr "ヒストグラム・ソース"
 
-#, fuzzy
 #~ msgid "almost no clipping"
 #~ msgstr "色域クリッピング"
 
@@ -9817,7 +9813,6 @@ msgstr ""
 #~ msgid "camera white balance"
 #~ msgstr "カメラのホワイトバランス"
 
-#, fuzzy
 #~ msgid "camera neutral white balance"
 #~ msgstr "カメラのホワイトバランス"
 
@@ -9969,7 +9964,7 @@ msgstr ""
 #~ msgstr "より粗く"
 
 #~ msgid "sharpen and denoise (strong)"
-#~ msgstr "シャープ化とノイズ低減（強）"
+#~ msgstr "シャープ化とノイズ低減(強)"
 
 #~ msgid "sharpen and denoise"
 #~ msgstr "シャープ化とノイズ低減"
@@ -9978,10 +9973,10 @@ msgstr ""
 #~ msgstr "カラーノイズ低減"
 
 #~ msgid "denoise (subtle)"
-#~ msgstr "ノイズ低減（微細）"
+#~ msgstr "ノイズ低減(微細)"
 
 #~ msgid "clarity (subtle)"
-#~ msgstr "明瞭化（微細）"
+#~ msgstr "明瞭化(微細)"
 
 #~ msgctxt "accel"
 #~ msgid "deflicker"
@@ -10176,8 +10171,8 @@ msgstr ""
 #~ "activated (default for new images). switch this to off if you can accept "
 #~ "display banding and prefer to have a slightly faster processing speed."
 #~ msgstr ""
-#~ "このオプションが有効でディザリングモジュールが有効になっている場合（新規画"
-#~ "像ではデフォルト）、ディザリング表示されます。縞状表示を受け入れ少しでも速"
+#~ "このオプションが有効でディザリングモジュールが有効になっている場合(新規画"
+#~ "像ではデフォルト)、ディザリング表示されます。縞状表示を受け入れ少しでも速"
 #~ "く処理したい場合は、無効にします"
 
 #~ msgid "delete originals after import"
@@ -10688,7 +10683,7 @@ msgstr ""
 #~ "set the aspect ratio (w:h)\n"
 #~ "press ctrl-x to swap sides"
 #~ msgstr ""
-#~ "アスペクト比（w:h）を設定します\n"
+#~ "アスペクト比(w:h)を設定します\n"
 #~ "ctrl-xでサイド交換"
 
 #~ msgid "swap the aspect ratio (ctrl-x)"
@@ -10872,7 +10867,7 @@ msgstr ""
 #~ msgstr "ダブルクリックでシステムの言語にリセット"
 
 #~ msgid "set the language of the user interface (needs a restart)"
-#~ msgstr "ユーザー・インターフェースの言語設定（要再起動）"
+#~ msgstr "ユーザー・インターフェースの言語設定(要再起動)"
 
 #~ msgid "colorlabel"
 #~ msgstr "カラーラベル"

@@ -2462,21 +2462,24 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+
+    piece->buf_in = roi_in;
+
     // skip this module?
     if(piece->enabled
        && !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
-      piece->buf_in = roi_in;
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
-      piece->buf_out = roi_out;
-      roi_in = roi_out;
     }
     else
     {
       // pass through regions of interest for gui post expose events
-      piece->buf_in = roi_in;
-      piece->buf_out = roi_in;
+      roi_out = roi_in;
     }
+
+    piece->buf_out = roi_out;
+    roi_in = roi_out;
+
     modules = g_list_next(modules);
     pieces = g_list_next(pieces);
   }
