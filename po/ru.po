@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-12-19 20:24+0300\n"
-"PO-Revision-Date: 2015-12-20 07:45+0300\n"
+"PO-Revision-Date: 2015-12-21 10:49+0300\n"
 "Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: русский <>\n"
 "Language: ru\n"
@@ -119,13 +119,15 @@ msgstr "Всегда спрашивать пользователя перед у
 
 #: ../build/src/preferences_gen.h:1546
 msgid "send files to trash when erasing images"
-msgstr ""
+msgstr "Отправлять файлы в корзину при удалении снимков"
 
 #: ../build/src/preferences_gen.h:1558
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
 msgstr ""
+"Отправлять файлы в корзину вместо удаления из файловой системы (работает не "
+"во всех системах)"
 
 #: ../build/src/preferences_gen.h:1565
 msgid "ask before moving images from film roll folder"
@@ -204,9 +206,8 @@ msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "Включить фотоленту в режимах обработки, управления камерой и карты."
 
 #: ../build/src/preferences_gen.h:1801
-#, fuzzy
 msgid "high quality thumb processing from size"
-msgstr "Высококачественная обработка для слайдшоу"
+msgstr "Высококачественная обработка начиная с размера"
 
 #: ../build/src/preferences_gen.h:1812 ../build/src/preferences_gen.h:2461
 msgctxt "preferences"
@@ -214,10 +215,9 @@ msgid "always"
 msgstr "Всегда"
 
 #: ../build/src/preferences_gen.h:1817
-#, fuzzy
 msgctxt "preferences"
 msgid "small"
-msgstr "Уменьшенный вид"
+msgstr "С маленьких изображений"
 
 #: ../build/src/preferences_gen.h:1822
 msgctxt "preferences"
@@ -259,6 +259,8 @@ msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower)."
 msgstr ""
+"Если миниатюра больше этого размера, она будет показываться с повышенным "
+"качеством (но медленнее)"
 
 #: ../build/src/preferences_gen.h:1877
 msgid "pen pressure control for brush masks"
@@ -377,7 +379,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2066
 msgid "overlay txt sidecar over zoomed images"
-msgstr ""
+msgstr "Показывать содержимое текстового файла над увеличенным снимком"
 
 #: ../build/src/preferences_gen.h:2078
 msgid ""
@@ -385,6 +387,8 @@ msgid ""
 "zoomed images on the lighttable. the txt file either has to be there at "
 "import time or the crawler has to be enabled"
 msgstr ""
+"Если к изображению есть сопровождающий текстовый файл (.txt), он может быть "
+"показан над увеличенным изображением в режиме просмотра"
 
 #: ../build/src/preferences_gen.h:2085
 msgid "expand a single lighttable module at a time"
@@ -466,9 +470,8 @@ msgid "core options"
 msgstr "Основные"
 
 #: ../build/src/preferences_gen.h:2281
-#, fuzzy
 msgid "memory in megabytes to use for thumbnail cache"
-msgstr "Количество мегабайт памяти под кэш мипмапов"
+msgstr "Сколько мегабайт памяти отвести под кэш миниатюр"
 
 #: ../build/src/preferences_gen.h:2301
 msgid ""
@@ -480,7 +483,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2308
 msgid "enable disk backend for thumbnail cache"
-msgstr ""
+msgstr "Писать кэш миниатюр на диск"
 
 #: ../build/src/preferences_gen.h:2320
 msgid ""
@@ -930,9 +933,8 @@ msgid "embedded ICC profile"
 msgstr "Встроенный ICC-профиль"
 
 #: ../src/common/colorspaces.c:1128
-#, fuzzy
 msgid "embedded matrix"
-msgstr "Встроенная в DNG цветовая матрица"
+msgstr "Встроенная матрица"
 
 #: ../src/common/colorspaces.c:1129
 msgid "standard color matrix"
@@ -1043,13 +1045,15 @@ msgstr "darktable"
 
 #: ../src/common/http_server.c:97
 msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
-msgstr ""
+msgstr "<h1>Извините,</h1><p>что-то пошло не так. Попробуйте ещё раз.</p>"
 
 #: ../src/common/http_server.c:102
 msgid ""
 "<h1>Thank you,</h1><p>everything should have worked, you can <b>close</b> "
 "your browser now and <b>go back</b> to darktable.</p>"
 msgstr ""
+"<h1>Спасибо,</h1><p>всё должно было сработать, можете <b>закрыть</b> браузер "
+"и <b>вернуться</b> в darktable.</p>"
 
 #: ../src/common/image.c:146
 msgid "orphaned image"
@@ -1223,7 +1227,7 @@ msgstr "Нет"
 #: ../src/common/opencl.c:549
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
-msgstr ""
+msgstr "Из-за медленного GPU ускорение через OpenCL отключено."
 
 #: ../src/common/utility.c:371
 msgid "above sea level"
@@ -1363,7 +1367,7 @@ msgstr[2] "Убирается %d фотографий"
 #: ../src/control/jobs/control_jobs.c:705
 #, c-format
 msgid "could not send %s to trash%s%s"
-msgstr ""
+msgstr "Не удалось отправить %s в корзину%s%s"
 
 #: ../src/control/jobs/control_jobs.c:706
 #, fuzzy, c-format
@@ -2425,7 +2429,7 @@ msgstr "Автомат. ББ"
 #: ../src/generate-cache/main.c:41
 #, c-format
 msgid "creating cache directories\n"
-msgstr ""
+msgstr "Создаются каталоги для кэша\n"
 
 #: ../src/generate-cache/main.c:47
 #, fuzzy, c-format
@@ -3293,7 +3297,7 @@ msgstr "16 бит"
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:483
 msgid "invalid paper size"
-msgstr ""
+msgstr "Некорректный формат бумаги"
 
 #: ../src/imageio/format/pdf.c:207
 msgid "invalid border size, using 0"
@@ -3324,9 +3328,8 @@ msgid "title"
 msgstr "Название"
 
 #: ../src/imageio/format/pdf.c:588
-#, fuzzy
 msgid "enter the title of the pdf"
-msgstr "Введите название книги"
+msgstr "Введите название PDF"
 
 #. // papers
 #: ../src/imageio/format/pdf.c:601 ../src/libs/print_settings.c:1081
@@ -3378,7 +3381,7 @@ msgstr "DIN"
 
 #: ../src/imageio/format/pdf.c:653
 msgid "dpi of the images inside the pdf"
-msgstr ""
+msgstr "dpi фотографий внутри файла PDF"
 
 #: ../src/imageio/format/pdf.c:660
 msgid "rotate images"
@@ -5915,12 +5918,12 @@ msgid "hot pixels"
 msgstr "«Выбитые» пикселы"
 
 #: ../src/iop/hotpixels.c:410
-#, fuzzy, c-format
+#, c-format
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
-msgstr[0] "Исправлено: %d"
-msgstr[1] "Исправлено: %d"
-msgstr[2] "Исправлено: %d"
+msgstr[0] "Исправлен %d пиксель"
+msgstr[1] "Исправлены %d пикселя"
+msgstr[2] "Исправлено %d пикселей"
 
 #: ../src/iop/hotpixels.c:438
 msgid "lower threshold for hot pixel"
@@ -7791,6 +7794,8 @@ msgid ""
 "enter the time shown on the selected picture\n"
 "format: hh:mm:ss"
 msgstr ""
+"Введите время на выбранном изображении.\n"
+"Формат: чч:мм:сс"
 
 #: ../src/libs/geotagging.c:400
 msgid "ok"
@@ -8896,7 +8901,7 @@ msgstr ""
 
 #: ../src/libs/select.c:127
 msgid "select untouched"
-msgstr "Выделить нетронутые"
+msgstr "Все без изменений"
 
 #: ../src/libs/select.c:129
 msgid ""
@@ -9300,7 +9305,7 @@ msgstr "Выделить съёмку"
 #: ../src/libs/tools/filmstrip.c:200 ../src/libs/tools/lighttable.c:154
 msgctxt "accel"
 msgid "select untouched"
-msgstr "Выделить нетронутые"
+msgstr "Выделить все без изменений"
 
 #: ../src/libs/tools/filter.c:65
 msgid "filter"
@@ -9601,7 +9606,6 @@ msgstr "Цветопроба"
 
 #. toggle gamut check
 #: ../src/views/darkroom.c:2208
-#, fuzzy
 msgctxt "accel"
 msgid "gamut check"
 msgstr "Проверка охвата"
@@ -9813,7 +9817,7 @@ msgstr ""
 
 #: ../src/views/view.c:315
 msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
-msgstr ""
+msgstr "_Да понял я, понял. Готов мучиться с 32-разрядным darktable."
 
 #: ../src/views/view.c:319
 msgid ""
