@@ -2644,7 +2644,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     }
 
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
+#if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__) && defined(__GLIBC__)
 #pragma omp parallel for default(none) shared(i, roi_out, o, mask, blend, d, stderr)
 #else
 #pragma omp parallel for shared(i, roi_out, o, mask, blend, d)
@@ -2695,7 +2695,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
        && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
     {
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__WIN32__)
+#if !defined(__SUNOS__) && !defined(__WIN32__) && defined(__GLIBC__)
 #pragma omp parallel for default(none) shared(roi_out, mask, stderr)
 #else
 #pragma omp parallel for shared(roi_out, mask)
@@ -2710,7 +2710,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
 /* now apply blending with per-pixel opacity value as defined in mask */
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__WIN32__)
+#if !defined(__SUNOS__) && !defined(__WIN32__) && defined(__GLIBC__)
 #pragma omp parallel for default(none) shared(i, roi_out, o, mask, blend, stderr)
 #else
 #pragma omp parallel for shared(i, roi_out, o, mask, blend)
