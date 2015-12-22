@@ -237,12 +237,15 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
     cl->dev[dev].summary = CL_COMPLETE;
     cl->dev[dev].used_global_mem = 0;
     cl->dev[dev].nvidia_sm_20 = 0;
-    cl->dev[dev].vendor = "";
-    cl->dev[dev].name = "";
-    cl->dev[dev].cname = "";
+    cl->dev[dev].vendor = NULL;
+    cl->dev[dev].name = NULL;
+    cl->dev[dev].cname = NULL;
+    cl->dev[dev].options = NULL;
     cl_device_id devid = cl->dev[dev].devid = devices[k];
 
     char infostr[1024];
+    char cname[1024];
+    char options[1024];
     char vendor[256];
     char driverversion[256];
     char deviceversion[256];
@@ -273,6 +276,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong),
                                              &(cl->dev[dev].max_mem_alloc), NULL);
 
+    _ascii_str_canonical(infostr, cname, sizeof(cname));
 
     if(!strncasecmp(vendor, "NVIDIA", 6))
     {
@@ -313,9 +317,9 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
       continue;
     }
 
-    cl->dev[dev].vendor = dt_opencl_get_vendor_by_id(vendor_id);
+    cl->dev[dev].vendor = strdup(dt_opencl_get_vendor_by_id(vendor_id));
     cl->dev[dev].name = strdup(infostr);
-    cl->dev[dev].cname = _ascii_str_canonical(infostr, NULL, 0);
+    cl->dev[dev].cname = strdup(cname);
 
     cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
 
@@ -342,6 +346,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
       printf("     DRIVER_VERSION:           %s\n", driverversion);
       printf("     DEVICE_VERSION:           %s\n", deviceversion);
     }
+
     dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
 
     cl->dev[dev].context = (cl->dlocl->symbols->dt_clCreateContext)(0, 1, &devid, NULL, NULL, &err);
@@ -387,6 +392,10 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
     snprintf(filename, sizeof(filename), "%s/kernels/programs.conf", dtpath);
     char kerneldir[PATH_MAX] = { 0 };
     snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
+
+    snprintf(options, sizeof(options), "-cl-fast-relaxed-math -cl-strict-aliasing %s -D%s=1 -I%s",
+           (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""), dt_opencl_get_vendor_by_id(vendor_id), kerneldir);
+    cl->dev[dev].options = strdup(options);
 
 
     const char *clincludes[DT_OPENCL_MAX_INCLUDES] = { "colorspace.cl", "common.h", NULL };
@@ -449,7 +458,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
         int loaded_cached;
         char md5sum[33];
         if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, includemd5, &loaded_cached)
-           && dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached, kerneldir)
+           && dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached)
               != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
@@ -556,6 +565,30 @@ finally:
     }
     g_free(oldchecksum);
   }
+  else // initialization failed
+  {
+    for(int i = 0; i < cl->num_devs; i++)
+    {
+      dt_pthread_mutex_destroy(&cl->dev[i].lock);
+      for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
+        if(cl->dev[i].kernel_used[k]) (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[i].kernel[k]);
+      for(int k = 0; k < DT_OPENCL_MAX_PROGRAMS; k++)
+        if(cl->dev[i].program_used[k]) (cl->dlocl->symbols->dt_clReleaseProgram)(cl->dev[i].program[k]);
+      (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
+      (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
+      if(cl->use_events)
+      {
+        dt_opencl_events_reset(i);
+        free(cl->dev[i].eventlist);
+        free(cl->dev[i].eventtags);
+      }
+      free((void *)(cl->dev[i].vendor));
+      free((void *)(cl->dev[i].name));
+      free((void *)(cl->dev[i].cname));
+      free((void *)(cl->dev[i].options));
+    }
+  }
+
   if(locale)
   {
     setlocale(LC_ALL, locale);
@@ -598,8 +631,10 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         free(cl->dev[i].eventlist);
         free(cl->dev[i].eventtags);
       }
+      free((void *)(cl->dev[i].vendor));
       free((void *)(cl->dev[i].name));
       free((void *)(cl->dev[i].cname));
+      free((void *)(cl->dev[i].options));
     }
     free(cl->dev_priority_image);
     free(cl->dev_priority_preview);
@@ -1193,7 +1228,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   if(!f) return 0;
 
   size_t filesize = filestat.st_size;
-  char *file = (char *)malloc(filesize + 1024);
+  char *file = (char *)malloc(filesize + 2048);
   size_t rd = fread(file, sizeof(char), filesize, f);
   fclose(f);
   if(rd != filesize)
@@ -1204,7 +1239,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   }
 
   char *start = file + filesize;
-  char *end = start + 1024;
+  char *end = start + 2048;
   size_t len;
 
   cl_device_id devid = cl->dev[dev].devid;
@@ -1215,6 +1250,9 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
 
   (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform, CL_PLATFORM_VERSION, end - start, start, &len);
+  start += len;
+
+  len = snprintf(start, end - start, "%s", cl->dev[dev].options);
   start += len;
 
   /* make sure that the md5sums of all the includes are applied as well */
@@ -1318,16 +1356,13 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
 }
 
 int dt_opencl_build_program(const int dev, const int prog, const char *binname, const char *cachedir,
-                            char *md5sum, int loaded_cached, const char *kerneldir)
+                            char *md5sum, int loaded_cached)
 {
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
   dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
   cl_int err;
-  char options[1024];
-  snprintf(options, sizeof(options), "-cl-fast-relaxed-math -cl-strict-aliasing %s -D%s=1 -I%s",
-           (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""), cl->dev[dev].vendor, kerneldir);
-  err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, options, 0, 0);
+  err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &(cl->dev[dev].devid), cl->dev[dev].options, 0, 0);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] could not build program: %d\n", err);
