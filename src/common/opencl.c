@@ -389,6 +389,10 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
     snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
 
 
+    const char *clincludes[DT_OPENCL_MAX_INCLUDES] = { "colorspace.cl", "common.h", NULL };
+    char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
+    dt_opencl_md5sum(clincludes, includemd5);
+
     // now load all darktable cl kernels.
     // TODO: compile as a job?
     tstart = dt_get_wtime();
@@ -444,7 +448,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         int loaded_cached;
         char md5sum[33];
-        if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, &loaded_cached)
+        if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, includemd5, &loaded_cached)
            && dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached, kerneldir)
               != CL_SUCCESS)
         {
@@ -467,6 +471,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not open `%s'!\n", filename);
       goto finally;
     }
+    for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++) g_free(includemd5[n]);
     ++dev;
   }
   free(devices);
@@ -1106,8 +1111,62 @@ static FILE *fopen_stat(const char *filename, struct stat *st)
 }
 
 
+void dt_opencl_md5sum(const char **files, char **md5sums)
+{
+  char dtpath[PATH_MAX] = { 0 };
+  char filename[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(dtpath, sizeof(dtpath));
+
+  for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++, files++, md5sums++)
+  {
+    if(!*files)
+    {
+      *md5sums = NULL;
+      continue;
+    }
+
+    snprintf(filename, sizeof(filename), "%s/kernels/%s", dtpath, *files);
+
+    struct stat filestat;
+    FILE *f = fopen_stat(filename, &filestat);
+
+    if(!f)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_md5sums] could not open file `%s'!\n", filename);
+      *md5sums = NULL;
+      continue;
+    }
+
+    size_t filesize = filestat.st_size;
+    char *file = (char *)malloc(filesize);
+
+    if(!file)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_md5sums] could not allocate buffer for file `%s'!\n", filename);
+      *md5sums = NULL;
+      continue;
+    }
+
+    size_t rd = fread(file, sizeof(char), filesize, f);
+    fclose(f);
+
+    if(rd != filesize)
+    {
+      free(file);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_md5sums] could not read all of file `%s'!\n", filename);
+      *md5sums = NULL;
+      continue;
+    }
+
+    *md5sums = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)file, filesize);
+
+    free(file);
+  }
+}
+
+
 int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char *binname,
-                           const char *cachedir, char *md5sum, int *loaded_cached)
+                           const char *cachedir, char *md5sum, char **includemd5, int *loaded_cached)
 {
   cl_int err;
   dt_opencl_t *cl = darktable.opencl;
@@ -1157,6 +1216,14 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
 
   (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform, CL_PLATFORM_VERSION, end - start, start, &len);
   start += len;
+
+  /* make sure that the md5sums of all the includes are applied as well */
+  for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++)
+  {
+    if(!includemd5[n]) continue;
+    len = snprintf(start, end - start, "%s", includemd5[n]);
+    start += len;
+  }
 
   char *source_md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)file, start - file);
   strncpy(md5sum, source_md5, 33);
