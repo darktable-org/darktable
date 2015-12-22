@@ -299,22 +299,14 @@ static void _lib_darktable_show_about_dialog()
   g_free(icon);
   const char *authors[]
       = { _("* contributors *"),
-          "Roman Lebedev", "Pascal de Bruijn", "Tobias Ellinghaus", "Ulrich Pegelow",
-          "Pedro Côrte-Real", "Jérémy Rosen", "Pascal Obry", "johannes hanika",
-          "michleb", "Dan Torop", "Ger Siemerink", "Edouard Gomez", "Henrik Andersson",
-          "Richard Levitte", "parafin", "bartokk", "josepvm", "Dennis Gnad",
-          "simonspa", "Moritz Lipp", "Andrew Toskin", "AlicVB", "Victor", "tatica",
-          "Thomas Pryds", "Josep V. Moragues", "Ronny Kahl", "Jose Carlos Garcia Sogo",
-          "Erik Gustavsson", "Cherrot Luo", "Victor Lamoine", "Torsten Bronger",
-          "Mikhail Trishchenkov", "Martijn van Beers", "Jake Probst", "Dimitrios Psychogios",
-          "Milan Knížek", "Michel", "Jochem Kossen", "Guilherme Brondani Torri",
-          "Fernando R", "Federico Bruni", "Alexandre Prokoudine", "Stéphane Gimenez",
-          "Robert William Hutton", "Robert Bieber", "Nazarii Vitak",
-          "moopmonster", "Michael Neumann", "Messie1", "Matthieu Volat", "Matthias Gehre",
-          "Martin Kyral", "Luis Barrancos", "Krisztian", "Kevin", "Jesper Pedersen",
-          "Jean-Sébastien Pédron", "Jean-Luc Coulon (f5ibh)", "Jan Niklas Fingerle",
-          "Ilya Popov", "Gabriel Ebner", "Dmitry Ashkadov", "Daniel Kraus (bovender)",
-          "Colin Adams", "Besmir Godole", "a3novy",
+          "Roman Lebedev", "Pedro Côrte-Real", "Tobias Ellinghaus", "Pascal Obry",
+          "Jérémy Rosen", "johannes hanika", "Michel Leblond", "Ulrich Pegelow",
+          "Pascal de Bruijn", "Ger Siemerink", "parafin", "Richard Levitte", "Edouard Gomez",
+          "Aldric Renaudin", "tatica", "JohnnyRun", "Josep V. Moragues",
+          "Jean-Sébastien Pédron", "ralfbrown", "Dušan Kazik", "Novy Sawai", "Robert William Hutton",
+          "Bruce Guenter", "K. Adam Christensen", "Guillaume Benny", "Matthieu Volat",
+          "Jan Kundrát", "Matthias Gehre", "Tom Vijlbrief", "Alexandre Prokoudine",
+          "Axel Burri", "Guillaume Subiron", "Martin Brodbeck", "Simon Spannagel",
           "And all those of you that made previous releases possible", NULL };
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
 
