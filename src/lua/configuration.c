@@ -31,15 +31,15 @@
 // LAST RELEASED VERSION : 1.4 was 1.0.0
 // 1.6 was 2.0.1
 // 1.6.1 was 2.0.2
-// 2.0 WILL BE 2.1.0 or 3.0.0 depending on compatibility
+// 2.0 WILL BE 3.0.0
 /* incompatible API change */
-#define API_VERSION_MAJOR 2
+#define API_VERSION_MAJOR 3
 /* backward compatible API change */
-#define API_VERSION_MINOR 1
+#define API_VERSION_MINOR 0
 /* bugfixes that should not change anything to the API */
 #define API_VERSION_PATCH 0
 /* suffix for unstable version */
-#define API_VERSION_SUFFIX "dev"
+#define API_VERSION_SUFFIX ""
 
 static int check_version(lua_State *L)
 {

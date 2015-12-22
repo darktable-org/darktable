@@ -7,12 +7,13 @@
   <indexterm>
   <primary>Lua API</primary>
   </indexterm>
-  <para>To access the darktable specific functions you must load the darktable environment:</para>
+  <para>This documentation is for the *developement* version of darktable. for the stable version, please visit the user manual</para>
+<para>To access the darktable specific functions you must load the darktable environment:</para>
 
 <para><programlisting language="lua">darktable = require "darktable"</programlisting></para>
 
 <para>All functions and data are accessed through the darktable module.</para>
-<para>This documentation for API version 2.1.0-dev.</para>
+<para>This documentation for API version 3.0.0.</para>
 
 <section status="final" id="darktable">
 <title>darktable</title>
@@ -740,8 +741,9 @@
 
 <varlistentry id="darktable_gui_create_job_cancel_callback"><term>[cancel_callback]</term><listitem>
 <synopsis>function( 
-	<emphasis><link linkend="darktable_gui_create_job_cancel_callback_job">job</link></emphasis> : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link>
-)</synopsis>
+	<emphasis><link linkend="darktable_gui_create_job_cancel_callback_job">job</link></emphasis> : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link>, 
+	<emphasis><link linkend="darktable_gui_create_job_cancel_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : string</synopsis>
 <para>A function called when the cancel button for that job is pressed</para>
 <para>note that the job won't be destroyed automatically. You need to set <link linkend="types_dt_lua_backgroundjob_t_valid">types.dt_lua_backgroundjob_t.valid</link> to false for that</para>
 
@@ -751,6 +753,19 @@
 <para>The job who is being cancelded</para>
 
 </listitem></varlistentry>
+
+<varlistentry id="darktable_gui_create_job_cancel_callback_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to analyze</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>string</synopsis>
+<para>The extra information to display</para>
+
+</listitem></varlistentry>
+
 
 </variablelist>
 </listitem></varlistentry>
@@ -1258,51 +1273,6 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
-<section status="final" id="darktable_gui_libs_metadata_view_register_info">
-<title>darktable.gui.libs.metadata_view.register_info</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>register_info</secondary>
-</indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_name">name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback">callback</link></emphasis> : function
-)</synopsis>
-<para>Register a function providing extra info to display in the widget</para>
-
-<variablelist>
-<varlistentry id="darktable_gui_libs_metadata_view_register_info_name"><term>name</term><listitem>
-<synopsis>string</synopsis>
-<para>The name displayed for the new information</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="darktable_gui_libs_metadata_view_register_info_callback"><term>callback</term><listitem>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
-) : string</synopsis>
-<para>The function providing the info</para>
-
-<variablelist>
-<varlistentry id="darktable_gui_libs_metadata_view_register_info_callback_image"><term>image</term><listitem>
-<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The image to analyze</para>
-
-</listitem></varlistentry>
-
-<varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis>string</synopsis>
-<para>The extra information to display</para>
-
-</listitem></varlistentry>
-
-
-</variablelist>
-</listitem></varlistentry>
-
-</variablelist>
-</section>
-
 </section>
 
 <section status="final" id="darktable_gui_libs_metadata">
@@ -6810,6 +6780,34 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_dt_lua_ellipsize_mode_t">
+<title>types.dt_lua_ellipsize_mode_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_lua_ellipsize_mode_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The ellipsize mode of a label</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>none</para></listitem>
+<listitem><para>start</para></listitem>
+<listitem><para>middle</para></listitem>
+<listitem><para>end</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_dt_lua_cairo_t">
 <title>types.dt_lua_cairo_t</title>
 <indexterm>
@@ -7610,6 +7608,27 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_align_t">types.dt_lua_align_t</link></synopsis>
 <para>The horizontal alignment of the label</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_label_ellipsize">
+<title>types.lua_label.ellipsize</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>ellipsize</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_lua_ellipsize_mode_t">types.dt_lua_ellipsize_mode_t</link></synopsis>
+<para>The ellipsize mode of the label</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
