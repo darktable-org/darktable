@@ -192,7 +192,7 @@ static void _metadata_update_value_end(GtkLabel *label, const char *value)
 
 
 #ifdef USE_LUA
-static int lua_update_metadata(lua_State*L);
+//static int lua_update_metadata(lua_State*L);
 #endif
 /* update all values to reflect mouse over image id or no data at all */
 static void _metadata_view_update_values(dt_lib_module_t *self)
@@ -531,9 +531,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     dt_image_cache_read_release(darktable.image_cache, img);
 
 #ifdef USE_LUA
-    dt_lua_do_chunk_async(lua_update_metadata,
-        LUA_ASYNC_TYPENAME,"void*",self,
-        LUA_ASYNC_TYPENAME,"int32_t",mouse_over_id,LUA_ASYNC_DONE);
+    //dt_lua_do_chunk_async(lua_update_metadata,
+    //    LUA_ASYNC_TYPENAME,"void*",self,
+    //    LUA_ASYNC_TYPENAME,"int32_t",mouse_over_id,LUA_ASYNC_DONE);
 #endif
   }
 
@@ -543,9 +543,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 fill_minuses:
   for(int k = 0; k < md_size; k++) _metadata_update_value(d->metadata[k], NODATA_STRING);
 #ifdef USE_LUA
-    dt_lua_do_chunk_async(lua_update_metadata,
-        LUA_ASYNC_TYPENAME,"void*",self,
-        LUA_ASYNC_TYPENAME,"int32_t",-1,LUA_ASYNC_DONE);
+    //dt_lua_do_chunk_async(lua_update_metadata,
+    //    LUA_ASYNC_TYPENAME,"void*",self,
+    //    LUA_ASYNC_TYPENAME,"int32_t",-1,LUA_ASYNC_DONE);
 #endif
 }
 
@@ -658,6 +658,7 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 #ifdef USE_LUA
+/*
 static int lua_update_widgets(lua_State*L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
@@ -747,7 +748,6 @@ static int lua_register_info(lua_State *L)
 
 void init(struct dt_lib_module_t *self)
 {
-
   lua_State *L = darktable.lua_state.state;
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
   lua_pushlightuserdata(L, self);
@@ -766,6 +766,7 @@ void init(struct dt_lib_module_t *self)
   lua_setfield(L,-2,"widgets");
   lua_pop(L,2);
 }
+*/
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
