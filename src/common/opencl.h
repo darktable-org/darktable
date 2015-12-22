@@ -91,6 +91,7 @@ typedef struct dt_opencl_device_t
   const char *vendor;
   const char *name;
   const char *cname;
+  const char *options;
   cl_int summary;
   float benchmark;
 } dt_opencl_device_t;
@@ -159,7 +160,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
 
 /** builds the given program. */
 int dt_opencl_build_program(const int dev, const int prog, const char *binname, const char *cachedir,
-                            char *md5sum, int loaded_cached, const char *kerneldir);
+                            char *md5sum, int loaded_cached);
 
 /** inits a kernel. returns the index or -1 if fail. */
 int dt_opencl_create_kernel(const int program, const char *name);
