@@ -837,9 +837,14 @@ static void _tree_cell_edited(GtkCellRendererText *cell, gchar *path_string, gch
   dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
   if(!form) return;
 
+  // we want to make sure that the new name is not an empty string. else this would convert
+  // in the xmp file into "<rdf:li/>" which produces problems. we use a single whitespace
+  // as the pure minimum text.
+  gchar *text = strlen(new_text) == 0 ? " " : new_text;
+
   // first, we need to update the mask name
 
-  g_strlcpy(form->name, new_text, sizeof(form->name));
+  g_strlcpy(form->name, text, sizeof(form->name));
   dt_masks_write_form(form, darktable.develop);
 
   // and we update the cell text
