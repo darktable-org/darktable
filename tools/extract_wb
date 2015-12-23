@@ -140,12 +140,20 @@ found_presets.sort! do |a, b|
   convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2])
 end
 
+min_padding = 0
+found_presets.each do |maker, model, preset, red, green, blue, acc|
+  min_padding = preset.size if preset.size > min_padding
+end
+
 # Print out the presets if they exit
 found_presets.each do |maker, model, preset, red, green, blue|
   if IGNORED_PRESETS.include? preset
     $stderr.puts "Ignoring preset '#{preset}'"
   else
     preset = '"'+preset+'"' if preset[-1] == "K"
+    preset = preset + " "*(min_padding-preset.size)
+    red = sprintf('%0.6f',red)
+    blue = sprintf('%0.6f',blue)
     puts "  { \"#{maker}\", \"#{model}\", #{preset}, 0, { #{red}, #{green}, #{blue}, 0 } },"
   end
 end
