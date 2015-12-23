@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-if ARGV.size != 1
-  $stderr.puts "Usage: extract_wb <file>"
+if ARGV.size < 1
+  $stderr.puts "Usage: extract_wb <file1> [file2] ..."
   exit 2
 end
 
@@ -16,10 +16,14 @@ FL_PRESET_REPLACE={
   "FluorescentD"  => "DaylightFluorescent",
   "FluorescentN"  => "NeutralFluorescent",
   "FluorescentW"  => "WhiteFluorescent",
+  "Daylight Fluorescent" => "DaylightFluorescent",
+  "Day White Fluorescent" => "DayWhiteFluorescent",
+  "White Fluorescent" => "WhiteFluorescent",
+  "Unknown (0x600)" => "Underwater",
 }
 PRESET_ORDER=["Unknown", "Daylight","Shade","Cloudy","Tungsten","Incandescent","Fluorescent",
               "WarmWhiteFluorescent","CoolWhiteFluorescent","DayWhiteFluorescent","DaylightFluorescent",
-              "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent", "Flash"]
+              "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent", "Underwater", "Flash"]
 
 PRESET_SORT_MAPPING={}
 PRESET_ORDER.each_with_index {|name, index| PRESET_SORT_MAPPING[name]=index+1}
@@ -48,82 +52,75 @@ File.open(CAMERAS) do |f|
   end
 end
 
-red = green = blue = maker = model = preset = nil
-listed_presets = []
-fl_count = 0
-IO.popen("exiftool \"-WB_RG*B*\" -WhiteBalance -Make -Model #{ARGV[0]}") do |io|
-  while !io.eof?
-    lineparts = io.readline.split(":")
-    tag = lineparts[0].strip
-    values = lineparts[1].strip.split(" ")
+found_presets = []
+ARGV.each do |filename|
+  red = green = blue = maker = model = preset = nil
+  listed_presets = []
+  fl_count = 0
+  IO.popen("exiftool \"-WB_*\" -WhiteBalance -Make -Model #{filename}") do |io|
+    while !io.eof?
+      lineparts = io.readline.split(":")
+      tag = lineparts[0].strip
+      values = lineparts[1].strip.split(" ")
 
-    if tag == "WB RGGB Levels"
-      green = (values[1].to_f+values[2].to_f)/2.0
-      red = values[0].to_f/green
-      blue = values[3].to_f/green
-      green = 1
-    elsif tag.split.include? "Make"
-      maker = lineparts[1].strip
-    elsif tag.split.include? "Model"
-      model = lineparts[1].strip
-    elsif tag == "White Balance"
-      preset = values[0]
-    elsif ["WB RGB Levels", "WB RGGB Levels"].include? tag.split[0..2].join(" ")
-      p = tag.split[3..-1].join
+      if tag == "WB RGGB Levels"
+        green = (values[1].to_f+values[2].to_f)/2.0
+        red = values[0].to_f/green
+        blue = values[3].to_f/green
+        green = 1
+      elsif tag == "WB GRB Levels"
+        green = values[0].to_f
+        red = values[1].to_f/green
+        blue = values[2].to_f/green
+        green = 1
+      elsif tag.split.include? "Make"
+        maker = lineparts[1].strip
+      elsif tag.split.include? "Model"
+        model = lineparts[1].strip
+      elsif tag == "White Balance"
+        preset = values.join(" ")
+        preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
+      elsif ["WB RGB Levels", "WB RGGB Levels"].include? tag.split[0..2].join(" ")
+        p = tag.split[3..-1].join
 
-      r=g=b=0
-      if values.size == 4
-        g = (values[1].to_f+values[2].to_f)/2.0
-        r = values[0].to_f/g
-        b = values[3].to_f/g
-        g = 1
-      elsif values.size == 3
-        g = values[1].to_f
-        r = values[0].to_f/g
-        b = values[2].to_f/g
-        g = 1
-      else
-        $stderr.puts "Found tag '#{p}' with #{values.size} values instead of 3 or 4"
+        r=g=b=0
+        if values.size == 4
+          g = (values[1].to_f+values[2].to_f)/2.0
+          r = values[0].to_f/g
+          b = values[3].to_f/g
+          g = 1
+        elsif values.size == 3
+          g = values[1].to_f
+          r = values[0].to_f/g
+          b = values[2].to_f/g
+          g = 1
+        else
+          $stderr.puts "Found tag '#{p}' with #{values.size} values instead of 3 or 4"
+        end
+        fl_count += 1 if p[0..."Fluorescent".size] == "Fluorescent"
+        p = "Unknown" if !p || p==""
+        listed_presets << [p,r,g,b]
       end
-      fl_count += 1 if p[0..."Fluorescent".size] == "Fluorescent"
-      p = "Unknown" if !p || p==""
-      listed_presets << [p,r,g,b]
     end
   end
-end
 
-if fl_count > 1
-  listed_presets = listed_presets.map do |preset, red, green, blue|
+  found_presets += listed_presets.map do |preset, red, green, blue|
     preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
-    [preset, red, green, blue]
-  end
-end
-
-# Adjust the maker/model we found with the map we generated before
-if exif_name_map[[maker,model]]
-  maker, model = exif_name_map[[maker,model]]
-else
-  $stderr.puts "WARNING: Couldn't find model in cameras.xml ('#{maker}', '#{model}')"
-end
-
-def print_preset(maker, model, preset, red, green, blue)
-  if IGNORED_PRESETS.include? preset
-    $stderr.puts "Ignoring preset '#{preset}'"
-    return
+    [maker, model, preset, red, green, blue]
   end
 
-  preset = '"'+preset+'"' if preset[-1] == "K"
+  # Adjust the maker/model we found with the map we generated before
+  if exif_name_map[[maker,model]]
+    maker, model = exif_name_map[[maker,model]]
+  else
+    $stderr.puts "WARNING: Couldn't find model in cameras.xml ('#{maker}', '#{model}')"
+  end
 
-  puts "  { \"#{maker}\", \"#{model}\", #{preset}, 0, { #{red}, #{green}, #{blue}, 0 } },"
-end
-
-# Print out the WB value that was used in the file
-preset = "\"#{ARGV[0]}\"" if !preset
-if red && green && blue
-  print_preset(maker, model, preset, red, green, blue)
-  puts
-else
-  $stderr.puts "ERROR: Couldn't figure out preset values, sorry"
+  # Print out the WB value that was used in the file
+  preset = "\"#{ARGV[0]}\"" if !preset
+  if red && green && blue
+    found_presets << [maker, model, preset, red, green, blue]
+  end
 end
 
 def convert_preset_to_sort(preset)
@@ -139,11 +136,16 @@ def convert_preset_to_sort(preset)
   end
 end
 
-listed_presets.sort! do |a, b|
-  convert_preset_to_sort(a[0]) <=> convert_preset_to_sort(b[0])
+found_presets.sort! do |a, b|
+  convert_preset_to_sort(a[2]) <=> convert_preset_to_sort(b[2])
 end
 
 # Print out the presets if they exit
-listed_presets.each do |preset, red, green, blue|
-  print_preset(maker, model, preset, red, green, blue)
+found_presets.each do |maker, model, preset, red, green, blue|
+  if IGNORED_PRESETS.include? preset
+    $stderr.puts "Ignoring preset '#{preset}'"
+  else
+    preset = '"'+preset+'"' if preset[-1] == "K"
+    puts "  { \"#{maker}\", \"#{model}\", #{preset}, 0, { #{red}, #{green}, #{blue}, 0 } },"
+  end
 end
