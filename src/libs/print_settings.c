@@ -1127,8 +1127,8 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hboxinfo),GTK_WIDGET(d->info),TRUE,TRUE,0);
   g_object_set(G_OBJECT(hboxinfo), "tooltip-text",
                _("image scale factor from native printer DPI:\n"
-                 " < 0 means that it is downscaled (best quality)\n"
-                 " > 0 means that the image is upscaled\n"
+                 " < 1 means that it is downscaled (best quality)\n"
+                 " > 1 means that the image is upscaled\n"
                  " a too large value may result in poor print quality"), (char *)NULL);
 
   //// borders
