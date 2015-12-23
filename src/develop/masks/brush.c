@@ -185,8 +185,8 @@ static void _brush_border_get_XY(float p0x, float p0y, float p1x, float p1y, flo
   // so we can have the resulting point
   if(dx == 0 && dy == 0)
   {
-    *xb = -9999999;
-    *yb = -9999999;
+    *xb = NAN;
+    *yb = NAN;
     return;
   }
   float l = 1.0 / sqrtf(dx * dx + dy * dy);
@@ -448,13 +448,13 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
   const gboolean withpayload = (dpayload != NULL);
 
   // we calculate points if needed
-  if((int)points_min[0] == -99999)
+  if(isnan(points_min[0]))
   {
     _brush_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmin,
                          p1[4] + (p2[4] - p1[4]) * tmin * tmin * (3.0 - 2.0 * tmin), points_min,
                          points_min + 1, border_min, border_min + 1);
   }
-  if((int)points_max[0] == -99999)
+  if(isnan(points_max[0]))
   {
     _brush_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmax,
                          p1[4] + (p2[4] - p1[4]) * tmax * tmax * (3.0 - 2.0 * tmax), points_max,
@@ -476,12 +476,12 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
 
     if(withborder)
     {
-      if((int)border_max[0] == -9999999)
+      if(isnan(border_max[0]))
       {
         border_max[0] = border_min[0];
         border_max[1] = border_min[1];
       }
-      else if((int)border_min[0] == -9999999)
+      else if(isnan(border_min[0]))
       {
         border_min[0] = border_max[0];
         border_min[1] = border_max[1];
@@ -515,7 +515,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
 
   // we split in two part
   double tx = (tmin + tmax) / 2.0;
-  float c[2] = { -99999, -99999 }, b[2] = { -99999, -99999 };
+  float c[2] = { NAN, NAN }, b[2] = { NAN, NAN };
   float rc[2], rb[2], rp[2];
   _brush_points_recurs(p1, p2, tmin, tx, points_min, c, border_min, b, rc, rb, rp, dpoints, dborder, dpayload);
   _brush_points_recurs(p1, p2, tx, tmax, rc, points_max, rb, border_max, rpoints, rborder, rpayload, dpoints,
@@ -761,10 +761,10 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
     // and we determine all points by recursion (to be sure the distance between 2 points is <=1)
     float rc[2], rb[2], rp[2];
-    float bmin[2] = { -99999, -99999 };
-    float bmax[2] = { -99999, -99999 };
-    float cmin[2] = { -99999, -99999 };
-    float cmax[2] = { -99999, -99999 };
+    float bmin[2] = { NAN, NAN };
+    float bmax[2] = { NAN, NAN };
+    float cmin[2] = { NAN, NAN };
+    float cmax[2] = { NAN, NAN };
 
     _brush_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, rp, dpoints, dborder, dpayload);
 
@@ -779,9 +779,9 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
     if(dborder)
     {
-      if((int)rb[0] == -9999999)
+      if(isnan(rb[0]))
       {
-        if((int)dt_masks_dynbuf_get(dborder, -2) == -9999999)
+        if(isnan(dt_masks_dynbuf_get(dborder, -2)))
         {
           dt_masks_dynbuf_set(dborder, -2, dt_masks_dynbuf_get(dborder, -4));
           dt_masks_dynbuf_set(dborder, -1, dt_masks_dynbuf_get(dborder, -3));
@@ -799,7 +799,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       // we get the next point (start of the next segment)
       _brush_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0, p3[4], cmin, cmin + 1,
                            bmax, bmax + 1);
-      if((int)bmax[0] == -9999999)
+      if(isnan(bmax[0]))
       {
         _brush_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0.0001, p3[4], cmin,
                              cmin + 1, bmax, bmax + 1);
@@ -2588,7 +2588,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 //   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  *buffer = calloc((*width) * (*height), sizeof(float));
+  *buffer = calloc((size_t)(*width) * (*height), sizeof(float));
 
   // now we fill the falloff
   int p0[2], p1[2];
