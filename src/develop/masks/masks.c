@@ -2169,16 +2169,16 @@ int dt_masks_point_in_form_exact(float x, float y, float *points, int points_sta
 
   if(points_count > 2 + points_start)
   {
-    float last = points[points_count * 2 - 1];
+    float last = isnan(points[points_count * 2 - 1]) ? -INFINITY : points[points_count * 2 - 1];
     float yf = (float)y;
     int nb = 0;
     for(int i = points_start; i < points_count; i++)
     {
       float yy = points[i * 2 + 1];
       //if we need to skip points (in case of deleted point, because of self-intersection)
-      if(points[i * 2] == -999999.0)
+      if(isnan(points[i * 2]))
       {
-        if(yy == -999999.0) break;
+        if(isnan(yy)) break;
         i = (int)yy - 1;
         continue;
       }
@@ -2200,16 +2200,16 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
 
   if(points_count > 2 + points_start)
   {
-    float last = points[points_count * 2 - 1];
+    float last = isnan(points[points_count * 2 - 1]) ? -INFINITY : points[points_count * 2 - 1];
     float yf = (float)y;
     int nb = 0;
     for(int i = points_start; i < points_count; i++)
     {
       float yy = points[i * 2 + 1];
       //if we need to jump to skip points (in case of deleted point, because of self-intersection)
-      if(points[i * 2] == -999999.0)
+      if(isnan(points[i * 2]))
       {
-        if(yy == -999999.0) break;
+        if(isnan(yy)) break;
         i = (int)yy - 1;
         continue;
       }

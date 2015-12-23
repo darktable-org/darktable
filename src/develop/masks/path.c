@@ -55,8 +55,8 @@ static void _path_border_get_XY(float p0x, float p0y, float p1x, float p1y, floa
   // so we can have the resulting point
   if(dx == 0 && dy == 0)
   {
-    *xb = -9999999;
-    *yb = -9999999;
+    *xb = NAN;
+    *yb = NAN;
     return;
   }
   float l = 1.0 / sqrtf(dx * dx + dy * dy);
@@ -181,7 +181,7 @@ static int _path_fill_gaps(int lastx, int lasty, int x, int y, dt_masks_dynbuf_t
   dt_masks_dynbuf_reset(points);
   dt_masks_dynbuf_add(points, x);
   dt_masks_dynbuf_add(points, y);
-  if(lastx == -999999) return 1;
+
   // now we want to be sure everything is continuous
   if(x - lastx > 1)
   {
@@ -294,13 +294,13 @@ static void _path_points_recurs(float *p1, float *p2, double tmin, double tmax, 
                                 int withborder)
 {
   // we calculate points if needed
-  if(path_min[0] == -99999)
+  if(isnan(path_min[0]))
   {
     _path_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmin,
                         p1[4] + (p2[4] - p1[4]) * tmin * tmin * (3.0 - 2.0 * tmin), path_min, path_min + 1,
                         border_min, border_min + 1);
   }
-  if(path_max[0] == -99999)
+  if(isnan(path_max[0]))
   {
     _path_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmax,
                         p1[4] + (p2[4] - p1[4]) * tmax * tmax * (3.0 - 2.0 * tmax), path_max, path_max + 1,
@@ -332,7 +332,7 @@ static void _path_points_recurs(float *p1, float *p2, double tmin, double tmax, 
 
   // we split in two part
   double tx = (tmin + tmax) / 2.0;
-  float c[2] = { -99999, -99999 }, b[2] = { -99999, -99999 };
+  float c[2] = { NAN, NAN }, b[2] = { NAN, NAN };
   float rc[2], rb[2];
   _path_points_recurs(p1, p2, tmin, tx, path_min, c, border_min, b, rc, rb, dpoints, dborder, withborder);
   _path_points_recurs(p1, p2, tx, tmax, rc, path_max, rb, border_max, rpath, rborder, dpoints, dborder, withborder);
@@ -351,7 +351,7 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
 
   for(int i = nb_corners * 3; i < border_count; i++)
   {
-    if(border[i * 2] < -999999 || border[i * 2 + 1] < -999999)
+    if(isnan(border[i * 2]) || isnan(border[i * 2 + 1]))
     {
       border[i * 2] = border[i * 2 - 2];
       border[i * 2 + 1] = border[i * 2 - 1];
@@ -383,7 +383,7 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
   const int wb = xmax - xmin;
 
   // we allocate the buffer
-  const int ss = hb * wb;
+  const size_t ss = (size_t)hb * wb;
   if(ss < 10) return 0;
 
   int *binter = calloc(ss, sizeof(int));
@@ -567,10 +567,10 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
     // and we determine all points by recursion (to be sure the distance between 2 points is <=1)
     float rc[2], rb[2];
-    float bmin[2] = { -99999, -99999 };
-    float bmax[2] = { -99999, -99999 };
-    float cmin[2] = { -99999, -99999 };
-    float cmax[2] = { -99999, -99999 };
+    float bmin[2] = { NAN, NAN };
+    float bmax[2] = { NAN, NAN };
+    float cmin[2] = { NAN, NAN };
+    float cmax[2] = { NAN, NAN };
 
     _path_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, dpoints, dborder, border && (nb >= 3));
 
@@ -589,9 +589,9 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
     if(dborder)
     {
-      if(rb[0] == -9999999.0f)
+      if(isnan(rb[0]))
       {
-        if(dt_masks_dynbuf_get(dborder, - 2) == -9999999.0f)
+        if(isnan(dt_masks_dynbuf_get(dborder, - 2)))
         {
           dt_masks_dynbuf_set(dborder, -2, dt_masks_dynbuf_get(dborder, -4));
           dt_masks_dynbuf_set(dborder, -1, dt_masks_dynbuf_get(dborder, -3));
@@ -612,7 +612,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       // we get the next point (start of the next segment)
       _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0, p3[4], cmin, cmin + 1,
                           bmax, bmax + 1);
-      if(bmax[0] == -9999999.0f)
+      if(isnan(bmax[0]))
       {
         _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0.0001, p3[4], cmin,
                             cmin + 1, bmax, bmax + 1);
@@ -677,21 +677,23 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
           int w = intersections[i * 2 + 1];
           if(v <= w)
           {
-            (*border)[v * 2] = -999999;
+            (*border)[v * 2] = NAN;
             (*border)[v * 2 + 1] = w;
           }
           else
           {
             if(w > nb * 3)
             {
-              if((*border)[nb * 6] == -999999)
+              if(isnan((*border)[nb * 6]) && isnan((*border)[nb * 6 + 1]))
+                (*border)[nb * 6 + 1] = w;
+              else if(isnan((*border)[nb * 6]))
                 (*border)[nb * 6 + 1] = MAX((*border)[nb * 6 + 1], w);
               else
                 (*border)[nb * 6 + 1] = w;
-              (*border)[nb * 6] = -999999;
+              (*border)[nb * 6] = NAN;
             }
-            (*border)[v * 2] = -999999;
-            (*border)[v * 2 + 1] = -999999;
+            (*border)[v * 2] = NAN;
+            (*border)[v * 2 + 1] = NAN;
           }
         }
       }
@@ -756,9 +758,9 @@ static void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *
     for(int i = corner_count * 3; i < gpt->points_count; i++)
     {
       //if we need to jump to skip points (in case of deleted point, because of self-intersection)
-      if(gpt->points[i * 2] == -999999.0)
+      if(isnan(gpt->points[i * 2]))
       {
-        if(gpt->points[i * 2 + 1] == -999999.0) break;
+        if(isnan(gpt->points[i * 2 + 1])) break;
         i = (int)gpt->points[i * 2 + 1] - 1;
         continue;
       }
@@ -1780,9 +1782,9 @@ static void dt_path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
     int dep = 1;
     for(int i = nb * 3; i < gpt->border_count; i++)
     {
-      if(gpt->border[i * 2] == -999999)
+      if(isnan(gpt->border[i * 2]))
       {
-        if(gpt->border[i * 2 + 1] == -999999) break;
+        if(isnan(gpt->border[i * 2 + 1])) break;
         i = gpt->border[i * 2 + 1] - 1;
         continue;
       }
@@ -1903,9 +1905,9 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
     // we look at the borders
     float xx = border[i * 2];
     float yy = border[i * 2 + 1];
-    if(xx == -999999)
+    if(isnan(xx))
     {
-      if(yy == -999999) break; // that means we have to skip the end of the border path
+      if(isnan(yy)) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
@@ -1959,9 +1961,9 @@ static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
     // we look at the borders
     float xx = border[i * 2];
     float yy = border[i * 2 + 1];
-    if(xx == -999999)
+    if(isnan(xx))
     {
-      if(yy == -999999) break; // that means we have to skip the end of the border path
+      if(isnan(yy)) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
@@ -2048,9 +2050,9 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
     // we look at the borders
     float xx = border[i * 2];
     float yy = border[i * 2 + 1];
-    if(xx == -999999)
+    if(isnan(xx))
     {
-      if(yy == -999999) break; // that means we have to skip the end of the border path
+      if(isnan(yy)) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
@@ -2186,6 +2188,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 
   // now we fill the falloff
   int p0[2], p1[2];
+  float pf1[2];
   int last0[2] = { -100, -100 }, last1[2] = { -100, -100 };
   nbp = 0;
   int next = 0;
@@ -2193,19 +2196,19 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   {
     p0[0] = points[i * 2], p0[1] = points[i * 2 + 1];
     if(next > 0)
-      p1[0] = border[next * 2], p1[1] = border[next * 2 + 1];
+      p1[0] = pf1[0] = border[next * 2], p1[1] = pf1[1] = border[next * 2 + 1];
     else
-      p1[0] = border[i * 2], p1[1] = border[i * 2 + 1];
+      p1[0] = pf1[0] = border[i * 2], p1[1] = pf1[1] = border[i * 2 + 1];
 
     // now we check p1 value to know if we have to skip a part
     if(next == i) next = 0;
-    while(p1[0] == -999999)
+    while(isnan(pf1[0]))
     {
-      if(p1[1] == -999999)
+      if(isnan(pf1[1]))
         next = i - 1;
       else
         next = p1[1];
-      p1[0] = border[next * 2], p1[1] = border[next * 2 + 1];
+      p1[0] = pf1[0] = border[next * 2], p1[1] = pf1[1] = border[next * 2 + 1];
     }
 
     // and we draw the falloff
@@ -2448,9 +2451,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   {
     float xx = border[2 * i];
     float yy = border[2 * i + 1];
-    if(xx == -999999)
+    if(isnan(xx))
     {
-      if(yy == -999999) break; // that means we have to skip the end of the border path
+      if(isnan(yy)) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
@@ -2470,6 +2473,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   {
     int xx = points[i * 2];
     int yy = points[i * 2 + 1];
+
     if(xx > 1 && yy > 1 && xx < width - 2 && yy < height - 2)
     {
       path_in_roi = 1;
@@ -2507,9 +2511,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   {
     int xx = border[i * 2];
     int yy = border[i * 2 + 1];
-    if(xx == -999999)
+    if(isnan(xx))
     {
-      if(yy == -999999) break; // that means we have to skip the end of the border path
+      if(isnan(yy)) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
@@ -2545,9 +2549,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   {
     float xx = border[i * 2];
     float yy = border[i * 2 + 1];
-    if(xx == -999999)
+    if(isnan(xx))
     {
-      if(yy == -999999) break; // that means we have to skip the end of the border path
+      if(isnan(yy)) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
@@ -2671,6 +2675,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   if(!path_encircles_roi)
   {
     int p0[2], p1[2];
+    float pf1[2];
     int last0[2] = { -100, -100 };
     int last1[2] = { -100, -100 };
     int next = 0;
@@ -2680,25 +2685,25 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
       p0[1] = ceilf(points[i * 2 + 1]);
       if(next > 0)
       {
-        p1[0] = border[next * 2];
-        p1[1] = border[next * 2 + 1];
+        p1[0] = pf1[0] = border[next * 2];
+        p1[1] = pf1[1] = border[next * 2 + 1];
       }
       else
       {
-        p1[0] = border[i * 2];
-        p1[1] = border[i * 2 + 1];
+        p1[0] = pf1[0] = border[i * 2];
+        p1[1] = pf1[1] = border[i * 2 + 1];
       }
 
       // now we check p1 value to know if we have to skip a part
       if(next == i) next = 0;
-      while(p1[0] == -999999)
+      while(isnan(pf1[0]))
       {
-        if(p1[1] == -999999)
+        if(isnan(pf1[1]))
           next = i - 1;
         else
           next = p1[1];
-        p1[0] = border[next * 2];
-        p1[1] = border[next * 2 + 1];
+        p1[0] = pf1[0] = border[next * 2];
+        p1[1] = pf1[1] = border[next * 2 + 1];
       }
 
       // and we draw the falloff
