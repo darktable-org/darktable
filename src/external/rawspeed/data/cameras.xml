@@ -7505,8 +7505,23 @@
 	<Camera make="Canon" model="Canon PowerShot SX100 IS" mode="dng">
 		<ID make="Canon" model="PowerShot SX100 IS">Canon PowerShot SX100 IS</ID>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot SX130 IS" mode="dng">
+		<ID make="Canon" model="PowerShot SX130 IS">Canon PowerShot SX130 IS</ID>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot SX260 HS" mode="dng">
+		<ID make="Canon" model="PowerShot SX260 HS">Canon PowerShot SX260 HS</ID>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot SX510 HS" mode="dng">
+		<ID make="Canon" model="PowerShot SX510 HS">Canon PowerShot SX510 HS</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot A3200 IS" mode="dng">
 		<ID make="Canon" model="PowerShot A3200 IS">Canon PowerShot A3200 IS</ID>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot SD450" mode="dng">
+		<ID make="Canon" model="PowerShot SD450">Canon PowerShot SD450</ID>
+	</Camera>
+	<Camera make="OnePlus" model="One A0001" mode="dng">
+		<ID make="OnePlus" model="One">OnePlus One</ID>
 	</Camera>
 	<!-- CHDK Cameras -->
 	<Camera make="AVT" model="F-080C" supported="no" mode="chdk">
