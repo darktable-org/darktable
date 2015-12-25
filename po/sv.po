@@ -25,8 +25,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-19 02:30+0100\n"
-"PO-Revision-Date: 2015-12-19 02:31+0100\n"
+"POT-Creation-Date: 2015-12-25 18:11+0100\n"
+"PO-Revision-Date: 2015-12-25 20:00+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -995,17 +995,17 @@ msgstr "sRGB (tex. JPG)"
 msgid "sRGB (web-safe)"
 msgstr "sRGB (webb-säker)"
 
-#: ../src/common/cups_print.c:309
+#: ../src/common/cups_print.c:324
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr "file `%s' som skulle skrivas ut finns inte, för bild %d på `%s'"
 
-#: ../src/common/cups_print.c:371
+#: ../src/common/cups_print.c:386
 #, c-format
 msgid "error while printing image %d on `%s'"
 msgstr "fel uppstod vid utskrift av bild %d på `%s'"
 
-#: ../src/common/cups_print.c:373
+#: ../src/common/cups_print.c:388
 #, c-format
 msgid "printing image %d on `%s'"
 msgstr "skriver ut bild %d på `%s'"
@@ -1254,7 +1254,7 @@ msgstr "importerade stilen '%s'"
 msgid "none"
 msgstr "ingen"
 
-#: ../src/common/opencl.c:549
+#: ../src/common/opencl.c:563
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
@@ -1796,28 +1796,28 @@ msgstr "visa och redigera markeringens element"
 msgid "toggle polarity of drawn mask"
 msgstr "växla den ritade markeringens polaritet"
 
-#: ../src/develop/blend_gui.c:1288 ../src/libs/masks.c:1004
-#: ../src/libs/masks.c:1043 ../src/libs/masks.c:1644
+#: ../src/develop/blend_gui.c:1288 ../src/libs/masks.c:1009
+#: ../src/libs/masks.c:1048 ../src/libs/masks.c:1649
 msgid "add gradient"
 msgstr "lägg till gradient"
 
 #: ../src/develop/blend_gui.c:1297 ../src/iop/spots.c:649
-#: ../src/libs/masks.c:1000 ../src/libs/masks.c:1039 ../src/libs/masks.c:1651
+#: ../src/libs/masks.c:1005 ../src/libs/masks.c:1044 ../src/libs/masks.c:1656
 msgid "add path"
 msgstr "lägg till slinga"
 
 #: ../src/develop/blend_gui.c:1306 ../src/iop/spots.c:657
-#: ../src/libs/masks.c:996 ../src/libs/masks.c:1035 ../src/libs/masks.c:1659
+#: ../src/libs/masks.c:1001 ../src/libs/masks.c:1040 ../src/libs/masks.c:1664
 msgid "add ellipse"
 msgstr "lägg till ellips"
 
 #: ../src/develop/blend_gui.c:1315 ../src/iop/spots.c:665
-#: ../src/libs/masks.c:992 ../src/libs/masks.c:1031 ../src/libs/masks.c:1667
+#: ../src/libs/masks.c:997 ../src/libs/masks.c:1036 ../src/libs/masks.c:1672
 msgid "add circle"
 msgstr "lägg till cirkel"
 
-#: ../src/develop/blend_gui.c:1324 ../src/libs/masks.c:1027
-#: ../src/libs/masks.c:1674
+#: ../src/develop/blend_gui.c:1324 ../src/libs/masks.c:1032
+#: ../src/libs/masks.c:1679
 msgid "add brush"
 msgstr "lägg till pensel"
 
@@ -1996,7 +1996,7 @@ msgstr "blandningsläge"
 msgid "choose blending mode"
 msgstr "välj blandningstyp"
 
-#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1293
+#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1294
 msgid "opacity"
 msgstr "ogenomskinlighet"
 
@@ -2069,11 +2069,11 @@ msgstr "ny instans"
 msgid "duplicate instance"
 msgstr "duplicera instans"
 
-#: ../src/develop/imageop.c:850 ../src/libs/masks.c:1164
+#: ../src/develop/imageop.c:850 ../src/libs/masks.c:1169
 msgid "move up"
 msgstr "flytta upp"
 
-#: ../src/develop/imageop.c:856 ../src/libs/masks.c:1167
+#: ../src/develop/imageop.c:856 ../src/libs/masks.c:1172
 msgid "move down"
 msgstr "flytta ner"
 
@@ -2259,7 +2259,7 @@ msgstr "kopia av %s"
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: maskering skiljer i version: %d != %d"
 
-#: ../src/develop/masks/masks.c:1641 ../src/libs/masks.c:1047
+#: ../src/develop/masks/masks.c:1641 ../src/libs/masks.c:1052
 msgid "add existing shape"
 msgstr "lägg till existerande form"
 
@@ -4099,33 +4099,33 @@ msgid "nokia like"
 msgstr "liknande nokia"
 
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:154
+#: ../src/iop/basecurve.c:155
 msgid "cubic spline"
 msgstr "kubisk spline"
 
-#: ../src/iop/basecurve.c:209
+#: ../src/iop/basecurve.c:210
 msgid "base curve"
 msgstr "baskurva"
 
-#: ../src/iop/basecurve.c:856
+#: ../src/iop/basecurve.c:857
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-axel: ingående, y-axel: utgående. arbetar på RGB-kanalerna"
 
-#: ../src/iop/basecurve.c:861 ../src/iop/lens.c:2189 ../src/iop/vignette.c:1147
-#: ../src/iop/watermark.c:1297
+#: ../src/iop/basecurve.c:862 ../src/iop/lens.c:2189 ../src/iop/vignette.c:1147
+#: ../src/iop/watermark.c:1298
 msgid "scale"
 msgstr "skala"
 
-#: ../src/iop/basecurve.c:862 ../src/iop/profile_gamma.c:319
+#: ../src/iop/basecurve.c:863 ../src/iop/profile_gamma.c:319
 #: ../src/iop/tonecurve.c:413
 msgid "linear"
 msgstr "linjär"
 
-#: ../src/iop/basecurve.c:863
+#: ../src/iop/basecurve.c:864
 msgid "logarithmic"
 msgstr "logaritmisk"
 
-#: ../src/iop/basecurve.c:865
+#: ../src/iop/basecurve.c:866
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -4469,7 +4469,7 @@ msgstr "mål"
 #: ../src/iop/channelmixer.c:458 ../src/iop/colorize.c:442
 #: ../src/iop/colorreconstruction.c:1309 ../src/iop/colorreconstruction.c:1314
 #: ../src/iop/colorzones.c:1081 ../src/iop/colorzones.c:1113
-#: ../src/iop/graduatednd.c:1059 ../src/iop/splittoning.c:501
+#: ../src/iop/graduatednd.c:1059 ../src/iop/splittoning.c:502
 msgid "hue"
 msgstr "nyans"
 
@@ -4478,7 +4478,7 @@ msgstr "nyans"
 #: ../src/iop/colorcorrection.c:282 ../src/iop/colorize.c:456
 #: ../src/iop/colorzones.c:1079 ../src/iop/colorzones.c:1114
 #: ../src/iop/graduatednd.c:1073 ../src/iop/lowpass.c:668
-#: ../src/iop/soften.c:564 ../src/iop/splittoning.c:513
+#: ../src/iop/soften.c:564 ../src/iop/splittoning.c:514
 #: ../src/iop/vignette.c:1150
 msgid "saturation"
 msgstr "mättnad"
@@ -4959,11 +4959,11 @@ msgctxt "accel"
 msgid "source mix"
 msgstr "källmixning"
 
-#: ../src/iop/colorize.c:282 ../src/iop/splittoning.c:495
+#: ../src/iop/colorize.c:282 ../src/iop/splittoning.c:496
 msgid "select tone color"
 msgstr "välj färgton"
 
-#: ../src/iop/colorize.c:449 ../src/iop/splittoning.c:508
+#: ../src/iop/colorize.c:449 ../src/iop/splittoning.c:509
 msgid "select the hue tone"
 msgstr "välj färgton"
 
@@ -5823,7 +5823,7 @@ msgstr ""
 "komprimering av gradering\n"
 "0% = mjuk, 100% = hård"
 
-#: ../src/iop/graduatednd.c:1045 ../src/iop/watermark.c:1300
+#: ../src/iop/graduatednd.c:1045 ../src/iop/watermark.c:1301
 msgid "rotation"
 msgstr "rotation"
 
@@ -6395,7 +6395,7 @@ msgid "how much to keep highlights"
 msgstr "hur mycket ska högdagrar behållas"
 
 #: ../src/iop/monochrome.c:553 ../src/iop/shadhi.c:823
-#: ../src/iop/splittoning.c:548
+#: ../src/iop/splittoning.c:551
 msgid "highlights"
 msgstr "högdagrar"
 
@@ -6607,7 +6607,7 @@ msgctxt "accel"
 msgid "highlights color correction"
 msgstr "färgkorrigering för högdagrar"
 
-#: ../src/iop/shadhi.c:822 ../src/iop/splittoning.c:543
+#: ../src/iop/shadhi.c:822 ../src/iop/splittoning.c:546
 msgid "shadows"
 msgstr "skuggor"
 
@@ -6743,11 +6743,11 @@ msgstr "autentisk platinotype"
 msgid "chocolate brown"
 msgstr "chokladbrun"
 
-#: ../src/iop/splittoning.c:516
+#: ../src/iop/splittoning.c:517
 msgid "select the saturation tone"
 msgstr "välj färgmättnadston"
 
-#: ../src/iop/splittoning.c:560
+#: ../src/iop/splittoning.c:558
 msgid "balance"
 msgstr "balans"
 
@@ -7113,7 +7113,7 @@ msgstr "SVG-vattenstämplar i %s/watermarks eller %s/watermarks"
 msgid "text"
 msgstr "text"
 
-#: ../src/iop/watermark.c:1248
+#: ../src/iop/watermark.c:1249
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -7121,11 +7121,11 @@ msgstr ""
 "text-sträng, tag:\n"
 "$(WATERMARK_TEXT)"
 
-#: ../src/iop/watermark.c:1263
+#: ../src/iop/watermark.c:1264
 msgid "text color"
 msgstr "text-färg"
 
-#: ../src/iop/watermark.c:1265
+#: ../src/iop/watermark.c:1266
 msgid ""
 "text color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -7133,16 +7133,16 @@ msgstr ""
 "text-färg, tag:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1268
+#: ../src/iop/watermark.c:1269
 msgid "select text color"
 msgstr "välj textens färg"
 
 #. Text font
-#: ../src/iop/watermark.c:1274
+#: ../src/iop/watermark.c:1275
 msgid "font"
 msgstr "typsnitt"
 
-#: ../src/iop/watermark.c:1281
+#: ../src/iop/watermark.c:1282
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -7155,58 +7155,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1288 ../src/libs/camera.c:497
+#: ../src/iop/watermark.c:1289 ../src/libs/camera.c:497
 msgid "properties"
 msgstr "inställningar"
 
-#: ../src/iop/watermark.c:1306
+#: ../src/iop/watermark.c:1307
 msgctxt "size"
 msgid "image"
 msgstr "bild"
 
-#: ../src/iop/watermark.c:1307
+#: ../src/iop/watermark.c:1308
 msgid "larger border"
 msgstr "långsidan"
 
-#: ../src/iop/watermark.c:1308
+#: ../src/iop/watermark.c:1309
 msgid "smaller border"
 msgstr "kortsidan"
 
-#: ../src/iop/watermark.c:1310
+#: ../src/iop/watermark.c:1311
 msgid "scale on"
 msgstr "skala i förhållande till"
 
-#: ../src/iop/watermark.c:1311
+#: ../src/iop/watermark.c:1312
 msgid "size is relative to"
 msgstr "storleken är i förhållande till"
 
-#: ../src/iop/watermark.c:1314
+#: ../src/iop/watermark.c:1315
 msgid "position"
 msgstr "placering"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1317 ../src/libs/print_settings.c:1199
+#: ../src/iop/watermark.c:1318 ../src/libs/print_settings.c:1199
 msgid "alignment"
 msgstr "orientering"
 
-#: ../src/iop/watermark.c:1334
+#: ../src/iop/watermark.c:1335
 msgid "x offset"
 msgstr "förskjutning x-led"
 
-#: ../src/iop/watermark.c:1337
+#: ../src/iop/watermark.c:1338
 msgid "y offset"
 msgstr "förskjutning y-led"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1342
+#: ../src/iop/watermark.c:1343
 msgid "the opacity of the watermark"
 msgstr "vattenstämpelns ogenomskinlighet"
 
-#: ../src/iop/watermark.c:1343
+#: ../src/iop/watermark.c:1344
 msgid "the scale of the watermark"
 msgstr "skalning av vattenstämpel"
 
-#: ../src/iop/watermark.c:1344
+#: ../src/iop/watermark.c:1345
 msgid "the rotation of the watermark"
 msgstr "vattenstämpelns rotation"
 
@@ -8411,47 +8411,47 @@ msgstr "markeringshanterare"
 msgid "group #%d"
 msgstr "grupp #%d"
 
-#: ../src/libs/masks.c:1117
+#: ../src/libs/masks.c:1122
 msgid "duplicate this shape"
 msgstr "duplicera denna form"
 
-#: ../src/libs/masks.c:1121
+#: ../src/libs/masks.c:1126
 msgid "delete this shape"
 msgstr "ta bort denna form"
 
-#: ../src/libs/masks.c:1127
+#: ../src/libs/masks.c:1132
 msgid "remove from group"
 msgstr "ta bort från grupp"
 
-#: ../src/libs/masks.c:1135
+#: ../src/libs/masks.c:1140
 msgid "group the forms"
 msgstr "gruppera formerna"
 
-#: ../src/libs/masks.c:1144
+#: ../src/libs/masks.c:1149
 msgid "use inversed shape"
 msgstr "använd omvänd form"
 
-#: ../src/libs/masks.c:1150
+#: ../src/libs/masks.c:1155
 msgid "mode : union"
 msgstr "läge : hopslagning"
 
-#: ../src/libs/masks.c:1153
+#: ../src/libs/masks.c:1158
 msgid "mode : intersection"
 msgstr "läge : skärning"
 
-#: ../src/libs/masks.c:1156
+#: ../src/libs/masks.c:1161
 msgid "mode : difference"
 msgstr "läge : skillnad"
 
-#: ../src/libs/masks.c:1159
+#: ../src/libs/masks.c:1164
 msgid "mode : exclusion"
 msgstr "läge : uteslutning"
 
-#: ../src/libs/masks.c:1173
+#: ../src/libs/masks.c:1178
 msgid "cleanup unused shapes"
 msgstr "städa bort oanvända former"
 
-#: ../src/libs/masks.c:1638
+#: ../src/libs/masks.c:1643
 msgid "created shapes"
 msgstr "skapa former"
 
@@ -8782,14 +8782,14 @@ msgstr "skalningsfaktor"
 #: ../src/libs/print_settings.c:1129
 msgid ""
 "image scale factor from native printer DPI:\n"
-" < 0 means that it is downscaled (best quality)\n"
-" > 0 means that the image is upscaled\n"
+" < 1 means that it is downscaled (best quality)\n"
+" > 1 means that the image is upscaled\n"
 " a too large value may result in poor print quality"
 msgstr ""
 "bildens skalningsfaktor med skrivarens DPI:\n"
-" < 0 betyder att bilden skalas ned (bästa kvalitén)\n"
-" > 0 betdyer att bilden skalas upp\n"
-" a för stort värde kan innebära sämre utskriftskvalité"
+" < 1 betyder att bilden skalas ned (bästa kvalitén)\n"
+" > 1 betdyer att bilden skalas upp\n"
+" ett för stort värde kan innebära sämre utskriftskvalité"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1143
@@ -9166,7 +9166,7 @@ msgstr "organisera och utveckla bilder från digital kameror"
 msgid "* contributors *"
 msgstr "* bidragsgivare *"
 
-#: ../src/libs/tools/darktable.c:321
+#: ../src/libs/tools/darktable.c:313
 msgid "translator-credits"
 msgstr ""
 "Henrik Andersson\n"
