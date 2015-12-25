@@ -1081,9 +1081,9 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
   const int pcol = (filters == 9) ? 6 : 2;
   const int colors = (filters == 9) ? 3 : 4;
 
-  // separate out G1 and G2 in Bayer patterns
-  unsigned int filters4;
-  if(filters == 9)
+  // separate out G1 and G2 in RGGB Bayer patterns
+  unsigned int filters4 = filters;
+  if(filters == 9 || filters == 0xb4b4b4b4) // x-trans or CYGM
     filters4 = filters;
   else if((filters & 3) == 1)
     filters4 = filters | 0x03030303u;
@@ -1210,7 +1210,7 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
   memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
   free(buffer);
 
-  if(filters4 != 9)
+  if(filters != 9 && filters != 0xb4b4b4b4) // x-trans or CYGM
 // for Bayer mix the two greens to make VNG4
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(out) schedule(static)
@@ -1560,7 +1560,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
       piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
       uhq_thumb ||
-      roi_out->scale > (data->filters == 9u ? 0.333f : 0.5f);
+      roi_out->scale > (data->filters == 9u ? 0.333f : 0.5f) ||
+      img->filters == 0xb4b4b4b4;
 
   // we check if we can stop at the linear interpolation step in VNG
   // instead of going the full way
@@ -1606,7 +1607,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     {
       float *in = (float *)pixels;
 
-      if(data->green_eq != DT_IOP_GREEN_EQ_NO)
+      if(img->filters != 0xb4b4b4b4 && data->green_eq != DT_IOP_GREEN_EQ_NO)
       {
         in = (float *)dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
         switch(data->green_eq)
@@ -1630,7 +1631,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
       if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
         passthrough_monochrome(tmp, in, &roo, &roi);
-      else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
+      else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || img->filters == 0xb4b4b4b4)
         vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters,
