@@ -474,12 +474,12 @@ priority=1000
 for n in sorted_nodes:
   # now that should be the priority in the c file:
   print("%d %s"%(priority, n))
-  filename="../src/iop/%s.c"%n
+  filename=os.path.join(os.path.dirname(__file__), "../src/iop/%s.c"%n)
   if not os.path.isfile(filename):
-    filename="../src/iop/%s.cc"%n
+    filename=os.path.join(os.path.dirname(__file__), "../src/iop/%s.cc"%n)
   if not os.path.isfile(filename):
     if not n == "rawspeed":
-      print("could not find file `%s', maybe you're not running inside tools/?"%filename)
+      print("could not find file `%s'"%filename)
     continue
   replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
   priority -= 1000.0/(length-1.0)
