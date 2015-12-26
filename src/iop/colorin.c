@@ -1042,7 +1042,9 @@ void reload_defaults(dt_iop_module_t *module)
     use_eprofile = TRUE; // the image has a profile assigned
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
-  if(use_eprofile)
+  if(img->filters == 0xb4b4b4b4)
+    tmp.type = DT_COLORSPACE_LIN_REC2020;
+  else if(use_eprofile)
     tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB)
     tmp.type = DT_COLORSPACE_SRGB;
