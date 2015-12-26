@@ -1635,7 +1635,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       {
         vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
         if (img->filters == 0xb4b4b4b4)
-          cmyg_convert(tmp, roo.width*roo.height, img->camera_makermodel);
+          dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, img->camera_makermodel);
       }
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters,

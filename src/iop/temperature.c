@@ -387,19 +387,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 0xb4b4b4b4)
   { // CYGM float mosaiced
-    float cmyg_coeffs[4] = {0.0f};
+    float cygm_coeffs[4] = {0.0f};
     for(int i = 0; i < 3; i++)
-      cmyg_coeffs[i] = d->coeffs[i];
-    cmyg_backconvert(cmyg_coeffs, 1, piece->pipe->image.camera_makermodel);
+      cygm_coeffs[i] = d->coeffs[i];
+    dt_colorspaces_rgb_to_cygm(cygm_coeffs, 1, piece->pipe->image.camera_makermodel);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, cmyg_coeffs) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, cygm_coeffs) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
       const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
       float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
       for(int i = 0; i < roi_out->width; i++, out++, in++)
-        *out = *in * cmyg_coeffs[FC(j, i, filters)];
+        *out = *in * cygm_coeffs[FC(j, i, filters)];
     }
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)

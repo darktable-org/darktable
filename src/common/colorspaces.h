@@ -202,11 +202,11 @@ dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char 
  * make sure that darktable.color_profiles->xprofile_lock is held when calling this! */
 void dt_colorspaces_update_display_transforms();
 
-/** convert CMYG buffer to RGB */
-void cmyg_convert(float *out, int num, const char *camera);
+/** convert CYGM buffer to RGB */
+void dt_colorspaces_cygm_to_rgb(float *out, int num, const char *camera);
 
-/** convert RGB buffer to CMYG */
-void cmyg_backconvert(float *out, int num, const char *camera);
+/** convert RGB buffer to CYGM */
+void dt_colorspaces_rgb_to_cygm(float *out, int num, const char *camera);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

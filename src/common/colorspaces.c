@@ -1633,29 +1633,29 @@ static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int 
 {
   double work[3][6], num;
 
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 6; j++)
+  for(int i = 0; i < 3; i++) {
+    for(int j = 0; j < 6; j++)
       work[i][j] = j == i+3;
-    for (int j = 0; j < 3; j++)
-      for (int k = 0; k < size; k++)
+    for(int j = 0; j < 3; j++)
+      for(int k = 0; k < size; k++)
         work[i][j] += in[k][i] * in[k][j];
   }
-  for (int i = 0; i < 3; i++) {
+  for(int i = 0; i < 3; i++) {
     num = work[i][i];
-    for (int j = 0; j < 6; j++)
+    for(int j = 0; j < 6; j++)
       work[i][j] /= num;
-    for (int k = 0; k < 3; k++) {
-      if (k==i) continue;
+    for(int k = 0; k < 3; k++) {
+      if(k==i) continue;
       num = work[k][i];
-      for (int j = 0; j < 6; j++)
+      for(int j = 0; j < 6; j++)
         work[k][j] -= work[i][j] * num;
     }
   }
-  for (int i = 0; i < size; i++)
-    for (int j = 0; j < 3; j++)
+  for(int i = 0; i < size; i++)
+    for(int j = 0; j < 3; j++)
     {
       out[i][j] = 0.0f;
-      for (int k = 0; k < 3; k++)
+      for(int k = 0; k < 3; k++)
         out[i][j] += work[j][k+3] * in[i][k];
     }
 }
@@ -1676,20 +1676,20 @@ static void dt_colorspaces_4bayermatrix(const char *name, double cam_rgb[4][3])
     return;
 
   // Multiply out XYZ colorspace
-  for (int i = 0; i < 4; i++)
-    for (int j = 0; j < 3; j++)
+  for(int i = 0; i < 4; i++)
+    for(int j = 0; j < 3; j++)
     {
       cam_rgb[i][j] = 0.0f;
-      for (int k = 0; k < 3; k++)
+      for(int k = 0; k < 3; k++)
         cam_rgb[i][j] += cam_xyz[i][k] * xyz_rgb[k][j];
     }
 
   // Normalize cam_rgb so that cam_rgb * (1,1,1) is (1,1,1,1)
-  for (int i = 0; i < 4; i++) {
+  for(int i = 0; i < 4; i++) {
     double num = 0.0f;
-    for (int j = 0; j < 3; j++)
+    for(int j = 0; j < 3; j++)
       num += cam_rgb[i][j];
-    for (int j = 0; j < 3; j++)
+    for(int j = 0; j < 3; j++)
       cam_rgb[i][j] /= num;
   }
 }
@@ -1709,21 +1709,21 @@ static void dt_colorspaces_inverse4bayermatrix(const char *name, double out_cam[
 
   // Invert the matrix into 3x4
   dt_colorspaces_pseudoinverse (cam_rgb, inverse, 4);
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 4; j++)
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 4; j++)
       rgb_cam[i][j] = inverse[j][i];
 
   // Finally apply the Rec2020 profile
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 4; j++)
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 4; j++)
     {
       out_cam[i][j] = 0.0f;
-      for (int k = 0; k < 3; k++)
+      for(int k = 0; k < 3; k++)
         out_cam[i][j] += rec2020_rgb[i][k] * rgb_cam[k][j];
     }
 }
 
-void cmyg_convert(float *out, int num, const char *camera)
+void dt_colorspaces_cygm_to_rgb(float *out, int num, const char *camera)
 {
   // Start with a fallback matrix in place
   double rgb_cam[3][4] = {
@@ -1752,7 +1752,7 @@ void cmyg_convert(float *out, int num, const char *camera)
   }
 }
 
-void cmyg_backconvert(float *out, int num, const char *camera)
+void dt_colorspaces_rgb_to_cygm(float *out, int num, const char *camera)
 {
   // Start with a fallback matrix in place
   double cam_rgb[4][3] = {
