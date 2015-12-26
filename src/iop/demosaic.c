@@ -1243,10 +1243,8 @@ static void cmyg_convert(float *out, int height, int width, const char *camera)
     for(int c = 0; c < 3; c++)
       for(int k = 0; k < 4; k++)
         o[c] += rgb_cam[c][k] * in[k];
-    // FIXME: The WB application either needs to move to temperature.c or it needs to use the correct multipliers
-    in[0] = o[0] * 1.0f;
-    in[1] = o[1] * 1.0f;
-    in[2] = o[2] * 0.65f;
+    for(int c = 0; c < 3; c++)
+      in[c] = o[c];
   }
 }
 
