@@ -1219,36 +1219,6 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
     for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
 }
 
-static void cmyg_convert(float *out, int height, int width, const char *camera)
-{
-  // Start with a fallback matrix in place
-  double rgb_cam[3][4] = {
-    {1,0,0,0},
-    {0,1,0,0},
-    {0,0,1,0},
-  };
-  rgb_cam[0][0] = NAN;
-  dt_colorspaces_inverse4bayermatrix(camera,rgb_cam);
-  if(isnan(rgb_cam[0][0]))
-  {
-    fprintf(stderr, "[demosaic] `%s' color matrix not found for 4bayer image!\n", camera);
-    dt_control_log(_("[demosaic] `%s' color matrix not found for 4bayer image!\n"), camera);
-    rgb_cam[0][0] = 1.0f;
-  }
-
-  for(int i = 0; i < height * width; i++)
-  {
-    float *in = &out[i*4];
-    float o[3] = {0.0f};
-    for(int c = 0; c < 3; c++)
-      for(int k = 0; k < 4; k++)
-        o[c] += rgb_cam[c][k] * in[k];
-    for(int c = 0; c < 3; c++)
-      in[c] = o[c];
-  }
-}
-
-
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in)
@@ -1665,7 +1635,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       {
         vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
         if (img->filters == 0xb4b4b4b4)
-          cmyg_convert(tmp, roo.width, roo.height, img->camera_makermodel);
+          cmyg_convert(tmp, roo.width*roo.height, img->camera_makermodel);
       }
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters,

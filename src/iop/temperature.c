@@ -387,28 +387,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 0xb4b4b4b4)
   { // CYGM float mosaiced
-    // Start with a fallback matrix in place
-    double cam_rgb[4][3] = {
-      {1,0,0},
-      {0,1,0},
-      {0,0,1},
-      {0,0,0},
-    };
-    cam_rgb[0][0] = NAN;
-    const char *camera = piece->pipe->image.camera_makermodel;
-    dt_colorspaces_4bayermatrix(camera,cam_rgb);
-    if(isnan(cam_rgb[0][0]))
-    {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
-      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
-      cam_rgb[0][0] = 1.0f;
-    }
-
     float cmyg_coeffs[4] = {0.0f};
-    for(int c = 0; c < 4; c++)
-      for(int k = 0; k < 3; k++)
-        cmyg_coeffs[c] += cam_rgb[c][k] * d->coeffs[k];
-
+    for(int i = 0; i < 3; i++)
+      cmyg_coeffs[i] = d->coeffs[i];
+    cmyg_backconvert(cmyg_coeffs, 1, piece->pipe->image.camera_makermodel);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, cmyg_coeffs) schedule(static)
 #endif

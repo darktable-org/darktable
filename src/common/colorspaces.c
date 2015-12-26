@@ -1660,7 +1660,7 @@ static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int 
     }
 }
 
-void dt_colorspaces_4bayermatrix(const char *name, double cam_rgb[4][3])
+static void dt_colorspaces_4bayermatrix(const char *name, double cam_rgb[4][3])
 {
   // XYZ from RGB
   const double xyz_rgb[3][3] = {
@@ -1694,7 +1694,7 @@ void dt_colorspaces_4bayermatrix(const char *name, double cam_rgb[4][3])
   }
 }
 
-void dt_colorspaces_inverse4bayermatrix(const char *name, double out_cam[3][4])
+static void dt_colorspaces_inverse4bayermatrix(const char *name, double out_cam[3][4])
 {
   // Rec2020
   static const double rec2020_rgb[3][3] = {
@@ -1721,6 +1721,65 @@ void dt_colorspaces_inverse4bayermatrix(const char *name, double out_cam[3][4])
       for (int k = 0; k < 3; k++)
         out_cam[i][j] += rec2020_rgb[i][k] * rgb_cam[k][j];
     }
+}
+
+void cmyg_convert(float *out, int num, const char *camera)
+{
+  // Start with a fallback matrix in place
+  double rgb_cam[3][4] = {
+    {1,0,0,0},
+    {0,1,0,0},
+    {0,0,1,0},
+  };
+  rgb_cam[0][0] = NAN;
+  dt_colorspaces_inverse4bayermatrix(camera,rgb_cam);
+  if(isnan(rgb_cam[0][0]))
+  {
+    fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
+    dt_control_log(_("[colorspaces] `%s' color matrix not found for 4bayer image!\n"), camera);
+    rgb_cam[0][0] = 1.0f;
+  }
+
+  for(int i = 0; i < num; i++)
+  {
+    float *in = &out[i*4];
+    float o[3] = {0.0f};
+    for(int c = 0; c < 3; c++)
+      for(int k = 0; k < 4; k++)
+        o[c] += rgb_cam[c][k] * in[k];
+    for(int c = 0; c < 3; c++)
+      in[c] = o[c];
+  }
+}
+
+void cmyg_backconvert(float *out, int num, const char *camera)
+{
+  // Start with a fallback matrix in place
+  double cam_rgb[4][3] = {
+    {1,0,0},
+    {0,1,0},
+    {0,0,1},
+    {0,0,0},
+  };
+  cam_rgb[0][0] = NAN;
+  dt_colorspaces_4bayermatrix(camera,cam_rgb);
+  if(isnan(cam_rgb[0][0]))
+  {
+    fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
+    dt_control_log(_("[colorspaces] `%s' color matrix not found for 4bayer image!\n"), camera);
+    cam_rgb[0][0] = 1.0f;
+  }
+
+  for(int i = 0; i < num; i++)
+  {
+    float *in = &out[i*3];
+    float o[4] = {0.0f};
+    for(int c = 0; c < 4; c++)
+      for(int k = 0; k < 3; k++)
+        o[c] += cam_rgb[c][k] * in[k];
+    for(int c = 0; c < 4; c++)
+      in[c] = o[c];
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
