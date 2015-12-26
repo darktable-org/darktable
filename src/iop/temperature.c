@@ -104,6 +104,7 @@ static int ignore_missing_wb(dt_image_t *img)
     "Kodak EOS DCS 1",
     "Kodak DCS560C",
     "Kodak DCS460D",
+    "Nikon E5700",
   };
 
   for(int i=0; i < sizeof(ignored_cameras)/sizeof(ignored_cameras[1]); i++)
