@@ -1216,6 +1216,30 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
 #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
     for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
+
+  if(filters == 0xb4b4b4b4)
+  {
+    // CanonG1 to Rec2020 matrix
+    // FIXME: this needs to be calculated on the fly (dcraw has the code and it seems simple enough)
+    float cam_rgb[3][4] = {
+      {-0.661274,1.184654,-1.210883,1.687500,},
+      {0.431856,-0.235114,-0.063028,0.866288,},
+      {0.196931,0.714014,0.994212,-0.905158,},
+    };
+
+    for(int i = 0; i < height * width; i++)
+    {
+      float *in = &out[i*4];
+      float o[3] = {0.0f};
+      for(int c = 0; c < 3; c++)
+        for(int k = 0; k < 4; k++)
+          o[c] += cam_rgb[c][k] * in[k];
+      // FIXME: The WB application either needs to move to temperature.c or it needs to use the correct multipliers
+      in[0] = o[0] * 1.0f;
+      in[1] = o[1] * 1.0f;
+      in[2] = o[2] * 0.65f;
+    }
+  }
 }
 
 

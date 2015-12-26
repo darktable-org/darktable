@@ -384,6 +384,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
     }
   }
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 0xb4b4b4b4)
+  { // CYGM float mosaiced
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
+      for(int i = 0; i < roi_out->width; i++, out++, in++)
+        // FIXME: Either just use memcpy or do the actual WB application starting from an inverted matrix
+        *out = *in;
+    }
+  }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
   { // bayer float mosaiced
 #ifdef _OPENMP
