@@ -24,6 +24,7 @@
 #include "common/debug.h"
 #include "common/srgb_tone_curve_values.h"
 #include "develop/imageop.h"
+#include "external/adobe_coeff.c"
 
 #ifdef USE_COLORDGTK
 #include "colord-gtk.h"
@@ -1626,6 +1627,100 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_
                                                                  dt_colorspaces_profile_direction_t direction)
 {
   return _get_profile(darktable.color_profiles, type, filename, direction);
+}
+
+static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
+{
+  double work[3][6], num;
+
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 6; j++)
+      work[i][j] = j == i+3;
+    for (int j = 0; j < 3; j++)
+      for (int k = 0; k < size; k++)
+        work[i][j] += in[k][i] * in[k][j];
+  }
+  for (int i = 0; i < 3; i++) {
+    num = work[i][i];
+    for (int j = 0; j < 6; j++)
+      work[i][j] /= num;
+    for (int k = 0; k < 3; k++) {
+      if (k==i) continue;
+      num = work[k][i];
+      for (int j = 0; j < 6; j++)
+        work[k][j] -= work[i][j] * num;
+    }
+  }
+  for (int i = 0; i < size; i++)
+    for (int j = 0; j < 3; j++)
+    {
+      out[i][j] = 0.0f;
+      for (int k = 0; k < 3; k++)
+        out[i][j] += work[j][k+3] * in[i][k];
+    }
+}
+
+void dt_colorspaces_4bayermatrix(const char *name, double cam_rgb[4][3])
+{
+  // XYZ from RGB
+  const double xyz_rgb[3][3] = {
+    { 0.412453, 0.357580, 0.180423 },
+    { 0.212671, 0.715160, 0.072169 },
+    { 0.019334, 0.119193, 0.950227 },
+  };
+
+  float cam_xyz[4][3];
+  cam_xyz[0][0] = NAN;
+  dt_dcraw_adobe_coeff(name, (float(*)[12])cam_xyz);
+  if(isnan(cam_xyz[0][0]))
+    return;
+
+  // Multiply out XYZ colorspace
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 3; j++)
+    {
+      cam_rgb[i][j] = 0.0f;
+      for (int k = 0; k < 3; k++)
+        cam_rgb[i][j] += cam_xyz[i][k] * xyz_rgb[k][j];
+    }
+
+  // Normalize cam_rgb so that cam_rgb * (1,1,1) is (1,1,1,1)
+  for (int i = 0; i < 4; i++) {
+    double num = 0.0f;
+    for (int j = 0; j < 3; j++)
+      num += cam_rgb[i][j];
+    for (int j = 0; j < 3; j++)
+      cam_rgb[i][j] /= num;
+  }
+}
+
+void dt_colorspaces_inverse4bayermatrix(const char *name, double out_cam[3][4])
+{
+  // Rec2020
+  static const double rec2020_rgb[3][3] = {
+    { 0.673492, 0.279037, -0.001938 },
+    { 0.165665, 0.675354, 0.029984 },
+    { 0.125046, 0.045609, 0.796860 },
+  };
+
+  double rgb_cam[3][4], cam_rgb[4][3], inverse[4][3];
+
+  dt_colorspaces_4bayermatrix(name, cam_rgb);
+
+  // Invert the matrix into 3x4
+  dt_colorspaces_pseudoinverse (cam_rgb, inverse, 4);
+  for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 4; j++)
+      rgb_cam[i][j] = inverse[j][i];
+
+  // Finally apply the Rec2020 profile
+  for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 4; j++)
+    {
+      out_cam[i][j] = 0.0f;
+      for (int k = 0; k < 3; k++)
+        out_cam[i][j] += rec2020_rgb[i][k] * rgb_cam[k][j];
+    }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

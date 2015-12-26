@@ -202,6 +202,12 @@ dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char 
  * make sure that darktable.color_profiles->xprofile_lock is held when calling this! */
 void dt_colorspaces_update_display_transforms();
 
+/** get a 4x3 matrix to convert RGB to CYGM or RGBE sensor data*/
+void dt_colorspaces_4bayermatrix(const char *name, double cam_rgb[4][3]);
+
+/** get a 3x4 matrix to convert CYGM or RGBE sensor data to RGB in Rec2020 */
+void dt_colorspaces_inverse4bayermatrix(const char *name, double rgb_cam[3][4]);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
