@@ -35,7 +35,7 @@
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-/* Begin EFH */
+/* Begin EFH  */
 #include "common/debug.h"
 #include "control/conf.h"
 #include "gui/draw.h"
