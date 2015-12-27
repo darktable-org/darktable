@@ -2267,14 +2267,24 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
 
           if(!((pc >= 60000) ^ (MAX(MAX(p1, p2), MAX(p3, p4)) >= 60000)))
           {
-            sum = _mm_add_epi32(sum, _mm_set_epi32(0, p4, p3 + p2, p1));
+            if(filters == 0xb4b4b4b4) // CYGM so lets keep all four values
+              sum = _mm_add_epi32(sum, _mm_set_epi32(p3, p4, p2, p1));
+            else
+              sum = _mm_add_epi32(sum, _mm_set_epi32(0, p4, p3 + p2, p1));
             num++;
           }
         }
 
-      col = _mm_mul_ps(
-          _mm_cvtepi32_ps(sum),
-          _mm_div_ps(_mm_set_ps(0.0f, 1.0f / 65535.0f, 0.5f / 65535.0f, 1.0f / 65535.0f), _mm_set1_ps(num)));
+      if(filters == 0xb4b4b4b4)
+        col = _mm_mul_ps(
+            _mm_cvtepi32_ps(sum),
+            _mm_div_ps(_mm_set_ps(1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / 65535.0f),
+            _mm_set1_ps(num)));
+      else
+         col = _mm_mul_ps(
+            _mm_cvtepi32_ps(sum),
+            _mm_div_ps(_mm_set_ps(0.0f, 1.0f / 65535.0f, 0.5f / 65535.0f, 1.0f / 65535.0f),
+            _mm_set1_ps(num)));
       _mm_stream_ps(outc, col);
       outc += 4;
     }
