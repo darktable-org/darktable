@@ -858,7 +858,8 @@ void reload_defaults(dt_iop_module_t *module)
       {
         if(!ignore_missing_wb(&(module->dev->image_storage)))
         {
-          dt_control_log(_("failed to read camera white balance information!"));
+          dt_control_log(_("failed to read camera white balance information from `%s'!"),
+                         module->dev->image_storage.filename);
           fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
                   module->dev->image_storage.filename);
         }
