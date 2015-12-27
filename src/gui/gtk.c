@@ -774,17 +774,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()), "changed", G_CALLBACK(key_accel_changed), NULL);
 
-  configure_ppd_dpi(gui);
-
-  // set constant width from conf key
-  int panel_width = dt_conf_get_int("panel_width");
-  if(panel_width < 20 || panel_width > 1000)
-  {
-    // fix for unset/insane values.
-    panel_width = 300 * gui->dpi_factor;
-    dt_conf_set_int("panel_width", panel_width);
-  }
-
   // Initializing widgets
   init_widgets(gui);
 
@@ -1034,6 +1023,17 @@ static void init_widgets(dt_gui_gtk_t *gui)
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
+
+  configure_ppd_dpi(gui);
+
+  // set constant width from conf key
+  int panel_width = dt_conf_get_int("panel_width");
+  if(panel_width < 20 || panel_width > 1000)
+  {
+    // fix for unset/insane values.
+    panel_width = 300 * gui->dpi_factor;
+    dt_conf_set_int("panel_width", panel_width);
+  }
 
   gtk_window_set_default_size(GTK_WINDOW(widget), DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(500));
 
