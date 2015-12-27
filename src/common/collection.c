@@ -337,6 +337,10 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename, version");
         break;
 
+      case DT_COLLECTION_SORT_GROUP:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "group_id desc, id-group_id != 0, id desc");
+        break;
+
       case DT_COLLECTION_SORT_NONE:
         // shouldn't happen
         break;
@@ -364,6 +368,10 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
       case DT_COLLECTION_SORT_COLOR:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_GROUP:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "group_id, id-group_id != 0, id");
         break;
 
       case DT_COLLECTION_SORT_NONE:
