@@ -1080,6 +1080,10 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   p->coeffs[2] /= p->coeffs[1];
   p->coeffs[1] = 1.0;
   for(int k = 0; k < 3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
+
+  // If we're in a CMYG image we need to create CMYG coeffs from the RGB ones
+  if (!isnan(p->coeffs[3])) dt_colorspaces_rgb_to_cygm(p->coeffs, 1, self->dev->image_storage.camera_makermodel);
+
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
