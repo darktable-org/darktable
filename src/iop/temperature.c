@@ -479,7 +479,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     const int ch = piece->colors;
 
     float rgb_coeffs[4] = {d->coeffs[0], d->coeffs[1], d->coeffs[2], d->coeffs[3]};
-    if (!isnan(d->coeffs[3]))
+    if (isnormal(d->coeffs[3]))
     { // We're in a 4 coeff image and we need to convert these coeffs to RGB
       dt_colorspaces_cygm_to_rgb(rgb_coeffs, 1, piece->pipe->image.camera_makermodel);
     }
@@ -521,7 +521,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   int kernel = -1;
 
-  if (!isnan(d->coeffs[3]))
+  if (isnormal(d->coeffs[3]))
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_temperature] temperature for CYGM not yet supported by opencl code\n");
     return FALSE;
@@ -1082,7 +1082,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   for(int k = 0; k < 3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
 
   // If we're in a CMYG image we need to create CMYG coeffs from the RGB ones
-  if (!isnan(p->coeffs[3])) dt_colorspaces_rgb_to_cygm(p->coeffs, 1, self->dev->image_storage.camera_makermodel);
+  if (isnormal(p->coeffs[3])) dt_colorspaces_rgb_to_cygm(p->coeffs, 1, self->dev->image_storage.camera_makermodel);
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
