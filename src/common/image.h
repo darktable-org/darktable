@@ -179,7 +179,7 @@ typedef struct dt_image_t
   uint8_t xtrans[6][6];
 
   /* White balance coeffs from the raw */
-  float wb_coeffs[3];
+  float wb_coeffs[4];
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
