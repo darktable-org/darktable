@@ -1629,7 +1629,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_
   return _get_profile(darktable.color_profiles, type, filename, direction);
 }
 
-static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
+void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
 {
   double work[3][6], num;
 

@@ -202,6 +202,9 @@ dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char 
  * make sure that darktable.color_profiles->xprofile_lock is held when calling this! */
 void dt_colorspaces_update_display_transforms();
 
+/** pseudoinverse taken from dcraw that allows inverting 3x4 into 4x3 */
+void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size);
+
 /** convert CYGM buffer to RGB */
 void dt_colorspaces_cygm_to_rgb(float *out, int num, const char *camera);
 
