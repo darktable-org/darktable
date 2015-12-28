@@ -218,7 +218,7 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING;
 }
 
 static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, int *force_autoapply)
