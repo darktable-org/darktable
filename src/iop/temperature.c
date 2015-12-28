@@ -478,7 +478,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   { // non-mosaiced
     const int ch = piece->colors;
 
-    const __m128 coeffs = _mm_set_ps(1.0f, d->coeffs[2], d->coeffs[1], d->coeffs[0]);
+    float rgb_coeffs[4] = {d->coeffs[0], d->coeffs[1], d->coeffs[2], d->coeffs[3]};
+    if (!isnan(d->coeffs[3]))
+    { // We're in a 4 coeff image and we need to convert these coeffs to RGB
+      dt_colorspaces_cygm_to_rgb(rgb_coeffs, 1, piece->pipe->image.camera_makermodel);
+    }
+
+    const __m128 coeffs = _mm_set_ps(1.0f, rgb_coeffs[2], rgb_coeffs[1], rgb_coeffs[0]);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
@@ -514,6 +520,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_coeffs = NULL;
   cl_int err = -999;
   int kernel = -1;
+
+  if (!isnan(d->coeffs[3]))
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_temperature] temperature for CYGM not yet supported by opencl code\n");
+    return FALSE;
+  }
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
   {
