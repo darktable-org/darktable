@@ -42,7 +42,7 @@
 #include "external/cie_colorimetric_tables.c"
 #include "common/colorspaces.h"
 
-DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 
 #define INITIALBLACKBODYTEMPERATURE 4000
 
@@ -56,7 +56,6 @@ DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
 
 typedef struct dt_iop_temperature_params_t
 {
-  float temp_out;
   float coeffs[4];
 } dt_iop_temperature_params_t;
 
@@ -82,6 +81,30 @@ typedef struct dt_iop_temperature_global_data_t
   int kernel_whitebalance_4f;
   int kernel_whitebalance_1f;
 } dt_iop_temperature_global_data_t;
+
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
+{
+  if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_temperature_params_v2_t
+    {
+      float temp_out;
+      float coeffs[3];
+    } dt_iop_temperature_params_v2_t;
+
+    dt_iop_temperature_params_v2_t *o = (dt_iop_temperature_params_v2_t *)old_params;
+    dt_iop_temperature_params_t *n = (dt_iop_temperature_params_t *)new_params;
+
+    n->coeffs[0] = o->coeffs[0];
+    n->coeffs[1] = o->coeffs[1];
+    n->coeffs[2] = o->coeffs[2];
+    n->coeffs[3] = NAN;
+
+    return 0;
+  }
+  return 1;
+}
 
 static int ignore_missing_wb(dt_image_t *img)
 {
@@ -838,7 +861,7 @@ static int prepare_wb_matrices(dt_iop_module_t *module)
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_temperature_params_t tmp
-      = (dt_iop_temperature_params_t){.temp_out = 5000.0, .coeffs = { 1.0, 1.0, 1.0, 1.0 } };
+      = (dt_iop_temperature_params_t){.coeffs = { 1.0, 1.0, 1.0, 1.0 } };
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
