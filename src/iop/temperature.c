@@ -891,8 +891,7 @@ void reload_defaults(dt_iop_module_t *module)
     // Only check the first three values, the fourth is usually NAN for RGB
     for(int k = 0; k < 3; k++)
     {
-      if(isnan(module->dev->image_storage.wb_coeffs[k]) ||
-         (k < 3 && module->dev->image_storage.wb_coeffs[k] == 0.0f))
+      if(isnan(module->dev->image_storage.wb_coeffs[k]) || module->dev->image_storage.wb_coeffs[k] == 0.0f)
       {
         found = 0;
         break;
@@ -1164,13 +1163,13 @@ static void apply_preset(dt_iop_module_t *self)
     case -1: // just un-setting.
       return;
     case 0: // camera wb
-      for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
+      for(int k = 0; k < 4; k++) p->coeffs[k] = fp->coeffs[k];
       break;
     case 1: // camera neutral wb
-      for(int k = 0; k < 3; k++) p->coeffs[k] = g->daylight_wb[k];
+      for(int k = 0; k < 4; k++) p->coeffs[k] = g->daylight_wb[k];
       break;
     case 2: // spot wb, expose callback will set p->coeffs.
-      for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
+      for(int k = 0; k < 4; k++) p->coeffs[k] = fp->coeffs[k];
       dt_iop_request_focus(self);
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
 
@@ -1261,7 +1260,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
-  for(int k = 0; k < 3; k++) g->daylight_wb[k] = 1.0;
+  for(int k = 0; k < 4; k++) g->daylight_wb[k] = 1.0;
   g->scale_tint
       = dt_bauhaus_slider_new_with_range(self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT, .01, 1.0, 3);
   g->scale_k = dt_bauhaus_slider_new_with_range(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
