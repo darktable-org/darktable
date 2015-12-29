@@ -1055,8 +1055,6 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
         {
           dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(out, (const uint16_t *)buf.buf, &roi_out,
                                                               &roi_in, roi_out.width, roi_in.width, image);
-          if (image->filters == 0xb4b4b4b4) // CYGM bayer patterns
-            dt_colorspaces_cygm_to_rgb(out, roi_out.width*roi_out.height, image->camera_makermodel);
         }
       }
     }
