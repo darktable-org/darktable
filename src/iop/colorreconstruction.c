@@ -490,6 +490,8 @@ static void blur_line(dt_iop_colorreconstruct_Lab_t *buf, const int offset1, con
 
 static void dt_iop_colorreconstruct_bilateral_blur(dt_iop_colorreconstruct_bilateral_t *b)
 {
+  if(!b) return;
+
   // gaussian up to 3 sigma
   blur_line(b->buf, b->size_x * b->size_y, b->size_x, 1, b->size_z, b->size_y, b->size_x);
   // gaussian up to 3 sigma
