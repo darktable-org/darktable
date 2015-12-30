@@ -247,7 +247,11 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
                                                                                    const float sigma_r)     // range sigma (blur luma values)
 {
   dt_iop_colorreconstruct_bilateral_t *b = (dt_iop_colorreconstruct_bilateral_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
-  if(!b) return NULL;
+  if(!b)
+  {
+    fprintf(stderr, "[color reconstruction] not able to allocate buffer (a)\n");
+    return NULL;
+  }
   float _x = roundf(roi->width / sigma_s);
   float _y = roundf(roi->height / sigma_s);
   float _z = roundf(100.0f / sigma_r);
@@ -262,6 +266,12 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   b->sigma_s = MAX(roi->height / (b->size_y - 1.0f), roi->width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
   b->buf = dt_alloc_align(16, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  if(!b->buf)
+  {
+    fprintf(stderr, "[color reconstruction] not able to allocate buffer (b)\n");
+    dt_iop_colorreconstruct_bilateral_free(b);
+    return NULL;
+  }
 
   memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
 #if 0
@@ -277,7 +287,11 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   if(!b) return NULL;
 
   dt_iop_colorreconstruct_bilateral_frozen_t *bf = (dt_iop_colorreconstruct_bilateral_frozen_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_frozen_t));
-  if(!bf) return NULL;
+  if(!bf)
+  {
+    fprintf(stderr, "[color reconstruction] not able to allocate buffer (c)\n");
+    return NULL;
+  }
 
   bf->size_x = b->size_x;
   bf->size_y = b->size_y;
@@ -296,6 +310,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   }
   else
   {
+    fprintf(stderr, "[color reconstruction] not able to allocate buffer (d)\n");
     dt_iop_colorreconstruct_bilateral_dump(bf);
     return NULL;
   }
@@ -308,7 +323,11 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   if(!bf) return NULL;
 
   dt_iop_colorreconstruct_bilateral_t *b = (dt_iop_colorreconstruct_bilateral_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
-  if(!b) return NULL;
+  if(!b)
+  {
+    fprintf(stderr, "[color reconstruction] not able to allocate buffer (e)\n");
+    return NULL;
+  }
 
   b->size_x = bf->size_x;
   b->size_y = bf->size_y;
@@ -327,6 +346,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   }
   else
   {
+    fprintf(stderr, "[color reconstruction] not able to allocate buffer (f)\n");
     dt_iop_colorreconstruct_bilateral_free(b);
     return NULL;
   }
@@ -338,6 +358,8 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
 static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bilateral_t *b, const float *const in, const float threshold,
                                                     dt_iop_colorreconstruct_precedence_t precedence, const float *params)
 {
+  if(!b) return;
+
   // splat into downsampled grid
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(b, precedence, params)
@@ -408,6 +430,8 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
 static void blur_line(dt_iop_colorreconstruct_Lab_t *buf, const int offset1, const int offset2, const int offset3, const int size1,
                       const int size2, const int size3)
 {
+  if(!buf) return;
+
   const float w0 = 6.f / 16.f;
   const float w1 = 4.f / 16.f;
   const float w2 = 1.f / 16.f;
@@ -477,6 +501,8 @@ static void dt_iop_colorreconstruct_bilateral_blur(dt_iop_colorreconstruct_bilat
 static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruct_bilateral_t *const b, const float *const in, float *out,
                                                     const float threshold, const dt_iop_roi_t *roi, const float iscale)
 {
+  if(!b) return;
+
   const float rescale = iscale / (roi->scale * b->scale);
   const int ox = 1;
   const int oy = b->size_x;
@@ -601,6 +627,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     dt_iop_colorreconstruct_bilateral_blur(b);
   }
 
+  if(!b) goto error;
+  
   dt_iop_colorreconstruct_bilateral_slice(b, in, out, data->threshold, roi_in, piece->iscale);
 
   // here is where we generate the canned bilateral grid of the preview pipe for later use
@@ -613,6 +641,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
 
   dt_iop_colorreconstruct_bilateral_free(b);
+  return;
+
+error:
+  dt_control_log(_("[color reconstruction] module failed."));
+  dt_iop_colorreconstruct_bilateral_free(b);
+  memcpy(ovoid, ivoid, (size_t)sizeof(float) * piece->colors * roi_out->width * roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
@@ -677,20 +711,24 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   else
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorcorrect_bilateral] can not identify resource limits for device %d in bilateral grid\n", devid);
+             "[opencl_colorreconstruction] can not identify resource limits for device %d in bilateral grid\n", devid);
     return NULL;
   }
 
   if(blocksizex * blocksizey < 16 * 16)
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorcorrect_bilateral] device %d does not offer sufficient resources to run bilateral grid\n",
+             "[opencl_colorreconstruction] device %d does not offer sufficient resources to run bilateral grid\n",
              devid);
     return NULL;
   }
 
   dt_iop_colorreconstruct_bilateral_cl_t *b = (dt_iop_colorreconstruct_bilateral_cl_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_cl_t));
-  if(!b) return NULL;
+  if(!b)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (a)\n");
+    return NULL;
+  }
 
   float _x = roundf(roi->width / sigma_s);
   float _y = roundf(roi->height / sigma_s);
@@ -717,6 +755,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
       = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
   if(!b->dev_grid)
   {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (b)\n");
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -726,6 +765,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
       = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
   if(!b->dev_grid_tmp)
   {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (c)\n");
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -740,6 +780,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_zero, sizes);
   if(err != CL_SUCCESS)
   {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] error running kernel colorreconstruct_zero: %d\n", err);
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -757,7 +798,11 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   if(!b) return NULL;
 
   dt_iop_colorreconstruct_bilateral_frozen_t *bf = (dt_iop_colorreconstruct_bilateral_frozen_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_frozen_t));
-  if(!bf) return NULL;
+  if(!bf)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (d)\n");
+    return NULL;
+  }
 
   bf->size_x = b->size_x;
   bf->size_y = b->size_y;
@@ -778,11 +823,18 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-           "[opencl_colorcorrect_bilateral] can not read bilateral grid from device %d\n", b->devid);
+           "[opencl_colorreconstruction] can not read bilateral grid from device %d\n", b->devid);
       dt_iop_colorreconstruct_bilateral_dump(bf);
       return NULL;
     }
   }
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (e)\n");
+    dt_iop_colorreconstruct_bilateral_dump(bf);
+    return NULL;
+  }
+
   return bf;
 }
 
@@ -790,7 +842,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
                                                                                          const int devid,
                                                                                          dt_iop_colorreconstruct_global_data_t *global)
 {
-  if(!bf) return NULL;
+  if(!bf || !bf->buf) return NULL;
 
   // check if our device offers enough room for local buffers
   size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
@@ -821,20 +873,24 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   else
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorcorrect_bilateral] can not identify resource limits for device %d in bilateral grid\n", devid);
+             "[opencl_colorreconstruction] can not identify resource limits for device %d in bilateral grid\n", devid);
     return NULL;
   }
 
   if(blocksizex * blocksizey < 16 * 16)
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorcorrect_bilateral] device %d does not offer sufficient resources to run bilateral grid\n",
+             "[opencl_colorreconstruction] device %d does not offer sufficient resources to run bilateral grid\n",
              devid);
     return NULL;
   }
 
   dt_iop_colorreconstruct_bilateral_cl_t *b = (dt_iop_colorreconstruct_bilateral_cl_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_cl_t));
-  if(!b) return NULL;
+  if(!b)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (f)\n");
+    return NULL;
+  }
 
   b->devid = devid;
   b->blocksizex = blocksizex;
@@ -858,6 +914,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
       = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
   if(!b->dev_grid)
   {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (g)\n");
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -867,6 +924,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
       = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
   if(!b->dev_grid_tmp)
   {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (h)\n");
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -879,7 +937,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-           "[opencl_colorcorrect_bilateral] can not write bilateral grid to device %d\n", b->devid);
+           "[opencl_colorreconstruction] can not write bilateral grid to device %d\n", b->devid);
       dt_iop_colorreconstruct_bilateral_free_cl(b);
       return NULL;
     }
@@ -892,6 +950,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct
                                                          dt_iop_colorreconstruct_precedence_t precedence, const float *params)
 {
   cl_int err = -666;
+  if(!b) return err;
   int pref = precedence;
   size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
   size_t local[] = { b->blocksizex, b->blocksizey, 1 };
@@ -918,6 +977,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct
 static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_bilateral_cl_t *b)
 {
   cl_int err = -666;
+  if(!b) return err;
   size_t sizes[3] = { 0, 0, 1 };
 
   err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
@@ -979,7 +1039,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct
                                                          const float threshold, const dt_iop_roi_t *roi, const float iscale)
 {
   cl_int err = -666;
-
+  if(!b) return err;
   const int bxy[2] = { b->x, b->y };
   const int roixy[2] = { roi->x, roi->y };
   const float rescale = iscale / (roi->scale * b->scale);
@@ -1068,7 +1128,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   dt_iop_colorreconstruct_bilateral_free_cl(b);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruct] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
