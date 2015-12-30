@@ -22,10 +22,17 @@ FL_PRESET_REPLACE={
   "Unknown (0x600)" => "Underwater",
   "Sunny" => "DirectSunlight",
   "Cool WHT FL" => "CoolWhiteFluorescent",
+  "Daylight FL" => "DaylightFluorescent",
+  "Warm WHT FL" => "WarmWhiteFluorescent",
+  "White FL" => "WhiteFluorescent",
+  "Mercury Lamp" => "HighTempMercuryVaporFluorescent",
+  "Day White FL" => "DayWhiteFluorescent",
+  "Sodium Lamp" => "SodiumVaporFluorescent",
 }
 PRESET_ORDER=["Unknown", "DirectSunlight", "Daylight","Shade","Cloudy","Tungsten","Incandescent","Fluorescent",
               "WarmWhiteFluorescent","CoolWhiteFluorescent","DayWhiteFluorescent","DaylightFluorescent",
-              "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent", "Underwater", "Flash"]
+              "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent", "HighTempMercuryVaporFluorescent",
+              "SodiumVaporFluorescent", "Underwater", "Flash"]
 
 PRESET_SORT_MAPPING={}
 PRESET_ORDER.each_with_index {|name, index| PRESET_SORT_MAPPING[name]=index+1}
