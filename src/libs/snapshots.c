@@ -360,10 +360,10 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   const gchar *name = _("original");
   if(darktable.develop->history_end > 0)
   {
-    dt_iop_module_t *module = ((dt_dev_history_item_t *)g_list_nth_data(
-                                   darktable.develop->history, darktable.develop->history_end - 1))->module;
-    if(module)
-      name = module->name();
+    dt_dev_history_item_t *history_item = g_list_nth_data(darktable.develop->history,
+                                                          darktable.develop->history_end - 1);
+    if(history_item && history_item->module)
+      name = history_item->module->name();
     else
       name = _("unknown");
   }

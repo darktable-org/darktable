@@ -1782,6 +1782,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.blendop_version"));
     Exiv2::XmpData::iterator multi_priority = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.multi_priority"));
     Exiv2::XmpData::iterator multi_name = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.multi_name"));
+    int history_count = -1;
 
     if((ver = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_modversion"))) != xmpData.end()
        && (en = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_enabled"))) != xmpData.end()
@@ -1791,6 +1792,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       const int cnt = ver->count();
       if(cnt == en->count() && cnt == op->count() && cnt == param->count())
       {
+        history_count = cnt;
         // clear history
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1,
                                     &stmt, NULL);
@@ -1893,12 +1895,22 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         sqlite3_finalize(stmt_sel_num);
         sqlite3_finalize(stmt_ins_hist);
         sqlite3_finalize(stmt_upd_hist);
+
+        // in case history_end is missing in XMP we set it to history_count here
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "UPDATE images SET history_end = ?1 where id = ?2", -1,
+                                    &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, history_count);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
       }
     }
 
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end"))) != xmpData.end())
+    // we shouldn't change history_end when no history was read!
+    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end"))) != xmpData.end() && history_count >= 0)
     {
-      int history_end = pos->toLong();
+      int history_end = MIN(pos->toLong(), history_count);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "UPDATE images SET history_end = ?1 where id = ?2", -1,
                                   &stmt, NULL);
@@ -2245,6 +2257,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   }
 
   if(history_end == -1) history_end = num - 1;
+  else history_end = MIN(history_end, num - 1); // safeguard for some old buggy libraries
   xmpData["Xmp.darktable.history_end"] = history_end;
 
   sqlite3_finalize(stmt);
