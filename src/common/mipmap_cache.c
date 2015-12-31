@@ -39,7 +39,9 @@
 #include <glib/gstdio.h>
 #include <errno.h>
 #include <xmmintrin.h>
+#ifndef _WIN32
 #include <sys/statvfs.h>
+#endif
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
 #define DT_MIPMAP_CACHE_FILE_VERSION 23
@@ -364,28 +366,37 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         int mkd = g_mkdir_with_parents(filename, 0750);
         if(!mkd)
         {
+          // first check the disk isn't full
+          int64_t free_mb;
+
+#ifndef _WIN32
+          struct statvfs vfsbuf;
+          if (!statvfs(filename, &vfsbuf))
+          {
+            free_mb = ((vfsbuf.f_frsize * vfsbuf.f_bavail) >> 20);
+#else
+          uint64_t user_free;
+          if (GetDiskFreeSpaceEx(filename, (PULARGE_INTEGER)&user_free, NULL, NULL))
+          {
+            free_mb = user_free >> 20;
+#endif
+            if (free_mb < 100)
+            {
+              fprintf(stderr, "Aborting image write as only %" PRId64 " MB free to write %s\n", free_mb, filename);
+              goto freespace_error;
+            }
+          }
+          else
+          {
+            fprintf(stderr, "Aborting image write since couldn't determine free space available to write %s\n", filename);
+            goto freespace_error;
+          }
+
           snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
           // Don't write existing files as both performance and quality (lossy jpg) suffer
           FILE *f = NULL;
           if (!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = fopen(filename, "wb")))
           {
-            // first check the disk isn't full
-            struct statvfs vfsbuf;
-            if (!statvfs(filename, &vfsbuf))
-            {
-              int64_t free_mb = ((vfsbuf.f_frsize * vfsbuf.f_bavail) >> 20);
-              if (free_mb < 100)
-              {
-                fprintf(stderr, "Aborting image write as only %" PRId64 " MB free to write %s\n", free_mb, filename);
-                goto write_error;
-              }
-            }
-            else
-            {
-              fprintf(stderr, "Aborting image write since couldn't determine free space available to write %s\n", filename);
-              goto write_error;
-            }
-
             const int cache_quality = dt_conf_get_int("database_cache_quality");
             const uint8_t *exif = NULL;
             int exif_len = 0;
@@ -399,17 +410,19 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
               exif = dt_mipmap_cache_exif_data_adobergb;
               exif_len = dt_mipmap_cache_exif_data_adobergb_length;
             }
+
+            fclose(f); //g_unlink will fail on windows if file is still open leaving an empty file
+
             if(dt_imageio_jpeg_write(filename, entry->data + sizeof(*dsc), dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)), exif, exif_len))
             {
-write_error:
               g_unlink(filename);
             }
           }
-          if(f) fclose(f);
         }
       }
     }
   }
+freespace_error:
   dt_free_align(entry->data);
 }
 
