@@ -23,8 +23,8 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "darktable.h"
 #endif
+#include "darktable.h"
 
 #include <sys/stat.h>
 

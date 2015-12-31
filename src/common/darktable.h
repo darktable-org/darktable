@@ -468,6 +468,11 @@ static inline size_t dt_get_total_memory()
   size_t length = sizeof(uint64_t);
   sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
   return physical_memory / 1024;
+#elif defined(_WIN32)
+  MEMORYSTATUSEX status;
+  status.dwLength = sizeof(status);
+  GlobalMemoryStatusEx( &status );
+  return (size_t)status.ullTotalPhys / 1024;
 #else
   // assume 2GB until we have a better solution.
   fprintf(stderr, "Unknown memory size. Assuming 2GB\n");

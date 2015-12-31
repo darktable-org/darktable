@@ -1331,7 +1331,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         int k = 0;
         while(!feof(f))
         {
-          gchar *line_pattern = g_strdup_printf("%%%zu[^\n]", sizeof(line) - 1);
+          gchar *line_pattern = g_strdup_printf("%%%" PRIu64 "[^\n]", sizeof(line) - 1);
           const int read = fscanf(f, line_pattern, line);
           g_free(line_pattern);
           if(read != 1) break;

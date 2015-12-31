@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <glib.h>
 #include <glib/gprintf.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -919,7 +920,7 @@ static void auto_apply_presets(dt_develop_t *dev)
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "SELECT rowid FROM memory.history ORDER BY rowid ASC", -1, &stmt, NULL);
         while(sqlite3_step(stmt) == SQLITE_ROW)
-          rowids = g_list_append(rowids, (void *)(long)sqlite3_column_int(stmt, 0));
+          rowids = g_list_append(rowids, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
         sqlite3_finalize(stmt);
 
         // update num accordingly
@@ -929,7 +930,7 @@ static void auto_apply_presets(dt_develop_t *dev)
 
         while(r)
         {
-          snprintf(query, sizeof(query), "UPDATE memory.history SET num=%d WHERE rowid=%ld", v, (long)(r->data));
+          snprintf(query, sizeof(query), "UPDATE memory.history SET num=%d WHERE rowid=%d", v, GPOINTER_TO_INT(r->data));
           DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
           v++;
           r = g_list_next(r);

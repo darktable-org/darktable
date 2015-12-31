@@ -323,7 +323,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
 
     cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
 
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr,
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %" PRId64 " x %" PRId64 "\n", k, infostr,
              cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %" PRIu64 "MB\n",
              k, infostr, cl->dev[dev].max_mem_alloc / 1024 / 1024);
@@ -387,7 +387,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
     char dtpath[PATH_MAX] = { 0 };
     char filename[PATH_MAX] = { 0 };
     char confentry[PATH_MAX] = { 0 };
-    char binname[PATH_MAX] = { 0 };
+    //char binname[PATH_MAX] = { 0 };
     dt_loc_get_datadir(dtpath, sizeof(dtpath));
     snprintf(filename, sizeof(filename), "%s/kernels/programs.conf", dtpath);
     char kerneldir[PATH_MAX] = { 0 };
@@ -412,7 +412,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
       while(!feof(f))
       {
         int prog = -1;
-        gchar *confline_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(confentry) - 1);
+        gchar *confline_pattern = g_strdup_printf("%%%" PRIu64 "[^\n]\n", sizeof(confentry) - 1);
         int rd = fscanf(f, confline_pattern, confentry);
         g_free(confline_pattern);
         if(rd != 1) continue;
@@ -453,12 +453,12 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
         }
 
         snprintf(filename, sizeof(filename), "%s/kernels/%s", dtpath, programname);
-        snprintf(binname, sizeof(binname), "%s/%s.bin", cachedir, programname);
+        //snprintf(binname, sizeof(binname), "%s/%s.bin", cachedir, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         int loaded_cached;
         char md5sum[33];
-        if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, includemd5, &loaded_cached)
-           && dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached)
+        if(dt_opencl_load_program(dev, prog, filename, programname, cachedir, md5sum, includemd5, &loaded_cached)
+           && dt_opencl_build_program(dev, prog, programname, cachedir, md5sum, loaded_cached)
               != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
@@ -1200,7 +1200,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
 }
 
 
-int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char *binname,
+int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char *programname,
                            const char *cachedir, char *md5sum, char **includemd5, int *loaded_cached)
 {
   cl_int err;
@@ -1272,15 +1272,32 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   char linkedfile[PATH_MAX] = { 0 };
   ssize_t linkedfile_len = 0;
 
+  char binname[PATH_MAX] = { 0 };
+  snprintf(binname, sizeof(binname), "%s/%s.bin", cachedir, programname);
+
   FILE *cached = fopen_stat(binname, &cachedstat);
   if(cached)
   {
 
+#ifndef _WIN32
     if((linkedfile_len = readlink(binname, linkedfile, sizeof(linkedfile) - 1)) > 0)
     {
       linkedfile[linkedfile_len] = '\0';
 
       if(strncmp(linkedfile, md5sum, 33) == 0)
+#else
+    char md5name[PATH_MAX] = { 0 };
+    snprintf(md5name, sizeof(md5name), "%s/%s.md5", cachedir, programname);
+
+    FILE *f = fopen(md5name, "rb");
+
+    if ( f != NULL )
+    {
+      char read_md5sum[33] = { 0 };
+      fread(read_md5sum, sizeof(char), sizeof(read_md5sum), f);
+
+      if (strncmp(read_md5sum, md5sum, 33) == 0)
+#endif
       {
         // md5sum matches, load cached binary
         size_t cached_filesize = cachedstat.st_size;
@@ -1355,7 +1372,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   return 1;
 }
 
-int dt_opencl_build_program(const int dev, const int prog, const char *binname, const char *cachedir,
+int dt_opencl_build_program(const int dev, const int prog, const char *programname, const char *cachedir,
                             char *md5sum, int loaded_cached)
 {
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
@@ -1437,6 +1454,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
       for(int i = 0; i < numdev; i++)
         if(cl->dev[dev].devid == devices[i])
         {
+#ifndef _WIN32
           // save opencl compiled binary as md5sum-named file
           char link_dest[PATH_MAX] = { 0 };
           snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, md5sum);
@@ -1451,10 +1469,30 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           if(!getcwd(cwd, sizeof(cwd))) goto ret;
           if(chdir(cachedir) != 0) goto ret;
           char dup[PATH_MAX] = { 0 };
-          g_strlcpy(dup, binname, sizeof(dup));
+          //g_strlcpy(dup, binname, sizeof(dup));
+          snprintf(dup, sizeof(dup), "%s/%s.bin", cachedir, programname);
           char *bname = basename(dup);
           if(symlink(md5sum, bname) != 0) goto ret;
           if(chdir(cwd) != 0) goto ret;
+#else
+          //save opencl compiled binary (e.g. basic.cl.bin)
+          char bin_file[PATH_MAX] = { 0 };
+          snprintf(bin_file, sizeof(bin_file), "%s/%s.bin", cachedir, programname);
+          FILE *f = fopen(bin_file, "wb");
+          if (!f) goto ret;
+          size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
+          if (bytes_written != binary_sizes[i]) goto ret;
+          fclose(f);
+          //save hash of program to file (e.g. basic.cl.bin.md5)
+          char md5_file[PATH_MAX] = { 0 };
+          snprintf(md5_file, sizeof(md5_file), "%s/%s.md5", cachedir, programname);
+          f = fopen(md5_file, "wb");
+          if (!f) goto ret;
+          
+          bytes_written = fwrite(md5sum, sizeof(char), strlen(md5sum), f);
+          if (bytes_written != sizeof(*md5sum)) goto ret;
+          fclose(f);
+#endif
         }
 
     ret:

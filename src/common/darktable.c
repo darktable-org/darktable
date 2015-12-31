@@ -238,13 +238,13 @@ gboolean dt_supported_image(const gchar *filename)
 static void strip_semicolons_from_keymap(const char *path)
 {
   char pathtmp[PATH_MAX] = { 0 };
-  FILE *fin = fopen(path, "r");
+  FILE *fin = fopen(path, "rb");
   FILE *fout;
   int i;
   int c = '\0';
 
   snprintf(pathtmp, sizeof(pathtmp), "%s_tmp", path);
-  fout = fopen(pathtmp, "w");
+  fout = fopen(pathtmp, "wb");
 
   // First ignoring the first three lines
   for(i = 0; i < 3; i++)
@@ -768,10 +768,10 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   const gchar *lang = dt_conf_get_string("ui_last/gui_language");
   if(lang != NULL && lang[0] != '\0')
   {
-    setenv("LANGUAGE", lang, 1);
+    g_setenv("LANGUAGE", lang, 1);
     if(setlocale(LC_ALL, lang) != NULL) gtk_disable_setlocale();
     setlocale(LC_MESSAGES, lang);
-    setenv("LANG", lang, 1);
+    g_setenv("LANG", lang, 1);
   }
   g_free((gchar *)lang);
 
@@ -1157,7 +1157,7 @@ void dt_configure_defaults()
   const int threads = dt_get_num_threads();
   const size_t mem = dt_get_total_memory();
   const int bits = (sizeof(void *) == 4) ? 32 : 64;
-  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits,
+  fprintf(stderr, "[defaults] found a %d-bit system with %" PRIu64 " kb ram and %d cores (%d atom based)\n", bits,
           mem, threads, atom_cores);
   if(mem > (2u << 20) && threads > 4)
   {

@@ -327,9 +327,13 @@ int main(int argc, char *arg[])
   // init dt without gui:
   if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
   running = init(m_argc, m_arg);
-
+#ifndef _WIN32
   srand48(SDL_GetTicks());
   if(use_random) random_state = drand48() * INT_MAX;
+#else
+  srand(SDL_GetTicks());
+  if(use_random) random_state = rand();
+#endif
   if(repeat < 0) repeat = random_state;
   while(running)
   {
@@ -363,6 +367,8 @@ int main(int argc, char *arg[])
   }
 
   dtv_shutdown();
+
+  exit(0);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
