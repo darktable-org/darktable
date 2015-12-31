@@ -644,6 +644,16 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
       svgdata = svgdoc;
     }
 
+    gchar *basename = g_path_get_basename(image->filename);
+    if(g_strrstr(basename, ".")) *(g_strrstr(basename, ".")) = '\0';
+    svgdoc = _string_substitute(svgdata, "$(IMAGE.BASENAME)", basename);
+    if(svgdoc != svgdata)
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    g_free(basename);
+
     // TODO: auto generate that code?
     GList *res;
     res = dt_metadata_get(image->id, "Xmp.dc.creator", NULL);
