@@ -29,7 +29,7 @@
 #include <signal.h>
 
 #if defined(WIN32)
-static const char *ocllib[] = { "OpenCL", NULL };
+static const char *ocllib[] = { "/windows/system32/OpenCL", NULL };
 #elif defined(__APPLE__)
 static const char *ocllib[] = { "/System/Library/Frameworks/OpenCL.framework/Versions/Current/OpenCL", NULL };
 #else

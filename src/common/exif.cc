@@ -64,6 +64,9 @@ extern "C" {
 #include "common/debug.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
+#ifdef _WIN32
+#include "win/wintime.h"
+#endif
 }
 
 static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);

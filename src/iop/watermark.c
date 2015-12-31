@@ -41,6 +41,9 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/file_location.h"
+#ifdef _WIN32
+#include "win/wintime.h"
+#endif
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 DT_MODULE_INTROSPECTION(4, dt_iop_watermark_params_t)

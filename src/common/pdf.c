@@ -36,6 +36,9 @@
 #include <time.h>
 #include <errno.h>
 #include <math.h>
+#ifdef _WIN32
+#include "win/wintime.h"
+#endif
 
 #ifdef STANDALONE
 #define PACKAGE_STRING "darktable pdf library"

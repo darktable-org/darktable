@@ -380,12 +380,15 @@ if(WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mms-bitfields")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
 
-  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
-  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
+  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
+  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
   list(APPEND LIBS ws2_32)
   list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
   list(APPEND SOURCES "win/getrusage.c")
+  list(APPEND SOURCES "win/wintime.c")
+
+  #add_definitions("-D__STDC_FORMAT_MACROS")
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
