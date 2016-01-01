@@ -315,7 +315,7 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 
 #endif
 
-void dt_pthread_attr_init(pthread_attr_t *attr);
+int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void*), void *arg);
 
 #endif
 

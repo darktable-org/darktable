@@ -537,10 +537,6 @@ static void *dt_control_work(void *ptr)
 // moved out of control.c to be able to make some helper functions static
 void dt_control_jobs_init(dt_control_t *control)
 {
-  pthread_attr_t attr;
-
-  dt_pthread_attr_init(&attr);
-  
   // start threads
   control->num_threads = CLAMP(dt_conf_get_int("worker_threads"), 1, 8);
   control->thread = (pthread_t *)calloc(control->num_threads, sizeof(pthread_t));
@@ -554,11 +550,11 @@ void dt_control_jobs_init(dt_control_t *control)
         = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    pthread_create(&control->thread[k], &attr, dt_control_work, params);
+    dt_pthread_create(&control->thread[k], dt_control_work, params);
   }
 
   /* create queue kicker thread */
-  pthread_create(&control->kick_on_workers_thread, &attr, dt_control_worker_kicker, control);
+  dt_pthread_create(&control->kick_on_workers_thread, dt_control_worker_kicker, control);
 
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
   {
@@ -568,10 +564,8 @@ void dt_control_jobs_init(dt_control_t *control)
         = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    pthread_create(&control->thread_res[k], &attr, dt_control_work_res, params);
+    dt_pthread_create(&control->thread_res[k], dt_control_work_res, params);
   }
-
-  pthread_attr_destroy(&attr);
 }
 
 void dt_control_jobs_cleanup(dt_control_t *control)

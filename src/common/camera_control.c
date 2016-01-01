@@ -26,9 +26,6 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#if defined(__SUNOS__)
-#include <fcntl.h>
-#endif
 #include <fcntl.h>
 
 /***/
@@ -528,10 +525,8 @@ gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
   cam->is_live_viewing = TRUE;
   dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 1);
 
-  pthread_attr_t attr;
-  dt_pthread_attr_init(&attr);
-  pthread_create(&cam->live_view_thread, &attr, &dt_camctl_camera_get_live_view, (void *)camctl);
-  pthread_attr_destroy(&attr);
+  dt_pthread_create(&cam->live_view_thread, &dt_camctl_camera_get_live_view, (void *)camctl);
+
   return TRUE;
 }
 
@@ -1101,10 +1096,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam, gboolea
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] enabling tether mode\n");
       camctl->active_camera = camera;
       camera->is_tethering = TRUE;
-      pthread_attr_t attr;
-      dt_pthread_attr_init(&attr);
-      pthread_create(&camctl->camera_event_thread, &attr, &_camera_event_thread, (void *)c);
-      pthread_attr_destroy(&attr);
+      dt_pthread_create(&camctl->camera_event_thread, &_camera_event_thread, (void *)c);
     }
     else
     {
