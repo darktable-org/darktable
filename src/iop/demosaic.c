@@ -1908,7 +1908,8 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
     uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
 
-  cl_mem dev_tmp = NULL;
+  cl_mem dev_tmp1 = NULL;
+  cl_mem dev_tmp2 = NULL;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_lookup = NULL;
   cl_int err = -999;
@@ -1928,19 +1929,24 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     int width = roi_out->width;
     int height = roi_out->height;
-    dev_tmp = dev_out;
+
+    dev_tmp1 = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+    if(dev_tmp1 == NULL) goto error;
+
+    dev_tmp2 = dev_out;
 
     if(scaled)
     {
       // need to scale to right res
-      dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
-      if(dev_tmp == NULL) goto error;
+      dev_tmp2 = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+      if(dev_tmp2 == NULL) goto error;
       width = roi_in->width;
       height = roi_in->height;
     }
+
     size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
-    // build interpolation lookup table which for a given offset in the sensor
+    // build interpolation lookup table for linear interpolation which for a given offset in the sensor
     // lists neighboring pixels from which to interpolate:
     // NUM_PIXELS                 # of neighboring pixels to read
     // for (1..NUM_PIXELS):
@@ -1986,7 +1992,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(dev_lookup == NULL) goto error;
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 1, sizeof(cl_mem), &dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 3, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 4, sizeof(int), (void *)&roi_in->x);
@@ -1998,7 +2004,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     // manage borders
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 1, sizeof(cl_mem), &dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 3, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 4, sizeof(int), (void *)&roi_in->x);
@@ -2008,11 +2014,16 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_border_interpolate, sizes);
     if(err != CL_SUCCESS) goto error;
 
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_tmp2, origin, origin, region);
+    if(err != CL_SUCCESS) goto error;
+
     if(filters4 != 9)
     {
       // for Bayer sensors mix the two green channels
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 0, sizeof(cl_mem), &dev_tmp);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 1, sizeof(cl_mem), &dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 0, sizeof(cl_mem), &dev_tmp2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 1, sizeof(cl_mem), &dev_tmp2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 3, sizeof(int), (void *)&height);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_green_equilibrate, sizes);
@@ -2022,7 +2033,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(scaled)
     {
       // scale temp buffer to output buffer
-      err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_tmp, roi_out, roi_in);
+      err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_tmp2, roi_out, roi_in);
       if(err != CL_SUCCESS) goto error;
     }
   }
@@ -2070,14 +2081,17 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
   }
 
-  if(dev_tmp != NULL && dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
-  dev_tmp = NULL;
+  if(dev_tmp1 != NULL && dev_tmp1 != dev_out) dt_opencl_release_mem_object(dev_tmp1);
+  dev_tmp1 = NULL;
+
+  if(dev_tmp2 != NULL && dev_tmp2 != dev_out) dt_opencl_release_mem_object(dev_tmp2);
+  dev_tmp2 = NULL;
 
   // color smoothing
   if(data->color_smoothing)
   {
-    dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4 * sizeof(float));
-    if(dev_tmp == NULL) goto error;
+    dev_tmp1 = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4 * sizeof(float));
+    if(dev_tmp1 == NULL) goto error;
 
     const int width = roi_out->width;
     const int height = roi_out->height;
@@ -2125,7 +2139,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     size_t region[] = { width, height, 1 };
     // two buffer references for our ping-pong
     cl_mem dev_t1 = dev_out;
-    cl_mem dev_t2 = dev_tmp;
+    cl_mem dev_t2 = dev_tmp1;
 
     for(uint32_t pass = 0; pass < data->color_smoothing; pass++)
     {
@@ -2146,22 +2160,24 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
 
     // after last step we find final output in dev_t1.
-    // let's see if this is in dev_tmp and needs to be copied to dev_out
-    if(dev_t1 == dev_tmp)
+    // let's see if this is in dev_tmp1 and needs to be copied to dev_out
+    if(dev_t1 == dev_tmp1)
     {
       // copy data from dev_tmp -> dev_out
-      err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_out, origin, origin, region);
       if(err != CL_SUCCESS) goto error;
     }
   }
 
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_tmp1 != NULL && dev_tmp1 != dev_out) dt_opencl_release_mem_object(dev_tmp1);
+  if(dev_tmp2 != NULL && dev_tmp2 != dev_out) dt_opencl_release_mem_object(dev_tmp2);
   if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
   return TRUE;
 
 error:
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_tmp1 != NULL && dev_tmp1 != dev_out) dt_opencl_release_mem_object(dev_tmp1);
+  if(dev_tmp2 != NULL && dev_tmp2 != dev_out) dt_opencl_release_mem_object(dev_tmp2);
   if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
@@ -2197,36 +2213,50 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
   const float smooth = data->color_smoothing ? ioratio : 0.0f;
 
-  tiling->factor = 1.0f + ioratio;
-
-  if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
-    tiling->factor += fmax(0.25f, smooth);
-  else if(roi_out->scale > (data->filters == 9u ? 0.333f : 0.5f)
-          || (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
-          || (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))
-    tiling->factor += fmax(1.25f, smooth);
-  else
-    tiling->factor += fmax(0.25f, smooth);
-
-  // note that even Markesteijn demosiac's buffers aren't
-  // significantly large enough to change maxbuf, except in the case
-  // of small image crops which won't be tiled anyhow
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
   if(data->filters != 9u)
   { // Bayer pattern
+    tiling->factor = 1.0f + ioratio;
+
+    if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
+      tiling->factor += fmax(0.25f, smooth);
+    else if((roi_out->scale > 0.5f)
+            || (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
+            || (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))
+      tiling->factor += fmax(1.25f, smooth);
+    else
+      tiling->factor += fmax(0.25f, smooth);
+
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
     tiling->xalign = 2;
     tiling->yalign = 2;
     tiling->overlap = 5; // take care of border handling
   }
   else
   { // X-Trans pattern, take care of Markesteijn's limits
+    tiling->factor = 1.0f + ioratio;
+
+    if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
+      tiling->factor += fmax(1.0f, smooth);
+    else if((roi_out->scale > 0.333f)
+            || (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
+            || (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))
+      tiling->factor += fmax(2.0f, smooth);
+    else
+      tiling->factor += 0.0f;
+
+    // note that even Markesteijn demosiac's buffers aren't
+    // significantly large enough to change maxbuf, except in the case
+    // of small image crops which won't be tiled anyhow
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
     tiling->xalign = 3;
     tiling->yalign = 3;
     tiling->overlap = 6;
   }
   return;
 }
+
 
 
 void init(dt_iop_module_t *module)
