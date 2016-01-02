@@ -165,3 +165,21 @@ clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only imag
   write_imagef(out, (int2)(x, y), (float4)(col[0], col[1], col[2], 0.0f));
 }
 
+
+kernel void
+green_equilibrate(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
+{
+  // for Bayer mix the two greens to make VNG4
+
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x , y));
+
+  pixel.y = (pixel.y + pixel.w) / 2.0f;
+  pixel.w = 0.0f;
+
+  write_imagef(out, (int2)(x, y), pixel);
+}

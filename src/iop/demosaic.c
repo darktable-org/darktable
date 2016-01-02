@@ -101,6 +101,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_vng_border_interpolate;
   int kernel_vng_lin_interpolate;
   int kernel_zoom_third_size;
+  int kernel_vng_green_equilibrate;
 } dt_iop_demosaic_global_data_t;
 
 typedef struct dt_iop_demosaic_data_t
@@ -2007,6 +2008,17 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_border_interpolate, sizes);
     if(err != CL_SUCCESS) goto error;
 
+    if(filters4 != 9)
+    {
+      // for Bayer sensors mix the two green channels
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 0, sizeof(cl_mem), &dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 1, sizeof(cl_mem), &dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_green_equilibrate, 3, sizeof(int), (void *)&height);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_green_equilibrate, sizes);
+      if(err != CL_SUCCESS) goto error;
+    }
+
     if(scaled)
     {
       // scale temp buffer to output buffer
@@ -2253,7 +2265,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_vng_border_interpolate = dt_opencl_create_kernel(vng, "border_interpolate");
   gd->kernel_vng_lin_interpolate = dt_opencl_create_kernel(vng, "lin_interpolate");
   gd->kernel_zoom_third_size = dt_opencl_create_kernel(vng, "clip_and_zoom_demosaic_third_size_xtrans");
-
+  gd->kernel_vng_green_equilibrate = dt_opencl_create_kernel(vng, "green_equilibrate");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -2279,6 +2291,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_vng_border_interpolate);
   dt_opencl_free_kernel(gd->kernel_vng_lin_interpolate);
   dt_opencl_free_kernel(gd->kernel_zoom_third_size);
+  dt_opencl_free_kernel(gd->kernel_vng_green_equilibrate);
   free(module->data);
   module->data = NULL;
 }
