@@ -255,6 +255,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
     cl_bool image_support = 0;
     cl_bool device_available = 0;
     cl_uint vendor_id = 0;
+    cl_bool little_endian = 0;
 
     // test GPU availability, vendor, memory, image support etc:
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE, sizeof(cl_bool), &device_available,
@@ -275,6 +276,9 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
                                              &(cl->dev[dev].max_image_width), NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong),
                                              &(cl->dev[dev].max_mem_alloc), NULL);
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_ENDIAN_LITTLE, sizeof(cl_bool), &little_endian,
+                                             NULL);
+
 
     _ascii_str_canonical(infostr, cname, sizeof(cname));
 
@@ -303,6 +307,13 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
     if(!image_support)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to missing image support.\n", k,
+               infostr);
+      continue;
+    }
+
+    if(!little_endian)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' as it is not little endian.\n", k,
                infostr);
       continue;
     }
