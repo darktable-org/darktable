@@ -1867,11 +1867,11 @@ process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     }
   }
 
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_tmp != NULL && dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_tmp != NULL && dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
