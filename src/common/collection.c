@@ -415,9 +415,9 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection)
 
   gchar *fq = g_strstr_len(query, strlen(query), "from");
   if((collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-    count_query = dt_util_dstrcat(NULL, "select count(images.id) from images %s", collection->where_ext);
+    count_query = dt_util_dstrcat(NULL, "select count(distinct images.id) from images %s", collection->where_ext);
   else
-    count_query = dt_util_dstrcat(count_query, "select count(id) %s", fq);
+    count_query = dt_util_dstrcat(count_query, "select count(distinct id) %s", fq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
   if((collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
