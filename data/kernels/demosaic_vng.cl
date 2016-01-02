@@ -112,7 +112,7 @@ lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 
   o[ip[0]] = read_imagef(in, sampleri, (int2)(x, y)).x;
 
-  write_imagef (out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
+  write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
 
 

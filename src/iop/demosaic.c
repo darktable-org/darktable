@@ -1967,7 +1967,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
             int weight = 1 << ((y == 0) + (x == 0));
             const int color = fcol(row + y + roi_in->y, col + x + roi_in->x, filters4, img->xtrans);
             if(color == f) continue;
-            *ip++ = (short)y << 16 | (short)x;
+            *ip++ = (y << 16) | (x & 0xffffu);
             *ip++ = weight;
             *ip++ = color;
             sum[color] += weight;
