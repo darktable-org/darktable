@@ -50,18 +50,17 @@ GtkAlignment
   border:0;
   padding:0;
 }
-#lib-plugin-ui GtkTreeView
+#lib-plugin-ui GtkTreeView,
+#lib-plugin-ui GtkComboBoxText *,
+#lib-plugin-ui GtkComboBox GtkToggleButton *
 {
   background-color: shade(@selected_bg_color, 0.8); /* 'transparent' doesn't work for those it seems */
 }
-#lib-plugin-ui GtkComboBoxText *
+#lib-plugin-ui GtkComboBox *:hover
 {
-  background-color: shade(@selected_bg_color, 0.8); /* 'transparent' doesn't work for those it seems */
+  background-color: shade(@selected_bg_color, 1.2); /* 'transparent' doesn't work for those it seems */
 }
-#lib-plugin-ui GtkComboBox *
-{
-  background-color: shade(@selected_bg_color, 0.8); /* 'transparent' doesn't work for those it seems */
-}
+
 /* bright background */
 #background_job_eventbox,
 #iop-plugin-ui GtkComboBox *
@@ -342,7 +341,7 @@ GtkFrame > GtkEventBox * {
 .context-menu .menuitem *:insensitive
 {
   color: @selected_bg_color;
-  background-color: @really_dark_bg_color;
+  background-color: transparent;
 }
 
 GtkMenuItem *
@@ -559,4 +558,9 @@ GtkFileChooserDialog .sidebar-row
 GtkFileChooserDialog .sidebar-row:hover
 {
   background-color: shade(@selected_bg_color, 1.7);
+}
+
+.cell:selected
+{
+  background-color: shade(@selected_bg_color, 1.2);
 }
