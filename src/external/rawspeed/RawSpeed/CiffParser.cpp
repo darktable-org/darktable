@@ -38,23 +38,13 @@ CiffParser::~CiffParser(void) {
   mRootIFD = NULL;
 }
 
-#ifdef CHECKSIZE
-#undef CHECKSIZE
-#endif
-#ifdef CHECKPTR
-#undef CHECKPTR
-#endif
-
-#define CHECKSIZE(A) if (A >= mInput->getSize()) throw CiffParserException("Error reading CIFF structure (size out of bounds). File Corrupt")
-#define CHECKPTR(A) if ((int)A >= ((int)(mInput->data) + size))) throw CiffParserException("Error reading CIFF structure (size out of bounds). File Corrupt")
-
 void CiffParser::parseData() {
   if (little != getHostEndianness())
     ThrowCPE("CIFF parsing not supported on big-endian architectures yet");
 
-  const unsigned char* data = mInput->getData(0);
   if (mInput->getSize() < 16)
     ThrowCPE("Not a CIFF file (size too small)");
+  const unsigned char* data = mInput->getData(0, 16);
 
   if (data[0] != 0x49 || data[1] != 0x49)
     ThrowCPE("Not a CIFF file (ID)");

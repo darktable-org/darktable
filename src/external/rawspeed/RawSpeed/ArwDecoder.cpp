@@ -53,7 +53,7 @@ RawImage ArwDecoder::decodeRawInternal() {
 
       mRaw->dim = iPoint2D(width, height);
       mRaw->createData();
-      ByteStream input(mFile->getData(off),mFile->getSize()-off);
+      ByteStream input(mFile, off);
 
       try {
         DecodeARW(input, width, height);
@@ -77,17 +77,17 @@ RawImage ArwDecoder::decodeRawInternal() {
         ThrowRDE("ARW: SRF format, file too short, trying to read out of bounds");
 
       // Replicate the dcraw contortions to get the "decryption" key
-      const uchar8 *data = mFile->getData(key_off);
+      const uchar8 *data = mFile->getData(key_off, 1);
       uint32 offset = (*data)*4;
-      data = mFile->getData(key_off+offset);
+      data = mFile->getData(key_off+offset, 4);
       uint32 key = get4BE(data,0);
-      uchar8 *head = mFile->getDataWrt(head_off);
+      uchar8 *head = mFile->getDataWrt(head_off, 40);
       SonyDecrypt((uint32 *) head, 10, key);
       for (int i=26; i-- > 22; )
         key = key << 8 | head[i];
 
       // "Decrypt" the whole image buffer in place
-      uchar8 *image_data = mFile->getDataWrt(off);
+      uchar8 *image_data = mFile->getDataWrt(off, len);
       SonyDecrypt((uint32 *) image_data, len/4, key);
 
       // And now decode as a normal 16bit raw
@@ -178,7 +178,7 @@ RawImage ArwDecoder::decodeRawInternal() {
     c2 = mFile->getSize() - off;
 
 
-  ByteStream input(mFile->getData(off), c2);
+  ByteStream input(mFile, off, c2);
  
   try {
     if (arw1)
@@ -208,7 +208,7 @@ void ArwDecoder::DecodeUncompressed(TiffIFD* raw) {
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), c2);
+  ByteStream input(mFile, off, c2);
 
   if (hints.find("sr2_format") != hints.end())
     Decode14BitRawBEunpacked(input, width, height);
@@ -313,10 +313,10 @@ void ArwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
       TiffEntry *priv = mRootIFD->getEntryRecursive(DNGPRIVATEDATA);
       const uchar8 *offdata = priv->getData();
       uint32 off = get4LE(offdata,0);
-      const unsigned char* data = mFile->getData(off);
       uint32 length = mFile->getSize()-off;
+      const unsigned char* data = mFile->getData(off, length);
       uint32 currpos = 8;
-      while (currpos < length) {
+      while (currpos+20 < length) {
         uint32 tag = get4BE(data,currpos);
         uint32 len = get4LE(data,currpos+4);
         if (tag == 0x574247) { /* WBG */
@@ -388,10 +388,7 @@ void ArwDecoder::GetWB() {
     if (sony_private)
       delete(sony_private);
 
-    if (mFile->getSize() < off+len)
-      ThrowRDE("ARW: Sony WB block out of range, corrupted file?");
-
-    uint32 *ifp_data = (uint32 *) mFile->getDataWrt(off);
+    uint32 *ifp_data = (uint32 *) mFile->getDataWrt(off, len);
     SonyDecrypt(ifp_data, len/4, key);
 
     if (mRootIFD->endian == getHostEndianness())

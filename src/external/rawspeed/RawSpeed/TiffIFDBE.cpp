@@ -36,7 +36,7 @@ TiffIFDBE::TiffIFDBE(FileMap* f, uint32 offset) {
   int entries;
   CHECKSIZE(offset);
 
-  const unsigned char* data = f->getData(offset);
+  const unsigned char* data = f->getData(offset, 2);
   entries = (unsigned short)data[0] << 8 | (unsigned short)data[1];    // Directory entries in this IFD
 
   CHECKSIZE(offset + 2 + entries*4);
@@ -77,7 +77,7 @@ TiffIFDBE::TiffIFDBE(FileMap* f, uint32 offset) {
       mEntry[t->tag] = t;
     }
   }
-  data = f->getDataWrt(offset + 2 + entries * 12);
+  data = f->getDataWrt(offset + 2 + entries * 12, 4);
   nextIFD = (unsigned int)data[0] << 24 | (unsigned int)data[1] << 16 | (unsigned int)data[2] << 8 | (unsigned int)data[3];
 }
 

@@ -58,9 +58,9 @@ RawImage Cr2Decoder::decodeRawInternal() {
 
     ByteStream *b;
     if (getHostEndianness() == big)
-      b = new ByteStream(mFile->getData(off+41), mFile->getSize());
+      b = new ByteStream(mFile, off+41);
     else
-      b = new ByteStreamSwap(mFile->getData(off+41), mFile->getSize());
+      b = new ByteStreamSwap(mFile, off+41);
     uint32 height = b->getShort();
     uint32 width = b->getShort();
 

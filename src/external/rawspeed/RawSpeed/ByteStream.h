@@ -23,6 +23,7 @@
 #define BYTE_STREAM_H
 
 #include "IOException.h"
+#include "FileMap.h"
 #include <stack>
 
 namespace RawSpeed {
@@ -32,6 +33,8 @@ class ByteStream
 public:
   ByteStream(const uchar8* _buffer, uint32 _size);
   ByteStream(const ByteStream* b);
+  ByteStream(FileMap *f, uint32 offset, uint32 count);
+  ByteStream(FileMap *f, uint32 offset);
   virtual ~ByteStream(void);
   uint32 peekByte();
   uint32 getOffset() {return off;}
@@ -52,7 +55,7 @@ public:
   void popOffset();
 protected:
   const uchar8* buffer;
-  const uint32 size;            // This if the end of buffer.
+  uint32 size;            // This if the end of buffer.
   uint32 off;                  // Offset in bytes (this is next byte to deliver)
   stack<uint32> offset_stack;
 };

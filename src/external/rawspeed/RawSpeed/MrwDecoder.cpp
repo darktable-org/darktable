@@ -37,23 +37,20 @@ MrwDecoder::~MrwDecoder(void) {
 }
 
 int MrwDecoder::isMRW(FileMap* input) {
-  if (input->getSize() < 30) {
-    return false;
-  }
-  const uchar8* data = input->getData(0);
+  const uchar8* data = input->getData(0, 4);
   return data[0] == 0x00 && data[1] == 0x4D && data[2] == 0x52 && data[3] == 0x4D;
 }
 
 void MrwDecoder::parseHeader() {
-  const unsigned char* data = mFile->getData(0);
-  
   if (mFile->getSize() < 30)
     ThrowRDE("Not a valid MRW file (size too small)");
 
   if (!isMRW(mFile))
     ThrowRDE("This isn't actually a MRW file, why are you calling me?");
-    
+
+  const unsigned char* data = mFile->getData(0,8);
   data_offset = get4BE(data,4)+8;
+  data = mFile->getData(0,data_offset);
 
   if (!mFile->isValid(data_offset))
     ThrowRDE("MRW: Data offset is invalid");
@@ -63,7 +60,8 @@ void MrwDecoder::parseHeader() {
   wb_coeffs[0] = wb_coeffs[1] = wb_coeffs[2] = wb_coeffs[3] = NAN;
 
   uint32 currpos = 8;
-  while (currpos < data_offset) {
+  // At most we read 20 bytes from currpos so check we don't step outside that
+  while (currpos+20 < data_offset) {
     uint32 tag = get4BE(data,currpos);
     uint32 len = get4BE(data,currpos+4);
     switch(tag) {
@@ -77,7 +75,7 @@ void MrwDecoder::parseHeader() {
       break;
     case 0x545457: // TTW
       // Base value for offsets needs to be at the beginning of the TIFF block, not the file
-      FileMap *f = new FileMap(mFile->getDataWrt(currpos+8), mFile->getSize()-currpos-8);
+      FileMap *f = new FileMap(mFile, currpos+8);
       if (little == getHostEndianness())
         tiff_meta = new TiffIFDBE(f, 8);
       else
@@ -105,7 +103,7 @@ RawImage MrwDecoder::decodeRawInternal() {
   if (!mFile->isValid(data_offset+imgsize-1))
     ThrowRDE("MRW decoder: Image end after EOF, file probably truncated");
 
-  ByteStream input(mFile->getData(data_offset), imgsize);
+  ByteStream input(mFile, data_offset, imgsize);
  
   try {
     if (packed)

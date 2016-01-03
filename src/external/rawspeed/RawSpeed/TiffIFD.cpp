@@ -51,7 +51,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
   endian = little;
   CHECKSIZE(offset);
 
-  entries = *(unsigned short*)f->getData(offset);    // Directory entries in this IFD
+  entries = *(unsigned short*)f->getData(offset, 2);    // Directory entries in this IFD
 
   CHECKSIZE(offset + 2 + entries*4);
   for (uint32 i = 0; i < entries; i++) {
@@ -104,7 +104,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
         mEntry[t->tag] = t;
     }
   }
-  nextIFD = *(int*)f->getData(offset + 2 + entries * 12);
+  nextIFD = *(int*)f->getData(offset + 2 + entries * 12, 4);
 }
 
 TiffIFD* TiffIFD::parseDngPrivateData(TiffEntry *t) {
@@ -189,7 +189,8 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
   uint32 size = f->getSize();
   CHECKSIZE(offset + 20);
   TiffIFD *maker_ifd = NULL;
-  const uchar8* data = f->getData(offset);
+  // Get at least 100 bytes which is more than enough for all the checks below
+  const uchar8* data = f->getData(offset, 100);
 
   // Pentax makernote starts with AOC\0 - If it's there, skip it
   if (data[0] == 0x41 && data[1] == 0x4f && data[2] == 0x43 && data[3] == 0)
@@ -201,7 +202,7 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
   // Pentax also has "PENTAX" at the start, makernote starts at 8
   if (data[0] == 0x50 && data[1] == 0x45 && data[2] == 0x4e && data[3] == 0x54 && data[4] == 0x41 && data[5] == 0x58)
   {
-    mFile = new FileMap(f->getDataWrt(offset), f->getSize()-offset);
+    mFile = new FileMap(f, offset);
     parent_end = getTiffEndianness((const ushort16*)&data[8]);
     if (parent_end == unknown)
       ThrowTPE("Cannot determine Pentax makernote endianness");
@@ -209,11 +210,11 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
     offset = 10;
   // Check for fuji signature in else block so we don't accidentally leak FileMap
   } else if (0 == memcmp(fuji_signature,&data[0], sizeof(fuji_signature))) {
-    mFile = new FileMap(f->getDataWrt(offset), f->getSize()-offset);
+    mFile = new FileMap(f, offset);
     offset = 12;
   } else if (0 == memcmp(nikon_v3_signature,&data[0], sizeof(nikon_v3_signature))) {
     offset += 10;
-    mFile = new FileMap(f->getDataWrt(offset), f->getSize()-offset);
+    mFile = new FileMap(f, offset);
     data +=10;
     offset = 8;
     // Read endianness

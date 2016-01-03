@@ -48,7 +48,7 @@ RawImage ThreefrDecoder::decodeRawInternal() {
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), mFile->getSize() - off);
+  ByteStream input(mFile, off);
 
   HasselbladDecompressor l(mFile, mRaw);
   map<string,string>::iterator pixelOffset = hints.find("pixelBaseOffset");

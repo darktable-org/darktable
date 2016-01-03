@@ -36,6 +36,8 @@ class BitPumpJPEG
 public:
   BitPumpJPEG(ByteStream *s);
   BitPumpJPEG(const uchar8* _buffer, uint32 _size );
+  BitPumpJPEG(FileMap *f, uint32 offset, uint32 _size );
+  BitPumpJPEG(FileMap *f, uint32 offset );
 	uint32 getBitsSafe(uint32 nbits);
 	uint32 getBitSafe();
 	uchar8 getByteSafe();
@@ -132,7 +134,7 @@ protected:
   void _fill();
   const uchar8* buffer;
   uchar8 current_buffer[16];
-  const uint32 size;            // This if the end of buffer.
+  uint32 size;            // This if the end of buffer.
   int mLeft;
   uint32 off;                  // Offset in bytes
   int stuffed;              // How many bytes has been stuffed?

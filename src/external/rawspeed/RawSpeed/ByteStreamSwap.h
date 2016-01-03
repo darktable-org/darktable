@@ -13,6 +13,8 @@ class ByteStreamSwap :
 public:
   ByteStreamSwap(const uchar8* _buffer, uint32 _size);
   ByteStreamSwap(const ByteStreamSwap* b);
+  ByteStreamSwap(FileMap *f, uint32 offset, uint32 count);
+  ByteStreamSwap(FileMap *f, uint32 offset);
   virtual ushort16 getShort();
   virtual int getInt();
   virtual ~ByteStreamSwap(void);

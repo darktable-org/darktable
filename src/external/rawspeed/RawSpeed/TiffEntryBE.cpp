@@ -29,7 +29,7 @@ TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset, uint32 up_offset) {
   file = f;
   parent_offset = up_offset;
   type = TIFF_UNDEFINED;  // We set type to undefined to avoid debug assertion errors.
-  data = f->getDataWrt(offset);
+  data = f->getDataWrt(offset, 8);
   tag = (TiffTag)getShort();
   data += 2;
   TiffDataType _type = (TiffDataType)getShort();
@@ -40,13 +40,10 @@ TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset, uint32 up_offset) {
   if (type > 13)
     ThrowTPE("Error reading TIFF structure. Unknown Type 0x%x encountered.", type);
   uint32 bytesize = count << datashifts[type];
-  if (bytesize <= 4) {
-    data = f->getDataWrt(offset + 8);
-  } else { // offset
-    data = f->getDataWrt(offset + 8);
+  data = f->getDataWrt(offset + 8, 4);
+  if (bytesize > 4) { // it's an offset
     data_offset = (unsigned int)data[0] << 24 | (unsigned int)data[1] << 16 | (unsigned int)data[2] << 8 | (unsigned int)data[3];
-    CHECKSIZE(data_offset + bytesize);
-    data = f->getDataWrt(data_offset);
+    data = f->getDataWrt(data_offset, bytesize);
   }
 #ifdef _DEBUG
   debug_intVal = 0xC0CAC01A;

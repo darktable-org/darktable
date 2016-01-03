@@ -33,9 +33,9 @@ RawDecoder(file), bytes(NULL) {
   huge_table = NULL;
   line_offsets = NULL;
   if (getHostEndianness() == little)
-    bytes = new ByteStream(file->getData(0), file->getSize());
+    bytes = new ByteStream(file, 0);
   else
-    bytes = new ByteStreamSwap(file->getData(0), file->getSize());
+    bytes = new ByteStreamSwap(file, 0);
 }
 
 X3fDecoder::~X3fDecoder(void)
@@ -110,11 +110,11 @@ boolean X3fDecoder::readName() {
       if (!mFile->isValid(cimg.dataOffset + cimg.dataSize - 1)) {
         return false;
       }
-      ByteStream i(mFile->getDataWrt(cimg.dataOffset), cimg.dataSize);
+      ByteStream i(mFile, cimg.dataOffset, cimg.dataSize);
       // Skip jpeg header
       i.skipBytes(6);
       if (i.getInt() == 0x66697845) { // Match text 'Exif'
-        TiffParser t(new FileMap(mFile->getDataWrt(cimg.dataOffset+12), i.getRemainSize()));
+        TiffParser t(new FileMap(mFile, cimg.dataOffset+12, i.getRemainSize()));
         try {
           t.parseData();
         } catch (...) {
@@ -169,7 +169,7 @@ string X3fDecoder::getProp(const char* key )
 
 void X3fDecoder::decompressSigma( X3fImage &image )
 {
-  ByteStream input(mFile->getDataWrt(image.dataOffset), image.dataSize);
+  ByteStream input(mFile, image.dataOffset, image.dataSize);
   mRaw->dim.x = image.width;
   mRaw->dim.y = image.height;
   mRaw->setCpp(3);
@@ -281,7 +281,7 @@ void X3fDecoder::decompressSigma( X3fImage &image )
       }
     }
     // Load offsets
-    ByteStream i2(mFile->getDataWrt(image.dataOffset+image.dataSize-mRaw->dim.y*4), mRaw->dim.y*4);
+    ByteStream i2(mFile, image.dataOffset+image.dataSize-mRaw->dim.y*4, mRaw->dim.y*4);
     line_offsets = (uint32*)_aligned_malloc(4*mRaw->dim.y, 16);
     if (!line_offsets)
       ThrowRDE("SigmaDecompressor: Memory Allocation failed.");
@@ -360,7 +360,7 @@ void X3fDecoder::decodeThreaded( RawDecoderThread* t )
     }
     
     /* We have a weird prediction which is actually more appropriate for a CFA image */
-    BitPumpMSB bits(mFile->getData(plane_offset[i]), mFile->getSize()-plane_offset[i]);
+    BitPumpMSB bits(mFile, plane_offset[i]);
     /* Initialize predictors */
     int pred_up[4];
     int pred_left[2];
@@ -392,7 +392,7 @@ void X3fDecoder::decodeThreaded( RawDecoderThread* t )
   if (curr_image->format == 6) {
     int pred[3];
     for (uint32 y = t->start_y; y < t->end_y; y++) {
-      BitPumpMSB bits(mFile->getData(line_offsets[y]),mFile->getSize()-line_offsets[y]);
+      BitPumpMSB bits(mFile, line_offsets[y]);
       ushort16* dst = (ushort16*)mRaw->getData(0,y);
       pred[0] = pred[1] = pred[2] = 0;
       for (int x = 0; x < mRaw->dim.x; x++) {
@@ -464,7 +464,7 @@ FileMap* X3fDecoder::getCompressedData()
   for (; img !=  mImages.end(); img++) {
     X3fImage cimg = *img;
     if (cimg.type == 1 || cimg.type == 3) {
-      return new FileMap(mFile->getDataWrt(cimg.dataOffset), cimg.dataSize);
+      return new FileMap(mFile, cimg.dataOffset, cimg.dataSize);
     }
   }
   return NULL;

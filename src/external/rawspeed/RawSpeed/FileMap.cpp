@@ -38,6 +38,16 @@ FileMap::FileMap(uchar8* _data, uint32 _size): data(_data), size(_size) {
   mOwnAlloc = false;
 }
 
+FileMap::FileMap(FileMap *f, uint32 offset) {
+  size = f->getSize()-offset;
+  data = f->getDataWrt(offset, size);
+  mOwnAlloc = false;
+}
+
+FileMap::FileMap(FileMap *f, uint32 offset, uint32 size) {
+  data = f->getDataWrt(offset, size);
+  mOwnAlloc = false;
+}
 
 FileMap::~FileMap(void) {
   if (data && mOwnAlloc) {
@@ -67,10 +77,10 @@ void FileMap::corrupt(int errors) {
   }
 }
 
-const uchar8* FileMap::getData( uint32 offset )
+const uchar8* FileMap::getData( uint32 offset, uint32 count )
 {
-  if (offset >= size)
-    throw IOException("FileMap: Attempting to read out of file.");
+  if (offset < 0 || count <= 0 || offset+count > size)
+    throw IOException("FileMap: Attempting to read file out of bounds.");
   return &data[offset];
 }
 } // namespace RawSpeed

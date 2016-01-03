@@ -12,6 +12,14 @@ ByteStreamSwap::ByteStreamSwap( const ByteStreamSwap* b ) :
 ByteStream(b)
 {}
 
+ByteStreamSwap::ByteStreamSwap( FileMap *f, uint32 offset, uint32 _size ) : 
+ByteStream(f, offset, _size)
+{}
+
+ByteStreamSwap::ByteStreamSwap( FileMap *f, uint32 offset ) : 
+ByteStream(f, offset)
+{}
+
 ByteStreamSwap::~ByteStreamSwap(void)
 {
 }

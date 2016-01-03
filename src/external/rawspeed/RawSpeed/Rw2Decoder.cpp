@@ -69,7 +69,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
     mRaw->createData();
 
     uint32 size = mFile->getSize() - off;
-    input_start = new ByteStream(mFile->getData(off), mFile->getSize() - off);
+    input_start = new ByteStream(mFile, off);
 
     if (size >= width*height*2) {
       // It's completely unpacked little-endian
@@ -98,7 +98,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
     if (!mFile->isValid(off))
       ThrowRDE("RW2 Decoder: Invalid image data offset, cannot decode.");
 
-    input_start = new ByteStream(mFile->getData(off), mFile->getSize() - off);
+    input_start = new ByteStream(mFile, off);
     DecodeRw2();
   }
   // Read blacklevels

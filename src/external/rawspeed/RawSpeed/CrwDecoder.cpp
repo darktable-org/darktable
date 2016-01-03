@@ -334,8 +334,8 @@ void CrwDecoder::decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 
   initHuffTables (dec_table);
 
   uint32 offset = 540 + lowbits*height*width/4;
-  ByteStream input(mFile->getData(offset), mFile->getSize() - offset);
-  BitPumpJPEG pump(mFile->getData(offset),mFile->getSize() - offset);
+  ByteStream input(mFile, offset);
+  BitPumpJPEG pump(mFile, offset);
 
   for (uint32 row=0; row < height; row+=8) {
     ushort16 *dest = (ushort16*) & mRaw->getData()[row*width*2];
@@ -367,7 +367,7 @@ void CrwDecoder::decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 
     // Add the uncompressed 2 low bits to the decoded 8 high bits
     if (lowbits) {
       offset = 26 + row*width/4;
-      ByteStream lowbit_input(mFile->getData(offset), height*width/4);
+      ByteStream lowbit_input(mFile, offset, height*width/4);
       uint32 lines = MIN(height-row, 8); // Process 8 rows or however are left
       for (uint32 i=0; i < width/4*lines; i++) {
         uint32 c = ((uint32) lowbit_input.getByte());

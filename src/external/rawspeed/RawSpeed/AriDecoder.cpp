@@ -32,9 +32,9 @@ AriDecoder::AriDecoder(FileMap* file) : RawDecoder(file) {
   try {
     ByteStream *s;
     if (getHostEndianness() == little) {
-      s = new ByteStream(mFile->getData(8), mFile->getSize()- 8);
+      s = new ByteStream(mFile, 8);
     } else {
-      s = new ByteStreamSwap(mFile->getData(8), mFile->getSize()- 8);
+      s = new ByteStreamSwap(mFile, 8);
     }
     mDataOffset = s->getInt();
     uint32 someNumber = s->getInt(); // Value: 3?
@@ -81,7 +81,7 @@ RawImage AriDecoder::decodeRawInternal() {
 
 void AriDecoder::decodeThreaded(RawDecoderThread * t) {
   uint32 startOff = mDataOffset + t->start_y * ((mWidth * 12) / 8);
-  BitPumpMSB32 bits(mFile->getData(startOff), mFile->getSize()-startOff);
+  BitPumpMSB32 bits(mFile, startOff);
   
   uint32 hw = mWidth >> 1;
   for (uint32 y = t->start_y; y < t->end_y; y++) {

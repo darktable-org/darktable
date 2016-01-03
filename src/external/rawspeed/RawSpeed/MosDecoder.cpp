@@ -62,7 +62,8 @@ RawImage MosDecoder::decodeRawInternal() {
   uint32 off = 0;
 
   uint32 base = 8;
-  const uchar8 *insideTiff = mFile->getData(base);
+  // We get a pointer up to the end of the file as we check offset bounds later
+  const uchar8 *insideTiff = mFile->getData(base, mFile->getSize()-base);
   if (get4LE(insideTiff, 0) == 0x49494949) {
     uint32 offset = get4LE(insideTiff, 8);
     if (offset+base+4 > mFile->getSize())
@@ -102,13 +103,11 @@ RawImage MosDecoder::decodeRawInternal() {
 
     DecodePhaseOneC(data_offset, strip_offset, width, height);
 
-    if (wb_offset > 0 && wb_offset+12 < mFile->getSize()) {
-      const uchar8 *data = mFile->getData(wb_offset);
-      for(int i=0; i<3; i++) {
-        // Use get4LE instead of going straight to float so this is endian clean
-        uint32 value = get4LE(data, i*4);
-        mRaw->metadata.wbCoeffs[i] = *((float *) &value);
-      }
+    const uchar8 *data = mFile->getData(wb_offset, 12);
+    for(int i=0; i<3; i++) {
+      // Use get4LE instead of going straight to float so this is endian clean
+      uint32 value = get4LE(data, i*4);
+      mRaw->metadata.wbCoeffs[i] = *((float *) &value);
     }
 
     return mRaw;
@@ -132,7 +131,7 @@ RawImage MosDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
 
-  ByteStream input(mFile->getData(off), mFile->getSize()-off);
+  ByteStream input(mFile, off);
   int compression = raw->getEntry(COMPRESSION)->getInt();
   if (1 == compression) {
     if (mRootIFD->endian == big)
@@ -155,9 +154,9 @@ void MosDecoder::DecodePhaseOneC(uint32 data_offset, uint32 strip_offset, uint32
   const int length[] = { 8,7,6,9,11,10,5,12,14,13 };
 
   for (uint32 row=0; row < height; row++) {
-    uint32 off = data_offset + get4LE(mFile->getData(strip_offset), row*4);
+    uint32 off = data_offset + get4LE(mFile->getData(strip_offset, 4), row*4);
 
-    BitPumpMSB32 pump(mFile->getData(off),mFile->getSize()-off);
+    BitPumpMSB32 pump(mFile, off);
     uint32 pred[2], len[2];
     pred[0] = pred[1] = 0;
     ushort16* img = (ushort16*)mRaw->getData(0, row);

@@ -123,9 +123,9 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
   if (NULL != b)
     delete b;
   if (getHostEndianness() == little)
-    b = new ByteStream(mFile->getData(0), mFile->getSize());
+    b = new ByteStream(mFile, 0);
   else
-    b = new ByteStreamSwap(mFile->getData(0), mFile->getSize());
+    b = new ByteStreamSwap(mFile, 0);
   b->setAbsoluteOffset(compressed_offset);
 
   for (uint32 y = 0; y < height; y++) {
@@ -135,7 +135,7 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
     int len[4];
     for (int i = 0; i < 4; i++)
       len[i] = y < 2 ? 7 : 4;
-    BitPumpMSB32 bits(mFile->getData(line_offset),mFile->getSize() - line_offset);
+    BitPumpMSB32 bits(mFile, line_offset);
     int op[4];
     ushort16* img = (ushort16*)mRaw->getData(0, y);
     ushort16* img_up = (ushort16*)mRaw->getData(0, max(0, (int)y - 1));
@@ -249,7 +249,7 @@ void SrwDecoder::decodeCompressed2( TiffIFD* raw, int bits)
     }
   }
 
-  BitPumpMSB pump(mFile->getData(offset),mFile->getSize() - offset);
+  BitPumpMSB pump(mFile, offset);
   for (uint32 y = 0; y < height; y++) {
     ushort16* img = (ushort16*)mRaw->getData(0, y);
     for (uint32 x = 0; x < width; x++) {
@@ -290,7 +290,7 @@ int32 SrwDecoder::samsungDiff (BitPumpMSB &pump, encTableItem *tbl)
 void SrwDecoder::decodeCompressed3( TiffIFD* raw, int bits)
 {
   uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
-  BitPumpMSB32 startpump(mFile->getData(offset),mFile->getSize() - offset);
+  BitPumpMSB32 startpump(mFile, offset);
 
   // Process the initial metadata bits, we only really use initVal, width and
   // height (the last two match the TIFF values anyway)
@@ -333,7 +333,7 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw, int bits)
     // Align pump to 16byte boundary
     if ((line_offset & 0xf) != 0)
       line_offset += 16 - (line_offset & 0xf);
-    BitPumpMSB32 pump(mFile->getData(offset+line_offset),mFile->getSize()-offset-line_offset);
+    BitPumpMSB32 pump(mFile, offset+line_offset);
 
     ushort16* img = (ushort16*)mRaw->getData(0, row);
     ushort16* img_up = (ushort16*)mRaw->getData(0, max(0, (int)row - 1));

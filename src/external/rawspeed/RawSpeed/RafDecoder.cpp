@@ -91,7 +91,7 @@ RawImage RafDecoder::decodeRawInternal() {
 
   mRaw->dim = iPoint2D(width*(double_width ? 2 : 1), height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), mFile->getSize() - off);
+  ByteStream input(mFile, off);
   iPoint2D pos(0, 0);
 
   if (double_width) {

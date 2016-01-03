@@ -35,9 +35,9 @@ X3fParser::X3fParser(FileMap* file) {
     ThrowRDE("X3F file too small");
 
   if (getHostEndianness() == little)
-    bytes = new ByteStream(file->getData(0), size);
+    bytes = new ByteStream(file, 0, size);
   else
-    bytes = new ByteStreamSwap(file->getData(0), size);
+    bytes = new ByteStreamSwap(file, 0, size);
   try {
     try {
       // Read signature

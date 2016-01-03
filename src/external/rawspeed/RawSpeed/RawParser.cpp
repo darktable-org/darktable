@@ -44,11 +44,12 @@ RawParser::~RawParser(void) {
 }
 
 RawDecoder* RawParser::getDecoder(CameraMetaData* meta) {
-  const unsigned char* data = mInput->getData(0);
   // We need some data.
   // For now it is 104 bytes for RAF images.
   if (mInput->getSize() <=  104)
     ThrowRDE("File too small");
+
+  const unsigned char* data = mInput->getData(0, 104);
 
   // MRW images are easy to check for, let's try that first
   if (MrwDecoder::isMRW(mInput)) {
@@ -87,12 +88,12 @@ RawDecoder* RawParser::getDecoder(CameraMetaData* meta) {
 
     // Open the IFDs and merge them
     try {
-      FileMap *m1 = new FileMap(mInput->getDataWrt(first_ifd), mInput->getSize()-first_ifd);
+      FileMap *m1 = new FileMap(mInput, first_ifd);
       FileMap *m2 = NULL;
       TiffParser p(m1);
       p.parseData();
       if (second_ifd) {
-        m2 = new FileMap(mInput->getDataWrt(second_ifd), mInput->getSize()-second_ifd);
+        m2 = new FileMap(mInput, second_ifd);
         try {
           TiffParser p2(m2);
           p2.parseData();
@@ -173,7 +174,7 @@ RawDecoder* RawParser::getDecoder(CameraMetaData* meta) {
 void RawParser::ParseFuji(uint32 offset, TiffIFD *target_ifd)
 {
   try {
-    ByteStreamSwap bytes(mInput->getData(offset), mInput->getSize()-offset);
+    ByteStreamSwap bytes(mInput, offset);
     uint32 entries = bytes.getUInt();
 
     if (entries > 255)

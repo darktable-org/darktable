@@ -98,7 +98,7 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   }
 
   uint32 x, y;
-  BitPumpMSB bits(mFile->getData(offset), size);
+  BitPumpMSB bits(mFile, offset, size);
   uchar8 *draw = mRaw->getData();
   ushort16 *dest;
   uint32 pitch = mRaw->pitch;

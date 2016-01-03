@@ -26,21 +26,12 @@
 
 namespace RawSpeed {
 
-#ifdef CHECKSIZE
-#undef CHECKSIZE
-#endif
-
-#define CHECKSIZE(A) if (A > size) ThrowCPE("Error reading CIFF structure (invalid size). File Corrupt")
-
 CiffIFD::CiffIFD(FileMap* f, uint32 start, uint32 end) {
   mFile = f;
   uint32 size = f->getSize();
-  CHECKSIZE(start);
-  CHECKSIZE(end);
 
-  uint32 valuedata_size = *(uint32 *) f->getData(end-4);
-  CHECKSIZE(start+valuedata_size);
-  ushort16 dircount = *(ushort16 *) f->getData(start+valuedata_size);
+  uint32 valuedata_size = *(uint32 *) f->getData(end-4, 4);
+  ushort16 dircount = *(ushort16 *) f->getData(start+valuedata_size, 2);
 
 //  fprintf(stderr, "Found %d entries between %d and %d after %d data bytes\n", 
 //                  dircount, start, end, valuedata_size);

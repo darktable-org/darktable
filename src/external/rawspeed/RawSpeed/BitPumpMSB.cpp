@@ -38,6 +38,19 @@ BitPumpMSB::BitPumpMSB(const uchar8* _buffer, uint32 _size) :
   init();
 }
 
+BitPumpMSB::BitPumpMSB(FileMap *f, uint32 offset, uint32 _size) :
+    size(_size + sizeof(uint32)), mLeft(0), off(0) {
+  buffer = f->getDataWrt(offset, size);
+  init();
+}
+
+BitPumpMSB::BitPumpMSB(FileMap *f, uint32 offset) :
+    mLeft(0), off(0) {
+  size = f->getSize() + sizeof(uint32); 
+  buffer = f->getDataWrt(offset, size);
+  init();
+}
+
 __inline void BitPumpMSB::init() {
   mStuffed = 0;
   memset(current_buffer,0,16);
