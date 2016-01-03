@@ -40,7 +40,7 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
   if(x >= width || y >= height) return;
 
   const int colors = (filters == 9) ? 3 : 4;
-  const int border = 1;
+  const int border = 2;
   const int avgwindow = 1;
 
   if(x >= border && x < width-border && y >= border && y < height-border) return;
@@ -114,6 +114,113 @@ lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 
   write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
+
+kernel void
+vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+		const unsigned int filters, global const unsigned char (*const xtrans)[6],
+		global const int (*const ips), global const int (*const code)[16])
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  const int colors = (filters == 9) ? 3 : 4;
+  const int prow = (filters == 9) ? 6 : 8;
+  const int pcol = (filters == 9) ? 6 : 2;
+  
+  if(x < 2 || x >= width-2 || y < 2 || y >= height-2) return;
+
+  float gval[8] = { 0.0f };
+  int g;
+
+  // get byte code
+  global const int *ip = ips + code[y % prow][x % pcol];
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float pixv[4] = { pixel.x, pixel.y, pixel.z, pixel.w };
+  
+  // calculate gradients
+  while((g = ip[0]) != INT_MAX)
+  {
+    int offset0 = g;
+    int2 p0 = (int2)(x + (short)(offset0 & 0xffffu), y + (short)(offset0 >> 16));
+    int offset1 = ip[1];
+    int2 p1 = (int2)(x + (short)(offset1 & 0xffffu), y + (short)(offset1 >> 16));
+    int weight = (short)(ip[2] & 0xffffu);
+    int color = (short)(ip[2] >> 16);
+    float4 pixel0 = read_imagef(in, sampleri, p0);
+    float pixv0[4] = { pixel0.x, pixel0.y, pixel0.z, pixel0.w };
+    float4 pixel1 = read_imagef(in, sampleri, p1);
+    float pixv1[4] = { pixel1.x, pixel1.y, pixel1.z, pixel1.w };
+    float diff = fabs(pixv0[color] - pixv1[color]) * weight;
+    gval[ip[3]] += diff;
+    ip += 5;
+    if((g = ip[-1]) == -1) continue;
+    gval[g] += diff;
+    while((g = *ip++) != -1) gval[g] += diff;
+  }
+  ip++;
+  
+  // chose a threshold
+  float gmin = gval[0];
+  float gmax = gval[0];
+  for(g = 1; g < 8; g++)
+  {
+    if(gmin > gval[g]) gmin = gval[g];
+    if(gmax < gval[g]) gmax = gval[g];
+  }
+
+  
+  if(gmax == 0.0f)
+  {
+    write_imagef(out, (int2)(x, y), pixel);
+    return;
+  }
+  
+  float thold = gmin + (gmax * 0.5f);
+  float sum[4] = { 0.0f };
+  int color = fcol(y, x, filters, xtrans);
+  int num = 0;
+  
+  // average the neightbors
+  for(g = 0; g < 8; g++, ip += 3)
+  {
+    int offset0 = ip[0];
+    int2 p0 = (int2)(x + (short)(offset0 & 0xffffu), y + (short)(offset0 >> 16));
+    if(gval[g] <= thold)
+    {
+      int offset1 = ip[1];
+      int2 p1 = (int2)(x + (short)(offset1 & 0xffffu), y + (short)(offset1 >> 16));
+      int c1 = ip[2];
+      for(int c = 0; c < colors; c++)
+      {
+        if(c == color && offset1)
+	{
+	  float4 pixel1 = read_imagef(in, sampleri, p1);
+	  float pixv1[4] = { pixel1.x, pixel1.y, pixel1.z, pixel1.w };
+          sum[c] += (pixv[c] + pixv1[c1]) * 0.5f;
+	}
+        else
+	{
+	  float4 pixel0 = read_imagef(in, sampleri, p0);
+	  float pixv0[4] = { pixel0.x, pixel0.y, pixel0.z, pixel0.w };	  
+          sum[c] += pixv0[c];
+	}
+      }
+      num++;
+    }
+  }
+  
+  // save to output
+  float o[4] = { 0.0f };
+  for(int c = 0; c < colors; c++)
+  {
+    float tot = pixv[color];
+    if(c != color) tot += (sum[c] - sum[color]) / num;
+    o[c] = clamp(tot, 0.0f, 1.0f);
+  }
+  write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
+}
+
 
 
 kernel void

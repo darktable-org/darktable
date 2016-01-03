@@ -17,6 +17,7 @@
 */
 
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
 #include "develop/imageop.h"
 #include "common/opencl.h"
@@ -102,6 +103,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_vng_lin_interpolate;
   int kernel_zoom_third_size;
   int kernel_vng_green_equilibrate;
+  int kernel_vng_interpolate;
 } dt_iop_demosaic_global_data_t;
 
 typedef struct dt_iop_demosaic_data_t
@@ -1894,6 +1896,12 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   else
     filters4 = data->filters | 0x0c0c0c0cu;
 
+  const int size = (filters4 == 9u) ? 6 : 16;
+  const int colors = (filters4 == 9u) ? 3 : 4;
+  const int prow = (filters4 == 9u) ? 6 : 8;
+  const int pcol = (filters4 == 9u) ? 6 : 2;
+
+
   if(roi_out->scale >= 1.00001f)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaic with upscaling not yet supported by opencl code\n");
@@ -1912,6 +1920,8 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_tmp2 = NULL;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_lookup = NULL;
+  cl_mem dev_code = NULL;
+  cl_mem dev_ips = NULL;
   cl_int err = -999;
 
   if(data->filters == 9u)
@@ -1957,13 +1967,12 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // COLORA TOT_WEIGHT
     // COLORB TOT_WEIGHT
     // COLORPIX                   # color of center pixel
-    int lookup[16][16][32];
-    const int size = (filters4 == 9u) ? 6 : 16;
-    const int colors = (filters4 == 9u) ? 3 : 4;
+    int32_t lookup[16][16][32];
+
     for(int row = 0; row < size; row++)
       for(int col = 0; col < size; col++)
       {
-        int *ip = lookup[row][col] + 1;
+        int32_t *ip = lookup[row][col] + 1;
         int sum[4] = { 0 };
         const int f = fcol(row + roi_in->y, col + roi_in->x, filters4, img->xtrans);
         // make list of adjoining pixel offsets by weight & color
@@ -1988,8 +1997,85 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
         *ip = f;
       }
 
+    // Precalculate for VNG
+    static const signed char terms[]
+      = { -2, -2, +0, -1, 1, 0x01, -2, -2, +0, +0, 2, 0x01, -2, -1, -1, +0, 1, 0x01, -2, -1, +0, -1, 1, 0x02,
+          -2, -1, +0, +0, 1, 0x03, -2, -1, +0, +1, 2, 0x01, -2, +0, +0, -1, 1, 0x06, -2, +0, +0, +0, 2, 0x02,
+          -2, +0, +0, +1, 1, 0x03, -2, +1, -1, +0, 1, 0x04, -2, +1, +0, -1, 2, 0x04, -2, +1, +0, +0, 1, 0x06,
+          -2, +1, +0, +1, 1, 0x02, -2, +2, +0, +0, 2, 0x04, -2, +2, +0, +1, 1, 0x04, -1, -2, -1, +0, 1, 0x80,
+          -1, -2, +0, -1, 1, 0x01, -1, -2, +1, -1, 1, 0x01, -1, -2, +1, +0, 2, 0x01, -1, -1, -1, +1, 1, 0x88,
+          -1, -1, +1, -2, 1, 0x40, -1, -1, +1, -1, 1, 0x22, -1, -1, +1, +0, 1, 0x33, -1, -1, +1, +1, 2, 0x11,
+          -1, +0, -1, +2, 1, 0x08, -1, +0, +0, -1, 1, 0x44, -1, +0, +0, +1, 1, 0x11, -1, +0, +1, -2, 2, 0x40,
+          -1, +0, +1, -1, 1, 0x66, -1, +0, +1, +0, 2, 0x22, -1, +0, +1, +1, 1, 0x33, -1, +0, +1, +2, 2, 0x10,
+          -1, +1, +1, -1, 2, 0x44, -1, +1, +1, +0, 1, 0x66, -1, +1, +1, +1, 1, 0x22, -1, +1, +1, +2, 1, 0x10,
+          -1, +2, +0, +1, 1, 0x04, -1, +2, +1, +0, 2, 0x04, -1, +2, +1, +1, 1, 0x04, +0, -2, +0, +0, 2, 0x80,
+          +0, -1, +0, +1, 2, 0x88, +0, -1, +1, -2, 1, 0x40, +0, -1, +1, +0, 1, 0x11, +0, -1, +2, -2, 1, 0x40,
+          +0, -1, +2, -1, 1, 0x20, +0, -1, +2, +0, 1, 0x30, +0, -1, +2, +1, 2, 0x10, +0, +0, +0, +2, 2, 0x08,
+          +0, +0, +2, -2, 2, 0x40, +0, +0, +2, -1, 1, 0x60, +0, +0, +2, +0, 2, 0x20, +0, +0, +2, +1, 1, 0x30,
+          +0, +0, +2, +2, 2, 0x10, +0, +1, +1, +0, 1, 0x44, +0, +1, +1, +2, 1, 0x10, +0, +1, +2, -1, 2, 0x40,
+          +0, +1, +2, +0, 1, 0x60, +0, +1, +2, +1, 1, 0x20, +0, +1, +2, +2, 1, 0x10, +1, -2, +1, +0, 1, 0x80,
+          +1, -1, +1, +1, 1, 0x88, +1, +0, +1, +2, 1, 0x08, +1, +0, +2, -1, 1, 0x40, +1, +0, +2, +1, 1, 0x10 };
+    static const signed char chood[]
+      = { -1, -1, -1, 0, -1, +1, 0, +1, +1, +1, +1, 0, +1, -1, 0, -1 };
+    int ips[prow * pcol * 352];
+    int *ip = ips;
+    int code[16][16];
+
+    for(int row = 0; row < prow; row++)
+      for(int col = 0; col < pcol; col++)
+      {
+        code[row][col] = ip - ips;
+        const signed char *cp = terms;
+        for(int t = 0; t < 64; t++)
+        {
+          int y1 = *cp++, x1 = *cp++;
+          int y2 = *cp++, x2 = *cp++;
+          int weight = *cp++;
+          int grads = *cp++;
+          int color = fcol(row + y1, col + x1, filters4, img->xtrans);
+          if(fcol(row + y2, col + x2, filters4, img->xtrans) != color) continue;
+          int diag
+              = (fcol(row, col + 1, filters4, img->xtrans) == color && fcol(row + 1, col, filters4, img->xtrans) == color)
+                    ? 2
+                    : 1;
+          if(abs(y1 - y2) == diag && abs(x1 - x2) == diag) continue;
+          *ip++ = (y1 << 16) | (x1 & 0xffffu); //(y1 * width + x1) * 4 + color;
+          *ip++ = (y2 << 16) | (x2 & 0xffffu); //(y2 * width + x2) * 4 + color;
+          *ip++ = (color << 16) | (weight & 0xffffu);
+          for(int g = 0; g < 8; g++)
+            if(grads & 1 << g) *ip++ = g;
+          *ip++ = -1;
+        }
+        *ip++ = INT_MAX;
+        cp = chood;
+        for(int g = 0; g < 8; g++)
+        {
+          int y = *cp++, x = *cp++;
+          *ip++ = (y << 16) | (x & 0xffffu); //(y * width + x) * 4;
+          int color = fcol(row, col, filters4, img->xtrans);
+          if(fcol(row + y, col + x, filters4, img->xtrans) != color
+             && fcol(row + y * 2, col + x * 2, filters4, img->xtrans) == color)
+          {
+            *ip++ = (2*y << 16) | (2*x & 0xffffu); //(y * width + x) * 8 + color;
+            *ip++ = color;
+          }
+          else
+          {
+            *ip++ = 0;
+            *ip++ = 0;
+          }
+        }
+      }
+
+
     dev_lookup = dt_opencl_copy_host_to_device_constant(devid, sizeof(lookup), lookup);
     if(dev_lookup == NULL) goto error;
+
+    dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
+    if(dev_code == NULL) goto error;
+
+    dev_ips = dt_opencl_copy_host_to_device_constant(devid, sizeof(ips), ips);
+    if(dev_ips == NULL) goto error;
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
@@ -2002,9 +2088,29 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_lin_interpolate, sizes);
     if(err != CL_SUCCESS) goto error;
 
+#if 0
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_tmp2, origin, origin, region);
+    if(err != CL_SUCCESS) goto error;
+#else
+    // do VNG interpolation
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 0, sizeof(cl_mem), &dev_tmp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 1, sizeof(cl_mem), &dev_tmp2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 4, sizeof(uint32_t), &filters4);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 5, sizeof(cl_mem), &dev_xtrans);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 6, sizeof(cl_mem), &dev_ips);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 7, sizeof(cl_mem), &dev_code);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_interpolate, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+#endif
+
     // manage borders
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 1, sizeof(cl_mem), &dev_tmp2);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 3, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 4, sizeof(int), (void *)&roi_in->x);
@@ -2012,11 +2118,6 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 6, sizeof(uint32_t), &filters4);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 7, sizeof(cl_mem), &dev_xtrans);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_border_interpolate, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_tmp2, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
 
     if(filters4 != 9)
@@ -2173,6 +2274,8 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_tmp2 != NULL && dev_tmp2 != dev_out) dt_opencl_release_mem_object(dev_tmp2);
   if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
+  if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
+  if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
   return TRUE;
 
 error:
@@ -2180,6 +2283,8 @@ error:
   if(dev_tmp2 != NULL && dev_tmp2 != dev_out) dt_opencl_release_mem_object(dev_tmp2);
   if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
+  if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
+  if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -2296,6 +2401,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_vng_lin_interpolate = dt_opencl_create_kernel(vng, "lin_interpolate");
   gd->kernel_zoom_third_size = dt_opencl_create_kernel(vng, "clip_and_zoom_demosaic_third_size_xtrans");
   gd->kernel_vng_green_equilibrate = dt_opencl_create_kernel(vng, "green_equilibrate");
+  gd->kernel_vng_interpolate = dt_opencl_create_kernel(vng, "vng_interpolate");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -2322,6 +2428,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_vng_lin_interpolate);
   dt_opencl_free_kernel(gd->kernel_zoom_third_size);
   dt_opencl_free_kernel(gd->kernel_vng_green_equilibrate);
+  dt_opencl_free_kernel(gd->kernel_vng_interpolate);
   free(module->data);
   module->data = NULL;
 }
