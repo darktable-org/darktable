@@ -483,6 +483,11 @@ static void synthesize(
 }
 #endif
 
+static int FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -493,6 +498,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // get our data struct:
   dt_iop_rawdenoiseprofile_params_t *d = (dt_iop_rawdenoiseprofile_params_t *)piece->data;
 
+  const int filters = dt_image_filter(&piece->pipe->image);
   const int max_max_scale = 5; // hard limit
   int max_scale = 3;
   const float scale = roi_in->scale / piece->iscale;
@@ -527,7 +533,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
 
   // DEBUG: hardcoded offsets to beginning of cggc quad
-  const int offx = 0;
+  int offx = 0;
+  if(FC(0, 0, filters) == 1) offx = 1;
 
   float *buf[max_max_scale];
   float *tmp1 = 0, *tmp2 = 0;
@@ -554,17 +561,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   // precondition((uint16_t *)ivoid, tmp1, ref, width, height, a, b, d->mode);
   for(size_t k=0;k<npixels;k++) tmp1[k] = ((uint16_t *)ivoid)[k];
-#if 1 // debug: write out preconditioned buffer for external analysis
+#if 0 // debug: write out preconditioned buffer for external analysis
   if(self->gui_data)
   {
-      char filename[512];
-      snprintf(filename, sizeof(filename), "/tmp/preconditioned.pfm");
-      FILE *f = fopen(filename, "wb");
-      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(size_t k = 0; k < npixels; k++)
-        for(int c=0;c<3;c++)
-          fwrite(tmp1+k, sizeof(float), 1, f);
-      fclose(f);
+    char filename[512];
+    snprintf(filename, sizeof(filename), "/tmp/preconditioned.pfm");
+    FILE *f = fopen(filename, "wb");
+    fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
+    for(size_t k = 0; k < npixels; k++)
+      for(int c=0;c<3;c++)
+        fwrite(tmp1+k, sizeof(float), 1, f);
+    fclose(f);
   }
 #endif
 
