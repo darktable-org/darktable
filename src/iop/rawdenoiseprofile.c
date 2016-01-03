@@ -100,7 +100,7 @@ static inline float fast_mexp2f(const float x)
 
 static inline float noise_stddev_gen_Fisz(const float level, const float black, const float white, const float a, const float b, const float c)
 {
-  return sqrtf(fmaxf(1.0f, fmaxf(0.0f, a*(level-black)) + b + c*c*(level-black)*(level-black)));
+  return sqrtf(MAX(0.0f, a*MAX(0, level-black) + b + c*c*MAX(0, level-black)*MAX(0, level-black)));
 }
 
 static inline float noise_stddev_dxo(
@@ -382,7 +382,7 @@ static void decompose_g(
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
     // detail[j*width+i] = input[j*width+i] - output[j*width+i];
     // Fisz transform:
-    detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(input[j*width+i], black, white, a, b, c);
+    detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
 }
 
 static void decompose_rb(
@@ -439,7 +439,7 @@ static void decompose_rb(
   for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
     // detail[j*width+i] = input[j*width+i] - output[j*width+i];
     // Fisz transform:
-    detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(input[j*width+i], black, white, a, b, c);
+    detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
 }
 
 #if 1// TODO: rewrite for single channel bayer patters (need to add channels for thrs+boost depending on pattern)
@@ -532,9 +532,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     return;
   }
 
-  // DEBUG: hardcoded offsets to beginning of cggc quad
+  // find offset to beginning of cggc quad
   int offx = 0;
   if(FC(0, 0, filters) == 1) offx = 1;
+  if(FC(0, 0, filters) == 3) offx = 1;
 
   float *buf[max_max_scale];
   float *tmp1 = 0, *tmp2 = 0;
@@ -582,7 +583,6 @@ memset(tmp2, 0, sizeof(float)*width*height);
 #if 1
   for(int scale = 0; scale < max_scale; scale++)
   {
-    // FIXME: hardcoded offsets for 5dm2
     decompose_g (buf2, buf1, buf[scale],   offx,    scale, black, white, a, b, c, width, height);  // green
     decompose_rb(buf2, buf1, buf[scale], 1-offx, 0, scale, black, white, a, b, c, width, height);  // blue
     decompose_rb(buf2, buf1, buf[scale],   offx, 1, scale, black, white, a, b, c, width, height);  // red
