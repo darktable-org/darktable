@@ -498,7 +498,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // get our data struct:
   dt_iop_rawdenoiseprofile_params_t *d = (dt_iop_rawdenoiseprofile_params_t *)piece->data;
 
-  const int filters = dt_image_filter(&piece->pipe->image);
   const int max_max_scale = 5; // hard limit
   int max_scale = 3;
   const float scale = roi_in->scale / piece->iscale;
@@ -532,10 +531,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     return;
   }
 
-  // find offset to beginning of cggc quad
+  // find offset to beginning of gccg quad
+  const dt_image_t *img = &piece->pipe->image;
+  const int filters = dt_image_filter(img);
   int offx = 0;
-  if(FC(0, 0, filters) == 1) offx = 1;
-  if(FC(0, 0, filters) == 3) offx = 1;
+  if(FC(img->crop_y, img->crop_x, filters) == 0) offx = 1;
+  if(FC(img->crop_y, img->crop_x, filters) == 2) offx = 1;
 
   float *buf[max_max_scale];
   float *tmp1 = 0, *tmp2 = 0;
