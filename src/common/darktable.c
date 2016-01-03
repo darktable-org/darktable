@@ -98,6 +98,10 @@
 #endif
 #endif
 
+#ifdef USE_LUA
+#include "lua/configuration.h"
+#endif
+
 darktable_t darktable;
 const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,exr,ia,iiq,"
                                        "jpeg,jpg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,"
@@ -505,6 +509,16 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       }
       else if(!strcmp(argv[k], "--version"))
       {
+#ifdef USE_LUA
+        const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
+                                      STR(LUA_API_VERSION_MAJOR) "."
+                                      STR(LUA_API_VERSION_MINOR) "."
+                                      STR(LUA_API_VERSION_PATCH) "-"
+                                      LUA_API_VERSION_SUFFIX :
+                                      STR(LUA_API_VERSION_MAJOR) "."
+                                      STR(LUA_API_VERSION_MINOR) "."
+                                      STR(LUA_API_VERSION_PATCH);
+#endif
         printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2015 johannes hanika\n" PACKAGE_BUGREPORT
                "\n\ncompile options:\n"
 #ifdef _OPENMP
@@ -520,7 +534,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #endif
 
 #ifdef USE_LUA
-               "  Lua support enabled\n"
+               "  Lua support enabled, API version %s\n"
 #else
                "  Lua support disabled\n"
 #endif
@@ -543,7 +557,9 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
                "  GraphicsMagick support disabled\n"
 #endif
 
-
+#if USE_LUA
+               , lua_api_version
+#endif
         );
         return 1;
       }
