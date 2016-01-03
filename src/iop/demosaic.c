@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-
 #include "develop/imageop.h"
 #include "common/opencl.h"
 #include "bauhaus/bauhaus.h"
@@ -163,6 +160,40 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   }
   return 1;
 }
+
+static const char* method2string(dt_iop_demosaic_method_t method)
+{
+  const char *string;
+
+  switch(method)
+  {
+    case DT_IOP_DEMOSAIC_PPG:
+      string = "PPG";
+      break;
+    case DT_IOP_DEMOSAIC_AMAZE:
+      string = "AMaZE";
+      break;
+    case DT_IOP_DEMOSAIC_VNG4:
+      string = "VNG4";
+      break;
+    case DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME:
+      string = "passthrough monochrome";
+      break;
+    case DT_IOP_DEMOSAIC_VNG:
+      string = "VNG (xtrans)";
+      break;
+    case DT_IOP_DEMOSAIC_MARKESTEIJN:
+      string = "Markesteijn-1 (xtrans)";
+      break;
+    case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
+      string = "Markesteijn-3 (xtrans)";
+      break;
+    default:
+      string = "(unknown method)";
+  }
+  return string;
+}
+
 
 static int FC(const int row, const int col, const unsigned int filters)
 {
@@ -2077,23 +2108,16 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dev_ips = dt_opencl_copy_host_to_device_constant(devid, sizeof(ips), ips);
     if(dev_ips == NULL) goto error;
 
+    // do linear interpolation
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 4, sizeof(int), (void *)&roi_in->x);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 5, sizeof(int), (void *)&roi_in->y);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 6, sizeof(uint32_t), &filters4);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 7, sizeof(cl_mem), &dev_lookup);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 4, sizeof(uint32_t), &filters4);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 5, sizeof(cl_mem), &dev_lookup);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_lin_interpolate, sizes);
     if(err != CL_SUCCESS) goto error;
 
-#if 0
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_tmp2, origin, origin, region);
-    if(err != CL_SUCCESS) goto error;
-#else
     // do VNG interpolation
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 0, sizeof(cl_mem), &dev_tmp1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 1, sizeof(cl_mem), &dev_tmp2);
@@ -2105,8 +2129,6 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 7, sizeof(cl_mem), &dev_code);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_interpolate, sizes);
     if(err != CL_SUCCESS) goto error;
-
-#endif
 
     // manage borders
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 0, sizeof(cl_mem), &dev_in);
@@ -2142,7 +2164,6 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     if(data->filters == 9u)
     {
-      const int zero = 0;
       const int width = roi_out->width;
       const int height = roi_out->height;
       size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
@@ -2187,6 +2208,19 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(dev_tmp2 != NULL && dev_tmp2 != dev_out) dt_opencl_release_mem_object(dev_tmp2);
   dev_tmp2 = NULL;
+
+  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+  dev_xtrans = NULL;
+
+  if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
+  dev_lookup = NULL;
+
+  if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
+  dev_code = NULL;
+
+  if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
+  dev_ips = NULL;
+
 
   // color smoothing
   if(data->color_smoothing)
@@ -2271,11 +2305,6 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   if(dev_tmp1 != NULL && dev_tmp1 != dev_out) dt_opencl_release_mem_object(dev_tmp1);
-  if(dev_tmp2 != NULL && dev_tmp2 != dev_out) dt_opencl_release_mem_object(dev_tmp2);
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
-  if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
-  if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
-  if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
   return TRUE;
 
 error:
@@ -2302,7 +2331,7 @@ process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem d
     return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   else
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method %d not yet supported by opencl code\n", demosaicing_method);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method '%s' not yet supported by opencl code\n", method2string(demosaicing_method));
     return FALSE;
   }
 }

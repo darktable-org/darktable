@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma OPENCL EXTENSION cl_amd_printf : enable
 #include "common.h"
 
 int
@@ -78,7 +77,7 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
 
 kernel void
 lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
-		const int r_x, const int r_y, const unsigned int filters, global const int (*const lookup)[16][32])
+		const unsigned int filters, global const int (*const lookup)[16][32])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -116,7 +115,7 @@ lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 }
 
 kernel void
-vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
 		const unsigned int filters, global const unsigned char (*const xtrans)[6],
 		global const int (*const ips), global const int (*const code)[16])
 {
@@ -202,8 +201,8 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
         else
 	{
 	  float4 pixel0 = read_imagef(in, sampleri, p0);
-	  float pixv0[4] = { pixel0.x, pixel0.y, pixel0.z, pixel0.w };	  
-          sum[c] += pixv0[c];
+	  float pixv0[4] = { pixel0.x, pixel0.y, pixel0.z, pixel0.w };
+	  sum[c] += pixv0[c];
 	}
       }
       num++;
