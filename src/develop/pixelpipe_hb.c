@@ -2196,6 +2196,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
         // ... and scale that into a nice image. putting the pixels into the image directly gets too
         // saturated/clips.
+        // new scale factor to do about the same as the old one for 1MP views, but scale to hidpi
+        const float scale = 0.5 * 1e6f/(roi_in.height*roi_in.width) *
+          (dev->histogram_waveform_width*dev->histogram_waveform_height) / (350.0f*233.);
         for(int y = 0; y < dev->histogram_waveform_height; y++)
         {
           for(int x = 0; x < dev->histogram_waveform_width; x++)
@@ -2206,7 +2209,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             for(int k = 0; k < 3; k++)
             {
               if(in[k] == 0) continue;
-              out[k] = CLAMP(in[k] * 0.5, 5, 255);
+              out[k] = CLAMP(in[k] * scale, 5, 255);
               //               if(in[k] == 0)
               //                 out[k] = 0;
               //               else
