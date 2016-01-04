@@ -599,6 +599,29 @@ error:
   return 1;
 }
 
+static void *_update_params(dt_lib_module_t *module,
+                            const void *const old_params, size_t old_params_size, int old_version,
+                            int target_version, size_t *new_size)
+{
+  // make a copy of the old params so we can free it in the loop
+  void *params = malloc(old_params_size);
+  if(params == NULL) return NULL;
+  memcpy(params, old_params, old_params_size);
+  while(old_version < target_version)
+  {
+    size_t size;
+    int version;
+    void *new_params = module->legacy_params(module, params, old_params_size, old_version, &version, &size);
+    free(params);
+    if(new_params == NULL) return NULL;
+    params = new_params;
+    old_version = version;
+    old_params_size = size;
+  }
+  *new_size = old_params_size;
+  return params;
+}
+
 void dt_lib_init_presets(dt_lib_module_t *module)
 {
   // since lighttable presets can't end up in styles or any other place outside of the presets table it is
@@ -643,8 +666,7 @@ void dt_lib_init_presets(dt_lib_module_t *module)
         void *new_params = NULL;
 
         if(module->legacy_params
-           && (new_params = module->legacy_params(module, op_params, op_params_size, op_version, version,
-                                                  &new_params_size)))
+          && (new_params = _update_params(module, op_params, op_params_size, op_version, version, &new_params_size)))
         {
           // write the updated preset back to db
           fprintf(stderr,
