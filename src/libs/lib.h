@@ -123,9 +123,9 @@ typedef struct dt_lib_module_t
   void (*configure)(struct dt_lib_module_t *self, int width, int height);
   int (*position)();
   /** implement these three if you want customizable presets to be stored in db. */
+  /** legacy_params can run in iterations, just return to what version you updated the preset. */
   void *(*legacy_params)(struct dt_lib_module_t *self, const void *const old_params,
-                         const size_t old_params_size, const int old_version, const int new_version,
-                         size_t *new_size);
+                         const size_t old_params_size, const int old_version, int *new_version, size_t *new_size);
   void *(*get_params)(struct dt_lib_module_t *self, int *size);
   int (*set_params)(struct dt_lib_module_t *self, const void *params, int size);
   void (*init_presets)(struct dt_lib_module_t *self);
