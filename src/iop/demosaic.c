@@ -1957,7 +1957,9 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(data->filters == 9u)
   {
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(img->xtrans), img->xtrans);
+    uint8_t xtrans[6][6];
+    memcpy(xtrans, img->xtrans, sizeof(xtrans));
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(xtrans), xtrans);
     if(dev_xtrans == NULL) goto error;
   }
 
