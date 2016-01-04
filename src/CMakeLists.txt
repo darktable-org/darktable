@@ -337,6 +337,7 @@ endif(GPHOTO2_FOUND)
 # See https://llvm.org/bugs/show_bug.cgi?id=25510
 check_c_source_compiles("#include <stdio.h>
 int main() {
+  __builtin_cpu_init();
   printf(\"%d\", __builtin_cpu_supports(\"sse3\"));
 }" HAVE_BUILTIN_CPU_SUPPORTS)
 if(HAVE_BUILTIN_CPU_SUPPORTS)
