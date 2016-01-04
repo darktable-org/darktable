@@ -405,6 +405,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
 #ifdef HAVE_BUILTIN_CPU_SUPPORTS
   // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+  __builtin_cpu_init();
   sse3_supported = __builtin_cpu_supports("sse3");
 #else
   sse3_supported = dt_detect_cpu_features() & CPU_FLAG_SSE3;
