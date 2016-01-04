@@ -1290,7 +1290,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_tint, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_k, TRUE, TRUE, 0);
-  if (isnormal(p->coeffs[3]))
+  if (isnormal(p->coeffs[3]) && self->dev->image_storage.filters == 0xb4b4b4b4)
   {
     dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
     dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));
@@ -1306,10 +1306,12 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_widget_set_label(g->scale_r, NULL, _("red"));
     dt_bauhaus_widget_set_label(g->scale_g, NULL, _("green"));
     dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue"));
-    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("green2"));
+    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("emerald"));
     gtk_box_pack_start(GTK_BOX(self->widget), g->scale_r, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(self->widget), g->scale_g, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
+    if(self->dev->image_storage.filters == 0x9c9c9c9c)
+      gtk_box_pack_start(GTK_BOX(self->widget), g->scale_g2, TRUE, TRUE, 0);
   }
 
   g->presets = dt_bauhaus_combobox_new(self);
