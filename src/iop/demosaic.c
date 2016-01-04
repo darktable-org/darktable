@@ -1947,6 +1947,20 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
     uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
 
+  // check if we can avoid full scale demosaicing and chose simple
+  // half scale or third scale interpolation instead
+  const int full_scale_demosaicing =
+      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
+      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
+      uhq_thumb ||
+      roi_out->scale > (data->filters == 9u ? 0.333f : 0.5f);
+
+  // check if we can stop at the linear interpolation step and
+  // avoid full VNG
+  const int only_vng_linear =
+      full_scale_demosaicing &&
+      roi_out->scale < (data->filters == 9u ? 0.667f : 0.8f);
+
   cl_mem dev_tmp1 = NULL;
   cl_mem dev_tmp2 = NULL;
   cl_mem dev_xtrans = NULL;
@@ -1963,9 +1977,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(dev_xtrans == NULL) goto error;
   }
 
-  if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
-      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || (uhq_thumb) ||
-      roi_out->scale > (data->filters == 9u ? 0.333f : .5f))
+  if(full_scale_demosaicing)
   {
     // Full demosaic and then scaling if needed
     int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
@@ -2120,17 +2132,29 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_lin_interpolate, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    // do VNG interpolation
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 0, sizeof(cl_mem), &dev_tmp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 1, sizeof(cl_mem), &dev_tmp2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 4, sizeof(uint32_t), &filters4);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 5, sizeof(cl_mem), &dev_xtrans);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 6, sizeof(cl_mem), &dev_ips);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 7, sizeof(cl_mem), &dev_code);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_interpolate, sizes);
-    if(err != CL_SUCCESS) goto error;
+
+    if(only_vng_linear)
+    {
+      // leave it at linear interpolation and skip VNG
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { width, height, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_tmp2, origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
+    }
+    else
+    {
+      // do VNG interpolation
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 0, sizeof(cl_mem), &dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 1, sizeof(cl_mem), &dev_tmp2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 4, sizeof(uint32_t), &filters4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 5, sizeof(cl_mem), &dev_xtrans);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 6, sizeof(cl_mem), &dev_ips);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 7, sizeof(cl_mem), &dev_code);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_interpolate, sizes);
+      if(err != CL_SUCCESS) goto error;
+    }
 
     // manage borders
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 0, sizeof(cl_mem), &dev_in);
@@ -2326,11 +2350,34 @@ process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem d
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   const int demosaicing_method = data->demosaicing_method;
+  const int qual = get_quality();
+
+  // we check if we need ultra-high quality thumbnail for this size
+  int uhq_thumb = 0;
+  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
+
+  // we use full Markesteijn demosaicing on xtrans sensors only if
+  // maximum quality is required
+  const int xtrans_full_markesteijn_demosaicing =
+      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 1) ||
+      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
+      uhq_thumb ||
+      roi_out->scale > 0.8f;
 
   if(demosaicing_method ==  DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
+  {
     return process_default_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+  }
   else if(demosaicing_method ==  DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
+  {
     return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+  }
+  else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) &&
+    !xtrans_full_markesteijn_demosaicing)
+  {
+    return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+  }
   else
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method '%s' not yet supported by opencl code\n", method2string(demosaicing_method));
@@ -2502,10 +2549,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       piece->process_cl_ready = 1;
       break;
     case DT_IOP_DEMOSAIC_MARKESTEIJN:
-      piece->process_cl_ready = 0;
+      // note: we have no opencl implementation for Markesteijn yet.
+      // however, we can fall back to VNG if maximum output quality is
+      // not required. so we need to go into the opencl codepath and
+      // decide on CPU fallback depending on the situation.
+      piece->process_cl_ready = 1;
       break;
     case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
-      piece->process_cl_ready = 0;
+      // see comment above.
+      piece->process_cl_ready = 1;
       break;
     default:
       piece->process_cl_ready = 0;
