@@ -1073,8 +1073,9 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
   }
 }
 
-static void pop_undo(dt_view_t *self, dt_undo_type_t type, dt_undo_data_t *data)
+static void pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
 {
+  dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
 
   if(type == DT_UNDO_GEOTAG)
@@ -1103,7 +1104,7 @@ static void _push_position(dt_view_t *self, int imgid, float longitude, float la
   geotag->latitude = latitude;
   geotag->elevation = elevation;
 
-  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo);
+  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo, NULL);
 }
 
 static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude, float *elevation)
