@@ -2267,7 +2267,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
 
           if(!((pc >= 60000) ^ (MAX(MAX(p1, p2), MAX(p3, p4)) >= 60000)))
           {
-            if(filters == 0xb4b4b4b4) // CYGM so lets keep all four values
+            if(filters == 0xb4b4b4b4 || filters == 0x9c9c9c9c) // CYGM or RGBE so lets keep all four values
               sum = _mm_add_epi32(sum, _mm_set_epi32(p3, p4, p2, p1));
             else
               sum = _mm_add_epi32(sum, _mm_set_epi32(0, p4, p3 + p2, p1));
@@ -2275,7 +2275,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
           }
         }
 
-      if(filters == 0xb4b4b4b4)
+      if(filters == 0xb4b4b4b4 || filters == 0x9c9c9c9c)
         col = _mm_mul_ps(
             _mm_cvtepi32_ps(sum),
             _mm_div_ps(_mm_set_ps(1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / 65535.0f),
