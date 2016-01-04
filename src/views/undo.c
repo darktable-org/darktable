@@ -22,10 +22,11 @@
 
 typedef struct dt_undo_item_t
 {
-  dt_view_t *view;
+  gpointer user_data;
   dt_undo_type_t type;
   dt_undo_data_t *data;
-  void (*undo)(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data);
+  void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data);
+  void (*free_data)(gpointer data);
 } dt_undo_item_t;
 
 dt_undo_t *dt_undo_init(void)
@@ -43,21 +44,30 @@ void dt_undo_cleanup(dt_undo_t *self)
   dt_pthread_mutex_destroy(&self->mutex);
 }
 
-void dt_undo_record(dt_undo_t *self, dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data,
-                    void (*undo)(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *item))
+static void _free_undo_data(void *p)
+{
+  dt_undo_item_t *item = (dt_undo_item_t *)p;
+  if (item->free_data) item->free_data(item->data);
+  g_free(item->data);
+}
+
+void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
+                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
+                    void (*free_data)(gpointer data))
 {
   dt_undo_item_t *item = g_malloc(sizeof(dt_undo_item_t));
 
-  item->view = view;
-  item->type = type;
-  item->data = data;
-  item->undo = undo;
+  item->user_data = user_data;
+  item->type      = type;
+  item->data      = data;
+  item->undo      = undo;
+  item->free_data = free_data;
 
   dt_pthread_mutex_lock(&self->mutex);
   self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
 
   // recording an undo data invalidate all the redo
-  g_list_free_full(self->redo_list, &g_free);
+  g_list_free_full(self->redo_list, _free_undo_data);
   self->redo_list = NULL;
   dt_pthread_mutex_unlock(&self->mutex);
 }
@@ -78,7 +88,7 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
       self->redo_list = g_list_remove(self->redo_list, item);
 
       //  callback with redo data
-      item->undo(item->view, item->type, item->data);
+      item->undo(item->user_data, item->type, item->data);
 
       //  add old position back into the undo list
       self->undo_list = g_list_prepend(self->undo_list, item);
@@ -105,7 +115,7 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
       self->undo_list = g_list_remove(self->undo_list, item);
 
       //  callback with undo data
-      item->undo(item->view, item->type, item->data);
+      item->undo(item->user_data, item->type, item->data);
 
       //  add element into the redo list as filed with our previous position (before undo)
 
@@ -130,7 +140,7 @@ static void dt_undo_clear_list(GList **list, uint32_t filter)
     if(item->type & filter)
     {
       //  remove this element
-      g_free(item->data);
+      _free_undo_data((void *)item);
       *list = g_list_remove(*list, item);
     }
     l = next;
