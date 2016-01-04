@@ -315,6 +315,8 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 
 #endif
 
+#define SAFESTACKSIZE 8*1024*1024
+gboolean dt_openmp_init_stacksize(void);
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void*), void *arg);
 
 #endif

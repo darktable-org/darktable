@@ -83,6 +83,7 @@
 #include <magick/api.h>
 #endif
 #include "dbus.h"
+#include "common/dtpthread.h"
 
 #if defined(__SUNOS__)
 #include <sys/varargs.h>
@@ -412,6 +413,14 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     return 1;
   }
 #endif
+
+  if(!dt_openmp_init_stacksize())
+  {
+    fprintf(stderr, "[dt_init] your system uses a low default stacksize and we could not set\n");
+    fprintf(stderr, "[dt_init] the OMP_STACKSIZE environment variable to %dB.\n", SAFESTACKSIZE);
+    fprintf(stderr, "[dt_init] Please set the OMP_STACKSIZE environment variable before starting darktable\n");
+    return 1;
+  }
 
 #ifdef M_MMAP_THRESHOLD
   mallopt(M_MMAP_THRESHOLD, 128 * 1024); /* use mmap() for large allocations */
