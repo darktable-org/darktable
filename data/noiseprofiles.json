@@ -1260,7 +1260,7 @@
       "maker": "Nikon",
       "models": [
         {
-          "comment": "1 v3 contributed by Salvador Abreu",
+          "comment": "nikon 1 v3 contributed by Salvador Abreu",
           "model": "1 V3",
           "profiles": [
             {"name": "1 V3 iso 160", "iso": 160, "a": [1.30622971100412e-05, 8.31502981813081e-06, 1.0419129000972e-05], "b": [1.1319963182176e-07, 8.01668177751935e-08, 1.29974604720382e-07]},
@@ -4544,7 +4544,7 @@
       "maker": "Ricoh",
       "models": [
         {
-          "comment": "gr contributed by pedrocr",
+          "comment": "ricoh gr contributed by Salvador Abreu",
           "model": "GR",
           "profiles": [
             {"name": "GR iso 100", "iso": 100, "a": [4.50941529392463e-06, 2.58460129979154e-06, 1.08005851638493e-05], "b": [5.66142173164346e-09, 6.78409383523121e-09, 1.83922383674754e-08]},

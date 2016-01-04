@@ -19,27 +19,7 @@
 #include "common/file_location.h"
 #include "lua/lua.h"
 #include "version.h"
-
-/*
- * LUA API VERSIONNING
- * This API versionning follows sementic versionning as defined in
- * http://semver.org
- * only stable releases are considered "released"
-   => no need to increase API version with every commit
-   however, beware of stable releases and API changes
- */
-// LAST RELEASED VERSION : 1.4 was 1.0.0
-// 1.6 was 2.0.1
-// 1.6.1 was 2.0.2
-// 2.0 WILL BE 3.0.0
-/* incompatible API change */
-#define API_VERSION_MAJOR 3
-/* backward compatible API change */
-#define API_VERSION_MINOR 0
-/* bugfixes that should not change anything to the API */
-#define API_VERSION_PATCH 0
-/* suffix for unstable version */
-#define API_VERSION_SUFFIX ""
+#include "lua/configuration.h"
 
 static int check_version(lua_State *L)
 {
@@ -66,7 +46,7 @@ static int check_version(lua_State *L)
        int patch= luaL_checkint(L,-1);
        lua_pop(L,1);
      */
-    if(major == API_VERSION_MAJOR && minor <= API_VERSION_MINOR)
+    if(major == LUA_API_VERSION_MAJOR && minor <= LUA_API_VERSION_MINOR)
     {
       valid = true;
     }
@@ -75,15 +55,15 @@ static int check_version(lua_State *L)
   {
     // nothing
   }
-  else if(strlen(API_VERSION_SUFFIX) == 0)
+  else if(strlen(LUA_API_VERSION_SUFFIX) == 0)
   {
-    luaL_error(L, "Module %s is not compatible with API %d.%d.%d", module_name, API_VERSION_MAJOR,
-               API_VERSION_MINOR, API_VERSION_PATCH);
+    luaL_error(L, "Module %s is not compatible with API %d.%d.%d", module_name, LUA_API_VERSION_MAJOR,
+               LUA_API_VERSION_MINOR, LUA_API_VERSION_PATCH);
   }
   else
   {
     dt_print(DT_DEBUG_LUA, "LUA ERROR Module %s is not compatible with API %d.%d.%d-%s\n", module_name,
-             API_VERSION_MAJOR, API_VERSION_MINOR, API_VERSION_PATCH, API_VERSION_SUFFIX);
+             LUA_API_VERSION_MAJOR, LUA_API_VERSION_MINOR, LUA_API_VERSION_PATCH, LUA_API_VERSION_SUFFIX);
   }
   return 0;
 }
@@ -127,30 +107,30 @@ int dt_lua_init_configuration(lua_State *L)
   lua_settable(L, -3);
 
   lua_pushstring(L, "api_version_major");
-  lua_pushnumber(L, API_VERSION_MAJOR);
+  lua_pushnumber(L, LUA_API_VERSION_MAJOR);
   lua_settable(L, -3);
 
   lua_pushstring(L, "api_version_minor");
-  lua_pushnumber(L, API_VERSION_MINOR);
+  lua_pushnumber(L, LUA_API_VERSION_MINOR);
   lua_settable(L, -3);
 
   lua_pushstring(L, "api_version_patch");
-  lua_pushnumber(L, API_VERSION_PATCH);
+  lua_pushnumber(L, LUA_API_VERSION_PATCH);
   lua_settable(L, -3);
 
   lua_pushstring(L, "api_version_suffix");
-  lua_pushstring(L, API_VERSION_SUFFIX);
+  lua_pushstring(L, LUA_API_VERSION_SUFFIX);
   lua_settable(L, -3);
 
   lua_pushstring(L, "api_version_string");
-  if(strcmp(API_VERSION_SUFFIX, "") == 0)
+  if(LUA_API_VERSION_SUFFIX[0] == '\0')
   {
-    lua_pushfstring(L, "%d.%d.%d", API_VERSION_MAJOR, API_VERSION_MINOR, API_VERSION_PATCH);
+    lua_pushfstring(L, "%d.%d.%d", LUA_API_VERSION_MAJOR, LUA_API_VERSION_MINOR, LUA_API_VERSION_PATCH);
   }
   else
   {
-    lua_pushfstring(L, "%d.%d.%d-%s", API_VERSION_MAJOR, API_VERSION_MINOR, API_VERSION_PATCH,
-                    API_VERSION_SUFFIX);
+    lua_pushfstring(L, "%d.%d.%d-%s", LUA_API_VERSION_MAJOR, LUA_API_VERSION_MINOR, LUA_API_VERSION_PATCH,
+                    LUA_API_VERSION_SUFFIX);
   }
   lua_settable(L, -3);
 

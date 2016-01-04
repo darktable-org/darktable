@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -685,6 +686,58 @@ void gui_cleanup(dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
+void init_key_accels (dt_iop_module_so_t *module)
+{
+  dt_accel_register_iop (module, TRUE, NC_("accel", "spot circle tool"),   0, 0);
+  dt_accel_register_iop (module, TRUE, NC_("accel", "spot elipse tool"),   0, 0);
+  dt_accel_register_iop (module, TRUE, NC_("accel", "spot path tool"),     0, 0);
+}
+
+static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                      GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
+  _add_circle(GTK_WIDGET(g->bt_circle), NULL, module);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), TRUE);
+  return TRUE;
+}
+
+static gboolean _add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                       GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
+  _add_ellipse(GTK_WIDGET(g->bt_ellipse), NULL, module);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), TRUE);
+  return TRUE;
+}
+
+static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
+  _add_path(GTK_WIDGET(g->bt_path), NULL, module);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), TRUE);
+  return TRUE;
+}
+
+void connect_key_accels (dt_iop_module_t *module)
+{
+  GClosure *closure;
+
+  closure = g_cclosure_new(G_CALLBACK(_add_circle_key_accel), (gpointer)module, NULL);
+  dt_accel_connect_iop (module, "spot circle tool", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_add_ellipse_key_accel), (gpointer)module, NULL);
+  dt_accel_connect_iop (module, "spot elipse tool", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
+  dt_accel_connect_iop (module, "spot path tool", closure);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

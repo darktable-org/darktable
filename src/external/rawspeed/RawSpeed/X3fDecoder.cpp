@@ -360,7 +360,7 @@ void X3fDecoder::decodeThreaded( RawDecoderThread* t )
     }
     
     /* We have a weird prediction which is actually more appropriate for a CFA image */
-    BitPumpMSB *bits = new BitPumpMSB(mFile->getData(plane_offset[i]), mFile->getSize()-plane_offset[i]);
+    BitPumpMSB bits(mFile->getData(plane_offset[i]), mFile->getSize()-plane_offset[i]);
     /* Initialize predictors */
     int pred_up[4];
     int pred_left[2];
@@ -369,22 +369,22 @@ void X3fDecoder::decodeThreaded( RawDecoderThread* t )
 
     for (int y = 0; y < dim.y; y++) {
       ushort16* dst = (ushort16*)mRaw->getData(0, y << subs) + i;
-      int diff1= SigmaDecode(bits);
-      int diff2 = SigmaDecode(bits);
+      int diff1= SigmaDecode(&bits);
+      int diff2 = SigmaDecode(&bits);
       dst[0] = pred_left[0] = pred_up[y & 1] = pred_up[y & 1] + diff1;
       dst[3<<subs] = pred_left[1] = pred_up[(y & 1) + 2] = pred_up[(y & 1) + 2] + diff2;
       dst += 6<<subs;
       // We decode two pixels every loop
       for (int x = 2; x < dim.x; x += 2) {
-        int diff1 = SigmaDecode(bits);
-        int diff2 = SigmaDecode(bits);
+        int diff1 = SigmaDecode(&bits);
+        int diff2 = SigmaDecode(&bits);
         dst[0] = pred_left[0] = pred_left[0] + diff1;
         dst[3<<subs] = pred_left[1] = pred_left[1] + diff2;
         dst += 6<<subs;
       }
       // If plane is larger than image, skip that number of pixels.
       for (int i = 0; i < skipX; i++)
-        SigmaSkipOne(bits);
+        SigmaSkipOne(&bits);
     }
     return;
   }
