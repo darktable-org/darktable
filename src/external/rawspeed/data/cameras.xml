@@ -7229,6 +7229,20 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
+	<Camera make="SONY" model="DSC-F828">
+		<ID make="Sony" model="DSC-F828">Sony DSC-F828</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">YELLOW</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="495" white="16383"/>
+		<Hints>
+			<Hint name="srf_format" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="SONY" model="DSC-R1">
 		<ID make="Sony" model="DSC-R1">Sony DSC-R1</ID>
 		<CFA width="2" height="2">
