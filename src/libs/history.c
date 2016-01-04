@@ -27,6 +27,7 @@
 #include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "views/undo.h"
 
 DT_MODULE(1)
 
@@ -38,6 +39,8 @@ typedef struct dt_lib_history_t
   GtkWidget *create_button;
 //   GtkWidget *apply_button;
   GtkWidget *compress_button;
+  gboolean record_undo;
+  dt_undo_history_t prev;
 } dt_lib_history_t;
 
 /* compress history stack */
@@ -90,6 +93,9 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_history_t *d = (dt_lib_history_t *)g_malloc0(sizeof(dt_lib_history_t));
   self->data = (void *)d;
+
+  d->record_undo = TRUE;
+  d->prev.snapshot = NULL;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_name(self->widget, "history-ui");
@@ -165,6 +171,65 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   return widget;
 }
 
+static GList *_duplicate_history(GList *hist)
+{
+  GList *result = NULL;
+
+  GList *h = g_list_first(hist);
+  while(h)
+  {
+    const dt_dev_history_item_t *old = (dt_dev_history_item_t *)(h->data);
+
+    dt_dev_history_item_t *new = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+
+    memcpy(new, old, sizeof(dt_dev_history_item_t));
+
+    new->params = malloc(old->module->params_size);
+    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+
+    memcpy(new->params, old->params, old->module->params_size);
+    memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
+
+    result = g_list_append(result, new);
+
+    h = g_list_next(h);
+  }
+  return result;
+}
+
+static void pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+
+  if(type == DT_UNDO_HISTORY)
+  {
+    dt_lib_history_t *d = (dt_lib_history_t *)self->data;
+    dt_undo_history_t *hist = (dt_undo_history_t *)data;
+
+    GList *current_params = darktable.develop->history;
+    const int end = darktable.develop->history_end;
+
+    darktable.develop->history = hist->snapshot;
+    darktable.develop->history_end = hist->end;
+
+    hist->snapshot = current_params;
+    hist->end = end;
+
+    // disable recording undo as the _lib_history_change_callback will be triggered by the calls below
+    d->record_undo = FALSE;
+
+    dt_dev_write_history(darktable.develop);
+    dt_dev_reload_history_items(darktable.develop);
+  }
+}
+
+static void _history_undo_data_free(gpointer data)
+{
+  dt_undo_history_t *hist = (dt_undo_history_t *)data;
+  GList *snapshot = hist->snapshot;
+  g_list_free_full(snapshot, dt_dev_free_history_item);
+}
+
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -179,6 +244,24 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
                      _lib_history_create_button(self, num, _("original"), FALSE, darktable.develop->history_end == 0),
                      TRUE, TRUE, 0);
   num++;
+
+  if (d->record_undo == TRUE)
+  {
+    /* record undo/redo history snapshot */
+    if (d->prev.snapshot != NULL)
+    {
+      dt_undo_history_t *hist = g_malloc(sizeof(dt_undo_history_t));
+      hist->snapshot=d->prev.snapshot;
+      hist->end=d->prev.end;
+      dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t *)hist, &pop_undo, _history_undo_data_free);
+    }
+
+    // record current history for next iteration, we duplicate the whole history
+    d->prev.snapshot = _duplicate_history(darktable.develop->history);
+    d->prev.end = darktable.develop->history_end;
+  }
+  else
+    d->record_undo = TRUE;
 
   /* lock history mutex */
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
