@@ -43,6 +43,15 @@
 #endif
 
 // this stores our exif data as a blob.
+
+template <typename T> struct array_deleter
+{
+  void operator()(T const *p)
+  {
+    delete[] p;
+  }
+};
+
 namespace IMF_NS
 {
 class Blob
@@ -56,7 +65,7 @@ public:
   {
     uint8_t *tmp_ptr = new uint8_t[_size];
     memcpy(tmp_ptr, _data, _size);
-    data.reset(tmp_ptr);
+    data.reset(tmp_ptr, array_deleter<uint8_t>());
   }
 
   uint32_t size;
@@ -82,7 +91,7 @@ template <> void BlobAttribute::writeValueTo(OStream &os, int version) const
 template <> void BlobAttribute::readValueFrom(IStream &is, int size, int version)
 {
   Xdr::read<StreamIO>(is, _value.size);
-  _value.data.reset(new uint8_t[_value.size]);
+  _value.data.reset(new uint8_t[_value.size], array_deleter<uint8_t>());
   Xdr::read<StreamIO>(is, (char *)(_value.data.get()), _value.size);
 }
 }

@@ -396,6 +396,10 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
     return 0;
   }
 
+  // we'll iterate throught all border points, but we can't start at point[0]
+  // because it may be in a self-intersected section
+  // so we choose a point where we are sure there's no intersection :
+  // one from border shape extrema (here x_max)
   int lastx = border[(posextr[1] - 1) * 2];
   int lasty = border[(posextr[1] - 1) * 2 + 1];
 
@@ -410,39 +414,53 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
     // we want to be sure everything is continuous
     _path_fill_gaps(lastx, lasty, border[i * 2], border[i * 2 + 1], extra);
 
-    // we now search intersections for all the point in extra
+    // extra represent all the points between the last one and the current one
+    // for all the points in extra, we'll check for self-intersection
+    // and "register" them in binter
     for(int j = dt_masks_dynbuf_position(extra) / 2 - 1; j >= 0; j--)
     {
       int xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
       int yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
+
+      // we check also 2 points around to be sure catching intersection
       int v[3] = { 0 };
       v[0] = binter[(yy - ymin) * wb + (xx - xmin)];
       if(xx > xmin) v[1] = binter[(yy - ymin) * wb + (xx - xmin - 1)];
       if(yy > ymin) v[2] = binter[(yy - ymin - 1) * wb + (xx - xmin)];
+
       for(int k = 0; k < 3; k++)
       {
         if(v[k] > 0)
         {
+          // there's already a border point "registered" at this coordinate.
+          // so we've potentially found a self-intersection portion between v[k] and i
           if((xx == lastx && yy == lasty) || v[k] == i - 1)
           {
+            // we haven't move from last point.
+            // this is not a real self-interesection, so we just update binter
             binter[(yy - ymin) * wb + (xx - xmin)] = i;
           }
           else if((i > v[k]
-                   && ((posextr[0] < i || posextr[0] > v[k]) && (posextr[1] < i || posextr[1] > v[k])
-                       && (posextr[2] < i || posextr[2] > v[k]) && (posextr[3] < i || posextr[3] > v[k])))
+                   && ((posextr[0] < v[k] || posextr[0] > i) && (posextr[1] < v[k] || posextr[1] > i)
+                       && (posextr[2] < v[k] || posextr[2] > i) && (posextr[3] < v[k] || posextr[3] > i)))
                   || (i < v[k] && posextr[0] < v[k] && posextr[0] > i && posextr[1] < v[k] && posextr[1] > i
                       && posextr[2] < v[k] && posextr[2] > i && posextr[3] < v[k] && posextr[3] > i))
           {
+            // we have found a self-intersection portion, between v[k] and i
+            // and we are sure that this portion doesn't include one of the shape extrema
             if(inter_count > 0)
             {
               if((v[k] - i) * (inter[inter_count * 2 - 2] - inter[inter_count * 2 - 1]) > 0
                  && inter[inter_count * 2 - 2] >= v[k] && inter[inter_count * 2 - 1] <= i)
               {
+                // we find an self-intersection portion which include the last one
+                // we just update it
                 inter[inter_count * 2 - 2] = v[k];
                 inter[inter_count * 2 - 1] = i;
               }
               else
               {
+                // we find a new self-intersection portion
                 inter[inter_count * 2] = v[k];
                 inter[inter_count * 2 + 1] = i;
                 inter_count++;
@@ -450,6 +468,7 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
             }
             else
             {
+              // we find a new self-intersection portion
               inter[inter_count * 2] = v[k];
               inter[inter_count * 2 + 1] = i;
               inter_count++;
@@ -458,6 +477,8 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
         }
         else
         {
+          // there wasn't anything "registered" at this place in binter
+          // we do it now
           binter[(yy - ymin) * wb + (xx - xmin)] = i;
         }
       }

@@ -864,9 +864,9 @@ void init_presets(dt_lib_module_t *self)
 }
 
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
-                    const int old_version, const int new_version, size_t *new_size)
+                    const int old_version, int *new_version, size_t *new_size)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1)
   {
     // add version of format & storage to params
     size_t new_params_size = old_params_size + 2 * sizeof(int32_t);
@@ -911,9 +911,10 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     memcpy(new_params + first_half + 2 * sizeof(int32_t), buf, old_params_size - first_half);
 
     *new_size = new_params_size;
+    *new_version = 2;
     return new_params;
   }
-  else if(old_version == 2 && new_version == 3)
+  else if(old_version == 2)
   {
     // add upscale to params
     size_t new_params_size = old_params_size + sizeof(int32_t);
@@ -923,9 +924,10 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     memcpy(new_params + 3 * sizeof(int32_t), old_params + 2 * sizeof(int32_t), old_params_size - 2 * sizeof(int32_t));
 
     *new_size = new_params_size;
+    *new_version = 3;
     return new_params;
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3)
   {
     // replace iccprofile by type + filename
     // format of v3:
@@ -975,6 +977,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     memcpy(new_params + pos, old_params + old_pos, old_params_size - old_pos);
 
     *new_size = new_params_size;
+    *new_version = 4;
     return new_params;
   }
 
