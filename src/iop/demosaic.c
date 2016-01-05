@@ -1119,7 +1119,7 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
       }
       float thold = gmin + (gmax * 0.5f);
       float sum[4] = { 0.0f };
-      int color = fcol(row, col, filters4, xtrans);
+      int color = fcol(row + roi_in->y, col + roi_in->x, filters4, xtrans);
       int num = 0;
       for(g = 0; g < 8; g++, ip += 2) /* Average the neighbors */
       {
