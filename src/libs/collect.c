@@ -59,7 +59,6 @@ typedef struct dt_lib_collect_t
   GtkTreeModel *listmodel;
   GtkScrolledWindow *scrolledwindow;
 
-  GtkBox *box;
   GtkScrolledWindow *sw2;
   GPtrArray *labels;
   GPtrArray *trees;
@@ -752,7 +751,7 @@ static void folders_view(dt_lib_collect_rule_t *dr)
       }
     }
   }
-  gtk_widget_show(GTK_WIDGET(d->box));
+
   gtk_widget_show(GTK_WIDGET(d->sw2));
 }
 
@@ -1219,7 +1218,7 @@ static void create_folders_gui(dt_lib_collect_rule_t *dr)
       model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel_folders), iter, rule);
       tree = _create_treeview_display(GTK_TREE_MODEL(model2));
       g_ptr_array_add(d->trees, (gpointer)tree);
-      gtk_box_pack_start(d->box, GTK_WIDGET(tree), FALSE, FALSE, 0);
+      gtk_container_add(GTK_CONTAINER(d->sw2), GTK_WIDGET(tree));
       gtk_widget_show(GTK_WIDGET(tree));
 
       gtk_tree_view_set_headers_visible(tree, FALSE);
@@ -1757,15 +1756,10 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
 
-
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  d->box = GTK_BOX(vbox);
-
   GtkWidget *sw2 = gtk_scrolled_window_new(NULL, NULL);
   d->sw2 = GTK_SCROLLED_WINDOW(sw2);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw2), DT_PIXEL_APPLY_DPI(300));
-  gtk_container_add(GTK_CONTAINER(sw2), GTK_WIDGET(d->box));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
 

@@ -1371,9 +1371,9 @@ void init_presets(dt_lib_module_t *self)
 }
 
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
-                    const int old_version, const int new_version, size_t *new_size)
+                    const int old_version, int *new_version, size_t *new_size)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1)
   {
     // we added the profile type
     //
@@ -1509,6 +1509,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     memcpy(new_params + pos, buf, old_params_size - ((char *)buf - (char *)old_params));
 
     *new_size = new_params_size;
+    *new_version = 2;
     return new_params;
   }
 
