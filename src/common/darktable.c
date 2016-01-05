@@ -83,7 +83,6 @@
 #include <magick/api.h>
 #endif
 #include "dbus.h"
-#include "common/dtpthread.h"
 
 #if defined(__SUNOS__)
 #include <sys/varargs.h>

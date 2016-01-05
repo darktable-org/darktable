@@ -28,13 +28,13 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void*), void *ar
   size_t stacksize;
   int ret;
   struct rlimit rlim;
-  
+
   pthread_attr_init(&attr);
   pthread_attr_getstacksize(&attr, &stacksize);
-  
+
   getrlimit(RLIMIT_STACK, &rlim);
-  
-  if (stacksize < rlim.rlim_cur)
+
+  if(stacksize < rlim.rlim_cur)
   {
     pthread_attr_setstacksize(&attr, rlim.rlim_cur);
   }
