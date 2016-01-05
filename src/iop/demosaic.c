@@ -1095,7 +1095,7 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
       int g;
       float gval[8] = { 0.0f };
       float *pix = out + 4 * (row * width + col);
-      ip = code[row % prow][col % pcol];
+      ip = code[(row + roi_in->y) % prow][(col + roi_in->x) % pcol];
       while((g = ip[0]) != INT_MAX) /* Calculate gradients */
       {
         float diff = fabsf(pix[g] - pix[ip[1]]) * ip[2];
