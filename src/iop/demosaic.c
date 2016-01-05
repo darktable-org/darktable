@@ -1029,7 +1029,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
  */
 static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
                             const dt_iop_roi_t *const roi_in, const unsigned int filters,
-                            const uint8_t (*const xtrans)[6])
+                            const uint8_t (*const xtrans)[6], const int only_vng_linear)
 {
   static const signed char terms[]
       = { -2, -2, +0, -1, 1, 0x01, -2, -2, +0, +0, 2, 0x01, -2, -1, -1, +0, 1, 0x01, -2, -1, +0, -1, 1, 0x02,
@@ -1068,6 +1068,9 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
     filters4 = filters | 0x0c0c0c0cu;
 
   lin_interpolate(out, in, roi_out, roi_in, filters4, xtrans);
+
+  // if only linear interpolation is requested we can stop it here
+  if(only_vng_linear) return;
 
   char *buffer
       = (char *)dt_alloc_align(16, (size_t)sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
@@ -1528,11 +1531,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
     uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
 
+  // we check if we can avoid full scale demosaicing and chose simple
+  // half scale or third scale interpolation instead
+  const int full_scale_demosaicing =
+      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
+      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
+      uhq_thumb ||
+      roi_out->scale > (data->filters == 9u ? 0.333f : 0.5f);
+
+  // we check if we can stop at the linear interpolation step in VNG
+  // instead of going the full way
+  const int only_vng_linear =
+      full_scale_demosaicing &&
+      roi_out->scale < (data->filters == 9u ? 0.667f : 0.8f);
+
+  // we use full Markesteijn demosaicing on xtrans sensors only if
+  // maximum quality is required
+  const int xtrans_full_markesteijn_demosaicing =
+      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 1) ||
+      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
+      uhq_thumb ||
+      roi_out->scale > 0.8f;
+
   const float *const pixels = (float *)i;
 
-  if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
-      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || (uhq_thumb) ||
-      roi_out->scale > (img->filters == 9u ? 0.333f : .5f))
+  if(full_scale_demosaicing)
   {
     // Full demosaic and then scaling if needed
     int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
@@ -1550,11 +1573,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
     if(img->filters == 9u)
     {
-      if(demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
-        vng_interpolate(tmp, pixels, &roo, &roi, data->filters, img->xtrans);
-      else
+      if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && xtrans_full_markesteijn_demosaicing)
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, img, img->xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
+      else
+        vng_interpolate(tmp, pixels, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
     }
     else
     {
@@ -1585,7 +1608,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
         passthrough_monochrome(tmp, in, &roo, &roi);
       else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
-        vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans);
+        vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters,
                      data->median_thrs); // wanted ppg or zoomed out a lot and quality is limited to 1
