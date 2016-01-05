@@ -2171,10 +2171,12 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 1, sizeof(cl_mem), &dev_tmp2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 4, sizeof(uint32_t), &filters4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 5, sizeof(cl_mem), &dev_xtrans);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 6, sizeof(cl_mem), &dev_ips);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 7, sizeof(cl_mem), &dev_code);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 4, sizeof(int), (void *)&roi_in->x);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 5, sizeof(int), (void *)&roi_in->y);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 6, sizeof(uint32_t), &filters4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 7, sizeof(cl_mem), &dev_xtrans);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 8, sizeof(cl_mem), &dev_ips);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 9, sizeof(cl_mem), &dev_code);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_interpolate, sizes);
       if(err != CL_SUCCESS) goto error;
     }

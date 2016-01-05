@@ -116,8 +116,9 @@ lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 
 kernel void
 vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-		const unsigned int filters, global const unsigned char (*const xtrans)[6],
-		global const int (*const ips), global const int (*const code)[16])
+		const int rin_x, const int rin_y, const unsigned int filters, 
+		global const unsigned char (*const xtrans)[6], global const int (*const ips), 
+		global const int (*const code)[16])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -132,7 +133,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
   int g;
 
   // get byte code
-  global const int *ip = ips + code[y % prow][x % pcol];
+  global const int *ip = ips + code[(y + rin_y) % prow][(x + rin_x) % pcol];
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float pixv[4] = { pixel.x, pixel.y, pixel.z, pixel.w };
@@ -177,7 +178,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
   
   float thold = gmin + (gmax * 0.5f);
   float sum[4] = { 0.0f };
-  int color = fcol(y, x, filters, xtrans);
+  int color = fcol(y + rin_y, x + rin_x, filters, xtrans);
   int num = 0;
   
   // average the neightbors
