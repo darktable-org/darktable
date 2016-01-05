@@ -250,7 +250,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     /* record undo/redo history snapshot */
     if (d->prev.snapshot != NULL)
     {
-      dt_undo_history_t *hist = g_malloc(sizeof(dt_undo_history_t));
+      dt_undo_history_t *hist = malloc(sizeof(dt_undo_history_t));
       hist->snapshot=d->prev.snapshot;
       hist->end=d->prev.end;
       dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t *)hist, &pop_undo, _history_undo_data_free);
