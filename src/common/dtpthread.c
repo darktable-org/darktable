@@ -1,44 +1,42 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2009--2014 johannes hanika.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <sys/resource.h>
 
 #include "common/dtpthread.h"
-
-gboolean dt_openmp_init_stacksize(void)
-{
-  pthread_attr_t attr;
-  size_t stacksize;
-  gboolean ret=TRUE;
-
-  pthread_attr_init(&attr);
-  pthread_attr_getstacksize(&attr, &stacksize);
-  
-  const gchar *openmp_stacksize_env=openmp_stacksize_env=g_getenv("OMP_STACKSIZE");
-  
-  gchar *s=g_strdup_printf("%dB", SAFESTACKSIZE);
-  
-  if (stacksize < SAFESTACKSIZE && g_strcmp0(openmp_stacksize_env, s) != 0 )
-  {
-    ret=g_setenv("OMP_STACKSIZE", s, TRUE);
-  }
-  
-  g_free(s);
-  
-  pthread_attr_destroy(&attr);
-  
-  return ret;
-}
+#include <sys/time.h>
+#include <sys/resource.h>
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void*), void *arg)
 {
   pthread_attr_t attr;
   size_t stacksize;
   int ret;
+  struct rlimit rlim;
   
   pthread_attr_init(&attr);
   pthread_attr_getstacksize(&attr, &stacksize);
   
-  if (stacksize < SAFESTACKSIZE)
+  getrlimit(RLIMIT_STACK, &rlim);
+  
+  if (stacksize < rlim.rlim_cur)
   {
-    pthread_attr_setstacksize(&attr, SAFESTACKSIZE);
+    pthread_attr_setstacksize(&attr, rlim.rlim_cur);
   }
   
   ret=pthread_create(thread, &attr, start_routine, arg);
