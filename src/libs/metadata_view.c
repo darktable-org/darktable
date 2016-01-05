@@ -35,7 +35,7 @@
 #include "lua/call.h"
 #endif
 
-#define SHOW_FLAGS 0
+#define SHOW_FLAGS 1
 
 DT_MODULE(1)
 
