@@ -2779,7 +2779,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->box_raw), g->demosaic_method_bayer, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("PPG (fast)"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("AMaZE (slow)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4 (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("passthrough (monochrome) (experimental)"));
   g_object_set(G_OBJECT(g->demosaic_method_bayer), "tooltip-text", _("demosaicing raw data method"),
                (char *)NULL);
@@ -2787,7 +2787,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->demosaic_method_xtrans, NULL, _("method"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), g->demosaic_method_xtrans, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
   g_object_set(G_OBJECT(g->demosaic_method_xtrans), "tooltip-text", _("demosaicing raw data method"),
