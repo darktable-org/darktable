@@ -20,4 +20,4 @@ else(APPLE)
   set_target_properties(darktable-chart PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
 endif(APPLE)
 
-install(TARGETS darktable-chart DESTINATION bin)
+install(TARGETS darktable-chart DESTINATION ${CMAKE_INSTALL_BINDIR})
