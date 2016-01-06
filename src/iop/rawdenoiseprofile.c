@@ -81,15 +81,15 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING;
 }
 
-typedef union floatint_t
-{
-  float f;
-  uint32_t i;
-} floatint_t;
-
 // very fast approximation for 2^-x (returns 0 for x > 126)
 static inline float fast_mexp2f(const float x)
 {
+  typedef union floatint_t
+  {
+    float f;
+    uint32_t i;
+  } floatint_t;
+
   const float i1 = (float)0x3f800000u; // 2^0
   const float i2 = (float)0x3f000000u; // 2^-1
   const float k0 = i1 + x * (i2 - i1);
@@ -100,7 +100,8 @@ static inline float fast_mexp2f(const float x)
 
 static inline float noise_stddev_gen_Fisz(const float level, const float black, const float white, const float a, const float b, const float c)
 {
-  return sqrtf(MAX(0.0f, a*MAX(0, level-black) + b*b + c*c*MAX(0, level-black)*MAX(0, level-black)));
+  const float v = MAX(1, level-black);
+  return sqrtf(a*v + b*b + c*c*v*v);
 }
 
 static inline float noise_stddev_dxo(
@@ -489,13 +490,14 @@ static void synthesize(
     float *pout = out + (size_t)j * width;
     for(int i = 0; i < width; i++)
     {
-      const int c = FC(crop_y + j, crop_x + i, filters);
+      const int fc = FC(crop_y + j, crop_x + i, filters);
+      assert(fc >= 0 && fc <= 2);
       // inverse Fisz transform:
       float d0 = *pdetail;
       if(mode == 1) d0 *= noise(*pin, black, white, a, b, c);
       // const float d0 = *pdetail;
-      const float d = copysignf(fmaxf(fabsf(d0) - thrsf[c], 0.0f), d0);
-      *pout = *pin + boostf[c] * d;
+      const float d = copysignf(MAX(fabsf(d0) - thrsf[fc], 0.0f), d0);
+      *pout = *pin + boostf[fc] * d;
       pdetail++;
       pin++;
       pout++;
@@ -525,9 +527,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       num++;
     }
   }
-  const float black = x / num;
-  const float black_s = sqrtf(x2/num - black*black);
-  fprintf(stderr, "estimated black %g/%d s %g num %lu\n", black,
+  dt_mipmap_cache_release(darktable.mipmap_cache, &full);
+  const float black = img->raw_black_level;
+  const float e_black = x / num;
+  const float black_s = sqrtf(x2/num - e_black*e_black);
+  fprintf(stderr, "estimated black %g/%d s %g num %lu\n", e_black,
       self->dev->image_storage.raw_black_level, black_s, num);
 
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
@@ -581,22 +585,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   tmp1 = dt_alloc_align(64, sizeof(float) * npixels);
   tmp2 = dt_alloc_align(64, sizeof(float) * npixels);
 
-#if 0
-  // create reference buffer for noise stabilisation (very wasteful on memory for now, sorry)
-  float *ref = dt_alloc_align(64, sizeof(float) * npixels);
-  for(size_t k=0;k<npixels;k++) tmp1[k] = ((uint16_t *)ivoid)[k];
-  decompose_g (ref, tmp1, tmp2,   offx,    scale, width, height);  // green
-  decompose_rb(ref, tmp1, tmp2, 1-offx, 0, scale, width, height);  // blue
-  decompose_rb(ref, tmp1, tmp2,   offx, 1, scale, width, height);  // red
-#endif
-
   // noise std dev ~= sqrt(b + a*input)
   // lacks pixel non-uniformity that kicks in for large values (do we care?)
   const float a = d->a, b = black_s, c = d->c;
-  const float white = self->dev->image_storage.raw_white_point;
+  const float white = img->raw_white_point;
 
   // precondition((uint16_t *)ivoid, tmp1, ref, width, height, a, b, d->mode);
+#if 0 // decompose into r-g, g, b-g
+  for(int j=0;j<height;j++)
+  {
+    for(int i=(j&1)?1-offx:offx;i<width;i+=2)
+      tmp1[j*width+i] = ((uint16_t *)ivoid)[j*width+i];
+    for(int i=(j&1)?offx:1-offx;i<width;i+=2)
+      tmp1[j*width+i] = ((uint16_t *)ivoid)[j*width+i] - 
+        ((uint16_t *)ivoid)[j*width + (i&~1) + ((j&1)?1-offx:offx)];
+  }
+#else
   for(size_t k=0;k<npixels;k++) tmp1[k] = ((uint16_t *)ivoid)[k];
+#endif
 #if 0 // debug: write out preconditioned buffer for external analysis
   if(self->gui_data)
   {
@@ -686,10 +692,11 @@ memset(buf1, 0, sizeof(float)*width*height);
     float var_y[3] = {0.0f}, s_x[3] = {0.0f}, thrs[3] = {0.0f};
     for(int k=0;k<3;k++)
     {
+      // const float nv = k==1? sb2 : 4.0*sb2; // noise variance, colour channels are doubled (r-g, b-g)
+      const float nv = sb2 * d->strength;
       var_y[k] = sum_y2[k] / (cnt[k] - 1.0f);     // noisy signal variance
-      if(var_y[k] > sb2 + 1e-10f)
-      s_x[k] = sqrtf(MAX(1e-12f, var_y[k] - sb2)); // signal std deviation
-      thrs[k] = d->strength * sb2 / s_x[k];
+      s_x[k] = sqrtf(MAX(1e-12f, var_y[k] - nv)); // signal std deviation
+      thrs[k] = nv / s_x[k];
       fprintf(stderr, "???[%d] y2 %g cnt %lu vy %g sx %g t %g\n", k, sum_y2[k], cnt[k], var_y[k], s_x[k], thrs[k]);
     }
     fprintf(stderr, "scale %d thrs %f %f %f = %f / %f\n", scale, thrs[0], thrs[1], thrs[2], sb2, s_x[0]);
@@ -702,6 +709,8 @@ memset(buf1, 0, sizeof(float)*width*height);
     const float thrs[3] = { 0.0, 0.0, 0.0 };
 #endif
     const float boost[3] = { 1.0f, 1.0f, 1.0f };
+    // const float boost[3] = { 0.0f, 0.0f, 0.0f };
+    // XXX this^ looks better than with threshold (black rims around light) wtf?
     synthesize(buf2, buf1, buf[scale], thrs, boost, black, white, a, b, c,
         width, height, img->crop_x + roi_in->x, img->crop_y + roi_in->y, filters, d->mode);
     // DEBUG: clean out temporary memory:
@@ -711,8 +720,22 @@ memset(buf1, 0, sizeof(float)*width*height);
     buf2 = buf1;
     buf1 = buf3;
   }
+#endif
 
   // backtransform(buf1, (uint16_t *)ovoid, ref, width, height, a, b, d->mode);
+#if 0 // recompose into r-g, g, b-g
+  for(int j=0;j<height;j++)
+  {
+    for(int i=(j&1)?1-offx:offx;i<width;i+=2) 
+      ((uint16_t *)ovoid)[j*width+i] = CLAMP(
+        buf1[j*width+i],
+        0, 0xffff);
+    for(int i=(j&1)?offx:1-offx;i<width;i+=2)
+      ((uint16_t *)ovoid)[j*width+i] = CLAMP(
+        buf1[j*width+i] + buf1[j*width + (i&~1) + ((j&1)?1-offx:offx)],
+        0, 0xffff);
+  }
+#else
   for(size_t k=0;k<npixels;k++) ((uint16_t*)ovoid)[k] = CLAMP(buf1[k], 0, 0xffff);
 #endif
 
