@@ -32,19 +32,25 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void*), void *ar
   pthread_attr_init(&attr);
   pthread_attr_getstacksize(&attr, &stacksize);
 
-  getrlimit(RLIMIT_STACK, &rlim);
+  ret = getrlimit(RLIMIT_STACK, &rlim);
+
+  if(ret != 0)
+  {
+    rlim.rlim_cur = 8 * 1024 * 1024;
+  }
 
   if(stacksize < rlim.rlim_cur)
   {
     pthread_attr_setstacksize(&attr, rlim.rlim_cur);
   }
-  
-  ret=pthread_create(thread, &attr, start_routine, arg);
-  
+
+  ret = pthread_create(thread, &attr, start_routine, arg);
+
   pthread_attr_destroy(&attr);
   
   return ret;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
-// // vim: shiftwidth=2 expandtab tabstop=2 cindent
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
