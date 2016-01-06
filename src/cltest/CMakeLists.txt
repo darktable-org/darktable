@@ -8,7 +8,7 @@ set_target_properties(darktable-cltest PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_P
 if(APPLE)
   set_target_properties(darktable-cltest PROPERTIES INSTALL_RPATH @loader_path/../${LIB_INSTALL}/darktable)
 else(APPLE)
-  set_target_properties(darktable-cltest PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
+  set_target_properties(darktable-cltest PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}/darktable)
 endif(APPLE)
 set_target_properties(darktable-cltest PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable-cltest lib_darktable)

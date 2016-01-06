@@ -19,7 +19,7 @@ set_target_properties(darktable-viewer PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_P
 if(APPLE)
   set_target_properties(darktable-viewer PROPERTIES INSTALL_RPATH @loader_path/../${LIB_INSTALL}/darktable)  
 else(APPLE)
-  set_target_properties(darktable-viewer PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
+  set_target_properties(darktable-viewer PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}/darktable)
 endif(APPLE)
 set_target_properties(darktable-viewer PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable-viewer lib_darktable ${SDL_LIBRARY} ${OPENGL_LIBRARIES})

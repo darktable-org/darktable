@@ -36,5 +36,5 @@ foreach(module ${MODULES})
 endforeach(module)
 
 foreach(module ${MODULES})
-    install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/views)
+    install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/views)
 endforeach(module)

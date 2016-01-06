@@ -754,7 +754,7 @@ if(WIN32)
   # Windows needs its DLLs in the same directory as the executable to find them.
   install(TARGETS lib_darktable DESTINATION bin)
 else(WIN32)
-  install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
+  install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
 
 # make sure static libs is first
@@ -811,7 +811,7 @@ if(NOT WIN32)
   if(APPLE)
     set_target_properties(darktable PROPERTIES INSTALL_RPATH @loader_path/../${LIB_INSTALL}/darktable)
   else(APPLE)
-    set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
+    set_target_properties(darktable PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}/darktable)
   endif(APPLE)
 endif(NOT WIN32)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
