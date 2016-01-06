@@ -24,7 +24,11 @@ else()
   set(SOURCE_PACKAGE 0)
 endif()
 
-# Include GNUInstallDirs, which sets sensible defaults for install directories
+# Include GNUInstallDirs, which sets sensible defaults for install directories.
+# See https://cmake.org/cmake/help/v3.0/module/GNUInstallDirs.html for further information.
+# These values can be easily overridden if required.
+# Some defaults are set for OpenBSD as well (info and man pages).
+
 include(GNUInstallDirs)
 
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
