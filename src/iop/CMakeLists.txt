@@ -24,7 +24,7 @@ macro (add_iop _lib _src)
   )
   add_library(${_lib} MODULE ${_output} ${ARGN})
   target_link_libraries(${_lib} ${LIBS})
-  install(TARGETS  ${_lib} DESTINATION ${LIB_INSTALL}/darktable/plugins)
+  install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
 endmacro (add_iop)
 
 # add_iop(useless "useless.c")

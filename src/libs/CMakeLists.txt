@@ -93,5 +93,5 @@ endforeach(module)
 # TODO: Modules are now not only lighttable related and should be placed
 #       in a better matching structure then just in lighttable directory.
 foreach(module ${MODULES})
-	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/lighttable)
+    install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable)
 endforeach(module)

@@ -237,12 +237,12 @@ if(CMAKE_BUILD_TYPE MATCHES "^[Dd][Ee][Bb][Uu][Gg]$" AND SOURCE_PACKAGE)
   message(FATAL_ERROR "ERROR: Debug build type most likely isn't what you want, use RelWithDebInfo instead. If you're absolutely sure that this is what you want then just comment out this line.")
 endif()
 
-if(NOT LIB_INSTALL)
-  set( LIB_INSTALL lib${LIB_SUFFIX} CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-endif(NOT LIB_INSTALL)
-
-mark_as_advanced(LIB_INSTALL)
-
+if(APPLE)
+    if(NOT LIB_INSTALL)
+      set( LIB_INSTALL lib${LIB_SUFFIX} CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
+    endif(NOT LIB_INSTALL)
+    mark_as_advanced(LIB_INSTALL)
+endif(APPLE)
 
 # we need some external programs for building darktable
 message(STATUS "Looking for external programs")

@@ -8,7 +8,7 @@ set_target_properties(darktable-cli PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH
 if(APPLE)
   set_target_properties(darktable-cli PROPERTIES INSTALL_RPATH @loader_path/../${LIB_INSTALL}/darktable)
 else(APPLE)
-  set_target_properties(darktable-cli PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
+  set_target_properties(darktable-cli PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}/darktable)
 endif(APPLE)
 set_target_properties(darktable-cli PROPERTIES LINKER_LANGUAGE C)
 if(CMAKE_COMPILER_IS_GNUCC)
