@@ -310,32 +310,19 @@ else(NOT EXTERNAL_PROGRAMS_FOUND)
   message(STATUS "All external programs found")
 endif(NOT EXTERNAL_PROGRAMS_FOUND)
 
-
-#need to put here do setting LOCALE_DIR variable
+# The path can be modified by setting CMAKE_INSTALL_LOCALEDIR
 if(USE_NLS)
-find_package(Gettext)
-if(Gettext_FOUND)
-	if(NOT LOCALE_DIR)
-    SET(LOCALE_DIR "${CMAKE_INSTALL_DATAROOTDIR}/locale")
-	endif(NOT LOCALE_DIR)
-
-	if(NOT LOCALE_DIR)
-		message(QUIET "Set LOCALE_DIR to path to get Gettext working")
-	else()
-		find_package(Msgfmt)
-		if(Msgfmt_FOUND)
-			message(STATUS "Found msgfmt to convert language file. Translation enabled")
-			add_subdirectory(po)
-		else()
-			message(STATUS "Cannot find msgfmt to convert language file. Translation won't be enabled")
-		endif()
-	endif(NOT LOCALE_DIR)
-endif(Gettext_FOUND)
+    find_package(Gettext)
+    if(Gettext_FOUND)
+        find_package(Msgfmt)
+        if(Msgfmt_FOUND)
+            message(STATUS "Found msgfmt to convert language file. Translation enabled")
+            add_subdirectory(po)
+        else()
+            message(STATUS "Cannot find msgfmt to convert language file. Translation won't be enabled")
+        endif()
+    endif(Gettext_FOUND)
 endif(USE_NLS)
-
-if(NOT DEFINED RUNTIME_LOCALE_DIR)
-  set(RUNTIME_LOCALE_DIR ${LOCALE_DIR})
-endif(NOT DEFINED RUNTIME_LOCALE_DIR)
 
 #find a temporary directory
 if(NOT TMP_DIR)
