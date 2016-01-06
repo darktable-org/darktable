@@ -456,13 +456,17 @@ static void decompose_rb(
       detail[j*width+i] = (input[j*width+i] - output[j*width+i]);
 }
 
-#if 1// TODO: rewrite for single channel bayer patters (need to add channels for thrs+boost depending on pattern)
+static int FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
+}
+
 static void synthesize(
     float *const out,
     const float *const in,
     const float *const detail,
-    const float *thrsf,
-    const float *boostf,
+    const float *const thrsf,
+    const float *const boostf,
     const float black,
     const float white,
     const float a,
@@ -470,11 +474,11 @@ static void synthesize(
     const float c,
     const int32_t width,
     const int32_t height,
+    const int32_t crop_x,
+    const int32_t crop_y,
+    const uint32_t filters,
     const uint32_t mode)
 {
-  const float threshold = thrsf[0];
-  const float boost = boostf[0];
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -485,23 +489,18 @@ static void synthesize(
     float *pout = out + (size_t)j * width;
     for(int i = 0; i < width; i++)
     {
+      const int c = FC(crop_y + j, crop_x + i, filters);
       // inverse Fisz transform:
       float d0 = *pdetail;
       if(mode == 1) d0 *= noise(*pin, black, white, a, b, c);
       // const float d0 = *pdetail;
-      const float d = copysignf(fmaxf(fabsf(d0) - threshold, 0.0f), d0);
-      *pout = *pin + boost * d;
+      const float d = copysignf(fmaxf(fabsf(d0) - thrsf[c], 0.0f), d0);
+      *pout = *pin + boostf[c] * d;
       pdetail++;
       pin++;
       pout++;
     }
   }
-}
-#endif
-
-static int FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
@@ -669,25 +668,42 @@ memset(buf1, 0, sizeof(float)*width*height);
     const float sigma_band = powf(varf, scale) * sigma;
     // determine thrs as bayesshrink
     // TODO: parallelize!
-    float sum_y2 = 0.0f;
-    for(size_t k = 0; k < npixels; k++)
-      sum_y2 += buf[scale][k] * buf[scale][k];
+    float sum_y2[3] = {0.0f};
+    uint64_t cnt[3] = {0};
+    for(int j=64;j<height-64;j++)
+    {
+      for(int i=64;i<width-64;i++)
+      {
+        const uint64_t k = j*width+i;
+        // just add crop y and x, it's only about odd/even and we want to avoid negative numbers
+        const int c = FC(img->crop_y + roi_in->y + j, img->crop_x + roi_in->x + i, filters);
+        sum_y2[c] += buf[scale][k] * buf[scale][k];
+        cnt[c]++;
+      }
+    }
 
     const float sb2 = sigma_band * sigma_band;
-    const float var_y = sum_y2 / (npixels - 1.0f);
-    const float std_x = sqrtf(MAX(1e-6f, var_y - sb2));
-    // adjust here because it seemed a little weak
-    const float adjt = d->strength;
-    float thrs[4] = { adjt * sb2 / std_x };
-// const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
-// const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
-fprintf(stderr, "scale %d thrs %f = %f / %f\n", scale, thrs[0], sb2, std_x);
-    if(d->mode == 0) thrs[0] = thrs[1] = thrs[2] = thrs[3] = 0.0f;
+    float var_y[3] = {0.0f}, s_x[3] = {0.0f}, thrs[3] = {0.0f};
+    for(int k=0;k<3;k++)
+    {
+      var_y[k] = sum_y2[k] / (cnt[k] - 1.0f);     // noisy signal variance
+      if(var_y[k] > sb2 + 1e-10f)
+      s_x[k] = sqrtf(MAX(1e-12f, var_y[k] - sb2)); // signal std deviation
+      thrs[k] = d->strength * sb2 / s_x[k];
+      fprintf(stderr, "???[%d] y2 %g cnt %lu vy %g sx %g t %g\n", k, sum_y2[k], cnt[k], var_y[k], s_x[k], thrs[k]);
+    }
+    fprintf(stderr, "scale %d thrs %f %f %f = %f / %f\n", scale, thrs[0], thrs[1], thrs[2], sb2, s_x[0]);
+    // XXX fake colour denoising:
+    // thrs[0] *= 4.0f;
+    // thrs[2] *= 4.0f;
+      
+    if(d->mode == 0) thrs[0] = thrs[1] = thrs[2] = 0.0f;
 #else
-    const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
+    const float thrs[3] = { 0.0, 0.0, 0.0 };
 #endif
-    const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    synthesize(buf2, buf1, buf[scale], thrs, boost, black, white, a, b, c, width, height, d->mode);
+    const float boost[3] = { 1.0f, 1.0f, 1.0f };
+    synthesize(buf2, buf1, buf[scale], thrs, boost, black, white, a, b, c,
+        width, height, img->crop_x + roi_in->x, img->crop_y + roi_in->y, filters, d->mode);
     // DEBUG: clean out temporary memory:
     // memset(buf1, 0, sizeof(float)*4*width*height);
 
