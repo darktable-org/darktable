@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
+
 file(GLOB LANGUAGES *.po)
 foreach(language ${LANGUAGES})
 	string(REGEX REPLACE "(.+(\\\\|/))+" "" language ${language})

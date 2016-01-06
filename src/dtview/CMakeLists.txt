@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.8.5)
+
 if(USE_LUA)
 	if(LUA52_FOUND)
 		include_directories(SYSTEM ${LUA52_INCLUDE_DIRS})
