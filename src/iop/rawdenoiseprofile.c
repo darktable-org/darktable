@@ -100,7 +100,7 @@ static inline float fast_mexp2f(const float x)
 
 static inline float noise_stddev_gen_Fisz(const float level, const float black, const float white, const float a, const float b, const float c)
 {
-  return sqrtf(MAX(0.0f, a*MAX(0, level-black) + b + c*c*MAX(0, level-black)*MAX(0, level-black)));
+  return sqrtf(MAX(0.0f, a*MAX(0, level-black) + b*b + c*c*MAX(0, level-black)*MAX(0, level-black)));
 }
 
 static inline float noise_stddev_dxo(
@@ -221,7 +221,7 @@ static inline void backtransform(
 
 #if 1 //def ANALYSE
 static void analyse_g(
-    float *const coarse,         // blurred buffer
+    const float *coarse,         // blurred buffer
     const uint16_t *const input, // const input buffer
     const int offx,              // select channel in bayer pattern
     const int32_t width,
@@ -261,6 +261,7 @@ static void analyse_g(
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
   {
     const float v = coarse[width*j+i];
+#if 1
     uint16_t vb;
     float inp;
     if(mode == 0)
@@ -276,6 +277,9 @@ static void analyse_g(
       //backtransform(coarse+width*j+i, &vb, coarse+width*j+i, 1, 1, aa, bb, mode);
     }
     const float d = fabsf(inp - v);
+#endif
+    // const float d = detail[width*j+i];
+    // const int bin = CLAMP((v - black)/(white - black) * N, 0, N-1);
     // const float d = input[width*j+i];
     const int bin = CLAMP((vb - black)/(white - black) * N, 0, N-1);
     sum[bin] += d;
@@ -289,7 +293,7 @@ static void analyse_g(
     {
       // g->stddev[k] = sum[k] / (1.4826*num[k]);
       g->stddev[k] = sqrtf(sum2[k] / (num[k]+1.0f));
-      if(mode) g->stddev[k] *= aa;
+      // if(mode) g->stddev[k] *= aa;
       if(g->stddev[k] > g->stddev_max) g->stddev_max = g->stddev[k];
       // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, sum[k]/(1.4826*num[k]));
     }
@@ -300,6 +304,7 @@ static void analyse_g(
       // fprintf(stdout, "%g %g\n", b + (w-b)*k/(float)N, sum[k]/(1.4826*num[k]));
 }
 
+#if 0
 static void analyse_rb(
     float *const coarse,         // blurred buffer
     const uint16_t *const input, // const input buffer
@@ -331,6 +336,7 @@ static void analyse_rb(
 #endif
 }
 #endif
+#endif
 
 static void decompose_g(
     float *const output,      // output buffer
@@ -344,7 +350,8 @@ static void decompose_g(
     const float b,            // noise profile gaussian part
     const float c,
     const int32_t width,      // width of buffers
-    const int32_t height)     // height of buffers (all three same size)
+    const int32_t height,     // height of buffers (all three same size)
+    const uint32_t mode)
 {
   const int mult = 1 << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
@@ -381,8 +388,11 @@ static void decompose_g(
 #endif
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
     // detail[j*width+i] = input[j*width+i] - output[j*width+i];
-    // Fisz transform:
-    detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
+    if(mode == 1)
+      // Fisz transform:
+      detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
+    else
+      detail[j*width+i] = (input[j*width+i] - output[j*width+i]);
 }
 
 static void decompose_rb(
@@ -398,7 +408,8 @@ static void decompose_rb(
     const float b,            // noise profile gaussian part
     const float c,
     const int32_t width,      // width of buffers
-    const int32_t height)     // height of buffers (all three same size)
+    const int32_t height,     // height of buffers (all three same size)
+    const uint32_t mode)
 {
   // jump scale+1 to jump over green channel at finest scale
   const int mult = 1 << (scale+1);
@@ -438,8 +449,11 @@ static void decompose_rb(
 #endif
   for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
     // detail[j*width+i] = input[j*width+i] - output[j*width+i];
-    // Fisz transform:
-    detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
+    if(mode == 1)
+      // Fisz transform:
+      detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
+    else
+      detail[j*width+i] = (input[j*width+i] - output[j*width+i]);
 }
 
 #if 1// TODO: rewrite for single channel bayer patters (need to add channels for thrs+boost depending on pattern)
@@ -455,7 +469,8 @@ static void synthesize(
     const float b,
     const float c,
     const int32_t width,
-    const int32_t height)
+    const int32_t height,
+    const uint32_t mode)
 {
   const float threshold = thrsf[0];
   const float boost = boostf[0];
@@ -471,7 +486,8 @@ static void synthesize(
     for(int i = 0; i < width; i++)
     {
       // inverse Fisz transform:
-      const float d0 = *pdetail * noise(*pin, black, white, a, b, c);
+      float d0 = *pdetail;
+      if(mode == 1) d0 *= noise(*pin, black, white, a, b, c);
       // const float d0 = *pdetail;
       const float d = copysignf(fmaxf(fabsf(d0) - threshold, 0.0f), d0);
       *pout = *pin + boost * d;
@@ -493,6 +509,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 {
   // now unfortunately we're supposed to work on 16-bit in- and output.
 
+  const dt_image_t *img = &piece->pipe->image;
+  // estimate gaussian (black sensor) noise:
+  // TODO: alloc some memory and use MAD instead of empirical variance estimate here?
+  dt_mipmap_buffer_t full;
+  dt_mipmap_cache_get(darktable.mipmap_cache, &full, img->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  double x = 0.0, x2 = 0.0;
+  uint64_t num = 0;
+  for(int j=img->crop_y;j<full.height;j++)
+  {
+    for(int i=0;i<img->crop_x;i++)
+    {
+      const double v = ((uint16_t*)full.buf)[full.width*j + i];
+      x += v;
+      x2 += v*v;
+      num++;
+    }
+  }
+  const float black = x / num;
+  const float black_s = sqrtf(x2/num - black*black);
+  fprintf(stderr, "estimated black %g/%d s %g num %lu\n", black,
+      self->dev->image_storage.raw_black_level, black_s, num);
 
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -532,7 +569,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
 
   // find offset to beginning of gccg quad
-  const dt_image_t *img = &piece->pipe->image;
   const int filters = dt_image_filter(img);
   int offx = 0;
   if(FC(img->crop_y, img->crop_x, filters) == 0) offx = 1;
@@ -557,8 +593,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   // noise std dev ~= sqrt(b + a*input)
   // lacks pixel non-uniformity that kicks in for large values (do we care?)
-  const float a = d->a, b = d->b, c = d->c;
-  const float black = self->dev->image_storage.raw_black_level;
+  const float a = d->a, b = black_s, c = d->c;
   const float white = self->dev->image_storage.raw_white_point;
 
   // precondition((uint16_t *)ivoid, tmp1, ref, width, height, a, b, d->mode);
@@ -584,9 +619,9 @@ memset(tmp2, 0, sizeof(float)*width*height);
 #if 1
   for(int scale = 0; scale < max_scale; scale++)
   {
-    decompose_g (buf2, buf1, buf[scale],   offx,    scale, black, white, a, b, c, width, height);  // green
-    decompose_rb(buf2, buf1, buf[scale], 1-offx, 0, scale, black, white, a, b, c, width, height);  // blue
-    decompose_rb(buf2, buf1, buf[scale],   offx, 1, scale, black, white, a, b, c, width, height);  // red
+    decompose_g (buf2, buf1, buf[scale],   offx,    scale, black, white, a, b, c, width, height, d->mode);  // green
+    decompose_rb(buf2, buf1, buf[scale], 1-offx, 0, scale, black, white, a, b, c, width, height, d->mode);  // blue
+    decompose_rb(buf2, buf1, buf[scale],   offx, 1, scale, black, white, a, b, c, width, height, d->mode);  // red
 // DEBUG: clean out temporary memory:
 memset(buf1, 0, sizeof(float)*width*height);
 #if 0 // DEBUG: print wavelet scales:
@@ -617,8 +652,8 @@ memset(buf1, 0, sizeof(float)*width*height);
 #if 1//def ANALYSE
   dt_iop_rawdenoiseprofile_gui_data_t *g = (dt_iop_rawdenoiseprofile_gui_data_t *)self->gui_data;
   analyse_g (buf1, ivoid,   offx,    width, height, black, white, a, b, c, d->mode, g);
-  analyse_rb(buf1, ivoid, 1-offx, 0, width, height, black, white, a, b, c, d->mode);
-  analyse_rb(buf1, ivoid,   offx, 1, width, height, black, white, a, b, c, d->mode);
+  // analyse_rb(buf1, ivoid, 1-offx, 0, width, height, black, white, a, b, c, d->mode);
+  // analyse_rb(buf1, ivoid,   offx, 1, width, height, black, white, a, b, c, d->mode);
 #endif
 
 #if 1
@@ -643,15 +678,16 @@ memset(buf1, 0, sizeof(float)*width*height);
     const float std_x = sqrtf(MAX(1e-6f, var_y - sb2));
     // adjust here because it seemed a little weak
     const float adjt = d->strength;
-    const float thrs[4] = { adjt * sb2 / std_x };
+    float thrs[4] = { adjt * sb2 / std_x };
 // const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
 // const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
 fprintf(stderr, "scale %d thrs %f = %f / %f\n", scale, thrs[0], sb2, std_x);
+    if(d->mode == 0) thrs[0] = thrs[1] = thrs[2] = thrs[3] = 0.0f;
 #else
     const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
 #endif
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    synthesize(buf2, buf1, buf[scale], thrs, boost, black, white, a, b, c, width, height);
+    synthesize(buf2, buf1, buf[scale], thrs, boost, black, white, a, b, c, width, height, d->mode);
     // DEBUG: clean out temporary memory:
     // memset(buf1, 0, sizeof(float)*4*width*height);
 
@@ -1001,6 +1037,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     // cairo_scale(cr, width/w, -height/3.0);
   cairo_set_source_rgb(cr, .7, .7, .7);
   cairo_move_to(cr, b*sx, 0.0*sy+height);
+  fprintf(stderr, "noise 0 %g\n", g->stddev[0]);
   for(int k=0;k<512;k++)
     if(g->stddev[k] == g->stddev[k])
       cairo_line_to(cr, (b + k/512.0*(w-b))*sx, g->stddev[k]*sy + height);
@@ -1014,6 +1051,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     // cairo_save(cr);
     // cairo_translate(cr, 0.0, height);
     // cairo_scale(cr, width/w, -height/g->stddev_max);
+    fprintf(stderr, "noise() 0 %g\n", noise(b, b, w, p->a, p->b, p->c));
     cairo_set_source_rgb(cr, .1, .7, .1);
     cairo_move_to(cr, b*sx, 0.0*sy+height);
     for(int k=0;k<512;k++)
