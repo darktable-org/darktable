@@ -2523,10 +2523,10 @@ void init_global(dt_iop_module_so_t *module)
       = dt_opencl_create_kernel(other, "clip_and_zoom_demosaic_passthrough_monochrome");
 
   const int vng = 15; // from programs.conf
-  gd->kernel_vng_border_interpolate = dt_opencl_create_kernel(vng, "border_interpolate");
-  gd->kernel_vng_lin_interpolate = dt_opencl_create_kernel(vng, "lin_interpolate");
+  gd->kernel_vng_border_interpolate = dt_opencl_create_kernel(vng, "vng_border_interpolate");
+  gd->kernel_vng_lin_interpolate = dt_opencl_create_kernel(vng, "vng_lin_interpolate");
   gd->kernel_zoom_third_size = dt_opencl_create_kernel(vng, "clip_and_zoom_demosaic_third_size_xtrans");
-  gd->kernel_vng_green_equilibrate = dt_opencl_create_kernel(vng, "green_equilibrate");
+  gd->kernel_vng_green_equilibrate = dt_opencl_create_kernel(vng, "vng_green_equilibrate");
   gd->kernel_vng_interpolate = dt_opencl_create_kernel(vng, "vng_interpolate");
 }
 

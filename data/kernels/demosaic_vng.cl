@@ -30,8 +30,8 @@ fcol(const int row, const int col, const unsigned int filters, global const unsi
 }
 
 kernel void
-border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-		   const int r_x, const int r_y, const unsigned int filters, global const unsigned char (*const xtrans)[6])
+vng_border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                       const int r_x, const int r_y, const unsigned int filters, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -76,8 +76,8 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
 
 
 kernel void
-lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
-		const unsigned int filters, global const int (*const lookup)[16][32])
+vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+                    const unsigned int filters, global const int (*const lookup)[16][32])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -116,9 +116,9 @@ lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 
 kernel void
 vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-		const int rin_x, const int rin_y, const unsigned int filters, 
-		global const unsigned char (*const xtrans)[6], global const int (*const ips), 
-		global const int (*const code)[16])
+                const int rin_x, const int rin_y, const unsigned int filters, 
+                global const unsigned char (*const xtrans)[6], global const int (*const ips), 
+                global const int (*const code)[16])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -221,12 +221,28 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
   write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
 
+kernel void
+vng_green_equilibrate(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
+{
+  // for Bayer mix the two greens to make VNG4
 
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x , y));
+
+  pixel.y = (pixel.y + pixel.w) / 2.0f;
+  pixel.w = 0.0f;
+
+  write_imagef(out, (int2)(x, y), pixel);
+}
 
 kernel void
 clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                                          const int r_x, const int r_y, const int rin_wd, const int rin_ht, const float r_scale, 
-					 global const unsigned char (*const xtrans)[6])
+                                         global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -272,21 +288,3 @@ clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only imag
   write_imagef(out, (int2)(x, y), (float4)(col[0], col[1], col[2], 0.0f));
 }
 
-
-kernel void
-green_equilibrate(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
-{
-  // for Bayer mix the two greens to make VNG4
-
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 pixel = read_imagef(in, sampleri, (int2)(x , y));
-
-  pixel.y = (pixel.y + pixel.w) / 2.0f;
-  pixel.w = 0.0f;
-
-  write_imagef(out, (int2)(x, y), pixel);
-}
