@@ -74,7 +74,7 @@ typedef struct dt_iop_demosaic_params_t
 typedef struct dt_iop_demosaic_gui_data_t
 {
   GtkWidget *box_raw;
-  GtkWidget *scale1;
+  GtkWidget *median_thrs;
   GtkWidget *greeneq;
   GtkWidget *color_smoothing;
   GtkWidget *demosaic_method_bayer;
@@ -141,7 +141,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_accel_connect_slider_iop(self, "edge threshold",
-                              GTK_WIDGET(((dt_iop_demosaic_gui_data_t *)self->gui_data)->scale1));
+                              GTK_WIDGET(((dt_iop_demosaic_gui_data_t *)self->gui_data)->median_thrs));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -2555,6 +2555,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     d->median_thrs = 0.0f;
   }
 
+  if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
+  {
+    d->median_thrs = 0.0f;
+  }
+
   // OpenCL only supported by some of the demosaicing methods
   switch(d->demosaicing_method)
   {
@@ -2613,7 +2618,7 @@ void gui_update(struct dt_iop_module_t *self)
   {
     gtk_widget_show(g->demosaic_method_bayer);
     gtk_widget_hide(g->demosaic_method_xtrans);
-    gtk_widget_show(g->scale1);
+    gtk_widget_show(g->median_thrs);
     gtk_widget_show(g->greeneq);
     dt_bauhaus_combobox_set(g->demosaic_method_bayer, p->demosaicing_method);
   }
@@ -2621,19 +2626,24 @@ void gui_update(struct dt_iop_module_t *self)
   {
     gtk_widget_show(g->demosaic_method_xtrans);
     gtk_widget_hide(g->demosaic_method_bayer);
-    gtk_widget_hide(g->scale1);
+    gtk_widget_hide(g->median_thrs);
     gtk_widget_hide(g->greeneq);
     dt_bauhaus_combobox_set(g->demosaic_method_xtrans, p->demosaicing_method & ~DEMOSAIC_XTRANS);
   }
 
   if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
   {
-    gtk_widget_hide(g->scale1);
+    gtk_widget_hide(g->median_thrs);
     gtk_widget_hide(g->color_smoothing);
     gtk_widget_hide(g->greeneq);
   }
 
-  dt_bauhaus_slider_set(g->scale1, p->median_thrs);
+  if(p->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE || p->demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
+  {
+    gtk_widget_hide(g->median_thrs);
+  }
+
+  dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
   dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
   dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
 
@@ -2741,13 +2751,19 @@ static void demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *se
 
   if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
   {
-    gtk_widget_hide(g->scale1);
+    gtk_widget_hide(g->median_thrs);
     gtk_widget_hide(g->color_smoothing);
     gtk_widget_hide(g->greeneq);
   }
+  else if(p->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE || p->demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
+  {
+    gtk_widget_hide(g->median_thrs);
+    gtk_widget_show(g->color_smoothing);
+    gtk_widget_show(g->greeneq);
+  }
   else
   {
-    gtk_widget_show(g->scale1);
+    gtk_widget_show(g->median_thrs);
     gtk_widget_show(g->color_smoothing);
     gtk_widget_show(g->greeneq);
   }
@@ -2793,12 +2809,12 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->demosaic_method_xtrans), "tooltip-text", _("demosaicing raw data method"),
                (char *)NULL);
 
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text",
+  g->median_thrs = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
+  g_object_set(G_OBJECT(g->median_thrs), "tooltip-text",
                _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."),
                (char *)NULL);
-  dt_bauhaus_widget_set_label(g->scale1, NULL, _("edge threshold"));
-  gtk_box_pack_start(GTK_BOX(g->box_raw), g->scale1, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->median_thrs, NULL, _("edge threshold"));
+  gtk_box_pack_start(GTK_BOX(g->box_raw), g->median_thrs, TRUE, TRUE, 0);
 
   g->color_smoothing = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->color_smoothing, NULL, _("color smoothing"));
@@ -2821,7 +2837,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->greeneq, _("full and local average"));
   g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("green channels matching method"), (char *)NULL);
 
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(median_thrs_callback), self);
+  g_signal_connect(G_OBJECT(g->median_thrs), "value-changed", G_CALLBACK(median_thrs_callback), self);
   g_signal_connect(G_OBJECT(g->color_smoothing), "value-changed", G_CALLBACK(color_smoothing_callback), self);
   g_signal_connect(G_OBJECT(g->greeneq), "value-changed", G_CALLBACK(greeneq_callback), self);
   g_signal_connect(G_OBJECT(g->demosaic_method_bayer), "value-changed",
