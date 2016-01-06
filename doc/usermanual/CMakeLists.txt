@@ -1,5 +1,5 @@
 # FIXME: Tell CMake to cache the pdf files so they are not regenerated each time.
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 FILE(GLOB_RECURSE IMAGE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.png")
 FILE(GLOB_RECURSE IMAGES_PATHS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images")
