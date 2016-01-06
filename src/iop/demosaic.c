@@ -1939,7 +1939,9 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
+
   const dt_image_t *img = &self->dev->image_storage;
+  const float threshold = 0.0001f * img->exif_iso;
 
   // separate out G1 and G2 in Bayer patterns
   unsigned int filters4;
@@ -1990,6 +1992,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_lookup = NULL;
   cl_mem dev_code = NULL;
   cl_mem dev_ips = NULL;
+  cl_mem dev_green_eq = NULL;
   cl_int err = -999;
 
   if(data->filters == 9u)
@@ -2145,6 +2148,23 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dev_ips = dt_opencl_copy_host_to_device_constant(devid, sizeof(ips), ips);
     if(dev_ips == NULL) goto error;
 
+    if(data->filters != 9u && data->green_eq != DT_IOP_GREEN_EQ_NO)
+    {
+      // green equilibration for Bayer sensors
+      dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
+      if(dev_green_eq == NULL) goto error;
+
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 3, sizeof(int), &height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 4, sizeof(uint32_t), (void *)&data->filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 5, sizeof(float), (void *)&threshold);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_green_eq, sizes);
+      if(err != CL_SUCCESS) goto error;
+      dev_in = dev_green_eq;
+    }
+
     // do linear interpolation
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
@@ -2272,6 +2292,8 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
   dev_ips = NULL;
 
+  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+  dev_green_eq = NULL;
 
   // color smoothing
   if(data->color_smoothing)
@@ -2365,6 +2387,7 @@ error:
   if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
   if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
   if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
+  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
