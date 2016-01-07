@@ -388,12 +388,11 @@ static void decompose_g(
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j=2*mult;j<height-2*mult;j++) for(int i=((j&1)?1-offx:offx)+2*mult;i<width-2*mult;i+=2)
-    // detail[j*width+i] = input[j*width+i] - output[j*width+i];
     if(mode == 1)
       // Fisz transform:
       detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
     else
-      detail[j*width+i] = (input[j*width+i] - output[j*width+i]);
+      detail[j*width+i] = input[j*width+i] - output[j*width+i];
 }
 
 static void decompose_rb(
@@ -449,12 +448,11 @@ static void decompose_rb(
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
-    // detail[j*width+i] = input[j*width+i] - output[j*width+i];
     if(mode == 1)
       // Fisz transform:
       detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
     else
-      detail[j*width+i] = (input[j*width+i] - output[j*width+i]);
+      detail[j*width+i] = input[j*width+i] - output[j*width+i];
 }
 
 static int FC(const int row, const int col, const unsigned int filters)
@@ -505,6 +503,92 @@ static void synthesize(
   }
 }
 
+#define ELEM_SWAP(a,b) { uint16_t t=(a);(a)=(b);(b)=t; }
+static inline uint16_t kth_smallest(uint16_t a[], int n, int k)
+{
+  int i,j,l,m ;
+  uint16_t x ;
+
+  l=0 ; m=n-1 ;
+  while (l<m) {
+    x=a[k] ;
+    i=l ;
+    j=m ;
+    do {
+      while (a[i]<x) i++ ;
+      while (x<a[j]) j-- ;
+      if (i<=j) {
+        ELEM_SWAP(a[i],a[j]) ;
+        i++ ; j-- ;
+      }
+    } while (i<=j) ;
+    if (j<k) l=i ;
+    if (k<i) m=j ;
+  }
+  return a[k] ;
+}
+#define median_n(a,n) kth_smallest(a,n,(((n)&1)?((n)/2):(((n)/2)-1)))
+static inline uint16_t median5(uint16_t v1, uint16_t v2, uint16_t v3, uint16_t v4, uint16_t v5)
+{
+  uint16_t v[5] = {v1, v2, v3, v4, v5};
+  return median_n(v, 5);
+}
+#undef median_n
+#undef ELEM_SWAP
+
+static inline void chop_outliers(
+    uint16_t *const in,
+    float    *const out,
+    const int32_t black,
+    const int32_t white,
+    const int32_t width,
+    const int32_t height,
+    const int32_t offx)
+{
+  // TODO: fill borders!
+  for(int j=2;j<height-2;j++)
+  {
+    // green:
+    for(int i=2+((j&1)?1-offx:offx);i<width-2;i+=2)
+    {
+      const float v = in[j*width+i];
+      const float m = median5(
+        in[(j-1)*width+i-1],
+        in[(j-1)*width+i+1],
+        in[(j+1)*width+i-1],
+        in[(j+1)*width+i+1],
+        in[j*width+i]);
+      if((fabsf(v-m)/(white-black) > 0.1) || // *(white-m)/white) ||
+         (MAX(0, v-black)/(float)(white-black) < 0.05))// || // stuck black pixels
+         // (v/(float)white > 0.50)) // stuck whites. doesn't work.
+        out[j*width+i] = m;
+      else out[j*width+i] = v;
+    }
+
+    // colour channels:
+    for(int i=2+((j&1)?offx:1-offx);i<width-2;i+=2)
+    {
+      const float v = in[j*width+i];
+#if 0
+      const float m = median5(
+        in[(j-1)*width+i],
+        in[(j+1)*width+i],
+        in[j*width+i-1],
+        in[j*width+i+1],
+        in[j*width+i]);
+      if((fabsf(v-m)/(white-black) > 0.1) || // *(white-m)/white) ||
+         (MAX(0, v-black)/(float)(white-black) < 0.05))// || // stuck black pixels
+         // (v/(float)white > 0.50)) // stuck whites. doesn't work.
+        out[j*width+i] = m;
+      else
+#endif
+        out[j*width+i] = v;
+      // decompose r-g g b-g:
+      out[j*width+i] -= out[j*width + (i&~1) + ((j&1)?1-offx:offx)];
+    }
+  }
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -531,15 +615,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const float black = img->raw_black_level;
   const float e_black = x / num;
   const float black_s = sqrtf(x2/num - e_black*e_black);
-  fprintf(stderr, "estimated black %g/%d s %g num %lu\n", e_black,
-      self->dev->image_storage.raw_black_level, black_s, num);
+  // fprintf(stderr, "estimated black %g/%d s %g num %lu\n", e_black, self->dev->image_storage.raw_black_level, black_s, num);
 
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   dt_iop_rawdenoiseprofile_params_t *d = (dt_iop_rawdenoiseprofile_params_t *)piece->data;
 
   const int max_max_scale = 5; // hard limit
-  int max_scale = 3;
+  int max_scale = 4;
   const float scale = roi_in->scale / piece->iscale;
 #if 0
   // largest desired filter on input buffer (20% of input dim)
@@ -591,30 +674,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const float white = img->raw_white_point;
 
   // precondition((uint16_t *)ivoid, tmp1, ref, width, height, a, b, d->mode);
-#if 0 // decompose into r-g, g, b-g
-  for(int j=0;j<height;j++)
-  {
-    for(int i=(j&1)?1-offx:offx;i<width;i+=2)
-      tmp1[j*width+i] = ((uint16_t *)ivoid)[j*width+i];
-    for(int i=(j&1)?offx:1-offx;i<width;i+=2)
-      tmp1[j*width+i] = ((uint16_t *)ivoid)[j*width+i] - 
-        ((uint16_t *)ivoid)[j*width + (i&~1) + ((j&1)?1-offx:offx)];
-  }
+#if 1 // decompose into r-g, g, b-g
+  chop_outliers((uint16_t *)ivoid, tmp1, black, white, width, height, offx);
+  // for(int j=0;j<height;j++)
+  // {
+  //   for(int i=(j&1)?1-offx:offx;i<width;i+=2)
+  //     tmp1[j*width+i] = ((uint16_t *)ivoid)[j*width+i]; // copy green
+  //   for(int i=(j&1)?offx:1-offx;i<width;i+=2)
+  //     tmp1[j*width+i] = 0.0f;//((uint16_t *)ivoid)[j*width+i] - 
+  //       //((uint16_t *)ivoid)[j*width + (i&~1) + ((j&1)?offx:1-offx)];
+  // }
 #else
   for(size_t k=0;k<npixels;k++) tmp1[k] = ((uint16_t *)ivoid)[k];
-#endif
-#if 0 // debug: write out preconditioned buffer for external analysis
-  if(self->gui_data)
-  {
-    char filename[512];
-    snprintf(filename, sizeof(filename), "/tmp/preconditioned.pfm");
-    FILE *f = fopen(filename, "wb");
-    fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-    for(size_t k = 0; k < npixels; k++)
-      for(int c=0;c<3;c++)
-        fwrite(tmp1+k, sizeof(float), 1, f);
-    fclose(f);
-  }
 #endif
 
   buf1 = tmp1;
@@ -629,24 +700,6 @@ memset(tmp2, 0, sizeof(float)*width*height);
     decompose_rb(buf2, buf1, buf[scale],   offx, 1, scale, black, white, a, b, c, width, height, d->mode);  // red
 // DEBUG: clean out temporary memory:
 memset(buf1, 0, sizeof(float)*width*height);
-#if 0 // DEBUG: print wavelet scales:
-    if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
-    {
-      char filename[512];
-      snprintf(filename, sizeof(filename), "/tmp/coarse_%d.pfm", scale);
-      FILE *f = fopen(filename, "wb");
-      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(size_t k = 0; k < npixels; k++)
-        fwrite(buf2+4*k, sizeof(float), 3, f);
-      fclose(f);
-      snprintf(filename, sizeof(filename), "/tmp/detail_%d.pfm", scale);
-      f = fopen(filename, "wb");
-      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(size_t k = 0; k < npixels; k++)
-        fwrite(buf[scale]+4*k, sizeof(float), 3, f);
-      fclose(f);
-    }
-#endif
     float *buf3 = buf2;
     buf2 = buf1;
     buf1 = buf3;
@@ -665,7 +718,7 @@ memset(buf1, 0, sizeof(float)*width*height);
   // now do everything backwards, so the result will end up in *ovoid
   for(int scale = max_scale - 1; scale >= 0; scale--)
   {
-#if 1
+#if 0
     // TODO: separately per channel?
     // variance stabilizing transform maps sigma to unity.
     const float sigma = 1.0f;
@@ -706,11 +759,14 @@ memset(buf1, 0, sizeof(float)*width*height);
       
     if(d->mode == 0) thrs[0] = thrs[1] = thrs[2] = 0.0f;
 #else
-    const float thrs[3] = { 0.0, 0.0, 0.0 };
+    // const float thrs[3] = { 0.0, 0.0, 0.0 };
+    const float t = powf(0.5f, scale) * d->strength * 10.0f;
+    const float thrs[3] = { 2.0*t, t, 2.0*t };
+    // const float thrs[3] = { 0, t, 0 };
+    // fprintf(stderr, "scale %d thrs %g = .5 ^ %d\n", scale, t, scale);
 #endif
     const float boost[3] = { 1.0f, 1.0f, 1.0f };
     // const float boost[3] = { 0.0f, 0.0f, 0.0f };
-    // XXX this^ looks better than with threshold (black rims around light) wtf?
     synthesize(buf2, buf1, buf[scale], thrs, boost, black, white, a, b, c,
         width, height, img->crop_x + roi_in->x, img->crop_y + roi_in->y, filters, d->mode);
     // DEBUG: clean out temporary memory:
@@ -723,13 +779,13 @@ memset(buf1, 0, sizeof(float)*width*height);
 #endif
 
   // backtransform(buf1, (uint16_t *)ovoid, ref, width, height, a, b, d->mode);
-#if 0 // recompose into r-g, g, b-g
+#if 1 // recompose from r-g, g, b-g
   for(int j=0;j<height;j++)
   {
     for(int i=(j&1)?1-offx:offx;i<width;i+=2) 
       ((uint16_t *)ovoid)[j*width+i] = CLAMP(
         buf1[j*width+i],
-        0, 0xffff);
+        0, 0xffff); // copy green
     for(int i=(j&1)?offx:1-offx;i<width;i+=2)
       ((uint16_t *)ovoid)[j*width+i] = CLAMP(
         buf1[j*width+i] + buf1[j*width + (i&~1) + ((j&1)?1-offx:offx)],
@@ -1015,7 +1071,7 @@ void gui_init(dt_iop_module_t *self)
   g->mode = dt_bauhaus_combobox_new(self);
   g->algo = dt_bauhaus_combobox_new(self);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 400.0f, .05, 1.f, 3);
-  g->a = dt_bauhaus_slider_new_with_range(self, 0.0001f, 200.0f, .05, 1.f, 4);
+  g->a = dt_bauhaus_slider_new_with_range(self, 0.0f, 200.0f, .05, 1.f, 4);
   g->b = dt_bauhaus_slider_new_with_range(self, 0.0f, 2000.0f, .05, 0.f, 3);
   g->c = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.f, .00001, 0.f, 8);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
