@@ -756,7 +756,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GError *error = NULL;
   GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
   gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), themes_style_provider,
-                                            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION + 1);
+                                            GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
 
   if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), gui->gtkrc, &error))
   {
