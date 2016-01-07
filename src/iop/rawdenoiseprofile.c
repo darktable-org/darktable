@@ -339,6 +339,117 @@ static void analyse_rb(
 #endif
 #endif
 
+#if 1 // eaw
+static inline float filter_eaw(
+    const float v0,
+    const float v1,
+    const float b)
+{
+  return fast_mexp2f(.5f*(v1-v0)*(v1-v0)/(b*b));
+}
+
+
+static void decompose_g(
+    float *const output,      // output buffer
+    const float *const input, // const input buffer
+    float *const detail,      // output detail buffer
+    const int offx,           // select channel in bayer pattern
+    const int scale,          // 0..max wavelet scale
+    const float black,
+    const float white,
+    const float a,            // noise profile poissonian scale
+    const float b,            // noise profile gaussian part
+    const float c,
+    const int32_t width,      // width of buffers
+    const int32_t height,     // height of buffers (all three same size)
+    const uint32_t mode)
+{
+  const int mult = 1 << scale;
+  static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+
+  // TODO: borders!
+  // non-separable, edge-avoiding, shift-independent a-trous wavelet transform.
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j=4*mult;j<height-4*mult;j++) for(int i=((j&1)?1-offx:offx)+4*mult;i<width-4*mult;i+=2)
+  {
+    output[j*width+i] = 0.0f;
+    float sum = 0.0f;
+    for(int jj=0;jj<5;jj++) for(int ii=0;ii<5;ii++)
+    {
+      const float v1 = input[(j + mult*(ii-2-jj+2))*width+i + mult*(ii-2+jj-2)];
+      float w = filter[jj] * filter[ii] * filter_eaw(input[j*width+i], v1, b);
+      sum += w;
+      output[j*width+i] += w * v1;
+    }
+    output[j*width+i] /= sum;
+  }
+
+  // final pass, write detail coeffs
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j=0;j<height;j++) for(int i=((j&1)?1-offx:offx);i<width;i+=2)
+    if(mode == 1)
+      // Fisz transform:
+      detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
+    else
+      detail[j*width+i] = input[j*width+i] - output[j*width+i];
+}
+
+static void decompose_rb(
+    float *const output,      // output buffer
+    const float *const input, // const input buffer
+    float *const detail,      // output detail buffer
+    const int offx,           // select channel in bayer pattern
+    const int offy,
+    const int scale,          // 0..max wavelet scale
+    const float black,
+    const float white,
+    const float a,            // noise profile poissonian scale
+    const float b,            // noise profile gaussian part
+    const float c,
+    const int32_t width,      // width of buffers
+    const int32_t height,     // height of buffers (all three same size)
+    const uint32_t mode)
+{
+  // jump scale+1 to jump over green channel at finest scale
+  const int mult = 1 << (scale+1);
+  static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+
+  // TODO: borders!
+  // non-separable, edge-avoiding, shift-independent a-trous wavelet transform.
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
+  {
+    output[j*width+i] = 0.0f;
+    float sum = 0.0f;
+    for(int jj=0;jj<5;jj++) for(int ii=0;ii<5;ii++)
+    {
+      const float v1 = input[(j + mult*(jj-2))*width+i + mult*(ii-2)];
+      float w = filter[jj] * filter[ii] * filter_eaw(input[j*width+i], v1, b);
+      sum += w;
+      output[j*width+i] += w * v1;
+    }
+    output[j*width+i] /= sum;
+  }
+
+  // final pass, write detail coeffs
+  // for(int j=offy;j<height;j+=2) for(int i=offx;i<width;i+=2)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j=offy;j<height-2*mult;j+=2) for(int i=offx;i<width;i+=2)
+    if(mode == 1)
+      // Fisz transform:
+      detail[j*width+i] = (input[j*width+i] - output[j*width+i]) / noise(output[j*width+i], black, white, a, b, c);
+    else
+      detail[j*width+i] = input[j*width+i] - output[j*width+i];
+}
+#else // separable
 static void decompose_g(
     float *const output,      // output buffer
     const float *const input, // const input buffer
@@ -454,6 +565,7 @@ static void decompose_rb(
     else
       detail[j*width+i] = input[j*width+i] - output[j*width+i];
 }
+#endif
 
 static int FC(const int row, const int col, const unsigned int filters)
 {
