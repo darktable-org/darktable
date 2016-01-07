@@ -1543,7 +1543,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // instead of going the full way
   const int only_vng_linear =
       full_scale_demosaicing &&
-      roi_out->scale < (data->filters == 9u ? 0.667f : 0.8f);
+      roi_out->scale < (data->filters == 9u ? 0.5f : 0.667f);
 
   // we use full Markesteijn demosaicing on xtrans sensors only if
   // maximum quality is required
@@ -1984,7 +1984,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // avoid full VNG
   const int only_vng_linear =
       full_scale_demosaicing &&
-      roi_out->scale < (data->filters == 9u ? 0.667f : 0.8f);
+      roi_out->scale < (data->filters == 9u ? 0.5f : 0.667f);
 
   cl_mem dev_tmp1 = NULL;
   cl_mem dev_tmp2 = NULL;
