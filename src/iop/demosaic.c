@@ -2165,16 +2165,57 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dev_in = dev_green_eq;
     }
 
-    // do linear interpolation
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 4, sizeof(uint32_t), &filters4);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 5, sizeof(cl_mem), &dev_lookup);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_lin_interpolate, sizes);
-    if(err != CL_SUCCESS) goto error;
+    if(TRUE)
+    {
+      // do linear interpolation
 
+      // prepare local work group for maximum efficiency
+      size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
+      size_t workgroupsize = 0;       // the maximum number of items in a work group
+      unsigned long localmemsize = 0; // the maximum amount of local memory we can use
+      size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+
+      int blocksizex = 64;
+      int blocksizey = 64;
+
+      if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+         && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_vng_lin_interpolate,
+                                                   &kernelworkgroupsize) == CL_SUCCESS)
+      {
+        while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
+              || localmemsize < (blocksizex + 2) * (blocksizey + 2) * sizeof(float)
+              || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
+        {
+          if(blocksizex == 1 || blocksizey == 1) break;
+
+          if(blocksizex > blocksizey)
+            blocksizex >>= 1;
+          else
+            blocksizey >>= 1;
+        }
+      }
+      else
+      {
+        dt_print(DT_DEBUG_OPENCL,
+             "[opencl_demosaic] can not identify resource limits for device %d in vng_lin_interpolate\n", devid);
+        goto error;
+      }
+
+      const int bwidth = ROUNDUP(width, blocksizex);
+      const int bheight = ROUNDUP(height, blocksizey);
+      size_t sizes[] = { bwidth, bheight, 1};
+      size_t local[] = { blocksizex, blocksizey, 1};
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 2, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 3, sizeof(int), &height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 4, sizeof(uint32_t), &filters4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 5, sizeof(cl_mem), &dev_lookup);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 6,
+                               (blocksizex + 2) * (blocksizey + 2) * sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+    }
 
     if(only_vng_linear)
     {
@@ -2187,6 +2228,43 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     else
     {
       // do VNG interpolation
+
+      // prepare local work group for maximum efficiency
+      size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
+      size_t workgroupsize = 0;       // the maximum number of items in a work group
+      unsigned long localmemsize = 0; // the maximum amount of local memory we can use
+      size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+
+      int blocksizex = 64;
+      int blocksizey = 64;
+
+      if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+         && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_vng_interpolate,
+                                                   &kernelworkgroupsize) == CL_SUCCESS)
+      {
+        while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
+              || localmemsize < (blocksizex + 4) * (blocksizey + 4) * (4 * sizeof(float))
+              || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
+        {
+          if(blocksizex == 1 || blocksizey == 1) break;
+
+          if(blocksizex > blocksizey)
+            blocksizex >>= 1;
+          else
+            blocksizey >>= 1;
+        }
+      }
+      else
+      {
+        dt_print(DT_DEBUG_OPENCL,
+             "[opencl_demosaic] can not identify resource limits for device %d in vng_interpolate\n", devid);
+        goto error;
+      }
+
+      const int bwidth = ROUNDUP(width, blocksizex);
+      const int bheight = ROUNDUP(height, blocksizey);
+      size_t sizes[] = { bwidth, bheight, 1};
+      size_t local[] = { blocksizex, blocksizey, 1};
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 0, sizeof(cl_mem), &dev_tmp1);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 1, sizeof(cl_mem), &dev_tmp2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 2, sizeof(int), (void *)&width);
@@ -2197,7 +2275,8 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 7, sizeof(cl_mem), &dev_xtrans);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 8, sizeof(cl_mem), &dev_ips);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 9, sizeof(cl_mem), &dev_code);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_interpolate, sizes);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 10, (blocksizex + 4) * (blocksizey + 4) * 4 * sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
 
