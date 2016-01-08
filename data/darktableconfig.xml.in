@@ -2013,6 +2013,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/spots/ellipse_flags</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/spots/path_border</name>
     <type>float</type>
     <default>0.05</default>
@@ -2246,6 +2253,13 @@
     <name>plugins/darkroom/masks/ellipse/rotation</name>
     <type>float</type>
     <default>90.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/ellipse/flags</name>
+    <type>int</type>
+    <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

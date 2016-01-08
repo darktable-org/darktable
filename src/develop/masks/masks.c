@@ -394,8 +394,10 @@ int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float *
     if(dt_ellipse_get_points(dev, x, y, a, b, ellipse->rotation, points, points_count))
     {
       if(border)
-        return dt_ellipse_get_points(dev, x, y, a + ellipse->border, b + ellipse->border, ellipse->rotation,
-                                     border, border_count);
+        return dt_ellipse_get_points(dev, x, y,
+                                     (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? a * (1.0f + ellipse->border) : a + ellipse->border),
+                                     (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? b * (1.0f + ellipse->border) : b + ellipse->border),
+                                     ellipse->rotation, border, border_count);
       else
         return 1;
     }
@@ -751,22 +753,57 @@ static int dt_masks_legacy_params_v2_to_v3(dt_develop_t *dev, void *params)
   }
 }
 
+static int dt_masks_legacy_params_v3_to_v4(dt_develop_t *dev, void *params)
+{
+  /*
+   * difference affecting ellipse
+   * up to v3: only equidistant feathering
+   * after v4: choice between equidistant and proportional feathering
+   * type of feathering is defined in new flags parameter
+   */
+
+  dt_masks_form_t *m = (dt_masks_form_t *)params;
+
+  GList *p = g_list_first(m->points);
+
+  if(!p) return 1;
+
+  if(m->type & DT_MASKS_ELLIPSE)
+  {
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)p->data;
+    ellipse->flags = DT_MASKS_ELLIPSE_EQUIDISTANT;
+  }
+
+  m->version = 4;
+
+  return 0;
+}
+
+
 int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_version, const int new_version)
 {
   int res = 1;
+#if 0 // we should not need this any longer
   if(old_version == 1 && new_version == 2)
   {
     res = dt_masks_legacy_params_v1_to_v2(dev, params);
   }
-  if(old_version == 2 && new_version == 3)
-  {
-    res = dt_masks_legacy_params_v2_to_v3(dev, params);
-  }
+#endif
 
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     res = dt_masks_legacy_params_v1_to_v2(dev, params);
     if(!res) res = dt_masks_legacy_params_v2_to_v3(dev, params);
+    if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
+  }
+  else if(old_version == 2 && new_version == 4)
+  {
+    res = dt_masks_legacy_params_v2_to_v3(dev, params);
+    if(!res) res = dt_masks_legacy_params_v3_to_v4(dev, params);
+  }
+  else if(old_version == 3 && new_version == 4)
+  {
+    res = dt_masks_legacy_params_v3_to_v4(dev, params);
   }
 
   return res;
@@ -1323,7 +1360,7 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
   dev->form_gui->posx = dev->form_gui->posy = dev->form_gui->dx = dev->form_gui->dy = 0.0f;
   dev->form_gui->scrollx = dev->form_gui->scrolly = 0.0f;
   dev->form_gui->form_selected = dev->form_gui->border_selected = dev->form_gui->form_dragging
-      = dev->form_gui->form_rotating = FALSE;
+      = dev->form_gui->form_rotating = dev->form_gui->border_toggling = FALSE;
   dev->form_gui->source_selected = dev->form_gui->source_dragging = FALSE;
   dev->form_gui->pivot_selected = FALSE;
   dev->form_gui->point_border_selected = dev->form_gui->seg_selected = dev->form_gui->point_selected
