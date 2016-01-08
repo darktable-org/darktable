@@ -231,7 +231,7 @@ typedef struct dt_dlopencl_t
 void dt_dlopencl_noop(void);
 
 /* dynamically load OpenCL library and bind needed functions */
-const char *dt_dlopencl_init(const char *, dt_dlopencl_t **);
+dt_dlopencl_t *dt_dlopencl_init(const char *);
 
 #endif
 #endif

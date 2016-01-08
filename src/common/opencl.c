@@ -133,7 +133,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
   char *library = dt_conf_get_string("opencl_library");
 
   // dynamically load opencl runtime
-  if(!dt_dlopencl_init(library, &cl->dlocl))
+  if((cl->dlocl = dt_dlopencl_init(library)) == NULL)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
@@ -578,7 +578,7 @@ finally:
   }
   else // initialization failed
   {
-    for(int i = 0; i < cl->num_devs; i++)
+    for(int i = 0; cl->dev && i < cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
       for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
@@ -1190,6 +1190,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_md5sums] could not allocate buffer for file `%s'!\n", filename);
       *md5sums = NULL;
+      fclose(f);
       continue;
     }
 
