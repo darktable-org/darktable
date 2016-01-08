@@ -755,8 +755,7 @@ static void _lib_folders_update_collection(const gchar *filmroll)
 static void set_properties(dt_lib_collect_rule_t *dr)
 {
   int property = gtk_combo_box_get_active(dr->combo);
-  const gchar *text = NULL;
-  text = gtk_entry_get_text(GTK_ENTRY(dr->text));
+  const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->text));
 
   char confname[200] = { 0 };
   snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", dr->num);
@@ -807,13 +806,10 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   {
     // tree creation/recreation
     sqlite3_stmt *stmt;
-    GtkTreeIter uncategorized, temp;
-    memset(&uncategorized, 0, sizeof(GtkTreeIter));
+    GtkTreeIter uncategorized = { 0 };
+    GtkTreeIter temp;
 
-    GtkTreeView *view;
-    view = d->view;
-
-    gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
     gtk_tree_store_clear(GTK_TREE_STORE(tagsmodel));
     gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
     gtk_widget_hide(GTK_WIDGET(d->sw2));
@@ -885,8 +881,7 @@ static void tags_view(dt_lib_collect_rule_t *dr)
             /* lets add new keyword and assign current */
             if(!found && pch[j] && *pch[j])
             {
-              gchar *pth2 = g_malloc(1);
-              pth2[0] = '\0';
+              gchar *pth2 = NULL;
 
               for(int i = 0; i <= level; i++)
               {
@@ -917,8 +912,8 @@ static void tags_view(dt_lib_collect_rule_t *dr)
     GtkTreeModel *filter = gtk_tree_model_filter_new(tagsmodel, NULL );
     gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(filter), DT_LIB_COLLECT_COL_VISIBLE);
 
-    gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
-    gtk_tree_view_set_model(GTK_TREE_VIEW(view), filter);
+    gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), filter);
     gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
     gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
@@ -958,8 +953,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
   char query[1024] = { 0 };
   int property = gtk_combo_box_get_active(dr->combo);
-  const gchar *text = NULL;
-  text = gtk_entry_get_text(GTK_ENTRY(dr->text));
+  const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->text));
 
   char *escaped_text = sqlite3_mprintf("%q", text);
 
