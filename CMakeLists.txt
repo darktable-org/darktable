@@ -237,11 +237,15 @@ if(CMAKE_BUILD_TYPE MATCHES "^[Dd][Ee][Bb][Uu][Gg]$" AND SOURCE_PACKAGE)
   message(FATAL_ERROR "ERROR: Debug build type most likely isn't what you want, use RelWithDebInfo instead. If you're absolutely sure that this is what you want then just comment out this line.")
 endif()
 
+# Setting the runtime path works differently on OSX than on Linux or BSD.
+# Hence use a variable that maps those in the correct way for each OS.
 if(APPLE)
-    if(NOT LIB_INSTALL)
-      set( LIB_INSTALL lib${LIB_SUFFIX} CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-    endif(NOT LIB_INSTALL)
-    mark_as_advanced(LIB_INSTALL)
+    # The string "@loader_path" should end up in the executable as-is.
+    set(ORIGIN_DT "@loader_path")
+else(APPLE)
+    # Note that $ORIGIN is not a variable but has a special meaning at runtime.
+    # The string "$ORIGIN" should end up in the executable as-is.
+    set(ORIGIN_DT "$ORIGIN")
 endif(APPLE)
 
 # we need some external programs for building darktable
