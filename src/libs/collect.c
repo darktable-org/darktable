@@ -509,18 +509,25 @@ static gboolean tag_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
   dt_lib_collect_t *d = get_collect(dr);
   gchar *str = NULL;
+  gchar *txt = NULL;
   gboolean startwildcard = FALSE;
 
-  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_TEXT, &txt, -1);
 
   gchar *haystack = g_utf8_strdown(str, -1);
   gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+  gchar *txt2 = g_utf8_strdown(txt, -1);
 
   if(g_str_has_prefix(needle, "%")) startwildcard = TRUE;
   if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
   if(g_str_has_suffix(needle, "|")) needle[strlen(needle) - 1] = '\0';
   if(g_str_has_suffix(haystack, "%")) haystack[strlen(haystack) - 1] = '\0';
   if(g_str_has_suffix(haystack, "|")) haystack[strlen(haystack) - 1] = '\0';
+
+  if(dr->typing && g_strrstr(txt2, needle) != NULL)
+  {
+    gtk_tree_view_expand_to_path(d->view, path);
+  }
 
   if(strlen(needle)==0)
   {
@@ -542,7 +549,9 @@ static gboolean tag_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
 
   g_free(haystack);
   g_free(needle);
+  g_free(txt2);
   g_free(str);
+  g_free(txt);
 
   return FALSE;
 }
@@ -810,14 +819,8 @@ static void tags_view(dt_lib_collect_rule_t *dr)
     gtk_widget_hide(GTK_WIDGET(d->sw2));
 
     /* query construction */
-    const gchar *text = NULL;
-    text = gtk_entry_get_text(GTK_ENTRY(dr->text));
-    char search[1024] = { 0 };
-    snprintf(search, sizeof(search), "%%%s%%", text);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT distinct name, id, name LIKE ?1 "
-                                "FROM tags ORDER BY UPPER(name) DESC", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, search, -1, SQLITE_STATIC);
+                                "SELECT distinct name, id FROM tags ORDER BY UPPER(name) DESC", -1, &stmt, NULL);
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -829,14 +832,14 @@ static void tags_view(dt_lib_collect_rule_t *dr)
           gtk_tree_store_insert(GTK_TREE_STORE(tagsmodel), &uncategorized, NULL, 0);
           gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &uncategorized, DT_LIB_COLLECT_COL_TEXT,
                              _(UNCATEGORIZED_TAG), DT_LIB_COLLECT_COL_PATH, "", DT_LIB_COLLECT_COL_VISIBLE,
-                             FALSE, -1);
+                             TRUE, -1);
         }
 
         /* adding an uncategorized tag */
         gtk_tree_store_insert(GTK_TREE_STORE(tagsmodel), &temp, &uncategorized, 0);
         gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &temp, DT_LIB_COLLECT_COL_TEXT,
                            sqlite3_column_text(stmt, 0), DT_LIB_COLLECT_COL_PATH, sqlite3_column_text(stmt, 0),
-                           DT_LIB_COLLECT_COL_VISIBLE, sqlite3_column_int(stmt, 2), -1);
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
       }
       else
       {
@@ -896,7 +899,7 @@ static void tags_view(dt_lib_collect_rule_t *dr)
 
               gtk_tree_store_insert(GTK_TREE_STORE(tagsmodel), &iter, level > 0 ? &current : NULL, 0);
               gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
-                                 DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, sqlite3_column_int(stmt, 2), -1);
+                                 DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
               g_free(pth2);
               current = iter;
             }
@@ -911,18 +914,24 @@ static void tags_view(dt_lib_collect_rule_t *dr)
     }
     sqlite3_finalize(stmt);
 
+    GtkTreeModel *filter = gtk_tree_model_filter_new(tagsmodel, NULL );
+    gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(filter), DT_LIB_COLLECT_COL_VISIBLE);
+
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
-    gtk_tree_view_set_model(GTK_TREE_VIEW(view), tagsmodel);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), filter);
     gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
     gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
     d->tags_new = FALSE;
+    g_object_unref(filter);
   }
 
+  // if needed, we restrict the tree to matching entries
+  if (dr->typing) refilter(tagsmodel, dr);
   // we update tree expansion and selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
   gtk_tree_view_collapse_all(d->view);
-  gtk_tree_model_foreach(tagsmodel, (GtkTreeModelForeachFunc)tag_expand, dr);
+  gtk_tree_model_foreach(gtk_tree_view_get_model(d->view), (GtkTreeModelForeachFunc)tag_expand, dr);
 
   g_object_unref(tagsmodel);
 }
@@ -1193,7 +1202,7 @@ entry_key_press_exit:
   g_object_unref(listmodel);
 }
 
-static void update_view(GtkEntry *entry, dt_lib_collect_rule_t *dr)
+static void update_view(dt_lib_collect_rule_t *dr)
 {
   int property = gtk_combo_box_get_active(dr->combo);
 
@@ -1323,7 +1332,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
 
   // update list of proposals
   create_folders_gui(d->rule + d->active_rule);
-  update_view(NULL, d->rule + d->active_rule);
+  update_view(d->rule + d->active_rule);
   darktable.gui->reset = old;
 }
 
@@ -1358,8 +1367,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
     refilter(c->treemodel_tags, d);
   }
 
-
-  update_view(NULL, d);
+  update_view(d);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1390,7 +1398,7 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
                                     NULL);
   g_free(text);
 
-  update_view(NULL, d->rule + active);
+  update_view(d->rule + active);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -1401,7 +1409,7 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
   GtkTreeModel *model;
   int property, rows;
 
-  update_view(NULL, d);
+  update_view(d);
   dt_lib_collect_t *c = get_collect(d);
 
   property = gtk_combo_box_get_active(d->combo);
@@ -1432,7 +1440,7 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
         g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
         g_free(text);
         d->typing = FALSE;
-        update_view(NULL, d);
+        update_view(d);
       }
     }
   }
@@ -1447,7 +1455,7 @@ static void entry_insert_text(GtkWidget *entry, gchar *new_text, gint new_length
 
 static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr)
 {
-  update_view(NULL, dr);
+  update_view(dr);
 }
 
 int position()
@@ -1459,7 +1467,7 @@ static void entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_c
 {
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
-  update_view(NULL, c->rule + c->active_rule);
+  update_view(c->rule + c->active_rule);
 }
 
 static void menuitem_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
