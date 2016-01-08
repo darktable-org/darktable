@@ -1543,7 +1543,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // instead of going the full way
   const int only_vng_linear =
       full_scale_demosaicing &&
-      roi_out->scale < (data->filters == 9u ? 0.667f : 0.8f);
+      roi_out->scale < (data->filters == 9u ? 0.5f : 0.667f);
 
   // we use full Markesteijn demosaicing on xtrans sensors only if
   // maximum quality is required
@@ -1939,7 +1939,9 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
+
   const dt_image_t *img = &self->dev->image_storage;
+  const float threshold = 0.0001f * img->exif_iso;
 
   // separate out G1 and G2 in Bayer patterns
   unsigned int filters4;
@@ -1982,7 +1984,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // avoid full VNG
   const int only_vng_linear =
       full_scale_demosaicing &&
-      roi_out->scale < (data->filters == 9u ? 0.667f : 0.8f);
+      roi_out->scale < (data->filters == 9u ? 0.5f : 0.667f);
 
   cl_mem dev_tmp1 = NULL;
   cl_mem dev_tmp2 = NULL;
@@ -1990,6 +1992,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_lookup = NULL;
   cl_mem dev_code = NULL;
   cl_mem dev_ips = NULL;
+  cl_mem dev_green_eq = NULL;
   cl_int err = -999;
 
   if(data->filters == 9u)
@@ -2145,16 +2148,74 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dev_ips = dt_opencl_copy_host_to_device_constant(devid, sizeof(ips), ips);
     if(dev_ips == NULL) goto error;
 
-    // do linear interpolation
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 4, sizeof(uint32_t), &filters4);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 5, sizeof(cl_mem), &dev_lookup);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_lin_interpolate, sizes);
-    if(err != CL_SUCCESS) goto error;
+    if(data->filters != 9u && data->green_eq != DT_IOP_GREEN_EQ_NO)
+    {
+      // green equilibration for Bayer sensors
+      dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
+      if(dev_green_eq == NULL) goto error;
 
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 3, sizeof(int), &height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 4, sizeof(uint32_t), (void *)&data->filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 5, sizeof(float), (void *)&threshold);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_green_eq, sizes);
+      if(err != CL_SUCCESS) goto error;
+      dev_in = dev_green_eq;
+    }
+
+    if(TRUE)
+    {
+      // do linear interpolation
+
+      // prepare local work group for maximum efficiency
+      size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
+      size_t workgroupsize = 0;       // the maximum number of items in a work group
+      unsigned long localmemsize = 0; // the maximum amount of local memory we can use
+      size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+
+      int blocksizex = 64;
+      int blocksizey = 64;
+
+      if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+         && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_vng_lin_interpolate,
+                                                   &kernelworkgroupsize) == CL_SUCCESS)
+      {
+        while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
+              || localmemsize < (blocksizex + 2) * (blocksizey + 2) * sizeof(float)
+              || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
+        {
+          if(blocksizex == 1 || blocksizey == 1) break;
+
+          if(blocksizex > blocksizey)
+            blocksizex >>= 1;
+          else
+            blocksizey >>= 1;
+        }
+      }
+      else
+      {
+        dt_print(DT_DEBUG_OPENCL,
+             "[opencl_demosaic] can not identify resource limits for device %d in vng_lin_interpolate\n", devid);
+        goto error;
+      }
+
+      const int bwidth = ROUNDUP(width, blocksizex);
+      const int bheight = ROUNDUP(height, blocksizey);
+      size_t sizes[] = { bwidth, bheight, 1};
+      size_t local[] = { blocksizex, blocksizey, 1};
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 1, sizeof(cl_mem), &dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 2, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 3, sizeof(int), &height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 4, sizeof(uint32_t), &filters4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 5, sizeof(cl_mem), &dev_lookup);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 6,
+                               (blocksizex + 2) * (blocksizey + 2) * sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+    }
 
     if(only_vng_linear)
     {
@@ -2167,6 +2228,43 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     else
     {
       // do VNG interpolation
+
+      // prepare local work group for maximum efficiency
+      size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
+      size_t workgroupsize = 0;       // the maximum number of items in a work group
+      unsigned long localmemsize = 0; // the maximum amount of local memory we can use
+      size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+
+      int blocksizex = 64;
+      int blocksizey = 64;
+
+      if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+         && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_vng_interpolate,
+                                                   &kernelworkgroupsize) == CL_SUCCESS)
+      {
+        while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
+              || localmemsize < (blocksizex + 4) * (blocksizey + 4) * (4 * sizeof(float))
+              || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
+        {
+          if(blocksizex == 1 || blocksizey == 1) break;
+
+          if(blocksizex > blocksizey)
+            blocksizex >>= 1;
+          else
+            blocksizey >>= 1;
+        }
+      }
+      else
+      {
+        dt_print(DT_DEBUG_OPENCL,
+             "[opencl_demosaic] can not identify resource limits for device %d in vng_interpolate\n", devid);
+        goto error;
+      }
+
+      const int bwidth = ROUNDUP(width, blocksizex);
+      const int bheight = ROUNDUP(height, blocksizey);
+      size_t sizes[] = { bwidth, bheight, 1};
+      size_t local[] = { blocksizex, blocksizey, 1};
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 0, sizeof(cl_mem), &dev_tmp1);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 1, sizeof(cl_mem), &dev_tmp2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 2, sizeof(int), (void *)&width);
@@ -2177,7 +2275,8 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 7, sizeof(cl_mem), &dev_xtrans);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 8, sizeof(cl_mem), &dev_ips);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 9, sizeof(cl_mem), &dev_code);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_interpolate, sizes);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 10, (blocksizex + 4) * (blocksizey + 4) * 4 * sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -2272,6 +2371,8 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
   dev_ips = NULL;
 
+  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+  dev_green_eq = NULL;
 
   // color smoothing
   if(data->color_smoothing)
@@ -2365,6 +2466,7 @@ error:
   if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
   if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
   if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
+  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -2500,10 +2602,10 @@ void init_global(dt_iop_module_so_t *module)
       = dt_opencl_create_kernel(other, "clip_and_zoom_demosaic_passthrough_monochrome");
 
   const int vng = 15; // from programs.conf
-  gd->kernel_vng_border_interpolate = dt_opencl_create_kernel(vng, "border_interpolate");
-  gd->kernel_vng_lin_interpolate = dt_opencl_create_kernel(vng, "lin_interpolate");
+  gd->kernel_vng_border_interpolate = dt_opencl_create_kernel(vng, "vng_border_interpolate");
+  gd->kernel_vng_lin_interpolate = dt_opencl_create_kernel(vng, "vng_lin_interpolate");
   gd->kernel_zoom_third_size = dt_opencl_create_kernel(vng, "clip_and_zoom_demosaic_third_size_xtrans");
-  gd->kernel_vng_green_equilibrate = dt_opencl_create_kernel(vng, "green_equilibrate");
+  gd->kernel_vng_green_equilibrate = dt_opencl_create_kernel(vng, "vng_green_equilibrate");
   gd->kernel_vng_interpolate = dt_opencl_create_kernel(vng, "vng_interpolate");
 }
 

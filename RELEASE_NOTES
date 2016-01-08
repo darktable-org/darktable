@@ -9,3 +9,4 @@ Stuff that belongs in here:
 
 The release team should empty this file after each release.
 ==========================================================================================
+opencl implementation of vng/vng4 demosaicing methods

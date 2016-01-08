@@ -869,14 +869,17 @@ int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
   cl_int err = -999;
 
-  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
-  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
+  const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);         // nbhood
   const float norm = 0.015f / (2 * P + 1);
 
 
   const float wb[4]
-      = { piece->pipe->processed_maximum[0] * d->strength, piece->pipe->processed_maximum[1] * d->strength,
-          piece->pipe->processed_maximum[2] * d->strength, 0.0f };
+      = { piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
+          piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
+          piece->pipe->processed_maximum[2] * d->strength * (scale * scale),
+          0.0f };
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
@@ -1186,7 +1189,6 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   /* decompose image into detail scales and coarse */
   for(int s = 0; s < max_scale; s++)
   {
-    const unsigned int scale = s;
     const float sigma = 1.0f;
     const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
     const float sigma_band = powf(varf, s) * sigma;
@@ -1199,7 +1201,7 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 4, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 5, sizeof(unsigned int),
-                             (void *)&scale);
+                             (void *)&s);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 6, sizeof(float),
                              (void *)&inv_sigma2);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 7, sizeof(cl_mem),
@@ -1216,7 +1218,7 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   }
 
   /* now synthesize again */
-  for(int scale = max_scale - 1; scale >= 0; scale--)
+  for(int s = max_scale - 1; s >= 0; s--)
   {
     // variance stabilizing transform maps sigma to unity.
     const float sigma = 1.0f;
@@ -1237,7 +1239,7 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     llocal[1] = blocksize;
     llocal[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 0, sizeof(cl_mem),
-                             &(dev_detail[scale]));
+                             &(dev_detail[s]));
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 1, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 2, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 3, sizeof(cl_mem), &dev_m);
@@ -1285,7 +1287,7 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     const float adjt = 8.0f;
 
     const float thrs[4] = { adjt * sb2 / std_x[0], adjt * sb2 / std_x[1], adjt * sb2 / std_x[2], 0.0f };
-    // fprintf(stderr, "scale %d thrs %f %f %f\n", scale, thrs[0], thrs[1], thrs[2]);
+    // fprintf(stderr, "scale %d thrs %f %f %f\n", s, thrs[0], thrs[1], thrs[2]);
 
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -1294,7 +1296,7 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 1, sizeof(cl_mem),
                              (void *)&dev_buf1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 2, sizeof(cl_mem),
-                             (void *)&dev_detail[scale]);
+                             (void *)&dev_detail[s]);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 4, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 5, sizeof(float), (void *)&thrs[0]);

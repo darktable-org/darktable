@@ -53,6 +53,7 @@ typedef struct dt_lib_collect_t
   int active_rule;
 
   GtkTreeView *view;
+  GtkTreeView *treeview_folders;
   GtkTreeModel *treemodel_folders;
   GtkTreeModel *treemodel_tags;
   gboolean tree_new;
@@ -60,8 +61,6 @@ typedef struct dt_lib_collect_t
   GtkScrolledWindow *scrolledwindow;
 
   GtkScrolledWindow *sw2;
-  GPtrArray *labels;
-  GPtrArray *trees;
 
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
@@ -529,16 +528,13 @@ static gboolean reveal_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
 {
   gboolean state;
   GtkTreeIter parent, child = *iter;
-  gchar *str;
 
-  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
-  g_free(str);
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
   if(!state) return FALSE;
 
   while(gtk_tree_model_iter_parent(model, &parent, &child))
   {
-    gtk_tree_model_get(model, &parent, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
-    g_free(str);
+    gtk_tree_model_get(model, &parent, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
     gtk_tree_store_set(GTK_TREE_STORE(model), &parent, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
     child = parent;
   }
@@ -696,13 +692,6 @@ static void _lib_folders_update_collection(const gchar *filmroll)
   if(!darktable.collection->clone) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }
 
-void destroy_widget(gpointer data)
-{
-  GtkWidget *widget = (GtkWidget *)data;
-
-  gtk_widget_destroy(widget);
-}
-
 static dt_lib_collect_t *get_collect(dt_lib_collect_rule_t *r)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)(((char *)r) - r->num * sizeof(dt_lib_collect_rule_t));
@@ -726,14 +715,12 @@ static void folders_view(dt_lib_collect_rule_t *dr)
 {
   dt_lib_collect_t *d = get_collect(dr);
 
-  GtkTreeView *tree;
-
   gtk_widget_hide(GTK_WIDGET(d->sw2));
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
 
   set_properties(dr);
 
-  if(d->trees != NULL)
+  if(d->treeview_folders != NULL)
   {
     if(dr->typing == FALSE)
     {
@@ -741,14 +728,10 @@ static void folders_view(dt_lib_collect_rule_t *dr)
     }
     else
     {
-      for(guint i = 0; i < d->trees->len; i++)
-      {
-        tree = GTK_TREE_VIEW(g_ptr_array_index(d->trees, i));
-        GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model(tree));
-        GtkTreeModel *model = gtk_tree_model_filter_get_model(modelfilter);
-        refilter(model, dr);
-        expand_tree(tree, dr);
-      }
+      GtkTreeModelFilter *modelfilter = GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model(d->treeview_folders));
+      GtkTreeModel *model = gtk_tree_model_filter_get_model(modelfilter);
+      refilter(model, dr);
+      expand_tree(d->treeview_folders, dr);
     }
   }
 
@@ -1178,7 +1161,6 @@ static void update_view(GtkEntry *entry, dt_lib_collect_rule_t *dr)
 
 static void create_folders_gui(dt_lib_collect_rule_t *dr)
 {
-  GtkTreeView *tree;
   GtkTreeModel *treemodel_folders;
   GtkTreeIter iter;
   dt_lib_collect_t *d = get_collect(dr);
@@ -1190,10 +1172,10 @@ static void create_folders_gui(dt_lib_collect_rule_t *dr)
   if(d->tree_new)
   {
 /* We have already inited the GUI once, clean around */
-    if(d->trees != NULL)
+    if(d->treeview_folders != NULL)
     {
-      g_ptr_array_free(d->trees, TRUE);
-      d->trees = NULL;
+      gtk_widget_destroy(GTK_WIDGET(d->treeview_folders));
+      d->treeview_folders = NULL;
     }
 
     /* set the UI */
@@ -1207,33 +1189,26 @@ static void create_folders_gui(dt_lib_collect_rule_t *dr)
       return;
     }
     gtk_tree_path_free(root);
-    int children = 1; // To be deleted if the following code in enabled
-    d->trees = g_ptr_array_sized_new(children);
-    g_ptr_array_set_free_func(d->trees, destroy_widget);
 
-    for(int i = 0; i < children; i++)
-    {
-      /* Only pass a rule (and filter the tree) if the typing property is TRUE */
-      if(dr->typing != FALSE) rule = dr;
-      model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel_folders), iter, rule);
-      tree = _create_treeview_display(GTK_TREE_MODEL(model2));
-      g_ptr_array_add(d->trees, (gpointer)tree);
-      gtk_container_add(GTK_CONTAINER(d->sw2), GTK_WIDGET(tree));
-      gtk_widget_show(GTK_WIDGET(tree));
+    /* Only pass a rule (and filter the tree) if the typing property is TRUE */
+    if(dr->typing != FALSE) rule = dr;
+    model2 = _create_filtered_model(GTK_TREE_MODEL(treemodel_folders), iter, rule);
+    d->treeview_folders = _create_treeview_display(GTK_TREE_MODEL(model2));
+    gtk_container_add(GTK_CONTAINER(d->sw2), GTK_WIDGET(d->treeview_folders));
+    gtk_widget_show(GTK_WIDGET(d->treeview_folders));
 
-      gtk_tree_view_set_headers_visible(tree, FALSE);
+    gtk_tree_view_set_headers_visible(d->treeview_folders, FALSE);
 
-      gtk_tree_selection_set_mode(gtk_tree_view_get_selection(tree), GTK_SELECTION_SINGLE);
+    gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->treeview_folders), GTK_SELECTION_SINGLE);
 
-      gtk_tree_view_set_enable_search(tree, TRUE);
-      gtk_tree_view_set_search_column(tree, DT_LIB_COLLECT_COL_PATH);
+    gtk_tree_view_set_enable_search(d->treeview_folders, TRUE);
+    gtk_tree_view_set_search_column(d->treeview_folders, DT_LIB_COLLECT_COL_PATH);
 
-      g_signal_connect(G_OBJECT(tree), "row-activated", G_CALLBACK(row_activated), d);
-      g_signal_connect(G_OBJECT(tree), "button-press-event", G_CALLBACK(view_onButtonPressed), NULL);
-      g_signal_connect(G_OBJECT(tree), "popup-menu", G_CALLBACK(view_onPopupMenu), NULL);
+    g_signal_connect(G_OBJECT(d->treeview_folders), "row-activated", G_CALLBACK(row_activated), d);
+    g_signal_connect(G_OBJECT(d->treeview_folders), "button-press-event", G_CALLBACK(view_onButtonPressed), NULL);
+    g_signal_connect(G_OBJECT(d->treeview_folders), "popup-menu", G_CALLBACK(view_onPopupMenu), NULL);
 
-      d->tree_new = FALSE;
-    }
+    d->tree_new = FALSE;
   }
 }
 
@@ -1763,19 +1738,14 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
 
-  d->labels = NULL;
-  d->trees = NULL;
-
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
 
-  /* set the monitor */
-  /* TODO: probably we should be using the same for the import code */
-
   // TODO: This should be done in a more generic place, not gui_init
   d->treemodel_folders = GTK_TREE_MODEL(_folder_tree());
   d->tree_new = TRUE;
+  d->treeview_folders = NULL;
   _lib_collect_gui_update(self);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
@@ -1805,7 +1775,6 @@ void gui_cleanup(dt_lib_module_t *self)
   free(d->params);
 
   /* cleanup mem */
-  if(d->trees != NULL) g_ptr_array_free(d->trees, TRUE);
 
   g_object_unref(d->treemodel_folders);
   g_object_unref(d->treemodel_tags);

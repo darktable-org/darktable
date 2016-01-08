@@ -26,7 +26,7 @@
 
 #include <assert.h>
 
-#define DEVELOP_MASKS_VERSION (3)
+#define DEVELOP_MASKS_VERSION (4)
 
 /**forms types */
 typedef enum dt_masks_type_t
@@ -77,6 +77,12 @@ typedef enum dt_masks_pressure_sensitivity_t
   DT_MASKS_PRESSURE_BRUSHSIZE_REL = 5
 } dt_masks_pressure_sensitivity_t;
 
+typedef enum dt_masks_ellipse_flags_t
+{
+  DT_MASKS_ELLIPSE_EQUIDISTANT = 0,
+  DT_MASKS_ELLIPSE_PROPORTIONAL = 1
+} dt_masks_ellipse_flags_t;
+
 /** structure used to store 1 point for a circle */
 typedef struct dt_masks_point_circle_t
 {
@@ -92,6 +98,7 @@ typedef struct dt_masks_point_ellipse_t
   float radius[2];
   float rotation;
   float border;
+  dt_masks_ellipse_flags_t flags;
 } dt_masks_point_ellipse_t;
 
 /** structure used to store 1 point for a path form */
@@ -197,6 +204,7 @@ typedef struct dt_masks_form_gui_t
   gboolean form_dragging;
   gboolean source_dragging;
   gboolean form_rotating;
+  gboolean border_toggling;
   int point_dragging;
   int feather_dragging;
   int seg_dragging;
