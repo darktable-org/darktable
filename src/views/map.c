@@ -1104,7 +1104,7 @@ static void _push_position(dt_view_t *self, int imgid, float longitude, float la
   geotag->latitude = latitude;
   geotag->elevation = elevation;
 
-  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo, NULL);
+  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo, free);
 }
 
 static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude, float *elevation)
