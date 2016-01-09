@@ -1264,10 +1264,46 @@ static void create_folders_gui(dt_lib_collect_rule_t *dr)
   }
 }
 
+static gboolean is_gui_up_to_date (dt_lib_collect_t *d)
+{
+  // we verify the nb of rules
+  const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1;
+  const int active = CLAMP(_a, 0, (MAX_RULES-1));
+  if (!gtk_widget_get_visible(d->rule[active].hbox)) return FALSE;
+  if (active < MAX_RULES && gtk_widget_get_visible(d->rule[active+1].hbox)) return FALSE;
+
+  // we verify each rules
+  char confname[200] = { 0 };
+  for(int i=0; i<=active; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
+    if (gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[i].combo)) != dt_conf_get_int(confname)) return FALSE;
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
+    gchar *text = dt_conf_get_string(confname);
+    if (text)
+    {
+      if (strcmp(gtk_entry_get_text(GTK_ENTRY(d->rule[i].text)),text) != 0) return FALSE;
+      g_free(text);
+    }
+    if (i != active)
+    {
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i+1);
+      const int mode = dt_conf_get_int(confname);
+      GtkDarktableButton *button = DTGTK_BUTTON(d->rule[i].button);
+      if(mode == DT_LIB_COLLECT_MODE_AND && button->icon != dtgtk_cairo_paint_and) return FALSE;
+      if(mode == DT_LIB_COLLECT_MODE_OR && button->icon != dtgtk_cairo_paint_or) return FALSE;
+      if(mode == DT_LIB_COLLECT_MODE_AND_NOT && button->icon != dtgtk_cairo_paint_andnot) return FALSE;
+    }
+  }
+  return TRUE;
+}
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+
+  //we check if something as change since last call
+  if(is_gui_up_to_date(d)) return;
 
   const int old = darktable.gui->reset;
   darktable.gui->reset = 1;
@@ -1346,8 +1382,10 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 {
   if(darktable.gui->reset) return;
   g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+  g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->text), "");
   g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+  g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
 
@@ -1388,13 +1426,16 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
     gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
 
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+  g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   gtk_editable_set_position(GTK_EDITABLE(d->rule[active].text), -1);
-  g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text,
-                                    NULL);
+  g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+  g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   g_free(text);
 
-  update_view(d->rule + active);
+  if(item == DT_COLLECTION_PROP_TAG) set_properties(d->rule + active);
+  else update_view(d->rule + active);
+
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -1431,9 +1472,11 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
           gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
 
         g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+        g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
         gtk_entry_set_text(GTK_ENTRY(d->text), text);
         gtk_editable_set_position(GTK_EDITABLE(d->text), -1);
         g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+        g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
         g_free(text);
         d->typing = FALSE;
         update_view(d);
@@ -1457,13 +1500,6 @@ static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr)
 int position()
 {
   return 400;
-}
-
-static void entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule_t *d)
-{
-  dt_lib_collect_t *c = get_collect(d);
-  c->active_rule = d->num;
-  update_view(c->rule + c->active_rule);
 }
 
 static void menuitem_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
@@ -1725,7 +1761,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  //   gtk_widget_set_size_request(self->widget, 100, -1);
+
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
 
@@ -1749,8 +1785,6 @@ void gui_init(dt_lib_module_t *self)
     w = gtk_entry_new();
     d->rule[i].text = w;
     dt_gui_key_accel_block_on_focus_connect(d->rule[i].text);
-    gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(entry_focus_in_callback), d->rule + i);
 
     /* xgettext:no-c-format */
     g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
