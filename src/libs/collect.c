@@ -798,8 +798,10 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   dt_lib_collect_t *d = get_collect(dr);
   set_properties(dr);
 
-  GtkTreeModel *tagsmodel;
-  tagsmodel = d->treemodel_tags;
+  GtkTreeModel *tagsmodel, *filter;
+  filter = d->treemodel_tags;
+  tagsmodel = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(filter));
+  g_object_ref(filter);
   g_object_ref(tagsmodel);
 
   if(d->tags_new)
@@ -909,16 +911,16 @@ static void tags_view(dt_lib_collect_rule_t *dr)
     }
     sqlite3_finalize(stmt);
 
-    GtkTreeModel *filter = gtk_tree_model_filter_new(tagsmodel, NULL );
-    gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(filter), DT_LIB_COLLECT_COL_VISIBLE);
-
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), filter);
     gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
     gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
     d->tags_new = FALSE;
-    g_object_unref(filter);
+  }
+  else
+  {
+    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), filter);
   }
 
   // if needed, we restrict the tree to matching entries
@@ -926,8 +928,9 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   // we update tree expansion and selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
   gtk_tree_view_collapse_all(d->view);
-  gtk_tree_model_foreach(gtk_tree_view_get_model(d->view), (GtkTreeModelForeachFunc)tag_expand, dr);
+  gtk_tree_model_foreach(filter, (GtkTreeModelForeachFunc)tag_expand, dr);
 
+  g_object_unref(filter);
   g_object_unref(tagsmodel);
 }
 
@@ -1358,7 +1361,6 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   else if(property == DT_COLLECTION_PROP_TAG)
   {
     d->typing = FALSE;
-    refilter(c->treemodel_tags, d);
   }
 
   update_view(d);
@@ -1790,7 +1792,9 @@ void gui_init(dt_lib_module_t *self)
   GtkTreeModel *tagsmodel
       = GTK_TREE_MODEL(gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
                                           G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN));
-  d->treemodel_tags = tagsmodel;
+  GtkTreeModel *filter = gtk_tree_model_filter_new(tagsmodel, NULL );
+  gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(filter), DT_LIB_COLLECT_COL_VISIBLE);
+  d->treemodel_tags = filter;
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
 
