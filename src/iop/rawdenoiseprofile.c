@@ -81,6 +81,18 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING;
 }
 
+#if 0 // i don't think we support blending for uint16_t:
+int flags()
+{
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
+int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return sizeof(uint16_t);
+}
+#endif
+
 // very fast approximation for 2^-x (returns 0 for x > 126)
 static inline float fast_mexp2f(const float x)
 {
@@ -98,126 +110,10 @@ static inline float fast_mexp2f(const float x)
   return k.f;
 }
 
-static inline float noise_stddev_gen_Fisz(const float level, const float black, const float white, const float a, const float b, const float c)
+static inline float noise(const float level, const float black, const float white, const float a, const float b, const float c)
 {
   const float v = MAX(1, level-black);
   return sqrtf(a*v + b*b + c*c*v*v);
-}
-
-static inline float noise_stddev_dxo(
-    const float level,   // input directly upsampled from uint16_t raw
-    const float black,   // raw black point
-    const float white,   // raw white level
-    const float r,       // read noise
-    const float G,       // gain, such that 100G equals the number of photoelectrons at white
-    const float p)       // pixel non-uniformity
-{
-  // percentage of input level, 100 is white
-  const float g = (level - black)/(white-black) * 100.0f;
-  // noise scaled as g*G is, i.e. photoelectrons.
-  // to compare to signal, uint16_t needs to be scaled (i-b)/(w-b)*100 * G
-  const float n = sqrtf(fmaxf(1.0f, r*r + g*G + p*g*G * p*g*G));
-  // or just do the reverse scaling here to keep the SNR to the input signal constant (ignore black offset for this matter):
-  // return (white-black)/(100.0*G) * n;
-  // return 100*G/(white-black) * n;
-  // return 100*G * n;
-  // return (white-black) * n;
-  return n/100.0;
-  // return n;
-  // unfortunately none of the above match the measured noise at all :/
-}
-
-static inline float noise(const float l, const float b, const float w, const float x, const float y, const float z)
-{
-  // return noise_stddev_dxo(l, b, w, x, y, z);
-  return noise_stddev_gen_Fisz(l, b, w, x, y, z);
-}
-
-// TODO: adjust those two functions to new noise model!
-static inline void precondition(
-    const uint16_t *const in,
-    float *const buf,
-    const float *const ref,
-    const int wd,
-    const int ht,
-    const float a,
-    const float b,
-    const uint32_t mode)
-{
-// #ifdef _OPENMP
-// #pragma omp parallel for schedule(static) default(none)
-// #endif
-  for(int j = 0; j < ht; j++)
-  {
-    float *buf2 = buf + (size_t)j * wd;
-    const float *ref2 = ref + (size_t)j * wd;
-    const uint16_t *in2 = in + (size_t)j * wd;
-    for(int i = 0; i < wd; i++)
-    {
-      if(mode == 0)
-        *buf2 = *in2;
-      else
-#if 0 // science
-        const float sigma2 = (b/a)*(b/a);
-        *buf2 = 2.0f * sqrtf(fmaxf(0.0f, *in2/a + 3./8. + sigma2));
-#else // custom pre-black point:
-        *buf2 = *in2 / sqrtf(fmaxf(1.f, a* *ref2 + b));
-#endif
-      buf2 ++;
-      in2 ++;
-      ref2 ++;
-    }
-  }
-}
-
-static inline void backtransform(
-    const float *const buf,
-    uint16_t *const out,
-    const float *const ref,
-    const int wd,
-    const int ht,
-    const float a,
-    const float b,
-    const uint32_t mode)
-{
-// #ifdef _OPENMP
-// #pragma omp parallel for schedule(static) default(none)
-// #endif
-  for(int j = 0; j < ht; j++)
-  {
-    const float *buf2 = buf + (size_t)j * wd;
-    const float *ref2 = ref + (size_t)j * wd;
-    uint16_t *out2 = out + (size_t)j * wd;
-    for(int i = 0; i < wd; i++)
-    {
-      if(mode == 0)
-      {
-        *out2 = *buf2;
-      }
-      else
-      {
-        const float x = *buf2;
-#if 0 // science
-        const float sigma2 = (b/a)*(b/a);
-        // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
-        if(x < .5f)
-          *out2 = 0.0f;
-        else
-          *out2 = 1. / 4. * x * x + 1. / 4. * sqrtf(3. / 2.) / x - 11. / 8. * 1.0 / (x * x)
-            + 5. / 8. * sqrtf(3. / 2.) * 1.0 / (x * x * x) - 1. / 8. - sigma2;
-        // asymptotic form:
-        // *out2 = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2);
-        *out2 *= a;
-#else // custom pre-blackpoint, algebraic inverse
-        // *out2 = CLAMP(.5f * (a * x*x + sqrtf(a*a*x*x*x*x + 4.0f*b*x*x)), 0, 0xffff);
-        *out2 = CLAMP(x * sqrtf(fmaxf(1.f, a* *ref2 + b)), 0, 0xffff);
-#endif
-      }
-      buf2 ++;
-      out2 ++;
-      ref2 ++;
-    }
-  }
 }
 
 #if 1 //def ANALYSE
@@ -265,18 +161,8 @@ static void analyse_g(
 #if 1
     uint16_t vb;
     float inp;
-    if(mode == 0)
-    {
-      inp = input[width*j+i];
-      vb = v;
-    }
-    else
-    {
-      // precondition(input+width*j+i, &inp, coarse+width*j+i, 1, 1, aa, bb, mode);
-      inp = input[width*j+i];
-      vb = input[width*j+i];
-      //backtransform(coarse+width*j+i, &vb, coarse+width*j+i, 1, 1, aa, bb, mode);
-    }
+    inp = input[width*j+i];
+    vb = v;
     const float d = fabsf(inp - v);
 #endif
     // const float d = detail[width*j+i];
@@ -339,17 +225,16 @@ static void analyse_rb(
 #endif
 #endif
 
-#if 1 // eaw
 static inline float filter_eaw(
     const float v0,
     const float v1,
     const float b)
 {
-  return fast_mexp2f(.5f*(v1-v0)*(v1-v0)/(b*b));
+  // un-normalised ``gaussian'' for base 2, with sigma = 3 noise sigma
+  return fast_mexp2f(.5f*(v1-v0)*(v1-v0)/(9.f*b*b));
 }
 
-
-static void decompose_g(
+static void decompose_eaw_g(
     float *const output,      // output buffer
     const float *const input, // const input buffer
     float *const detail,      // output detail buffer
@@ -367,6 +252,7 @@ static void decompose_g(
   const int mult = 1 << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
+  const float bs = b * powf(0.5f, scale);
   // TODO: borders!
   // non-separable, edge-avoiding, shift-independent a-trous wavelet transform.
 #ifdef _OPENMP
@@ -379,7 +265,7 @@ static void decompose_g(
     for(int jj=0;jj<5;jj++) for(int ii=0;ii<5;ii++)
     {
       const float v1 = input[(j + mult*(ii-2-jj+2))*width+i + mult*(ii-2+jj-2)];
-      float w = filter[jj] * filter[ii] * filter_eaw(input[j*width+i], v1, b);
+      float w = filter[jj] * filter[ii] * filter_eaw(input[j*width+i], v1, bs);
       sum += w;
       output[j*width+i] += w * v1;
     }
@@ -398,7 +284,7 @@ static void decompose_g(
       detail[j*width+i] = input[j*width+i] - output[j*width+i];
 }
 
-static void decompose_rb(
+static void decompose_eaw_rb(
     float *const output,      // output buffer
     const float *const input, // const input buffer
     float *const detail,      // output detail buffer
@@ -418,6 +304,7 @@ static void decompose_rb(
   const int mult = 1 << (scale+1);
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
+  // const float bs = b * powf(0.5f, scale);
   // TODO: borders!
   // non-separable, edge-avoiding, shift-independent a-trous wavelet transform.
 #ifdef _OPENMP
@@ -426,15 +313,15 @@ static void decompose_rb(
   for(int j=offy+2*mult;j<height-2*mult;j+=2) for(int i=offx+2*mult;i<width-2*mult;i+=2)
   {
     output[j*width+i] = 0.0f;
-    float sum = 0.0f;
+    // float sum = 0.0f;
     for(int jj=0;jj<5;jj++) for(int ii=0;ii<5;ii++)
     {
       const float v1 = input[(j + mult*(jj-2))*width+i + mult*(ii-2)];
-      float w = filter[jj] * filter[ii] * filter_eaw(input[j*width+i], v1, b);
-      sum += w;
+      float w = filter[jj] * filter[ii];// * filter_eaw(input[j*width+i], v1, bs);
+      // sum += w;
       output[j*width+i] += w * v1;
     }
-    output[j*width+i] /= sum;
+    // output[j*width+i] /= sum;
   }
 
   // final pass, write detail coeffs
@@ -449,7 +336,8 @@ static void decompose_rb(
     else
       detail[j*width+i] = input[j*width+i] - output[j*width+i];
 }
-#else // separable
+
+// separable
 static void decompose_g(
     float *const output,      // output buffer
     const float *const input, // const input buffer
@@ -565,7 +453,6 @@ static void decompose_rb(
     else
       detail[j*width+i] = input[j*width+i] - output[j*width+i];
 }
-#endif
 
 static int FC(const int row, const int col, const unsigned int filters)
 {
@@ -785,20 +672,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const float a = d->a, b = black_s, c = d->c;
   const float white = img->raw_white_point;
 
-  // precondition((uint16_t *)ivoid, tmp1, ref, width, height, a, b, d->mode);
-#if 1 // decompose into r-g, g, b-g
   chop_outliers((uint16_t *)ivoid, tmp1, black, white, width, height, offx);
-  // for(int j=0;j<height;j++)
-  // {
-  //   for(int i=(j&1)?1-offx:offx;i<width;i+=2)
-  //     tmp1[j*width+i] = ((uint16_t *)ivoid)[j*width+i]; // copy green
-  //   for(int i=(j&1)?offx:1-offx;i<width;i+=2)
-  //     tmp1[j*width+i] = 0.0f;//((uint16_t *)ivoid)[j*width+i] - 
-  //       //((uint16_t *)ivoid)[j*width + (i&~1) + ((j&1)?offx:1-offx)];
-  // }
-#else
-  for(size_t k=0;k<npixels;k++) tmp1[k] = ((uint16_t *)ivoid)[k];
-#endif
 
   buf1 = tmp1;
   buf2 = tmp2;
@@ -807,9 +681,18 @@ memset(tmp2, 0, sizeof(float)*width*height);
 #if 1
   for(int scale = 0; scale < max_scale; scale++)
   {
-    decompose_g (buf2, buf1, buf[scale],   offx,    scale, black, white, a, b, c, width, height, d->mode);  // green
-    decompose_rb(buf2, buf1, buf[scale], 1-offx, 0, scale, black, white, a, b, c, width, height, d->mode);  // blue
-    decompose_rb(buf2, buf1, buf[scale],   offx, 1, scale, black, white, a, b, c, width, height, d->mode);  // red
+    if(d->algo == 0)
+    {
+      decompose_g (buf2, buf1, buf[scale],   offx,    scale, black, white, a, b, c, width, height, d->mode);  // green
+      decompose_rb(buf2, buf1, buf[scale], 1-offx, 0, scale, black, white, a, b, c, width, height, d->mode);  // blue
+      decompose_rb(buf2, buf1, buf[scale],   offx, 1, scale, black, white, a, b, c, width, height, d->mode);  // red
+    }
+    else
+    {
+      decompose_eaw_g (buf2, buf1, buf[scale],   offx,    scale, black, white, a, b, c, width, height, d->mode);  // green
+      decompose_eaw_rb(buf2, buf1, buf[scale], 1-offx, 0, scale, black, white, a, b, c, width, height, d->mode);  // blue
+      decompose_eaw_rb(buf2, buf1, buf[scale],   offx, 1, scale, black, white, a, b, c, width, height, d->mode);  // red
+    }
 // DEBUG: clean out temporary memory:
 memset(buf1, 0, sizeof(float)*width*height);
     float *buf3 = buf2;
@@ -830,7 +713,7 @@ memset(buf1, 0, sizeof(float)*width*height);
   // now do everything backwards, so the result will end up in *ovoid
   for(int scale = max_scale - 1; scale >= 0; scale--)
   {
-#if 0
+#if 1
     // TODO: separately per channel?
     // variance stabilizing transform maps sigma to unity.
     const float sigma = 1.0f;
@@ -857,18 +740,15 @@ memset(buf1, 0, sizeof(float)*width*height);
     float var_y[3] = {0.0f}, s_x[3] = {0.0f}, thrs[3] = {0.0f};
     for(int k=0;k<3;k++)
     {
-      // const float nv = k==1? sb2 : 4.0*sb2; // noise variance, colour channels are doubled (r-g, b-g)
-      const float nv = sb2 * d->strength;
+      float nv = sb2 * d->strength * d->strength;
+      // need this? also the spatial pattern is doubled (bayer)
+      // if(k!=1) nv *= 2; // noise variance in colour channels is doubled (r-g, b-g)
       var_y[k] = sum_y2[k] / (cnt[k] - 1.0f);     // noisy signal variance
       s_x[k] = sqrtf(MAX(1e-12f, var_y[k] - nv)); // signal std deviation
       thrs[k] = nv / s_x[k];
       fprintf(stderr, "???[%d] y2 %g cnt %lu vy %g sx %g t %g\n", k, sum_y2[k], cnt[k], var_y[k], s_x[k], thrs[k]);
     }
     fprintf(stderr, "scale %d thrs %f %f %f = %f / %f\n", scale, thrs[0], thrs[1], thrs[2], sb2, s_x[0]);
-    // XXX fake colour denoising:
-    // thrs[0] *= 4.0f;
-    // thrs[2] *= 4.0f;
-      
     if(d->mode == 0) thrs[0] = thrs[1] = thrs[2] = 0.0f;
 #else
     // const float thrs[3] = { 0.0, 0.0, 0.0 };
@@ -890,7 +770,6 @@ memset(buf1, 0, sizeof(float)*width*height);
   }
 #endif
 
-  // backtransform(buf1, (uint16_t *)ovoid, ref, width, height, a, b, d->mode);
 #if 1 // recompose from r-g, g, b-g
   for(int j=0;j<height;j++)
   {
@@ -910,9 +789,6 @@ memset(buf1, 0, sizeof(float)*width*height);
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
   dt_free_align(tmp1);
   dt_free_align(tmp2);
-  // dt_free_align(ref);
-
-  // if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
 
 
@@ -1182,7 +1058,7 @@ void gui_init(dt_iop_module_t *self)
   g->profile = dt_bauhaus_combobox_new(self);
   g->mode = dt_bauhaus_combobox_new(self);
   g->algo = dt_bauhaus_combobox_new(self);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 400.0f, .05, 1.f, 3);
+  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 10.0f, .05, 1.f, 3);
   g->a = dt_bauhaus_slider_new_with_range(self, 0.0f, 200.0f, .05, 1.f, 4);
   g->b = dt_bauhaus_slider_new_with_range(self, 0.0f, 2000.0f, .05, 0.f, 3);
   g->c = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.f, .00001, 0.f, 8);
