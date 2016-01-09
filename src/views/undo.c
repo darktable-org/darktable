@@ -49,6 +49,7 @@ static void _free_undo_data(void *p)
   dt_undo_item_t *item = (dt_undo_item_t *)p;
   if (item->free_data) item->free_data(item->data);
   free(item->data);
+  g_free(item);
 }
 
 void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
@@ -140,8 +141,8 @@ static void dt_undo_clear_list(GList **list, uint32_t filter)
     if(item->type & filter)
     {
       //  remove this element
-      _free_undo_data((void *)item);
       *list = g_list_remove(*list, item);
+      _free_undo_data((void *)item);
     }
     l = next;
   };
