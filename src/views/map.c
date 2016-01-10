@@ -845,7 +845,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 void init_key_accels(dt_view_t *self)
 {
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
-  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_r, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
   // Film strip shortcuts
   dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
@@ -853,10 +853,14 @@ void init_key_accels(dt_view_t *self)
 static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
-  if(keyval == GDK_KEY_z)
-    dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
-  else
-    dt_undo_do_redo(darktable.undo, DT_UNDO_GEOTAG);
+  dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
+  return TRUE;
+}
+
+static gboolean _view_map_redo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data)
+{
+  dt_undo_do_redo(darktable.undo, DT_UNDO_GEOTAG);
   return TRUE;
 }
 
@@ -871,8 +875,10 @@ static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *accele
 
 void connect_key_accels(dt_view_t *self)
 {
+  // undo/redo
   GClosure *closure = g_cclosure_new(G_CALLBACK(_view_map_undo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "undo", closure);
+  closure = g_cclosure_new(G_CALLBACK(_view_map_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
   // Film strip shortcuts
   closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
