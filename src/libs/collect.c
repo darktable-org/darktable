@@ -54,11 +54,11 @@ typedef struct dt_lib_collect_t
   int nb_rules;
 
   GtkTreeView *view;
+  int view_rule;
   GtkTreeView *treeview_folders;
   GtkTreeModel *treemodel_folders;
   GtkTreeModel *treemodel_tags;
   gboolean folder_new;
-  gboolean tags_new;
   GtkTreeModel *listmodel;
   GtkScrolledWindow *scrolledwindow;
 
@@ -790,6 +790,7 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   }
 
   gtk_widget_show(GTK_WIDGET(d->sw2));
+  d->view_rule = DT_COLLECTION_PROP_FOLDERS;
 }
 
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
@@ -805,7 +806,7 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   g_object_ref(filter);
   g_object_ref(tagsmodel);
 
-  if(d->tags_new)
+  if(d->view_rule != DT_COLLECTION_PROP_TAG)
   {
     // tree creation/recreation
     sqlite3_stmt *stmt;
@@ -917,15 +918,7 @@ static void tags_view(dt_lib_collect_rule_t *dr)
     gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
     gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
-    d->tags_new = FALSE;
-  }
-  else
-  {
-    gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
-    gtk_widget_hide(GTK_WIDGET(d->sw2));
-    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), filter);
-    gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
+    d->view_rule = DT_COLLECTION_PROP_TAG;
   }
 
   // if needed, we restrict the tree to matching entries
@@ -1202,6 +1195,7 @@ entry_key_press_exit:
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
   gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
   g_object_unref(listmodel);
+  d->view_rule = property;
 }
 
 static void update_view(dt_lib_collect_rule_t *dr)
@@ -1682,8 +1676,11 @@ static void tag_changed(gpointer instance, gpointer self)
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
 
   // update tree
-  d->tags_new = TRUE;
-  _lib_collect_gui_update(self);
+  if(gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[d->active_rule].combo)) == DT_COLLECTION_PROP_TAG)
+  {
+    d->view_rule = -1;
+    _lib_collect_gui_update(self);
+  }
 }
 
 static void menuitem_clear(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
@@ -1836,6 +1833,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->scrolledwindow), DT_PIXEL_APPLY_DPI(300));
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
+  d->view_rule = -1;
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
@@ -1874,7 +1872,6 @@ void gui_init(dt_lib_module_t *self)
   // TODO: This should be done in a more generic place, not gui_init
   d->treemodel_folders = GTK_TREE_MODEL(_folder_tree());
   d->folder_new = TRUE;
-  d->tags_new = TRUE;
   d->treeview_folders = NULL;
   _lib_collect_gui_update(self);
 
