@@ -536,15 +536,13 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
   g_list_free (list);
 }
 
-#define RAW_SCALE   (piece->pipe->iscale)
 #define CAIRO_SCALE (1.0 / MAX (piece->pipe->backbuf_width, piece->pipe->backbuf_height))
-#define UI_SCALE    (RAW_SCALE / zoom_scale)
 
 static void distort_paths_raw_to_cairo (const struct dt_iop_module_t *module,
                                         const dt_dev_pixelpipe_iop_t *piece,
                                         dt_iop_liquify_params_t *p)
 {
-  const distort_params_t params = { module->dev, piece->pipe, RAW_SCALE, CAIRO_SCALE, true, 0, 99999 };
+  const distort_params_t params = { module->dev, piece->pipe, piece->pipe->iscale, CAIRO_SCALE, TRUE, 0, 99999 };
   _distort_paths (&params, p);
 }
 
@@ -553,7 +551,7 @@ static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
                                         const float roi_in_scale,
                                         dt_iop_liquify_params_t *p)
 {
-  const distort_params_t params = { module->dev, piece->pipe, RAW_SCALE, roi_in_scale, true, 0, module->priority };
+  const distort_params_t params = { module->dev, piece->pipe, piece->pipe->iscale, roi_in_scale, TRUE, 0, module->priority };
   _distort_paths (&params, p);
 }
 
@@ -561,7 +559,7 @@ static float complex distort_point_cairo_to_raw (const struct dt_iop_module_t *m
                                                   const dt_dev_pixelpipe_iop_t *piece,
                                                   const float complex p)
 {
-  const distort_params_t params = { module->dev, piece->pipe, CAIRO_SCALE, RAW_SCALE, false, 0, 99999 };
+  const distort_params_t params = { module->dev, piece->pipe, CAIRO_SCALE, piece->pipe->iscale, FALSE, 0, 99999 };
   return _distort_point  (p, &params);
 }
 
@@ -1464,7 +1462,7 @@ static void set_line_width (cairo_t *cr, double scale, dt_liquify_ui_width_enum_
   cairo_set_line_width (cr, width);
 }
 
-static bool detect_drag (const dt_iop_liquify_gui_data_t *g, const double scale, const float complex pt)
+static gboolean detect_drag (const dt_iop_liquify_gui_data_t *g, const double scale, const float complex pt)
 {
   // g->last_button1_pressed_pos is valid only while BUTTON1 is down
   return g->last_button1_pressed_pos != -1.0 &&
@@ -2478,8 +2476,7 @@ int mouse_moved (struct dt_iop_module_t *module,
 
   const float complex pt_cairo = transform_view_to_cairo (module, piece, x, y);
   const float complex pt = distort_point_cairo_to_raw (module, piece, pt_cairo);
-  const double zoom_scale = get_zoom_scale (develop);
-  const double scale = UI_SCALE;
+  const double scale = piece->pipe->iscale / get_zoom_scale (develop);
 
   dt_pthread_mutex_lock (&g->lock);
 
@@ -2651,8 +2648,7 @@ int button_pressed (struct dt_iop_module_t *module,
 
   const float complex pt_cairo = transform_view_to_cairo (module, piece, x, y);
   const float complex pt = distort_point_cairo_to_raw (module, piece, pt_cairo);
-  const double zoom_scale = get_zoom_scale (develop);
-  const double scale = UI_SCALE;
+  const double scale = piece->pipe->iscale / get_zoom_scale (develop);
 
   dt_pthread_mutex_lock (&g->lock);
 
@@ -2774,8 +2770,7 @@ int button_released (struct dt_iop_module_t *module,
 
   const float complex pt_cairo = transform_view_to_cairo (module, piece, x, y);
   const float complex pt = distort_point_cairo_to_raw (module, piece, pt_cairo);
-  const double zoom_scale = get_zoom_scale (develop);
-  const double scale = UI_SCALE;
+  const double scale = piece->pipe->iscale / get_zoom_scale (develop);
 
   dt_pthread_mutex_lock (&g->lock);
 
@@ -2786,7 +2781,6 @@ int button_released (struct dt_iop_module_t *module,
   if (which == 1 && g->temp && (g->status & DT_LIQUIFY_STATUS_NEW))
   {
     end_drag (g);
-    // double zoom_scale = get_zoom_scale (develop);
     if (gtk_toggle_button_get_active (g->btn_point_tool))
     {
       // user released without dragging, set a default strength vector
