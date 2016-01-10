@@ -51,6 +51,7 @@ typedef struct dt_lib_collect_t
 {
   dt_lib_collect_rule_t rule[MAX_RULES];
   int active_rule;
+  int nb_rules;
 
   GtkTreeView *view;
   GtkTreeView *treeview_folders;
@@ -920,7 +921,11 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   }
   else
   {
+    gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
+    gtk_widget_hide(GTK_WIDGET(d->sw2));
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), filter);
+    gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
   }
 
   // if needed, we restrict the tree to matching entries
@@ -1264,15 +1269,55 @@ static void create_folders_gui(dt_lib_collect_rule_t *dr)
   }
 }
 
+static gboolean is_gui_up_to_date(dt_lib_collect_t *d)
+{
+  // we verify the nb of rules
+  const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1;
+  const int active = CLAMP(_a, 0, (MAX_RULES - 1));
+  if(active + 1 != d->nb_rules) return FALSE;
+
+  // we verify each rules
+  char confname[200] = { 0 };
+  for(int i = 0; i <= active; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
+    if(gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[i].combo)) != dt_conf_get_int(confname)) return FALSE;
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
+    gchar *text = dt_conf_get_string(confname);
+    if(text)
+    {
+      if(strcmp(gtk_entry_get_text(GTK_ENTRY(d->rule[i].text)), text) != 0)
+      {
+        g_free(text);
+        return FALSE;
+      }
+      g_free(text);
+    }
+    if(i != active)
+    {
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i + 1);
+      const int mode = dt_conf_get_int(confname);
+      GtkDarktableButton *button = DTGTK_BUTTON(d->rule[i].button);
+      if(mode == DT_LIB_COLLECT_MODE_AND && button->icon != dtgtk_cairo_paint_and) return FALSE;
+      if(mode == DT_LIB_COLLECT_MODE_OR && button->icon != dtgtk_cairo_paint_or) return FALSE;
+      if(mode == DT_LIB_COLLECT_MODE_AND_NOT && button->icon != dtgtk_cairo_paint_andnot) return FALSE;
+    }
+  }
+  return TRUE;
+}
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
 
+  // we check if something as change since last call
+  if(is_gui_up_to_date(d)) return;
+
   const int old = darktable.gui->reset;
   darktable.gui->reset = 1;
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1;
   const int active = CLAMP(_a, 0, (MAX_RULES - 1));
+  d->nb_rules = active + 1;
   char confname[200] = { 0 };
 
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), TRUE);
@@ -1338,6 +1383,8 @@ void gui_reset(dt_lib_module_t *self)
   dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
   dt_conf_set_int("plugins/lighttable/collect/item0", DT_COLLECTION_PROP_FILMROLL);
   dt_conf_set_string("plugins/lighttable/collect/string0", "");
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  d->active_rule = 0;
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
   dt_collection_update_query(darktable.collection);
 }
@@ -1346,8 +1393,10 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 {
   if(darktable.gui->reset) return;
   g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+  g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->text), "");
   g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+  g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
 
@@ -1388,13 +1437,20 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
     gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
 
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+  g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   gtk_editable_set_position(GTK_EDITABLE(d->rule[active].text), -1);
   g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text,
                                     NULL);
+  g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed,
+                                    NULL);
   g_free(text);
 
-  update_view(d->rule + active);
+  if(item == DT_COLLECTION_PROP_TAG)
+    set_properties(d->rule + active);
+  else
+    update_view(d->rule + active);
+
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -1431,9 +1487,11 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
           gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
 
         g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+        g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
         gtk_entry_set_text(GTK_ENTRY(d->text), text);
         gtk_editable_set_position(GTK_EDITABLE(d->text), -1);
         g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+        g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
         g_free(text);
         d->typing = FALSE;
         update_view(d);
@@ -1462,8 +1520,11 @@ int position()
 static void entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule_t *d)
 {
   dt_lib_collect_t *c = get_collect(d);
-  c->active_rule = d->num;
-  update_view(c->rule + c->active_rule);
+  if(c->active_rule != d->num)
+  {
+    c->active_rule = d->num;
+    update_view(c->rule + c->active_rule);
+  }
 }
 
 static void menuitem_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
@@ -1471,7 +1532,7 @@ static void menuitem_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   // add next row with and operator
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
   const int active = CLAMP(_a, 1, MAX_RULES);
-  if(active < 10)
+  if(active < MAX_RULES)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
@@ -1490,7 +1551,7 @@ static void menuitem_or(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   // add next row with or operator
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
   const int active = CLAMP(_a, 1, MAX_RULES);
-  if(active < 10)
+  if(active < MAX_RULES)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
@@ -1509,7 +1570,7 @@ static void menuitem_and_not(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   // add next row with and not operator
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
   const int active = CLAMP(_a, 1, MAX_RULES);
-  if(active < 10)
+  if(active < MAX_RULES)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
@@ -1527,7 +1588,7 @@ static void menuitem_change_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 {
   // add next row with and operator
   const int num = d->num + 1;
-  if(num < 10 && num > 0)
+  if(num < MAX_RULES && num > 0)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
@@ -1540,7 +1601,7 @@ static void menuitem_change_or(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 {
   // add next row with or operator
   const int num = d->num + 1;
-  if(num < 10 && num > 0)
+  if(num < MAX_RULES && num > 0)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
@@ -1553,7 +1614,7 @@ static void menuitem_change_and_not(GtkMenuItem *menuitem, dt_lib_collect_rule_t
 {
   // add next row with and not operator
   const int num = d->num + 1;
-  if(num < 10 && num > 0)
+  if(num < MAX_RULES && num > 0)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
@@ -1725,8 +1786,9 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  //   gtk_widget_set_size_request(self->widget, 100, -1);
+
   d->active_rule = 0;
+  d->nb_rules = 0;
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
 
   GtkBox *box;
