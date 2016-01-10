@@ -2460,6 +2460,18 @@ static void sync_pipe (struct dt_iop_module_t *module, gboolean history)
   ctrl+click on strength:    Cycle linear, grow, shrink
 */
 
+gboolean get_point_scale(struct dt_iop_module_t *module, float x, float y, float complex *pt, float *scale)
+{
+  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe (module->dev, module->dev->preview_pipe, module);
+  if (!piece || piece->pipe->backbuf_width==0 || piece->pipe->backbuf_width==0)
+    return FALSE;
+
+  const float complex pt_cairo = transform_view_to_cairo (module, piece, x, y);
+  *pt = distort_point_cairo_to_raw (module, piece, pt_cairo);
+  *scale = piece->pipe->iscale / get_zoom_scale (module->dev);
+  return TRUE;
+}
+
 int mouse_moved (struct dt_iop_module_t *module,
                  double x,
                  double y,
@@ -2468,20 +2480,16 @@ int mouse_moved (struct dt_iop_module_t *module,
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   int handled = g->last_hit.elem ? 1 : 0;
+  float complex pt;
+  float scale;
 
-  dt_develop_t *develop = module->dev;
-  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe (develop, develop->preview_pipe, module);
-  if (!piece)
+  if (!get_point_scale(module, x, y, &pt, &scale))
     return 0;
-
-  const float complex pt_cairo = transform_view_to_cairo (module, piece, x, y);
-  const float complex pt = distort_point_cairo_to_raw (module, piece, pt_cairo);
-  const double scale = piece->pipe->iscale / get_zoom_scale (develop);
 
   dt_pthread_mutex_lock (&g->lock);
 
   g->last_mouse_pos = pt;
-  const int drag_p = detect_drag (g, scale, pt);
+  const int dragged = detect_drag (g, scale, pt);
 
   // Don't hit test while dragging, you'd only hit the dragged thing
   // anyway.
@@ -2504,7 +2512,7 @@ int mouse_moved (struct dt_iop_module_t *module,
     }
   }
 
-  if (drag_p && !g->dragging && g->last_hit.elem)
+  if (dragged && !g->dragging && g->last_hit.elem)
   {
     // start dragging
     start_drag (g, g->last_hit.layer, g->last_hit.elem);
@@ -2640,15 +2648,11 @@ int button_pressed (struct dt_iop_module_t *module,
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   int handled = 0;
+  float complex pt;
+  float scale;
 
-  dt_develop_t *develop = module->dev;
-  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe (develop, develop->preview_pipe, module);
-  if (!piece)
+  if (!get_point_scale(module, x, y, &pt, &scale))
     return 0;
-
-  const float complex pt_cairo = transform_view_to_cairo (module, piece, x, y);
-  const float complex pt = distort_point_cairo_to_raw (module, piece, pt_cairo);
-  const double scale = piece->pipe->iscale / get_zoom_scale (develop);
 
   dt_pthread_mutex_lock (&g->lock);
 
@@ -2762,15 +2766,11 @@ int button_released (struct dt_iop_module_t *module,
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   int handled = 0;
+  float complex pt;
+  float scale;
 
-  dt_develop_t *develop = module->dev;
-  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe (develop, develop->preview_pipe, module);
-  if (!piece)
+  if (!get_point_scale(module, x, y, &pt, &scale))
     return 0;
-
-  const float complex pt_cairo = transform_view_to_cairo (module, piece, x, y);
-  const float complex pt = distort_point_cairo_to_raw (module, piece, pt_cairo);
-  const double scale = piece->pipe->iscale / get_zoom_scale (develop);
 
   dt_pthread_mutex_lock (&g->lock);
 
@@ -2881,7 +2881,7 @@ int button_released (struct dt_iop_module_t *module,
 
   if (gtk_toggle_button_get_active (g->btn_node_tool))
   {
-    if (which == 1 && g->last_mouse_mods == 0 && !detect_drag (g, scale, pt))
+    if (which == 1 && g->last_mouse_mods == 0 && !dragged)
     {
       // select/unselect start/endpoint and clear previous selections
       if (g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
@@ -2900,7 +2900,7 @@ int button_released (struct dt_iop_module_t *module,
         goto done;
       }
     }
-    if (which == 1 && g->last_mouse_mods == GDK_SHIFT_MASK && !detect_drag (g, scale, pt))
+    if (which == 1 && g->last_mouse_mods == GDK_SHIFT_MASK && !dragged)
     {
       // select/unselect start/endpoint and keep previous selections
       if (g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
@@ -2911,7 +2911,7 @@ int button_released (struct dt_iop_module_t *module,
         goto done;
       }
     }
-    if (which == 1 && (g->last_mouse_mods == GDK_CONTROL_MASK) && !detect_drag (g, scale, pt))
+    if (which == 1 && (g->last_mouse_mods == GDK_CONTROL_MASK) && !dragged)
     {
       // add node
       if (g->last_hit.layer == DT_LIQUIFY_LAYER_PATH)
@@ -2971,7 +2971,7 @@ int button_released (struct dt_iop_module_t *module,
     }
     if (which == 1
         && (g->last_mouse_mods == (GDK_MOD1_MASK | GDK_CONTROL_MASK))
-        && !detect_drag (g, scale, pt))
+        && !dragged)
     {
       if (g->last_hit.layer == DT_LIQUIFY_LAYER_PATH)
       {
