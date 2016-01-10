@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-01-10 12:11+0100\n"
-"PO-Revision-Date: 2016-01-10 12:13+0100\n"
+"PO-Revision-Date: 2016-01-10 12:16+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -184,9 +184,7 @@ msgstr "droits par défaut lors de l'importation"
 
 #: ../build/src/preferences_gen.h:1732
 msgid "comma separated tags to be applied when importing"
-msgstr ""
-"liste de mots-clés (séparés par une virgule)\n"
-" à appliquer lors de l'importation"
+msgstr "mots-clés séparés par des virgules à appliquer à l'importation"
 
 #: ../build/src/preferences_gen.h:1754
 msgid "initial import rating"
