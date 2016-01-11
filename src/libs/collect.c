@@ -85,7 +85,7 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_COL_TOOLTIP,
   DT_LIB_COLLECT_COL_PATH,
   DT_LIB_COLLECT_COL_VISIBLE,
-  DT_LIB_COLLECT_COL_NOTHERE,
+  DT_LIB_COLLECT_COL_UNREACHABLE,
   DT_LIB_COLLECT_NUM_COLS
 } dt_lib_collect_cols_t;
 
@@ -562,6 +562,62 @@ static void set_properties(dt_lib_collect_rule_t *dr)
   dt_conf_set_int(confname, property);
 }
 
+static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_rule_t *dr)
+{
+  GtkTreeModel *filter = NULL;
+  GtkTreePath *path = NULL;
+
+  if(gtk_combo_box_get_active(dr->combo) == DT_COLLECTION_PROP_FOLDERS)
+  {
+    // we search a common path to all the folders
+    // we'll use it as root
+    GtkTreeIter child, iter;
+    int level = 0;
+
+    while(gtk_tree_model_iter_n_children(model, level > 0 ? &iter : NULL) > 0)
+    {
+      if(level > 0)
+      {
+        sqlite3_stmt *stmt = NULL;
+        gchar *pth, *query = NULL;
+        int id = -1;
+        // Check if this path also matches a filmroll
+        gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &pth, -1);
+        query = dt_util_dstrcat(query, "select id from film_rolls where folder like '%s'", pth);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+
+        g_free(pth);
+        g_free(query);
+
+        if(id != -1)
+        {
+          // we go back to the parent, in order to show this folder
+          if(!gtk_tree_model_iter_parent(model, &child, &iter)) level = 0;
+          iter = child;
+          break;
+        }
+      }
+      if(gtk_tree_model_iter_n_children(model, level > 0 ? &iter : NULL) != 1) break;
+
+      gtk_tree_model_iter_children(model, &child, level > 0 ? &iter : NULL);
+      iter = child;
+      level++;
+    }
+
+    if(level > 0) path = gtk_tree_model_get_path(model, &iter);
+  }
+
+  // Create filter and set virtual root
+  filter = gtk_tree_model_filter_new(model, path);
+  gtk_tree_path_free(path);
+
+  gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(filter), DT_LIB_COLLECT_COL_VISIBLE);
+
+  return filter;
+}
+
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 static void tree_view(dt_lib_collect_rule_t *dr)
 {
@@ -684,7 +740,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
               }
               gchar *pth3 = g_strdup(pth2);
 
-              if(level == max_level)
+              if(folders || level == max_level)
                 pth2[strlen(pth2) - 1] = '\0';
               else
                 pth2 = dt_util_dstrcat(pth2, "%%");
@@ -693,7 +749,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
               gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
                                  DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
               if(folders)
-                gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_NOTHERE,
+                gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_UNREACHABLE,
                                    !(g_file_test(pth3, G_FILE_TEST_IS_DIR)), -1);
               g_free(pth2);
               g_free(pth3);
@@ -712,8 +768,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
 
-    filter = gtk_tree_model_filter_new(model, NULL);
-    gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(filter), DT_LIB_COLLECT_COL_VISIBLE);
+    filter = _create_filtered_model(model, dr);
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), filter);
     gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
@@ -1577,7 +1632,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
   g_object_set(renderer, "strikethrough", TRUE, NULL);
-  gtk_tree_view_column_add_attribute(col, renderer, "strikethrough-set", DT_LIB_COLLECT_COL_NOTHERE);
+  gtk_tree_view_column_add_attribute(col, renderer, "strikethrough-set", DT_LIB_COLLECT_COL_UNREACHABLE);
 
   GtkTreeModel *listmodel
       = GTK_TREE_MODEL(gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
