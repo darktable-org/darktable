@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2015-12-08 22:25+0100\n"
-"PO-Revision-Date: 2015-12-17 08:32+0100\n"
+"POT-Creation-Date: 2016-01-10 08:18+0100\n"
+"PO-Revision-Date: 2016-01-10 08:22+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -18185,10 +18185,10 @@ msgstr "bordure autour de l'image en mode chambre noire"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16881(para)
 msgid ""
 "Process the image in darkroom mode with a small border of the given number "
-"of pixels (default 10)."
+"of pixels (default 20)."
 msgstr ""
 "Traite l'image dans la vue chambre noire avec une petite bordure du nombre "
-"de pixels donné (par défaut 10)."
+"de pixels donné (par défaut 20)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16886(bridgehead)
 msgid "do high quality processing for slideshow"

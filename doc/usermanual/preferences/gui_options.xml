@@ -246,7 +246,7 @@
 
   <para>
     Process the image in darkroom mode with a small border of the given number of pixels
-    (default 10).
+    (default 20).
   </para>
 
   <bridgehead renderas="sect4">do high quality processing for slideshow</bridgehead>
