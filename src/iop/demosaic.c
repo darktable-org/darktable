@@ -2522,19 +2522,34 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int qual = get_quality();
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
   const float smooth = data->color_smoothing ? ioratio : 0.0f;
+  const float greeneq = data->green_eq != DT_IOP_GREEN_EQ_NO ? 0.25f : 0.0f;
+
+  // we check if we need ultra-high quality thumbnail for this size
+  const int uhq_thumb = (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL) ?
+                          get_thumb_quality(roi_out->width, roi_out->height) : 0;
+
+  // check if we will do full scale demosaicing or chose simple
+  // half scale or third scale interpolation instead
+  const int full_scale_demosaicing =
+      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
+      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
+      uhq_thumb ||
+      roi_out->scale > (data->filters == 9u ? 0.333f : 0.5f);
+
+  // check if output buffer has same dimension as input buffer (thus avoiding one
+  // additional temporary buffer)
+  const int unscaled = (roi_out->scale > 0.99999f && roi_out->scale < 1.00001f);
 
   if(data->filters != 9u)
   { // Bayer pattern
     tiling->factor = 1.0f + ioratio;
 
-    if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
-      tiling->factor += fmax(0.25f, smooth);
-    else if((roi_out->scale > 0.5f)
-            || (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
-            || (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))
-      tiling->factor += fmax(1.25f, smooth);
+    if(full_scale_demosaicing && unscaled)
+      tiling->factor += fmax(greeneq, smooth);
+    else if(full_scale_demosaicing)
+      tiling->factor += fmax(1.0f + greeneq, smooth);
     else
-      tiling->factor += fmax(0.25f, smooth);
+      tiling->factor += smooth;
 
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
@@ -2546,14 +2561,12 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   { // X-Trans pattern, take care of Markesteijn's limits
     tiling->factor = 1.0f + ioratio;
 
-    if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
-      tiling->factor += fmax(1.0f, smooth);
-    else if((roi_out->scale > 0.333f)
-            || (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
-            || (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))
-      tiling->factor += fmax(2.0f, smooth);
+    if(full_scale_demosaicing && unscaled)
+      tiling->factor += fmax(1.0f + greeneq, smooth);
+    else if(full_scale_demosaicing)
+      tiling->factor += fmax(2.0f + greeneq, smooth);
     else
-      tiling->factor += 0.0f;
+      tiling->factor += smooth;
 
     // note that even Markesteijn demosiac's buffers aren't
     // significantly large enough to change maxbuf, except in the case
