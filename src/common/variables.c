@@ -273,7 +273,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
     }
     else
     {
-      snprintf(value, value_len, "%s", _("unknown"));
+      snprintf(value, value_len, "%s", _("none"));
     }
     g_list_free_full(res, &g_free);
   }
@@ -287,7 +287,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
     }
     else
     {
-      snprintf(value, value_len, "%s", _("unknown"));
+      snprintf(value, value_len, "%s", _("none"));
     }
     g_list_free_full(res, &g_free);
   }
@@ -301,7 +301,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
     }
     else
     {
-      snprintf(value, value_len, "%s", _("unknown"));
+      snprintf(value, value_len, "%s", _("none"));
     }
     g_list_free_full(res, &g_free);
   }
