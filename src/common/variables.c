@@ -263,6 +263,48 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
     }
     g_list_free_full(res, &g_free);
   }
+  else if(g_strcmp0(variable, "$(CREATOR)") == 0 && params->filename && (got_value = TRUE))
+  {
+    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      snprintf(value, value_len, "%s", (char *)res->data);
+    }
+    else
+    {
+      snprintf(value, value_len, "%s", _("none"));
+    }
+    g_list_free_full(res, &g_free);
+  }
+  else if(g_strcmp0(variable, "$(PUBLISHER)") == 0 && params->filename && (got_value = TRUE))
+  {
+    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.publisher", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      snprintf(value, value_len, "%s", (char *)res->data);
+    }
+    else
+    {
+      snprintf(value, value_len, "%s", _("none"));
+    }
+    g_list_free_full(res, &g_free);
+  }
+  else if(g_strcmp0(variable, "$(RIGHTS)") == 0 && params->filename && (got_value = TRUE))
+  {
+    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      snprintf(value, value_len, "%s", (char *)res->data);
+    }
+    else
+    {
+      snprintf(value, value_len, "%s", _("none"));
+    }
+    g_list_free_full(res, &g_free);
+  }
 
   g_free(pictures_folder);
   g_free((gchar *)homedir);
