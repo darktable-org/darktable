@@ -3,15 +3,15 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-12-30 11:20+0100\n"
-"PO-Revision-Date: 2015-12-30 11:22+0100\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"PO-Revision-Date: 2016-01-10 11:18+0100\n"
+"Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 1.8.6\n"
+"X-Generator: Poedit 1.6.10\n"
 
 #: ../build/src/preferences_gen.h:1460
 msgid "GUI options"
@@ -184,9 +184,7 @@ msgstr "droits par défaut lors de l'importation"
 
 #: ../build/src/preferences_gen.h:1732
 msgid "comma separated tags to be applied when importing"
-msgstr ""
-"liste de mots-clés (séparés par une virgule)\n"
-" à appliquer lors de l'importation"
+msgstr "mots-clés séparés par des virgules à appliquer à l'importation"
 
 #: ../build/src/preferences_gen.h:1754
 msgid "initial import rating"
@@ -2121,8 +2119,8 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:191
 #: ../src/gui/presets.c:297 ../src/gui/presets.c:643
-#: ../src/iop/temperature.c:1232 ../src/libs/import.c:550 ../src/libs/lib.c:309
-#: ../src/libs/lib.c:334 ../src/libs/lib.c:1130
+#: ../src/iop/temperature.c:1232 ../src/libs/import.c:550
+#: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1130
 msgid "preset"
 msgstr "pré-réglage"
 
@@ -3033,7 +3031,8 @@ msgstr ""
 msgid "edit `%s' for module `%s'"
 msgstr "éditer « %s » pour le module « %s »"
 
-#: ../src/gui/preferences.c:1232 ../src/gui/presets.c:403 ../src/libs/lib.c:241
+#: ../src/gui/preferences.c:1232 ../src/gui/presets.c:403
+#: ../src/libs/lib.c:241
 msgid "description or further information"
 msgstr "description ou information complémentaire"
 
@@ -4020,7 +4019,8 @@ msgstr "net"
 msgid "dull"
 msgstr "flou"
 
-#: ../src/iop/atrous.c:1387 ../src/iop/equalizer.c:401 ../src/iop/nlmeans.c:709
+#: ../src/iop/atrous.c:1387 ../src/iop/equalizer.c:401
+#: ../src/iop/nlmeans.c:709
 msgid "luma"
 msgstr "luma"
 
@@ -4028,7 +4028,8 @@ msgstr "luma"
 msgid "change lightness at each feature size"
 msgstr "changer la luminosité pour chaque taille"
 
-#: ../src/iop/atrous.c:1393 ../src/iop/equalizer.c:402 ../src/iop/nlmeans.c:711
+#: ../src/iop/atrous.c:1393 ../src/iop/equalizer.c:402
+#: ../src/iop/nlmeans.c:711
 msgid "chroma"
 msgstr "chroma"
 
@@ -4138,8 +4139,8 @@ msgstr "courbe de base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
-#: ../src/iop/basecurve.c:862 ../src/iop/lens.c:2189 ../src/iop/vignette.c:1147
-#: ../src/iop/watermark.c:1298
+#: ../src/iop/basecurve.c:862 ../src/iop/lens.c:2189
+#: ../src/iop/vignette.c:1147 ../src/iop/watermark.c:1298
 msgid "scale"
 msgstr "échelle"
 
@@ -5639,8 +5640,8 @@ msgctxt "mode"
 msgid "manual"
 msgstr "manuel"
 
-#: ../src/iop/exposure.c:804 ../src/iop/levels.c:553 ../src/iop/tonecurve.c:783
-#: ../src/iop/vignette.c:1138
+#: ../src/iop/exposure.c:804 ../src/iop/levels.c:553
+#: ../src/iop/tonecurve.c:783 ../src/iop/vignette.c:1138
 msgid "automatic"
 msgstr "automatique"
 
@@ -7547,16 +7548,18 @@ msgstr "historique"
 msgid "description"
 msgstr "description"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:555 ../src/libs/metadata.c:335
-#: ../src/libs/metadata_view.c:115
+#: ../src/libs/collect.h:30 ../src/libs/import.c:555
+#: ../src/libs/metadata.c:335 ../src/libs/metadata_view.c:115
 msgid "creator"
 msgstr "auteur"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:560 ../src/libs/metadata.c:336
+#: ../src/libs/collect.h:30 ../src/libs/import.c:560
+#: ../src/libs/metadata.c:336
 msgid "publisher"
 msgstr "diffuseur"
 
-#: ../src/libs/collect.h:31 ../src/libs/import.c:565 ../src/libs/metadata.c:337
+#: ../src/libs/collect.h:31 ../src/libs/import.c:565
+#: ../src/libs/metadata.c:337
 msgid "rights"
 msgstr "droits"
 
@@ -9473,19 +9476,23 @@ msgstr "trier par"
 msgid "preferences"
 msgstr "préférences"
 
-#: ../src/libs/tools/global_toolbox.c:81 ../src/libs/tools/global_toolbox.c:124
+#: ../src/libs/tools/global_toolbox.c:81
+#: ../src/libs/tools/global_toolbox.c:124
 msgid "expand grouped images"
 msgstr "montrer les images groupées"
 
-#: ../src/libs/tools/global_toolbox.c:83 ../src/libs/tools/global_toolbox.c:126
+#: ../src/libs/tools/global_toolbox.c:83
+#: ../src/libs/tools/global_toolbox.c:126
 msgid "collapse grouped images"
 msgstr "cacher les images groupées"
 
-#: ../src/libs/tools/global_toolbox.c:93 ../src/libs/tools/global_toolbox.c:143
+#: ../src/libs/tools/global_toolbox.c:93
+#: ../src/libs/tools/global_toolbox.c:143
 msgid "hide image overlays"
 msgstr "cache les surimpressions"
 
-#: ../src/libs/tools/global_toolbox.c:95 ../src/libs/tools/global_toolbox.c:145
+#: ../src/libs/tools/global_toolbox.c:95
+#: ../src/libs/tools/global_toolbox.c:145
 msgid "show image overlays"
 msgstr "affiche les surimpressions"
 
@@ -9694,8 +9701,8 @@ msgstr ""
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2187 ../src/views/map.c:726 ../src/views/print.c:352
-#: ../src/views/tethering.c:391
+#: ../src/views/darkroom.c:2187 ../src/views/map.c:726
+#: ../src/views/print.c:352 ../src/views/tethering.c:391
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
