@@ -2258,22 +2258,27 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
     else
       (*totalsuccess)++;
 
-    // get profiling info of event
-    cl_ulong start;
-    cl_ulong end;
-    cl_int errs = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)(
-        (*eventlist)[k], CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
-    cl_int erre = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)((*eventlist)[k], CL_PROFILING_COMMAND_END,
-                                                                   sizeof(cl_ulong), &end, NULL);
-    if(errs == CL_SUCCESS && erre == CL_SUCCESS)
+    if(darktable.unmuted & DT_DEBUG_PERF)
     {
-      (*eventtags)[k].timelapsed = end - start;
+      // get profiling info of event (only if darktable was called with '-d perf')
+      cl_ulong start;
+      cl_ulong end;
+      cl_int errs = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)(
+          (*eventlist)[k], CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
+      cl_int erre = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)((*eventlist)[k], CL_PROFILING_COMMAND_END,
+                                                                   sizeof(cl_ulong), &end, NULL);
+      if(errs == CL_SUCCESS && erre == CL_SUCCESS)
+      {
+        (*eventtags)[k].timelapsed = end - start;
+      }
+      else
+      {
+        (*eventtags)[k].timelapsed = 0;
+        (*lostevents)++;
+      }
     }
     else
-    {
       (*eventtags)[k].timelapsed = 0;
-      (*lostevents)++;
-    }
 
     // finally release event to be re-used by driver
     (cl->dlocl->symbols->dt_clReleaseEvent)((*eventlist)[k]);
