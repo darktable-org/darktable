@@ -209,7 +209,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
-void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userdata)
+static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userdata)
 {
   GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -315,7 +315,7 @@ error:
   g_free(new_path);
 }
 
-void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
+static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
 {
   GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
 
@@ -343,7 +343,7 @@ void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
   dt_control_remove_images();
 }
 
-void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
+static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
 {
   GtkWidget *menu, *menuitem;
 
@@ -365,7 +365,7 @@ void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_
                  gdk_event_get_time((GdkEvent *)event));
 }
 
-gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
+static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
 {
   if(d->view_rule != DT_COLLECTION_PROP_FOLDERS) return FALSE;
   /* single click with the right mouse button? */
@@ -395,7 +395,7 @@ gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib
   return FALSE; /* we did not handle this */
 }
 
-gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
+static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
 {
   if(d->view_rule != DT_COLLECTION_PROP_FOLDERS) return FALSE;
 
