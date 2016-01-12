@@ -11,6 +11,7 @@
   <plist>${project}/Info.plist</plist>
   <main-binary>${prefix:dt}/bin/darktable</main-binary>
   <binary dest="${bundle}/Contents/MacOS/darktable-cli-bin">${prefix:dt}/bin/darktable-cli</binary>
+  <binary dest="${bundle}/Contents/MacOS/darktable-generate-cache-bin">${prefix:dt}/bin/darktable-generate-cache</binary>
   <binary>${prefix:dt}/lib/darktable</binary>
   <binary>${prefix}/lib/libgphoto2_port/${pkg:libgphoto2_port:VERSION}/*.so</binary>
   <binary>${prefix}/lib/libgphoto2/${pkg:libgphoto2:VERSION}/*.so</binary>
@@ -29,5 +30,6 @@
   <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
   <data dest="${bundle}/Contents/Resources/share/applications/open.desktop">${project}/open.desktop</data>
   <data dest="${bundle}/Contents/MacOS/darktable-cli">${project}/darktable-cli.sh</data>
+  <data dest="${bundle}/Contents/MacOS/darktable-generate-cache">${project}/darktable-cli.sh</data>
   <icon-theme icons="all">Adwaita</icon-theme>
 </app-bundle>
