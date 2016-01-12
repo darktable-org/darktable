@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-12-28 15:11+0100\n"
-"PO-Revision-Date: 2016-01-12 19:10+0100\n"
+"PO-Revision-Date: 2016-01-12 19:23+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -7071,7 +7071,7 @@ msgstr "beweeg om het voorbeeld op het canvas te doen oplichten, klik om het voo
 
 #: ../src/libs/colorpicker.c:374 ../src/libs/image.c:178
 msgid "remove"
-msgstr "uitschrijven"
+msgstr "verwijder"
 
 #: ../src/libs/colorpicker.c:462
 msgid "live samples"
