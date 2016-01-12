@@ -20,7 +20,7 @@ export GTK_DATA_PREFIX="$bundle_res"
 export GTK_EXE_PREFIX="$bundle_res"
 export GTK_PATH="$bundle_res"
 
-export GTK_IM_MODULE_FILE="$bundle_etc"/gtk-2.0/gtk.immodules
+export GTK_IM_MODULE_FILE="$bundle_etc"/gtk-3.0/gtk.immodules
 export GDK_PIXBUF_MODULE_FILE="$(echo "$bundle_lib"/gdk-pixbuf-2.0/*/loaders.cache)"
 
 export IOLIBS="$(echo "$bundle_lib"/libgphoto2_port/*/)"
