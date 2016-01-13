@@ -57,7 +57,7 @@ typedef struct dt_lib_collect_t
   int view_rule;
 
   GtkTreeModel *treefilter;
-  GtkTreeModel *listmodel;
+  GtkTreeModel *listfilter;
   GtkScrolledWindow *scrolledwindow;
 
   GtkScrolledWindow *sw2;
@@ -410,6 +410,29 @@ static dt_lib_collect_t *get_collect(dt_lib_collect_rule_t *r)
   return d;
 }
 
+static gboolean list_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
+  dt_lib_collect_t *d = get_collect(dr);
+  gchar *str = NULL;
+
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+
+  gchar *haystack = g_utf8_strdown(str, -1);
+  gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+
+  if(strcmp(haystack, needle) == 0)
+  {
+    gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
+  }
+
+  g_free(haystack);
+  g_free(needle);
+  g_free(str);
+
+  return FALSE;
+}
+
 static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
@@ -470,7 +493,33 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   return FALSE;
 }
 
-static gboolean match_string(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
+  gchar *str = NULL;
+  gboolean visible;
+
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+
+  gchar *haystack = g_utf8_strdown(str, -1);
+  gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+  if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
+
+  if(g_str_has_prefix(needle, "%"))
+    visible = (g_strrstr(haystack, needle + 1) != NULL);
+  else
+    visible = (g_strrstr(haystack, needle) != NULL);
+
+  g_free(haystack);
+  g_free(needle);
+
+  g_free(str);
+
+  gtk_list_store_set(GTK_LIST_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
+  return FALSE;
+}
+
+static gboolean tree_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
   gchar *str = NULL;
@@ -497,8 +546,7 @@ static gboolean match_string(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
   return FALSE;
 }
 
-
-static gboolean reveal_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+static gboolean tree_reveal_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   gboolean state;
   GtkTreeIter parent, child = *iter;
@@ -516,11 +564,11 @@ static gboolean reveal_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   return FALSE;
 }
 
-static void refilter(GtkTreeModel *model, gpointer data)
+static void tree_set_visibility(GtkTreeModel *model, gpointer data)
 {
-  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)match_string, data);
+  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_match_string, data);
 
-  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)reveal_func, NULL);
+  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_reveal_func, NULL);
 }
 
 static void _lib_folders_update_collection(const gchar *filmroll)
@@ -579,17 +627,17 @@ static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_
       if(level > 0)
       {
         sqlite3_stmt *stmt = NULL;
-        gchar *pth, *query = NULL;
+        gchar *pth = NULL;
         int id = -1;
         // Check if this path also matches a filmroll
         gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &pth, -1);
-        query = dt_util_dstrcat(query, "select id from film_rolls where folder like '%s'", pth);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "select id from film_rolls where folder like ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, pth, -1, SQLITE_TRANSIENT);
         if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
         sqlite3_finalize(stmt);
 
         g_free(pth);
-        g_free(query);
 
         if(id != -1)
         {
@@ -629,9 +677,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
   set_properties(dr);
 
-  GtkTreeModel *model, *filter;
-  filter = d->treefilter;
-  model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(filter));
+  GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(d->treefilter));
 
   if(d->view_rule != property)
   {
@@ -641,6 +687,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     GtkTreeIter temp;
 
     g_object_ref(model);
+    g_object_unref(d->treefilter);
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
     gtk_tree_store_clear(GTK_TREE_STORE(model));
     gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
@@ -768,290 +815,233 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
 
-    filter = _create_filtered_model(model, dr);
+    d->treefilter = _create_filtered_model(model, dr);
 
-    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), filter);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->treefilter);
     gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
     gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
-    g_object_unref(filter);
     g_object_unref(model);
 
     d->view_rule = property;
   }
 
   // if needed, we restrict the tree to matching entries
-  if(dr->typing) refilter(model, dr);
+  if(dr->typing) tree_set_visibility(model, dr);
   // we update tree expansion and selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
   gtk_tree_view_collapse_all(d->view);
-  gtk_tree_model_foreach(filter, (GtkTreeModelForeachFunc)tree_expand, dr);
+  gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
 }
 
 static void list_view(dt_lib_collect_rule_t *dr)
 {
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
-  sqlite3_stmt *stmt;
-  GtkTreeIter iter;
-
-  GtkTreeView *view;
-  GtkTreeModel *listmodel;
-
-  view = d->view;
-  listmodel = d->listmodel;
-  g_object_ref(listmodel);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
-  gtk_list_store_clear(GTK_LIST_STORE(listmodel));
-  gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
-  gtk_widget_hide(GTK_WIDGET(d->sw2));
+  int property = gtk_combo_box_get_active(dr->combo);
 
   set_properties(dr);
 
-  char query[1024] = { 0 };
-  int property = gtk_combo_box_get_active(dr->combo);
-  const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->text));
+  GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(d->listfilter));
 
-  char *escaped_text = sqlite3_mprintf("%q", text);
-
-  switch(property)
+  if(d->view_rule != property)
   {
-    case DT_COLLECTION_PROP_FILMROLL: // film roll
-      snprintf(query, sizeof(query),
-               "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by folder desc",
-               escaped_text);
-      break;
-    case DT_COLLECTION_PROP_CAMERA: ;// camera
-      GList *makermodels = NULL;
-      dt_collection_get_makermodel(text, &makermodels, NULL);
-      GList *element = makermodels;
-      int index = 0;
-      while(element)
+    sqlite3_stmt *stmt;
+    GtkTreeIter iter;
+    g_object_unref(d->listfilter);
+    g_object_ref(model);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
+    gtk_list_store_clear(GTK_LIST_STORE(model));
+    gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
+    gtk_widget_hide(GTK_WIDGET(d->sw2));
+
+    char query[1024] = { 0 };
+
+    switch(property)
+    {
+      case DT_COLLECTION_PROP_CAMERA:; // camera
+        GList *makermodels = NULL;
+        dt_collection_get_makermodel("", &makermodels, NULL);
+        GList *element = makermodels;
+        int index = 0;
+        while(element)
+        {
+          gchar *value = (gchar *)element->data;
+          gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+          gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, value,
+                             DT_LIB_COLLECT_COL_ID, index, DT_LIB_COLLECT_COL_TOOLTIP, value,
+                             DT_LIB_COLLECT_COL_PATH, value, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
+          g_free(value);
+          index++;
+          element = element->next;
+        }
+        g_list_free(makermodels);
+        break;
+
+      case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("altered"),
+                           DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("altered"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("altered"), -1);
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("not altered"),
+                           DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("not altered"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("not altered"), -1);
+        break;
+
+      case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("tagged"),
+                           DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("tagged"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("tagged"), -1);
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("not tagged"),
+                           DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("not tagged"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("not tagged"), -1);
+        break;
+
+      case DT_COLLECTION_PROP_COLORLABEL: // colorlabels
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("red"),
+                           DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("red"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("red"), -1);
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("yellow"),
+                           DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("yellow"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("yellow"), -1);
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("green"),
+                           DT_LIB_COLLECT_COL_ID, 2, DT_LIB_COLLECT_COL_TOOLTIP, _("green"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("green"), -1);
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("blue"),
+                           DT_LIB_COLLECT_COL_ID, 3, DT_LIB_COLLECT_COL_TOOLTIP, _("blue"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("blue"), -1);
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("purple"),
+                           DT_LIB_COLLECT_COL_ID, 4, DT_LIB_COLLECT_COL_TOOLTIP, _("purple"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("purple"), -1);
+        break;
+
+      // TODO: Add empty string for metadata?
+      // TODO: Autogenerate this code?
+      case DT_COLLECTION_PROP_TITLE: // title
+        snprintf(query, sizeof(query),
+                 "select distinct value, 1 from meta_data where key = %d order by value",
+                 DT_METADATA_XMP_DC_TITLE);
+        break;
+      case DT_COLLECTION_PROP_DESCRIPTION: // description
+        snprintf(query, sizeof(query),
+                 "select distinct value, 1 from meta_data where key = %d order by value",
+                 DT_METADATA_XMP_DC_DESCRIPTION);
+        break;
+      case DT_COLLECTION_PROP_CREATOR: // creator
+        snprintf(query, sizeof(query),
+                 "select distinct value, 1 from meta_data where key = %d order by value",
+                 DT_METADATA_XMP_DC_CREATOR);
+        break;
+      case DT_COLLECTION_PROP_PUBLISHER: // publisher
+        snprintf(query, sizeof(query),
+                 "select distinct value, 1 from meta_data where key = %d order by value",
+                 DT_METADATA_XMP_DC_PUBLISHER);
+        break;
+      case DT_COLLECTION_PROP_RIGHTS: // rights
+        snprintf(query, sizeof(query),
+                 "select distinct value, 1 from meta_data where key = %d order by value ",
+                 DT_METADATA_XMP_DC_RIGHTS);
+        break;
+      case DT_COLLECTION_PROP_LENS: // lens
+        snprintf(query, sizeof(query), "select distinct lens, 1 from images order by lens");
+        break;
+
+      case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
+        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length, 1 "
+                                       "from images order by focal_length");
+        break;
+
+      case DT_COLLECTION_PROP_ISO: // iso
+        snprintf(query, sizeof(query),
+                 "select distinct cast(iso as integer) as iso, 1 from images order by iso");
+        break;
+
+      case DT_COLLECTION_PROP_APERTURE: // aperture
+        snprintf(query, sizeof(query),
+                 "select distinct round(aperture,1) as aperture, 1 from images order by aperture");
+        break;
+
+      case DT_COLLECTION_PROP_FILENAME: // filename
+        snprintf(query, sizeof(query), "select distinct filename, 1 from images order by filename");
+        break;
+
+      case DT_COLLECTION_PROP_DAY:
+        snprintf(query, sizeof(query),
+                 "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images ORDER BY datetime_taken DESC");
+        break;
+
+      case DT_COLLECTION_PROP_TIME:
+        snprintf(query, sizeof(query),
+                 "SELECT DISTINCT datetime_taken, 1 FROM images ORDER BY datetime_taken DESC");
+        break;
+
+      default: // filmroll
+        snprintf(query, sizeof(query), "select distinct folder, id from film_rolls order by folder desc");
+        break;
+    }
+
+    if(strlen(query) > 0)
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        gchar *value = (gchar *) element->data;
-        gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-        gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter,
-                           DT_LIB_COLLECT_COL_TEXT, value,
-                           DT_LIB_COLLECT_COL_ID, index,
-                           DT_LIB_COLLECT_COL_TOOLTIP, value,
-                           DT_LIB_COLLECT_COL_PATH, value, -1);
-        g_free(value);
-        index++;
-        element = element->next;
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        const char *folder = (const char *)sqlite3_column_text(stmt, 0);
+        if(property == DT_COLLECTION_PROP_FILMROLL)
+        {
+          folder = dt_image_film_roll_name(folder);
+        }
+        gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
+
+        // replace invalid utf8 characters if any
+        gchar *text = g_strdup(value);
+        gchar *ptr = text;
+        while(!g_utf8_validate(ptr, -1, (const gchar **)&ptr)) ptr[0] = '?';
+
+        gchar *escaped_text = g_markup_escape_text(text, -1);
+
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, folder,
+                           DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1), DT_LIB_COLLECT_COL_TOOLTIP,
+                           escaped_text, DT_LIB_COLLECT_COL_PATH, value, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
+                           -1);
+        g_free(text);
+        g_free(escaped_text);
       }
-      g_list_free(makermodels);
-      break;
-    case DT_COLLECTION_PROP_TAG: // tag
-      snprintf(query, sizeof(query),
-               "SELECT distinct name, id FROM tags WHERE name LIKE '%%%s%%' ORDER BY UPPER(name)",
-               escaped_text);
-      break;
-    case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
-      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("altered"),
-                         DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("altered"), -1);
-      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("not altered"),
-                         DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("not altered"), -1);
-      goto entry_key_press_exit;
-      break;
-
-    case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
-      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("tagged"),
-                         DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("tagged"), -1);
-      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("not tagged"),
-                         DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("not tagged"), -1);
-      goto entry_key_press_exit;
-      break;
-
-    case DT_COLLECTION_PROP_COLORLABEL: // colorlabels
-      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("red"),
-                         DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("red"), -1);
-      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("yellow"),
-                         DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("yellow"), -1);
-      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("green"),
-                         DT_LIB_COLLECT_COL_ID, 2, DT_LIB_COLLECT_COL_TOOLTIP, _("green"), -1);
-      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("blue"),
-                         DT_LIB_COLLECT_COL_ID, 3, DT_LIB_COLLECT_COL_TOOLTIP, _("blue"), -1);
-      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("purple"),
-                         DT_LIB_COLLECT_COL_ID, 4, DT_LIB_COLLECT_COL_TOOLTIP, _("purple"), -1);
-      goto entry_key_press_exit;
-      break;
-
-    // TODO: Add empty string for metadata?
-    // TODO: Autogenerate this code?
-    case DT_COLLECTION_PROP_TITLE: // title
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
-          DT_METADATA_XMP_DC_TITLE, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_DESCRIPTION: // description
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
-          DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_CREATOR: // creator
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
-          DT_METADATA_XMP_DC_CREATOR, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_PUBLISHER: // publisher
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
-          DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_RIGHTS: // rights
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'order by value ",
-          DT_METADATA_XMP_DC_RIGHTS, escaped_text);
-      break;
-    case DT_COLLECTION_PROP_LENS: // lens
-      snprintf(query, sizeof(query),
-               "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
-      break;
-
-    case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
-    {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
-
-      if(operator&& number)
-        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length, 1 from images where "
-        "focal_length %s %s order by focal_length",
-        operator, number);
-      else if(number)
-        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length, 1 from images where "
-        "focal_length = %s order by focal_length",
-        number);
-      else
-        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length, 1 from images where "
-        "focal_length like '%%%s%%' order by focal_length",
-        escaped_text);
-
-      g_free(operator);
-      g_free(number);
+      sqlite3_finalize(stmt);
     }
-    break;
 
-    case DT_COLLECTION_PROP_ISO: // iso
-    {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
+    gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
 
-      if(operator&& number)
-        snprintf(query, sizeof(query),
-                 "select distinct cast(iso as integer) as iso, 1 from images where iso %s %s order by iso",
-                 operator, number);
-      else if(number)
-        snprintf(query, sizeof(query),
-                 "select distinct cast(iso as integer) as iso, 1 from images where iso = %s order by iso",
-                 number);
-      else
-        snprintf(
-            query, sizeof(query),
-            "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso",
-            escaped_text);
+    d->listfilter = _create_filtered_model(model, dr);
 
-      g_free(operator);
-      g_free(number);
-    }
-    break;
+    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->listfilter);
+    gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
-    case DT_COLLECTION_PROP_APERTURE: // aperture
-    {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
+    g_object_unref(model);
 
-      if(operator&& number)
-        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where "
-                                       "aperture %s %s order by aperture",
-                                       operator, number);
-      else if(number)
-        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where "
-                                       "aperture = %s order by aperture",
-                 number);
-      else
-        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where "
-                                       "aperture like '%%%s%%' order by aperture",
-                 escaped_text);
-
-      g_free(operator);
-      g_free(number);
-    }
-    break;
-
-    case DT_COLLECTION_PROP_FILENAME: // filename
-      snprintf(query, sizeof(query),
-               "select distinct filename, 1 from images where filename like '%%%s%%' order by filename",
-               escaped_text);
-      break;
-
-    case DT_COLLECTION_PROP_FOLDERS: // folders
-      // We shouldn't ever be here
-      break;
-
-    case DT_COLLECTION_PROP_DAY:
-      snprintf(query, sizeof(query), "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images WHERE "
-                                     "datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC",
-               escaped_text);
-      break;
-
-    default: // time
-      snprintf(query, sizeof(query), "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken "
-                                     "LIKE '%%%s%%' ORDER BY datetime_taken DESC",
-               escaped_text);
-      break;
+    d->view_rule = property;
   }
-  sqlite3_free(escaped_text);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-    const char *folder = (const char *)sqlite3_column_text(stmt, 0);
-    if(property == 0) // film roll
-    {
-      folder = dt_image_film_roll_name(folder);
-    }
-    gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
-
-    // replace invalid utf8 characters if any
-    gchar *text = g_strdup(value);
-    gchar *ptr = text;
-    while(!g_utf8_validate(ptr, -1, (const gchar **)&ptr)) ptr[0] = '?';
-
-    gchar *escaped_text = g_markup_escape_text(text, -1);
-
-
-    gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, folder,
-                       DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1), DT_LIB_COLLECT_COL_TOOLTIP,
-                       escaped_text, DT_LIB_COLLECT_COL_PATH, value, -1);
-    g_free(text);
-    g_free(escaped_text);
-  }
-  sqlite3_finalize(stmt);
-
-  goto entry_key_press_exit;
-
-entry_key_press_exit:
-  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(view), listmodel);
-  gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
-  gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
-  g_object_unref(listmodel);
-  d->view_rule = property;
+  // if needed, we restrict the tree to matching entries
+  if(property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_CREATOR
+     || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_DESCRIPTION
+     || property == DT_COLLECTION_PROP_FILENAME || property == DT_COLLECTION_PROP_FILMROLL
+     || property == DT_COLLECTION_PROP_LENS || property == DT_COLLECTION_PROP_PUBLISHER
+     || property == DT_COLLECTION_PROP_RIGHTS || property == DT_COLLECTION_PROP_TIME
+     || property == DT_COLLECTION_PROP_TITLE)
+    gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
+  // we update list selection
+  gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
+  gtk_tree_model_foreach(d->listfilter, (GtkTreeModelForeachFunc)list_select, dr);
 }
 
 static void update_view(dt_lib_collect_rule_t *dr)
@@ -1235,10 +1225,12 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
                                     NULL);
   g_free(text);
 
-  if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS)
-    set_properties(d->rule + active);
+  if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS
+     || item == DT_COLLECTION_PROP_COLORLABEL || item == DT_COLLECTION_PROP_GEOTAGGING
+     || item == DT_COLLECTION_PROP_HISTORY)
+    set_properties(d->rule + active); // we just have to set the selection
   else
-    update_view(d->rule + active);
+    update_view(d->rule + active); // we have to update visible items too
 
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
@@ -1637,13 +1629,14 @@ void gui_init(dt_lib_module_t *self)
   GtkTreeModel *listmodel
       = GTK_TREE_MODEL(gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
                                           G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN));
-  d->listmodel = listmodel;
+  d->listfilter = gtk_tree_model_filter_new(listmodel, NULL);
+  gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(d->listfilter), DT_LIB_COLLECT_COL_VISIBLE);
+
   GtkTreeModel *treemodel
       = GTK_TREE_MODEL(gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
                                           G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN));
-  GtkTreeModel *filter = gtk_tree_model_filter_new(treemodel, NULL);
-  gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(filter), DT_LIB_COLLECT_COL_VISIBLE);
-  d->treefilter = filter;
+  d->treefilter = gtk_tree_model_filter_new(treemodel, NULL);
+  gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(d->treefilter), DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
@@ -1694,7 +1687,7 @@ void gui_cleanup(dt_lib_module_t *self)
   /* cleanup mem */
 
   g_object_unref(d->treefilter);
-  g_object_unref(d->listmodel);
+  g_object_unref(d->listfilter);
 
   /* TODO: Make sure we are cleaning up all allocations */
 
