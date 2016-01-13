@@ -142,11 +142,11 @@ typedef enum {
 
 float dt_liquify_ui_widths [] = {
   // value in 1/96 inch (that is: in pixels on a standard 96 dpi screen)
-    1.0, // DT_LIQUIFY_UI_WIDTH_THINLINE
+    2.0, // DT_LIQUIFY_UI_WIDTH_THINLINE
     3.0, // DT_LIQUIFY_UI_WIDTH_THICKLINE
     3.0, // DT_LIQUIFY_UI_WIDTH_DOUBLELINE
-    8.0, // DT_LIQUIFY_UI_WIDTH_GIZMO
-    6.0, // DT_LIQUIFY_UI_WIDTH_GIZMO_SMALL
+    9.0, // DT_LIQUIFY_UI_WIDTH_GIZMO
+    7.0, // DT_LIQUIFY_UI_WIDTH_GIZMO_SMALL
   100.0, // DT_LIQUIFY_UI_WIDTH_DEFAULT_RADIUS,
    50.0, // DT_LIQUIFY_UI_WIDTH_DEFAULT_STRENGTH,
     4.0  // DT_LIQUIFY_UI_WIDTH_MIN_DRAG
@@ -1567,6 +1567,7 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p)
 
 #define FG_COLOR  set_source_rgba (cr, fg_color);
 #define BG_COLOR  set_source_rgba (cr, bg_color);
+#define VERYTHINLINE  set_line_width  (cr, scale, DT_LIQUIFY_UI_WIDTH_THINLINE / 2.0);
 #define THINLINE  set_line_width  (cr, scale, DT_LIQUIFY_UI_WIDTH_THINLINE);
 #define THICKLINE set_line_width  (cr, scale, DT_LIQUIFY_UI_WIDTH_THICKLINE);
 
@@ -1668,7 +1669,7 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
 
       if (layer == DT_LIQUIFY_LAYER_WARPS)
       {
-        THINLINE; FG_COLOR;
+        VERYTHINLINE; FG_COLOR;
         for (GList *i = interpolated; i != NULL; i = i->next)
         {
           const dt_liquify_warp_t *pwarp = ((dt_liquify_warp_t *) i->data);
@@ -1684,7 +1685,7 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
           draw_circle   (cr, pwarp->point, GET_UI_WIDTH (GIZMO_SMALL));
           draw_triangle (cr, pwarp->strength,
                          carg (pwarp->strength - pwarp->point) + rot,
-                         GET_UI_WIDTH (GIZMO_SMALL));
+                         GET_UI_WIDTH (GIZMO_SMALL) / 3.0);
         }
         BG_COLOR;
         cairo_fill_preserve (cr);
