@@ -18,7 +18,6 @@ PRINT_HELP=0
 
 OPT_FLICKR=-1
 OPT_KWALLET=-1
-OPT_GNOME_KEYRING=-1
 OPT_OPENMP=-1
 OPT_OPENCL=-1
 OPT_UNITY=-1
@@ -36,7 +35,7 @@ parse_feature()
 {
 	feature=$1
 	value=$2
-	
+
 	case $feature in
 	flickr)
 		OPT_FLICKR=$value
@@ -46,9 +45,6 @@ parse_feature()
 		;;
 	kwallet)
 		OPT_KWALLET=$value
-		;;
-	gnome-keyring)
-		OPT_GNOME_KEYRING=$value
 		;;
 	openmp)
 		OPT_OPENMP=$value
@@ -139,7 +135,6 @@ All these options have a --disable-* equivalent. By default they are set
 so that the cmake script autodetects features.
    --enable-flickr
    --enable-kwallet
-   --enable-gnome-keyring
    --enable-openmp
    --enable-opencl
    --enable-unity
@@ -213,7 +208,6 @@ CMAKE_MORE_OPTIONS=""
 cmake_boolean_option USE_FLICKR $OPT_FLICKR
 cmake_boolean_option USE_LIBSECRET $OPT_LIBSECRET
 cmake_boolean_option USE_KWALLET $OPT_KWALLET
-cmake_boolean_option USE_GNOME_KEYRING $OPT_GNOME_KEYRING
 cmake_boolean_option USE_OPENMP $OPT_OPENMP
 cmake_boolean_option USE_OPENCL $OPT_OPENCL
 cmake_boolean_option USE_UNITY $OPT_UNITY
