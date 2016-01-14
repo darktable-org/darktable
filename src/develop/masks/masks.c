@@ -2118,8 +2118,6 @@ void dt_masks_update_image(dt_develop_t *dev)
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate_all(dev);
-
-  dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
 }
 
 static void _cleanup_unused_recurs(dt_develop_t *dev, int formid, int *used, int nb)
