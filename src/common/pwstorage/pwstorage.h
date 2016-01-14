@@ -1,5 +1,5 @@
 // This file is part of darktable
-// Copyright (c) 2010 Tobias Ellinghaus <houz@gmx.de>.
+// Copyright (c) 2010-2016 Tobias Ellinghaus <me@houz.org>.
 
 // darktable is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ typedef enum pw_storage_backend_t
 {
   PW_STORAGE_BACKEND_NONE = 0,
   PW_STORAGE_BACKEND_KWALLET,
-  PW_STORAGE_BACKEND_GNOME_KEYRING,
   PW_STORAGE_BACKEND_LIBSECRET
 } pw_storage_backend_t;
 

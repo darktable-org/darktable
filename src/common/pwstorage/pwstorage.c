@@ -1,5 +1,5 @@
 // This file is part of darktable
-// Copyright (c) 2010 Tobias Ellinghaus <houz@gmx.de>.
+// Copyright (c) 2010-2016 Tobias Ellinghaus <me@houz.org>.
 
 // darktable is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,15 +24,12 @@
 #include "backend_libsecret.h"
 #endif
 
-#ifdef HAVE_GKEYRING
-#include "backend_gkeyring.h"
-#endif
-
 #ifdef HAVE_KWALLET
 #include "backend_kwallet.h"
 #endif
 
 #include "control/conf.h"
+#include "control/control.h"
 
 #include <glib.h>
 #include <string.h>
@@ -46,9 +43,6 @@ const dt_pwstorage_t *dt_pwstorage_new()
 #endif
 #ifdef HAVE_KWALLET
   dt_capabilities_add("kwallet");
-#endif
-#ifdef HAVE_GKEYRING
-  dt_capabilities_add("gnome-keyring");
 #endif
 
   dt_pwstorage_t *pwstorage = g_malloc(sizeof(dt_pwstorage_t));
@@ -83,10 +77,12 @@ const dt_pwstorage_t *dt_pwstorage_new()
   else if(strcmp(_backend_str, "kwallet") == 0)
     _backend = PW_STORAGE_BACKEND_KWALLET;
 #endif
-#ifdef HAVE_GKEYRING
   else if(strcmp(_backend_str, "gnome keyring") == 0)
-    _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
-#endif
+  {
+    fprintf(stderr, "[pwstorage_new] GNOME Keyring backend is no longer supported.\n");
+    dt_control_log(_("GNOME Keyring backend is no longer supported. configure a different one"));
+    _backend = PW_STORAGE_BACKEND_NONE;
+  }
 
   g_free(_backend_str);
 
@@ -143,27 +139,6 @@ const dt_pwstorage_t *dt_pwstorage_new()
       pwstorage->backend_context = NULL;
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
 #endif
-    case PW_STORAGE_BACKEND_GNOME_KEYRING:
-#ifdef HAVE_GKEYRING
-      dt_print(DT_DEBUG_PWSTORAGE,
-               "[pwstorage_new] using gnome keyring backend for usersname/password storage.\n");
-      pwstorage->backend_context = (void *)dt_pwstorage_gkeyring_new();
-      if(pwstorage->backend_context == NULL)
-      {
-        dt_print(DT_DEBUG_PWSTORAGE,
-                 "[pwstorage_new] error starting gnome keyring. using no storage backend.\n");
-        pwstorage->backend_context = NULL;
-        pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
-      }
-      else
-        pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
-#else
-      dt_print(DT_DEBUG_PWSTORAGE,
-               "[pwstorage_new] gnome keyring storage not available. using no storage backend.\n");
-      pwstorage->backend_context = NULL;
-      pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
-#endif
-      break;
   }
 
   switch(pwstorage->pw_storage_backend)
@@ -176,9 +151,6 @@ const dt_pwstorage_t *dt_pwstorage_new()
       break;
     case PW_STORAGE_BACKEND_KWALLET:
       dt_conf_set_string("plugins/pwstorage/pwstorage_backend", "kwallet");
-      break;
-    case PW_STORAGE_BACKEND_GNOME_KEYRING:
-      dt_conf_set_string("plugins/pwstorage/pwstorage_backend", "gnome keyring");
       break;
   }
 
@@ -204,11 +176,6 @@ void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage)
       dt_pwstorage_kwallet_destroy(pwstorage->backend_context);
 #endif
       break;
-    case PW_STORAGE_BACKEND_GNOME_KEYRING:
-#ifdef HAVE_GKEYRING
-      g_free(pwstorage->backend_context);
-#endif
-      break;
   }
 }
 
@@ -232,11 +199,6 @@ gboolean dt_pwstorage_set(const gchar *slot, GHashTable *table)
                                       table);
 #endif
       break;
-    case PW_STORAGE_BACKEND_GNOME_KEYRING:
-#ifdef HAVE_GKEYRING
-      return dt_pwstorage_gkeyring_set(slot, table);
-#endif
-      break;
   }
   return FALSE;
 }
@@ -258,11 +220,6 @@ GHashTable *dt_pwstorage_get(const gchar *slot)
     case PW_STORAGE_BACKEND_KWALLET:
 #ifdef HAVE_KWALLET
       return dt_pwstorage_kwallet_get((backend_kwallet_context_t *)darktable.pwstorage->backend_context, slot);
-#endif
-      break;
-    case PW_STORAGE_BACKEND_GNOME_KEYRING:
-#ifdef HAVE_GKEYRING
-      return dt_pwstorage_gkeyring_get(slot);
 #endif
       break;
   }

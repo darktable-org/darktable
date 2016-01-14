@@ -1298,12 +1298,11 @@
         <option>none</option>
         <option capability="libsecret">libsecret</option>
         <option capability="kwallet">kwallet</option>
-        <option capability="gnome-keyring">gnome keyring</option>
       </enum>
     </type>
     <default>auto</default>
     <shortdescription>password storage backend to use</shortdescription>
-    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet, gnome keyring</longdescription>
+    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/icctype</name>
