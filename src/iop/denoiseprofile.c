@@ -139,7 +139,7 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORTS_FREQSEP;
 }
 
 typedef union floatint_t

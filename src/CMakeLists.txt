@@ -73,6 +73,8 @@ FILE(GLOB SOURCE_FILES
   "develop/pixelpipe.c"
   "develop/blend.c"
   "develop/blend_gui.c"
+  "develop/fft.c"
+  "develop/freqsep.c"
   "develop/tiling.c"
   "develop/masks/masks.c"
   "dtgtk/button.c"

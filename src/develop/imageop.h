@@ -84,7 +84,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_PREVIEW_NON_OPENCL
   = 1 << 8, // Preview pixelpipe of this module must not run on GPU but always on CPU
   IOP_FLAGS_NO_HISTORY_STACK = 1 << 9, // This iop will never show up in the history stack
-  IOP_FLAGS_NO_MASKS = 1 << 10         // The module doesn't support masks (used with SUPPORT_BLENDING)
+  IOP_FLAGS_NO_MASKS = 1 << 10,         // The module doesn't support masks (used with SUPPORT_BLENDING)
+  IOP_FLAGS_SUPPORTS_FREQSEP = 1 << 11, // Does provide FFT
 } dt_iop_flags_t;
 
 /** status of a module*/

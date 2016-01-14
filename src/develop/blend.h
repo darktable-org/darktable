@@ -27,6 +27,15 @@
 
 #define DEVELOP_BLEND_VERSION (7)
 
+/* frequency separation */
+typedef enum dt_develop_fs_preview_t
+{
+  DEVELOP_FS_PREVIEW_FINAL_IMAGE = 0,
+  DEVELOP_FS_PREVIEW_FREQLAY = 1,
+  DEVELOP_FS_PREVIEW_FREQLAY_CHNG = 2
+} dt_develop_fs_preview_t;
+/* End frequency separation */
+
 typedef enum dt_develop_blend_mode_t
 {
   DEVELOP_BLEND_MASK_FLAG = 0x80,
@@ -270,6 +279,22 @@ typedef struct dt_develop_blend_params_t
   uint32_t reserved[4];
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+
+  /* frequency separation */
+  uint32_t fs_filter_type; // off - highpass - lowpass - bandpass ...
+  uint32_t fs_filter_by; // luma - chroma - luma & chroma ...
+  float fs_frequency_low; // low frequency
+  float fs_frequency_high; // high frequency
+  int fs_sharpness; // sharpness
+  uint32_t fs_preview; // preview final image
+  float fs_freqlay_exposure; // exposure compensation for the mask
+
+  float * tF1, *tF2, *tF3; // filter complement & colorspace complement
+  void *fs_ivoid; // buffer for backup original image
+  dt_iop_roi_t fs_roi_tF1;
+  dt_iop_roi_t fs_roi_ivoid;
+  /* End frequency separation */
+
 } dt_develop_blend_params_t;
 
 
@@ -357,6 +382,24 @@ typedef struct dt_iop_gui_blend_data_t
   int *masks_combo_ids;
   int masks_shown;
   int control_button_pressed;
+
+  /* frequency separation */
+  GtkBox *fs_top_box; // frequency separation top box
+  GtkBox *fs_box; // frequency separation box
+
+  GList *fs_filter_types; // list with (off - Lowpass - Highpass - Bandpass ...)
+  GList *fs_filter_by; // list with (luma - chroma - luma & chroma)
+  GList *fs_preview; // preview final image - preview mask - mask + parent module modifications
+
+  GtkWidget *fs_filter_types_combo; //  combo box with (off - Lowpass - Highpass - Bandpass ...)
+  GtkWidget *fs_filter_by_combo; //  combo box with (luma - chroma - luma & chroma)
+  GtkWidget *fs_preview_combo; //  combo box with (yes - no)
+  GtkWidget *fs_frequency_low_slider; // low frequency
+  GtkWidget *fs_frequency_high_slider; // high frequency
+  GtkWidget *fs_sharpness_slider; // sharpness for the filters
+  GtkWidget *fs_freqlay_exposure_slider; // exposure compensation for the mask
+
+  /* End frequency separation */
 } dt_iop_gui_blend_data_t;
 
 
