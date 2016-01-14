@@ -65,11 +65,11 @@ const dt_pwstorage_t *dt_pwstorage_new()
     if(g_strcmp0(desktop, "KDE") == 0)
       _backend = PW_STORAGE_BACKEND_KWALLET;
     else if(g_strcmp0(desktop, "GNOME") == 0)
-      _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+      _backend = PW_STORAGE_BACKEND_LIBSECRET;
     else if(g_strcmp0(desktop, "Unity") == 0)
-      _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+      _backend = PW_STORAGE_BACKEND_LIBSECRET;
     else if(g_strcmp0(desktop, "XFCE") == 0)
-      _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+      _backend = PW_STORAGE_BACKEND_LIBSECRET;
 
     dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] autodetected storage backend.\n");
   }
