@@ -351,6 +351,37 @@ static void node_insert_before (dt_iop_liquify_params_t *p, dt_liquify_path_data
   this->header.prev = new->header.idx;
 }
 
+static void node_gc (dt_iop_liquify_params_t *p)
+{
+  int last=0;
+  for (last=MAX_NODES-1; last>0; last--)
+    if (p->nodes[last].header.type != DT_LIQUIFY_PATH_INVALIDATED)
+      break;
+  int k = 0;
+
+  while (k<=last)
+  {
+    if (p->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
+    {
+      for (int e=0; e<=last; e++)
+      {
+        //  then move slot if above position k
+        if (e >= k)                       p->nodes[e] = p->nodes[e+1];
+        //  update all pointers above position k
+        if (e >= k)                       p->nodes[e].header.idx--;
+        if (p->nodes[e].header.prev >= k) p->nodes[e].header.prev--;
+        if (p->nodes[e].header.next >= k) p->nodes[e].header.next--;
+      }
+      last--;
+    }
+    else
+      k++;
+  }
+  //  invalidate all nodes beyond the last moved one
+  for (int k=last+1; k<MAX_NODES; k++)
+    p->nodes[k].header.type = DT_LIQUIFY_PATH_INVALIDATED;
+}
+
 static void node_delete (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *this)
 {
   dt_liquify_path_data_t *prev = node_prev (p, this);
@@ -371,6 +402,7 @@ static void node_delete (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *thi
 
   this->header.prev = this->header.next = - 1;
   this->header.type = DT_LIQUIFY_PATH_INVALIDATED;
+  node_gc (p);
 }
 
 static void path_delete (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *this)
@@ -391,6 +423,7 @@ static void path_delete (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *thi
     n->header.type = DT_LIQUIFY_PATH_INVALIDATED;
     n = node_prev (p, n);
   }
+  node_gc (p);
 }
 
 /**
@@ -516,6 +549,9 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
   for (int k=0; k<MAX_NODES; k++)
   {
     dt_liquify_path_data_t *data = (dt_liquify_path_data_t *) &p->nodes[k];
+    if (data->header.type == DT_LIQUIFY_PATH_INVALIDATED)
+      break;
+
     switch (data->header.type)
     {
     case DT_LIQUIFY_PATH_CURVE_TO_V1:
@@ -1473,7 +1509,9 @@ static void update_warp_count (const dt_iop_liquify_gui_data_t *g)
 {
   guint warp = 0, node = 0;
   for (int k=0; k<MAX_NODES; k++)
-    if (g->params.nodes[k].header.type != DT_LIQUIFY_PATH_INVALIDATED)
+    if (g->params.nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
+      break;
+    else
     {
       node++;
       if (g->params.nodes[k].header.type == DT_LIQUIFY_PATH_MOVE_TO_V1)
@@ -1493,7 +1531,7 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p)
     const dt_liquify_path_data_t *data = &p->nodes[k];
 
     if (data->header.type == DT_LIQUIFY_PATH_INVALIDATED)
-      continue;
+      break;
 
     const float complex *p2 = &data->point;
     const dt_liquify_warp_t *warp2 = &data->warp;
@@ -1605,7 +1643,7 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
       const dt_liquify_path_data_t *prev = node_prev (p, data);
 
       if (p->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
-        continue;
+        break;
 
       hit.elem = data;
 
@@ -2158,6 +2196,9 @@ static void smooth_paths_linsys (dt_iop_liquify_params_t *params)
 {
   for (int k=0; k<MAX_NODES; k++)
   {
+    if (params->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
+      break;
+
     if (params->nodes[k].header.prev != -1)
       continue;
 
@@ -2293,7 +2334,9 @@ static void smooth_paths_linsys (dt_iop_liquify_params_t *params)
 static dt_liquify_path_data_t *find_hovered (dt_iop_liquify_params_t *p)
 {
   for (int k=0; k<MAX_NODES; k++)
-    if (p->nodes[k].header.type != DT_LIQUIFY_PATH_INVALIDATED && p->nodes[k].header.hovered)
+    if (p->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
+      break;
+    else if (p->nodes[k].header.hovered)
       return &p->nodes[k];
   return NULL;
 }
@@ -2369,7 +2412,10 @@ static void end_drag (dt_iop_liquify_gui_data_t *g)
 static void unselect_all (dt_iop_liquify_params_t *p)
 {
   for (int k=0; k<MAX_NODES; k++)
-    p->nodes[k].header.selected = 0;
+    if (p->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
+      break;
+    else
+      p->nodes[k].header.selected = 0;
 }
 
 static float get_zoom_scale (dt_develop_t *develop)
