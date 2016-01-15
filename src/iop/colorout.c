@@ -357,18 +357,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
       float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
 
-      if(!gamutcheck)
+      cmsDoTransform(d->xform, in, out, roi_out->width);
+
+      if(gamutcheck)
       {
-        cmsDoTransform(d->xform, in, out, roi_out->width);
-      }
-      else
-      {
-        void *rgb = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-        cmsDoTransform(d->xform, in, rgb, roi_out->width);
-        float *rgbptr = (float *)rgb;
-        for(int j = 0; j < roi_out->width; j++, rgbptr += 4, out += 4)
+        for(int j = 0; j < roi_out->width; j++, out += 4)
         {
-          const __m128 pixel = _mm_load_ps(rgbptr);
+          const __m128 pixel = _mm_load_ps(out);
           __m128 ingamut = _mm_cmplt_ps(pixel, _mm_set_ps(-FLT_MAX, 0.0f, 0.0f, 0.0f));
 
           ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
@@ -378,7 +373,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
               = _mm_or_ps(_mm_and_ps(ingamut, outofgamutpixel), _mm_andnot_ps(ingamut, pixel));
           _mm_stream_ps(out, result);
         }
-        dt_free_align(rgb);
       }
     }
     _mm_sfence();
