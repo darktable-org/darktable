@@ -324,24 +324,39 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       }
     }
     _mm_sfence();
-// apply profile
+
+    // do we have any lut to apply, or is this a linear profile?
+    if((d->lut[0][0] >= 0.0f) && (d->lut[1][0] >= 0.0f) && (d->lut[2][0] >= 0.0f))
+    { // apply profile
+      float *const out = (float *const)ovoid;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(roi_in, roi_out, ivoid, ovoid)
+#pragma omp parallel for schedule(static) default(none) shared(roi_in, roi_out, ovoid)
 #endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-
-      float *in = (float *)ivoid + (size_t)ch * roi_in->width * j;
-      float *out = (float *)ovoid + (size_t)ch * roi_out->width * j;
-
-      for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+      for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
       {
-        for(int i = 0; i < 3; i++)
-          if(d->lut[i][0] >= 0.0f)
+        for(int c = 0; c < 3; c++)
+        {
+          out[k + c] = (out[k + c] < 1.0f) ? lerp_lut(d->lut[c], out[k + c])
+                                           : dt_iop_eval_exp(d->unbounded_coeffs[c], out[k + c]);
+        }
+      }
+    }
+    else if((d->lut[0][0] >= 0.0f) || (d->lut[1][0] >= 0.0f) || (d->lut[2][0] >= 0.0f))
+    { // apply profile
+      float *const out = (float *const)ovoid;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(roi_in, roi_out, ovoid)
+#endif
+      for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          if(d->lut[c][0] >= 0.0f)
           {
-            out[i] = (out[i] < 1.0f) ? lerp_lut(d->lut[i], out[i])
-                                     : dt_iop_eval_exp(d->unbounded_coeffs[i], out[i]);
+            out[k + c] = (out[k + c] < 1.0f) ? lerp_lut(d->lut[c], out[k + c])
+                                             : dt_iop_eval_exp(d->unbounded_coeffs[c], out[k + c]);
           }
+        }
       }
     }
   }
