@@ -127,6 +127,11 @@ GtkAlignment
   padding: 2px;
   background-color: transparent;
 }
+#iop-plugin-ui GtkLabel:selected,
+#lib-plugin-ui GtkLabel:selected
+{
+  background-color: shade(@selected_bg_color, 1.7);
+}
 #iop-plugin-ui,
 #lib-plugin-ui
 {
