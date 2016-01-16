@@ -1566,6 +1566,21 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   return module;
 }
 
+void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
+{
+  while (list)
+  {
+    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)list->data;
+    if (hitem->module == module)
+    {
+      hitem->module = NULL;
+      // set the multi_name to the module op name to be able to recreate the multi-instance later
+      strncpy(hitem->multi_name, module->op, sizeof(hitem->multi_name));
+    }
+    list = list->next;
+  }
+}
+
 void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
 {
   // if(darktable.gui->reset) return;

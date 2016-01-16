@@ -248,6 +248,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history(dt_develop_t *dev);
 void dt_dev_free_history_item(gpointer data);
+void dt_dev_invalidate_history_module(GList *list, struct dt_iop_module_t *module);
 
 void dt_dev_invalidate(dt_develop_t *dev);
 // also invalidates preview (which is unaffected by resize/zoom/pan)
