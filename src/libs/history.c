@@ -49,6 +49,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 /* signal callback for history change */
 static void _lib_history_change_callback(gpointer instance, gpointer user_data);
+static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data);
 
 
 
@@ -129,11 +130,14 @@ void gui_init(dt_lib_module_t *self)
   /* connect to history change signal for updating the history view */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
                             G_CALLBACK(_lib_history_change_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE,
+                            G_CALLBACK(_lib_history_module_remove_callback), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_history_change_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_history_module_remove_callback), self);
 
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
   g_list_free_full(d->prev.snapshot, dt_dev_free_history_item);
@@ -232,6 +236,13 @@ static void _history_undo_data_free(gpointer data)
   GList *snapshot = hist->snapshot;
   g_list_free_full(snapshot, dt_dev_free_history_item);
   free(data);
+}
+
+static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_history_t *d = (dt_lib_history_t *)self->data;
+  dt_dev_invalidate_history_module(d->prev.snapshot, module);
 }
 
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
