@@ -34,7 +34,9 @@
 #include <string.h>
 
 // we assume people have -msee support.
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
 
@@ -1292,6 +1294,7 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
     for(int i = offx; i < roi_out->width - offX; i++)
     {
       const int c = FC(j, i, filters);
+#if defined(__SSE__)
       // prefetch what we need soon (load to cpu caches)
       _mm_prefetch((char *)buf_in + 256, _MM_HINT_NTA); // TODO: try HINT_T0-3
       _mm_prefetch((char *)buf_in + roi_in->width + 256, _MM_HINT_NTA);
@@ -1300,8 +1303,14 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
       _mm_prefetch((char *)buf_in - roi_in->width + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf_in - 2 * roi_in->width + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf_in - 3 * roi_in->width + 256, _MM_HINT_NTA);
+#endif
+
+#if defined(__SSE__)
       __m128 col = _mm_load_ps(buf);
       float *color = (float *)&col;
+#else
+      float color[4] = { buf[0], buf[1], buf[2], buf[3] };
+#endif
       const float pc = buf_in[0];
       // if(__builtin_expect(c == 0 || c == 2, 1))
       if(c == 0 || c == 2)
@@ -1364,13 +1373,19 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
     for(int i = 1; i < roi_out->width - 1; i++)
     {
       // also prefetch direct nbs top/bottom
+#if defined(__SSE__)
       _mm_prefetch((char *)buf + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf - roi_out->width * 4 * sizeof(float) + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf + roi_out->width * 4 * sizeof(float) + 256, _MM_HINT_NTA);
+#endif
 
       const int c = FC(j, i, filters);
+#if defined(__SSE__)
       __m128 col = _mm_load_ps(buf);
       float *color = (float *)&col;
+#else
+      float color[4] = { buf[0], buf[1], buf[2], buf[3] };
+#endif
       // fill all four pixels with correctly interpolated stuff: r/b for green1/2
       // b for r and r for b
       if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
