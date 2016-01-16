@@ -1690,11 +1690,12 @@ nextpow2(int n)
   return k;
 }
 
+// utility function to calculate optimal work group dimensions for a given kernel
+// taking device specific restrictions and local memory limitations into account
 static int
 blocksizeopt(const int devid, const int kernel, int *blocksizex, int *blocksizey,
              const dt_iop_demosaic_cl_buffer_t *factors)
 {
-   // prepare local work group size for maximum efficiency
    size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
    size_t workgroupsize = 0;       // the maximum number of items in a work group
    unsigned long localmemsize = 0; // the maximum amount of local memory we can use
@@ -1732,6 +1733,7 @@ blocksizeopt(const int devid, const int kernel, int *blocksizex, int *blocksizey
   return TRUE;
 }
 
+// color smoothing step by multiple passes of median filtering
 static int
 color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                    cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_out)
@@ -1772,6 +1774,7 @@ color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   size_t local[] = { blocksizex, blocksizey, 1 };
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { width, height, 1 };
+
   // two buffer references for our ping-pong
   cl_mem dev_t1 = dev_out;
   cl_mem dev_t2 = dev_tmp;
@@ -1844,6 +1847,7 @@ process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     int width = roi_out->width;
     int height = roi_out->height;
     dev_tmp = dev_out;
+
     if(scaled)
     {
       // need to scale to right res
@@ -1852,6 +1856,7 @@ process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
       width = roi_in->width;
       height = roi_in->height;
     }
+
     size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
     // 1:1 demosaic
@@ -2187,8 +2192,8 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                     ? 2
                     : 1;
           if(abs(y1 - y2) == diag && abs(x1 - x2) == diag) continue;
-          *ip++ = (y1 << 16) | (x1 & 0xffffu); //(y1 * width + x1) * 4 + color;
-          *ip++ = (y2 << 16) | (x2 & 0xffffu); //(y2 * width + x2) * 4 + color;
+          *ip++ = (y1 << 16) | (x1 & 0xffffu);
+          *ip++ = (y2 << 16) | (x2 & 0xffffu);
           *ip++ = (color << 16) | (weight & 0xffffu);
           for(int g = 0; g < 8; g++)
             if(grads & 1 << g) *ip++ = g;
@@ -2199,12 +2204,12 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
         for(int g = 0; g < 8; g++)
         {
           int y = *cp++, x = *cp++;
-          *ip++ = (y << 16) | (x & 0xffffu); //(y * width + x) * 4;
+          *ip++ = (y << 16) | (x & 0xffffu);
           int color = fcol(row, col, filters4, img->xtrans);
           if(fcol(row + y, col + x, filters4, img->xtrans) != color
              && fcol(row + y * 2, col + x * 2, filters4, img->xtrans) == color)
           {
-            *ip++ = (2*y << 16) | (2*x & 0xffffu); //(y * width + x) * 8 + color;
+            *ip++ = (2*y << 16) | (2*x & 0xffffu);
             *ip++ = color;
           }
           else
@@ -2285,7 +2290,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
     else
     {
-      // do VNG interpolation
+      // do full VNG interpolation
       factors.xoffset = 2*2;
       factors.xfactor = 1;
       factors.yoffset = 2*2;
@@ -2566,7 +2571,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     int blocksizex;
     int blocksizey;
 
-    // Copy current tile from dev_in to first rgb image buffer.
+    // copy from dev_in to first rgb image buffer.
     sizes[0] = ROUNDUPWD(width);
     sizes[1] = ROUNDUPHT(height);
     sizes[2] = 1;
@@ -2621,7 +2626,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_green_minmax, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
-    // Interpolate green horizontally, vertically, and along both diagonals
+    // interpolate green horizontally, vertically, and along both diagonals
     factors.xoffset = 2*6;
     factors.xfactor = 1;
     factors.yoffset = 2*6;
@@ -2660,8 +2665,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     for(int pass = 0; pass < passes; pass++)
     {
 
-      // if on second pass, copy rgb[0] to [3] into rgb[4] to [7]
-      // and process that second set of buffers
+      // if on second pass, copy rgb[0] to [3] into rgb[4] to [7] ....
       if(pass == 1)
       {
         for(int c = 0; c < 4; c++)
@@ -2670,13 +2674,14 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                                                         (size_t)width * height * 4 * sizeof(float));
           if(err != CL_SUCCESS) goto error;
         }
+        // ... and process that second set of buffers
         dev_rgb += 4;
       }
 
       // second and third pass (only Markesteijn-3)
       if(pass)
       {
-        // recalculate green from interpolated values of closer pixels. this is expensive!
+        // recalculate green from interpolated values of closer pixels
         sizes[0] = ROUNDUPWD(width);
         sizes[1] = ROUNDUPHT(height);
         sizes[2] = 1;
@@ -2720,7 +2725,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       {
         const char dir[2] = { i, i ^ 1 };
 
-        // we use buffer dev_aux to transport intermediate results from one loop run to the next
+        // we use dev_aux to transport intermediate results from one loop run to the next
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 0, sizeof(cl_mem), (void *)&dev_trgb[0]);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 1, sizeof(cl_mem), (void *)&dev_aux);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 2, sizeof(int), (void *)&width);
@@ -3448,21 +3453,16 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       piece->process_cl_ready = 1;
       break;
     case DT_IOP_DEMOSAIC_MARKESTEIJN:
-      // note: we have no opencl implementation for Markesteijn yet.
-      // however, we can fall back to VNG if maximum output quality is
-      // not required. so we need to go into the opencl codepath and
-      // decide on CPU fallback depending on the situation.
       piece->process_cl_ready = 1;
       break;
     case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
-      // see comment above.
       piece->process_cl_ready = 1;
       break;
     default:
       piece->process_cl_ready = 0;
   }
 
-  // OpenCL can not (yet) green-equilibrate over full image.
+  // OpenCL can not green-equilibrate over full image.
   if(d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH) piece->process_cl_ready = 0;
 }
 

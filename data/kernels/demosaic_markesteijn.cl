@@ -88,7 +88,7 @@ markesteijn_border_interpolate(read_only image2d_t in, write_only image2d_t out,
 }
 
 
-// Copy current tile from in to image buffer.
+// copy image from image object to buffer.
 kernel void
 markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int width, const int height,
                          const int rin_x, const int rin_y, global const unsigned char (*const xtrans)[6])
@@ -397,9 +397,7 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
 }
 
 
-// Recalculate green from interpolated values of closer pixels.
-// only used for Markesteijn-3, this is an expensive step
-// as it processes a loop over several global buffers
+// recalculate green from interpolated values of closer pixels.
 kernel void
 markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global float *rgb_2, global float *rgb_3,
                               global float *gminmax, const int width, const int height, const int rin_x, const int rin_y, 
@@ -699,7 +697,7 @@ markesteijn_homo_threshold(global float *drv, global float *thresh, const int wi
   if(x < 9 || x >= width-9 || y < 9 || y >= height-9) return;
 
   // note: although *thresh points to a buffer of size width*height*4*sizeof(float) we only need one
-  // float per cell, so we actually only use one quarter of the buffer
+  // float per cell, so we actually use only a quarter of the buffer
 
   const int glidx = mad24(y, width, x);
   
