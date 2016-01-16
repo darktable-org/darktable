@@ -1819,17 +1819,10 @@ process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
   const dt_image_t *img = &self->dev->image_storage;
+
   const float threshold = 0.0001f * img->exif_iso;
-
-  if(roi_out->scale >= 1.00001f)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaic with upscaling not yet supported by opencl code\n");
-    return FALSE;
-  }
-
   const int devid = piece->pipe->devid;
   const int qual = get_quality();
-
   const int demosaicing_method = data->demosaicing_method;
 
   // we check if we need ultra-high quality thumbnail for this size
@@ -2044,14 +2037,6 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int colors = (filters4 == 9u) ? 3 : 4;
   const int prow = (filters4 == 9u) ? 6 : 8;
   const int pcol = (filters4 == 9u) ? 6 : 2;
-
-
-  if(roi_out->scale >= 1.00001f)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaic with upscaling not yet supported by opencl code\n");
-    return FALSE;
-  }
-
   const int devid = piece->pipe->devid;
   const int qual = get_quality();
 
@@ -2463,12 +2448,6 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
   const dt_image_t *img = &self->dev->image_storage;
-
-  if(roi_out->scale >= 1.00001f)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaic with upscaling not yet supported by opencl code\n");
-    return FALSE;
-  }
 
   const int devid = piece->pipe->devid;
   const int qual = get_quality();
