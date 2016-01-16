@@ -505,10 +505,53 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
   if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
 
-  if(g_str_has_prefix(needle, "%"))
-    visible = (g_strrstr(haystack, needle + 1) != NULL);
+  int property = gtk_combo_box_get_active(dr->combo);
+  if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+     || property == DT_COLLECTION_PROP_ISO)
+  {
+    // handle of numeric value, which can have some operator before the text
+    visible = TRUE;
+    gchar *operator, *number;
+    dt_collection_split_operator_number(needle, &number, &operator);
+    if(number)
+    {
+      float nb1 = g_strtod(number, NULL);
+      float nb2 = g_strtod(haystack, NULL);
+      if(operator&& strcmp(operator, ">") == 0)
+      {
+        visible = (nb2 > nb1);
+      }
+      else if(operator&& strcmp(operator, ">=") == 0)
+      {
+        visible = (nb2 >= nb1);
+      }
+      else if(operator&& strcmp(operator, "<") == 0)
+      {
+        visible = (nb2 < nb1);
+      }
+      else if(operator&& strcmp(operator, "<=") == 0)
+      {
+        visible = (nb2 <= nb1);
+      }
+      else if(operator&& strcmp(operator, "<>") == 0)
+      {
+        visible = (nb1 != nb2);
+      }
+      else
+      {
+        visible = (nb1 == nb2);
+      }
+    }
+    g_free(operator);
+    g_free(number);
+  }
   else
-    visible = (g_strrstr(haystack, needle) != NULL);
+  {
+    if(g_str_has_prefix(needle, "%"))
+      visible = (g_strrstr(haystack, needle + 1) != NULL);
+    else
+      visible = (g_strrstr(haystack, needle) != NULL);
+  }
 
   g_free(haystack);
   g_free(needle);
@@ -1037,7 +1080,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
      || property == DT_COLLECTION_PROP_FILENAME || property == DT_COLLECTION_PROP_FILMROLL
      || property == DT_COLLECTION_PROP_LENS || property == DT_COLLECTION_PROP_PUBLISHER
      || property == DT_COLLECTION_PROP_RIGHTS || property == DT_COLLECTION_PROP_TIME
-     || property == DT_COLLECTION_PROP_TITLE)
+     || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
+     || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO)
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
   // we update list selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
