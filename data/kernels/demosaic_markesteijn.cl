@@ -16,15 +16,31 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma OPENCL EXTENSION cl_amd_printf : enable
-
 #include "common.h"
 
 // directions along the both axes and both diagonals
 constant const char2 dir[4] = { (char2)(1, 0), (char2)(0, 1), (char2)(1, 1), (char2)(-1, 1) };
+
 // all possible offsets of a neighboring pixel in x/y directions
 constant const char2 offs[4] = { (char2)(1, 0), (char2)(0, 1), (char2)(-1, 0), (char2)(0, -1) };
 
+int
+hexidx1(const char2 hex, const int stride)
+{
+  return mad24(hex.y, stride, hex.x);
+}
+
+int
+hexidx4(const char2 hex, const int stride)
+{
+  return mul24(mad24(hex.y, stride, hex.x), 4);
+}
+
+float
+sqr(const float x)
+{
+  return x * x;
+}
 
 // temporary be here to fill in image borders
 kernel void
@@ -91,19 +107,6 @@ markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int wi
   for(int c = 0; c < 3; c++) 
     pix[c] = (c == f) ? p : 0.0f;
 }
-
-int
-hexidx1(const char2 hex, const int stride)
-{
-  return mad24(hex.y, stride, hex.x);
-}
-
-int
-hexidx4(const char2 hex, const int stride)
-{
-  return mul24(mad24(hex.y, stride, hex.x), 4);
-}
-
 
 
 // find minimum and maximum allowed green values of red/blue pixel pairs
@@ -196,7 +199,6 @@ markesteijn_green_minmax(global float *rgb, global float *gminmax, const int wid
   vstore2((float2)(gmin, gmax), glidx, gminmax);
 }
  
-
 
 // Interpolate green horizontally, vertically, and along both diagonals
 kernel void
@@ -294,11 +296,7 @@ markesteijn_interpolate_green(global float *rgb_0, global float *rgb_1, global f
   }
 }
  
-float
-sqr(const float x)
-{
-  return x * x;
-}
+
 
 // interpolate red and blue values for solitary green pixels
 kernel void
@@ -366,9 +364,13 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
   aux += glidx;
   rgb += glidx;
   
-  const float odiff = aux[3];
-  float diff = 0.0f;
   float color[4] = { 0.0f };
+  float ocolor[4] = { 0.0f };
+  
+  if(d > 0)
+    for(int c = 0; c < 4; c++) ocolor[c] = color[c] = aux[c];
+    
+  float diff = 0.0f;
   
   const int i = 4 * mad24(dir.y, stride, dir.x);
 
@@ -377,23 +379,21 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
     const int off = i << c;
     float g = 2.0f * buff[1] - (buff + off)[1] - (buff - off)[1];
     color[h] = g + (buff + off)[h] + (buff - off)[h];
-    diff = (d > 1) ? sqr((buff + off)[1] - (buff - off)[1] - (buff + off)[h] + (buff - off)[h]) 
-                     + sqr(g)
-                   : diff;
-  }
-  
-  if((d > 1) && (d & 1) && (odiff < diff))
-  {
-    for(int c = 0; c < 2; c++) color[c * 2] = aux[c * 2];
-  }
-  
-  if((d < 2) || (d & 1))
-  {
-    for(int c = 0; c < 2; c++) rgb[c * 2] = clamp(color[c * 2] / 2.0f, 0.0f, 1.0f);
+    diff += (d > 1) ? sqr((buff + off)[1] - (buff - off)[1] - (buff + off)[h] + (buff - off)[h]) 
+                      + sqr(g)
+                    : 0.0f;
   }
   
   color[3] = diff;
-  for(int c = 0; c < 4; c++) aux[c] = color[c];
+
+  if((d > 1) && (d & 1))
+    for(int c = 0; c < 2; c++) color[c * 2] = (ocolor[3] < diff) ?  ocolor[c * 2] : color[c * 2];
+    
+  if((d < 2) || (d & 1))
+    for(int c = 0; c < 2; c++) rgb[c * 2] = clamp(color[c * 2] / 2.0f, 0.0f, 1.0f);
+
+  for(int c = 0; c < 4; c++)
+    aux[c] = color[c];
 }
 
 
@@ -601,3 +601,386 @@ markesteijn_interpolate_twoxtwo(global float *rgb, const int width, const int he
 }
 
 
+// Convert to perceptual YPbPr colorspace
+kernel void
+markesteijn_convert_yuv(global float *rgb, global float *yuv, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // take sufficient border into account
+  if(x < 7 || x >= width-7 || y < 7 || y >= height-7) return;
+
+  // center input and output around current pixel
+  const int idx = 4 * mad24(y, width, x);
+  rgb += idx;
+  yuv += idx;
+  
+  const float Y = 0.2627f * rgb[0] + 0.6780f * rgb[1] + 0.0593f * rgb[2];
+  
+  yuv[0] = Y;
+  yuv[1] = (rgb[2] - Y) * 0.56433f;
+  yuv[2] = (rgb[0] - Y) * 0.67815f;
+}
+
+
+// differentiate in all directions
+kernel void
+markesteijn_differentiate(global float *yuv, global float *drv, const int width, const int height,
+                          const int d, local float *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int xgid = get_group_id(0);
+  const int ygid = get_group_id(1);
+  
+  // individual control variable in this work group and the work group size
+  const int l = mad24(ylid, xlsz, xlid);
+  const int lsz = mul24(xlsz, ylsz);
+
+  // stride and maximum capacity of local buffer
+  // cells of 4*float per pixel with a surrounding border of 1 cell
+  const int stride = xlsz + 2*1;
+  const int maxbuf = mul24(stride, ylsz + 2*1);
+
+  // coordinates of top left pixel of buffer
+  // this is 1 pixel left and above of the work group origin
+  const int xul = mul24(xgid, xlsz) - 1;
+  const int yul = mul24(ygid, ylsz) - 1;
+
+  // total size of yuv (in units of 4*float)
+  const int yuv_max = mul24(width, height);
+  
+  // we locally buffer yuv to speed-up reading
+  for(int n = 0; n <= maxbuf/lsz; n++)
+  {
+    const int bufidx = mad24(n, lsz, l);
+    if(bufidx >= maxbuf) continue;
+    const int xx = xul + bufidx % stride;
+    const int yy = yul + bufidx / stride;
+    const int inidx = mad24(yy, width, xx);
+    const float4 pixel = (inidx >= 0 && inidx < yuv_max) ? vload4(inidx, yuv) : (float4)0.0f;
+    vstore4(pixel, bufidx, buffer);
+  }
+  
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  // center the local buffer around current x,y-Pixel
+  local float *buff = buffer +  4 * mad24(ylid + 1, stride, xlid + 1);
+  
+  // take sufficient border into account
+  if(x < 8 || x >= width-8 || y < 8 || y >= height-8) return;
+
+  // center drv around current pixel
+  drv += mad24(y, width, x);
+  
+  const char2 p = dir[d & 3];
+  const int off = 4 * mad24(p.y, stride, p.x);
+
+  drv[0] = sqr(2.0f * (buff)[0] - (buff + off)[0] - (buff - off)[0])
+           + sqr(2.0f * (buff)[1] - (buff + off)[1] - (buff - off)[1])
+           + sqr(2.0f * (buff)[2] - (buff + off)[2] - (buff - off)[2]);
+}
+
+
+// Get threshold for homogeneity maps
+kernel void
+markesteijn_homo_threshold(global float *drv, global float *thresh, const int width, const int height,
+                           const int d)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // take sufficient border into account
+  if(x < 9 || x >= width-9 || y < 9 || y >= height-9) return;
+
+  // note: although *thresh points to a buffer of size width*height*4*sizeof(float) we only need one
+  // float per cell, so we actually only use one quarter of the buffer
+
+  const int glidx = mad24(y, width, x);
+  
+  const float deriv = drv[glidx];
+  
+  float tr = (d == 0) ? FLT_MAX : thresh[glidx];
+    
+  tr = (tr > deriv) ? deriv : tr;
+  
+  thresh[glidx] = tr;
+}
+
+// set homogeneity maps
+kernel void
+markesteijn_homo_set(global float *drv, global float *thresh, global uchar *homo, 
+                     const int width, const int height, local float *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int xgid = get_group_id(0);
+  const int ygid = get_group_id(1);
+  
+  // individual control variable in this work group and the work group size
+  const int l = mad24(ylid, xlsz, xlid);
+  const int lsz = mul24(xlsz, ylsz);
+
+  // stride and maximum capacity of local buffer
+  // cells of 1*float per pixel with a surrounding border of 1 cell
+  const int stride = xlsz + 2*1;
+  const int maxbuf = mul24(stride, ylsz + 2*1);
+
+  // coordinates of top left pixel of buffer
+  // this is 1 pixel left and above of the work group origin
+  const int xul = mul24(xgid, xlsz) - 1;
+  const int yul = mul24(ygid, ylsz) - 1;
+
+  // total size of drv (in units of 1*float)
+  const int drv_max = mul24(width, height);
+  
+  // we locally buffer drv to speed-up reading
+  for(int n = 0; n <= maxbuf/lsz; n++)
+  {
+    const int bufidx = mad24(n, lsz, l);
+    if(bufidx >= maxbuf) continue;
+    const int xx = xul + bufidx % stride;
+    const int yy = yul + bufidx / stride;
+    const int inidx = mad24(yy, width, xx);
+    buffer[bufidx] = (inidx >= 0 && inidx < drv_max) ? drv[inidx] : 0.0f;
+  }
+  
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  // center the local buffer around current x,y-Pixel
+  local float *buff = buffer +  mad24(ylid + 1, stride, xlid + 1);
+  
+  // take sufficient border into account
+  if(x < 9 || x >= width-9 || y < 9 || y >= height-9) return;
+
+  const int glidx = mad24(y, width, x);
+  
+  const float tr = 8.0f * thresh[glidx];
+  
+  uchar accu = 0;
+  for(int v = -1; v <= 1; v++)
+    for(int h = -1; h <= 1; h++)
+    {
+      const int idx = mad24(v, stride, h);
+      accu += (buff[idx] <= tr) ? 1 : 0;
+    }
+    
+  homo[glidx] = accu;
+}
+
+
+// set homogeneity maps
+kernel void
+markesteijn_homo_sum(global uchar *homo, global uchar *homosum, 
+                     const int width, const int height, local uchar *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int xgid = get_group_id(0);
+  const int ygid = get_group_id(1);
+  
+  // individual control variable in this work group and the work group size
+  const int l = mad24(ylid, xlsz, xlid);
+  const int lsz = mul24(xlsz, ylsz);
+
+  // stride and maximum capacity of local buffer
+  // cells of 1*uchar per pixel with a surrounding border of 2 cells
+  const int stride = xlsz + 2*2;
+  const int maxbuf = mul24(stride, ylsz + 2*2);
+
+  // coordinates of top left pixel of buffer
+  // this is 2 pixel left and above of the work group origin
+  const int xul = mul24(xgid, xlsz) - 2;
+  const int yul = mul24(ygid, ylsz) - 2;
+
+  // total size of homo (in units of 1*uchar)
+  const int homo_max = mul24(width, height);
+  
+  // we locally buffer homo to speed-up reading
+  for(int n = 0; n <= maxbuf/lsz; n++)
+  {
+    const int bufidx = mad24(n, lsz, l);
+    if(bufidx >= maxbuf) continue;
+    const int xx = xul + bufidx % stride;
+    const int yy = yul + bufidx / stride;
+    const int inidx = mad24(yy, width, xx);
+    buffer[bufidx] = (inidx >= 0 && inidx < homo_max) ? homo[inidx] : 0;
+  }
+  
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  // center the local buffer around current x,y-Pixel
+  local uchar *buff = buffer +  mad24(ylid + 2, stride, xlid + 2);
+  
+  // take sufficient border into account
+  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+
+  const int glidx = mad24(y, width, x);
+ 
+  uchar accu = 0;
+  for(int v = -2; v <= 2; v++)
+    for(int h = -2; h <= 2; h++)
+    {
+      const int idx = mad24(v, stride, h);
+      accu += buff[idx];
+    }
+    
+  homosum[glidx] = accu;
+}
+
+
+// get maximum value for homosum
+kernel void
+markesteijn_homo_max(global uchar *homosum, global uchar *maxval, const int width, const int height,
+                     const int d)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // take sufficient border into account
+  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+
+  // note: although *maxval points to a buffer of size width*height*4*sizeof(float) we only need one
+  // uchar per cell, so we actually only use a fraction of the buffer
+
+  const int glidx = mad24(y, width, x);
+  
+  const uchar hm = homosum[glidx];
+  
+  uchar hmax = (d == 0) ? 0 : maxval[glidx];
+    
+  hmax = (hmax < hm) ? hm : hmax;
+  
+  maxval[glidx] = hmax;
+}
+
+
+// adjust maximum value for homosum
+kernel void
+markesteijn_homo_max_corr(global uchar *maxval, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // take sufficient border into account
+  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+
+  // note: although *maxval points to a buffer of size width*height*4*sizeof(float) we only need one
+  // uchar per cell, so we actually only use a fraction of the buffer
+
+  const int glidx = mad24(y, width, x);
+  
+  uchar hmax = maxval[glidx];
+  
+  hmax -= hmax >> 3;
+  
+  maxval[glidx] = hmax;
+}
+
+// for Markesteijn-3: only use one of two directions if one is better than the other
+kernel void
+markesteijn_homo_quench(global uchar *homosum1, global uchar *homosum2, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // take sufficient border into account
+  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+
+  const int glidx = mad24(y, width, x);
+  
+  uchar hmi1, hmi2, hmo1, hmo2;
+  
+  hmi1 = hmo1 = homosum1[glidx];
+  hmi2 = hmo2 = homosum2[glidx];
+  
+  hmo1 = (hmi1 < hmi2) ? 0 : hmo1;
+  hmo2 = (hmi1 > hmi2) ? 0 : hmo2;
+  
+  homosum1[glidx] = hmo1;
+  homosum2[glidx] = hmo2;
+}
+
+// Initialize output image to zero
+kernel void
+markesteijn_zero(write_only image2d_t out, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // take sufficient border into account
+  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+ 
+  write_imagef(out, (int2)(x, y), (float4)0.0f);
+}
+
+
+// accumulate contributions of all directions into output image
+kernel void
+markesteijn_accu(read_only image2d_t in, write_only image2d_t out, global float *rgb,
+                 global uchar *homosum, global uchar *maxval, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // take sufficient border into account
+  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  
+  const int glidx = mad24(y, width, x);
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 add = vload4(glidx, rgb);
+  add.w = 1.0f;
+
+  pixel += (homosum[glidx] >= maxval[glidx]) ? add : (float4)0.0f;  
+  
+  write_imagef(out, (int2)(x, y), pixel); 
+}
+
+
+// process the final image
+kernel void
+markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // take sufficient border into account
+  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  pixel = (pixel.w > 0.0f) ? pixel/pixel.w : (float4)0.0f;
+  pixel.w = 0.0f;
+  
+  write_imagef(out, (int2)(x, y), pixel); 
+}
+
+
+kernel void
+markesteijn_probe(global float *in, write_only image2d_t out, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // take sufficient border into account
+  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  
+  const int glidx = mad24(y, width, x);
+  float4 pixel = vload4(glidx, in);
+
+  write_imagef(out, (int2)(x, y), pixel); 
+}

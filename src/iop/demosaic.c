@@ -20,7 +20,7 @@
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #pragma GCC diagnostic ignored "-Wunused-function"
 
-#define DEBUG 1
+#define DEBUG 0
 
 #include "develop/imageop.h"
 #include "common/opencl.h"
@@ -115,6 +115,18 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_markesteijn_recalculate_green;
   int kernel_markesteijn_red_and_blue;
   int kernel_markesteijn_interpolate_twoxtwo;
+  int kernel_markesteijn_convert_yuv;
+  int kernel_markesteijn_differentiate;
+  int kernel_markesteijn_homo_threshold;
+  int kernel_markesteijn_homo_set;
+  int kernel_markesteijn_homo_sum;
+  int kernel_markesteijn_homo_max;
+  int kernel_markesteijn_homo_max_corr;
+  int kernel_markesteijn_homo_quench;
+  int kernel_markesteijn_zero;
+  int kernel_markesteijn_accu;
+  int kernel_markesteijn_final;
+  int kernel_markesteijn_probe;
 } dt_iop_demosaic_global_data_t;
 
 typedef struct dt_iop_demosaic_data_t
@@ -805,21 +817,6 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                   }
               }
       } // end of multipass loop
-
-#if DEBUG
-      if(TRUE)
-      {
-        rgb = (float(*)[TS][TS][3])buffer;
-        mrow -= top;
-        mcol -= left;
-          for(int row = 11; row < mrow - 11; row++)
-            for(int col = 11; col < mcol - 11; col++)
-              for(int c = 0; c < 3; c++)
-                out[4 * (width * (row + top) + col + left) + c] = rgb[0][row][col][c];
-        continue;
-      }
-#endif
-
 
       // jump back to the first set of rgb buffers (this is a nop
       // unless on the second pass)
@@ -2406,6 +2403,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   else
   {
+    // sample half-size or third-size image
     if(data->filters == 9u)
     {
       const int width = roi_out->width;
@@ -2573,7 +2571,6 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
   const dt_image_t *img = &self->dev->image_storage;
-  const float threshold = 0.0001f * img->exif_iso;
 
   if(roi_out->scale >= 1.00001f)
   {
@@ -2601,6 +2598,9 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   cl_mem dev_xtrans = NULL;
   cl_mem dev_green_eq = NULL;
   cl_mem dev_rgbv[8] = { NULL };
+  cl_mem dev_drv[8] = { NULL };
+  cl_mem dev_homo[8] = { NULL };
+  cl_mem dev_homosum[8] = { NULL };
   cl_mem dev_gminmax = NULL;
   cl_mem dev_allhex = NULL;
   cl_mem dev_aux = NULL;
@@ -2618,8 +2618,8 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     // Full demosaic and then scaling if needed
     int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
 
-    int width = roi_out->width;
-    int height = roi_out->height;
+    int width = roi_in->width;
+    int height = roi_in->height;
     const int passes = (data->demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 3 : 1;
     const int ndir = 4 << (passes > 1);
 
@@ -2627,6 +2627,8 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                        patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
                                        { 0, 1, 0, -2, 1, 0, -2, 0, 1, 1, -2, -2, 1, -1, -1, 1 } };
 
+    // allhex contains the offset coordinates (x,y) of a green hexagon around each
+    // non-green pixel and vice versa
     char allhex[3][3][8][2];
     // sgreen is the offset in the sensor matrix of the solitary
     // green pixels (initialized here only to avoid compiler warning)
@@ -2665,21 +2667,21 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
     for(int n = 0; n < ndir; n++)
     {
-      // need several intermediate buffers
-      dev_rgbv[n] = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * 4 * sizeof(float));
+      dev_rgbv[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
       if(dev_rgbv[n] == NULL) goto error;
     }
 
-    dev_gminmax = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * 2 * sizeof(float));
+    dev_gminmax = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 2 * sizeof(float));
     if(dev_gminmax == NULL) goto error;
+
+    dev_aux = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
+    if(dev_aux == NULL) goto error;
 
     if(scaled)
     {
       // need to scale to right res
-      dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+      dev_tmp = dt_opencl_alloc_device(devid, (size_t)width, height, 4 * sizeof(float));
       if(dev_tmp == NULL) goto error;
-      width = roi_in->width;
-      height = roi_in->height;
     }
     else
     {
@@ -2687,13 +2689,16 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       dev_tmp = dev_out;
     }
 
-    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[3];
     size_t local[3];
     dt_iop_demosaic_cl_buffer_t factors;
     int blocksizex;
     int blocksizey;
 
     // Copy current tile from dev_in to first rgb image buffer.
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = ROUNDUPHT(height);
+    sizes[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_initial_copy, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_initial_copy, 1, sizeof(cl_mem), (void *)&dev_rgb[0]);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_initial_copy, 2, sizeof(int), (void *)&width);
@@ -2713,7 +2718,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       if(err != CL_SUCCESS) goto error;
     }
 
-    // Set green1 and green3 to the minimum and maximum allowed values
+    // find minimum and maximum allowed green values of red/blue pixel pairs
     factors.xoffset = 2*3;
     factors.xfactor = 1;
     factors.yoffset = 2*3;
@@ -2741,7 +2746,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 7, sizeof(cl_mem), (void *)&dev_xtrans);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 8, sizeof(cl_mem), (void *)&dev_allhex);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 9,
-                             (blocksizex + 2*3) * (blocksizey + 2*3) * 4 * sizeof(float), NULL);
+                             (blocksizex + 2*3) * (blocksizey + 2*3) * sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_green_minmax, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
@@ -2780,8 +2785,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_green, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
-    dev_aux = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * 4 * sizeof(float));
-    if(dev_aux == NULL) goto error;
+    // multi-pass loop: one pass for Markesteijn-1 and three passes for Markesteijn-3
     for(int pass = 0; pass < passes; pass++)
     {
 
@@ -2798,6 +2802,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
         dev_rgb += 4;
       }
 
+      // second and third pass (only Markesteijn-3)
       if(pass)
       {
         // recalculate green from interpolated values of closer pixels. this is expensive!
@@ -2833,17 +2838,18 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       goto error;
 
       sizes[0] = ROUNDUP(width, blocksizex);
-      sizes[1] = ROUNDUP(height, blocksizex);
+      sizes[1] = ROUNDUP(height, blocksizey);
       sizes[2] = 1;
       local[0] = blocksizex;
       local[1] = blocksizey;
       local[2] = 1;
 
       cl_mem *dev_trgb = dev_rgb;
-      for(int i = 1, d = 0, h = 0; d < 6; d++, i ^= 1, h ^= 2)
+      for(int d = 0, i = 1, h = 0; d < 6; d++, i ^= 1, h ^= 2)
       {
-        const char dir[2] = { (i == 1) ? 1 : 0, (i == 1) ? 0 : 1 };
+        const char dir[2] = { i, i ^ 1 };
 
+        // we use buffer dev_aux to transport intermediate results from one loop run to the next
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 0, sizeof(cl_mem), (void *)&dev_trgb[0]);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 1, sizeof(cl_mem), (void *)&dev_aux);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 2, sizeof(int), (void *)&width);
@@ -2935,23 +2941,241 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     }
     // end of multi pass
 
+    // gminmax data no longer needed
     if(dev_gminmax != NULL) dt_opencl_release_mem_object(dev_gminmax);
     dev_gminmax = NULL;
 
-    if(dev_aux != NULL) dt_opencl_release_mem_object(dev_aux);
-    dev_aux = NULL;
-
-#if DEBUG
-    if(TRUE)
+    // prepare derivatives buffers
+    for(int n = 0; n < ndir; n++)
     {
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_rgbv[0], dev_tmp, 0, origin, region);
+      dev_drv[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
+      if(dev_drv[n] == NULL) goto error;
+    }
+
+    // convert to perceptual colorspace and differentiate in all directions
+    factors.xoffset = 2*1;
+    factors.xfactor = 1;
+    factors.yoffset = 2*1;
+    factors.yfactor = 1;
+    factors.cellsize = 4 * sizeof(float);
+    factors.overhead = 0;
+    blocksizex = 64;
+    blocksizey = 64;
+    if(!blocksizeopt(devid, gd->kernel_markesteijn_differentiate, &blocksizex, &blocksizey, &factors))
+    goto error;
+
+    for(int d = 0; d < ndir; d++)
+    {
+      // convert to perceptual YPbPr colorspace
+      sizes[0] = ROUNDUPWD(width);
+      sizes[1] = ROUNDUPHT(height);
+      sizes[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_convert_yuv, 0, sizeof(cl_mem), (void *)&dev_rgb[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_convert_yuv, 1, sizeof(cl_mem), (void *)&dev_aux);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_convert_yuv, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_convert_yuv, 3, sizeof(int), (void *)&height);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_convert_yuv, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+
+      // differentiate in all directions
+      sizes[0] = ROUNDUP(width, blocksizex);
+      sizes[1] = ROUNDUP(height, blocksizey);
+      sizes[2] = 1;
+      local[0] = blocksizex;
+      local[1] = blocksizey;
+      local[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 0, sizeof(cl_mem), (void *)&dev_aux);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 1, sizeof(cl_mem), (void *)&dev_drv[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 4, sizeof(int), (void *)&d);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 5,
+                              (blocksizex + 2*1) * (blocksizey + 2*1) * 4 * sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_differentiate, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
+
+    // reserve buffers for homogeneity maps and sum maps
+    for(int n = 0; n < ndir; n++)
+    {
+      dev_homo[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(unsigned char));
+      if(dev_homo[n] == NULL) goto error;
+
+      dev_homosum[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(unsigned char));
+      if(dev_homosum[n] == NULL) goto error;
+    }
+
+    // get thresholds for homogeneity map (store them in dev_aux)
+    for(int d = 0; d < ndir; d++)
+    {
+      sizes[0] = ROUNDUPWD(width);
+      sizes[1] = ROUNDUPHT(height);
+      sizes[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 0, sizeof(cl_mem), (void *)&dev_drv[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 1, sizeof(cl_mem), (void *)&dev_aux);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 4, sizeof(int), (void *)&d);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_homo_threshold, sizes);
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    // set homogeneity maps
+    factors.xoffset = 2*1;
+    factors.xfactor = 1;
+    factors.yoffset = 2*1;
+    factors.yfactor = 1;
+    factors.cellsize = 1 * sizeof(float);
+    factors.overhead = 0;
+    blocksizex = 64;
+    blocksizey = 64;
+    if(!blocksizeopt(devid, gd->kernel_markesteijn_homo_set, &blocksizex, &blocksizey, &factors))
+    goto error;
+
+    for(int d = 0; d < ndir; d++)
+    {
+      sizes[0] = ROUNDUP(width, blocksizex);
+      sizes[1] = ROUNDUP(height, blocksizey);
+      sizes[2] = 1;
+      local[0] = blocksizex;
+      local[1] = blocksizey;
+      local[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 0, sizeof(cl_mem), (void *)&dev_drv[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 1, sizeof(cl_mem), (void *)&dev_aux);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 2, sizeof(cl_mem), (void *)&dev_homo[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 3, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 4, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 5,
+                              (blocksizex + 2*1) * (blocksizey + 2*1) * sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_homo_set, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    // build 5x5 sum of homogeneity maps for each pixel and direction
+    factors.xoffset = 2*2;
+    factors.xfactor = 1;
+    factors.yoffset = 2*2;
+    factors.yfactor = 1;
+    factors.cellsize = 1 * sizeof(char);
+    factors.overhead = 0;
+    blocksizex = 64;
+    blocksizey = 64;
+    if(!blocksizeopt(devid, gd->kernel_markesteijn_homo_sum, &blocksizex, &blocksizey, &factors))
+    goto error;
+
+    for(int d = 0; d < ndir; d++)
+    {
+      sizes[0] = ROUNDUP(width, blocksizex);
+      sizes[1] = ROUNDUP(height, blocksizey);
+      sizes[2] = 1;
+      local[0] = blocksizex;
+      local[1] = blocksizey;
+      local[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 0, sizeof(cl_mem), (void *)&dev_homo[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 1, sizeof(cl_mem), (void *)&dev_homosum[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 4,
+                              (blocksizex + 2*2) * (blocksizey + 2*2) * sizeof(char), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_homo_sum, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    // get maximum of homogeneity maps (store in dev_aux)
+    for(int d = 0; d < ndir; d++)
+    {
+      sizes[0] = ROUNDUPWD(width);
+      sizes[1] = ROUNDUPHT(height);
+      sizes[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 0, sizeof(cl_mem), (void *)&dev_homosum[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 1, sizeof(cl_mem), (void *)&dev_aux);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 4, sizeof(int), (void *)&d);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_homo_max, sizes);
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    // adjust maximum value
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = ROUNDUPHT(height);
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max_corr, 0, sizeof(cl_mem), (void *)&dev_aux);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max_corr, 1, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max_corr, 2, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_homo_max_corr, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    // for Markesteijn-3: use only one of two directions if there is a difference in homogeneity
+    for(int d = 0; d < ndir - 4; d++)
+    {
+      sizes[0] = ROUNDUPWD(width);
+      sizes[1] = ROUNDUPHT(height);
+      sizes[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_quench, 0, sizeof(cl_mem), (void *)&dev_homosum[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_quench, 1, sizeof(cl_mem), (void *)&dev_homosum[d + 4]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_quench, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_quench, 3, sizeof(int), (void *)&height);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_homo_quench, sizes);
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    // initialize output buffer to zero
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = ROUNDUPHT(height);
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_zero, 0, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_zero, 1, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_zero, 2, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_zero, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+
+    // accumulate all contributions
+    for(int d = 0; d < ndir; d++)
+    {
+      sizes[0] = ROUNDUPWD(width);
+      sizes[1] = ROUNDUPHT(height);
+      sizes[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 1, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 2, sizeof(cl_mem), (void *)&dev_rgbv[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 3, sizeof(cl_mem), (void *)&dev_homosum[d]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 4, sizeof(cl_mem), (void *)&dev_aux);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 5, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 6, sizeof(int), (void *)&height);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_accu, sizes);
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    // process the final image
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = ROUNDUPHT(height);
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 0, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 3, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_final, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+#if DEBUG
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = ROUNDUPHT(height);
+    sizes[2] = 1;
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_probe, 0, sizeof(cl_mem), (void *)&dev_rgbv[7]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_probe, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_probe, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_probe, 3, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_probe, sizes);
+    if(err != CL_SUCCESS) goto error;
 #endif
 
     // manage borders
+    sizes[0] = ROUNDUPWD(width);
+    sizes[1] = ROUNDUPHT(height);
+    sizes[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 1, sizeof(cl_mem), &dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 2, sizeof(int), (void *)&width);
@@ -2971,6 +3195,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   }
   else
   {
+    // sample third-size image
     const int width = roi_out->width;
     const int height = roi_out->height;
     size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
@@ -2994,6 +3219,27 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     if(dev_rgbv[n] != NULL) dt_opencl_release_mem_object(dev_rgbv[n]);
     dev_rgbv[n] = NULL;
   }
+
+  for(int n = 0; n < 8; n++)
+  {
+    if(dev_drv[n] != NULL) dt_opencl_release_mem_object(dev_drv[n]);
+    dev_drv[n] = NULL;
+  }
+
+  for(int n = 0; n < 8; n++)
+  {
+    if(dev_homo[n] != NULL) dt_opencl_release_mem_object(dev_homo[n]);
+    dev_homo[n] = NULL;
+  }
+
+  for(int n = 0; n < 8; n++)
+  {
+    if(dev_homosum[n] != NULL) dt_opencl_release_mem_object(dev_homosum[n]);
+    dev_homosum[n] = NULL;
+  }
+
+  if(dev_aux != NULL) dt_opencl_release_mem_object(dev_aux);
+  dev_aux = NULL;
 
   if(dev_tmp != NULL && dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
   dev_tmp = NULL;
@@ -3095,12 +3341,19 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 error:
   for(int n = 0; n < 8; n++)
     if(dev_rgbv[n] != NULL) dt_opencl_release_mem_object(dev_rgbv[n]);
+  for(int n = 0; n < 8; n++)
+    if(dev_drv[n] != NULL) dt_opencl_release_mem_object(dev_drv[n]);
+  for(int n = 0; n < 8; n++)
+    if(dev_homo[n] != NULL) dt_opencl_release_mem_object(dev_homo[n]);
+  for(int n = 0; n < 8; n++)
+    if(dev_homosum[n] != NULL) dt_opencl_release_mem_object(dev_homosum[n]);
   if(dev_gminmax != NULL) dt_opencl_release_mem_object(dev_gminmax);
   if(dev_tmp != NULL && dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
   if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   if(dev_allhex != NULL) dt_opencl_release_mem_object(dev_allhex);
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
   if(dev_aux != NULL) dt_opencl_release_mem_object(dev_aux);
+  if(dev_homo != NULL) dt_opencl_release_mem_object(dev_homo);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -3215,7 +3468,10 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     const int ndir = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 8 : 4;
 
     tiling->factor = 1.0f + ioratio;
-    tiling->factor += ndir + 2;
+    tiling->factor += ndir * 1.0f      // rgb
+                      + ndir * 0.25f   // drv
+                      + ndir * 0.125f  // homo + homosum
+                      + 1.0f;          // aux
 
     if(full_scale_demosaicing && unscaled)
       tiling->factor += fmax(1.0f + greeneq, smooth);
@@ -3224,9 +3480,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     else
       tiling->factor += smooth;
 
-    // note that even Markesteijn demosiac's buffers aren't
-    // significantly large enough to change maxbuf, except in the case
-    // of small image crops which won't be tiled anyhow
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
     tiling->xalign = 3;
@@ -3304,6 +3557,18 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_markesteijn_recalculate_green = dt_opencl_create_kernel(markesteijn, "markesteijn_recalculate_green");
   gd->kernel_markesteijn_red_and_blue = dt_opencl_create_kernel(markesteijn, "markesteijn_red_and_blue");
   gd->kernel_markesteijn_interpolate_twoxtwo = dt_opencl_create_kernel(markesteijn, "markesteijn_interpolate_twoxtwo");
+  gd->kernel_markesteijn_convert_yuv = dt_opencl_create_kernel(markesteijn, "markesteijn_convert_yuv");
+  gd->kernel_markesteijn_differentiate = dt_opencl_create_kernel(markesteijn, "markesteijn_differentiate");
+  gd->kernel_markesteijn_homo_threshold = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_threshold");
+  gd->kernel_markesteijn_homo_set = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_set");
+  gd->kernel_markesteijn_homo_sum = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_sum");
+  gd->kernel_markesteijn_homo_max = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_max");
+  gd->kernel_markesteijn_homo_max_corr = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_max_corr");
+  gd->kernel_markesteijn_homo_quench = dt_opencl_create_kernel(markesteijn, "markesteijn_homo_quench");
+  gd->kernel_markesteijn_zero = dt_opencl_create_kernel(markesteijn, "markesteijn_zero");
+  gd->kernel_markesteijn_accu = dt_opencl_create_kernel(markesteijn, "markesteijn_accu");
+  gd->kernel_markesteijn_final = dt_opencl_create_kernel(markesteijn, "markesteijn_final");
+  gd->kernel_markesteijn_probe = dt_opencl_create_kernel(markesteijn, "markesteijn_probe");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -3339,6 +3604,18 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_markesteijn_recalculate_green);
   dt_opencl_free_kernel(gd->kernel_markesteijn_red_and_blue);
   dt_opencl_free_kernel(gd->kernel_markesteijn_interpolate_twoxtwo);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_convert_yuv);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_differentiate);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_homo_threshold);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_homo_set);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_homo_sum);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_homo_max);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_homo_max_corr);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_homo_quench);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_zero);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_accu);
+  dt_opencl_free_kernel(gd->kernel_markesteijn_final);
+    dt_opencl_free_kernel(gd->kernel_markesteijn_probe);
   free(module->data);
   module->data = NULL;
 }
