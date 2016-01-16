@@ -111,6 +111,12 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
 
+  /** \brief This signal is raised when a module is removed from the history stack
+    1 module
+    no returned value
+    */
+  DT_SIGNAL_DEVELOP_MODULE_REMOVE,
+
   /** \brief This signal is rasied when image is changed in darkroom */
   DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
 
