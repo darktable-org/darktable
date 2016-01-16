@@ -17,6 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "develop/imageop.h"
 #include "views/undo.h"
 #include <glib.h>
 
@@ -29,12 +30,37 @@ typedef struct dt_undo_item_t
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
 
+static void _undo_clear_list_for_module(GList *list, dt_iop_module_t *module)
+{
+  while(list)
+  {
+    dt_undo_item_t *item = (dt_undo_item_t *)list->data;
+    if(item->type == DT_UNDO_HISTORY)
+    {
+      dt_undo_history_t *hist = (dt_undo_history_t *)item->data;
+      dt_dev_invalidate_history_module(hist->snapshot, module);
+    }
+    list = list->next;
+  }
+}
+
+static void _undo_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data)
+{
+  dt_undo_t *udata = (dt_undo_t *)user_data;
+  dt_pthread_mutex_lock(&udata->mutex);
+  _undo_clear_list_for_module (udata->undo_list, module);
+  _undo_clear_list_for_module (udata->redo_list, module);
+  dt_pthread_mutex_unlock(&udata->mutex);
+}
+
 dt_undo_t *dt_undo_init(void)
 {
   dt_undo_t *udata = malloc(sizeof(dt_undo_t));
   udata->undo_list = NULL;
   udata->redo_list = NULL;
   dt_pthread_mutex_init(&udata->mutex, NULL);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE,
+                            G_CALLBACK(_undo_module_remove_callback), udata);
   return udata;
 }
 
@@ -42,6 +68,7 @@ void dt_undo_cleanup(dt_undo_t *self)
 {
   dt_undo_clear(self, DT_UNDO_ALL);
   dt_pthread_mutex_destroy(&self->mutex);
+  dt_control_signal_disconnect (darktable.signals, G_CALLBACK(_undo_module_remove_callback), self);
 }
 
 static void _free_undo_data(void *p)
