@@ -16,12 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-#pragma GCC diagnostic ignored "-Wunused-function"
-
-#define DEBUG 0
-
 #include "develop/imageop.h"
 #include "common/opencl.h"
 #include "bauhaus/bauhaus.h"
@@ -126,7 +120,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_markesteijn_zero;
   int kernel_markesteijn_accu;
   int kernel_markesteijn_final;
-  int kernel_markesteijn_probe;
 } dt_iop_demosaic_global_data_t;
 
 typedef struct dt_iop_demosaic_data_t
@@ -3163,18 +3156,6 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_final, sizes);
     if(err != CL_SUCCESS) goto error;
 
-#if DEBUG
-    sizes[0] = ROUNDUPWD(width);
-    sizes[1] = ROUNDUPHT(height);
-    sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_probe, 0, sizeof(cl_mem), (void *)&dev_rgbv[7]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_probe, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_probe, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_probe, 3, sizeof(int), (void *)&height);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_probe, sizes);
-    if(err != CL_SUCCESS) goto error;
-#endif
-
     // manage borders
     sizes[0] = ROUNDUPWD(width);
     sizes[1] = ROUNDUPHT(height);
@@ -3571,7 +3552,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_markesteijn_zero = dt_opencl_create_kernel(markesteijn, "markesteijn_zero");
   gd->kernel_markesteijn_accu = dt_opencl_create_kernel(markesteijn, "markesteijn_accu");
   gd->kernel_markesteijn_final = dt_opencl_create_kernel(markesteijn, "markesteijn_final");
-  gd->kernel_markesteijn_probe = dt_opencl_create_kernel(markesteijn, "markesteijn_probe");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -3618,7 +3598,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_markesteijn_zero);
   dt_opencl_free_kernel(gd->kernel_markesteijn_accu);
   dt_opencl_free_kernel(gd->kernel_markesteijn_final);
-    dt_opencl_free_kernel(gd->kernel_markesteijn_probe);
   free(module->data);
   module->data = NULL;
 }

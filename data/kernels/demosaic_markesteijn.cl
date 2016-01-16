@@ -22,7 +22,7 @@
 constant const char2 dir[4] = { (char2)(1, 0), (char2)(0, 1), (char2)(1, 1), (char2)(-1, 1) };
 
 // all possible offsets of a neighboring pixel in x/y directions
-constant const char2 offs[4] = { (char2)(1, 0), (char2)(0, 1), (char2)(-1, 0), (char2)(0, -1) };
+constant const char2 nboff[4] = { (char2)(1, 0), (char2)(0, 1), (char2)(-1, 0), (char2)(0, -1) };
 
 int
 hexidx1(const char2 hex, const int stride)
@@ -182,9 +182,9 @@ markesteijn_green_minmax(global float *rgb, global float *gminmax, const int wid
   global const char2 *hex2nd = hex;               // initialized here only to prevent compiler warning
   for (int n = 0; n < 4; n++)
   {
-    if(FCxtrans(y + offs[n].y + rin_y, x + offs[n].x + rin_x, xtrans) == 1) continue; // this is a green pixel
-    buff2nd = buff + mad24(offs[n].y, stride, offs[n].x);
-    hex2nd = allhex[(y + offs[n].y) % 3][(x + offs[n].x) % 3];
+    if(FCxtrans(y + nboff[n].y + rin_y, x + nboff[n].x + rin_x, xtrans) == 1) continue; // this is a green pixel
+    buff2nd = buff + mad24(nboff[n].y, stride, nboff[n].x);
+    hex2nd = allhex[(y + nboff[n].y) % 3][(x + nboff[n].x) % 3];
   }
   
   // we have found the second pixel: now include it into min/max calculation
@@ -969,18 +969,3 @@ markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int wi
   write_imagef(out, (int2)(x, y), pixel); 
 }
 
-
-kernel void
-markesteijn_probe(global float *in, write_only image2d_t out, const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  // take sufficient border into account
-  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
-  
-  const int glidx = mad24(y, width, x);
-  float4 pixel = vload4(glidx, in);
-
-  write_imagef(out, (int2)(x, y), pixel); 
-}
