@@ -2945,6 +2945,9 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     if(dev_gminmax != NULL) dt_opencl_release_mem_object(dev_gminmax);
     dev_gminmax = NULL;
 
+    // jump back to the first set of rgb buffers (this is a noop for Markesteijn-1)
+    dev_rgb = dev_rgbv;
+
     // prepare derivatives buffers
     for(int n = 0; n < ndir; n++)
     {
