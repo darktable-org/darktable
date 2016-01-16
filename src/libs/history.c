@@ -135,6 +135,9 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_history_change_callback), self);
 
+  dt_lib_history_t *d = (dt_lib_history_t *)self->data;
+  g_list_free_full(d->prev.snapshot, dt_dev_free_history_item);
+
   g_free(self->data);
   self->data = NULL;
 }
