@@ -38,6 +38,7 @@
 #include "develop/imageop.h"
 #include "develop/lightroom.h"
 #include "develop/masks.h"
+#include "views/undo.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 

@@ -204,6 +204,53 @@ static GList *_duplicate_history(GList *hist)
   return result;
 }
 
+dt_iop_module_t *get_base_module(dt_develop_t *dev, char *op)
+{
+  dt_iop_module_t *result = NULL;
+
+  GList *modules = g_list_first(dev->iop);
+  while(modules)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    if(strcmp(mod->op,op)==0)
+    {
+      result = mod;
+      break;
+    }
+    modules = g_list_next(modules);
+  }
+
+  return result;
+}
+
+static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int multi_priority)
+{
+  while (hist)
+  {
+    dt_dev_history_item_t *hit = (dt_dev_history_item_t *)hist->data;
+
+    if (!hit->module && strcmp(hit->multi_name,module->op)==0 && hit->multi_priority==multi_priority)
+    {
+      hit->module = module;
+      snprintf(hit->multi_name, sizeof(hit->multi_name), "%s", module->multi_name);
+    }
+    hist = hist->next;
+  }
+}
+
+struct _cb_data
+{
+  dt_iop_module_t *module;
+  int multi_priority;
+};
+
+static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
+{
+  struct _cb_data *udata = (struct _cb_data *)user_data;
+  dt_undo_history_t *hdata = (dt_undo_history_t *)data;
+  _reset_module_instance(hdata->snapshot, udata->module, udata->multi_priority);
+}
+
 static void pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -219,11 +266,90 @@ static void pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *da
     darktable.develop->history = hist->snapshot;
     darktable.develop->history_end = hist->end;
 
+    //  let's handle invalidated module in the history
+
+    GList *l = g_list_first(darktable.develop->history);
+    gboolean done = FALSE;
+
+    while (l)
+    {
+      GList *next = g_list_next(l);
+      dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)l->data;
+
+      // this fixes the duplicate module when undo: hitem->multi_priority = 0;
+      if (hitem->module == NULL)
+      {
+        const dt_iop_module_t *base = get_base_module(darktable.develop, hitem->multi_name);
+
+        //  from there we create a new module for this base instance. The goal is to do a very minimal setup of the
+        //  new module to be able to write the history items. From there we reload the whole history back and this
+        //  will recreate the proper module instances.
+
+        dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+        if(dt_iop_load_module(module, base->so, base->dev))
+        {
+          free(module);
+          return;
+        }
+
+        // adjust the multi_name of the new module
+
+        int pname = module->multi_priority + 1;
+        char mname[128];
+
+        do
+        {
+          snprintf(mname, sizeof(mname), "%d", pname);
+          gboolean dup = FALSE;
+
+          GList *modules = g_list_first(base->dev->iop);
+          while(modules)
+          {
+            dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+            if(mod->instance == base->instance)
+            {
+              if(strcmp(mname, mod->multi_name) == 0)
+              {
+                dup = TRUE;
+                break;
+              }
+            }
+            modules = g_list_next(modules);
+          }
+
+          if(dup)
+            pname++;
+          else
+            break;
+        } while(1);
+        g_strlcpy(module->multi_name, mname, sizeof(module->multi_name));
+
+        // if not already done, set the module to all others same instance
+
+        if (!done)
+        {
+          GList *h = g_list_first(darktable.develop->history);
+          _reset_module_instance(h, module, hitem->multi_priority);
+
+          // and do that also in the undo/redo lists
+          struct _cb_data udata = { module, hitem->multi_priority };
+          dt_undo_iterate (darktable.undo, DT_UNDO_HISTORY, &udata, &_undo_items_cb);
+          done = TRUE;
+        }
+
+        hitem->module = module;
+        snprintf(hitem->multi_name, sizeof(hitem->multi_name), "%s", hitem->module->multi_name);
+      }
+      l = next;
+    }
+
     hist->snapshot = current_params;
     hist->end = end;
 
     // disable recording undo as the _lib_history_change_callback will be triggered by the calls below
     d->record_undo = FALSE;
+
+    //  write new history and reload
 
     dt_dev_write_history(darktable.develop);
     dt_dev_reload_history_items(darktable.develop);
