@@ -102,7 +102,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_zoom_third_size;
   int kernel_vng_green_equilibrate;
   int kernel_vng_interpolate;
-  int kernel_markesteijn_border_interpolate;
   int kernel_markesteijn_initial_copy;
   int kernel_markesteijn_green_minmax;
   int kernel_markesteijn_interpolate_green;
@@ -2480,6 +2479,8 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   cl_mem dev_gminmax = NULL;
   cl_mem dev_allhex = NULL;
   cl_mem dev_aux = NULL;
+  cl_mem dev_edge_in = NULL;
+  cl_mem dev_edge_out = NULL;
   cl_int err = -999;
 
   cl_mem *dev_rgb = dev_rgbv;
@@ -3039,19 +3040,98 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_final, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    // manage borders
-    sizes[0] = ROUNDUPWD(width);
-    sizes[1] = ROUNDUPHT(height);
-    sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 1, sizeof(cl_mem), &dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 4, sizeof(int), (void *)&roi_in->x);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 5, sizeof(int), (void *)&roi_in->y);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_border_interpolate, 6, sizeof(cl_mem), &dev_xtrans);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_border_interpolate, sizes);
-    if(err != CL_SUCCESS) goto error;
+    // now it's time to get rid of most of the temporary buffers (except of dev_tmp and dev_xtrans)
+    for(int n = 0; n < 8; n++)
+    {
+      if(dev_rgbv[n] != NULL) dt_opencl_release_mem_object(dev_rgbv[n]);
+      dev_rgbv[n] = NULL;
+    }
+
+    for(int n = 0; n < 8; n++)
+    {
+      if(dev_drv[n] != NULL) dt_opencl_release_mem_object(dev_drv[n]);
+      dev_drv[n] = NULL;
+    }
+
+    for(int n = 0; n < 8; n++)
+    {
+      if(dev_homo[n] != NULL) dt_opencl_release_mem_object(dev_homo[n]);
+      dev_homo[n] = NULL;
+    }
+
+    for(int n = 0; n < 8; n++)
+    {
+      if(dev_homosum[n] != NULL) dt_opencl_release_mem_object(dev_homosum[n]);
+      dev_homosum[n] = NULL;
+    }
+
+    if(dev_aux != NULL) dt_opencl_release_mem_object(dev_aux);
+    dev_aux = NULL;
+
+    if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+    dev_xtrans = NULL;
+
+    if(dev_allhex != NULL) dt_opencl_release_mem_object(dev_allhex);
+    dev_allhex = NULL;
+
+    if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+    dev_green_eq = NULL;
+
+
+    // take care of image borders. the algorihm above leaves an unprocessed border of 11px.
+    // strategy: take the four edges and process them each with process_vng_cl(). as VNG produces
+    // an image with a border with only linear interpolation we process edges of 15px and
+    // drop 3px on the inner side if possible
+
+    // take care of some degenerate cases (which might happen if we are called in a tiling context)
+    const int wd = (width > 15) ? 15 : width;
+    const int ht = (height > 15) ? 15 : height;
+    const int wdc = (wd >= 15) ? 3 : 0;
+    const int htc = (ht >= 15) ? 3 : 0;
+
+    // the data of all four edges:
+    // total edge: x-offset, y-offset, width, height,
+    // after dropping: x-offset adjust, y-offset adjust, width adjust, height adjust
+    const int edges[4][8] = { { 0, 0, wd, height, 0, 0, -wdc, 0 },
+                              { 0, 0, width, ht, 0, 0, 0, -htc },
+                              { width - wd, 0, wd, height, wdc, 0, -wdc, 0 },
+                              { 0, height - ht, width, ht, 0, htc, 0, -htc } };
+
+    for(int n = 0; n < 4; n++)
+    {
+      dt_iop_roi_t roi = { roi_in->x + edges[n][0], roi_in->y + edges[n][1], edges[n][2], edges[n][3], 1.0f };
+
+      size_t iorigin[] = { edges[n][0], edges[n][1], 0 };
+      size_t oorigin[] = { 0, 0, 0 };
+      size_t region[] = { edges[n][2], edges[n][3], 1 };
+
+      cl_mem dev_edge_in = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float));
+      if(dev_edge_in == NULL) goto error;
+
+      cl_mem dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], 4 * sizeof(float));
+      if(dev_edge_out == NULL) goto error;
+
+      err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_edge_in, iorigin, oorigin, region);
+      if(err != CL_SUCCESS) goto error;
+
+      if(!process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, &roi))
+        goto error;
+
+      iorigin[0] += edges[n][4];
+      iorigin[1] += edges[n][5];
+      oorigin[0] += edges[n][4];
+      oorigin[1] += edges[n][5];
+      region[0] += edges[n][6];
+      region[1] += edges[n][7];
+
+      err = dt_opencl_enqueue_copy_image(devid, dev_edge_out, dev_tmp, oorigin, iorigin, region);
+      if(err != CL_SUCCESS) goto error;
+
+      dt_opencl_release_mem_object(dev_edge_in);
+      dt_opencl_release_mem_object(dev_edge_out);
+      dev_edge_in = dev_edge_out = NULL;
+    }
+
 
     if(scaled)
     {
@@ -3081,44 +3161,12 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     if(err != CL_SUCCESS) goto error;
   }
 
-  for(int n = 0; n < 8; n++)
-  {
-    if(dev_rgbv[n] != NULL) dt_opencl_release_mem_object(dev_rgbv[n]);
-    dev_rgbv[n] = NULL;
-  }
-
-  for(int n = 0; n < 8; n++)
-  {
-    if(dev_drv[n] != NULL) dt_opencl_release_mem_object(dev_drv[n]);
-    dev_drv[n] = NULL;
-  }
-
-  for(int n = 0; n < 8; n++)
-  {
-    if(dev_homo[n] != NULL) dt_opencl_release_mem_object(dev_homo[n]);
-    dev_homo[n] = NULL;
-  }
-
-  for(int n = 0; n < 8; n++)
-  {
-    if(dev_homosum[n] != NULL) dt_opencl_release_mem_object(dev_homosum[n]);
-    dev_homosum[n] = NULL;
-  }
-
-  if(dev_aux != NULL) dt_opencl_release_mem_object(dev_aux);
-  dev_aux = NULL;
-
+  // free remaining temporary buffers
   if(dev_tmp != NULL && dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
   dev_tmp = NULL;
 
   if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   dev_xtrans = NULL;
-
-  if(dev_allhex != NULL) dt_opencl_release_mem_object(dev_allhex);
-  dev_allhex = NULL;
-
-  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
-  dev_green_eq = NULL;
 
 
   // color smoothing
@@ -3145,7 +3193,8 @@ error:
   if(dev_allhex != NULL) dt_opencl_release_mem_object(dev_allhex);
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
   if(dev_aux != NULL) dt_opencl_release_mem_object(dev_aux);
-  if(dev_homo != NULL) dt_opencl_release_mem_object(dev_homo);
+  if(dev_edge_in != NULL) dt_opencl_release_mem_object(dev_edge_in);
+  if(dev_edge_out != NULL) dt_opencl_release_mem_object(dev_edge_out);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -3341,7 +3390,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_vng_interpolate = dt_opencl_create_kernel(vng, "vng_interpolate");
 
   const int markesteijn = 16; // from programs.conf
-  gd->kernel_markesteijn_border_interpolate = dt_opencl_create_kernel(markesteijn, "markesteijn_border_interpolate");
   gd->kernel_markesteijn_initial_copy = dt_opencl_create_kernel(markesteijn, "markesteijn_initial_copy");
   gd->kernel_markesteijn_green_minmax = dt_opencl_create_kernel(markesteijn, "markesteijn_green_minmax");
   gd->kernel_markesteijn_interpolate_green = dt_opencl_create_kernel(markesteijn, "markesteijn_interpolate_green");
@@ -3387,7 +3435,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_zoom_third_size);
   dt_opencl_free_kernel(gd->kernel_vng_green_equilibrate);
   dt_opencl_free_kernel(gd->kernel_vng_interpolate);
-  dt_opencl_free_kernel(gd->kernel_markesteijn_border_interpolate);
   dt_opencl_free_kernel(gd->kernel_markesteijn_initial_copy);
   dt_opencl_free_kernel(gd->kernel_markesteijn_green_minmax);
   dt_opencl_free_kernel(gd->kernel_markesteijn_interpolate_green);

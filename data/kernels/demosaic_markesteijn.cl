@@ -42,52 +42,6 @@ sqr(const float x)
   return x * x;
 }
 
-// temporary be here to fill in image borders
-kernel void
-markesteijn_border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                               const int rin_x, const int rin_y, global const unsigned char (*const xtrans)[6])
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  const int border = 11;
-  const int avgwindow = 1;
-
-  if(x >= border && x < width-border && y >= border && y < height-border) return;
-
-  float o[4] = { 0.0f };
-  float sum[4] = { 0.0f };
-  int count[4] = { 0 };
-
-  for(int j = y-avgwindow; j <= y+avgwindow; j++)
-    for(int i = x-avgwindow; i <= x+avgwindow; i++)
-    {
-      if(j >= 0 && i >= 0 && j < height && i < width)
-      {
-        int f = FCxtrans(j + rin_y, i + rin_x, xtrans);
-        sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
-        count[f]++;
-      }
-    }
-
-  float i = read_imagef(in, sampleri, (int2)(x, y)).x;
-
-  int f = FCxtrans(y + rin_y, x + rin_x, xtrans);
-
-  for(int c = 0; c < 3; c++)
-  {
-    if(c != f && count[c] != 0)
-      o[c] = sum[c] / count[c];
-    else
-      o[c] = i;
-  }
-
-  write_imagef (out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
-}
-
-
 // copy image from image object to buffer.
 kernel void
 markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int width, const int height,
