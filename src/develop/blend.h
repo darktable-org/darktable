@@ -25,7 +25,8 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
-#define DEVELOP_BLEND_VERSION (7)
+//#define DEVELOP_BLEND_VERSION (7)
+#define DEVELOP_BLEND_VERSION (8)
 
 /* frequency separation */
 typedef enum dt_develop_fs_preview_t
@@ -258,6 +259,29 @@ typedef struct dt_develop_blend_params6_t
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
 } dt_develop_blend_params6_t;
 
+/** blend legacy parameters version 7 */
+typedef struct dt_develop_blend_params7_t
+{
+  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
+  uint32_t mask_mode;
+  /** blending mode */
+  uint32_t blend_mode;
+  /** mixing opacity */
+  float opacity;
+  /** how masks are combined */
+  uint32_t mask_combine;
+  /** id of mask in current pipeline */
+  uint32_t mask_id;
+  /** blendif mask */
+  uint32_t blendif;
+  /** blur radius */
+  float radius;
+  /** some reserved fields for future use */
+  uint32_t reserved[4];
+  /** blendif parameters */
+  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+} dt_develop_blend_params7_t;
+
 /** blend parameters current version */
 typedef struct dt_develop_blend_params_t
 {
@@ -285,9 +309,13 @@ typedef struct dt_develop_blend_params_t
   uint32_t fs_filter_by; // luma - chroma - luma & chroma ...
   float fs_frequency_low; // low frequency
   float fs_frequency_high; // high frequency
+  float fs_frequency; // high frequency
+  float fs_frequency_range; // high frequency
   int fs_sharpness; // sharpness
   uint32_t fs_preview; // preview final image
   float fs_freqlay_exposure; // exposure compensation for the mask
+  int fs_lighten_freq_layer; // user asks to lighten the layer
+  int fs_invert_freq_layer; // user asks to invert the layer
 
   float * tF1, *tF2, *tF3; // filter complement & colorspace complement
   void *fs_ivoid; // buffer for backup original image
@@ -396,8 +424,13 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *fs_preview_combo; //  combo box with (yes - no)
   GtkWidget *fs_frequency_low_slider; // low frequency
   GtkWidget *fs_frequency_high_slider; // high frequency
+  GtkWidget *fs_frequency_slider; // high frequency
+  GtkWidget *fs_frequency_range_slider; // high frequency
   GtkWidget *fs_sharpness_slider; // sharpness for the filters
   GtkWidget *fs_freqlay_exposure_slider; // exposure compensation for the mask
+  GtkWidget *fs_lighten_freq_layer; // adds 50% gray to the layer
+  GtkWidget *fs_invert_freq_layer; // inverts the layer
+
 
   /* End frequency separation */
 } dt_iop_gui_blend_data_t;

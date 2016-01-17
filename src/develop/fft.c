@@ -9,130 +9,15 @@
 #include <stdlib.h>
 #include <xmmintrin.h>
 
+#define _FFT_SSE_
+#define _FFT_MULTFR_
 
-void fft_Threshold(float *const InputR, float *const InputI, float *const OutputR, float *const OutputI,
+#ifdef _FFT_SSE_
+void fft_filter_fft(float *const InputR, float *const InputI, float *const OutputR, float *const OutputI,
                     const int nWidh, const int mHeight,
-                    const float range1, const float range2, const fft_decompose_channels channels, const fft_filter_type filter_type,
+                    const float range1, const float range2, const int sharpness, const fft_decompose_channels channels, const fft_filter_type filter_type,
                     const dt_iop_colorspace_type_t cst, const int ch)
 {
-  const float Th1 = range1/100.f; // cutoff frequency
-  const float Th2 = range2/100.f; // cutoff frequency
-    
-  float maxA = 0; // max(A(u, v))
-  const int nWidh1 = nWidh*ch;
-    
-  memset(OutputR, 0, nWidh*mHeight*ch*sizeof(float));
-  memset(OutputI, 0, nWidh*mHeight*ch*sizeof(float));
-
-    // calculate max(A(u, v))
-#ifdef _FFT_MULTFR_
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(maxA) schedule(static)
-#endif
-#endif
-	for (int y=0; y < mHeight; y++)
-	{
-	  float *inI = &InputI[nWidh1*y];
-		
-		for (int x=0; x < nWidh1; x+=ch)
-		{
-			if (channels & FFT_DECOMPOSE_CH1) {
-        if (fabs(inI[x]) > maxA) maxA = fabs(inI[x]);}
-			if (channels & FFT_DECOMPOSE_CH2) {
-        if (fabs(inI[x+1]) > maxA) maxA = fabs(inI[x+1]);}
-			if (channels & FFT_DECOMPOSE_CH3) {
-        if (fabs(inI[x+2]) > maxA) maxA = fabs(inI[x+2]);}
-			if (channels & FFT_DECOMPOSE_CH4) {
-        if (fabs(inI[x+3]) > maxA) maxA = fabs(inI[x+3]);}
-		}
-	}
-
-#ifdef _FFT_MULTFR_
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(maxA) schedule(static)
-#endif
-#endif
-	for (int y=0; y < mHeight; y++)
-	{
-		const int i = nWidh1*y;
-		
-    float *inR = &InputR[i];
-    float *inI = &InputI[i];
-    float *outR = &OutputR[i];
-    float *outI = &OutputI[i];
-		
-		for (int x=0; x < nWidh1; x+=ch)
-		{ 
-			float abs_filter = 0;
-			int count = 0;
-			 
-			if (channels & FFT_DECOMPOSE_CH1) {
-				if (abs(inI[x]) > abs_filter) abs_filter += abs(inI[x]); count++;}
-			if (channels & FFT_DECOMPOSE_CH2) {
-				if (abs(inI[x+1]) > abs_filter) abs_filter += abs(inI[x+1]); count++;}
-			if (channels & FFT_DECOMPOSE_CH3) {
-				if (abs(inI[x+2]) > abs_filter) abs_filter += abs(inI[x+2]); count++;}
-			if (channels & FFT_DECOMPOSE_CH4) {
-				if (abs(inI[x+3]) > abs_filter) abs_filter += abs(inI[x+3]); count++;}
-
-			abs_filter /= count;
-			 
-			int pass = (((filter_type == FFT_FILTER_TYPE_THRESHOLD) && (Th1*maxA <= abs_filter && abs_filter <= Th2*maxA)) ||
-						((filter_type == FFT_FILTER_TYPE_THRESHOLD_INV) && (Th1*maxA >= abs_filter || abs_filter >= Th2*maxA)));
-			
-      if (!pass)
-      {
-        for (int i=0;i<ch;i++)
-        {
-          outR[x+i] = inR[x+i];
-          outI[x+i] = inI[x+i];
-          inR[x+i] = inI[x+i] = 0;
-        }
-      }
-      else
-      {
-        if (!(channels & FFT_DECOMPOSE_CH1))
-        {
-          outR[x] = inR[x];
-          outI[x] = inI[x];
-          inR[x]=0; inI[x]=0;
-        }
-
-        if (!(channels & FFT_DECOMPOSE_CH2))
-        {
-          outR[x+1] = inR[x+1];
-          outI[x+1] = inI[x+1];
-          inR[x+1]=0; inI[x+1]=0;
-        }
-
-        if (!(channels & FFT_DECOMPOSE_CH3))
-        {
-          outR[x+2] = inR[x+2];
-          outI[x+2] = inI[x+2];
-          inR[x+2]=0; inI[x+2]=0;
-        }
-
-        if (!(channels & FFT_DECOMPOSE_CH4))
-        {
-          outR[x+3] = inR[x+3];
-          outI[x+3] = inI[x+3];
-          inR[x+3]=0; inI[x+3]=0;
-        }
-      }
-    }
-  }
-}
-
-void fft_PassFilter(float *const InputR, float *const InputI, float *const OutputR, float *const OutputI,
-                    const int nWidh, const int mHeight,
-                    const float range1, const float range2, const fft_decompose_channels channels, const fft_filter_type filter_type,
-                    const dt_iop_colorspace_type_t cst, const int ch)
-{
-  const float max_freq = 0.7071067811865475;
-  const float min_rng = 0;
-  const float max_rng = 100;
-  const float Fc1 = fmin(fmax(range1*(max_freq/max_rng),min_rng),max_rng); // cutoff frequency
-  const float Fc2 = fmin(fmax(range2*(max_freq/max_rng),min_rng),max_rng); // cutoff frequency
   const int nWidh1 = nWidh*ch;
 
   memset(OutputR, 0, nWidh*mHeight*ch*sizeof(float));
@@ -145,97 +30,100 @@ void fft_PassFilter(float *const InputR, float *const InputI, float *const Outpu
 #endif
   for (int y=0; y < mHeight; y++)
   {
-    const int i = nWidh1*y;
+    const int ii = nWidh1*y;
 
-    float *inR = &InputR[i];
-    float *inI = &InputI[i];
-    float *outR = &OutputR[i];
-    float *outI = &OutputI[i];
+    float *inR = &InputR[ii];
+    float *inI = &InputI[ii];
+    float *outR = &OutputR[ii];
+    float *outI = &OutputI[ii];
 
-    for (int col=0, x=0; x < nWidh1; col++, x+=ch)
+    for (int x=0, col = 0; x < nWidh1; x+=ch, col++)
     {
-      const float m = (y-(float)mHeight/2)/(float)mHeight; // (u-M/2)/M   -0.5<m<0.5
-      const float n = (col-(float)nWidh/2)/(float)nWidh; // (v-N/2)/N   -0.5<n<0.5
-      const float r = sqrtf(powf(m,2) + powf(n,2)); // sqrt(m^2 + n^2)      [0, 0.7071067811865475]
+      float val = 0;
 
-      int pass = ( ((filter_type == FFT_FILTER_TYPE_BANDPASS) && (Fc1 <= r && r <= Fc2)) ||
-          ((filter_type == FFT_FILTER_TYPE_BANDBLOCK) && (Fc1 >= r || r >= Fc2)) ||
-          ((filter_type == FFT_FILTER_TYPE_LOWPASS) && (r >= Fc2)) ||
-          ((filter_type == FFT_FILTER_TYPE_HIGHPASS) && (r <= Fc1)) );
+       int dv = (y < mHeight / 2) ? y : y - mHeight;
+       int du = (col < nWidh / 2) ? col : col - nWidh;
+       float dist = (float)(dv * dv + du * du);
 
-      if (!pass)
-      {
-        for (int i=0;i<ch;i++)
-        {
-          outR[x+i] = inR[x+i];
-          outI[x+i] = inI[x+i];
-          inR[x+i] = inI[x+i] = 0;
-        }
-      }
-      else
-      {
-        if (!(channels & FFT_DECOMPOSE_CH1))
-        {
-          outR[x] = inR[x];
-          outI[x] = inI[x];
-          inR[x]=0; inI[x]=0;
-        }
+       // Butterworth Lowpass
+       if (filter_type == FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH)
+         val = 1 / (1 + powf(dist / (range1*range1), sharpness));
 
-        if (!(channels & FFT_DECOMPOSE_CH2))
-        {
-          outR[x+1] = inR[x+1];
-          outI[x+1] = inI[x+1];
-          inR[x+1]=0; inI[x+1]=0;
-        }
+       // Butterworth Highpass
+       else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH)
+         val = 1 / (1 + powf((range1*range1) / dist, sharpness));
 
-        if (!(channels & FFT_DECOMPOSE_CH3))
-        {
-          outR[x+2] = inR[x+2];
-          outI[x+2] = inI[x+2];
-          inR[x+2]=0; inI[x+2]=0;
-        }
+       // Gaussian Lowpass
+       else if (filter_type == FFT_FILTER_TYPE_LOWPASS_GAUSSIAN)
+         val = expf(dist / (-2.f*range1*range1));
 
-        if (!(channels & FFT_DECOMPOSE_CH4))
-        {
-          outR[x+3] = inR[x+3];
-          outI[x+3] = inI[x+3];
-          inR[x+3]=0; inI[x+3]=0;
-        }
-      }
+       // Gaussian Highpass
+       else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN)
+         val = 1 - expf(dist / (-2.f*range1*range1));
+
+       else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_SMOOTH)
+       {
+         /*               1      f < catoff - w
+             f H(x) =     0      f > catoff + w
+                          else   1/2*(1-sin(pi*(f-cutoff)/2*w))
+          */
+
+         const float catoff = range1;
+         const float w = range2;
+         const float x0 = nWidh/2.f;
+         const float y0 = mHeight/2.f;
+         const float xa = col;
+         const float ya = y;
+         const float f = sqrtf(((x0-xa)*(x0-xa))+((y0-ya)*(y0-ya)));
+
+         if (filter_type == FFT_FILTER_TYPE_HIGHPASS_SMOOTH)
+         {
+           if (f < catoff - w)
+             val = 1;
+           else if (f > catoff + w)
+             val = 0;
+           else
+           {
+             val = 0.5f*(1-sinf(M_PI*(f-catoff)/(2*w)));
+           }
+         }
+       }
+
+        const float val4[4] = { (channels & FFT_DECOMPOSE_CH1) ? val : 0.f,
+                                (channels & FFT_DECOMPOSE_CH2) ? val : 0.f,
+                                (channels & FFT_DECOMPOSE_CH3) ? val : 0.f,
+                                (channels & FFT_DECOMPOSE_CH4) ? val : 0.f };
+        const __m128 val4a = _mm_load_ps(val4);
+
+        const float tR[4] = { inR[x], inR[x+1], inR[x+2], inR[x+3] };
+        const float tI[4] = { inI[x], inI[x+1], inI[x+2], inI[x+3] };
+
+        _mm_store_ps(&(inR[x]), _mm_mul_ps(_mm_load_ps(&(inR[x])), val4a));
+        _mm_store_ps(&(inI[x]), _mm_mul_ps(_mm_load_ps(&(inI[x])), val4a));
+
+        _mm_store_ps(&(outR[x]), _mm_sub_ps(_mm_load_ps(tR), _mm_load_ps(&(inR[x]))));
+        _mm_store_ps(&(outI[x]), _mm_sub_ps(_mm_load_ps(tI), _mm_load_ps(&(inI[x]))));
     }
   }
+
 }
-
-#define m_(col)  ( ((float)(col) - ((float)nWidh/2.f  )) / (float)nWidh) /* [-0.5, 0.5] */
-#define n_(y)    ( ((float)(y)   - ((float)mHeight/2.f)) / (float)mHeight) /* [-0.5, 0.5] */
-
-void fft_OtherFilter(float *const InputR, float *const InputI, float *const OutputR, float *const OutputI,
+#else
+void fft_filter_fft(float *const InputR, float *const InputI, float *const OutputR, float *const OutputI,
                     const int nWidh, const int mHeight,
                     const float range1, const float range2, const int sharpness, const fft_decompose_channels channels, const fft_filter_type filter_type,
                     const dt_iop_colorspace_type_t cst, const int ch)
 {
-  float R = fmax( fmax( fmax( -m_(0), m_(nWidh-1)), -n_(0)), n_(mHeight-1));
-
-  const float max_freq = R/2.f;
-  const float min_rng = 0;
-  const float max_rng = 100;
-  float maxvar = 0, minvar = 1;
-/*  const float Fc1 = fmin(fmax(range1*(max_freq/max_rng),min_rng),max_rng); // cutoff frequency (0, 0.5]
-  const float Fc2 = fmin(fmax(range2*(max_freq/max_rng),min_rng),max_rng); // cutoff frequency (0, 0.5]*/
-  const float Fc2 = fmin(fmax(range2*(max_freq/max_rng),min_rng),max_rng); // cutoff frequency (0, 0.5]
   const int nWidh1 = nWidh*ch;
-
-  fprintf(stderr, "R=%f, Fc2=%f, sharpness=%i\n", R, Fc2, sharpness);
 
   memset(OutputR, 0, nWidh*mHeight*ch*sizeof(float));
   memset(OutputI, 0, nWidh*mHeight*ch*sizeof(float));
-/*
+
 #ifdef _FFT_MULTFR_
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
 #endif
-*/  for (int y=0; y < mHeight; y++)
+  for (int y=0; y < mHeight; y++)
   {
     const int ii = nWidh1*y;
 
@@ -249,90 +137,63 @@ void fft_OtherFilter(float *const InputR, float *const InputI, float *const Outp
     {
       float val = 0;
 
-//--------------------------------------------------------------------
-      {
-        /*               1      f < catoff - w
-            f H(x) =     0      f > catoff + w
-                         else   1/2*(1-sin(pi*(f-cutoff)/2*w))
-         */
-      float f = sqrt((float)(y-mHeight/2)*(y-mHeight/2)+(col-nWidh/2)*(col-nWidh/2));
-      if (f < range1 - range2)
-        val = 1;
-      else if (f > range1 + range2)
-        val = 0;
-      else
-      {
-        val = 0.5f*(1-sin(M_PI*(f-range1)/(2*range2)));
-      }
-      }
-
-/*
-
-
-
-//--------------------------------------------------------------------
-      {
-        float dist = sqrt((float)(y-mHeight/2)*(y-mHeight/2)+(col-nWidh/2)*(col-nWidh/2));
-      // Butterworth Highpass
-      if (filter_type == FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH)
-        val = 1 / (1 + pow(range1/dist, (double)2*sharpness));
-
-      // butterworth lowpass
-      if (filter_type == FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH)
-        val = 1 / (1 + pow(dist/range1, (double)2*sharpness));
-
-      // Gaussian Highpass
-      if (filter_type == FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN)
-        val = 1 - exp(-dist*dist/(2*range1*range1));
-
-      // Gaussian Lowpass
-      if (filter_type == FFT_FILTER_TYPE_LOWPASS_GAUSSIAN)
-        val = exp(-dist*dist/(2*range1*range1));
-      }
-
-//--------------------------------------------------------------------
-       {
-        int dv = (y < mHeight / 2) ? y : y - mHeight;
+       int dv = (y < mHeight / 2) ? y : y - mHeight;
        int du = (col < nWidh / 2) ? col : col - nWidh;
        float dist = (float)(dv * dv + du * du);
 
-       // Butterworth Highpass
-       if (filter_type == FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH)
-         val = 1 / (1 + pow((range1*range1) / dist, sharpness));
-
        // Butterworth Lowpass
        if (filter_type == FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH)
-         val = 1 / (1 + pow(dist / (range1*range1), sharpness));
+         val = 1 / (1 + powf(dist / (range1*range1), sharpness));
 
-       // Gaussian Highpass
-       if (filter_type == FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN)
-         val = 1 - exp(dist / (-2*range1*range1));
+       // Butterworth Highpass
+       else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH)
+         val = 1 / (1 + powf((range1*range1) / dist, sharpness));
+
 
        // Gaussian Lowpass
-       if (filter_type == FFT_FILTER_TYPE_LOWPASS_GAUSSIAN)
-         val = exp(dist / (-2*range1*range1));
+       else if (filter_type == FFT_FILTER_TYPE_LOWPASS_GAUSSIAN)
+         val = expf(dist / (-2.f*range1*range1));
+
+       // Gaussian Highpass
+       else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN)
+         val = 1 - expf(dist / (-2.f*range1*range1));
+
+       else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_SMOOTH)
+       {
+         /*               1      f < catoff - w
+             f H(x) =     0      f > catoff + w
+                          else   1/2*(1-sin(pi*(f-cutoff)/2*w))
+          */
+
+         const float catoff = range1;
+         const float w = range2;
+         const float x0 = nWidh/2.f;
+         const float y0 = mHeight/2.f;
+         const float xa = col;
+         const float ya = y;
+         const float f = sqrtf(((x0-xa)*(x0-xa))+((y0-ya)*(y0-ya)));
+
+         if (filter_type == FFT_FILTER_TYPE_HIGHPASS_SMOOTH)
+         {
+           if (f < catoff - w)
+             val = 1;
+           else if (f > catoff + w)
+             val = 0;
+           else
+           {
+             val = 0.5f*(1-sin(M_PI*(f-catoff)/(2*w)));
+           }
+         }
        }
-//------------------------------------------------------------------------
-
-*/
-
-
-
-      if (val < minvar) minvar = val;
-      if (val > maxvar) maxvar = val;
-
-
-
-
 
 
       for (int i=0; i<ch; i++)
       {
-  /*      if ( ((channels & FFT_DECOMPOSE_CH1) && i == 0) ||
+        if ( ((channels & FFT_DECOMPOSE_CH1) && i == 0) ||
             ((channels & FFT_DECOMPOSE_CH2) && i == 1) ||
             ((channels & FFT_DECOMPOSE_CH3) && i == 2) ||
             ((channels & FFT_DECOMPOSE_CH4) && i == 3) )
-        {*/
+        {
           const float tR = inR[x+i];
           const float tI = inI[x+i];
 
@@ -341,47 +202,21 @@ void fft_OtherFilter(float *const InputR, float *const InputI, float *const Outp
 
           outR[x+i] = tR - inR[x+i];
           outI[x+i] = tI - inI[x+i];
-  /*      }
+        }
         else
         {
           outR[x+i] = inR[x+i];
           outI[x+i] = inI[x+i];
           inR[x+i]=0; inI[x+i]=0;
-        }*/
+        }
       }
 
       col++;
     }
   }
-fprintf(stderr, "max=%f, min=%f\n", maxvar, minvar);
-}
 
-// filters a FD image (InputR, InputI)
-// excluded data is left on (OutputR, OutputI)
-// nWidh, mHeight: image dimentions
-// range1: high range
-// range2: low range
-// channels: channels to filter
-// filter_type: Lowpass, Highpass, Bandpass, Bandblock
-void fft_apply_filter(float *const InputR, float *const InputI, float *OutputR, float *OutputI,
-                      const int nWidh, const int mHeight,
-                      const float range1, const float range2, const int sharpness, const fft_decompose_channels channels, const fft_filter_type filter_type,
-                      const dt_iop_colorspace_type_t cst, const int ch)
-{
-  if (filter_type == FFT_FILTER_TYPE_THRESHOLD || filter_type == FFT_FILTER_TYPE_THRESHOLD_INV)
-  {
-    fft_Threshold(InputR, InputI, OutputR, OutputI, nWidh, mHeight, range1, range2, channels, filter_type, cst, ch);
-  }
-  else if (filter_type == FFT_FILTER_TYPE_HIGHPASS || filter_type == FFT_FILTER_TYPE_LOWPASS ||
-            filter_type == FFT_FILTER_TYPE_BANDPASS || filter_type == FFT_FILTER_TYPE_BANDBLOCK)
-  {
-    fft_PassFilter(InputR, InputI, OutputR, OutputI, nWidh, mHeight, range1, range2, channels, filter_type, cst, ch);
-  }
-  else //if (filter_type == FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH)
-  {
-    fft_OtherFilter(InputR, InputI, OutputR, OutputI, nWidh, mHeight, range1*10, range2*10, sharpness, channels, filter_type, cst, ch);
-  }
 }
+#endif
 
 // performs a bit reversal for all the rows and columns
 static void fft_bit_reversal(float *GRe, float *GIm, const int nWidh, const int mHeight, const int ch)
@@ -479,10 +314,11 @@ void fft_scale(float *const GRe, float *const GIm, const int nWidh, const int mH
 {
     const float factor = 1.f / (float)(nWidh*mHeight);
     const int nWidh1 = nWidh*ch;
-    const float fRI[4] = { (channels & FFT_DECOMPOSE_CH1) ? factor : 1.f,
+/*    const float fRI[4] = { (channels & FFT_DECOMPOSE_CH1) ? factor : 1.f,
                             (channels & FFT_DECOMPOSE_CH2) ? factor : 1.f,
                             (channels & FFT_DECOMPOSE_CH3) ? factor : 1.f,
-                            (channels & FFT_DECOMPOSE_CH4) ? factor : 1.f };
+                            (channels & FFT_DECOMPOSE_CH4) ? factor : 1.f };*/
+    const __m128 fRI = _mm_set1_ps(factor);
 
 #ifdef _FFT_MULTFR_
 #ifdef _OPENMP
@@ -496,9 +332,9 @@ void fft_scale(float *const GRe, float *const GIm, const int nWidh, const int mH
 
       for (int x = 0; x < nWidh1; x+=ch)
       {
-        const __m128 factor1 = _mm_load_ps(fRI);
-        _mm_store_ps(&(re[x]), _mm_mul_ps(_mm_load_ps(&(re[x])), factor1));
-        _mm_store_ps(&(im[x]), _mm_mul_ps(_mm_load_ps(&(im[x])), factor1));
+//        const __m128 factor1 = _mm_load_ps(fRI);
+        _mm_store_ps(&(re[x]), _mm_mul_ps(_mm_load_ps(&(re[x])), fRI));
+        _mm_store_ps(&(im[x]), _mm_mul_ps(_mm_load_ps(&(im[x])), fRI));
       }
     }
 }
@@ -541,19 +377,22 @@ void fft_scale(float */*const*/ GRe, float */*const*/ GIm, const int nWidh, cons
 static void fft_single_fft2d(float *GRe, float *GIm, const int original, const int match, const float fR, const float fI,
                               const fft_decompose_channels channels, const dt_iop_colorspace_type_t cst, const int ch)
 {
-  float tR[4];
-  float tI[4];
+//  float tR[4];
+//  float tI[4];
 
   //(tR, tI) = (fR, fI)*(GRe, GIm)[match]
   const __m128 tRa = _mm_sub_ps(_mm_mul_ps( _mm_set1_ps(fR), _mm_load_ps( &(GRe[match]))),
                                 _mm_mul_ps( _mm_set1_ps(fI), _mm_load_ps( &(GIm[match]))));
   const __m128 tIa = _mm_add_ps(_mm_mul_ps( _mm_set1_ps(fR), _mm_load_ps( &(GIm[match]))),
                                 _mm_mul_ps( _mm_set1_ps(fI), _mm_load_ps( &(GRe[match]))));
-  _mm_store_ps(tR, tRa);
-  _mm_store_ps(tI, tIa);
+//  _mm_store_ps(tR, tRa);
+//  _mm_store_ps(tI, tIa);
 
   // (GRe, GIm)[match] = (GRe, GIm)[original] - (tR, tI)
-  if (channels & FFT_DECOMPOSE_CH1) {
+  _mm_store_ps( &(GRe[match]), _mm_sub_ps( _mm_load_ps( &(GRe[original])), tRa ) );
+  _mm_store_ps( &(GIm[match]), _mm_sub_ps( _mm_load_ps( &(GIm[original])), tIa ) );
+
+/*  if (channels & FFT_DECOMPOSE_CH1) {
     GRe[match] = GRe[original] - tR[0];
     GIm[match] = GIm[original] - tI[0];}
   if (channels & FFT_DECOMPOSE_CH2) {
@@ -564,10 +403,13 @@ static void fft_single_fft2d(float *GRe, float *GIm, const int original, const i
     GIm[match+2] = GIm[original+2] - tI[2];}
   if (channels & FFT_DECOMPOSE_CH4) {
     GRe[match+3] = GRe[original+3] - tR[3];
-    GIm[match+3] = GIm[original+3] - tI[3];}
+    GIm[match+3] = GIm[original+3] - tI[3];}*/
 
   // (GRe, GIm)[original] = (GRe, GIm)[original] + (tR, tI)
-  if (channels & FFT_DECOMPOSE_CH1) {
+  _mm_store_ps( &(GRe[original]), _mm_add_ps( _mm_load_ps( &(GRe[original])), tRa ) );
+  _mm_store_ps( &(GIm[original]), _mm_add_ps( _mm_load_ps( &(GIm[original])), tIa ) );
+
+/*  if (channels & FFT_DECOMPOSE_CH1) {
     GRe[original] += tR[0];
     GIm[original] += tI[0];}
   if (channels & FFT_DECOMPOSE_CH2) {
@@ -578,7 +420,7 @@ static void fft_single_fft2d(float *GRe, float *GIm, const int original, const i
     GIm[original+2] += tI[2];}
   if (channels & FFT_DECOMPOSE_CH4) {
     GRe[original+3] += tR[3];
-    GIm[original+3] += tI[3];}
+    GIm[original+3] += tI[3];}*/
 
 }
 #else
@@ -747,7 +589,7 @@ void fft_FFT2D(float *const  gRe, float *const  gIm, float *const GRe, float *co
 // (FRe2, FIm2) = output of the filter
 // image recomposed --> (FRe, FIm)
 void fft_recompose_image(float *GRe, float *GIm, float *gRe, float *gIm, const int nWidh, const int mHeight,
-                          const fft_decompose_channels channels, const int ch)
+                          /*const fft_decompose_channels channels,*/ const int ch)
 {
     const int nWidh1 = nWidh*ch;
 
@@ -758,14 +600,19 @@ void fft_recompose_image(float *GRe, float *GIm, float *gRe, float *gIm, const i
 #endif
     for (int y = 0; y < mHeight; y++)
     {
-      float *reO = &GRe[y*nWidh1];
-      float *imO = &GIm[y*nWidh1];
-      float *reI = &gRe[y*nWidh1];
-      float *imI = &gIm[y*nWidh1];
+      const int y1 = y*nWidh1;
+
+      float *reO = &GRe[y1];
+      float *imO = &GIm[y1];
+      float *reI = &gRe[y1];
+      float *imI = &gIm[y1];
 
       for (int x = 0; x < nWidh1; x+=ch)
       {
-        if ( (reI[x] != 0 || imI[x] != 0)) {
+        _mm_store_ps( &(reO[x]), _mm_add_ps( _mm_load_ps( &(reO[x])), _mm_load_ps( &(reI[x])) ) );
+        _mm_store_ps( &(imO[x]), _mm_add_ps( _mm_load_ps( &(imO[x])), _mm_load_ps( &(imI[x])) ) );
+
+/*        if ( (reI[x] != 0 || imI[x] != 0)) {
           reO[x] += reI[x];
           imO[x] += imI[x];}
         if ( (reI[x+1] != 0 || imI[x+1] != 0)) {
@@ -776,8 +623,7 @@ void fft_recompose_image(float *GRe, float *GIm, float *gRe, float *gIm, const i
           imO[x+2] += imI[x+2];}
         if ( (reI[x+3] != 0 || imI[x+3] != 0)) {
           reO[x+3] += reI[x+3];
-          imO[x+3] += imI[x+3];}
-
+          imO[x+3] += imI[x+3];}*/
       }
     }
 }

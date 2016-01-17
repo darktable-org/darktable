@@ -3099,7 +3099,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 1 && new_version == 7)
+  if(old_version == 1 && new_version == 8)
   {
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
 
@@ -3115,7 +3115,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 2 && new_version == 7)
+  if(old_version == 2 && new_version == 8)
   {
     if(length != sizeof(dt_develop_blend_params2_t)) return 1;
 
@@ -3139,7 +3139,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 3 && new_version == 7)
+  if(old_version == 3 && new_version == 8)
   {
     if(length != sizeof(dt_develop_blend_params3_t)) return 1;
 
@@ -3161,7 +3161,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 4 && new_version == 7)
+  if(old_version == 4 && new_version == 8)
   {
     if(length != sizeof(dt_develop_blend_params4_t)) return 1;
 
@@ -3184,7 +3184,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 5 && new_version == 7)
+  if(old_version == 5 && new_version == 8)
   {
     if(length != sizeof(dt_develop_blend_params5_t)) return 1;
 
@@ -3202,7 +3202,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 6 && new_version == 7)
+  if(old_version == 6 && new_version == 8)
   {
     if(length != sizeof(dt_develop_blend_params6_t)) return 1;
 
