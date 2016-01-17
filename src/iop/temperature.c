@@ -38,7 +38,6 @@
 #include "bauhaus/bauhaus.h"
 
 // for Kelvin temperature and bogus WB
-#include "external/adobe_coeff.c"
 #include "external/cie_colorimetric_tables.c"
 #include "common/colorspaces.h"
 
@@ -80,6 +79,7 @@ typedef struct dt_iop_temperature_global_data_t
 {
   int kernel_whitebalance_4f;
   int kernel_whitebalance_1f;
+  double RGB_to_CAM[4][3], CAM_to_RGB[3][4];
 } dt_iop_temperature_global_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -394,6 +394,7 @@ static uint8_t FCxtrans(const int row, const int col, const dt_iop_roi_t *const 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
   const int filters = dt_image_filter(&piece->pipe->image);
   uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
@@ -504,7 +505,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     {
       // Demosaic CMYG data coming from a mipf, so we need to do the RGB conversion here
       // instead of what happens in the normal pipe where demosaic would do it
-      dt_colorspaces_cygm_to_rgb(ovoid, roi_out->width*roi_out->height, piece->pipe->image.camera_makermodel);
+      dt_colorspaces_cygm_to_rgb(ovoid, roi_out->width*roi_out->height, gd->CAM_to_RGB);
     }
 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -770,43 +771,9 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
     return 0;
   }
 
-  // color matrix
-  float XYZ_to_CAM[4][3];
-  XYZ_to_CAM[0][0] = NAN;
-  dt_dcraw_adobe_coeff(module->dev->image_storage.camera_makermodel, (float(*)[12])XYZ_to_CAM);
-
-  if(!isnan(XYZ_to_CAM[0][0]))
+  double mul[4];
+  if (dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, mul))
   {
-    // sRGB D65
-    const double RGB_to_XYZ[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
-                                      { 0.2126729, 0.7151522, 0.0721750 },
-                                      { 0.0193339, 0.1191920, 0.9503041 } };
-
-    double RGB_to_CAM[4][3];
-    for(int i = 0; i < 4; i++)
-    {
-      for(int j = 0; j < 3; j++)
-      {
-        RGB_to_CAM[i][j] = 0.0;
-        for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
-      }
-    }
-
-    const double RGB[3] = { 1.0, 1.0, 1.0 };
-
-    double CAM[4];
-    for(int c = 0; c < 4; c++)
-    {
-      CAM[c] = 0.0;
-      for(int i = 0; i < 3; i++)
-      {
-        CAM[c] += RGB_to_CAM[c][i] * RGB[i];
-      }
-    }
-
-    double mul[4];
-    for(int k = 0; k < 4; k++) mul[k] = 1.0 / CAM[k];
-
     // normalize green:
     bwb[0] = mul[0] / mul[1];
     bwb[2] = mul[2] / mul[1];
@@ -819,7 +786,7 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
   return 1;
 }
 
-static int prepare_wb_matrices(dt_iop_module_t *module)
+static void prepare_matrices(dt_iop_module_t *module)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
 
@@ -839,41 +806,28 @@ static int prepare_wb_matrices(dt_iop_module_t *module)
     // let's just assume for now(TM) that if it is not raw, it is sRGB
     memcpy(g->XYZ_to_CAM, XYZ_to_RGB, sizeof(g->XYZ_to_CAM));
     memcpy(g->CAM_to_XYZ, RGB_to_XYZ, sizeof(g->CAM_to_XYZ));
-
-    return 0;
+    return;
   }
 
-  // prepare matrices for Kelvin temperature
-  float XYZ_to_CAM[4][3] = {{0}};
-  XYZ_to_CAM[0][0] = NAN;
-
-  if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
-    for(int i = 0; i < 9; i++)
-      XYZ_to_CAM[i/3][i%3] = module->dev->image_storage.d65_color_matrix[i];
-  else
-    dt_dcraw_adobe_coeff(module->dev->image_storage.camera_makermodel, (float(*)[12])XYZ_to_CAM);
-
-  if(!isnan(XYZ_to_CAM[0][0]))
+  char *camera = module->dev->image_storage.camera_makermodel;
+  if (!dt_colorspaces_conversion_matrices_xyz(camera, module->dev->image_storage.d65_color_matrix,
+                                                      g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
-    for(int i = 0; i < 4; i++)
-    {
-      for(int j = 0; j < 3; j++)
-      {
-        g->XYZ_to_CAM[i][j] = (double)XYZ_to_CAM[i][j];
-      }
-    }
-
-    double inverse[4][3];
-    // Invert the matrix into 3x4
-    dt_colorspaces_pseudoinverse (g->XYZ_to_CAM, inverse, 4);
-    for(int i = 0; i < 3; i++)
-      for(int j = 0; j < 4; j++)
-        g->CAM_to_XYZ[i][j] = inverse[j][i];
-
-    return 0;
+    fprintf(stderr, "[temperature] `%s' color matrix not found for image!\n", camera);
+    dt_control_log(_("[temperature] `%s' color matrix not found for image!\n"), camera);
   }
 
-  return 1;
+  // Get and store the matrix to go from camera to RGB for 4Bayer images
+  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
+  if (module->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  {
+    char *camera = module->dev->image_storage.camera_makermodel;
+    if (!dt_colorspaces_conversion_matrices_rgb(camera, gd->RGB_to_CAM, gd->CAM_to_RGB, NULL))
+    {
+      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
+    }
+  }
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -884,7 +838,7 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
-  if(module->gui_data) prepare_wb_matrices(module);
+  if(module->gui_data) prepare_matrices(module);
 
   /* check if file is raw / hdr */
   if(dt_image_is_raw(&module->dev->image_storage))
@@ -930,7 +884,7 @@ void reload_defaults(dt_iop_module_t *module)
 
     if(!found)
     {
-      double bwb[3];
+      double bwb[4];
       if(!calculate_bogus_daylight_wb(module, bwb))
       {
         // found camera matrix and used it to calculate bogus daylight wb
@@ -1090,7 +1044,8 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   for(int k = 0; k < 3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
 
   // If we're in a CMYG image we need to create CMYG coeffs from the RGB ones
-  if (isnormal(p->coeffs[3])) dt_colorspaces_rgb_to_cygm(p->coeffs, 1, self->dev->image_storage.camera_makermodel);
+  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
+  if (isnormal(p->coeffs[3])) dt_colorspaces_rgb_to_cygm(p->coeffs, 1, gd->RGB_to_CAM);
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);

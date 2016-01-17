@@ -1629,7 +1629,8 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_
   return _get_profile(darktable.color_profiles, type, filename, direction);
 }
 
-void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
+// Copied from dcraw's pseudoinverse()
+static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
 {
   double work[3][6], num;
 
@@ -1660,123 +1661,134 @@ void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
     }
 }
 
-static void dt_colorspaces_4bayermatrix(const char *name, double cam_rgb[4][3])
+int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4])
 {
-  // XYZ from RGB
-  const double xyz_rgb[3][3] = {
+  if(!isnan(in_XYZ_to_CAM[0]))
+  {
+    for(int i = 0; i < 9; i++)
+        XYZ_to_CAM[i/3][i%3] = (double) in_XYZ_to_CAM[i];
+    for(int i = 0; i < 3; i++)
+      XYZ_to_CAM[3][i] = 0.0f;
+  }
+  else
+  {
+    float adobe_XYZ_to_CAM[4][3];
+    adobe_XYZ_to_CAM[0][0] = NAN;
+
+    dt_dcraw_adobe_coeff(name, (float(*)[12])adobe_XYZ_to_CAM);
+    if(isnan(adobe_XYZ_to_CAM[0][0]))
+      return FALSE;
+
+    for(int i = 0; i < 4; i++)
+      for(int j = 0; j < 3; j++)
+        XYZ_to_CAM[i][j] = (double) adobe_XYZ_to_CAM[i][j];
+  }
+
+  // Invert the matrix
+  double inverse[4][3];
+  dt_colorspaces_pseudoinverse (XYZ_to_CAM, inverse, 4);
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 4; j++)
+      CAM_to_XYZ[i][j] = inverse[j][i];
+
+  return TRUE;
+}
+
+// Converted from dcraw's cam_xyz_coeff()
+int dt_colorspaces_conversion_matrices_rgb(const char *name, double out_RGB_to_CAM[4][3], double out_CAM_to_RGB[3][4], double mul[4])
+{
+  double RGB_to_CAM[4][3], CAM_to_RGB[3][4];
+
+  float XYZ_to_CAM[4][3];
+  XYZ_to_CAM[0][0] = NAN;
+  dt_dcraw_adobe_coeff(name, (float(*)[12])XYZ_to_CAM);
+  if(isnan(XYZ_to_CAM[0][0]))
+    return FALSE;
+
+  const double RGB_to_XYZ[3][3] = {
+  // sRGB D65
     { 0.412453, 0.357580, 0.180423 },
     { 0.212671, 0.715160, 0.072169 },
     { 0.019334, 0.119193, 0.950227 },
   };
 
-  float cam_xyz[4][3];
-  cam_xyz[0][0] = NAN;
-  dt_dcraw_adobe_coeff(name, (float(*)[12])cam_xyz);
-  if(isnan(cam_xyz[0][0]))
-    return;
-
-  // Multiply out XYZ colorspace
+  // Multiply RGB matrix
   for(int i = 0; i < 4; i++)
     for(int j = 0; j < 3; j++)
     {
-      cam_rgb[i][j] = 0.0f;
+      RGB_to_CAM[i][j] = 0.0f;
       for(int k = 0; k < 3; k++)
-        cam_rgb[i][j] += cam_xyz[i][k] * xyz_rgb[k][j];
+        RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
     }
 
   // Normalize cam_rgb so that cam_rgb * (1,1,1) is (1,1,1,1)
   for(int i = 0; i < 4; i++) {
     double num = 0.0f;
     for(int j = 0; j < 3; j++)
-      num += cam_rgb[i][j];
+      num += RGB_to_CAM[i][j];
     for(int j = 0; j < 3; j++)
-      cam_rgb[i][j] /= num;
+       RGB_to_CAM[i][j] /= num;
+    if(mul) mul[i] = 1.0f / num;
   }
-}
 
-static void dt_colorspaces_inverse4bayermatrix(const char *name, double out_cam[3][4])
-{
-  // Rec2020
-  static const double rec2020_rgb[3][3] = {
-    { 0.673492, 0.279037, -0.001938 },
-    { 0.165665, 0.675354, 0.029984 },
-    { 0.125046, 0.045609, 0.796860 },
-  };
+  if(out_RGB_to_CAM)
+    for(int i = 0; i < 4; i++)
+      for(int j = 0; j < 3; j++)
+        out_RGB_to_CAM[i][j] = RGB_to_CAM[i][j];
 
-  double rgb_cam[3][4], cam_rgb[4][3], inverse[4][3];
-
-  dt_colorspaces_4bayermatrix(name, cam_rgb);
-
-  // Invert the matrix into 3x4
-  dt_colorspaces_pseudoinverse (cam_rgb, inverse, 4);
-  for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 4; j++)
-      rgb_cam[i][j] = inverse[j][i];
-
-  // Finally apply the Rec2020 profile
-  for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 4; j++)
-    {
-      out_cam[i][j] = 0.0f;
-      for(int k = 0; k < 3; k++)
-        out_cam[i][j] += rec2020_rgb[i][k] * rgb_cam[k][j];
-    }
-}
-
-void dt_colorspaces_cygm_to_rgb(float *out, int num, const char *camera)
-{
-  // Start with a fallback matrix in place
-  double rgb_cam[3][4] = {
-    {1,0,0,0},
-    {0,1,0,0},
-    {0,0,1,0},
-  };
-  rgb_cam[0][0] = NAN;
-  dt_colorspaces_inverse4bayermatrix(camera,rgb_cam);
-  if(isnan(rgb_cam[0][0]))
+  if(out_CAM_to_RGB)
   {
-    fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
-    dt_control_log(_("[colorspaces] `%s' color matrix not found for 4bayer image!\n"), camera);
-    rgb_cam[0][0] = 1.0f;
+    // Invert the matrix
+    double inverse[4][3];
+    dt_colorspaces_pseudoinverse (RGB_to_CAM, inverse, 4);
+    for(int i = 0; i < 3; i++)
+      for(int j = 0; j < 4; j++)
+        CAM_to_RGB[i][j] = inverse[j][i];
+
+    static const double REC2020_to_XYZ[3][3] = {
+      { 0.673492, 0.279037, -0.001938 },
+      { 0.165665, 0.675354, 0.029984 },
+      { 0.125046, 0.045609, 0.796860 },
+    };
+
+    // Finally apply the Rec2020 profile
+    for(int i = 0; i < 3; i++)
+    {
+      for(int j = 0; j < 4; j++)
+      {
+        out_CAM_to_RGB[i][j] = 0.0f;
+        for(int k = 0; k < 3; k++)
+          out_CAM_to_RGB[i][j] += REC2020_to_XYZ[i][k] * CAM_to_RGB[k][j];
+      }
+    }
   }
 
+  return TRUE;
+}
+
+void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4])
+{
   for(int i = 0; i < num; i++)
   {
     float *in = &out[i*4];
     float o[3] = {0.0f};
     for(int c = 0; c < 3; c++)
       for(int k = 0; k < 4; k++)
-        o[c] += rgb_cam[c][k] * in[k];
+        o[c] += CAM_to_RGB[c][k] * in[k];
     for(int c = 0; c < 3; c++)
       in[c] = o[c];
   }
 }
 
-void dt_colorspaces_rgb_to_cygm(float *out, int num, const char *camera)
+void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3])
 {
-  // Start with a fallback matrix in place
-  double cam_rgb[4][3] = {
-    {1,0,0},
-    {0,1,0},
-    {0,0,1},
-    {0,0,0},
-  };
-  cam_rgb[0][0] = NAN;
-  dt_colorspaces_4bayermatrix(camera,cam_rgb);
-  if(isnan(cam_rgb[0][0]))
-  {
-    fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
-    dt_control_log(_("[colorspaces] `%s' color matrix not found for 4bayer image!\n"), camera);
-    cam_rgb[0][0] = 1.0f;
-  }
-
   for(int i = 0; i < num; i++)
   {
     float *in = &out[i*3];
     float o[4] = {0.0f};
     for(int c = 0; c < 4; c++)
       for(int k = 0; k < 3; k++)
-        o[c] += cam_rgb[c][k] * in[k];
+        o[c] += RGB_to_CAM[c][k] * in[k];
     for(int c = 0; c < 4; c++)
       in[c] = o[c];
   }

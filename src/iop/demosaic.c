@@ -118,6 +118,8 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_markesteijn_zero;
   int kernel_markesteijn_accu;
   int kernel_markesteijn_final;
+
+  double CAM_to_RGB[3][4];
 } dt_iop_demosaic_global_data_t;
 
 typedef struct dt_iop_demosaic_data_t
@@ -1532,6 +1534,8 @@ static int get_thumb_quality(int width, int height)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
+
   const dt_image_t *img = &self->dev->image_storage;
   const float threshold = 0.0001f * img->exif_iso;
 
@@ -1635,7 +1639,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       {
         vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
         if (img->flags & DT_IMAGE_4BAYER)
-          dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, img->camera_makermodel);
+          dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, gd->CAM_to_RGB);
       }
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters,
@@ -3618,6 +3622,18 @@ void reload_defaults(dt_iop_module_t *module)
     module->default_enabled = 0;
 
   if(module->dev->image_storage.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+
+  // Get and store the matrix to go from camera to RGB for 4Bayer images
+  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)module->data;
+  if (module->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  {
+    char *camera = module->dev->image_storage.camera_makermodel;
+    if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, gd->CAM_to_RGB, NULL))
+    {
+      fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_control_log(_("[colorspaces] `%s' color matrix not found for 4bayer image!\n"), camera);
+    }
+  }
 
 end:
   memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
