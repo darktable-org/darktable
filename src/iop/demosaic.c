@@ -1569,7 +1569,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 1) ||
       piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
       uhq_thumb ||
-      roi_out->scale > 0.8f;
+      roi_out->scale > 0.667f;
 
   const float *const pixels = (float *)i;
 
@@ -3218,7 +3218,7 @@ process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem d
       (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 1) ||
       piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
       uhq_thumb ||
-      roi_out->scale > 0.8f;
+      roi_out->scale > 0.667f;
 
   if(demosaicing_method ==  DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
   {
