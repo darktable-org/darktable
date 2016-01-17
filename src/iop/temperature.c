@@ -53,6 +53,8 @@ DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 
 #define DT_IOP_NUM_OF_STD_TEMP_PRESETS 3
 
+static void gui_sliders_update(struct dt_iop_module_t *self);
+
 typedef struct dt_iop_temperature_params_t
 {
   float coeffs[4];
@@ -60,7 +62,7 @@ typedef struct dt_iop_temperature_params_t
 
 typedef struct dt_iop_temperature_gui_data_t
 {
-  GtkWidget *scale_k, *scale_tint, *scale_r, *scale_g, *scale_b, *scale_g2;
+  GtkWidget *scale_k, *scale_tint, *coeff_widgets, *scale_r, *scale_g, *scale_b, *scale_g2;
   GtkWidget *presets;
   GtkWidget *finetune;
   int preset_cnt;
@@ -636,6 +638,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
   dt_bauhaus_slider_set(g->scale_k, TempK);
   dt_bauhaus_slider_set(g->scale_tint, tint);
+
+  gui_sliders_update(self);
 
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera"));
@@ -1223,9 +1227,40 @@ static void finetune_changed(GtkWidget *widget, gpointer user_data)
   apply_preset((dt_iop_module_t *)user_data);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+static void gui_sliders_update(struct dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  if((img->flags & DT_IMAGE_4BAYER) && img->filters == 0xb4b4b4b4)
+  {
+    dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
+    dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));
+    dt_bauhaus_widget_set_label(g->scale_b, NULL, _("cyan"));
+    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("yellow"));
+
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_b, 0);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g2, 1);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g, 2);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_r, 3);
+  }
+  else
+  {
+    dt_bauhaus_widget_set_label(g->scale_r, NULL, _("red"));
+    dt_bauhaus_widget_set_label(g->scale_g, NULL, _("green"));
+    dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue"));
+    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("emerald"));
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_r, 0);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g, 1);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_b, 2);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g2, 3);
+  }
+
+  gtk_widget_set_visible(GTK_WIDGET(g->scale_g2), (img->flags & DT_IMAGE_4BAYER));
+}
+
+void gui_init(struct dt_iop_module_t *self)
+{
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
@@ -1239,39 +1274,27 @@ void gui_init(struct dt_iop_module_t *self)
       = dt_bauhaus_slider_new_with_range(self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT, .01, 1.0, 3);
   g->scale_k = dt_bauhaus_slider_new_with_range(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
                                                 10., 5000.0, 0);
+
+  g->coeff_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->scale_r = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[0], 3);
   g->scale_g = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[1], 3);
   g->scale_b = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[2], 3);
   g->scale_g2 = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[3], 3);
+
   dt_bauhaus_slider_set_format(g->scale_k, "%.0fK");
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
   dt_bauhaus_widget_set_label(g->scale_k, NULL, _("temperature"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_tint, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_k, TRUE, TRUE, 0);
-  if ((img->flags & DT_IMAGE_4BAYER) && self->dev->image_storage.filters == 0xb4b4b4b4)
-  {
-    dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
-    dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));
-    dt_bauhaus_widget_set_label(g->scale_b, NULL, _("cyan"));
-    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("yellow"));
-    gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(self->widget), g->scale_g2, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(self->widget), g->scale_g, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(self->widget), g->scale_r, TRUE, TRUE, 0);
-  }
-  else
-  {
-    dt_bauhaus_widget_set_label(g->scale_r, NULL, _("red"));
-    dt_bauhaus_widget_set_label(g->scale_g, NULL, _("green"));
-    dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue"));
-    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("emerald"));
-    gtk_box_pack_start(GTK_BOX(self->widget), g->scale_r, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(self->widget), g->scale_g, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
-    if((img->flags & DT_IMAGE_4BAYER) && self->dev->image_storage.filters == 0x9c9c9c9c)
-      gtk_box_pack_start(GTK_BOX(self->widget), g->scale_g2, TRUE, TRUE, 0);
-  }
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_r, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_b, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->coeff_widgets, TRUE, TRUE, 0);
+  gtk_widget_set_no_show_all(g->scale_g2, TRUE);
+
+  gui_sliders_update(self);
 
   g->presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->presets, NULL, _("preset"));
@@ -1297,6 +1320,11 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->scale_g2), "value-changed", G_CALLBACK(rgb_callback), self);
   g_signal_connect(G_OBJECT(g->presets), "value-changed", G_CALLBACK(presets_changed), self);
   g_signal_connect(G_OBJECT(g->finetune), "value-changed", G_CALLBACK(finetune_changed), self);
+}
+
+void gui_reset(struct dt_iop_module_t *self)
+{
+  gui_sliders_update(self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
