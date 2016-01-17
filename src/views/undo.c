@@ -154,7 +154,7 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
   dt_pthread_mutex_unlock(&self->mutex);
 }
 
-static void dt_undo_clear_list(GList **list, uint32_t filter)
+static void _undo_clear_list(GList **list, uint32_t filter)
 {
   GList *l = g_list_first(*list);
 
@@ -177,8 +177,8 @@ static void dt_undo_clear_list(GList **list, uint32_t filter)
 void dt_undo_clear(dt_undo_t *self, uint32_t filter)
 {
   dt_pthread_mutex_lock(&self->mutex);
-  dt_undo_clear_list(&self->undo_list, filter);
-  dt_undo_clear_list(&self->redo_list, filter);
+  _undo_clear_list(&self->undo_list, filter);
+  _undo_clear_list(&self->redo_list, filter);
   self->undo_list = NULL;
   self->redo_list = NULL;
   dt_pthread_mutex_unlock(&self->mutex);
