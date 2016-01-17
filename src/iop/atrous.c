@@ -43,16 +43,18 @@ DT_MODULE_INTROSPECTION(1, dt_iop_atrous_params_t)
 #define MAX_NUM_SCALES 8 // 2*2^(i+1) + 1 = 1025px support for i = 8
 #define RES 64
 
-#define dt_atrous_show_upper_label(cr, text, ext)                                                            \
-  cairo_text_extents(cr, text, &ext);                                                                        \
-  cairo_move_to(cr, .5 * (width - ext.width), .08 * height);                                                 \
-  cairo_show_text(cr, text);
+#define dt_atrous_show_upper_label(cr, text, layout, ink)                                                     \
+  pango_layout_set_text(layout, text, -1);                                                                   \
+  pango_layout_get_pixel_extents(layout, &ink, NULL);                                                        \
+  cairo_move_to(cr, .5 * (width - ink.width), (.08 * height) - ink.height);                                  \
+  pango_cairo_show_layout(cr, layout);
 
 
-#define dt_atrous_show_lower_label(cr, text, ext)                                                            \
-  cairo_text_extents(cr, text, &ext);                                                                        \
-  cairo_move_to(cr, .5 * (width - ext.width), .98 * height);                                                 \
-  cairo_show_text(cr, text);
+#define dt_atrous_show_lower_label(cr, text, layout, ink)                                                     \
+  pango_layout_set_text(layout, text, -1);                                                                   \
+  pango_layout_get_pixel_extents(layout, &ink, NULL);                                                        \
+  cairo_move_to(cr, .5 * (width - ink.width), (.98 * height) - ink.height);                                  \
+  pango_cairo_show_layout(cr, layout);
 
 
 typedef enum atrous_channel_t
@@ -1153,40 +1155,49 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   if(c->mouse_y > 0 || c->dragging)
   {
     // draw labels:
-    cairo_text_extents_t ext;
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+    pango_font_description_set_absolute_size(desc,(.06 * height) * PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
     gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, .06 * height);
-    cairo_text_extents(cr, _("coarse"), &ext);
-    cairo_move_to(cr, .02 * width + ext.height, .14 * height + ext.width);
+    pango_layout_set_text(layout, _("coarse"), -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, .02 * width - ink.y, .14 * height + ink.width);
     cairo_save(cr);
     cairo_rotate(cr, -M_PI * .5f);
-    cairo_show_text(cr, _("coarse"));
+    pango_cairo_show_layout(cr, layout);
     cairo_restore(cr);
-    cairo_text_extents(cr, _("fine"), &ext);
-    cairo_move_to(cr, .98 * width, .14 * height + ext.width);
+    pango_layout_set_text(layout, _("fine"), -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, .98 * width - ink.height, .14 * height + ink.width);
     cairo_save(cr);
     cairo_rotate(cr, -M_PI * .5f);
-    cairo_show_text(cr, _("fine"));
+    pango_cairo_show_layout(cr, layout);
     cairo_restore(cr);
 
     switch(c->channel2)
     {
       case atrous_L:
       case atrous_c:
-        dt_atrous_show_upper_label(cr, _("contrasty"), ext);
-        dt_atrous_show_lower_label(cr, _("smooth"), ext);
+        dt_atrous_show_upper_label(cr, _("contrasty"), layout, ink);
+        dt_atrous_show_lower_label(cr, _("smooth"), layout, ink);
         break;
       case atrous_Lt:
       case atrous_ct:
-        dt_atrous_show_upper_label(cr, _("smooth"), ext);
-        dt_atrous_show_lower_label(cr, _("noisy"), ext);
+        dt_atrous_show_upper_label(cr, _("smooth"), layout, ink);
+        dt_atrous_show_lower_label(cr, _("noisy"), layout, ink);
         break;
       default: // case atrous_s:
-        dt_atrous_show_upper_label(cr, _("bold"), ext);
-        dt_atrous_show_lower_label(cr, _("dull"), ext);
+        dt_atrous_show_upper_label(cr, _("bold"), layout, ink);
+        dt_atrous_show_lower_label(cr, _("dull"), layout, ink);
         break;
     }
+    pango_font_description_free(desc);
+    g_object_unref(layout);
   }
 
 

@@ -625,34 +625,43 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
   // draw labels:
-  cairo_text_extents_t ext;
+  PangoLayout *layout;
+  PangoRectangle ink;
+  PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+  pango_font_description_set_absolute_size(desc,(.06 * height) * PANGO_SCALE);
+  layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
-  cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size(cr, .06 * height);
 
-  cairo_text_extents(cr, _("dark"), &ext);
-  cairo_move_to(cr, .02 * width + ext.height, .5 * (height + ext.width));
+  pango_layout_set_text(layout, _("dark"), -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, .02 * width - ink.y, .5 * (height + ink.width));
   cairo_save(cr);
   cairo_rotate(cr, -M_PI * .5f);
-  cairo_show_text(cr, _("dark"));
+  pango_cairo_show_layout(cr, layout);
   cairo_restore(cr);
 
-  cairo_text_extents(cr, _("bright"), &ext);
-  cairo_move_to(cr, .98 * width, .5 * (height + ext.width));
+  pango_layout_set_text(layout, _("bright"), -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, .98 * width - ink.height, .5 * (height + ink.width));
   cairo_save(cr);
   cairo_rotate(cr, -M_PI * .5f);
-  cairo_show_text(cr, _("bright"));
+  pango_cairo_show_layout(cr, layout);
   cairo_restore(cr);
 
-  cairo_text_extents(cr, _("day vision"), &ext);
-  cairo_move_to(cr, .5 * (width - ext.width), .08 * height);
-  cairo_show_text(cr, _("day vision"));
 
-  cairo_text_extents(cr, _("night vision"), &ext);
-  cairo_move_to(cr, .5 * (width - ext.width), .97 * height);
-  cairo_show_text(cr, _("night vision"));
+  pango_layout_set_text(layout, _("day vision"), -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, .5 * (width - ink.width), .08 * height - ink.height);
+  pango_cairo_show_layout(cr, layout);
 
+  pango_layout_set_text(layout, _("night vision"), -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, .5 * (width - ink.width), .97 * height - ink.height);
+  pango_cairo_show_layout(cr, layout);
 
+  pango_font_description_free(desc);
+  g_object_unref(layout);
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);

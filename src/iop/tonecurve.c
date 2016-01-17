@@ -1011,6 +1011,12 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       // ... and the local sample
       if(raw_max[0] >= 0.0f)
       {
+        PangoLayout *layout;
+        PangoRectangle ink;
+        PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+        pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(0.06) * height) * PANGO_SCALE);
+        layout = pango_cairo_create_layout(cr);
+        pango_layout_set_font_description(layout, desc);
         picker_scale(raw_mean, picker_mean);
         picker_scale(raw_min, picker_min);
         picker_scale(raw_max, picker_max);
@@ -1027,11 +1033,14 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-        cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(0.06) * height);
-        cairo_move_to(cr, 0.02f * width, -0.94 * height);
-        cairo_show_text(cr, text);
+        pango_layout_set_text(layout, text, -1);
+        pango_layout_get_pixel_extents(layout, &ink, NULL);
+        cairo_move_to(cr, 0.02f * width, -0.94 * height - ink.height - ink.y);
+        pango_cairo_show_layout(cr, layout);
         cairo_stroke(cr);
+        pango_font_description_free(desc);
+        g_object_unref(layout);
       }
     }
   }
