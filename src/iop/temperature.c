@@ -395,6 +395,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
+  const dt_image_t *img = &self->dev->image_storage;
   const int filters = dt_image_filter(&piece->pipe->image);
   uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
@@ -481,7 +482,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   { // non-mosaiced
     const int ch = piece->colors;
 
-    float coeff4 = isnormal(d->coeffs[3]) ? d->coeffs[3] : 1.0f;
+    float coeff4 = (img->flags & DT_IMAGE_4BAYER) ? d->coeffs[3] : 1.0f;
 
     const __m128 coeffs = _mm_set_ps(coeff4, d->coeffs[2], d->coeffs[1], d->coeffs[0]);
 
@@ -501,7 +502,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     }
     _mm_sfence();
 
-    if (isnormal(d->coeffs[3]))
+    if(img->flags & DT_IMAGE_4BAYER)
     {
       // Demosaic CMYG data coming from a mipf, so we need to do the RGB conversion here
       // instead of what happens in the normal pipe where demosaic would do it
@@ -849,9 +850,10 @@ void reload_defaults(dt_iop_module_t *module)
     int found = 1;
 
     // Only check the first three values, the fourth is usually NAN for RGB
-    for(int k = 0; k < 3; k++)
+    int num_coeffs = (module->dev->image_storage.flags & DT_IMAGE_4BAYER) ? 4 : 3;
+    for(int k = 0; k < num_coeffs; k++)
     {
-      if(isnan(module->dev->image_storage.wb_coeffs[k]) || module->dev->image_storage.wb_coeffs[k] == 0.0f)
+      if(!isnormal(module->dev->image_storage.wb_coeffs[k]) || module->dev->image_storage.wb_coeffs[k] == 0.0f)
       {
         found = 0;
         break;
@@ -1045,7 +1047,8 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   // If we're in a CMYG image we need to create CMYG coeffs from the RGB ones
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
-  if (isnormal(p->coeffs[3])) dt_colorspaces_rgb_to_cygm(p->coeffs, 1, gd->RGB_to_CAM);
+  const dt_image_t *img = &self->dev->image_storage;
+  if (img->flags & DT_IMAGE_4BAYER) dt_colorspaces_rgb_to_cygm(p->coeffs, 1, gd->RGB_to_CAM);
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1222,6 +1225,7 @@ static void finetune_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
+  const dt_image_t *img = &self->dev->image_storage;
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
@@ -1245,7 +1249,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_tint, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_k, TRUE, TRUE, 0);
-  if (isnormal(p->coeffs[3]) && self->dev->image_storage.filters == 0xb4b4b4b4)
+  if ((img->flags & DT_IMAGE_4BAYER) && self->dev->image_storage.filters == 0xb4b4b4b4)
   {
     dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
     dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));
@@ -1265,7 +1269,7 @@ void gui_init(struct dt_iop_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), g->scale_r, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(self->widget), g->scale_g, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
-    if(self->dev->image_storage.filters == 0x9c9c9c9c)
+    if((img->flags & DT_IMAGE_4BAYER) && self->dev->image_storage.filters == 0x9c9c9c9c)
       gtk_box_pack_start(GTK_BOX(self->widget), g->scale_g2, TRUE, TRUE, 0);
   }
 
