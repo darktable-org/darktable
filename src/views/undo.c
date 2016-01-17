@@ -184,6 +184,31 @@ void dt_undo_clear(dt_undo_t *self, uint32_t filter)
   dt_pthread_mutex_unlock(&self->mutex);
 }
 
+static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
+                          void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
+{
+  GList *l = g_list_first(list);
+
+  // check for first item that is matching the given pattern
+
+  while(l)
+  {
+    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    if(item->type & filter)
+    {
+      apply(user_data, item->type, item->data);
+    }
+    l = l->next;
+  };
+}
+
+void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
+                     void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
+{
+  _undo_iterate(self->undo_list, filter, user_data, apply);
+  _undo_iterate(self->redo_list, filter, user_data, apply);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
