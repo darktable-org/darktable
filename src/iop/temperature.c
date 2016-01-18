@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2013 johannes hanika.
     copyright (c) 2015 LebedevRI.
+    copyright (c) 2016 Pedro Côrte-Real
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -523,6 +524,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
+  const dt_image_t *img = &self->dev->image_storage;
 
   const int devid = piece->pipe->devid;
   const int filters = dt_image_filter(&piece->pipe->image);
@@ -530,7 +532,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   int kernel = -1;
 
-  if (isnormal(d->coeffs[3]))
+  if(img->flags & DT_IMAGE_4BAYER)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_temperature] temperature for CYGM not yet supported by opencl code\n");
     return FALSE;
@@ -960,7 +962,7 @@ gui:
            && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model)
            && !strcmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
         {
-          for(int k = 0; k < 3; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
+          for(int k = 0; k < 4; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
           break;
         }
       }
@@ -1168,7 +1170,7 @@ static void apply_preset(dt_iop_module_t *self)
         if(wb_preset[i].tuning == tune)
         {
           // got exact match!
-          for(int k = 0; k < 3; k++) p->coeffs[k] = wb_preset[i].channel[k];
+          for(int k = 0; k < 4; k++) p->coeffs[k] = wb_preset[i].channel[k];
           found = TRUE;
           break;
         }
@@ -1203,7 +1205,7 @@ static void apply_preset(dt_iop_module_t *self)
 
         wb_data interpolated = {.tuning = tune };
         dt_wb_preset_interpolate(&wb_preset[min_id], &wb_preset[max_id], &interpolated);
-        for(int k = 0; k < 3; k++) p->coeffs[k] = interpolated.channel[k];
+        for(int k = 0; k < 4; k++) p->coeffs[k] = interpolated.channel[k];
       }
     }
     break;
