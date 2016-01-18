@@ -1745,7 +1745,7 @@ int dt_colorspaces_conversion_matrices_rgb(const char *name, double out_RGB_to_C
       for(int j = 0; j < 4; j++)
         CAM_to_RGB[i][j] = inverse[j][i];
 
-    static const double REC2020_to_XYZ[3][3] = {
+    const double REC2020_to_XYZ[3][3] = {
       { 0.673492, 0.279037, -0.001938 },
       { 0.165665, 0.675354, 0.029984 },
       { 0.125046, 0.045609, 0.796860 },
