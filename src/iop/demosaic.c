@@ -35,9 +35,6 @@
 // we assume people have -msee support.
 #include <xmmintrin.h>
 
-#define BLOCKSIZE                                                                                            \
-  2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
-
 DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
 
 #define DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
@@ -1703,8 +1700,8 @@ blocksizeopt(const int devid, const int kernel, int *blocksizex, int *blocksizey
    // first starting values must be supplied in *blocksizex and *blocksizey.
    // we make sure that these are a power of 2 and lie within reasonable limits.
    // note: *blocksizex and *blocksizey may point to the same location in memory
-   *blocksizex = CLAMP(nextpow2(*blocksizex), 2, BLOCKSIZE);
-   *blocksizey = CLAMP(nextpow2(*blocksizey), 2, BLOCKSIZE);
+   *blocksizex = CLAMP(nextpow2(*blocksizex), 2, 2 << 8);
+   *blocksizey = CLAMP(nextpow2(*blocksizey), 2, 2 << 8);
 
    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
       && dt_opencl_get_kernel_work_group_size(devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
@@ -3105,18 +3102,23 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       size_t oorigin[] = { 0, 0, 0 };
       size_t region[] = { edges[n][2], edges[n][3], 1 };
 
+      // reserve input buffer for image edge
       cl_mem dev_edge_in = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float));
       if(dev_edge_in == NULL) goto error;
 
+      // reserve output buffer for VNG processing of edge
       cl_mem dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], 4 * sizeof(float));
       if(dev_edge_out == NULL) goto error;
 
+      // copy edge to input buffer
       err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_edge_in, iorigin, oorigin, region);
       if(err != CL_SUCCESS) goto error;
 
+      // VNG processing
       if(!process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, &roi))
         goto error;
 
+      // adjust for "good" part, dropping linear border where possible
       iorigin[0] += edges[n][4];
       iorigin[1] += edges[n][5];
       oorigin[0] += edges[n][4];
@@ -3124,9 +3126,11 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       region[0] += edges[n][6];
       region[1] += edges[n][7];
 
+      // copy output
       err = dt_opencl_enqueue_copy_image(devid, dev_edge_out, dev_tmp, oorigin, iorigin, region);
       if(err != CL_SUCCESS) goto error;
 
+      // release intermediate buffers
       dt_opencl_release_mem_object(dev_edge_in);
       dt_opencl_release_mem_object(dev_edge_out);
       dev_edge_in = dev_edge_out = NULL;
