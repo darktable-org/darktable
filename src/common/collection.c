@@ -787,11 +787,11 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       dt_collection_split_operator_number(escaped_text, &number, &operator);
 
       if(operator&& number)
-        query = dt_util_dstrcat(query, "(aperture %s %s)", operator, number);
+        query = dt_util_dstrcat(query, "(round(aperture,1) %s %s)", operator, number);
       else if(number)
-        query = dt_util_dstrcat(query, "(aperture = %s)", number);
+        query = dt_util_dstrcat(query, "(round(aperture,1) = %s)", number);
       else
-        query = dt_util_dstrcat(query, "(aperture like '%%%s%%')", escaped_text);
+        query = dt_util_dstrcat(query, "(round(aperture,1) like '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number);
