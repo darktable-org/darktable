@@ -852,11 +852,11 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       for(int d = 0; d < ndir; d++)
         for(int row = 11; row < mrow - 11; row++)
         {
-          int col = 11;
+          // start before first column where homo[d][row][col+2] != 0,
+          // so can know v5sum and homosum[d][row][col] will be 0
+          int col = 6;
           uint8_t v5sum[5] = { 0 };
-          for(int v = -2; v <= 2; v++)
-            for(int h = -4; h <= 0; h++) v5sum[(col + h) % 5] += homo[d][row + v][col + h + 2];
-          homosum[d][row][col] = v5sum[0] + v5sum[1] + v5sum[2] + v5sum[3] + v5sum[4];
+          homosum[d][row][col] = 0;
           // calculate by rolling through column sums
           for(col++; col < mcol - 11; col++)
           {
