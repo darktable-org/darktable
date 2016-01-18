@@ -75,6 +75,7 @@ typedef struct dt_iop_temperature_gui_data_t
 typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
+  double RGB_to_CAM[4][3], CAM_to_RGB[3][4];
 } dt_iop_temperature_data_t;
 
 
@@ -82,7 +83,6 @@ typedef struct dt_iop_temperature_global_data_t
 {
   int kernel_whitebalance_4f;
   int kernel_whitebalance_1f;
-  double RGB_to_CAM[4][3], CAM_to_RGB[3][4];
 } dt_iop_temperature_global_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -397,7 +397,6 @@ static uint8_t FCxtrans(const int row, const int col, const dt_iop_roi_t *const 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
   const dt_image_t *img = &self->dev->image_storage;
   const int filters = dt_image_filter(&piece->pipe->image);
   uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
@@ -509,7 +508,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     {
       // Demosaic CMYG data coming from a mipf, so we need to do the RGB conversion here
       // instead of what happens in the normal pipe where demosaic would do it
-      dt_colorspaces_cygm_to_rgb(ovoid, roi_out->width*roi_out->height, gd->CAM_to_RGB);
+      dt_colorspaces_cygm_to_rgb(ovoid, roi_out->width*roi_out->height, d->CAM_to_RGB);
     }
 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -524,19 +523,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
-  const dt_image_t *img = &self->dev->image_storage;
 
   const int devid = piece->pipe->devid;
   const int filters = dt_image_filter(&piece->pipe->image);
   cl_mem dev_coeffs = NULL;
   cl_int err = -999;
   int kernel = -1;
-
-  if(img->flags & DT_IMAGE_4BAYER)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_temperature] temperature for CYGM not yet supported by opencl code\n");
-    return FALSE;
-  }
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
   {
@@ -606,6 +598,20 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
+
+  if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  {
+    // 4Bayer images not implemented in OpenCL yet
+    piece->process_cl_ready = 0;
+
+    // Get and store the matrix to go from camera to RGB for 4Bayer images
+    char *camera = self->dev->image_storage.camera_makermodel;
+    if (!dt_colorspaces_conversion_matrices_rgb(camera, d->RGB_to_CAM, d->CAM_to_RGB, NULL))
+    {
+      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
+    }
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -822,18 +828,6 @@ static void prepare_matrices(dt_iop_module_t *module)
   {
     fprintf(stderr, "[temperature] `%s' color matrix not found for image!\n", camera);
     dt_control_log(_("[temperature] `%s' color matrix not found for image!\n"), camera);
-  }
-
-  // Get and store the matrix to go from camera to RGB for 4Bayer images
-  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
-  if (module->dev->image_storage.flags & DT_IMAGE_4BAYER)
-  {
-    char *camera = module->dev->image_storage.camera_makermodel;
-    if (!dt_colorspaces_conversion_matrices_rgb(camera, gd->RGB_to_CAM, gd->CAM_to_RGB, NULL))
-    {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
-      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
-    }
   }
 }
 
@@ -1052,9 +1046,22 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   for(int k = 0; k < 3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
 
   // If we're in a CMYG image we need to create CMYG coeffs from the RGB ones
-  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
   const dt_image_t *img = &self->dev->image_storage;
-  if (img->flags & DT_IMAGE_4BAYER) dt_colorspaces_rgb_to_cygm(p->coeffs, 1, gd->RGB_to_CAM);
+  if (img->flags & DT_IMAGE_4BAYER)
+  {
+    // We don't have access to dt_iop_temperature_data_t here so we have to
+    // recalculate RGB_to_CAM.
+    double RGB_to_CAM[4][3];
+
+    // Get and store the matrix to go from camera to RGB for 4Bayer images
+    const char *camera = img->camera_makermodel;
+    if (!dt_colorspaces_conversion_matrices_rgb(camera, RGB_to_CAM, NULL, NULL))
+    {
+      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
+    }
+    dt_colorspaces_rgb_to_cygm(p->coeffs, 1, RGB_to_CAM);
+  }
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
