@@ -4,7 +4,7 @@ sed -i '' 's|/opt/local/share/locale||' package/darktable.app/Contents/Resources
 glib-compile-schemas package/darktable.app/Contents/Resources/share/glib-2.0/schemas/
 sed -i '' 's|{VERSION}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f2|sed 's/^\([0-9]*\.[0-9]*\)$/\1.0/')'|' package/darktable.app/Contents/Info.plist
 sed -i '' 's|{COMMITS}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f3)'|' package/darktable.app/Contents/Info.plist
-for i in package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/MacOS/darktable-cli-bin package/darktable.app/Contents/MacOS/darktable-generate-cache-bin
+for i in package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/MacOS/darktable-cli-bin package/darktable.app/Contents/MacOS/darktable-generate-cache-bin package/darktable.app/Contents/MacOS/darktable-cltest-bin
 do
 	install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$i"
 done
@@ -23,6 +23,7 @@ then
 	dsymutil package/darktable.app/Contents/MacOS/darktable-bin
 	dsymutil package/darktable.app/Contents/MacOS/darktable-cli-bin
 	dsymutil package/darktable.app/Contents/MacOS/darktable-generate-cache-bin
+	dsymutil package/darktable.app/Contents/MacOS/darktable-cltest-bin
 fi
 
 if [ -n "$CODECERT" ]
