@@ -70,6 +70,7 @@ typedef struct dt_iop_temperature_gui_data_t
   int preset_num[50];
   double daylight_wb[4];
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
+  double RGB_to_CAM[4][3];
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
@@ -611,6 +612,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
       dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
     }
+    else if (self->gui_data)
+    {
+      // Copy RGB_to_CAM matrix to gui_data as well so be able to use it for spot WB
+      dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+      memcpy(g->RGB_to_CAM, d->RGB_to_CAM, sizeof(double)*12);
+    }
   }
 }
 
@@ -1049,18 +1056,8 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   const dt_image_t *img = &self->dev->image_storage;
   if (img->flags & DT_IMAGE_4BAYER)
   {
-    // We don't have access to dt_iop_temperature_data_t here so we have to
-    // recalculate RGB_to_CAM.
-    double RGB_to_CAM[4][3];
-
-    // Get and store the matrix to go from camera to RGB for 4Bayer images
-    const char *camera = img->camera_makermodel;
-    if (!dt_colorspaces_conversion_matrices_rgb(camera, RGB_to_CAM, NULL, NULL))
-    {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
-      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
-    }
-    dt_colorspaces_rgb_to_cygm(p->coeffs, 1, RGB_to_CAM);
+    dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+    dt_colorspaces_rgb_to_cygm(p->coeffs, 1, g->RGB_to_CAM);
   }
 
   gui_update_from_coeffs(self);
