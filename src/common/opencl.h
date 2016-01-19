@@ -110,6 +110,7 @@ typedef struct dt_opencl_t
   int async_pixelpipe;
   int number_event_handles;
   int synch_cache;
+  int enable_markesteijn;
   int micro_nap;
   int enabled;
   int stopped;

@@ -2413,6 +2413,8 @@ restart:
                "[opencl] frequent opencl errors encountered; disabling opencl for this session!\n");
       dt_control_log(
           _("darktable discovered problems with your OpenCL setup; disabling OpenCL for this session!"));
+      // also remove "opencl" from capabilities so that the preference entry is greyed out
+      dt_capabilities_remove("opencl");
     }
 
     dt_dev_pixelpipe_flush_caches(pipe);
