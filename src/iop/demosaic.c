@@ -718,8 +718,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
 
         /* Interpolate red for blue pixels and vice versa:              */
-        for(int row = top + 6; row < mrow - 6; row++)
-          for(int col = left + 6; col < mcol - 6; col++)
+        for(int row = top + 5; row < mrow - 5; row++)
+          for(int col = left + 5; col < mcol - 5; col++)
           {
             int f = 2 - FCxtrans(row + yoff + 12, col + xoff + 12, xtrans);
             if(f == 1) continue;
