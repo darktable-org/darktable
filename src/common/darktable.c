@@ -449,6 +449,28 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   _dt_sigsegv_old_handler = signal(SIGSEGV, &_dt_sigsegv_handler);
 #endif
 
+#if !defined(__BYTE_ORDER__) || __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+#error "Unfortunately we only work on litte-endian systems."
+#endif
+
+#if !defined(__amd64__) && !defined(__amd64) && !defined(__x86_64__) && !defined(__x86_64)                   \
+    && !defined(__i386__) && !defined(__i386)                                                                \
+    && !(defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A))
+#error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit) and ARMv8-A (64-bit only)."
+#endif
+
+#if defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A)
+#if !defined(__SIZEOF_POINTER__) || __SIZEOF_POINTER__ < 8
+#error "On ARMv8-A, we only support 64-bit."
+#else
+  if(sizeof(void *) < 8)
+  {
+    fprintf(stderr, "[dt_init] On ARMv8-A, we only support 64-bit.\n");
+    return 1;
+  }
+#endif
+#endif
+
 #ifndef __SSE2__
 #pragma message "Building without SSE2 is highly experimental."
 #pragma message "Expect a LOT of functionality to be broken. You have been warned."

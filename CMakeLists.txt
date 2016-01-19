@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
 include(CheckCCompilerFlag)
+include(TestBigEndian)
 
 # Check if this is source package build
 if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
@@ -51,6 +52,15 @@ else()
 endif()
 
 MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
+
+test_big_endian(BIGENDIAN)
+if(${BIGENDIAN})
+	# we do not really want those.
+	# besides, no one probably tried darktable on such systems
+	MESSAGE(FATAL_ERROR "Found big endian system. Bad.")
+else()
+	MESSAGE(STATUS "Found little endian system. Good.")
+endif(${BIGENDIAN})
 
 if(APPLE)
 	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
