@@ -572,45 +572,45 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
   g_list_free (list);
 }
 
-#define CAIRO_SCALE (1.0 / MAX (piece->pipe->backbuf_width, piece->pipe->backbuf_height))
+#define CAIRO_SCALE (1.0 / MAX (pipe->backbuf_width, pipe->backbuf_height))
 
 static void distort_paths_raw_to_cairo (const struct dt_iop_module_t *module,
-                                        const dt_dev_pixelpipe_iop_t *piece,
+                                        dt_dev_pixelpipe_t *pipe,
                                         dt_iop_liquify_params_t *p)
 {
-  const distort_params_t params = { module->dev, piece->pipe, piece->pipe->iscale, CAIRO_SCALE, TRUE, 0, 99999 };
+  const distort_params_t params = { module->dev, pipe, pipe->iscale, CAIRO_SCALE, TRUE, 0, 99999 };
   _distort_paths (&params, p);
 }
 
 static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
-                                        const dt_dev_pixelpipe_iop_t *piece,
+                                        dt_dev_pixelpipe_t *pipe,
                                         const float roi_in_scale,
                                         dt_iop_liquify_params_t *p)
 {
-  const distort_params_t params = { module->dev, piece->pipe, piece->pipe->iscale, roi_in_scale, TRUE, 0, module->priority };
+  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, TRUE, 0, module->priority };
   _distort_paths (&params, p);
 }
 
 static float complex distort_point_cairo_to_raw (const struct dt_iop_module_t *module,
-                                                  const dt_dev_pixelpipe_iop_t *piece,
-                                                  const float complex p)
+                                                 dt_dev_pixelpipe_t *pipe,
+                                                 const float complex p)
 {
-  const distort_params_t params = { module->dev, piece->pipe, CAIRO_SCALE, piece->pipe->iscale, FALSE, 0, 99999 };
+  const distort_params_t params = { module->dev, pipe, CAIRO_SCALE, pipe->iscale, FALSE, 0, 99999 };
   return _distort_point  (p, &params);
 }
 
 static float complex transform_view_to_cairo (const struct dt_iop_module_t *module,
-                                               const dt_dev_pixelpipe_iop_t *piece,
-                                               const float x,
-                                               const float y)
+                                              const dt_dev_pixelpipe_t *pipe,
+                                              const float x,
+                                              const float y)
 {
   float pt[2];
   dt_dev_get_pointer_zoom_pos (module->dev, x, y, &pt[0], &pt[1]);
 
   pt[0] += 0.5;
   pt[1] += 0.5;
-  const int w = piece->pipe->processed_width;
-  const int h = piece->pipe->processed_height;
+  const int w = pipe->processed_width;
+  const int h = pipe->processed_height;
   float max = MAX (w, h);
   pt[0] *= w / max;
   pt[1] *= h / max;
@@ -1076,7 +1076,7 @@ static float complex *build_global_distortion_map (struct dt_iop_module_t *modul
   dt_iop_liquify_params_t copy_params;
   memcpy(&copy_params, (dt_iop_liquify_params_t *)piece->data, sizeof(dt_iop_liquify_params_t));
 
-  distort_paths_raw_to_piece (module, piece, roi_in->scale, &copy_params);
+  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
 
   GList *interpolated = interpolate_paths (&copy_params);
 
@@ -1126,7 +1126,7 @@ void modify_roi_in (struct dt_iop_module_t *module,
   dt_iop_liquify_params_t copy_params;
   memcpy(&copy_params, (dt_iop_liquify_params_t*)piece->data, sizeof(dt_iop_liquify_params_t));
 
-  distort_paths_raw_to_piece (module, piece, roi_in->scale, &copy_params);
+  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
 
   cairo_rectangle_int_t pipe_rect = {
     0,
@@ -2425,6 +2425,56 @@ static float get_zoom_scale (dt_develop_t *develop)
   return dt_dev_get_zoom_scale (develop, zoom, closeup ? 2 : 1, 1);
 }
 
+static gboolean _get_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe)
+{
+  // make sure we lock the pipe and take a copy. it is not thread safe to use a pipe on the GUI thread, so we
+  // get a copy and use it from there.
+
+  dt_pthread_mutex_lock(&module->dev->preview_pipe->busy_mutex);
+  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe (module->dev, module->dev->preview_pipe, module);
+
+  if (!piece || piece->pipe->backbuf_width==0 || piece->pipe->backbuf_width==0)
+  {
+    dt_pthread_mutex_unlock(&module->dev->preview_pipe->busy_mutex);
+    pipe->input = NULL;
+    pipe->backbuf = NULL;
+    pipe->nodes = NULL;
+    return FALSE;
+  }
+
+  *pipe = *(piece->pipe);
+  // not used in this path, let's nullify the pointers, no need to deep-copy
+  pipe->input = NULL;
+  pipe->backbuf = NULL;
+
+  // just deep copy the nodes, after _get_pipe is called, _release_pipe must be called to free memory
+  GList *n = pipe->nodes;
+  pipe->nodes = NULL;
+  while (n)
+  {
+    dt_dev_pixelpipe_iop_t *data = (dt_dev_pixelpipe_iop_t *)n->data;
+    dt_dev_pixelpipe_iop_t *new = malloc(sizeof(dt_dev_pixelpipe_iop_t));
+    memcpy(new, data, sizeof(dt_dev_pixelpipe_iop_t));
+    pipe->nodes = g_list_append(pipe->nodes, new);
+    n = n->next;
+  }
+
+  dt_pthread_mutex_unlock(&module->dev->preview_pipe->busy_mutex);
+  return TRUE;
+}
+
+static void _release_pipe(dt_dev_pixelpipe_t *pipe)
+{
+  GList *n = pipe->nodes;
+  while (n)
+  {
+    GList *next = n->next;
+    dt_dev_pixelpipe_iop_t *data = (dt_dev_pixelpipe_iop_t *)n->data;
+    free(data);
+    n = next;
+  }
+}
+
 void gui_post_expose (struct dt_iop_module_t *module,
                       cairo_t *cr,
                       int32_t width,
@@ -2442,8 +2492,9 @@ void gui_post_expose (struct dt_iop_module_t *module,
   if (bb_width < 1.0 || bb_height < 1.0)
     return;
 
-  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe (develop, develop->preview_pipe, module);
-  if (!piece)
+  dt_dev_pixelpipe_t pipe;
+
+  if (!_get_pipe(module, &pipe))
     return;
 
   // You're not supposed to understand this
@@ -2467,7 +2518,9 @@ void gui_post_expose (struct dt_iop_module_t *module,
 
   // distort all points in one go.  distorting is an expensive
   // operation because it locks the whole pipe.
-  distort_paths_raw_to_cairo (module, piece, &copy_params);
+  distort_paths_raw_to_cairo (module, &pipe, &copy_params);
+
+  _release_pipe(&pipe);
 
   draw_paths (module, cr, 1.0 / (scale * zoom_scale), &copy_params);
 }
@@ -2507,15 +2560,16 @@ static void sync_pipe (struct dt_iop_module_t *module, gboolean history)
   ctrl+click on strength:    Cycle linear, grow, shrink
 */
 
-gboolean get_point_scale(struct dt_iop_module_t *module, float x, float y, float complex *pt, float *scale)
+static gboolean get_point_scale(struct dt_iop_module_t *module, float x, float y, float complex *pt, float *scale)
 {
-  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe (module->dev, module->dev->preview_pipe, module);
-  if (!piece || piece->pipe->backbuf_width==0 || piece->pipe->backbuf_width==0)
+  dt_dev_pixelpipe_t pipe;
+  if (!_get_pipe (module, &pipe))
     return FALSE;
 
-  const float complex pt_cairo = transform_view_to_cairo (module, piece, x, y);
-  *pt = distort_point_cairo_to_raw (module, piece, pt_cairo);
-  *scale = piece->pipe->iscale / get_zoom_scale (module->dev);
+  const float complex pt_cairo = transform_view_to_cairo (module, &pipe, x, y);
+  *pt = distort_point_cairo_to_raw (module, &pipe, pt_cairo);
+  *scale = pipe.iscale / get_zoom_scale (module->dev);
+  _release_pipe(&pipe);
   return TRUE;
 }
 
