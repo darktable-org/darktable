@@ -3237,9 +3237,16 @@ process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem d
   {
     return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
-  else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3))
+  else if(demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
   {
-    return process_markesteijn_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+    // only use markesteijn demosaicing on GPU if the corresponding config option is enabled.
+    if(darktable.opencl->enable_markesteijn)
+      return process_markesteijn_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+    else
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] Markesteijn demosaicing with OpenCL not enabled (see 'opencl_enable_markesteijn')\n");
+      return FALSE;
+    }
   }
   else
   {
