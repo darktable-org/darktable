@@ -3218,6 +3218,21 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
+  if(old_version == 7 && new_version == 8)
+  {
+    if(length != sizeof(dt_develop_blend_params7_t)) return 1;
+
+    dt_develop_blend_params7_t *o = (dt_develop_blend_params7_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+
+    memcpy(n, o, sizeof(dt_develop_blend_params_t)); // make a copy of
+                                                     // version 7 parameters
+
+    n->fs_sharpness = 1;
+
+    return 0;
+  }
+
   return 1;
 }
 

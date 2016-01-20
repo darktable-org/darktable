@@ -306,7 +306,6 @@ typedef struct dt_develop_blend_params_t
 
   /* frequency separation */
   uint32_t fs_filter_type; // off - highpass - lowpass - bandpass ...
-  uint32_t fs_filter_by; // luma - chroma - luma & chroma ...
   float fs_frequency_low; // low frequency
   float fs_frequency_high; // high frequency
   float fs_frequency; // high frequency
@@ -314,8 +313,14 @@ typedef struct dt_develop_blend_params_t
   int fs_sharpness; // sharpness
   uint32_t fs_preview; // preview final image
   float fs_freqlay_exposure; // exposure compensation for the mask
-  int fs_lighten_freq_layer; // user asks to lighten the layer
+  int fs_lighten_freq_layer; // user asks to lighten (add grey) the layer
   int fs_invert_freq_layer; // user asks to invert the layer
+  int fs_show_luma_chroma; // user wants to filter luma & chroma
+  int fs_show_luma; // user wants to filter luma only
+  int fs_show_chroma; // user wants to filter chroma only
+  int fs_show_channel_1; // user wants to filter channel red
+  int fs_show_channel_2; // user wants to filter channel green
+  int fs_show_channel_3; // user wants to filter channel blue
 
   float * tF1, *tF2, *tF3; // filter complement & colorspace complement
   void *fs_ivoid; // buffer for backup original image
@@ -414,13 +419,9 @@ typedef struct dt_iop_gui_blend_data_t
   /* frequency separation */
   GtkBox *fs_top_box; // frequency separation top box
   GtkBox *fs_box; // frequency separation box
-
   GList *fs_filter_types; // list with (off - Lowpass - Highpass - Bandpass ...)
-  GList *fs_filter_by; // list with (luma - chroma - luma & chroma)
   GList *fs_preview; // preview final image - preview mask - mask + parent module modifications
-
   GtkWidget *fs_filter_types_combo; //  combo box with (off - Lowpass - Highpass - Bandpass ...)
-  GtkWidget *fs_filter_by_combo; //  combo box with (luma - chroma - luma & chroma)
   GtkWidget *fs_preview_combo; //  combo box with (yes - no)
   GtkWidget *fs_frequency_low_slider; // low frequency
   GtkWidget *fs_frequency_high_slider; // high frequency
@@ -430,8 +431,12 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *fs_freqlay_exposure_slider; // exposure compensation for the mask
   GtkWidget *fs_lighten_freq_layer; // adds 50% gray to the layer
   GtkWidget *fs_invert_freq_layer; // inverts the layer
-
-
+  GtkWidget *fs_show_luma_chroma; // adds 50% gray to the layer
+  GtkWidget *fs_show_luma; // adds 50% gray to the layer
+  GtkWidget *fs_show_chroma; // adds 50% gray to the layer
+  GtkWidget *fs_show_channel_1; // adds 50% gray to the layer
+  GtkWidget *fs_show_channel_2; // adds 50% gray to the layer
+  GtkWidget *fs_show_channel_3; // adds 50% gray to the layer
   /* End frequency separation */
 } dt_iop_gui_blend_data_t;
 
