@@ -1579,7 +1579,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   if(full_scale_demosaicing)
   {
     // Full demosaic and then scaling if needed
-    int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
+    const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
     float *tmp = (float *) o;
     if(scaled)
     {
@@ -1844,7 +1844,7 @@ process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
       roi_out->scale > (img->filters == 9u ? 0.333f : .5f))
   {
     // Full demosaic and then scaling if needed
-    int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
+    const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
 
     int width = roi_out->width;
     int height = roi_out->height;
@@ -2086,7 +2086,7 @@ process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(full_scale_demosaicing)
   {
     // Full demosaic and then scaling if needed
-    int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
+    const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
 
     int width = roi_out->width;
     int height = roi_out->height;
@@ -2496,7 +2496,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   if(full_scale_demosaicing)
   {
     // Full demosaic and then scaling if needed
-    int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
+    const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
 
     int width = roi_in->width;
     int height = roi_in->height;
@@ -3296,7 +3296,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   // check if output buffer has same dimension as input buffer (thus avoiding one
   // additional temporary buffer)
-  const int unscaled = (roi_out->scale > 0.99999f && roi_out->scale < 1.00001f);
+  const int unscaled = (roi_out->width == roi_in->width && roi_out->height == roi_in->height);
 
   if((demosaicing_method == DT_IOP_DEMOSAIC_PPG) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
