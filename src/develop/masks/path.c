@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "develop/masks.h"
 #include "common/debug.h"
+#include <assert.h>
 
 
 /** get the point of the path at pos t [0,1]  */
@@ -2082,6 +2083,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
     ymin = fminf(yy, ymin);
     ymax = fmaxf(yy, ymax);
   }
+
   for(int i = nb_corner * 3; i < points_count; i++)
   {
     // we look at the path too
@@ -2104,11 +2106,12 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  *buffer = calloc((*width) * (*height), sizeof(float));
+  const size_t bufsize = (size_t)(*width) * (*height);
+  *buffer = calloc(bufsize, sizeof(float));
 
   // we write all the point around the path into the buffer
   int nbp = border_count;
-  int lastx, lasty, lasty2, nx;
+  int lastx, lasty, lasty2;
   if(nbp > 2)
   {
     lastx = (int)points[(nbp - 1) * 2];
@@ -2116,12 +2119,12 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
     lasty2 = (int)points[(nbp - 2) * 2 + 1];
 
     int just_change_dir = 0;
-    for(int ii = nb_corner * 3; ii < 2 * nbp; ii++)
+    for(int ii = nb_corner * 3; ii < 2 * nbp - nb_corner * 3; ii++)
     {
       // we are writing more than 1 loop in the case the dir in y change
       // exactly at start/end point
       int i = ii;
-      if(ii >= nbp) i = ii - nbp + nb_corner * 3;
+      if(ii >= nbp) i = (ii - nb_corner * 3) % (nbp - nb_corner * 3) + nb_corner * 3;
       int xx = (int)points[i * 2];
       int yy = (int)points[i * 2 + 1];
 
@@ -2135,8 +2138,10 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
         {
           for(int j = yy + 1; j < lasty; j++)
           {
-            int nx = (j - yy) * (lastx - xx) / (float)(lasty - yy) + xx;
-            (*buffer)[(j - (*posy)) * (*width) + nx - (*posx)] = 1.0f;
+            const int nx = (j - yy) * (lastx - xx) / (float)(lasty - yy) + xx;
+            const size_t idx = (size_t)(j - (*posy)) * (*width) + nx - (*posx);
+            assert(idx < bufsize);
+            (*buffer)[idx] = 1.0f;
           }
           lasty2 = yy + 2;
           lasty = yy + 1;
@@ -2145,8 +2150,10 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
         {
           for(int j = lasty + 1; j < yy; j++)
           {
-            nx = (j - lasty) * (xx - lastx) / (float)(yy - lasty) + lastx;
-            (*buffer)[(j - (*posy)) * (*width) + nx - (*posx)] = 1.0f;
+            const int nx = (j - lasty) * (xx - lastx) / (float)(yy - lasty) + lastx;
+            const size_t idx = (size_t)(j - (*posy)) * (*width) + nx - (*posx);
+            assert(idx < bufsize);
+            (*buffer)[idx] = 1.0f;
           }
           lasty2 = yy - 2;
           lasty = yy - 1;
@@ -2155,7 +2162,9 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
       // if we change the direction of the path (in y), then we add a extra point
       if((lasty - lasty2) * (lasty - yy) > 0)
       {
-        (*buffer)[(lasty - (*posy)) * (*width) + lastx + 1 - (*posx)] = 1.0f;
+        const size_t idx = (size_t)(lasty - (*posy)) * (*width) + lastx + 1 - (*posx);
+        assert(idx < bufsize);
+        (*buffer)[idx] = 1.0f;
         just_change_dir = 1;
       }
       // we add the point
@@ -2163,22 +2172,38 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
       {
         // if we have changed the direction, we have to be carefull that point can be at the same place
         // as the previous one , especially on sharp edges
-        float v = (*buffer)[(yy - (*posy)) * (*width) + xx - (*posx)];
+        const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
+        assert(idx < bufsize);
+        float v = (*buffer)[idx];
         if(v > 0.0)
         {
           if(xx - (*posx) > 0)
-            (*buffer)[(yy - (*posy)) * (*width) + xx - 1 - (*posx)] = 1.0f;
+          {
+            const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx - 1 - (*posx);
+            assert(idx < bufsize);
+            (*buffer)[idx] = 1.0f;
+          }
           else if(xx - (*posx) < (*width) - 1)
-            (*buffer)[(yy - (*posy)) * (*width) + xx + 1 - (*posx)] = 1.0f;
+          {
+            const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx + 1 - (*posx);
+            assert(idx < bufsize);
+            (*buffer)[idx] = 1.0f;
+          }
         }
         else
         {
-          (*buffer)[(yy - (*posy)) * (*width) + xx - (*posx)] = 1.0f;
+          const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
+          assert(idx < bufsize);
+          (*buffer)[idx] = 1.0f;
           just_change_dir = 0;
         }
       }
       else
-        (*buffer)[(yy - (*posy)) * (*width) + xx - (*posx)] = 1.0f;
+      {
+        const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
+        assert(idx < bufsize);
+        (*buffer)[idx] = 1.0f;
+      }
       // we change last values
       lasty2 = lasty;
       lasty = yy;
