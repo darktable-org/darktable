@@ -25,7 +25,9 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 #include "common/opencl.h"
 #include "develop/develop.h"
@@ -342,8 +344,29 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
+
+  const int ch = piece->colors;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static)
+#endif
+  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
+  {
+    ((float *)o)[k] = (((float *)i)[k] - d->black) * d->scale;
+  }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+
+  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
 
@@ -366,6 +389,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
 }
+#endif
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
