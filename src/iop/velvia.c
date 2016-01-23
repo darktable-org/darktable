@@ -32,7 +32,9 @@
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x) (((x) >= 0.0) ? ((x) <= 1.0 ? (x) : 1.0) : 0.0)
@@ -119,8 +121,53 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_velvia_data_t *const data = (dt_iop_velvia_data_t *)piece->data;
+
+  const int ch = piece->colors;
+  const float strength = data->strength / 100.0f;
+
+  // Apply velvia saturation
+  if(strength <= 0.0)
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static)
+#endif
+    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+    {
+      const float *const in = (const float *const)ivoid + (size_t)ch * k;
+      float *const out = (float *const)ovoid + (size_t)ch * k;
+
+      // calculate vibrance, and apply boost velvia saturation at least saturated pixels
+      float pmax = MAX(in[0], MAX(in[1], in[2])); // max value in RGB set
+      float pmin = MIN(in[0], MIN(in[1], in[2])); // min value in RGB set
+      float plum = (pmax + pmin) / 2.0f;          // pixel luminocity
+      float psat = (plum <= 0.5f) ? (pmax - pmin) / (1e-5f + pmax + pmin)
+                                  : (pmax - pmin) / (1e-5f + MAX(0.0f, 2.0f - pmax - pmin));
+
+      float pweight
+          = CLAMPS(((1.0f - (1.5f * psat)) + ((1.0f + (fabsf(plum - 0.5f) * 2.0f)) * (1.0f - data->bias)))
+                       / (1.0f + (1.0f - data->bias)),
+                   0.0f, 1.0f);              // The weight of pixel
+      float saturation = strength * pweight; // So lets calculate the final affection of filter on pixel
+
+      // Apply velvia saturation values
+      out[0] = CLAMPS(in[0] + saturation * (in[0] - 0.5f * (in[1] + in[2])), 0.0f, 1.0f);
+      out[1] = CLAMPS(in[1] + saturation * (in[1] - 0.5f * (in[2] + in[0])), 0.0f, 1.0f);
+      out[2] = CLAMPS(in[2] + saturation * (in[2] - 0.5f * (in[0] + in[1])), 0.0f, 1.0f);
+    }
+  }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_velvia_data_t *data = (dt_iop_velvia_data_t *)piece->data;
   float *in = (float *)ivoid;
@@ -181,7 +228,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
-
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
