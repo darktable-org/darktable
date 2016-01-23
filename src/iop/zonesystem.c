@@ -35,7 +35,9 @@
 #include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?
@@ -56,7 +58,14 @@ typedef struct dt_iop_zonesystem_params_t
 } dt_iop_zonesystem_params_t;
 
 /** and pixelpipe data is just the same */
-typedef struct dt_iop_zonesystem_params_t dt_iop_zonesystem_data_t;
+typedef struct dt_iop_zonesystem_data_t
+{
+  dt_iop_zonesystem_params_t params;
+  float rzscale;
+  float zonemap_offset[MAX_ZONE_SYSTEM_SIZE];
+  float zonemap_scale[MAX_ZONE_SYSTEM_SIZE];
+} dt_iop_zonesystem_data_t;
+
 
 /*
 void init_presets (dt_iop_module_so_t *self)
@@ -153,20 +162,17 @@ static inline void _iop_zonesystem_calculate_zonemap(struct dt_iop_zonesystem_pa
 }
 
 #define GAUSS(a, b, c, x) (a * pow(2.718281828, (-pow((x - b), 2) / (pow(c, 2)))))
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-{
-  float *in;
-  float *out;
-  dt_iop_zonesystem_gui_data_t *g = NULL;
-  dt_iop_zonesystem_data_t *data = (dt_iop_zonesystem_data_t *)piece->data;
 
+static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out)
+{
   const int width = roi_out->width;
   const int height = roi_out->height;
 
   if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
+    dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
     dt_pthread_mutex_lock(&g->lock);
     if(g->in_preview_buffer == NULL || g->out_preview_buffer == NULL || g->preview_width != width
        || g->preview_height != height)
@@ -180,53 +186,26 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     }
     dt_pthread_mutex_unlock(&g->lock);
   }
+}
 
-  /* calculate zonemap */
-  const int size = data->size;
-  float zonemap[MAX_ZONE_SYSTEM_SIZE] = { -1 };
-  _iop_zonesystem_calculate_zonemap(data, zonemap);
+static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                   const void *const ivoid, void *const ovoid,
+                                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_zonesystem_data_t *d = (dt_iop_zonesystem_data_t *)piece->data;
+  dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
   const int ch = piece->colors;
-
-
-  /* process the image */
-  in = (float *)ivoid;
-  out = (float *)ovoid;
-
-  const float rzscale = (size - 1) / 100.0f;
-
-  float zonemap_offset[MAX_ZONE_SYSTEM_SIZE] = { -1 };
-  float zonemap_scale[MAX_ZONE_SYSTEM_SIZE] = { -1 };
-
-  // precompute scale and offset
-  for(int k = 0; k < size - 1; k++) zonemap_scale[k] = (zonemap[k + 1] - zonemap[k]) * (size - 1);
-  for(int k = 0; k < size - 1; k++) zonemap_offset[k] = 100.0f * ((k + 1) * zonemap[k] - k * zonemap[k + 1]);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, zonemap_scale, zonemap_offset) schedule(static)
-#endif
-  for(int j = 0; j < height; j++)
-    for(int i = 0; i < width; i++)
-    {
-      /* remap lightness into zonemap and apply lightness */
-      const float *inp = in + ch * ((size_t)j * width + i);
-      float *outp = out + ch * ((size_t)j * width + i);
-
-      const int rz = CLAMPS(inp[0] * rzscale, 0, size - 2); // zone index
-
-      const float zs = ((rz > 0) ? (zonemap_offset[rz] / inp[0]) : 0) + zonemap_scale[rz];
-
-      _mm_stream_ps(outp, _mm_mul_ps(_mm_load_ps(inp), _mm_set1_ps(zs)));
-    }
-
-  _mm_sfence();
+  const int size = d->params.size;
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 
-
   /* if gui and have buffer lets gaussblur and fill buffer with zone indexes */
-  if(self->dev->gui_attached && g && g->in_preview_buffer && g->out_preview_buffer)
+  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && g && g->in_preview_buffer
+     && g->out_preview_buffer)
   {
-
     float Lmax[] = { 100.0f };
     float Lmin[] = { 0.0f };
 
@@ -241,7 +220,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     if(gauss && tmp)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid, tmp) schedule(static)
+#pragma omp parallel for default(none) shared(tmp) schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++) tmp[k] = ((float *)ivoid)[ch * k];
 
@@ -260,7 +239,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ovoid, tmp) schedule(static)
+#pragma omp parallel for default(none) shared(tmp) schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++) tmp[k] = ((float *)ovoid)[ch * k];
 
@@ -284,6 +263,73 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
 }
 
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_zonesystem_data_t *const d = (const dt_iop_zonesystem_data_t *const)piece->data;
+
+  process_common_setup(self, piece, ivoid, ovoid, roi_in, roi_out);
+
+  const int ch = piece->colors;
+  const int size = d->params.size;
+
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#endif
+  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+  {
+    for(int c = 0; c < 3; c++)
+    {
+      /* remap lightness into zonemap and apply lightness */
+      const int rz = CLAMPS(in[k] * d->rzscale, 0, size - 2); // zone index
+      const float zs = ((rz > 0) ? (d->zonemap_offset[rz] / in[k]) : 0) + d->zonemap_scale[rz];
+
+      const size_t p = (size_t)k + c;
+      out[p] = in[p] * zs;
+    }
+  }
+
+  process_common_cleanup(self, piece, ivoid, ovoid, roi_in, roi_out);
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_zonesystem_data_t *const d = (const dt_iop_zonesystem_data_t *const)piece->data;
+
+  process_common_setup(self, piece, ivoid, ovoid, roi_in, roi_out);
+
+  const int ch = piece->colors;
+  const int size = d->params.size;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      /* remap lightness into zonemap and apply lightness */
+      const float *in = (float *)ivoid + ch * ((size_t)j * roi_out->width + i);
+      float *out = (float *)ovoid + ch * ((size_t)j * roi_out->width + i);
+
+      const int rz = CLAMPS(in[0] * d->rzscale, 0, size - 2); // zone index
+
+      const float zs = ((rz > 0) ? (d->zonemap_offset[rz] / in[0]) : 0) + d->zonemap_scale[rz];
+
+      _mm_stream_ps(out, _mm_mul_ps(_mm_load_ps(in), _mm_set1_ps(zs)));
+    }
+  }
+
+  _mm_sfence();
+
+  process_common_cleanup(self, piece, ivoid, ovoid, roi_in, roi_out);
+}
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -299,12 +345,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   /* calculate zonemap */
-  const int size = data->size;
+  const int size = data->params.size;
   float zonemap[MAX_ZONE_SYSTEM_SIZE] = { -1 };
   float zonemap_offset[ROUNDUP(MAX_ZONE_SYSTEM_SIZE, 16)] = { -1 };
   float zonemap_scale[ROUNDUP(MAX_ZONE_SYSTEM_SIZE, 16)] = { -1 };
 
-  _iop_zonesystem_calculate_zonemap(data, zonemap);
+  _iop_zonesystem_calculate_zonemap(&(data->params), zonemap);
 
   /* precompute scale and offset */
   for(int k = 0; k < size - 1; k++) zonemap_scale[k] = (zonemap[k + 1] - zonemap[k]) * (size - 1);
@@ -367,8 +413,20 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)p1;
 
   dt_iop_zonesystem_data_t *d = (dt_iop_zonesystem_data_t *)piece->data;
-  d->size = p->size;
-  for(int i = 0; i <= MAX_ZONE_SYSTEM_SIZE; i++) d->zone[i] = p->zone[i];
+
+  d->params = *p;
+  d->rzscale = (d->params.size - 1) / 100.0f;
+
+  /* calculate zonemap */
+  float zonemap[MAX_ZONE_SYSTEM_SIZE] = { -1 };
+  _iop_zonesystem_calculate_zonemap(&(d->params), zonemap);
+
+  const int size = d->params.size;
+
+  // precompute scale and offset
+  for(int k = 0; k < size - 1; k++) d->zonemap_scale[k] = (zonemap[k + 1] - zonemap[k]) * (size - 1);
+  for(int k = 0; k < size - 1; k++)
+    d->zonemap_offset[k] = 100.0f * ((k + 1) * zonemap[k] - k * zonemap[k + 1]);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
