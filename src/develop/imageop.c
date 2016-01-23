@@ -175,6 +175,21 @@ static int default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe
   return 1;
 }
 
+static void default_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i,
+                            void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
+{
+  if(darktable.codepath.OPENMP_SIMD && self->process_plain)
+    self->process_plain(self, piece, i, o, roi_in, roi_out);
+#if defined(__SSE__)
+  else if(darktable.codepath.SSE2 && self->process_sse2)
+    self->process_sse2(self, piece, i, o, roi_in, roi_out);
+#endif
+  else if(self->process_plain)
+    self->process_plain(self, piece, i, o, roi_in, roi_out);
+  else
+    dt_unreachable_codepath_with_desc(self->op);
+}
+
 static dt_introspection_field_t *default_get_introspection_linear()
 {
   return NULL;
@@ -271,9 +286,33 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
     module->init_pipe = default_init_pipe;
   if(!g_module_symbol(module->module, "cleanup_pipe", (gpointer) & (module->cleanup_pipe)))
     module->cleanup_pipe = default_cleanup_pipe;
-  if(!g_module_symbol(module->module, "process", (gpointer) & (module->process))) goto error;
+
+  module->process = default_process;
+
   if(!g_module_symbol(module->module, "process_tiling", (gpointer) & (module->process_tiling)))
     module->process_tiling = default_process_tiling;
+
+  if(!g_module_symbol(module->module, "process_sse2", (gpointer) & (module->process_sse2)))
+    module->process_sse2 = NULL;
+
+  if(!g_module_symbol(module->module, "process", (gpointer) & (module->process_plain)))
+  {
+    if(darktable.codepath._no_intrinsics || (
+#if defined(__SSE__)
+                                                (darktable.codepath.SSE2 && !(module->process_sse2))
+#else
+                                                1
+#endif
+                                                    ))
+    {
+      goto error;
+    }
+    else
+    {
+      module->process_plain = NULL;
+    }
+  }
+
   if(!darktable.opencl->inited
      || !g_module_symbol(module->module, "process_cl", (gpointer) & (module->process_cl)))
     module->process_cl = NULL;
@@ -386,6 +425,8 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->cleanup_pipe = so->cleanup_pipe;
   module->process = so->process;
   module->process_tiling = so->process_tiling;
+  module->process_plain = so->process_plain;
+  module->process_sse2 = so->process_sse2;
   module->process_cl = so->process_cl;
   module->process_tiling_cl = so->process_tiling_cl;
   module->distort_transform = so->distort_transform;

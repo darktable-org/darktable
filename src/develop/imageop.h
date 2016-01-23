@@ -202,6 +202,10 @@ typedef struct dt_iop_module_so_t
   void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
                          const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
                          const int bpp);
+  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+                        const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+                       const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
                     const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i,
@@ -378,12 +382,20 @@ typedef struct dt_iop_module_t
     * x,y, and scale are just given for orientation in the framebuffer. i and o are
     * scaled to the same size width*height and contain a max of 3 floats. other color
     * formats may be filled by this callback, if the pipeline can handle it. */
+  /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
   void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
                   const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   /** a tiling variant of process(). */
   void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
                          const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
                          const int bpp);
+  /** WARNING: in IOP implementation, it is called process()!!! */
+  /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
+  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+                        const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  /** a variant process(), that can contain SSE2 intrinsics. */
+  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+                       const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   /** the opencl equivalent of process(). */
   int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
                     const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
