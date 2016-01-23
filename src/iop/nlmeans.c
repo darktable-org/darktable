@@ -27,7 +27,9 @@
 #include "common/opencl.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 
 #define BLOCKSIZE                                                                                            \
@@ -124,6 +126,7 @@ void connect_key_accels(dt_iop_module_t *self)
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
 // *roi_out, dt_iop_roi_t *roi_in);
 
+#if defined(__SSE__)
 typedef union floatint_t
 {
   float f;
@@ -150,6 +153,7 @@ static float gh(const float f, const float sharpness)
   // const float spread = 100.f;
   // return 1.0f/(1.0f + fabsf(f)*spread);
 }
+#endif
 
 #ifdef HAVE_OPENCL
 static int bucket_next(unsigned int *state, unsigned int max)
@@ -367,11 +371,10 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-
-
+#if defined(__SSE__)
 /** process, all real work is done here. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -562,6 +565,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+#endif
 
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)

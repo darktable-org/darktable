@@ -78,7 +78,9 @@
 #include <sys/wait.h>
 #endif
 #include <locale.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #endif
@@ -426,8 +428,11 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
         "WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
 #endif
 
+#if defined(__SSE__)
   // make everything go a lot faster.
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+#endif
+
 #if !defined __APPLE__ && !defined __WIN32__
   _dt_sigsegv_old_handler = signal(SIGSEGV, &_dt_sigsegv_handler);
 #endif

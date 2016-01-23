@@ -29,9 +29,9 @@
 #include "control/control.h"
 #include <memory.h>
 #include <stdlib.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
-// SSE4 actually not used yet.
-// #include <smmintrin.h>
+#endif
 
 #define INSET DT_PIXEL_APPLY_DPI(5)
 #define INFL .3f
@@ -139,6 +139,7 @@ void connect_key_accels(dt_iop_module_t *self)
     (a), (a), (a), (a)                                                                                       \
   }
 
+#if defined(__SSE__)
 static const __m128 fone ALIGNED(16) = VEC4(0x3f800000u);
 static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
 static const __m128 ooo1 ALIGNED(16) = { 0.f, 0.f, 0.f, 1.f };
@@ -372,6 +373,7 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
   }
   _mm_sfence();
 }
+#endif
 
 static int get_samples(float *t, const dt_iop_atrous_data_t *const d, const dt_iop_roi_t *roi_in,
                        const dt_dev_pixelpipe_iop_t *const piece)
@@ -438,9 +440,10 @@ static int get_scales(float (*thrs)[4], float (*boost)[4], float *sharp, const d
   return i;
 }
 
+#if defined(__SSE__)
 /* just process the supplied image buffer, upstream default_process_tiling() does the rest */
-void process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs[MAX_NUM_SCALES][4];
@@ -515,6 +518,7 @@ error:
   if(tmp != NULL) dt_free_align(tmp);
   return;
 }
+#endif
 
 #ifdef HAVE_OPENCL
 /* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */

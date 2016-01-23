@@ -18,7 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <xmmintrin.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -36,14 +35,18 @@
 #include "dtgtk/gradientslider.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define TEA_ROUNDS 8
 
 DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
+#if defined(__SSE__)
 typedef __m128(_find_nearest_color)(float *val, const float f, const float rf);
+#endif
 
 typedef enum dt_iop_dither_type_t
 {
@@ -121,6 +124,7 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 
+#if defined(__SSE__)
 // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
 static __m128 _find_nearest_color_n_levels_gray(float *val, const float f, const float rf)
 {
@@ -405,8 +409,8 @@ void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -415,6 +419,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   else
     process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
+#endif
 
 static void method_callback(GtkWidget *widget, gpointer user_data)
 {

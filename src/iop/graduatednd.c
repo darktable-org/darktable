@@ -35,7 +35,9 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 #define CLIP(x) ((x < 0.0f) ? 0.0f : (x > 1.0f) ? 1.0f : x)
 
@@ -646,8 +648,9 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
   return 0;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
   const int ch = piece->colors;
@@ -779,6 +782,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+#endif
 
 
 #ifdef HAVE_OPENCL
