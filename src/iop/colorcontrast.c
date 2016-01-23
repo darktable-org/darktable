@@ -32,7 +32,9 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <assert.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 DT_MODULE_INTROSPECTION(2, dt_iop_colorcontrast_params_t)
 
@@ -132,8 +134,48 @@ void connect_key_accels(dt_iop_module_t *self)
 
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
+  assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
+
+  // get our data struct:
+  const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
+
+  // how many colors in our buffer?
+  const int ch = piece->colors;
+
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
+
+  if(d->unbound)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static)
+#endif
+    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    {
+      out[k + 1] = (in[k + 1] * d->a_steepness) + d->a_offset;
+      out[k + 2] = (in[k + 2] * d->b_steepness) + d->b_offset;
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static)
+#endif
+    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    {
+      out[k + 1] = CLAMP((in[k + 1] * d->a_steepness) + d->a_offset, -128.0f, 128.0f);
+      out[k + 2] = CLAMP((in[k + 2] * d->b_steepness) + d->b_offset, -128.0f, 128.0f);
+    }
+  }
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
@@ -183,6 +225,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
   _mm_sfence();
 }
+#endif
 
 
 #ifdef HAVE_OPENCL
