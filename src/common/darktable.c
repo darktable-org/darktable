@@ -383,6 +383,41 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
   return id;
 }
 
+static void dt_codepaths_init()
+{
+#ifdef HAVE_BUILTIN_CPU_SUPPORTS
+  __builtin_cpu_init();
+#endif
+
+  memset(&(darktable.codepath), 0, sizeof(darktable.codepath));
+
+  // first, enable whatever codepath this CPU supports
+  {
+#ifdef HAVE_BUILTIN_CPU_SUPPORTS
+    darktable.codepath.SSE2 = (__builtin_cpu_supports("sse") && __builtin_cpu_supports("sse2"));
+#else
+    dt_cpu_flags_t flags = dt_detect_cpu_features();
+    darktable.codepath.SSE2 = ((flags & (CPU_FLAG_SSE)) && (flags & (CPU_FLAG_SSE2)));
+#endif
+  }
+
+  // second, apply overrides from conf
+  // NOTE: all intrinsics sets can only be overridden to OFF
+  if(!dt_conf_get_bool("codepaths/sse2")) darktable.codepath.SSE2 = 0;
+
+  // last: do we have any intrinsics sets enabled?
+  darktable.codepath._no_intrinsics = !(darktable.codepath.SSE2);
+
+// if there is no SSE, we must enable plain codepath by default,
+// else, enable it conditionally.
+#if defined(__SSE__)
+  // disabled by default, needs to be manually enabled if needed.
+  // disabling all optimized codepaths enables it automatically.
+  if(dt_conf_get_bool("codepaths/openmp_simd") || darktable.codepath._no_intrinsics)
+#endif
+    darktable.codepath.OPENMP_SIMD = 1;
+}
+
 int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 {
 #ifndef __WIN32__
@@ -756,12 +791,6 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   g_type_init();
 #endif
 
-// does not work, as gtk is not inited yet.
-// even if it were, it's a super bad idea to invoke gtk stuff from
-// a signal handler.
-/* check cput caps */
-// dt_check_cpu(argc,argv);
-
 #ifdef USE_LUA
   dt_lua_init_early(L);
 #endif
@@ -788,6 +817,9 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     setenv("LANG", lang, 1);
   }
   g_free((gchar *)lang);
+
+  // detect cpu features and decide which codepaths to enable
+  dt_codepaths_init();
 
   // get the list of color profiles
   darktable.color_profiles = dt_colorspaces_init();
