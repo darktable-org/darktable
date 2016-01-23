@@ -417,7 +417,19 @@ static void dt_codepaths_init()
   // disabling all optimized codepaths enables it automatically.
   if(dt_conf_get_bool("codepaths/openmp_simd") || darktable.codepath._no_intrinsics)
 #endif
+  {
     darktable.codepath.OPENMP_SIMD = 1;
+    fprintf(stderr, "[dt_codepaths_init] will be using HIGHLY EXPERIMENTAL plain OpenMP SIMD codepath.\n");
+  }
+
+#if defined(__SSE__)
+  if(darktable.codepath._no_intrinsics)
+#endif
+  {
+    fprintf(stderr, "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
+    fprintf(stderr,
+            "[dt_codepaths_init] expect a LOT of functionality to be broken. you have been warned.\n");
+  }
 }
 
 int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
@@ -437,26 +449,25 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   _dt_sigsegv_old_handler = signal(SIGSEGV, &_dt_sigsegv_handler);
 #endif
 
-#ifndef __SSE3__
-#error "Unfortunately we depend on SSE3 instructions at this time."
-#error "Please contribute a backport patch (or buy a newer processor)."
-#else
-  int sse3_supported = 0;
+#ifndef __SSE2__
+#pragma message "Building without SSE2 is highly experimental."
+#pragma message "Expect a LOT of functionality to be broken. You have been warned."
+#endif
+
+  int sse2_supported = 0;
 
 #ifdef HAVE_BUILTIN_CPU_SUPPORTS
   // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
   __builtin_cpu_init();
-  sse3_supported = __builtin_cpu_supports("sse3");
+  sse2_supported = __builtin_cpu_supports("sse2");
 #else
-  sse3_supported = dt_detect_cpu_features() & CPU_FLAG_SSE3;
+  sse2_supported = dt_detect_cpu_features() & CPU_FLAG_SSE2;
 #endif
-  if(!sse3_supported)
+  if(!sse2_supported)
   {
-    fprintf(stderr, "[dt_init] unfortunately we depend on SSE3 instructions at this time.\n");
-    fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
-    return 1;
+    fprintf(stderr, "[dt_init] SSE2 instruction set is unavailable.\n");
+    fprintf(stderr, "[dt_init] expect a LOT of functionality to be broken. you have been warned.\n");
   }
-#endif
 
 #ifdef M_MMAP_THRESHOLD
   mallopt(M_MMAP_THRESHOLD, 128 * 1024); /* use mmap() for large allocations */
