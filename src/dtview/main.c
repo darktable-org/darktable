@@ -287,7 +287,6 @@ static void usage(const char *progname)
 
 int main(int argc, char *arg[])
 {
-  gtk_init(&argc, &arg);
   repeat = random_state = use_random = 0;
 
   // use system color profile, if we can:
@@ -315,8 +314,9 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char *m_arg[5 + argc - k];
+  char *m_arg[6 + argc - k];
   m_arg[m_argc++] = "darktable-viewer";
+  m_arg[m_argc++] = "--disable-opencl";
   m_arg[m_argc++] = "--conf";
   m_arg[m_argc++] = "write_sidecar_files=FALSE";
   m_arg[m_argc++] = "--conf";
@@ -327,6 +327,7 @@ int main(int argc, char *arg[])
   // init dt without gui:
   if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
   running = init(m_argc, m_arg);
+  gtk_init(&argc, &arg);
 
   srand48(SDL_GetTicks());
   if(use_random) random_state = drand48() * INT_MAX;
