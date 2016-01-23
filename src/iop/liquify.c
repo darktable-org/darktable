@@ -184,13 +184,13 @@ typedef enum {
 } dt_liquify_path_data_enum_t;
 
 typedef struct {
-  dt_liquify_path_data_enum_t type      : 8;
-  dt_liquify_node_type_enum_t node_type : 8;
-  dt_liquify_layer_enum_t selected      : 8;
-  dt_liquify_layer_enum_t hovered       : 8;
-  int                     prev          : 8;
-  int                     idx           : 8;
-  int                     next          : 8;
+  dt_liquify_path_data_enum_t type;
+  dt_liquify_node_type_enum_t node_type;
+  dt_liquify_layer_enum_t selected;
+  dt_liquify_layer_enum_t hovered;
+  int8_t prev;
+  int8_t idx;
+  int8_t next;
 } dt_liquify_path_header_t;
 
 // Scalars and vectors are represented here as points because the only
