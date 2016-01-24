@@ -1287,27 +1287,25 @@ static cl_int_t apply_global_distortion_map_cl (struct dt_iop_module_t *module,
 
   cl_mem_t dev_roi_in = dt_opencl_copy_host_to_device_constant (
     devid, sizeof (dt_iop_roi_t), (void *) roi_in);
-  if (dev_roi_in == NULL) goto error;
 
   cl_mem_t dev_roi_out = dt_opencl_copy_host_to_device_constant (
     devid, sizeof (dt_iop_roi_t), (void *) roi_out);
-  if (dev_roi_out == NULL) goto error;
 
   cl_mem_t dev_map = dt_opencl_copy_host_to_device_constant (
     devid, map_extent->width * map_extent->height * sizeof (float complex), (void *) map);
-  if (dev_map == NULL) goto error;
 
   cl_mem_t dev_map_extent = dt_opencl_copy_host_to_device_constant (
     devid, sizeof (cairo_rectangle_int_t), (void *) map_extent);
-  if (dev_map_extent == NULL) goto error;
 
   cl_mem_t dev_kdesc = dt_opencl_copy_host_to_device_constant (
     devid, sizeof (dt_liquify_kernel_descriptor_t), (void *) &kdesc);
-  if (dev_kdesc == NULL) goto error;
 
   cl_mem_t dev_kernel = dt_opencl_copy_host_to_device_constant (
     devid, (kdesc.size * kdesc.resolution  + 1) * sizeof (float), (void *) k);
-  if (dev_kernel == NULL) goto error;
+
+  if (dev_roi_in == NULL || dev_roi_out == NULL || dev_map == NULL || dev_map_extent == NULL
+      || dev_kdesc == NULL || dev_kernel == NULL)
+    goto error;
 
   dt_opencl_set_kernel_arg (devid, gd->warp_kernel, 0, sizeof (cl_mem), &dev_in);
   dt_opencl_set_kernel_arg (devid, gd->warp_kernel, 1, sizeof (cl_mem), &dev_out);
