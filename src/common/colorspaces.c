@@ -1697,7 +1697,7 @@ int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM
 // Converted from dcraw's cam_xyz_coeff()
 int dt_colorspaces_conversion_matrices_rgb(const char *name, double out_RGB_to_CAM[4][3], double out_CAM_to_RGB[3][4], double mul[4])
 {
-  double RGB_to_CAM[4][3], CAM_to_RGB[3][4];
+  double RGB_to_CAM[4][3];
 
   float XYZ_to_CAM[4][3];
   XYZ_to_CAM[0][0] = NAN;
@@ -1743,24 +1743,7 @@ int dt_colorspaces_conversion_matrices_rgb(const char *name, double out_RGB_to_C
     dt_colorspaces_pseudoinverse (RGB_to_CAM, inverse, 4);
     for(int i = 0; i < 3; i++)
       for(int j = 0; j < 4; j++)
-        CAM_to_RGB[i][j] = inverse[j][i];
-
-    const double REC2020_to_XYZ[3][3] = {
-      { 0.673492, 0.279037, -0.001938 },
-      { 0.165665, 0.675354, 0.029984 },
-      { 0.125046, 0.045609, 0.796860 },
-    };
-
-    // Finally apply the Rec2020 profile
-    for(int i = 0; i < 3; i++)
-    {
-      for(int j = 0; j < 4; j++)
-      {
-        out_CAM_to_RGB[i][j] = 0.0f;
-        for(int k = 0; k < 3; k++)
-          out_CAM_to_RGB[i][j] += REC2020_to_XYZ[i][k] * CAM_to_RGB[k][j];
-      }
-    }
+        out_CAM_to_RGB[i][j] = inverse[j][i];
   }
 
   return TRUE;

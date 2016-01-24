@@ -1055,6 +1055,19 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
         {
           dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(out, (const uint16_t *)buf.buf, &roi_out,
                                                               &roi_in, roi_out.width, roi_in.width, image);
+
+          // For four bayer images we'll need to convert to XYZ here as the pipe only carries 3 channels
+          if(image->flags & DT_IMAGE_4BAYER)
+          {
+            double CAM_to_RGB[3][4];
+            const char *camera = image->camera_makermodel;
+            if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, CAM_to_RGB, NULL))
+            {
+              fprintf(stderr, "[init_f] `%s' color matrix not found for 4bayer image!\n", camera);
+              dt_control_log(_("[init_f] `%s' color matrix not found for 4bayer image!\n"), camera);
+            }
+            dt_colorspaces_cygm_to_rgb(out, roi_out.width*roi_out.height, CAM_to_RGB);
+          }
         }
       }
     }

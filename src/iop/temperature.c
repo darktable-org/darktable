@@ -485,9 +485,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   { // non-mosaiced
     const int ch = piece->colors;
 
-    float coeff4 = (img->flags & DT_IMAGE_4BAYER) ? d->coeffs[3] : 1.0f;
+    float tmp[4] = {d->coeffs[0], d->coeffs[1], d->coeffs[2], d->coeffs[3]};
+    if(img->flags & DT_IMAGE_4BAYER) {
+      // We're processing a 4 bayer image that's been converted to RGB so we
+      // need to get some RGB coeffs
+      dt_colorspaces_cygm_to_rgb(tmp, 1, d->CAM_to_RGB);
+    }
 
-    const __m128 coeffs = _mm_set_ps(coeff4, d->coeffs[2], d->coeffs[1], d->coeffs[0]);
+    const __m128 coeffs = _mm_set_ps(1.0f, tmp[2], tmp[1], tmp[0]);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
@@ -504,13 +509,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       }
     }
     _mm_sfence();
-
-    if(img->flags & DT_IMAGE_4BAYER)
-    {
-      // Demosaic CMYG data coming from a mipf, so we need to do the RGB conversion here
-      // instead of what happens in the normal pipe where demosaic would do it
-      dt_colorspaces_cygm_to_rgb(ovoid, roi_out->width*roi_out->height, d->CAM_to_RGB);
-    }
 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
