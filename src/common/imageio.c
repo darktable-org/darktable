@@ -338,12 +338,16 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, d
   // needed to alloc correct buffer size:
   img->bpp = 4 * sizeof(float);
   dt_imageio_retval_t ret;
+  dt_image_loader_t loader;
 #ifdef HAVE_OPENEXR
+  loader = LOADER_EXR;
   ret = dt_imageio_open_exr(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 #endif
+  loader = LOADER_RGBE;
   ret = dt_imageio_open_rgbe(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
+  loader = LOADER_PFM;
   ret = dt_imageio_open_pfm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 return_label:
@@ -353,6 +357,7 @@ return_label:
     img->flags &= ~DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags |= DT_IMAGE_HDR;
+    img->loader = loader;
   }
   return ret;
 }
@@ -461,6 +466,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_TIFF;
     return ret;
   }
 
@@ -471,6 +477,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_PNG;
     return ret;
   }
 
@@ -482,6 +489,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_J2K;
     return ret;
   }
 #endif
@@ -493,6 +501,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_JPEG;
     return ret;
   }
 
@@ -902,6 +911,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_GM;
     return ret;
   }
 #endif
@@ -922,6 +932,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return !DT_IMAGEIO_OK;
 
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
+  img->loader = LOADER_UNKNOWN;
 
   /* check if file is ldr using magic's */
   if(dt_imageio_is_ldr(filename)) ret = dt_imageio_open_ldr(img, filename, buf);
@@ -931,11 +942,14 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
     ret = dt_imageio_open_hdr(img, filename, buf);
   
   /* use rawspeed to load the raw */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) 
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+  {
     ret = dt_imageio_open_rawspeed(img, filename, buf);
+    if(ret == DT_IMAGEIO_OK) img->loader = LOADER_RAWSPEED;
+  }
 
   /* fallback that tries to open file via GraphicsMagick */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) 
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_exotic(img, filename, buf);
 
   return ret;
