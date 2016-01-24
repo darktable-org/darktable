@@ -177,6 +177,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+#ifdef HAVE_OPENCL
 static const char* method2string(dt_iop_demosaic_method_t method)
 {
   const char *string;
@@ -209,6 +210,7 @@ static const char* method2string(dt_iop_demosaic_method_t method)
   }
   return string;
 }
+#endif
 
 static int FC(const int row, const int col, const unsigned int filters)
 {
