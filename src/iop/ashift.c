@@ -125,6 +125,78 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "keystone", GTK_WIDGET(g->keystone));
 }
 
+#define generate_mat3inv_body(c_type, A, B)                                                                  \
+  int mat3inv_##c_type(c_type *const dst, const c_type *const src)                                           \
+  {                                                                                                          \
+                                                                                                             \
+    const c_type det = A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3))                                     \
+                       - A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3))                                   \
+                       + A(3, 1) * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));                                  \
+                                                                                                             \
+    const c_type epsilon = 1e-7f;                                                                            \
+    if(fabs(det) < epsilon) return 1;                                                                        \
+                                                                                                             \
+    const c_type invDet = 1.0 / det;                                                                         \
+                                                                                                             \
+    B(1, 1) = invDet * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3));                                              \
+    B(1, 2) = -invDet * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3));                                             \
+    B(1, 3) = invDet * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));                                              \
+                                                                                                             \
+    B(2, 1) = -invDet * (A(3, 3) * A(2, 1) - A(3, 1) * A(2, 3));                                             \
+    B(2, 2) = invDet * (A(3, 3) * A(1, 1) - A(3, 1) * A(1, 3));                                              \
+    B(2, 3) = -invDet * (A(2, 3) * A(1, 1) - A(2, 1) * A(1, 3));                                             \
+                                                                                                             \
+    B(3, 1) = invDet * (A(3, 2) * A(2, 1) - A(3, 1) * A(2, 2));                                              \
+    B(3, 2) = -invDet * (A(3, 2) * A(1, 1) - A(3, 1) * A(1, 2));                                             \
+    B(3, 3) = invDet * (A(2, 2) * A(1, 1) - A(2, 1) * A(1, 2));                                              \
+    return 0;                                                                                                \
+  }
+
+#define A(y, x) src[(y - 1) * 3 + (x - 1)]
+#define B(y, x) dst[(y - 1) * 3 + (x - 1)]
+/** inverts the given 3x3 matrix */
+generate_mat3inv_body(float, A, B)
+
+int mat3inv(float *const dst, const float *const src)
+{
+  return mat3inv_float(dst, src);
+}
+
+generate_mat3inv_body(double, A, B)
+#undef B
+#undef A
+#undef generate_mat3inv_body
+
+/* static */
+void mat3mulv(float *dst, const float *const mat, const float *const v)
+{
+  for(int k = 0; k < 3; k++)
+  {
+    float x = 0.0f;
+    for(int i = 0; i < 3; i++) x += mat[3 * k + i] * v[i];
+    dst[k] = x;
+  }
+}
+
+/* static */
+void mat3mul(float *dst, const float *const m1, const float *const m2)
+{
+  for(int k = 0; k < 3; k++)
+  {
+    for(int i = 0; i < 3; i++)
+    {
+      float x = 0.0f;
+      for(int j = 0; j < 3; j++) x += m1[3 * k + j] * m2[3 * j + i];
+      dst[3 * k + i] = x;
+    }
+  }
+}
+
+void _print_roi(const dt_iop_roi_t *roi, const char *label)
+{
+  printf("{ %5d  %5d  %5d  %5d  %.6f } %s\n", roi->x, roi->y, roi->width, roi->height, roi->scale, label);
+}
+
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
@@ -152,7 +224,6 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   return 1;
 }
 
-
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
@@ -165,13 +236,14 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   //dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
   *roi_in = *roi_out;
 
-  const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
+  const float orig_w = roi_in->scale * piece->buf_in.width;
+  const float orig_h = roi_in->scale * piece->buf_in.height;
 
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
 
-  for(int y = 0; y < roi_out->height; y++)
+  for(int y = 0; y < roi_out->height; y += roi_out->height - 1)
   {
-    for(int x = 0; x < roi_out->width; x++)
+    for(int x = 0; x < roi_out->width; x += roi_out->width - 1)
     {
       xm = MIN(xm, roi_out->x + x);
       xM = MAX(xM, roi_out->x + x);
@@ -180,22 +252,20 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     }
   }
 
-  if(!isfinite(xm) || !(0 <= xm && xm < orig_w)) xm = 0;
-  if(!isfinite(xM) || !(1 <= xM && xM < orig_w)) xM = orig_w;
-  if(!isfinite(ym) || !(0 <= ym && ym < orig_h)) ym = 0;
-  if(!isfinite(yM) || !(1 <= yM && yM < orig_h)) yM = orig_h;
-
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  roi_in->x = fmaxf(0.0f, xm - interpolation->width);
-  roi_in->y = fmaxf(0.0f, ym - interpolation->width);
-  roi_in->width = fminf(orig_w - roi_in->x, xM - roi_in->x + interpolation->width);
-  roi_in->height = fminf(orig_h - roi_in->y, yM - roi_in->y + interpolation->width);
+  //const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  roi_in->x = fmaxf(0.0f, xm - 0 /*interpolation->width*/);
+  roi_in->y = fmaxf(0.0f, ym - 0 /*interpolation->width*/);
+  roi_in->width = fminf(ceilf(orig_w) - roi_in->x, xM - roi_in->x + 1 + 0 /*interpolation->width*/);
+  roi_in->height = fminf(ceilf(orig_h) - roi_in->y, yM - roi_in->y + 1 + 0 /*interpolation->width*/);
 
   // sanity check.
   roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(orig_w));
   roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
   roi_in->width = CLAMP(roi_in->width, 1, (int)ceilf(orig_w) - roi_in->x);
   roi_in->height = CLAMP(roi_in->height, 1, (int)ceilf(orig_h) - roi_in->y);
+
+  //_print_roi(roi_out, "roi_out");
+  //_print_roi(roi_in, "roi_in");
 }
 
 
