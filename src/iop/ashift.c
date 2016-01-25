@@ -58,6 +58,8 @@ typedef struct dt_iop_ashift_data_t
 {
   float rotation;
   float keystone;
+  float homograph[3][3];
+  float ihomograph[3][3];
 } dt_iop_ashift_data_t;
 
 typedef struct dt_iop_ashift_global_data_t
@@ -68,7 +70,7 @@ typedef struct dt_iop_ashift_global_data_t
 
 const char *name()
 {
-  return _("automatic shift");
+  return _("perspective correction");
 }
 
 int flags()
@@ -79,6 +81,11 @@ int flags()
 int groups()
 {
   return IOP_GROUP_CORRECT;
+}
+
+int operation_tags()
+{
+  return IOP_TAG_DISTORT;
 }
 
 #if 0
@@ -186,16 +193,19 @@ void _print_roi(const dt_iop_roi_t *roi, const char *label)
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
-  //dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(points, points_count)
+  shared(points, points_count, data)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    points[i] = points[i];
-    points[i + 1] = points[i + 1];
+    float pi[3] = { points[i], points[i + 1], 1.0f };
+    float po[3];
+    mat3mulv(po, (float *)data->homograph, pi);
+    points[i] = po[0] / po[2];
+    points[i + 1] = po[1] / po[2];
   }
 
   return 1;
@@ -205,16 +215,19 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count)
 {
-  //dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(points, points_count)
+  shared(points, points_count, data)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    points[i] = points[i];
-    points[i + 1] = points[i + 1];
+    float pi[3] = { points[i], points[i + 1], 1.0f };
+    float po[3];
+    mat3mulv(po, (float *)data->ihomograph, pi);
+    points[i] = po[0] / po[2];
+    points[i + 1] = po[1] / po[2];
   }
 
   return 1;
@@ -268,7 +281,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  //dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   //dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   const int ch = piece->colors;
@@ -278,26 +291,29 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(ivoid, ovoid, roi_in, roi_out, interpolation)
+  shared(ivoid, ovoid, roi_in, roi_out, data, interpolation)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
     float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
     for(int i = 0; i < roi_out->width; i++, out += ch)
     {
-      float pi[2], po[2];
+      float pin[3], pout[3];
 
-      pi[0] = roi_out->x + i;
-      pi[1] = roi_out->y + j;
-      pi[0] /= roi_out->scale;
-      pi[1] /= roi_out->scale;
-      memcpy(po, pi, sizeof(po));
-      po[0] *= roi_in->scale;
-      po[1] *= roi_in->scale;
-      po[0] -= roi_in->x;
-      po[1] -= roi_in->y;
+      pout[0] = roi_out->x + i;
+      pout[1] = roi_out->y + j;
+      pout[0] /= roi_out->scale;
+      pout[1] /= roi_out->scale;
+      pout[2] = 1.0f;
+      mat3mulv(pin, (float *)data->ihomograph, pout);
+      pin[0] /= pin[2];
+      pin[1] /= pin[2];
+      pin[0] *= roi_in->scale;
+      pin[1] *= roi_in->scale;
+      pin[0] -= roi_in->x;
+      pin[1] -= roi_in->y;
 
-      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, po[0], po[1], roi_in->width,
+      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, pin[0], pin[1], roi_in->width,
                                        roi_in->height, ch_width);
     }
   }
@@ -343,6 +359,61 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   d->rotation = p->rotation;
   d->keystone = p->keystone;
+
+  const float phi = (p->rotation / 180.0f) * M_PI;
+
+  const float orig_w = piece->buf_in.width;
+  const float orig_h = piece->buf_in.height;
+
+
+  // three intermediate buffers for matrix calculation
+  float m1[3][3], m2[3][3], m3[3][3];
+
+  // for image in coordinate system of original image dimensions
+  // translation of image origin to image center
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = 1.0f;
+  m1[1][1] = 1.0f;
+  m1[2][2] = 1.0f;
+  m1[0][2] = -0.5f * orig_w;
+  m1[1][2] = -0.5f * orig_h;
+
+  // rotation of image around origin
+  memset(m2, 0, sizeof(m2));
+  m2[0][0] = cos(phi);
+  m2[0][1] = -sin(phi);
+  m2[1][0] = sin(phi);
+  m2[1][1] = cos(phi);
+  m2[2][2] = 1.0f;
+
+  // multiply the two m2 * m1 -> m3
+  mat3mul((float *)m3, (float *)m2, (float *)m1);
+
+  // translation of image back to origin
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = 1.0f;
+  m1[1][1] = 1.0f;
+  m1[2][2] = 1.0f;
+  m1[0][2] = 0.5f * orig_w;
+  m1[1][2] = 0.5f * orig_h;
+
+  // multiply m1 * m3 -> homograph
+  mat3mul((float *)d->homograph, (float *)m1, (float *)m3);
+
+  // invert homograph
+  if(mat3inv_float((float *)d->ihomograph, (float *)d->homograph))
+  {
+    // in case of error we set both to unity matrices
+    memset(d->homograph, 0, sizeof(d->homograph));
+    d->homograph[0][0] = 1.0f;
+    d->homograph[1][1] = 1.0f;
+    d->homograph[2][2] = 1.0f;
+
+    memset(d->ihomograph, 0, sizeof(d->ihomograph));
+    d->ihomograph[0][0] = 1.0f;
+    d->ihomograph[1][1] = 1.0f;
+    d->ihomograph[2][2] = 1.0f;
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
