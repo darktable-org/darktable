@@ -263,7 +263,7 @@ typedef struct {
   GdkModifierType last_mouse_mods;  ///< GDK modifiers at the time mouse button was pressed.
 
   dt_liquify_hit_t last_hit;      ///< Element last hit with mouse button.
-  GList *dragging;      ///< List of dt_liquify_hit_t being dragged. Owns elements.
+  dt_liquify_hit_t dragging;      ///< Element being dragged with mouse button.
 
   dt_liquify_path_data_t *temp;    ///< Points to the element under construction or NULL.
   dt_liquify_status_enum_t status; ///< Various flags.
@@ -2392,19 +2392,18 @@ static dt_liquify_path_data_t *alloc_curve_to (dt_iop_module_t *module, float co
 
 static void start_drag (dt_iop_liquify_gui_data_t *g, dt_liquify_layer_enum_t layer, dt_liquify_path_data_t *elem)
 {
-  dt_liquify_hit_t *hit = malloc (sizeof (dt_liquify_hit_t));
-  hit->layer = layer;
-  hit->elem = elem;
-  g->dragging = g_list_append (g->dragging, hit);
+  g->dragging.layer = layer;
+  g->dragging.elem = elem;
 }
 
 static void end_drag (dt_iop_liquify_gui_data_t *g)
 {
-  if (g->dragging)
-  {
-    g_list_free_full (g->dragging, free);
-    g->dragging = NULL;
-  }
+  g->dragging = NOWHERE;
+}
+
+static gboolean is_dragging(dt_iop_liquify_gui_data_t *g)
+{
+  return g->dragging.elem != NULL;
 }
 
 static void unselect_all (dt_iop_liquify_params_t *p)
@@ -2593,7 +2592,7 @@ int mouse_moved (struct dt_iop_module_t *module,
   // Don't hit test while dragging, you'd only hit the dragged thing
   // anyway.
 
-  if (!g->dragging)
+  if (!is_dragging(g))
   {
     dt_liquify_hit_t hit = hit_test_paths (module, scale, g->fake_cr, &g->params, pt);
     dt_liquify_path_data_t *last_hovered = find_hovered (&g->params);
@@ -2611,120 +2610,116 @@ int mouse_moved (struct dt_iop_module_t *module,
     }
   }
 
-  if (dragged && !g->dragging && g->last_hit.elem)
+  if (dragged && !is_dragging(g) && g->last_hit.elem)
   {
     // start dragging
     start_drag (g, g->last_hit.layer, g->last_hit.elem);
   }
 
-  if (g->dragging)
+  if (is_dragging(g))
   {
-    for (GList *i = g->dragging; i != NULL; i = i->next)
+    dt_liquify_path_data_t *d = g->dragging.elem;
+    dt_liquify_path_data_t *n = node_next(&g->params, d);
+    dt_liquify_path_data_t *p = node_prev(&g->params, d);
+
+    const float complex *start_pt = &d->point;
+
+    switch (g->dragging.layer)
     {
-      const dt_liquify_hit_t *hit = i->data; assert (hit && hit->elem);
-      dt_liquify_path_data_t *d = hit->elem;
-      dt_liquify_path_data_t *n = node_next(&g->params, d);
-      dt_liquify_path_data_t *p = node_prev(&g->params, d);
-
-      const float complex *start_pt = &d->point;
-
-      switch (hit->layer)
+    case DT_LIQUIFY_LAYER_CENTERPOINT:
+      switch (d->header.type)
       {
-      case DT_LIQUIFY_LAYER_CENTERPOINT:
-        switch (d->header.type)
-        {
-        case DT_LIQUIFY_PATH_CURVE_TO_V1:
-          d->curve_to_v1.ctrl2 += pt - d->point;
-          // fall thru
-        case DT_LIQUIFY_PATH_MOVE_TO_V1:
-        case DT_LIQUIFY_PATH_LINE_TO_V1:
-          if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-            n->curve_to_v1.ctrl1 += pt - d->point;
-          if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-            p->curve_to_v1.ctrl2 += pt - d->point;
-          d->warp.radius   += pt - d->point;
-          d->warp.strength += pt - d->point;
-          d->point = pt;
-          break;
-        default:
-          break;
-        }
+      case DT_LIQUIFY_PATH_CURVE_TO_V1:
+        d->curve_to_v1.ctrl2 += pt - d->point;
+        // fall thru
+      case DT_LIQUIFY_PATH_MOVE_TO_V1:
+      case DT_LIQUIFY_PATH_LINE_TO_V1:
+        if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+          n->curve_to_v1.ctrl1 += pt - d->point;
+        if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+          p->curve_to_v1.ctrl2 += pt - d->point;
+        d->warp.radius   += pt - d->point;
+        d->warp.strength += pt - d->point;
+        d->point = pt;
         break;
-
-      case DT_LIQUIFY_LAYER_CTRLPOINT1:
-        switch (d->header.type)
-        {
-        case DT_LIQUIFY_PATH_CURVE_TO_V1:
-          d->curve_to_v1.ctrl1 = pt;
-          if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-          {
-            switch (p->header.node_type)
-            {
-            case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-              p->curve_to_v1.ctrl2 = p->point +
-                cabs (p->point - p->curve_to_v1.ctrl2) *
-                cexp (carg (p->point - pt) * I);
-              break;
-            case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-              p->curve_to_v1.ctrl2 = 2 * p->point - pt;
-              break;
-            default:
-              break;
-            }
-          }
-          break;
-        default:
-          break;
-        }
-        break;
-
-      case DT_LIQUIFY_LAYER_CTRLPOINT2:
-        switch (d->header.type)
-        {
-        case DT_LIQUIFY_PATH_CURVE_TO_V1:
-          d->curve_to_v1.ctrl2 = pt;
-          if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-          {
-            switch (d->header.node_type)
-            {
-            case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-              n->curve_to_v1.ctrl1 = d->point +
-                cabs (d->point - n->curve_to_v1.ctrl1) *
-                cexp (carg (d->point - pt) * I);
-              break;
-            case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-              n->curve_to_v1.ctrl1 = 2 * d->point - pt;
-              break;
-            default:
-              break;
-            }
-          }
-          break;
-        default:
-          break;
-        }
-        break;
-
-      case DT_LIQUIFY_LAYER_RADIUSPOINT:
-        d->warp.radius = pt;
-        dt_conf_set_float(CONF_RADIUS, cabs(d->warp.radius - d->point));
-        break;
-
-      case DT_LIQUIFY_LAYER_STRENGTHPOINT:
-        d->warp.strength = pt;
-        break;
-
-      case DT_LIQUIFY_LAYER_HARDNESSPOINT1:
-        d->warp.control1 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
-        break;
-
-      case DT_LIQUIFY_LAYER_HARDNESSPOINT2:
-        d->warp.control2 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
-        break;
-
       default:
         break;
       }
+      break;
+
+    case DT_LIQUIFY_LAYER_CTRLPOINT1:
+      switch (d->header.type)
+      {
+      case DT_LIQUIFY_PATH_CURVE_TO_V1:
+        d->curve_to_v1.ctrl1 = pt;
+        if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+        {
+          switch (p->header.node_type)
+          {
+          case DT_LIQUIFY_NODE_TYPE_SMOOTH:
+            p->curve_to_v1.ctrl2 = p->point +
+              cabs (p->point - p->curve_to_v1.ctrl2) *
+              cexp (carg (p->point - pt) * I);
+            break;
+          case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
+            p->curve_to_v1.ctrl2 = 2 * p->point - pt;
+            break;
+          default:
+            break;
+          }
+        }
+        break;
+      default:
+        break;
+      }
+      break;
+
+    case DT_LIQUIFY_LAYER_CTRLPOINT2:
+      switch (d->header.type)
+      {
+      case DT_LIQUIFY_PATH_CURVE_TO_V1:
+        d->curve_to_v1.ctrl2 = pt;
+        if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+        {
+          switch (d->header.node_type)
+          {
+          case DT_LIQUIFY_NODE_TYPE_SMOOTH:
+            n->curve_to_v1.ctrl1 = d->point +
+              cabs (d->point - n->curve_to_v1.ctrl1) *
+              cexp (carg (d->point - pt) * I);
+            break;
+          case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
+            n->curve_to_v1.ctrl1 = 2 * d->point - pt;
+            break;
+          default:
+            break;
+          }
+        }
+        break;
+      default:
+        break;
+      }
+      break;
+
+    case DT_LIQUIFY_LAYER_RADIUSPOINT:
+      d->warp.radius = pt;
+      dt_conf_set_float(CONF_RADIUS, cabs(d->warp.radius - d->point));
+      break;
+
+    case DT_LIQUIFY_LAYER_STRENGTHPOINT:
+      d->warp.strength = pt;
+      break;
+
+    case DT_LIQUIFY_LAYER_HARDNESSPOINT1:
+      d->warp.control1 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
+      break;
+
+    case DT_LIQUIFY_LAYER_HARDNESSPOINT2:
+      d->warp.control2 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
+      break;
+
+    default:
+      break;
     }
     handled = 1;
   }
@@ -2760,7 +2755,7 @@ int button_pressed (struct dt_iop_module_t *module,
   if (which == 1)
     g->last_button1_pressed_pos = pt;
 
-  if (!g->dragging)
+  if (!is_dragging(g))
     // while dragging you would always hit the dragged thing
     g->last_hit = hit_test_paths (module, scale, g->fake_cr, &g->params, pt);
 
@@ -2926,7 +2921,7 @@ int button_released (struct dt_iop_module_t *module,
     goto done;
   }
 
-  if (which == 1 && g->dragging)
+  if (which == 1 && is_dragging(g))
   {
     end_drag (g);
     handled = 2;
@@ -3138,7 +3133,7 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
   dt_control_hinter_message (darktable.control, "");
 
   // if currently dragging, does nothing
-  if (g->dragging)
+  if (is_dragging(g))
   {
     gtk_toggle_button_set_active (btn, 0);
     return;
@@ -3181,7 +3176,7 @@ void gui_init (dt_iop_module_t *module)
   g->fake_cr = cairo_create (cs);
   cairo_surface_destroy (cs);
 
-  g->dragging = NULL;
+  g->dragging = NOWHERE;
   g->temp = NULL;
   g->status = 0;
   g->last_mouse_pos =
