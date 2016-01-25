@@ -206,8 +206,11 @@ def add_edges(gr):
   gr.add_edge(('borders', 'spots'))
   gr.add_edge(('clipping', 'spots'))
 
-  # liquify immediately before spot removal
+  # liquify immediately after spot removal
   gr.add_edge(('liquify', 'spots'))
+  gr.add_edge(('lens', 'liquify'))
+  gr.add_edge(('rotatepixels', 'liquify'))
+  gr.add_edge(('scalepixels', 'liquify'))
 
   # want to do powerful color magic before monochroming it:
   gr.add_edge(('monochrome', 'colorzones'))
