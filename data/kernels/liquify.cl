@@ -98,7 +98,7 @@ warp_kernel (read_only image2d_t in,
 
   float2 warp = map[pos.y * map_extent->width + pos.x];
 
-  const int2 map_origin     = (int2) (map_extent->x, map_extent->y);
+  const int2 map_origin = (int2) (map_extent->x, map_extent->y);
   pos += map_origin;
 
   // roi_in >= roi_out, so we only have to check roi_out
