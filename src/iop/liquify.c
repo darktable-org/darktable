@@ -3136,6 +3136,14 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   dt_control_hinter_message (darktable.control, "");
+
+  // if currently dragging, does nothing
+  if (g->dragging)
+  {
+    gtk_toggle_button_set_active (btn, 0);
+    return;
+  }
+
   if (gtk_toggle_button_get_active (btn))
   {
     gtk_toggle_button_set_active (g->btn_point_tool, btn == g->btn_point_tool);
