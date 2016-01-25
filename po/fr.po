@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-23 23:55+0100\n"
-"PO-Revision-Date: 2016-01-23 23:57+0100\n"
+"POT-Creation-Date: 2016-01-25 23:34+0100\n"
+"PO-Revision-Date: 2016-01-25 23:50+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1054,7 +1054,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1314
 #: ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
-#: ../src/iop/colorin.c:1222 ../src/iop/demosaic.c:3755
+#: ../src/iop/colorin.c:1222 ../src/iop/demosaic.c:3757
 #: ../src/iop/vignette.c:1141 ../src/libs/history.c:153
 #: ../src/libs/live_view.c:440
 msgid "off"
@@ -1082,34 +1082,34 @@ msgstr ""
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1341
+#: ../src/common/image.c:1342
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1355
+#: ../src/common/image.c:1356
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1413 ../src/control/jobs/control_jobs.c:626
+#: ../src/common/image.c:1414 ../src/control/jobs/control_jobs.c:626
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:1565
+#: ../src/common/image.c:1566
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:558 ../src/common/mipmap_cache.c:1011
+#: ../src/common/imageio.c:567 ../src/common/mipmap_cache.c:1011
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image « %s » non disponible!"
 
-#: ../src/common/imageio.c:576
+#: ../src/common/imageio.c:585
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1118,17 +1118,17 @@ msgstr ""
 "échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de "
 "fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
-#: ../src/common/imageio.c:577
+#: ../src/common/imageio.c:586
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "l'aperçu"
 
-#: ../src/common/imageio.c:577
+#: ../src/common/imageio.c:586
 msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:590
+#: ../src/common/imageio.c:599
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -1268,7 +1268,7 @@ msgstr "au dessus du niveau de la mer"
 msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
-#: ../src/common/utility.c:423 ../src/libs/metadata_view.c:525
+#: ../src/common/utility.c:423 ../src/libs/metadata_view.c:549
 msgid "m"
 msgstr "m"
 
@@ -5357,44 +5357,44 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:3727 ../src/iop/demosaic.c:3737
+#: ../src/iop/demosaic.c:3729 ../src/iop/demosaic.c:3739
 #: ../src/iop/dither.c:556 ../src/iop/highlights.c:733
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:3729
+#: ../src/iop/demosaic.c:3731
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:3730
+#: ../src/iop/demosaic.c:3732
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:3731
+#: ../src/iop/demosaic.c:3733
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3732
+#: ../src/iop/demosaic.c:3734
 msgid "passthrough (monochrome) (experimental)"
 msgstr "monochrome (expérimental)"
 
-#: ../src/iop/demosaic.c:3733 ../src/iop/demosaic.c:3742
+#: ../src/iop/demosaic.c:3735 ../src/iop/demosaic.c:3744
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:3739
+#: ../src/iop/demosaic.c:3741
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3740
+#: ../src/iop/demosaic.c:3742
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-passe"
 
-#: ../src/iop/demosaic.c:3741
+#: ../src/iop/demosaic.c:3743
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-passes (lent)"
 
-#: ../src/iop/demosaic.c:3747
+#: ../src/iop/demosaic.c:3749
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5404,63 +5404,63 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:3749
+#: ../src/iop/demosaic.c:3751
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:3753
+#: ../src/iop/demosaic.c:3755
 msgid "color smoothing"
 msgstr "lissage des couleurs"
 
-#: ../src/iop/demosaic.c:3756
+#: ../src/iop/demosaic.c:3758
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:3757
+#: ../src/iop/demosaic.c:3759
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:3758
+#: ../src/iop/demosaic.c:3760
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:3759
+#: ../src/iop/demosaic.c:3761
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:3760
+#: ../src/iop/demosaic.c:3762
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:3762
+#: ../src/iop/demosaic.c:3764
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:3766
+#: ../src/iop/demosaic.c:3768
 msgid "match greens"
 msgstr "correction des verts"
 
-#: ../src/iop/demosaic.c:3767
+#: ../src/iop/demosaic.c:3769
 msgid "disabled"
 msgstr "désactivée"
 
-#: ../src/iop/demosaic.c:3768
+#: ../src/iop/demosaic.c:3770
 msgid "local average"
 msgstr "moyenne locale"
 
-#: ../src/iop/demosaic.c:3769
+#: ../src/iop/demosaic.c:3771
 msgid "full average"
 msgstr "moyenne globale"
 
-#: ../src/iop/demosaic.c:3770
+#: ../src/iop/demosaic.c:3772
 msgid "full and local average"
 msgstr "moyenne globale et locale"
 
-#: ../src/iop/demosaic.c:3771
+#: ../src/iop/demosaic.c:3773
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:3783
+#: ../src/iop/demosaic.c:3785
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -6311,6 +6311,125 @@ msgstr "centile des blancs"
 #: ../src/iop/levels.c:626
 msgid "white"
 msgstr "blanc"
+
+#: ../src/iop/liquify.c:282
+msgid "liquify"
+msgstr "liquéfier"
+
+#: ../src/iop/liquify.c:3149
+msgid "click and drag to add point"
+msgstr "cliquer et tracer pour ajouter un point"
+
+#: ../src/iop/liquify.c:3151
+msgid "click to add line"
+msgstr "cliquer pour ajouter une ligne"
+
+#: ../src/iop/liquify.c:3153
+msgid "click to add curve"
+msgstr "cliquer pour ajouter une courbe"
+
+#: ../src/iop/liquify.c:3155
+msgid "click to edit nodes"
+msgstr "cliquer pour éditer les points"
+
+#: ../src/iop/liquify.c:3193
+msgid ""
+"use a tool to add warps.\n"
+"right-click to remove a warp."
+msgstr ""
+"utiliser un outil pour ajouter une forme.\n"
+"clic-droit pour supprimer une forme."
+
+#: ../src/iop/liquify.c:3195
+msgid "warps|nodes count:"
+msgstr "nb formes|points:"
+
+#: ../src/iop/liquify.c:3202
+msgid "node tool: edit, add and delete nodes"
+msgstr "outil point: éditer, ajouter et supprimer des points"
+
+#: ../src/iop/liquify.c:3210
+msgid "curve tool: draw curves"
+msgstr "outil courbe: dessiner des courbes"
+
+#: ../src/iop/liquify.c:3218
+msgid "line tool: draw lines"
+msgstr "outil ligne: dessiner des lignes"
+
+#: ../src/iop/liquify.c:3226
+msgid "point tool: draw points"
+msgstr "outil point: placer des points"
+
+#: ../src/iop/liquify.c:3234
+msgid "disable all tools"
+msgstr "désactiver les outils"
+
+#: ../src/iop/liquify.c:3241
+msgid ""
+"ctrl+click to add node\n"
+"right click to remove path"
+msgstr ""
+"ctrl-clic pour ajouter un point\n"
+"clic-droit pour supprimer un chemin"
+
+#: ../src/iop/liquify.c:3242
+msgid ""
+"click and drag to move - click : linear or feathered\n"
+"ctrl+click : symmetrical, smooth, cusp, autosmooth\n"
+"right-click to remove"
+msgstr ""
+"clic et déplacer pour positionner - clic : linéaire ou progressif\n"
+"ctrl-clic : symétrique, doux, courbe, automatique\n"
+"clic-droit pour supprimer"
+
+#: ../src/iop/liquify.c:3243 ../src/iop/liquify.c:3244
+msgid "drag to change shape of path"
+msgstr "déplacer pour changer le chemin"
+
+#: ../src/iop/liquify.c:3245
+msgid "drag to adjust warp radius"
+msgstr "déplacer pour ajuster le rayon"
+
+#: ../src/iop/liquify.c:3246
+msgid "drag to adjust hardness (center)"
+msgstr "déplacer pour ajuster la dureté (centre)"
+
+#: ../src/iop/liquify.c:3247
+msgid "drag to adjust hardness (feather)"
+msgstr "déplacer pour ajuster la dureté (progressif)"
+
+#: ../src/iop/liquify.c:3248
+msgid ""
+"drag to adjust warp strength\n"
+"ctrl+click : linear, grow, and shrink"
+msgstr ""
+"déplacer pour ajuster la force du point\n"
+"ctrl-clic : linéaire, augmente et diminue"
+
+#: ../src/iop/liquify.c:3265
+msgctxt "accel"
+msgid "point tool"
+msgstr "outil point"
+
+#: ../src/iop/liquify.c:3266
+msgctxt "accel"
+msgid "line tool"
+msgstr "outil ligne"
+
+#: ../src/iop/liquify.c:3267
+msgctxt "accel"
+msgid "curve tool"
+msgstr "outil courbe"
+
+#: ../src/iop/liquify.c:3268
+msgctxt "accel"
+msgid "node tool"
+msgstr "édition des chemins"
+
+#: ../src/iop/liquify.c:3269
+msgctxt "accel"
+msgid "disable tools"
+msgstr "désactiver les outils"
 
 #: ../src/iop/lowlight.c:83
 msgid "lowlight vision"
@@ -8799,7 +8918,52 @@ msgid_plural "image has %d stars"
 msgstr[0] "l'image a %d étoile"
 msgstr[1] "l'image a %d étoiles"
 
-#: ../src/libs/metadata_view.c:600
+#: ../src/libs/metadata_view.c:376 ../src/libs/snapshots.c:368
+msgid "unknown"
+msgstr "inconnu"
+
+#: ../src/libs/metadata_view.c:377
+msgid "tiff"
+msgstr "tiff"
+
+#: ../src/libs/metadata_view.c:378
+msgid "png"
+msgstr "png"
+
+#: ../src/libs/metadata_view.c:379
+msgid "j2k"
+msgstr "j2k"
+
+#: ../src/libs/metadata_view.c:380
+msgid "jpeg"
+msgstr "jpeg"
+
+#: ../src/libs/metadata_view.c:381
+msgid "exr"
+msgstr "exr"
+
+#: ../src/libs/metadata_view.c:382
+msgid "rgbe"
+msgstr "rgbe"
+
+#: ../src/libs/metadata_view.c:383
+msgid "pfm"
+msgstr "pfm"
+
+#: ../src/libs/metadata_view.c:384
+msgid "GraphicsMagick"
+msgstr "GraphicsMagick"
+
+#: ../src/libs/metadata_view.c:385
+msgid "rawspeed"
+msgstr "rawspeed"
+
+#: ../src/libs/metadata_view.c:390
+#, c-format
+msgid "loader: %s"
+msgstr "chargement: %s"
+
+#: ../src/libs/metadata_view.c:624
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
@@ -9086,10 +9250,6 @@ msgid ""
 msgstr ""
 "prends un instantané pour le comparer avec une autre image ou avec la même "
 "image à une autre étape du développement"
-
-#: ../src/libs/snapshots.c:368
-msgid "unknown"
-msgstr "inconnu"
 
 #: ../src/libs/styles.c:45
 msgid "styles"
@@ -10164,9 +10324,6 @@ msgstr ""
 #~ msgid "let's go float!"
 #~ msgstr "let's go float!"
 
-#~ msgid "pdf"
-#~ msgstr "pdf"
-
 #~ msgid ""
 #~ "enter the path where to put the exported pdf\n"
 #~ "recognized variables (using the first image):"
@@ -10559,12 +10716,6 @@ msgstr ""
 
 #~ msgid "iso"
 #~ msgstr "iso"
-
-#~ msgid "jpeg 2000"
-#~ msgstr "jpeg 2000"
-
-#~ msgid "j2k"
-#~ msgstr "j2k"
 
 #~ msgid "dcp mode"
 #~ msgstr "mode dcp"
@@ -11146,9 +11297,6 @@ msgstr ""
 #~ "$(HOME) - dossier personnel\n"
 #~ "$(DESKTOP) - dossier du bureau"
 
-#~ msgid "ppg"
-#~ msgstr "ppg"
-
 #~ msgid "AMaZE"
 #~ msgstr "AMaZE"
 
@@ -11448,9 +11596,6 @@ msgstr ""
 
 #~ msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 #~ msgstr "<span color=\"#7f7f7f\"><big><b>mode %s</b></big></span>"
-
-#~ msgid "loading image %s"
-#~ msgstr "chargement de l'image %s"
 
 #~ msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
 #~ msgstr ""
