@@ -33,17 +33,6 @@ typedef struct {
 
 const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
-float lanczos (float a, float x)
-{
-  if (fabs (x) >= a) return 0;
-  if (fabs (x) < FLT_EPSILON) return 1;
-
-  return
-    (a * sinpi (x) * sinpi (x / a))
-    /
-    (M_PI * M_PI * x * x);
-}
-
 float kmix (global const float *k,
 	    global const dt_liquify_kernel_descriptor_t* kdesc,
 	    float t)
