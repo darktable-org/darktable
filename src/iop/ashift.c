@@ -85,26 +85,12 @@ int groups()
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 2)
   {
     const dt_iop_ashift_params1_t *old = old_params;
     dt_iop_ashift_params_t *new = new_params;
-    new->threshold = old->threshold;
-    new->spatial = old->spatial;
-    new->range = old->range;
-    new->precedence = COLORRECONSTRUCT_PRECEDENCE_NONE;
-    new->hue = 0.66f;
-    return 0;
-  }
-  else if(old_version == 2 && new_version == 3)
-  {
-    const dt_iop_ashift_params2_t *old = old_params;
-    dt_iop_ashift_params_t *new = new_params;
-    new->threshold = old->threshold;
-    new->spatial = old->spatial;
-    new->range = old->range;
-    new->precedence = old->precedence;
-    new->hue = 0.66f;
+    new->rotation = old->rotation;
+    new->keystone = old->keystone;
     return 0;
   }
   return 1;
@@ -202,6 +188,10 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 {
   //dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
 
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)                                                      \
+  shared(points, points_count)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] = points[i];
@@ -210,11 +200,17 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
+
+
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count)
 {
   //dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
 
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)                                                      \
+  shared(points, points_count)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] = points[i];
@@ -252,11 +248,11 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     }
   }
 
-  //const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  roi_in->x = fmaxf(0.0f, xm - 0 /*interpolation->width*/);
-  roi_in->y = fmaxf(0.0f, ym - 0 /*interpolation->width*/);
-  roi_in->width = fminf(ceilf(orig_w) - roi_in->x, xM - roi_in->x + 1 + 0 /*interpolation->width*/);
-  roi_in->height = fminf(ceilf(orig_h) - roi_in->y, yM - roi_in->y + 1 + 0 /*interpolation->width*/);
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  roi_in->x = fmaxf(0.0f, xm - interpolation->width);
+  roi_in->y = fmaxf(0.0f, ym - interpolation->width);
+  roi_in->width = fminf(ceilf(orig_w) - roi_in->x, xM - roi_in->x + 1 + interpolation->width);
+  roi_in->height = fminf(ceilf(orig_h) - roi_in->y, yM - roi_in->y + 1 + interpolation->width);
 
   // sanity check.
   roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(orig_w));
@@ -275,7 +271,36 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   //dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   //dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  memcpy(ovoid, ivoid, (size_t)sizeof(float) * piece->colors * roi_out->width * roi_out->height);
+  const int ch = piece->colors;
+  const int ch_width = ch * roi_in->width;
+
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)                                                      \
+  shared(ivoid, ovoid, roi_in, roi_out, interpolation)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+    for(int i = 0; i < roi_out->width; i++, out += ch)
+    {
+      float pi[2], po[2];
+
+      pi[0] = roi_out->x + i;
+      pi[1] = roi_out->y + j;
+      pi[0] /= roi_out->scale;
+      pi[1] /= roi_out->scale;
+      memcpy(po, pi, sizeof(po));
+      po[0] *= roi_in->scale;
+      po[1] *= roi_in->scale;
+      po[0] -= roi_in->x;
+      po[1] -= roi_in->y;
+
+      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, po[0], po[1], roi_in->width,
+                                       roi_in->height, ch_width);
+    }
+  }
 }
 
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
