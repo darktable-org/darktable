@@ -200,11 +200,12 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
       = { xa * self->dev->preview_pipe->backbuf_width, ya * self->dev->preview_pipe->backbuf_height,
           xb * self->dev->preview_pipe->backbuf_width, yb * self->dev->preview_pipe->backbuf_height };
   dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, pts, 2);
-  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-  pts[0] /= (float)piece->buf_out.width;
-  pts[2] /= (float)piece->buf_out.width;
-  pts[1] /= (float)piece->buf_out.height;
-  pts[3] /= (float)piece->buf_out.height;
+  dt_iop_roi_t buf_in, buf_out;
+  if(!dt_dev_get_iop_buffer_sizes(self->dev, self->dev->preview_pipe, self, &buf_in, &buf_out)) return 0;
+  pts[0] /= (float)buf_out.width;
+  pts[2] /= (float)buf_out.width;
+  pts[1] /= (float)buf_out.height;
+  pts[3] /= (float)buf_out.height;
 
   // we first need to find the rotation angle
   // weird dichotomic solution : we may use something more cool ...
@@ -273,9 +274,9 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   const float sinv = sin(v);
   float pts[4];
 
-  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-  if(!piece) return 0;
-  float wp = piece->buf_out.width, hp = piece->buf_out.height;
+  dt_iop_roi_t buf_in, buf_out;
+  if(!dt_dev_get_iop_buffer_sizes(self->dev, self->dev->preview_pipe, self, &buf_in, &buf_out)) return 0;
+  float wp = buf_out.width, hp = buf_out.height;
 
   // if sinv=0 then this is just the offset
   if(sinv == 0)

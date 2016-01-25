@@ -1721,20 +1721,27 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
   return 1;
 }
 
-dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
-                                                    struct dt_iop_module_t *module)
+gboolean dt_dev_get_iop_buffer_sizes(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
+                                     struct dt_iop_module_t *module, dt_iop_roi_t *buf_in,
+                                     dt_iop_roi_t *buf_out)
 {
+  dt_pthread_mutex_lock(&dev->history_mutex);
   GList *pieces = g_list_last(pipe->nodes);
   while(pieces)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->module == module)
     {
-      return piece;
+      // we copy the buffers structs, to be sure it's thread safe
+      *buf_in = piece->buf_in;
+      *buf_out = piece->buf_out;
+      dt_pthread_mutex_unlock(&dev->history_mutex);
+      return TRUE;
     }
     pieces = g_list_previous(pieces);
   }
-  return NULL;
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+  return FALSE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
