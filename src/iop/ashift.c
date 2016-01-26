@@ -198,6 +198,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
+    // as points are already in orignal image coordinates we can homograph them directly
     float pi[3] = { points[i], points[i + 1], 1.0f };
     float po[3];
     mat3mulv(po, (float *)data->homograph, pi);
@@ -220,6 +221,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
+    // as points are already in original image coordinates we can homograph them directly
     float pi[3] = { points[i], points[i + 1], 1.0f };
     float po[3];
     mat3mulv(po, (float *)data->ihomograph, pi);
@@ -245,12 +247,17 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     {
       float pin[3], pout[3];
 
+      // convert from input coordinates to original image coordinates
       pin[0] = roi_in->x + x;
       pin[1] = roi_in->y + y;
       pin[0] /= roi_in->scale;
       pin[1] /= roi_in->scale;
       pin[2] = 1.0f;
+
+      // apply hompgraph
       mat3mulv(pout, (float *)data->homograph, pin);
+
+      // convert to output image coordinates
       pout[0] /= pout[2];
       pout[1] /= pout[2];
       pout[0] *= roi_out->scale;
@@ -297,12 +304,17 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     {
       float pin[3], pout[3];
 
+      // convert from output image coordinates to original image coordinates
       pout[0] = roi_out->x + x;
       pout[1] = roi_out->y + y;
       pout[0] /= roi_out->scale;
       pout[1] /= roi_out->scale;
       pout[2] = 1.0f;
+
+      // apply homograph
       mat3mulv(pin, (float *)data->ihomograph, pout);
+
+      // convert to input image coordinates
       pin[0] /= pin[2];
       pin[1] /= pin[2];
       pin[0] *= roi_in->scale;
@@ -346,6 +358,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 #pragma omp parallel for schedule(static) default(none)                                                      \
   shared(ivoid, ovoid, roi_in, roi_out, data, interpolation)
 #endif
+  // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {
     float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
@@ -353,12 +366,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     {
       float pin[3], pout[3];
 
+      // convert output pixel coordinates to original image coordinates
       pout[0] = roi_out->x + i;
       pout[1] = roi_out->y + j;
       pout[0] /= roi_out->scale;
       pout[1] /= roi_out->scale;
       pout[2] = 1.0f;
+
+      // apply homograph
       mat3mulv(pin, (float *)data->ihomograph, pout);
+
+      // convert to input pixel coordinates
       pin[0] /= pin[2];
       pin[1] /= pin[2];
       pin[0] *= roi_in->scale;
@@ -366,6 +384,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       pin[0] -= roi_in->x;
       pin[1] -= roi_in->y;
 
+      // get output values by interpolation from input image
       dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, pin[0], pin[1], roi_in->width,
                                        roi_in->height, ch_width);
     }
@@ -424,8 +443,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // three intermediate buffers for matrix calculation
   float m1[3][3], m2[3][3], m3[3][3];
 
-  // for image in coordinate system of original image dimensions
-  // translation of image origin to image center
+
+  // step 1: translation of image origin to image center
   memset(m1, 0, sizeof(m1));
   m1[0][0] = 1.0f;
   m1[1][1] = 1.0f;
@@ -433,7 +452,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   m1[0][2] = -0.5f * orig_w;
   m1[1][2] = -0.5f * orig_h;
 
-  // rotation of image around origin
+  // step 2: rotation of image around center
   memset(m2, 0, sizeof(m2));
   m2[0][0] = cos(phi);
   m2[0][1] = -sin(phi);
@@ -444,9 +463,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // multiply m2 * m1 -> m3
   mat3mul((float *)m3, (float *)m2, (float *)m1);
 
-  // adjust for change of dimension size versus original viewport.
+
+  // step 3: adjust for change of dimension size versus original viewport.
   // we want to make sure that we don't get pixels with negative
-  // x/y coordinates after adjustments, so we need to translate.
+  // x/y coordinates after adjustments, so we need to translate accordingly.
   // TODO: there must be a more elegant mathematical expression
   memset(m1, 0, sizeof(m1));
   m1[0][0] = 1.0f;
@@ -458,7 +478,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // multiply m1 * m3 -> m2
   mat3mul((float *)m2, (float *)m1, (float *)m3);
 
-  // translation of image back to origin
+
+  // step 4: translate image back to origin
   memset(m1, 0, sizeof(m1));
   m1[0][0] = 1.0f;
   m1[1][1] = 1.0f;
@@ -469,10 +490,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // multiply m1 * m2 -> homograph
   mat3mul((float *)d->homograph, (float *)m1, (float *)m2);
 
-  // invert homograph
+
+  // invert homograph as we need to be able to calculate both directions
   if(mat3inv_float((float *)d->ihomograph, (float *)d->homograph))
   {
-    // in case of error we set both to unity matrices
+    // in case of error we set both of them to unity matrices
     memset(d->homograph, 0, sizeof(d->homograph));
     d->homograph[0][0] = 1.0f;
     d->homograph[1][1] = 1.0f;
