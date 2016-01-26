@@ -30,7 +30,6 @@
 #include "control/control.h"
 #include "common/debug.h"
 #include "common/opencl.h"
-#include "common/colorspaces.h"
 #include "common/interpolation.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -160,7 +159,6 @@ generate_mat3inv_body(double, A, B)
 #undef A
 #undef generate_mat3inv_body
 
-/* static */
 void mat3mulv(float *dst, const float *const mat, const float *const v)
 {
   for(int k = 0; k < 3; k++)
@@ -171,7 +169,6 @@ void mat3mulv(float *dst, const float *const mat, const float *const v)
   }
 }
 
-/* static */
 void mat3mul(float *dst, const float *const m1, const float *const m2)
 {
   for(int k = 0; k < 3; k++)
@@ -236,13 +233,56 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
+  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   *roi_out = *roi_in;
+
+  float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
+
+  // go through all four vertices of input roi and convert coordinates to output
+  for(int y = 0; y < roi_in->height; y += roi_in->height - 1)
+  {
+    for(int x = 0; x < roi_in->width; x += roi_in->width - 1)
+    {
+      float pin[3], pout[3];
+
+      pin[0] = roi_in->x + x;
+      pin[1] = roi_in->y + y;
+      pin[0] /= roi_in->scale;
+      pin[1] /= roi_in->scale;
+      pin[2] = 1.0f;
+      mat3mulv(pout, (float *)data->homograph, pin);
+      pout[0] /= pout[2];
+      pout[1] /= pout[2];
+      pout[0] *= roi_out->scale;
+      pout[1] *= roi_out->scale;
+      xm = MIN(xm, pout[0]);
+      xM = MAX(xM, pout[0]);
+      ym = MIN(ym, pout[1]);
+      yM = MAX(yM, pout[1]);
+    }
+  }
+
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  roi_out->x = fmaxf(0.0f, xm - interpolation->width);
+  roi_out->y = fmaxf(0.0f, ym - interpolation->width);
+  roi_out->width = ceilf(xM - roi_out->x + 1 + interpolation->width);
+  roi_out->height = ceilf(yM - roi_out->y + 1 + interpolation->width);
+
+  // sanity check.
+  roi_out->x = CLAMP(roi_out->x, 0, MAX(roi_in->width, roi_in->height));
+  roi_out->y = CLAMP(roi_out->y, 0, MAX(roi_in->width, roi_in->height));
+  roi_out->width = CLAMP(roi_out->width, 1, sqrt(2.0f) * MAX(roi_in->width, roi_in->height));
+  roi_out->height = CLAMP(roi_out->height, 1, sqrt(2.0f) * MAX(roi_in->width, roi_in->height));
+
+  //_print_roi(roi_out, "roi_out");
+  //_print_roi(roi_in, "roi_in");
+
 }
 
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *const roi_out, dt_iop_roi_t *roi_in)
 {
-  //dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   *roi_in = *roi_out;
 
   const float orig_w = roi_in->scale * piece->buf_in.width;
@@ -250,14 +290,27 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
 
+  // go through all four vertices of output roi and convert coordinates to input
   for(int y = 0; y < roi_out->height; y += roi_out->height - 1)
   {
     for(int x = 0; x < roi_out->width; x += roi_out->width - 1)
     {
-      xm = MIN(xm, roi_out->x + x);
-      xM = MAX(xM, roi_out->x + x);
-      ym = MIN(ym, roi_out->y + y);
-      yM = MAX(yM, roi_out->y + y);
+      float pin[3], pout[3];
+
+      pout[0] = roi_out->x + x;
+      pout[1] = roi_out->y + y;
+      pout[0] /= roi_out->scale;
+      pout[1] /= roi_out->scale;
+      pout[2] = 1.0f;
+      mat3mulv(pin, (float *)data->ihomograph, pout);
+      pin[0] /= pin[2];
+      pin[1] /= pin[2];
+      pin[0] *= roi_in->scale;
+      pin[1] *= roi_in->scale;
+      xm = MIN(xm, pin[0]);
+      xM = MAX(xM, pin[0]);
+      ym = MIN(ym, pin[1]);
+      yM = MAX(yM, pin[1]);
     }
   }
 
@@ -365,6 +418,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   const float orig_w = piece->buf_in.width;
   const float orig_h = piece->buf_in.height;
 
+  const float alpha = atan2(orig_h, orig_w);
+  const float diag = sqrt(orig_w * orig_w + orig_h * orig_h);
 
   // three intermediate buffers for matrix calculation
   float m1[3][3], m2[3][3], m3[3][3];
@@ -386,8 +441,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   m2[1][1] = cos(phi);
   m2[2][2] = 1.0f;
 
-  // multiply the two m2 * m1 -> m3
+  // multiply m2 * m1 -> m3
   mat3mul((float *)m3, (float *)m2, (float *)m1);
+
+  // adjust for change of dimension size versus original viewport.
+  // we want to make sure that we don't get pixels with negative
+  // x/y coordinates after adjustments, so we need to translate.
+  // TODO: there must be a more elegant mathematical expression
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = 1.0f;
+  m1[1][1] = 1.0f;
+  m1[2][2] = 1.0f;
+  m1[0][2] = 0.5f * diag * fmax(fabs(cos(alpha + phi)), fabs(cos(alpha - phi))) - 0.5 * orig_w;
+  m1[1][2] = 0.5f * diag * fmax(fabs(sin(alpha + phi)), fabs(sin(alpha - phi))) - 0.5 * orig_h;
+
+  // multiply m1 * m3 -> m2
+  mat3mul((float *)m2, (float *)m1, (float *)m3);
 
   // translation of image back to origin
   memset(m1, 0, sizeof(m1));
@@ -397,8 +466,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   m1[0][2] = 0.5f * orig_w;
   m1[1][2] = 0.5f * orig_h;
 
-  // multiply m1 * m3 -> homograph
-  mat3mul((float *)d->homograph, (float *)m1, (float *)m3);
+  // multiply m1 * m2 -> homograph
+  mat3mul((float *)d->homograph, (float *)m1, (float *)m2);
 
   // invert homograph
   if(mat3inv_float((float *)d->ihomograph, (float *)d->homograph))
