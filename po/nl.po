@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-01-26 19:11+0100\n"
-"PO-Revision-Date: 2016-01-26 19:15+0100\n"
+"PO-Revision-Date: 2016-01-26 20:11+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -5900,28 +5900,33 @@ msgid ""
 "ctrl+click : symmetrical, smooth, cusp, autosmooth\n"
 "right-click to remove"
 msgstr ""
+"klik en sleep om te verplaatsen - klik: lineair of feathered\n"
+"ctrl+klik: symmetrisch, glad, knobbel, automatisch glad\n"
+"rechtermuisknop om te verwijderen"
 
 #: ../src/iop/liquify.c:3243 ../src/iop/liquify.c:3244
 msgid "drag to change shape of path"
-msgstr ""
+msgstr "wijzig vorm van een pad door slepen"
 
 #: ../src/iop/liquify.c:3245
 msgid "drag to adjust warp radius"
-msgstr ""
+msgstr "wijzig radius verdraaiingen door slepen"
 
 #: ../src/iop/liquify.c:3246
 msgid "drag to adjust hardness (center)"
-msgstr ""
+msgstr "wijzig hardheid door slepen (centrum)"
 
 #: ../src/iop/liquify.c:3247
 msgid "drag to adjust hardness (feather)"
-msgstr ""
+msgstr "wijzig hardheid door slepen (feather)"
 
 #: ../src/iop/liquify.c:3248
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click : linear, grow, and shrink"
 msgstr ""
+"sleep om de kracht van verdraaiing te wijzigen\n"
+"ctrl+klik: lineair, groeien of krimpen"
 
 #: ../src/iop/liquify.c:3265
 msgctxt "accel"
@@ -6481,20 +6486,19 @@ msgstr ""
 "klik rechts om een lijn te verwijderen"
 
 #: ../src/iop/spots.c:692
-#, fuzzy
 msgctxt "accel"
 msgid "spot circle tool"
-msgstr "vlekken verwijderen"
+msgstr "spot cirkel gereedschap"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
 msgid "spot elipse tool"
-msgstr ""
+msgstr "spot ellips gereedschap"
 
 #: ../src/iop/spots.c:694
 msgctxt "accel"
 msgid "spot path tool"
-msgstr ""
+msgstr "spot pad gereedschap"
 
 #: ../src/iop/temperature.c:118
 msgctxt "modulename"
