@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-26 18:24+0100\n"
-"PO-Revision-Date: 2016-01-26 18:49+0100\n"
+"POT-Creation-Date: 2016-01-26 19:04+0100\n"
+"PO-Revision-Date: 2016-01-26 19:08+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -4734,9 +4734,8 @@ msgid "hue"
 msgstr "tint"
 
 #: ../src/iop/colorreconstruction.c:649
-#, fuzzy
 msgid "[color reconstruction] module failed."
-msgstr "kleur reconstructie"
+msgstr "[kleur reconstructie] module mislukt"
 
 #: ../src/iop/colorreconstruction.c:1369 ../src/iop/shadhi.c:849 ../src/iop/tonemap.cc:299
 msgid "spatial extent"
@@ -5841,7 +5840,7 @@ msgstr "uitvloeien"
 
 #: ../src/iop/liquify.c:3149
 msgid "click and drag to add point"
-msgstr ""
+msgstr "voeg een punt toe door te klikken en te slepen"
 
 #: ../src/iop/liquify.c:3151
 msgid "click to add line"
@@ -5923,34 +5922,29 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/liquify.c:3265
-#, fuzzy
 msgctxt "accel"
 msgid "point tool"
-msgstr "punt"
+msgstr "gereedschap punt"
 
 #: ../src/iop/liquify.c:3266
-#, fuzzy
 msgctxt "accel"
 msgid "line tool"
-msgstr "bekijk toolbox"
+msgstr "gereedschap lijn"
 
 #: ../src/iop/liquify.c:3267
-#, fuzzy
 msgctxt "accel"
 msgid "curve tool"
-msgstr "bekijk toolbox"
+msgstr "gereedschap curve"
 
 #: ../src/iop/liquify.c:3268
-#, fuzzy
 msgctxt "accel"
 msgid "node tool"
-msgstr "moduletoolbox"
+msgstr "gereedschap knooppunt"
 
 #: ../src/iop/liquify.c:3269
-#, fuzzy
 msgctxt "accel"
 msgid "disable tools"
-msgstr "zichtbaar voor"
+msgstr "gereedschappen uitschakelen"
 
 #: ../src/iop/lowlight.c:83
 msgid "lowlight vision"
