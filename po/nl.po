@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-26 19:04+0100\n"
-"PO-Revision-Date: 2016-01-26 19:08+0100\n"
+"POT-Creation-Date: 2016-01-26 19:11+0100\n"
+"PO-Revision-Date: 2016-01-26 19:15+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -5859,6 +5859,8 @@ msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
 msgstr ""
+"voeg verdraaiingen toe met de gereedschappen\n"
+"verwijder een verdraaiing met de rechtermuisknop"
 
 #: ../src/iop/liquify.c:3195
 msgid "warps|nodes count:"
@@ -8379,9 +8381,9 @@ msgid "rawspeed"
 msgstr "rawspeed"
 
 #: ../src/libs/metadata_view.c:390
-#, fuzzy, c-format
+#, c-format
 msgid "loader: %s"
-msgstr "afbeelding laden %s"
+msgstr "lader: %s"
 
 #: ../src/libs/metadata_view.c:624
 msgctxt "accel"
