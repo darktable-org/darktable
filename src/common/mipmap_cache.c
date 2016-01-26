@@ -1108,7 +1108,19 @@ static int _write_image(dt_imageio_module_data_t *data, const char *filename, co
                         int exif_len, int imgid, int num, int total)
 {
   _dummy_data_t *d = (_dummy_data_t *)data;
+#if 1
+  // XXX this is stupid. we'd much rather have proper output spaces in gamma.c
+  uint32_t *ibuf = (uint32_t *)in;
+  for(int i=0;i<data->width*data->height;i++)
+  {
+    const uint32_t b = (ibuf[i] >> 22) & 0xff;
+    const uint32_t g = (ibuf[i] >> 12) & 0xff;
+    const uint32_t r = (ibuf[i] >>  2) & 0xff;
+    ((uint32_t *)d->buf)[i] = (r<<16)|(g<<8)|b;
+  }
+#else
   memcpy(d->buf, in, data->width * data->height * sizeof(uint32_t));
+#endif
   return 0;
 }
 
@@ -1215,7 +1227,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, dt_colorspa
     dat.buf = buf;
     // export with flags: ignore exif (don't load from disk), don't swap byte order, don't do hq processing,
     // no upscaling and signal we want thumbnail export
-    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 0, 1,
+    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 1, 0, 0, 1,
                                        NULL, FALSE, NULL, NULL, 1, 1);
     if(!res)
     {

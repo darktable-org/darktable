@@ -198,9 +198,9 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     const int ht = d->ht;
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
-    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
+    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB30, wd);
     cairo_surface_t *surface
-        = cairo_image_surface_create_for_data(d->buffer, CAIRO_FORMAT_RGB24, wd, ht, stride);
+        = cairo_image_surface_create_for_data(d->buffer, CAIRO_FORMAT_RGB30, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);

@@ -96,10 +96,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     for(int k = 0; k < roi_out->height; k++)
     {
       const float *in = ((float *)i) + (size_t)ch * k * roi_out->width;
-      uint8_t *out = ((uint8_t *)o) + (size_t)ch * k * roi_out->width;
-      for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
+      uint32_t *out = ((uint32_t *)o) + k * roi_out->width;
+      for(int j = 0; j < roi_out->width; j++, in += ch, out ++)
       {
-        for(int c = 0; c < 3; c++) out[2 - c] = d->table[(uint16_t)CLAMP((int)(0xfffful * in[c]), 0, 0xffff)];
+        const int r = CLAMP((int)(0x3ff * in[0]), 0, 0x3ff)<<20;
+        const int g = CLAMP((int)(0x3ff * in[1]), 0, 0x3ff)<<10;
+        const int b = CLAMP((int)(0x3ff * in[2]), 0, 0x3ff)<<0;
+        out[0] = r | g | b;
       }
     }
   }

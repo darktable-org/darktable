@@ -165,7 +165,7 @@ void expose(
     image_surface_width = width;
     image_surface_height = height;
     if(image_surface) cairo_surface_destroy(image_surface);
-    image_surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+    image_surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB30, width, height);
     image_surface_imgid = -1; // invalidate old stuff
   }
   cairo_surface_t *surface;
@@ -187,8 +187,8 @@ void expose(
     dt_pthread_mutex_lock(mutex);
     wd = dev->pipe->backbuf_width;
     ht = dev->pipe->backbuf_height;
-    stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = dt_cairo_image_surface_create_for_data(dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB30, wd);
+    surface = dt_cairo_image_surface_create_for_data(dev->pipe->backbuf, CAIRO_FORMAT_RGB30, wd, ht, stride);
     wd /= darktable.gui->ppd;
     ht /= darktable.gui->ppd;
     if(dev->full_preview)
@@ -227,9 +227,9 @@ void expose(
     cairo_paint(cr);
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_clip(cr);
-    stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
+    stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB30, wd);
     surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+        = cairo_image_surface_create_for_data(dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB30, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
