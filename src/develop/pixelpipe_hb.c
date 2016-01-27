@@ -18,6 +18,7 @@
 */
 #include "develop/pixelpipe.h"
 #include "develop/blend.h"
+#include "develop/freqsep.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "control/control.h"
@@ -1090,11 +1091,26 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             return 1;
           }
 
+          /* pre-process frequency separation */
+          if(success_opencl)
+          {
+            success_opencl
+                = dt_develop_freqsep_preprocess_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+          }
+
           /* now call process_cl of module; module should emit meaningful messages in case of error */
           if(success_opencl)
           {
             success_opencl
                 = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+
+            /* post-process frequency separation */
+             if(success_opencl)
+             {
+             success_opencl
+               = dt_develop_freqsep_postprocess_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+             }
+
             pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
           }
@@ -1135,6 +1151,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           {
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
             return 1;
+          }
+
+          /* pre-process frequency separation */
+          if(success_opencl)
+          {
+            success_opencl
+                = dt_develop_freqsep_preprocess_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
           }
 
           /* process blending */
@@ -1229,11 +1252,26 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             return 1;
           }
 
+          /* pre-process freqseps */
+          if(success_opencl)
+          {
+            success_opencl
+                            = dt_develop_freqsep_preprocess_tiling_cl(module, piece, input, *output, &roi_in, roi_out);
+          }
+
           /* now call process_tiling_cl of module; module should emit meaningful messages in case of error */
           if(success_opencl)
           {
             success_opencl
                 = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+
+            /* post-process freqseps */
+            if(success_opencl)
+            {
+              success_opencl
+                = dt_develop_freqsep_postprocess_tiling_cl(module, piece, input, *output, &roi_in, roi_out);
+            }
+
             pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU);
           }
@@ -1441,13 +1479,27 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                                   MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                                   tiling.factor, tiling.overhead))
           {
+            /* pre-process frequency separation */
+            dt_develop_freqsep_preprocess_tiling(module, piece, input, *output, &roi_in, roi_out);
+
             module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+
+            /* post-process frequency separation */
+            dt_develop_freqsep_postprocess_tiling(module, piece, input, *output, &roi_in, roi_out);
+
             pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
           }
           else
           {
+            /* pre-process frequency separation */
+            dt_develop_freqsep_preprocess(module, piece, input, *output, &roi_in, roi_out);
+
             module->process(module, piece, input, *output, &roi_in, roi_out);
+
+            /* post-process frequency separation */
+            dt_develop_freqsep_postprocess(module, piece, input, *output, &roi_in, roi_out);
+
             pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
           }
@@ -1574,13 +1626,27 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                                 MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                                 tiling.factor, tiling.overhead))
         {
+          /* pre-process frequency separation */
+          dt_develop_freqsep_preprocess_tiling(module, piece, input, *output, &roi_in, roi_out);
+
           module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+
+          /* post-process frequency separation */
+          dt_develop_freqsep_postprocess_tiling(module, piece, input, *output, &roi_in, roi_out);
+
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
         }
         else
         {
+          /* pre-process frequency separation */
+          dt_develop_freqsep_preprocess(module, piece, input, *output, &roi_in, roi_out);
+
           module->process(module, piece, input, *output, &roi_in, roi_out);
+
+          /* post-process frequency separation */
+          dt_develop_freqsep_postprocess(module, piece, input, *output, &roi_in, roi_out);
+
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
         }
@@ -1672,13 +1738,27 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                               MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                               tiling.factor, tiling.overhead))
       {
+        /* pre-process frequency separation */
+        dt_develop_freqsep_preprocess_tiling(module, piece, input, *output, &roi_in, roi_out);
+
         module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+
+        /* post-process frequency separation */
+        dt_develop_freqsep_postprocess_tiling(module, piece, input, *output, &roi_in, roi_out);
+
         pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
         pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
       }
       else
       {
+        /* pre-process frequency separation */
+        dt_develop_freqsep_preprocess(module, piece, input, *output, &roi_in, roi_out);
+
         module->process(module, piece, input, *output, &roi_in, roi_out);
+
+        /* post-process frequency separation */
+        dt_develop_freqsep_postprocess(module, piece, input, *output, &roi_in, roi_out);
+
         pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
         pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
       }
@@ -1757,13 +1837,27 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                             MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                             tiling.factor, tiling.overhead))
     {
+      /* pre-process frequency separation */
+      dt_develop_freqsep_preprocess_tiling(module, piece, input, *output, &roi_in, roi_out);
+
       module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+
+      /* post-process frequency separation */
+      dt_develop_freqsep_postprocess_tiling(module, piece, input, *output, &roi_in, roi_out);
+
       pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
       pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
     }
     else
     {
+      /* pre-process frequency separation */
+      dt_develop_freqsep_preprocess(module, piece, input, *output, &roi_in, roi_out);
+
       module->process(module, piece, input, *output, &roi_in, roi_out);
+
+      /* post-process frequency separation */
+      dt_develop_freqsep_postprocess(module, piece, input, *output, &roi_in, roi_out);
+
       pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
       pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
     }

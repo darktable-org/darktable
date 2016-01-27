@@ -60,7 +60,7 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS | IOP_FLAGS_SUPPORTS_FREQSEP;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

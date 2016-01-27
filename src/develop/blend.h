@@ -25,7 +25,17 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
-#define DEVELOP_BLEND_VERSION (7)
+//#define DEVELOP_BLEND_VERSION (7)
+#define DEVELOP_BLEND_VERSION (8)
+
+/* frequency separation */
+typedef enum dt_develop_fs_preview_t
+{
+  DEVELOP_FS_PREVIEW_FINAL_IMAGE = 0,
+  DEVELOP_FS_PREVIEW_FREQLAY = 1,
+  DEVELOP_FS_PREVIEW_FREQLAY_CHNG = 2
+} dt_develop_fs_preview_t;
+/* End frequency separation */
 
 typedef enum dt_develop_blend_mode_t
 {
@@ -249,6 +259,29 @@ typedef struct dt_develop_blend_params6_t
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
 } dt_develop_blend_params6_t;
 
+/** blend legacy parameters version 7 */
+typedef struct dt_develop_blend_params7_t
+{
+  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
+  uint32_t mask_mode;
+  /** blending mode */
+  uint32_t blend_mode;
+  /** mixing opacity */
+  float opacity;
+  /** how masks are combined */
+  uint32_t mask_combine;
+  /** id of mask in current pipeline */
+  uint32_t mask_id;
+  /** blendif mask */
+  uint32_t blendif;
+  /** blur radius */
+  float radius;
+  /** some reserved fields for future use */
+  uint32_t reserved[4];
+  /** blendif parameters */
+  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+} dt_develop_blend_params7_t;
+
 /** blend parameters current version */
 typedef struct dt_develop_blend_params_t
 {
@@ -270,6 +303,34 @@ typedef struct dt_develop_blend_params_t
   uint32_t reserved[4];
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+
+  /* frequency separation */
+  uint32_t fs_filter_type; // off - highpass - lowpass - bandpass ...
+  float fs_frequency_low; // low frequency
+  float fs_frequency_high; // high frequency
+  float fs_frequency; // high frequency
+  float fs_frequency_range; // high frequency
+  int fs_sharpness; // sharpness
+  uint32_t fs_preview; // preview final image
+  float fs_freqlay_exposure; // exposure compensation for the mask
+  int fs_lighten_freq_layer; // user asks to lighten (add grey) the layer
+  int fs_invert_freq_layer; // user asks to invert the layer
+  int fs_show_luma_chroma; // user wants to filter luma & chroma
+  int fs_show_luma; // user wants to filter luma only
+  int fs_show_chroma; // user wants to filter chroma only
+  int fs_show_channel_1; // user wants to filter channel red
+  int fs_show_channel_2; // user wants to filter channel green
+  int fs_show_channel_3; // user wants to filter channel blue
+  float fs_clip_percent; // % clipping for lighteen
+
+  float * tF1, *tF2, *tF3; // filter complement & colorspace complement
+  void *fs_ivoid; // buffer for backup original image
+  void *compl1x, *compl2x, *compl3x;
+  float *fs_img_channel1x, *fs_img_channel2x, *fs_img_channel3x;
+  dt_iop_roi_t fs_roi_tF1;
+  dt_iop_roi_t fs_roi_ivoid;
+  /* End frequency separation */
+
 } dt_develop_blend_params_t;
 
 
@@ -357,6 +418,30 @@ typedef struct dt_iop_gui_blend_data_t
   int *masks_combo_ids;
   int masks_shown;
   int control_button_pressed;
+
+  /* frequency separation */
+  GtkBox *fs_top_box; // frequency separation top box
+  GtkBox *fs_box; // frequency separation box
+  GList *fs_filter_types; // list with (off - Lowpass - Highpass - Bandpass ...)
+  GList *fs_preview; // preview final image - preview mask - mask + parent module modifications
+  GtkWidget *fs_filter_types_combo; //  combo box with (off - Lowpass - Highpass - Bandpass ...)
+  GtkWidget *fs_preview_combo; //  combo box with (yes - no)
+  GtkWidget *fs_frequency_low_slider; // low frequency
+  GtkWidget *fs_frequency_high_slider; // high frequency
+  GtkWidget *fs_frequency_slider; // high frequency
+  GtkWidget *fs_frequency_range_slider; // high frequency
+  GtkWidget *fs_sharpness_slider; // sharpness for the filters
+  GtkWidget *fs_freqlay_exposure_slider; // exposure compensation for the mask
+  GtkWidget *fs_lighten_freq_layer; // adds 50% gray to the layer
+  GtkWidget *fs_invert_freq_layer; // inverts the layer
+  GtkWidget *fs_show_luma_chroma; // adds 50% gray to the layer
+  GtkWidget *fs_show_luma; // adds 50% gray to the layer
+  GtkWidget *fs_show_chroma; // adds 50% gray to the layer
+  GtkWidget *fs_show_channel_1; // adds 50% gray to the layer
+  GtkWidget *fs_show_channel_2; // adds 50% gray to the layer
+  GtkWidget *fs_show_channel_3; // adds 50% gray to the layer
+  GtkWidget *fs_clip_percent_slider; // exposure compensation for the mask
+  /* End frequency separation */
 } dt_iop_gui_blend_data_t;
 
 

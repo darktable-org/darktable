@@ -32,6 +32,8 @@
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
+#include "develop/freqsep.h"
+#include "develop/fft.h"
 
 #include <strings.h>
 #include <assert.h>
@@ -267,6 +269,333 @@ static void _blendif_scale_print_default(float value, char *string, int n)
 {
   snprintf(string, n, "%-4.0f", value * 100.0f);
 }
+
+/* frequency separation CALLBACK */
+
+void fs_show_hide_controls(dt_iop_gui_blend_data_t *data, dt_develop_blend_params_t *bp)
+{
+  if(bp->fs_filter_type > 0)
+  {
+    gtk_widget_show(GTK_WIDGET(data->fs_top_box));
+
+    if (bp->fs_filter_type == FFT_FILTER_TYPE_LOWPASS_SMOOTH)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_range_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_high_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_LOWPASS_GAUSSIAN)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_high_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_sharpness_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_sharpness_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_high_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_BANDPASS_BUTTERWORTH)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_sharpness_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_BANDPASS_GAUSSIAN)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_BANDPASS_IDEAL)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_HIGHPASS_IDEAL)
+    {
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_LOWPASS_IDEAL)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_BARTLETT)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+  }
+  else
+  {
+    gtk_widget_hide(GTK_WIDGET(data->fs_top_box));
+  }
+}
+
+static void _fs_filter_types_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
+{
+
+  const unsigned int fs_filter_type = GPOINTER_TO_UINT(
+      g_list_nth_data(data->fs_filter_types, dt_bauhaus_combobox_get(data->fs_filter_types_combo)));
+
+  data->module->blend_params->fs_filter_type = fs_filter_type;
+
+  fs_show_hide_controls(data, data->module->blend_params);
+
+
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_preview_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
+{
+
+  const unsigned int fs_preview = GPOINTER_TO_UINT(
+      g_list_nth_data(data->fs_preview, dt_bauhaus_combobox_get(data->fs_preview_combo)));
+
+  data->module->blend_params->fs_preview = fs_preview;
+
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_frequency_low_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->fs_frequency_low = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_frequency_high_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->fs_frequency_high = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_frequency_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->fs_frequency = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_frequency_range_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->fs_frequency_range = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_sharpness_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->fs_sharpness = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_freqlay_exposure_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->fs_freqlay_exposure = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_clip_percent_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->fs_clip_percent = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_show_luma_chroma_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  bp->fs_show_luma_chroma = active;
+  if (bp->fs_show_luma_chroma)
+  {
+    bp->fs_show_luma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma), bp->fs_show_luma);
+    bp->fs_show_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_chroma), bp->fs_show_chroma);
+    bp->fs_show_channel_1 = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_1), bp->fs_show_channel_1);
+    bp->fs_show_channel_2 = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_2), bp->fs_show_channel_2);
+    bp->fs_show_channel_3 = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_3), bp->fs_show_channel_3);
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _fs_show_luma_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  bp->fs_show_luma = active;
+  if (bp->fs_show_luma)
+  {
+    bp->fs_show_luma_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma_chroma), bp->fs_show_luma_chroma);
+    bp->fs_show_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_chroma), bp->fs_show_chroma);
+    bp->fs_show_channel_1 = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_1), bp->fs_show_channel_1);
+    bp->fs_show_channel_2 = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_2), bp->fs_show_channel_2);
+    bp->fs_show_channel_3 = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_3), bp->fs_show_channel_3);
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _fs_show_chroma_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  bp->fs_show_chroma = active;
+  if (bp->fs_show_chroma)
+  {
+    bp->fs_show_luma_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma_chroma), bp->fs_show_luma_chroma);
+    bp->fs_show_luma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma), bp->fs_show_luma);
+    bp->fs_show_channel_1 = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_1), bp->fs_show_channel_1);
+    bp->fs_show_channel_2 = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_2), bp->fs_show_channel_2);
+    bp->fs_show_channel_3 = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_3), bp->fs_show_channel_3);
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _fs_show_channel_1_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  bp->fs_show_channel_1 = active;
+  if (bp->fs_show_channel_1)
+  {
+    bp->fs_show_luma_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma_chroma), bp->fs_show_luma_chroma);
+    bp->fs_show_luma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma), bp->fs_show_luma);
+    bp->fs_show_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_chroma), bp->fs_show_chroma);
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _fs_show_channel_2_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  bp->fs_show_channel_2 = active;
+  if (bp->fs_show_channel_2)
+  {
+    bp->fs_show_luma_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma_chroma), bp->fs_show_luma_chroma);
+    bp->fs_show_luma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma), bp->fs_show_luma);
+    bp->fs_show_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_chroma), bp->fs_show_chroma);
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _fs_show_channel_3_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  bp->fs_show_channel_3 = active;
+  if (bp->fs_show_channel_3)
+  {
+    bp->fs_show_luma_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma_chroma), bp->fs_show_luma_chroma);
+    bp->fs_show_luma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma), bp->fs_show_luma);
+    bp->fs_show_chroma = 0; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_chroma), bp->fs_show_chroma);
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _fs_lighten_freq_layer_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+
+  bp->fs_lighten_freq_layer = active;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _fs_invert_freq_layer_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+
+  bp->fs_invert_freq_layer = active;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+/* End - frequency separation CALLBACK */
 
 static void _blendop_masks_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
 {
@@ -1358,11 +1687,45 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
-  if(!(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) || !bd || !bd->blend_inited) return;
+  if(!(module->flags() & (IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_SUPPORTS_FREQSEP)) || !bd || !bd->blend_inited) return;
 
   int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
+  /* frequency separation */
+
+  if(module->flags() & IOP_FLAGS_SUPPORTS_FREQSEP)
+  {
+    dt_bauhaus_combobox_set(bd->fs_filter_types_combo,
+                g_list_index(bd->fs_filter_types, GUINT_TO_POINTER(module->blend_params->fs_filter_type)));
+
+    dt_bauhaus_combobox_set(bd->fs_preview_combo,
+                g_list_index(bd->fs_preview, GUINT_TO_POINTER(module->blend_params->fs_preview)));
+
+    dt_bauhaus_slider_set(bd->fs_frequency_low_slider, module->blend_params->fs_frequency_low);
+    dt_bauhaus_slider_set(bd->fs_frequency_high_slider, module->blend_params->fs_frequency_high);
+    dt_bauhaus_slider_set(bd->fs_frequency_slider, module->blend_params->fs_frequency);
+    dt_bauhaus_slider_set(bd->fs_frequency_range_slider, module->blend_params->fs_frequency_range);
+    dt_bauhaus_slider_set(bd->fs_sharpness_slider, module->blend_params->fs_sharpness);
+    dt_bauhaus_slider_set(bd->fs_freqlay_exposure_slider, module->blend_params->fs_freqlay_exposure);
+    dt_bauhaus_slider_set(bd->fs_clip_percent_slider, module->blend_params->fs_clip_percent);
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_lighten_freq_layer), module->blend_params->fs_lighten_freq_layer);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_invert_freq_layer), module->blend_params->fs_invert_freq_layer);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma_chroma), module->blend_params->fs_show_luma_chroma);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma), module->blend_params->fs_show_luma);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_chroma), module->blend_params->fs_show_chroma);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_1), module->blend_params->fs_show_channel_1);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_2), module->blend_params->fs_show_channel_2);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_3), module->blend_params->fs_show_channel_3);
+
+    /* now show hide controls as required */
+    fs_show_hide_controls(bd, module->blend_params);
+  }
+  /* End frequency separation */
+
+  if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+  {
   dt_bauhaus_combobox_set(bd->masks_modes_combo,
                           g_list_index(bd->masks_modes, GUINT_TO_POINTER(module->blend_params->mask_mode)));
 
@@ -1506,6 +1869,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   }
 
   darktable.gui->reset = reset;
+  }
 }
 
 static void _collect_blend_modes(GList **list, const char *name, unsigned int mode)
@@ -1538,13 +1902,15 @@ static void _add_blendmode_combo(GList **list, GtkWidget *combobox, GList *compl
 
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 {
-  /* create and add blend mode if module supports it */
-  if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-  {
-    const int bs = DT_PIXEL_APPLY_DPI(14);
+  dt_iop_gui_blend_data_t *bd = NULL;
 
+  const int bs = DT_PIXEL_APPLY_DPI(14);
+
+  /* create and add blend mode if module supports it */
+  if(module->flags() & (IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_SUPPORTS_FREQSEP))
+  {
     module->blend_data = g_malloc0(sizeof(dt_iop_gui_blend_data_t));
-    dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+    bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
     bd->iopw = iopw;
     bd->module = module;
@@ -1558,6 +1924,235 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->masks_invert = NULL;
     bd->blend_modes_all = NULL;
 
+    /* frequency separation */
+    bd->fs_top_box = NULL;
+    bd->fs_box = NULL;
+    bd->fs_filter_types = NULL;
+    bd->fs_preview = NULL;
+    bd->fs_filter_types_combo = NULL;
+    bd->fs_preview_combo = NULL;
+    bd->fs_frequency_low_slider = NULL;
+    bd->fs_frequency_high_slider = NULL;
+    bd->fs_frequency_slider = NULL;
+    bd->fs_frequency_range_slider = NULL;
+    bd->fs_sharpness_slider = NULL;
+    bd->fs_freqlay_exposure_slider = NULL;
+    bd->fs_lighten_freq_layer = NULL;
+    bd->fs_invert_freq_layer = NULL;
+    bd->fs_show_luma_chroma = NULL;
+    bd->fs_show_luma = NULL;
+    bd->fs_show_chroma = NULL;
+    bd->fs_show_channel_1 = NULL;
+    bd->fs_show_channel_2 = NULL;
+    bd->fs_show_channel_3 = NULL;
+    bd->fs_clip_percent_slider = NULL;
+    /* End frequency separation */
+  }
+
+  /* frequency separation */
+  if(module->flags() & IOP_FLAGS_SUPPORTS_FREQSEP)
+  {
+    bd->fs_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+
+    bd->fs_filter_types_combo = dt_bauhaus_combobox_new(module);
+    dt_bauhaus_widget_set_label(bd->fs_filter_types_combo, _("frequency separation"), _("frequency separation"));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("off"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(0));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("high pass (ideal)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_HIGHPASS_IDEAL));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (ideal)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_IDEAL));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("band pass (ideal)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_BANDPASS_IDEAL));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("high pass (butterworth)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (butterworth)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("band pass (butterworth)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_BANDPASS_BUTTERWORTH));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("high pass (gaussian)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (gaussian)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_GAUSSIAN));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("band pass (gaussian)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_BANDPASS_GAUSSIAN));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (smooth)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_SMOOTH));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("bartlett"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_BARTLETT));
+
+
+
+      dt_bauhaus_combobox_set(bd->fs_filter_types_combo, 0);
+      g_object_set(
+          bd->fs_filter_types_combo, "tooltip-text",
+          _("activates frequency separation and selects the filter type."),
+          (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_filter_types_combo), "value-changed",
+                       G_CALLBACK(_fs_filter_types_callback), bd);
+
+    bd->fs_preview_combo = dt_bauhaus_combobox_new(module);
+    dt_bauhaus_widget_set_label(bd->fs_preview_combo, _("preview"), _("preview"));
+
+    dt_bauhaus_combobox_add(bd->fs_preview_combo, _("final image"));
+    bd->fs_preview = g_list_append(bd->fs_preview, GUINT_TO_POINTER(DEVELOP_FS_PREVIEW_FINAL_IMAGE));
+
+    dt_bauhaus_combobox_add(bd->fs_preview_combo, _("frequency (only)"));
+    bd->fs_preview = g_list_append(bd->fs_preview, GUINT_TO_POINTER(DEVELOP_FS_PREVIEW_FREQLAY));
+
+    dt_bauhaus_combobox_add(bd->fs_preview_combo, _("frequency (with changes)"));
+    bd->fs_preview = g_list_append(bd->fs_preview, GUINT_TO_POINTER(DEVELOP_FS_PREVIEW_FREQLAY_CHNG));
+
+      dt_bauhaus_combobox_set(bd->fs_preview_combo, 0);
+      g_object_set(
+          bd->fs_preview_combo, "tooltip-text",
+          _("displays the image or the frequency layer, with or without changes."),
+          (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_preview_combo), "value-changed",
+                       G_CALLBACK(_fs_preview_callback), bd);
+
+      bd->fs_frequency_low_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, .1, 0.0, 6);
+      dt_bauhaus_widget_set_label(bd->fs_frequency_low_slider, _("low frequency"), _("low frequency"));
+      dt_bauhaus_slider_set_format(bd->fs_frequency_low_slider, "%.1f");
+      g_object_set(bd->fs_frequency_low_slider, "tooltip-text", _("sets the low frequency for the filter."), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_frequency_low_slider), "value-changed", G_CALLBACK(_fs_frequency_low_callback), bd);
+
+      bd->fs_frequency_high_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, .1, 0.0, 6);
+      dt_bauhaus_widget_set_label(bd->fs_frequency_high_slider, _("high frequency"), _("high frequency"));
+      dt_bauhaus_slider_set_format(bd->fs_frequency_high_slider, "%.1f");
+      g_object_set(bd->fs_frequency_high_slider, "tooltip-text", _("sets the high frequency for the filter."), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_frequency_high_slider), "value-changed", G_CALLBACK(_fs_frequency_high_callback), bd);
+
+      bd->fs_frequency_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, .1, 0.0, 6);
+      dt_bauhaus_widget_set_label(bd->fs_frequency_slider, _("frequency"), _("frequency"));
+      dt_bauhaus_slider_set_format(bd->fs_frequency_slider, "%.1f");
+      g_object_set(bd->fs_frequency_slider, "tooltip-text", _("sets the frequency for the filter."), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_frequency_slider), "value-changed", G_CALLBACK(_fs_frequency_callback), bd);
+
+      bd->fs_frequency_range_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, .1, 0.0, 6);
+      dt_bauhaus_widget_set_label(bd->fs_frequency_range_slider, _("frequency range"), _("frequency range"));
+      dt_bauhaus_slider_set_format(bd->fs_frequency_range_slider, "%.1f");
+      g_object_set(bd->fs_frequency_range_slider, "tooltip-text", _("sets the range frequency for the filter."), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_frequency_range_slider), "value-changed", G_CALLBACK(_fs_frequency_range_callback), bd);
+
+      bd->fs_sharpness_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 0.0, 1);
+      dt_bauhaus_widget_set_label(bd->fs_sharpness_slider, _("sharpness"), _("sharpness"));
+      dt_bauhaus_slider_set_format(bd->fs_sharpness_slider, "%.1f");
+      g_object_set(bd->fs_sharpness_slider, "tooltip-text", _("sets the sharpness for the filter."), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_sharpness_slider), "value-changed", G_CALLBACK(_fs_sharpness_callback), bd);
+
+      bd->fs_freqlay_exposure_slider = dt_bauhaus_slider_new_with_range(module, -20.0, 20.0, .1, 0.0, 3);
+      dt_bauhaus_widget_set_label(bd->fs_freqlay_exposure_slider, _("exposure compensation"), _("exposure compensation"));
+      dt_bauhaus_slider_set_format(bd->fs_freqlay_exposure_slider, "%.1f");
+      g_object_set(bd->fs_freqlay_exposure_slider, "tooltip-text", _("modifies the exposure of the preview, it does not affect the final image."), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_freqlay_exposure_slider), "value-changed", G_CALLBACK(_fs_freqlay_exposure_callback), bd);
+
+      bd->fs_clip_percent_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, .001, 0.01, 3);
+      dt_bauhaus_widget_set_label(bd->fs_clip_percent_slider, _("% clipping"), _("% clipping"));
+      dt_bauhaus_slider_set_format(bd->fs_clip_percent_slider, "%.3f%%");
+      g_object_set(bd->fs_clip_percent_slider, "tooltip-text", _("clipping for lighteen."), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_clip_percent_slider), "value-changed", G_CALLBACK(_fs_clip_percent_callback), bd);
+
+
+      GtkWidget *label_out = gtk_label_new(_("output:  "));
+
+      bd->fs_show_luma_chroma = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      g_object_set(G_OBJECT(bd->fs_show_luma_chroma), "tooltip-text", _("show luma & chroma"), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_show_luma_chroma), "toggled", G_CALLBACK(_fs_show_luma_chroma_callback), module);
+      gtk_widget_set_size_request(GTK_WIDGET(bd->fs_show_luma_chroma), bs, bs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma_chroma), FALSE);
+
+      bd->fs_show_luma = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      g_object_set(G_OBJECT(bd->fs_show_luma), "tooltip-text", _("show luma"), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_show_luma), "toggled", G_CALLBACK(_fs_show_luma_callback), module);
+      gtk_widget_set_size_request(GTK_WIDGET(bd->fs_show_luma), bs, bs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_luma), FALSE);
+
+      bd->fs_show_chroma = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      g_object_set(G_OBJECT(bd->fs_show_chroma), "tooltip-text", _("show chroma"), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_show_chroma), "toggled", G_CALLBACK(_fs_show_chroma_callback), module);
+      gtk_widget_set_size_request(GTK_WIDGET(bd->fs_show_chroma), bs, bs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_chroma), FALSE);
+
+      bd->fs_show_channel_1 = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      g_object_set(G_OBJECT(bd->fs_show_channel_1), "tooltip-text", _("show channel red"), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_show_channel_1), "toggled", G_CALLBACK(_fs_show_channel_1_callback), module);
+      gtk_widget_set_size_request(GTK_WIDGET(bd->fs_show_channel_1), bs, bs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_1), FALSE);
+
+      bd->fs_show_channel_2 = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      g_object_set(G_OBJECT(bd->fs_show_channel_2), "tooltip-text", _("show channel green"), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_show_channel_2), "toggled", G_CALLBACK(_fs_show_channel_2_callback), module);
+      gtk_widget_set_size_request(GTK_WIDGET(bd->fs_show_channel_2), bs, bs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_2), FALSE);
+
+      bd->fs_show_channel_3 = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      g_object_set(G_OBJECT(bd->fs_show_channel_3), "tooltip-text", _("show channel blue"), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_show_channel_3), "toggled", G_CALLBACK(_fs_show_channel_3_callback), module);
+      gtk_widget_set_size_request(GTK_WIDGET(bd->fs_show_channel_3), bs, bs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_show_channel_3), FALSE);
+
+      bd->fs_lighten_freq_layer = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      g_object_set(G_OBJECT(bd->fs_lighten_freq_layer), "tooltip-text", _("lighten frequency layer"), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_lighten_freq_layer), "toggled", G_CALLBACK(_fs_lighten_freq_layer_callback), module);
+      gtk_widget_set_size_request(GTK_WIDGET(bd->fs_lighten_freq_layer), bs, bs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_lighten_freq_layer), FALSE);
+
+      bd->fs_invert_freq_layer = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      g_object_set(G_OBJECT(bd->fs_invert_freq_layer), "tooltip-text", _("invert frequency layer"), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_invert_freq_layer), "toggled", G_CALLBACK(_fs_invert_freq_layer_callback), module);
+      gtk_widget_set_size_request(GTK_WIDGET(bd->fs_invert_freq_layer), bs, bs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_invert_freq_layer), FALSE);
+
+
+      GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+      gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(box), TRUE, TRUE, 0);
+
+      gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->fs_filter_types_combo), TRUE, TRUE, 0);
+
+      bd->fs_top_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_frequency_low_slider, TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_frequency_high_slider, TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_frequency_slider, TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_frequency_range_slider, TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_sharpness_slider, TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_freqlay_exposure_slider, TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_clip_percent_slider, TRUE, TRUE, 0);
+
+      GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(bd->fs_preview_combo), TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox), bd->fs_lighten_freq_layer, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox), bd->fs_invert_freq_layer, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), hbox, TRUE, TRUE, 0);
+
+      GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(hbox1), label_out, FALSE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox1), bd->fs_show_luma_chroma, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox1), bd->fs_show_luma, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox1), bd->fs_show_chroma, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox1), bd->fs_show_channel_1, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox1), bd->fs_show_channel_2, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox1), bd->fs_show_channel_3, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), hbox1, TRUE, TRUE, 0);
+
+      gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->fs_top_box), TRUE, TRUE, 0);
+    }
+    /* End frequency separation */
+
+  if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+  {
     /** generate a list of all available blend modes */
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2);
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal bounded"), DEVELOP_BLEND_BOUNDED);
