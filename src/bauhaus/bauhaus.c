@@ -1578,18 +1578,27 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   if(darktable.bauhaus->keys_cnt)
   {
     cairo_save(cr);
-    cairo_text_extents_t ext;
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
     set_text_color(cr, 1);
     set_value_font(cr);
+    const int line_height = get_line_height();
+    pango_font_description_set_absolute_size(desc,(MIN(3 * line_height, .2 * height)) * PANGO_SCALE);
+
     // make extra large, but without dependency on popup window height
     // (that might differ for comboboxes for example). only fall back
     // to height dependency if the popup is really small.
-    const int line_height = get_line_height();
-    cairo_set_font_size(cr, MIN(3 * line_height, .2 * height));
-    cairo_text_extents(cr, darktable.bauhaus->keys, &ext);
-    cairo_move_to(cr, wd - 4 - ht - ext.width, height * 0.5);
-    cairo_show_text(cr, darktable.bauhaus->keys); // FIXME: pango
+    pango_layout_set_text(layout, darktable.bauhaus->keys, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, wd - 4 - ht - ink.width, height * 0.5);
+    pango_cairo_show_layout(cr, layout);
     cairo_restore(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+
   }
   if(darktable.bauhaus->cursor_visible)
   {
