@@ -2427,19 +2427,20 @@ static gboolean _get_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pi
   // make sure we lock the pipe and take a copy. it is not thread safe to use a pipe on the GUI thread, so we
   // get a copy and use it from there.
 
-  dt_pthread_mutex_lock(&module->dev->preview_pipe->busy_mutex);
-  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe (module->dev, module->dev->preview_pipe, module);
+  dt_pthread_mutex_lock(&module->dev->history_mutex);
 
-  if (!piece || piece->pipe->backbuf_width==0 || piece->pipe->backbuf_width==0)
+  dt_dev_pixelpipe_t *mp_pipe = module->dev->preview_pipe;
+
+  if (!mp_pipe || mp_pipe->backbuf_width==0 || mp_pipe->backbuf_width==0)
   {
-    dt_pthread_mutex_unlock(&module->dev->preview_pipe->busy_mutex);
+    dt_pthread_mutex_unlock(&module->dev->history_mutex);
     pipe->input = NULL;
     pipe->backbuf = NULL;
     pipe->nodes = NULL;
     return FALSE;
   }
 
-  *pipe = *(piece->pipe);
+  *pipe = *(mp_pipe);
   // not used in this path, let's nullify the pointers, no need to deep-copy
   pipe->input = NULL;
   pipe->backbuf = NULL;
@@ -2456,7 +2457,7 @@ static gboolean _get_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pi
     n = n->next;
   }
 
-  dt_pthread_mutex_unlock(&module->dev->preview_pipe->busy_mutex);
+  dt_pthread_mutex_unlock(&module->dev->history_mutex);
   return TRUE;
 }
 
