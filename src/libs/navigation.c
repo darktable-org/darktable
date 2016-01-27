@@ -249,18 +249,22 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     if(fabsf(cur_scale - min_scale) > 0.001f)
     {
       /* Zoom % */
+      PangoLayout *layout;
+      PangoRectangle ink;
+      PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+      layout = pango_cairo_create_layout(cr);
+      pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(11)) * PANGO_SCALE);
+      pango_layout_set_font_description(layout, desc);
       cairo_translate(cr, 0, height);
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
-      cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(11));
 
       char zoomline[5];
       snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale * 100);
 
-      cairo_text_extents_t ext;
-      cairo_text_extents(cr, zoomline, &ext);
-      h = d->zoom_h = ext.height;
-      w = d->zoom_w = ext.width;
+      pango_layout_set_text(layout, zoomline, -1);
+      pango_layout_get_pixel_extents(layout, &ink, NULL);
+      h = d->zoom_h = ink.height;
+      w = d->zoom_w = ink.width;
 
       cairo_move_to(cr, width - w - h * 1.1, 0);
 
@@ -271,13 +275,16 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       gtk_style_context_get(context, gtk_widget_get_state_flags(widget), "background-color", &color, NULL);
 
       gdk_cairo_set_source_rgba(cr, color);
-      cairo_text_path(cr, zoomline);
+      pango_cairo_layout_path(cr, layout);
       cairo_stroke_preserve(cr);
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
       cairo_fill(cr);
       cairo_restore(cr);
 
       gdk_rgba_free(color);
+      pango_font_description_free(desc);
+      g_object_unref(layout);
+
     }
     else
     {
