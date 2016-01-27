@@ -84,10 +84,9 @@ static void _dropdown_changed(GtkComboBox *widget, gpointer user_data)
   GtkTreeIter iter;
   if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(d->dropdown), &iter))
   {
-    gchar *str;
     int view;
     GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(d->dropdown));
-    gtk_tree_model_get(model, &iter, TEXT_COLUMN, &str, VIEW_COLUMN, &view, -1);
+    gtk_tree_model_get(model, &iter, VIEW_COLUMN, &view, -1);
     _switch_view(view);
   }
 }
@@ -226,13 +225,14 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
     if(gtk_tree_model_get_iter_first(model, &iter) == TRUE) do
     {
       gchar *str;
-      gtk_tree_model_get(model, &iter, 0, &str, -1);
+      gtk_tree_model_get(model, &iter, TEXT_COLUMN, &str, -1);
       if(!g_strcmp0(str, name))
       {
         gtk_combo_box_set_active(GTK_COMBO_BOX(d->dropdown), index);
         gtk_widget_set_state_flags(d->dropdown, GTK_STATE_FLAG_SELECTED, TRUE);
         break;
       }
+      g_free(str);
       index++;
     } while(gtk_tree_model_iter_next(model, &iter) == TRUE);
   }
