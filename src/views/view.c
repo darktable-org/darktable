@@ -886,16 +886,23 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
     if(img)
     {
+      PangoLayout *layout;
+      PangoRectangle ink;
+      PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+      pango_font_description_set_absolute_size(desc,(.25 * width) * PANGO_SCALE);
+      layout = pango_cairo_create_layout(cr);
+      pango_layout_set_font_description(layout, desc);
       const char *ext = img->filename + strlen(img->filename);
       while(ext > img->filename && *ext != '.') ext--;
       ext++;
       cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
-      cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size(cr, .25 * width);
-      cairo_text_extents_t text_extends;
-      cairo_text_extents(cr, ext, &text_extends);
-      cairo_move_to(cr, .025 * width - text_extends.x_bearing, .24 * height);
-      cairo_show_text(cr, ext);
+      pango_layout_set_text(layout, ext, -1);
+      pango_layout_get_pixel_extents(layout, &ink, NULL);
+      cairo_move_to(cr, .025 * width - ink.x, .24 * height);
+      pango_cairo_show_layout(cr, layout);
+      pango_font_description_free(desc);
+      g_object_unref(layout);
+
     }
   }
 
@@ -1297,21 +1304,29 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   if(draw_metadata && img && (zoom == 1))
   {
     // some exif data
+    PangoLayout *layout;
+    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+    layout = pango_cairo_create_layout(cr);
+    pango_font_description_set_absolute_size(desc,(.025 * fscale) * PANGO_SCALE);
+    pango_layout_set_font_description(layout, desc);
     cairo_set_source_rgb(cr, .7, .7, .7);
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, .025 * fscale);
 
     cairo_move_to(cr, .02 * fscale, .04 * fscale);
     // cairo_show_text(cr, img->filename);
-    cairo_text_path(cr, img->filename);
+    pango_layout_set_text(layout, img->filename, -1);
+    pango_cairo_layout_path(cr, layout);
     char exifline[50];
     cairo_move_to(cr, .02 * fscale, .08 * fscale);
     dt_image_print_exif(img, exifline, 50);
-    cairo_text_path(cr, exifline);
+    pango_layout_set_text(layout, exifline, -1);
+    pango_cairo_layout_path(cr, layout);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 1.0);
     cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
     cairo_stroke(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+
   }
 
   // draw custom metadata from accompanying text file:
@@ -1325,8 +1340,11 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       if(f)
       {
         char line[2048];
-        cairo_select_font_face(cr, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        cairo_set_font_size(cr, .015 * fscale);
+        PangoLayout *layout;
+        PangoFontDescription *desc = pango_font_description_from_string("monospace bold");
+        layout = pango_cairo_create_layout(cr);
+        pango_font_description_set_absolute_size(desc,(.015 * fscale) * PANGO_SCALE);
+        pango_layout_set_font_description(layout, desc);
         // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
         int k = 0;
         while(!feof(f))
@@ -1339,7 +1357,8 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
           cairo_move_to(cr, .02 * fscale, .20 * fscale + .017 * fscale * k);
           cairo_set_source_rgb(cr, .7, .7, .7);
-          cairo_text_path(cr, line);
+          pango_layout_set_text(layout, line, -1);
+          pango_cairo_layout_path(cr, layout);
           cairo_fill_preserve(cr);
           cairo_set_line_width(cr, 1.0);
           cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
@@ -1347,6 +1366,9 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           k++;
         }
         fclose(f);
+        pango_font_description_free(desc);
+        g_object_unref(layout);
+
       }
       g_free(path);
     }
