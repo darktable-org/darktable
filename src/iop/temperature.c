@@ -481,18 +481,46 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
 #endif
+  else if(img->flags & DT_IMAGE_4BAYER)
+  { // non-mosaiced CYGM/RGBE image
+    const int ch = piece->colors;
+
+    // Create the CAM to RGB with applied WB matrix
+    double CAM_to_RGB_WB[3][4];
+    for (int a=0; a<3; a++)
+      for (int b=0; b<4; b++)
+        CAM_to_RGB_WB[a][b] = d->CAM_to_RGB[a][b] * d->coeffs[b];
+
+    // Create the RGB->RGB+WB matrix
+    double RGB_to_RGB_WB[3][3];
+    for (int a=0; a<3; a++)
+      for (int b=0; b<3; b++) {
+        RGB_to_RGB_WB[a][b] = 0.0f;
+        for (int c=0; c<4; c++)
+          RGB_to_RGB_WB[a][b] += CAM_to_RGB_WB[a][c] * d->RGB_to_CAM[c][b];
+      }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, RGB_to_RGB_WB) schedule(static)
+#endif
+    for(int k = 0; k < roi_out->height; k++)
+    {
+      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+      for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
+      {
+        out[0]=out[1]=out[2] = 0.0f;
+        for (int a=0; a<3; a++)
+          for (int b=0; b<3; b++)
+            out[a] += RGB_to_RGB_WB[a][b] * in[b];
+      }
+    }
+  }
   else
   { // non-mosaiced
     const int ch = piece->colors;
 
-    float tmp[4] = {d->coeffs[0], d->coeffs[1], d->coeffs[2], d->coeffs[3]};
-    if(img->flags & DT_IMAGE_4BAYER) {
-      // We're processing a 4 bayer image that's been converted to RGB so we
-      // need to get some RGB coeffs
-      dt_colorspaces_cygm_to_rgb(tmp, 1, d->CAM_to_RGB);
-    }
-
-    const __m128 coeffs = _mm_set_ps(1.0f, tmp[2], tmp[1], tmp[0]);
+    const __m128 coeffs = _mm_set_ps(1.0f, d->coeffs[2], d->coeffs[1], d->coeffs[0]);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
