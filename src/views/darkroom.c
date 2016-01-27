@@ -401,17 +401,23 @@ void expose(
   {
     gchar *label = darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK ? _("gamut check") : _("soft proof");
     cairo_set_source_rgba(cri, 0.5, 0.5, 0.5, 0.5);
-    cairo_text_extents_t te;
-    cairo_select_font_face(cri, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cri, 20);
-    cairo_text_extents(cri, label, &te);
-    cairo_move_to(cri, te.height * 2, height - (te.height * 2));
-    cairo_text_path(cri, label);
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+    layout = pango_cairo_create_layout(cri);
+    pango_font_description_set_absolute_size(desc,(20) * PANGO_SCALE);
+    pango_layout_set_font_description(layout, desc);
+    pango_layout_set_text(layout, label, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cri, ink.height * 2, height - (ink.height * 3));
+    pango_cairo_layout_path(cri, layout);
     cairo_set_source_rgb(cri, 0.7, 0.7, 0.7);
     cairo_fill_preserve(cri);
     cairo_set_line_width(cri, 0.7);
     cairo_set_source_rgb(cri, 0.3, 0.3, 0.3);
     cairo_stroke(cri);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
   }
 }
 
