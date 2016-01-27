@@ -1749,6 +1749,37 @@ int dt_colorspaces_conversion_matrices_rgb(const char *name, double out_RGB_to_C
   return TRUE;
 }
 
+void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int num, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], float coeffs[4])
+{
+  // Create the CAM to RGB with applied WB matrix
+  double CAM_to_RGB_WB[3][4];
+  for (int a=0; a<3; a++)
+    for (int b=0; b<4; b++)
+      CAM_to_RGB_WB[a][b] = CAM_to_RGB[a][b] * coeffs[b];
+
+  // Create the RGB->RGB+WB matrix
+  double RGB_to_RGB_WB[3][3];
+  for (int a=0; a<3; a++)
+    for (int b=0; b<3; b++) {
+      RGB_to_RGB_WB[a][b] = 0.0f;
+      for (int c=0; c<4; c++)
+        RGB_to_RGB_WB[a][b] += CAM_to_RGB_WB[a][c] * RGB_to_CAM[c][b];
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(in, out, num, RGB_to_RGB_WB) schedule(static)
+#endif
+  for(int i = 0; i < num; i++)
+  {
+    const float *inpos = &in[i*4];
+    float *outpos = &out[i*4];
+    outpos[0]=outpos[1]=outpos[2] = 0.0f;
+    for (int a=0; a<3; a++)
+      for (int b=0; b<3; b++)
+        outpos[a] += RGB_to_RGB_WB[a][b] * inpos[b];
+  }
+}
+
 void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4])
 {
   for(int i = 0; i < num; i++)

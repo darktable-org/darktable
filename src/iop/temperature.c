@@ -483,38 +483,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 #endif
   else if(img->flags & DT_IMAGE_4BAYER)
   { // non-mosaiced CYGM/RGBE image
-    const int ch = piece->colors;
-
-    // Create the CAM to RGB with applied WB matrix
-    double CAM_to_RGB_WB[3][4];
-    for (int a=0; a<3; a++)
-      for (int b=0; b<4; b++)
-        CAM_to_RGB_WB[a][b] = d->CAM_to_RGB[a][b] * d->coeffs[b];
-
-    // Create the RGB->RGB+WB matrix
-    double RGB_to_RGB_WB[3][3];
-    for (int a=0; a<3; a++)
-      for (int b=0; b<3; b++) {
-        RGB_to_RGB_WB[a][b] = 0.0f;
-        for (int c=0; c<4; c++)
-          RGB_to_RGB_WB[a][b] += CAM_to_RGB_WB[a][c] * d->RGB_to_CAM[c][b];
-      }
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, RGB_to_RGB_WB) schedule(static)
-#endif
-    for(int k = 0; k < roi_out->height; k++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-      for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
-      {
-        out[0]=out[1]=out[2] = 0.0f;
-        for (int a=0; a<3; a++)
-          for (int b=0; b<3; b++)
-            out[a] += RGB_to_RGB_WB[a][b] * in[b];
-      }
-    }
+    dt_colorspaces_cygm_apply_coeffs_to_rgb(((float *)ovoid), ((float *)ivoid),
+                                            roi_out->width*roi_out->height,
+                                            d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
   }
   else
   { // non-mosaiced
