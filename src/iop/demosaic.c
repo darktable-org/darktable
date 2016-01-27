@@ -1644,7 +1644,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
 
-      if(data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
+      if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
     }
 
     if(scaled)
