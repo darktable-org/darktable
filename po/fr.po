@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-25 23:34+0100\n"
-"PO-Revision-Date: 2016-01-25 23:50+0100\n"
+"POT-Creation-Date: 2016-01-27 21:32+0100\n"
+"PO-Revision-Date: 2016-01-27 21:34+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5102,51 +5102,55 @@ msgstr "niveau d'égalisation de l'histogramme"
 msgid "output color profile"
 msgstr "profil de couleur de sortie "
 
-#: ../src/iop/colorout.c:500
+#: ../src/iop/colorout.c:468 ../src/iop/colorout.c:486
+msgid "missing output profile has been replaced by sRGB!"
+msgstr "profil de sortie non trouvé, remplacé par sRGB !"
+
+#: ../src/iop/colorout.c:520
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "profil de sortie non supporté, remplacé par sRGB !"
 
-#: ../src/iop/colorout.c:636
+#: ../src/iop/colorout.c:656
 msgid "output intent"
 msgstr "rendu (sortie)"
 
-#: ../src/iop/colorout.c:637 ../src/libs/export.c:617
+#: ../src/iop/colorout.c:657 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261
 #: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2466
 msgid "perceptual"
 msgstr "perceptif"
 
-#: ../src/iop/colorout.c:638 ../src/libs/export.c:618
+#: ../src/iop/colorout.c:658 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
 #: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2467
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
-#: ../src/iop/colorout.c:639 ../src/libs/export.c:619
+#: ../src/iop/colorout.c:659 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
 #: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2468
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/colorout.c:640 ../src/libs/export.c:620
+#: ../src/iop/colorout.c:660 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
 #: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2469
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
-#: ../src/iop/colorout.c:649
+#: ../src/iop/colorout.c:669
 msgid "output profile"
 msgstr "profil (sortie)"
 
-#: ../src/iop/colorout.c:658
+#: ../src/iop/colorout.c:678
 msgid "rendering intent"
 msgstr ""
 "mode de rendu\n"
 "définit comment les couleurs hors gamut sont reproduites\n"
 "perceptif est adapté à la photographie"
 
-#: ../src/iop/colorout.c:659
+#: ../src/iop/colorout.c:679
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC dans %s/color/out ou %s/color/out"
@@ -9733,9 +9737,13 @@ msgstr "boîte à outils de module"
 msgid "ratings"
 msgstr "étoiles"
 
-#: ../src/libs/tools/viewswitcher.c:46
+#: ../src/libs/tools/viewswitcher.c:57
 msgid "viewswitcher"
 msgstr "changer de vue"
+
+#: ../src/libs/tools/viewswitcher.c:142
+msgid "other"
+msgstr "autre"
 
 #: ../src/libs/tools/view_toolbox.c:45
 msgid "view toolbox"
