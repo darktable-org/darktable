@@ -74,6 +74,7 @@ FILE(GLOB SOURCE_FILES
   "develop/blend.c"
   "develop/blend_gui.c"
   "develop/fft.c"
+  "develop/fftw3.c"
   "develop/freqsep.c"
   "develop/tiling.c"
   "develop/masks/masks.c"

@@ -19,15 +19,13 @@ void fft_filter_fft(float *const InputR, float *const InputI, float *const Outpu
                     const fft_filter_type filter_type, const dt_iop_colorspace_type_t cst, const int ch)
 {
   const int nWidh1 = nWidh*ch;
-  const float catoff = range1;
-  const float w = range2;
-  const float x0 = nWidh/2.f;
-  const float y0 = mHeight/2.f;
+  float dist = 0;
 
   memset(OutputR, 0, nWidh*mHeight*ch*sizeof(float));
   memset(OutputI, 0, nWidh*mHeight*ch*sizeof(float));
 
-#ifdef _FFT_MULTFR_
+
+#ifdef _FFT_MULTFR_x
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -35,7 +33,6 @@ void fft_filter_fft(float *const InputR, float *const InputI, float *const Outpu
   for (int y=0; y < mHeight; y++)
   {
     const int ii = nWidh1*y;
-    const int dv = (y < mHeight / 2) ? y : y - mHeight;
 
     float *inR = &InputR[ii];
     float *inI = &InputI[ii];
@@ -46,44 +43,186 @@ void fft_filter_fft(float *const InputR, float *const InputI, float *const Outpu
     {
       float val = 0;
 
-       const int du = (col < nWidh / 2) ? col : col - nWidh;
-       const float dist = (float)(dv * dv + du * du);
+       // Bandpass Ideal
+       if (filter_type == FFT_FILTER_TYPE_BANDPASS_IDEAL)
+       {
+         dist = (((nWidh/2.f-col)*(nWidh/2.f-col))+((mHeight/2.f-y)*(mHeight/2.f-y)));
 
-       // Butterworth Lowpass
-       if (filter_type == FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH)
-         val = 1 / (1 + powf(dist / (range1*range1), sharpness));
+         if (range1 <= dist && dist <= range2)
+         {
+           val = 1.f;
+         }
+         else
+         {
+           val = 0;
+         }
+       }
+
+       // Lowpass Ideal
+       if (filter_type == FFT_FILTER_TYPE_LOWPASS_IDEAL)
+       {
+         dist = (((nWidh/2.f-col)*(nWidh/2.f-col))+((mHeight/2.f-y)*(mHeight/2.f-y)));
+
+         if (range1 <= dist)
+         {
+           val = 1.f;
+         }
+         else
+         {
+           val = 0;
+         }
+       }
+
+       // Highpass Ideal
+       if (filter_type == FFT_FILTER_TYPE_HIGHPASS_IDEAL)
+       {
+         dist = (((nWidh/2.f-col)*(nWidh/2.f-col))+((mHeight/2.f-y)*(mHeight/2.f-y)));
+
+         if (range1 >= dist)
+         {
+           val = 1.f;
+         }
+         else
+         {
+           val = 0;
+         }
+       }
 
        // Butterworth Highpass
-       else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH)
-         val = 1 / (1 + powf((range1*range1) / dist, sharpness));
+       if (filter_type == FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH)
+       {
+         dist = (((nWidh/2.f-col)*(nWidh/2.f-col))+((mHeight/2.f-y)*(mHeight/2.f-y)));
+
+         if (range1 == 0)
+         {
+           val = 1.f;
+         }
+         else
+         {
+           val = 1.f / (1.f + powf(dist / (range1*range1), sharpness));
+         }
+       }
+
+       // Butterworth Lowpass
+       else if (filter_type == FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH)
+       {
+         dist = (((nWidh/2.f-col)*(nWidh/2.f-col))+((mHeight/2.f-y)*(mHeight/2.f-y)));
+
+         if (dist == 0)
+         {
+           val = 1.f;
+         }
+         else
+         {
+           val = 1.f / (1.f + powf((range1*range1) / dist, sharpness));
+         }
+       }
+
+       // Butterworth Bandpass
+       if (filter_type == FFT_FILTER_TYPE_BANDPASS_BUTTERWORTH)
+       {
+         dist = (((nWidh/2.f-col)*(nWidh/2.f-col))+((mHeight/2.f-y)*(mHeight/2.f-y)));
+         if (range1 == 0 && range2 == 0)
+         {
+           val = 1.f;
+         }
+         else
+         {
+           val = (1.f / (1.f + powf(dist / (range2*range2), sharpness))) * (1.f / (1.f + powf((range1*range1) / dist, sharpness)));
+         }
+       }
 
        // Gaussian Lowpass
        else if (filter_type == FFT_FILTER_TYPE_LOWPASS_GAUSSIAN)
-         val = expf(dist / (-2.f*range1*range1));
+       {
+         int dv = (y < mHeight / 2) ? y : y - mHeight;
+         int du = (col < nWidh / 2) ? col : col - nWidh;
+         dist = (float)(dv * dv + du * du);
+
+         if (range1 == 0)
+         {
+           val = 1.f;
+         }
+         else
+         {
+           val = expf(dist / (-2.f*range1*range1));
+         }
+       }
 
        // Gaussian Highpass
        else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN)
-         val = 1 - expf(dist / (-2.f*range1*range1));
-
-       else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_SMOOTH)
        {
-         /*               1      f < catoff - w
-             f H(x) =     0      f > catoff + w
+         int dv = (y < mHeight / 2) ? y : y - mHeight;
+         int du = (col < nWidh / 2) ? col : col - nWidh;
+         dist = (float)(dv * dv + du * du);
+
+         if (range1 == 0)
+         {
+           val = 1.f;
+         }
+         else
+         {
+           val = 1.f - expf(dist / (-2.f*range1*range1));
+         }
+       }
+
+       // Gaussian Bandpass
+       else if (filter_type == FFT_FILTER_TYPE_BANDPASS_GAUSSIAN)
+       {
+         int dv = (y < mHeight / 2) ? y : y - mHeight;
+         int du = (col < nWidh / 2) ? col : col - nWidh;
+         dist = (float)(dv * dv + du * du);
+
+         if (range1 == 0 || range2 == 0)
+         {
+           val = 1.f;
+         }
+         else
+         {
+           val = ( expf(dist / (-2.f*range1*range1)) ) * ( 1 - expf(dist / (-2.f*range2*range2)) );
+         }
+       }
+
+       else if (filter_type == FFT_FILTER_TYPE_LOWPASS_SMOOTH)
+       {
+         /*               1      f < cutoff - w
+             f H(x) =     0      f > cutoff + w
                           else   1/2*(1-sin(pi*(f-cutoff)/2*w))
           */
 
+         const float cutoff = range1;
+         const float w = range2;
+         const float x0 = nWidh/2.f;
+         const float y0 = mHeight/2.f;
          const float xa = col;
          const float ya = y;
          const float f = sqrtf(((x0-xa)*(x0-xa))+((y0-ya)*(y0-ya)));
+           if (f < cutoff - w)
+             val = 1.f;
+           else if (f > cutoff + w)
+             val = 0.f;
+           else if (w == 0)
+             val = 0.f;
+           else
+           {
+             val = 0.5f*(1.f-sinf(M_PI*(f-cutoff)/(2.f*w)));
+           }
+       }
 
-         if (f < catoff - w)
-           val = 1;
-         else if (f > catoff + w)
-           val = 0;
-         else
-         {
-           val = 0.5f*(1-sinf(M_PI*(f-catoff)/(2*w)));
-         }
+
+       // BARTLETT
+       else if (filter_type == FFT_FILTER_TYPE_BARTLETT)
+       {
+         int dv = (y < mHeight / 2) ? y : y - mHeight;
+         int du = (col < nWidh / 2) ? col : col - nWidh;
+         dist = (float)(dv * dv + du * du);
+          if (range1 == 0)
+            val = 1.f;
+          else
+          {
+             float tmp = dist - (range1 / 2.f);
+             val = 1.0f - (2.0f * fabs(tmp)) / range1;
+          }
        }
 
         const float val4[4] = { (channels & FFT_DECOMPOSE_CH1) ? val : 0.f,
@@ -155,14 +294,14 @@ void fft_filter_fft(float *const InputR, float *const InputI, float *const Outpu
        else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN)
          val = 1 - expf(dist / (-2.f*range1*range1));
 
-       else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_SMOOTH)
+       else if (filter_type == FFT_FILTER_TYPE_LOWPASS_SMOOTH)
        {
-         /*               1      f < catoff - w
-             f H(x) =     0      f > catoff + w
+         /*               1      f < cutoff - w
+             f H(x) =     0      f > cutoff + w
                           else   1/2*(1-sin(pi*(f-cutoff)/2*w))
           */
 
-         const float catoff = range1;
+         const float cutoff = range1;
          const float w = range2;
          const float x0 = nWidh/2.f;
          const float y0 = mHeight/2.f;
@@ -170,15 +309,15 @@ void fft_filter_fft(float *const InputR, float *const InputI, float *const Outpu
          const float ya = y;
          const float f = sqrtf(((x0-xa)*(x0-xa))+((y0-ya)*(y0-ya)));
 
-         if (filter_type == FFT_FILTER_TYPE_HIGHPASS_SMOOTH)
+         if (filter_type == FFT_FILTER_TYPE_LOWPASS_SMOOTH)
          {
-           if (f < catoff - w)
+           if (f < cutoff - w)
              val = 1;
-           else if (f > catoff + w)
+           else if (f > cutoff + w)
              val = 0;
            else
            {
-             val = 0.5f*(1-sin(M_PI*(f-catoff)/(2*w)));
+             val = 0.5f*(1-sin(M_PI*(f-cutoff)/(2*w)));
            }
          }
        }

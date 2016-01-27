@@ -278,7 +278,7 @@ void fs_show_hide_controls(dt_iop_gui_blend_data_t *data, dt_develop_blend_param
   {
     gtk_widget_show(GTK_WIDGET(data->fs_top_box));
 
-    if (bp->fs_filter_type == FFT_FILTER_TYPE_HIGHPASS_SMOOTH)
+    if (bp->fs_filter_type == FFT_FILTER_TYPE_LOWPASS_SMOOTH)
     {
       gtk_widget_show(GTK_WIDGET(data->fs_frequency_slider));
       gtk_widget_show(GTK_WIDGET(data->fs_frequency_range_slider));
@@ -322,6 +322,60 @@ void fs_show_hide_controls(dt_iop_gui_blend_data_t *data, dt_develop_blend_param
       gtk_widget_hide(GTK_WIDGET(data->fs_frequency_high_slider));
       gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
       gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_BANDPASS_BUTTERWORTH)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_sharpness_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_BANDPASS_GAUSSIAN)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_BANDPASS_IDEAL)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_HIGHPASS_IDEAL)
+    {
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_LOWPASS_IDEAL)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
+    }
+    else if (bp->fs_filter_type == FFT_FILTER_TYPE_BARTLETT)
+    {
+      gtk_widget_show(GTK_WIDGET(data->fs_frequency_low_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_high_slider));
+
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_frequency_range_slider));
+      gtk_widget_hide(GTK_WIDGET(data->fs_sharpness_slider));
     }
   }
   else
@@ -388,6 +442,12 @@ static void _fs_sharpness_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *d
 static void _fs_freqlay_exposure_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
 {
   data->module->blend_params->fs_freqlay_exposure = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _fs_clip_percent_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->fs_clip_percent = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
@@ -1648,6 +1708,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     dt_bauhaus_slider_set(bd->fs_frequency_range_slider, module->blend_params->fs_frequency_range);
     dt_bauhaus_slider_set(bd->fs_sharpness_slider, module->blend_params->fs_sharpness);
     dt_bauhaus_slider_set(bd->fs_freqlay_exposure_slider, module->blend_params->fs_freqlay_exposure);
+    dt_bauhaus_slider_set(bd->fs_clip_percent_slider, module->blend_params->fs_clip_percent);
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_lighten_freq_layer), module->blend_params->fs_lighten_freq_layer);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->fs_invert_freq_layer), module->blend_params->fs_invert_freq_layer);
@@ -1884,6 +1945,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->fs_show_channel_1 = NULL;
     bd->fs_show_channel_2 = NULL;
     bd->fs_show_channel_3 = NULL;
+    bd->fs_clip_percent_slider = NULL;
     /* End frequency separation */
   }
 
@@ -1898,20 +1960,39 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("off"));
     bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(0));
 
-    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (butterworth)"));
-    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH));
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("high pass (ideal)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_HIGHPASS_IDEAL));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (ideal)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_IDEAL));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("band pass (ideal)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_BANDPASS_IDEAL));
 
     dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("high pass (butterworth)"));
     bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH));
 
-    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (gaussian)"));
-    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_GAUSSIAN));
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (butterworth)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("band pass (butterworth)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_BANDPASS_BUTTERWORTH));
 
     dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("high pass (gaussian)"));
     bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN));
 
-    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("high pass (smooth)"));
-    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_HIGHPASS_SMOOTH));
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (gaussian)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_GAUSSIAN));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("band pass (gaussian)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_BANDPASS_GAUSSIAN));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("low pass (smooth)"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_LOWPASS_SMOOTH));
+
+    dt_bauhaus_combobox_add(bd->fs_filter_types_combo, _("bartlett"));
+    bd->fs_filter_types = g_list_append(bd->fs_filter_types, GUINT_TO_POINTER(FFT_FILTER_TYPE_BARTLETT));
+
 
 
       dt_bauhaus_combobox_set(bd->fs_filter_types_combo, 0);
@@ -1978,6 +2059,12 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
       g_object_set(bd->fs_freqlay_exposure_slider, "tooltip-text", _("modifies the exposure of the preview, it does not affect the final image."), (char *)NULL);
       g_signal_connect(G_OBJECT(bd->fs_freqlay_exposure_slider), "value-changed", G_CALLBACK(_fs_freqlay_exposure_callback), bd);
 
+      bd->fs_clip_percent_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, .001, 0.01, 3);
+      dt_bauhaus_widget_set_label(bd->fs_clip_percent_slider, _("% clipping"), _("% clipping"));
+      dt_bauhaus_slider_set_format(bd->fs_clip_percent_slider, "%.3f%%");
+      g_object_set(bd->fs_clip_percent_slider, "tooltip-text", _("clipping for lighteen."), (char *)NULL);
+      g_signal_connect(G_OBJECT(bd->fs_clip_percent_slider), "value-changed", G_CALLBACK(_fs_clip_percent_callback), bd);
+
 
       GtkWidget *label_out = gtk_label_new(_("output:  "));
 
@@ -2042,6 +2129,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_frequency_range_slider, TRUE, TRUE, 0);
       gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_sharpness_slider, TRUE, TRUE, 0);
       gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_freqlay_exposure_slider, TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->fs_top_box), bd->fs_clip_percent_slider, TRUE, TRUE, 0);
 
       GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(bd->fs_preview_combo), TRUE, TRUE, 0);

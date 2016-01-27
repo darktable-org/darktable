@@ -67,8 +67,8 @@ static dt_develop_blend_params_t _default_blendop_params
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
 /* frequency separation */
-          0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-          NULL, NULL, NULL, NULL, { 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0 }
+          0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+          NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, { 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0 }
 /* End frequency separation */ };
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);

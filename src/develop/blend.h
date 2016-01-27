@@ -321,9 +321,12 @@ typedef struct dt_develop_blend_params_t
   int fs_show_channel_1; // user wants to filter channel red
   int fs_show_channel_2; // user wants to filter channel green
   int fs_show_channel_3; // user wants to filter channel blue
+  float fs_clip_percent; // % clipping for lighteen
 
   float * tF1, *tF2, *tF3; // filter complement & colorspace complement
   void *fs_ivoid; // buffer for backup original image
+  void *compl1x, *compl2x, *compl3x;
+  float *fs_img_channel1x, *fs_img_channel2x, *fs_img_channel3x;
   dt_iop_roi_t fs_roi_tF1;
   dt_iop_roi_t fs_roi_ivoid;
   /* End frequency separation */
@@ -437,6 +440,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *fs_show_channel_1; // adds 50% gray to the layer
   GtkWidget *fs_show_channel_2; // adds 50% gray to the layer
   GtkWidget *fs_show_channel_3; // adds 50% gray to the layer
+  GtkWidget *fs_clip_percent_slider; // exposure compensation for the mask
   /* End frequency separation */
 } dt_iop_gui_blend_data_t;
 

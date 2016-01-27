@@ -14,131 +14,7 @@
 #include "fft.h"
 
 #define _FFT_MULTFR_
-
-void fs_copy_in_to_ft(float *const in, const struct dt_iop_roi_t *const roi_in, float *const ft, const struct dt_iop_roi_t *const roi_ft, const int ch)
-{
-  const int rowsize = roi_in->width*ch*sizeof(float);
-  const int w_ft = roi_ft->width*ch;
-  const int w_in = roi_in->width*ch;
-
-#ifdef _FFT_MULTFR_x
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-#endif
-  for (int y=0; y < roi_in->height; y++) // copy each row
-  {
-    memcpy(&ft[y*w_ft], &in[y*w_in], rowsize);
-  }
-}
-
-void fs_copy_ft_to_in(const float *const ft, const struct dt_iop_roi_t *const roi_ft, float *const in, const struct dt_iop_roi_t *const roi_in, const int ch)
-{
-  const int rowsize = roi_in->width*ch*sizeof(float);
-  const int w_ft = roi_ft->width*ch;
-  const int w_in = roi_in->width*ch;
-
-#ifdef _FFT_MULTFR_x
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-#endif
-  for (int y=0; y < roi_in->height; y++) // copy each row
-  {
-    memcpy(&in[y*w_in], &ft[y*w_ft], rowsize);
-  }
-}
-
-void fs_copy_ft_to_out(float *const ft, const struct dt_iop_roi_t *const roi_ft, float *const out, const struct dt_iop_roi_t *const roi_out, const int ch)
-{
-  const int rowsize = roi_out->width*ch*sizeof(float);
-  const int xoffs = roi_out->x - roi_ft->x;
-  const int yoffs = roi_out->y - roi_ft->y;
-  const int iwidth = roi_ft->width;
-
-#ifdef _FFT_MULTFR_x
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-#endif
-  for (int y=0; y < roi_out->height; y++) // copy each row
-  {
-    size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
-    size_t oindex = (size_t)y * roi_out->width * ch;
-    float *in = (float *)ft + iindex;
-    float *out1 = (float *)out + oindex;
-
-    memcpy(out1, in, rowsize);
-  }
-}
-
-void fs_copy_out_to_ft(float *const out, const struct dt_iop_roi_t *const roi_out, float *const ft, const struct dt_iop_roi_t *const roi_ft, const int ch)
-{
-  const int rowsize = roi_out->width*ch*sizeof(float);
-  const int xoffs = roi_out->x - roi_ft->x;
-  const int yoffs = roi_out->y - roi_ft->y;
-  const int iwidth = roi_ft->width;
-
-#ifdef _FFT_MULTFR_x
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-#endif
-  for (int y=0; y < roi_out->height; y++) // copy each row
-  {
-    size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
-    size_t oindex = (size_t)y * roi_out->width * ch;
-    float *in = (float *)ft + iindex;
-    float *out1 = (float *)out + oindex;
-
-    memcpy(in, out1, rowsize);
-  }
-}
-
-// filters a FD image (InputR, InputI)
-// excluded data is left on (OutputR, OutputI)
-// nWidh, mHeight: image dimentions
-// range1: high range
-// range2: low range
-// channels: channels to filter
-// filter_type: Lowpass, Highpass, Bandpass, Bandblock
-void fs_apply_filter(dt_develop_blend_params_t *d, float *const InputR, float *const InputI, float *OutputR, float *OutputI,
-                      const int nWidh, const int mHeight,
-                      const fft_decompose_channels channels, const fft_filter_type filter_type,
-                      const dt_iop_colorspace_type_t cst, const int ch)
-{
-    float rng1 = 0;
-    float rng2 = 0;
-
-    if (filter_type == FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH)
-    {
-      const float max_rng = fmin(nWidh, mHeight)/2.f;
-      rng1 = (((100.f-d->fs_frequency_low)*max_rng)/(100.f));
-    }
-    else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH)
-    {
-      const float max_rng = fmax(nWidh, mHeight);
-      rng1 = ((d->fs_frequency_high*max_rng)/(100.f));
-    }
-    else if (filter_type == FFT_FILTER_TYPE_LOWPASS_GAUSSIAN)
-    {
-      const float max_rng = fmin(nWidh, mHeight)/2.f;
-      rng1 = (((100.f-d->fs_frequency_low)*max_rng)/(100.f));
-    }
-    else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN)
-    {
-      const float max_rng = fmax(nWidh, mHeight);
-      rng1 = ((d->fs_frequency_high*max_rng)/(100.f));
-    }
-    else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_SMOOTH)
-    {
-      const float max_rng = fmax(nWidh, mHeight);
-      rng1 = (d->fs_frequency*max_rng)/(100.f);
-      rng2 = (d->fs_frequency_range*max_rng)/(100.f);
-    }
-
-    fft_filter_fft(InputR, InputI, OutputR, OutputI, nWidh, mHeight, rng1, rng2, d->fs_sharpness, channels, filter_type, cst, ch);
-}
+//#define _TIME_FFT_
 
 fft_decompose_channels fs_get_channels_from_colorspace(dt_develop_blend_params_t *d, const dt_iop_colorspace_type_t cst)
 {
@@ -185,6 +61,167 @@ fft_decompose_channels fs_get_channels_from_colorspace(dt_develop_blend_params_t
 
   return resp;
 }
+
+void fs_copy_in_to_ft(float *const in, const struct dt_iop_roi_t *const roi_in, float *const ft, const struct dt_iop_roi_t *const roi_ft, const int ch)
+{
+  const int rowsize = roi_in->width*ch*sizeof(float);
+  const int w_ft = roi_ft->width*ch;
+  const int w_in = roi_in->width*ch;
+
+#ifdef _FFT_MULTFR_
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+#endif
+  for (int y=0; y < roi_in->height; y++) // copy each row
+  {
+    memcpy(&ft[y*w_ft], &in[y*w_in], rowsize);
+  }
+}
+
+void fs_copy_ft_to_in(const float *const ft, const struct dt_iop_roi_t *const roi_ft, float *const in, const struct dt_iop_roi_t *const roi_in, const int ch)
+{
+  const int rowsize = roi_in->width*ch*sizeof(float);
+  const int w_ft = roi_ft->width*ch;
+  const int w_in = roi_in->width*ch;
+
+#ifdef _FFT_MULTFR_
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+#endif
+  for (int y=0; y < roi_in->height; y++) // copy each row
+  {
+    memcpy(&in[y*w_in], &ft[y*w_ft], rowsize);
+  }
+}
+
+void fs_copy_ft_to_out(float *const ft, const struct dt_iop_roi_t *const roi_ft, float *const out, const struct dt_iop_roi_t *const roi_out, const int ch)
+{
+  const int rowsize = roi_out->width*ch*sizeof(float);
+  const int xoffs = roi_out->x - roi_ft->x;
+  const int yoffs = roi_out->y - roi_ft->y;
+  const int iwidth = roi_ft->width;
+
+#ifdef _FFT_MULTFR_
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+#endif
+  for (int y=0; y < roi_out->height; y++) // copy each row
+  {
+    size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
+    size_t oindex = (size_t)y * roi_out->width * ch;
+    float *in = (float *)ft + iindex;
+    float *out1 = (float *)out + oindex;
+
+    memcpy(out1, in, rowsize);
+  }
+}
+
+void fs_copy_out_to_ft(float *const out, const struct dt_iop_roi_t *const roi_out, float *const ft, const struct dt_iop_roi_t *const roi_ft, const int ch)
+{
+  const int rowsize = roi_out->width*ch*sizeof(float);
+  const int xoffs = roi_out->x - roi_ft->x;
+  const int yoffs = roi_out->y - roi_ft->y;
+  const int iwidth = roi_ft->width;
+
+#ifdef _FFT_MULTFR_
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+#endif
+  for (int y=0; y < roi_out->height; y++) // copy each row
+  {
+    size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
+    size_t oindex = (size_t)y * roi_out->width * ch;
+    float *in = (float *)ft + iindex;
+    float *out1 = (float *)out + oindex;
+
+    memcpy(in, out1, rowsize);
+  }
+}
+
+// filters a FD image (InputR, InputI)
+// excluded data is left on (OutputR, OutputI)
+// nWidh, mHeight: image dimentions
+// range1: high range
+// range2: low range
+// channels: channels to filter
+// filter_type: Lowpass, Highpass, Bandpass, Bandblock
+void fs_apply_filter(dt_develop_blend_params_t *d, float *const InputR, float *const InputI, float *OutputR, float *OutputI,
+                      const int nWidh, const int mHeight,
+                      const fft_decompose_channels channels, const fft_filter_type filter_type,
+                      const dt_iop_colorspace_type_t cst, const int ch)
+{
+    float rng1 = 0;
+    float rng2 = 0;
+
+    if (filter_type == FFT_FILTER_TYPE_HIGHPASS_IDEAL)
+    {
+      const float max_rng1 = ((nWidh/2)*(nWidh/2) + (mHeight/2)*(mHeight/2));
+      rng1 = (((d->fs_frequency_high)*max_rng1)/(100.f));
+    }
+    else if (filter_type == FFT_FILTER_TYPE_LOWPASS_IDEAL)
+    {
+      const float max_rng1 = ((nWidh/2)*(nWidh/2) + (mHeight/2)*(mHeight/2));
+      rng1 = (((d->fs_frequency_low)*max_rng1)/(100.f));
+    }
+    else if (filter_type == FFT_FILTER_TYPE_BANDPASS_IDEAL)
+    {
+      const float max_rng1 = ((nWidh/2)*(nWidh/2) + (mHeight/2)*(mHeight/2));
+      rng1 = (((d->fs_frequency_low)*max_rng1)/(100.f));
+      rng2 = (((d->fs_frequency_high)*max_rng1)/(100.f));
+    }
+    else if (filter_type == FFT_FILTER_TYPE_LOWPASS_BUTTERWORTH)
+    {
+      const float max_rng1 = fmax(nWidh, mHeight)/*fmin(nWidh, mHeight)/2.f*/;
+      rng1 = (((d->fs_frequency_low)*max_rng1)/(100.f));
+    }
+    else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_BUTTERWORTH)
+    {
+      const float max_rng1 = fmax(nWidh, mHeight);
+      rng1 = ((d->fs_frequency_high*max_rng1)/(100.f));
+    }
+    else if (filter_type == FFT_FILTER_TYPE_BANDPASS_BUTTERWORTH)
+    {
+      const float max_rng1 = fmax(nWidh, mHeight);
+      rng1 = (((d->fs_frequency_low)*max_rng1)/(100.f));
+      rng2 = (((d->fs_frequency_high)*max_rng1)/(100.f));
+    }
+    else if (filter_type == FFT_FILTER_TYPE_LOWPASS_GAUSSIAN)
+    {
+      const float max_rng1 = fmin(nWidh, mHeight)/2.f;
+      rng1 = (((d->fs_frequency_low)*max_rng1)/(100.f));
+    }
+    else if (filter_type == FFT_FILTER_TYPE_HIGHPASS_GAUSSIAN)
+    {
+      const float max_rng1 = fmax(nWidh, mHeight);
+      rng1 = ((d->fs_frequency_high*max_rng1)/(100.f));
+    }
+    else if (filter_type == FFT_FILTER_TYPE_BANDPASS_GAUSSIAN)
+    {
+      const float max_rng1 = fmin(nWidh, mHeight)/2.f;
+      const float max_rng2 = fmax(nWidh, mHeight);
+      rng1 = (((d->fs_frequency_low)*max_rng1)/(100.f));
+      rng2 = (((d->fs_frequency_high)*max_rng2)/(100.f));
+    }
+    else if (filter_type == FFT_FILTER_TYPE_LOWPASS_SMOOTH)
+    {
+      const float max_rng1 = fmin(nWidh, mHeight);///10.f;
+
+      rng1 = (d->fs_frequency*max_rng1)/(100.f);
+      rng2 = (d->fs_frequency_range*max_rng1)/(100.f);
+    }
+    else if (filter_type == FFT_FILTER_TYPE_BARTLETT)
+    {
+      const float max_rng1 = fmax(nWidh, mHeight)*2;
+      rng1 = (((d->fs_frequency_low)*max_rng1)/(100.f));
+    }
+
+    fft_filter_fft(InputR, InputI, OutputR, OutputI, nWidh, mHeight, rng1, rng2, d->fs_sharpness, channels, filter_type, cst, ch);
+}
+
 /*
 void fs_filter_HLS_from_RGB(float *const o, dt_iop_roi_t *const roi_out, float *const filtered_ch,
                               const dt_iop_colorspace_type_t cst, const int ch, const fft_decompose_channels channels, const int forward)
@@ -505,8 +542,13 @@ int fs_convert_from_to_colorspace(dt_develop_blend_params_t *d, float * b, dt_io
 
 // adjust the exposure of the frequency layer, for display purpuses only
 // the image will be recomposed without the exposure change
-void dt_fs_freqlayer_exposure(void *ivoid, const int width, const int height, const float white, const dt_iop_colorspace_type_t cst, const int ch)
+void dt_fs_freqlayer_exposure(void *ivoid, const int width, const int height, const float exposure, const dt_iop_colorspace_type_t cst, const int ch)
 {
+  if (exposure == 0) return;
+
+    const float scale = (exposure >= 0.f) ? (1.0f + exposure): (1.0f/(1.0f + fabs(exposure)));
+
+
   if (cst == iop_cs_rgb)
   {
 #ifdef _FFT_MULTFR_
@@ -516,25 +558,46 @@ void dt_fs_freqlayer_exposure(void *ivoid, const int width, const int height, co
 #endif
     for(int k = 0; k < height; k++)
     {
-      const __m128 whitev = _mm_set1_ps(white+1);
+      const __m128 s = _mm_set1_ps(scale);
       float *out = ((float *)ivoid) + (size_t)ch * k * width;
       for(int j = 0; j < width; j++, out += ch)
-        _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), whitev));
+        _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), s));
     }
   }
   else
   {
-    for(int k = 0; k < height; k++)
+    const int width1 = width*ch;
+
+    for (int y=0; y < height; y++)
     {
-      float *out = ((float *)ivoid) + (size_t)ch * k * width;
-      for(int j = 0; j < width*ch; j+=ch)
-        out[j] *= white+1;
+      float *out = ((float *)ivoid) + (y*width1);
+
+      for (int x=0; x < width; x ++, out += ch)
+      {
+        if (out[0] != 0)
+        {
+               const float L = out[0] * scale;
+                const float L_ab = fabs(L / out[0]);
+
+                out[0] = L;
+                out[1] *= L_ab;
+                out[2] *= L_ab;
+        }
+        else
+        {
+          out[0] += exposure*10;
+          out[1] *= exposure*10;
+          out[2] *= exposure*10;
+        }
+      }
     }
   }
 }
 
-void dt_fs_freqlayer_lighten(void *ivoid, const int width, const int height, const float white, const int ch)
+void dt_fs_freqlayer_lighten(void *ivoid, const int width, const int height, const float exposure, const float clip_percent,
+                              const dt_iop_colorspace_type_t cst, const int ch)
 {
+  /*
 #ifdef _FFT_MULTFR_
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(ivoid) schedule(static)
@@ -548,6 +611,144 @@ void dt_fs_freqlayer_lighten(void *ivoid, const int width, const int height, con
     for(int j = 0; j < width; j++, out += ch)
       _mm_store_ps(out, _mm_add_ps(_mm_load_ps(out), whitev));
   }
+*/
+
+  const int width1 = width*ch;
+  float min_rng = 0;
+  float max_rng = 0;
+  if (cst == iop_cs_rgb)
+  {
+    min_rng = .001f;
+    max_rng = .9f;
+  }
+  else
+  {
+    min_rng = .01f;
+    max_rng = 100.f;
+  }
+
+  float min1 = INFINITY;
+  float max1 = -INFINITY;
+  float min2 = INFINITY;
+  float max2 = -INFINITY;
+  float min3 = INFINITY;
+  float max3 = -INFINITY;
+/*  int nblack1 = 0;
+  int nblack2 = 0;
+  int nblack3 = 0;
+  int nwhite1 = 0;
+  int nwhite2 = 0;
+  int nwhite3 = 0;*/
+
+  // get range values
+  for (int y=0; y < height; y++)
+  {
+    float *out = ((float *)ivoid) + (y*width1);
+
+    for (int x=0; x < width; x ++, out += ch)
+    {
+      min1 = fmin(min1, out[0]);
+      max1 = fmax (max1, out[0]);
+
+      min2 = fmin(min2, out[1]);
+      max2 = fmax (max2, out[1]);
+
+      min3 = fmin(min3, out[2]);
+      max3 = fmax (max3, out[2]);
+
+/*      if (out[0] < 0) nblack1++;
+      if (out[1] < 0) nblack2++;
+      if (out[2] < 1) nblack3++;
+      if (out[0] > 0) nwhite1++;
+      if (out[1] > 0) nwhite2++;
+      if (out[2] > 0) nwhite3++;*/
+    }
+  }
+
+/*  fprintf(stderr, "[fftw3_dt_FFT_R_Forward] min1=%f, max1=%f\n", min1, max1);
+  fprintf(stderr, "[fftw3_dt_FFT_R_Forward] min2=%f, max2=%f\n", min2, max2);
+  fprintf(stderr, "[fftw3_dt_FFT_R_Forward] min3=%f, max3=%f\n", min3, max3);
+  fprintf(stderr, "[fftw3_dt_FFT_R_Forward] nblack1=%i, nblack2=%i, nblack3=%i\n", nblack1, nblack2, nblack3);
+  fprintf(stderr, "[fftw3_dt_FFT_R_Forward] nwhite1=%i, nwhite2=%i, nwhite3=%i\n", nwhite1, nwhite2, nwhite3);
+*/
+  const float percent = clip_percent/100.f;
+  const float black1 = fmin(min1 + (max1-min1)*percent, 0.f);
+  const float black2 = fmin(min2 + (max2-min2)*percent, 0.f);
+  const float black3 = fmin(min3 + (max3-min3)*percent, 0.f);
+
+  float maxa = 0;
+  float mina = 0;
+  float a = 0;
+  float b = 0;
+  if (cst == iop_cs_rgb)
+  {
+    maxa = fmax(max1, fmax(max2, max3));
+    mina = fmin(fmin(black1, fmin(black2, black3)), 0.f);
+    a = (max_rng-min_rng)/(maxa-mina);
+    b = max_rng - (a * maxa);
+
+//  fprintf(stderr, "[fftw3_dt_FFT_R_Forward] black1=%f, black2=%f, black3=%f\n", black1, black2, black3);
+//  fprintf(stderr, "[fftw3_dt_FFT_R_Forward] maxa-mina=%f---------------\n", maxa-mina);
+
+  // normalize
+    for (int y=0; y < height; y++)
+    {
+      float *out = ((float *)ivoid) + (y*width1);
+
+      for (int x=0; x < width; x ++, out += ch)
+      {
+        if (out[0] < black1) out[0] = min_rng;
+        else out[0] = (a * out[0] + b);
+        if (out[1] < black2) out[1] = min_rng;
+        else out[1] = (a * out[1] + b);
+        if (out[2] < black3) out[2] = min_rng;
+        else out[2] = (a * out[2] + b);
+
+
+
+      }
+    }
+  }
+  else
+  {
+//    maxa = fmax(max1, fmax(max2, max3));
+//    mina = fmin(fmin(black1, fmin(black2, black3)), 0.f);
+    maxa = max1;
+    mina = fmin(black1, 0.f);
+    a = (max_rng-min_rng)/(maxa-mina);
+    b = max_rng - (a * maxa);
+
+/*    fprintf(stderr, "[fftw3_dt_FFT_R_Forward] black1=%f, black2=%f, black3=%f\n", black1, black2, black3);
+    fprintf(stderr, "[fftw3_dt_FFT_R_Forward] maxa-mina=%f---------------\n", maxa-mina);
+    fprintf(stderr, "[fftw3_dt_FFT_R_Forward] a=%f, b=%f\n", a, b);
+*/
+    if (max1 != 0)
+    {
+      for (int y=0; y < height; y++)
+      {
+        float *out = ((float *)ivoid) + (y*width1);
+
+        for (int x=0; x < width; x ++, out += ch)
+        {
+          if (out[0] < black1) out[0] = min_rng;
+          else out[0] = (a * out[0] + b);
+        }
+      }
+    }
+    else
+    {
+      for (int y=0; y < height; y++)
+      {
+        float *out = ((float *)ivoid) + (y*width1);
+
+        for (int x=0; x < width; x ++, out += ch)
+        {
+          out[0] = ((max_rng - min_rng)/2.f);
+        }
+      }
+    }
+  }
+
 }
 
 void dt_develop_freqsep_preprocess(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid,
@@ -575,13 +776,20 @@ void dt_develop_freqsep_preprocess(struct dt_iop_module_t *self, struct dt_dev_p
   float *out = (float *)ovoid;
   const int ch = piece->colors;
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
+  const fft_decompose_channels channels = fs_get_channels_from_colorspace(d, cst);
 
-  // save image width and height as the nearest >= pow2()
+
   d->fs_roi_tF1 = *roi_in;
+  // save image width and height as the nearest >= pow2()
   d->fs_roi_tF1.width = fft_convert_pow2(roi_in->width);
   d->fs_roi_tF1.height = fft_convert_pow2(roi_in->height);
 
   const int buffersize = d->fs_roi_tF1.width * d->fs_roi_tF1.height * ch * sizeof(float);
+
+#ifdef _TIME_FFT_
+  struct timeval tm1,tm2;
+  gettimeofday(&tm1,NULL);
+#endif
 
   // allocate space for decomposed image
   d->tF1 = dt_alloc_align(64, buffersize);
@@ -595,7 +803,7 @@ void dt_develop_freqsep_preprocess(struct dt_iop_module_t *self, struct dt_dev_p
 
   if (d->tF1 == NULL || d->tF2 == NULL || d->fs_ivoid == NULL || d->tF3 == NULL || tF4 == NULL || tF5 == NULL)
   {
-    fprintf(stderr, "NULL buffer for FFT!!!\n");
+    fprintf(stderr, "[dt_develop_freqsep_preprocess] NULL buffer for FFT!!!\n");
 
     if (d->tF1)
     {
@@ -631,12 +839,12 @@ void dt_develop_freqsep_preprocess(struct dt_iop_module_t *self, struct dt_dev_p
 
   // decompose the image into (tF4, tF5)
   fft_FFT2D_R_Forward(tF4, tF5, d->fs_roi_tF1.width, d->fs_roi_tF1.height,
-            fs_get_channels_from_colorspace(d, cst), cst, ch);
+      channels, cst, ch);
 
   // apply filter to (tF4, tF5)
   // (tF1, tF2) will store the complementary data (excluded by the filter)
   fs_apply_filter(d, tF4, tF5, d->tF1, d->tF2, d->fs_roi_tF1.width, d->fs_roi_tF1.height,
-                fs_get_channels_from_colorspace(d, cst), d->fs_filter_type, cst, ch);
+      channels, d->fs_filter_type, cst, ch);
 
   if (d->fs_invert_freq_layer)
   {
@@ -651,13 +859,19 @@ void dt_develop_freqsep_preprocess(struct dt_iop_module_t *self, struct dt_dev_p
 
   // recompose the filtered image (tF4, tF5), so it can be edited/displayed
   fft_FFT2D_R_Inverse(tF4, tF5, d->fs_roi_tF1.width, d->fs_roi_tF1.height,
-            fs_get_channels_from_colorspace(d, cst), cst, ch);
+      channels, cst, ch);
 
 //  fs_convert_from_to_colorspace(d, tF4, &d->fs_roi_tF1, d->tF3, cst, ch, 1);
 
   // copy tF4 to input for the parent module
   fs_copy_ft_to_in(tF4, &d->fs_roi_tF1, in, roi_in, ch);
   fs_copy_ft_to_out(tF4, &d->fs_roi_tF1, out, roi_out, ch);
+
+#ifdef _TIME_FFT_
+  gettimeofday(&tm2,NULL);
+  float perf = (tm2.tv_sec-tm1.tv_sec)*1000.0f + (tm2.tv_usec-tm1.tv_usec)/1000.0f;
+  printf("time spent dt_develop_freqsep_preprocess: %.4f\n",perf/100.0f);
+#endif
 
 cleanup:
   // release buffers
@@ -682,7 +896,7 @@ void dt_develop_freqsep_postprocess(struct dt_iop_module_t *self, struct dt_dev_
   if(!(d->fs_filter_type > 0)) return;
   if (d->tF1 == NULL || d->tF2 == NULL || d->fs_ivoid == NULL)
   {
-    fprintf(stderr, "NULL buffer for FFT!!!\n");
+    fprintf(stderr, "[dt_develop_freqsep_postprocess] NULL buffer for FFT!!!\n");
     goto cleanup;
   }
 
@@ -703,11 +917,18 @@ void dt_develop_freqsep_postprocess(struct dt_iop_module_t *self, struct dt_dev_
   float *out = (float *)ovoid;
   const int ch = piece->colors;
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
-
+  const fft_decompose_channels channels = fs_get_channels_from_colorspace(d, cst);
   const int buffersize = d->fs_roi_tF1.width * d->fs_roi_tF1.height * ch * sizeof(float);
 
+#ifdef _TIME_FFT_
+  struct timeval tm1,tm2;
+  gettimeofday(&tm1,NULL);
+#endif
+
   float *tF4 = dt_alloc_align(64, buffersize);
+  g_assert(tF4 != NULL);
   float *tF5 = dt_alloc_align(64, buffersize);
+  g_assert(tF5 != NULL);
 
   // if the user wants to see just the frequency layer, just copy ivoid to ovoid
   if (d->fs_preview == DEVELOP_FS_PREVIEW_FREQLAY)
@@ -716,7 +937,7 @@ void dt_develop_freqsep_postprocess(struct dt_iop_module_t *self, struct dt_dev_
 
     if (d->fs_lighten_freq_layer)
     {
-      dt_fs_freqlayer_lighten(out, roi_out->width, roi_out->height, .018, ch);
+      dt_fs_freqlayer_lighten(out, roi_out->width, roi_out->height, d->fs_freqlay_exposure, d->fs_clip_percent, cst, ch);
     }
     dt_fs_freqlayer_exposure(out, roi_out->width, roi_out->height, d->fs_freqlay_exposure, cst, ch);
   }
@@ -729,14 +950,14 @@ void dt_develop_freqsep_postprocess(struct dt_iop_module_t *self, struct dt_dev_
 
     // decompose (again) the image (tF4, tF5)
     fft_FFT2D_R_Forward(tF4, tF5, d->fs_roi_tF1.width, d->fs_roi_tF1.height,
-              fs_get_channels_from_colorspace(d, cst), cst, ch);
+        channels, cst, ch);
 
     // apply inverse filter to (tF4, tF5) to merge it with (tF1, tF2)
     fft_recompose_image(tF4, tF5, d->tF1, d->tF2, d->fs_roi_tF1.width, d->fs_roi_tF1.height, ch);
 
     // recompose back (tF4, tF5) and get the final image
     fft_FFT2D_R_Inverse(tF4, tF5, d->fs_roi_tF1.width, d->fs_roi_tF1.height,
-              fs_get_channels_from_colorspace(d, cst), cst, ch);
+        channels, cst, ch);
 
     fs_convert_from_to_colorspace(d, tF4, &d->fs_roi_tF1, d->tF3, cst, ch, 0);
 
@@ -747,7 +968,7 @@ void dt_develop_freqsep_postprocess(struct dt_iop_module_t *self, struct dt_dev_
   {
     if (d->fs_lighten_freq_layer)
     {
-      dt_fs_freqlayer_lighten(out, roi_out->width, roi_out->height, .018, ch);
+      dt_fs_freqlayer_lighten(out, roi_out->width, roi_out->height, d->fs_freqlay_exposure, d->fs_clip_percent, cst, ch);
     }
     dt_fs_freqlayer_exposure(out, roi_out->width, roi_out->height, d->fs_freqlay_exposure, cst, ch);
   }
@@ -764,6 +985,12 @@ void dt_develop_freqsep_postprocess(struct dt_iop_module_t *self, struct dt_dev_
   {
     dt_free_align(tF5);
   }
+
+#ifdef _TIME_FFT_
+  gettimeofday(&tm2,NULL);
+  float perf = (tm2.tv_sec-tm1.tv_sec)*1000.0f + (tm2.tv_usec-tm1.tv_usec)/1000.0f;
+  printf("time spent dt_develop_freqsep_postprocess: %.4f\n",perf/100.0f);
+#endif
 
 cleanup:
   if (d->tF1)
