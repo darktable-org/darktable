@@ -27,6 +27,10 @@ GtkAlignment
   background-color:transparent;
 }
 
+#main_window *:insensitive {
+  color: black;
+}
+
 #iop-plugin-ui GtkBox,
 #lib-plugin-ui GtkBox
 {
@@ -162,7 +166,7 @@ GtkTable {
 }
 
 #header_label,#darktable_label,#view_label {
-  color: #7f7f7f;
+  color: shade(@fg_color, 0.7);
   background-color: @bg_color;
   font-size: 1.7em;
   margin:0;
@@ -171,11 +175,30 @@ GtkTable {
 }
 
 #view_label:hover {
-  color: #a0a0a0;
+  color: shade(@fg_color, 0.8);
 }
 
+#view_dropdown:selected *,
 #view_label:selected {
-  color: #afafaf;
+  color: shade(@fg_color, 0.9);
+}
+
+#view_dropdown *
+{
+  color: shade(@fg_color, 0.7);
+  margin: 0;
+  padding: 0;
+  font-size: 1.1em;
+}
+
+#view_dropdown .button *
+{
+  font-size: 1.25em;
+}
+
+#view_dropdown *:insensitive
+{
+  color: shade(@fg_color, 0.5);
 }
 
 #panel_label {
@@ -320,10 +343,6 @@ GtkFrame > GtkEventBox * {
 {
   background-color:@selected_bg_color;
   background-image:none;
-}
-
-#main_window *:insensitive {
-  color: black;
 }
 
 #recent-collection-ui .button,
