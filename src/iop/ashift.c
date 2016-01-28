@@ -16,6 +16,8 @@
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -57,8 +59,6 @@ typedef struct dt_iop_ashift_data_t
 {
   float rotation;
   float keystone;
-  float homograph[3][3];
-  float ihomograph[3][3];
 } dt_iop_ashift_data_t;
 
 typedef struct dt_iop_ashift_global_data_t
@@ -66,6 +66,11 @@ typedef struct dt_iop_ashift_global_data_t
   int kernel_ashift_void;
 } dt_iop_ashift_global_data_t;
 
+typedef enum dt_iop_ashift_homodir_t
+{
+  ASHIFT_HOMOGRAPH_FORWARD,
+  ASHIFT_HOMOGRAPH_INVERTED
+} dt_iop_ashift_homodir_t;
 
 const char *name()
 {
@@ -188,20 +193,156 @@ void _print_roi(const dt_iop_roi_t *roi, const char *label)
 }
 
 
+static void homography(float *homograph, const float angle, const float shift,
+                       const int width, const int height, dt_iop_ashift_homodir_t dir)
+{
+  const float u = width;
+  const float v = height;
+
+  const float phi = (angle / 180.0f) * M_PI;
+  const float cosi = cos(phi);
+  const float sini = sin(phi);
+
+  //const float f_global = 100.0f;
+  //const float horifac = 0.0f;
+
+  const float kst = shift;
+  const float kst2 = kst * v + 1.0f;
+
+#if 0
+  const float exppa = exp(shift);
+  const float fdb = f_global / (14.4f + (v / u - 1) * 7.2f);
+  const float rad = fdb * (exppa - 1.0f) / (exppa + 1.0f);
+  const float alpha = CLAMP(atan(rad), -1.5f, 1.5f);
+  const float rt = sin(0.5f * alpha);
+  const float r = fmax(0.1f, 2.0f * (horifac - 1.0f) * rt * rt + 1.0f);
+#endif
+
+  const float beta = atan2(v, u);
+  const float diag = sqrt(u * u + v * v);
+
+  // three intermediate buffers for matrix calculation
+  float m1[3][3], m2[3][3], m3[3][3];
+
+
+  // step 1: translation of image origin to image center
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = 1.0f;
+  m1[1][1] = 1.0f;
+  m1[2][2] = 1.0f;
+  m1[0][2] = -0.5f * u;
+  m1[1][2] = -0.5f * v;
+
+  // step 2: rotation of image around center
+  memset(m2, 0, sizeof(m2));
+  m2[0][0] = cosi;
+  m2[0][1] = -sini;
+  m2[1][0] = sini;
+  m2[1][1] = cosi;
+  m2[2][2] = 1.0f;
+
+  // multiply m2 * m1 -> m3
+  mat3mul((float *)m3, (float *)m2, (float *)m1);
+
+#if 0
+  // step 3: shift correction
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = exppa;
+  m1[1][0] = 0.5f* ((exppa - 1.0f) * u) / v;
+  m1[1][1] = 2.0f * exppa / (exppa + 1.0f);
+  m1[1][2] = -0.5f * ((exppa - 1.0f) * u ) / (exppa + 1.0f);
+  m1[2][0] = (exppa - 1.0f) / v;
+  m1[2][2] = 1.0f;
+#else
+  // step 3: shift correction
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = 1.0f; //kst2;
+  m1[1][0] = 0.0f; //0.5f * (kst2 - 1.0f) * (u / v);
+  m1[1][1] = 1.0f; //2.0f * kst2 / (1.0f + kst2);
+  m1[1][2] = 0.0f; //0.5f * u * (1.0f - kst2) / (1.0f + kst2);
+  m1[2][0] = 0.0f; //kst;
+  m1[2][2] = 1.0f;
+#endif
+
+  // multiply m1 * m3 -> m2
+  mat3mul((float *)m2, (float *)m1, (float *)m3);
+
+
+  // step 4: horizontal compression
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = 1.0f;
+  m1[1][1] = 1.0f; //r;
+  m1[1][2] = 0.0f; //0.5f* u * (1.0f - r);
+  m1[2][2] = 1.0f;
+
+  // multiply m1 * m2 -> m3
+  mat3mul((float *)m3, (float *)m1, (float *)m2);
+
+
+  // step 5: adjust for change of dimension size versus original viewport.
+  // we want to make sure that we don't get pixels with negative
+  // x/y coordinates after adjustments, so we need to translate accordingly.
+  // TODO: there must be a more elegant mathematical expression
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = 1.0f;
+  m1[1][1] = 1.0f;
+  m1[2][2] = 1.0f;
+  m1[0][2] = 0.5f * diag * fmax(fabs(cos(beta + phi)), fabs(cos(beta - phi))) - 0.5 * u;
+  m1[1][2] = 0.5f * diag * fmax(fabs(sin(beta + phi)), fabs(sin(beta - phi))) - 0.5 * v;
+
+  // multiply m1 * m3 -> m2
+  mat3mul((float *)m2, (float *)m1, (float *)m3);
+
+
+  // step 5: translate image back to origin
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = 1.0f;
+  m1[1][1] = 1.0f;
+  m1[2][2] = 1.0f;
+  m1[0][2] = 0.5f * u;
+  m1[1][2] = 0.5f * v;
+
+  // multiply m1 * m2 -> m3
+  mat3mul((float *)m3, (float *)m1, (float *)m2);
+
+  if(dir == ASHIFT_HOMOGRAPH_INVERTED)
+  {
+    // generate inverted homograph
+    if(mat3inv((float *)homograph, (float *)m3))
+    {
+      // in case of error we set to unity matrix
+      memset(m3, 0, sizeof(m3));
+      m3[0][0] = 1.0f;
+      m3[1][1] = 1.0f;
+      m3[2][2] = 1.0f;
+      memcpy(homograph, m3, sizeof(m3));
+    }
+  }
+  else
+  {
+    memcpy(homograph, m3, sizeof(m3));
+  }
+}
+
+
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
+  float homograph[3][3];
+  homography((float *)homograph, data->rotation, data->keystone,
+             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(points, points_count, data)
+  shared(points, points_count, homograph)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     // as points are already in orignal image coordinates we can homograph them directly
     float pi[3] = { points[i], points[i + 1], 1.0f };
     float po[3];
-    mat3mulv(po, (float *)data->homograph, pi);
+    mat3mulv(po, (float *)homograph, pi);
     points[i] = po[0] / po[2];
     points[i + 1] = po[1] / po[2];
   }
@@ -215,16 +356,20 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
+  float ihomograph[3][3];
+  homography((float *)ihomograph, data->rotation, data->keystone,
+             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(points, points_count, data)
+  shared(points, points_count, ihomograph)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     // as points are already in original image coordinates we can homograph them directly
     float pi[3] = { points[i], points[i + 1], 1.0f };
     float po[3];
-    mat3mulv(po, (float *)data->ihomograph, pi);
+    mat3mulv(po, (float *)ihomograph, pi);
     points[i] = po[0] / po[2];
     points[i + 1] = po[1] / po[2];
   }
@@ -237,6 +382,10 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   *roi_out = *roi_in;
+
+  float homograph[3][3];
+  homography((float *)homograph, data->rotation, data->keystone,
+             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
 
@@ -255,7 +404,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       pin[2] = 1.0f;
 
       // apply hompgraph
-      mat3mulv(pout, (float *)data->homograph, pin);
+      mat3mulv(pout, (float *)homograph, pin);
 
       // convert to output image coordinates
       pout[0] /= pout[2];
@@ -292,6 +441,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   *roi_in = *roi_out;
 
+  float ihomograph[3][3];
+  homography((float *)ihomograph, data->rotation, data->keystone,
+             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+
   const float orig_w = roi_in->scale * piece->buf_in.width;
   const float orig_h = roi_in->scale * piece->buf_in.height;
 
@@ -312,7 +465,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       pout[2] = 1.0f;
 
       // apply homograph
-      mat3mulv(pin, (float *)data->ihomograph, pout);
+      mat3mulv(pin, (float *)ihomograph, pout);
 
       // convert to input image coordinates
       pin[0] /= pin[2];
@@ -354,9 +507,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
+  float ihomograph[3][3];
+  homography((float *)ihomograph, data->rotation, data->keystone,
+             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(ivoid, ovoid, roi_in, roi_out, data, interpolation)
+  shared(ivoid, ovoid, roi_in, roi_out, ihomograph, interpolation)
 #endif
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
@@ -374,7 +531,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       pout[2] = 1.0f;
 
       // apply homograph
-      mat3mulv(pin, (float *)data->ihomograph, pout);
+      mat3mulv(pin, (float *)ihomograph, pout);
 
       // convert to input pixel coordinates
       pin[0] /= pin[2];
@@ -431,80 +588,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   d->rotation = p->rotation;
   d->keystone = p->keystone;
-
-  const float phi = (p->rotation / 180.0f) * M_PI;
-
-  const float orig_w = piece->buf_in.width;
-  const float orig_h = piece->buf_in.height;
-
-  const float alpha = atan2(orig_h, orig_w);
-  const float diag = sqrt(orig_w * orig_w + orig_h * orig_h);
-
-  // three intermediate buffers for matrix calculation
-  float m1[3][3], m2[3][3], m3[3][3];
-
-
-  // step 1: translation of image origin to image center
-  memset(m1, 0, sizeof(m1));
-  m1[0][0] = 1.0f;
-  m1[1][1] = 1.0f;
-  m1[2][2] = 1.0f;
-  m1[0][2] = -0.5f * orig_w;
-  m1[1][2] = -0.5f * orig_h;
-
-  // step 2: rotation of image around center
-  memset(m2, 0, sizeof(m2));
-  m2[0][0] = cos(phi);
-  m2[0][1] = -sin(phi);
-  m2[1][0] = sin(phi);
-  m2[1][1] = cos(phi);
-  m2[2][2] = 1.0f;
-
-  // multiply m2 * m1 -> m3
-  mat3mul((float *)m3, (float *)m2, (float *)m1);
-
-
-  // step 3: adjust for change of dimension size versus original viewport.
-  // we want to make sure that we don't get pixels with negative
-  // x/y coordinates after adjustments, so we need to translate accordingly.
-  // TODO: there must be a more elegant mathematical expression
-  memset(m1, 0, sizeof(m1));
-  m1[0][0] = 1.0f;
-  m1[1][1] = 1.0f;
-  m1[2][2] = 1.0f;
-  m1[0][2] = 0.5f * diag * fmax(fabs(cos(alpha + phi)), fabs(cos(alpha - phi))) - 0.5 * orig_w;
-  m1[1][2] = 0.5f * diag * fmax(fabs(sin(alpha + phi)), fabs(sin(alpha - phi))) - 0.5 * orig_h;
-
-  // multiply m1 * m3 -> m2
-  mat3mul((float *)m2, (float *)m1, (float *)m3);
-
-
-  // step 4: translate image back to origin
-  memset(m1, 0, sizeof(m1));
-  m1[0][0] = 1.0f;
-  m1[1][1] = 1.0f;
-  m1[2][2] = 1.0f;
-  m1[0][2] = 0.5f * orig_w;
-  m1[1][2] = 0.5f * orig_h;
-
-  // multiply m1 * m2 -> homograph
-  mat3mul((float *)d->homograph, (float *)m1, (float *)m2);
-
-
-  // invert homograph as we need to be able to calculate both directions
-  if(mat3inv_float((float *)d->ihomograph, (float *)d->homograph))
-  {
-    // in case of error we set both of them to unity matrices
-    memset(d->homograph, 0, sizeof(d->homograph));
-    d->homograph[0][0] = 1.0f;
-    d->homograph[1][1] = 1.0f;
-    d->homograph[2][2] = 1.0f;
-
-    memset(d->ihomograph, 0, sizeof(d->ihomograph));
-    d->ihomograph[0][0] = 1.0f;
-    d->ihomograph[1][1] = 1.0f;
-    d->ihomograph[2][2] = 1.0f;
-  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -576,8 +659,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->rotation = dt_bauhaus_slider_new_with_range(self, -45.0f, 45.0f, 0.1f, p->rotation, 2);
-  g->keystone = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 0.1f, p->keystone, 2);
+  g->rotation = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 0.1f, p->rotation, 2);
+  g->keystone = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.01f, p->keystone, 2);
 
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
   dt_bauhaus_widget_set_label(g->keystone, NULL, _("keystone"));
