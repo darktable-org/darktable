@@ -69,6 +69,7 @@ src/imageio/storage/latex.c
 src/imageio/storage/picasa.c
 src/iop/amaze_demosaic_RT.cc
 src/iop/atrous.c
+src/iop/ashift.c
 src/iop/basecurve.c
 src/iop/bilat.c
 src/iop/bilateral.cc
