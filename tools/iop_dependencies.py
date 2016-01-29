@@ -103,15 +103,12 @@ def add_edges(gr):
   gr.add_edge(('flip', 'rotatepixels'))
   gr.add_edge(('flip', 'lens'))
   gr.add_edge(('flip', 'spots'))
-<<<<<<< HEAD
+  gr.add_edge(('flip', 'liquify'))
   gr.add_edge(('flip', 'ashift'))
   
   # ashift wants a lens corrected image with straight lines:
   gr.add_edge(('ashift', 'lens'))
 
-=======
-  gr.add_edge(('flip', 'liquify'))
->>>>>>> master
   # plus, it confuses crop/rotate, vignetting and graduated density
   gr.add_edge(('clipping', 'flip'))
   gr.add_edge(('graduatednd', 'flip'))
