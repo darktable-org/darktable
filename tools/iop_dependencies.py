@@ -213,7 +213,7 @@ def add_edges(gr):
 
   # liquify immediately after spot removal
   gr.add_edge(('liquify', 'spots'))
-  gr.add_edge(('lens', 'liquify'))
+  gr.add_edge(('liquify', 'lens'))
   gr.add_edge(('rotatepixels', 'liquify'))
   gr.add_edge(('scalepixels', 'liquify'))
 
