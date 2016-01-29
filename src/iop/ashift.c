@@ -36,41 +36,11 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "gui/draw.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_ashift_params_t)
-
-typedef struct dt_iop_ashift_params_t
-{
-  float rotation;
-  float lensshift;
-} dt_iop_ashift_params_t;
-
-
-typedef struct dt_iop_ashift_gui_data_t
-{
-  GtkWidget *rotation;
-  GtkWidget *lensshift;
-  dt_pthread_mutex_t lock;
-} dt_iop_ashift_gui_data_t;
-
-typedef struct dt_iop_ashift_data_t
-{
-  float rotation;
-  float lensshift;
-} dt_iop_ashift_data_t;
-
-typedef struct dt_iop_ashift_global_data_t
-{
-  int kernel_ashift_void;
-} dt_iop_ashift_global_data_t;
-
-typedef enum dt_iop_ashift_homodir_t
-{
-  ASHIFT_HOMOGRAPH_FORWARD,
-  ASHIFT_HOMOGRAPH_INVERTED
-} dt_iop_ashift_homodir_t;
 
 const char *name()
 {
@@ -92,6 +62,41 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
+typedef enum dt_iop_ashift_homodir_t
+{
+  ASHIFT_HOMOGRAPH_FORWARD,
+  ASHIFT_HOMOGRAPH_INVERTED
+} dt_iop_ashift_homodir_t;
+
+typedef struct dt_iop_ashift_params_t
+{
+  float rotation;
+  float lensshift_v;
+  float lensshift_h;
+} dt_iop_ashift_params_t;
+
+
+typedef struct dt_iop_ashift_gui_data_t
+{
+  GtkWidget *rotation;
+  GtkWidget *lensshift_v;
+  GtkWidget *lensshift_h;
+  dt_pthread_mutex_t lock;
+} dt_iop_ashift_gui_data_t;
+
+typedef struct dt_iop_ashift_data_t
+{
+  float rotation;
+  float lensshift_v;
+  float lensshift_h;
+} dt_iop_ashift_data_t;
+
+typedef struct dt_iop_ashift_global_data_t
+{
+  int kernel_ashift_void;
+} dt_iop_ashift_global_data_t;
+
+
 #if 0
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -101,7 +106,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     const dt_iop_ashift_params1_t *old = old_params;
     dt_iop_ashift_params_t *new = new_params;
     new->rotation = old->rotation;
-    new->lensshift = old->lensshift;
+    new->lensshift_v = old->lensshift_v;
+    new->lensshift_h = old->lensshift_h;
     return 0;
   }
   return 1;
@@ -111,7 +117,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (v)"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (h)"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -119,7 +126,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotation));
-  dt_accel_connect_slider_iop(self, "lens shift", GTK_WIDGET(g->lensshift));
+  dt_accel_connect_slider_iop(self, "lens shift (v)", GTK_WIDGET(g->lensshift_v));
+  dt_accel_connect_slider_iop(self, "lens shift (h)", GTK_WIDGET(g->lensshift_h));
 }
 
 #define generate_mat3inv_body(c_type, A, B)                                                                  \
@@ -193,7 +201,7 @@ void _print_roi(const dt_iop_roi_t *roi, const char *label)
 }
 
 
-static void homography(float *homograph, const float angle, const float shift,
+static void homography(float *homograph, const float angle, const float shift_v, const float shift_h,
                        const int width, const int height, dt_iop_ashift_homodir_t dir)
 {
   // calculate homograph that combines all translations, rotations
@@ -212,16 +220,25 @@ static void homography(float *homograph, const float angle, const float shift,
   const float cosi = cos(phi);
   const float sini = sin(phi);
 
-  const float f_global = 100.0f;  // TODO: convert this into a module parameter
-  const float horifac = 1.0f;
-
   // all this comes from ShiftN
-  const float exppa = exp(shift);
-  const float fdb = f_global / (14.4f + (v / u - 1) * 7.2f);
-  const float rad = fdb * (exppa - 1.0f) / (exppa + 1.0f);
-  const float alpha = CLAMP(atan(rad), -1.5f, 1.5f);
-  const float rt = sin(0.5f * alpha);
-  const float r = fmax(0.1f, 2.0f * (horifac - 1.0f) * rt * rt + 1.0f);
+  const float f_global = 28.0; // TODO: this is a parameter in ShiftN -> check if this would make sense here as well
+  const float horifac = 1.0f;  // TODO: this is a parameter in ShiftN -> check if this would make sense here as well
+  const float exppa_v = exp(shift_v);
+  const float fdb_v = f_global / (14.4f + (v / u - 1) * 7.2f);
+  const float rad_v = fdb_v * (exppa_v - 1.0f) / (exppa_v + 1.0f);
+  const float alpha_v = CLAMP(atan(rad_v), -1.5f, 1.5f);
+  const float rt_v = sin(0.5f * alpha_v);
+  const float r_v = fmax(0.1f, 2.0f * (horifac - 1.0f) * rt_v * rt_v + 1.0f);
+
+  const float vertifac = 1.0f;  // see horifac above
+  const float exppa_h = exp(shift_h);
+  const float fdb_h = f_global / (14.4f + (u / v - 1) * 7.2f);
+  const float rad_h = fdb_h * (exppa_h - 1.0f) / (exppa_h + 1.0f);
+  const float alpha_h = CLAMP(atan(rad_h), -1.5f, 1.5f);
+  const float rt_h = sin(0.5f * alpha_h);
+  const float r_h = fmax(0.1f, 2.0f * (vertifac - 1.0f) * rt_h * rt_h + 1.0f);
+
+
 
   // three intermediate buffers for matrix calculation
   float m1[3][3], m2[3][3], m3[3][3];
@@ -248,13 +265,13 @@ static void homography(float *homograph, const float angle, const float shift,
   mat3mul((float *)m3, (float *)m2, (float *)m1);
 
 
-  // Step 3: apply lens shift effect
+  // Step 3: apply vertical lens shift effect
   memset(m1, 0, sizeof(m1));
-  m1[0][0] = exppa;
-  m1[1][0] = 0.5f* ((exppa - 1.0f) * u) / v;
-  m1[1][1] = 2.0f * exppa / (exppa + 1.0f);
-  m1[1][2] = -0.5f * ((exppa - 1.0f) * u ) / (exppa + 1.0f);
-  m1[2][0] = (exppa - 1.0f) / v;
+  m1[0][0] = exppa_v;
+  m1[1][0] = 0.5f* ((exppa_v - 1.0f) * u) / v;
+  m1[1][1] = 2.0f * exppa_v / (exppa_v + 1.0f);
+  m1[1][2] = -0.5f * ((exppa_v - 1.0f) * u ) / (exppa_v + 1.0f);
+  m1[2][0] = (exppa_v - 1.0f) / v;
   m1[2][2] = 1.0f;
 
   // multiply m1 * m3 -> m2
@@ -264,15 +281,49 @@ static void homography(float *homograph, const float angle, const float shift,
   // Step 4: horizontal compression
   memset(m1, 0, sizeof(m1));
   m1[0][0] = 1.0f;
-  m1[1][1] = r;
-  m1[1][2] = 0.5f * u * (1.0f - r);
+  m1[1][1] = r_v;
+  m1[1][2] = 0.5f * u * (1.0f - r_v);
   m1[2][2] = 1.0f;
 
   // multiply m1 * m2 -> m3
   mat3mul((float *)m3, (float *)m1, (float *)m2);
 
 
-  // Step 5: find x/y offsets and apply according correction
+  // Step 5: flip x and y back again
+  memset(m1, 0, sizeof(m1));
+  m1[0][1] = 1.0f;
+  m1[1][0] = 1.0f;
+  m1[2][2] = 1.0f;
+
+  // multiply m1 * m3 -> m2
+  mat3mul((float *)m2, (float *)m1, (float *)m3);
+
+
+  // Step 6: now we can apply horizontal lens shift with the same matrix format as above
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = exppa_h;
+  m1[1][0] = 0.5f* ((exppa_h - 1.0f) * v) / u;
+  m1[1][1] = 2.0f * exppa_h / (exppa_h + 1.0f);
+  m1[1][2] = -0.5f * ((exppa_h - 1.0f) * v ) / (exppa_h + 1.0f);
+  m1[2][0] = (exppa_h - 1.0f) / u;
+  m1[2][2] = 1.0f;
+
+  // multiply m1 * m2 -> m3
+  mat3mul((float *)m3, (float *)m1, (float *)m2);
+
+
+  // Step 7: vertical compression
+  memset(m1, 0, sizeof(m1));
+  m1[0][0] = 1.0f;
+  m1[1][1] = r_h;
+  m1[1][2] = 0.5f * v * (1.0f - r_h);
+  m1[2][2] = 1.0f;
+
+  // multiply m1 * m3 -> m2
+  mat3mul((float *)m2, (float *)m1, (float *)m3);
+
+
+  // Step 8: find x/y offsets and apply according correction
   float umin = FLT_MAX, vmin = FLT_MAX;
   // visit all four corners
   for(int y = 0; y < height; y += height - 1)
@@ -282,27 +333,17 @@ static void homography(float *homograph, const float angle, const float shift,
       pi[0] = x;
       pi[1] = y;
       pi[2] = 1.0f;
-      // till here m3 expects input in (x:y:1) format and gives output as (y:x:1)
-      mat3mulv(po, (float *)m3, pi);
-      umin = fmin(umin, po[1] / po[2]);
-      vmin = fmin(vmin, po[0] / po[2]);
+      // m2 expects input in (x:y:1) format and gives output as (x:y:1)
+      mat3mulv(po, (float *)m2, pi);
+      umin = fmin(umin, po[0] / po[2]);
+      vmin = fmin(vmin, po[1] / po[2]);
     }
   memset(m1, 0, sizeof(m1));
   m1[0][0] = 1.0f;
   m1[1][1] = 1.0f;
   m1[2][2] = 1.0f;
-  m1[0][2] = -vmin;
-  m1[1][2] = -umin;
-
-  // multiply m1 * m3 -> m2
-  mat3mul((float *)m2, (float *)m1, (float *)m3);
-
-
-  // Stepy 6: flip x and y back again
-  memset(m1, 0, sizeof(m1));
-  m1[0][1] = 1.0f;
-  m1[1][0] = 1.0f;
-  m1[2][2] = 1.0f;
+  m1[0][2] = -umin;
+  m1[1][2] = -vmin;
 
   // multiply m1 * m2 -> m3
   mat3mul((float *)m3, (float *)m1, (float *)m2);
@@ -335,7 +376,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->lensshift,
+  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
 #ifdef _OPENMP
@@ -362,7 +403,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift,
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
 #ifdef _OPENMP
@@ -389,7 +430,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   *roi_out = *roi_in;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->lensshift,
+  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
@@ -447,7 +488,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   *roi_in = *roi_out;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift,
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   const float orig_w = roi_in->scale * piece->buf_in.width;
@@ -505,7 +546,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
-  //dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
@@ -513,7 +553,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift,
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
 #ifdef _OPENMP
@@ -575,13 +615,21 @@ static void rotation_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-
-static void lensshift_callback(GtkWidget *slider, gpointer user_data)
+static void lensshift_v_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->lensshift = dt_bauhaus_slider_get(slider);
+  p->lensshift_v = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  p->lensshift_h = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -590,9 +638,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)p1;
   dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   d->rotation = p->rotation;
-  d->lensshift = p->lensshift;
+  d->lensshift_v = p->lensshift_v;
+  d->lensshift_h = p->lensshift_h;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -614,7 +664,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)module->params;
   dt_bauhaus_slider_set(g->rotation, p->rotation);
-  dt_bauhaus_slider_set(g->lensshift, p->lensshift);
+  dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+  dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
 }
 
 void init(dt_iop_module_t *module)
@@ -625,7 +676,7 @@ void init(dt_iop_module_t *module)
   module->priority = 260; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f };
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
 }
@@ -665,19 +716,24 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->rotation = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 0.1f, p->rotation, 2);
-  g->lensshift = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.01f, p->lensshift, 2);
+  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.01f, p->lensshift_v, 2);
+  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.01f, p->lensshift_h, 2);
 
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
-  dt_bauhaus_widget_set_label(g->lensshift, NULL, _("lens shift"));
+  dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (v)"));
+  dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (h)"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
 
   g_object_set(g->rotation, "tooltip-text", _("rotate image"), (char *)NULL);
-  g_object_set(g->lensshift, "tooltip-text", _("apply lens lens shift correction"), (char *)NULL);
+  g_object_set(g->lensshift_v, "tooltip-text", _("apply lens lens shift correction in vertical direction"), (char *)NULL);
+  g_object_set(g->lensshift_h, "tooltip-text", _("apply lens lens shift correction in horizontal direction"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
-  g_signal_connect(G_OBJECT(g->lensshift), "value-changed", G_CALLBACK(lensshift_callback), self);
+  g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
+  g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
