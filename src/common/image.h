@@ -99,6 +99,20 @@ typedef enum dt_image_orientation_t
   ORIENTATION_421 /* ??? */ = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY // 7
 } dt_image_orientation_t;
 
+typedef enum dt_image_loader_t
+{
+  LOADER_UNKNOWN = 0,
+  LOADER_TIFF = 1,
+  LOADER_PNG = 2,
+  LOADER_J2K = 3,
+  LOADER_JPEG = 4,
+  LOADER_EXR = 5,
+  LOADER_RGBE = 6,
+  LOADER_PFM = 7,
+  LOADER_GM = 8,
+  LOADER_RAWSPEED = 9,
+} dt_image_loader_t;
+
 struct dt_cache_entry_t;
 // TODO: add color labels and such as cachable
 // __attribute__ ((aligned (128)))
@@ -134,6 +148,7 @@ typedef struct dt_image_t
 
   // used by library
   int32_t num, flags, film_id, id, group_id, version;
+  dt_image_loader_t loader;
 
   uint32_t filters;          // Bayer demosaic pattern
   int32_t bpp;               // bytes per pixel

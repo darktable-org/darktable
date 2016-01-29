@@ -69,6 +69,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     str = (char *)sqlite3_column_text(stmt, 13);
     if(str) g_strlcpy(img->exif_datetime_taken, str, sizeof(img->exif_datetime_taken));
     img->flags = sqlite3_column_int(stmt, 14);
+    img->loader = LOADER_UNKNOWN;
     img->exif_crop = sqlite3_column_double(stmt, 15);
     img->orientation = sqlite3_column_int(stmt, 16);
     img->exif_focus_distance = sqlite3_column_double(stmt, 17);

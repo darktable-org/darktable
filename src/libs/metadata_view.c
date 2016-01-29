@@ -278,7 +278,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                     N_("has .txt"),
                                     N_("has .wav")
       };
-      char *tooltip_parts[13] = { 0 };
+      char *tooltip_parts[14] = { 0 };
       int next_tooltip_part = 0;
 
       memset(value, EMPTY_FIELD, sizeof(value));
@@ -367,9 +367,33 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[10]);
       }
 
-      value[12] = '\0';
+      static const struct
+      {
+        char *tooltip;
+        char flag;
+      } loaders[] =
+      {
+        { N_("unknown"), EMPTY_FIELD},
+        { N_("tiff"), 't'},
+        { N_("png"), 'p'},
+        { N_("j2k"), 'J'},
+        { N_("jpeg"), 'j'},
+        { N_("exr"), 'e'},
+        { N_("rgbe"), 'R'},
+        { N_("pfm"), 'P'},
+        { N_("GraphicsMagick"), 'g'},
+        { N_("rawspeed"), 'r'}
+      };
+
+      int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
+      value[12] = loaders[loader].flag;
+      char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders[loader].tooltip));
+      tooltip_parts[next_tooltip_part++] = loader_tooltip;
+
+      value[13] = '\0';
 
       tooltip = g_strjoinv("\n", tooltip_parts);
+      g_free(loader_tooltip);
 
       _metadata_update_value(d->metadata[md_internal_flags], value);
       g_object_set(G_OBJECT(d->metadata[md_internal_flags]), "tooltip-text", tooltip, (char *)NULL);
