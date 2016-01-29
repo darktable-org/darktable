@@ -101,7 +101,10 @@ typedef struct dt_iop_ashift_data_t
 
 typedef struct dt_iop_ashift_global_data_t
 {
-  int kernel_ashift_void;
+  int kernel_ashift_bilinear;
+  int kernel_ashift_bicubic;
+  int kernel_ashift_lanczos2;
+  int kernel_ashift_lanczos3;
 } dt_iop_ashift_global_data_t;
 
 
@@ -629,8 +632,113 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     g->isflipped = isflipped;
     dt_pthread_mutex_unlock(&g->lock);
   }
-
 }
+
+#ifdef HAVE_OPENCL
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)self->data;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  float ihomograph[3][3];
+  homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h,
+             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+
+  cl_int err = -999;
+  cl_mem dev_homo = NULL;
+
+  const int devid = piece->pipe->devid;
+  const int iwidth = roi_in->width;
+  const int iheight = roi_in->height;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  dev_homo = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, ihomograph);
+  if(dev_homo == NULL) goto error;
+
+  const int iroi[2] = { roi_in->x, roi_in-> y };
+  const int oroi[2] = { roi_out->x, roi_out-> y };
+  const float in_scale = roi_in->scale;
+  const float out_scale = roi_out->scale;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  int ldkernel = -1;
+
+  switch(interpolation->id)
+  {
+    case DT_INTERPOLATION_BILINEAR:
+      ldkernel = gd->kernel_ashift_bilinear;
+      break;
+    case DT_INTERPOLATION_BICUBIC:
+      ldkernel = gd->kernel_ashift_bicubic;
+      break;
+    case DT_INTERPOLATION_LANCZOS2:
+      ldkernel = gd->kernel_ashift_lanczos2;
+      break;
+    case DT_INTERPOLATION_LANCZOS3:
+      ldkernel = gd->kernel_ashift_lanczos3;
+      break;
+    default:
+      return FALSE;
+  }
+
+  dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 4, sizeof(int), (void *)&iwidth);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 5, sizeof(int), (void *)&iheight);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 6, 2*sizeof(int), (void *)iroi);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 7, 2*sizeof(int), (void *)oroi);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(float), (void *)&in_scale);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(float), (void *)&out_scale);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 10, sizeof(cl_mem), (void *)&dev_homo);
+  err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_homo);
+
+  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    // we want to find out if the final output image is flipped in relation to this iop
+    // so we can adjust the gui labels accordingly
+
+    // origin of image and opposite corner as reference points
+    float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
+    float ivec[2] = { points[2] - points[0], points[3] - points[1] };
+    float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
+
+    // where do they go?
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points, 2);
+
+    float ovec[2] = { points[2] - points[0], points[3] - points[1] };
+    float ovecl = sqrt(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
+
+    // angle between input vector and output vector
+    float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
+
+    // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
+    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI/2.0f) < M_PI/4.0f ? 1 : 0;
+
+    dt_pthread_mutex_lock(&g->lock);
+    g->isflipped = isflipped;
+    dt_pthread_mutex_unlock(&g->lock);
+  }
+
+  return TRUE;
+
+error:
+  if(dev_homo != NULL) dt_opencl_release_mem_object(dev_homo);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_ashift] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
 
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
@@ -729,8 +837,12 @@ void init_global(dt_iop_module_so_t *module)
   dt_iop_ashift_global_data_t *gd
       = (dt_iop_ashift_global_data_t *)malloc(sizeof(dt_iop_ashift_global_data_t));
   module->data = gd;
-  //const int program = 13; // colorcorrection.cl, from programs.conf
-  //gd->kernel_ashift_void = dt_opencl_create_kernel(program, "ashift_void");
+
+  const int program = 2; // basic.cl, from programs.conf
+  gd->kernel_ashift_bilinear = dt_opencl_create_kernel(program, "ashift_bilinear");
+  gd->kernel_ashift_bicubic = dt_opencl_create_kernel(program, "ashift_bicubic");
+  gd->kernel_ashift_lanczos2 = dt_opencl_create_kernel(program, "ashift_lanczos2");
+  gd->kernel_ashift_lanczos3 = dt_opencl_create_kernel(program, "ashift_lanczos3");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -741,8 +853,11 @@ void cleanup(dt_iop_module_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  //dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)module->data;
-  //dt_opencl_free_kernel(gd->kernel_ashift_void);
+  dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_ashift_bilinear);
+  dt_opencl_free_kernel(gd->kernel_ashift_bicubic);
+  dt_opencl_free_kernel(gd->kernel_ashift_lanczos2);
+  dt_opencl_free_kernel(gd->kernel_ashift_lanczos3);
   free(module->data);
   module->data = NULL;
 }
