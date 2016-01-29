@@ -831,6 +831,40 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
 }
 
+void reload_defaults(dt_iop_module_t *module)
+{
+  // our module is disabled by default
+  module->default_enabled = 0;
+  // init defaults:
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f };
+  memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
+
+  int isflipped = 0;
+
+  if(module && module->dev)
+  {
+    const dt_image_t *img = &module->dev->image_storage;
+    isflipped = (img->orientation == ORIENTATION_ROTATE_CCW_90_DEG ||
+               img->orientation == ORIENTATION_ROTATE_CW_90_DEG) ? 1 : 0;
+  }
+
+  if(module && module->gui_data)
+  {
+    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+    char string_v[256];
+    char string_h[256];
+
+    snprintf(string_v, sizeof(string_v), _("lens shift (%s)"), isflipped ? _("horizontal") : _("vertical"));
+    snprintf(string_h, sizeof(string_h), _("lens shift (%s)"), isflipped ? _("vertical") : _("horizontal"));
+
+    dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
+    dt_bauhaus_widget_set_label(g->lensshift_h, NULL, string_h);
+  }
+}
+
+
 void init_global(dt_iop_module_so_t *module)
 {
   dt_iop_ashift_global_data_t *gd
