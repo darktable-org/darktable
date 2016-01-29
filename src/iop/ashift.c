@@ -44,21 +44,21 @@ DT_MODULE_INTROSPECTION(1, dt_iop_ashift_params_t)
 typedef struct dt_iop_ashift_params_t
 {
   float rotation;
-  float keystone;
+  float lensshift;
 } dt_iop_ashift_params_t;
 
 
 typedef struct dt_iop_ashift_gui_data_t
 {
   GtkWidget *rotation;
-  GtkWidget *keystone;
+  GtkWidget *lensshift;
   dt_pthread_mutex_t lock;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
 {
   float rotation;
-  float keystone;
+  float lensshift;
 } dt_iop_ashift_data_t;
 
 typedef struct dt_iop_ashift_global_data_t
@@ -101,7 +101,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     const dt_iop_ashift_params1_t *old = old_params;
     dt_iop_ashift_params_t *new = new_params;
     new->rotation = old->rotation;
-    new->keystone = old->keystone;
+    new->lensshift = old->lensshift;
     return 0;
   }
   return 1;
@@ -111,7 +111,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "keystone"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -119,7 +119,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotation));
-  dt_accel_connect_slider_iop(self, "keystone", GTK_WIDGET(g->keystone));
+  dt_accel_connect_slider_iop(self, "lens shift", GTK_WIDGET(g->lensshift));
 }
 
 #define generate_mat3inv_body(c_type, A, B)                                                                  \
@@ -196,56 +196,59 @@ void _print_roi(const dt_iop_roi_t *roi, const char *label)
 static void homography(float *homograph, const float angle, const float shift,
                        const int width, const int height, dt_iop_ashift_homodir_t dir)
 {
+  // calculate homograph that combines all translations, rotations
+  // and warping into one single matrix operation.
+  // this is heavily leaning on ShiftN where the homographic matrix expects
+  // input in (y : x : 1) format. in the darktable world we want to keep the
+  // (x : y : 1) convention. therefore we need to flip coordinates first,
+  // apply all corrections in ShiftN format and then flip coordinates back again.
+
   const float u = width;
   const float v = height;
 
-  const float phi = (angle / 180.0f) * M_PI;
+  // inverted convention of rotation angle. only used for user convenience
+  // so that right shifting the slider produces a clockwise rotation
+  const float phi = (-angle / 180.0f) * M_PI;
   const float cosi = cos(phi);
   const float sini = sin(phi);
 
-  //const float f_global = 100.0f;
-  //const float horifac = 0.0f;
+  const float f_global = 100.0f;  // TODO: convert this into a module parameter
+  const float horifac = 1.0f;
 
-  const float kst = shift;
-  const float kst2 = kst * v + 1.0f;
-
-#if 0
+  // all this comes from ShiftN
   const float exppa = exp(shift);
   const float fdb = f_global / (14.4f + (v / u - 1) * 7.2f);
   const float rad = fdb * (exppa - 1.0f) / (exppa + 1.0f);
   const float alpha = CLAMP(atan(rad), -1.5f, 1.5f);
   const float rt = sin(0.5f * alpha);
   const float r = fmax(0.1f, 2.0f * (horifac - 1.0f) * rt * rt + 1.0f);
-#endif
-
-  const float beta = atan2(v, u);
-  const float diag = sqrt(u * u + v * v);
 
   // three intermediate buffers for matrix calculation
   float m1[3][3], m2[3][3], m3[3][3];
 
 
-  // step 1: translation of image origin to image center
+  // Step 1: flip x and y coordinates
   memset(m1, 0, sizeof(m1));
-  m1[0][0] = 1.0f;
-  m1[1][1] = 1.0f;
+  m1[0][1] = 1.0f;
+  m1[1][0] = 1.0f;
   m1[2][2] = 1.0f;
-  m1[0][2] = -0.5f * u;
-  m1[1][2] = -0.5f * v;
 
-  // step 2: rotation of image around center
+
+  // Step 2: rotation of image around center
   memset(m2, 0, sizeof(m2));
   m2[0][0] = cosi;
   m2[0][1] = -sini;
   m2[1][0] = sini;
   m2[1][1] = cosi;
+  m2[0][2] = -0.5f * v * cosi + 0.5f * u * sini + 0.5f * v;
+  m2[1][2] = -0.5f * v * sini - 0.5f * u * cosi + 0.5f * u;
   m2[2][2] = 1.0f;
 
   // multiply m2 * m1 -> m3
   mat3mul((float *)m3, (float *)m2, (float *)m1);
 
-#if 0
-  // step 3: shift correction
+
+  // Step 3: apply lens shift effect
   memset(m1, 0, sizeof(m1));
   m1[0][0] = exppa;
   m1[1][0] = 0.5f* ((exppa - 1.0f) * u) / v;
@@ -253,74 +256,76 @@ static void homography(float *homograph, const float angle, const float shift,
   m1[1][2] = -0.5f * ((exppa - 1.0f) * u ) / (exppa + 1.0f);
   m1[2][0] = (exppa - 1.0f) / v;
   m1[2][2] = 1.0f;
-#else
-  // step 3: shift correction
-  memset(m1, 0, sizeof(m1));
-  m1[0][0] = 1.0f; //kst2;
-  m1[1][0] = 0.0f; //0.5f * (kst2 - 1.0f) * (u / v);
-  m1[1][1] = 1.0f; //2.0f * kst2 / (1.0f + kst2);
-  m1[1][2] = 0.0f; //0.5f * u * (1.0f - kst2) / (1.0f + kst2);
-  m1[2][0] = 0.0f; //kst;
-  m1[2][2] = 1.0f;
-#endif
 
   // multiply m1 * m3 -> m2
   mat3mul((float *)m2, (float *)m1, (float *)m3);
 
 
-  // step 4: horizontal compression
+  // Step 4: horizontal compression
   memset(m1, 0, sizeof(m1));
   m1[0][0] = 1.0f;
-  m1[1][1] = 1.0f; //r;
-  m1[1][2] = 0.0f; //0.5f* u * (1.0f - r);
+  m1[1][1] = r;
+  m1[1][2] = 0.5f * u * (1.0f - r);
   m1[2][2] = 1.0f;
 
   // multiply m1 * m2 -> m3
   mat3mul((float *)m3, (float *)m1, (float *)m2);
 
 
-  // step 5: adjust for change of dimension size versus original viewport.
-  // we want to make sure that we don't get pixels with negative
-  // x/y coordinates after adjustments, so we need to translate accordingly.
-  // TODO: there must be a more elegant mathematical expression
+  // Step 5: find x/y offsets and apply according correction
+  float umin = FLT_MAX, vmin = FLT_MAX;
+  // visit all four corners
+  for(int y = 0; y < height; y += height - 1)
+    for(int x = 0; x < width; x += width - 1)
+    {
+      float pi[3], po[3];
+      pi[0] = x;
+      pi[1] = y;
+      pi[2] = 1.0f;
+      // till here m3 expects input in (x:y:1) format and gives output as (y:x:1)
+      mat3mulv(po, (float *)m3, pi);
+      umin = fmin(umin, po[1] / po[2]);
+      vmin = fmin(vmin, po[0] / po[2]);
+    }
   memset(m1, 0, sizeof(m1));
   m1[0][0] = 1.0f;
   m1[1][1] = 1.0f;
   m1[2][2] = 1.0f;
-  m1[0][2] = 0.5f * diag * fmax(fabs(cos(beta + phi)), fabs(cos(beta - phi))) - 0.5 * u;
-  m1[1][2] = 0.5f * diag * fmax(fabs(sin(beta + phi)), fabs(sin(beta - phi))) - 0.5 * v;
+  m1[0][2] = -vmin;
+  m1[1][2] = -umin;
 
   // multiply m1 * m3 -> m2
   mat3mul((float *)m2, (float *)m1, (float *)m3);
 
 
-  // step 5: translate image back to origin
+  // Stepy 6: flip x and y back again
   memset(m1, 0, sizeof(m1));
-  m1[0][0] = 1.0f;
-  m1[1][1] = 1.0f;
+  m1[0][1] = 1.0f;
+  m1[1][0] = 1.0f;
   m1[2][2] = 1.0f;
-  m1[0][2] = 0.5f * u;
-  m1[1][2] = 0.5f * v;
 
   // multiply m1 * m2 -> m3
   mat3mul((float *)m3, (float *)m1, (float *)m2);
 
-  if(dir == ASHIFT_HOMOGRAPH_INVERTED)
+
+  // depending on the needs we keep the final matrix for forward conversions
+  // or produce an inverted matrix for backward conversions
+  if(dir == ASHIFT_HOMOGRAPH_FORWARD)
+  {
+    memcpy(homograph, m3, sizeof(m3));
+  }
+  else
   {
     // generate inverted homograph
     if(mat3inv((float *)homograph, (float *)m3))
     {
       // in case of error we set to unity matrix
-      memset(m3, 0, sizeof(m3));
-      m3[0][0] = 1.0f;
-      m3[1][1] = 1.0f;
-      m3[2][2] = 1.0f;
-      memcpy(homograph, m3, sizeof(m3));
+      memset(m1, 0, sizeof(m1));
+      m1[0][0] = 1.0f;
+      m1[1][1] = 1.0f;
+      m1[2][2] = 1.0f;
+      memcpy(homograph, m1, sizeof(m1));
     }
-  }
-  else
-  {
-    memcpy(homograph, m3, sizeof(m3));
   }
 }
 
@@ -330,7 +335,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->keystone,
+  homography((float *)homograph, data->rotation, data->lensshift,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
 #ifdef _OPENMP
@@ -357,7 +362,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->keystone,
+  homography((float *)ihomograph, data->rotation, data->lensshift,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
 #ifdef _OPENMP
@@ -384,7 +389,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   *roi_out = *roi_in;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->keystone,
+  homography((float *)homograph, data->rotation, data->lensshift,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
@@ -421,14 +426,14 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   roi_out->x = fmaxf(0.0f, xm - interpolation->width);
   roi_out->y = fmaxf(0.0f, ym - interpolation->width);
-  roi_out->width = ceilf(xM - roi_out->x + 1 + interpolation->width);
-  roi_out->height = ceilf(yM - roi_out->y + 1 + interpolation->width);
+  roi_out->width = floorf(xM - roi_out->x + 1 + interpolation->width);
+  roi_out->height = floorf(yM - roi_out->y + 1 + interpolation->width);
 
   // sanity check.
-  roi_out->x = CLAMP(roi_out->x, 0, MAX(roi_in->width, roi_in->height));
-  roi_out->y = CLAMP(roi_out->y, 0, MAX(roi_in->width, roi_in->height));
-  roi_out->width = CLAMP(roi_out->width, 1, sqrt(2.0f) * MAX(roi_in->width, roi_in->height));
-  roi_out->height = CLAMP(roi_out->height, 1, sqrt(2.0f) * MAX(roi_in->width, roi_in->height));
+  roi_out->x = CLAMP(roi_out->x, 0, INT_MAX);
+  roi_out->y = CLAMP(roi_out->y, 0, INT_MAX);
+  roi_out->width = CLAMP(roi_out->width, 1, INT_MAX);
+  roi_out->height = CLAMP(roi_out->height, 1, INT_MAX);
 
   //_print_roi(roi_out, "roi_out");
   //_print_roi(roi_in, "roi_in");
@@ -442,7 +447,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   *roi_in = *roi_out;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->keystone,
+  homography((float *)ihomograph, data->rotation, data->lensshift,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   const float orig_w = roi_in->scale * piece->buf_in.width;
@@ -508,7 +513,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->keystone,
+  homography((float *)ihomograph, data->rotation, data->lensshift,
              piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
 #ifdef _OPENMP
@@ -555,7 +560,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->factor = 2.0f;
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
-  tiling->overlap = 0;
+  tiling->overlap = 3;  // account for interpolation width
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
@@ -571,12 +576,12 @@ static void rotation_callback(GtkWidget *slider, gpointer user_data)
 }
 
 
-static void keystone_callback(GtkWidget *slider, gpointer user_data)
+static void lensshift_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->keystone = dt_bauhaus_slider_get(slider);
+  p->lensshift = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -587,7 +592,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
 
   d->rotation = p->rotation;
-  d->keystone = p->keystone;
+  d->lensshift = p->lensshift;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -609,7 +614,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)module->params;
   dt_bauhaus_slider_set(g->rotation, p->rotation);
-  dt_bauhaus_slider_set(g->keystone, p->keystone);
+  dt_bauhaus_slider_set(g->lensshift, p->lensshift);
 }
 
 void init(dt_iop_module_t *module)
@@ -617,7 +622,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_ashift_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_ashift_params_t));
   module->default_enabled = 0;
-  module->priority = 270; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 260; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
   dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f };
@@ -660,19 +665,19 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->rotation = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 0.1f, p->rotation, 2);
-  g->keystone = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.01f, p->keystone, 2);
+  g->lensshift = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.01f, p->lensshift, 2);
 
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
-  dt_bauhaus_widget_set_label(g->keystone, NULL, _("keystone"));
+  dt_bauhaus_widget_set_label(g->lensshift, NULL, _("lens shift"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->keystone, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift, TRUE, TRUE, 0);
 
-  g_object_set(g->rotation, "tooltip-text", _("rotation angle"), (char *)NULL);
-  g_object_set(g->keystone, "tooltip-text", _("keystone correction"), (char *)NULL);
+  g_object_set(g->rotation, "tooltip-text", _("rotate image"), (char *)NULL);
+  g_object_set(g->lensshift, "tooltip-text", _("apply lens lens shift correction"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
-  g_signal_connect(G_OBJECT(g->keystone), "value-changed", G_CALLBACK(keystone_callback), self);
+  g_signal_connect(G_OBJECT(g->lensshift), "value-changed", G_CALLBACK(lensshift_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
