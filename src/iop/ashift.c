@@ -658,8 +658,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_homo = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, ihomograph);
   if(dev_homo == NULL) goto error;
 
-  const int iroi[2] = { roi_in->x, roi_in-> y };
-  const int oroi[2] = { roi_out->x, roi_out-> y };
+  const int iroi[2] = { roi_in->x, roi_in->y };
+  const int oroi[2] = { roi_out->x, roi_out->y };
   const float in_scale = roi_in->scale;
   const float out_scale = roi_out->scale;
 
@@ -684,7 +684,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       ldkernel = gd->kernel_ashift_lanczos3;
       break;
     default:
-      return FALSE;
+      goto error;
   }
 
   dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -747,7 +747,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->factor = 2.0f;
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
-  tiling->overlap = 3;  // account for interpolation width
+  tiling->overlap = 3;  // accounts for interpolation width
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
@@ -785,7 +785,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)p1;
   dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   d->rotation = p->rotation;
   d->lensshift_v = p->lensshift_v;
@@ -916,8 +915,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
 
   g_object_set(g->rotation, "tooltip-text", _("rotate image"), (char *)NULL);
-  g_object_set(g->lensshift_v, "tooltip-text", _("apply lens lens shift correction in one direction"), (char *)NULL);
-  g_object_set(g->lensshift_h, "tooltip-text", _("apply lens lens shift correction in one direction"), (char *)NULL);
+  g_object_set(g->lensshift_v, "tooltip-text", _("apply lens shift correction in one direction"), (char *)NULL);
+  g_object_set(g->lensshift_h, "tooltip-text", _("apply lens shift correction in one direction"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
