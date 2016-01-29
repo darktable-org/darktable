@@ -40,6 +40,13 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+// Motivation to this module comes from the program ShiftN (http://www.shiftn.de) by
+// Marcus Hebel.
+
+// Thanks to Marcus for his support when implementing part of the ShiftN functionality
+// to darktable.
+
+
 DT_MODULE_INTROSPECTION(1, dt_iop_ashift_params_t)
 
 const char *name()
@@ -81,6 +88,7 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *rotation;
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
+  int isflipped;
   dt_pthread_mutex_t lock;
 } dt_iop_ashift_gui_data_t;
 
@@ -208,21 +216,21 @@ static void homography(float *homograph, const float angle, const float shift_v,
   // and warping into one single matrix operation.
   // this is heavily leaning on ShiftN where the homographic matrix expects
   // input in (y : x : 1) format. in the darktable world we want to keep the
-  // (x : y : 1) convention. therefore we need to flip coordinates first,
-  // apply all corrections in ShiftN format and then flip coordinates back again.
+  // (x : y : 1) convention. therefore we need to flip coordinates first and
+  // make sure that output is in correct format after corrections are applied.
 
   const float u = width;
   const float v = height;
 
   // inverted convention of rotation angle. only used for user convenience
-  // so that right shifting the slider produces a clockwise rotation
+  // so that right shifting the slider intuitively produces a clockwise image rotation
   const float phi = (-angle / 180.0f) * M_PI;
   const float cosi = cos(phi);
   const float sini = sin(phi);
 
   // all this comes from ShiftN
-  const float f_global = 28.0; // TODO: this is a parameter in ShiftN -> check if this would make sense here as well
-  const float horifac = 1.0f;  // TODO: this is a parameter in ShiftN -> check if this would make sense here as well
+  const float f_global = 28.0; // TODO: this is a parameter in ShiftN -> check use in darktable (in comb. with horifac)
+  const float horifac = 1.0f;  // TODO: see f_global
   const float exppa_v = exp(shift_v);
   const float fdb_v = f_global / (14.4f + (v / u - 1) * 7.2f);
   const float rad_v = fdb_v * (exppa_v - 1.0f) / (exppa_v + 1.0f);
@@ -230,7 +238,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   const float rt_v = sin(0.5f * alpha_v);
   const float r_v = fmax(0.1f, 2.0f * (horifac - 1.0f) * rt_v * rt_v + 1.0f);
 
-  const float vertifac = 1.0f;  // see horifac above
+  const float vertifac = 1.0f;  // TODO: see f_global
   const float exppa_h = exp(shift_h);
   const float fdb_h = f_global / (14.4f + (u / v - 1) * 7.2f);
   const float rad_h = fdb_h * (exppa_h - 1.0f) / (exppa_h + 1.0f);
@@ -244,14 +252,14 @@ static void homography(float *homograph, const float angle, const float shift_v,
   float m1[3][3], m2[3][3], m3[3][3];
 
 
-  // Step 1: flip x and y coordinates
+  // Step 1: flip x and y coordinates (see above)
   memset(m1, 0, sizeof(m1));
   m1[0][1] = 1.0f;
   m1[1][0] = 1.0f;
   m1[2][2] = 1.0f;
 
 
-  // Step 2: rotation of image around center
+  // Step 2: rotation of image around its center
   memset(m2, 0, sizeof(m2));
   m2[0][0] = cosi;
   m2[0][1] = -sini;
@@ -298,6 +306,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   // multiply m1 * m3 -> m2
   mat3mul((float *)m2, (float *)m1, (float *)m3);
 
+  // from here output vectors would be in (x : y : 1) format
 
   // Step 6: now we can apply horizontal lens shift with the same matrix format as above
   memset(m1, 0, sizeof(m1));
@@ -323,7 +332,8 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)m2, (float *)m1, (float *)m3);
 
 
-  // Step 8: find x/y offsets and apply according correction
+  // Step 8: find x/y offsets and apply according correction so that
+  // no negative coordinates occur in output vector
   float umin = FLT_MAX, vmin = FLT_MAX;
   // visit all four corners
   for(int y = 0; y < height; y += height - 1)
@@ -349,7 +359,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)m3, (float *)m1, (float *)m2);
 
 
-  // depending on the needs we keep the final matrix for forward conversions
+  // on request we either keep the final matrix for forward conversions
   // or produce an inverted matrix for backward conversions
   if(dir == ASHIFT_HOMOGRAPH_FORWARD)
   {
@@ -546,6 +556,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
@@ -591,6 +602,34 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
                                        roi_in->height, ch_width);
     }
   }
+
+  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    // we want to find out if the final output image is flipped in relation to this iop
+    // so we can adjust the gui labels accordingly
+
+    // origin of image and opposite corner as reference points
+    float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
+    float ivec[2] = { points[2] - points[0], points[3] - points[1] };
+    float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
+
+    // where do they go?
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points, 2);
+
+    float ovec[2] = { points[2] - points[0], points[3] - points[1] };
+    float ovecl = sqrt(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
+
+    // angle between input vector and output vector
+    float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
+
+    // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
+    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI/2.0f) < M_PI/4.0f ? 1 : 0;
+
+    dt_pthread_mutex_lock(&g->lock);
+    g->isflipped = isflipped;
+    dt_pthread_mutex_unlock(&g->lock);
+  }
+
 }
 
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -666,6 +705,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->rotation, p->rotation);
   dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+
+  dt_pthread_mutex_lock(&g->lock);
+  g->isflipped = -1;
+  dt_pthread_mutex_unlock(&g->lock);
 }
 
 void init(dt_iop_module_t *module)
@@ -704,6 +747,33 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
+// adjust labels of lens shift parameters according to flip status of image
+static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  if(darktable.gui->reset) return FALSE;
+
+  dt_pthread_mutex_lock(&g->lock);
+  const int isflipped = g->isflipped;
+  g->isflipped = -1;
+  dt_pthread_mutex_unlock(&g->lock);
+
+  // no data after last visit
+  if(isflipped == -1) return FALSE;
+
+  char string_v[256];
+  char string_h[256];
+
+  snprintf(string_v, sizeof(string_v), _("lens shift (%s)"), isflipped ? _("horizontal") : _("vertical"));
+  snprintf(string_h, sizeof(string_h), _("lens shift (%s)"), isflipped ? _("vertical") : _("horizontal"));
+
+  darktable.gui->reset = 1;
+  dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
+  dt_bauhaus_widget_set_label(g->lensshift_h, NULL, string_h);
+  darktable.gui->reset = 0;
+
+  return FALSE;
+}
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -712,6 +782,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
+  dt_pthread_mutex_lock(&g->lock);
+  g->isflipped = -1;
+  dt_pthread_mutex_unlock(&g->lock);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -720,20 +793,21 @@ void gui_init(struct dt_iop_module_t *self)
   g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.01f, p->lensshift_h, 2);
 
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
-  dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (v)"));
-  dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (h)"));
+  dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (vertical)"));
+  dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
 
   g_object_set(g->rotation, "tooltip-text", _("rotate image"), (char *)NULL);
-  g_object_set(g->lensshift_v, "tooltip-text", _("apply lens lens shift correction in vertical direction"), (char *)NULL);
-  g_object_set(g->lensshift_h, "tooltip-text", _("apply lens lens shift correction in horizontal direction"), (char *)NULL);
+  g_object_set(g->lensshift_v, "tooltip-text", _("apply lens lens shift correction in one direction"), (char *)NULL);
+  g_object_set(g->lensshift_h, "tooltip-text", _("apply lens lens shift correction in one direction"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
