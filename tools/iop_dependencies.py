@@ -106,8 +106,10 @@ def add_edges(gr):
   gr.add_edge(('flip', 'liquify'))
   gr.add_edge(('flip', 'ashift'))
   
-  # ashift wants a lens corrected image with straight lines:
+  # ashift wants a lens corrected image with straight lines.
+  # therefore lens shoucl come before and liquify should come after ashift
   gr.add_edge(('ashift', 'lens'))
+  gr.add_edge(('liquify', 'ashift'))
 
   # plus, it confuses crop/rotate, vignetting and graduated density
   gr.add_edge(('clipping', 'flip'))
