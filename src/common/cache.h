@@ -24,6 +24,7 @@
 #include <ck_ht.h>
 #include <ck_pr.h>
 #include <ck_queue.h>
+#include <ck_spinlock.h>
 #pragma GCC diagnostic pop
 
 #include "common/dtpthread.h"
@@ -43,7 +44,7 @@ typedef struct dt_cache_entry
 
 typedef struct dt_cache_t
 {
-  dt_pthread_mutex_t lock; // big fat lock. we're only expecting a couple hand full of cpu threads to use this concurrently.
+  ck_spinlock_fas_t spinlock; // big fat lock. we're only expecting a couple hand full of cpu threads to use this concurrently.
 
   size_t entry_size; // cache line allocation
   size_t cost;       // user supplied cost per cache line (bytes?)
