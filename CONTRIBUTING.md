@@ -48,3 +48,4 @@ then
 	exit 1;
 fi
 ```
+* Also, there is a [Coding Style](http://redmine.darktable.org/projects/darktable/wiki/Coding_Style) page on our redmine wiki.
