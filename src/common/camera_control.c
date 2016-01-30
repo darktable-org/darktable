@@ -924,7 +924,6 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
       g_free(output);
     } while((ifile = g_list_next(ifile)));
 
-  _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
   _camctl_unlock(c);
 }
 
@@ -1090,7 +1089,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam, gboolea
     dt_camctl_t *camctl = (dt_camctl_t *)c;
     dt_camera_t *camera = (dt_camera_t *)cam;
 
-    if(enable == TRUE && camera->is_tethering != TRUE)
+    if(enable == TRUE)
     {
       _camctl_lock(c, cam);
       // Start up camera event polling thread
