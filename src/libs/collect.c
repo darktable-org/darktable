@@ -511,8 +511,8 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   {
     // handle of numeric value, which can have some operator before the text
     visible = TRUE;
-    gchar *operator, *number;
-    dt_collection_split_operator_number(needle, &number, &operator);
+    gchar *operator, *number, *number2;
+    dt_collection_split_operator_number(needle, &number, &number2, &operator);
     if(number)
     {
       float nb1 = g_strtod(number, NULL);
@@ -537,6 +537,11 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
       {
         visible = (nb1 != nb2);
       }
+      else if(operator&& number2 && strcmp(operator, "[]") == 0)
+      {
+        float nb3 = g_strtod(number2, NULL);
+        visible = (nb2 >= nb1 && nb2 <= nb3);
+      }
       else
       {
         visible = (nb1 == nb2);
@@ -544,6 +549,7 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
     }
     g_free(operator);
     g_free(number);
+    g_free(number2);
   }
   else
   {
