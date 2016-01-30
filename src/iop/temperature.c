@@ -798,9 +798,15 @@ static int prepare_wb_matrices(dt_iop_module_t *module)
   }
 
   // prepare matrices for Kelvin temperature
-  float XYZ_to_CAM[4][3];
+  float XYZ_to_CAM[4][3] = {{0}};
   XYZ_to_CAM[0][0] = NAN;
-  dt_dcraw_adobe_coeff(module->dev->image_storage.camera_makermodel, (float(*)[12])XYZ_to_CAM);
+
+  if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
+    for(int i = 0; i < 9; i++)
+      XYZ_to_CAM[i/3][i%3] = module->dev->image_storage.d65_color_matrix[i];
+  else
+    dt_dcraw_adobe_coeff(module->dev->image_storage.camera_makermodel, (float(*)[12])XYZ_to_CAM);
+
   if(!isnan(XYZ_to_CAM[0][0]))
   {
     for(int i = 0; i < 3; i++)
