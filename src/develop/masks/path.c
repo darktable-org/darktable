@@ -498,12 +498,13 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
 /** get all points of the path and the border */
 /** this take care of gaps and self-intersection and iop distortions */
 static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int prio_max,
-                                   dt_dev_pixelpipe_t *pipe, float **points, int *points_count,
-                                   float **border, int *border_count, int source)
+                                   dt_dev_pixelpipe_t *pipe, float pipe_iwidth, float pipe_iheight,
+                                   float **points, int *points_count, float **border, int *border_count,
+                                   int source)
 {
   double start2 = dt_get_wtime();
 
-  float wd = pipe->iwidth, ht = pipe->iheight;
+  float wd = pipe_iwidth, ht = pipe_iheight;
 
   dt_masks_dynbuf_t *dpoints = NULL, *dborder = NULL;
 
@@ -817,8 +818,12 @@ static void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *
 static int dt_path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,
                                      int *points_count, float **border, int *border_count, int source)
 {
-  return _path_get_points_border(dev, form, 999999, dev->preview_pipe, points, points_count, border,
-                                 border_count, source);
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  float pipe_iwidth = dev->preview_pipe->iwidth;
+  float pipe_iheight = dev->preview_pipe->iheight;
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+  return _path_get_points_border(dev, form, 999999, dev->preview_pipe, pipe_iwidth, pipe_iheight, points,
+                                 points_count, border, border_count, source);
 }
 
 static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
@@ -996,13 +1001,17 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)(malloc(sizeof(dt_masks_point_path_t)));
       int nb = g_list_length(form->points);
       // change the values
+      dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
       float wd = darktable.develop->preview_pipe->backbuf_width;
       float ht = darktable.develop->preview_pipe->backbuf_height;
+      dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
       float pts[2] = { pzx * wd, pzy * ht };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
+      dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
       bzpt->corner[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
       bzpt->corner[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+      dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
       bzpt->ctrl1[0] = bzpt->ctrl1[1] = bzpt->ctrl2[0] = bzpt->ctrl2[1] = -1.0;
       bzpt->state = DT_MASKS_POINT_STATE_NORMAL;
 
@@ -1012,8 +1021,10 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       if(nb == 0)
       {
         dt_masks_point_path_t *bzpt2 = (dt_masks_point_path_t *)(malloc(sizeof(dt_masks_point_path_t)));
+        dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
         bzpt2->corner[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
         bzpt2->corner[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+        dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
         bzpt2->ctrl1[0] = bzpt2->ctrl1[1] = bzpt2->ctrl2[0] = bzpt2->ctrl2[1] = -1.0;
         bzpt2->border[0] = bzpt2->border[1] = MAX(0.005f, masks_border);
         bzpt2->state = DT_MASKS_POINT_STATE_NORMAL;
@@ -1050,8 +1061,10 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       if(!gpt) return 0;
       // we start the form dragging
       gui->source_dragging = TRUE;
+      dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
       gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
       gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+      dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
       gui->dx = gpt->source[2] - gui->posx;
       gui->dy = gpt->source[3] - gui->posy;
       return 1;
@@ -1060,8 +1073,10 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
     {
       gui->form_dragging = TRUE;
       gui->point_edited = -1;
+      dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
       gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
       gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+      dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
       gui->dx = gpt->points[2] - gui->posx;
       gui->dy = gpt->points[3] - gui->posy;
       return 1;
@@ -1126,13 +1141,17 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
         // we add a new point to the path
         dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)(malloc(sizeof(dt_masks_point_path_t)));
         // change the values
+        dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
         float wd = darktable.develop->preview_pipe->backbuf_width;
         float ht = darktable.develop->preview_pipe->backbuf_height;
+        dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
         float pts[2] = { pzx * wd, pzy * ht };
         dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
+        dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
         bzpt->corner[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
         bzpt->corner[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+        dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
         bzpt->ctrl1[0] = bzpt->ctrl1[1] = bzpt->ctrl2[0] = bzpt->ctrl2[1] = -1.0;
         bzpt->state = DT_MASKS_POINT_STATE_NORMAL;
 
@@ -1157,8 +1176,10 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       {
         // we move the entire segment
         gui->seg_dragging = gui->seg_selected;
+        dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
         gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
         gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+        dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
         gui->dx = gpt->points[gui->seg_selected * 6 + 2] - gui->posx;
         gui->dy = gpt->points[gui->seg_selected * 6 + 3] - gui->posy;
       }
@@ -1285,12 +1306,16 @@ static int dt_path_events_button_released(struct dt_iop_module_t *module, float 
 
     // we get point0 new values
     dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_first(form->points)->data;
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
     float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
 
     // we move all points
     GList *points = g_list_first(form->points);
@@ -1323,12 +1348,16 @@ static int dt_path_events_button_released(struct dt_iop_module_t *module, float 
     gui->source_dragging = FALSE;
 
     // we change the source value
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
     form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     dt_masks_write_form(form, darktable.develop);
 
     // we recreate the form points
@@ -1359,12 +1388,16 @@ static int dt_path_events_button_released(struct dt_iop_module_t *module, float 
       return 1;
     }
     gui->scrollx = gui->scrolly = 0;
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
     float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
 
     point->corner[0] += dx;
     point->corner[1] += dy;
@@ -1391,12 +1424,15 @@ static int dt_path_events_button_released(struct dt_iop_module_t *module, float 
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_dragging);
     gui->feather_dragging = -1;
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     int p1x, p1y, p2x, p2y;
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     _path_feather_to_ctrl(point->corner[0] * darktable.develop->preview_pipe->iwidth,
                           point->corner[1] * darktable.develop->preview_pipe->iheight, pts[0], pts[1], &p1x,
                           &p1y, &p2x, &p2y, gpt->clockwise);
@@ -1404,6 +1440,7 @@ static int dt_path_events_button_released(struct dt_iop_module_t *module, float 
     point->ctrl1[1] = (float)p1y / darktable.develop->preview_pipe->iheight;
     point->ctrl2[0] = (float)p2x / darktable.develop->preview_pipe->iwidth;
     point->ctrl2[1] = (float)p2y / darktable.develop->preview_pipe->iheight;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
 
     point->state = DT_MASKS_POINT_STATE_USER;
 
@@ -1441,15 +1478,19 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, closeup ? 2 : 1, 1);
+  dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
   float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
+  dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
   if(!gui) return 0;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
   if(gui->point_dragging >= 0)
   {
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     float pts[2] = { pzx * wd, pzy * ht };
     if(gui->creation && g_list_length(form->points) > 3)
     {
@@ -1467,8 +1508,10 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
 
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->point_dragging);
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     pzx = pts[0] / darktable.develop->preview_pipe->iwidth;
     pzy = pts[1] / darktable.develop->preview_pipe->iheight;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     bzpt->ctrl1[0] += pzx - bzpt->corner[0];
     bzpt->ctrl2[0] += pzx - bzpt->corner[0];
     bzpt->ctrl1[1] += pzy - bzpt->corner[1];
@@ -1488,12 +1531,16 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
     int pos2 = (gui->seg_dragging + 1) % g_list_length(form->points);
     dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->seg_dragging);
     dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points, pos2);
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
     float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
 
     // we move all points
     point->corner[0] += dx;
@@ -1522,14 +1569,17 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   }
   else if(gui->feather_dragging >= 0)
   {
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_dragging);
 
     int p1x, p1y, p2x, p2y;
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     _path_feather_to_ctrl(point->corner[0] * darktable.develop->preview_pipe->iwidth,
                           point->corner[1] * darktable.develop->preview_pipe->iheight, pts[0], pts[1], &p1x,
                           &p1y, &p2x, &p2y, gpt->clockwise);
@@ -1537,6 +1587,7 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
     point->ctrl1[1] = (float)p1y / darktable.develop->preview_pipe->iheight;
     point->ctrl2[0] = (float)p2x / darktable.develop->preview_pipe->iwidth;
     point->ctrl2[1] = (float)p2y / darktable.develop->preview_pipe->iheight;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     point->state = DT_MASKS_POINT_STATE_USER;
 
     _path_init_ctrl_points(form);
@@ -1548,8 +1599,10 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   }
   else if(gui->point_border_dragging >= 0)
   {
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
 
     int k = gui->point_border_dragging;
 
@@ -1565,10 +1618,12 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points, k);
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     float nx = point->corner[0] * darktable.develop->preview_pipe->iwidth;
     float ny = point->corner[1] * darktable.develop->preview_pipe->iheight;
     float nr = sqrtf((pts[0] - nx) * (pts[0] - nx) + (pts[1] - ny) * (pts[1] - ny));
     float bdr = nr / fminf(darktable.develop->preview_pipe->iwidth, darktable.develop->preview_pipe->iheight);
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
 
     point->border[0] = point->border[1] = bdr;
 
@@ -1580,8 +1635,10 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   }
   else if(gui->form_dragging || gui->source_dragging)
   {
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
     gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
     gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1596,8 +1653,10 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   // are we near a point or feather ?
   guint nb = g_list_length(form->points);
 
+  dt_pthread_mutex_lock(&darktable.develop->preview_pipe_mutex);
   pzx *= darktable.develop->preview_pipe->backbuf_width,
       pzy *= darktable.develop->preview_pipe->backbuf_height;
+  dt_pthread_mutex_unlock(&darktable.develop->preview_pipe_mutex);
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
@@ -1909,8 +1968,8 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   // we get buffers for all points
   float *points = NULL, *border = NULL;
   int points_count, border_count;
-  if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
-                              &border, &border_count, 1))
+  if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, piece->pipe->iwidth,
+                              piece->pipe->iheight, &points, &points_count, &border, &border_count, 1))
   {
     free(points);
     free(border);
@@ -1965,8 +2024,8 @@ static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   // we get buffers for all points
   float *points = NULL, *border = NULL;
   int points_count, border_count;
-  if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
-                              &border, &border_count, 0))
+  if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, piece->pipe->iwidth,
+                              piece->pipe->iheight, &points, &points_count, &border, &border_count, 0))
   {
     free(points);
     free(border);
@@ -2050,8 +2109,8 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   // we get buffers for all points
   float *points = NULL, *border = NULL;
   int points_count, border_count;
-  if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
-                              &border, &border_count, 0))
+  if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, piece->pipe->iwidth,
+                              piece->pipe->iheight, &points, &points_count, &border, &border_count, 0))
   {
     free(points);
     free(border);
@@ -2475,8 +2534,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   // we get buffers for all points
   float *points = NULL, *border = NULL, *cpoints = NULL;
   int points_count, border_count;
-  if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
-                              &border, &border_count, 0) || (points_count <= 2))
+  if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, piece->pipe->iwidth,
+                              piece->pipe->iheight, &points, &points_count, &border, &border_count, 0)
+     || (points_count <= 2))
   {
     free(points);
     free(border);
