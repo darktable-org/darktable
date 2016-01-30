@@ -16,7 +16,9 @@
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// during development only:
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -33,6 +35,7 @@
 #include "common/debug.h"
 #include "common/opencl.h"
 #include "common/interpolation.h"
+#include "common/colorspaces.h"    // for mat3inv
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -74,6 +77,12 @@ typedef enum dt_iop_ashift_homodir_t
   ASHIFT_HOMOGRAPH_FORWARD,
   ASHIFT_HOMOGRAPH_INVERTED
 } dt_iop_ashift_homodir_t;
+
+typedef enum dt_iop_ashift_edge_t
+{
+  ASHIFT_EDGE_HORIZONTAL,
+  ASHIFT_EDGE_VERTICAL,
+} dt_iop_ashift_edge_t;
 
 typedef struct dt_iop_ashift_params_t
 {
@@ -141,49 +150,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "lens shift (h)", GTK_WIDGET(g->lensshift_h));
 }
 
-#define generate_mat3inv_body(c_type, A, B)                                                                  \
-  int mat3inv_##c_type(c_type *const dst, const c_type *const src)                                           \
-  {                                                                                                          \
-                                                                                                             \
-    const c_type det = A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3))                                     \
-                       - A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3))                                   \
-                       + A(3, 1) * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));                                  \
-                                                                                                             \
-    const c_type epsilon = 1e-7f;                                                                            \
-    if(fabs(det) < epsilon) return 1;                                                                        \
-                                                                                                             \
-    const c_type invDet = 1.0 / det;                                                                         \
-                                                                                                             \
-    B(1, 1) = invDet * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3));                                              \
-    B(1, 2) = -invDet * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3));                                             \
-    B(1, 3) = invDet * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));                                              \
-                                                                                                             \
-    B(2, 1) = -invDet * (A(3, 3) * A(2, 1) - A(3, 1) * A(2, 3));                                             \
-    B(2, 2) = invDet * (A(3, 3) * A(1, 1) - A(3, 1) * A(1, 3));                                              \
-    B(2, 3) = -invDet * (A(2, 3) * A(1, 1) - A(2, 1) * A(1, 3));                                             \
-                                                                                                             \
-    B(3, 1) = invDet * (A(3, 2) * A(2, 1) - A(3, 1) * A(2, 2));                                              \
-    B(3, 2) = -invDet * (A(3, 2) * A(1, 1) - A(3, 1) * A(1, 2));                                             \
-    B(3, 3) = invDet * (A(2, 2) * A(1, 1) - A(2, 1) * A(1, 2));                                              \
-    return 0;                                                                                                \
-  }
 
-#define A(y, x) src[(y - 1) * 3 + (x - 1)]
-#define B(y, x) dst[(y - 1) * 3 + (x - 1)]
-/** inverts the given 3x3 matrix */
-generate_mat3inv_body(float, A, B)
-
-int mat3inv(float *const dst, const float *const src)
-{
-  return mat3inv_float(dst, src);
-}
-
-generate_mat3inv_body(double, A, B)
-#undef B
-#undef A
-#undef generate_mat3inv_body
-
-void mat3mulv(float *dst, const float *const mat, const float *const v)
+static inline void mat3mulv(float *dst, const float *const mat, const float *const v)
 {
   for(int k = 0; k < 3; k++)
   {
@@ -193,7 +161,7 @@ void mat3mulv(float *dst, const float *const mat, const float *const v)
   }
 }
 
-void mat3mul(float *dst, const float *const m1, const float *const m2)
+static inline void mat3mul(float *dst, const float *const m1, const float *const m2)
 {
   for(int k = 0; k < 3; k++)
   {
@@ -206,7 +174,8 @@ void mat3mul(float *dst, const float *const m1, const float *const m2)
   }
 }
 
-void _print_roi(const dt_iop_roi_t *roi, const char *label)
+
+static void _print_roi(const dt_iop_roi_t *roi, const char *label)
 {
   printf("{ %5d  %5d  %5d  %5d  %.6f } %s\n", roi->x, roi->y, roi->width, roi->height, roi->scale, label);
 }
@@ -370,7 +339,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   }
   else
   {
-    // generate inverted homograph
+    // generate inverted homograph (mat3inv function defined in colorspaces.c)
     if(mat3inv((float *)homograph, (float *)m3))
     {
       // in case of error we set to unity matrix
@@ -554,7 +523,154 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   //_print_roi(roi_in, "roi_in");
 }
 
+// simple conversion of rgb image into greyscale
+static void rgb2grey(const float *in, float *out, const int width, const int height)
+{
+  const int ch = 4;
 
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)                                                      \
+  shared(in, out)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    const float *inp = in + (size_t)ch * j * width;
+    float *outp = out + (size_t)j * width;
+    for(int i = 0; i < width; i++, inp += ch, outp++)
+    {
+      *outp = 0.3f * inp[0] + 0.59f * inp[1] + 0.11f * inp[2];
+    }
+  }
+}
+
+// support function only needed during development
+static void grey2rgb(const float *in, float *out, const int width, const int height)
+{
+  const int ch = 4;
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)                                                      \
+  shared(in, out)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    const float *inp = in + (size_t)j * width;
+    float *outp = out + (size_t)ch * j * width;
+    for(int i = 0; i < width; i++, inp++, outp += ch)
+    {
+      outp[0] = outp[1] = outp[2] = *inp;
+    }
+  }
+}
+
+// sobel edge detection in one direction
+static void edge_detect_1d(const float *in, float *out, const int width, const int height, dt_iop_ashift_edge_t dir)
+{
+  // Sobel kernels for both directions
+  const float hkernel[3][3] = { { 1.0f, 0.0f, -1.0f }, { 2.0f, 0.0f, -2.0f }, {  1.0f,  0.0f, -1.0f } };
+  const float vkernel[3][3] = { { 1.0f, 2.0f,  1.0f }, { 0.0f, 0.0f,  0.0f }, { -1.0f, -2.0f, -1.0f } };
+  const int kwidth = 3;
+  const int khwidth = kwidth / 2;
+
+  // select kernel
+  const float *kernel = (dir == ASHIFT_EDGE_HORIZONTAL) ? (const float *)hkernel : (const float *)vkernel;
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)                                                      \
+  shared(in, out, kernel)
+#endif
+  // loop over image pixels and perform sobel convolution
+  for(int j = khwidth; j < height - khwidth; j++)
+  {
+    const float *inp = in + (size_t)j * width + khwidth;
+    float *outp = out + (size_t)j * width + khwidth;
+    for(int i = khwidth; i < width - khwidth; i++, inp++, outp++)
+    {
+      float sum = 0.0f;
+      for(int jj = 0; jj < kwidth; jj++)
+      {
+        const int k = jj * kwidth;
+        const int l = (jj - khwidth) * width;
+        for(int ii = 0; ii < kwidth; ii++)
+        {
+          sum += inp[l + ii - khwidth] * kernel[k + ii];
+        }
+      }
+      *outp = sum;
+    }
+  }
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)                                                      \
+  shared(out)
+#endif
+  // border fill in output buffer, so we don't get pseudo lines at image frame
+  for(int j = 0; j < height; j++)
+    for(int i = 0; i < width; i++)
+    {
+      float val = out[j * width + i];
+
+      if(j < khwidth) val = out[(khwidth - j) * width + i];
+      else if(j >= height - khwidth) val = out[(j - khwidth) * width + i];
+      else if(i < khwidth) val = out[j * width + (khwidth - i)];
+      else if(i >= width - khwidth) val = out[j * width + (i - khwidth)];
+
+      out[j * width + i] = val;
+
+      // jump over center of image
+      if(i == khwidth && j >= khwidth && j < height - khwidth) i = width - khwidth;
+    }
+}
+
+// edge detection in both directions after conversion into greyscale
+// outputs absolute values and gradients of edges
+static int edge_detect(const float *in, float *value, float *gradient, const int width, const int height)
+{
+  float *greyscale = NULL;
+  float *Gx = NULL;
+  float *Gy = NULL;
+
+  // allocate intermediate buffers
+  greyscale = malloc((size_t)width * height * sizeof(float));
+  if(greyscale == NULL) goto error;
+
+  Gx = malloc((size_t)width * height * sizeof(float));
+  if(Gx == NULL) goto error;
+
+  Gy = malloc((size_t)width * height * sizeof(float));
+  if(Gy == NULL) goto error;
+
+  // generate greyscale image
+  rgb2grey(in, greyscale, width, height);
+
+  // perform edge detection in both directions
+  edge_detect_1d(greyscale, Gx, width, height, ASHIFT_EDGE_HORIZONTAL);
+  edge_detect_1d(greyscale, Gy, width, height, ASHIFT_EDGE_VERTICAL);
+
+  // calculate absolute values and gradients
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)                                                      \
+  shared(Gx, Gy, value, gradient)
+#endif
+  for(size_t k = 0; k < (size_t)width * height; k++)
+  {
+    value[k] = sqrt(Gx[k] * Gx[k] + Gy[k] * Gy[k]);
+    gradient[k] = atan2(Gy[k], Gx[k]);
+  }
+
+  free(greyscale);
+  free(Gx);
+  free(Gy);
+  return TRUE;
+
+error:
+  if(greyscale) free(greyscale);
+  if(Gx) free(Gx);
+  if(Gy) free(Gy);
+  return FALSE;
+}
+
+#if 1
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -633,6 +749,37 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     dt_pthread_mutex_unlock(&g->lock);
   }
 }
+#else
+// dummy process() for testing purposes during development
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  float *edge = NULL;
+  float *gradient = NULL;
+
+  // allocate intermediate buffers
+  edge = malloc((size_t)width * height * sizeof(float));
+  if(edge == NULL) goto error;
+
+  gradient = malloc((size_t)width * height * sizeof(float));
+  if(gradient == NULL) goto error;
+
+  if(!edge_detect((float *)ivoid, edge, gradient, width, height)) goto error;
+
+  grey2rgb(edge, (float *)ovoid, width, height);
+
+  free(edge);
+  free(gradient);
+  return;
+
+error:
+  if(edge) free(edge);
+  if(gradient) free(gradient);
+}
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
