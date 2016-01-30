@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-30 12:04+0100\n"
-"PO-Revision-Date: 2016-01-30 12:05+0100\n"
+"POT-Creation-Date: 2016-01-30 13:22+0100\n"
+"PO-Revision-Date: 2016-01-30 13:24+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -1066,7 +1066,7 @@ msgstr "ein"
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1314
 #: ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
-#: ../src/iop/colorin.c:1222 ../src/iop/demosaic.c:2216
+#: ../src/iop/colorin.c:1222 ../src/iop/demosaic.c:2222
 #: ../src/iop/vignette.c:1141 ../src/libs/history.c:153
 #: ../src/libs/live_view.c:440
 msgid "off"
@@ -1257,16 +1257,18 @@ msgid "style %s was successfully imported"
 msgstr "Stil ‚%s‘ erfolgreich importiert"
 
 #: ../src/common/variables.c:248 ../src/common/variables.c:262
-#: ../src/iop/clipping.c:1563 ../src/iop/clipping.c:1853
-#: ../src/iop/clipping.c:1873 ../src/iop/clipping.c:2018
-#: ../src/iop/clipping.c:2046 ../src/iop/colorreconstruction.c:1374
-#: ../src/iop/lens.c:2047 ../src/libs/export.c:485 ../src/libs/live_view.c:351
+#: ../src/common/variables.c:276 ../src/common/variables.c:290
+#: ../src/common/variables.c:304 ../src/iop/clipping.c:1563
+#: ../src/iop/clipping.c:1853 ../src/iop/clipping.c:1873
+#: ../src/iop/clipping.c:2018 ../src/iop/clipping.c:2046
+#: ../src/iop/colorreconstruction.c:1374 ../src/iop/lens.c:2047
+#: ../src/libs/export.c:485 ../src/libs/live_view.c:351
 #: ../src/libs/live_view.c:377 ../src/libs/live_view.c:386
 #: ../src/libs/print_settings.c:1007 ../src/libs/print_settings.c:1276
 msgid "none"
 msgstr "keine"
 
-#: ../src/common/opencl.c:563
+#: ../src/common/opencl.c:574
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
@@ -2791,6 +2793,18 @@ msgstr "$(DESKTOP) – Desktop-Verzeichnis"
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) – Titel aus den Metadaten"
 
+#: ../src/gui/gtkentry.c:213
+msgid "$(CREATOR) - creator from metadata"
+msgstr "$(CREATOR) – Urheber aus den Metadaten"
+
+#: ../src/gui/gtkentry.c:214
+msgid "$(PUBLISHER) - publisher from metadata"
+msgstr "$(PUBLISHER) – Herausgeber aus den Metadaten"
+
+#: ../src/gui/gtkentry.c:215
+msgid "$(RIGHTS) - rights from metadata"
+msgstr "$(RIGHTS) – Rechte aus den Metadaten"
+
 #: ../src/gui/guides.c:370
 msgid "extra"
 msgstr "weiter"
@@ -4278,7 +4292,7 @@ msgstr "Schwellwert"
 msgid "the threshold of light"
 msgstr "Schwellwert des Lichts"
 
-#: ../src/iop/bloom.c:538 ../src/iop/denoiseprofile.c:1659
+#: ../src/iop/bloom.c:538 ../src/iop/denoiseprofile.c:1661
 #: ../src/iop/grain.c:544 ../src/iop/hotpixels.c:445 ../src/iop/nlmeans.c:707
 #: ../src/iop/velvia.c:345
 msgid "strength"
@@ -4982,7 +4996,7 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "Nicht unterstütztes Eingabeprofil wurde durch lineares Rec709-RGB ersetzt!"
 
-#: ../src/iop/colorin.c:1205 ../src/iop/denoiseprofile.c:1655
+#: ../src/iop/colorin.c:1205 ../src/iop/denoiseprofile.c:1657
 #: ../src/libs/export.c:597 ../src/libs/print_settings.c:996
 #: ../src/libs/print_settings.c:1212
 msgid "profile"
@@ -5366,45 +5380,45 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
-#: ../src/iop/demosaic.c:2188 ../src/iop/demosaic.c:2198
+#: ../src/iop/demosaic.c:2194 ../src/iop/demosaic.c:2204
 #: ../src/iop/dither.c:556 ../src/iop/highlights.c:733
 msgid "method"
 msgstr "Methode"
 
-#: ../src/iop/demosaic.c:2190
+#: ../src/iop/demosaic.c:2196
 msgid "PPG (fast)"
 msgstr "PPG (schnell)"
 
-#: ../src/iop/demosaic.c:2191
+#: ../src/iop/demosaic.c:2197
 msgid "AMaZE (slow)"
 msgstr "AMaZE (langsam)"
 
-#: ../src/iop/demosaic.c:2192
+#: ../src/iop/demosaic.c:2198
 msgid "VNG4 (slow)"
 msgstr "VNG4 (langsam)"
 
-#: ../src/iop/demosaic.c:2193
+#: ../src/iop/demosaic.c:2199
 msgid "passthrough (monochrome) (experimental)"
 msgstr "durchschleifen (monochrom) (experimentell)"
 
-#: ../src/iop/demosaic.c:2194 ../src/iop/demosaic.c:2203
+#: ../src/iop/demosaic.c:2200 ../src/iop/demosaic.c:2209
 msgid "demosaicing raw data method"
 msgstr "Methode zum Entrastern der Rohdaten"
 
-#: ../src/iop/demosaic.c:2200
+#: ../src/iop/demosaic.c:2206
 msgid "VNG (slow)"
 msgstr "VNG (langsam)"
 
-#: ../src/iop/demosaic.c:2201
+#: ../src/iop/demosaic.c:2207
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-mal"
 
-#: ../src/iop/demosaic.c:2202
+#: ../src/iop/demosaic.c:2208
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-mal (langsam)"
 
 # WTF? Wer bitte soll das verstehen?
-#: ../src/iop/demosaic.c:2208
+#: ../src/iop/demosaic.c:2214
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5414,63 +5428,63 @@ msgstr ""
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen um Kanten zu ignorieren."
 
-#: ../src/iop/demosaic.c:2210
+#: ../src/iop/demosaic.c:2216
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
-#: ../src/iop/demosaic.c:2214
+#: ../src/iop/demosaic.c:2220
 msgid "color smoothing"
 msgstr "Farbglättung"
 
-#: ../src/iop/demosaic.c:2217
+#: ../src/iop/demosaic.c:2223
 msgid "one time"
 msgstr "einmal"
 
-#: ../src/iop/demosaic.c:2218
+#: ../src/iop/demosaic.c:2224
 msgid "two times"
 msgstr "zweimal"
 
-#: ../src/iop/demosaic.c:2219
+#: ../src/iop/demosaic.c:2225
 msgid "three times"
 msgstr "dreimal"
 
-#: ../src/iop/demosaic.c:2220
+#: ../src/iop/demosaic.c:2226
 msgid "four times"
 msgstr "viermal"
 
-#: ../src/iop/demosaic.c:2221
+#: ../src/iop/demosaic.c:2227
 msgid "five times"
 msgstr "fünfmal"
 
-#: ../src/iop/demosaic.c:2223
+#: ../src/iop/demosaic.c:2229
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "wie viele Median-Schritte zur Fabrglättung nach dem Entrastern"
 
-#: ../src/iop/demosaic.c:2227
+#: ../src/iop/demosaic.c:2233
 msgid "match greens"
 msgstr "Grün anpassen"
 
-#: ../src/iop/demosaic.c:2228
+#: ../src/iop/demosaic.c:2234
 msgid "disabled"
 msgstr "deaktiviert"
 
-#: ../src/iop/demosaic.c:2229
+#: ../src/iop/demosaic.c:2235
 msgid "local average"
 msgstr "lokales Mittel"
 
-#: ../src/iop/demosaic.c:2230
+#: ../src/iop/demosaic.c:2236
 msgid "full average"
 msgstr "volles Mittel"
 
-#: ../src/iop/demosaic.c:2231
+#: ../src/iop/demosaic.c:2237
 msgid "full and local average"
 msgstr "volles und lokales Mittel"
 
-#: ../src/iop/demosaic.c:2232
+#: ../src/iop/demosaic.c:2238
 msgid "green channels matching method"
 msgstr "Methode zum Abgleichen des Grünkanals"
 
-#: ../src/iop/demosaic.c:2244
+#: ../src/iop/demosaic.c:2250
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -5480,40 +5494,40 @@ msgstr "Entrastern funktioniert nur mit Raw-Bildern."
 msgid "denoise (profiled)"
 msgstr "Entrauschen (Profil)"
 
-#: ../src/iop/denoiseprofile.c:1414
+#: ../src/iop/denoiseprofile.c:1416
 #, c-format
 msgid "found match for ISO %d"
 msgstr "Treffer für ISO %d gefunden"
 
-#: ../src/iop/denoiseprofile.c:1422
+#: ../src/iop/denoiseprofile.c:1424
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "aus ISO %d und %d interpoliert"
 
-#: ../src/iop/denoiseprofile.c:1656 ../src/iop/exposure.c:799
+#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:799
 #: ../src/iop/lens.c:2197 ../src/iop/levels.c:548
 #: ../src/libs/copy_history.c:272 ../src/libs/export.c:635
 #: ../src/libs/print_settings.c:1317
 msgid "mode"
 msgstr "Modus"
 
-#: ../src/iop/denoiseprofile.c:1657 ../src/iop/nlmeans.c:705
+#: ../src/iop/denoiseprofile.c:1659 ../src/iop/nlmeans.c:705
 msgid "patch size"
 msgstr "Blockgröße"
 
-#: ../src/iop/denoiseprofile.c:1660
+#: ../src/iop/denoiseprofile.c:1662
 msgid "non-local means"
 msgstr "nicht-lokales Mittel"
 
-#: ../src/iop/denoiseprofile.c:1661
+#: ../src/iop/denoiseprofile.c:1663
 msgid "wavelets"
 msgstr "Wavelets"
 
-#: ../src/iop/denoiseprofile.c:1662
+#: ../src/iop/denoiseprofile.c:1664
 msgid "profile used for variance stabilization"
 msgstr "Benutztes Profil zur Stabilisierung der Streuung"
 
-#: ../src/iop/denoiseprofile.c:1665
+#: ../src/iop/denoiseprofile.c:1667
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -5522,11 +5536,11 @@ msgstr ""
 "besten für Überblendung ‚Helligkeit‘, Wavelets sind für ‚Farbe‘ am besten"
 
 # Ugh ...
-#: ../src/iop/denoiseprofile.c:1669
+#: ../src/iop/denoiseprofile.c:1671
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "Radius der Blöcke, die verglichen werden. Erhöhen für mehr Schärfe"
 
-#: ../src/iop/denoiseprofile.c:1670
+#: ../src/iop/denoiseprofile.c:1672
 msgid "finetune denoising strength"
 msgstr "Stärke des Entrauschens anpassen"
 
