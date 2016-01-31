@@ -35,7 +35,7 @@
 #include "common/debug.h"
 #include "common/opencl.h"
 #include "common/interpolation.h"
-#include "common/colorspaces.h"    // for mat3inv
+#include "common/colorspaces.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -544,7 +544,7 @@ static void rgb2grey(const float *in, float *out, const int width, const int hei
 }
 
 // support function only needed during development
-static void grey2rgb(const float *in, float *out, const int width, const int height)
+static void grey2rgb(const float *in, float *out, const int out_width, const int out_height, const int in_width, const int in_height)
 {
   const int ch = 4;
 
@@ -552,12 +552,14 @@ static void grey2rgb(const float *in, float *out, const int width, const int hei
 #pragma omp parallel for schedule(static) default(none)                                                      \
   shared(in, out)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int j = 0; j < out_height; j++)
   {
-    const float *inp = in + (size_t)j * width;
-    float *outp = out + (size_t)ch * j * width;
-    for(int i = 0; i < width; i++, inp++, outp += ch)
+    if(j >= in_height) continue;
+    const float *inp = in + (size_t)j * in_width;
+    float *outp = out + (size_t)ch * j * out_width;
+    for(int i = 0; i < out_width; i++, inp++, outp += ch)
     {
+      if(i >= in_width) continue;
       outp[0] = outp[1] = outp[2] = *inp;
     }
   }
@@ -757,27 +759,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  float *edge = NULL;
-  float *gradient = NULL;
+  float *edge_value = NULL;
+  float *edge_gradient = NULL;
 
   // allocate intermediate buffers
-  edge = malloc((size_t)width * height * sizeof(float));
-  if(edge == NULL) goto error;
+  edge_value = malloc((size_t)width * height * sizeof(float));
+  if(edge_value == NULL) goto error;
 
-  gradient = malloc((size_t)width * height * sizeof(float));
-  if(gradient == NULL) goto error;
+  edge_gradient = malloc((size_t)width * height * sizeof(float));
+  if(edge_gradient == NULL) goto error;
 
-  if(!edge_detect((float *)ivoid, edge, gradient, width, height)) goto error;
+  // detect edges by their values and gradients
+  if(!edge_detect((float *)ivoid, edge_value, edge_gradient, width, height)) goto error;
 
-  grey2rgb(edge, (float *)ovoid, width, height);
+  grey2rgb(edge_value, (float *)ovoid, roi_out->width, roi_out->height, width, height);
 
-  free(edge);
-  free(gradient);
+  free(edge_value);
+  free(edge_gradient);
   return;
 
 error:
-  if(edge) free(edge);
-  if(gradient) free(gradient);
+  if(edge_value) free(edge_value);
+  if(edge_gradient) free(edge_gradient);
 }
 #endif
 
