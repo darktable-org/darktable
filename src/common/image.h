@@ -65,7 +65,9 @@ typedef enum
   // image has an associated .txt file for overlay
   DT_IMAGE_HAS_TXT = 4096,
   // image has an associated wav file
-  DT_IMAGE_HAS_WAV = 8192
+  DT_IMAGE_HAS_WAV = 8192,
+  // image is a bayer pattern with 4 colors (e.g., CYGM or RGBE)
+  DT_IMAGE_4BAYER = 16384,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
@@ -179,7 +181,7 @@ typedef struct dt_image_t
   uint8_t xtrans[6][6];
 
   /* White balance coeffs from the raw */
-  float wb_coeffs[3];
+  float wb_coeffs[4];
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;

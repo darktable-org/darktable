@@ -24,6 +24,7 @@
 #include "common/debug.h"
 #include "common/srgb_tone_curve_values.h"
 #include "develop/imageop.h"
+#include "external/adobe_coeff.c"
 
 #ifdef USE_COLORDGTK
 #include "colord-gtk.h"
@@ -1626,6 +1627,191 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_
                                                                  dt_colorspaces_profile_direction_t direction)
 {
   return _get_profile(darktable.color_profiles, type, filename, direction);
+}
+
+// Copied from dcraw's pseudoinverse()
+static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
+{
+  double work[3][6], num;
+
+  for(int i = 0; i < 3; i++) {
+    for(int j = 0; j < 6; j++)
+      work[i][j] = j == i+3;
+    for(int j = 0; j < 3; j++)
+      for(int k = 0; k < size; k++)
+        work[i][j] += in[k][i] * in[k][j];
+  }
+  for(int i = 0; i < 3; i++) {
+    num = work[i][i];
+    for(int j = 0; j < 6; j++)
+      work[i][j] /= num;
+    for(int k = 0; k < 3; k++) {
+      if(k==i) continue;
+      num = work[k][i];
+      for(int j = 0; j < 6; j++)
+        work[k][j] -= work[i][j] * num;
+    }
+  }
+  for(int i = 0; i < size; i++)
+    for(int j = 0; j < 3; j++)
+    {
+      out[i][j] = 0.0f;
+      for(int k = 0; k < 3; k++)
+        out[i][j] += work[j][k+3] * in[i][k];
+    }
+}
+
+int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4])
+{
+  if(!isnan(in_XYZ_to_CAM[0]))
+  {
+    for(int i = 0; i < 9; i++)
+        XYZ_to_CAM[i/3][i%3] = (double) in_XYZ_to_CAM[i];
+    for(int i = 0; i < 3; i++)
+      XYZ_to_CAM[3][i] = 0.0f;
+  }
+  else
+  {
+    float adobe_XYZ_to_CAM[4][3];
+    adobe_XYZ_to_CAM[0][0] = NAN;
+
+    dt_dcraw_adobe_coeff(name, (float(*)[12])adobe_XYZ_to_CAM);
+    if(isnan(adobe_XYZ_to_CAM[0][0]))
+      return FALSE;
+
+    for(int i = 0; i < 4; i++)
+      for(int j = 0; j < 3; j++)
+        XYZ_to_CAM[i][j] = (double) adobe_XYZ_to_CAM[i][j];
+  }
+
+  // Invert the matrix
+  double inverse[4][3];
+  dt_colorspaces_pseudoinverse (XYZ_to_CAM, inverse, 4);
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 4; j++)
+      CAM_to_XYZ[i][j] = inverse[j][i];
+
+  return TRUE;
+}
+
+// Converted from dcraw's cam_xyz_coeff()
+int dt_colorspaces_conversion_matrices_rgb(const char *name, double out_RGB_to_CAM[4][3], double out_CAM_to_RGB[3][4], double mul[4])
+{
+  double RGB_to_CAM[4][3];
+
+  float XYZ_to_CAM[4][3];
+  XYZ_to_CAM[0][0] = NAN;
+  dt_dcraw_adobe_coeff(name, (float(*)[12])XYZ_to_CAM);
+  if(isnan(XYZ_to_CAM[0][0]))
+    return FALSE;
+
+  const double RGB_to_XYZ[3][3] = {
+  // sRGB D65
+    { 0.412453, 0.357580, 0.180423 },
+    { 0.212671, 0.715160, 0.072169 },
+    { 0.019334, 0.119193, 0.950227 },
+  };
+
+  // Multiply RGB matrix
+  for(int i = 0; i < 4; i++)
+    for(int j = 0; j < 3; j++)
+    {
+      RGB_to_CAM[i][j] = 0.0f;
+      for(int k = 0; k < 3; k++)
+        RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
+    }
+
+  // Normalize cam_rgb so that cam_rgb * (1,1,1) is (1,1,1,1)
+  for(int i = 0; i < 4; i++) {
+    double num = 0.0f;
+    for(int j = 0; j < 3; j++)
+      num += RGB_to_CAM[i][j];
+    for(int j = 0; j < 3; j++)
+       RGB_to_CAM[i][j] /= num;
+    if(mul) mul[i] = 1.0f / num;
+  }
+
+  if(out_RGB_to_CAM)
+    for(int i = 0; i < 4; i++)
+      for(int j = 0; j < 3; j++)
+        out_RGB_to_CAM[i][j] = RGB_to_CAM[i][j];
+
+  if(out_CAM_to_RGB)
+  {
+    // Invert the matrix
+    double inverse[4][3];
+    dt_colorspaces_pseudoinverse (RGB_to_CAM, inverse, 4);
+    for(int i = 0; i < 3; i++)
+      for(int j = 0; j < 4; j++)
+        out_CAM_to_RGB[i][j] = inverse[j][i];
+  }
+
+  return TRUE;
+}
+
+void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int num, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], float coeffs[4])
+{
+  // Create the CAM to RGB with applied WB matrix
+  double CAM_to_RGB_WB[3][4];
+  for (int a=0; a<3; a++)
+    for (int b=0; b<4; b++)
+      CAM_to_RGB_WB[a][b] = CAM_to_RGB[a][b] * coeffs[b];
+
+  // Create the RGB->RGB+WB matrix
+  double RGB_to_RGB_WB[3][3];
+  for (int a=0; a<3; a++)
+    for (int b=0; b<3; b++) {
+      RGB_to_RGB_WB[a][b] = 0.0f;
+      for (int c=0; c<4; c++)
+        RGB_to_RGB_WB[a][b] += CAM_to_RGB_WB[a][c] * RGB_to_CAM[c][b];
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(in, out, num, RGB_to_RGB_WB) schedule(static)
+#endif
+  for(int i = 0; i < num; i++)
+  {
+    const float *inpos = &in[i*4];
+    float *outpos = &out[i*4];
+    outpos[0]=outpos[1]=outpos[2] = 0.0f;
+    for (int a=0; a<3; a++)
+      for (int b=0; b<3; b++)
+        outpos[a] += RGB_to_RGB_WB[a][b] * inpos[b];
+  }
+}
+
+void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4])
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out, num, CAM_to_RGB) schedule(static)
+#endif
+  for(int i = 0; i < num; i++)
+  {
+    float *in = &out[i*4];
+    float o[3] = {0.0f,0.0f,0.0f};
+    for(int c = 0; c < 3; c++)
+      for(int k = 0; k < 4; k++)
+        o[c] += CAM_to_RGB[c][k] * in[k];
+    for(int c = 0; c < 3; c++)
+      in[c] = o[c];
+  }
+}
+
+void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3])
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out, num, RGB_to_CAM) schedule(static)
+#endif
+  for(int i = 0; i < num; i++)
+  {
+    float *in = &out[i*3];
+    float o[4] = {0.0f,0.0f,0.0f,0.0f};
+    for(int c = 0; c < 4; c++)
+      for(int k = 0; k < 3; k++)
+        o[c] += RGB_to_CAM[c][k] * in[k];
+    for(int c = 0; c < 4; c++)
+      in[c] = o[c];
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

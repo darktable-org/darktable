@@ -24,6 +24,7 @@
 #include "gui/gtk.h"
 #include "common/darktable.h"
 #include "common/interpolation.h"
+#include "common/colorspaces.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
@@ -128,6 +129,7 @@ typedef struct dt_iop_demosaic_data_t
   uint32_t demosaicing_method;
   uint32_t yet_unused_data_specific_to_demosaicing_method;
   float median_thrs;
+  double CAM_to_RGB[3][4];
 } dt_iop_demosaic_data_t;
 
 static void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -1081,9 +1083,9 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
   const int pcol = (filters == 9) ? 6 : 2;
   const int colors = (filters == 9) ? 3 : 4;
 
-  // separate out G1 and G2 in Bayer patterns
-  unsigned int filters4;
-  if(filters == 9)
+  // separate out G1 and G2 in RGGB Bayer patterns
+  unsigned int filters4 = filters;
+  if(filters == 9 || filters == 0xb4b4b4b4 || filters == 0x9c9c9c9c) // x-trans or CYGM
     filters4 = filters;
   else if((filters & 3) == 1)
     filters4 = filters | 0x03030303u;
@@ -1210,14 +1212,13 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
   memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
   free(buffer);
 
-  if(filters4 != 9)
+  if(filters != 9 && filters != 0xb4b4b4b4 && filters != 0x9c9c9c9c) // x-trans or CYGM or RGBE
 // for Bayer mix the two greens to make VNG4
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
     for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
 }
-
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
@@ -1560,7 +1561,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
       piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
       uhq_thumb ||
-      roi_out->scale > (data->filters == 9u ? 0.333f : 0.5f);
+      roi_out->scale > (data->filters == 9u ? 0.333f : 0.5f) ||
+      (img->flags & DT_IMAGE_4BAYER); // half_size_f doesn't support 4bayer images
 
   // we check if we can stop at the linear interpolation step in VNG
   // instead of going the full way
@@ -1606,7 +1608,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     {
       float *in = (float *)pixels;
 
-      if(data->green_eq != DT_IOP_GREEN_EQ_NO)
+      if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO)
       {
         in = (float *)dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
         switch(data->green_eq)
@@ -1630,15 +1632,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
       if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
         passthrough_monochrome(tmp, in, &roo, &roi);
-      else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
+      else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
+      {
         vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
+        if (img->flags & DT_IMAGE_4BAYER)
+          dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, data->CAM_to_RGB);
+      }
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters,
                      data->median_thrs); // wanted ppg or zoomed out a lot and quality is limited to 1
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
 
-      if(data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
+      if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
     }
 
     if(scaled)
@@ -3530,6 +3536,20 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   // OpenCL can not green-equilibrate over full image.
   if(d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH) piece->process_cl_ready = 0;
+
+  if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  {
+    // 4Bayer images not implemented in OpenCL yet
+    piece->process_cl_ready = 0;
+
+    // Get and store the matrix to go from camera to RGB for 4Bayer images
+    char *camera = self->dev->image_storage.camera_makermodel;
+    if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, d->CAM_to_RGB, NULL))
+    {
+      fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_control_log(_("[colorspaces] `%s' color matrix not found for 4bayer image!\n"), camera);
+    }
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

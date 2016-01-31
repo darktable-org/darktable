@@ -73,7 +73,7 @@ public:
   double pixelAspectRatio;
 
   // White balance coefficients of the image
-  float wbCoeffs[3];
+  float wbCoeffs[4];
 
   // How many pixels far down the left edge and far up the right edge the image 
   // corners are when the image is rotated 45 degrees in Fuji rotated sensors.

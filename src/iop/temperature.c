@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2013 johannes hanika.
     copyright (c) 2015 LebedevRI.
+    copyright (c) 2016 Pedro Côrte-Real
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,11 +39,10 @@
 #include "bauhaus/bauhaus.h"
 
 // for Kelvin temperature and bogus WB
-#include "external/adobe_coeff.c"
 #include "external/cie_colorimetric_tables.c"
 #include "common/colorspaces.h"
 
-DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 
 #define INITIALBLACKBODYTEMPERATURE 4000
 
@@ -54,26 +54,29 @@ DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
 
 #define DT_IOP_NUM_OF_STD_TEMP_PRESETS 3
 
+static void gui_sliders_update(struct dt_iop_module_t *self);
+
 typedef struct dt_iop_temperature_params_t
 {
-  float temp_out;
-  float coeffs[3];
+  float coeffs[4];
 } dt_iop_temperature_params_t;
 
 typedef struct dt_iop_temperature_gui_data_t
 {
-  GtkWidget *scale_k, *scale_tint, *scale_r, *scale_g, *scale_b;
+  GtkWidget *scale_k, *scale_tint, *coeff_widgets, *scale_r, *scale_g, *scale_b, *scale_g2;
   GtkWidget *presets;
   GtkWidget *finetune;
   int preset_cnt;
   int preset_num[50];
-  double daylight_wb[3];
-  double XYZ_to_CAM[3][3], CAM_to_XYZ[3][3];
+  double daylight_wb[4];
+  double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
+  double RGB_to_CAM[4][3];
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
 {
-  float coeffs[3];
+  float coeffs[4];
+  double RGB_to_CAM[4][3], CAM_to_RGB[3][4];
 } dt_iop_temperature_data_t;
 
 
@@ -82,6 +85,30 @@ typedef struct dt_iop_temperature_global_data_t
   int kernel_whitebalance_4f;
   int kernel_whitebalance_1f;
 } dt_iop_temperature_global_data_t;
+
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
+{
+  if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_temperature_params_v2_t
+    {
+      float temp_out;
+      float coeffs[3];
+    } dt_iop_temperature_params_v2_t;
+
+    dt_iop_temperature_params_v2_t *o = (dt_iop_temperature_params_v2_t *)old_params;
+    dt_iop_temperature_params_t *n = (dt_iop_temperature_params_t *)new_params;
+
+    n->coeffs[0] = o->coeffs[0];
+    n->coeffs[1] = o->coeffs[1];
+    n->coeffs[2] = o->coeffs[2];
+    n->coeffs[3] = NAN;
+
+    return 0;
+  }
+  return 1;
+}
 
 static int ignore_missing_wb(dt_image_t *img)
 {
@@ -104,6 +131,8 @@ static int ignore_missing_wb(dt_image_t *img)
     "Kodak EOS DCS 1",
     "Kodak DCS560C",
     "Kodak DCS460D",
+    "Nikon E5700",
+    "Sony DSC-F828",
   };
 
   for(int i=0; i < sizeof(ignored_cameras)/sizeof(ignored_cameras[1]); i++)
@@ -147,6 +176,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_r));
   dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
+  dt_accel_connect_slider_iop(self, "green2", GTK_WIDGET(g->scale_g2));
 }
 
 
@@ -297,7 +327,7 @@ static void XYZ_to_temperature(cmsCIEXYZ XYZ, double *TempK, double *tint)
   if(*tint > DT_IOP_HIGHEST_TINT) *tint = DT_IOP_HIGHEST_TINT;
 }
 
-static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mul[3])
+static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mul[4])
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
@@ -305,8 +335,8 @@ static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mu
 
   double XYZ[3] = { _xyz.X, _xyz.Y / tint, _xyz.Z };
 
-  double CAM[3];
-  for(int k = 0; k < 3; k++)
+  double CAM[4];
+  for(int k = 0; k < 4; k++)
   {
     CAM[k] = 0.0;
     for(int i = 0; i < 3; i++)
@@ -315,21 +345,21 @@ static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mu
     }
   }
 
-  for(int k = 0; k < 3; k++) mul[k] = 1.0 / CAM[k];
+  for(int k = 0; k < 4; k++) mul[k] = 1.0 / CAM[k];
 }
 
-static void mul2temp(dt_iop_module_t *self, float coeffs[3], double *TempK, double *tint)
+static void mul2temp(dt_iop_module_t *self, float coeffs[4], double *TempK, double *tint)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
-  double CAM[3];
-  for(int k = 0; k < 3; k++) CAM[k] = 1.0 / coeffs[k];
+  double CAM[4];
+  for(int k = 0; k < 4; k++) coeffs[k] > 0.0f ? CAM[k] = 1.0 / coeffs[k] : 0.0f;
 
   double XYZ[3];
   for(int k = 0; k < 3; k++)
   {
     XYZ[k] = 0.0;
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++)
     {
       XYZ[k] += g->CAM_to_XYZ[k][i] * CAM[i];
     }
@@ -368,6 +398,7 @@ static uint8_t FCxtrans(const int row, const int col, const dt_iop_roi_t *const 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  const dt_image_t *img = &self->dev->image_storage;
   const int filters = dt_image_filter(&piece->pipe->image);
   uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
@@ -450,6 +481,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
 #endif
+  else if(img->flags & DT_IMAGE_4BAYER)
+  { // non-mosaiced CYGM/RGBE image
+    dt_colorspaces_cygm_apply_coeffs_to_rgb(((float *)ovoid), ((float *)ivoid),
+                                            roi_out->width*roi_out->height,
+                                            d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
+  }
   else
   { // non-mosaiced
     const int ch = piece->colors;
@@ -548,7 +585,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  for(int k = 0; k < 3; k++) d->coeffs[k] = p->coeffs[k];
+  for(int k = 0; k < 4; k++) d->coeffs[k] = p->coeffs[k];
 
   if(dt_image_filter(&piece->pipe->image) && dt_dev_pixelpipe_uses_downsampled_input(piece->pipe)
      && pipe->pre_monochrome_demosaiced)
@@ -559,6 +596,20 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
+
+  if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  {
+    // 4Bayer images not implemented in OpenCL yet
+    piece->process_cl_ready = 0;
+
+    // Get and store the matrix to go from camera to RGB for 4Bayer images
+    char *camera = self->dev->image_storage.camera_makermodel;
+    if (!dt_colorspaces_conversion_matrices_rgb(camera, d->RGB_to_CAM, d->CAM_to_RGB, NULL))
+    {
+      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
+    }
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -590,8 +641,11 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
   dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
+  dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
   dt_bauhaus_slider_set(g->scale_k, TempK);
   dt_bauhaus_slider_set(g->scale_tint, tint);
+
+  gui_sliders_update(self);
 
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera"));
@@ -716,57 +770,26 @@ void gui_update(struct dt_iop_module_t *self)
   }
 }
 
-static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[3])
+static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
 {
   if(!dt_image_is_raw(&module->dev->image_storage))
   {
     bwb[0] = 1.0;
     bwb[2] = 1.0;
     bwb[1] = 1.0;
+    bwb[3] = 1.0;
 
     return 0;
   }
 
-  // color matrix
-  float XYZ_to_CAM[4][3];
-  XYZ_to_CAM[0][0] = NAN;
-  dt_dcraw_adobe_coeff(module->dev->image_storage.camera_makermodel, (float(*)[12])XYZ_to_CAM);
-  if(!isnan(XYZ_to_CAM[0][0]))
+  double mul[4];
+  if (dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, mul))
   {
-    // sRGB D65
-    const double RGB_to_XYZ[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
-                                      { 0.2126729, 0.7151522, 0.0721750 },
-                                      { 0.0193339, 0.1191920, 0.9503041 } };
-
-    double RGB_to_CAM[3][3];
-    for(int i = 0; i < 3; i++)
-    {
-      for(int j = 0; j < 3; j++)
-      {
-        RGB_to_CAM[i][j] = 0.0;
-        for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
-      }
-    }
-
-    const double RGB[3] = { 1.0, 1.0, 1.0 };
-
-    double CAM[3];
-    for(int c = 0; c < 3; c++)
-    {
-      CAM[c] = 0.0;
-      for(int i = 0; i < 3; i++)
-      {
-        CAM[c] += RGB_to_CAM[c][i] * RGB[i];
-      }
-    }
-
-    double mul[3];
-    for(int k = 0; k < 3; k++) mul[k] = 1.0 / CAM[k];
-
     // normalize green:
     bwb[0] = mul[0] / mul[1];
     bwb[2] = mul[2] / mul[1];
     bwb[1] = 1.0;
+    bwb[3] = mul[3] / mul[1];
 
     return 0;
   }
@@ -774,67 +797,57 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[3])
   return 1;
 }
 
-static int prepare_wb_matrices(dt_iop_module_t *module)
+static void prepare_matrices(dt_iop_module_t *module)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
 
   // sRGB D65
-  const double RGB_to_XYZ[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
-                                    { 0.2126729, 0.7151522, 0.0721750 },
-                                    { 0.0193339, 0.1191920, 0.9503041 } };
+  const double RGB_to_XYZ[3][4] = { { 0.4124564, 0.3575761, 0.1804375, 0 },
+                                    { 0.2126729, 0.7151522, 0.0721750, 0 },
+                                    { 0.0193339, 0.1191920, 0.9503041, 0 } };
 
   // sRGB D65
-  const double XYZ_to_RGB[3][3] = { { 3.2404542, -1.5371385, -0.4985314 },
+  const double XYZ_to_RGB[4][3] = { { 3.2404542, -1.5371385, -0.4985314 },
                                     { -0.9692660, 1.8760108, 0.0415560 },
-                                    { 0.0556434, -0.2040259, 1.0572252 } };
+                                    { 0.0556434, -0.2040259, 1.0572252 },
+                                    { 0, 0, 0 } };
 
   if(!dt_image_is_raw(&module->dev->image_storage))
   {
     // let's just assume for now(TM) that if it is not raw, it is sRGB
     memcpy(g->XYZ_to_CAM, XYZ_to_RGB, sizeof(g->XYZ_to_CAM));
     memcpy(g->CAM_to_XYZ, RGB_to_XYZ, sizeof(g->CAM_to_XYZ));
-
-    return 0;
+    return;
   }
 
-  // prepare matrices for Kelvin temperature
-  float XYZ_to_CAM[4][3] = {{0}};
-  XYZ_to_CAM[0][0] = NAN;
-
-  if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
-    for(int i = 0; i < 9; i++)
-      XYZ_to_CAM[i/3][i%3] = module->dev->image_storage.d65_color_matrix[i];
-  else
-    dt_dcraw_adobe_coeff(module->dev->image_storage.camera_makermodel, (float(*)[12])XYZ_to_CAM);
-
-  if(!isnan(XYZ_to_CAM[0][0]))
+  char *camera = module->dev->image_storage.camera_makermodel;
+  if (!dt_colorspaces_conversion_matrices_xyz(camera, module->dev->image_storage.d65_color_matrix,
+                                                      g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
-    for(int i = 0; i < 3; i++)
-    {
-      for(int j = 0; j < 3; j++)
-      {
-        g->XYZ_to_CAM[i][j] = (double)XYZ_to_CAM[i][j];
-      }
-    }
-
-    // and inverse matrix
-    mat3inv_double((double *)g->CAM_to_XYZ, (double *)g->XYZ_to_CAM);
-
-    return 0;
+    fprintf(stderr, "[temperature] `%s' color matrix not found for image!\n", camera);
+    dt_control_log(_("[temperature] `%s' color matrix not found for image!\n"), camera);
   }
 
-  return 1;
+  if (module->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  {
+    // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
+    if (!dt_colorspaces_conversion_matrices_rgb(camera, g->RGB_to_CAM, NULL, NULL))
+    {
+      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
+    }
+  }
 }
 
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_temperature_params_t tmp
-      = (dt_iop_temperature_params_t){.temp_out = 5000.0, .coeffs = { 1.0, 1.0, 1.0 } };
+      = (dt_iop_temperature_params_t){.coeffs = { 1.0, 1.0, 1.0, 1.0 } };
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
-  if(module->gui_data) prepare_wb_matrices(module);
+  if(module->gui_data) prepare_matrices(module);
 
   /* check if file is raw / hdr */
   if(dt_image_is_raw(&module->dev->image_storage))
@@ -844,9 +857,11 @@ void reload_defaults(dt_iop_module_t *module)
 
     int found = 1;
 
-    for(int k = 0; k < 3; k++)
+    // Only check the first three values, the fourth is usually NAN for RGB
+    int num_coeffs = (module->dev->image_storage.flags & DT_IMAGE_4BAYER) ? 4 : 3;
+    for(int k = 0; k < num_coeffs; k++)
     {
-      if(isnan(module->dev->image_storage.wb_coeffs[k]) || module->dev->image_storage.wb_coeffs[k] == 0.0f)
+      if(!isnormal(module->dev->image_storage.wb_coeffs[k]) || module->dev->image_storage.wb_coeffs[k] == 0.0f)
       {
         found = 0;
         break;
@@ -855,7 +870,7 @@ void reload_defaults(dt_iop_module_t *module)
 
     if(found)
     {
-      for(int k = 0; k < 3; k++) tmp.coeffs[k] = module->dev->image_storage.wb_coeffs[k];
+      for(int k = 0; k < 4; k++) tmp.coeffs[k] = module->dev->image_storage.wb_coeffs[k];
     }
     else
     {
@@ -879,11 +894,11 @@ void reload_defaults(dt_iop_module_t *module)
 
     if(!found)
     {
-      double bwb[3];
+      double bwb[4];
       if(!calculate_bogus_daylight_wb(module, bwb))
       {
         // found camera matrix and used it to calculate bogus daylight wb
-        for(int c = 0; c < 3; c++) tmp.coeffs[c] = bwb[c];
+        for(int c = 0; c < 4; c++) tmp.coeffs[c] = bwb[c];
         found = 1;
       }
     }
@@ -911,10 +926,12 @@ void reload_defaults(dt_iop_module_t *module)
       tmp.coeffs[0] = 2.0f;
       tmp.coeffs[1] = 1.0f;
       tmp.coeffs[2] = 1.5f;
+      tmp.coeffs[3] = 1.0f;
     }
 
     tmp.coeffs[0] /= tmp.coeffs[1];
     tmp.coeffs[2] /= tmp.coeffs[1];
+    tmp.coeffs[3] /= tmp.coeffs[1];
     tmp.coeffs[1] = 1.0f;
   }
 
@@ -928,9 +945,10 @@ gui:
     dt_bauhaus_slider_set_default(g->scale_r, tmp.coeffs[0]);
     dt_bauhaus_slider_set_default(g->scale_g, tmp.coeffs[1]);
     dt_bauhaus_slider_set_default(g->scale_b, tmp.coeffs[2]);
+    dt_bauhaus_slider_set_default(g->scale_g2, tmp.coeffs[3]);
 
     // to have at least something and definitely not crash
-    for(int c = 0; c < 3; c++) g->daylight_wb[c] = tmp.coeffs[c];
+    for(int c = 0; c < 4; c++) g->daylight_wb[c] = tmp.coeffs[c];
 
     if(!calculate_bogus_daylight_wb(module, g->daylight_wb))
     {
@@ -946,7 +964,7 @@ gui:
            && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model)
            && !strcmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
         {
-          for(int k = 0; k < 3; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
+          for(int k = 0; k < 4; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
           break;
         }
       }
@@ -1012,6 +1030,7 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
   dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
+  dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
   darktable.gui->reset = 0;
 }
 
@@ -1033,6 +1052,15 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   p->coeffs[2] /= p->coeffs[1];
   p->coeffs[1] = 1.0;
   for(int k = 0; k < 3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
+
+  // If we're in a CMYG image we need to create CMYG coeffs from the RGB ones
+  const dt_image_t *img = &self->dev->image_storage;
+  if (img->flags & DT_IMAGE_4BAYER)
+  {
+    dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+    dt_colorspaces_rgb_to_cygm(p->coeffs, 1, g->RGB_to_CAM);
+  }
+
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
@@ -1046,20 +1074,22 @@ static void temp_changed(dt_iop_module_t *self)
   const double TempK = dt_bauhaus_slider_get(g->scale_k);
   const double tint = dt_bauhaus_slider_get(g->scale_tint);
 
-  double rgb[3];
-  temp2mul(self, TempK, tint, rgb);
+  double coeffs[4];
+  temp2mul(self, TempK, tint, coeffs);
 
   // normalize
-  rgb[0] /= rgb[1];
-  rgb[2] /= rgb[1];
-  rgb[1] = 1.0;
+  coeffs[0] /= coeffs[1];
+  coeffs[2] /= coeffs[1];
+  coeffs[3] /= coeffs[1];
+  coeffs[1] = 1.0;
 
-  for(int c = 0; c < 3; c++) p->coeffs[c] = rgb[c];
+  for(int c = 0; c < 4; c++) p->coeffs[c] = coeffs[c];
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
   dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
+  dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
   darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1095,6 +1125,8 @@ static void rgb_callback(GtkWidget *slider, gpointer user_data)
     p->coeffs[1] = value;
   else if(slider == g->scale_b)
     p->coeffs[2] = value;
+  else if(slider == g->scale_g2)
+    p->coeffs[3] = value;
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1115,13 +1147,13 @@ static void apply_preset(dt_iop_module_t *self)
     case -1: // just un-setting.
       return;
     case 0: // camera wb
-      for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
+      for(int k = 0; k < 4; k++) p->coeffs[k] = fp->coeffs[k];
       break;
     case 1: // camera neutral wb
-      for(int k = 0; k < 3; k++) p->coeffs[k] = g->daylight_wb[k];
+      for(int k = 0; k < 4; k++) p->coeffs[k] = g->daylight_wb[k];
       break;
     case 2: // spot wb, expose callback will set p->coeffs.
-      for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
+      for(int k = 0; k < 4; k++) p->coeffs[k] = fp->coeffs[k];
       dt_iop_request_focus(self);
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
 
@@ -1143,7 +1175,7 @@ static void apply_preset(dt_iop_module_t *self)
         if(wb_preset[i].tuning == tune)
         {
           // got exact match!
-          for(int k = 0; k < 3; k++) p->coeffs[k] = wb_preset[i].channel[k];
+          for(int k = 0; k < 4; k++) p->coeffs[k] = wb_preset[i].channel[k];
           found = TRUE;
           break;
         }
@@ -1178,7 +1210,7 @@ static void apply_preset(dt_iop_module_t *self)
 
         wb_data interpolated = {.tuning = tune };
         dt_wb_preset_interpolate(&wb_preset[min_id], &wb_preset[max_id], &interpolated);
-        for(int k = 0; k < 3; k++) p->coeffs[k] = interpolated.channel[k];
+        for(int k = 0; k < 4; k++) p->coeffs[k] = interpolated.channel[k];
       }
     }
     break;
@@ -1202,6 +1234,38 @@ static void finetune_changed(GtkWidget *widget, gpointer user_data)
   apply_preset((dt_iop_module_t *)user_data);
 }
 
+static void gui_sliders_update(struct dt_iop_module_t *self)
+{
+  const dt_image_t *img = &self->dev->image_storage;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  if((img->flags & DT_IMAGE_4BAYER) && img->filters == 0xb4b4b4b4)
+  {
+    dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
+    dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));
+    dt_bauhaus_widget_set_label(g->scale_b, NULL, _("cyan"));
+    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("yellow"));
+
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_b, 0);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g2, 1);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g, 2);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_r, 3);
+  }
+  else
+  {
+    dt_bauhaus_widget_set_label(g->scale_r, NULL, _("red"));
+    dt_bauhaus_widget_set_label(g->scale_g, NULL, _("green"));
+    dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue"));
+    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("emerald"));
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_r, 0);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g, 1);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_b, 2);
+    gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_g2, 3);
+  }
+
+  gtk_widget_set_visible(GTK_WIDGET(g->scale_g2), (img->flags & DT_IMAGE_4BAYER));
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
@@ -1212,27 +1276,32 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
-  for(int k = 0; k < 3; k++) g->daylight_wb[k] = 1.0;
+  for(int k = 0; k < 4; k++) g->daylight_wb[k] = 1.0;
   g->scale_tint
       = dt_bauhaus_slider_new_with_range(self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT, .01, 1.0, 3);
   g->scale_k = dt_bauhaus_slider_new_with_range(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
                                                 10., 5000.0, 0);
+
+  g->coeff_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->scale_r = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[0], 3);
   g->scale_g = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[1], 3);
   g->scale_b = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[2], 3);
+  g->scale_g2 = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[3], 3);
+
   dt_bauhaus_slider_set_format(g->scale_k, "%.0fK");
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
   dt_bauhaus_widget_set_label(g->scale_k, NULL, _("temperature"));
-  dt_bauhaus_widget_set_label(g->scale_r, NULL, _("red"));
-  dt_bauhaus_widget_set_label(g->scale_g, NULL, _("green"));
-  dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_tint, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_k, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_r, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_b, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->coeff_widgets, TRUE, TRUE, 0);
+  gtk_widget_set_no_show_all(g->scale_g2, TRUE);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_r, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_g, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
+  gui_sliders_update(self);
 
   g->presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->presets, NULL, _("preset"));
@@ -1255,8 +1324,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->scale_r), "value-changed", G_CALLBACK(rgb_callback), self);
   g_signal_connect(G_OBJECT(g->scale_g), "value-changed", G_CALLBACK(rgb_callback), self);
   g_signal_connect(G_OBJECT(g->scale_b), "value-changed", G_CALLBACK(rgb_callback), self);
+  g_signal_connect(G_OBJECT(g->scale_g2), "value-changed", G_CALLBACK(rgb_callback), self);
   g_signal_connect(G_OBJECT(g->presets), "value-changed", G_CALLBACK(presets_changed), self);
   g_signal_connect(G_OBJECT(g->finetune), "value-changed", G_CALLBACK(finetune_changed), self);
+}
+
+void gui_reset(struct dt_iop_module_t *self)
+{
+  gui_sliders_update(self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

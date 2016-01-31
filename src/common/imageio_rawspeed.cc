@@ -234,7 +234,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     m.reset();
 
     // Grab the WB
-    for(int i = 0; i < 3; i++) img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
+    for(int i = 0; i < 4; i++) img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
     img->filters = 0u;
     if(!r->isCFA)
@@ -245,6 +245,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     img->bpp = r->getBpp();
     img->filters = r->cfa.getDcrawFilter();
+    if (img->filters == 0xb4b4b4b4 || img->filters == 0x9c9c9c9c)
+      img->flags |= DT_IMAGE_4BAYER;
     if(img->filters)
     {
       img->flags &= ~DT_IMAGE_LDR;

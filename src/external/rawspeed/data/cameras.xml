@@ -1039,10 +1039,10 @@
 	<Camera make="Canon" model="Canon PowerShot G1">
 		<ID make="Canon" model="PowerShot G1">Canon PowerShot G1</ID>
 		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
+			<Color x="0" y="0">FUJI_GREEN</Color>
+			<Color x="1" y="0">MAGENTA</Color>
+			<Color x="0" y="1">YELLOW</Color>
+			<Color x="1" y="1">CYAN</Color>
 		</CFA>
 		<Crop x="4" y="8" width="-52" height="-2"/>
 		<Sensor black="31" white="1023"/>
@@ -2419,10 +2419,10 @@
 	<Camera make="NIKON" model="E5700" decoder_version="4">
 		<ID make="Nikon" model="E5700">Nikon E5700</ID>
 		<CFA width="2" height="2">
-			<Color x="0" y="0">BLUE</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">RED</Color>
+			<Color x="0" y="0">FUJI_GREEN</Color>
+			<Color x="1" y="0">MAGENTA</Color>
+			<Color x="0" y="1">YELLOW</Color>
+			<Color x="1" y="1">CYAN</Color>
 		</CFA>
 		<Crop x="0" y="0" width="2576" height="1924"/>
 		<Sensor black="0" white="4095"/>
@@ -7241,6 +7241,20 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
+	</Camera>
+	<Camera make="SONY" model="DSC-F828">
+		<ID make="Sony" model="DSC-F828">Sony DSC-F828</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">YELLOW</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="5" y="0" width="-67" height="0"/>
+		<Sensor black="495" white="16383"/>
+		<Hints>
+			<Hint name="srf_format" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="SONY" model="DSC-R1">
 		<ID make="Sony" model="DSC-R1">Sony DSC-R1</ID>

@@ -1010,6 +1010,7 @@ void dt_image_init(dt_image_t *img)
   img->wb_coeffs[0] = NAN;
   img->wb_coeffs[1] = NAN;
   img->wb_coeffs[2] = NAN;
+  img->wb_coeffs[3] = NAN;
   img->cache_entry = 0;
 }
 

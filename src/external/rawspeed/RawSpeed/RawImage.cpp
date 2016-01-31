@@ -63,6 +63,7 @@ ImageMetaData::ImageMetaData(void) {
   wbCoeffs[0] = NAN;
   wbCoeffs[1] = NAN;
   wbCoeffs[2] = NAN;
+  wbCoeffs[3] = NAN;
 }
 
 RawImageData::~RawImageData(void) {
