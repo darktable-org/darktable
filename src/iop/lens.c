@@ -947,10 +947,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     p = (dt_iop_lensfun_params_t *)self->default_params;
   }
 
-#ifdef HAVE_GEGL
-// pull in new params to gegl
-#error "lensfun needs to be ported to GEGL!"
-#else
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
 
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
@@ -1022,25 +1018,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     d->do_nan_checks = FALSE;
   }
-#endif
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-#error "lensfun needs to be ported to GEGL!"
-#else
   piece->data = calloc(1, sizeof(dt_iop_lensfun_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-#error "lensfun needs to be ported to GEGL!"
-#else
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+
   if(d->lens)
   {
     lf_lens_destroy(d->lens);
@@ -1048,7 +1037,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   }
   free(piece->data);
   piece->data = NULL;
-#endif
 }
 
 void init_global(dt_iop_module_so_t *module)

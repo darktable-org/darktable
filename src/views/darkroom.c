@@ -1677,7 +1677,7 @@ void enter(dt_view_t *self)
   /* signal that darktable.develop is initialized and ready to be used */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
 
-  // synch gui and flag gegl pipe as dirty
+  // synch gui and flag pipe as dirty
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
   dt_dev_pop_history_items(dev, dev->history_end);
 

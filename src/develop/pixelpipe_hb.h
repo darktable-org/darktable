@@ -27,7 +27,6 @@
 
 /**
  * struct used by iop modules to connect to pixelpipe.
- * input and output nodes will be connected to gegl graph.
  * data can be used to store whatever private data and
  * will be freed at the end.
  */
@@ -76,7 +75,7 @@ typedef enum dt_dev_pixelpipe_change_t
 } dt_dev_pixelpipe_change_t;
 
 /**
- * this encapsulates the gegl pixel pipeline.
+ * this encapsulates the pixelpipe.
  * a develop module will need several of these:
  * for previews and full blits to cairo and for
  * the export function.
@@ -97,7 +96,7 @@ typedef struct dt_dev_pixelpipe_t
   int processed_width, processed_height;
   // sensor saturation, propagated through the operations:
   float processed_maximum[3];
-  // gegl instances of pixel pipeline, stored in GList of dt_dev_pixelpipe_iop_t
+  // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
   // event flag
   dt_dev_pixelpipe_change_t changed;
@@ -148,7 +147,7 @@ int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int
 int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
 int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries);
-// constructs a new input gegl_buffer from given RGB float array.
+// constructs a new input buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
                                 int height, float iscale, int pre_monochrome_demosaiced);
 
@@ -165,13 +164,13 @@ void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe);
 // wrapper for cleanup_nodes, create_nodes, synch_all and synch_top, decides upon changed event which one to
 // take on. also locks dev->history_mutex.
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
-// cleanup all gegl nodes except clean input/output
+// cleanup all nodes except clean input/output
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe);
 // sync with develop_t history stack from scratch (new node added, have to pop old ones)
 void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 // sync with develop_t history stack by just copying the top item params (same op, new params on top)
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
-// adjust gegl:nop output node according to history stack (history pop event)
+// adjust output node according to history stack (history pop event)
 void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 
 // process region of interest of pixels. returns 1 if pipe was altered during processing.
@@ -188,9 +187,7 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 
 
 // TODO: future application: remove/add modules from list, load from disk, user programmable etc
-// TODO: add n-th module in dev list to gegl pipeline
 void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
-// TODO: remove n-th module from gegl pipeline
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 
 // signifies that this pipeline uses the MIP_F buffer instead of MIP_FULL

@@ -22,9 +22,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
@@ -109,13 +107,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)p1;
-#ifdef HAVE_GEGL
-  // pull in new params to gegl
-  gegl_node_set(piece->input, "linear_value", p->linear, "gamma_value", p->gamma, NULL);
-// gegl_node_set(piece->input, "value", p->gamma, NULL);
-#else
-  // build gamma table in pipeline piece from committed params:
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
+
+  // build gamma table in pipeline piece from committed params:
   float a, b, c, g;
   if(p->linear < 1.0)
   {
@@ -141,36 +135,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     }
     d->table[k] = tmp >> 8;
   }
-#endif
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-  piece->data = NULL;
-  dt_iop_gamma_params_t *default_params = (dt_iop_gamma_params_t *)self->default_params;
-  piece->input = piece->output
-      = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear_value", default_params->linear,
-                            "gamma_value", default_params->gamma, NULL);
-// piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:gamma", "value",
-// default_params->gamma, NULL);
-#else
   piece->data = malloc(sizeof(dt_iop_gamma_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-// no free necessary, no data is alloc'ed
-#else
   free(piece->data);
   piece->data = NULL;
-#endif
 }
 
 void init(dt_iop_module_t *module)

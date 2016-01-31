@@ -192,7 +192,7 @@ typedef struct dt_iop_basecurve_gui_data_t
 
 typedef struct dt_iop_basecurve_data_t
 {
-  dt_draw_curve_t *curve; // curve for gegl nodes and pixel processing
+  dt_draw_curve_t *curve; // curve for pixelpipe piece and pixel processing
   int basecurve_type;
   int basecurve_nodes;
   float table[0x10000];      // precomputed look-up table for tone curve
@@ -367,7 +367,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // create part of the gegl pipeline
+  // create part of the pixelpipe
   piece->data = calloc(1, sizeof(dt_iop_basecurve_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }

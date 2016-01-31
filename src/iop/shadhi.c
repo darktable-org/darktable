@@ -709,11 +709,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)p1;
-#ifdef HAVE_GEGL
-  fprintf(stderr, "[shadows&highlights] TODO: implement gegl version!\n");
-// pull in new params to gegl
-#else
   dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;
+
   d->order = p->order;
   d->radius = p->radius;
   d->shadows = p->shadows;
@@ -729,7 +726,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #ifdef HAVE_OPENCL
   if(d->shadhi_algo == SHADHI_ALGO_BILATERAL)
     piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
-#endif
 #endif
 }
 

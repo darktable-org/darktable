@@ -352,13 +352,13 @@ typedef struct dt_iop_module_t
   void (*init_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                     struct dt_dev_pixelpipe_iop_t *piece);
   /** this resets the params to factory defaults. used at the beginning of each history synch. */
-  /** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece.
+  /** this commits (a mutex will be locked to synch pipe/gui) the given history params to the pixelpipe piece.
    */
   void (*commit_params)(struct dt_iop_module_t *self, dt_iop_params_t *params,
                         struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this is the chance to update default parameters, after the full raw is loaded. */
   void (*reload_defaults)(struct dt_iop_module_t *self);
-  /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
+  /** this destroys all resources needed by the piece of the pixelpipe. */
   void (*cleanup_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                        struct dt_dev_pixelpipe_iop_t *piece);
   void (*modify_roi_in)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -368,7 +368,7 @@ typedef struct dt_iop_module_t
   int (*legacy_params)(struct dt_iop_module_t *self, const void *const old_params, const int old_version,
                        void *new_params, const int new_version);
 
-  /** this is the temp homebrew callback to operations, as long as gegl is so slow.
+  /** this is the temp homebrew callback to operations.
     * x,y, and scale are just given for orientation in the framebuffer. i and o are
     * scaled to the same size width*height and contain a max of 3 floats. other color
     * formats may be filled by this callback, if the pipeline can handle it. */

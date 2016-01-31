@@ -565,14 +565,8 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-// no free necessary, no data is alloc'ed
-#else
   free(piece->data);
   piece->data = NULL;
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
