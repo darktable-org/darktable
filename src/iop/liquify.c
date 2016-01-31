@@ -498,22 +498,6 @@ typedef struct {
   int pmax;
 } distort_params_t;
 
-static float complex _distort_point (const float complex p, const distort_params_t *params)
-{
-  float complex q = p / params->from_scale;
-  float pt[2] = { creal (q), cimag (q) };
-
-  if (params->direction)
-    dt_dev_distort_transform_plus     (params->develop, params->pipe, params->pmin, params->pmax, pt, 1);
-  else
-    dt_dev_distort_backtransform_plus (params->develop, params->pipe, params->pmin, params->pmax, pt, 1);
-
-  q = (float) pt[0] + (float) pt[1] * I;
-  q *= params->to_scale;
-
-  return q;
-}
-
 static void _distort_point_list (GList *list, const distort_params_t *params)
 {
   const size_t len = g_list_length (list);
@@ -589,33 +573,6 @@ static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
 {
   const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, TRUE, 0, module->priority };
   _distort_paths (&params, p);
-}
-
-static float complex distort_point_cairo_to_raw (const struct dt_iop_module_t *module,
-                                                 dt_dev_pixelpipe_t *pipe,
-                                                 const float complex p)
-{
-  const distort_params_t params = { module->dev, pipe, CAIRO_SCALE, pipe->iscale, FALSE, 0, 99999 };
-  return _distort_point  (p, &params);
-}
-
-static float complex transform_view_to_cairo (const struct dt_iop_module_t *module,
-                                              const dt_dev_pixelpipe_t *pipe,
-                                              const float x,
-                                              const float y)
-{
-  float pt[2];
-  dt_dev_get_pointer_zoom_pos (module->dev, x, y, &pt[0], &pt[1]);
-
-  pt[0] += 0.5;
-  pt[1] += 0.5;
-  const int w = pipe->processed_width;
-  const int h = pipe->processed_height;
-  float max = MAX (w, h);
-  pt[0] *= w / max;
-  pt[1] *= h / max;
-
-  return pt[0] + pt[1] * I;
 }
 
 // op-engine code
@@ -2427,19 +2384,20 @@ static gboolean _get_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pi
   // make sure we lock the pipe and take a copy. it is not thread safe to use a pipe on the GUI thread, so we
   // get a copy and use it from there.
 
-  dt_pthread_mutex_lock(&module->dev->preview_pipe->busy_mutex);
-  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe (module->dev, module->dev->preview_pipe, module);
+  dt_pthread_mutex_lock(&module->dev->history_mutex);
 
-  if (!piece || piece->pipe->backbuf_width==0 || piece->pipe->backbuf_width==0)
+  dt_dev_pixelpipe_t *mp_pipe = module->dev->preview_pipe;
+
+  if (!mp_pipe || mp_pipe->backbuf_width==0 || mp_pipe->backbuf_width==0)
   {
-    dt_pthread_mutex_unlock(&module->dev->preview_pipe->busy_mutex);
+    dt_pthread_mutex_unlock(&module->dev->history_mutex);
     pipe->input = NULL;
     pipe->backbuf = NULL;
     pipe->nodes = NULL;
     return FALSE;
   }
 
-  *pipe = *(piece->pipe);
+  *pipe = *(mp_pipe);
   // not used in this path, let's nullify the pointers, no need to deep-copy
   pipe->input = NULL;
   pipe->backbuf = NULL;
@@ -2456,7 +2414,7 @@ static gboolean _get_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pi
     n = n->next;
   }
 
-  dt_pthread_mutex_unlock(&module->dev->preview_pipe->busy_mutex);
+  dt_pthread_mutex_unlock(&module->dev->history_mutex);
   return TRUE;
 }
 
@@ -2557,17 +2515,21 @@ static void sync_pipe (struct dt_iop_module_t *module, gboolean history)
   ctrl+click on strength:    Cycle linear, grow, shrink
 */
 
-static gboolean get_point_scale(struct dt_iop_module_t *module, float x, float y, float complex *pt, float *scale)
+static void get_point_scale(struct dt_iop_module_t *module, float x, float y, float complex *pt, float *scale)
 {
-  dt_dev_pixelpipe_t pipe;
-  if (!_get_pipe (module, &pipe))
-    return FALSE;
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+  float wd = darktable.develop->preview_pipe->backbuf_width;
+  float ht = darktable.develop->preview_pipe->backbuf_height;
+  float pts[2] = { pzx * wd, pzy * ht };
+  dt_dev_distort_backtransform(darktable.develop, pts, 1);
+  float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
+  float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
-  const float complex pt_cairo = transform_view_to_cairo (module, &pipe, x, y);
-  *pt = distort_point_cairo_to_raw (module, &pipe, pt_cairo);
-  *scale = pipe.iscale / get_zoom_scale (module->dev);
-  _release_pipe(&pipe);
-  return TRUE;
+  *scale = darktable.develop->preview_pipe->iscale / get_zoom_scale(module->dev);
+  *pt = (nx * darktable.develop->pipe->iwidth) +  (ny * darktable.develop->pipe->iheight) * I;
 }
 
 int mouse_moved (struct dt_iop_module_t *module,
@@ -2581,8 +2543,7 @@ int mouse_moved (struct dt_iop_module_t *module,
   float complex pt;
   float scale;
 
-  if (!get_point_scale(module, x, y, &pt, &scale))
-    return 0;
+  get_point_scale(module, x, y, &pt, &scale);
 
   dt_pthread_mutex_lock (&g->lock);
 
@@ -2745,8 +2706,7 @@ int button_pressed (struct dt_iop_module_t *module,
   float complex pt;
   float scale;
 
-  if (!get_point_scale(module, x, y, &pt, &scale))
-    return 0;
+  get_point_scale(module, x, y, &pt, &scale);
 
   dt_pthread_mutex_lock (&g->lock);
 
@@ -2863,8 +2823,7 @@ int button_released (struct dt_iop_module_t *module,
   float complex pt;
   float scale;
 
-  if (!get_point_scale(module, x, y, &pt, &scale))
-    return 0;
+  get_point_scale(module, x, y, &pt, &scale);
 
   dt_pthread_mutex_lock (&g->lock);
 
