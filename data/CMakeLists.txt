@@ -46,13 +46,22 @@ file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
 add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
 		SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in
-		COMMAND ${intltool_merge_BIN} -d ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+		COMMAND ${intltool_merge_BIN} --desktop-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
 		MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in
 		DEPENDS ${PO_FILES}
 )
 add_custom_target(darktable.desktop_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ./share/applications)
-install(FILES darktable.appdata.xml DESTINATION ./share/appdata)
+
+add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+		SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+		COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+		MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+		DEPENDS ${PO_FILES}
+)
+add_custom_target(darktable.appdata_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml DESTINATION ./share/appdata)
 
 #
 # Install watermarks

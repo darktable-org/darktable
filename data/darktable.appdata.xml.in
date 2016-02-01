@@ -8,22 +8,22 @@
   <name>darktable</name>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+ and GPL-2.0+ and LGPL-2.0+ and BSD-3-Clause and MIT and CC-BY-SA-1.0 and CC-BY-2.5 and CC-BY-NC-3.0</project_license>
-  <summary>Organize and develop images from digital cameras</summary>
+  <_summary>Organize and develop images from digital cameras</_summary>
   <translation type="gettext">darktable</translation>
   <description>
-    <p>
+    <_p>
       darktable manages your digital negatives in a database and lets you
       view them through a lighttable. It also enables you to develop raw
       images and enhance them in a darkroom.
-    </p>
-    <p>
+    </_p>
+    <_p>
       Other modes besides lighttable and darkroom are a map for geotagging,
       tethering, print and a slideshow.
-    </p>
-    <p>
+    </_p>
+    <_p>
       darktable supports most modern camera's raw formats, and does all
       of its processing at very high precision.
-    </p>
+    </_p>
   </description>
   <screenshots>
     <screenshot height="741" width="1317" type="default">
