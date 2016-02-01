@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include <lcms2.h>
+#include <xmmintrin.h>
 
 // constants fit to the ones from lcms.h:
 typedef enum dt_iop_color_intent_t
@@ -164,7 +165,19 @@ void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
 void dt_XYZ_to_Lab(const float *XYZ, float *Lab);
 
 /** uses D50 white point. */
+__m128 dt_XYZ_to_Lab_SSE(__m128 XYZ);
+
+/** uses D50 white point. */
 void dt_Lab_to_XYZ(const float *Lab, float *XYZ);
+
+/** uses D50 white point. */
+__m128 dt_Lab_to_XYZ_SSE(__m128 Lab);
+
+/** uses D65 white point. */
+__m128 dt_XYZ_to_sRGB_SSE(__m128 XYZ);
+
+/** uses D65 white point. */
+__m128 dt_sRGB_to_XYZ_SSE(__m128 RGB);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */
