@@ -814,6 +814,16 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   // this is a gui thread only thing. no mutex required:
   const int imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
 
+  const float fscale = fminf(width, height);
+  int metadata_height = 0;
+  int metadata_pos = 0;
+  gchar *str = dt_conf_get_string("plugins/lighttable/metadata/layout");
+  if(strcmp("overlay", str)) // We are either in top or bottom
+    metadata_height = 0.045f * fscale;
+  if(!strcmp("bottom", str))
+    metadata_pos = height-metadata_height;
+  g_free(str);
+
   if (draw_selected)
   {
     /* clear and reset statements */
@@ -985,7 +995,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       if(zoom == 1 && !image_only)
       {
         const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
-        scale = fminf((width-2*tb) / (float)buf.width, (height-2*tb) / (float)buf.height);
+        scale = fminf((width-2*tb) / (float)buf.width, (height-2*tb-metadata_height) / (float)buf.height);
       }
       else
         scale = fminf(width * imgwd / (float)buf.width, height * imgwd / (float)buf.height);
@@ -997,8 +1007,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     if (image_only) // in this case we want to display the picture exactly at (px, py)
       cairo_translate(cr, px, py);
     else
-      cairo_translate(cr, width / 2.0, height / 2.0);
-
+      cairo_translate(cr, width / 2.0, (metadata_pos == 0 ? metadata_height : 0) + (height-metadata_height) / 2.0);
     cairo_scale(cr, scale, scale);
 
     if(buf.buf && surface)
@@ -1031,28 +1040,19 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
       if(buf.buf && (selected || zoom == 1))
       {
-        const float border = zoom == 1 ? 16 / scale : 2 / scale;
-        cairo_set_line_width(cr, 1. / scale);
         if(zoom == 1)
         {
-          // draw shadow around border
-          cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+          cairo_set_line_width(cr, 0.5 / scale);
+          // draw line around border
+          cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
           cairo_stroke(cr);
           // cairo_new_path(cr);
           cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-          float alpha = 1.0f;
-          for(int k = 0; k < 16; k++)
-          {
-            cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-            cairo_new_sub_path(cr);
-            cairo_rectangle(cr, -k / scale, -k / scale, buf.width + 2. * k / scale, buf.height + 2. * k / scale);
-            cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-            alpha *= 0.6f;
-            cairo_fill(cr);
-          }
         }
         else
         {
+          const float border = 2 / scale;
+          cairo_set_line_width(cr, 1. / scale);
           cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
           cairo_new_sub_path(cr);
           cairo_rectangle(cr, -border, -border, buf.width + 2. * border, buf.height + 2. * border);
@@ -1074,11 +1074,17 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
   cairo_save(cr);
 
-  const float fscale = fminf(width, height);
   if(imgsel == imgid || full_preview || darktable.gui->show_overlays || zoom == 1)
   {
     if(draw_metadata && width > DECORATION_SIZE_LIMIT)
     {
+      if (zoom == 1 && metadata_height != 0)
+      {
+        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+        cairo_rectangle(cr, 0, metadata_pos, width, metadata_height);
+        cairo_fill(cr);
+      }
+
       // draw mouseover hover effects, set event hook for mouse button down!
       cairo_set_line_width(cr, 1.5);
       cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
@@ -1099,7 +1105,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       if(zoom != 1)
         y = 0.90 * height;
       else
-        y = .12 * fscale;
+        y = metadata_height != 0 ? metadata_pos + .023 * fscale : 0.12 * fscale;
       const gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
 
       if(img)
@@ -1108,7 +1114,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           if(zoom != 1)
             x = (0.41 + k * 0.12) * width;
           else
-            x = (.08 + k * 0.04) * fscale;
+            x = ((metadata_height != 0 ? .06 : 0.09) + k * 0.04) * fscale;
 
           if(!image_is_rejected) // if rejected: draw no stars
           {
@@ -1136,7 +1142,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       if(zoom != 1)
         x = 0.11 * width;
       else
-        x = .04 * fscale;
+        x = (metadata_height != 0 ? .02 : 0.04) * fscale;
 
       if(image_is_rejected) cairo_set_source_rgb(cr, 1., 0., 0.);
 
@@ -1257,8 +1263,8 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     if(width > DECORATION_SIZE_LIMIT)
     {
       // color labels:
-      const float x = zoom == 1 ? (0.07) * fscale : .21 * width;
-      const float y = zoom == 1 ? 0.17 * fscale : 0.1 * height;
+      const float x = zoom == 1 ? (metadata_height != 0 ? metadata_pos + 0.43 : 0.07) * fscale : .21 * width;
+      const float y = zoom == 1 ? (metadata_height != 0 ? metadata_pos + 0.025 : 0.17) * fscale : 0.1 * height;
       const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
 
       /* clear and reset prepared statement */
@@ -1296,22 +1302,42 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
   if(draw_metadata && img && (zoom == 1))
   {
-    // some exif data
     cairo_set_source_rgb(cr, .7, .7, .7);
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, .025 * fscale);
+    cairo_set_font_size(cr, .026 * fscale);
 
-    cairo_move_to(cr, .02 * fscale, .04 * fscale);
-    // cairo_show_text(cr, img->filename);
-    cairo_text_path(cr, img->filename);
     char exifline[50];
-    cairo_move_to(cr, .02 * fscale, .08 * fscale);
     dt_image_print_exif(img, exifline, 50);
-    cairo_text_path(cr, exifline);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-    cairo_stroke(cr);
+
+    if (metadata_height != 0)
+    {
+      cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+      int y = metadata_pos + .032 * fscale;
+
+      // Display the image name centered
+      cairo_text_extents_t extents;
+      cairo_text_extents(cr, img->filename, &extents);
+      cairo_move_to(cr, width/2 - extents.width/2, y);
+      cairo_text_path(cr, img->filename);
+
+      // Display exif info right aligned
+      cairo_text_extents(cr, exifline, &extents);
+      cairo_move_to(cr, width - extents.width - 0.02 * fscale, y);
+      cairo_text_path(cr, exifline);
+      // Write everything out
+      cairo_fill_preserve(cr);
+      cairo_set_line_width(cr, 1.0);
+      cairo_stroke(cr);
+    } else {
+      cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+      cairo_move_to(cr, .02 * fscale, .04 * fscale);
+      cairo_text_path(cr, img->filename);
+      cairo_move_to(cr, .02 * fscale, .085 * fscale);
+      cairo_text_path(cr, exifline);
+      cairo_fill_preserve(cr);
+      cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+      cairo_set_line_width(cr, 1.0);
+      cairo_stroke(cr);
+    }
   }
 
   // draw custom metadata from accompanying text file:
