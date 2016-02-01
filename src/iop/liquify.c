@@ -498,37 +498,11 @@ typedef struct {
   int pmax;
 } distort_params_t;
 
-static void _distort_point_list (GList *list, const distort_params_t *params)
-{
-  const size_t len = g_list_length (list);
-  float *buffer = malloc (2 * sizeof (float) * len);
-  float *b = buffer;
-
-  for (GList *i = list; i != NULL; i = i->next)
-  {
-    float complex p = *((float complex *) i->data) / params->from_scale;
-    *b++ = (float) creal (p);
-    *b++ = (float) cimag (p);
-  }
-
-  if (params->direction)
-    dt_dev_distort_transform_plus     (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
-  else
-    dt_dev_distort_backtransform_plus (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
-
-  b = buffer;
-  for (GList *i = list; i != NULL; i = i->next)
-  {
-    float complex *p = (float complex *) i->data;
-    *p = (b[0] + b[1] * I) * params->to_scale;
-    b += 2;
-  }
-  free (buffer);
-}
-
 static void _distort_paths (const distort_params_t *params, const dt_iop_liquify_params_t *p)
 {
-  GList *list = NULL;
+  int len = 0;
+
+  // count nodes
 
   for (int k=0; k<MAX_NODES; k++)
   {
@@ -539,21 +513,88 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
     switch (data->header.type)
     {
     case DT_LIQUIFY_PATH_CURVE_TO_V1:
-      list = g_list_append (list, &data->curve_to_v1.ctrl1);
-      list = g_list_append (list, &data->curve_to_v1.ctrl2);
+      len += 2;
       // fall thru
     case DT_LIQUIFY_PATH_MOVE_TO_V1:
     case DT_LIQUIFY_PATH_LINE_TO_V1:
-      list = g_list_append (list, &data->warp.point);
-      list = g_list_append (list, &data->warp.strength);
-      list = g_list_append (list, &data->warp.radius);
+      len += 3;
       break;
     default:
       break;
     }
   }
-  _distort_point_list (list, params);
-  g_list_free (list);
+
+  // create buffer with all points
+
+  float *buffer = malloc (2 * sizeof (float) * len);
+  float *b = buffer;
+
+  for (int k=0; k<MAX_NODES; k++)
+  {
+    dt_liquify_path_data_t *data = (dt_liquify_path_data_t *) &p->nodes[k];
+    if (data->header.type == DT_LIQUIFY_PATH_INVALIDATED)
+      break;
+
+    switch (data->header.type)
+    {
+    case DT_LIQUIFY_PATH_CURVE_TO_V1:
+      *b++ = creal (data->curve_to_v1.ctrl1) / params->from_scale;
+      *b++ = cimag (data->curve_to_v1.ctrl1) / params->from_scale;
+      *b++ = creal (data->curve_to_v1.ctrl2) / params->from_scale;
+      *b++ = cimag (data->curve_to_v1.ctrl2) / params->from_scale;
+      // fall thru
+    case DT_LIQUIFY_PATH_MOVE_TO_V1:
+    case DT_LIQUIFY_PATH_LINE_TO_V1:
+      *b++ = creal (data->warp.point) / params->from_scale;
+      *b++ = cimag (data->warp.point) / params->from_scale;
+      *b++ = creal (data->warp.strength) / params->from_scale;
+      *b++ = cimag (data->warp.strength) / params->from_scale;
+      *b++ = creal (data->warp.radius) / params->from_scale;
+      *b++ = cimag (data->warp.radius) / params->from_scale;
+      break;
+    default:
+      break;
+    }
+  }
+
+  // transform points
+
+  if (params->direction)
+    dt_dev_distort_transform_plus     (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
+  else
+    dt_dev_distort_backtransform_plus (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
+
+  // record back the transformed points
+
+  b = buffer;
+
+  for (int k=0; k<MAX_NODES; k++)
+  {
+    dt_liquify_path_data_t *data = (dt_liquify_path_data_t *) &p->nodes[k];
+    if (data->header.type == DT_LIQUIFY_PATH_INVALIDATED)
+      break;
+
+    switch (data->header.type)
+    {
+    case DT_LIQUIFY_PATH_CURVE_TO_V1:
+      data->curve_to_v1.ctrl1 = (b[0] + b[1] * I) * params->to_scale;
+      b += 2;
+      data->curve_to_v1.ctrl2 = (b[0] + b[1] * I) * params->to_scale;
+      b += 2;
+      // fall thru
+    case DT_LIQUIFY_PATH_MOVE_TO_V1:
+    case DT_LIQUIFY_PATH_LINE_TO_V1:
+      data->warp.point = (b[0] + b[1] * I) * params->to_scale;
+      b += 2;
+      data->warp.strength = (b[0] + b[1] * I) * params->to_scale;
+      b += 2;
+      data->warp.radius = (b[0] + b[1] * I) * params->to_scale;
+      b += 2;
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 #define CAIRO_SCALE (1.0 / MAX (pipe->backbuf_width, pipe->backbuf_height))
