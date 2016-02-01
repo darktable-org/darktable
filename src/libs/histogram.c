@@ -27,6 +27,9 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
+#define exposure2white(x) exp2f(-(x))
+#define white2exposure(x) -dt_log2f(fmaxf(0.001, x))
+
 DT_MODULE(1)
 
 #define DT_HIST_INSET 5
@@ -451,8 +454,8 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   gtk_widget_get_allocation(widget, &allocation);
   if(d->dragging && d->highlight == 2)
   {
-    float white = d->white - (event->x - d->button_down_x) * 1.0f / (float)allocation.width;
-    dt_dev_exposure_set_white(darktable.develop, white);
+    float exposure = white2exposure(d->white) + (event->x - d->button_down_x) * 4.0f / (float)allocation.width;
+    dt_dev_exposure_set_white(darktable.develop, exposure2white(exposure));
   }
   else if(d->dragging && d->highlight == 1)
   {
@@ -593,10 +596,10 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   float cb = dt_dev_exposure_get_black(darktable.develop);
 
   if(event->direction == GDK_SCROLL_UP && d->highlight == 2)
-    dt_dev_exposure_set_white(darktable.develop, cw - 0.1);
+    dt_dev_exposure_set_white(darktable.develop, exposure2white(white2exposure(cw) + 0.02));
 
   if(event->direction == GDK_SCROLL_DOWN && d->highlight == 2)
-    dt_dev_exposure_set_white(darktable.develop, cw + 0.1);
+    dt_dev_exposure_set_white(darktable.develop, exposure2white(white2exposure(cw) - 0.02));
 
   if(event->direction == GDK_SCROLL_UP && d->highlight == 1)
     dt_dev_exposure_set_black(darktable.develop, cb - 0.001);
