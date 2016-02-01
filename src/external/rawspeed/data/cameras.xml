@@ -1036,7 +1036,7 @@
 	<Camera make="Canon" model="Canon PowerShot Pro70" supported="no">
 		<ID make="Canon" model="PowerShot Pro70">Canon PowerShot Pro70</ID>
 	</Camera>
-	<Camera make="Canon" model="Canon PowerShot G1">
+	<Camera make="Canon" model="Canon PowerShot G1" supported="no">
 		<ID make="Canon" model="PowerShot G1">Canon PowerShot G1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">FUJI_GREEN</Color>
@@ -2416,7 +2416,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="E5700" decoder_version="4">
+	<Camera make="NIKON" model="E5700" decoder_version="4" supported="no">
 		<ID make="Nikon" model="E5700">Nikon E5700</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">FUJI_GREEN</Color>
