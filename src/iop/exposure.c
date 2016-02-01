@@ -592,7 +592,7 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
+static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const float exposure)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
@@ -600,7 +600,7 @@ static void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float 
   {
     dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-    p->deflicker_target_level = white;
+    p->deflicker_target_level = exposure;
 
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
@@ -610,12 +610,13 @@ static void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float 
   }
   else
   {
+    float white = exposure2white(exposure);
     exposure_set_white(self, white);
     autoexp_disable(self);
   }
 }
 
-static float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
+static float dt_iop_exposure_get_exposure(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
@@ -625,7 +626,7 @@ static float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
   }
   else
   {
-    return exposure2white(p->exposure);
+    return p->exposure;
   }
 }
 
@@ -633,10 +634,9 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  float b = black;
-  if(p->black == b) return;
+  if(p->black == black) return;
 
-  p->black = b;
+  p->black = black;
   if(p->black >= exposure2white(p->exposure))
   {
     exposure_set_white(self, p->black + 0.01);
@@ -722,7 +722,7 @@ static void exposure_callback(GtkWidget *slider, gpointer user_data)
   autoexp_disable(self);
 
   const float exposure = dt_bauhaus_slider_get(slider);
-  dt_iop_exposure_set_white(self, exposure2white(exposure));
+  dt_iop_exposure_set_exposure(self, exposure);
 }
 
 static void black_callback(GtkWidget *slider, gpointer user_data)
@@ -784,8 +784,8 @@ void gui_init(struct dt_iop_module_t *self)
    */
   dt_dev_proxy_exposure_t *instance = g_malloc0(sizeof(dt_dev_proxy_exposure_t));
   instance->module = self;
-  instance->set_white = dt_iop_exposure_set_white;
-  instance->get_white = dt_iop_exposure_get_white;
+  instance->set_exposure = dt_iop_exposure_set_exposure;
+  instance->get_exposure = dt_iop_exposure_get_exposure;
   instance->set_black = dt_iop_exposure_set_black;
   instance->get_black = dt_iop_exposure_get_black;
   darktable.develop->proxy.exposure

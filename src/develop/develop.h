@@ -70,8 +70,8 @@ extern const gchar *dt_dev_histogram_type_names[];
 typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
-  void (*set_white)(struct dt_iop_module_t *exp, const float white);
-  float (*get_white)(struct dt_iop_module_t *exp);
+  void (*set_exposure)(struct dt_iop_module_t *exp, const float exposure);
+  float (*get_exposure)(struct dt_iop_module_t *exp);
   void (*set_black)(struct dt_iop_module_t *exp, const float black);
   float (*get_black)(struct dt_iop_module_t *exp);
 } dt_dev_proxy_exposure_t;
@@ -244,7 +244,7 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
 /*
- * exposure plugin hook, set the white level
+ * exposure plugin hook, set the exposure and the black level
  */
 
 /** a function used to sort the list */
@@ -253,10 +253,10 @@ gint dt_dev_exposure_hooks_sort(gconstpointer a, gconstpointer b);
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
 /** reset exposure to defaults */
 void dt_dev_exposure_reset_defaults(dt_develop_t *dev);
-/** set exposure white level */
-void dt_dev_exposure_set_white(dt_develop_t *dev, const float white);
-/** get exposure white level */
-float dt_dev_exposure_get_white(dt_develop_t *dev);
+/** set exposure */
+void dt_dev_exposure_set_exposure(dt_develop_t *dev, const float exposure);
+/** get exposure */
+float dt_dev_exposure_get_exposure(dt_develop_t *dev);
 /** set exposure black level */
 void dt_dev_exposure_set_black(dt_develop_t *dev, const float black);
 /** get exposure black level */
