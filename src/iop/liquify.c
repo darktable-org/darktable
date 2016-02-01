@@ -597,16 +597,6 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
   }
 }
 
-#define CAIRO_SCALE (1.0 / MAX (pipe->backbuf_width, pipe->backbuf_height))
-
-static void distort_paths_raw_to_cairo (const struct dt_iop_module_t *module,
-                                        dt_dev_pixelpipe_t *pipe,
-                                        dt_iop_liquify_params_t *p)
-{
-  const distort_params_t params = { module->dev, pipe, pipe->iscale, CAIRO_SCALE, TRUE, 0, 99999 };
-  _distort_paths (&params, p);
-}
-
 static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
                                         dt_dev_pixelpipe_t *pipe,
                                         const float roi_in_scale,
@@ -2420,57 +2410,6 @@ static float get_zoom_scale (dt_develop_t *develop)
   return dt_dev_get_zoom_scale (develop, zoom, closeup ? 2 : 1, 1);
 }
 
-static gboolean _get_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe)
-{
-  // make sure we lock the pipe and take a copy. it is not thread safe to use a pipe on the GUI thread, so we
-  // get a copy and use it from there.
-
-  dt_pthread_mutex_lock(&module->dev->history_mutex);
-
-  dt_dev_pixelpipe_t *mp_pipe = module->dev->preview_pipe;
-
-  if (!mp_pipe || mp_pipe->backbuf_width==0 || mp_pipe->backbuf_width==0)
-  {
-    dt_pthread_mutex_unlock(&module->dev->history_mutex);
-    pipe->input = NULL;
-    pipe->backbuf = NULL;
-    pipe->nodes = NULL;
-    return FALSE;
-  }
-
-  *pipe = *(mp_pipe);
-  // not used in this path, let's nullify the pointers, no need to deep-copy
-  pipe->input = NULL;
-  pipe->backbuf = NULL;
-
-  // just deep copy the nodes, after _get_pipe is called, _release_pipe must be called to free memory
-  GList *n = pipe->nodes;
-  pipe->nodes = NULL;
-  while (n)
-  {
-    dt_dev_pixelpipe_iop_t *data = (dt_dev_pixelpipe_iop_t *)n->data;
-    dt_dev_pixelpipe_iop_t *new = malloc(sizeof(dt_dev_pixelpipe_iop_t));
-    memcpy(new, data, sizeof(dt_dev_pixelpipe_iop_t));
-    pipe->nodes = g_list_append(pipe->nodes, new);
-    n = n->next;
-  }
-
-  dt_pthread_mutex_unlock(&module->dev->history_mutex);
-  return TRUE;
-}
-
-static void _release_pipe(dt_dev_pixelpipe_t *pipe)
-{
-  GList *n = pipe->nodes;
-  while (n)
-  {
-    GList *next = n->next;
-    dt_dev_pixelpipe_iop_t *data = (dt_dev_pixelpipe_iop_t *)n->data;
-    free(data);
-    n = next;
-  }
-}
-
 void gui_post_expose (struct dt_iop_module_t *module,
                       cairo_t *cr,
                       int32_t width,
@@ -2485,26 +2424,12 @@ void gui_post_expose (struct dt_iop_module_t *module,
 
   const float bb_width = develop->preview_pipe->backbuf_width;
   const float bb_height = develop->preview_pipe->backbuf_height;
+  const float iscale = develop->preview_pipe->iscale;
+  const float scale = MAX (bb_width, bb_height);
   if (bb_width < 1.0 || bb_height < 1.0)
     return;
 
-  dt_dev_pixelpipe_t pipe;
-
-  if (!_get_pipe(module, &pipe))
-    return;
-
-  // You're not supposed to understand this
-  const float zoom_x = dt_control_get_dev_zoom_x ();
-  const float zoom_y = dt_control_get_dev_zoom_y ();
-  const float zoom_scale = get_zoom_scale (develop);
-  cairo_translate (cr, 0.5 * width, 0.5 * height); // origin @ center of view
-  cairo_scale     (cr, zoom_scale, zoom_scale);    // the zoom
-  cairo_translate (cr, -bb_width * (0.5 + zoom_x), -bb_height * (0.5 + zoom_y));
-
-  // setup CAIRO coordinate system
-  const float scale = MAX (bb_width, bb_height);
-  cairo_scale (cr, scale, scale);
-
+  // get a copy of all iop params
   dt_pthread_mutex_lock (&g->lock);
   update_warp_count (g);
   smooth_paths_linsys (&g->params);
@@ -2512,11 +2437,22 @@ void gui_post_expose (struct dt_iop_module_t *module,
   memcpy(&copy_params, &g->params, sizeof(dt_iop_liquify_params_t));
   dt_pthread_mutex_unlock (&g->lock);
 
-  // distort all points in one go.  distorting is an expensive
-  // operation because it locks the whole pipe.
-  distort_paths_raw_to_cairo (module, &pipe, &copy_params);
+  // distort all points
+  dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
+  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, TRUE, 0, 99999 };
+  _distort_paths (&d_params, &copy_params);
+  dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
 
-  _release_pipe(&pipe);
+  // You're not supposed to understand this
+  const float zoom_x = dt_control_get_dev_zoom_x ();
+  const float zoom_y = dt_control_get_dev_zoom_y ();
+  const float zoom_scale = get_zoom_scale (develop);
+
+  // setup CAIRO coordinate system
+  cairo_translate (cr, 0.5 * width, 0.5 * height); // origin @ center of view
+  cairo_scale     (cr, zoom_scale, zoom_scale);    // the zoom
+  cairo_translate (cr, -bb_width * (0.5 + zoom_x), -bb_height * (0.5 + zoom_y));
+  cairo_scale (cr, scale, scale);
 
   draw_paths (module, cr, 1.0 / (scale * zoom_scale), &copy_params);
 }
