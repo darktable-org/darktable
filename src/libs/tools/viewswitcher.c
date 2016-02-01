@@ -139,9 +139,9 @@ void gui_init(dt_lib_module_t *self)
                                          "sensitive", SENSITIVE_COLUMN, NULL);
 
           gtk_list_store_append(model, &iter);
-          char *italic = g_strdup_printf("<i>%s</i>", _("other"));
-          gtk_list_store_set(model, &iter, TEXT_COLUMN, italic, VIEW_COLUMN, 0, SENSITIVE_COLUMN, 0, -1);
-          g_free(italic);
+//           char *italic = g_strdup_printf("<i>%s</i>", _("other"));
+          gtk_list_store_set(model, &iter, TEXT_COLUMN, /*italic*/ _("other"), VIEW_COLUMN, 0, SENSITIVE_COLUMN, 0, -1);
+//           g_free(italic);
 
           gtk_box_pack_start(GTK_BOX(self->widget), d->dropdown, FALSE, FALSE, 0);
           g_signal_connect(G_OBJECT(d->dropdown), "changed", G_CALLBACK(_dropdown_changed), d);
