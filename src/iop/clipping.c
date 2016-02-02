@@ -2106,22 +2106,28 @@ void gui_draw_rounded_rectangle(cairo_t *cr, int width, int height, int x, int y
 // draw symmetry signs
 void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
 {
-  cairo_text_extents_t extents;
-  cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
+  PangoLayout *layout;
+  PangoRectangle ink;
+  PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+  pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(16)) * PANGO_SCALE);
+  layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
   // VERIF : is there any pb to use such special char here ?
-  cairo_text_extents(cr, "ꝏ", &extents);
+  pango_layout_set_text(layout, ("ꝏ"), -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_set_source_rgba(cr, .5, .5, .5, .7);
   gui_draw_rounded_rectangle(
-      cr, extents.width + DT_PIXEL_APPLY_DPI(4), extents.height + DT_PIXEL_APPLY_DPI(8),
-      x - extents.width / 2.0f - DT_PIXEL_APPLY_DPI(2), y - extents.height / 2.0f - DT_PIXEL_APPLY_DPI(4));
-  cairo_move_to(cr, x - extents.width / 2.0f - DT_PIXEL_APPLY_DPI(1),
-                y + extents.height / 2.0f - DT_PIXEL_APPLY_DPI(1));
+      cr, ink.width + DT_PIXEL_APPLY_DPI(4), ink.height + DT_PIXEL_APPLY_DPI(8),
+      x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(2), y - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(4));
+  cairo_move_to(cr, x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(1),
+                y - ink.height - ink.x / 2.0f - DT_PIXEL_APPLY_DPI(1));
   if(active)
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, .9);
   else
     cairo_set_source_rgba(cr, .2, .2, .2, .9);
-  cairo_show_text(cr, "ꝏ");
+  pango_cairo_show_layout(cr, layout);
+  pango_font_description_free(desc);
+  g_object_unref(layout);
 }
 
 // draw guides and handles over the image
@@ -2182,18 +2188,24 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   {
     char dimensions[16];
     dimensions[0] = '\0';
-    cairo_text_extents_t extents;
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+    pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(16)) * PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
 
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
     snprintf(dimensions, sizeof(dimensions), "%.0fx%.0f", (float)procw * g->clip_w, (float)proch * g->clip_h);
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
 
-    cairo_text_extents(cr, dimensions, &extents);
-    cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - extents.width * .5f,
+    pango_layout_set_text(layout, dimensions, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - ink.width * .5f,
                   (g->clip_y + g->clip_h / 2) * ht);
-    cairo_show_text(cr, dimensions);
+    pango_cairo_show_layout(cr, layout);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
   }
 
   // draw crop area guides
@@ -2236,6 +2248,11 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
   if(g->straightening)
   {
+    PangoLayout *layout;
+    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+    pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(16)) * PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
     float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
     cairo_arc(cr, bzx * wd, bzy * ht, DT_PIXEL_APPLY_DPI(3), 0, 2.0 * M_PI);
     cairo_stroke(cr);
@@ -2261,10 +2278,11 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     view_angle[0] = '\0';
     snprintf(view_angle, sizeof(view_angle), "%.2f °", angle);
     cairo_set_source_rgb(cr, .7, .7, .7);
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
     cairo_move_to(cr, pzx * wd + DT_PIXEL_APPLY_DPI(20), pzy * ht);
-    cairo_show_text(cr, view_angle);
+    pango_layout_set_text(layout, view_angle, -1);
+    pango_cairo_show_layout(cr, layout);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
   }
   else if(g->k_show != 1)
   {
@@ -2462,20 +2480,26 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       cairo_stroke(cr);
 
       // draw the apply "button"
-      cairo_text_extents_t extents;
-      cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+      PangoLayout *layout;
+      PangoRectangle ink;
+      PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+      pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(16)) * PANGO_SCALE);
+      layout = pango_cairo_create_layout(cr);
+      pango_layout_set_font_description(layout, desc);
       cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
-      cairo_text_extents(cr, "ok", &extents);
-      int c[2] = { (MIN(pts[4], pts[2]) + MAX(pts[0], pts[6])) / 2.0f,
+      pango_layout_set_text(layout, "ok", -1);
+      pango_layout_get_pixel_extents(layout, &ink, NULL);      int c[2] = { (MIN(pts[4], pts[2]) + MAX(pts[0], pts[6])) / 2.0f,
                    (MIN(pts[5], pts[7]) + MAX(pts[1], pts[3])) / 2.0f };
       cairo_set_source_rgba(cr, .5, .5, .5, .9);
-      gui_draw_rounded_rectangle(cr, extents.width + DT_PIXEL_APPLY_DPI(8),
-                                 extents.height + DT_PIXEL_APPLY_DPI(12),
-                                 c[0] - extents.width / 2.0f - DT_PIXEL_APPLY_DPI(4),
-                                 c[1] - extents.height / 2.0f - DT_PIXEL_APPLY_DPI(6));
-      cairo_move_to(cr, c[0] - extents.width / 2.0f, c[1] + extents.height / 2.0f);
+      gui_draw_rounded_rectangle(cr, ink.width + DT_PIXEL_APPLY_DPI(8),
+                                 ink.height + DT_PIXEL_APPLY_DPI(12),
+                                 c[0] - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(4),
+                                 c[1] - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(6));
+      cairo_move_to(cr, c[0] - ink.width / 2.0f, c[1] - ink.height / 2.0f);
       cairo_set_source_rgba(cr, .2, .2, .2, .9);
-      cairo_show_text(cr, "ok");
+      pango_cairo_show_layout(cr, layout);
+      pango_font_description_free(desc);
+      g_object_unref(layout);
 
       // draw the symmetry buttons
       gboolean sym = FALSE;

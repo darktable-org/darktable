@@ -401,17 +401,23 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   }
 
   cairo_set_source_rgb(cr, .25, .25, .25);
-  cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size(cr, .1 * height);
+  PangoLayout *layout;
+  PangoRectangle ink;
+  PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+  layout = pango_cairo_create_layout(cr);
+  pango_font_description_set_absolute_size(desc,(.1 * height) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, desc);
 
   char exifline[50];
-  cairo_move_to(cr, .02 * width, .98 * height);
   dt_image_print_exif(&dev->image_storage, exifline, 50);
+  pango_layout_set_text(layout, exifline, -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, .02 * width, .98 * height - ink.height - ink.y);
   cairo_save(cr);
   //   cairo_show_text(cr, exifline);
   cairo_set_line_width(cr, 2.0);
   cairo_set_source_rgba(cr, 1, 1, 1, 0.3);
-  cairo_text_path(cr, exifline);
+  pango_cairo_layout_path(cr, layout);
   cairo_stroke_preserve(cr);
   cairo_set_source_rgb(cr, .25, .25, .25);
   cairo_fill(cr);
@@ -433,6 +439,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
+  pango_font_description_free(desc);
+  g_object_unref(layout);
   return TRUE;
 }
 

@@ -341,20 +341,27 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   cairo_set_source_rgb(cr, .8, .8, .8);
 
   // Draw left aligned value camera model value
-  cairo_text_extents_t te;
+  PangoLayout *layout;
+  PangoRectangle ink;
+  PangoFontDescription *desc = pango_font_description_from_string("Sans bold");
+  layout = pango_cairo_create_layout(cr);
+  pango_font_description_set_absolute_size(desc, (11.5) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, desc);
   char model[4096] = { 0 };
   sprintf(model + strlen(model), "%s", lib->data.camera_model);
-  cairo_text_extents(cr, model, &te);
-  cairo_move_to(cr, 5, 1 + BAR_HEIGHT - te.height / 2);
-  cairo_show_text(cr, model);
+  pango_layout_set_text(layout, model, -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, 5, 1 + BAR_HEIGHT - ink.height / 2);
+  pango_cairo_show_layout(cr, layout);
 
   // Draw right aligned battery value
   const char *battery_value = dt_camctl_camera_get_property(darktable.camctl, NULL, "batterylevel");
   char battery[4096] = { 0 };
   snprintf(battery, sizeof(battery), "%s: %s", _("battery"), battery_value ? battery_value : _("n/a"));
-  cairo_text_extents(cr, battery, &te);
-  cairo_move_to(cr, width - te.width - 5, 1 + BAR_HEIGHT - te.height / 2);
-  cairo_show_text(cr, battery);
+  pango_layout_set_text(layout, battery, -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, width - ink.width - 5, 1 + BAR_HEIGHT - ink.height / 2);
+  pango_cairo_show_layout(cr, layout);
 
   // Let's cook up the middle part of infobar
   gchar center[1024] = { 0 };
@@ -372,9 +379,12 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   g_strlcat(center, "      ", sizeof(center));
 
   // Now lets put it in center view...
-  cairo_text_extents(cr, center, &te);
-  cairo_move_to(cr, (width / 2) - (te.width / 2), 1 + BAR_HEIGHT - te.height / 2);
-  cairo_show_text(cr, center);
+  pango_layout_set_text(layout, center, -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, (width / 2) - (ink.width / 2), 1 + BAR_HEIGHT - ink.height / 2);
+  pango_cairo_show_layout(cr, layout);
+  pango_font_description_free(desc);
+  g_object_unref(layout);
 }
 
 static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
