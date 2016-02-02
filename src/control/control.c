@@ -296,14 +296,14 @@ void *dt_control_expose(void *voidptr)
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_ack != darktable.control->log_pos)
   {
-    PangoLayout *layout;
     PangoRectangle ink;
-    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
-    pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(14)) * PANGO_SCALE);
+    PangoLayout *layout;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    const float fontsize = DT_PIXEL_APPLY_DPI(14);
+    pango_font_description_set_absolute_size(desc, (fontsize) * PANGO_SCALE);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
-    const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc,(fontsize) * PANGO_SCALE);
     pango_layout_set_text(layout, darktable.control->log_message[darktable.control->log_ack], -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float pad = DT_PIXEL_APPLY_DPI(20.0f), xc = width / 2.0;
@@ -343,7 +343,7 @@ void *dt_control_expose(void *voidptr)
       color.alpha = 1.0;
     }
     gdk_cairo_set_source_rgba(cr, &color);
-    cairo_move_to(cr, xc - wd + .5f * pad, (yc + 1. / 3. * fontsize) - ink.height);
+    cairo_move_to(cr, xc - wd + .5f * pad, (yc + 1. / 3. * fontsize) - fontsize);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -351,17 +351,18 @@ void *dt_control_expose(void *voidptr)
   // draw busy indicator
   if(darktable.control->log_busy > 0)
   {
-    PangoLayout *layout;
     PangoRectangle ink;
-    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
-    layout = pango_cairo_create_layout(cr);
+    PangoLayout *layout;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc,(fontsize) * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc, (fontsize) * PANGO_SCALE);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
     pango_layout_set_text(layout, _("working.."), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
-    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize);
+    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
     pango_cairo_layout_path(cr, layout);
     cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
     cairo_fill_preserve(cr);

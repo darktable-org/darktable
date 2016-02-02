@@ -70,18 +70,6 @@ static float get_label_font_size()
   return get_line_height() * darktable.bauhaus->label_font_size;
 }
 
-// TODO: remove / make use of the pango font size / X height
-static float get_value_font_size()
-{
-  return get_line_height() * darktable.bauhaus->value_font_size;
-}
-
-static void set_value_font(cairo_t *cr)
-{
-  cairo_select_font_face(cr, darktable.bauhaus->value_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-  cairo_set_font_size(cr, get_value_font_size());
-}
-
 static void set_bg_normal(cairo_t *cr)
 {
   cairo_set_source_rgb(cr, darktable.bauhaus->bg_normal, darktable.bauhaus->bg_normal,
@@ -1530,7 +1518,6 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       cairo_save(cr);
       set_text_color(cr, 1);
-      set_value_font(cr);
       GList *it = d->labels;
       int k = 0, i = 0;
       int hovered = darktable.bauhaus->mouse_y / (ht + get_line_space());
@@ -1580,25 +1567,26 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     cairo_save(cr);
     PangoLayout *layout;
     PangoRectangle ink;
-    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
     layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, desc);
+    pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
     set_text_color(cr, 1);
-    set_value_font(cr);
-    const int line_height = get_line_height();
-    pango_font_description_set_absolute_size(desc,(MIN(3 * line_height, .2 * height)) * PANGO_SCALE);
 
     // make extra large, but without dependency on popup window height
     // (that might differ for comboboxes for example). only fall back
     // to height dependency if the popup is really small.
+    const int line_height = get_line_height();
+    const int size = MIN(3 * line_height, .2 * height);
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
+    pango_layout_set_font_description(layout, desc);
+
     pango_layout_set_text(layout, darktable.bauhaus->keys, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, wd - 4 - ht - ink.width, height * 0.5);
+    cairo_move_to(cr, wd - 4 - ht - ink.width, height * 0.5 - size);
     pango_cairo_show_layout(cr, layout);
     cairo_restore(cr);
     pango_font_description_free(desc);
     g_object_unref(layout);
-
   }
   if(darktable.bauhaus->cursor_visible)
   {
@@ -1606,7 +1594,6 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     cairo_save(cr);
     cairo_set_source_rgb(cr, 1, 1, 1);
     const int line_height = get_line_height();
-    cairo_set_font_size(cr, MIN(3 * line_height, .2 * height));
     cairo_move_to(cr, wd - ht + 3, height * 0.5 + line_height);
     cairo_line_to(cr, wd - ht + 3, height * 0.5 - 3 * line_height);
     cairo_stroke(cr);

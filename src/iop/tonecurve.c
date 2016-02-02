@@ -1013,7 +1013,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       {
         PangoLayout *layout;
         PangoRectangle ink;
-        PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+        PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+        pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
         pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(0.06) * height) * PANGO_SCALE);
         layout = pango_cairo_create_layout(cr);
         pango_layout_set_font_description(layout, desc);

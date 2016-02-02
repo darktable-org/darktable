@@ -33,6 +33,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/expander.h"
+#include "bauhaus/bauhaus.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -888,8 +889,10 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     {
       PangoLayout *layout;
       PangoRectangle ink;
-      PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
-      pango_font_description_set_absolute_size(desc,(.25 * width) * PANGO_SCALE);
+      PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+      pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+      const int fontsize = 0.25 * width;
+      pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
       const char *ext = img->filename + strlen(img->filename);
@@ -898,7 +901,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
       pango_layout_set_text(layout, ext, -1);
       pango_layout_get_pixel_extents(layout, &ink, NULL);
-      cairo_move_to(cr, .025 * width - ink.x, .24 * height);
+      cairo_move_to(cr, .025 * width - ink.x, .24 * height - fontsize);
       pango_cairo_show_layout(cr, layout);
       pango_font_description_free(desc);
       g_object_unref(layout);
@@ -1305,18 +1308,20 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   {
     // some exif data
     PangoLayout *layout;
-    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
-    pango_font_description_set_absolute_size(desc,(.025 * fscale) * PANGO_SCALE);
+    const int fontsize = 0.025 * fscale;
+    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
     pango_layout_set_font_description(layout, desc);
     cairo_set_source_rgb(cr, .7, .7, .7);
 
-    cairo_move_to(cr, .02 * fscale, .04 * fscale);
+    cairo_move_to(cr, .02 * fscale, .04 * fscale - fontsize);
     // cairo_show_text(cr, img->filename);
     pango_layout_set_text(layout, img->filename, -1);
     pango_cairo_layout_path(cr, layout);
     char exifline[50];
-    cairo_move_to(cr, .02 * fscale, .08 * fscale);
+    cairo_move_to(cr, .02 * fscale, .08 * fscale - fontsize);
     dt_image_print_exif(img, exifline, 50);
     pango_layout_set_text(layout, exifline, -1);
     pango_cairo_layout_path(cr, layout);
@@ -1343,7 +1348,8 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         PangoLayout *layout;
         PangoFontDescription *desc = pango_font_description_from_string("monospace bold");
         layout = pango_cairo_create_layout(cr);
-        pango_font_description_set_absolute_size(desc,(.015 * fscale) * PANGO_SCALE);
+        const int fontsize = 0.015 * fscale;
+        pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
         pango_layout_set_font_description(layout, desc);
         // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
         int k = 0;
@@ -1355,7 +1361,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           if(read != 1) break;
           fgetc(f); // munch \n
 
-          cairo_move_to(cr, .02 * fscale, .20 * fscale + .017 * fscale * k);
+          cairo_move_to(cr, .02 * fscale, .20 * fscale + .017 * fscale * k - fontsize);
           cairo_set_source_rgb(cr, .7, .7, .7);
           pango_layout_set_text(layout, line, -1);
           pango_cairo_layout_path(cr, layout);

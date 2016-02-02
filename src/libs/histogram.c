@@ -26,6 +26,7 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
+#include "bauhaus/bauhaus.h"
 
 DT_MODULE(1)
 
@@ -403,16 +404,17 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_set_source_rgb(cr, .25, .25, .25);
   PangoLayout *layout;
   PangoRectangle ink;
-  PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   layout = pango_cairo_create_layout(cr);
-  pango_font_description_set_absolute_size(desc,(.1 * height) * PANGO_SCALE);
+  pango_font_description_set_absolute_size(desc, (.1 * height) * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
 
   char exifline[50];
   dt_image_print_exif(&dev->image_storage, exifline, 50);
   pango_layout_set_text(layout, exifline, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, .02 * width, .98 * height - ink.height - ink.y);
+  cairo_move_to(cr, .02 * width, .98 * height - ink.height);
   cairo_save(cr);
   //   cairo_show_text(cr, exifline);
   cairo_set_line_width(cr, 2.0);

@@ -160,8 +160,8 @@ void configure(dt_view_t *self, int wd, int ht)
   // dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
-#define MARGIN 20
-#define BAR_HEIGHT 18 /* see libs/camera.c */
+#define MARGIN DT_PIXEL_APPLY_DPI(20)
+#define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) /* see libs/camera.c */
 static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                            int32_t pointery)
 {

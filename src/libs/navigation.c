@@ -24,6 +24,7 @@
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#include "bauhaus/bauhaus.h"
 
 DT_MODULE(1)
 
@@ -251,9 +252,10 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       /* Zoom % */
       PangoLayout *layout;
       PangoRectangle ink;
-      PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+      PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+      pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
       layout = pango_cairo_create_layout(cr);
-      pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(11)) * PANGO_SCALE);
+      pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(11) * PANGO_SCALE);
       pango_layout_set_font_description(layout, desc);
       cairo_translate(cr, 0, height);
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
@@ -266,7 +268,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       h = d->zoom_h = ink.height;
       w = d->zoom_w = ink.width;
 
-      cairo_move_to(cr, width - w - h * 1.1, 0);
+      cairo_move_to(cr, width - w - h * 1.1, - ink.height);
 
       cairo_save(cr);
       cairo_set_line_width(cr, 2.0);

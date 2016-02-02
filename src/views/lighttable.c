@@ -520,7 +520,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
     const float at = 0.3f;
     PangoLayout *layout;
     PangoRectangle ink;
-    PangoFontDescription *desc = pango_font_description_from_string("sans-serif");
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     pango_font_description_set_absolute_size(desc,(fs) * PANGO_SCALE);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);

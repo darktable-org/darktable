@@ -327,7 +327,7 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data)
 }
 
 
-#define BAR_HEIGHT 18 /* also change in views/capture.c */
+#define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) /* also change in views/tethering.c */
 static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                              int32_t pointerx, int32_t pointery)
 {
@@ -343,15 +343,17 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   // Draw left aligned value camera model value
   PangoLayout *layout;
   PangoRectangle ink;
-  PangoFontDescription *desc = pango_font_description_from_string("Sans bold");
+  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   layout = pango_cairo_create_layout(cr);
-  pango_font_description_set_absolute_size(desc, (11.5) * PANGO_SCALE);
+  const int fontsize = DT_PIXEL_APPLY_DPI(11.5);
+  pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
   char model[4096] = { 0 };
   sprintf(model + strlen(model), "%s", lib->data.camera_model);
   pango_layout_set_text(layout, model, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, 5, 1 + BAR_HEIGHT - ink.height / 2);
+  cairo_move_to(cr, DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);
   pango_cairo_show_layout(cr, layout);
 
   // Draw right aligned battery value
@@ -360,7 +362,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   snprintf(battery, sizeof(battery), "%s: %s", _("battery"), battery_value ? battery_value : _("n/a"));
   pango_layout_set_text(layout, battery, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, width - ink.width - 5, 1 + BAR_HEIGHT - ink.height / 2);
+  cairo_move_to(cr, width - ink.width - DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);
   pango_cairo_show_layout(cr, layout);
 
   // Let's cook up the middle part of infobar
@@ -381,7 +383,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   // Now lets put it in center view...
   pango_layout_set_text(layout, center, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, (width / 2) - (ink.width / 2), 1 + BAR_HEIGHT - ink.height / 2);
+  cairo_move_to(cr, (width / 2) - (ink.width / 2), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);
   pango_cairo_show_layout(cr, layout);
   pango_font_description_free(desc);
   g_object_unref(layout);

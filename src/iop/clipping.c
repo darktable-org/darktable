@@ -2108,19 +2108,18 @@ void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
 {
   PangoLayout *layout;
   PangoRectangle ink;
-  PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
-  pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(16)) * PANGO_SCALE);
+  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
-  // VERIF : is there any pb to use such special char here ?
-  pango_layout_set_text(layout, ("ꝏ"), -1);
+  pango_layout_set_text(layout, "ꝏ", -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_set_source_rgba(cr, .5, .5, .5, .7);
   gui_draw_rounded_rectangle(
       cr, ink.width + DT_PIXEL_APPLY_DPI(4), ink.height + DT_PIXEL_APPLY_DPI(8),
       x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(2), y - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(4));
-  cairo_move_to(cr, x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(1),
-                y - ink.height - ink.x / 2.0f - DT_PIXEL_APPLY_DPI(1));
+  cairo_move_to(cr, x - ink.width / 2.0f, y - 3.0 * ink.height / 4.0f - DT_PIXEL_APPLY_DPI(4));
   if(active)
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, .9);
   else
@@ -2190,8 +2189,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     dimensions[0] = '\0';
     PangoLayout *layout;
     PangoRectangle ink;
-    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
-    pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(16)) * PANGO_SCALE);
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
 
@@ -2202,7 +2202,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - ink.width * .5f,
-                  (g->clip_y + g->clip_h / 2) * ht);
+                  (g->clip_y + g->clip_h / 2) * ht - ink.height * .5f);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -2248,9 +2248,11 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
   if(g->straightening)
   {
+    PangoRectangle ink;
     PangoLayout *layout;
-    PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
-    pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(16)) * PANGO_SCALE);
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
     float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
@@ -2276,10 +2278,11 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     char view_angle[16];
     view_angle[0] = '\0';
-    snprintf(view_angle, sizeof(view_angle), "%.2f °", angle);
-    cairo_set_source_rgb(cr, .7, .7, .7);
-    cairo_move_to(cr, pzx * wd + DT_PIXEL_APPLY_DPI(20), pzy * ht);
+    snprintf(view_angle, sizeof(view_angle), "%.2f°", angle);
     pango_layout_set_text(layout, view_angle, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_set_source_rgb(cr, .7, .7, .7);
+    cairo_move_to(cr, pzx * wd + DT_PIXEL_APPLY_DPI(20) / zoom_scale, pzy * ht - ink.height);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -2482,20 +2485,22 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       // draw the apply "button"
       PangoLayout *layout;
       PangoRectangle ink;
-      PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
-      pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(16)) * PANGO_SCALE);
+      PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+      pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+      pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
       cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
       pango_layout_set_text(layout, "ok", -1);
-      pango_layout_get_pixel_extents(layout, &ink, NULL);      int c[2] = { (MIN(pts[4], pts[2]) + MAX(pts[0], pts[6])) / 2.0f,
+      pango_layout_get_pixel_extents(layout, &ink, NULL);
+      int c[2] = { (MIN(pts[4], pts[2]) + MAX(pts[0], pts[6])) / 2.0f,
                    (MIN(pts[5], pts[7]) + MAX(pts[1], pts[3])) / 2.0f };
       cairo_set_source_rgba(cr, .5, .5, .5, .9);
       gui_draw_rounded_rectangle(cr, ink.width + DT_PIXEL_APPLY_DPI(8),
                                  ink.height + DT_PIXEL_APPLY_DPI(12),
                                  c[0] - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(4),
                                  c[1] - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(6));
-      cairo_move_to(cr, c[0] - ink.width / 2.0f, c[1] - ink.height / 2.0f);
+      cairo_move_to(cr, c[0] - ink.width / 2.0f, c[1] - 3.0 * ink.height / 4.0f);
       cairo_set_source_rgba(cr, .2, .2, .2, .9);
       pango_cairo_show_layout(cr, layout);
       pango_font_description_free(desc);
