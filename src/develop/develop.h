@@ -244,7 +244,7 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
 /*
- * exposure plugin hook, set the exposure level and the black level
+ * exposure plugin hook, set the exposure and the black level
  */
 
 /** a function used to sort the list */
@@ -253,9 +253,9 @@ gint dt_dev_exposure_hooks_sort(gconstpointer a, gconstpointer b);
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
 /** reset exposure to defaults */
 void dt_dev_exposure_reset_defaults(dt_develop_t *dev);
-/** set exposure level */
+/** set exposure */
 void dt_dev_exposure_set_exposure(dt_develop_t *dev, const float exposure);
-/** get exposure level */
+/** get exposure */
 float dt_dev_exposure_get_exposure(dt_develop_t *dev);
 /** set exposure black level */
 void dt_dev_exposure_set_black(dt_develop_t *dev, const float black);
