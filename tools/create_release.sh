@@ -23,6 +23,11 @@ echo "#define PACKAGE_VERSION \"$dt_decoration\"" > darktable-$dt_decoration/src
 echo "* removing usermanual"
 rm -rf darktable-$dt_decoration/doc/usermanual
 
+# ... and also remove RELEASE_NOTES. that file is just for internal use
+echo "* removing RELEASE_NOTES"
+rm -rf darktable-$dt_decoration/RELEASE_NOTES
+
+# wrap it up again
 echo "* creating final tarball"
 tar cJf darktable-$dt_decoration.tar.xz darktable-$dt_decoration/
 rm "$SRCDIR/darktable-$dt_decoration.tar"
