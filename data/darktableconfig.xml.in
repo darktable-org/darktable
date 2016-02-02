@@ -577,7 +577,7 @@
   <dtconfig prefs="session">
     <name>session/base_directory_pattern</name>
     <type>string</type>
-    <default>$(PICTURES_FOLDER)/darktable</default>
+    <default>$(PICTURES_FOLDER)/Darktable</default>
     <shortdescription>base directory naming pattern</shortdescription>
     <longdescription>part of full import path for an import session</longdescription>
   </dtconfig>
