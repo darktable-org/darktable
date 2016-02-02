@@ -89,12 +89,6 @@ typedef enum dt_iop_ashift_homodir_t
   ASHIFT_HOMOGRAPH_INVERTED
 } dt_iop_ashift_homodir_t;
 
-typedef enum dt_iop_ashift_edge_t
-{
-  ASHIFT_EDGE_HORIZONTAL,
-  ASHIFT_EDGE_VERTICAL,
-} dt_iop_ashift_edge_t;
-
 typedef enum dt_iop_ashift_linetype_t
 {
   ASHIFT_LINE_IRRELEVANT = 0,       // the line is found to be not interesting
@@ -660,116 +654,6 @@ static void grey2rgb(const float *in, float *out, const int out_width, const int
     }
   }
 }
-
-// sobel edge detection in one direction
-static void edge_detect_1d(const float *in, float *out, const int width, const int height,
-                           dt_iop_ashift_edge_t dir)
-{
-  // Sobel kernels for both directions
-  const float hkernel[3][3] = { { 1.0f, 0.0f, -1.0f }, { 2.0f, 0.0f, -2.0f }, { 1.0f, 0.0f, -1.0f } };
-  const float vkernel[3][3] = { { 1.0f, 2.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { -1.0f, -2.0f, -1.0f } };
-  const int kwidth = 3;
-  const int khwidth = kwidth / 2;
-
-  // select kernel
-  const float *kernel = (dir == ASHIFT_EDGE_HORIZONTAL) ? (const float *)hkernel : (const float *)vkernel;
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out, kernel)
-#endif
-  // loop over image pixels and perform sobel convolution
-  for(int j = khwidth; j < height - khwidth; j++)
-  {
-    const float *inp = in + (size_t)j * width + khwidth;
-    float *outp = out + (size_t)j * width + khwidth;
-    for(int i = khwidth; i < width - khwidth; i++, inp++, outp++)
-    {
-      float sum = 0.0f;
-      for(int jj = 0; jj < kwidth; jj++)
-      {
-        const int k = jj * kwidth;
-        const int l = (jj - khwidth) * width;
-        for(int ii = 0; ii < kwidth; ii++)
-        {
-          sum += inp[l + ii - khwidth] * kernel[k + ii];
-        }
-      }
-      *outp = sum;
-    }
-  }
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out)
-#endif
-  // border fill in output buffer, so we don't get pseudo lines at image frame
-  for(int j = 0; j < height; j++)
-    for(int i = 0; i < width; i++)
-    {
-      float val = out[j * width + i];
-
-      if(j < khwidth)
-        val = out[(khwidth - j) * width + i];
-      else if(j >= height - khwidth)
-        val = out[(j - khwidth) * width + i];
-      else if(i < khwidth)
-        val = out[j * width + (khwidth - i)];
-      else if(i >= width - khwidth)
-        val = out[j * width + (i - khwidth)];
-
-      out[j * width + i] = val;
-
-      // jump over center of image
-      if(i == khwidth && j >= khwidth && j < height - khwidth) i = width - khwidth;
-    }
-}
-
-// edge detection in both directions after conversion into greyscale
-// outputs absolute values and gradients of edges
-static int edge_detect(const float *in, float *value, float *gradient, const int width, const int height)
-{
-  float *greyscale = NULL;
-  float *Gx = NULL;
-  float *Gy = NULL;
-
-  // allocate intermediate buffers
-  greyscale = malloc((size_t)width * height * sizeof(float));
-  if(greyscale == NULL) goto error;
-
-  Gx = malloc((size_t)width * height * sizeof(float));
-  if(Gx == NULL) goto error;
-
-  Gy = malloc((size_t)width * height * sizeof(float));
-  if(Gy == NULL) goto error;
-
-  // generate greyscale image
-  rgb2grey(in, greyscale, width, height);
-
-  // perform edge detection in both directions
-  edge_detect_1d(greyscale, Gx, width, height, ASHIFT_EDGE_HORIZONTAL);
-  edge_detect_1d(greyscale, Gy, width, height, ASHIFT_EDGE_VERTICAL);
-
-// calculate absolute values and gradients
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(Gx, Gy, value, gradient)
-#endif
-  for(size_t k = 0; k < (size_t)width * height; k++)
-  {
-    value[k] = sqrt(Gx[k] * Gx[k] + Gy[k] * Gy[k]);
-    gradient[k] = atan2(Gy[k], Gx[k]);
-  }
-
-  free(greyscale);
-  free(Gx);
-  free(Gy);
-  return TRUE;
-
-error:
-  if(greyscale) free(greyscale);
-  if(Gx) free(Gx);
-  if(Gy) free(Gy);
-  return FALSE;
-}
-
 
 // Do actual line_detection based on LSD algorithm and return results according to this module's
 // conventions
