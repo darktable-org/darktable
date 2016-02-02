@@ -2552,8 +2552,10 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
   // we don't do anything if the image is not ready
-  if(self->dev->preview_pipe->backbuf_width == g->old_width
-     && self->dev->preview_pipe->backbuf_height == g->old_height)
+  if((self->dev->preview_pipe->backbuf_width == g->old_width
+      && self->dev->preview_pipe->backbuf_height == g->old_height)
+    ||self->dev->preview_loading
+    )
     return 0;
   g->old_width = g->old_height = -1;
 
