@@ -1085,7 +1085,7 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
 
   // separate out G1 and G2 in RGGB Bayer patterns
   unsigned int filters4 = filters;
-  if(filters == 9 || filters == 0xb4b4b4b4 || filters == 0x9c9c9c9c) // x-trans or CYGM
+  if(filters == 9 || FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
     filters4 = filters;
   else if((filters & 3) == 1)
     filters4 = filters | 0x03030303u;
@@ -1212,7 +1212,7 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
   memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
   free(buffer);
 
-  if(filters != 9 && filters != 0xb4b4b4b4 && filters != 0x9c9c9c9c) // x-trans or CYGM or RGBE
+  if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
 // for Bayer mix the two greens to make VNG4
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(out) schedule(static)

@@ -1239,7 +1239,7 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   const dt_image_t *img = &self->dev->image_storage;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
-  if((img->flags & DT_IMAGE_4BAYER) && img->filters == 0xb4b4b4b4)
+  if(FILTERS_ARE_CYGM(img->filters))
   {
     dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
     dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));
