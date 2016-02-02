@@ -49,6 +49,17 @@
 // Thanks to Marcus for his support when implementing part of the ShiftN functionality
 // to darktable.
 
+// For line detection we use the LSD algorithm as published by Rafael Grompone:
+//
+//  "LSD: a Line Segment Detector" by Rafael Grompone von Gioi,
+//  Jeremie Jakubowicz, Jean-Michel Morel, and Gregory Randall,
+//  Image Processing On Line, 2012. DOI:10.5201/ipol.2012.gjmr-lsd
+//  http://dx.doi.org/10.5201/ipol.2012.gjmr-lsd
+#include "ashift_lsd.c"
+
+#define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
+#define MAX_TANGENTIAL_DEVIATION 30         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
+
 
 DT_MODULE_INTROSPECTION(1, dt_iop_ashift_params_t)
 
@@ -84,6 +95,16 @@ typedef enum dt_iop_ashift_edge_t
   ASHIFT_EDGE_VERTICAL,
 } dt_iop_ashift_edge_t;
 
+typedef enum dt_iop_ashift_linetype_t
+{
+  ASHIFT_LINE_IRRELEVANT = 0,       // the line is found to be not interesting
+                                    // eg. too short, or not horizontal or vertical
+  ASHIFT_LINE_VERTICAL   = 1 << 0,  // the line is (mostly) vertical
+  ASHIFT_LINE_VSELECTED  = 1 << 1,  // vertical line is selected
+  ASHIFT_LINE_HORIZONTAL = 1 << 2,  // the line is (mostly) horizontal
+  ASHIFT_LINE_HSELECTED  = 1 << 3   // horizontal line is selected
+} dt_iop_ashift_linetype_t;
+
 typedef struct dt_iop_ashift_params_t
 {
   float rotation;
@@ -91,13 +112,38 @@ typedef struct dt_iop_ashift_params_t
   float lensshift_h;
 } dt_iop_ashift_params_t;
 
+typedef struct dt_iop_ashift_line_t
+{
+  float p1[3];
+  float p2[3];
+  float length;
+  float width;
+  float weight;
+  dt_iop_ashift_linetype_t type;
+  // homogeneous coordinates:
+  float L[3];
+} dt_iop_ashift_line_t;
 
 typedef struct dt_iop_ashift_gui_data_t
 {
   GtkWidget *rotation;
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
+  GtkWidget *fit;
   int isflipped;
+  int lines_in_width;
+  int lines_in_height;
+  int lines_count;
+  int vertical_count;
+  int horizontal_count;
+  float *buf;
+  int buf_width;
+  int buf_height;
+  int buf_x_off;
+  int buf_y_off;
+  float buf_scale;
+  uint64_t buf_hash;
+  dt_iop_ashift_line_t *lines;
   dt_pthread_mutex_t lock;
 } dt_iop_ashift_gui_data_t;
 
@@ -150,7 +196,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "lens shift (h)", GTK_WIDGET(g->lensshift_h));
 }
 
-
+// multiply 3x3 matrix with 3x1 vector
 static inline void mat3mulv(float *dst, const float *const mat, const float *const v)
 {
   for(int k = 0; k < 3; k++)
@@ -161,6 +207,7 @@ static inline void mat3mulv(float *dst, const float *const mat, const float *con
   }
 }
 
+// multiply two 3x3 matrices
 static inline void mat3mul(float *dst, const float *const m1, const float *const m2)
 {
   for(int k = 0; k < 3; k++)
@@ -173,6 +220,37 @@ static inline void mat3mul(float *dst, const float *const m1, const float *const
     }
   }
 }
+
+// normalized product of two 3x1 vectors
+static inline void vec3prodn(float *dst, const float *const v1, const float *const v2)
+{
+  const float l1 = v1[1] * v2[2] - v1[2] * v2[1];
+  const float l2 = v1[2] * v2[0] - v1[0] * v2[2];
+  const float l3 = v1[0] * v2[1] - v1[1] * v2[0];
+
+  // normalize so that l1^2 + l2^2 + l3^3 = 1
+  const float sq = sqrt(l1 * l1 + l2 * l2 + l3 * l3);
+
+  const float f = sq > 0.0f ? 1.0f / sq : 1.0f;
+
+  dst[0] = l1 * f;
+  dst[1] = l2 * f;
+  dst[2] = l3 * f;
+}
+
+// scalar product of two 3x1 vectors
+static inline float vec3scalar(const float *const v1, const float *const v2)
+{
+  return (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]);
+}
+
+// check if 3x1 vector is (very close to) null
+static inline int vec3isnull(const float *const v)
+{
+  const float eps = 1e-10f;
+  return (fabs(v[0]) < eps && fabs(v[1]) < eps && fabs(v[2]) < eps);
+}
+
 
 
 static void _print_roi(const dt_iop_roi_t *roi, const char *label)
@@ -201,8 +279,9 @@ static void homography(float *homograph, const float angle, const float shift_v,
   const float sini = sin(phi);
 
   // all this comes from ShiftN
-  const float f_global = 28.0; // TODO: this is a parameter in ShiftN -> check use in darktable (in comb. with horifac)
-  const float horifac = 1.0f;  // TODO: see f_global
+  const float f_global
+      = 28.0; // TODO: this is a parameter in ShiftN -> check use in darktable (in comb. with horifac)
+  const float horifac = 1.0f; // TODO: see f_global
   const float exppa_v = exp(shift_v);
   const float fdb_v = f_global / (14.4f + (v / u - 1) * 7.2f);
   const float rad_v = fdb_v * (exppa_v - 1.0f) / (exppa_v + 1.0f);
@@ -210,7 +289,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   const float rt_v = sin(0.5f * alpha_v);
   const float r_v = fmax(0.1f, 2.0f * (horifac - 1.0f) * rt_v * rt_v + 1.0f);
 
-  const float vertifac = 1.0f;  // TODO: see f_global
+  const float vertifac = 1.0f; // TODO: see f_global
   const float exppa_h = exp(shift_h);
   const float fdb_h = f_global / (14.4f + (u / v - 1) * 7.2f);
   const float rad_h = fdb_h * (exppa_h - 1.0f) / (exppa_h + 1.0f);
@@ -248,9 +327,9 @@ static void homography(float *homograph, const float angle, const float shift_v,
   // Step 3: apply vertical lens shift effect
   memset(m1, 0, sizeof(m1));
   m1[0][0] = exppa_v;
-  m1[1][0] = 0.5f* ((exppa_v - 1.0f) * u) / v;
+  m1[1][0] = 0.5f * ((exppa_v - 1.0f) * u) / v;
   m1[1][1] = 2.0f * exppa_v / (exppa_v + 1.0f);
-  m1[1][2] = -0.5f * ((exppa_v - 1.0f) * u ) / (exppa_v + 1.0f);
+  m1[1][2] = -0.5f * ((exppa_v - 1.0f) * u) / (exppa_v + 1.0f);
   m1[2][0] = (exppa_v - 1.0f) / v;
   m1[2][2] = 1.0f;
 
@@ -283,9 +362,9 @@ static void homography(float *homograph, const float angle, const float shift_v,
   // Step 6: now we can apply horizontal lens shift with the same matrix format as above
   memset(m1, 0, sizeof(m1));
   m1[0][0] = exppa_h;
-  m1[1][0] = 0.5f* ((exppa_h - 1.0f) * v) / u;
+  m1[1][0] = 0.5f * ((exppa_h - 1.0f) * v) / u;
   m1[1][1] = 2.0f * exppa_h / (exppa_h + 1.0f);
-  m1[1][2] = -0.5f * ((exppa_h - 1.0f) * v ) / (exppa_h + 1.0f);
+  m1[1][2] = -0.5f * ((exppa_h - 1.0f) * v) / (exppa_h + 1.0f);
   m1[2][0] = (exppa_h - 1.0f) / u;
   m1[2][2] = 1.0f;
 
@@ -358,12 +437,11 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h,
-             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
+  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, piece->buf_in.width,
+             piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(points, points_count, homograph)
+#pragma omp parallel for schedule(static) default(none) shared(points, points_count, homograph)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -385,12 +463,11 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
-             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, piece->buf_in.width,
+             piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(points, points_count, ihomograph)
+#pragma omp parallel for schedule(static) default(none) shared(points, points_count, ihomograph)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -412,8 +489,8 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   *roi_out = *roi_in;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h,
-             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
+  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, piece->buf_in.width,
+             piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
 
@@ -460,7 +537,6 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 
   //_print_roi(roi_out, "roi_out");
   //_print_roi(roi_in, "roi_in");
-
 }
 
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -470,8 +546,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   *roi_in = *roi_out;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
-             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, piece->buf_in.width,
+             piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   const float orig_w = roi_in->scale * piece->buf_in.width;
   const float orig_h = roi_in->scale * piece->buf_in.height;
@@ -523,14 +599,33 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   //_print_roi(roi_in, "roi_in");
 }
 
-// simple conversion of rgb image into greyscale
+// simple conversion of rgb image into greyscale variant suitable for line segment detection
+// the lsd routines expect input as *double in the range [0; 256]
+static void rgb2grey256(const float *in, double *out, const int width, const int height)
+{
+  const int ch = 4;
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    const float *inp = in + (size_t)ch * j * width;
+    double *outp = out + (size_t)j * width;
+    for(int i = 0; i < width; i++, inp += ch, outp++)
+    {
+      *outp = (0.3f * inp[0] + 0.59f * inp[1] + 0.11f * inp[2]) * 256.0;
+    }
+  }
+}
+
+// simple conversion of rgb image into greyscale variant
 static void rgb2grey(const float *in, float *out, const int width, const int height)
 {
   const int ch = 4;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(in, out)
+#pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -543,14 +638,15 @@ static void rgb2grey(const float *in, float *out, const int width, const int hei
   }
 }
 
+
 // support function only needed during development
-static void grey2rgb(const float *in, float *out, const int out_width, const int out_height, const int in_width, const int in_height)
+static void grey2rgb(const float *in, float *out, const int out_width, const int out_height,
+                     const int in_width, const int in_height)
 {
   const int ch = 4;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(in, out)
+#pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
   for(int j = 0; j < out_height; j++)
   {
@@ -566,11 +662,12 @@ static void grey2rgb(const float *in, float *out, const int out_width, const int
 }
 
 // sobel edge detection in one direction
-static void edge_detect_1d(const float *in, float *out, const int width, const int height, dt_iop_ashift_edge_t dir)
+static void edge_detect_1d(const float *in, float *out, const int width, const int height,
+                           dt_iop_ashift_edge_t dir)
 {
   // Sobel kernels for both directions
-  const float hkernel[3][3] = { { 1.0f, 0.0f, -1.0f }, { 2.0f, 0.0f, -2.0f }, {  1.0f,  0.0f, -1.0f } };
-  const float vkernel[3][3] = { { 1.0f, 2.0f,  1.0f }, { 0.0f, 0.0f,  0.0f }, { -1.0f, -2.0f, -1.0f } };
+  const float hkernel[3][3] = { { 1.0f, 0.0f, -1.0f }, { 2.0f, 0.0f, -2.0f }, { 1.0f, 0.0f, -1.0f } };
+  const float vkernel[3][3] = { { 1.0f, 2.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { -1.0f, -2.0f, -1.0f } };
   const int kwidth = 3;
   const int khwidth = kwidth / 2;
 
@@ -578,8 +675,7 @@ static void edge_detect_1d(const float *in, float *out, const int width, const i
   const float *kernel = (dir == ASHIFT_EDGE_HORIZONTAL) ? (const float *)hkernel : (const float *)vkernel;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(in, out, kernel)
+#pragma omp parallel for schedule(static) default(none) shared(in, out, kernel)
 #endif
   // loop over image pixels and perform sobel convolution
   for(int j = khwidth; j < height - khwidth; j++)
@@ -603,8 +699,7 @@ static void edge_detect_1d(const float *in, float *out, const int width, const i
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(out)
+#pragma omp parallel for schedule(static) default(none) shared(out)
 #endif
   // border fill in output buffer, so we don't get pseudo lines at image frame
   for(int j = 0; j < height; j++)
@@ -612,10 +707,14 @@ static void edge_detect_1d(const float *in, float *out, const int width, const i
     {
       float val = out[j * width + i];
 
-      if(j < khwidth) val = out[(khwidth - j) * width + i];
-      else if(j >= height - khwidth) val = out[(j - khwidth) * width + i];
-      else if(i < khwidth) val = out[j * width + (khwidth - i)];
-      else if(i >= width - khwidth) val = out[j * width + (i - khwidth)];
+      if(j < khwidth)
+        val = out[(khwidth - j) * width + i];
+      else if(j >= height - khwidth)
+        val = out[(j - khwidth) * width + i];
+      else if(i < khwidth)
+        val = out[j * width + (khwidth - i)];
+      else if(i >= width - khwidth)
+        val = out[j * width + (i - khwidth)];
 
       out[j * width + i] = val;
 
@@ -649,10 +748,9 @@ static int edge_detect(const float *in, float *value, float *gradient, const int
   edge_detect_1d(greyscale, Gx, width, height, ASHIFT_EDGE_HORIZONTAL);
   edge_detect_1d(greyscale, Gy, width, height, ASHIFT_EDGE_VERTICAL);
 
-  // calculate absolute values and gradients
+// calculate absolute values and gradients
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(Gx, Gy, value, gradient)
+#pragma omp parallel for schedule(static) default(none) shared(Gx, Gy, value, gradient)
 #endif
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
@@ -672,6 +770,188 @@ error:
   return FALSE;
 }
 
+
+// Do actual line_detection based on LSD algorithm and return results according to this module's
+// conventions
+static int line_detect(const float *in, const int width, const int height, const int x_off, const int y_off,
+                       const float scale, dt_iop_ashift_line_t **alines, int *lcount, int *vcount, int *hcount)
+{
+  double *greyscale = NULL;
+  double *lines = NULL;
+  dt_iop_ashift_line_t *ashift_lines = NULL;
+
+  int vertical_count = 0;
+  int horizontal_count = 0;
+
+  // allocate intermediate buffers
+  greyscale = malloc((size_t)width * height * sizeof(double));
+  if(greyscale == NULL) goto error;
+
+  // generate greyscale image
+  rgb2grey256(in, greyscale, width, height);
+
+  // call the line segment detector LSD;
+  // LSD stores the number of found lines in lines_count.
+  // it returns structural details as vector double lines[7 * lines_count]
+  int lines_count;
+  lines = lsd(&lines_count, greyscale, width, height);
+
+  if(lines_count > 0)
+  {
+    // aggregate lines data into our own structures
+    ashift_lines = (dt_iop_ashift_line_t *)malloc((size_t)lines_count * sizeof(dt_iop_ashift_line_t));
+    if(ashift_lines == NULL) goto error;
+
+    for(int n = 0; n < lines_count; n++)
+    {
+      // line position in absolute coordinates
+      float px1 = x_off + lines[n * 7 + 0];
+      float py1 = y_off + lines[n * 7 + 1];
+      float px2 = x_off + lines[n * 7 + 2];
+      float py2 = y_off + lines[n * 7 + 3];
+
+      // scale back to input buffer
+      px1 /= scale;
+      py1 /= scale;
+      px2 /= scale;
+      py2 /= scale;
+
+      ashift_lines[n].p1[0] = px1;
+      ashift_lines[n].p1[1] = py1;
+      ashift_lines[n].p1[2] = 1.0f;
+      ashift_lines[n].p2[0] = px2;
+      ashift_lines[n].p2[1] = py2;
+      ashift_lines[n].p2[2] = 1.0f;;
+
+      // calculate homogeneous coordinates of line (defined by both points)
+      vec3prodn(ashift_lines[n].L, ashift_lines[n].p1, ashift_lines[n].p2);
+
+      // length and width of rectangle (see LSD) and weight (= length * width)
+      ashift_lines[n].length = sqrt((px2 - px1) * (px2 - px1) + (py2 - py1) * (py2 - py1));
+      ashift_lines[n].width = lines[n * 7 + 4] / scale;
+      ashift_lines[n].weight = ashift_lines[n].length * ashift_lines[n].width;
+
+      const float angle = atan2(py2 - py1, px2 - px1) / M_PI * 180.0f;
+      const int relevant = ashift_lines[n].length > MIN_LINE_LENGTH ? 1 : 0;
+      const int vertical = fabs(fabs(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
+      const int horizontal = fabs(fabs(fabs(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
+
+      // register type of line
+      dt_iop_ashift_linetype_t type = 0;
+      if(vertical && relevant)
+      {
+        type |= (ASHIFT_LINE_VERTICAL | ASHIFT_LINE_VSELECTED);
+        vertical_count++;
+      }
+      else if(horizontal && relevant)
+      {
+        type |= (ASHIFT_LINE_HORIZONTAL | ASHIFT_LINE_HSELECTED);
+        horizontal_count++;
+      }
+
+      ashift_lines[n].type = type;
+    }
+
+#if 0
+    printf("%d lines (vertical %d, horizontal %d, not relevant %d)\n", lines_count, vertical_count,
+           horizontal_count, lines_count - vertical_count - horizontal_count);
+    for(int n = 0; n < lines_count; n++)
+    {
+      printf("x1 %.0f, y1 %.0f, x2 %.0f, y2 %.0f, length %.0f, width %f, X %f, Y %f, Z %f, type %d, scalars %f %f\n",
+             ashift_lines[n].p1[0], ashift_lines[n].p1[1], ashift_lines[n].p2[0], ashift_lines[n].p2[1],
+             ashift_lines[n].length, ashift_lines[n].width,
+             ashift_lines[n].L[0], ashift_lines[n].L[1], ashift_lines[n].L[2], ashift_lines[n].type,
+             vec3scalar(ashift_lines[n].p1, ashift_lines[n].L),
+             vec3scalar(ashift_lines[n].p2, ashift_lines[n].L));
+    }
+    printf("\n");
+#endif
+  }
+
+  // store results in provides locations
+  *lcount = lines_count;
+  *vcount = vertical_count;
+  *hcount = horizontal_count;
+  *alines = ashift_lines;
+
+  // free intermediate buffers
+  free(lines);
+  free(greyscale);
+  return TRUE;
+
+error:
+  if(lines) free(lines);
+  if(greyscale) free(greyscale);
+  return FALSE;
+}
+
+static int get_structure(dt_iop_module_t *module)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+  float *buffer = NULL;
+
+  dt_pthread_mutex_lock(&g->lock);
+  // read buffer data
+  const int width = g->buf_width;
+  const int height = g->buf_height;
+  const int x_off = g->buf_x_off;
+  const int y_off = g->buf_y_off;
+  const float scale = g->buf_scale;
+
+  // create a temporary buffer to hold image data
+  buffer = malloc((size_t)width * height * 4 * sizeof(float));
+  if(buffer != NULL)
+    memcpy(buffer, g->buf, (size_t)width * height * 4 * sizeof(float));
+
+  // get rid of old structural data
+  g->lines_count = 0;
+  free(g->lines);
+  g->lines = NULL;
+  dt_pthread_mutex_unlock(&g->lock);
+
+  if(buffer == NULL) goto error;
+
+  dt_iop_ashift_line_t *lines;
+  int lines_count;
+  int vertical_count;
+  int horizontal_count;
+
+  // get structural data
+  if(!line_detect(buffer, width, height, x_off, y_off, scale, &lines, &lines_count,
+                  &vertical_count, &horizontal_count))
+    goto error;
+
+  dt_pthread_mutex_lock(&g->lock);
+  // save new structural data
+  g->lines_in_width = width;
+  g->lines_in_height = height;
+  g->lines_count = lines_count;
+  g->vertical_count = vertical_count;
+  g->horizontal_count = horizontal_count;
+  g->lines = lines;
+  dt_pthread_mutex_unlock(&g->lock);
+
+  free(buffer);
+  return TRUE;
+
+error:
+  free(buffer);
+  return FALSE;
+}
+
+
+static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
+{
+  if(!get_structure(module))
+  {
+    dt_control_log(_("could not detect structural data in image"));
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 #if 1
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -685,12 +965,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
-             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, piece->buf_in.width,
+             piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                                                      \
-  shared(ivoid, ovoid, roi_in, roi_out, ihomograph, interpolation)
+#pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_in, roi_out, ihomograph,    \
+                                                               interpolation)
 #endif
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
@@ -729,13 +1009,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
 
+    const int width = roi_in->width;
+    const int height = roi_in->height;
+    const int x_off = roi_in->x;
+    const int y_off = roi_in->y;
+    const float scale = roi_in->scale;
+
     // origin of image and opposite corner as reference points
     float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
     float ivec[2] = { points[2] - points[0], points[3] - points[1] };
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points, 2);
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points,
+                                      2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
     float ovecl = sqrt(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
@@ -744,10 +1031,32 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
-    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI/2.0f) < M_PI/4.0f ? 1 : 0;
+    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
     dt_pthread_mutex_lock(&g->lock);
     g->isflipped = isflipped;
+
+    // save a copy of preview input buffer for parameter fitting
+    // TODO: this should ideally be dependent on a hash value that represents image changes up to
+    // this module. piece->pipe->backbuf_hash is not suited as it does not depend on
+    // pixelpipe parameters
+    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
+    {
+      free(g->buf); // a no-op if g->buf is NULL
+      // only get new buffer if no old buffer or old buffer does not fit in terms of size
+      g->buf = malloc((size_t)width * height * 4 * sizeof(float));
+    }
+
+    // copy data
+    if(g->buf) memcpy(g->buf, ivoid, (size_t)width * height * 4 * sizeof(float));
+
+    g->buf_width = width;
+    g->buf_height = height;
+    g->buf_x_off = x_off;
+    g->buf_y_off = y_off;
+    g->buf_scale = scale;
+    g->buf_hash = 0;
+
     dt_pthread_mutex_unlock(&g->lock);
   }
 }
@@ -756,31 +1065,32 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  float *edge_value = NULL;
-  float *edge_gradient = NULL;
+  const int ch = 4;
+  const int in_width = roi_in->width;
+  const int in_height = roi_in->height;
+  const int out_width = roi_out->width;
+  const int out_height = roi_out->height;
 
-  // allocate intermediate buffers
-  edge_value = malloc((size_t)width * height * sizeof(float));
-  if(edge_value == NULL) goto error;
-
-  edge_gradient = malloc((size_t)width * height * sizeof(float));
-  if(edge_gradient == NULL) goto error;
-
-  // detect edges by their values and gradients
-  if(!edge_detect((float *)ivoid, edge_value, edge_gradient, width, height)) goto error;
-
-  grey2rgb(edge_value, (float *)ovoid, roi_out->width, roi_out->height, width, height);
-
-  free(edge_value);
-  free(edge_gradient);
-  return;
-
-error:
-  if(edge_value) free(edge_value);
-  if(edge_gradient) free(edge_gradient);
+  float *in = (float *)ivoid;
+  float *out = (float *)ovoid;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#endif
+  for(int j = 0; j < out_height; j++)
+  {
+    if(j >= in_height) continue;
+    const float *inp = in + (size_t)ch * j * in_width;
+    float *outp = out + (size_t)ch * j * out_width;
+    for(int i = 0; i < out_width; i++, inp += ch, outp += ch)
+    {
+      if(i >= in_width) continue;
+      outp[0] = inp[0];
+      outp[1] = inp[1];
+      outp[2] = inp[2];
+    }
+  }
 }
 #endif
 
@@ -793,8 +1103,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h,
-             piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+  homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h, piece->buf_in.width,
+             piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   cl_int err = -999;
   cl_mem dev_homo = NULL;
@@ -843,8 +1153,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, ldkernel, 3, sizeof(int), (void *)&height);
   dt_opencl_set_kernel_arg(devid, ldkernel, 4, sizeof(int), (void *)&iwidth);
   dt_opencl_set_kernel_arg(devid, ldkernel, 5, sizeof(int), (void *)&iheight);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 6, 2*sizeof(int), (void *)iroi);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 7, 2*sizeof(int), (void *)oroi);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 6, 2 * sizeof(int), (void *)iroi);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 7, 2 * sizeof(int), (void *)oroi);
   dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(float), (void *)&in_scale);
   dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(float), (void *)&out_scale);
   dt_opencl_set_kernel_arg(devid, ldkernel, 10, sizeof(cl_mem), (void *)&dev_homo);
@@ -858,13 +1168,20 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
 
+    const int width = roi_in->width;
+    const int height = roi_in->height;
+    const int x_off = roi_in->x;
+    const int y_off = roi_in->y;
+    const float scale = roi_in->scale;
+
     // origin of image and opposite corner as reference points
     float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
     float ivec[2] = { points[2] - points[0], points[3] - points[1] };
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points, 2);
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points,
+                                      2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
     float ovecl = sqrt(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
@@ -873,11 +1190,35 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
-    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI/2.0f) < M_PI/4.0f ? 1 : 0;
+    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
     dt_pthread_mutex_lock(&g->lock);
     g->isflipped = isflipped;
+
+    // save a copy of preview input buffer for parameter fitting
+    // TODO: this should ideally be dependent on a hash value that represents image changes up to
+    // this module. piece->pipe->backbuf_hash is not suited as it does not depend on
+    // pixelpipe parameters
+    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
+    {
+      free(g->buf); // a no-op if g->buf is NULL
+      // only get new buffer if no old buffer or old buffer does not fit in terms of size
+      g->buf = malloc((size_t)width * height * 4 * sizeof(float));
+    }
+
+    // copy data
+    if(g->buf)
+      err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in, width, height, 4 * sizeof(float));
+
+    g->buf_width = width;
+    g->buf_height = height;
+    g->buf_x_off = x_off;
+    g->buf_y_off = y_off;
+    g->buf_scale = scale;
+    g->buf_hash = 0;
     dt_pthread_mutex_unlock(&g->lock);
+
+    if(err != CL_SUCCESS) goto error;
   }
 
   return TRUE;
@@ -897,7 +1238,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->factor = 2.0f;
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
-  tiling->overlap = 3;  // accounts for interpolation width
+  tiling->overlap = 3; // accounts for interpolation width
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
@@ -927,6 +1268,16 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->lensshift_h = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void fit_button_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  if(!do_fit(self, p)) return;
+  dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -965,6 +1316,15 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_lock(&g->lock);
   g->isflipped = -1;
+  free(g->lines);
+  free(g->buf);
+  g->lines = NULL;
+  g->buf = NULL;
+  g->lines_count = 0;
+  g->buf_hash = 0;
+  g->buf_width = 0;
+  g->buf_height = 0;
+  g->buf_scale = 1.0f;
   dt_pthread_mutex_unlock(&g->lock);
 }
 
@@ -995,8 +1355,10 @@ void reload_defaults(dt_iop_module_t *module)
   if(module && module->dev)
   {
     const dt_image_t *img = &module->dev->image_storage;
-    isflipped = (img->orientation == ORIENTATION_ROTATE_CCW_90_DEG ||
-               img->orientation == ORIENTATION_ROTATE_CW_90_DEG) ? 1 : 0;
+    isflipped = (img->orientation == ORIENTATION_ROTATE_CCW_90_DEG
+                 || img->orientation == ORIENTATION_ROTATE_CW_90_DEG)
+                    ? 1
+                    : 0;
   }
 
   if(module && module->gui_data)
@@ -1082,6 +1444,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_pthread_mutex_init(&g->lock, NULL);
   dt_pthread_mutex_lock(&g->lock);
   g->isflipped = -1;
+  g->lines_count = 0;
+  g->lines = NULL;
+  g->buf = NULL;
+  g->buf_hash = 0;
+  g->buf_width = 0;
+  g->buf_height = 0;
+  g->buf_scale = 1.0f;
   dt_pthread_mutex_unlock(&g->lock);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1089,6 +1458,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->rotation = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 0.1f, p->rotation, 2);
   g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.01f, p->lensshift_v, 2);
   g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.01f, p->lensshift_h, 2);
+  g->fit = gtk_button_new_with_label(_("fit"));
 
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
   dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (vertical)"));
@@ -1097,14 +1467,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->fit, TRUE, TRUE, 0);
 
   g_object_set(g->rotation, "tooltip-text", _("rotate image"), (char *)NULL);
-  g_object_set(g->lensshift_v, "tooltip-text", _("apply lens shift correction in one direction"), (char *)NULL);
-  g_object_set(g->lensshift_h, "tooltip-text", _("apply lens shift correction in one direction"), (char *)NULL);
+  g_object_set(g->lensshift_v, "tooltip-text", _("apply lens shift correction in one direction"),
+               (char *)NULL);
+  g_object_set(g->lensshift_h, "tooltip-text", _("apply lens shift correction in one direction"),
+               (char *)NULL);
+  g_object_set(g->fit, "tooltip-text", _("start fitting routine"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
+  g_signal_connect(G_OBJECT(g->fit), "clicked", G_CALLBACK(fit_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
 
@@ -1112,6 +1487,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
+  free(g->lines);
+  free(g->buf);
   free(self->gui_data);
   self->gui_data = NULL;
 }
