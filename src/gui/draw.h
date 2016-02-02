@@ -34,7 +34,7 @@
 #define M_PI 3.141592654
 #endif
 
-/** wrapper around nikon curve or gegl. */
+/** wrapper around nikon curve. */
 typedef struct dt_draw_curve_t
 {
   CurveData c;

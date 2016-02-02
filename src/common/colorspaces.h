@@ -202,6 +202,21 @@ dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char 
  * make sure that darktable.color_profiles->xprofile_lock is held when calling this! */
 void dt_colorspaces_update_display_transforms();
 
+/** Calculate CAM->XYZ, XYZ->CAM matrices **/
+int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4]);
+
+/** Calculate CAM->RGB, RGB->CAM matrices and default WB multipliers */
+int dt_colorspaces_conversion_matrices_rgb(const char *name, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], double mul[4]);
+
+/** Applies CYGM WB coeffs to an image that's already been converted to RGB by dt_colorspaces_cygm_to_rgb */
+void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int num, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], float coeffs[4]);
+
+/** convert CYGM buffer to RGB */
+void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4]);
+
+/** convert RGB buffer to CYGM */
+void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3]);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

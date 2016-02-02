@@ -15,7 +15,7 @@ VIM_MODELINE='// vim: shiftwidth=2 expandtab tabstop=2 cindent'
 KATE_MODELINE='// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;'
 
 # thank you for collecting these files in tools/beautify_style.sh
-SOURCES=$(find src/ -name "*.c" -or -name "*.cc" -or -name "*.h" | grep -v src/external | grep -v gegl-operations)
+SOURCES=$(find src/ -name "*.c" -or -name "*.cc" -or -name "*.h" | grep -v src/external)
 
 for f in $SOURCES
 do

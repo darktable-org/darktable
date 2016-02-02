@@ -216,24 +216,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  // pull in new params to gegl
+  // pull in new params to pipe
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
   dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)p1;
-#ifdef HAVE_GEGL
-// TODO
-#else
+
   for(int ch = 0; ch < 3; ch++)
     for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++)
       dt_draw_curve_set_point(d->curve[ch], k, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
   int l = 0;
   for(int k = (int)MIN(pipe->iwidth * pipe->iscale, pipe->iheight * pipe->iscale); k; k >>= 1) l++;
   d->num_levels = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l);
-#endif
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // create part of the gegl pipeline
+  // create part of the pixelpipe
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)malloc(sizeof(dt_iop_equalizer_data_t));
   dt_iop_equalizer_params_t *default_params = (dt_iop_equalizer_params_t *)self->default_params;
   piece->data = (void *)d;
@@ -247,21 +244,11 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   int l = 0;
   for(int k = (int)MIN(pipe->iwidth * pipe->iscale, pipe->iheight * pipe->iscale); k; k >>= 1) l++;
   d->num_levels = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l);
-#ifdef HAVE_GEGL
-#error "gegl version not implemented!"
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve",
-                                                     "sampling-points", 65535, "curve", d->curve[0], NULL);
-  d->num_levels = 1;
-#endif
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 // clean up everything again.
-#ifdef HAVE_GEGL
-#error "gegl version not implemented!"
-// (void)gegl_node_remove_child(pipe->gegl, piece->input);
-#endif
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
   for(int ch = 0; ch < 3; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);

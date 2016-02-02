@@ -761,14 +761,6 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 /* check cput caps */
 // dt_check_cpu(argc,argv);
 
-#ifdef HAVE_GEGL
-  char geglpath[PATH_MAX] = { 0 };
-  char datadir[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  snprintf(geglpath, sizeof(geglpath), "%s/gegl:/usr/lib/gegl-0.0", datadir);
-  (void)setenv("GEGL_PATH", geglpath, 1);
-  gegl_init(&argc, &argv);
-#endif
 #ifdef USE_LUA
   dt_lua_init_early(L);
 #endif
@@ -1099,9 +1091,6 @@ void dt_cleanup()
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
 
   dt_exif_cleanup();
-#ifdef HAVE_GEGL
-  gegl_exit();
-#endif
 }
 
 void dt_print(dt_debug_thread_t thread, const char *msg, ...)

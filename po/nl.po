@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-26 19:11+0100\n"
-"PO-Revision-Date: 2016-01-26 20:11+0100\n"
+"POT-Creation-Date: 2016-01-30 17:17+0100\n"
+"PO-Revision-Date: 2016-01-30 17:18+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -711,8 +711,8 @@ msgstr "onbekende extensie '.%s'"
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "ophalen instellingen van de formaatmodule mislukt, exporteren is afgebroken ..."
 
-#: ../src/common/collection.c:665 ../src/develop/lightroom.c:916 ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:461 ../src/iop/channelmixer.c:474
-#: ../src/iop/colorbalance.c:584 ../src/iop/colorbalance.c:623 ../src/iop/colorbalance.c:662 ../src/iop/temperature.c:1220 ../src/libs/collect.c:948
+#: ../src/common/collection.c:665 ../src/develop/lightroom.c:916 ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:461 ../src/iop/channelmixer.c:473
+#: ../src/iop/colorbalance.c:584 ../src/iop/colorbalance.c:623 ../src/iop/colorbalance.c:662 ../src/iop/temperature.c:1226 ../src/libs/collect.c:948
 #: ../src/libs/collect.c:949 ../src/libs/collect.c:950
 msgid "red"
 msgstr "rood"
@@ -721,14 +721,14 @@ msgstr "rood"
 msgid "yellow"
 msgstr "geel"
 
-#: ../src/common/collection.c:669 ../src/develop/lightroom.c:920 ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:462 ../src/iop/channelmixer.c:481
-#: ../src/iop/colorbalance.c:593 ../src/iop/colorbalance.c:632 ../src/iop/colorbalance.c:671 ../src/iop/temperature.c:1221 ../src/libs/collect.c:956
+#: ../src/common/collection.c:669 ../src/develop/lightroom.c:920 ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:462 ../src/iop/channelmixer.c:480
+#: ../src/iop/colorbalance.c:593 ../src/iop/colorbalance.c:632 ../src/iop/colorbalance.c:671 ../src/iop/temperature.c:1227 ../src/libs/collect.c:956
 #: ../src/libs/collect.c:957 ../src/libs/collect.c:958
 msgid "green"
 msgstr "groen"
 
-#: ../src/common/collection.c:671 ../src/develop/lightroom.c:922 ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463 ../src/iop/channelmixer.c:487
-#: ../src/iop/colorbalance.c:602 ../src/iop/colorbalance.c:641 ../src/iop/colorbalance.c:680 ../src/iop/temperature.c:1222 ../src/libs/collect.c:960
+#: ../src/common/collection.c:671 ../src/develop/lightroom.c:922 ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463 ../src/iop/channelmixer.c:486
+#: ../src/iop/colorbalance.c:602 ../src/iop/colorbalance.c:641 ../src/iop/colorbalance.c:680 ../src/iop/temperature.c:1228 ../src/libs/collect.c:960
 #: ../src/libs/collect.c:961 ../src/libs/collect.c:962
 msgid "blue"
 msgstr "blauw"
@@ -1859,7 +1859,7 @@ msgid "%s is switched off"
 msgstr "%s is uitgeschakeld"
 
 #: ../src/develop/imageop.c:1208 ../src/gui/accelerators.c:596 ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847 ../src/gui/accelerators.c:873
-#: ../src/gui/presets.c:191 ../src/gui/presets.c:297 ../src/gui/presets.c:643 ../src/iop/temperature.c:1232 ../src/libs/import.c:550 ../src/libs/lib.c:309
+#: ../src/gui/presets.c:191 ../src/gui/presets.c:297 ../src/gui/presets.c:643 ../src/iop/temperature.c:1238 ../src/libs/import.c:550 ../src/libs/lib.c:309
 #: ../src/libs/lib.c:334 ../src/libs/lib.c:1152
 msgid "preset"
 msgstr "voorkeur"
@@ -4133,47 +4133,47 @@ msgstr "grijs"
 msgid "amount of red channel in the output channel"
 msgstr "hoeveelheid rood in uitgaand kanaal"
 
-#: ../src/iop/channelmixer.c:479
+#: ../src/iop/channelmixer.c:478
 msgid "amount of green channel in the output channel"
 msgstr "hoeveelheid groen in uitgaand kanaal"
 
-#: ../src/iop/channelmixer.c:486
+#: ../src/iop/channelmixer.c:485
 msgid "amount of blue channel in the output channel"
 msgstr "hoeveelheid blauw in uitgaand kanaal"
 
-#: ../src/iop/channelmixer.c:502
+#: ../src/iop/channelmixer.c:501
 msgid "swap R and B"
 msgstr "wissel r en b"
 
-#: ../src/iop/channelmixer.c:507
+#: ../src/iop/channelmixer.c:506
 msgid "swap G and B"
 msgstr "wissel r en b"
 
-#: ../src/iop/channelmixer.c:512
+#: ../src/iop/channelmixer.c:511
 msgid "color contrast boost"
 msgstr "kleurcontrast versterken"
 
-#: ../src/iop/channelmixer.c:517
+#: ../src/iop/channelmixer.c:516
 msgid "color details boost"
 msgstr "kleurdetails versterken"
 
-#: ../src/iop/channelmixer.c:522
+#: ../src/iop/channelmixer.c:521
 msgid "color artifacts boost"
 msgstr "kleurartefacten versterken"
 
-#: ../src/iop/channelmixer.c:527
+#: ../src/iop/channelmixer.c:526
 msgid "B/W"
 msgstr "B/W"
 
-#: ../src/iop/channelmixer.c:532
+#: ../src/iop/channelmixer.c:531
 msgid "B/W artifacts boost"
 msgstr "B/W artefacten versterken"
 
-#: ../src/iop/channelmixer.c:537
+#: ../src/iop/channelmixer.c:536
 msgid "B/W smooth skin"
 msgstr "B/W gladde huid"
 
-#: ../src/iop/channelmixer.c:542
+#: ../src/iop/channelmixer.c:541
 msgid "B/W blue artifacts reduce"
 msgstr "B/W reduceren van blauwe artefacten"
 
@@ -4672,44 +4672,48 @@ msgstr "mate van histogramegalisatie"
 msgid "output color profile"
 msgstr "uitgaand kleurprofiel"
 
-#: ../src/iop/colorout.c:500
+#: ../src/iop/colorout.c:468 ../src/iop/colorout.c:486
+msgid "missing output profile has been replaced by sRGB!"
+msgstr "ontbrekend uitgaand profiel is vervangen door sRGB!"
+
+#: ../src/iop/colorout.c:520
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "een niet ondersteund uitgaand profiel is vervangen door sRGB!"
 
-#: ../src/iop/colorout.c:636
+#: ../src/iop/colorout.c:656
 msgid "output intent"
 msgstr "voorgenomen output "
 
-#: ../src/iop/colorout.c:637 ../src/libs/export.c:617 ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261 ../src/views/darkroom.c:1547
+#: ../src/iop/colorout.c:657 ../src/libs/export.c:617 ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261 ../src/views/darkroom.c:1547
 #: ../src/views/lighttable.c:2466
 msgid "perceptual"
 msgstr "perceptueel"
 
-#: ../src/iop/colorout.c:638 ../src/libs/export.c:618 ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262 ../src/views/darkroom.c:1548
+#: ../src/iop/colorout.c:658 ../src/libs/export.c:618 ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262 ../src/views/darkroom.c:1548
 #: ../src/views/lighttable.c:2467
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
-#: ../src/iop/colorout.c:639 ../src/libs/export.c:619 ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263 ../src/views/darkroom.c:1549
+#: ../src/iop/colorout.c:659 ../src/libs/export.c:619 ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263 ../src/views/darkroom.c:1549
 #: ../src/views/lighttable.c:2468
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/colorout.c:640 ../src/libs/export.c:620 ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264 ../src/views/darkroom.c:1550
+#: ../src/iop/colorout.c:660 ../src/libs/export.c:620 ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264 ../src/views/darkroom.c:1550
 #: ../src/views/lighttable.c:2469
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
-#: ../src/iop/colorout.c:649
+#: ../src/iop/colorout.c:669
 msgid "output profile"
 msgstr "uitgaand profiel"
 
-#: ../src/iop/colorout.c:658
+#: ../src/iop/colorout.c:678
 msgid "rendering intent"
 msgstr "rendering intent"
 
-#: ../src/iop/colorout.c:659
+#: ../src/iop/colorout.c:679
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC profielen in%s/kleur/uit van %s/kleur/uit"
@@ -6530,33 +6534,33 @@ msgctxt "white balance"
 msgid "spot"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:861
+#: ../src/iop/temperature.c:867
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "ophalen camera-witbalans info van `%s' is niet gelukt!"
 
-#: ../src/iop/temperature.c:1218
+#: ../src/iop/temperature.c:1224
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:1219
+#: ../src/iop/temperature.c:1225
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:1234
+#: ../src/iop/temperature.c:1240
 msgid "choose white balance preset from camera"
 msgstr "kies voor camera-witbalans "
 
-#: ../src/iop/temperature.c:1238
+#: ../src/iop/temperature.c:1244
 msgid "finetune"
 msgstr "fijnafstelling"
 
-#: ../src/iop/temperature.c:1239
+#: ../src/iop/temperature.c:1245
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1243
+#: ../src/iop/temperature.c:1249
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
@@ -9144,9 +9148,13 @@ msgstr "moduletoolbox"
 msgid "ratings"
 msgstr "waarderingen"
 
-#: ../src/libs/tools/viewswitcher.c:46
+#: ../src/libs/tools/viewswitcher.c:57
 msgid "viewswitcher"
 msgstr "schermwisselaar"
+
+#: ../src/libs/tools/viewswitcher.c:142
+msgid "other"
+msgstr "overige"
 
 #: ../src/libs/tools/view_toolbox.c:45
 msgid "view toolbox"

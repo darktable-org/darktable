@@ -1042,7 +1042,9 @@ void reload_defaults(dt_iop_module_t *module)
     use_eprofile = TRUE; // the image has a profile assigned
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
-  if(use_eprofile)
+  if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
+    tmp.type = DT_COLORSPACE_LIN_REC709;
+  else if(use_eprofile)
     tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB)
     tmp.type = DT_COLORSPACE_SRGB;
@@ -1118,7 +1120,7 @@ static void update_profile_list(dt_iop_module_t *self)
   else
     dt_dcraw_adobe_coeff(self->dev->image_storage.camera_makermodel, (float(*)[12])cam_xyz);
 
-  if(!isnan(cam_xyz[0]))
+  if(!isnan(cam_xyz[0]) && !(self->dev->image_storage.flags & DT_IMAGE_4BAYER))
   {
     prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_STANDARD_MATRIX, ""), sizeof(prof->name));

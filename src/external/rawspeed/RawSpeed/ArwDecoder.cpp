@@ -63,6 +63,40 @@ RawImage ArwDecoder::decodeRawInternal() {
       }
 
       return mRaw;
+    } else if (hints.find("srf_format") != hints.end()) {
+      uint32 width = mRootIFD->getEntryRecursive(IMAGEWIDTH)->getInt();
+      uint32 height = mRootIFD->getEntryRecursive(IMAGELENGTH)->getInt();
+      uint32 len = width*height*2;
+
+      // Constants taken from dcraw
+      uint32 off = 862144;
+      uint32 key_off = 200896;
+      uint32 head_off = 164600;
+
+      if (mFile->getSize() < off+len)
+        ThrowRDE("ARW: SRF format, file too short, trying to read out of bounds");
+
+      // Replicate the dcraw contortions to get the "decryption" key
+      const uchar8 *data = mFile->getData(key_off);
+      uint32 offset = (*data)*4;
+      data = mFile->getData(key_off+offset);
+      uint32 key = get4BE(data,0);
+      uchar8 *head = mFile->getDataWrt(head_off);
+      SonyDecrypt((uint32 *) head, 10, key);
+      for (int i=26; i-- > 22; )
+        key = key << 8 | head[i];
+
+      // "Decrypt" the whole image buffer in place
+      uchar8 *image_data = mFile->getDataWrt(off);
+      SonyDecrypt((uint32 *) image_data, len/4, key);
+
+      // And now decode as a normal 16bit raw
+      mRaw->dim = iPoint2D(width, height);
+      mRaw->createData();
+      ByteStream input(image_data,len);
+      Decode16BitRawBEunpacked(input, width, height);
+
+      return mRaw;
     } else {
       ThrowRDE("ARW Decoder: No image data found");
     }
@@ -307,6 +341,27 @@ void ArwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   }
 }
 
+void ArwDecoder::SonyDecrypt(uint32 *buffer, uint32 len, uint32 key) {
+  uint32 pad[128];
+
+  // Initialize the decryption pad from the key
+  for (int p=0; p < 4; p++)
+    pad[p] = key = key * 48828125 + 1;
+  pad[3] = pad[3] << 1 | (pad[0]^pad[2]) >> 31;
+  for (int p=4; p < 127; p++)
+    pad[p] = (pad[p-4]^pad[p-2]) << 1 | (pad[p-3]^pad[p-1]) >> 31;
+  for (int p=0; p < 127; p++)
+    pad[p] = get4BE((uchar8 *) &pad[p],0);
+
+  int p = 127;
+  // Decrypt the buffer in place using the pad
+  while (len--) {
+    pad[p & 127] = pad[(p+1) & 127] ^ pad[(p+1+64) & 127];
+    *buffer++ ^= pad[p & 127];
+    p++;
+  }
+}
+
 void ArwDecoder::GetWB() {
   // Set the whitebalance for all the modern ARW formats (everything after A100)
   if (mRootIFD->hasEntryRecursive(DNGPRIVATEDATA)) {
@@ -337,24 +392,7 @@ void ArwDecoder::GetWB() {
       ThrowRDE("ARW: Sony WB block out of range, corrupted file?");
 
     uint32 *ifp_data = (uint32 *) mFile->getDataWrt(off);
-    uint32 pad[128];
-    uint32 p;
-    // Initialize the decryption
-    for (p=0; p < 4; p++)
-      pad[p] = key = key * 48828125 + 1;
-    pad[3] = pad[3] << 1 | (pad[0]^pad[2]) >> 31;
-    for (p=4; p < 127; p++)
-      pad[p] = (pad[p-4]^pad[p-2]) << 1 | (pad[p-3]^pad[p-1]) >> 31;
-    for (p=0; p < 127; p++)
-      pad[p] = get4BE((uchar8 *) &pad[p],0);
-
-    // Decrypt the buffer in place
-    uint32 count = len/4;
-    while (count--) {
-      pad[p & 127] = pad[(p+1) & 127] ^ pad[(p+1+64) & 127];
-      *ifp_data++ ^= pad[p & 127];
-      p++;
-    }
+    SonyDecrypt(ifp_data, len/4, key);
 
     if (mRootIFD->endian == getHostEndianness())
       sony_private = new TiffIFD(mFile, off);

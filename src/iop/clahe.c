@@ -250,37 +250,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)p1;
-#ifdef HAVE_GEGL
-  fprintf(stderr, "[local contrast] TODO: implement gegl version!\n");
-// pull in new params to gegl
-#else
   dt_iop_rlce_data_t *d = (dt_iop_rlce_data_t *)piece->data;
+
   d->radius = p->radius;
   d->slope = p->slope;
-#endif
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-  piece->data = NULL;
-#else
   piece->data = calloc(1, sizeof(dt_iop_rlce_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-// no free necessary, no data is alloc'ed
-#else
   free(piece->data);
   piece->data = NULL;
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)

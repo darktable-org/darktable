@@ -1,3 +1,1 @@
-src/gegl-operations/dt-contrast-curve.c
-src/gegl-operations/dt-gamma.c
 src/iop/useless.c

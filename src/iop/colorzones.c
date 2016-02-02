@@ -301,12 +301,10 @@ void cleanup_global(dt_iop_module_so_t *module)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  // pull in new params to gegl
+  // pull in new params to pipe
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)p1;
-#ifdef HAVE_GEGL
-// TODO
-#else
+
 #if 0 // print new preset
   printf("p.channel = %d;\n", p->channel);
   for(int k=0; k<3; k++) for(int i=0; i<DT_IOP_COLORZONES_BANDS; i++)
@@ -335,7 +333,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                               strength(p->equalizer_y[ch][DT_IOP_COLORZONES_BANDS - 1], p->strength));
     dt_draw_curve_calc_values(d->curve[ch], 0.0, 1.0, DT_IOP_COLORZONES_LUT_RES, d->lut[3], d->lut[ch]);
   }
-#endif
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -356,18 +353,13 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
                                   default_params->equalizer_y[ch][1]);
   }
   d->channel = (dt_iop_colorzones_channel_t)default_params->channel;
-#ifdef HAVE_GEGL
-#error "gegl version not implemented!"
-#endif
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 // clean up everything again.
-#ifdef HAVE_GEGL
-#error "gegl version not implemented!"
-#endif
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+
   for(int ch = 0; ch < 3; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;

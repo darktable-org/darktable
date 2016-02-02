@@ -21,3 +21,31 @@ development mailing list, [see here for more
 information](http://www.darktable.org/contact/).  This will dramatically
 improve your chances of having your code merged, especially if we think you'll
 hang around to maintain it.
+
+### Coding style
+
+We like our code to be properly formatted. We have a well-defined coding style, 
+and [.clang-format](.clang-format) style file represents it fully.
+You can enforce your commits to follow it:
+
+1. Install [clang-format](http://clang.llvm.org/docs/ClangFormat.html) clang tool. Probably, any version will be ok, but the newer the better.
+2. You'll need to integrate `git` and `clang-format`.
+  * For that, you will need to download `git-clang-format` from [here](https://github.com/llvm-mirror/clang/blob/master/tools/clang-format/git-clang-format) or [here](https://llvm.org/svn/llvm-project/cfe/trunk/tools/clang-format/git-clang-format).
+  * Read it to check for nastiness.
+  * Put it somewhere in your path (e.g. `~/bin` or `/usr/local/bin`) and ensure that it is executable (`chmod +x`).
+3. Now, step into your local clone of repository:
+  * `cd darktable/.git/hooks`
+  * If you previously did not have a `pre-commit` hook:
+    * `cp pre-commit.sample pre-commit && chmod +x pre-commit`
+  * Open `pre-commit` with your favourite text editor, and append at the end:
+```
+# format everything
+res=$(git clang-format --diff | wc -l)
+if [ $res -ne 1 ]
+then
+	git clang-format
+	echo "Commit did not match clang-format"
+	exit 1;
+fi
+```
+* Also, there is a [Coding Style](http://redmine.darktable.org/projects/darktable/wiki/Coding_Style) page on our redmine wiki.

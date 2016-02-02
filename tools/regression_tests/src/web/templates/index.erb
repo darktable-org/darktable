@@ -1,0 +1,126 @@
+<%
+  def sum_brands(brand_stats)
+    values = {}
+    brand_stats.each do |brand, stats|
+      stats.each do |type, value|
+        values[type] ||= 0
+        values[type] += value
+      end
+    end
+    values
+  end
+
+  @brand_stats = @brand_stats.keys.sort.map do |key| 
+    values = @brand_stats[key]
+    values[:total] = values.map{|type, val| type == :total ? 0 : val.to_i}.reduce(:+)
+    [key, values]
+  end
+  @brand_stats << ["Total", sum_brands(@brand_stats)]
+
+  def calc_percent(stats, type)
+    ((stats[type].to_f/stats[:total].to_f)*100).to_i
+  end
+
+  @brand_results = @brand_results.keys.sort.map {|key| [key, @brand_results[key]]}
+
+  def link_to_results(brand, type=nil, stats=nil)
+    value = if brand && type && stats
+      stats[type].to_s+" ("+calc_percent(stats, type).to_s+"%)"
+    else
+      brand.capitalize
+    end
+
+    if brand == "Total"
+      value
+    else
+      anchor = type ? brand+"-"+type.to_s : brand
+      "<a href=\"#results-#{anchor}\">#{value}</a>"
+    end
+  end
+%>
+
+<div class="row">
+  <div class="span12">
+    <h1>Regression comparison between darktable versions</h1>
+    <div class="panel panel-primary">
+      <div class="panel-heading">Comparison Settings</div>
+      <table class="table">
+        <tbody>
+          <tr><th>From</th><td><%= @version1 %></td></tr>
+          <tr><th>To</th><td><%= @version2 %></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="span12">
+    <h2>Summary of test run</h2>
+    <div class="panel panel-primary">
+      <div class="panel-heading">Results of test run per camera brand</div>
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Brand</th>
+          <% TYPES.each do |type, opts| %>
+            <th class="<%= opts[:class].to_s %>"><%= opts[:name].to_s %></th>
+          <% end %>
+          </tr>
+        </thead>
+        <tbody>
+    <% @brand_stats.each do |brand, stats| %>
+        <tr>
+          <th><%= link_to_results(brand) %></th>
+      <% TYPES.each do |type, opts| %>
+        <% if stats[type] %>
+          <td class="<%= opts[:class].to_s %>">
+            <%= link_to_results(brand, type, stats) %>
+          </td>
+        <% else %>
+          <td></td>
+        <% end %>
+      <% end %>
+        </tr>
+    <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="span12">
+    <h2>Detail of per Brand Results</h2>
+  <% @brand_results.each do |brand, results| %>
+    <div class="panel panel-primary" id="results-<%= brand %>">
+      <div class="panel-heading">
+        <h3 class="panel-title"><%= brand.capitalize %></h3>
+      </div>
+      <div class="panel-body">
+      <% TYPES.each do |type, opts| %>
+        <% instances = results[type] %>
+        <% if instances %>
+          <div class="panel panel-<%= opts[:class] ? opts[:class].to_s : "default" %>" id="results-<%= brand %>-<%= type %>">
+            <div class="panel-heading">
+              <h4 class="panel-title"><%= brand.capitalize %> <%= opts[:name] %></h4>
+            </div>
+            <ul class="list-group">
+            <% instances.each do |values| %>
+              <li class="list-group-item">
+              <% if opts[:diffed] %>
+                <a href="diff-<%= values["name"] %>.html"><%= values["name"] %></a>
+              <% else %>
+                <%= values["name"] %>
+              <% end %>
+              </li>
+            <% end %>
+            </ul>
+          </div>
+        <% end %>
+      <% end %>
+      </div>
+    </div>
+  <% end %>
+  </div>
+</div>

@@ -134,21 +134,12 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if(mRootIFD->hasEntryRecursive((CiffTag)0x102c)) {
     CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x102c);
     if (entry->type == CIFF_SHORT && entry->getShort() > 512) {
-      /* G1 */
-
+      // G1/Pro90 CYGM pattern
       const ushort16 *data = entry->getShortArray();
-
-      // RGB? (second green level looks bogus)
-      float cam_mul[4];
-      for(int c = 0; c < 4; c++)
-      {
-        cam_mul[c ^ 2] = (float) data[60 + c];
-      }
-
-      const float green = cam_mul[1];
-      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
-      mRaw->metadata.wbCoeffs[1] = 1.0f;
-      mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
+      mRaw->metadata.wbCoeffs[0] = (float) data[62];
+      mRaw->metadata.wbCoeffs[1] = (float) data[63];
+      mRaw->metadata.wbCoeffs[2] = (float) data[60];
+      mRaw->metadata.wbCoeffs[3] = (float) data[61];
     } else if (entry->type == CIFF_SHORT) {
       /* G2, S30, S40 */
 

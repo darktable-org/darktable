@@ -1131,11 +1131,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
-#ifdef HAVE_GEGL
-  fprintf(stderr, "[watermark] TODO: implement gegl version!\n");
-// pull in new params to gegl
-#else
   dt_iop_watermark_data_t *d = (dt_iop_watermark_data_t *)piece->data;
+
   d->opacity = p->opacity;
   d->scale = p->scale;
   d->rotate = p->rotate;
@@ -1153,30 +1150,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   snprintf(d->font, sizeof(d->font), "%s", p->font);
 
 // fprintf(stderr,"Commit params: %s...\n",d->filename);
-#endif
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-  piece->data = NULL;
-#else
   piece->data = malloc(sizeof(dt_iop_watermark_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-// no free necessary, no data is alloc'ed
-#else
   free(piece->data);
   piece->data = NULL;
-#endif
 }
 
 

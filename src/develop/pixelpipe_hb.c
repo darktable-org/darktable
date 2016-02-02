@@ -56,7 +56,6 @@ typedef enum dt_pixelpipe_picker_source_t
   PIXELPIPE_PICKER_OUTPUT = 1
 } dt_pixelpipe_picker_source_t;
 
-// this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
 
 static char *_pipe_type_to_str(int pipe_type)

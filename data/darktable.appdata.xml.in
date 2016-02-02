@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2013 Pascal de Bruijn <pmjdebruijn@pcode.nl>
+               2013-2016 Tobias Ellinghaus <me@houz.org>
+               2016 Richard Hughes <richard@hughsie.com>
+-->
+<component type="desktop">
+  <id>darktable.desktop</id>
+  <name>darktable</name>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0+ and GPL-2.0+ and LGPL-2.0+ and BSD-3-Clause and MIT and CC-BY-SA-1.0 and CC-BY-2.5 and CC-BY-NC-3.0</project_license>
+  <_summary>Organize and develop images from digital cameras</_summary>
+  <translation type="gettext">darktable</translation>
+  <description>
+    <_p>
+      darktable manages your digital negatives in a database and lets you
+      view them through a lighttable. It also enables you to develop raw
+      images and enhance them in a darkroom.
+    </_p>
+    <_p>
+      Other modes besides lighttable and darkroom are a map for geotagging,
+      tethering, print and a slideshow.
+    </_p>
+    <_p>
+      darktable supports most modern camera's raw formats, and does all
+      of its processing at very high precision.
+    </_p>
+  </description>
+  <screenshots>
+    <screenshot height="741" width="1317" type="default">
+      <image>https://www.darktable.org/images/darktable-appdata-lighttable.png</image>
+      <caption>Virtual light table</caption>
+      </screenshot>
+    <screenshot height="741" width="1317">
+      <image>https://www.darktable.org/images/darktable-appdata-darkroom.png</image>
+      <caption>Virtual dark room</caption>
+      </screenshot>
+    <screenshot height="741" width="1317">
+      <image>https://www.darktable.org/images/darktable-appdata-tethering.png</image>
+      <caption>Tethered to a camera</caption>
+    </screenshot>
+    <screenshot height="741" width="1317">
+      <image>https://www.darktable.org/images/darktable-appdata-map.png</image>
+      <caption>Where the photographs were taken</caption>
+      </screenshot>
+  </screenshots>
+  <url type="homepage">https://www.darktable.org/</url>
+  <url type="bugtracker">https://redmine.darktable.org/projects/darktable/issues</url>
+  <url type="help">https://www.darktable.org/usermanual/</url>
+  <update_contact>darktable-dev@lists.darktable.org</update_contact>
+</component>

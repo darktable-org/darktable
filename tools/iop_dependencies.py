@@ -1,7 +1,21 @@
 #!/usr/bin/env python
 
-# import graphviz (python-pygraph python-pygraphviz)
+def usage():
+  sys.stderr.write("Usage: iop_dependencies.py [--apply]\n")
+  sys.exit(2)
+
 import sys
+apply_changes = False
+
+if len(sys.argv) > 2:
+  usage()
+elif len(sys.argv) == 2:
+  if sys.argv[1] == "--apply":
+    apply_changes = True
+  else:
+    usage()
+
+# import graphviz (python-pygraph python-pygraphviz)
 sys.path.append('..')
 sys.path.append('/usr/lib/graphviz/python/')
 sys.path.append('/usr/lib64/graphviz/python/')
@@ -208,7 +222,7 @@ def add_edges(gr):
 
   # liquify immediately after spot removal
   gr.add_edge(('liquify', 'spots'))
-  gr.add_edge(('lens', 'liquify'))
+  gr.add_edge(('liquify', 'lens'))
   gr.add_edge(('rotatepixels', 'liquify'))
   gr.add_edge(('scalepixels', 'liquify'))
 
@@ -489,7 +503,8 @@ for n in sorted_nodes:
     if not n == "rawspeed":
       print("could not find file `%s'"%filename)
     continue
-  replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
+  if apply_changes:
+    replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
   priority -= 1000.0/(length-1.0)
 
 # beauty-print the sorted pipe as pdf:

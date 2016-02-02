@@ -66,11 +66,7 @@ typedef struct dt_dev_histogram_stats_t
 
 typedef void dt_iop_params_t;
 
-#ifdef HAVE_GEGL
-#include "develop/pixelpipe_gegl.h"
-#else
 #include "develop/pixelpipe_hb.h"
-#endif
 
 #endif
 
