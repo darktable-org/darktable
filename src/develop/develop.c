@@ -1345,8 +1345,8 @@ gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
   dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
 
   /* check if exposure iop module has registered its hooks */
-  if(instance && instance->module && instance->set_black && instance->get_black && instance->set_white
-     && instance->get_white)
+  if(instance && instance->module && instance->set_black && instance->get_black && instance->set_exposure
+     && instance->get_exposure)
     return TRUE;
 
   return FALSE;
@@ -1366,18 +1366,18 @@ void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
   dt_dev_add_history_item(exposure->dev, exposure, TRUE);
 }
 
-void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
+void dt_dev_exposure_set_exposure(dt_develop_t *dev, const float exposure)
 {
   dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
 
-  if(instance && instance->module && instance->set_white) instance->set_white(instance->module, white);
+  if(instance && instance->module && instance->set_exposure) instance->set_exposure(instance->module, exposure);
 }
 
-float dt_dev_exposure_get_white(dt_develop_t *dev)
+float dt_dev_exposure_get_exposure(dt_develop_t *dev)
 {
   dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
 
-  if(instance && instance->module && instance->get_white) return instance->get_white(instance->module);
+  if(instance && instance->module && instance->get_exposure) return instance->get_exposure(instance->module);
 
   return 0.0;
 }
