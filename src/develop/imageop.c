@@ -2071,60 +2071,6 @@ static int FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col)&1)) << 1) & 3;
 }
 
-uint32_t dt_iop_adjust_filters_to_crop(const dt_image_t *img)
-{
-  uint32_t filters = dt_image_filter(img);
-
-  // FIXME: get those from rawprepare IOP somehow !!! (img->crop_{x,y})
-
-  // if black y offset is odd, need to switch pattern by one row:
-  // 0x16161616 <-> 0x61616161
-  // 0x49494949 <-> 0x94949494
-  if(img->crop_y & 1)
-  {
-    switch(filters)
-    {
-      case 0x16161616u:
-        filters = 0x61616161u;
-        break;
-      case 0x49494949u:
-        filters = 0x94949494u;
-        break;
-      case 0x61616161u:
-        filters = 0x16161616u;
-        break;
-      case 0x94949494u:
-        filters = 0x49494949u;
-        break;
-      default:
-        filters = 0;
-        break;
-    }
-  }
-  if(img->crop_x & 1)
-  {
-    switch(filters)
-    {
-      case 0x16161616u:
-        filters = 0x49494949u;
-        break;
-      case 0x49494949u:
-        filters = 0x16161616u;
-        break;
-      case 0x61616161u:
-        filters = 0x94949494u;
-        break;
-      case 0x94949494u:
-        filters = 0x61616161u;
-        break;
-      default:
-        filters = 0;
-        break;
-    }
-  }
-  return filters;
-}
-
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
@@ -2216,6 +2162,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
 
   // move p to point to an rggb block:
   int trggbx = 0, trggby = 0;
+
   if(FC(trggby, trggbx + 1, filters) != 1) trggbx++;
   if(FC(trggby, trggbx, filters) != 0)
   {
@@ -2267,7 +2214,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
 
           if(!((pc >= 60000) ^ (MAX(MAX(p1, p2), MAX(p3, p4)) >= 60000)))
           {
-            if(filters == 0xb4b4b4b4 || filters == 0x9c9c9c9c) // CYGM or RGBE so lets keep all four values
+            if(FILTERS_ARE_4BAYER(filters)) // CYGM or RGBE so lets keep all four values
               sum = _mm_add_epi32(sum, _mm_set_epi32(p3, p4, p2, p1));
             else
               sum = _mm_add_epi32(sum, _mm_set_epi32(0, p4, p3 + p2, p1));
@@ -2275,7 +2222,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
           }
         }
 
-      if(filters == 0xb4b4b4b4 || filters == 0x9c9c9c9c)
+      if(FILTERS_ARE_4BAYER(filters))
         col = _mm_mul_ps(
             _mm_cvtepi32_ps(sum),
             _mm_div_ps(_mm_set_ps(1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / 65535.0f),
@@ -2309,7 +2256,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint1
    * here we just need to adjust filters to the crop!
    */
 
-  const uint32_t filters = dt_iop_adjust_filters_to_crop(img);
+  const uint32_t filters = img->filters_cropped;
 
   dt_iop_clip_and_zoom_demosaic_half_size(out, in, roi_out, roi_in, roi_out->width, in_stride, filters);
 }
@@ -2728,7 +2675,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(float *out, const flo
    * here we just need to adjust filters to the crop!
    */
 
-  const uint32_t filters = dt_iop_adjust_filters_to_crop(img);
+  const uint32_t filters = img->filters_cropped;
 
   dt_iop_clip_and_zoom_demosaic_half_size_f(out, in, roi_out, roi_in, out_stride, in_stride, filters, clip);
 }

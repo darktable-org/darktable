@@ -969,6 +969,7 @@ void dt_image_init(dt_image_t *img)
   img->legacy_flip.user_flip = 0;
 
   img->filters = 0u;
+  img->filters_cropped = 0u;
   img->bpp = 0;
   img->film_id = -1;
   img->group_id = -1;

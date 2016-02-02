@@ -26,6 +26,17 @@
 
 #include <inttypes.h>
 
+#define FILTERS_ARE_CYGM(filters) (\
+  (filters) == 0xb4b4b4b4 \
+)
+
+#define FILTERS_ARE_RGBE(filters) (\
+  (filters) == 0x63636363 ||\
+  (filters) == 0x9c9c9c9c \
+)
+
+#define FILTERS_ARE_4BAYER(filters) (FILTERS_ARE_CYGM(filters) || FILTERS_ARE_RGBE(filters))
+
 typedef enum dt_imageio_levels_t
 {
   IMAGEIO_INT8 = 0x0,

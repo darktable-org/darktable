@@ -244,9 +244,40 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     }
 
     img->bpp = r->getBpp();
+
+    // dimensions of uncropped image
+    iPoint2D dimUncropped = r->getUncroppedDim();
+    img->width = dimUncropped.x;
+    img->height = dimUncropped.y;
+
+    // dimensions of cropped image
+    iPoint2D dimCropped = r->dim;
+
+    // crop - Top,Left corner
+    iPoint2D cropTL = r->getCropOffset();
+    img->crop_x = cropTL.x;
+    img->crop_y = cropTL.y;
+
+    // crop - Bottom,Right corner
+    iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
+    img->crop_width = cropBR.x;
+    img->crop_height = cropBR.y;
+
+    img->fuji_rotation_pos = r->metadata.fujiRotationPos;
+    img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
+
     img->filters = r->cfa.getDcrawFilter();
-    if (img->filters == 0xb4b4b4b4 || img->filters == 0x9c9c9c9c)
+    if(FILTERS_ARE_4BAYER(img->filters))
       img->flags |= DT_IMAGE_4BAYER;
+
+    // Shift CFA to match crop and get a cropped filters
+    ColorFilterArray cropcfa(r->cfa);
+    if (img->crop_x & 1)
+      cropcfa.shiftLeft();
+    if (img->crop_y & 1)
+      cropcfa.shiftDown();
+    img->filters_cropped = cropcfa.getDcrawFilter();
+
     if(img->filters)
     {
       img->flags &= ~DT_IMAGE_LDR;
@@ -272,27 +303,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
           }
       }
     }
-
-    // dimensions of uncropped image
-    iPoint2D dimUncropped = r->getUncroppedDim();
-    img->width = dimUncropped.x;
-    img->height = dimUncropped.y;
-
-    // dimensions of cropped image
-    iPoint2D dimCropped = r->dim;
-
-    // crop - Top,Left corner
-    iPoint2D cropTL = r->getCropOffset();
-    img->crop_x = cropTL.x;
-    img->crop_y = cropTL.y;
-
-    // crop - Bottom,Right corner
-    iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
-    img->crop_width = cropBR.x;
-    img->crop_height = cropBR.y;
-
-    img->fuji_rotation_pos = r->metadata.fujiRotationPos;
-    img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
 
     void *buf = dt_mipmap_cache_alloc(mbuf, img);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;
