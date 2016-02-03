@@ -207,35 +207,16 @@ typedef struct {
 } dt_liquify_warp_t;
 
 typedef struct {
-  dt_liquify_path_header_t header;
-  dt_liquify_warp_t warp;
-} dt_liquify_move_to_v1_t;
-
-typedef struct {
-  dt_liquify_path_header_t header;
-  dt_liquify_warp_t warp;
-} dt_liquify_line_to_v1_t;
-
-typedef struct {
-  dt_liquify_path_header_t header;
-  dt_liquify_warp_t warp;
   float complex ctrl1;
   float complex ctrl2;
-} dt_liquify_curve_to_v1_t;
+} dt_liquify_node_t;
 
 // set up lots of alternative ways to get at the popular members.
 
-typedef union {
-  struct {
-    dt_liquify_path_header_t   header;
-    union {
-      float complex            point;
-      dt_liquify_warp_t        warp;
-    };
-  };
-  dt_liquify_move_to_v1_t    move_to_v1;
-  dt_liquify_line_to_v1_t    line_to_v1;
-  dt_liquify_curve_to_v1_t   curve_to_v1;
+typedef struct {
+  dt_liquify_path_header_t header;
+  dt_liquify_warp_t        warp;
+  dt_liquify_node_t        node; // extended node data
 } dt_liquify_path_data_t;
 
 typedef struct {
@@ -538,10 +519,10 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
     switch (data->header.type)
     {
     case DT_LIQUIFY_PATH_CURVE_TO_V1:
-      *b++ = creal (data->curve_to_v1.ctrl1) / params->from_scale;
-      *b++ = cimag (data->curve_to_v1.ctrl1) / params->from_scale;
-      *b++ = creal (data->curve_to_v1.ctrl2) / params->from_scale;
-      *b++ = cimag (data->curve_to_v1.ctrl2) / params->from_scale;
+      *b++ = creal (data->node.ctrl1) / params->from_scale;
+      *b++ = cimag (data->node.ctrl1) / params->from_scale;
+      *b++ = creal (data->node.ctrl2) / params->from_scale;
+      *b++ = cimag (data->node.ctrl2) / params->from_scale;
       // fall thru
     case DT_LIQUIFY_PATH_MOVE_TO_V1:
     case DT_LIQUIFY_PATH_LINE_TO_V1:
@@ -577,9 +558,9 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
     switch (data->header.type)
     {
     case DT_LIQUIFY_PATH_CURVE_TO_V1:
-      data->curve_to_v1.ctrl1 = (b[0] + b[1] * I) * params->to_scale;
+      data->node.ctrl1 = (b[0] + b[1] * I) * params->to_scale;
       b += 2;
-      data->curve_to_v1.ctrl2 = (b[0] + b[1] * I) * params->to_scale;
+      data->node.ctrl2 = (b[0] + b[1] * I) * params->to_scale;
       b += 2;
       // fall thru
     case DT_LIQUIFY_PATH_MOVE_TO_V1:
@@ -1521,7 +1502,7 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p)
     if (data->header.type == DT_LIQUIFY_PATH_INVALIDATED)
       break;
 
-    const float complex *p2 = &data->point;
+    const float complex *p2 = &data->warp.point;
     const dt_liquify_warp_t *warp2 = &data->warp;
 
     if (data->header.type == DT_LIQUIFY_PATH_MOVE_TO_V1)
@@ -1537,7 +1518,7 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p)
 
     const dt_liquify_path_data_t *prev = node_prev (p, data);
     const dt_liquify_warp_t *warp1 = &prev->warp;
-    const float complex *p1 = &prev->point;
+    const float complex *p1 = &prev->warp.point;
 
     if (data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
     {
@@ -1560,8 +1541,8 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p)
     {
       float complex *buffer = malloc (INTERPOLATION_POINTS * sizeof (float complex));
       interpolate_cubic_bezier (*p1,
-                                data->curve_to_v1.ctrl1,
-                                data->curve_to_v1.ctrl2,
+                                data->node.ctrl1,
+                                data->node.ctrl2,
                                 *p2,
                                 buffer,
                                 INTERPOLATION_POINTS);
@@ -1654,7 +1635,7 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
 
       cairo_new_path (cr);
 
-      const float complex point = data->point;
+      const float complex point = data->warp.point;
 
       if (data->header.type == DT_LIQUIFY_PATH_MOVE_TO_V1)
         cairo_move_to (cr, creal (point), cimag (point));
@@ -1725,12 +1706,12 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
             || (data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1))
         {
           assert (prev);
-          cairo_move_to (cr, creal (prev->point), cimag (prev->point));
+          cairo_move_to (cr, creal (prev->warp.point), cimag (prev->warp.point));
           if (data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
             cairo_line_to (cr, creal (point), cimag (point));
           if (data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1) {
-            cairo_curve_to (cr, creal (data->curve_to_v1.ctrl1), cimag (data->curve_to_v1.ctrl1),
-                            creal (data->curve_to_v1.ctrl2), cimag (data->curve_to_v1.ctrl2),
+            cairo_curve_to (cr, creal (data->node.ctrl1), cimag (data->node.ctrl1),
+                            creal (data->node.ctrl2), cimag (data->node.ctrl2),
                             creal (point), cimag (point));
           }
           THICKLINE; FG_COLOR;
@@ -1779,23 +1760,23 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
             !(prev && prev->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH))
         {
           THINLINE; FG_COLOR;
-          cairo_move_to (cr, creal (prev->point), cimag (prev->point));
-          cairo_line_to (cr, creal (data->curve_to_v1.ctrl1), cimag (data->curve_to_v1.ctrl1));
+          cairo_move_to (cr, creal (prev->warp.point), cimag (prev->warp.point));
+          cairo_line_to (cr, creal (data->node.ctrl1), cimag (data->node.ctrl1));
           cairo_stroke (cr);
         }
         if (layer == DT_LIQUIFY_LAYER_CTRLPOINT2_HANDLE &&
             data->header.node_type != DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH)
         {
           THINLINE; FG_COLOR;
-          cairo_move_to (cr, creal (data->point), cimag (data->point));
-          cairo_line_to (cr, creal (data->curve_to_v1.ctrl2), cimag (data->curve_to_v1.ctrl2));
+          cairo_move_to (cr, creal (data->warp.point), cimag (data->warp.point));
+          cairo_line_to (cr, creal (data->node.ctrl2), cimag (data->node.ctrl2));
           cairo_stroke (cr);
         }
         if (layer == DT_LIQUIFY_LAYER_CTRLPOINT1 &&
             !(prev && prev->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH))
         {
           THINLINE; BG_COLOR;
-          draw_circle (cr, data->curve_to_v1.ctrl1, GET_UI_WIDTH (GIZMO_SMALL));
+          draw_circle (cr, data->node.ctrl1, GET_UI_WIDTH (GIZMO_SMALL));
           FILL_TEST;
           cairo_fill_preserve (cr);
           FG_COLOR;
@@ -1805,7 +1786,7 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
             data->header.node_type != DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH)
         {
           THINLINE; BG_COLOR;
-          draw_circle (cr, data->curve_to_v1.ctrl2, GET_UI_WIDTH (GIZMO_SMALL));
+          draw_circle (cr, data->node.ctrl2, GET_UI_WIDTH (GIZMO_SMALL));
           FILL_TEST;
           cairo_fill_preserve (cr);
           FG_COLOR;
@@ -2205,16 +2186,16 @@ static void smooth_paths_linsys (dt_iop_liquify_params_t *params)
 
     while (node)
     {
-      const dt_liquify_curve_to_v1_t *d = (dt_liquify_curve_to_v1_t *) node;
+      const dt_liquify_path_data_t *d = (dt_liquify_path_data_t *) node;
       const dt_liquify_path_data_t *p = node_prev (params, node);
       const dt_liquify_path_data_t *n = node_next (params, node);
       const dt_liquify_path_data_t *nn = n ? node_next (params, n) : NULL;
 
-      pt[idx] = node->point;
+      pt[idx] = node->warp.point;
       if (d->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
       {
-        c1[idx-1] = d->ctrl1;
-        c2[idx-1] = d->ctrl2;
+        c1[idx-1] = d->node.ctrl1;
+        c2[idx-1] = d->node.ctrl2;
       }
 
       const int autosmooth      = d->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH;
@@ -2302,11 +2283,11 @@ static void smooth_paths_linsys (dt_iop_liquify_params_t *params)
     idx = 0;
     while (node)
     {
-      dt_liquify_curve_to_v1_t *d  = (dt_liquify_curve_to_v1_t *) node;
+      dt_liquify_path_data_t *d  = (dt_liquify_path_data_t *) node;
       if (d->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
       {
-        d->ctrl1 = c1[idx];
-        d->ctrl2 = c2[idx];
+        d->node.ctrl1 = c1[idx];
+        d->node.ctrl2 = c2[idx];
       }
       ++idx;
       node = node_next(params, node);
@@ -2343,7 +2324,7 @@ static void init_warp (dt_liquify_warp_t *warp, float complex point)
 static dt_liquify_path_data_t *alloc_move_to (dt_iop_module_t *module, float complex start_point)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  dt_liquify_move_to_v1_t* m = (dt_liquify_move_to_v1_t*)node_alloc (&g->params, &g->node_index);
+  dt_liquify_path_data_t* m = (dt_liquify_path_data_t*)node_alloc (&g->params, &g->node_index);
   if (m)
   {
     m->header.type = DT_LIQUIFY_PATH_MOVE_TO_V1;
@@ -2356,7 +2337,7 @@ static dt_liquify_path_data_t *alloc_move_to (dt_iop_module_t *module, float com
 static dt_liquify_path_data_t *alloc_line_to (dt_iop_module_t *module, float complex end_point)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  dt_liquify_line_to_v1_t* l = (dt_liquify_line_to_v1_t*)node_alloc (&g->params, &g->node_index);
+  dt_liquify_path_data_t* l = (dt_liquify_path_data_t*)node_alloc (&g->params, &g->node_index);
   if (l)
   {
     l->header.type = DT_LIQUIFY_PATH_LINE_TO_V1;
@@ -2369,12 +2350,12 @@ static dt_liquify_path_data_t *alloc_line_to (dt_iop_module_t *module, float com
 static dt_liquify_path_data_t *alloc_curve_to (dt_iop_module_t *module, float complex end_point)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  dt_liquify_curve_to_v1_t* c = (dt_liquify_curve_to_v1_t*)node_alloc (&g->params, &g->node_index);
+  dt_liquify_path_data_t* c = (dt_liquify_path_data_t*)node_alloc (&g->params, &g->node_index);
   if (c)
   {
     c->header.type = DT_LIQUIFY_PATH_CURVE_TO_V1;
     c->header.node_type = DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH;
-    c->ctrl1 = c->ctrl2 = 0.0;
+    c->node.ctrl1 = c->node.ctrl2 = 0.0;
     init_warp (&c->warp, end_point);
   }
   return (dt_liquify_path_data_t *)c;
@@ -2562,7 +2543,7 @@ int mouse_moved (struct dt_iop_module_t *module,
     dt_liquify_path_data_t *n = node_next(&g->params, d);
     dt_liquify_path_data_t *p = node_prev(&g->params, d);
 
-    const float complex *start_pt = &d->point;
+    const float complex *start_pt = &d->warp.point;
 
     switch (g->dragging.layer)
     {
@@ -2570,17 +2551,17 @@ int mouse_moved (struct dt_iop_module_t *module,
       switch (d->header.type)
       {
       case DT_LIQUIFY_PATH_CURVE_TO_V1:
-        d->curve_to_v1.ctrl2 += pt - d->point;
+        d->node.ctrl2 += pt - d->warp.point;
         // fall thru
       case DT_LIQUIFY_PATH_MOVE_TO_V1:
       case DT_LIQUIFY_PATH_LINE_TO_V1:
         if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-          n->curve_to_v1.ctrl1 += pt - d->point;
+          n->node.ctrl1 += pt - d->warp.point;
         if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-          p->curve_to_v1.ctrl2 += pt - d->point;
-        d->warp.radius   += pt - d->point;
-        d->warp.strength += pt - d->point;
-        d->point = pt;
+          p->node.ctrl2 += pt - d->warp.point;
+        d->warp.radius   += pt - d->warp.point;
+        d->warp.strength += pt - d->warp.point;
+        d->warp.point = pt;
         break;
       default:
         break;
@@ -2591,18 +2572,18 @@ int mouse_moved (struct dt_iop_module_t *module,
       switch (d->header.type)
       {
       case DT_LIQUIFY_PATH_CURVE_TO_V1:
-        d->curve_to_v1.ctrl1 = pt;
+        d->node.ctrl1 = pt;
         if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
           switch (p->header.node_type)
           {
           case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-            p->curve_to_v1.ctrl2 = p->point +
-              cabs (p->point - p->curve_to_v1.ctrl2) *
-              cexp (carg (p->point - pt) * I);
+            p->node.ctrl2 = p->warp.point +
+              cabs (p->warp.point - p->node.ctrl2) *
+              cexp (carg (p->warp.point - pt) * I);
             break;
           case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-            p->curve_to_v1.ctrl2 = 2 * p->point - pt;
+            p->node.ctrl2 = 2 * p->warp.point - pt;
             break;
           default:
             break;
@@ -2618,18 +2599,18 @@ int mouse_moved (struct dt_iop_module_t *module,
       switch (d->header.type)
       {
       case DT_LIQUIFY_PATH_CURVE_TO_V1:
-        d->curve_to_v1.ctrl2 = pt;
+        d->node.ctrl2 = pt;
         if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
           switch (d->header.node_type)
           {
           case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-            n->curve_to_v1.ctrl1 = d->point +
-              cabs (d->point - n->curve_to_v1.ctrl1) *
-              cexp (carg (d->point - pt) * I);
+            n->node.ctrl1 = d->warp.point +
+              cabs (d->warp.point - n->node.ctrl1) *
+              cexp (carg (d->warp.point - pt) * I);
             break;
           case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-            n->curve_to_v1.ctrl1 = 2 * d->point - pt;
+            n->node.ctrl1 = 2 * d->warp.point - pt;
             break;
           default:
             break;
@@ -2643,7 +2624,7 @@ int mouse_moved (struct dt_iop_module_t *module,
 
     case DT_LIQUIFY_LAYER_RADIUSPOINT:
       d->warp.radius = pt;
-      dt_conf_set_float(CONF_RADIUS, cabs(d->warp.radius - d->point));
+      dt_conf_set_float(CONF_RADIUS, cabs(d->warp.radius - d->warp.point));
       break;
 
     case DT_LIQUIFY_LAYER_STRENGTHPOINT:
@@ -2953,25 +2934,25 @@ int button_released (struct dt_iop_module_t *module,
         if (prev && e->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
 	  // add node to curve
-          dt_liquify_curve_to_v1_t *curve1 = (dt_liquify_curve_to_v1_t *) e;
+          dt_liquify_path_data_t *curve1 = (dt_liquify_path_data_t *) e;
 
-          dt_liquify_curve_to_v1_t *curve2 = (dt_liquify_curve_to_v1_t *)alloc_curve_to (module, 0);
+          dt_liquify_path_data_t *curve2 = (dt_liquify_path_data_t *)alloc_curve_to (module, 0);
           if (!curve2) goto done;
 
-          curve2->ctrl1 = curve1->ctrl1;
-          curve2->ctrl2 = curve1->ctrl2;
+          curve2->node.ctrl1 = curve1->node.ctrl1;
+          curve2->node.ctrl2 = curve1->node.ctrl2;
 
           dt_liquify_warp_t *warp1 = &prev->warp;
           dt_liquify_warp_t *warp2 = &curve2->warp;
           dt_liquify_warp_t *warp3 = &e->warp;
 
-          const float t = find_nearest_on_curve_t (warp1->point, curve1->ctrl1, curve1->ctrl2,
+          const float t = find_nearest_on_curve_t (warp1->point, curve1->node.ctrl1, curve1->node.ctrl2,
                                                    warp3->point, pt, INTERPOLATION_POINTS);
 
           float complex midpoint = warp3->point;
-          casteljau (&warp1->point, &curve1->ctrl1, &curve1->ctrl2, &midpoint, t);
+          casteljau (&warp1->point, &curve1->node.ctrl1, &curve1->node.ctrl2, &midpoint, t);
           midpoint = warp1->point;
-          casteljau (&warp3->point, &curve2->ctrl2, &curve2->ctrl1, &midpoint, 1.0 - t);
+          casteljau (&warp3->point, &curve2->node.ctrl2, &curve2->node.ctrl1, &midpoint, 1.0 - t);
 
           mix_warps (warp2, warp1, warp3, midpoint, t);
 
@@ -2987,7 +2968,7 @@ int button_released (struct dt_iop_module_t *module,
           dt_liquify_warp_t *warp3 = &e->warp;
           const float t = find_nearest_on_line_t (warp1->point, warp3->point, pt);
 
-          dt_liquify_path_data_t *tmp = alloc_line_to (module, e->point);
+          dt_liquify_path_data_t *tmp = alloc_line_to (module, e->warp.point);
           if (!tmp) goto done;
 
           dt_liquify_warp_t *warp2 = &tmp->warp;
@@ -3022,13 +3003,13 @@ int button_released (struct dt_iop_module_t *module,
         if (prev && e->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
         {
           // line -> curve
-          const float complex p0 = prev->point;
-          const float complex p1 = e->point;
-          dt_liquify_curve_to_v1_t *c = (dt_liquify_curve_to_v1_t *)e;
+          const float complex p0 = prev->warp.point;
+          const float complex p1 = e->warp.point;
+          dt_liquify_path_data_t *c = (dt_liquify_path_data_t *)e;
           e->header.type = DT_LIQUIFY_PATH_CURVE_TO_V1;
           e->header.node_type = DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH;
-          c->ctrl1 = (2 * p0 +     p1) / 3.0;
-          c->ctrl2 = (    p0 + 2 * p1) / 3.0;
+          c->node.ctrl1 = (2 * p0 +     p1) / 3.0;
+          c->node.ctrl2 = (    p0 + 2 * p1) / 3.0;
 
           handled = 2;
           goto done;
