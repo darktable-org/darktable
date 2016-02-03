@@ -1241,6 +1241,25 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
     d->typing = FALSE;
   }
 
+  if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+     || property == DT_COLLECTION_PROP_ISO)
+  {
+    g_object_set(G_OBJECT(d->text), "tooltip-text",
+                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators"), (char *)NULL);
+  }
+  else if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+  {
+    g_object_set(G_OBJECT(d->text), "tooltip-text",
+                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in the form : "
+                   "YYYY:MM:DD HH:MM:SS (time part facultative)"),
+                 (char *)NULL);
+  }
+  else
+  {
+    /* xgettext:no-c-format */
+    g_object_set(G_OBJECT(d->text), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
+  }
+
   update_view(d);
   dt_collection_update_query(darktable.collection);
 }

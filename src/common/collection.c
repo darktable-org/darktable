@@ -549,7 +549,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
   *number1 = *number2 = *operator= NULL;
 
   // we test the range expression first
-  regex = g_regex_new("^\\s*\\[\\s*([0-9]+\\.?[0-9]*);([0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0, NULL);
+  regex = g_regex_new("^\\s*\\[\\s*([0-9]+\\.?[0-9]*)\\s*;\\s*([0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
 
