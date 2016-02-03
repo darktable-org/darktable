@@ -800,13 +800,16 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 // on my machine with 7 image per row it seems grouping has the largest
 // impact from around 400ms -> 55ms per redraw.
 
+  // active if zoom>1 or in the proper area
+  const gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
+
   const gboolean draw_thumb = TRUE;
-  const gboolean draw_colorlabels = !image_only;
-  const gboolean draw_local_copy = !image_only;
+  const gboolean draw_colorlabels = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_local_copy = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
   const gboolean draw_grouping = !image_only;
   const gboolean draw_selected = !image_only;
   const gboolean draw_history = !image_only;
-  const gboolean draw_metadata = !image_only;
+  const gboolean draw_metadata = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
   const gboolean draw_audio = !image_only;
 
   cairo_save(cr);
