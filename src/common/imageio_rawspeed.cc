@@ -101,6 +101,18 @@ void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   }
 }
 
+uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint32_t crop_y)
+{
+    ColorFilterArray cfa(filters);
+
+    if (crop_x & 1)
+      cfa.shiftLeft();
+    if (crop_y & 1)
+      cfa.shiftDown();
+
+    return cfa.getDcrawFilter();
+}
+
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *mbuf)
 {
@@ -269,14 +281,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->filters = r->cfa.getDcrawFilter();
     if(FILTERS_ARE_4BAYER(img->filters))
       img->flags |= DT_IMAGE_4BAYER;
-
-    // Shift CFA to match crop and get a cropped filters
-    ColorFilterArray cropcfa(r->cfa);
-    if (img->crop_x & 1)
-      cropcfa.shiftLeft();
-    if (img->crop_y & 1)
-      cropcfa.shiftDown();
-    img->filters_cropped = cropcfa.getDcrawFilter();
 
     if(img->filters)
     {

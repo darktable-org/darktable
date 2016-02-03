@@ -45,6 +45,23 @@ ColorFilterArray::ColorFilterArray( const ColorFilterArray& other )
     memcpy(cfa, other.cfa, size.area()*sizeof(CFAColor));
 }
 
+// FC macro from dcraw outputs, given the filters definition, the dcraw color
+// number for that given position in the CFA pattern
+#define FC(filters,row,col) ((filters) >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3)
+ColorFilterArray::ColorFilterArray( const uint32 filters) :
+size(8,2)
+{
+  cfa = NULL;
+  setSize(size);
+
+  for (int x = 0; x < 8; x++) {
+    for (int y = 0; y < 2; y++) {
+      CFAColor c = toRawspeedColor(FC(filters,y,x));
+      setColorAt(iPoint2D(x,y), c);
+    }
+  }
+}
+
 ColorFilterArray& ColorFilterArray::operator=(const ColorFilterArray& other ) 
 {
   setSize(other.size);
@@ -209,6 +226,17 @@ RawSpeed::uint32 ColorFilterArray::getDcrawFilter()
   }
   writeLog(DEBUG_PRIO_EXTRA, "DCRAW filter:%x\n",ret);
   return ret;
+}
+
+CFAColor ColorFilterArray::toRawspeedColor( uint32 dcrawColor )
+{
+  switch (dcrawColor) {
+    case 0: return CFA_RED;
+    case 1: return CFA_GREEN;
+    case 2: return CFA_BLUE;
+    case 3: return CFA_GREEN2;
+  }
+  return CFA_UNKNOWN;
 }
 
 RawSpeed::uint32 ColorFilterArray::toDcrawColor( CFAColor c )

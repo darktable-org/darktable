@@ -153,7 +153,6 @@ typedef struct dt_image_t
   dt_image_loader_t loader;
 
   uint32_t filters;          // Bayer demosaic pattern
-  uint32_t filters_cropped;  // Bayer demosaic pattern after cropping
   int32_t bpp;               // bytes per pixel
   int32_t cpp;               // components per pixel
   float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs

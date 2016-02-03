@@ -22,6 +22,7 @@
 #include "common/dtpthread.h"
 #include "common/debug.h"
 #include "common/interpolation.h"
+#include "common/imageio_rawspeed.h"
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -2256,7 +2257,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint1
    * here we just need to adjust filters to the crop!
    */
 
-  const uint32_t filters = img->filters_cropped;
+  const uint32_t filters =  dt_rawspeed_crop_dcraw_filters(img->filters, img->crop_x, img->crop_y);
 
   dt_iop_clip_and_zoom_demosaic_half_size(out, in, roi_out, roi_in, roi_out->width, in_stride, filters);
 }
@@ -2675,7 +2676,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(float *out, const flo
    * here we just need to adjust filters to the crop!
    */
 
-  const uint32_t filters = img->filters_cropped;
+  const uint32_t filters =  dt_rawspeed_crop_dcraw_filters(img->filters, img->crop_x, img->crop_y);
 
   dt_iop_clip_and_zoom_demosaic_half_size_f(out, in, roi_out, roi_in, out_stride, in_stride, filters, clip);
 }

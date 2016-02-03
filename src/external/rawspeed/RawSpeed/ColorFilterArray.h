@@ -49,6 +49,7 @@ public:
   ColorFilterArray(const ColorFilterArray& other );
   ColorFilterArray& operator= (const ColorFilterArray& other);
   ColorFilterArray(iPoint2D size);
+  ColorFilterArray(const uint32 dcrawFilters);
   virtual ~ColorFilterArray(void);
   virtual void setSize(iPoint2D size);
   void setColorAt(iPoint2D pos, CFAColor c);
@@ -61,6 +62,7 @@ public:
   virtual std::string asString();
   static std::string colorToString(CFAColor c);
   uint32 toDcrawColor(CFAColor c);
+  CFAColor toRawspeedColor(uint32 dcrawColor);
   iPoint2D size;
 protected:
   CFAColor *cfa;
