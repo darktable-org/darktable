@@ -535,26 +535,138 @@ GList *dt_collection_get_selected(const dt_collection_t *collection, int limit)
 /* splits an input string into a number part and an optional operator part.
    number can be a decimal integer or rational numerical item.
    operator can be any of "=", "<", ">", "<=", ">=" and "<>".
+   range notation [x;y] can also be used
 
    number and operator are returned as pointers to null terminated strings in g_mallocated
    memory (to be g_free'd after use) - or NULL if no match is found.
 */
-void dt_collection_split_operator_number(const gchar *input, char **number, char **operator)
+void dt_collection_split_operator_number(const gchar *input, char **number1, char **number2, char **operator)
 {
   GRegex *regex;
   GMatchInfo *match_info;
   int match_count;
 
-  *number = *operator= NULL;
+  *number1 = *number2 = *operator= NULL;
 
-  regex = g_regex_new("\\s*(=|<|>|<=|>=|<>)?\\s*([0-9]+\\.?[0-9]*)\\s*", 0, 0, NULL);
+  // we test the range expression first
+  regex = g_regex_new("^\\s*\\[\\s*([0-9]+\\.?[0-9]*)\\s*;\\s*([0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+
+  if(match_count == 3)
+  {
+    *number1 = g_match_info_fetch(match_info, 1);
+    *number2 = g_match_info_fetch(match_info, 2);
+    *operator= g_strdup("[]");
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+    return;
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+
+  // and we test the classic comparaison operators
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*([0-9]+\\.?[0-9]*)\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
 
   if(match_count == 3)
   {
     *operator= g_match_info_fetch(match_info, 1);
-    *number = g_match_info_fetch(match_info, 2);
+    *number1 = g_match_info_fetch(match_info, 2);
+
+    if(*operator&& strcmp(*operator, "") == 0)
+    {
+      g_free(*operator);
+      *operator= NULL;
+    }
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+}
+void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2, char **operator)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  int match_count;
+
+  *number1 = *number2 = *operator= NULL;
+
+  // we test the range expression first
+  // 4 elements : date1 time1(optional) date2 time2(optional)
+  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}:\\d{2}:\\d{2})\\s*( "
+                      "\\d{2}:\\d{2}:\\d{2})?\\s*;\\s*(\\d{4}:\\d{2}:\\d{2})\\s*( "
+                      "\\d{2}:\\d{2}:\\d{2})?\\s*\\]\\s*$",
+                      0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+
+  if(match_count >= 4)
+  {
+    *number1 = g_match_info_fetch(match_info, 1);
+    gchar *number1_time = g_match_info_fetch(match_info, 2);
+    *number2 = g_match_info_fetch(match_info, 3);
+    *operator= g_strdup("[]");
+
+    if(!number1_time || strcmp(number1_time, "") == 0)
+      *number1 = dt_util_dstrcat(*number1, " 00:00:00");
+    else
+      *number1 = dt_util_dstrcat(*number1, "%s", number1_time);
+
+    if(match_count == 5)
+    {
+      gchar *number2_time = g_match_info_fetch(match_info, 4);
+      *number2 = dt_util_dstrcat(*number2, "%s", number2_time);
+      g_free(number2_time);
+    }
+    else
+      *number2 = dt_util_dstrcat(*number2, " 23:59:59");
+
+    if(number1_time) g_free(number1_time);
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+    return;
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+
+  // and we test the classic comparaison operators
+  // 2 elements : date time(optional)
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(\\d{4}:\\d{2}:\\d{2})\\s*( \\d{2}:\\d{2}:\\d{2})?\\s*$", 0,
+                      0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+
+  if(match_count >= 3)
+  {
+    *operator= g_match_info_fetch(match_info, 1);
+    *number1 = g_match_info_fetch(match_info, 2);
+    // we fill the time part if it's not set
+    if(match_count == 4)
+    {
+      gchar *nb_time = g_match_info_fetch(match_info, 3);
+      *number1 = dt_util_dstrcat(*number1, "%s", nb_time);
+      g_free(nb_time);
+    }
+    else if(*operator&& strcmp(*operator, ">") == 0)
+      *number1 = dt_util_dstrcat(*number1, " 23:59:59");
+    else if(*operator&& strcmp(*operator, ">=") == 0)
+      *number1 = dt_util_dstrcat(*number1, " 00:00:00");
+    else if(*operator&& strcmp(*operator, "<") == 0)
+      *number1 = dt_util_dstrcat(*number1, " 00:00:00");
+    else if(*operator&& strcmp(*operator, "<=") == 0)
+      *number1 = dt_util_dstrcat(*number1, " 23:59:59");
+    else if(*operator&& strcmp(*operator, "=") == 0)
+      *number1 = dt_util_dstrcat(*number1, "%%");
+    else if(*operator&& strcmp(*operator, "<>") == 0)
+      *number1 = dt_util_dstrcat(*number1, "%%");
+    else if(*operator&& strcmp(*operator, "") == 0)
+      *number1 = dt_util_dstrcat(*number1, "%%");
+    else if(!*operator)
+      *number1 = dt_util_dstrcat(*number1, "%%");
 
     if(*operator&& strcmp(*operator, "") == 0)
     {
@@ -749,52 +861,71 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
     {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
+      gchar *operator, *number1, *number2;
+      dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& number)
-        query = dt_util_dstrcat(query, "(focal_length %s %s)", operator, number);
-      else if(number)
-        query = dt_util_dstrcat(query, "(focal_length = %s)", number);
+      if(operator&& strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((focal_length >= %s) AND (focal_length <= %s))", number1, number2);
+      }
+      else if(operator&& number1)
+        query = dt_util_dstrcat(query, "(focal_length %s %s)", operator, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query, "(focal_length = %s)", number1);
       else
         query = dt_util_dstrcat(query, "(focal_length like '%%%s%%')", escaped_text);
 
       g_free(operator);
-      g_free(number);
+      g_free(number1);
+      g_free(number2);
     }
     break;
 
     case DT_COLLECTION_PROP_ISO: // iso
     {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
+      gchar *operator, *number1, *number2;
+      dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& number)
-        query = dt_util_dstrcat(query, "(iso %s %s)", operator, number);
-      else if(number)
-        query = dt_util_dstrcat(query, "(iso = %s)", number);
+      if(operator&& strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((iso >= %s) AND (iso <= %s))", number1, number2);
+      }
+      else if(operator&& number1)
+        query = dt_util_dstrcat(query, "(iso %s %s)", operator, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query, "(iso = %s)", number1);
       else
         query = dt_util_dstrcat(query, "(iso like '%%%s%%')", escaped_text);
 
       g_free(operator);
-      g_free(number);
+      g_free(number1);
+      g_free(number2);
     }
     break;
 
     case DT_COLLECTION_PROP_APERTURE: // aperture
     {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
+      gchar *operator, *number1, *number2;
+      dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& number)
-        query = dt_util_dstrcat(query, "(round(aperture,1) %s %s)", operator, number);
-      else if(number)
-        query = dt_util_dstrcat(query, "(round(aperture,1) = %s)", number);
+      if(operator&& strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((round(aperture,1) >= %s) AND (round(aperture,1) <= %s))", number1,
+                                  number2);
+      }
+      else if(operator&& number1)
+        query = dt_util_dstrcat(query, "(round(aperture,1) %s %s)", operator, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query, "(round(aperture,1) = %s)", number1);
       else
         query = dt_util_dstrcat(query, "(round(aperture,1) like '%%%s%%')", escaped_text);
 
       g_free(operator);
-      g_free(number);
+      g_free(number1);
+      g_free(number2);
     }
     break;
 
@@ -802,8 +933,40 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       query = dt_util_dstrcat(query, "(filename like '%%%s%%')", escaped_text);
       break;
 
-    default: // day or time
-      query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);
+    case DT_COLLECTION_PROP_DAY:
+    // query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);
+    // break;
+
+    case DT_COLLECTION_PROP_TIME:
+    {
+      gchar *operator, *number1, *number2;
+      dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
+
+      if(operator&& strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((datetime_taken >= '%s') AND (datetime_taken <= '%s'))", number1,
+                                  number2);
+      }
+      else if(operator&& strcmp(operator, "=") == 0 && number1)
+        query = dt_util_dstrcat(query, "(datetime_taken like '%s')", number1);
+      else if(operator&& strcmp(operator, "<>") == 0 && number1)
+        query = dt_util_dstrcat(query, "(datetime_taken not like '%s')", number1);
+      else if(operator&& number1)
+        query = dt_util_dstrcat(query, "(datetime_taken %s '%s')", operator, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query, "(datetime_taken like '%s')", number1);
+      else
+        query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number1);
+      g_free(number2);
+    }
+    break;
+
+    default:
+      // we shouldn't be here
       break;
   }
   sqlite3_free(escaped_text);
