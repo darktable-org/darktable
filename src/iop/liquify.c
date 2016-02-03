@@ -595,6 +595,8 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
       break;
     }
   }
+
+  free (buffer);
 }
 
 static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
