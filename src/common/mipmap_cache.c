@@ -915,23 +915,25 @@ int dt_image_get_demosaic_method(const int imgid, const char **method_name)
   if(demosaic && demosaic->get_f && demosaic->get_p)
   {
     dt_introspection_field_t *field = demosaic->get_f("demosaicing_method");
-
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(
-        dt_database_get(darktable.db),
-        "SELECT op_params FROM history WHERE imgid=?1 AND operation='demosaic' ORDER BY num DESC LIMIT 1", -1,
-        &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
-    if(sqlite3_step(stmt) == SQLITE_ROW)
+    if(field)
     {
-      // use introspection to get the orientation from the binary params blob
-      const void *params = sqlite3_column_blob(stmt, 0);
-      method = *((int *)demosaic->get_p(params, "demosaicing_method"));
-    }
-    sqlite3_finalize(stmt);
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(
+          dt_database_get(darktable.db),
+          "SELECT op_params FROM history WHERE imgid=?1 AND operation='demosaic' ORDER BY num DESC LIMIT 1", -1,
+          &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-    if(method_name) *method_name = field->Enum.values[method].name;
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        // use introspection to get the orientation from the binary params blob
+        const void *params = sqlite3_column_blob(stmt, 0);
+        method = *((int *)demosaic->get_p(params, "demosaicing_method"));
+      }
+      sqlite3_finalize(stmt);
+
+      if(method_name) *method_name = field->Enum.values[method].name;
+    }
   }
 
   return method;
