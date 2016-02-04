@@ -60,8 +60,6 @@ typedef struct dt_lib_collect_t
   GtkTreeModel *listfilter;
   GtkScrolledWindow *scrolledwindow;
 
-  GtkScrolledWindow *sw2;
-
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
 
@@ -740,7 +738,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
     gtk_tree_store_clear(GTK_TREE_STORE(model));
     gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
-    gtk_widget_hide(GTK_WIDGET(d->sw2));
 
     /* query construction */
     char query[1024] = { 0 };
@@ -902,7 +899,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
     gtk_list_store_clear(GTK_LIST_STORE(model));
     gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
-    gtk_widget_hide(GTK_WIDGET(d->sw2));
 
     char query[1024] = { 0 };
 
@@ -1156,7 +1152,6 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   char confname[200] = { 0 };
 
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(d->sw2), TRUE);
 
   for(int i = 0; i < MAX_RULES; i++)
   {
@@ -1709,13 +1704,6 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(treemodel);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
-
-  GtkWidget *sw2 = gtk_scrolled_window_new(NULL, NULL);
-  d->sw2 = GTK_SCROLLED_WINDOW(sw2);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw2), DT_PIXEL_APPLY_DPI(300));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
