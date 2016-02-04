@@ -24,7 +24,7 @@ our @ISA = 'Exporter';
 our @EXPORT = qw( @token @comments
                   $P_LINENO $P_FILENAME $P_TYPE $P_VALUE
                   $T_NONE $T_IDENT $T_KEYWORD $T_INTEGER_LITERAL $T_OPERATOR
-                  $K_UNSIGNED $K_SIGNED $K_GBOOLEAN $K_CHAR $K_SHORT $K_USHORT $K_INT $K_UINT $K_LONG $K_FLOAT $K_DOUBLE $K_TYPEDEF $K_STRUCT $K_UNION $K_CONST $K_VOLATILE $K_STATIC $K_ENUM $K_VOID $K_DT_MODULE_INTROSPECTION
+                  $K_UNSIGNED $K_SIGNED $K_GBOOLEAN $K_CHAR $K_SHORT $K_USHORT $K_INT $K_UINT $K_LONG $K_FLOAT $K_DOUBLE $K_COMPLEX $K_TYPEDEF $K_STRUCT $K_UNION $K_CONST $K_VOLATILE $K_STATIC $K_ENUM $K_VOID $K_DT_MODULE_INTROSPECTION
                   $O_ASTERISK $O_AMPERSAND $O_SEMICOLON $O_COMMA $O_COLON $O_SLASH $O_LEFTROUND $O_RIGHTROUND $O_LEFTCURLY $O_RIGHTCURLY $O_LEFTSQUARE $O_RIGHTSQUARE $O_EQUAL
                   read_file get_token look_ahead token2string
                   isid isinteger issemicolon istypedef isstruct isunion isenum isleftcurly isrightcurly isleftround isrightround isleftsquare isrightsquare 
@@ -73,6 +73,7 @@ our $K_UINT = $i++; push(@K_readable, 'uint');
 our $K_LONG = $i++; push(@K_readable, 'long');
 our $K_FLOAT = $i++; push(@K_readable, 'float');
 our $K_DOUBLE = $i++; push(@K_readable, 'double');
+our $K_COMPLEX = $i++; push(@K_readable, 'complex');
 our $K_TYPEDEF = $i++; push(@K_readable, 'typedef');
 our $K_STRUCT = $i++; push(@K_readable, 'struct');
 our $K_UNION = $i++; push(@K_readable, 'union');
@@ -88,6 +89,7 @@ my  @keywords = (
       ['gboolean', $K_GBOOLEAN],
       ['char', $K_CHAR],
       ['gchar', $K_CHAR],
+      ['int8_t', $K_CHAR],
       ['short', $K_SHORT],
       ['int16_t', $K_SHORT],
       ['uint16_t', $K_USHORT],
@@ -99,6 +101,7 @@ my  @keywords = (
       ['long', $K_LONG],
       ['float', $K_FLOAT],
       ['double', $K_DOUBLE],
+      ['complex', $K_COMPLEX],
       ['typedef', $K_TYPEDEF],
       ['struct', $K_STRUCT],
       ['union', $K_UNION],

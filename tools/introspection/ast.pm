@@ -607,6 +607,40 @@ sub check_tree
   return 0;
 }
 
+#################### FLOAT COMPLEX TYPE ####################
+
+package ast_type_float_complex_node;
+
+@ISA = 'ast_type_node';
+
+sub new
+{
+  my ($self, $token) = @_;
+
+  my $reference = $self->SUPER::new($token);
+  bless($reference, $self);
+
+  return $reference;
+}
+
+sub get_type
+{
+  return "FloatComplex";
+}
+
+sub get_introspection_code
+{
+  return "";
+}
+
+sub print_tree
+{
+  my ($self, $prefix, $indent) = @_;
+  my $spaces = " "x$indent;
+  my $extra = $self->get_static_const();
+  ast::print_out($prefix.$spaces.$extra."float complex\n");
+}
+
 #################### GBOOLEAN TYPE ####################
 
 package ast_type_gboolean_node;

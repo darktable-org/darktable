@@ -138,7 +138,19 @@ sub parse_type
     elsif($token[$P_VALUE] == $K_INT) { $ast = ast_type_int_node->new(\@token); advance_token(); }
     elsif($token[$P_VALUE] == $K_UINT) { $ast = ast_type_int_node->new(\@token); $ast->set_unsigned(); advance_token(); }
     elsif($token[$P_VALUE] == $K_LONG) { $ast = ast_type_long_node->new(\@token); advance_token(); }
-    elsif($token[$P_VALUE] == $K_FLOAT) { $ast = ast_type_float_node->new(\@token); advance_token(); }
+    elsif($token[$P_VALUE] == $K_FLOAT) {
+      my @next_token = look_ahead(1);
+      if($next_token[$P_TYPE] == $T_KEYWORD && $next_token[$P_VALUE] == $K_COMPLEX)
+      {
+        advance_token();
+        $ast = ast_type_float_complex_node->new(\@token);
+      }
+      else
+      {
+        $ast = ast_type_float_node->new(\@token);
+      }
+      advance_token();
+    }
     elsif($token[$P_VALUE] == $K_DOUBLE) { $ast = ast_type_double_node->new(\@token);  advance_token(); }
     elsif($token[$P_VALUE] == $K_STRUCT || $token[$P_VALUE] == $K_UNION) { $ast = parse_struct_or_union(); return if(!defined($ast)); }
     elsif($token[$P_VALUE] == $K_CONST) { advance_token(); $ast = parse_type(); return if(!defined($ast)); $ast->set_const(); }
@@ -299,9 +311,11 @@ sub parse_direct_declarator
   my $declarator;
   if(isleftround(@token))
   {
+    advance_token();
     $declarator = parse_declarator();
     return if(!defined($declarator));
     if(!isrightround(@token)) { print_error "expecting ')', found '".token2string(@token)."'"; return; }
+    advance_token();
   }
   else
   {

@@ -24,7 +24,7 @@
 
 // some typedefs for structs that hold the data in a machine readable form
 
-#define DT_INTROSPECTION_VERSION 4
+#define DT_INTROSPECTION_VERSION 5
 
 // clang-format off
 
@@ -37,6 +37,7 @@ typedef enum dt_introspection_type_t
   DT_INTROSPECTION_TYPE_OPAQUE,
   DT_INTROSPECTION_TYPE_FLOAT,
   DT_INTROSPECTION_TYPE_DOUBLE,
+  DT_INTROSPECTION_TYPE_FLOATCOMPLEX,
   DT_INTROSPECTION_TYPE_CHAR,
   DT_INTROSPECTION_TYPE_UCHAR,
   DT_INTROSPECTION_TYPE_SHORT,
@@ -83,6 +84,14 @@ typedef struct dt_introspection_type_double_t
   double                              Max;          // minimum allowed value for this double field. taken from comments. defau to G_MAXDOUBLE
   double                              Default;      // default value for this double field. taken from comments. defaults to 0
 } dt_introspection_type_double_t;
+
+typedef struct dt_introspection_type_float_complex_t
+{
+  dt_introspection_type_header_t      header;
+//   float complex                       Min;       // unfortunately we can't have these for "float complex",
+//   float complex                       Max;       // because we'd have to #include<complex.h> which doesn't seem to work with C++,
+//   float complex                       Default;   // at least in a quick test.
+} dt_introspection_type_float_complex_t;
 
 typedef struct dt_introspection_type_char_t
 {
@@ -185,22 +194,23 @@ typedef struct dt_introspection_type_struct_t
 // sorry for the camel case/Capitals, but we have to avoid reserved keywords
 typedef union dt_introspection_field_t
 {
-  dt_introspection_type_header_t      header;       // the common header
-  dt_introspection_type_opaque_t      Opaque;       // some binary blob
-  dt_introspection_type_float_t       Float;        // a float
-  dt_introspection_type_double_t      Double;       // a double
-  dt_introspection_type_char_t        Char;         // a char
-  dt_introspection_type_uchar_t       UChar;        // an unsigned char
-  dt_introspection_type_short_t       Short;        // a short
-  dt_introspection_type_ushort_t      UShort;       // an unsigned short
-  dt_introspection_type_int_t         Int;          // an int
-  dt_introspection_type_uint_t        UInt;         // an unsigned int
-  dt_introspection_type_long_t        Long;         // a long
-  dt_introspection_type_ulong_t       ULong;        // an unsigned long
-  dt_introspection_type_bool_t        Bool;         // a gboolean
-  dt_introspection_type_array_t       Array;        // an array
-  dt_introspection_type_enum_t        Enum;         // an enum
-  dt_introspection_type_struct_t      Struct;       // a struct
+  dt_introspection_type_header_t        header;        // the common header
+  dt_introspection_type_opaque_t        Opaque;        // some binary blob
+  dt_introspection_type_float_t         Float;         // a float
+  dt_introspection_type_double_t        Double;        // a double
+  dt_introspection_type_float_complex_t FloatComplex;  // a float complex
+  dt_introspection_type_char_t          Char;          // a char
+  dt_introspection_type_uchar_t         UChar;         // an unsigned char
+  dt_introspection_type_short_t         Short;         // a short
+  dt_introspection_type_ushort_t        UShort;        // an unsigned short
+  dt_introspection_type_int_t           Int;           // an int
+  dt_introspection_type_uint_t          UInt;          // an unsigned int
+  dt_introspection_type_long_t          Long;          // a long
+  dt_introspection_type_ulong_t         ULong;         // an unsigned long
+  dt_introspection_type_bool_t          Bool;          // a gboolean
+  dt_introspection_type_array_t         Array;         // an array
+  dt_introspection_type_enum_t          Enum;          // an enum
+  dt_introspection_type_struct_t        Struct;        // a struct
 } dt_introspection_field_t;
 
 typedef struct dt_introspection_t
