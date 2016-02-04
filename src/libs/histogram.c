@@ -402,22 +402,23 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   }
 
   cairo_set_source_rgb(cr, .25, .25, .25);
+  cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
   PangoLayout *layout;
   PangoRectangle ink;
   PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   layout = pango_cairo_create_layout(cr);
-  pango_font_description_set_absolute_size(desc, (.1 * height) * PANGO_SCALE);
+  pango_font_description_set_absolute_size(desc, .1 * height * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
 
   char exifline[50];
   dt_image_print_exif(&dev->image_storage, exifline, 50);
   pango_layout_set_text(layout, exifline, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, .02 * width, .98 * height - ink.height);
+  cairo_move_to(cr, .02 * width, .98 * height - ink.height - ink.x);
+//   printf("wh: %d/%d, xy: %d/%d\n", ink.width, ink.height, ink.x, ink.y);
   cairo_save(cr);
-  //   cairo_show_text(cr, exifline);
-  cairo_set_line_width(cr, 2.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
   cairo_set_source_rgba(cr, 1, 1, 1, 0.3);
   pango_cairo_layout_path(cr, layout);
   cairo_stroke_preserve(cr);

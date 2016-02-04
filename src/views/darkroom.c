@@ -406,7 +406,7 @@ void expose(
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cri);
-    pango_font_description_set_absolute_size(desc,(20) * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(20) * PANGO_SCALE);
     pango_layout_set_font_description(layout, desc);
     pango_layout_set_text(layout, label, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);

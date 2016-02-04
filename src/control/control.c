@@ -300,7 +300,7 @@ void *dt_control_expose(void *voidptr)
     PangoLayout *layout;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc, (fontsize) * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
@@ -355,7 +355,7 @@ void *dt_control_expose(void *voidptr)
     PangoLayout *layout;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc, (fontsize) * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
