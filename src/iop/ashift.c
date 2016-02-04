@@ -19,6 +19,7 @@
 // during development only:
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -93,11 +94,24 @@ typedef enum dt_iop_ashift_linetype_t
 {
   ASHIFT_LINE_IRRELEVANT = 0,       // the line is found to be not interesting
                                     // eg. too short, or not horizontal or vertical
-  ASHIFT_LINE_VERTICAL   = 1 << 0,  // the line is (mostly) vertical
-  ASHIFT_LINE_VSELECTED  = 1 << 1,  // vertical line is selected
-  ASHIFT_LINE_HORIZONTAL = 1 << 2,  // the line is (mostly) horizontal
-  ASHIFT_LINE_HSELECTED  = 1 << 3   // horizontal line is selected
+  ASHIFT_LINE_RELEVANT   = 1 << 0,  // the line is relevant for us
+  ASHIFT_LINE_DIRVERT    = 1 << 1,  // the line is (mostly) vertical, else (mostly) horizontal
+  ASHIFT_LINE_SELECTED   = 1 << 2,  // the line is selected for fitting
+  ASHIFT_LINE_VERTICAL_NOT_SELECTED   = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_DIRVERT,
+  ASHIFT_LINE_HORIZONTAL_NOT_SELECTED = ASHIFT_LINE_RELEVANT,
+  ASHIFT_LINE_VERTICAL_SELECTED = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_DIRVERT | ASHIFT_LINE_SELECTED,
+  ASHIFT_LINE_HORIZONTAL_SELECTED = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED,
+  ASHIFT_LINE_MASK = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_DIRVERT | ASHIFT_LINE_SELECTED
 } dt_iop_ashift_linetype_t;
+
+typedef enum dt_iop_ashift_linecolor_t
+{
+  ASHIFT_LINECOLOR_GREY    = 0,
+  ASHIFT_LINECOLOR_GREEN   = 1,
+  ASHIFT_LINECOLOR_RED     = 2,
+  ASHIFT_LINECOLOR_BLUE    = 3,
+  ASHIFT_LINECOLOR_YELLOW  = 4
+} dt_iop_ashift_linecolor_t;
 
 typedef struct dt_iop_ashift_params_t
 {
@@ -118,26 +132,44 @@ typedef struct dt_iop_ashift_line_t
   float L[3];
 } dt_iop_ashift_line_t;
 
+typedef struct dt_iop_ashift_points_idx_t
+{
+  size_t offset;
+  int length;
+  int near;
+  dt_iop_ashift_linecolor_t color;
+  // bounding box:
+  float bbx, bby, bbX, bbY;
+} dt_iop_ashift_points_idx_t;
+
 typedef struct dt_iop_ashift_gui_data_t
 {
   GtkWidget *rotation;
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
   GtkWidget *fit;
+  int fitting;
   int isflipped;
+  dt_iop_ashift_line_t *lines;
   int lines_in_width;
   int lines_in_height;
   int lines_count;
   int vertical_count;
   int horizontal_count;
+  int lines_version;
+  float vertical_weight;
+  float horizontal_weight;
+  float *points;
+  dt_iop_ashift_points_idx_t *points_idx;
+  int points_lines_count;
+  int points_version;
   float *buf;
   int buf_width;
   int buf_height;
   int buf_x_off;
   int buf_y_off;
   float buf_scale;
-  uint64_t buf_hash;
-  dt_iop_ashift_line_t *lines;
+  uint64_t grid_hash;
   dt_pthread_mutex_t lock;
 } dt_iop_ashift_gui_data_t;
 
@@ -403,7 +435,6 @@ static void homography(float *homograph, const float angle, const float shift_v,
   // multiply m1 * m2 -> m3
   mat3mul((float *)m3, (float *)m1, (float *)m2);
 
-
   // on request we either keep the final matrix for forward conversions
   // or produce an inverted matrix for backward conversions
   if(dir == ASHIFT_HOMOGRAPH_FORWARD)
@@ -517,11 +548,10 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     }
   }
 
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  roi_out->x = fmaxf(0.0f, xm - interpolation->width);
-  roi_out->y = fmaxf(0.0f, ym - interpolation->width);
-  roi_out->width = floorf(xM - roi_out->x + 1 + interpolation->width);
-  roi_out->height = floorf(yM - roi_out->y + 1 + interpolation->width);
+  roi_out->x = fmaxf(0.0f, xm);
+  roi_out->y = fmaxf(0.0f, ym);
+  roi_out->width = floorf(xM - roi_out->x + 1);
+  roi_out->height = floorf(yM - roi_out->y + 1);
 
   // sanity check.
   roi_out->x = CLAMP(roi_out->x, 0, INT_MAX);
@@ -594,7 +624,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 }
 
 // simple conversion of rgb image into greyscale variant suitable for line segment detection
-// the lsd routines expect input as *double in the range [0; 256]
+// the lsd routines expect input as *double, roughly in the range [0.0; 256.0]
 static void rgb2grey256(const float *in, double *out, const int width, const int height)
 {
   const int ch = 4;
@@ -655,17 +685,20 @@ static void grey2rgb(const float *in, float *out, const int out_width, const int
   }
 }
 
-// Do actual line_detection based on LSD algorithm and return results according to this module's
+// do actual line_detection based on LSD algorithm and return results according to this module's
 // conventions
 static int line_detect(const float *in, const int width, const int height, const int x_off, const int y_off,
-                       const float scale, dt_iop_ashift_line_t **alines, int *lcount, int *vcount, int *hcount)
+                       const float scale, dt_iop_ashift_line_t **alines, int *lcount, int *vcount, int *hcount,
+                       float *vweight, float *hweight)
 {
   double *greyscale = NULL;
-  double *lines = NULL;
+  double *lsd_lines = NULL;
   dt_iop_ashift_line_t *ashift_lines = NULL;
 
   int vertical_count = 0;
   int horizontal_count = 0;
+  float vertical_weight = 0.0f;
+  float horizontal_weight = 0.0f;
 
   // allocate intermediate buffers
   greyscale = malloc((size_t)width * height * sizeof(double));
@@ -676,9 +709,12 @@ static int line_detect(const float *in, const int width, const int height, const
 
   // call the line segment detector LSD;
   // LSD stores the number of found lines in lines_count.
-  // it returns structural details as vector double lines[7 * lines_count]
+  // it returns structural details as vector 'double lines[7 * lines_count]'
   int lines_count;
-  lines = lsd(&lines_count, greyscale, width, height);
+  lsd_lines = lsd(&lines_count, greyscale, width, height);
+
+  // we count the lines that we really want to use
+  int m = 0;
 
   if(lines_count > 0)
   {
@@ -688,11 +724,25 @@ static int line_detect(const float *in, const int width, const int height, const
 
     for(int n = 0; n < lines_count; n++)
     {
+      float x1 = lsd_lines[n * 7 + 0];
+      float y1 = lsd_lines[n * 7 + 1];
+      float x2 = lsd_lines[n * 7 + 2];
+      float y2 = lsd_lines[n * 7 + 3];
+
+      // check for lines along image borders and skip them.
+      // these would likely be false-positives which could result
+      // from any kind of processing artifacts
+      if((fabs(x1 - x2) < 1 && fmax(x1, x2) < 1) ||
+         (fabs(x1 - x2) < 1 && fmin(x1, x2) > width - 2) ||
+         (fabs(y1 - y2) < 1 && fmax(y1, y2) < 1) ||
+         (fabs(y1 - y2) < 1 && fmin(y1, y2) > height - 2))
+        continue;
+
       // line position in absolute coordinates
-      float px1 = x_off + lines[n * 7 + 0];
-      float py1 = y_off + lines[n * 7 + 1];
-      float px2 = x_off + lines[n * 7 + 2];
-      float py2 = y_off + lines[n * 7 + 3];
+      float px1 = x_off + x1;
+      float py1 = y_off + y1;
+      float px2 = x_off + x2;
+      float py2 = y_off + y2;
 
       // scale back to input buffer
       px1 /= scale;
@@ -700,47 +750,58 @@ static int line_detect(const float *in, const int width, const int height, const
       px2 /= scale;
       py2 /= scale;
 
-      ashift_lines[n].p1[0] = px1;
-      ashift_lines[n].p1[1] = py1;
-      ashift_lines[n].p1[2] = 1.0f;
-      ashift_lines[n].p2[0] = px2;
-      ashift_lines[n].p2[1] = py2;
-      ashift_lines[n].p2[2] = 1.0f;;
+      // store as homogeneous coordinates
+      ashift_lines[m].p1[0] = px1;
+      ashift_lines[m].p1[1] = py1;
+      ashift_lines[m].p1[2] = 1.0f;
+      ashift_lines[m].p2[0] = px2;
+      ashift_lines[m].p2[1] = py2;
+      ashift_lines[m].p2[2] = 1.0f;;
 
-      // calculate homogeneous coordinates of line (defined by both points)
-      vec3prodn(ashift_lines[n].L, ashift_lines[n].p1, ashift_lines[n].p2);
+      // calculate homogeneous coordinates of connecting line (defined by both points)
+      vec3prodn(ashift_lines[m].L, ashift_lines[m].p1, ashift_lines[m].p2);
 
       // length and width of rectangle (see LSD) and weight (= length * width)
-      ashift_lines[n].length = sqrt((px2 - px1) * (px2 - px1) + (py2 - py1) * (py2 - py1));
-      ashift_lines[n].width = lines[n * 7 + 4] / scale;
-      ashift_lines[n].weight = ashift_lines[n].length * ashift_lines[n].width;
+      ashift_lines[m].length = sqrt((px2 - px1) * (px2 - px1) + (py2 - py1) * (py2 - py1));
+      ashift_lines[m].width = lsd_lines[n * 7 + 4] / scale;
+      float weight = ashift_lines[m].length * ashift_lines[m].width;
 
       const float angle = atan2(py2 - py1, px2 - px1) / M_PI * 180.0f;
-      const int relevant = ashift_lines[n].length > MIN_LINE_LENGTH ? 1 : 0;
       const int vertical = fabs(fabs(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
       const int horizontal = fabs(fabs(fabs(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
+
+      int relevant = ashift_lines[m].length > MIN_LINE_LENGTH ? 1 : 0;
 
       // register type of line
       dt_iop_ashift_linetype_t type = 0;
       if(vertical && relevant)
       {
-        type |= (ASHIFT_LINE_VERTICAL | ASHIFT_LINE_VSELECTED);
+        type = ASHIFT_LINE_VERTICAL_SELECTED;
         vertical_count++;
+        vertical_weight += weight;
       }
       else if(horizontal && relevant)
       {
-        type |= (ASHIFT_LINE_HORIZONTAL | ASHIFT_LINE_HSELECTED);
+        type = ASHIFT_LINE_HORIZONTAL_SELECTED;
         horizontal_count++;
+        horizontal_weight += weight;
       }
+      ashift_lines[m].type = type;
 
-      ashift_lines[n].type = type;
+      // the next valid line
+      m++;
     }
 
 #if 0
     printf("%d lines (vertical %d, horizontal %d, not relevant %d)\n", lines_count, vertical_count,
-           horizontal_count, lines_count - vertical_count - horizontal_count);
-    for(int n = 0; n < lines_count; n++)
+           horizontal_count, m - vertical_count - horizontal_count);
+    float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
+    for(int n = 0; n < m; n++)
     {
+      xmin = fmin(xmin, fmin(ashift_lines[n].p1[0], ashift_lines[n].p2[0]));
+      xmax = fmax(xmax, fmax(ashift_lines[n].p1[0], ashift_lines[n].p2[0]));
+      ymin = fmin(ymin, fmin(ashift_lines[n].p1[1], ashift_lines[n].p2[1]));
+      ymax = fmax(ymax, fmax(ashift_lines[n].p1[1], ashift_lines[n].p2[1]));
       printf("x1 %.0f, y1 %.0f, x2 %.0f, y2 %.0f, length %.0f, width %f, X %f, Y %f, Z %f, type %d, scalars %f %f\n",
              ashift_lines[n].p1[0], ashift_lines[n].p1[1], ashift_lines[n].p2[0], ashift_lines[n].p2[1],
              ashift_lines[n].length, ashift_lines[n].width,
@@ -748,73 +809,89 @@ static int line_detect(const float *in, const int width, const int height, const
              vec3scalar(ashift_lines[n].p1, ashift_lines[n].L),
              vec3scalar(ashift_lines[n].p2, ashift_lines[n].L));
     }
-    printf("\n");
+    printf("xmin %.0f, xmax %.0f, ymin %.0f, ymax %.0f\n", xmin, xmax, ymin, ymax);
 #endif
   }
 
-  // store results in provides locations
-  *lcount = lines_count;
+  // store results in provided locations
+  *lcount = m;
   *vcount = vertical_count;
+  *vweight = vertical_weight;
   *hcount = horizontal_count;
+  *hweight = horizontal_weight;
   *alines = ashift_lines;
 
   // free intermediate buffers
-  free(lines);
+  free(lsd_lines);
   free(greyscale);
   return TRUE;
 
 error:
-  if(lines) free(lines);
+  if(lsd_lines) free(lsd_lines);
   if(greyscale) free(greyscale);
   return FALSE;
 }
 
+// get image from buffer, analyze for structure and save results
 static int get_structure(dt_iop_module_t *module)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
   float *buffer = NULL;
+  int width = 0;
+  int height = 0;
+  int x_off = 0;
+  int y_off = 0;
+  float scale = 0.0f;
 
   dt_pthread_mutex_lock(&g->lock);
-  // read buffer data
-  const int width = g->buf_width;
-  const int height = g->buf_height;
-  const int x_off = g->buf_x_off;
-  const int y_off = g->buf_y_off;
-  const float scale = g->buf_scale;
+  // read buffer data if they are available
+  if(g->buf != NULL)
+  {
+    width = g->buf_width;
+    height = g->buf_height;
+    x_off = g->buf_x_off;
+    y_off = g->buf_y_off;
+    scale = g->buf_scale;
 
-  // create a temporary buffer to hold image data
-  buffer = malloc((size_t)width * height * 4 * sizeof(float));
-  if(buffer != NULL)
-    memcpy(buffer, g->buf, (size_t)width * height * 4 * sizeof(float));
-
-  // get rid of old structural data
-  g->lines_count = 0;
-  free(g->lines);
-  g->lines = NULL;
+    // create a temporary buffer to hold image data
+    buffer = malloc((size_t)width * height * 4 * sizeof(float));
+    if(buffer != NULL)
+      memcpy(buffer, g->buf, (size_t)width * height * 4 * sizeof(float));
+  }
   dt_pthread_mutex_unlock(&g->lock);
 
   if(buffer == NULL) goto error;
+
+  // get rid of old structural data
+  g->lines_count = 0;
+  g->vertical_count = 0;
+  g->horizontal_count = 0;
+  free(g->lines);
+  g->lines = NULL;
 
   dt_iop_ashift_line_t *lines;
   int lines_count;
   int vertical_count;
   int horizontal_count;
+  float vertical_weight;
+  float horizontal_weight;
 
-  // get structural data
+  // get new structural data
   if(!line_detect(buffer, width, height, x_off, y_off, scale, &lines, &lines_count,
-                  &vertical_count, &horizontal_count))
+                  &vertical_count, &horizontal_count, &vertical_weight, &horizontal_weight))
     goto error;
 
-  dt_pthread_mutex_lock(&g->lock);
   // save new structural data
   g->lines_in_width = width;
   g->lines_in_height = height;
   g->lines_count = lines_count;
   g->vertical_count = vertical_count;
   g->horizontal_count = horizontal_count;
+  g->vertical_weight = vertical_weight;
+  g->horizontal_weight = horizontal_weight;
+  g->lines_version++;
   g->lines = lines;
-  dt_pthread_mutex_unlock(&g->lock);
 
   free(buffer);
   return TRUE;
@@ -827,13 +904,34 @@ error:
 
 static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 {
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+  if(g->fitting) return FALSE;
+
+  g->fitting = 1;
+
+  dt_pthread_mutex_lock(&g->lock);
+  float *b = g->buf;
+  dt_pthread_mutex_unlock(&g->lock);
+
+  if(b == NULL)
+  {
+    dt_control_log(_("please first activate this module"));
+    goto error;
+  }
+
   if(!get_structure(module))
   {
     dt_control_log(_("could not detect structural data in image"));
-    return FALSE;
+    goto error;
   }
 
+  g->fitting = 0;
   return TRUE;
+
+error:
+  g->fitting =0;
+  return FALSE;
 }
 
 #if 1
@@ -939,7 +1037,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     g->buf_x_off = x_off;
     g->buf_y_off = y_off;
     g->buf_scale = scale;
-    g->buf_hash = 0;
 
     dt_pthread_mutex_unlock(&g->lock);
   }
@@ -1099,7 +1196,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     g->buf_x_off = x_off;
     g->buf_y_off = y_off;
     g->buf_scale = scale;
-    g->buf_hash = 0;
     dt_pthread_mutex_unlock(&g->lock);
 
     if(err != CL_SUCCESS) goto error;
@@ -1127,6 +1223,261 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->yalign = 1;
   return;
 }
+
+// generate a hash that indicates distorting pixelpipe changes, i.e. changes
+// effecting the roi or significant effects of warping modules
+static uint64_t grid_hash(dt_develop_t *dev, const int width, const int height, const unsigned char steps)
+{
+  const int stride = steps + 1;
+  const int points_count = stride * stride;
+
+  // generate a grid of equally spaced point coordinates and a second copy
+  float points[2 * points_count];
+  float tpoints[2 * points_count];
+
+  const float xdelta = (float)(width - 1) / steps;
+  const float ydelta = (float)(height - 1) / steps;
+
+  float x = 0.0f;
+  float y = 0.0f;
+
+  // generate the grid
+  for(int j = 0; j <= steps; j++, y += ydelta)
+    for(int i = 0; i <= steps; i++, x += xdelta)
+    {
+      points[2 * (j * stride + i)] = x;
+      points[2 * (j * stride + i) + 1] = y;
+    }
+
+  // make the copy
+  memcpy(tpoints, points, 2 * points_count);
+
+  // transform the copy
+  dt_dev_distort_transform(dev, tpoints, points_count);
+
+  // generate a hash out of the deltas of original and transformed points
+  uint64_t hash = 5381;
+  for(int k = 0; k <= 2 * points_count; k++)
+    hash = ((hash << 5) + hash) ^ (int)(points[k] - tpoints[k]);
+
+  return hash;
+}
+
+// get all the points to display lines in the gui
+static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *lines, const int lines_count,
+                      const int lines_version, float **points, dt_iop_ashift_points_idx_t **points_idx,
+                      int *points_lines_count)
+{
+  dt_develop_t *dev = self->dev;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  dt_iop_ashift_points_idx_t *my_points_idx = NULL;
+  float *my_points = NULL;
+
+  // is the display flipped relative to the original image?
+  const int isflipped = g->isflipped;
+
+  // allocate new index array
+  my_points_idx = (dt_iop_ashift_points_idx_t *)malloc(lines_count * sizeof(dt_iop_ashift_points_idx_t));
+  if(my_points_idx == NULL) goto error;
+
+  size_t total_points = 0;
+
+  // first step: basic initialization of my_points_idx and counting of total_points
+  for(int n = 0; n < lines_count; n++)
+  {
+    const int length = lines[n].length;
+    my_points_idx[n].length = length;
+    total_points += length;
+
+    my_points_idx[n].near = 0;
+
+    const dt_iop_ashift_linetype_t type = lines[n].type;
+
+    // set line color according to line type/orientation
+    // note: if the screen display is flipped versus the original image we need
+    // to respect that fact in the color selection
+    if((type & ASHIFT_LINE_MASK) == ASHIFT_LINE_VERTICAL_SELECTED)
+      my_points_idx[n].color = isflipped ? ASHIFT_LINECOLOR_BLUE : ASHIFT_LINECOLOR_GREEN;
+    else if((type & ASHIFT_LINE_MASK) == ASHIFT_LINE_VERTICAL_NOT_SELECTED)
+      my_points_idx[n].color = isflipped ? ASHIFT_LINECOLOR_YELLOW : ASHIFT_LINECOLOR_RED;
+    else if((type & ASHIFT_LINE_MASK) == ASHIFT_LINE_HORIZONTAL_SELECTED)
+      my_points_idx[n].color = isflipped ? ASHIFT_LINECOLOR_GREEN : ASHIFT_LINECOLOR_BLUE;
+    else if((type & ASHIFT_LINE_MASK) == ASHIFT_LINE_HORIZONTAL_NOT_SELECTED)
+      my_points_idx[n].color = isflipped ? ASHIFT_LINECOLOR_RED : ASHIFT_LINECOLOR_YELLOW;
+    else
+      my_points_idx[n].color = ASHIFT_LINECOLOR_GREY;
+  }
+
+  // now allocate new points buffer
+  my_points = (float *)malloc((size_t)2 * total_points * sizeof(float));
+  if(my_points == NULL) goto error;
+
+  // second step: generate points for each line
+  size_t offset = 0;
+  for(int n = 0; n < lines_count; n++)
+  {
+    my_points_idx[n].offset = offset;
+
+    float x = lines[n].p1[0];
+    float y = lines[n].p1[1];
+    const int length = lines[n].length;
+
+    const float dx = (lines[n].p2[0] - x) / (float)(length - 1);
+    const float dy = (lines[n].p2[1] - y) / (float)(length - 1);
+
+    for(int l = 0; l < length && offset < total_points; l++, offset++)
+    {
+      my_points[2 * offset] = x;
+      my_points[2 * offset + 1] = y;
+
+      x += dx;
+      y += dy;
+    }
+  }
+
+  // third step: transform all points
+  if(!dt_dev_distort_transform_plus(dev, dev->preview_pipe, self->priority, 9999999, my_points, total_points))
+    goto error;
+
+  // fourth step: get bounding box in final coordinates (used later for checking "near"-ness to mouse pointer)
+  for(int n = 0; n < lines_count; n++)
+  {
+    float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
+
+    size_t offset = my_points_idx[n].offset;
+    int length = my_points_idx[n].length;
+
+    for(int l = 0; l < length; l++)
+    {
+      xmin = fmin(xmin, my_points[2 * offset]);
+      xmax = fmax(xmax, my_points[2 * offset]);
+      ymin = fmin(ymin, my_points[2 * offset + 1]);
+      ymax = fmax(ymax, my_points[2 * offset + 1]);
+    }
+
+    my_points_idx[n].bbx = xmin;
+    my_points_idx[n].bbX = xmax;
+    my_points_idx[n].bby = ymin;
+    my_points_idx[n].bbY = ymax;
+  }
+
+  // check if lines_version has changed in-between -> too bad: we can forget about all we did :(
+  if(g->lines_version > lines_version)
+    goto error;
+
+  *points = my_points;
+  *points_idx = my_points_idx;
+  *points_lines_count = lines_count;
+
+  return TRUE;
+
+error:
+  if(my_points_idx != NULL) free(my_points_idx);
+  if(my_points != NULL) free(my_points);
+  return FALSE;
+}
+
+void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
+                     int32_t pointerx, int32_t pointery)
+{
+  dt_develop_t *dev = self->dev;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+
+  // structural data are currently being collected or fit procedure is running? -> skip
+  if(g->fitting) return;
+
+  // no structural data? -> nothing to do
+  if(g->lines == NULL) return;
+
+  // points data are missing or outdated, or distortion has changed? -> generate points
+  uint64_t hash = grid_hash(dev, g->buf_width, g->buf_height, 10);
+  if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash || g->lines_version > g->points_version)
+  {
+    // we need to reprocess points;
+    free(g->points);
+    g->points = NULL;
+    free(g->points_idx);
+    g->points_idx = NULL;
+    g->points_lines_count = 0;
+
+    if(!get_points(self, g->lines, g->lines_count, g->lines_version, &g->points, &g->points_idx,
+                   &g->points_lines_count))
+      return;
+
+    g->points_version = g->lines_version;
+    g->grid_hash = hash;
+  }
+
+  // a final check
+  if(g->points == NULL || g->points_idx == NULL) return;
+
+  // the usual rescaling stuff
+  float wd = dev->preview_pipe->backbuf_width;
+  float ht = dev->preview_pipe->backbuf_height;
+  if(wd < 1.0 || ht < 1.0) return;
+  float zoom_y = dt_control_get_dev_zoom_y();
+  float zoom_x = dt_control_get_dev_zoom_x();
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+
+  cairo_save(cr);
+  cairo_translate(cr, width / 2.0, height / 2.0);
+  cairo_scale(cr, zoom_scale, zoom_scale);
+  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+
+  // this must match the sequence of enum dt_iop_ashift_linecolor_t!
+  const float line_colors[5][4] =
+  { { 0.3f, 0.3f, 0.3f, 0.8f },                    // grey (misc. lines)
+    { 0.0f, 1.0f, 0.0f, 0.8f },                    // green (selected vertical lines)
+    { 1.0f, 0.0f, 0.0f, 0.8f },                    // red (de-selected vertical lines)
+    { 0.0f, 0.0f, 1.0f, 0.8f },                    // blue (selected horizontal lines)
+    { 1.0f, 1.0f, 0.0f, 0.8f } };                  // yellow (de-selected horizontal lines)
+
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
+  // now draw all lines
+  for(int n = 0; n < g->points_lines_count; n++)
+  {
+    // is the near flag set? -> draw line a bit thicker
+    if(g->points_idx[n].near)
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5) / zoom_scale);
+    else
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
+
+    // the color of this line
+    const float *color = line_colors[g->points_idx[n].color];
+    cairo_set_source_rgba(cr, color[0], color[1], color[2], color[3]);
+
+    size_t offset = g->points_idx[n].offset;
+    const int length = g->points_idx[n].length;
+
+    // sanity check (this should not happen)
+    if(length < 2) continue;
+
+    // set starting point of multi-segment line
+    cairo_move_to(cr, g->points[offset * 2], g->points[offset * 2 + 1]);
+
+    offset++;
+    // draw individual line segments
+    for(int l = 1; l < length; l++, offset++)
+    {
+      cairo_line_to(cr, g->points[offset * 2], g->points[offset * 2 + 1]);
+    }
+
+    // finally stroke the line
+    cairo_stroke(cr);
+  }
+
+  cairo_restore(cr);
+}
+
 
 static void rotation_callback(GtkWidget *slider, gpointer user_data)
 {
@@ -1199,17 +1550,22 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
 
   dt_pthread_mutex_lock(&g->lock);
-  g->isflipped = -1;
-  free(g->lines);
   free(g->buf);
-  g->lines = NULL;
   g->buf = NULL;
   g->lines_count = 0;
-  g->buf_hash = 0;
   g->buf_width = 0;
   g->buf_height = 0;
   g->buf_scale = 1.0f;
+  g->isflipped = -1;
   dt_pthread_mutex_unlock(&g->lock);
+
+  g->fitting = 0;
+  free(g->lines);
+  g->lines = NULL;
+  g->lines_count =0;
+  g->horizontal_count = 0;
+  g->vertical_count = 0;
+  g->grid_hash = 0;
 }
 
 void init(dt_iop_module_t *module)
@@ -1299,7 +1655,6 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   dt_pthread_mutex_lock(&g->lock);
   const int isflipped = g->isflipped;
-  g->isflipped = -1;
   dt_pthread_mutex_unlock(&g->lock);
 
   // no data after last visit
@@ -1327,15 +1682,24 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
   dt_pthread_mutex_lock(&g->lock);
-  g->isflipped = -1;
-  g->lines_count = 0;
-  g->lines = NULL;
   g->buf = NULL;
-  g->buf_hash = 0;
   g->buf_width = 0;
   g->buf_height = 0;
   g->buf_scale = 1.0f;
+  g->isflipped = -1;
   dt_pthread_mutex_unlock(&g->lock);
+
+  g->fitting = 0;
+  g->lines = NULL;
+  g->lines_count = 0;
+  g->vertical_count = 0;
+  g->horizontal_count = 0;
+  g->lines_version = 0;
+  g->points = NULL;
+  g->points_idx = NULL;
+  g->points_lines_count = 0;
+  g->points_version = 0;
+  g->grid_hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1373,6 +1737,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_pthread_mutex_destroy(&g->lock);
   free(g->lines);
   free(g->buf);
+  free(g->points);
+  free(g->points_idx);
   free(self->gui_data);
   self->gui_data = NULL;
 }
