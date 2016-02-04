@@ -415,7 +415,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   dt_image_print_exif(&dev->image_storage, exifline, 50);
   pango_layout_set_text(layout, exifline, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, .02 * width, .98 * height - ink.height - ink.x);
+  cairo_move_to(cr, .02 * width, .98 * height - ink.height - ink.y);
   dt_print(DT_DEBUG_CONTROL, "[histogram] wh: %d/%d, ink.w|h: %d/%d, ink.x|y: %d/%d -> %f\n", width, height, ink.width, ink.height, ink.x, ink.y, .98 * height - ink.height - ink.x);
   cairo_save(cr);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
