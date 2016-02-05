@@ -59,7 +59,10 @@
 #include "ashift_lsd.c"
 
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
-#define MAX_TANGENTIAL_DEVIATION 30         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
+#define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
+#define RANSAC_ITER 200                     // how many interations to run in ransac
+#define RANSAC_DELTA 0.0005f                // limit of distance between line and intersection point
+#define RANSAC_HURDLE 5                     // hurdle rate of number of lines below which a complete permutation is made
 
 
 DT_MODULE_INTROSPECTION(1, dt_iop_ashift_params_t)
@@ -153,6 +156,8 @@ typedef struct dt_iop_ashift_gui_data_t
   dt_iop_ashift_line_t *lines;
   int lines_in_width;
   int lines_in_height;
+  int lines_x_off;
+  int lines_y_off;
   int lines_count;
   int vertical_count;
   int horizontal_count;
@@ -276,7 +281,6 @@ static inline int vec3isnull(const float *const v)
   const float eps = 1e-10f;
   return (fabs(v[0]) < eps && fabs(v[1]) < eps && fabs(v[2]) < eps);
 }
-
 
 
 static void _print_roi(const dt_iop_roi_t *roi, const char *label)
@@ -711,10 +715,10 @@ static int line_detect(const float *in, const int width, const int height, const
   // LSD stores the number of found lines in lines_count.
   // it returns structural details as vector 'double lines[7 * lines_count]'
   int lines_count;
-  lsd_lines = lsd(&lines_count, greyscale, width, height);
+  lsd_lines = lsd_scale(&lines_count, greyscale, width, height, 1.0);
 
   // we count the lines that we really want to use
-  int m = 0;
+  int lct = 0;
 
   if(lines_count > 0)
   {
@@ -729,13 +733,13 @@ static int line_detect(const float *in, const int width, const int height, const
       float x2 = lsd_lines[n * 7 + 2];
       float y2 = lsd_lines[n * 7 + 3];
 
-      // check for lines along image borders and skip them.
+      // check for lines running along image borders and skip them.
       // these would likely be false-positives which could result
       // from any kind of processing artifacts
-      if((fabs(x1 - x2) < 1 && fmax(x1, x2) < 1) ||
-         (fabs(x1 - x2) < 1 && fmin(x1, x2) > width - 2) ||
-         (fabs(y1 - y2) < 1 && fmax(y1, y2) < 1) ||
-         (fabs(y1 - y2) < 1 && fmin(y1, y2) > height - 2))
+      if((fabs(x1 - x2) < 1 && fmax(x1, x2) < 2) ||
+         (fabs(x1 - x2) < 1 && fmin(x1, x2) > width - 3) ||
+         (fabs(y1 - y2) < 1 && fmax(y1, y2) < 2) ||
+         (fabs(y1 - y2) < 1 && fmin(y1, y2) > height - 3))
         continue;
 
       // line position in absolute coordinates
@@ -751,29 +755,32 @@ static int line_detect(const float *in, const int width, const int height, const
       py2 /= scale;
 
       // store as homogeneous coordinates
-      ashift_lines[m].p1[0] = px1;
-      ashift_lines[m].p1[1] = py1;
-      ashift_lines[m].p1[2] = 1.0f;
-      ashift_lines[m].p2[0] = px2;
-      ashift_lines[m].p2[1] = py2;
-      ashift_lines[m].p2[2] = 1.0f;;
+      ashift_lines[lct].p1[0] = px1;
+      ashift_lines[lct].p1[1] = py1;
+      ashift_lines[lct].p1[2] = 1.0f;
+      ashift_lines[lct].p2[0] = px2;
+      ashift_lines[lct].p2[1] = py2;
+      ashift_lines[lct].p2[2] = 1.0f;;
 
-      // calculate homogeneous coordinates of connecting line (defined by both points)
-      vec3prodn(ashift_lines[m].L, ashift_lines[m].p1, ashift_lines[m].p2);
+      // calculate homogeneous coordinates of connecting line (defined by the two points)
+      vec3prodn(ashift_lines[lct].L, ashift_lines[lct].p1, ashift_lines[lct].p2);
 
       // length and width of rectangle (see LSD) and weight (= length * width)
-      ashift_lines[m].length = sqrt((px2 - px1) * (px2 - px1) + (py2 - py1) * (py2 - py1));
-      ashift_lines[m].width = lsd_lines[n * 7 + 4] / scale;
-      float weight = ashift_lines[m].length * ashift_lines[m].width;
+      ashift_lines[lct].length = sqrt((px2 - px1) * (px2 - px1) + (py2 - py1) * (py2 - py1));
+      ashift_lines[lct].width = lsd_lines[n * 7 + 4] / scale;
+
+      const float weight = ashift_lines[lct].length * ashift_lines[lct].width;
+      ashift_lines[lct].weight = weight;
+
 
       const float angle = atan2(py2 - py1, px2 - px1) / M_PI * 180.0f;
       const int vertical = fabs(fabs(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
       const int horizontal = fabs(fabs(fabs(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
 
-      int relevant = ashift_lines[m].length > MIN_LINE_LENGTH ? 1 : 0;
+      const int relevant = ashift_lines[lct].length > MIN_LINE_LENGTH ? 1 : 0;
 
       // register type of line
-      dt_iop_ashift_linetype_t type = 0;
+      dt_iop_ashift_linetype_t type = ASHIFT_LINE_IRRELEVANT;
       if(vertical && relevant)
       {
         type = ASHIFT_LINE_VERTICAL_SELECTED;
@@ -786,17 +793,17 @@ static int line_detect(const float *in, const int width, const int height, const
         horizontal_count++;
         horizontal_weight += weight;
       }
-      ashift_lines[m].type = type;
+      ashift_lines[lct].type = type;
 
       // the next valid line
-      m++;
+      lct++;
     }
 
 #if 0
     printf("%d lines (vertical %d, horizontal %d, not relevant %d)\n", lines_count, vertical_count,
-           horizontal_count, m - vertical_count - horizontal_count);
+           horizontal_count, lct - vertical_count - horizontal_count);
     float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
-    for(int n = 0; n < m; n++)
+    for(int n = 0; n < lct; n++)
     {
       xmin = fmin(xmin, fmin(ashift_lines[n].p1[0], ashift_lines[n].p2[0]));
       xmax = fmax(xmax, fmax(ashift_lines[n].p1[0], ashift_lines[n].p2[0]));
@@ -814,7 +821,7 @@ static int line_detect(const float *in, const int width, const int height, const
   }
 
   // store results in provided locations
-  *lcount = m;
+  *lcount = lct;
   *vcount = vertical_count;
   *vweight = vertical_weight;
   *hcount = horizontal_count;
@@ -885,6 +892,8 @@ static int get_structure(dt_iop_module_t *module)
   // save new structural data
   g->lines_in_width = width;
   g->lines_in_height = height;
+  g->lines_x_off = x_off;
+  g->lines_y_off = y_off;
   g->lines_count = lines_count;
   g->vertical_count = vertical_count;
   g->horizontal_count = horizontal_count;
@@ -900,6 +909,275 @@ error:
   free(buffer);
   return FALSE;
 }
+
+
+// swap two integer values
+static inline void swap(int *a, int *b)
+{
+  int tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
+// do complete permutations
+static int quickperm(int *a, int *p, const int N, int *i)
+{
+  if(*i >= N) return FALSE;
+
+  p[*i]--;
+  int j = (*i % 2 == 1) ? p[*i] : 0;
+  swap(&a[j], &a[*i]);
+  *i = 1;
+  while(p[*i] == 0)
+  {
+    p[*i] = *i;
+    (*i)++;
+  }
+  return TRUE;
+}
+
+// Fisher-Yates shuffle
+static void shuffle(int *a, const int N)
+{
+  for(int i = 0; i < N; i++)
+  {
+    int j = i + rand() % (N - i);
+    swap(&a[j], &a[i]);
+  }
+}
+
+// factorial function
+static int fact(const int n)
+{
+  return (n == 1 ? 1 : n * fact(n - 1));
+}
+
+static void aprintd(const int *a, const int N)
+{
+  for(int n = 0; n < N; n++) printf("%d ", a[n]);
+  printf("\n");
+}
+
+
+static void aprintf(const float *a, const int N)
+{
+  for(int n = 0; n < N; n++) printf("%f ", a[n]);
+  printf("\n");
+}
+
+// We use a pseudo-RANSAC algorithm to elminiate ouliers from our set of lines. The
+// original RANSAC works on linear optimization problems. Our model is nonlinear. We
+// take advantage of the fact that lines interesting for our model are vantage lines
+// that meet in one vantage point for each subset of lines (vertical/horizontal).
+// Stragegy: we construct a model by random sampling within the subset of lines and
+// calculate the vantage point. Then we check the distance in homogeneous coordinates
+// of all other lines to the vantage point. The model that gives highest number of lines
+// combined with the highest total weight wins.
+// Disadvantage: compared to the original RANSAC we don't get any model parameters that
+// we could use for the following LM fit.
+static void ransac(const dt_iop_ashift_line_t const* lines, int *index_set, int *inout_set,
+                  const int set_count, const float total_weight, const int xmin, const int xmax,
+                  const int ymin, const int ymax)
+{
+  if(set_count < 3) return;
+
+  int best_set[set_count];
+  memcpy(best_set, index_set, sizeof(best_set));
+  int best_inout[set_count];
+  memset(best_inout, 0, sizeof(best_inout));
+  float best_quality = 0.0f;
+
+  // go for complete permutations on small set sizes, else for random sample consensus
+  int riter = (set_count > RANSAC_HURDLE) ? RANSAC_ITER : fact(set_count);
+
+  // some data needed for quickperm
+  int perm[set_count + 1];
+  for(int n = 0; n < set_count + 1; n++) perm[n] = n;
+  int piter = 1;
+
+  for(int r = 0; r < riter; r++)
+  {
+    // get random or systematic variation of index set
+    if(set_count > RANSAC_HURDLE)
+      shuffle(index_set, set_count);
+    else
+      (void)quickperm(index_set, perm, set_count, &piter);
+
+    // inout holds good/bad qualification for each line
+    int inout[set_count];
+
+    // summed quality evaluation of this run
+    float quality = 0.0f;
+
+    // we build a model ouf of the first two lines
+    const float *L1 = lines[index_set[0]].L;
+    const float *L2 = lines[index_set[1]].L;
+
+    // get intersection point (ideally a vantage point)
+    float V[3];
+    vec3prodn(V, L1, L2);
+
+    // seldom case: L1 and L2 are identical -> no valid vantage point
+    if(vec3isnull(V))
+      continue;
+
+    // no chance for this module to correct for a vantage point which lies inside the image frame.
+    // check that and skip if needed
+    if(fabs(V[2]) > 0.0f &&
+         V[0]/V[2] >= xmin &&
+         V[1]/V[2] >= ymin &&
+         V[0]/V[2] <= xmax &&
+         V[1]/V[2] <= ymax)
+      continue;
+
+    // the two lines constituting the model are part of the set
+    inout[0] = 1;
+    inout[1] = 1;
+
+    // go through all remaining lines, check if they are within the model, and
+    // mark that fact in inout[].
+    // summarize a quality parameter for all lines within the model
+    for(int n = 2; n < set_count; n++)
+    {
+      const float *L3 = lines[index_set[n]].L;
+      const float d = fabs(vec3scalar(V, L3));
+
+      // depending on d we either include or exclude the point from the set
+      inout[n] = (d < RANSAC_DELTA) ? 1 : 0;
+
+      float q;
+
+      if(inout[n] == 1)
+        // a quality parameter that depends 50% on the number of lines within the model
+        // and 50% of their weight
+        q = 0.5f + 0.5f * (float)set_count * lines[index_set[n]].weight / total_weight;
+      else
+        q = 0.0f;
+
+      quality += q;
+    }
+
+    // now check against the best model found so far
+    if(quality > best_quality)
+    {
+      memcpy(best_set, index_set, sizeof(best_set));
+      memcpy(best_inout, inout, sizeof(best_inout));
+      best_quality = quality;
+    }
+
+#if 0
+    // report some statistics
+    int count = 0, lastcount = 0;
+    for(int n = 0; n < set_count; n++) count += best_inout[n];
+    for(int n = 0; n < set_count; n++) lastcount += inout[n];
+    printf("ransac run %d: best quality %.5f, line count %d of %d (this run: quality %.5f, count %d)\n", r,
+           best_quality, count, set_count, quality, lastcount);
+#endif
+  }
+
+  // store back best set
+  memcpy(index_set, best_set, set_count * sizeof(int));
+  memcpy(inout_set, best_inout, set_count * sizeof(int));
+}
+
+
+// try to clean up structural lines to increase chance of a convergent fitting
+static int remove_outliers(dt_iop_module_t *module)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+  const int width = g->lines_in_width;
+  const int height = g->lines_in_height;
+  const int xmin = g->lines_x_off;
+  const int ymin = g->lines_y_off;
+  const int xmax = xmin + width;
+  const int ymax = ymin + height;
+
+  // holds the index set of lines we want to work on
+  int lines_set[g->lines_count];
+  // holds the result of ransac
+  int inout_set[g->lines_count];
+
+  // some counter variables
+  int vnb = 0, vcount = 0;
+  int hnb = 0, hcount = 0;
+
+  // just to be on the safe side
+  if(g->lines == NULL) goto error;
+
+  // generate index list for the vertical lines
+  for(int n = 0; n < g->lines_count; n++)
+  {
+    // is this a selected vertical line?
+    if((g->lines[n].type & ASHIFT_LINE_MASK) != ASHIFT_LINE_VERTICAL_SELECTED)
+      continue;
+
+    lines_set[vnb] = n;
+    inout_set[vnb] = 0;
+    vnb++;
+  }
+
+  // it only makes sense to call ransac if we have more than two lines
+  if(vnb > 2)
+    ransac(g->lines, lines_set, inout_set, vnb, g->vertical_weight,
+           xmin, xmax, ymin, ymax);
+
+  // adjust line selected flag according to the ransac results
+  for(int n = 0; n < vnb; n++)
+  {
+    const int m = lines_set[n];
+    if(inout_set[n] == 1)
+    {
+      g->lines[m].type |= ASHIFT_LINE_SELECTED;
+      vcount++;
+    }
+    else
+      g->lines[m].type &= ~ASHIFT_LINE_SELECTED;
+  }
+  // update number of vertical lines
+  g->vertical_count = vcount;
+  g->lines_version++;
+
+  // now generate index list for the horizontal lines
+  for(int n = 0; n < g->lines_count; n++)
+  {
+    // is this a selected horizontal line?
+    if((g->lines[n].type & ASHIFT_LINE_MASK) != ASHIFT_LINE_HORIZONTAL_SELECTED)
+      continue;
+
+    lines_set[hnb] = n;
+    inout_set[hnb] = 0;
+    hnb++;
+  }
+
+  // it only makes sense to call ransac if we have more than two lines
+  if(hnb > 2)
+    ransac(g->lines, lines_set, inout_set, hnb, g->horizontal_weight,
+           xmin, xmax, ymin, ymax);
+
+  // adjust line selected flag according to the ransac results
+  for(int n = 0; n < hnb; n++)
+  {
+    const int m = lines_set[n];
+    if(inout_set[n] == 1)
+    {
+      g->lines[m].type |= ASHIFT_LINE_SELECTED;
+      hcount++;
+    }
+    else
+      g->lines[m].type &= ~ASHIFT_LINE_SELECTED;
+  }
+  // update number of horizontal lines
+  g->horizontal_count = hcount;
+  g->lines_version++;
+
+  return TRUE;
+
+error:
+  return FALSE;
+}
+
+
 
 
 static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
@@ -923,6 +1201,12 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   if(!get_structure(module))
   {
     dt_control_log(_("could not detect structural data in image"));
+    goto error;
+  }
+
+  if(!remove_outliers(module))
+  {
+    dt_control_log(_("could not run outlier removal on structural data"));
     goto error;
   }
 
@@ -1281,15 +1565,17 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   my_points_idx = (dt_iop_ashift_points_idx_t *)malloc(lines_count * sizeof(dt_iop_ashift_points_idx_t));
   if(my_points_idx == NULL) goto error;
 
+  // account for total number of points
   size_t total_points = 0;
 
   // first step: basic initialization of my_points_idx and counting of total_points
   for(int n = 0; n < lines_count; n++)
   {
     const int length = lines[n].length;
-    my_points_idx[n].length = length;
+    
     total_points += length;
 
+    my_points_idx[n].length = length;
     my_points_idx[n].near = 0;
 
     const dt_iop_ashift_linetype_t type = lines[n].type;
@@ -1657,7 +1943,6 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   const int isflipped = g->isflipped;
   dt_pthread_mutex_unlock(&g->lock);
 
-  // no data after last visit
   if(isflipped == -1) return FALSE;
 
   char string_v[256];
