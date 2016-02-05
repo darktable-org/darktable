@@ -535,6 +535,9 @@ void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
 /* DNG Images are assumed to be decodable unless explicitly set so */
 void DngDecoder::checkSupportInternal(CameraMetaData *meta) {
+  // We set this, since DNG's are not explicitly added.
+  failOnUnknown = FALSE;
+
   if (!(mRootIFD->hasEntryRecursive(MAKE) && mRootIFD->hasEntryRecursive(MODEL))) {
     // Check "Unique Camera Model" instead, uses this for both make + model.
     if (mRootIFD->hasEntryRecursive(UNIQUECAMERAMODEL)) {
@@ -548,9 +551,6 @@ void DngDecoder::checkSupportInternal(CameraMetaData *meta) {
   }
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
-
-  // We set this, since DNG's are not explicitly added. 
-  failOnUnknown = FALSE;
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   this->checkCameraSupported(meta, make, model, "dng");
