@@ -60,9 +60,10 @@
 
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
+#define POINTS_NEAR_DELTA 2                 // distance of mouse pointer to line for "near" detection
 #define RANSAC_ITER 200                     // how many interations to run in ransac
 #define RANSAC_DELTA 0.0005f                // limit of distance between line and intersection point
-#define RANSAC_HURDLE 5                     // hurdle rate of number of lines below which a complete permutation is made
+#define RANSAC_HURDLE 5                     // hurdle rate: the number of lines below which we do a complete permutation instead of random sampling
 
 
 DT_MODULE_INTROSPECTION(1, dt_iop_ashift_params_t)
@@ -1547,6 +1548,46 @@ static uint64_t grid_hash(dt_develop_t *dev, const int width, const int height, 
   return hash;
 }
 
+// gather information about "near"-ness in g->points_idx
+static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, const int lines_count,
+                     float pzx, float pzy, float delta)
+{
+  const float delta2 = delta * delta;
+
+  for(int n = 0; n < lines_count; n++)
+  {
+    points_idx[n].near = 0;
+
+    // first check if the mouse pointer is outside the bounding box of the line -> skip this line
+    if(pzx < points_idx[n].bbx - delta &&
+       pzx > points_idx[n].bbX + delta &&
+       pzy < points_idx[n].bby - delta &&
+       pzy > points_idx[n].bbY + delta)
+      continue;
+
+    // pointer is inside bounding box
+    size_t offset = points_idx[n].offset;
+    const int length = points_idx[n].length;
+
+    // sanity check (this should not happen)
+    if(length < 2) continue;
+
+    // check line point by point
+    for(int l = 0; l < length; l++, offset++)
+    {
+      float dx = pzx - points[offset * 2];
+      float dy = pzy - points[offset * 2 + 1];
+
+      if(dx * dx + dy * dy < delta2)
+      {
+        points_idx[n].near = 1;
+        break;
+      }
+    }
+  }
+}
+
+
 // get all the points to display lines in the gui
 static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *lines, const int lines_count,
                       const int lines_version, float **points, dt_iop_ashift_points_idx_t **points_idx,
@@ -1722,9 +1763,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float line_colors[5][4] =
   { { 0.3f, 0.3f, 0.3f, 0.8f },                    // grey (misc. lines)
     { 0.0f, 1.0f, 0.0f, 0.8f },                    // green (selected vertical lines)
-    { 1.0f, 0.0f, 0.0f, 0.8f },                    // red (de-selected vertical lines)
+    { 0.8f, 0.0f, 0.0f, 0.8f },                    // red (de-selected vertical lines)
     { 0.0f, 0.0f, 1.0f, 0.8f },                    // blue (selected horizontal lines)
-    { 1.0f, 1.0f, 0.0f, 0.8f } };                  // yellow (de-selected horizontal lines)
+    { 0.8f, 0.8f, 0.0f, 0.8f } };                  // yellow (de-selected horizontal lines)
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
@@ -1733,9 +1774,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   {
     // is the near flag set? -> draw line a bit thicker
     if(g->points_idx[n].near)
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5) / zoom_scale);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
     else
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5) / zoom_scale);
 
     // the color of this line
     const float *color = line_colors[g->points_idx[n].color];
@@ -1762,6 +1803,56 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
 
   cairo_restore(cr);
+}
+
+int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  float wd = self->dev->preview_pipe->backbuf_width;
+  float ht = self->dev->preview_pipe->backbuf_height;
+  if(wd < 1.0 || ht < 1.0) return 1;
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
+  float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+
+  // gather information about "near"-ness in g->points_idx
+  get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, POINTS_NEAR_DELTA);
+
+  dt_control_queue_redraw_center();
+  return 1;
+}
+
+int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
+                   uint32_t state)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  // go through lines near to the pointer and change "selected" state.
+  // left-click sets and right-click unsets the state
+  for(int n = 0; n < g->points_lines_count; n++)
+  {
+    if(g->points_idx[n].near == 0)
+      continue;
+
+    if(which == 3)
+      g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+    else
+      g->lines[n].type |= ASHIFT_LINE_SELECTED;
+  }
+
+  g->lines_version++;
+
+  return 0;
+}
+
+int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
+{
+  // nothing to do
+  return 0;
 }
 
 
