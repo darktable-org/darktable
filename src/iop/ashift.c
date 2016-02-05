@@ -283,11 +283,12 @@ static inline int vec3isnull(const float *const v)
   return (fabs(v[0]) < eps && fabs(v[1]) < eps && fabs(v[2]) < eps);
 }
 
-
+#if 0
 static void _print_roi(const dt_iop_roi_t *roi, const char *label)
 {
   printf("{ %5d  %5d  %5d  %5d  %.6f } %s\n", roi->x, roi->y, roi->width, roi->height, roi->scale, label);
 }
+#endif
 
 
 static void homography(float *homograph, const float angle, const float shift_v, const float shift_h,
@@ -648,48 +649,6 @@ static void rgb2grey256(const float *in, double *out, const int width, const int
   }
 }
 
-// simple conversion of rgb image into greyscale variant
-static void rgb2grey(const float *in, float *out, const int width, const int height)
-{
-  const int ch = 4;
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
-#endif
-  for(int j = 0; j < height; j++)
-  {
-    const float *inp = in + (size_t)ch * j * width;
-    float *outp = out + (size_t)j * width;
-    for(int i = 0; i < width; i++, inp += ch, outp++)
-    {
-      *outp = 0.3f * inp[0] + 0.59f * inp[1] + 0.11f * inp[2];
-    }
-  }
-}
-
-
-// support function only needed during development
-static void grey2rgb(const float *in, float *out, const int out_width, const int out_height,
-                     const int in_width, const int in_height)
-{
-  const int ch = 4;
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
-#endif
-  for(int j = 0; j < out_height; j++)
-  {
-    if(j >= in_height) continue;
-    const float *inp = in + (size_t)j * in_width;
-    float *outp = out + (size_t)ch * j * out_width;
-    for(int i = 0; i < out_width; i++, inp++, outp += ch)
-    {
-      if(i >= in_width) continue;
-      outp[0] = outp[1] = outp[2] = *inp;
-    }
-  }
-}
-
 // do actual line_detection based on LSD algorithm and return results according to this module's
 // conventions
 static int line_detect(const float *in, const int width, const int height, const int x_off, const int y_off,
@@ -951,19 +910,6 @@ static void shuffle(int *a, const int N)
 static int fact(const int n)
 {
   return (n == 1 ? 1 : n * fact(n - 1));
-}
-
-static void aprintd(const int *a, const int N)
-{
-  for(int n = 0; n < N; n++) printf("%d ", a[n]);
-  printf("\n");
-}
-
-
-static void aprintf(const float *a, const int N)
-{
-  for(int n = 0; n < N; n++) printf("%f ", a[n]);
-  printf("\n");
 }
 
 // We use a pseudo-RANSAC algorithm to elminiate ouliers from our set of lines. The
@@ -1710,7 +1656,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 {
   dt_develop_t *dev = self->dev;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
   // structural data are currently being collected or fit procedure is running? -> skip
   if(g->fitting) return;
@@ -1749,10 +1694,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
-  float pzx, pzy;
-  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
-  pzx += 0.5f;
-  pzy += 0.5f;
 
   cairo_save(cr);
   cairo_translate(cr, width / 2.0, height / 2.0);
@@ -1808,12 +1749,11 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
   float wd = self->dev->preview_pipe->backbuf_width;
   float ht = self->dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return 1;
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
+
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
