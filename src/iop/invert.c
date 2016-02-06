@@ -53,7 +53,11 @@ typedef struct dt_iop_invert_global_data_t
   int kernel_invert_4f;
 } dt_iop_invert_global_data_t;
 
-typedef struct dt_iop_invert_params_t dt_iop_invert_data_t;
+typedef struct dt_iop_invert_data_t
+{
+  float color[3]; // color of film material
+  double RGB_to_CAM[4][3]; // Matrix to convert CYGM to RGB for this camera
+} dt_iop_invert_data_t;
 
 const char *name()
 {
@@ -159,8 +163,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   const float *const m = piece->pipe->processed_maximum;
 
-  const float film_rgb[3] = { d->color[0], d->color[1], d->color[2] };
-  const float film_rgb_f[3] = { d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2] };
+  float film_rgb[4] = { d->color[0], d->color[1], d->color[2], 0.0f };
+
+  // Convert the RGB color to CYGM only if we're not in the preview pipe (which is already RGB)
+  if((self->dev->image_storage.flags & DT_IMAGE_4BAYER) && !dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+    dt_colorspaces_rgb_to_cygm(film_rgb, 1, d->RGB_to_CAM);
+
+  const float film_rgb_f[4] = { film_rgb[0] * m[0], film_rgb[1] * m[1], film_rgb[2] * m[2], film_rgb[3] * m[3] };
 
   // FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
   //   if(self->request_color_pick){
@@ -353,10 +362,25 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 {
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)params;
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
-  memcpy(d, p, sizeof(dt_iop_invert_params_t));
+
+  for(int k = 0; k < 3; k++)
+    d->color[k] = p->color[k];
 
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
+
+  if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  {
+    // 4Bayer images not implemented in OpenCL yet
+    piece->process_cl_ready = 0;
+
+    char *camera = self->dev->image_storage.camera_makermodel;
+    if (!dt_colorspaces_conversion_matrices_rgb(camera, d->RGB_to_CAM, NULL, NULL))
+    {
+      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
+    }
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
