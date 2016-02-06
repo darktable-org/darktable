@@ -475,6 +475,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     dt_colorspaces_cygm_apply_coeffs_to_rgb(((float *)ovoid), ((float *)ivoid),
                                             roi_out->width*roi_out->height,
                                             d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
+    float new_maximum[4] = {1.0f};
+    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->processed_maximum,
+                                            1, d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
+    for(int k = 0; k < 4; k++)
+      piece->pipe->processed_maximum[k] = new_maximum[k];
   }
   else
   { // non-mosaiced
@@ -500,7 +505,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
-  for(int k = 0; k < 3; k++)
+  for(int k = 0; k < 4; k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
 }
 

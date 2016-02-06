@@ -54,7 +54,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   dt_iop_roi_t buf_in,
       buf_out;                // theoretical full buffer regions of interest, as passed through modify_roi_out
   int process_cl_ready;       // set this to 0 in commit_params to temporarily disable the use of process_cl
-  float processed_maximum[3]; // sensor saturation after this iop, used internally for caching
+  float processed_maximum[4]; // sensor saturation after this iop, used internally for caching
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
@@ -88,7 +88,7 @@ typedef struct dt_dev_pixelpipe_t
   // dimensions of processed buffer
   int processed_width, processed_height;
   // sensor saturation, propagated through the operations:
-  float processed_maximum[3];
+  float processed_maximum[4];
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
   // event flag

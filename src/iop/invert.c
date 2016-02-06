@@ -183,7 +183,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         *out = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - *in, 0.0f, 1.0f);
     }
 
-    for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
   { // bayer float mosaiced
@@ -225,7 +225,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     }
     _mm_sfence();
 
-    for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
   }
   else
   { // non-mosaiced
@@ -294,7 +294,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_color);
-  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] = 1.0f;
+  for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
   return TRUE;
 
 error:

@@ -755,9 +755,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     // dev->preview_pipe ? "[preview]" : "", hash);
     // copy over cached processed max for clipping:
     if(piece)
-      for(int k = 0; k < 3; k++) pipe->processed_maximum[k] = piece->processed_maximum[k];
+      for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = piece->processed_maximum[k];
     else
-      for(int k = 0; k < 3; k++) pipe->processed_maximum[k] = 1.0f;
+      for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = 1.0f;
     (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(!modules) return 0;
@@ -1829,7 +1829,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         _pipe_type_to_str(pipe->type));
     g_free(module_label);
     // in case we get this buffer from the cache, also get the processed max:
-    for(int k = 0; k < 3; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
+    for(int k = 0; k < 4; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(module == darktable.develop->gui_module)
     {
@@ -2368,7 +2368,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 restart:
 
   // image max is normalized before
-  for(int k = 0; k < 3; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
+  for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
 
   // check if we should obsolete caches
   if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(&(pipe->cache));

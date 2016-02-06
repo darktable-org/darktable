@@ -1616,7 +1616,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       {
         vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
         if (img->flags & DT_IMAGE_4BAYER)
+        {
           dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, data->CAM_to_RGB);
+          dt_colorspaces_cygm_to_rgb(piece->pipe->processed_maximum, 1, data->CAM_to_RGB);
+        }
       }
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters,
