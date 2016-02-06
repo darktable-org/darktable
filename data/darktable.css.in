@@ -52,6 +52,7 @@ GtkAlignment
 }
 #lib-plugin-ui GtkTreeView,
 #lib-plugin-ui GtkComboBoxText *,
+#lib-plugin-ui GtkComboBox *,
 #lib-plugin-ui GtkComboBox GtkToggleButton *
 {
   background-color: shade(@selected_bg_color, 0.8); /* 'transparent' doesn't work for those it seems */
