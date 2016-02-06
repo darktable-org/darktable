@@ -123,7 +123,7 @@ unsigned short TiffEntry::getShort() {
 }
 
 const uint32* TiffEntry::getIntArray() {
-  if (type != TIFF_LONG && type != TIFF_SLONG && type != TIFF_RATIONAL && type != TIFF_SRATIONAL && type != TIFF_UNDEFINED )
+  if (type != TIFF_LONG && type != TIFF_SLONG && type != TIFF_RATIONAL && type != TIFF_SRATIONAL && type != TIFF_UNDEFINED && type != TIFF_OFFSET)
     ThrowTPE("TIFF, getIntArray: Wrong type 0x%x encountered. Expected Long", type);
   return (uint32*)&data[0];
 }
