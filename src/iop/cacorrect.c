@@ -74,11 +74,6 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
 // *roi_out, dt_iop_roi_t *roi_in);
 
-static int FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
-}
-
 /*==================================================================================
  * begin raw therapee code, hg checkout of june 05, 2013 branch master.
  *==================================================================================*/

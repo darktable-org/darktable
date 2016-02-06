@@ -152,17 +152,6 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static int FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
-}
-
-static uint8_t FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
-                        uint8_t (*const xtrans)[6])
-{
-  return xtrans[(row + roi->y) % 6][(col + roi->x) % 6];
-}
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -179,7 +168,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   //   }
 
   const int filters = dt_image_filter(&piece->pipe->image);
-  uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
+  const uint8_t (*const xtrans)[6] = (const uint8_t (*const)[6]) self->dev->image_storage.xtrans;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
   { // xtrans float mosaiced

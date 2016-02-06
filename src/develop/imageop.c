@@ -2066,12 +2066,6 @@ int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in, const 
 
 #endif
 
-
-static int FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> ((((row) << 1 & 14) + ((col)&1)) << 1) & 3;
-}
-
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
@@ -2679,12 +2673,6 @@ void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(float *out, const flo
   const uint32_t filters =  dt_rawspeed_crop_dcraw_filters(img->filters, img->crop_x, img->crop_y);
 
   dt_iop_clip_and_zoom_demosaic_half_size_f(out, in, roi_out, roi_in, out_stride, in_stride, filters, clip);
-}
-
-static uint8_t FCxtrans(size_t row, size_t col, const dt_iop_roi_t *const roi,
-                        const uint8_t (*const xtrans)[6])
-{
-  return xtrans[(row + roi->y) % 6][(col + roi->x) % 6];
 }
 
 /**

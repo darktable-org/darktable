@@ -32,13 +32,6 @@
  */
 struct dt_iop_module_t;
 
-/** region of interest */
-typedef struct dt_iop_roi_t
-{
-  int x, y, width, height;
-  float scale;
-} dt_iop_roi_t;
-
 typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack

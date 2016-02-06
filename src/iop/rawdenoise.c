@@ -88,14 +88,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "noise threshold", GTK_WIDGET(g->threshold));
 }
 
-#if 0
-static int
-FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
-}
-#endif
-
 // transposes image, it is faster to read columns than to write them.
 static void hat_transform(float *temp, const float *const base, int stride, int size, int scale)
 {
@@ -260,14 +252,8 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   free(fimg);
 }
 
-static uint8_t FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
-                        uint8_t (*const xtrans)[6])
-{
-  return xtrans[(row + roi->y) % 6][(col + roi->x) % 6];
-}
-
 static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_iop_roi_t *const roi,
-                                   float threshold, uint8_t (*const xtrans)[6])
+                                   float threshold, const uint8_t (*const xtrans)[6])
 {
   // note that these constants are the same for X-Trans and Bayer, as
   // they are proportional to image detail on each channel, not the
@@ -391,10 +377,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   else
   {
     uint32_t filters = dt_image_filter(&piece->pipe->image);
+    const uint8_t (*const xtrans)[6] = (const uint8_t (*const)[6]) self->dev->image_storage.xtrans;
     if (filters != 9u)
       wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, filters);
     else
-      wavelet_denoise_xtrans(ivoid, ovoid, roi_in, d->threshold, self->dev->image_storage.xtrans);
+      wavelet_denoise_xtrans(ivoid, ovoid, roi_in, d->threshold, xtrans);
   }
 }
 

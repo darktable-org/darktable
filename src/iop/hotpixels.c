@@ -96,14 +96,6 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   return sizeof(float);
 }
 
-static uint8_t FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
-                        const uint8_t (*const xtrans)[6])
-{
-  // add +6 to as offset can be -1 or -2 and need to ensure a
-  // non-negative array index.
-  return xtrans[(row + roi->y + 6) % 6][(col + roi->x + 6) % 6];
-}
-
 static int process_xtrans(const void *const i, void *o, const dt_iop_roi_t *const roi_in, const int width,
                           const int height, const uint8_t (*const xtrans)[6], const float threshold,
                           const float multiplier, const gboolean markfixed, const int min_neighbours)

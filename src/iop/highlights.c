@@ -150,12 +150,6 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
     return 4 * sizeof(float);
 }
 
-static uint8_t FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
-                        const uint8_t (*const xtrans)[6])
-{
-  return xtrans[(row + roi->y) % 6][(col + roi->x) % 6];
-}
-
 static inline void _interpolate_color_xtrans(void *ivoid, void *ovoid, const dt_iop_roi_t *const roi_in,
                                              const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
                                              const float *clip, const uint8_t (*const xtrans)[6],
@@ -304,11 +298,6 @@ static inline void _interpolate_color_xtrans(void *ivoid, void *ovoid, const dt_
     out += offs;
     in += offs;
   }
-}
-
-static int FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
 static inline void _interpolate_color(void *ivoid, void *ovoid, const dt_iop_roi_t *roi_out, int dim, int dir,

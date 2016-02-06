@@ -25,6 +25,13 @@
 #include <sched.h>
 #include <stdint.h>
 
+/** region of interest */
+typedef struct dt_iop_roi_t
+{
+  int x, y, width, height;
+  float scale;
+} dt_iop_roi_t;
+
 #include "common/darktable.h"
 #include "common/introspection.h"
 #include "common/opencl.h"
@@ -35,7 +42,6 @@
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
-struct dt_iop_roi_t;
 struct dt_develop_blend_params_t;
 struct dt_develop_tiling_t;
 
@@ -643,6 +649,39 @@ static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int w
       in += 4;
     }
   }
+}
+
+/** Calculate the bayer pattern color from the row and column **/
+static inline int FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
+}
+
+/** Calculate the xtrans pattern color from the row and column **/
+static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi, const uint8_t (*const xtrans)[6])
+{
+  // add +6 to as offset can be -1 or -2 and need to ensure a
+  // non-negative array index.
+  int irow = row+6;
+  int icol = col+6;
+
+  if(roi)
+  {
+    irow += roi->y;
+    icol += roi->x;
+  }
+
+  return xtrans[irow % 6][icol % 6];
+}
+
+static inline int fcol(const int row, const int col, const unsigned int filters, const uint8_t (*const xtrans)[6])
+{
+  if(filters == 9)
+    // There are a few cases in VNG demosaic in which row or col is -1
+    // or -2. The +6 ensures a non-negative array index.
+    return FCxtrans(row + 6, col + 6, NULL, xtrans);
+  else
+    return FC(row, col, filters);
 }
 
 #endif

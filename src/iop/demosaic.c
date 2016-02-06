@@ -214,11 +214,6 @@ static const char* method2string(dt_iop_demosaic_method_t method)
 }
 #endif
 
-static int FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
-}
-
 #define SWAP(a, b)                                                                                           \
   {                                                                                                          \
     const float tmp = (b);                                                                                   \
@@ -485,11 +480,6 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 // x-trans specific demosaicing algorithms
 //
 
-static int FCxtrans(const int row, const int col, const uint8_t (*const xtrans)[6])
-{
-  return xtrans[row % 6][col % 6];
-}
-
 // xtrans_interpolate adapted from dcraw 9.20
 
 #define CLIPF(x) CLAMPS(x, 0.0f, 1.0f)
@@ -534,8 +524,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
     for(int col = 0; col < 3; col++)
       for(int ng = 0, d = 0; d < 10; d += 2)
       {
-        int g = FCxtrans(row, col, xtrans) == 1;
-        if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, xtrans) == 1)
+        int g = FCxtrans(row, col, NULL, xtrans) == 1;
+        if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, NULL, xtrans) == 1)
           ng = 0;
         else
           ng++;
@@ -596,13 +586,13 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           float(*const pix) = rgb[0][row - top][col - left];
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
-            const int f = FCxtrans(row + yoff, col + xoff, xtrans);
+            const int f = FCxtrans(row + yoff, col + xoff, NULL, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0;
           }
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row + yoff + 18, col + yoff + 18, xtrans);
+            const int c = FCxtrans(row + yoff + 18, col + yoff + 18, NULL, xtrans);
             for(int cc = 0; cc < 3; cc++)
               if(cc != c)
                 pix[cc] = 0.0f;
@@ -610,7 +600,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
               {
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 1) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
-                if(c == FCxtrans(cy + yoff, cx + xoff, xtrans))
+                if(c == FCxtrans(cy + yoff, cx + xoff, NULL, xtrans))
                   pix[c] = in[roi_in->width * cy + cx];
                 else
                 {
@@ -621,7 +611,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                     for(int x = col - 1; x <= col + 1; x++)
                     {
                       const int yy = TRANSLATE(y, height), xx = TRANSLATE(x, width);
-                      const int ff = FCxtrans(yy + yoff, xx + xoff, xtrans);
+                      const int ff = FCxtrans(yy + yoff, xx + xoff, NULL, xtrans);
                       if(ff == c)
                       {
                         sum += in[roi_in->width * yy + xx];
@@ -657,7 +647,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
           // between each pair
-          if(FCxtrans(yoff + row + 12, xoff + col + 12, xtrans) == 1)
+          if(FCxtrans(yoff + row + 12, xoff + col + 12, NULL, xtrans) == 1)
           {
             min = FLT_MAX, max = 0.0f;
             continue;
@@ -702,7 +692,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         for(int col = left + 3; col < mcol - 3; col++)
         {
           float color[8];
-          int f = FCxtrans(row + yoff + 12, col + xoff + 12, xtrans);
+          int f = FCxtrans(row + yoff + 12, col + xoff + 12, NULL, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
           short *hex = allhex[(row + 9) % 3][(col + 9) % 3];
@@ -735,7 +725,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           for(int row = top + 5; row < mrow - 5; row++)
             for(int col = left + 5; col < mcol - 5; col++)
             {
-              int f = FCxtrans(row + yoff + 12, col + xoff + 12, xtrans);
+              int f = FCxtrans(row + yoff + 12, col + xoff + 12, NULL, xtrans);
               if(f == 1) continue;
               short *hex = allhex[(row + 12) % 3][(col + 12) % 3];
               for(int d = 3; d < 6; d++)
@@ -752,7 +742,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           for(int col = (left - sgcol + 7) / 3 * 3 + sgcol; col < mcol - 5; col += 3)
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
-            int h = FCxtrans(row + yoff + 12, col + xoff + 13, xtrans);
+            int h = FCxtrans(row + yoff + 12, col + xoff + 13, NULL, xtrans);
             float diff[6] = { 0.0f };
             float color[3][8];
             for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
@@ -780,7 +770,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         for(int row = top + 6; row < mrow - 6; row++)
           for(int col = left + 6; col < mcol - 6; col++)
           {
-            int f = 2 - FCxtrans(row + yoff + 12, col + xoff + 12, xtrans);
+            int f = 2 - FCxtrans(row + yoff + 12, col + xoff + 12, NULL, xtrans);
             if(f == 1) continue;
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int c = (row - sgrow) % 3 ? TS : 1;
@@ -924,16 +914,6 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 }
 
 #undef TS
-
-static int fcol(const int row, const int col, const unsigned int filters, const uint8_t (*const xtrans)[6])
-{
-  if(filters == 9)
-    // There are a few cases in VNG demosaic in which row or col is -1
-    // or -2. The +6 ensures a non-negative array index.
-    return FCxtrans(row + 6, col + 6, xtrans);
-  else
-    return FC(row, col, filters);
-}
 
 /* taken from dcraw and demosaic_ppg below */
 
@@ -2527,8 +2507,8 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       for(int col = 0; col < 3; col++)
         for(int ng = 0, d = 0; d < 10; d += 2)
         {
-          int g = FCxtrans(row, col, img->xtrans) == 1;
-          if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, img->xtrans) == 1)
+          int g = FCxtrans(row, col, NULL, img->xtrans) == 1;
+          if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, NULL, img->xtrans) == 1)
             ng = 0;
           else
             ng++;
