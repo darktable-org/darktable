@@ -816,9 +816,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm1_pos->toFloat(i);
       else if(is_2_65 == 1 && cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
         for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm2_pos->toFloat(i);
-      else if(is_1_65 == 0 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+      else if(cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
         for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm1_pos->toFloat(i);
-      else if(is_2_65 == 0 && cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
+      else if(cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
         for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm2_pos->toFloat(i);
     }
 
