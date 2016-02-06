@@ -132,6 +132,8 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
   uint32 y;
 
   bool zero_is_bad = true;
+  if (hints.find("zero_is_not_bad") != hints.end())
+    zero_is_bad = false;
 
   /* 9 + 1/7 bits per pixel */
   int skip = w * 14 * t->start_y * 9;
