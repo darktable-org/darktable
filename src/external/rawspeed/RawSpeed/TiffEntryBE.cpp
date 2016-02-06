@@ -93,7 +93,7 @@ unsigned short TiffEntryBE::getShort() {
 }
 
 const uint32* TiffEntryBE::getIntArray() {
-  if (!(type == TIFF_LONG || type == TIFF_SLONG || type == TIFF_UNDEFINED || type == TIFF_RATIONAL ||  type == TIFF_SRATIONAL))
+  if (!(type == TIFF_LONG || type == TIFF_SLONG || type == TIFF_UNDEFINED || type == TIFF_RATIONAL || type == TIFF_SRATIONAL || type == TIFF_OFFSET))
     ThrowTPE("TIFF, getIntArray: Wrong type 0x%x encountered. Expected Int", type);
   if (own_data)
     return (uint32*)own_data;
