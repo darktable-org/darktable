@@ -600,8 +600,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     char *camera = self->dev->image_storage.camera_makermodel;
     if (!dt_colorspaces_conversion_matrices_rgb(camera, d->RGB_to_CAM, d->CAM_to_RGB, NULL))
     {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
-      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
+      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image\n", camera);
+      dt_control_log(_("`%s' color matrix not found for 4bayer image\n"), camera);
     }
   }
 }
@@ -818,8 +818,8 @@ static void prepare_matrices(dt_iop_module_t *module)
   if (!dt_colorspaces_conversion_matrices_xyz(camera, module->dev->image_storage.d65_color_matrix,
                                                       g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
-    fprintf(stderr, "[temperature] `%s' color matrix not found for image!\n", camera);
-    dt_control_log(_("[temperature] `%s' color matrix not found for image!\n"), camera);
+    fprintf(stderr, "[temperature] `%s' color matrix not found for image\n", camera);
+    dt_control_log(_("`%s' color matrix not found for image\n"), camera);
   }
 
   if (module->dev->image_storage.flags & DT_IMAGE_4BAYER)
@@ -827,8 +827,8 @@ static void prepare_matrices(dt_iop_module_t *module)
     // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
     if (!dt_colorspaces_conversion_matrices_rgb(camera, g->RGB_to_CAM, NULL, NULL))
     {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
-      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
+      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image\n", camera);
+      dt_control_log(_("`%s' color matrix not found for 4bayer image\n"), camera);
     }
   }
 }
