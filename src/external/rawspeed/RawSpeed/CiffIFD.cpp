@@ -28,7 +28,6 @@ namespace RawSpeed {
 
 CiffIFD::CiffIFD(FileMap* f, uint32 start, uint32 end) {
   mFile = f;
-  uint32 size = f->getSize();
 
   uint32 valuedata_size = *(uint32 *) f->getData(end-4, 4);
   ushort16 dircount = *(ushort16 *) f->getData(start+valuedata_size, 2);
