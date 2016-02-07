@@ -30,6 +30,7 @@
 #include "common/utility.h"
 #include "libs/collect.h"
 #include "views/view.h"
+#include "bauhaus/bauhaus.h"
 
 DT_MODULE(1)
 
@@ -54,11 +55,22 @@ typedef struct dt_lib_collect_t
   int nb_rules;
 
   GtkTreeView *view;
+
+  GtkWidget *num_box;
+  GtkWidget *num_op;
+  GtkWidget *num_num1_label;
+  GtkWidget *num_num1;
+  GtkWidget *num_num2_label;
+  GtkWidget *num_num2;
+  GtkWidget *date_window;
+  GtkWidget *date_cal;
+
   int view_rule;
 
   GtkTreeModel *treefilter;
   GtkTreeModel *listfilter;
-  GtkScrolledWindow *scrolledwindow;
+  GtkWidget *sw_list;
+  GtkWidget *sw_num;
 
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
@@ -503,59 +515,10 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
   if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
 
-  int property = gtk_combo_box_get_active(dr->combo);
-  if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-     || property == DT_COLLECTION_PROP_ISO)
-  {
-    // handle of numeric value, which can have some operator before the text
-    visible = TRUE;
-    gchar *operator, *number, *number2;
-    dt_collection_split_operator_number(needle, &number, &number2, &operator);
-    if(number)
-    {
-      float nb1 = g_strtod(number, NULL);
-      float nb2 = g_strtod(haystack, NULL);
-      if(operator&& strcmp(operator, ">") == 0)
-      {
-        visible = (nb2 > nb1);
-      }
-      else if(operator&& strcmp(operator, ">=") == 0)
-      {
-        visible = (nb2 >= nb1);
-      }
-      else if(operator&& strcmp(operator, "<") == 0)
-      {
-        visible = (nb2 < nb1);
-      }
-      else if(operator&& strcmp(operator, "<=") == 0)
-      {
-        visible = (nb2 <= nb1);
-      }
-      else if(operator&& strcmp(operator, "<>") == 0)
-      {
-        visible = (nb1 != nb2);
-      }
-      else if(operator&& number2 && strcmp(operator, "[]") == 0)
-      {
-        float nb3 = g_strtod(number2, NULL);
-        visible = (nb2 >= nb1 && nb2 <= nb3);
-      }
-      else
-      {
-        visible = (nb1 == nb2);
-      }
-    }
-    g_free(operator);
-    g_free(number);
-    g_free(number2);
-  }
+  if(g_str_has_prefix(needle, "%"))
+    visible = (g_strrstr(haystack, needle + 1) != NULL);
   else
-  {
-    if(g_str_has_prefix(needle, "%"))
-      visible = (g_strrstr(haystack, needle + 1) != NULL);
-    else
-      visible = (g_strrstr(haystack, needle) != NULL);
-  }
+    visible = (g_strrstr(haystack, needle) != NULL);
 
   g_free(haystack);
   g_free(needle);
@@ -713,6 +676,335 @@ static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_
   return filter;
 }
 
+static gboolean date_cal_leave(GtkWidget *widget, GdkEvent *event, dt_lib_collect_t *d)
+{
+  gtk_widget_hide(d->date_window);
+  return FALSE;
+}
+static void date_cal_select(GtkCalendar *calendar, dt_lib_collect_t *d)
+{
+  // we write the selected date in the correct entry
+  GtkEntry *entry = GTK_ENTRY(g_object_get_data(G_OBJECT(calendar), "current-entry"));
+  if(entry)
+  {
+    guint y, m, dd;
+    gtk_calendar_get_date(calendar, &y, &m, &dd);
+
+    // we adjust the time part depending of the operator
+    char dtxt[40] = { 0 };
+    switch(dt_bauhaus_combobox_get(d->num_op))
+    {
+      case 0:
+      case 5:
+        sprintf(dtxt, "%04d:%02d:%02d%%", y, m, dd);
+        break;
+      case 1:
+      case 4:
+        sprintf(dtxt, "%04d:%02d:%02d 23:59:59", y, m, dd);
+        break;
+      case 2:
+      case 3:
+        sprintf(dtxt, "%04d:%02d:%02d 00:00:00", y, m, dd);
+        break;
+      case 6:
+        if(GTK_WIDGET(entry) == d->num_num1)
+          sprintf(dtxt, "%04d:%02d:%02d 00:00:00", y, m, dd);
+        else
+          sprintf(dtxt, "%04d:%02d:%02d 23:59:59", y, m, dd);
+        break;
+    }
+
+    gtk_entry_set_text(entry, dtxt);
+  }
+
+  // we hide the calendar
+  gtk_widget_hide(d->date_window);
+}
+
+static void numeric_validate(GtkEntry *entry, dt_lib_collect_t *d)
+{
+  dt_lib_collect_rule_t *dr = d->rule + d->active_rule;
+  if(!dr) return;
+
+  // we construct the text to insert in the entry
+  gchar *text = NULL;
+  switch(dt_bauhaus_combobox_get(d->num_op))
+  {
+    case 0: // equal
+      break;
+    case 1:
+      text = dt_util_dstrcat(text, ">");
+      break;
+    case 2:
+      text = dt_util_dstrcat(text, ">=");
+      break;
+    case 3:
+      text = dt_util_dstrcat(text, "<");
+      break;
+    case 4:
+      text = dt_util_dstrcat(text, "<=");
+      break;
+    case 5:
+      text = dt_util_dstrcat(text, "<>");
+      break;
+    case 6:
+      text = dt_util_dstrcat(text, "[");
+      break;
+  }
+  text = dt_util_dstrcat(text, "%s", gtk_entry_get_text(GTK_ENTRY(d->num_num1)));
+
+  if(dt_bauhaus_combobox_get(d->num_op) == 6)
+    text = dt_util_dstrcat(text, ";%s]", gtk_entry_get_text(GTK_ENTRY(d->num_num2)));
+
+  g_signal_handlers_block_matched(dr->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+  g_signal_handlers_block_matched(dr->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
+  gtk_entry_set_text(GTK_ENTRY(dr->text), text);
+  gtk_editable_set_position(GTK_EDITABLE(dr->text), -1);
+  g_signal_handlers_unblock_matched(dr->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
+  g_signal_handlers_unblock_matched(dr->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
+
+  g_free(text);
+
+  set_properties(dr);
+  dt_collection_update_query(darktable.collection);
+}
+
+static void numeric_view_set_visibility(dt_lib_collect_rule_t *dr)
+{
+  dt_lib_collect_t *d = get_collect(dr);
+
+  if(dt_bauhaus_combobox_get(d->num_op) == 6)
+  {
+    gtk_widget_show(d->num_num2);
+    gtk_widget_show(d->num_num2_label);
+    gtk_label_set_text(GTK_LABEL(d->num_num1_label), _("min value"));
+  }
+  else
+  {
+    gtk_label_set_text(GTK_LABEL(d->num_num1_label), _("value"));
+    gtk_widget_hide(d->num_num2);
+    gtk_widget_hide(d->num_num2_label);
+  }
+}
+
+static void numeric_op_changed(GtkWidget *widget, dt_lib_collect_rule_t *dr)
+{
+  numeric_view_set_visibility(dr);
+  numeric_validate(NULL, get_collect(dr));
+}
+static void numeric_num_focusin(GtkWidget *w, GdkEventFocus *event, dt_lib_collect_t *d)
+{
+  // dirty workaround to popup the completion window immediately
+  gint pos = 0;
+  gtk_editable_insert_text(GTK_EDITABLE(w), "4", 0, &pos);
+}
+
+static gboolean numeric_completion_match(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
+                                         gpointer user_data)
+{
+  dt_lib_collect_t *d = (dt_lib_collect_t *)user_data;
+  dt_lib_collect_rule_t *dr = d->rule + d->active_rule;
+  if(!dr) return FALSE;
+
+  gchar *str;
+  gtk_tree_model_get(gtk_entry_completion_get_model(completion), iter, 0, &str, -1);
+  const gchar *txt1 = gtk_entry_get_text(GTK_ENTRY(d->num_num1));
+  if(!str) return FALSE;
+  if(strcmp(str, _("calendar...")) == 0) return TRUE;
+
+  // for the second textbox, we only show value >= to the first one
+  if(gtk_entry_completion_get_entry(completion) == d->num_num2)
+  {
+    int property = gtk_combo_box_get_active(dr->combo);
+
+    if(txt1)
+    {
+      if(property == DT_COLLECTION_PROP_TIME || property == DT_COLLECTION_PROP_DAY)
+      {
+        // date comparaison
+        struct tm tm1 = { 0 };
+        if(strptime(txt1, "%Y:%m:%d %H:%M:%S", &tm1))
+        {
+          struct tm tm2 = { 0 };
+          if(strptime(str, "%Y:%m:%d %H:%M:%S", &tm2))
+          {
+            if(difftime(mktime(&tm2), mktime(&tm1)) < 0)
+            {
+              g_free(str);
+              return FALSE;
+            }
+          }
+        }
+      }
+      else
+      {
+        // numeric comparaison
+        float nb1 = g_strtod(txt1, NULL);
+        float nb2 = g_strtod(str, NULL);
+        if(nb2 < nb1)
+        {
+          g_free(str);
+          return FALSE;
+        }
+      }
+    }
+  }
+
+  gboolean ret = g_str_has_prefix(str, key);
+
+  g_free(str);
+  return ret;
+}
+
+static gboolean numeric_match_selected(GtkEntryCompletion *completion, GtkTreeModel *model, GtkTreeIter *iter,
+                                       dt_lib_collect_t *d)
+{
+  gchar *str;
+  gtk_tree_model_get(model, iter, 0, &str, -1);
+
+  gboolean ret = FALSE;
+
+  if(str && strcmp(str, _("calendar...")) == 0)
+  {
+    // we show the date picking popup
+    GtkWidget *entry = gtk_entry_completion_get_entry(completion);
+    g_object_set_data(G_OBJECT(d->date_cal), "current-entry", entry);
+    GtkAllocation a1;
+    gtk_widget_get_allocation(entry, &a1);
+    int wx, wy;
+    gdk_window_get_origin(gtk_widget_get_window(entry), &wx, &wy);
+    int h = gtk_widget_get_allocated_height(entry);
+    gtk_window_move(GTK_WINDOW(d->date_window), wx + a1.x, wy + a1.y + h);
+    gtk_widget_show_all(d->date_window);
+    gtk_widget_grab_focus(d->date_window);
+
+    ret = TRUE;
+  }
+  g_free(str);
+  return ret;
+}
+
+static void numeric_view(dt_lib_collect_rule_t *dr)
+{
+  // update related list
+  dt_lib_collect_t *d = get_collect(dr);
+  int property = gtk_combo_box_get_active(dr->combo);
+
+  set_properties(dr);
+
+  if(d->view_rule != property)
+  {
+    sqlite3_stmt *stmt;
+    GtkTreeIter iter;
+
+    gtk_widget_hide(GTK_WIDGET(d->sw_list));
+    gtk_widget_hide(GTK_WIDGET(d->sw_num));
+
+    GtkEntryCompletion *completion = gtk_entry_get_completion(GTK_ENTRY(d->num_num1));
+    GtkTreeModel *model = gtk_entry_completion_get_model(completion);
+    gtk_list_store_clear(GTK_LIST_STORE(model));
+
+    // show a line to pickup a date if needed
+    if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+    {
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, _("calendar..."), -1);
+    }
+
+    char query[1024] = { 0 };
+    switch(property)
+    {
+      case DT_COLLECTION_PROP_ISO: // iso
+        snprintf(query, sizeof(query),
+                 "select distinct cast(iso as integer) as iso from images order by iso");
+        break;
+
+      case DT_COLLECTION_PROP_APERTURE: // aperture
+        snprintf(query, sizeof(query),
+                 "select distinct round(aperture,1) as aperture from images order by aperture");
+        break;
+
+      case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
+        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length "
+                                       "from images order by focal_length");
+        break;
+
+      case DT_COLLECTION_PROP_DAY:
+        snprintf(query, sizeof(query),
+                 "SELECT DISTINCT substr(datetime_taken, 1, 10) FROM images ORDER BY datetime_taken DESC");
+        break;
+
+      case DT_COLLECTION_PROP_TIME:
+        snprintf(query, sizeof(query),
+                 "SELECT DISTINCT datetime_taken FROM images ORDER BY datetime_taken DESC");
+        break;
+    }
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, sqlite3_column_text(stmt, 0), -1);
+    }
+    sqlite3_finalize(stmt);
+
+    gtk_widget_show(GTK_WIDGET(d->sw_num));
+
+    d->view_rule = property;
+  }
+
+  gchar *operator, *number1, *number2;
+
+  if(property == DT_COLLECTION_PROP_TIME || property == DT_COLLECTION_PROP_DAY)
+  {
+    dt_collection_split_operator_datetime(gtk_entry_get_text(GTK_ENTRY(dr->text)), &number1, &number2,
+                                          &operator);
+  }
+  else
+  {
+    dt_collection_split_operator_number(gtk_entry_get_text(GTK_ENTRY(dr->text)), &number1, &number2,
+                                        &operator);
+  }
+
+  g_signal_handlers_block_matched(d->num_op, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, numeric_op_changed, NULL);
+  g_signal_handlers_block_matched(d->num_num1, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, numeric_validate, NULL);
+  g_signal_handlers_block_matched(d->num_num2, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, numeric_validate, NULL);
+
+  if(number1)
+    gtk_entry_set_text(GTK_ENTRY(d->num_num1), number1);
+  else
+    gtk_entry_set_text(GTK_ENTRY(d->num_num1), "");
+  if(number2)
+    gtk_entry_set_text(GTK_ENTRY(d->num_num2), number2);
+  else
+    gtk_entry_set_text(GTK_ENTRY(d->num_num2), "");
+
+  if(!operator|| strcmp(operator, "=") == 0)
+    dt_bauhaus_combobox_set(d->num_op, 0);
+  else if(strcmp(operator, ">") == 0)
+    dt_bauhaus_combobox_set(d->num_op, 1);
+  else if(strcmp(operator, ">=") == 0)
+    dt_bauhaus_combobox_set(d->num_op, 2);
+  else if(strcmp(operator, "<") == 0)
+    dt_bauhaus_combobox_set(d->num_op, 3);
+  else if(strcmp(operator, "<=") == 0)
+    dt_bauhaus_combobox_set(d->num_op, 4);
+  else if(strcmp(operator, "<>") == 0)
+    dt_bauhaus_combobox_set(d->num_op, 5);
+  else if(strcmp(operator, "[]") == 0)
+    dt_bauhaus_combobox_set(d->num_op, 6);
+
+  g_signal_handlers_unblock_matched(d->num_op, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, numeric_op_changed, NULL);
+  g_signal_handlers_unblock_matched(d->num_num1, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, numeric_validate, NULL);
+  g_signal_handlers_unblock_matched(d->num_num2, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, numeric_validate, NULL);
+
+  g_free(operator);
+  g_free(number1);
+  g_free(number2);
+
+  numeric_view_set_visibility(dr);
+}
+
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 static void tree_view(dt_lib_collect_rule_t *dr)
 {
@@ -737,7 +1029,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     g_object_unref(d->treefilter);
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
     gtk_tree_store_clear(GTK_TREE_STORE(model));
-    gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
+    gtk_widget_hide(GTK_WIDGET(d->sw_list));
+    gtk_widget_hide(GTK_WIDGET(d->sw_num));
 
     /* query construction */
     char query[1024] = { 0 };
@@ -864,8 +1157,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     d->treefilter = _create_filtered_model(model, dr);
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->treefilter);
-    gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
+    gtk_widget_set_no_show_all(GTK_WIDGET(d->sw_list), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(d->sw_list));
 
     g_object_unref(model);
 
@@ -898,7 +1191,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
     g_object_ref(model);
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
     gtk_list_store_clear(GTK_LIST_STORE(model));
-    gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
+    gtk_widget_hide(GTK_WIDGET(d->sw_list));
+    gtk_widget_hide(GTK_WIDGET(d->sw_num));
 
     char query[1024] = { 0 };
 
@@ -999,33 +1293,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
         snprintf(query, sizeof(query), "select distinct lens, 1 from images order by lens");
         break;
 
-      case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
-        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length, 1 "
-                                       "from images order by focal_length");
-        break;
-
-      case DT_COLLECTION_PROP_ISO: // iso
-        snprintf(query, sizeof(query),
-                 "select distinct cast(iso as integer) as iso, 1 from images order by iso");
-        break;
-
-      case DT_COLLECTION_PROP_APERTURE: // aperture
-        snprintf(query, sizeof(query),
-                 "select distinct round(aperture,1) as aperture, 1 from images order by aperture");
-        break;
-
       case DT_COLLECTION_PROP_FILENAME: // filename
         snprintf(query, sizeof(query), "select distinct filename, 1 from images order by filename");
-        break;
-
-      case DT_COLLECTION_PROP_DAY:
-        snprintf(query, sizeof(query),
-                 "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images ORDER BY datetime_taken DESC");
-        break;
-
-      case DT_COLLECTION_PROP_TIME:
-        snprintf(query, sizeof(query),
-                 "SELECT DISTINCT datetime_taken, 1 FROM images ORDER BY datetime_taken DESC");
         break;
 
       default: // filmroll
@@ -1068,8 +1337,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
     d->listfilter = _create_filtered_model(model, dr);
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->listfilter);
-    gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
+    gtk_widget_set_no_show_all(GTK_WIDGET(d->sw_list), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(d->sw_list));
 
     g_object_unref(model);
 
@@ -1078,12 +1347,10 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
   // if needed, we restrict the tree to matching entries
   if(property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_CREATOR
-     || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_DESCRIPTION
-     || property == DT_COLLECTION_PROP_FILENAME || property == DT_COLLECTION_PROP_FILMROLL
-     || property == DT_COLLECTION_PROP_LENS || property == DT_COLLECTION_PROP_PUBLISHER
-     || property == DT_COLLECTION_PROP_RIGHTS || property == DT_COLLECTION_PROP_TIME
-     || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
-     || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO)
+     || property == DT_COLLECTION_PROP_DESCRIPTION || property == DT_COLLECTION_PROP_FILENAME
+     || property == DT_COLLECTION_PROP_FILMROLL || property == DT_COLLECTION_PROP_LENS
+     || property == DT_COLLECTION_PROP_PUBLISHER || property == DT_COLLECTION_PROP_RIGHTS
+     || property == DT_COLLECTION_PROP_TITLE)
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
   // we update list selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
@@ -1096,6 +1363,10 @@ static void update_view(dt_lib_collect_rule_t *dr)
 
   if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG)
     tree_view(dr);
+  else if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_ISO
+          || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_DAY
+          || property == DT_COLLECTION_PROP_TIME)
+    numeric_view(dr);
   else
     list_view(dr);
 }
@@ -1151,7 +1422,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   d->nb_rules = active + 1;
   char confname[200] = { 0 };
 
-  gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->sw_list), TRUE);
 
   for(int i = 0; i < MAX_RULES; i++)
   {
@@ -1302,47 +1573,8 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
 
 static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
-  GtkTreeView *view;
-  GtkTreeModel *model;
-  int property, rows;
-
   update_view(d);
-  dt_lib_collect_t *c = get_collect(d);
 
-  property = gtk_combo_box_get_active(d->combo);
-
-  if(property != DT_COLLECTION_PROP_FOLDERS && property != DT_COLLECTION_PROP_TAG)
-  {
-    view = c->view;
-    model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
-
-    rows = gtk_tree_model_iter_n_children(model, NULL);
-
-    if(rows == 1)
-    {
-      GtkTreeIter iter;
-      if(gtk_tree_model_get_iter_first(model, &iter))
-      {
-        gchar *text;
-        const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->combo));
-        if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
-           item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS) // or folders
-          gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
-        else
-          gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
-
-        g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
-        g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-        gtk_entry_set_text(GTK_ENTRY(d->text), text);
-        gtk_editable_set_position(GTK_EDITABLE(d->text), -1);
-        g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
-        g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-        g_free(text);
-        d->typing = FALSE;
-        update_view(d);
-      }
-    }
-  }
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1669,15 +1901,14 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   }
 
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  d->scrolledwindow = GTK_SCROLLED_WINDOW(sw);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->scrolledwindow), DT_PIXEL_APPLY_DPI(300));
+  d->sw_list = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->sw_list), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->sw_list), DT_PIXEL_APPLY_DPI(300));
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
   d->view_rule = -1;
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
-  gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
+  gtk_container_add(GTK_CONTAINER(d->sw_list), GTK_WIDGET(view));
   g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(row_activated), d);
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
@@ -1703,7 +1934,83 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(d->treefilter), DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->sw_list), TRUE, TRUE, 0);
+
+  d->sw_num = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->sw_num), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->sw_num), DT_PIXEL_APPLY_DPI(300));
+  d->num_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+
+  d->num_op = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->num_op, NULL, _("operator"));
+  dt_bauhaus_combobox_add(d->num_op, _("equal"));
+  dt_bauhaus_combobox_add(d->num_op, _("superior"));
+  dt_bauhaus_combobox_add(d->num_op, _("superior or equal"));
+  dt_bauhaus_combobox_add(d->num_op, _("inferior"));
+  dt_bauhaus_combobox_add(d->num_op, _("inferior or equal"));
+  dt_bauhaus_combobox_add(d->num_op, _("different"));
+  dt_bauhaus_combobox_add(d->num_op, _("range"));
+  gtk_widget_set_margin_top(d->num_op, DT_PIXEL_APPLY_DPI(20));
+  gtk_box_pack_start(GTK_BOX(d->num_box), d->num_op, FALSE, TRUE, 5);
+
+  GtkWidget *nbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *nbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  d->num_num1_label = gtk_label_new(_("value"));
+  gtk_box_pack_start(GTK_BOX(nbox2), d->num_num1_label, FALSE, TRUE, 0);
+  d->num_num2_label = gtk_label_new(_("max value"));
+  gtk_box_pack_start(GTK_BOX(nbox2), d->num_num2_label, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(nbox), nbox2, FALSE, TRUE, 0);
+
+  nbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  d->num_num1 = gtk_entry_new();
+  gtk_box_pack_start(GTK_BOX(nbox2), d->num_num1, TRUE, TRUE, 0);
+  d->num_num2 = gtk_entry_new();
+  gtk_box_pack_start(GTK_BOX(nbox2), d->num_num2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(nbox), nbox2, TRUE, TRUE, 5);
+
+  gtk_box_pack_start(GTK_BOX(d->num_box), nbox, FALSE, TRUE, 5);
+
+  GtkTreeModel *complmodel = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  gtk_entry_completion_set_model(completion, complmodel);
+  gtk_entry_completion_set_minimum_key_length(completion, 0);
+  gtk_entry_completion_set_text_column(completion, 0);
+  gtk_entry_completion_set_match_func(completion, numeric_completion_match, d, NULL);
+  g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(numeric_match_selected), d);
+  gtk_entry_set_completion(GTK_ENTRY(d->num_num1), completion);
+  completion = gtk_entry_completion_new();
+  gtk_entry_completion_set_model(completion, complmodel);
+  gtk_entry_completion_set_minimum_key_length(completion, 0);
+  gtk_entry_completion_set_text_column(completion, 0);
+  gtk_entry_completion_set_match_func(completion, numeric_completion_match, d, NULL);
+  g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(numeric_match_selected), d);
+  gtk_entry_set_completion(GTK_ENTRY(d->num_num2), completion);
+  g_object_unref(complmodel);
+
+  g_signal_connect(G_OBJECT(d->num_op), "value-changed", G_CALLBACK(numeric_op_changed), d);
+  g_signal_connect(G_OBJECT(d->num_num1), "changed", G_CALLBACK(numeric_validate), d);
+  g_signal_connect(G_OBJECT(d->num_num2), "changed", G_CALLBACK(numeric_validate), d);
+  gtk_widget_add_events(d->num_num1, GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect(G_OBJECT(d->num_num1), "focus-in-event", G_CALLBACK(numeric_num_focusin), d);
+  gtk_widget_add_events(d->num_num2, GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect(G_OBJECT(d->num_num2), "focus-in-event", G_CALLBACK(numeric_num_focusin), d);
+
+  gtk_container_add(GTK_CONTAINER(d->sw_num), d->num_box);
+  gtk_widget_show_all(GTK_WIDGET(d->num_box));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->sw_num), TRUE, TRUE, 0);
+
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->sw_list), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->sw_num), TRUE);
+
+  // calendar gui
+  d->date_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_decorated(GTK_WINDOW(d->date_window), FALSE);
+  gtk_window_set_skip_taskbar_hint(GTK_WINDOW(d->date_window), TRUE);
+  d->date_cal = gtk_calendar_new();
+  gtk_widget_set_can_focus(d->date_cal, TRUE);
+  gtk_container_add(GTK_CONTAINER(d->date_window), d->date_cal);
+  g_signal_connect(G_OBJECT(d->date_cal), "day-selected-double-click", G_CALLBACK(date_cal_select), d);
+  g_signal_connect(G_OBJECT(d->date_cal), "focus-out-event", G_CALLBACK(date_cal_leave), d);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
@@ -1742,7 +2049,7 @@ void gui_cleanup(dt_lib_module_t *self)
   free(d->params);
 
   /* cleanup mem */
-
+  gtk_widget_destroy(d->date_window);
   g_object_unref(d->treefilter);
   g_object_unref(d->listfilter);
 
