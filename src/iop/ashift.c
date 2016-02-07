@@ -68,7 +68,7 @@
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 2                 // distance of mouse pointer to line for "near" detection
 #define RANSAC_ITER 200                     // how many interations to run in ransac
-#define RANSAC_DELTA 0.0005f                // limit of distance between line and intersection point
+#define RANSAC_DELTA 0.0001f                // limit of distance between line and intersection point
 #define RANSAC_HURDLE 5                     // hurdle rate: the number of lines below which we do a complete permutation instead of random sampling
 #define MINIMUM_FITLINES 4                  // minimum number of lines needed for automatic parameter fit
 #define NMS_EPSILON 1e-10                   // break criterion for Nelder-Mead simplex
@@ -1032,6 +1032,9 @@ static void ransac(const dt_iop_ashift_line_t const* lines, int *index_set, int 
          V[0]/V[2] <= xmax &&
          V[1]/V[2] <= ymax)
       continue;
+
+    // normalize V
+    vec3norm(V, V);
 
     // the two lines constituting the model are part of the set
     inout[0] = 1;
