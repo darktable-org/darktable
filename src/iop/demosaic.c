@@ -1664,7 +1664,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       tmp = (float *)dt_alloc_align(16, (size_t)roo.width * roo.height * 4 * sizeof(float));
     }
 
-    if(img->filters == 9u)
+    if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+      passthrough_monochrome(tmp, pixels, &roo, &roi);
+    else if(img->filters == 9u)
     {
       if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && xtrans_full_markesteijn_demosaicing)
         xtrans_markesteijn_interpolate(tmp, pixels,
@@ -1701,9 +1703,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
       }
 
-      if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-        passthrough_monochrome(tmp, in, &roo, &roi);
-      else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
+      if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
       {
         vng_interpolate(tmp, in, piece->pipe->processed_maximum,
                         &roo, &roi, data->filters, img->xtrans, only_vng_linear);
@@ -1734,15 +1734,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // sample half-size raw (Bayer) or 1/3-size raw (X-Trans)
     const float clip = fminf(piece->pipe->processed_maximum[0],
                              fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-    if(img->filters == 9u)
-      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi,
-                                                        roo.width, roi.width,
-                                                        img->xtrans);
+
+    if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+      dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, pixels, &roo, &roi, roo.width, roi.width);
     else
     {
-      if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-        dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, pixels, &roo, &roi, roo.width,
-                                                               roi.width);
+      if(img->filters == 9u)
+        dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi,
+                                                          roo.width, roi.width,
+                                                          img->xtrans);
       else
         dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                   data->filters, clip);
@@ -3850,9 +3850,14 @@ static void demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *se
 static void demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->demosaicing_method = dt_bauhaus_combobox_get(combo) | DEMOSAIC_XTRANS;
-  if((p->demosaicing_method > DT_IOP_DEMOSAIC_MARKESTEIJN_3) || (p->demosaicing_method < DT_IOP_DEMOSAIC_VNG))
-    p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  if(dt_bauhaus_combobox_get(combo) == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+    p->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+  else
+  {
+    p->demosaicing_method = dt_bauhaus_combobox_get(combo) | DEMOSAIC_XTRANS;
+    if((p->demosaicing_method > DT_IOP_DEMOSAIC_MARKESTEIJN_3) || (p->demosaicing_method < DT_IOP_DEMOSAIC_VNG))
+      p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3881,6 +3886,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("passthrough (monochrome) (experimental)"));
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
 
   g->median_thrs = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
