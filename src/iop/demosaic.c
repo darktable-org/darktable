@@ -1238,6 +1238,32 @@ static void vng_interpolate(float *out, const float *const in,
     for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
 }
 
+/** 1:1 "demosaic" where in comes RGB buffer and out goes R=G=B=average(R,G,G,B) */
+static void rgb_monochrome(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
+                           const dt_iop_roi_t *const roi_in)
+{
+  // we should always process buffers of exactly the same size
+  assert(roi_in->width == roi_out->width);
+  assert(roi_in->height == roi_out->height);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int row = 0; row < roi_out->height; row++)
+  {
+    for(int col = 0; col < roi_out->width; col++)
+    {
+      int pos = 4*(row*roi_in->width+col);
+      // Average four pixels giving green twice the weight because of RGGB
+      float avg = (in[pos] + (in[pos+1] * 2.0f) + in[pos+2]) / 4.0f;
+
+      // Set RGB all to the average
+      pos = 4*(row*roi_out->width+col);
+      out[pos] = out[pos+1] = out[pos+2] = avg;
+    }
+  }
+}
+
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in)
@@ -1580,6 +1606,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int qual = get_quality();
   int demosaicing_method = data->demosaicing_method;
+
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    rgb_monochrome(o, i, roi_out, roi_in);
+    return;
+  }
+
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2 && roi_out->scale <= .99999f
      && // only overwrite setting if quality << requested and in dr mode
      ((img->filters != 9u) && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)))
@@ -3579,6 +3612,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     d->green_eq = DT_IOP_GREEN_EQ_NO;
     d->color_smoothing = 0;
     d->median_thrs = 0.0f;
+
+    if((pipe->image.flags & DT_IMAGE_RAW) && dt_dev_pixelpipe_uses_downsampled_input(pipe))
+    {
+      // Always enable demosaic for monochrome so we can convert MIPF
+      piece->enabled = 1;
+      // Don't enable opencl as it's not implemented
+      piece->process_cl_ready = 0;
+    }
   }
 
   if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
