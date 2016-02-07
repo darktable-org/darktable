@@ -2405,8 +2405,10 @@ void gui_post_expose (struct dt_iop_module_t *module,
   if (!g)
     return;
 
+  dt_pthread_mutex_lock(&develop->preview_pipe->backbuf_mutex);
   const float bb_width = develop->preview_pipe->backbuf_width;
   const float bb_height = develop->preview_pipe->backbuf_height;
+  dt_pthread_mutex_unlock(&develop->preview_pipe->backbuf_mutex);
   const float iscale = develop->preview_pipe->iscale;
   const float scale = MAX (bb_width, bb_height);
   if (bb_width < 1.0 || bb_height < 1.0)
@@ -2481,8 +2483,10 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
+  dt_pthread_mutex_lock(&darktable.develop->preview_pipe->backbuf_mutex);
   float wd = darktable.develop->preview_pipe->backbuf_width;
   float ht = darktable.develop->preview_pipe->backbuf_height;
+  dt_pthread_mutex_unlock(&darktable.develop->preview_pipe->backbuf_mutex);
   float pts[2] = { pzx * wd, pzy * ht };
   dt_dev_distort_backtransform(darktable.develop, pts, 1);
   float nx = pts[0] / darktable.develop->preview_pipe->iwidth;

@@ -370,10 +370,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   //   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
 
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   float bigger_side, smaller_side;
   if(wd >= ht)
   {
@@ -464,10 +464,10 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 {
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   float wd = self->dev->preview_pipe->backbuf_width;
   float ht = self->dev->preview_pipe->backbuf_height;
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   float bigger_side, smaller_side;
   if(wd >= ht)
   {

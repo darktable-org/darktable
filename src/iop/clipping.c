@@ -511,7 +511,7 @@ static int _iop_clipping_set_max_clip(struct dt_iop_module_t *self)
   if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 999999, points, 4))
     return 0;
 
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   g->clip_max_x = points[0] / self->dev->preview_pipe->backbuf_width;
   g->clip_max_y = points[1] / self->dev->preview_pipe->backbuf_height;
   g->clip_max_w = (points[2] - points[0]) / self->dev->preview_pipe->backbuf_width;
@@ -522,7 +522,7 @@ static int _iop_clipping_set_max_clip(struct dt_iop_module_t *self)
   g->clip_y = points[5] / self->dev->preview_pipe->backbuf_height;
   g->clip_w = (points[6] - points[4]) / self->dev->preview_pipe->backbuf_width;
   g->clip_h = (points[7] - points[5]) / self->dev->preview_pipe->backbuf_height;
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   g->clip_x = fmaxf(g->clip_x, g->clip_max_x);
   g->clip_y = fmaxf(g->clip_y, g->clip_max_y);
   g->clip_w = fminf(g->clip_w, g->clip_max_w);
@@ -1216,10 +1216,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       g->clip_h = fabsf(p->ch) - p->cy;
       if(g->clip_x > 0 || g->clip_y > 0 || g->clip_h < 1.0f || g->clip_w < 1.0f)
       {
-        dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+        dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
         g->old_width = self->dev->preview_pipe->backbuf_width;
         g->old_height = self->dev->preview_pipe->backbuf_height;
-        dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+        dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
       }
       else
       {
@@ -2142,23 +2142,23 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
   // we don't do anything if the image is not ready
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   if(self->dev->preview_pipe->backbuf_width == g->old_width
      && self->dev->preview_pipe->backbuf_height == g->old_height)
   {
-    dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+    dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
     return;
   }
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   g->old_width = g->old_height = -1;
 
   // reapply box aspect to be sure that the ratio has not been modified by the keystone transform
   apply_box_aspect(self, GRAB_HORIZONTAL);
 
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   float zoom_y = dt_control_get_dev_zoom_y();
   float zoom_x = dt_control_get_dev_zoom_x();
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
@@ -2563,22 +2563,21 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
   // we don't do anything if the image is not ready
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   if((self->dev->preview_pipe->backbuf_width == g->old_width
       && self->dev->preview_pipe->backbuf_height == g->old_height)
     ||self->dev->preview_loading
     )
   {
-    dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+    dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
     return 0;
   }
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
   g->old_width = g->old_height = -1;
 
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
   float wd = self->dev->preview_pipe->backbuf_width;
   float ht = self->dev->preview_pipe->backbuf_height;
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
+
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
@@ -2788,10 +2787,10 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       }
       apply_box_aspect(self, grab);
       // we save crop params too
-      dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+      dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
       float wd = self->dev->preview_pipe->backbuf_width;
       float ht = self->dev->preview_pipe->backbuf_height;
-      dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+      dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
       float points[4]
           = { g->clip_x * wd, g->clip_y * ht, (g->clip_x + g->clip_w) * wd, (g->clip_y + g->clip_h) * ht };
       if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999,
@@ -2907,10 +2906,10 @@ static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_
     p->cw = p->ch = 1.0f;
   }
   // we want value in iop space
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   float wd = self->dev->preview_pipe->backbuf_width;
   float ht = self->dev->preview_pipe->backbuf_height;
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   float points[4]
       = { g->clip_x * wd, g->clip_y * ht, (g->clip_x + g->clip_w) * wd, (g->clip_y + g->clip_h) * ht };
   if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999,
@@ -2938,14 +2937,15 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   // we don't do anything if the image is not ready
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   if(self->dev->preview_pipe->backbuf_width == g->old_width
      && self->dev->preview_pipe->backbuf_height == g->old_height)
   {
-    dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+    dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
     return 0;
   }
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
+
   g->old_width = g->old_height = -1;
 
   if(g->straightening)
@@ -2985,14 +2985,14 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   // we don't do anything if the image is not ready
-  dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   if(self->dev->preview_pipe->backbuf_width == g->old_width
      && self->dev->preview_pipe->backbuf_height == g->old_height)
   {
-    dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+    dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
     return 0;
   }
-  dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   g->old_width = g->old_height = -1;
 
   // avoid unexpected back to lt mode:
@@ -3032,10 +3032,10 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
                          p->kxc * wp, p->kyc * hp, p->kxd * wp, p->kyd * hp };
         dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 999999, pts, 4);
 
-        dt_pthread_mutex_lock(&self->dev->preview_pipe_mutex);
+        dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
         float xx = pzx * self->dev->preview_pipe->backbuf_width,
               yy = pzy * self->dev->preview_pipe->backbuf_height;
-        dt_pthread_mutex_unlock(&self->dev->preview_pipe_mutex);
+        dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
         float c[2] = { (MIN(pts[4], pts[2]) + MAX(pts[0], pts[6])) / 2.0f,
                        (MIN(pts[5], pts[7]) + MAX(pts[1], pts[3])) / 2.0f };
         float ext = DT_PIXEL_APPLY_DPI(10.0) / (zoom_scale);
