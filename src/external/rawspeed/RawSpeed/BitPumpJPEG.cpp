@@ -46,7 +46,7 @@ BitPumpJPEG::BitPumpJPEG(FileMap *f, uint32 offset, uint32 _size) :
 
 BitPumpJPEG::BitPumpJPEG(FileMap *f, uint32 offset) :
     mLeft(0), off(0), stuffed(0) {
-  size = f->getSize() + sizeof(uint32); 
+  size = f->getSize() + sizeof(uint32) - offset;
   buffer = f->getDataWrt(offset, size);
   init();
 }
