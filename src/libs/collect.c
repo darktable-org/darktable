@@ -99,6 +99,17 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_NUM_COLS
 } dt_lib_collect_cols_t;
 
+typedef enum dt_lib_collect_op_t
+{
+  DT_LIB_COLLECT_OP_EQUAL = 0,
+  DT_LIB_COLLECT_OP_SUP,
+  DT_LIB_COLLECT_OP_SUP_EQUAL,
+  DT_LIB_COLLECT_OP_INF,
+  DT_LIB_COLLECT_OP_INF_EQUAL,
+  DT_LIB_COLLECT_OP_DIFF,
+  DT_LIB_COLLECT_OP_RANGE
+} dt_lib_collect_op_t;
+
 typedef struct _image_t
 {
   int id;
@@ -694,19 +705,19 @@ static void date_cal_select(GtkCalendar *calendar, dt_lib_collect_t *d)
     char dtxt[40] = { 0 };
     switch(dt_bauhaus_combobox_get(d->num_op))
     {
-      case 0:
-      case 5:
+      case DT_LIB_COLLECT_OP_EQUAL:
+      case DT_LIB_COLLECT_OP_DIFF:
         snprintf(dtxt, sizeof(dtxt), "%04d:%02d:%02d%%", y, m, dd);
         break;
-      case 1:
-      case 4:
+      case DT_LIB_COLLECT_OP_SUP:
+      case DT_LIB_COLLECT_OP_INF_EQUAL:
         snprintf(dtxt, sizeof(dtxt), "%04d:%02d:%02d 23:59:59", y, m, dd);
         break;
-      case 2:
-      case 3:
+      case DT_LIB_COLLECT_OP_SUP_EQUAL:
+      case DT_LIB_COLLECT_OP_INF:
         snprintf(dtxt, sizeof(dtxt), "%04d:%02d:%02d 00:00:00", y, m, dd);
         break;
-      case 6:
+      case DT_LIB_COLLECT_OP_RANGE:
         if(GTK_WIDGET(entry) == d->num_num1)
           snprintf(dtxt, sizeof(dtxt), "%04d:%02d:%02d 00:00:00", y, m, dd);
         else
@@ -730,30 +741,30 @@ static void numeric_validate(GtkEntry *entry, dt_lib_collect_t *d)
   gchar *text = NULL;
   switch(dt_bauhaus_combobox_get(d->num_op))
   {
-    case 0: // equal
+    case DT_LIB_COLLECT_OP_EQUAL: // equal
       break;
-    case 1:
+    case DT_LIB_COLLECT_OP_SUP:
       text = dt_util_dstrcat(text, ">");
       break;
-    case 2:
+    case DT_LIB_COLLECT_OP_SUP_EQUAL:
       text = dt_util_dstrcat(text, ">=");
       break;
-    case 3:
+    case DT_LIB_COLLECT_OP_INF:
       text = dt_util_dstrcat(text, "<");
       break;
-    case 4:
+    case DT_LIB_COLLECT_OP_INF_EQUAL:
       text = dt_util_dstrcat(text, "<=");
       break;
-    case 5:
+    case DT_LIB_COLLECT_OP_DIFF:
       text = dt_util_dstrcat(text, "<>");
       break;
-    case 6:
+    case DT_LIB_COLLECT_OP_RANGE:
       text = dt_util_dstrcat(text, "[");
       break;
   }
   text = dt_util_dstrcat(text, "%s", gtk_entry_get_text(GTK_ENTRY(d->num_num1)));
 
-  if(dt_bauhaus_combobox_get(d->num_op) == 6)
+  if(dt_bauhaus_combobox_get(d->num_op) == DT_LIB_COLLECT_OP_RANGE)
     text = dt_util_dstrcat(text, ";%s]", gtk_entry_get_text(GTK_ENTRY(d->num_num2)));
 
   g_signal_handlers_block_matched(dr->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
@@ -773,7 +784,7 @@ static void numeric_view_set_visibility(dt_lib_collect_rule_t *dr)
 {
   dt_lib_collect_t *d = get_collect(dr);
 
-  if(dt_bauhaus_combobox_get(d->num_op) == 6)
+  if(dt_bauhaus_combobox_get(d->num_op) == DT_LIB_COLLECT_OP_RANGE)
   {
     gtk_widget_show(d->num_num2);
     gtk_widget_show(d->num_num2_label);
@@ -979,20 +990,20 @@ static void numeric_view(dt_lib_collect_rule_t *dr)
   else
     gtk_entry_set_text(GTK_ENTRY(d->num_num2), "");
 
-  if(!operator|| strcmp(operator, "=") == 0)
-    dt_bauhaus_combobox_set(d->num_op, 0);
+  if(!operator|| strcmp(operator, "=") == 0 || strcmp(operator, "") == 0)
+    dt_bauhaus_combobox_set(d->num_op, DT_LIB_COLLECT_OP_EQUAL);
   else if(strcmp(operator, ">") == 0)
-    dt_bauhaus_combobox_set(d->num_op, 1);
+    dt_bauhaus_combobox_set(d->num_op, DT_LIB_COLLECT_OP_SUP);
   else if(strcmp(operator, ">=") == 0)
-    dt_bauhaus_combobox_set(d->num_op, 2);
+    dt_bauhaus_combobox_set(d->num_op, DT_LIB_COLLECT_OP_SUP_EQUAL);
   else if(strcmp(operator, "<") == 0)
-    dt_bauhaus_combobox_set(d->num_op, 3);
+    dt_bauhaus_combobox_set(d->num_op, DT_LIB_COLLECT_OP_INF);
   else if(strcmp(operator, "<=") == 0)
-    dt_bauhaus_combobox_set(d->num_op, 4);
+    dt_bauhaus_combobox_set(d->num_op, DT_LIB_COLLECT_OP_INF_EQUAL);
   else if(strcmp(operator, "<>") == 0)
-    dt_bauhaus_combobox_set(d->num_op, 5);
+    dt_bauhaus_combobox_set(d->num_op, DT_LIB_COLLECT_OP_DIFF);
   else if(strcmp(operator, "[]") == 0)
-    dt_bauhaus_combobox_set(d->num_op, 6);
+    dt_bauhaus_combobox_set(d->num_op, DT_LIB_COLLECT_OP_RANGE);
 
   g_signal_handlers_unblock_matched(d->num_op, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, numeric_op_changed, NULL);
   g_signal_handlers_unblock_matched(d->num_num1, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, numeric_validate, NULL);
