@@ -2478,6 +2478,35 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   return FALSE;
 }
 
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  if(self->enabled)
+  {
+    if(in)
+    {
+      // got focus. make it redraw in full
+      dt_dev_reprocess_all(self->dev);
+    }
+    else
+    {
+      if(g->fitting == 1) return;
+      g->fitting = 1;
+      // get rid of old structural data
+      g->lines_count = 0;
+      g->vertical_count = 0;
+      g->horizontal_count = 0;
+      free(g->lines);
+      g->lines = NULL;
+      g->lines_version++;
+      g->fitting = 0;
+      dt_control_queue_redraw_center();
+    }
+  }
+}
+
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_ashift_gui_data_t));
