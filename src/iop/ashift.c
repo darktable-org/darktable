@@ -44,7 +44,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-// Motivation to this module comes from the program ShiftN (http://www.shiftn.de) by
+// Inspiration for this module comes from the program ShiftN (http://www.shiftn.de) by
 // Marcus Hebel.
 
 // Thanks to Marcus for his support when implementing part of the ShiftN functionality
@@ -58,12 +58,22 @@
 //  http://dx.doi.org/10.5201/ipol.2012.gjmr-lsd
 #include "ashift_lsd.c"
 
+// For parameter optimization we are using the Nelder-Mead simplex method
+// implemented by Michael F. Hutt.
+#include "ashift_nmsimplex.c"
+
+#define ROTATION_RANGE 10                   // allowed min/max value for rotation parameter
+#define LENSSHIFT_RANGE 1                   // allowed min/max value for lensshift paramters
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 2                 // distance of mouse pointer to line for "near" detection
 #define RANSAC_ITER 200                     // how many interations to run in ransac
 #define RANSAC_DELTA 0.0005f                // limit of distance between line and intersection point
 #define RANSAC_HURDLE 5                     // hurdle rate: the number of lines below which we do a complete permutation instead of random sampling
+#define MINIMUM_FITLINES 4                  // minimum number of lines needed for automatic parameter fit
+#define NMS_EPSILON 1e-10                   // break criterion for Nelder-Mead simplex
+#define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
+#define NMS_ITERATIONS 200                  // maximum number of iterations for Nelder-Mead simplex
 
 
 DT_MODULE_INTROSPECTION(1, dt_iop_ashift_params_t)
@@ -117,6 +127,20 @@ typedef enum dt_iop_ashift_linecolor_t
   ASHIFT_LINECOLOR_YELLOW  = 4
 } dt_iop_ashift_linecolor_t;
 
+typedef enum dt_iop_ashift_fitaxis_t
+{
+  ASHIFT_FIT_VERTICALLY = 0,
+  ASHIFT_FIT_HORIZONTALLY = 1,
+  ASHIFT_FIT_BOTH = 2
+} dt_iop_ashift_fitaxis_t;
+
+typedef enum dt_iop_ashift_nmsresult_t
+{
+  NMS_SUCCESS = 0,
+  NMS_NOT_ENOUGH_LINES = 1,
+  NMS_DID_NOT_CONVERGE = 2
+} dt_iop_ashift_nmsresult_t;
+
 typedef struct dt_iop_ashift_params_t
 {
   float rotation;
@@ -146,12 +170,31 @@ typedef struct dt_iop_ashift_points_idx_t
   float bbx, bby, bbX, bbY;
 } dt_iop_ashift_points_idx_t;
 
+typedef struct dt_iop_ashift_fit_params_t
+{
+  int params_count;
+  dt_iop_ashift_linetype_t linetype;
+  dt_iop_ashift_linetype_t linemask;
+  dt_iop_ashift_line_t *lines;
+  int lines_count;
+  int width;
+  int height;
+  float weight;
+  float rotation;
+  float lensshift_v;
+  float lensshift_h;
+} dt_iop_ashift_fit_params_t;
+
 typedef struct dt_iop_ashift_gui_data_t
 {
   GtkWidget *rotation;
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
-  GtkWidget *fit;
+  GtkWidget *fit_v;
+  GtkWidget *fit_h;
+  GtkWidget *fit_both;
+  GtkWidget *structure;
+  GtkWidget *clean;
   int fitting;
   int isflipped;
   dt_iop_ashift_line_t *lines;
@@ -268,6 +311,19 @@ static inline void vec3prodn(float *dst, const float *const v1, const float *con
   dst[0] = l1 * f;
   dst[1] = l2 * f;
   dst[2] = l3 * f;
+}
+
+// normalized a 3x1 vector so that x^2 + y^2 + z^2 = 0
+static inline void vec3norm(float *dst, const float *const v)
+{
+  const float sq = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+
+  // special handling for an all-zero vector
+  const float f = sq > 0.0f ? 1.0f / sq : 1.0f;
+
+  dst[0] = v[0] * f;
+  dst[1] = v[1] * f;
+  dst[2] = v[2] * f;
 }
 
 // scalar product of two 3x1 vectors
@@ -1124,10 +1180,318 @@ error:
   return FALSE;
 }
 
+// utility function to map a variable in [min; max] to [-INF; + INF]
+static inline double logit(double x, double min, double max)
+{
+  const double eps = 1.0e-6;
+  // make sure p does not touch the borders of ist definition area
+  // not critical as logit() is only used on initial fit parameters
+  double p = CLAMP((x - min) / (max - min), eps, 1.0 - eps);
 
+  return (2.0 * atanh(2.0 * p - 1.0));
+}
 
+// inverted function to logit()
+static inline double ilogit(double L, double min, double max)
+{
+  double p = 0.5 * (1.0 + tanh(0.5 * L));
 
-static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
+  return (p * (max - min) + min);
+}
+
+// helper function for simplex() return quality parameter for the given model
+// strategy:
+//    * generate homography matrix out of fixed parameters and fitting parameters
+//    * apply homography to all end points of affected lines
+//    * generate new line out of transformed end points
+//    * calculate scalar product v of line with perpendicular axis
+//    * sum over weighted v^2 values
+// TODO: for fitting in both directions check if we should consolidate
+//       individually and combine with a 50:50 weighting
+static double model_fitness(double *params, void *data)
+{
+  dt_iop_ashift_fit_params_t *fit = (dt_iop_ashift_fit_params_t *)data;
+
+  // just for convenience: get shorter names
+  dt_iop_ashift_line_t *lines = fit->lines;
+  const int lines_count = fit->lines_count;
+  const int width = fit->width;
+  const int height = fit->height;
+
+  float rotation = fit->rotation;
+  float lensshift_v = fit->lensshift_v;
+  float lensshift_h = fit->lensshift_h;
+
+  int pcount = 0;
+
+  // fill in fit parameters from params[]. Attention: order matters!!!
+  if(isnan(rotation))
+  {
+    rotation = ilogit(params[pcount], -ROTATION_RANGE, ROTATION_RANGE);
+    pcount++;
+  }
+
+  if(isnan(lensshift_v))
+  {
+    lensshift_v = ilogit(params[pcount], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    pcount++;
+  }
+
+  if(isnan(lensshift_h))
+  {
+    lensshift_h = ilogit(params[pcount], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    pcount++;
+  }
+
+  assert(pcount == fit->params_count);
+
+  // the possible reference axes
+  const float Av[3] = { 1.0f, 0.0f, 0.0f };
+  const float Ah[3] = { 0.0f, 1.0f, 0.0f };
+
+  // generate homograph out of the parameters
+  float homograph[3][3];
+  homography((float *)homograph, rotation, lensshift_v, lensshift_h, width,
+             height, ASHIFT_HOMOGRAPH_FORWARD);
+
+#if 0
+  printf("homograph ");
+  for(int i = 0; i < 9; i++) printf("%.6f ", ((float *)homograph)[i]);
+  printf("\n");
+#endif
+
+  // accounting variables
+  double sumsq = 0.0;
+  double weight = 0.0;
+  int count = 0;
+
+  // iterate over all lines
+  for(int n = 0; n < lines_count; n++)
+  {
+    // check if this is a line which we must skip
+    if((lines[n].type & fit->linemask) != fit->linetype)
+      continue;
+
+    // select the perpendicular reference axis
+    const float *A = lines[n].type & ASHIFT_LINE_DIRVERT ? Ah : Av;
+
+    // apply homographic transformation to the end points
+    float P1[3], P2[3];
+    mat3mulv(P1, (float *)homograph, lines[n].p1);
+    mat3mulv(P2, (float *)homograph, lines[n].p2);
+
+    // get line connecting the two points
+    float L[3];
+    vec3prodn(L, P1, P2);
+
+    // get scalar product of line with orthogonal axis -> gives 0 if line is perpendicular
+    float v = vec3scalar(L, A);
+
+#if 0
+    printf("line %3d, L { %.6f %.6f %.6f } -> { %.6f %.6f %.6f } v %.6f\n", count,
+           lines[n].L[0], lines[n].L[1], lines[n].L[2], L[0], L[1], L[2], v);
+#endif
+    // sum up weighted v^2
+    sumsq += v * v * lines[n].weight;
+    weight += lines[n].weight;
+    count++;
+  }
+
+#if 0
+  printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f -> lines %d, sumsq %f, weight %f\n",
+         rotation, lensshift_v, lensshift_h, count, sumsq, weight);
+#endif
+
+  return (weight > 0.0f ? sumsq/weight : INFINITY);
+}
+
+static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ashift_fitaxis_t dir)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+  double params[3];
+  int enough_lines = TRUE;
+  dt_iop_ashift_fitaxis_t mdir = dir;
+
+  dt_iop_ashift_fit_params_t fit;
+  fit.lines = g->lines;
+  fit.lines_count = g->lines_count;
+  fit.width = g->lines_in_width;
+  fit.height = g->lines_in_height;
+
+  // if the image is flipped we need to change direction
+  if(dir == ASHIFT_FIT_VERTICALLY && g->isflipped)
+    mdir = ASHIFT_FIT_HORIZONTALLY;
+  else if(dir == ASHIFT_FIT_HORIZONTALLY && g->isflipped)
+    mdir = ASHIFT_FIT_VERTICALLY;
+
+  // prepare fit structure and starting parameters for simplex fit.
+  // note: the sequence of parameters in params[] needs to match the
+  // respective order in dt_iop_ashift_fit_params_t. Parameters which are
+  // to be fittet are marked with NAN in the fit structure. Non-NAN
+  // parameters are assumed to be constant.
+  switch(mdir)
+  {
+    case ASHIFT_FIT_VERTICALLY:
+      fit.params_count = 2;
+      fit.linemask = ASHIFT_LINE_MASK;
+      fit.linetype = ASHIFT_LINE_VERTICAL_SELECTED;
+      fit.weight = g->vertical_weight;
+      fit.rotation = NAN;
+      fit.lensshift_v = NAN;
+      fit.lensshift_h = p->lensshift_h;
+      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
+      params[1] = logit(p->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      enough_lines = g->vertical_count >= MINIMUM_FITLINES;
+      break;
+
+    case ASHIFT_FIT_HORIZONTALLY:
+      fit.params_count = 2;
+      fit.linemask = ASHIFT_LINE_MASK;
+      fit.linetype = ASHIFT_LINE_HORIZONTAL_SELECTED;
+      fit.weight = g->horizontal_weight;
+      fit.rotation = NAN;
+      fit.lensshift_v = p->lensshift_v;
+      fit.lensshift_h = NAN;
+      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
+      params[1] = logit(p->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      enough_lines = g->horizontal_count >= MINIMUM_FITLINES;
+      break;
+
+    case ASHIFT_FIT_BOTH:
+    default:
+      fit.params_count = 3;
+      fit.linemask = ASHIFT_LINE_SELECTED;
+      fit.linetype = ASHIFT_LINE_SELECTED;
+      fit.weight = g->vertical_weight + g->horizontal_weight;
+      fit.rotation = NAN;
+      fit.lensshift_v = NAN;
+      fit.lensshift_h = NAN;
+      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
+      params[1] = logit(p->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      params[2] = logit(p->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      enough_lines = g->vertical_count >= MINIMUM_FITLINES && g->horizontal_count >= MINIMUM_FITLINES;
+      break;
+  }
+
+  // error: we do not run simplex if there are not enough lines
+  if(!enough_lines)
+    return NMS_NOT_ENOUGH_LINES;
+
+  // start the simplex fit
+  int iter = simplex(model_fitness, params, fit.params_count, NMS_EPSILON, NMS_SCALE, NMS_ITERATIONS, NULL, (void*)&fit);
+
+  // error: the fit did not converge
+  if(iter >= NMS_ITERATIONS)
+    return NMS_DID_NOT_CONVERGE;
+
+  // fit was successful: now write the results into structure p
+  switch(mdir)
+  {
+    case ASHIFT_FIT_VERTICALLY:
+      p->rotation = ilogit(params[0], -ROTATION_RANGE, ROTATION_RANGE);
+      p->lensshift_v = ilogit(params[1], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      break;
+
+    case ASHIFT_FIT_HORIZONTALLY:
+      p->rotation = ilogit(params[0], -ROTATION_RANGE, ROTATION_RANGE);
+      p->lensshift_h = ilogit(params[1], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      break;
+
+    case ASHIFT_FIT_BOTH:
+    default:
+      p->rotation = ilogit(params[0], -ROTATION_RANGE, ROTATION_RANGE);
+      p->lensshift_v = ilogit(params[1], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      p->lensshift_h = ilogit(params[2], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      break;
+  }
+#if 0
+  printf("params after optimization: rotation %f, lensshift_v %f, lensshift_h %f\n",
+         p->rotation, p->lensshift_v, p->lensshift_h);
+#endif
+
+  return NMS_SUCCESS;
+}
+
+#if 0
+// only used in development phase. call model_fitness() with current parameters and
+// print some useful information
+static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ashift_fitaxis_t dir)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+  if(!g->lines) return;
+
+  double params[3];
+  dt_iop_ashift_fitaxis_t mdir = dir;
+
+  dt_iop_ashift_fit_params_t fit;
+  fit.lines = g->lines;
+  fit.lines_count = g->lines_count;
+  fit.width = g->lines_in_width;
+  fit.height = g->lines_in_height;
+
+  // if the image is flipped we need to change direction
+  if(dir == ASHIFT_FIT_VERTICALLY && g->isflipped)
+    mdir = ASHIFT_FIT_HORIZONTALLY;
+  else if(dir == ASHIFT_FIT_HORIZONTALLY && g->isflipped)
+    mdir = ASHIFT_FIT_VERTICALLY;
+
+  // prepare fit structure and starting parameters for simplex fit.
+  // note: the sequence of parameters in params[] needs to match the
+  // respective order in dt_iop_ashift_fit_params_t. Parameters which are
+  // to be fittet are marked with NAN in the fit structure. Non-NAN
+  // parameters are assumed to be constant.
+  switch(mdir)
+  {
+    case ASHIFT_FIT_VERTICALLY:
+      fit.params_count = 2;
+      fit.linemask = ASHIFT_LINE_MASK;
+      fit.linetype = ASHIFT_LINE_VERTICAL_SELECTED;
+      fit.weight = g->vertical_weight;
+      fit.rotation = NAN;
+      fit.lensshift_v = NAN;
+      fit.lensshift_h = p->lensshift_h;
+      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
+      params[1] = logit(p->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      break;
+
+    case ASHIFT_FIT_HORIZONTALLY:
+      fit.params_count = 2;
+      fit.linemask = ASHIFT_LINE_MASK;
+      fit.linetype = ASHIFT_LINE_HORIZONTAL_SELECTED;
+      fit.weight = g->horizontal_weight;
+      fit.rotation = NAN;
+      fit.lensshift_v = p->lensshift_v;
+      fit.lensshift_h = NAN;
+      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
+      params[1] = logit(p->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      break;
+
+    case ASHIFT_FIT_BOTH:
+    default:
+      fit.params_count = 3;
+      fit.linemask = ASHIFT_LINE_SELECTED;
+      fit.linetype = ASHIFT_LINE_SELECTED;
+      fit.weight = g->vertical_weight + g->horizontal_weight;
+      fit.rotation = NAN;
+      fit.lensshift_v = NAN;
+      fit.lensshift_h = NAN;
+      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
+      params[1] = logit(p->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      params[2] = logit(p->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+      break;
+  }
+
+  double quality = model_fitness(params, (void *)&fit);
+
+  printf("model fitness: %.8f (rotation %f, lensshift_v %f, lensshift_h %f)\n",
+         quality, p->rotation, p->lensshift_v, p->lensshift_h);
+}
+#endif
+
+// helper function to start analysis for structural data and report about errors
+static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -1153,6 +1517,8 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 
   if(!remove_outliers(module))
   {
+    // in fact currently remove_outliers() always returns TRUE. The log
+    // message here is implemented for future extensions
     dt_control_log(_("could not run outlier removal on structural data"));
     goto error;
   }
@@ -1161,9 +1527,66 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   return TRUE;
 
 error:
-  g->fitting =0;
+  g->fitting = 0;
   return FALSE;
 }
+
+// helper function to clean structural data
+static int do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+  if(g->fitting) return FALSE;
+
+  g->fitting = 1;
+  g->lines_count = 0;
+  g->vertical_count = 0;
+  g->horizontal_count = 0;
+  free(g->lines);
+  g->lines = NULL;
+  g->lines_version++;
+  g->fitting = 0;
+  return TRUE;
+}
+
+// helper function to start parameter fit and report about errors
+static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ashift_fitaxis_t dir)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+  if(g->fitting) return FALSE;
+
+  // if no structure available get it
+  if(g->lines == NULL)
+    if(!do_get_structure(module, p)) goto error;
+
+  g->fitting = 1;
+
+  dt_iop_ashift_nmsresult_t res = nmsfit(module, p, dir);
+
+  switch(res)
+  {
+    case NMS_NOT_ENOUGH_LINES:
+      dt_control_log(_("not enough structural data for automatic correction"));
+      goto error;
+      break;
+    case NMS_DID_NOT_CONVERGE:
+      dt_control_log(_("automatic correction not successful, please correct manually"));
+      goto error;
+      break;
+    case NMS_SUCCESS:
+    default:
+      break;
+  }
+
+  g->fitting = 0;
+  return TRUE;
+
+error:
+  g->fitting = 0;
+  return FALSE;
+}
+
 
 #if 1
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
@@ -1763,13 +2186,14 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, POINTS_NEAR_DELTA);
 
   dt_control_queue_redraw_center();
-  return 1;
+  return 0;
 }
 
 int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
                    uint32_t state)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  int handled = 0;
 
   // go through lines near to the pointer and change "selected" state.
   // left-click sets and right-click unsets the state
@@ -1782,11 +2206,13 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
       g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
     else
       g->lines[n].type |= ASHIFT_LINE_SELECTED;
+
+    handled = 1;
   }
 
   g->lines_version++;
 
-  return 0;
+  return handled;
 }
 
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
@@ -1802,6 +2228,7 @@ static void rotation_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->rotation = dt_bauhaus_slider_get(slider);
+  //model_probe(self, p, ASHIFT_FIT_VERTICALLY);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1811,6 +2238,7 @@ static void lensshift_v_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->lensshift_v = dt_bauhaus_slider_get(slider);
+  //model_probe(self, p, ASHIFT_FIT_VERTICALLY);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1820,15 +2248,72 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->lensshift_h = dt_bauhaus_slider_get(slider);
+  //model_probe(self, p, ASHIFT_FIT_VERTICALLY);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void fit_button_clicked(GtkButton *button, gpointer user_data)
+static void fit_v_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  if(!do_fit(self, p)) return;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  if(!do_fit(self, p, ASHIFT_FIT_VERTICALLY)) return;
+  darktable.gui->reset = 1;
+  dt_bauhaus_slider_set(g->rotation, p->rotation);
+  dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+  darktable.gui->reset = 0;
+  dt_iop_request_focus(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void fit_h_button_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  if(!do_fit(self, p, ASHIFT_FIT_HORIZONTALLY)) return;
+  darktable.gui->reset = 1;
+  dt_bauhaus_slider_set(g->rotation, p->rotation);
+  dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+  darktable.gui->reset = 0;
+  dt_iop_request_focus(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void fit_both_button_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  if(!do_fit(self, p, ASHIFT_FIT_BOTH)) return;
+  darktable.gui->reset = 1;
+  dt_bauhaus_slider_set(g->rotation, p->rotation);
+  dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+  dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+  darktable.gui->reset = 0;
+  dt_iop_request_focus(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void structure_button_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  if(!do_get_structure(self, p)) return;
+  dt_iop_request_focus(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void clean_button_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  if(!do_clean_structure(self, p)) return;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2019,10 +2504,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->rotation = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 0.1f, p->rotation, 2);
-  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.01f, p->lensshift_v, 2);
-  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.01f, p->lensshift_h, 2);
-  g->fit = gtk_button_new_with_label(_("fit"));
+  g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.1f, p->rotation, 2);
+  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01f, p->lensshift_v, 2);
+  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01f, p->lensshift_h, 2);
+  g->fit_v = gtk_button_new_with_label(_("fit_v"));
+  g->fit_h = gtk_button_new_with_label(_("fit_h"));
+  g->fit_both = gtk_button_new_with_label(_("fit_both"));
+  g->structure = gtk_button_new_with_label(_("structure"));
+  g->clean = gtk_button_new_with_label(_("clean"));
 
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
   dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (vertical)"));
@@ -2031,19 +2520,35 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->fit, TRUE, TRUE, 0);
+  GtkWidget *fbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_box_pack_start(GTK_BOX(fbox), g->fit_v, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(fbox), g->fit_h, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(fbox), g->fit_both, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), fbox, TRUE, TRUE, 0);
+  GtkWidget *sbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_box_pack_start(GTK_BOX(sbox), g->structure, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(sbox), g->clean, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), sbox, TRUE, TRUE, 0);
 
   g_object_set(g->rotation, "tooltip-text", _("rotate image"), (char *)NULL);
   g_object_set(g->lensshift_v, "tooltip-text", _("apply lens shift correction in one direction"),
                (char *)NULL);
   g_object_set(g->lensshift_h, "tooltip-text", _("apply lens shift correction in one direction"),
                (char *)NULL);
-  g_object_set(g->fit, "tooltip-text", _("start fitting routine"), (char *)NULL);
+  g_object_set(g->fit_v, "tooltip-text", _("automatically correct for vertical perspective distortion"), (char *)NULL);
+  g_object_set(g->fit_h, "tooltip-text", _("automatically correct for horizontal perspective distortion"), (char *)NULL);
+  g_object_set(g->fit_both, "tooltip-text", _("automatically correct for vertical and horizontal perspective distortions"), (char *)NULL);
+  g_object_set(g->structure, "tooltip-text", _("analyse line structure in image"), (char *)NULL);
+  g_object_set(g->clean, "tooltip-text", _("remove line structure information"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
-  g_signal_connect(G_OBJECT(g->fit), "clicked", G_CALLBACK(fit_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->fit_v), "clicked", G_CALLBACK(fit_v_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->fit_h), "clicked", G_CALLBACK(fit_h_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->fit_both), "clicked", G_CALLBACK(fit_both_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->structure), "clicked", G_CALLBACK(structure_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(clean_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
 
