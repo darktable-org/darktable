@@ -696,21 +696,21 @@ static void date_cal_select(GtkCalendar *calendar, dt_lib_collect_t *d)
     {
       case 0:
       case 5:
-        sprintf(dtxt, "%04d:%02d:%02d%%", y, m, dd);
+        snprintf(dtxt, sizeof(dtxt), "%04d:%02d:%02d%%", y, m, dd);
         break;
       case 1:
       case 4:
-        sprintf(dtxt, "%04d:%02d:%02d 23:59:59", y, m, dd);
+        snprintf(dtxt, sizeof(dtxt), "%04d:%02d:%02d 23:59:59", y, m, dd);
         break;
       case 2:
       case 3:
-        sprintf(dtxt, "%04d:%02d:%02d 00:00:00", y, m, dd);
+        snprintf(dtxt, sizeof(dtxt), "%04d:%02d:%02d 00:00:00", y, m, dd);
         break;
       case 6:
         if(GTK_WIDGET(entry) == d->num_num1)
-          sprintf(dtxt, "%04d:%02d:%02d 00:00:00", y, m, dd);
+          snprintf(dtxt, sizeof(dtxt), "%04d:%02d:%02d 00:00:00", y, m, dd);
         else
-          sprintf(dtxt, "%04d:%02d:%02d 23:59:59", y, m, dd);
+          snprintf(dtxt, sizeof(dtxt), "%04d:%02d:%02d 23:59:59", y, m, dd);
         break;
     }
 
