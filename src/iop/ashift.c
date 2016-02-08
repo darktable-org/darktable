@@ -67,8 +67,12 @@
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
-#define RANSAC_ITER 200                     // how many interations to run in ransac
-#define RANSAC_DELTA 0.0001f                // limit of distance between line and intersection point
+#define RANSAC_RUNS 200                     // how many interations to run in ransac
+#define RANSAC_EPSILON 4                    // starting value for ransac epsilon (in -log10 units)
+#define RANSAC_EPSILON_STEP 1               // step size of epsilon optimization
+#define RANSAC_ELIMINATION_RATIO 60         // percentage of lines we try to eliminate as outliers
+#define RANSAC_OPTIMIZATION_STEPS 4         // home many steps to optimize epsilon
+#define RANSAC_OPTIMIZATION_DRY_RUNS 50     // how man runs per optimization steps
 #define RANSAC_HURDLE 5                     // hurdle rate: the number of lines below which we do a complete permutation instead of random sampling
 #define MINIMUM_FITLINES 4                  // minimum number of lines needed for automatic parameter fit
 #define NMS_EPSILON 1e-10                   // break criterion for Nelder-Mead simplex
@@ -974,12 +978,18 @@ static int fact(const int n)
 // original RANSAC works on linear optimization problems. Our model is nonlinear. We
 // take advantage of the fact that lines interesting for our model are vantage lines
 // that meet in one vantage point for each subset of lines (vertical/horizontal).
-// Stragegy: we construct a model by random sampling within the subset of lines and
+// Stragegy: we construct a model by (random) sampling within the subset of lines and
 // calculate the vantage point. Then we check the distance in homogeneous coordinates
 // of all other lines to the vantage point. The model that gives highest number of lines
 // combined with the highest total weight wins.
 // Disadvantage: compared to the original RANSAC we don't get any model parameters that
 // we could use for the following LM fit.
+// Self optimization: we optimize "epsilon", the hurdle line to reject a line as an outlier,
+// by a number of dry runs first. The target percentage value of averagelines to eliminate as
+// outliers (without judging on the quality of the model) is given by RANSAC_ELIMINATION_RATIO,
+// note: the actual percentage of outliers removed will be lower because we will look for the
+// best quality model with the optimized epsilon and quality also encloses the number of good
+// lines
 static void ransac(const dt_iop_ashift_line_t const* lines, int *index_set, int *inout_set,
                   const int set_count, const float total_weight, const int xmin, const int xmax,
                   const int ymin, const int ymax)
@@ -992,18 +1002,26 @@ static void ransac(const dt_iop_ashift_line_t const* lines, int *index_set, int 
   memset(best_inout, 0, sizeof(best_inout));
   float best_quality = 0.0f;
 
+  // hurdle value epsilon for rejecting a line as an outlier will be self-optimized
+  // in a number of dry runs
+  float epsilon = pow(10.0f, -RANSAC_EPSILON);
+  float epsilon_step = RANSAC_EPSILON_STEP;
+  int lines_eliminated = 0;
+
+  // number of runs to optimize epsilon
+  const int optiruns = RANSAC_OPTIMIZATION_STEPS * RANSAC_OPTIMIZATION_DRY_RUNS;
   // go for complete permutations on small set sizes, else for random sample consensus
-  int riter = (set_count > RANSAC_HURDLE) ? RANSAC_ITER : fact(set_count);
+  const int riter = (set_count > RANSAC_HURDLE) ? RANSAC_RUNS : fact(set_count);
 
   // some data needed for quickperm
   int perm[set_count + 1];
   for(int n = 0; n < set_count + 1; n++) perm[n] = n;
   int piter = 1;
 
-  for(int r = 0; r < riter; r++)
+  for(int r = 0; r < optiruns + riter; r++)
   {
     // get random or systematic variation of index set
-    if(set_count > RANSAC_HURDLE)
+    if(set_count > RANSAC_HURDLE || r < optiruns)
       shuffle(index_set, set_count);
     else
       (void)quickperm(index_set, perm, set_count, &piter);
@@ -1051,26 +1069,50 @@ static void ransac(const dt_iop_ashift_line_t const* lines, int *index_set, int 
       const float d = fabs(vec3scalar(V, L3));
 
       // depending on d we either include or exclude the point from the set
-      inout[n] = (d < RANSAC_DELTA) ? 1 : 0;
+      inout[n] = (d < epsilon) ? 1 : 0;
 
       float q;
 
       if(inout[n] == 1)
-        // a quality parameter that depends 50% on the number of lines within the model
-        // and 50% of their weight
-        q = 0.5f + 0.5f * (float)set_count * lines[index_set[n]].weight / total_weight;
+        // a quality parameter that depends 30% on the number of lines within the model
+        // and 70% of their weight
+        q = 0.3f + 0.7f * (float)set_count * lines[index_set[n]].weight / total_weight;
       else
+      {
         q = 0.0f;
+        lines_eliminated++;
+      }
 
       quality += q;
     }
 
-    // now check against the best model found so far
-    if(quality > best_quality)
+    if(r < optiruns)
     {
-      memcpy(best_set, index_set, sizeof(best_set));
-      memcpy(best_inout, inout, sizeof(best_inout));
-      best_quality = quality;
+      // on last run of each optimization steps
+      if((r % RANSAC_OPTIMIZATION_DRY_RUNS) == (RANSAC_OPTIMIZATION_DRY_RUNS - 1))
+      {
+        // average ratio of lines that we eliminated with the given epsilon
+        float ratio = 100.0f * (float)lines_eliminated / ((float)set_count * RANSAC_OPTIMIZATION_DRY_RUNS);
+        // adjust epsilon accordingly
+        if(ratio < RANSAC_ELIMINATION_RATIO)
+          epsilon = pow(10.0f, log10(epsilon) - epsilon_step);
+        else if(ratio > RANSAC_ELIMINATION_RATIO)
+          epsilon = pow(10.0f, log10(epsilon) + epsilon_step);
+
+        // reduce step-size for next optimization round
+        epsilon_step /= 2.0f;
+        lines_eliminated = 0;
+      }
+    }
+    else
+    {
+      // in the "real" runs check against the best model found so far
+      if(quality > best_quality)
+      {
+        memcpy(best_set, index_set, sizeof(best_set));
+        memcpy(best_inout, inout, sizeof(best_inout));
+        best_quality = quality;
+      }
     }
 
 #if 0
@@ -1078,8 +1120,8 @@ static void ransac(const dt_iop_ashift_line_t const* lines, int *index_set, int 
     int count = 0, lastcount = 0;
     for(int n = 0; n < set_count; n++) count += best_inout[n];
     for(int n = 0; n < set_count; n++) lastcount += inout[n];
-    printf("ransac run %d: best quality %.5f, line count %d of %d (this run: quality %.5f, count %d)\n", r,
-           best_quality, count, set_count, quality, lastcount);
+    printf("run %d: best qual %.6f, eps %.6f, line count %d of %d (this run: qual %.5f, count %d (%2f%%))\n", r,
+           best_quality, epsilon, count, set_count, quality, lastcount, 100.0f * lastcount / (float)set_count);
 #endif
   }
 
