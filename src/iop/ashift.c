@@ -2304,7 +2304,7 @@ static void fit_v_button_clicked(GtkButton *button, gpointer user_data)
     darktable.gui->reset = 0;
   }
   // hack to guarantee enable module on button click
-  p->toggle ^= 1;
+  if(!self->enabled) p->toggle ^= 1;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2323,7 +2323,7 @@ static void fit_h_button_clicked(GtkButton *button, gpointer user_data)
     darktable.gui->reset = 0;
   }
   // hack to guarantee enable module on button click
-  p->toggle ^= 1;
+  if(!self->enabled) p->toggle ^= 1;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2343,7 +2343,7 @@ static void fit_both_button_clicked(GtkButton *button, gpointer user_data)
     darktable.gui->reset = 0;
   }
   // hack to guarantee enable module on button click
-  p->toggle ^= 1;
+  if(!self->enabled) p->toggle ^= 1;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2355,7 +2355,7 @@ static void structure_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   (void)do_get_structure(self, p);
   // hack to guarantee enable module on button click
-  p->toggle ^= 1;
+  if(!self->enabled) p->toggle ^= 1;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
