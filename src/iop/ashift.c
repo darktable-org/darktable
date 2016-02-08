@@ -16,11 +16,6 @@
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// during development only:
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunused-function"
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -150,6 +145,7 @@ typedef struct dt_iop_ashift_params_t
   float rotation;
   float lensshift_v;
   float lensshift_h;
+  int toggle;
 } dt_iop_ashift_params_t;
 
 typedef struct dt_iop_ashift_line_t
@@ -254,6 +250,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->rotation = old->rotation;
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
+    new->toggle = old->toggle;
     return 0;
   }
   return 1;
@@ -277,6 +274,7 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 
 // multiply 3x3 matrix with 3x1 vector
+// dst needs to be different from v
 static inline void mat3mulv(float *dst, const float *const mat, const float *const v)
 {
   for(int k = 0; k < 3; k++)
@@ -288,6 +286,7 @@ static inline void mat3mulv(float *dst, const float *const mat, const float *con
 }
 
 // multiply two 3x3 matrices
+// dst needs to be different from m1 and m2
 static inline void mat3mul(float *dst, const float *const m1, const float *const m2)
 {
   for(int k = 0; k < 3; k++)
@@ -302,6 +301,7 @@ static inline void mat3mul(float *dst, const float *const m1, const float *const
 }
 
 // normalized product of two 3x1 vectors
+// dst needs to be different from v1 and v2
 static inline void vec3prodn(float *dst, const float *const v1, const float *const v2)
 {
   const float l1 = v1[1] * v2[2] - v1[2] * v2[1];
@@ -319,6 +319,7 @@ static inline void vec3prodn(float *dst, const float *const v1, const float *con
 }
 
 // normalized a 3x1 vector so that x^2 + y^2 + z^2 = 0
+// dst and v may be the same
 static inline void vec3norm(float *dst, const float *const v)
 {
   const float sq = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
@@ -1552,7 +1553,7 @@ static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 
   if(b == NULL)
   {
-    dt_control_log(_("please first activate this module"));
+    dt_control_log(_("missing data - please repeat"));
     goto error;
   }
 
@@ -1636,7 +1637,6 @@ error:
 }
 
 
-#if 1
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -1743,39 +1743,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     dt_pthread_mutex_unlock(&g->lock);
   }
 }
-#else
-// dummy process() for testing purposes during development
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-{
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-
-  const int ch = 4;
-  const int in_width = roi_in->width;
-  const int in_height = roi_in->height;
-  const int out_width = roi_out->width;
-  const int out_height = roi_out->height;
-
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
-#endif
-  for(int j = 0; j < out_height; j++)
-  {
-    if(j >= in_height) continue;
-    const float *inp = in + (size_t)ch * j * in_width;
-    float *outp = out + (size_t)ch * j * out_width;
-    for(int i = 0; i < out_width; i++, inp += ch, outp += ch)
-    {
-      if(i >= in_width) continue;
-      outp[0] = inp[0];
-      outp[1] = inp[1];
-      outp[2] = inp[2];
-    }
-  }
-}
-#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -2314,11 +2281,15 @@ static void fit_v_button_clicked(GtkButton *button, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  if(!do_fit(self, p, ASHIFT_FIT_VERTICALLY)) return;
-  darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->rotation, p->rotation);
-  dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
-  darktable.gui->reset = 0;
+  if(do_fit(self, p, ASHIFT_FIT_VERTICALLY))
+  {
+    darktable.gui->reset = 1;
+    dt_bauhaus_slider_set(g->rotation, p->rotation);
+    dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+    darktable.gui->reset = 0;
+  }
+  // hack to guarantee enable module on button click
+  p->toggle ^= 1;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2329,11 +2300,15 @@ static void fit_h_button_clicked(GtkButton *button, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  if(!do_fit(self, p, ASHIFT_FIT_HORIZONTALLY)) return;
-  darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->rotation, p->rotation);
-  dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
-  darktable.gui->reset = 0;
+  if(do_fit(self, p, ASHIFT_FIT_HORIZONTALLY))
+  {
+    darktable.gui->reset = 1;
+    dt_bauhaus_slider_set(g->rotation, p->rotation);
+    dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+    darktable.gui->reset = 0;
+  }
+  // hack to guarantee enable module on button click
+  p->toggle ^= 1;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2344,12 +2319,16 @@ static void fit_both_button_clicked(GtkButton *button, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  if(!do_fit(self, p, ASHIFT_FIT_BOTH)) return;
-  darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->rotation, p->rotation);
-  dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
-  dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
-  darktable.gui->reset = 0;
+  if(do_fit(self, p, ASHIFT_FIT_BOTH))
+  {
+    darktable.gui->reset = 1;
+    dt_bauhaus_slider_set(g->rotation, p->rotation);
+    dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+    dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+    darktable.gui->reset = 0;
+  }
+  // hack to guarantee enable module on button click
+  p->toggle ^= 1;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2359,7 +2338,9 @@ static void structure_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  if(!do_get_structure(self, p)) return;
+  (void)do_get_structure(self, p);
+  // hack to guarantee enable module on button click
+  p->toggle ^= 1;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2369,7 +2350,7 @@ static void clean_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  if(!do_clean_structure(self, p)) return;
+  (void)do_clean_structure(self, p);
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2436,7 +2417,7 @@ void init(dt_iop_module_t *module)
   module->priority = 252; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f };
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0 };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
 }
@@ -2446,7 +2427,7 @@ void reload_defaults(dt_iop_module_t *module)
   // our module is disabled by default
   module->default_enabled = 0;
   // init defaults:
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f };
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0 };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
 
@@ -2535,8 +2516,6 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   if(self->enabled)
   {
     if(in)
