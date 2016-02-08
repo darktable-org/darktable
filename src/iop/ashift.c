@@ -64,7 +64,7 @@
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
 #define RANSAC_RUNS 200                     // how many interations to run in ransac
 #define RANSAC_EPSILON 4                    // starting value for ransac epsilon (in -log10 units)
-#define RANSAC_EPSILON_STEP 1               // step size of epsilon optimization
+#define RANSAC_EPSILON_STEP 1               // step size of epsilon optimization (log10 units)
 #define RANSAC_ELIMINATION_RATIO 60         // percentage of lines we try to eliminate as outliers
 #define RANSAC_OPTIMIZATION_STEPS 4         // home many steps to optimize epsilon
 #define RANSAC_OPTIMIZATION_DRY_RUNS 50     // how man runs per optimization steps
@@ -1075,9 +1075,13 @@ static void ransac(const dt_iop_ashift_line_t const* lines, int *index_set, int 
       float q;
 
       if(inout[n] == 1)
-        // a quality parameter that depends 30% on the number of lines within the model
-        // and 70% of their weight
-        q = 0.3f + 0.7f * (float)set_count * lines[index_set[n]].weight / total_weight;
+      {
+        // a quality parameter that depends 1/3 on the number of lines within the model,
+        // 1/3 on their weight, and 1/3 on their weighted distance d to the vantage point
+        q = 0.33f / (float)set_count
+            + 0.33f * lines[index_set[n]].weight / total_weight
+            + 0.33f * (1.0f - d / epsilon) * (float)set_count * lines[index_set[n]].weight / total_weight;
+      }
       else
       {
         q = 0.0f;
