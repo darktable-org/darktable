@@ -748,6 +748,67 @@ void dtgtk_cairo_paint_refresh(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   cairo_identity_matrix(cr);
 }
 
+void dtgtk_cairo_paint_perspective(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
+{
+  gint s = w < h ? w : h;
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+
+  cairo_set_line_width(cr, 0.07);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
+  if((flags & 3) == 1)
+  {
+    cairo_move_to(cr, 0.1, 0.9);
+    cairo_line_to(cr, 0.3, 0.1);
+    cairo_line_to(cr, 0.7, 0.1);
+    cairo_line_to(cr, 0.9, 0.9);
+    cairo_line_to(cr, 0.1, 0.9);
+    cairo_stroke(cr);
+  }
+  else if((flags & 3) == 2)
+  {
+    cairo_move_to(cr, 0.1, 0.9);
+    cairo_line_to(cr, 0.9, 0.7);
+    cairo_line_to(cr, 0.9, 0.3);
+    cairo_line_to(cr, 0.1, 0.1);
+    cairo_line_to(cr, 0.1, 0.9);
+    cairo_stroke(cr);
+  }
+  else if((flags & 3) == 3)
+  {
+    cairo_move_to(cr, 0.1, 0.9);
+    cairo_line_to(cr, 0.9, 0.7);
+    cairo_line_to(cr, 0.8, 0.2);
+    cairo_line_to(cr, 0.3, 0.1);
+    cairo_line_to(cr, 0.1, 0.9);
+    cairo_stroke(cr);
+  }
+}
+
+void dtgtk_cairo_paint_structure(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
+{
+  gint s = w < h ? w : h;
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+
+  cairo_set_line_width(cr, 0.15);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
+  cairo_move_to(cr, 0.1, 0.1);
+  cairo_line_to(cr, 0.0, 0.9);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.366, 0.1);
+  cairo_line_to(cr, 0.33, 0.9);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.633, 0.1);
+  cairo_line_to(cr, 0.66, 0.9);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.9, 0.1);
+  cairo_line_to(cr, 1.0, 0.9);
+  cairo_stroke(cr);
+}
+
 void dtgtk_cairo_paint_cancel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
 {
   gint s = w < h ? w : h;

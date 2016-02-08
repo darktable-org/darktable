@@ -32,6 +32,8 @@
 #include "common/opencl.h"
 #include "common/interpolation.h"
 #include "common/colorspaces.h"
+#include "dtgtk/resetlabel.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -195,7 +197,8 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *fit_both;
   GtkWidget *structure;
   GtkWidget *clean;
-  int visible;
+  GtkWidget *eye;
+  int lines_suppressed;
   int fitting;
   int isflipped;
   dt_iop_ashift_line_t *lines;
@@ -922,7 +925,7 @@ static int get_structure(dt_iop_module_t *module)
   g->vertical_weight = vertical_weight;
   g->horizontal_weight = horizontal_weight;
   g->lines_version++;
-  g->visible = 1;
+  g->lines_suppressed = 0;
   g->lines = lines;
 
   free(buffer);
@@ -1597,7 +1600,7 @@ static int do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p
   free(g->lines);
   g->lines = NULL;
   g->lines_version++;
-  g->visible = 1;
+  g->lines_suppressed = 0;
   g->fitting = 0;
   return TRUE;
 }
@@ -2109,7 +2112,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(g->fitting) return;
 
   // no structural data or visibility switched off? -> nothing to do
-  if(g->lines == NULL || g->visible == 0 || !gui_has_focus(self)) return;
+  if(g->lines == NULL || g->lines_suppressed || !gui_has_focus(self)) return;
 
   // points data are missing or outdated, or distortion has changed? -> generate points
   uint64_t hash = grid_hash(dev, g->buf_width, g->buf_height, 10);
@@ -2359,6 +2362,24 @@ static void clean_button_clicked(GtkButton *button, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  if(darktable.gui->reset) return;
+  if(g->lines == NULL)
+  {
+    g->lines_suppressed = 0;
+    gtk_toggle_button_set_active(togglebutton, 0);
+  }
+  else
+  {
+    g->lines_suppressed = gtk_toggle_button_get_active(togglebutton);
+  }
+  dt_iop_request_focus(self);
+  dt_dev_reprocess_all(self->dev);
+}
+
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -2391,6 +2412,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->rotation, p->rotation);
   dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
   dt_pthread_mutex_lock(&g->lock);
   free(g->buf);
@@ -2409,7 +2431,7 @@ void gui_update(struct dt_iop_module_t *self)
   g->horizontal_count = 0;
   g->vertical_count = 0;
   g->grid_hash = 0;
-  g->visible = 1;
+  g->lines_suppressed = 0;
   g->lines_version++;
 }
 
@@ -2513,6 +2535,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   darktable.gui->reset = 1;
   dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
   dt_bauhaus_widget_set_label(g->lensshift_h, NULL, string_h);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
   darktable.gui->reset = 0;
 
   return FALSE;
@@ -2556,7 +2579,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->vertical_count = 0;
   g->horizontal_count = 0;
   g->lines_version = 0;
-  g->visible = 1;
+  g->lines_suppressed = 0;
   g->points = NULL;
   g->points_idx = NULL;
   g->points_lines_count = 0;
@@ -2566,30 +2589,53 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, ROTATION_RANGE / 100.0, p->rotation, 2);
-  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, LENSSHIFT_RANGE / 100.0, p->lensshift_v, 3);
-  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, LENSSHIFT_RANGE / 100.0, p->lensshift_h, 3);
-  g->fit_v = gtk_button_new_with_label(_("fit_v"));
-  g->fit_h = gtk_button_new_with_label(_("fit_h"));
-  g->fit_both = gtk_button_new_with_label(_("fit_both"));
-  g->structure = gtk_button_new_with_label(_("structure"));
-  g->clean = gtk_button_new_with_label(_("clean"));
-
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
-  dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (vertical)"));
-  dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
-
   gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
+
+  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, LENSSHIFT_RANGE / 100.0, p->lensshift_v, 3);
+  dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (vertical)"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
+
+  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, LENSSHIFT_RANGE / 100.0, p->lensshift_h, 3);
+  dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
-  GtkWidget *fbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(fbox), g->fit_v, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(fbox), g->fit_h, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(fbox), g->fit_both, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), fbox, TRUE, TRUE, 0);
-  GtkWidget *sbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(sbox), g->structure, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(sbox), g->clean, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), sbox, TRUE, TRUE, 0);
+
+
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), 2 * DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_homogeneous (GTK_GRID(grid), TRUE);
+
+  GtkWidget *label1 = gtk_label_new(_("automatic fit"));
+  gtk_widget_set_halign(label1, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label1, 0, 0, 1, 1);
+
+  g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 1);
+  gtk_widget_set_size_request(g->fit_v, -1, DT_PIXEL_APPLY_DPI(24));
+  gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_v, label1, GTK_POS_RIGHT, 1, 1);
+
+  g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 2);
+  gtk_widget_set_size_request(g->fit_h, -1, DT_PIXEL_APPLY_DPI(24));
+  gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_h, g->fit_v, GTK_POS_RIGHT, 1, 1);
+
+  g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 3);
+  gtk_widget_set_size_request(g->fit_both, -1, DT_PIXEL_APPLY_DPI(24));
+  gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_both, g->fit_h, GTK_POS_RIGHT, 1, 1);
+
+  GtkWidget *label2 = gtk_label_new(_("get structure"));
+  gtk_widget_set_halign(label1, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label2, 0, 1, 1, 1);
+
+  g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  gtk_grid_attach_next_to(GTK_GRID(grid), g->structure, label2, GTK_POS_RIGHT, 1, 1);
+
+  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  gtk_grid_attach_next_to(GTK_GRID(grid), g->clean, g->structure, GTK_POS_RIGHT, 1, 1);
+
+  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  gtk_grid_attach_next_to(GTK_GRID(grid), g->eye, g->clean, GTK_POS_RIGHT, 1, 1);
+
+
+  gtk_box_pack_start(GTK_BOX(self->widget), grid, TRUE, TRUE, 0);
 
   g_object_set(g->rotation, "tooltip-text", _("rotate image"), (char *)NULL);
   g_object_set(g->lensshift_v, "tooltip-text", _("apply lens shift correction in one direction"),
@@ -2601,6 +2647,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(g->fit_both, "tooltip-text", _("automatically correct for vertical and horizontal perspective distortions"), (char *)NULL);
   g_object_set(g->structure, "tooltip-text", _("analyse line structure in image"), (char *)NULL);
   g_object_set(g->clean, "tooltip-text", _("remove line structure information"), (char *)NULL);
+  g_object_set(g->eye, "tooltip-text", _("toggle visibility of structure lines"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
@@ -2610,6 +2657,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->fit_both), "clicked", G_CALLBACK(fit_both_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->structure), "clicked", G_CALLBACK(structure_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(clean_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(eye_button_toggled), (gpointer)self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
 
