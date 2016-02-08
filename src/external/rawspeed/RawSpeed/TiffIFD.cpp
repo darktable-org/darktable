@@ -26,12 +26,6 @@
 
 namespace RawSpeed {
 
-#ifdef CHECKSIZE
-#undef CHECKSIZE
-#endif
-
-#define CHECKSIZE(A) if (A > size) ThrowTPE("Error reading TIFF structure (invalid size). File Corrupt")
-
 TiffIFD::TiffIFD() {
   nextIFD = 0;
   endian = little;
@@ -46,16 +40,25 @@ TiffIFD::TiffIFD(FileMap* f) {
 
 TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
   mFile = f;
-  uint32 size = f->getSize();
   uint32 entries;
   endian = little;
-  CHECKSIZE(offset);
 
   entries = *(unsigned short*)f->getData(offset, 2);    // Directory entries in this IFD
 
-  CHECKSIZE(offset + 2 + entries*4);
   for (uint32 i = 0; i < entries; i++) {
-    TiffEntry *t = new TiffEntry(f, offset + 2 + i*12, offset);
+    int entry_offset = offset + 2 + i*12;
+
+    // If the space for the entry is no longer valid stop reading any more as
+    // the file is broken or truncated
+    if (!mFile->isValid(entry_offset+12))
+      break;
+
+    TiffEntry *t = NULL;
+    try {
+      t = new TiffEntry(f, entry_offset, offset);
+    } catch (IOException) { // Ignore unparsable entry
+      continue;
+    }
 
     switch (t->tag) {
       case DNGPRIVATEDATA: 
@@ -64,8 +67,9 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
             TiffIFD *maker_ifd = parseDngPrivateData(t);
             mSubIFD.push_back(maker_ifd);
             delete(t);
-          } catch (TiffParserException) {
-            // Unparsable private data are added as entries
+          } catch (TiffParserException) { // Unparsable private data are added as entries
+            mEntry[t->tag] = t;
+          } catch (IOException) { // Unparsable private data are added as entries
             mEntry[t->tag] = t;
           }
         }
@@ -76,8 +80,9 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
           try {
             mSubIFD.push_back(parseMakerNote(f, t->getDataOffset(), endian));
             delete(t);
-          } catch (TiffParserException) {
-            // Unparsable makernotes are added as entries
+          } catch (TiffParserException) { // Unparsable makernotes are added as entries
+            mEntry[t->tag] = t;
+          } catch (IOException) { // Unparsable makernotes are added as entries
             mEntry[t->tag] = t;
           }
         }
@@ -95,10 +100,12 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
             mSubIFD.push_back(new TiffIFD(f, sub_offsets[j]));
           }
           delete(t);
-        } catch (TiffParserException) {
-          // Unparsable subifds are added as entries
+        } catch (TiffParserException) { // Unparsable subifds are added as entries
+          mEntry[t->tag] = t;
+        } catch (IOException) { // Unparsable subifds are added as entries
           mEntry[t->tag] = t;
         }
+
         break;
       default:
         mEntry[t->tag] = t;
@@ -134,7 +141,9 @@ TiffIFD* TiffIFD::parseDngPrivateData(TiffEntry *t) {
     count = (unsigned int)data[0] << 24 | (unsigned int)data[1] << 16 | (unsigned int)data[2] << 8 | (unsigned int)data[3];
 
   data+=4;
-  CHECKSIZE(count);
+  if (count > size)
+    ThrowTPE("Error reading TIFF structure (invalid size). File Corrupt");
+
   Endianness makernote_endian = unknown;
   if (data[0] == 0x49 && data[1] == 0x49)
     makernote_endian = little;
@@ -186,8 +195,6 @@ const uchar8 nikon_v3_signature[] = {
 TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_end)
 {
   FileMap *mFile = f;
-  uint32 size = f->getSize();
-  CHECKSIZE(offset + 20);
   TiffIFD *maker_ifd = NULL;
   // Get at least 100 bytes which is more than enough for all the checks below
   const uchar8* data = f->getData(offset, 100);
