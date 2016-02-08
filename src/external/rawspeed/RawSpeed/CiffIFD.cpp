@@ -36,14 +36,27 @@ CiffIFD::CiffIFD(FileMap* f, uint32 start, uint32 end) {
 //                  dircount, start, end, valuedata_size);
 
   for (uint32 i = 0; i < dircount; i++) {
-    CiffEntry *t = new CiffEntry(f, start, start+valuedata_size+2+i*10);
+    int entry_offset = start+valuedata_size+2+i*10;
+
+    // If the space for the entry is no longer valid stop reading any more as
+    // the file is broken or truncated
+    if (!mFile->isValid(entry_offset+10))
+      break;
+
+    CiffEntry *t = NULL;
+    try {
+      t = new CiffEntry(f, start, entry_offset);
+    } catch (IOException) { // Ignore unparsable entry
+      continue;
+    }
 
     if (t->type == CIFF_SUB1 || t->type == CIFF_SUB2) {
       try {
         mSubIFD.push_back(new CiffIFD(f, t->data_offset, t->data_offset+t->count));
         delete(t);
-      } catch (CiffParserException) {
-        // Unparsable subifds are added as entries
+      } catch (CiffParserException) { // Unparsable subifds are added as entries
+        mEntry[t->tag] = t;
+      } catch (IOException) { // Unparsable private data are added as entries
         mEntry[t->tag] = t;
       }
     } else {
