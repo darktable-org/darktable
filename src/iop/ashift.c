@@ -66,7 +66,7 @@
 #define LENSSHIFT_RANGE 1                   // allowed min/max value for lensshift paramters
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
-#define POINTS_NEAR_DELTA 2                 // distance of mouse pointer to line for "near" detection
+#define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
 #define RANSAC_ITER 200                     // how many interations to run in ransac
 #define RANSAC_DELTA 0.0001f                // limit of distance between line and intersection point
 #define RANSAC_HURDLE 5                     // hurdle rate: the number of lines below which we do a complete permutation instead of random sampling
@@ -195,6 +195,7 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *fit_both;
   GtkWidget *structure;
   GtkWidget *clean;
+  int visible;
   int fitting;
   int isflipped;
   dt_iop_ashift_line_t *lines;
@@ -916,6 +917,7 @@ static int get_structure(dt_iop_module_t *module)
   g->vertical_weight = vertical_weight;
   g->horizontal_weight = horizontal_weight;
   g->lines_version++;
+  g->visible = 1;
   g->lines = lines;
 
   free(buffer);
@@ -1548,6 +1550,7 @@ static int do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p
   free(g->lines);
   g->lines = NULL;
   g->lines_version++;
+  g->visible = 1;
   g->fitting = 0;
   return TRUE;
 }
@@ -2077,6 +2080,12 @@ error:
   return FALSE;
 }
 
+// does this gui have focus?
+static int gui_has_focus(struct dt_iop_module_t *self)
+{
+  return self->dev->gui_module == self;
+}
+
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                      int32_t pointerx, int32_t pointery)
 {
@@ -2086,8 +2095,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // structural data are currently being collected or fit procedure is running? -> skip
   if(g->fitting) return;
 
-  // no structural data? -> nothing to do
-  if(g->lines == NULL) return;
+  // no structural data or visibility switched off? -> nothing to do
+  if(g->lines == NULL || g->visible == 0 || !gui_has_focus(self)) return;
 
   // points data are missing or outdated, or distortion has changed? -> generate points
   uint64_t hash = grid_hash(dev, g->buf_width, g->buf_height, 10);
@@ -2122,6 +2131,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
   cairo_save(cr);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_clip(cr);
   cairo_translate(cr, width / 2.0, height / 2.0);
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
@@ -2371,6 +2382,8 @@ void gui_update(struct dt_iop_module_t *self)
   g->horizontal_count = 0;
   g->vertical_count = 0;
   g->grid_hash = 0;
+  g->visible = 1;
+  g->lines_version++;
 }
 
 void init(dt_iop_module_t *module)
@@ -2491,16 +2504,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      if(g->fitting == 1) return;
-      g->fitting = 1;
-      // get rid of old structural data
-      g->lines_count = 0;
-      g->vertical_count = 0;
-      g->horizontal_count = 0;
-      free(g->lines);
-      g->lines = NULL;
-      g->lines_version++;
-      g->fitting = 0;
       dt_control_queue_redraw_center();
     }
   }
@@ -2528,6 +2531,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->vertical_count = 0;
   g->horizontal_count = 0;
   g->lines_version = 0;
+  g->visible = 1;
   g->points = NULL;
   g->points_idx = NULL;
   g->points_lines_count = 0;
