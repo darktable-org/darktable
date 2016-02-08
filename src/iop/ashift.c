@@ -63,7 +63,7 @@
 #include "ashift_nmsimplex.c"
 
 #define ROTATION_RANGE 10                   // allowed min/max value for rotation parameter
-#define LENSSHIFT_RANGE 1                   // allowed min/max value for lensshift paramters
+#define LENSSHIFT_RANGE 0.5                 // allowed min/max value for lensshift paramters
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
@@ -2582,9 +2582,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.1f, p->rotation, 2);
-  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01f, p->lensshift_v, 2);
-  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01f, p->lensshift_h, 2);
+  g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, ROTATION_RANGE / 100.0, p->rotation, 2);
+  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, LENSSHIFT_RANGE / 100.0, p->lensshift_v, 3);
+  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, LENSSHIFT_RANGE / 100.0, p->lensshift_h, 3);
   g->fit_v = gtk_button_new_with_label(_("fit_v"));
   g->fit_h = gtk_button_new_with_label(_("fit_h"));
   g->fit_both = gtk_button_new_with_label(_("fit_both"));
