@@ -1316,8 +1316,10 @@ static double model_fitness(double *params, void *data)
 #endif
 
   // accounting variables
-  double sumsq = 0.0;
-  double weight = 0.0;
+  double sumsq_v = 0.0;
+  double sumsq_h = 0.0;
+  double weight_v = 0.0;
+  double weight_h = 0.0;
   int count = 0;
 
   // iterate over all lines
@@ -1327,8 +1329,11 @@ static double model_fitness(double *params, void *data)
     if((lines[n].type & fit->linemask) != fit->linetype)
       continue;
 
+    // the direction of this line (vertical)
+    const int vertical = lines[n].type & ASHIFT_LINE_DIRVERT;
+
     // select the perpendicular reference axis
-    const float *A = lines[n].type & ASHIFT_LINE_DIRVERT ? Ah : Av;
+    const float *A = vertical ? Ah : Av;
 
     // apply homographic transformation to the end points
     float P1[3], P2[3];
@@ -1342,22 +1347,25 @@ static double model_fitness(double *params, void *data)
     // get scalar product of line with orthogonal axis -> gives 0 if line is perpendicular
     float v = vec3scalar(L, A);
 
-#if 0
-    printf("line %3d, L { %.6f %.6f %.6f } -> { %.6f %.6f %.6f } v %.6f\n", count,
-           lines[n].L[0], lines[n].L[1], lines[n].L[2], L[0], L[1], L[2], v);
-#endif
-    // sum up weighted v^2
-    sumsq += v * v * lines[n].weight;
-    weight += lines[n].weight;
+    // sum up weighted v^2 for both directions individually
+    sumsq_v += vertical ? v * v * lines[n].weight : 0.0;
+    weight_v  += vertical ? lines[n].weight : 0.0;
+    sumsq_h += !vertical ? v * v * lines[n].weight : 0.0;
+    weight_h  += !vertical ? lines[n].weight : 0.0;;
     count++;
   }
 
+  sumsq_v = weight_v > 0.0f ? sumsq_v / weight_v : 0.0;
+  sumsq_h = weight_h > 0.0f ? sumsq_h / weight_h : 0.0;
+
+  double sum = sqrt(1.0 - (1.0 - sumsq_v) * (1.0 - sumsq_h)) * 1.0e6;
+
 #if 0
-  printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f -> lines %d, sumsq %f, weight %f\n",
-         rotation, lensshift_v, lensshift_h, count, sumsq, weight);
+  printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f -> lines %d, sum %10f\n",
+         rotation, lensshift_v, lensshift_h, count, sum);
 #endif
 
-  return (weight > 0.0f ? sumsq/weight : INFINITY);
+  return sum;
 }
 
 static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ashift_fitaxis_t dir)
@@ -1560,7 +1568,7 @@ static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 
   if(b == NULL)
   {
-    dt_control_log(_("missing data - please repeat"));
+    dt_control_log(_("data pending - please repeat"));
     goto error;
   }
 
@@ -1574,7 +1582,7 @@ static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   {
     // in fact currently remove_outliers() always returns TRUE. The log
     // message here is implemented for future extensions
-    dt_control_log(_("could not run outlier removal on structural data"));
+    dt_control_log(_("could not run outlier removal"));
     goto error;
   }
 
@@ -1623,11 +1631,11 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
   switch(res)
   {
     case NMS_NOT_ENOUGH_LINES:
-      dt_control_log(_("not enough structural data for automatic correction"));
+      dt_control_log(_("not enough structure for automatic correction"));
       goto error;
       break;
     case NMS_DID_NOT_CONVERGE:
-      dt_control_log(_("automatic correction not successful, please correct manually"));
+      dt_control_log(_("automatic correction failed, please correct manually"));
       goto error;
       break;
     case NMS_SUCCESS:
