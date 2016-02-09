@@ -79,7 +79,12 @@ void FileMap::corrupt(int errors) {
 
 const uchar8* FileMap::getData( uint32 offset, uint32 count )
 {
-  if (offset < 0 || count <= 0 || offset+count > size+FILEMAP_MARGIN)
+  uint64 totaloffset = (uint64)offset + (uint64)count;
+  uint64 totalsize = (uint64)size + FILEMAP_MARGIN;
+
+  if (count == 0)
+    throw IOException("FileMap: Trying to get a zero sized buffer?!");
+  if (!isValid(offset) || totaloffset > totalsize)
     throw IOException("FileMap: Attempting to read file out of bounds.");
   return &data[offset];
 }
