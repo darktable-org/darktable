@@ -344,7 +344,7 @@ static void node_gc (dt_iop_liquify_params_t *p)
   {
     if (p->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
     {
-      for (int e=0; e<=last; e++)
+      for (int e=0; e<last; e++)
       {
         //  then move slot if above position k
         if (e >= k)                       p->nodes[e] = p->nodes[e+1];
