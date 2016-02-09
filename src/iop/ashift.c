@@ -1934,7 +1934,7 @@ static uint64_t grid_hash(dt_develop_t *dev, const int width, const int height, 
     }
 
   // make the copy
-  memcpy(tpoints, points, 2 * points_count);
+  memcpy(tpoints, points, sizeof(tpoints));
 
   // transform the copy
   dt_dev_distort_transform(dev, tpoints, points_count);
