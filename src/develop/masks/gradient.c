@@ -485,10 +485,9 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cairo_set_line_width(cr, 1.0 / zoom_scale);
     cairo_stroke(cr);
 
-    _gradient_point_transform(xref, yref, gpt->points[2] + dx, gpt->points[3] + dy, sinv, cosv, &x, &y);
+    // dark side of the gradient
     cairo_arc(cr, x, y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
-
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_stroke(cr);
 
@@ -499,9 +498,12 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cairo_line_to(cr, x, y);
     cairo_stroke(cr);
 
-    _gradient_point_transform(xref, yref, gpt->points[4] + dx, gpt->points[5] + dy, sinv, cosv, &x, &y);
+    // light side of the gradient
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_arc(cr, x, y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_stroke(cr);
 
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_stroke(cr);
