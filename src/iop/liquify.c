@@ -2823,14 +2823,14 @@ int button_released (struct dt_iop_module_t *module,
     }
     if (gtk_toggle_button_get_active (g->btn_curve_tool))
     {
+      const int prev_index = g->node_index;
+      g->temp = alloc_curve_to (module, pt);
+      if (!g->temp) goto done;
       // user dragged, make it a symmetrical node
       if (dragged)
       {
         g->temp->header.node_type = DT_LIQUIFY_NODE_TYPE_SYMMETRICAL;
       }
-      const int prev_index = g->node_index;
-      g->temp = alloc_curve_to (module, pt);
-      if (!g->temp) goto done;
       g->temp->warp.radius = pt +
         (dt_conf_key_exists(CONF_RADIUS) ? dt_conf_get_float(CONF_RADIUS) : GET_UI_WIDTH (DEFAULT_RADIUS));
       g->temp->warp.strength = pt + GET_UI_WIDTH (DEFAULT_STRENGTH);
