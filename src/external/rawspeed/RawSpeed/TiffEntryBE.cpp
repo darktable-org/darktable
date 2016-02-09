@@ -26,6 +26,7 @@ namespace RawSpeed {
 
 TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset, uint32 up_offset) {
   own_data = NULL;
+  empty_data = 0;
   file = f;
   parent_offset = up_offset;
   type = TIFF_UNDEFINED;  // We set type to undefined to avoid debug assertion errors.
@@ -40,8 +41,12 @@ TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset, uint32 up_offset) {
   if (type > 13)
     ThrowTPE("Error reading TIFF structure. Unknown Type 0x%x encountered.", type);
   uint32 bytesize = count << datashifts[type];
-  data = f->getDataWrt(offset + 8, 4);
-  if (bytesize > 4) { // it's an offset
+  if (bytesize == 0) // Better return empty than NULL-dereference later
+    data = (uchar8 *) &empty_data;
+  else if (bytesize <= 4)
+    data = f->getDataWrt(offset + 8, bytesize);
+  else { // it's an offset
+    data = f->getDataWrt(offset + 8, 4);
     data_offset = (unsigned int)data[0] << 24 | (unsigned int)data[1] << 16 | (unsigned int)data[2] << 8 | (unsigned int)data[3];
     data = f->getDataWrt(data_offset, bytesize);
   }

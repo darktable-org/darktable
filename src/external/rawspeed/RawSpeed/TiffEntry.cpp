@@ -35,6 +35,7 @@ TiffEntry::TiffEntry() {
 TiffEntry::TiffEntry(FileMap* f, uint32 offset, uint32 up_offset) {
   parent_offset = up_offset;
   own_data = NULL;
+  empty_data = 0;
   file = f;
   unsigned short* p = (unsigned short*)f->getData(offset, 2);
   tag = (TiffTag)p[0];
@@ -43,10 +44,10 @@ TiffEntry::TiffEntry(FileMap* f, uint32 offset, uint32 up_offset) {
   if (type > 13)
     ThrowTPE("Error reading TIFF structure. Unknown Type 0x%x encountered.", type);
   uint32 bytesize = count << datashifts[type];
-  if (bytesize <= 0)
-    data = NULL;
+  if (bytesize == 0) // Better return empty than NULL-dereference later
+    data = (uchar8 *) &empty_data;
   else if (bytesize <= 4)
-      data = f->getDataWrt(offset + 8, bytesize);
+    data = f->getDataWrt(offset + 8, bytesize);
   else { // offset
     data_offset = *(uint32*)f->getData(offset + 8, 4);
     fetchData();

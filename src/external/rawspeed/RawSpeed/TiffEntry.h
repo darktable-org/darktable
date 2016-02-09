@@ -93,6 +93,7 @@ public:
   bool isString();
   void offsetFromParent() {data_offset += parent_offset; parent_offset = 0; fetchData(); }
   uint32 parent_offset;
+  uint64 empty_data;
 protected:
   void fetchData();
   string getValueAsString();
