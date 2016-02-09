@@ -40,7 +40,11 @@ TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset, uint32 up_offset) {
 
   if (type > 13)
     ThrowTPE("Error reading TIFF structure. Unknown Type 0x%x encountered.", type);
-  uint32 bytesize = count << datashifts[type];
+
+  uint64 bytesize = (uint64)count << datashifts[type];
+  if (bytesize > UINT32_MAX)
+    ThrowTPE("TIFF entry is supposedly %llu bytes", bytesize);
+
   if (bytesize == 0) // Better return empty than NULL-dereference later
     data = (uchar8 *) &empty_data;
   else if (bytesize <= 4)
