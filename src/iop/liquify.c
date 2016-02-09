@@ -1160,12 +1160,14 @@ void process (struct dt_iop_module_t *module,
 
   cairo_rectangle_int_t map_extent;
   float complex *map = build_global_distortion_map (module, piece, roi_in, roi_out, &map_extent);
-  if (map == NULL || map_extent.width == 0 || map_extent.height == 0)
+  if (map == NULL)
     return;
 
   // 3. apply the map
 
-  apply_global_distortion_map (module, piece, in, out, roi_in, roi_out, map, &map_extent);
+  if (map_extent.width != 0 && map_extent.height != 0)
+    apply_global_distortion_map (module, piece, in, out, roi_in, roi_out, map, &map_extent);
+
   dt_free_align ((void *) map);
 }
 
@@ -1328,12 +1330,14 @@ int process_cl (struct dt_iop_module_t *module,
 
   cairo_rectangle_int_t map_extent;
   const float complex *map = build_global_distortion_map (module, piece, roi_in, roi_out, &map_extent);
-  if (map == NULL || map_extent.width == 0 || map_extent.height == 0)
+  if (map == NULL)
     return TRUE;
 
   // 3. apply the map
 
-  err = apply_global_distortion_map_cl (module, piece, dev_in, dev_out, roi_in, roi_out, map, &map_extent);
+  if (map_extent.width != 0 && map_extent.height != 0)
+    err = apply_global_distortion_map_cl (module, piece, dev_in, dev_out, roi_in, roi_out, map, &map_extent);
+
   dt_free_align ((void *) map);
   if (err != CL_SUCCESS) goto error;
 
