@@ -321,7 +321,7 @@ static inline void vec3prodn(float *dst, const float *const v1, const float *con
   dst[2] = l3 * f;
 }
 
-// normalized a 3x1 vector so that x^2 + y^2 + z^2 = 0
+// normalize a 3x1 vector so that x^2 + y^2 + z^2 = 1
 // dst and v may be the same
 static inline void vec3norm(float *dst, const float *const v)
 {
@@ -987,13 +987,13 @@ static int fact(const int n)
 // of all other lines to the vantage point. The model that gives highest number of lines
 // combined with the highest total weight wins.
 // Disadvantage: compared to the original RANSAC we don't get any model parameters that
-// we could use for the following LM fit.
+// we could use for the following NMS fit.
 // Self optimization: we optimize "epsilon", the hurdle line to reject a line as an outlier,
-// by a number of dry runs first. The target percentage value of averagelines to eliminate as
+// by a number of dry runs first. The target average percentage value of lines to eliminate as
 // outliers (without judging on the quality of the model) is given by RANSAC_ELIMINATION_RATIO,
-// note: the actual percentage of outliers removed will be lower because we will look for the
-// best quality model with the optimized epsilon and quality also encloses the number of good
-// lines
+// note: the actual percentage of outliers removed in the final run will be lower because we
+// will look for the best quality model with the optimized epsilon and quality also
+// encloses the number of good lines
 static void ransac(const dt_iop_ashift_line_t const* lines, int *index_set, int *inout_set,
                   const int set_count, const float total_weight, const int xmin, const int xmax,
                   const int ymin, const int ymax)
@@ -1368,6 +1368,7 @@ static double model_fitness(double *params, void *data)
   return sum;
 }
 
+// setup all data structures for fitting and call NM simplex
 static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ashift_fitaxis_t dir)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
@@ -2611,21 +2612,24 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), 2 * DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_homogeneous (GTK_GRID(grid), TRUE);
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
 
   GtkWidget *label1 = gtk_label_new(_("automatic fit"));
   gtk_widget_set_halign(label1, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), label1, 0, 0, 1, 1);
 
   g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 1);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
   gtk_widget_set_size_request(g->fit_v, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_v, label1, GTK_POS_RIGHT, 1, 1);
 
   g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 2);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
   gtk_widget_set_size_request(g->fit_h, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_h, g->fit_v, GTK_POS_RIGHT, 1, 1);
 
   g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 3);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
   gtk_widget_set_size_request(g->fit_both, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_both, g->fit_h, GTK_POS_RIGHT, 1, 1);
 
@@ -2634,12 +2638,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(GTK_GRID(grid), label2, 0, 1, 1, 1);
 
   g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
   gtk_grid_attach_next_to(GTK_GRID(grid), g->structure, label2, GTK_POS_RIGHT, 1, 1);
 
   g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->clean), TRUE);
   gtk_grid_attach_next_to(GTK_GRID(grid), g->clean, g->structure, GTK_POS_RIGHT, 1, 1);
 
   g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->eye), TRUE);
   gtk_grid_attach_next_to(GTK_GRID(grid), g->eye, g->clean, GTK_POS_RIGHT, 1, 1);
 
 
