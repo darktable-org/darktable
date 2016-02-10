@@ -369,9 +369,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   const float u = width;
   const float v = height;
 
-  // inverted convention of rotation angle. only used for user convenience
-  // so that right shifting the slider intuitively produces a clockwise image rotation
-  const float phi = (-angle / 180.0f) * M_PI;
+  const float phi = M_PI * angle / 180.0f;
   const float cosi = cos(phi);
   const float sini = sin(phi);
 
@@ -994,7 +992,7 @@ static int fact(const int n)
 // note: the actual percentage of outliers removed in the final run will be lower because we
 // will look for the best quality model with the optimized epsilon and quality also
 // encloses the number of good lines
-static void ransac(const dt_iop_ashift_line_t const* lines, int *index_set, int *inout_set,
+static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout_set,
                   const int set_count, const float total_weight, const int xmin, const int xmax,
                   const int ymin, const int ymax)
 {
