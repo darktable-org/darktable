@@ -273,6 +273,11 @@ int flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+int operation_tags()
+{
+   return IOP_TAG_DISTORT;
+}
+
 /******************************************************************************/
 /* Code common to op-engine and gui.                                          */
 /******************************************************************************/
@@ -1032,11 +1037,12 @@ static void _get_map_extent (const dt_iop_roi_t *roi_out,
 }
 
 static float complex *create_global_distortion_map (const cairo_rectangle_int_t *map_extent,
-                                                    GList *interpolated)
+                                                    GList *interpolated,
+                                                    gboolean inverted)
 {
   // allocate distortion map big enough to contain all paths
   const int mapsize = map_extent->width * map_extent->height;
-  float complex * const map = dt_alloc_align (16, mapsize * sizeof (float complex));
+  float complex * map = dt_alloc_align (16, mapsize * sizeof (float complex));
   memset (map, 0, mapsize * sizeof (float complex));
 
   // build map
@@ -1049,6 +1055,61 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
     add_to_global_distortion_map (map, map_extent, warp, stamp, &r);
     free ((void *) stamp);
   }
+
+  if (inverted)
+  {
+    float complex * const imap = dt_alloc_align (16, mapsize * sizeof (float complex));
+    memset (imap, 0, mapsize * sizeof (float complex));
+
+    // copy map into imap (inverted map).
+    // imap [ n + dx(map[n]) , n + dy(map[n]) ] = -map[n]
+
+    #pragma omp parallel for schedule (static) default (shared)
+
+    for (int y = 0; y <  map_extent->height; y++)
+    {
+      const float complex *row = map + y * map_extent->width;
+      for (int x = 0; x < map_extent->width; x++)
+      {
+        const float complex d = *(row + x);
+        // compute new position (nx,ny) given the displacement d
+        const int nx = x + (int)creal(d);
+        const int ny = y + (int)cimag(d);
+
+        // if the point falls into the extent, set it
+        if (nx>0 && nx<map_extent->width && ny>0 && ny<map_extent->height)
+          imap[nx + ny * map_extent->width] = -d;
+      }
+    }
+
+    dt_free_align ((void *) map);
+
+    // now just do a pass to avoid gap with a displacement of zero, note that we do not need high
+    // precision here as the inverted distortion mask is only used to compute a final displacement
+    // of points.
+
+    #pragma omp parallel for schedule (dynamic) default (shared)
+
+    for (int y = 0; y <  map_extent->height; y++)
+    {
+      float complex *row = imap + y * map_extent->width;
+      float complex last[2] = { 0, 0 };
+      for (int x = 0; x < map_extent->width / 2 + 1; x++)
+      {
+        float complex *cl = row + x;
+        float complex *cr = row + map_extent->width - x;
+        if (x!=0)
+        {
+          if (*cl == 0) *cl = last[0];
+          if (*cr == 0) *cr = last[1];
+        }
+        last[0] = *cl; last[1] = *cr;
+      }
+    }
+
+    map = imap;
+  }
+
   return map;
 }
 
@@ -1068,7 +1129,7 @@ static float complex *build_global_distortion_map (struct dt_iop_module_t *modul
 
   _get_map_extent (roi_out, interpolated, map_extent);
 
-  float complex *map = create_global_distortion_map(map_extent, interpolated);
+  float complex *map = create_global_distortion_map(map_extent, interpolated, FALSE);
 
   g_list_free_full (interpolated, free);
   return map;
@@ -1137,6 +1198,75 @@ void modify_roi_in (struct dt_iop_module_t *module,
   // cleanup
   cairo_region_destroy (roi_in_region);
   g_list_free_full (interpolated, free);
+}
+
+static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count, gboolean inverted)
+{
+  const float scale = piece->iscale;
+
+  // compute the extent of all points (all computations are done in RAW coordinate)
+  float xmin=9999999, xmax=0, ymin=9999999, ymax=0;
+
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    const float x = points[i] * scale;
+    const float y = points[i + 1] * scale;
+    if (xmin > x) xmin = x;
+    if (ymin > y) ymin = y;
+    if (xmax < x) xmax = x;
+    if (ymax < y) ymax = y;
+  }
+
+  cairo_rectangle_int_t extent = { .x = (int)(xmin - .5), .y = (int)(ymin - .5),
+                                   .width = (int)(xmax - xmin + 2.5), .height = (int)(ymax - ymin + 2.5) };
+
+  if (extent.width != 0 && extent.height != 0)
+  {
+    // create the distortion map for this extent
+
+    GList *interpolated = interpolate_paths ((dt_iop_liquify_params_t *)piece->data);
+
+    // we need to adjust the extent to be the union enclosing all the points (currently in extent) and
+    // the warps that are in (possibly partly) in this same region.
+
+    cairo_region_t *roi_in_region = cairo_region_create_rectangle (&extent);
+    dt_iop_roi_t roi_in = { .x = extent.x, .y = extent.y, .width = extent.width, .height = extent.height };
+    _get_map_extent (&roi_in, interpolated, &extent);
+    cairo_region_union_rectangle (roi_in_region, &extent);
+    cairo_region_get_extents (roi_in_region, &extent);
+    cairo_region_destroy (roi_in_region);
+
+    float complex *map = create_global_distortion_map (&extent, interpolated, inverted);
+
+    if (map == NULL) return 0;
+
+    // apply distortion to all points (this is a simple displacement given by a vector at this same point in the map)
+    for(size_t i = 0; i < points_count; i++)
+    {
+      float *px = &points[i*2];
+      float *py = &points[i*2+1];
+      const float x = *px * scale;
+      const float y = *py * scale;
+      const int map_offset = ((int)(x - 0.5) - extent.x) + ((int)(y - 0.5) - extent.y) * extent.width;
+      const float complex dist = map[map_offset] / scale;
+      *px += creal(dist);
+      *py += cimag(dist);
+    }
+
+    dt_free_align ((void *) map);
+  }
+
+  return 1;
+}
+
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  return _distort_xtransform(self, piece, points, points_count, TRUE);
+}
+
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  return _distort_xtransform(self, piece, points, points_count, FALSE);
 }
 
 void process (struct dt_iop_module_t *module,
