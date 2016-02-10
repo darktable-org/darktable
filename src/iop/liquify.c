@@ -1031,6 +1031,27 @@ static void _get_map_extent (const dt_iop_roi_t *roi_out,
   cairo_region_destroy (roi_out_region);
 }
 
+static float complex *create_global_distortion_map (const cairo_rectangle_int_t *map_extent,
+                                                    GList *interpolated)
+{
+  // allocate distortion map big enough to contain all paths
+  const int mapsize = map_extent->width * map_extent->height;
+  float complex * const map = dt_alloc_align (16, mapsize * sizeof (float complex));
+  memset (map, 0, mapsize * sizeof (float complex));
+
+  // build map
+  for (GList *i = interpolated; i != NULL; i = i->next)
+  {
+    const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
+    float complex *stamp = NULL;
+    cairo_rectangle_int_t r;
+    build_round_stamp (&stamp, &r, warp);
+    add_to_global_distortion_map (map, map_extent, warp, stamp, &r);
+    free ((void *) stamp);
+  }
+  return map;
+}
+
 static float complex *build_global_distortion_map (struct dt_iop_module_t *module,
                                                    const dt_dev_pixelpipe_iop_t *piece,
                                                    const dt_iop_roi_t *roi_in,
@@ -1047,21 +1068,7 @@ static float complex *build_global_distortion_map (struct dt_iop_module_t *modul
 
   _get_map_extent (roi_out, interpolated, map_extent);
 
-  // allocate distortion map big enough to contain all paths
-  const int mapsize = map_extent->width * map_extent->height;
-  float complex * const map = dt_alloc_align (16, mapsize * sizeof (float complex));
-  memset (map, 0, mapsize * sizeof (float complex));
-
-  // build map
-  for (GList *i = interpolated; i != NULL; i = i->next)
-  {
-    const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
-    float complex *stamp = NULL;
-    cairo_rectangle_int_t r;
-    build_round_stamp (&stamp, &r, warp);
-    add_to_global_distortion_map (map, map_extent, warp, stamp, &r);
-    free ((void *) stamp);
-  }
+  float complex *map = create_global_distortion_map(map_extent, interpolated);
 
   g_list_free_full (interpolated, free);
   return map;
