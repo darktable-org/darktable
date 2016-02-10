@@ -1099,8 +1099,8 @@ void modify_roi_in (struct dt_iop_module_t *module,
   cairo_rectangle_int_t pipe_rect = {
     0,
     0,
-    piece->pipe->iwidth  * roi_in->scale, // FIXME: why is this -1
-    piece->pipe->iheight * roi_in->scale  // in spots.c ?
+    piece->pipe->iwidth  * roi_in->scale,
+    piece->pipe->iheight * roi_in->scale
   };
   cairo_rectangle_int_t roi_in_rect = {
     roi_in->x,
