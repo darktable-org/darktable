@@ -474,7 +474,6 @@ typedef struct {
   dt_dev_pixelpipe_t *pipe;
   float from_scale;
   float to_scale;
-  gboolean direction; ///< to raw == false
   int pmin;
   int pmax;
 } distort_params_t;
@@ -538,12 +537,7 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
     }
   }
 
-  // transform points
-
-  if (params->direction)
-    dt_dev_distort_transform_plus     (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
-  else
-    dt_dev_distort_backtransform_plus (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
+  dt_dev_distort_transform_plus (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
 
   // record back the transformed points
 
@@ -585,7 +579,7 @@ static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
                                         const float roi_in_scale,
                                         dt_iop_liquify_params_t *p)
 {
-  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, TRUE, 0, module->priority };
+  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, 0, module->priority - 1 };
   _distort_paths (&params, p);
 }
 
@@ -2426,7 +2420,7 @@ void gui_post_expose (struct dt_iop_module_t *module,
 
   // distort all points
   dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
-  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, TRUE, 0, 99999 };
+  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, module->priority + 1, 9999999 };
   _distort_paths (&d_params, &copy_params);
   dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
 
@@ -2488,7 +2482,8 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   float wd = darktable.develop->preview_pipe->backbuf_width;
   float ht = darktable.develop->preview_pipe->backbuf_height;
   float pts[2] = { pzx * wd, pzy * ht };
-  dt_dev_distort_backtransform(darktable.develop, pts, 1);
+  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
+                                    module->priority + 1, 9999999, pts, 1);
   float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
