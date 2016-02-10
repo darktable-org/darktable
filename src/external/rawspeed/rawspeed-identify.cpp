@@ -33,11 +33,6 @@ extern "C" {
 #include <unistd.h>
 }
 
-void set_datadir(const char *datadir)
-{
-
-}
-
 // define this function, it is only declared in rawspeed:
 int rawspeed_get_number_of_processor_cores()
 {
