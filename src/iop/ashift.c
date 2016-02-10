@@ -76,6 +76,7 @@
 #define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
 #define NMS_ITERATIONS 200                  // maximum number of iterations for Nelder-Mead simplex
 
+#undef ASHIFT_DEBUG
 
 DT_MODULE_INTROSPECTION(1, dt_iop_ashift_params_t)
 
@@ -130,9 +131,10 @@ typedef enum dt_iop_ashift_linecolor_t
 
 typedef enum dt_iop_ashift_fitaxis_t
 {
-  ASHIFT_FIT_VERTICALLY = 0,
-  ASHIFT_FIT_HORIZONTALLY = 1,
-  ASHIFT_FIT_BOTH = 2
+  ASHIFT_FIT_NONE = 0,
+  ASHIFT_FIT_VERTICALLY = 1,
+  ASHIFT_FIT_HORIZONTALLY = 2,
+  ASHIFT_FIT_BOTH = 3
 } dt_iop_ashift_fitaxis_t;
 
 typedef enum dt_iop_ashift_nmsresult_t
@@ -223,6 +225,7 @@ typedef struct dt_iop_ashift_gui_data_t
   int buf_y_off;
   float buf_scale;
   uint64_t grid_hash;
+  dt_iop_ashift_fitaxis_t lastfit;
   dt_pthread_mutex_t lock;
 } dt_iop_ashift_gui_data_t;
 
@@ -822,7 +825,7 @@ static int line_detect(const float *in, const int width, const int height, const
       lct++;
     }
 
-#if 0
+#ifdef ASHIFT_DEBUG
     printf("%d lines (vertical %d, horizontal %d, not relevant %d)\n", lines_count, vertical_count,
            horizontal_count, lct - vertical_count - horizontal_count);
     float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
@@ -1121,7 +1124,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
       }
     }
 
-#if 0
+#ifdef ASHIFT_DEBUG
     // report some statistics
     int count = 0, lastcount = 0;
     for(int n = 0; n < set_count; n++) count += best_inout[n];
@@ -1307,12 +1310,6 @@ static double model_fitness(double *params, void *data)
   homography((float *)homograph, rotation, lensshift_v, lensshift_h, width,
              height, ASHIFT_HOMOGRAPH_FORWARD);
 
-#if 0
-  printf("homograph ");
-  for(int i = 0; i < 9; i++) printf("%.6f ", ((float *)homograph)[i]);
-  printf("\n");
-#endif
-
   // accounting variables
   double sumsq_v = 0.0;
   double sumsq_h = 0.0;
@@ -1358,8 +1355,8 @@ static double model_fitness(double *params, void *data)
 
   double sum = sqrt(1.0 - (1.0 - sumsq_v) * (1.0 - sumsq_h)) * 1.0e6;
 
-#if 0
-  printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f -> lines %d, sum %10f\n",
+#ifdef ASHIFT_DEBUG
+  printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f -> lines %d, quality %10f\n",
          rotation, lensshift_v, lensshift_h, count, sum);
 #endif
 
@@ -1467,15 +1464,15 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
       p->lensshift_h = ilogit(params[2], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
       break;
   }
-#if 0
-  printf("params after optimization: rotation %f, lensshift_v %f, lensshift_h %f\n",
-         p->rotation, p->lensshift_v, p->lensshift_h);
+#ifdef ASHIFT_DEBUG
+  printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f\n",
+         iter, p->rotation, p->lensshift_v, p->lensshift_h);
 #endif
 
   return NMS_SUCCESS;
 }
 
-#if 0
+#ifdef ASHIFT_DEBUG
 // only used in development phase. call model_fitness() with current parameters and
 // print some useful information
 static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ashift_fitaxis_t dir)
@@ -2265,7 +2262,10 @@ static void rotation_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->rotation = dt_bauhaus_slider_get(slider);
-  //model_probe(self, p, ASHIFT_FIT_VERTICALLY);
+#ifdef ASHIFT_DEBUG
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  model_probe(self, p, g->lastfit);
+#endif
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2275,7 +2275,10 @@ static void lensshift_v_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->lensshift_v = dt_bauhaus_slider_get(slider);
-  //model_probe(self, p, ASHIFT_FIT_VERTICALLY);
+#ifdef ASHIFT_DEBUG
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  model_probe(self, p, g->lastfit);
+#endif
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2285,7 +2288,10 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->lensshift_h = dt_bauhaus_slider_get(slider);
-  //model_probe(self, p, ASHIFT_FIT_VERTICALLY);
+#ifdef ASHIFT_DEBUG
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  model_probe(self, p, g->lastfit);
+#endif
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2304,6 +2310,7 @@ static void fit_v_button_clicked(GtkButton *button, gpointer user_data)
     dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
     darktable.gui->reset = 0;
   }
+  g->lastfit = ASHIFT_FIT_VERTICALLY;
 
   // hack to guarantee enable module on button click
   if(!self->enabled) p->toggle ^= 1;
@@ -2326,6 +2333,7 @@ static void fit_h_button_clicked(GtkButton *button, gpointer user_data)
     dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
     darktable.gui->reset = 0;
   }
+  g->lastfit = ASHIFT_FIT_HORIZONTALLY;
 
   // hack to guarantee enable module on button click
   if(!self->enabled) p->toggle ^= 1;
@@ -2348,6 +2356,7 @@ static void fit_both_button_clicked(GtkButton *button, gpointer user_data)
     dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
     darktable.gui->reset = 0;
   }
+  g->lastfit = ASHIFT_FIT_BOTH;
   
   // hack to guarantee enable module on button click
   if(!self->enabled) p->toggle ^= 1;
@@ -2437,6 +2446,7 @@ void gui_update(struct dt_iop_module_t *self)
   g->buf_height = 0;
   g->buf_scale = 1.0f;
   g->isflipped = -1;
+  g->lastfit = ASHIFT_FIT_NONE;
   dt_pthread_mutex_unlock(&g->lock);
 
   g->fitting = 0;
@@ -2586,6 +2596,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->buf_height = 0;
   g->buf_scale = 1.0f;
   g->isflipped = -1;
+  g->lastfit = ASHIFT_FIT_NONE;
   dt_pthread_mutex_unlock(&g->lock);
 
   g->fitting = 0;
