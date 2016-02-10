@@ -174,9 +174,8 @@ RawImage ArwDecoder::decodeRawInternal() {
   if (!mFile->isValid(off))
     ThrowRDE("Sony ARW decoder: Data offset after EOF, file probably truncated");
 
-  if (!mFile->isValid(off + c2))
+  if (!mFile->isValid(off, c2))
     c2 = mFile->getSize() - off;
-
 
   ByteStream input(mFile, off, c2);
  

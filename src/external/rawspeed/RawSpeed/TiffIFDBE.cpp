@@ -43,7 +43,7 @@ TiffIFDBE::TiffIFDBE(FileMap* f, uint32 offset) {
 
     // If the space for the entry is no longer valid stop reading any more as
     // the file is broken or truncated
-    if (!mFile->isValid(entry_offset+11))
+    if (!mFile->isValid(entry_offset, 12))
       break;
 
     TiffEntryBE *t = NULL;

@@ -201,7 +201,7 @@ RawImage DngDecoder::decodeRawInternal() {
 
           offY += yPerSlice;
 
-          if (mFile->isValid(slice.offset + slice.count)) // Only decode if size is valid
+          if (mFile->isValid(slice.offset, slice.count)) // Only decode if size is valid
             slices.push_back(slice);
         }
 
@@ -292,7 +292,7 @@ RawImage DngDecoder::decodeRawInternal() {
             e.mUseBigtable = yPerSlice * mRaw->dim.y > 1024 * 1024;
             offY += yPerSlice;
 
-            if (mFile->isValid(e.byteOffset + e.byteCount)) // Only decode if size is valid
+            if (mFile->isValid(e.byteOffset, e.byteCount)) // Only decode if size is valid
               slices.addSlice(e);
           }
         }

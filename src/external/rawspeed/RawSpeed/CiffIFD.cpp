@@ -40,7 +40,7 @@ CiffIFD::CiffIFD(FileMap* f, uint32 start, uint32 end) {
 
     // If the space for the entry is no longer valid stop reading any more as
     // the file is broken or truncated
-    if (!mFile->isValid(entry_offset+9))
+    if (!mFile->isValid(entry_offset, 10))
       break;
 
     CiffEntry *t = NULL;

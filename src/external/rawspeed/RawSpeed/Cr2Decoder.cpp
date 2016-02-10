@@ -153,7 +153,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
         if (slices[0].w != slice.w)
           ThrowRDE("CR2 Decoder: Slice width does not match.");
 
-      if (mFile->isValid(slice.offset + slice.count)) // Only decode if size is valid
+      if (mFile->isValid(slice.offset, slice.count)) // Only decode if size is valid
         slices.push_back(slice);
       completeH += slice.h;
     }

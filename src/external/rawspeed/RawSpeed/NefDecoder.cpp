@@ -81,7 +81,7 @@ RawImage NefDecoder::decodeRawInternal() {
   if (counts->count != offsets->count) {
     ThrowRDE("NEF Decoder: Byte count number does not match strip size: count:%u, strips:%u ", counts->count, offsets->count);
   }
-  if (!mFile->isValid(offsets->getInt() + counts->getInt()))
+  if (!mFile->isValid(offsets->getInt(), counts->getInt()))
     ThrowRDE("NEF Decoder: Invalid strip byte count. File probably truncated.");
 
 
@@ -204,7 +204,7 @@ void NefDecoder::DecodeUncompressed() {
 
     offY = MIN(height, offY + yPerSlice);
 
-    if (mFile->isValid(slice.offset + slice.count)) // Only decode if size is valid
+    if (mFile->isValid(slice.offset, slice.count)) // Only decode if size is valid
       slices.push_back(slice);
   }
 

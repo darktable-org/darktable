@@ -107,7 +107,7 @@ LJpegDecompressor::~LJpegDecompressor(void) {
 }
 
 void LJpegDecompressor::getSOF(SOFInfo* sof, uint32 offset, uint32 size) {
-  if (!mFile->isValid(offset + size - 1))
+  if (!mFile->isValid(offset, size))
     ThrowRDE("LJpegDecompressor::getSOF: Start offset plus size is longer than file. Truncated file.");
   try {
     Endianness host_endian = getHostEndianness();
@@ -137,7 +137,7 @@ void LJpegDecompressor::getSOF(SOFInfo* sof, uint32 offset, uint32 size) {
 }
 
 void LJpegDecompressor::startDecoder(uint32 offset, uint32 size, uint32 offsetX, uint32 offsetY) {
-  if (!mFile->isValid(offset + size - 1))
+  if (!mFile->isValid(offset, size))
     ThrowRDE("LJpegDecompressor::startDecoder: Start offset plus size is longer than file. Truncated file.");
   if ((int)offsetX >= mRaw->dim.x)
     ThrowRDE("LJpegDecompressor::startDecoder: X offset outside of image");

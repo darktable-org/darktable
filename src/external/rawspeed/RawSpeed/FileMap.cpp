@@ -77,15 +77,25 @@ void FileMap::corrupt(int errors) {
   }
 }
 
+bool FileMap::isValid(uint32 offset, uint32 count)
+{
+  uint64 totaloffset = (uint64)offset + (uint64)count - 1;
+  return (isValid(offset) && totaloffset < size);
+}
+
 const uchar8* FileMap::getData( uint32 offset, uint32 count )
 {
-  uint64 totaloffset = (uint64)offset + (uint64)count;
-  uint64 totalsize = (uint64)size + FILEMAP_MARGIN;
-
   if (count == 0)
     throw IOException("FileMap: Trying to get a zero sized buffer?!");
+
+  uint64 totaloffset = (uint64)offset + (uint64)count - 1;
+  uint64 totalsize = (uint64)size + FILEMAP_MARGIN;
+
+  // Give out data up to FILEMAP_MARGIN more bytes than are really in the
+  // file as that is useful for some of the BitPump code
   if (!isValid(offset) || totaloffset > totalsize)
     throw IOException("FileMap: Attempting to read file out of bounds.");
   return &data[offset];
 }
+
 } // namespace RawSpeed

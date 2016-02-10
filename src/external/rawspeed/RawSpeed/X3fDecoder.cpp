@@ -107,7 +107,7 @@ boolean X3fDecoder::readName() {
   for (; img !=  mImages.end(); img++) {
     X3fImage cimg = *img;
     if (cimg.type == 2 && cimg.format == 0x12 && cimg.dataSize > 100) {
-      if (!mFile->isValid(cimg.dataOffset + cimg.dataSize - 1)) {
+      if (!mFile->isValid(cimg.dataOffset, cimg.dataSize )) {
         return false;
       }
       ByteStream i(mFile, cimg.dataOffset, cimg.dataSize);

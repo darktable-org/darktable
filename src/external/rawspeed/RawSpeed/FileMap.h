@@ -57,6 +57,7 @@ public:
   uchar8* getDataWrt(uint32 offset, uint32 count) {return (uchar8 *)getData(offset,count);}
   uint32 getSize() {return size;}
   bool isValid(uint32 offset) {return offset<size;}
+  bool isValid(uint32 offset, uint32 count);
   FileMap* clone();
   /* For testing purposes */
   void corrupt(int errors);

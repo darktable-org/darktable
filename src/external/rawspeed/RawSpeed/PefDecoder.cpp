@@ -62,7 +62,7 @@ RawImage PefDecoder::decodeRawInternal() {
   if (counts->count != offsets->count) {
     ThrowRDE("PEF Decoder: Byte count number does not match strip size: count:%u, strips:%u ", counts->count, offsets->count);
   }
-  if (!mFile->isValid(offsets->getInt() + counts->getInt()))
+  if (!mFile->isValid(offsets->getInt(), counts->getInt()))
     ThrowRDE("PEF Decoder: Truncated file.");
 
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();

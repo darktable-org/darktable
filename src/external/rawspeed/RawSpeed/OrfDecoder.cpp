@@ -63,7 +63,7 @@ RawImage OrfDecoder::decodeRawInternal() {
   for (uint32 i=0; i < counts->count; i++)
     size += sizes[i];
 
-  if (!mFile->isValid(off + size))
+  if (!mFile->isValid(off, size))
     ThrowRDE("ORF Decoder: Truncated file");
 
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();

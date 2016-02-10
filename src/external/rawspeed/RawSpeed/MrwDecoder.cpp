@@ -88,22 +88,10 @@ void MrwDecoder::parseHeader() {
 }
 
 RawImage MrwDecoder::decodeRawInternal() {
-  uint32 imgsize;
-
   mRaw->dim = iPoint2D(raw_width, raw_height);
   mRaw->createData();
 
-  if (packed)
-    imgsize = raw_width * raw_height * 3 / 2;
-  else
-    imgsize = raw_width * raw_height * 2;
-
-  if (!mFile->isValid(data_offset))
-    ThrowRDE("MRW decoder: Data offset after EOF, file probably truncated");
-  if (!mFile->isValid(data_offset+imgsize-1))
-    ThrowRDE("MRW decoder: Image end after EOF, file probably truncated");
-
-  ByteStream input(mFile, data_offset, imgsize);
+  ByteStream input(mFile, data_offset);
  
   try {
     if (packed)
