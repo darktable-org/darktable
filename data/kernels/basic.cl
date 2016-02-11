@@ -1157,6 +1157,246 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
 }
 
 
+
+/* kernel for the ashift module: bilinear interpolation */
+kernel void
+ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
+                const float in_scale, const float out_scale, global float *homograph)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float pin[3], pout[3];
+
+  // convert output pixel coordinates to original image coordinates
+  pout[0] = roi_out.x + x;
+  pout[1] = roi_out.y + y;
+  pout[0] /= out_scale;
+  pout[1] /= out_scale;
+  pout[2] = 1.0f;
+
+  // apply homograph
+  for(int i = 0; i < 3; i++)
+  {
+    pin[i] = 0.0f;
+    for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
+  }
+ 
+  // convert to input pixel coordinates
+  pin[0] /= pin[2];
+  pin[1] /= pin[2];
+  pin[0] *= in_scale;
+  pin[1] *= in_scale;
+  pin[0] -= roi_in.x;
+  pin[1] -= roi_in.y;
+
+  // get output values by interpolation from input image using fast hardware bilinear interpolation
+  float rx = pin[0];
+  float ry = pin[1];
+
+  float4 pixel = (rx >= 0 && ry >= 0 && rx <= iwidth - 1 && ry <= iheight - 1) ? read_imagef(in, samplerf, (float2)(rx, ry)) : (float4)0.0f;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+/* kernel for the ashift module: bicubic interpolation */
+kernel void
+ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
+                const float in_scale, const float out_scale, global float *homograph)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  const int kwidth = 2;
+
+  if(x >= width || y >= height) return;
+
+  float pin[3], pout[3];
+
+  // convert output pixel coordinates to original image coordinates
+  pout[0] = roi_out.x + x;
+  pout[1] = roi_out.y + y;
+  pout[0] /= out_scale;
+  pout[1] /= out_scale;
+  pout[2] = 1.0f;
+
+  // apply homograph
+  for(int i = 0; i < 3; i++)
+  {
+    pin[i] = 0.0f;
+    for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
+  }
+ 
+  // convert to input pixel coordinates
+  pin[0] /= pin[2];
+  pin[1] /= pin[2];
+  pin[0] *= in_scale;
+  pin[1] *= in_scale;
+  pin[0] -= roi_in.x;
+  pin[1] -= roi_in.y;
+
+  // get output values by interpolation from input image
+  float rx = pin[0];
+  float ry = pin[1];
+  int tx = rx;
+  int ty = ry;
+
+  float4 pixel = (float4)0.0f;
+  float weight = 0.0f;
+  for(int jj = 1 - kwidth; jj <= kwidth; jj++)
+    for(int ii= 1 - kwidth; ii <= kwidth; ii++)
+  {
+    const int i = tx + ii;
+    const int j = ty + jj;
+
+    float wx = interpolation_func_bicubic((float)i - rx);
+    float wy = interpolation_func_bicubic((float)j - ry);
+    float w = wx * wy;
+
+    pixel += read_imagef(in, samplerc, (int2)(i, j)) * w;
+    weight += w;
+  }
+  
+  pixel = weight > 0.0f ? pixel/weight : (float4)0.0f;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
+/* kernel for the ashift module: lanczos2 interpolation */
+kernel void
+ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
+                const float in_scale, const float out_scale, global float *homograph)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  const int kwidth = 2;
+
+  if(x >= width || y >= height) return;
+
+  float pin[3], pout[3];
+
+  // convert output pixel coordinates to original image coordinates
+  pout[0] = roi_out.x + x;
+  pout[1] = roi_out.y + y;
+  pout[0] /= out_scale;
+  pout[1] /= out_scale;
+  pout[2] = 1.0f;
+
+  // apply homograph
+  for(int i = 0; i < 3; i++)
+  {
+    pin[i] = 0.0f;
+    for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
+  }
+ 
+  // convert to input pixel coordinates
+  pin[0] /= pin[2];
+  pin[1] /= pin[2];
+  pin[0] *= in_scale;
+  pin[1] *= in_scale;
+  pin[0] -= roi_in.x;
+  pin[1] -= roi_in.y;
+
+  // get output values by interpolation from input image
+  float rx = pin[0];
+  float ry = pin[1];
+  int tx = rx;
+  int ty = ry;
+
+  float4 pixel = (float4)0.0f;
+  float weight = 0.0f;
+  for(int jj = 1 - kwidth; jj <= kwidth; jj++)
+    for(int ii= 1 - kwidth; ii <= kwidth; ii++)
+  {
+    const int i = tx + ii;
+    const int j = ty + jj;
+
+    float wx = interpolation_func_lanczos(2, (float)i - rx);
+    float wy = interpolation_func_lanczos(2, (float)j - ry);
+    float w = wx * wy;
+
+    pixel += read_imagef(in, samplerc, (int2)(i, j)) * w;
+    weight += w;
+  }
+  
+  pixel = weight > 0.0f ? pixel/weight : (float4)0.0f;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
+/* kernels for the ashift module: lanczos3 interpolation */
+kernel void
+ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
+                const float in_scale, const float out_scale, global float *homograph)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  const int kwidth = 3;
+
+  if(x >= width || y >= height) return;
+
+  float pin[3], pout[3];
+
+  // convert output pixel coordinates to original image coordinates
+  pout[0] = roi_out.x + x;
+  pout[1] = roi_out.y + y;
+  pout[0] /= out_scale;
+  pout[1] /= out_scale;
+  pout[2] = 1.0f;
+
+  // apply homograph
+  for(int i = 0; i < 3; i++)
+  {
+    pin[i] = 0.0f;
+    for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
+  }
+ 
+  // convert to input pixel coordinates
+  pin[0] /= pin[2];
+  pin[1] /= pin[2];
+  pin[0] *= in_scale;
+  pin[1] *= in_scale;
+  pin[0] -= roi_in.x;
+  pin[1] -= roi_in.y;
+
+  // get output values by interpolation from input image
+  float rx = pin[0];
+  float ry = pin[1];
+  int tx = rx;
+  int ty = ry;
+
+  float4 pixel = (float4)0.0f;
+  float weight = 0.0f;
+  for(int jj = 1 - kwidth; jj <= kwidth; jj++)
+    for(int ii= 1 - kwidth; ii <= kwidth; ii++)
+  {
+    const int i = tx + ii;
+    const int j = ty + jj;
+
+    float wx = interpolation_func_lanczos(3, (float)i - rx);
+    float wy = interpolation_func_lanczos(3, (float)j - ry);
+    float w = wx * wy;
+
+    pixel += read_imagef(in, samplerc, (int2)(i, j)) * w;
+    weight += w;
+  }
+  
+  pixel = weight > 0.0f ? pixel/weight : (float4)0.0f;
+
+  write_imagef (out, (int2)(x, y), pixel); 
+}
+
+
 kernel void
 lens_vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float4 *pi)
 {
