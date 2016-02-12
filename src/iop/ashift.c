@@ -2355,6 +2355,7 @@ static void fit_v_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_request_focus(self);
+  dt_dev_reprocess_all(self->dev);
   if(do_fit(self, p, ASHIFT_FIT_VERTICALLY))
   {
     darktable.gui->reset = 1;
@@ -2378,6 +2379,7 @@ static void fit_h_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_request_focus(self);
+  dt_dev_reprocess_all(self->dev);
   if(do_fit(self, p, ASHIFT_FIT_HORIZONTALLY))
   {
     darktable.gui->reset = 1;
@@ -2401,6 +2403,7 @@ static void fit_both_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_request_focus(self);
+  dt_dev_reprocess_all(self->dev);
   if(do_fit(self, p, ASHIFT_FIT_BOTH))
   {
     darktable.gui->reset = 1;
@@ -2422,11 +2425,11 @@ static void structure_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_request_focus(self);
+  dt_dev_reprocess_all(self->dev);
   (void)do_get_structure(self, p);
   // hack to guarantee enable module on button click
   if(!self->enabled) p->toggle ^= 1;
-  dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
