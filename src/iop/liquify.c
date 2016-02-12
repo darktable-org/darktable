@@ -1249,6 +1249,7 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     cairo_region_destroy (roi_in_region);
 
     float complex *map = create_global_distortion_map (&extent, interpolated, inverted);
+    g_list_free_full (interpolated, free);
 
     if (map == NULL) return 0;
 
