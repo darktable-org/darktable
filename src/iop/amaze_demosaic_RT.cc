@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdbool.h>
+
 static __inline float clampnan(const float x, const float m, const float M)
 {
   float r;
