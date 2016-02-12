@@ -831,7 +831,9 @@ static void build_round_stamp (float complex **pstamp,
                                  * stamp_extent->width * stamp_extent->height);
 
   // clear memory
+  #ifdef _OPENMP
   #pragma omp parallel for schedule (static) default (shared)
+  #endif
 
   for (int i = 0; i < stamp_extent->height; i++)
   {
@@ -849,7 +851,9 @@ static void build_round_stamp (float complex **pstamp,
   // The expensive operation here is hypotf ().  By dividing the
   // circle in octants and doing only the inside we have to calculate
   // hypotf only for PI / 32 = 0.098 of the stamp area.
+  #ifdef _OPENMP
   #pragma omp parallel for schedule (dynamic, 1) default (shared)
+  #endif
 
   for (int y = 0; y <= iradius; y++)
   {
@@ -936,7 +940,9 @@ static void add_to_global_distortion_map (float complex *global_map,
   cairo_region_get_extents (mmreg, &cmmext);
   free (mmreg);
 
+  #ifdef _OPENMP
   #pragma omp parallel for schedule (static) default (shared)
+  #endif
 
   for (int y = cmmext.y; y < cmmext.y + cmmext.height; y++)
   {
@@ -973,7 +979,9 @@ static void apply_global_distortion_map (struct dt_iop_module_t *module,
   const struct dt_interpolation * const interpolation =
     dt_interpolation_new (DT_INTERPOLATION_USERPREF);
 
+  #ifdef _OPENMP
   #pragma omp parallel for schedule (static) default (shared)
+  #endif
 
   for (int y = extent->y; y < extent->y + extent->height; y++)
   {
@@ -1064,7 +1072,9 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
     // copy map into imap (inverted map).
     // imap [ n + dx(map[n]) , n + dy(map[n]) ] = -map[n]
 
+    #ifdef _OPENMP
     #pragma omp parallel for schedule (static) default (shared)
+    #endif
 
     for (int y = 0; y <  map_extent->height; y++)
     {
@@ -1088,7 +1098,9 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
     // precision here as the inverted distortion mask is only used to compute a final displacement
     // of points.
 
+    #ifdef _OPENMP
     #pragma omp parallel for schedule (dynamic) default (shared)
+    #endif
 
     for (int y = 0; y <  map_extent->height; y++)
     {
@@ -1281,7 +1293,9 @@ void process (struct dt_iop_module_t *module,
   const int ch = piece->colors;
   assert (ch == 4);
 
+  #ifdef _OPENMP
   #pragma omp parallel for schedule (static) default (shared)
+  #endif
   for (int i = 0; i < roi_out->height; i++)
   {
     float *destrow = out + (size_t) ch * i * roi_out->width;
