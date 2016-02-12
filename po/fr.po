@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-06 14:57+0100\n"
-"PO-Revision-Date: 2016-02-06 15:09+0100\n"
+"POT-Creation-Date: 2016-02-12 08:34+0100\n"
+"PO-Revision-Date: 2016-02-12 08:50+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 1.8.6\n"
+"X-Generator: Poedit 1.8.7\n"
 
 #: ../build/src/preferences_gen.h:1460
 msgid "GUI options"
@@ -884,36 +884,36 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:777 ../src/develop/lightroom.c:916
+#: ../src/common/collection.c:777 ../src/develop/lightroom.c:926
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:446
 #: ../src/iop/channelmixer.c:458 ../src/iop/colorbalance.c:584
 #: ../src/iop/colorbalance.c:623 ../src/iop/colorbalance.c:662
-#: ../src/iop/temperature.c:1256 ../src/libs/collect.c:954
+#: ../src/iop/temperature.c:1250 ../src/libs/collect.c:954
 #: ../src/libs/collect.c:955 ../src/libs/collect.c:956
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:779 ../src/develop/lightroom.c:918
-#: ../src/iop/temperature.c:1247 ../src/libs/collect.c:958
+#: ../src/common/collection.c:779 ../src/develop/lightroom.c:928
+#: ../src/iop/temperature.c:1241 ../src/libs/collect.c:958
 #: ../src/libs/collect.c:959 ../src/libs/collect.c:960
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:781 ../src/develop/lightroom.c:920
+#: ../src/common/collection.c:781 ../src/develop/lightroom.c:930
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:447
 #: ../src/iop/channelmixer.c:465 ../src/iop/colorbalance.c:593
 #: ../src/iop/colorbalance.c:632 ../src/iop/colorbalance.c:671
-#: ../src/iop/temperature.c:1244 ../src/iop/temperature.c:1257
+#: ../src/iop/temperature.c:1238 ../src/iop/temperature.c:1251
 #: ../src/libs/collect.c:962 ../src/libs/collect.c:963
 #: ../src/libs/collect.c:964
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:783 ../src/develop/lightroom.c:922
+#: ../src/common/collection.c:783 ../src/develop/lightroom.c:932
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:448
 #: ../src/iop/channelmixer.c:471 ../src/iop/colorbalance.c:602
 #: ../src/iop/colorbalance.c:641 ../src/iop/colorbalance.c:680
-#: ../src/iop/temperature.c:1258 ../src/libs/collect.c:966
+#: ../src/iop/temperature.c:1252 ../src/libs/collect.c:966
 #: ../src/libs/collect.c:967 ../src/libs/collect.c:968
 msgid "blue"
 msgstr "bleu"
@@ -1081,7 +1081,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1314
 #: ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
-#: ../src/iop/colorin.c:1224 ../src/iop/demosaic.c:3777
+#: ../src/iop/colorin.c:1224 ../src/iop/demosaic.c:3760
 #: ../src/iop/vignette.c:1139 ../src/libs/history.c:153
 #: ../src/libs/live_view.c:440
 msgid "off"
@@ -2148,7 +2148,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:191
 #: ../src/gui/presets.c:297 ../src/gui/presets.c:643
-#: ../src/iop/temperature.c:1307 ../src/libs/import.c:550 ../src/libs/lib.c:309
+#: ../src/iop/temperature.c:1301 ../src/libs/import.c:550 ../src/libs/lib.c:309
 #: ../src/libs/lib.c:334 ../src/libs/lib.c:1152
 msgid "preset"
 msgstr "pré-réglage"
@@ -2192,36 +2192,35 @@ msgstr "réinitialiser les paramètres"
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/develop/lightroom.c:380
+#: ../src/develop/lightroom.c:388
 msgid "cannot find lightroom XMP!"
 msgstr "impossible de trouver un XMP venant de Lightroom !"
 
-#: ../src/develop/lightroom.c:412 ../src/develop/lightroom.c:434
-#: ../src/develop/lightroom.c:454 ../src/develop/lightroom.c:464
-#: ../src/develop/lightroom.c:481
+#: ../src/develop/lightroom.c:420 ../src/develop/lightroom.c:442
+#: ../src/develop/lightroom.c:462 ../src/develop/lightroom.c:491
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "« %s » n'est pas un XMP de Lightroom !"
 
-#: ../src/develop/lightroom.c:1383 ../src/libs/import.c:570
+#: ../src/develop/lightroom.c:1393 ../src/libs/import.c:570
 msgid "tags"
 msgstr "mots-clés"
 
-#: ../src/develop/lightroom.c:1392 ../src/libs/tools/filter.c:141
+#: ../src/develop/lightroom.c:1402 ../src/libs/tools/filter.c:141
 msgid "rating"
 msgstr "étoile"
 
-#: ../src/develop/lightroom.c:1401 ../src/libs/collect.h:33
+#: ../src/develop/lightroom.c:1411 ../src/libs/collect.h:33
 #: ../src/libs/geotagging.c:43
 msgid "geotagging"
 msgstr "géolocalisation"
 
-#: ../src/develop/lightroom.c:1410 ../src/libs/collect.h:29
+#: ../src/develop/lightroom.c:1420 ../src/libs/collect.h:29
 #: ../src/libs/tools/filter.c:143
 msgid "color label"
 msgstr "labels couleur"
 
-#: ../src/develop/lightroom.c:1416
+#: ../src/develop/lightroom.c:1426
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -4096,6 +4095,121 @@ msgstr "fusion"
 msgid "make effect stronger or weaker"
 msgstr "rend l'effet plus fort ou plus faible"
 
+#: ../src/iop/ashift.c:85
+msgid "perspective correction"
+msgstr "correction de perspective"
+
+#: ../src/iop/ashift.c:268 ../src/iop/watermark.c:253
+msgctxt "accel"
+msgid "rotation"
+msgstr "rotation"
+
+#: ../src/iop/ashift.c:269
+msgctxt "accel"
+msgid "lens shift (v)"
+msgstr "correction d'objectif (v)"
+
+#: ../src/iop/ashift.c:270
+msgctxt "accel"
+msgid "lens shift (h)"
+msgstr "correction d'objectif (h)"
+
+#: ../src/iop/ashift.c:1567
+msgid "data pending - please repeat"
+msgstr "données en attente, merci de recommencer"
+
+#: ../src/iop/ashift.c:1573
+msgid "could not detect structural data in image"
+msgstr "impossible de détecter les structures dans l'image"
+
+#. in fact currently remove_outliers() always returns TRUE. The log
+#. message here is implemented for future extensions
+#: ../src/iop/ashift.c:1581
+msgid "could not run outlier removal"
+msgstr ""
+
+#: ../src/iop/ashift.c:1630
+msgid "not enough structure for automatic correction"
+msgstr "pas assez de structure pour corriger automatiquement"
+
+#: ../src/iop/ashift.c:1634
+msgid "automatic correction failed, please correct manually"
+msgstr "correction automatique impossible, merci de corriger manuellement"
+
+#: ../src/iop/ashift.c:2503 ../src/iop/ashift.c:2504 ../src/iop/ashift.c:2557
+#: ../src/iop/ashift.c:2558
+#, c-format
+msgid "lens shift (%s)"
+msgstr "correction d'objectif (%s)"
+
+#: ../src/iop/ashift.c:2503 ../src/iop/ashift.c:2504 ../src/iop/ashift.c:2557
+#: ../src/iop/ashift.c:2558 ../src/iop/clipping.c:1565
+#: ../src/iop/clipping.c:1854 ../src/iop/clipping.c:1875
+msgid "horizontal"
+msgstr "horizontale"
+
+#: ../src/iop/ashift.c:2503 ../src/iop/ashift.c:2504 ../src/iop/ashift.c:2557
+#: ../src/iop/ashift.c:2558 ../src/iop/clipping.c:1564
+#: ../src/iop/clipping.c:1855 ../src/iop/clipping.c:1874
+msgid "vertical"
+msgstr "verticale"
+
+#: ../src/iop/ashift.c:2618 ../src/iop/graduatednd.c:1028
+#: ../src/iop/watermark.c:1296
+msgid "rotation"
+msgstr "rotation"
+
+#: ../src/iop/ashift.c:2622
+msgid "lens shift (vertical)"
+msgstr "correction d'objectif (verticale)"
+
+#: ../src/iop/ashift.c:2626
+msgid "lens shift (horizontal)"
+msgstr "correction d'objectif (horizontale)"
+
+#: ../src/iop/ashift.c:2634
+msgid "automatic fit"
+msgstr "correction automatique"
+
+#: ../src/iop/ashift.c:2653
+msgid "get structure"
+msgstr "récupère les structures"
+
+#: ../src/iop/ashift.c:2672
+msgid "rotate image"
+msgstr "rotation de l'image"
+
+#: ../src/iop/ashift.c:2673 ../src/iop/ashift.c:2675
+msgid "apply lens shift correction in one direction"
+msgstr "applique la correction d'objectif dans une direction"
+
+#: ../src/iop/ashift.c:2677
+msgid "automatically correct for vertical perspective distortion"
+msgstr "correction automatique des distorsions verticales de perspective"
+
+#: ../src/iop/ashift.c:2678
+msgid "automatically correct for horizontal perspective distortion"
+msgstr "correction automatique des distorsions horizontales de perspective"
+
+#: ../src/iop/ashift.c:2679
+msgid ""
+"automatically correct for vertical and horizontal perspective distortions"
+msgstr ""
+"correction automatique des distorsions verticales et horizontales de "
+"perspective"
+
+#: ../src/iop/ashift.c:2680
+msgid "analyse line structure in image"
+msgstr "analyser les lignes de structure dans l'image"
+
+#: ../src/iop/ashift.c:2681
+msgid "remove line structure information"
+msgstr "supprime la visualisation des lignes de structure"
+
+#: ../src/iop/ashift.c:2682
+msgid "toggle visibility of structure lines"
+msgstr "active/désactive l'affichage des lignes de structure"
+
 #: ../src/iop/basecurve.c:91
 msgid "neutral"
 msgstr "neutre"
@@ -4295,7 +4409,7 @@ msgid "the size of bloom"
 msgstr "taille de la lumière d'arrière-plan"
 
 #: ../src/iop/bloom.c:517 ../src/iop/colorreconstruction.c:1368
-#: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:437
+#: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:429
 #: ../src/iop/sharpen.c:576
 msgid "threshold"
 msgstr "seuil"
@@ -4305,7 +4419,7 @@ msgid "the threshold of light"
 msgstr "seuil de lumière"
 
 #: ../src/iop/bloom.c:523 ../src/iop/denoiseprofile.c:1661
-#: ../src/iop/grain.c:527 ../src/iop/hotpixels.c:445 ../src/iop/nlmeans.c:707
+#: ../src/iop/grain.c:527 ../src/iop/hotpixels.c:437 ../src/iop/nlmeans.c:707
 #: ../src/iop/velvia.c:328
 msgid "strength"
 msgstr "force"
@@ -4511,13 +4625,13 @@ msgstr "choisir la couleur du cadre interne dans l'image"
 msgid "chromatic aberrations"
 msgstr "aberrations chromatiques"
 
-#: ../src/iop/cacorrect.c:1383
+#: ../src/iop/cacorrect.c:1378
 msgid "automatic chromatic aberration correction"
 msgstr ""
 "correction automatique des\n"
 "aberrations chromatiques"
 
-#: ../src/iop/cacorrect.c:1386
+#: ../src/iop/cacorrect.c:1381
 msgid ""
 "automatic chromatic aberration correction\n"
 "disabled for non-Bayer sensors"
@@ -4526,7 +4640,7 @@ msgstr ""
 "aberrations chromatiques\n"
 "uniquement pour les capteur de Bayer"
 
-#: ../src/iop/cacorrect.c:1389
+#: ../src/iop/cacorrect.c:1384
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
@@ -4638,16 +4752,6 @@ msgstr "recadrer et pivoter"
 #: ../src/iop/clipping.c:1462
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "format de dimension non reconnu. il devrait être  \"nombre:nombre\""
-
-#: ../src/iop/clipping.c:1564 ../src/iop/clipping.c:1855
-#: ../src/iop/clipping.c:1874
-msgid "vertical"
-msgstr "verticale"
-
-#: ../src/iop/clipping.c:1565 ../src/iop/clipping.c:1854
-#: ../src/iop/clipping.c:1875
-msgid "horizontal"
-msgstr "horizontale"
 
 #: ../src/iop/clipping.c:1566 ../src/iop/clipping.c:1876
 msgid "full"
@@ -5207,8 +5311,8 @@ msgid "hue"
 msgstr "teinte"
 
 #: ../src/iop/colorreconstruction.c:649
-msgid "[color reconstruction] module failed."
-msgstr "reconstruction des couleurs [échec du module]"
+msgid "module `color reconstruction' failed"
+msgstr "échec du module  « correction de perspective »"
 
 #: ../src/iop/colorreconstruction.c:1369 ../src/iop/shadhi.c:845
 #: ../src/iop/tonemap.cc:297
@@ -5393,50 +5497,49 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:3550
+#: ../src/iop/demosaic.c:3533 ../src/iop/invert.c:381
 #, c-format
-msgid "[colorspaces] `%s' color matrix not found for 4bayer image!\n"
-msgstr ""
-"[colorspaces] matrice couleur « %s » non trouvée pour une image de bayer!\n"
+msgid "`%s' color matrix not found for 4bayer image!\n"
+msgstr " matrice couleur « %s » non trouvée pour une image de bayer!\n"
 
-#: ../src/iop/demosaic.c:3749 ../src/iop/demosaic.c:3759
-#: ../src/iop/dither.c:556 ../src/iop/highlights.c:733
+#: ../src/iop/demosaic.c:3732 ../src/iop/demosaic.c:3742
+#: ../src/iop/dither.c:556 ../src/iop/highlights.c:722
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:3751
+#: ../src/iop/demosaic.c:3734
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:3752
+#: ../src/iop/demosaic.c:3735
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:3753
+#: ../src/iop/demosaic.c:3736
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3754
+#: ../src/iop/demosaic.c:3737
 msgid "passthrough (monochrome) (experimental)"
 msgstr "monochrome (expérimental)"
 
-#: ../src/iop/demosaic.c:3755 ../src/iop/demosaic.c:3764
+#: ../src/iop/demosaic.c:3738 ../src/iop/demosaic.c:3747
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:3761
+#: ../src/iop/demosaic.c:3744
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3762
+#: ../src/iop/demosaic.c:3745
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-passe"
 
-#: ../src/iop/demosaic.c:3763
+#: ../src/iop/demosaic.c:3746
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-passes (lent)"
 
-#: ../src/iop/demosaic.c:3769
+#: ../src/iop/demosaic.c:3752
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5446,63 +5549,63 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:3771
+#: ../src/iop/demosaic.c:3754
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:3775
+#: ../src/iop/demosaic.c:3758
 msgid "color smoothing"
 msgstr "lissage des couleurs"
 
-#: ../src/iop/demosaic.c:3778
+#: ../src/iop/demosaic.c:3761
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:3779
+#: ../src/iop/demosaic.c:3762
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:3780
+#: ../src/iop/demosaic.c:3763
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:3781
+#: ../src/iop/demosaic.c:3764
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:3782
+#: ../src/iop/demosaic.c:3765
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:3784
+#: ../src/iop/demosaic.c:3767
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:3788
+#: ../src/iop/demosaic.c:3771
 msgid "match greens"
 msgstr "correction des verts"
 
-#: ../src/iop/demosaic.c:3789
+#: ../src/iop/demosaic.c:3772
 msgid "disabled"
 msgstr "désactivée"
 
-#: ../src/iop/demosaic.c:3790
+#: ../src/iop/demosaic.c:3773
 msgid "local average"
 msgstr "moyenne locale"
 
-#: ../src/iop/demosaic.c:3791
+#: ../src/iop/demosaic.c:3774
 msgid "full average"
 msgstr "moyenne globale"
 
-#: ../src/iop/demosaic.c:3792
+#: ../src/iop/demosaic.c:3775
 msgid "full and local average"
 msgstr "moyenne globale et locale"
 
-#: ../src/iop/demosaic.c:3793
+#: ../src/iop/demosaic.c:3776
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:3805
+#: ../src/iop/demosaic.c:3788
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -5714,7 +5817,7 @@ msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr "pourcentage de valeurs hautes tronquées, "
 
-#: ../src/iop/exposure.c:835 ../src/iop/highlights.c:744
+#: ../src/iop/exposure.c:835 ../src/iop/highlights.c:733
 msgid "clipping threshold"
 msgstr "seuil de troncature"
 
@@ -5930,10 +6033,6 @@ msgstr ""
 "progressivité du dégradé :\n"
 "0% = doux, 100% = dur"
 
-#: ../src/iop/graduatednd.c:1028 ../src/iop/watermark.c:1296
-msgid "rotation"
-msgstr "rotation"
-
 #: ../src/iop/graduatednd.c:1030
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "rotation du filtre de -180 à 180 degrés"
@@ -5967,23 +6066,23 @@ msgstr "force du grain à appliquer"
 msgid "highlight reconstruction"
 msgstr "reconstruire hautes lumières"
 
-#: ../src/iop/highlights.c:734
+#: ../src/iop/highlights.c:723
 msgid "clip highlights"
 msgstr "tronquer les hautes lumières"
 
-#: ../src/iop/highlights.c:735
+#: ../src/iop/highlights.c:724
 msgid "reconstruct in LCh"
 msgstr "reconstruire dans LCh"
 
-#: ../src/iop/highlights.c:736
+#: ../src/iop/highlights.c:725
 msgid "reconstruct color"
 msgstr "reconstruire les couleurs"
 
-#: ../src/iop/highlights.c:737
+#: ../src/iop/highlights.c:726
 msgid "highlight reconstruction method"
 msgstr "méthode de reconstruction des hautes lumières"
 
-#: ../src/iop/highlights.c:741
+#: ../src/iop/highlights.c:730
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -6025,31 +6124,31 @@ msgstr "contraste du filtre passe-haut"
 msgid "hot pixels"
 msgstr "pixels chauds"
 
-#: ../src/iop/hotpixels.c:410
+#: ../src/iop/hotpixels.c:402
 #, c-format
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
 msgstr[0] "%d pixel corrigé"
 msgstr[1] "%d pixels corrigés"
 
-#: ../src/iop/hotpixels.c:438
+#: ../src/iop/hotpixels.c:430
 msgid "lower threshold for hot pixel"
 msgstr "seuil bas pour les pixels chauds"
 
-#: ../src/iop/hotpixels.c:446
+#: ../src/iop/hotpixels.c:438
 msgid "strength of hot pixel correction"
 msgstr "force de la correction des pixels chauds"
 
 #. 3 neighbours
-#: ../src/iop/hotpixels.c:451
+#: ../src/iop/hotpixels.c:443
 msgid "detect by 3 neighbors"
 msgstr "détection par 3 voisins"
 
-#: ../src/iop/hotpixels.c:458
+#: ../src/iop/hotpixels.c:450
 msgid "mark fixed pixels"
 msgstr "montrer"
 
-#: ../src/iop/hotpixels.c:470
+#: ../src/iop/hotpixels.c:462
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
@@ -6057,24 +6156,24 @@ msgstr ""
 "suppression des pixels chauds\n"
 "uniquement pour les images raw"
 
-#: ../src/iop/invert.c:60
+#: ../src/iop/invert.c:64
 msgid "invert"
 msgstr "inverser"
 
-#: ../src/iop/invert.c:75
+#: ../src/iop/invert.c:79
 msgctxt "accel"
 msgid "pick color of film material from image"
 msgstr "choisir la couleur du film dans l'image"
 
-#: ../src/iop/invert.c:393
+#: ../src/iop/invert.c:406
 msgid "color of film material"
 msgstr "couleur du film"
 
-#: ../src/iop/invert.c:417
+#: ../src/iop/invert.c:430
 msgid "select color of film material"
 msgstr "sélectionne la couleur du film"
 
-#: ../src/iop/invert.c:422
+#: ../src/iop/invert.c:435
 msgid "pick color of film material from image"
 msgstr "choisir la couleur du film dans l'image"
 
@@ -6358,23 +6457,23 @@ msgstr "blanc"
 msgid "liquify"
 msgstr "liquéfier"
 
-#: ../src/iop/liquify.c:3068
+#: ../src/iop/liquify.c:3072
 msgid "click and drag to add point"
 msgstr "cliquer et tracer pour ajouter un point"
 
-#: ../src/iop/liquify.c:3070
+#: ../src/iop/liquify.c:3074
 msgid "click to add line"
 msgstr "cliquer pour ajouter une ligne"
 
-#: ../src/iop/liquify.c:3072
+#: ../src/iop/liquify.c:3076
 msgid "click to add curve"
 msgstr "cliquer pour ajouter une courbe"
 
-#: ../src/iop/liquify.c:3074
+#: ../src/iop/liquify.c:3078
 msgid "click to edit nodes"
 msgstr "cliquer pour éditer les points"
 
-#: ../src/iop/liquify.c:3112
+#: ../src/iop/liquify.c:3116
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -6382,31 +6481,31 @@ msgstr ""
 "utiliser un outil pour ajouter une forme.\n"
 "clic-droit pour supprimer une forme."
 
-#: ../src/iop/liquify.c:3114
+#: ../src/iop/liquify.c:3118
 msgid "warps|nodes count:"
 msgstr "nb formes|points:"
 
-#: ../src/iop/liquify.c:3121
+#: ../src/iop/liquify.c:3125
 msgid "node tool: edit, add and delete nodes"
 msgstr "outil point: éditer, ajouter et supprimer des points"
 
-#: ../src/iop/liquify.c:3129
+#: ../src/iop/liquify.c:3133
 msgid "curve tool: draw curves"
 msgstr "outil courbe: dessiner des courbes"
 
-#: ../src/iop/liquify.c:3137
+#: ../src/iop/liquify.c:3141
 msgid "line tool: draw lines"
 msgstr "outil ligne: dessiner des lignes"
 
-#: ../src/iop/liquify.c:3145
+#: ../src/iop/liquify.c:3149
 msgid "point tool: draw points"
 msgstr "outil point: placer des points"
 
-#: ../src/iop/liquify.c:3153
+#: ../src/iop/liquify.c:3157
 msgid "disable all tools"
 msgstr "désactiver les outils"
 
-#: ../src/iop/liquify.c:3160
+#: ../src/iop/liquify.c:3164
 msgid ""
 "ctrl+click to add node\n"
 "right click to remove path"
@@ -6414,7 +6513,7 @@ msgstr ""
 "ctrl-clic pour ajouter un point\n"
 "clic-droit pour supprimer un chemin"
 
-#: ../src/iop/liquify.c:3161
+#: ../src/iop/liquify.c:3165
 msgid ""
 "click and drag to move - click : linear or feathered\n"
 "ctrl+click : symmetrical, smooth, cusp, autosmooth\n"
@@ -6424,23 +6523,23 @@ msgstr ""
 "ctrl-clic : symétrique, doux, courbe, automatique\n"
 "clic-droit pour supprimer"
 
-#: ../src/iop/liquify.c:3162 ../src/iop/liquify.c:3163
+#: ../src/iop/liquify.c:3166 ../src/iop/liquify.c:3167
 msgid "drag to change shape of path"
 msgstr "déplacer pour changer le chemin"
 
-#: ../src/iop/liquify.c:3164
+#: ../src/iop/liquify.c:3168
 msgid "drag to adjust warp radius"
 msgstr "déplacer pour ajuster le rayon"
 
-#: ../src/iop/liquify.c:3165
+#: ../src/iop/liquify.c:3169
 msgid "drag to adjust hardness (center)"
 msgstr "déplacer pour ajuster la dureté (centre)"
 
-#: ../src/iop/liquify.c:3166
+#: ../src/iop/liquify.c:3170
 msgid "drag to adjust hardness (feather)"
 msgstr "déplacer pour ajuster la dureté (progressif)"
 
-#: ../src/iop/liquify.c:3167
+#: ../src/iop/liquify.c:3171
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click : linear, grow, and shrink"
@@ -6448,27 +6547,27 @@ msgstr ""
 "déplacer pour ajuster la force du point\n"
 "ctrl-clic : linéaire, augmente et diminue"
 
-#: ../src/iop/liquify.c:3184
+#: ../src/iop/liquify.c:3188
 msgctxt "accel"
 msgid "point tool"
 msgstr "outil point"
 
-#: ../src/iop/liquify.c:3185
+#: ../src/iop/liquify.c:3189
 msgctxt "accel"
 msgid "line tool"
 msgstr "outil ligne"
 
-#: ../src/iop/liquify.c:3186
+#: ../src/iop/liquify.c:3190
 msgctxt "accel"
 msgid "curve tool"
 msgstr "outil courbe"
 
-#: ../src/iop/liquify.c:3187
+#: ../src/iop/liquify.c:3191
 msgctxt "accel"
 msgid "node tool"
 msgstr "édition des chemins"
 
-#: ../src/iop/liquify.c:3188
+#: ../src/iop/liquify.c:3192
 msgctxt "accel"
 msgid "disable tools"
 msgstr "désactiver les outils"
@@ -6688,11 +6787,11 @@ msgctxt "accel"
 msgid "noise threshold"
 msgstr "seuil de bruit"
 
-#: ../src/iop/rawdenoise.c:502
+#: ../src/iop/rawdenoise.c:489
 msgid "noise threshold"
 msgstr "seuil de bruit"
 
-#: ../src/iop/rawdenoise.c:508
+#: ../src/iop/rawdenoise.c:495
 msgid ""
 "raw denoising\n"
 "only works for raw images."
@@ -6775,11 +6874,11 @@ msgctxt "modulename"
 msgid "rotate pixels"
 msgstr "rotation des pixels"
 
-#: ../src/iop/rotatepixels.c:336
+#: ../src/iop/rotatepixels.c:345
 msgid "automatic pixel rotation"
 msgstr "rotation automatique des pixels"
 
-#: ../src/iop/rotatepixels.c:339
+#: ../src/iop/rotatepixels.c:348
 msgid ""
 "automatic pixel rotation\n"
 "only works for the sensors that need it."
@@ -7044,71 +7143,70 @@ msgctxt "accel"
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:610 ../src/iop/temperature.c:837
+#: ../src/iop/temperature.c:604 ../src/iop/temperature.c:831
 #, c-format
-msgid "[temperature] `%s' color matrix not found for 4bayer image!\n"
-msgstr ""
-"[temperature] matrice couleur « %s » non trouvée pour une image de bayer!\n"
+msgid "`%s' color matrix not found for 4bayer image\n"
+msgstr "matrice couleur « %s » non trouvée pour une image de bayer!\n"
 
-#: ../src/iop/temperature.c:651
+#: ../src/iop/temperature.c:645
 msgctxt "white balance"
 msgid "camera"
 msgstr "boîtier"
 
-#: ../src/iop/temperature.c:652
+#: ../src/iop/temperature.c:646
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "neutre boîtier"
 
-#: ../src/iop/temperature.c:653
+#: ../src/iop/temperature.c:647
 msgctxt "white balance"
 msgid "spot"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:828
+#: ../src/iop/temperature.c:822
 #, c-format
-msgid "[temperature] `%s' color matrix not found for image!\n"
-msgstr "[temperature] matrice couleur « %s » non trouvée pour l'image!\n"
+msgid "`%s' color matrix not found for image\n"
+msgstr "matrice couleur « %s » non trouvée pour l'image!\n"
 
-#: ../src/iop/temperature.c:882
+#: ../src/iop/temperature.c:876
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "impossible de récupérer la balance des blancs du boîtier pour « %s » !"
 
-#: ../src/iop/temperature.c:1245
+#: ../src/iop/temperature.c:1239
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1246
+#: ../src/iop/temperature.c:1240
 msgid "cyan"
 msgstr "cyan"
 
-#: ../src/iop/temperature.c:1259
+#: ../src/iop/temperature.c:1253
 msgid "emerald"
 msgstr "émeraude"
 
-#: ../src/iop/temperature.c:1292
+#: ../src/iop/temperature.c:1286
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:1293
+#: ../src/iop/temperature.c:1287
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:1309
+#: ../src/iop/temperature.c:1303
 msgid "choose white balance preset from camera"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:1313
+#: ../src/iop/temperature.c:1307
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:1314
+#: ../src/iop/temperature.c:1308
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1318
+#: ../src/iop/temperature.c:1312
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
@@ -7353,11 +7451,6 @@ msgstr "rafraîchir"
 msgctxt "accel"
 msgid "opacity"
 msgstr "opacité"
-
-#: ../src/iop/watermark.c:253
-msgctxt "accel"
-msgid "rotation"
-msgstr "rotation"
 
 #: ../src/iop/watermark.c:254
 msgctxt "accel"
@@ -10236,6 +10329,16 @@ msgstr ""
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
 
+#~ msgid "[colorspaces] `%s' color matrix not found for 4bayer image!\n"
+#~ msgstr ""
+#~ "[colorspaces] matrice couleur « %s » non trouvée pour une image de "
+#~ "bayer!\n"
+
+#~ msgid "[temperature] `%s' color matrix not found for 4bayer image!\n"
+#~ msgstr ""
+#~ "[temperature] matrice couleur « %s » non trouvée pour une image de "
+#~ "bayer!\n"
+
 #~ msgctxt "preferences"
 #~ msgid "gnome keyring"
 #~ msgstr "gnome keyring"
@@ -10622,9 +10725,6 @@ msgstr ""
 
 #~ msgid "my jobcode"
 #~ msgstr "mon code de projet"
-
-#~ msgid "storage structure"
-#~ msgstr "structure de stockage"
 
 #~ msgid ""
 #~ "the following three settings describe the directory structure and file "
@@ -11149,14 +11249,8 @@ msgstr ""
 #~ msgid "paste parts"
 #~ msgstr "coller partiellement"
 
-#~ msgid "adjust perspective for horizontal keystone distortion"
-#~ msgstr "ajuste la perspective pour la distorsion horizontale"
-
 #~ msgid "keystone v"
 #~ msgstr "vertical"
-
-#~ msgid "adjust perspective for vertical keystone distortion"
-#~ msgstr "ajuste la perspective pour la distorsion verticale"
 
 #~ msgctxt "accel"
 #~ msgid "keystone h"
