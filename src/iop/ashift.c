@@ -60,7 +60,7 @@
 #include "ashift_nmsimplex.c"
 
 #define ROTATION_RANGE 10                   // allowed min/max value for rotation parameter
-#define LENSSHIFT_RANGE 0.5                 // allowed min/max value for lensshift paramters
+#define LENSSHIFT_RANGE 1                   // allowed min/max value for lensshift paramters
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
@@ -2379,8 +2379,8 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     {
       darktable.gui->reset = 1;
       dt_bauhaus_slider_set(g->rotation, p->rotation);
-      dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
-      dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+      dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+      dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -2423,8 +2423,8 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     {
       darktable.gui->reset = 1;
       dt_bauhaus_slider_set(g->rotation, p->rotation);
-      dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
-      dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+      dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+      dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -2467,8 +2467,8 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
     {
       darktable.gui->reset = 1;
       dt_bauhaus_slider_set(g->rotation, p->rotation);
-      dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
-      dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+      dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+      dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -2554,8 +2554,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)module->params;
   dt_bauhaus_slider_set(g->rotation, p->rotation);
-  dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
-  dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+  dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+  dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
   dt_pthread_mutex_lock(&g->lock);
@@ -2738,12 +2738,14 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
 
-  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, LENSSHIFT_RANGE / 100.0, p->lensshift_v, 3);
+  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -0.5*LENSSHIFT_RANGE, 0.5*LENSSHIFT_RANGE, 0.005*LENSSHIFT_RANGE, p->lensshift_v, 3);
   dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (vertical)"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
 
-  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, LENSSHIFT_RANGE / 100.0, p->lensshift_h, 3);
+  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -0.5*LENSSHIFT_RANGE, 0.5*LENSSHIFT_RANGE, 0.005*LENSSHIFT_RANGE, p->lensshift_v, 3);
   dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
 
 
