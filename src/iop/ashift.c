@@ -1384,6 +1384,9 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
+  if(!g->lines) return NMS_NOT_ENOUGH_LINES;
+  if(dir == ASHIFT_FIT_NONE) return NMS_SUCCESS;
+
   double params[3];
   int pcount = 0;
   int enough_lines = TRUE;
@@ -2348,76 +2351,136 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void fit_v_button_clicked(GtkButton *button, gpointer user_data)
+static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
-  if(do_fit(self, p, ASHIFT_FIT_VERTICALLY))
+  if(darktable.gui->reset) return FALSE;
+
+  if(event->button == 1)
   {
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->rotation, p->rotation);
-    dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
-    dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
-    darktable.gui->reset = 0;
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
+    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+
+    dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
+
+    if(control)
+      fitaxis = ASHIFT_FIT_ROTATION_VERTICAL_LINES;
+    else if(shift)
+      fitaxis = ASHIFT_FIT_VERTICALLY_NO_ROTATION;
+    else
+      fitaxis = ASHIFT_FIT_VERTICALLY;
+
+    dt_iop_request_focus(self);
+    dt_dev_reprocess_all(self->dev);
+    if(do_fit(self, p, fitaxis))
+    {
+      darktable.gui->reset = 1;
+      dt_bauhaus_slider_set(g->rotation, p->rotation);
+      dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+      dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+      darktable.gui->reset = 0;
+    }
+    g->lastfit = fitaxis;
+
+    // hack to guarantee that module gets enabled on button click
+    if(!self->enabled) p->toggle ^= 1;
+
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+    return TRUE;
   }
-  g->lastfit = ASHIFT_FIT_VERTICALLY;
-
-  // hack to guarantee enable module on button click
-  if(!self->enabled) p->toggle ^= 1;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  return FALSE;
 }
 
-static void fit_h_button_clicked(GtkButton *button, gpointer user_data)
+static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
-  if(do_fit(self, p, ASHIFT_FIT_HORIZONTALLY))
+  if(darktable.gui->reset) return FALSE;
+
+  if(event->button == 1)
   {
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->rotation, p->rotation);
-    dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
-    dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
-    darktable.gui->reset = 0;
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
+    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+
+    dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
+
+    if(control)
+      fitaxis = ASHIFT_FIT_ROTATION_HORIZONTAL_LINES;
+    else if(shift)
+      fitaxis = ASHIFT_FIT_HORIZONTALLY_NO_ROTATION;
+    else
+      fitaxis = ASHIFT_FIT_HORIZONTALLY;
+
+    dt_iop_request_focus(self);
+    dt_dev_reprocess_all(self->dev);
+    if(do_fit(self, p, fitaxis))
+    {
+      darktable.gui->reset = 1;
+      dt_bauhaus_slider_set(g->rotation, p->rotation);
+      dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+      dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+      darktable.gui->reset = 0;
+    }
+    g->lastfit = fitaxis;
+
+    // hack to guarantee that module gets enabled on button click
+    if(!self->enabled) p->toggle ^= 1;
+
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+    return TRUE;
   }
-  g->lastfit = ASHIFT_FIT_HORIZONTALLY;
-
-  // hack to guarantee enable module on button click
-  if(!self->enabled) p->toggle ^= 1;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  return FALSE;
 }
 
-static void fit_both_button_clicked(GtkButton *button, gpointer user_data)
+static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
-  if(do_fit(self, p, ASHIFT_FIT_BOTH))
-  {
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->rotation, p->rotation);
-    dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
-    dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
-    darktable.gui->reset = 0;
-  }
-  g->lastfit = ASHIFT_FIT_BOTH;
-  
-  // hack to guarantee enable module on button click
-  if(!self->enabled) p->toggle ^= 1;
+  if(darktable.gui->reset) return FALSE;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(event->button == 1)
+  {
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
+    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+
+    dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
+
+    if(control)
+      fitaxis = ASHIFT_FIT_ROTATION_BOTH_LINES;
+    else if(shift)
+      fitaxis = ASHIFT_FIT_BOTH_NO_ROTATION;
+    else
+      fitaxis = ASHIFT_FIT_BOTH;
+
+    dt_iop_request_focus(self);
+    dt_dev_reprocess_all(self->dev);
+    if(do_fit(self, p, fitaxis))
+    {
+      darktable.gui->reset = 1;
+      dt_bauhaus_slider_set(g->rotation, p->rotation);
+      dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+      dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+      darktable.gui->reset = 0;
+    }
+    g->lastfit = fitaxis;
+
+    // hack to guarantee that module gets enabled on button click
+    if(!self->enabled) p->toggle ^= 1;
+
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static void structure_button_clicked(GtkButton *button, gpointer user_data)
@@ -2428,7 +2491,7 @@ static void structure_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_request_focus(self);
   dt_dev_reprocess_all(self->dev);
   (void)do_get_structure(self, p);
-  // hack to guarantee enable module on button click
+  // hack to guarantee that module gets enabled on button click
   if(!self->enabled) p->toggle ^= 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2731,9 +2794,15 @@ void gui_init(struct dt_iop_module_t *self)
                (char *)NULL);
   g_object_set(g->lensshift_h, "tooltip-text", _("apply lens shift correction in one direction"),
                (char *)NULL);
-  g_object_set(g->fit_v, "tooltip-text", _("automatically correct for vertical perspective distortion"), (char *)NULL);
-  g_object_set(g->fit_h, "tooltip-text", _("automatically correct for horizontal perspective distortion"), (char *)NULL);
-  g_object_set(g->fit_both, "tooltip-text", _("automatically correct for vertical and horizontal perspective distortions"), (char *)NULL);
+  g_object_set(g->fit_v, "tooltip-text", _("automatically correct for vertical perspective distortion\n"
+                                           "ctrl-click to only fit rotation\n"
+                                           "shift-click to only fit lens shift"), (char *)NULL);
+  g_object_set(g->fit_h, "tooltip-text", _("automatically correct for horizontal perspective distortion\n"
+                                           "ctrl-click to only fit rotation\n"
+                                           "shift-click to only fit lens shift"), (char *)NULL);
+  g_object_set(g->fit_both, "tooltip-text", _("automatically correct for vertical and horizontal perspective distortions\n"
+                                              "ctrl-click to only fit rotation\n"
+                                              "shift-click to only fit lens shift"), (char *)NULL);
   g_object_set(g->structure, "tooltip-text", _("analyse line structure in image"), (char *)NULL);
   g_object_set(g->clean, "tooltip-text", _("remove line structure information"), (char *)NULL);
   g_object_set(g->eye, "tooltip-text", _("toggle visibility of structure lines"), (char *)NULL);
@@ -2741,9 +2810,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
-  g_signal_connect(G_OBJECT(g->fit_v), "clicked", G_CALLBACK(fit_v_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->fit_h), "clicked", G_CALLBACK(fit_h_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->fit_both), "clicked", G_CALLBACK(fit_both_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->fit_v), "button-press-event", G_CALLBACK(fit_v_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->fit_h), "button-press-event", G_CALLBACK(fit_h_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->fit_both), "button-press-event", G_CALLBACK(fit_both_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->structure), "clicked", G_CALLBACK(structure_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(clean_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(eye_button_toggled), (gpointer)self);
