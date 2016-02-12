@@ -108,11 +108,11 @@ typedef enum dt_iop_ashift_homodir_t
 
 typedef enum dt_iop_ashift_linetype_t
 {
-  ASHIFT_LINE_IRRELEVANT = 0,       // the line is found to be not interesting
-                                    // eg. too short, or not horizontal or vertical
-  ASHIFT_LINE_RELEVANT   = 1 << 0,  // the line is relevant for us
-  ASHIFT_LINE_DIRVERT    = 1 << 1,  // the line is (mostly) vertical, else (mostly) horizontal
-  ASHIFT_LINE_SELECTED   = 1 << 2,  // the line is selected for fitting
+  ASHIFT_LINE_IRRELEVANT   = 0,       // the line is found to be not interesting
+                                      // eg. too short, or not horizontal or vertical
+  ASHIFT_LINE_RELEVANT     = 1 << 0,  // the line is relevant for us
+  ASHIFT_LINE_DIRVERT      = 1 << 1,  // the line is (mostly) vertical, else (mostly) horizontal
+  ASHIFT_LINE_SELECTED     = 1 << 2,  // the line is selected for fitting
   ASHIFT_LINE_VERTICAL_NOT_SELECTED   = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_DIRVERT,
   ASHIFT_LINE_HORIZONTAL_NOT_SELECTED = ASHIFT_LINE_RELEVANT,
   ASHIFT_LINE_VERTICAL_SELECTED = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_DIRVERT | ASHIFT_LINE_SELECTED,
@@ -131,10 +131,26 @@ typedef enum dt_iop_ashift_linecolor_t
 
 typedef enum dt_iop_ashift_fitaxis_t
 {
-  ASHIFT_FIT_NONE = 0,
-  ASHIFT_FIT_VERTICALLY = 1,
-  ASHIFT_FIT_HORIZONTALLY = 2,
-  ASHIFT_FIT_BOTH = 3
+  ASHIFT_FIT_NONE          = 0,       // none
+  ASHIFT_FIT_ROTATION      = 1 << 0,  // flag indicates to fit rotation angle
+  ASHIFT_FIT_LENS_VERT     = 1 << 1,  // flag indicates to fit vertical lens shift
+  ASHIFT_FIT_LENS_HOR      = 1 << 2,  // flag indicates to fit horizontal lens shift
+  ASHIFT_FIT_LINES_VERT    = 1 << 3,  // use vertical lines for fitting
+  ASHIFT_FIT_LINES_HOR     = 1 << 4,  // use horizontal lines for fitting
+  ASHIFT_FIT_LENS_BOTH = ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR,
+  ASHIFT_FIT_LINES_BOTH = ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
+  ASHIFT_FIT_VERTICALLY = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LINES_VERT,
+  ASHIFT_FIT_HORIZONTALLY = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LENS_HOR | ASHIFT_FIT_LINES_HOR,
+  ASHIFT_FIT_BOTH = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR |
+                    ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
+  ASHIFT_FIT_VERTICALLY_NO_ROTATION = ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LINES_VERT,
+  ASHIFT_FIT_HORIZONTALLY_NO_ROTATION = ASHIFT_FIT_LENS_HOR | ASHIFT_FIT_LINES_HOR,
+  ASHIFT_FIT_BOTH_NO_ROTATION = ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR |
+                                ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
+  ASHIFT_FIT_ROTATION_VERTICAL_LINES = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LINES_VERT,
+  ASHIFT_FIT_ROTATION_HORIZONTAL_LINES = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LINES_HOR,
+  ASHIFT_FIT_ROTATION_BOTH_LINES = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
+  ASHIFT_FIT_FLIP = ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR | ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR
 } dt_iop_ashift_fitaxis_t;
 
 typedef enum dt_iop_ashift_nmsresult_t
@@ -1369,101 +1385,110 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
   double params[3];
+  int pcount = 0;
   int enough_lines = TRUE;
-  dt_iop_ashift_fitaxis_t mdir = dir;
 
+  // initialize fit parameters
   dt_iop_ashift_fit_params_t fit;
   fit.lines = g->lines;
   fit.lines_count = g->lines_count;
   fit.width = g->lines_in_width;
   fit.height = g->lines_in_height;
+  fit.rotation = p->rotation;
+  fit.lensshift_v = p->lensshift_v;
+  fit.lensshift_h = p->lensshift_h;
+  fit.linetype = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
+  fit.linemask = ASHIFT_LINE_MASK;
+  fit.params_count = 0;
+  fit.weight = 0.0f;
 
-  // if the image is flipped we need to change direction
-  if(dir == ASHIFT_FIT_VERTICALLY && g->isflipped)
-    mdir = ASHIFT_FIT_HORIZONTALLY;
-  else if(dir == ASHIFT_FIT_HORIZONTALLY && g->isflipped)
-    mdir = ASHIFT_FIT_VERTICALLY;
+  // if the image is flipped and if we do not want to fit both lens shift
+  // directions or none at all, then we need to change direction
+  dt_iop_ashift_fitaxis_t mdir = dir;
+  if((mdir & ASHIFT_FIT_LENS_BOTH) != ASHIFT_FIT_LENS_BOTH &&
+     (mdir & ASHIFT_FIT_LENS_BOTH) != 0)
+  {
+    // flip all directions
+    mdir ^= g->isflipped ? ASHIFT_FIT_FLIP : 0;
+    // special case that needs to be corrected
+    mdir |= (mdir & ASHIFT_FIT_LINES_BOTH) == 0 ? ASHIFT_FIT_LINES_BOTH : 0;
+  }
+
 
   // prepare fit structure and starting parameters for simplex fit.
   // note: the sequence of parameters in params[] needs to match the
   // respective order in dt_iop_ashift_fit_params_t. Parameters which are
   // to be fittet are marked with NAN in the fit structure. Non-NAN
   // parameters are assumed to be constant.
-  switch(mdir)
+  if(mdir & ASHIFT_FIT_ROTATION)
   {
-    case ASHIFT_FIT_VERTICALLY:
-      fit.params_count = 2;
-      fit.linemask = ASHIFT_LINE_MASK;
-      fit.linetype = ASHIFT_LINE_VERTICAL_SELECTED;
-      fit.weight = g->vertical_weight;
-      fit.rotation = NAN;
-      fit.lensshift_v = NAN;
-      fit.lensshift_h = p->lensshift_h;
-      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
-      params[1] = logit(p->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      enough_lines = g->vertical_count >= MINIMUM_FITLINES;
-      break;
-
-    case ASHIFT_FIT_HORIZONTALLY:
-      fit.params_count = 2;
-      fit.linemask = ASHIFT_LINE_MASK;
-      fit.linetype = ASHIFT_LINE_HORIZONTAL_SELECTED;
-      fit.weight = g->horizontal_weight;
-      fit.rotation = NAN;
-      fit.lensshift_v = p->lensshift_v;
-      fit.lensshift_h = NAN;
-      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
-      params[1] = logit(p->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      enough_lines = g->horizontal_count >= MINIMUM_FITLINES;
-      break;
-
-    case ASHIFT_FIT_BOTH:
-    default:
-      fit.params_count = 3;
-      fit.linemask = ASHIFT_LINE_SELECTED;
-      fit.linetype = ASHIFT_LINE_SELECTED;
-      fit.weight = g->vertical_weight + g->horizontal_weight;
-      fit.rotation = NAN;
-      fit.lensshift_v = NAN;
-      fit.lensshift_h = NAN;
-      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
-      params[1] = logit(p->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      params[2] = logit(p->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      enough_lines = g->vertical_count >= MINIMUM_FITLINES && g->horizontal_count >= MINIMUM_FITLINES;
-      break;
+    // we fit rotation
+    fit.params_count++;
+    params[pcount] = logit(fit.rotation, -ROTATION_RANGE, ROTATION_RANGE);
+    pcount++;
+    fit.rotation = NAN;
   }
 
-  // error: we do not run simplex if there are not enough lines
+  if(mdir & ASHIFT_FIT_LENS_VERT)
+  {
+    // we fit vertical lens shift
+    fit.params_count++;
+    params[pcount] = logit(fit.lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    pcount++;
+    fit.lensshift_v = NAN;
+  }
+
+  if(mdir & ASHIFT_FIT_LENS_HOR)
+  {
+    // we fit horizontal lens shift
+    fit.params_count++;
+    params[pcount] = logit(fit.lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    pcount++;
+    fit.lensshift_h = NAN;
+  }
+
+  if(mdir & ASHIFT_FIT_LINES_VERT)
+  {
+    // we use vertical lines for fitting
+    fit.linetype |= ASHIFT_LINE_DIRVERT;
+    fit.weight += g->vertical_weight;
+    enough_lines = enough_lines && (g->vertical_count >= MINIMUM_FITLINES);
+  }
+
+  if(mdir & ASHIFT_FIT_LINES_HOR)
+  {
+    // we use horizontal lines for fitting
+    fit.linetype |= 0;
+    fit.weight += g->horizontal_weight;
+    enough_lines = enough_lines && (g->horizontal_count >= MINIMUM_FITLINES);
+  }
+
+  // this needs to come after ASHIFT_FIT_LINES_VERT and ASHIFT_FIT_LINES_HOR
+  if((mdir & ASHIFT_FIT_LINES_BOTH) == ASHIFT_FIT_LINES_BOTH)
+  {
+    // if we use fitting in both directions we need to
+    // adjust fit.linetype and fit.linemask to match all selected lines
+    fit.linetype = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
+    fit.linemask = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
+  }
+
+  // error case: we do not run simplex if there are not enough lines
   if(!enough_lines)
     return NMS_NOT_ENOUGH_LINES;
 
   // start the simplex fit
   int iter = simplex(model_fitness, params, fit.params_count, NMS_EPSILON, NMS_SCALE, NMS_ITERATIONS, NULL, (void*)&fit);
 
-  // error: the fit did not converge
+  // error case: the fit did not converge
   if(iter >= NMS_ITERATIONS)
     return NMS_DID_NOT_CONVERGE;
 
-  // fit was successful: now write the results into structure p
-  switch(mdir)
-  {
-    case ASHIFT_FIT_VERTICALLY:
-      p->rotation = ilogit(params[0], -ROTATION_RANGE, ROTATION_RANGE);
-      p->lensshift_v = ilogit(params[1], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      break;
+  // fit was successful: now write the results into structure p (order matters!!!)
+  pcount = 0;
+  p->rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -ROTATION_RANGE, ROTATION_RANGE) : fit.rotation;
+  p->lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -LENSSHIFT_RANGE, LENSSHIFT_RANGE) : fit.lensshift_v;
+  p->lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -LENSSHIFT_RANGE, LENSSHIFT_RANGE) : fit.lensshift_h;
 
-    case ASHIFT_FIT_HORIZONTALLY:
-      p->rotation = ilogit(params[0], -ROTATION_RANGE, ROTATION_RANGE);
-      p->lensshift_h = ilogit(params[1], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      break;
-
-    case ASHIFT_FIT_BOTH:
-    default:
-      p->rotation = ilogit(params[0], -ROTATION_RANGE, ROTATION_RANGE);
-      p->lensshift_v = ilogit(params[1], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      p->lensshift_h = ilogit(params[2], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      break;
-  }
 #ifdef ASHIFT_DEBUG
   printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f\n",
          iter, p->rotation, p->lensshift_v, p->lensshift_h);
@@ -1480,66 +1505,94 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
   if(!g->lines) return;
+  if(dir == ASHIFT_FIT_NONE) return;
 
   double params[3];
-  dt_iop_ashift_fitaxis_t mdir = dir;
+  int pcount = 0;
+  int enough_lines = TRUE;
 
+  // initialize fit parameters
   dt_iop_ashift_fit_params_t fit;
   fit.lines = g->lines;
   fit.lines_count = g->lines_count;
   fit.width = g->lines_in_width;
   fit.height = g->lines_in_height;
+  fit.rotation = p->rotation;
+  fit.lensshift_v = p->lensshift_v;
+  fit.lensshift_h = p->lensshift_h;
+  fit.linetype = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
+  fit.linemask = ASHIFT_LINE_MASK;
+  fit.params_count = 0;
+  fit.weight = 0.0f;
 
-  // if the image is flipped we need to change direction
-  if(dir == ASHIFT_FIT_VERTICALLY && g->isflipped)
-    mdir = ASHIFT_FIT_HORIZONTALLY;
-  else if(dir == ASHIFT_FIT_HORIZONTALLY && g->isflipped)
-    mdir = ASHIFT_FIT_VERTICALLY;
+  // if the image is flipped and if we do not want to fit both lens shift
+  // directions or none at all, then we need to change direction
+  dt_iop_ashift_fitaxis_t mdir = dir;
+  if((mdir & ASHIFT_FIT_LENS_BOTH) != ASHIFT_FIT_LENS_BOTH &&
+     (mdir & ASHIFT_FIT_LENS_BOTH) != 0)
+  {
+    // flip all directions
+    mdir ^= g->isflipped ? ASHIFT_FIT_FLIP : 0;
+    // special case that needs to be corrected
+    mdir |= (mdir & ASHIFT_FIT_LINES_BOTH) == 0 ? ASHIFT_FIT_LINES_BOTH : 0;
+  }
+
 
   // prepare fit structure and starting parameters for simplex fit.
   // note: the sequence of parameters in params[] needs to match the
   // respective order in dt_iop_ashift_fit_params_t. Parameters which are
   // to be fittet are marked with NAN in the fit structure. Non-NAN
   // parameters are assumed to be constant.
-  switch(mdir)
+  if(mdir & ASHIFT_FIT_ROTATION)
   {
-    case ASHIFT_FIT_VERTICALLY:
-      fit.params_count = 2;
-      fit.linemask = ASHIFT_LINE_MASK;
-      fit.linetype = ASHIFT_LINE_VERTICAL_SELECTED;
-      fit.weight = g->vertical_weight;
-      fit.rotation = NAN;
-      fit.lensshift_v = NAN;
-      fit.lensshift_h = p->lensshift_h;
-      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
-      params[1] = logit(p->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      break;
+    // we fit rotation
+    fit.params_count++;
+    params[pcount] = logit(fit.rotation, -ROTATION_RANGE, ROTATION_RANGE);
+    pcount++;
+    fit.rotation = NAN;
+  }
 
-    case ASHIFT_FIT_HORIZONTALLY:
-      fit.params_count = 2;
-      fit.linemask = ASHIFT_LINE_MASK;
-      fit.linetype = ASHIFT_LINE_HORIZONTAL_SELECTED;
-      fit.weight = g->horizontal_weight;
-      fit.rotation = NAN;
-      fit.lensshift_v = p->lensshift_v;
-      fit.lensshift_h = NAN;
-      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
-      params[1] = logit(p->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      break;
+  if(mdir & ASHIFT_FIT_LENS_VERT)
+  {
+    // we fit vertical lens shift
+    fit.params_count++;
+    params[pcount] = logit(fit.lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    pcount++;
+    fit.lensshift_v = NAN;
+  }
 
-    case ASHIFT_FIT_BOTH:
-    default:
-      fit.params_count = 3;
-      fit.linemask = ASHIFT_LINE_SELECTED;
-      fit.linetype = ASHIFT_LINE_SELECTED;
-      fit.weight = g->vertical_weight + g->horizontal_weight;
-      fit.rotation = NAN;
-      fit.lensshift_v = NAN;
-      fit.lensshift_h = NAN;
-      params[0] = logit(p->rotation, -ROTATION_RANGE, ROTATION_RANGE);
-      params[1] = logit(p->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      params[2] = logit(p->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-      break;
+  if(mdir & ASHIFT_FIT_LENS_HOR)
+  {
+    // we fit horizontal lens shift
+    fit.params_count++;
+    params[pcount] = logit(fit.lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    pcount++;
+    fit.lensshift_h = NAN;
+  }
+
+  if(mdir & ASHIFT_FIT_LINES_VERT)
+  {
+    // we use vertical lines for fitting
+    fit.linetype |= ASHIFT_LINE_DIRVERT;
+    fit.weight += g->vertical_weight;
+    enough_lines = enough_lines && (g->vertical_count >= MINIMUM_FITLINES);
+  }
+
+  if(mdir & ASHIFT_FIT_LINES_HOR)
+  {
+    // we use horizontal lines for fitting
+    fit.linetype |= 0;
+    fit.weight += g->horizontal_weight;
+    enough_lines = enough_lines && (g->horizontal_count >= MINIMUM_FITLINES);
+  }
+
+  // this needs to come after ASHIFT_FIT_LINES_VERT and ASHIFT_FIT_LINES_HOR
+  if((mdir & ASHIFT_FIT_LINES_BOTH) == ASHIFT_FIT_LINES_BOTH)
+  {
+    // if we use fitting in both directions we need to
+    // adjust fit.linetype and fit.linemask to match all selected lines
+    fit.linetype = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
+    fit.linemask = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
   }
 
   double quality = model_fitness(params, (void *)&fit);
@@ -2373,6 +2426,7 @@ static void structure_button_clicked(GtkButton *button, gpointer user_data)
   // hack to guarantee enable module on button click
   if(!self->enabled) p->toggle ^= 1;
   dt_iop_request_focus(self);
+  dt_dev_reprocess_all(self->dev);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
