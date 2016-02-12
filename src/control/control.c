@@ -500,7 +500,10 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
     if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
     {
       if(darktable.control->log_message_timeout_id)
+      {
         g_source_remove(darktable.control->log_message_timeout_id);
+        darktable.control->log_message_timeout_id = 0;
+      }
       darktable.control->log_ack = (darktable.control->log_ack + 1) % DT_CTL_LOG_SIZE;
       dt_pthread_mutex_unlock(&darktable.control->log_mutex);
       return;
