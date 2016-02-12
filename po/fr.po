@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-12 08:34+0100\n"
-"PO-Revision-Date: 2016-02-12 08:50+0100\n"
+"POT-Creation-Date: 2016-02-12 19:00+0100\n"
+"PO-Revision-Date: 2016-02-12 19:03+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4099,114 +4099,130 @@ msgstr "rend l'effet plus fort ou plus faible"
 msgid "perspective correction"
 msgstr "correction de perspective"
 
-#: ../src/iop/ashift.c:268 ../src/iop/watermark.c:253
+#: ../src/iop/ashift.c:284 ../src/iop/watermark.c:253
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:269
+#: ../src/iop/ashift.c:285
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "correction d'objectif (v)"
 
-#: ../src/iop/ashift.c:270
+#: ../src/iop/ashift.c:286
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "correction d'objectif (h)"
 
-#: ../src/iop/ashift.c:1567
+#: ../src/iop/ashift.c:1623
 msgid "data pending - please repeat"
 msgstr "données en attente, merci de recommencer"
 
-#: ../src/iop/ashift.c:1573
+#: ../src/iop/ashift.c:1629
 msgid "could not detect structural data in image"
 msgstr "impossible de détecter les structures dans l'image"
 
 #. in fact currently remove_outliers() always returns TRUE. The log
 #. message here is implemented for future extensions
-#: ../src/iop/ashift.c:1581
+#: ../src/iop/ashift.c:1637
 msgid "could not run outlier removal"
 msgstr ""
 
-#: ../src/iop/ashift.c:1630
+#: ../src/iop/ashift.c:1686
 msgid "not enough structure for automatic correction"
 msgstr "pas assez de structure pour corriger automatiquement"
 
-#: ../src/iop/ashift.c:1634
+#: ../src/iop/ashift.c:1690
 msgid "automatic correction failed, please correct manually"
 msgstr "correction automatique impossible, merci de corriger manuellement"
 
-#: ../src/iop/ashift.c:2503 ../src/iop/ashift.c:2504 ../src/iop/ashift.c:2557
-#: ../src/iop/ashift.c:2558
+#: ../src/iop/ashift.c:2623 ../src/iop/ashift.c:2624 ../src/iop/ashift.c:2677
+#: ../src/iop/ashift.c:2678
 #, c-format
 msgid "lens shift (%s)"
 msgstr "correction d'objectif (%s)"
 
-#: ../src/iop/ashift.c:2503 ../src/iop/ashift.c:2504 ../src/iop/ashift.c:2557
-#: ../src/iop/ashift.c:2558 ../src/iop/clipping.c:1565
+#: ../src/iop/ashift.c:2623 ../src/iop/ashift.c:2624 ../src/iop/ashift.c:2677
+#: ../src/iop/ashift.c:2678 ../src/iop/clipping.c:1565
 #: ../src/iop/clipping.c:1854 ../src/iop/clipping.c:1875
 msgid "horizontal"
 msgstr "horizontale"
 
-#: ../src/iop/ashift.c:2503 ../src/iop/ashift.c:2504 ../src/iop/ashift.c:2557
-#: ../src/iop/ashift.c:2558 ../src/iop/clipping.c:1564
+#: ../src/iop/ashift.c:2623 ../src/iop/ashift.c:2624 ../src/iop/ashift.c:2677
+#: ../src/iop/ashift.c:2678 ../src/iop/clipping.c:1564
 #: ../src/iop/clipping.c:1855 ../src/iop/clipping.c:1874
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/ashift.c:2618 ../src/iop/graduatednd.c:1028
+#: ../src/iop/ashift.c:2738 ../src/iop/graduatednd.c:1028
 #: ../src/iop/watermark.c:1296
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:2622
+#: ../src/iop/ashift.c:2742
 msgid "lens shift (vertical)"
 msgstr "correction d'objectif (verticale)"
 
-#: ../src/iop/ashift.c:2626
+#: ../src/iop/ashift.c:2747
 msgid "lens shift (horizontal)"
 msgstr "correction d'objectif (horizontale)"
 
-#: ../src/iop/ashift.c:2634
+#: ../src/iop/ashift.c:2756
 msgid "automatic fit"
 msgstr "correction automatique"
 
-#: ../src/iop/ashift.c:2653
+#: ../src/iop/ashift.c:2775
 msgid "get structure"
 msgstr "récupère les structures"
 
-#: ../src/iop/ashift.c:2672
+#: ../src/iop/ashift.c:2794
 msgid "rotate image"
 msgstr "rotation de l'image"
 
-#: ../src/iop/ashift.c:2673 ../src/iop/ashift.c:2675
+#: ../src/iop/ashift.c:2795 ../src/iop/ashift.c:2797
 msgid "apply lens shift correction in one direction"
 msgstr "applique la correction d'objectif dans une direction"
 
-#: ../src/iop/ashift.c:2677
-msgid "automatically correct for vertical perspective distortion"
-msgstr "correction automatique des distorsions verticales de perspective"
-
-#: ../src/iop/ashift.c:2678
-msgid "automatically correct for horizontal perspective distortion"
-msgstr "correction automatique des distorsions horizontales de perspective"
-
-#: ../src/iop/ashift.c:2679
+#: ../src/iop/ashift.c:2799
 msgid ""
-"automatically correct for vertical and horizontal perspective distortions"
+"automatically correct for vertical perspective distortion\n"
+"ctrl-click to only fit rotation\n"
+"shift-click to only fit lens shift"
+msgstr ""
+"correction automatique des distorsions verticales de perspective\n"
+"ctrl-clic pour la correction de rotation seulement\n"
+"shift-clic pour la correction de distorsion uniquement"
+
+#: ../src/iop/ashift.c:2802
+msgid ""
+"automatically correct for horizontal perspective distortion\n"
+"ctrl-click to only fit rotation\n"
+"shift-click to only fit lens shift"
+msgstr ""
+"correction automatique des distorsions horizontales de perspective\n"
+"ctrl-clic pour la correction de rotation seulement\n"
+"shift-clic pour la correction de distorsion uniquement"
+
+#: ../src/iop/ashift.c:2805
+msgid ""
+"automatically correct for vertical and horizontal perspective distortions\n"
+"ctrl-click to only fit rotation\n"
+"shift-click to only fit lens shift"
 msgstr ""
 "correction automatique des distorsions verticales et horizontales de "
-"perspective"
+"perspective\n"
+"ctrl-clic pour la correction de rotation seulement\n"
+"shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:2680
+#: ../src/iop/ashift.c:2808
 msgid "analyse line structure in image"
 msgstr "analyser les lignes de structure dans l'image"
 
-#: ../src/iop/ashift.c:2681
+#: ../src/iop/ashift.c:2809
 msgid "remove line structure information"
 msgstr "supprime la visualisation des lignes de structure"
 
-#: ../src/iop/ashift.c:2682
+#: ../src/iop/ashift.c:2810
 msgid "toggle visibility of structure lines"
 msgstr "active/désactive l'affichage des lignes de structure"
 
@@ -6457,23 +6473,23 @@ msgstr "blanc"
 msgid "liquify"
 msgstr "liquéfier"
 
-#: ../src/iop/liquify.c:3072
+#: ../src/iop/liquify.c:3222
 msgid "click and drag to add point"
 msgstr "cliquer et tracer pour ajouter un point"
 
-#: ../src/iop/liquify.c:3074
+#: ../src/iop/liquify.c:3224
 msgid "click to add line"
 msgstr "cliquer pour ajouter une ligne"
 
-#: ../src/iop/liquify.c:3076
+#: ../src/iop/liquify.c:3226
 msgid "click to add curve"
 msgstr "cliquer pour ajouter une courbe"
 
-#: ../src/iop/liquify.c:3078
+#: ../src/iop/liquify.c:3228
 msgid "click to edit nodes"
 msgstr "cliquer pour éditer les points"
 
-#: ../src/iop/liquify.c:3116
+#: ../src/iop/liquify.c:3266
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -6481,31 +6497,31 @@ msgstr ""
 "utiliser un outil pour ajouter une forme.\n"
 "clic-droit pour supprimer une forme."
 
-#: ../src/iop/liquify.c:3118
+#: ../src/iop/liquify.c:3268
 msgid "warps|nodes count:"
 msgstr "nb formes|points:"
 
-#: ../src/iop/liquify.c:3125
+#: ../src/iop/liquify.c:3275
 msgid "node tool: edit, add and delete nodes"
 msgstr "outil point: éditer, ajouter et supprimer des points"
 
-#: ../src/iop/liquify.c:3133
+#: ../src/iop/liquify.c:3283
 msgid "curve tool: draw curves"
 msgstr "outil courbe: dessiner des courbes"
 
-#: ../src/iop/liquify.c:3141
+#: ../src/iop/liquify.c:3291
 msgid "line tool: draw lines"
 msgstr "outil ligne: dessiner des lignes"
 
-#: ../src/iop/liquify.c:3149
+#: ../src/iop/liquify.c:3299
 msgid "point tool: draw points"
 msgstr "outil point: placer des points"
 
-#: ../src/iop/liquify.c:3157
+#: ../src/iop/liquify.c:3307
 msgid "disable all tools"
 msgstr "désactiver les outils"
 
-#: ../src/iop/liquify.c:3164
+#: ../src/iop/liquify.c:3314
 msgid ""
 "ctrl+click to add node\n"
 "right click to remove path"
@@ -6513,7 +6529,7 @@ msgstr ""
 "ctrl-clic pour ajouter un point\n"
 "clic-droit pour supprimer un chemin"
 
-#: ../src/iop/liquify.c:3165
+#: ../src/iop/liquify.c:3315
 msgid ""
 "click and drag to move - click : linear or feathered\n"
 "ctrl+click : symmetrical, smooth, cusp, autosmooth\n"
@@ -6523,23 +6539,23 @@ msgstr ""
 "ctrl-clic : symétrique, doux, courbe, automatique\n"
 "clic-droit pour supprimer"
 
-#: ../src/iop/liquify.c:3166 ../src/iop/liquify.c:3167
+#: ../src/iop/liquify.c:3316 ../src/iop/liquify.c:3317
 msgid "drag to change shape of path"
 msgstr "déplacer pour changer le chemin"
 
-#: ../src/iop/liquify.c:3168
+#: ../src/iop/liquify.c:3318
 msgid "drag to adjust warp radius"
 msgstr "déplacer pour ajuster le rayon"
 
-#: ../src/iop/liquify.c:3169
+#: ../src/iop/liquify.c:3319
 msgid "drag to adjust hardness (center)"
 msgstr "déplacer pour ajuster la dureté (centre)"
 
-#: ../src/iop/liquify.c:3170
+#: ../src/iop/liquify.c:3320
 msgid "drag to adjust hardness (feather)"
 msgstr "déplacer pour ajuster la dureté (progressif)"
 
-#: ../src/iop/liquify.c:3171
+#: ../src/iop/liquify.c:3321
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click : linear, grow, and shrink"
@@ -6547,27 +6563,27 @@ msgstr ""
 "déplacer pour ajuster la force du point\n"
 "ctrl-clic : linéaire, augmente et diminue"
 
-#: ../src/iop/liquify.c:3188
+#: ../src/iop/liquify.c:3338
 msgctxt "accel"
 msgid "point tool"
 msgstr "outil point"
 
-#: ../src/iop/liquify.c:3189
+#: ../src/iop/liquify.c:3339
 msgctxt "accel"
 msgid "line tool"
 msgstr "outil ligne"
 
-#: ../src/iop/liquify.c:3190
+#: ../src/iop/liquify.c:3340
 msgctxt "accel"
 msgid "curve tool"
 msgstr "outil courbe"
 
-#: ../src/iop/liquify.c:3191
+#: ../src/iop/liquify.c:3341
 msgctxt "accel"
 msgid "node tool"
 msgstr "édition des chemins"
 
-#: ../src/iop/liquify.c:3192
+#: ../src/iop/liquify.c:3342
 msgctxt "accel"
 msgid "disable tools"
 msgstr "désactiver les outils"
