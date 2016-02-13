@@ -59,8 +59,10 @@
 // implemented by Michael F. Hutt.
 #include "ashift_nmsimplex.c"
 
-#define ROTATION_RANGE 10                   // allowed min/max value for rotation parameter
-#define LENSSHIFT_RANGE 1                   // allowed min/max value for lensshift paramters
+#define ROTATION_RANGE 10                   // allowed min/max default range for rotation parameter
+#define ROTATION_RANGE_SOFT 20              // allowed min/max range for rotation parameter with manual adjustment
+#define LENSSHIFT_RANGE 0.5                 // allowed min/max default range for lensshift paramters
+#define LENSSHIFT_RANGE_SOFT 1              // allowed min/max range for lensshift paramters with manual adjustment
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
@@ -203,6 +205,9 @@ typedef struct dt_iop_ashift_fit_params_t
   float rotation;
   float lensshift_v;
   float lensshift_h;
+  float rotation_range;
+  float lensshift_v_range;
+  float lensshift_h_range;
 } dt_iop_ashift_fit_params_t;
 
 typedef struct dt_iop_ashift_gui_data_t
@@ -219,6 +224,9 @@ typedef struct dt_iop_ashift_gui_data_t
   int lines_suppressed;
   int fitting;
   int isflipped;
+  float rotation_range;
+  float lensshift_v_range;
+  float lensshift_h_range;
   dt_iop_ashift_line_t *lines;
   int lines_in_width;
   int lines_in_height;
@@ -1293,25 +1301,28 @@ static double model_fitness(double *params, void *data)
   float rotation = fit->rotation;
   float lensshift_v = fit->lensshift_v;
   float lensshift_h = fit->lensshift_h;
+  float rotation_range = fit->rotation_range;
+  float lensshift_v_range = fit->lensshift_v_range;
+  float lensshift_h_range = fit->lensshift_h_range;
 
   int pcount = 0;
 
   // fill in fit parameters from params[]. Attention: order matters!!!
   if(isnan(rotation))
   {
-    rotation = ilogit(params[pcount], -ROTATION_RANGE, ROTATION_RANGE);
+    rotation = ilogit(params[pcount], -rotation_range, rotation_range);
     pcount++;
   }
 
   if(isnan(lensshift_v))
   {
-    lensshift_v = ilogit(params[pcount], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    lensshift_v = ilogit(params[pcount], -lensshift_v_range, lensshift_v_range);
     pcount++;
   }
 
   if(isnan(lensshift_h))
   {
-    lensshift_h = ilogit(params[pcount], -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    lensshift_h = ilogit(params[pcount], -lensshift_h_range, lensshift_h_range);
     pcount++;
   }
 
@@ -1400,6 +1411,9 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   fit.rotation = p->rotation;
   fit.lensshift_v = p->lensshift_v;
   fit.lensshift_h = p->lensshift_h;
+  fit.rotation_range = g->rotation_range;
+  fit.lensshift_v_range = g->lensshift_v_range;
+  fit.lensshift_h_range = g->lensshift_h_range;
   fit.linetype = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
   fit.linemask = ASHIFT_LINE_MASK;
   fit.params_count = 0;
@@ -1427,7 +1441,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   {
     // we fit rotation
     fit.params_count++;
-    params[pcount] = logit(fit.rotation, -ROTATION_RANGE, ROTATION_RANGE);
+    params[pcount] = logit(fit.rotation, -fit.rotation_range, fit.rotation_range);
     pcount++;
     fit.rotation = NAN;
   }
@@ -1436,7 +1450,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   {
     // we fit vertical lens shift
     fit.params_count++;
-    params[pcount] = logit(fit.lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    params[pcount] = logit(fit.lensshift_v, -fit.lensshift_v_range, fit.lensshift_v_range);
     pcount++;
     fit.lensshift_v = NAN;
   }
@@ -1445,7 +1459,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   {
     // we fit horizontal lens shift
     fit.params_count++;
-    params[pcount] = logit(fit.lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+    params[pcount] = logit(fit.lensshift_h, -fit.lensshift_h_range, fit.lensshift_h_range);
     pcount++;
     fit.lensshift_h = NAN;
   }
@@ -1488,9 +1502,9 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
 
   // fit was successful: now write the results into structure p (order matters!!!)
   pcount = 0;
-  p->rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -ROTATION_RANGE, ROTATION_RANGE) : fit.rotation;
-  p->lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -LENSSHIFT_RANGE, LENSSHIFT_RANGE) : fit.lensshift_v;
-  p->lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -LENSSHIFT_RANGE, LENSSHIFT_RANGE) : fit.lensshift_h;
+  p->rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range) : fit.rotation;
+  p->lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range) : fit.lensshift_v;
+  p->lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
 
 #ifdef ASHIFT_DEBUG
   printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f\n",
@@ -1538,39 +1552,6 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
     mdir ^= g->isflipped ? ASHIFT_FIT_FLIP : 0;
     // special case that needs to be corrected
     mdir |= (mdir & ASHIFT_FIT_LINES_BOTH) == 0 ? ASHIFT_FIT_LINES_BOTH : 0;
-  }
-
-
-  // prepare fit structure and starting parameters for simplex fit.
-  // note: the sequence of parameters in params[] needs to match the
-  // respective order in dt_iop_ashift_fit_params_t. Parameters which are
-  // to be fittet are marked with NAN in the fit structure. Non-NAN
-  // parameters are assumed to be constant.
-  if(mdir & ASHIFT_FIT_ROTATION)
-  {
-    // we fit rotation
-    fit.params_count++;
-    params[pcount] = logit(fit.rotation, -ROTATION_RANGE, ROTATION_RANGE);
-    pcount++;
-    fit.rotation = NAN;
-  }
-
-  if(mdir & ASHIFT_FIT_LENS_VERT)
-  {
-    // we fit vertical lens shift
-    fit.params_count++;
-    params[pcount] = logit(fit.lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-    pcount++;
-    fit.lensshift_v = NAN;
-  }
-
-  if(mdir & ASHIFT_FIT_LENS_HOR)
-  {
-    // we fit horizontal lens shift
-    fit.params_count++;
-    params[pcount] = logit(fit.lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
-    pcount++;
-    fit.lensshift_h = NAN;
   }
 
   if(mdir & ASHIFT_FIT_LINES_VERT)
@@ -2311,17 +2292,26 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   return 0;
 }
 
+// adjust the range values in gui data if needed from the narrow default boundaries
+// to soft boundaries
+static void range_adjust(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+{
+  g->rotation_range = fabs(p->rotation) > ROTATION_RANGE ? ROTATION_RANGE_SOFT : g->rotation_range;
+  g->lensshift_v_range = fabs(p->lensshift_v) > LENSSHIFT_RANGE ? LENSSHIFT_RANGE_SOFT : g->lensshift_v_range;
+  g->lensshift_h_range = fabs(p->lensshift_h) > LENSSHIFT_RANGE ? LENSSHIFT_RANGE_SOFT : g->lensshift_h_range;
+}
 
 static void rotation_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   p->rotation = dt_bauhaus_slider_get(slider);
 #ifdef ASHIFT_DEBUG
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
+  range_adjust(p, g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2330,11 +2320,12 @@ static void lensshift_v_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   p->lensshift_v = dt_bauhaus_slider_get(slider);
 #ifdef ASHIFT_DEBUG
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
+  range_adjust(p, g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2343,11 +2334,12 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   p->lensshift_h = dt_bauhaus_slider_get(slider);
 #ifdef ASHIFT_DEBUG
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
+  range_adjust(p, g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2378,7 +2370,7 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     if(do_fit(self, p, fitaxis))
     {
       darktable.gui->reset = 1;
-      dt_bauhaus_slider_set(g->rotation, p->rotation);
+      dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
       darktable.gui->reset = 0;
@@ -2422,7 +2414,7 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     if(do_fit(self, p, fitaxis))
     {
       darktable.gui->reset = 1;
-      dt_bauhaus_slider_set(g->rotation, p->rotation);
+      dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
       darktable.gui->reset = 0;
@@ -2466,7 +2458,7 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
     if(do_fit(self, p, fitaxis))
     {
       darktable.gui->reset = 1;
-      dt_bauhaus_slider_set(g->rotation, p->rotation);
+      dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
       darktable.gui->reset = 0;
@@ -2553,7 +2545,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)module->params;
-  dt_bauhaus_slider_set(g->rotation, p->rotation);
+  dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
   dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
@@ -2576,8 +2568,12 @@ void gui_update(struct dt_iop_module_t *self)
   g->horizontal_count = 0;
   g->vertical_count = 0;
   g->grid_hash = 0;
+  g->rotation_range = ROTATION_RANGE;
+  g->lensshift_v_range = LENSSHIFT_RANGE;
+  g->lensshift_h_range = LENSSHIFT_RANGE;
   g->lines_suppressed = 0;
   g->lines_version++;
+  range_adjust(p, g);
 }
 
 void init(dt_iop_module_t *module)
@@ -2731,21 +2727,26 @@ void gui_init(struct dt_iop_module_t *self)
   g->points_lines_count = 0;
   g->points_version = 0;
   g->grid_hash = 0;
+  g->rotation_range = ROTATION_RANGE;
+  g->lensshift_v_range = LENSSHIFT_RANGE;
+  g->lensshift_h_range = LENSSHIFT_RANGE;
+  range_adjust(p, g);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, ROTATION_RANGE / 100.0, p->rotation, 2);
+  g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.01*ROTATION_RANGE, p->rotation, 2);
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->rotation, -ROTATION_RANGE_SOFT, ROTATION_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
 
-  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -0.5*LENSSHIFT_RANGE, 0.5*LENSSHIFT_RANGE, 0.005*LENSSHIFT_RANGE, p->lensshift_v, 3);
+  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01*LENSSHIFT_RANGE, p->lensshift_v, 3);
   dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (vertical)"));
-  dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+  dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_v, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
 
-  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -0.5*LENSSHIFT_RANGE, 0.5*LENSSHIFT_RANGE, 0.005*LENSSHIFT_RANGE, p->lensshift_v, 3);
+  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01*LENSSHIFT_RANGE, p->lensshift_v, 3);
   dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
-  dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+  dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_h, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
 
 
