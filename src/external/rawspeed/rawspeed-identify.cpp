@@ -102,6 +102,9 @@ int main(int argc, const char* argv[])
     for (uint32 i=0; i<r->errors.size(); i++)
       fprintf(stderr, "WARNING: [rawspeed] %s\n", r->errors[i]);
 
+    fprintf(stdout, "make: %s\n", r->metadata.make.c_str());
+    fprintf(stdout, "model: %s\n", r->metadata.model.c_str());
+
     fprintf(stdout, "canonical_make: %s\n", r->metadata.canonical_make.c_str());
     fprintf(stdout, "canonical_model: %s\n", r->metadata.canonical_model.c_str());
     fprintf(stdout, "canonical_alias: %s\n", r->metadata.canonical_alias.c_str());
