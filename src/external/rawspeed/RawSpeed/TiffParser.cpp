@@ -105,6 +105,9 @@ void TiffParser::parseData() {
     else
       mRootIFD->mSubIFD.push_back(new TiffIFDBE(mInput, nextIFD));
 
+    if (mRootIFD->mSubIFD.size() > 100)
+      throw TiffParserException("TIFF file has too many SubIFDs, probably broken");
+
     nextIFD = mRootIFD->mSubIFD.back()->getNextIFD();
   }
 }
