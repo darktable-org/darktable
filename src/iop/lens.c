@@ -1614,6 +1614,7 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
     GtkLabel *label;
 
     label = GTK_LABEL(gtk_label_new(_("camera/lens not found - please select manually")));
+    gtk_label_set_ellipsize(label, PANGO_ELLIPSIZE_MIDDLE);
 
     g_object_set(G_OBJECT(label), "tooltip-text", _("try to locate your camera/lens in the above two menus"),
                  (char *)NULL);
@@ -2016,6 +2017,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   darktable.gui->reset = 1;
   gtk_label_set_text(g->message, message);
+  g_object_set(G_OBJECT(g->message), "tooltip-text", message, (char *)NULL);
   darktable.gui->reset = 0;
 
   return FALSE;
@@ -2221,6 +2223,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(label), "tooltip-text", _("which corrections have actually been done"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(label), FALSE, FALSE, 0);
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  gtk_label_set_ellipsize(GTK_LABEL(g->message), PANGO_ELLIPSIZE_MIDDLE);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->message), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 }
