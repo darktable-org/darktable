@@ -54,16 +54,6 @@ TiffParser::~TiffParser(void) {
   mRootIFD = NULL;
 }
 
-#ifdef CHECKSIZE
-#undef CHECKSIZE
-#endif
-#ifdef CHECKPTR
-#undef CHECKPTR
-#endif
-
-#define CHECKSIZE(A) if (A >= mInput->getSize()) throw TiffParserException("Error reading TIFF structure (size out of bounds). File Corrupt")
-#define CHECKPTR(A) if ((int)A >= ((int)(mInput->data) + size))) throw TiffParserException("Error reading TIFF structure (size out of bounds). File Corrupt")
-
 void TiffParser::parseData() {
   if (mInput->getSize() < 16)
     throw TiffParserException("Not a TIFF file (size too small)");
@@ -98,8 +88,6 @@ void TiffParser::parseData() {
     nextIFD = (unsigned int)data[0] << 24 | (unsigned int)data[1] << 16 | (unsigned int)data[2] << 8 | (unsigned int)data[3];
   }
   while (nextIFD) {
-    CHECKSIZE(nextIFD);
-
     if (tiff_endian == host_endian)
       mRootIFD->mSubIFD.push_back(new TiffIFD(mInput, nextIFD));
     else
