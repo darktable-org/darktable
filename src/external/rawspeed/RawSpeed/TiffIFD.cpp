@@ -27,18 +27,21 @@
 namespace RawSpeed {
 
 TiffIFD::TiffIFD() {
+  SET_DEPTH(0);
   nextIFD = 0;
   endian = little;
   mFile = 0;
 }
 
 TiffIFD::TiffIFD(FileMap* f) {
+  SET_DEPTH(0);
   nextIFD = 0;
   endian = little;
   mFile = f;
 }
 
-TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
+TiffIFD::TiffIFD(FileMap* f, uint32 offset, uint32 _depth) {
+  SET_DEPTH(_depth);
   mFile = f;
   uint32 entries;
   endian = little;
@@ -97,7 +100,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
           const unsigned int* sub_offsets = t->getIntArray();
 
           for (uint32 j = 0; j < t->count; j++) {
-            mSubIFD.push_back(new TiffIFD(f, sub_offsets[j]));
+            mSubIFD.push_back(new TiffIFD(f, sub_offsets[j], depth));
           }
           delete(t);
         } catch (TiffParserException) { // Unparsable subifds are added as entries
@@ -269,9 +272,9 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
   // Attempt to parse the rest as an IFD
   try {
     if (parent_end == getHostEndianness())
-      maker_ifd = new TiffIFD(mFile, offset);
+      maker_ifd = new TiffIFD(mFile, offset, depth);
     else
-      maker_ifd = new TiffIFDBE(mFile, offset);
+      maker_ifd = new TiffIFDBE(mFile, offset, depth);
   } catch (...) {
     if (mFile != f)
       delete mFile;

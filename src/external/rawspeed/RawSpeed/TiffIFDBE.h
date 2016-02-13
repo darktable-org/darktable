@@ -31,7 +31,7 @@ class TiffIFDBE :
 {
 public:
   TiffIFDBE();
-  TiffIFDBE(FileMap* f, uint32 offset);
+  TiffIFDBE(FileMap* f, uint32 offset, uint32 depth=0);
   virtual ~TiffIFDBE(void);
 };
 

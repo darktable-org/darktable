@@ -27,10 +27,12 @@
 namespace RawSpeed {
 
 TiffIFDBE::TiffIFDBE() {
+  SET_DEPTH(0);
   endian = big;
 }
 
-TiffIFDBE::TiffIFDBE(FileMap* f, uint32 offset) {
+TiffIFDBE::TiffIFDBE(FileMap* f, uint32 offset, uint32 _depth) {
+  SET_DEPTH(_depth);
   mFile = f;
   endian = big;
   int entries;
@@ -77,7 +79,7 @@ TiffIFDBE::TiffIFDBE(FileMap* f, uint32 offset) {
         const unsigned int* sub_offsets = t->getIntArray();
         try {
           for (uint32 j = 0; j < t->count; j++) {
-            mSubIFD.push_back(new TiffIFDBE(f, sub_offsets[j]));
+            mSubIFD.push_back(new TiffIFDBE(f, sub_offsets[j], depth));
           }
           delete(t);
         } catch (TiffParserException) { // Unparsable subifds are added as entries
