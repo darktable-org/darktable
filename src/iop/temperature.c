@@ -20,7 +20,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -384,8 +386,82 @@ void dt_wb_preset_interpolate(const wb_data *const p1, // the smaller tuning
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const int filters = dt_image_filter(&piece->pipe->image);
+  const uint8_t (*const xtrans)[6] = (const uint8_t (*const)[6]) self->dev->image_storage.xtrans;
+  const dt_iop_temperature_data_t *const d = (dt_iop_temperature_data_t *)piece->data;
+
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
+
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u)
+  { // xtrans float mosaiced
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const size_t p = (size_t)j * roi_out->width + i;
+        out[p] = in[p] * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
+      }
+    }
+  }
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  { // bayer float mosaiced
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const size_t p = (size_t)j * roi_out->width + i;
+        out[p] = in[p] * d->coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
+      }
+    }
+  }
+  else if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  { // non-mosaiced CYGM/RGBE image
+    dt_iop_temperature_data_t *d2 = (dt_iop_temperature_data_t *)piece->data;
+
+    dt_colorspaces_cygm_apply_coeffs_to_rgb(((float *)ovoid), ((float *)ivoid),
+                                            roi_out->width * roi_out->height, d2->RGB_to_CAM, d2->CAM_to_RGB,
+                                            d2->coeffs);
+    float new_maximum[4] = {1.0f};
+    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->processed_maximum, 1, d2->RGB_to_CAM,
+                                            d2->CAM_to_RGB, d2->coeffs);
+    for(int k = 0; k < 4; k++)
+      piece->pipe->processed_maximum[k] = new_maximum[k];
+  }
+  else
+  { // non-mosaiced
+    const int ch = piece->colors;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#endif
+    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        const size_t p = (size_t)k + c;
+        out[p] = in[p] * d->coeffs[c];
+      }
+    }
+
+    if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  }
+  for(int k = 0; k < 4; k++)
+    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_image_t *img = &self->dev->image_storage;
   const int filters = dt_image_filter(&piece->pipe->image);
@@ -442,34 +518,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     }
     _mm_sfence();
   }
-#if 0
-  else if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters
-          && piece->pipe->pre_monochrome_demosaiced)
-  { // pre-demosaiced (monochrome)
-    const int ch = piece->colors;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)ch * j * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
-
-      const __m128 coeffs[3]
-          = { _mm_set1_ps(d->coeffs[0]), _mm_set1_ps(d->coeffs[1]), _mm_set1_ps(d->coeffs[2]) };
-
-      for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
-      {
-        const __m128 input = _mm_load_ps(in);
-        const __m128 multiplied = _mm_mul_ps(input, coeffs[FC(j + roi_out->y, roi_out->x + i, filters)]);
-        _mm_stream_ps(out, multiplied);
-      }
-    }
-    _mm_sfence();
-
-    if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-  }
-#endif
   else if(img->flags & DT_IMAGE_4BAYER)
   { // non-mosaiced CYGM/RGBE image
     dt_colorspaces_cygm_apply_coeffs_to_rgb(((float *)ovoid), ((float *)ivoid),
@@ -508,6 +556,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   for(int k = 0; k < 4; k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
 }
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
