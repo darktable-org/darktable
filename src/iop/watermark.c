@@ -370,15 +370,6 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
         svgdata = svgdoc;
       }
 
-      GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
-      g_snprintf(buffer, sizeof(buffer), "%s", gdk_rgba_to_string(&c));
-      svgdoc = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
-      if(svgdoc != svgdata)
-      {
-        g_free(svgdata);
-        svgdata = svgdoc;
-      }
-
       PangoFontDescription *font = pango_font_description_from_string(data->font);
       const PangoStyle font_style = pango_font_description_get_style(font);
       const int font_weight = (int)pango_font_description_get_weight(font);
@@ -419,6 +410,16 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
       }
 
       pango_font_description_free(font);
+    }
+
+    // watermark color
+    GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
+    g_snprintf(buffer, sizeof(buffer), "%s", gdk_rgba_to_string(&c));
+    svgdoc = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
+    if(svgdoc != svgdata)
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
     }
 
     // Current image ID
@@ -1236,6 +1237,23 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), g->refresh, g->watermarks, GTK_POS_RIGHT, 1, 1);
 
 
+  // Watermark color
+  float red = dt_conf_get_float("plugins/darkroom/watermark/color_red");
+  float green = dt_conf_get_float("plugins/darkroom/watermark/color_green");
+  float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
+  GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
+
+  label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
+  g->colorpick = gtk_color_button_new_with_rgba(&color);
+  g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("watermark color, tag:\n$(WATERMARK_COLOR)"),
+               (char *)NULL);
+  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
+
+  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), g->colorpick, label, GTK_POS_RIGHT, 2, 1);
+
   // Simple text
   label = gtk_label_new(_("text"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -1249,22 +1267,6 @@ void gui_init(struct dt_iop_module_t *self)
   gchar *str = dt_conf_get_string("plugins/darkroom/watermark/text");
   gtk_entry_set_text(GTK_ENTRY(g->text), str);
   g_free(str);
-
-  // Text color
-  float red = dt_conf_get_float("plugins/darkroom/watermark/color_red");
-  float green = dt_conf_get_float("plugins/darkroom/watermark/color_green");
-  float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
-  GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
-
-  label = dtgtk_reset_label_new(_("text color"), self, &p->color, 3 * sizeof(float));
-  g->colorpick = gtk_color_button_new_with_rgba(&color);
-  g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("text color, tag:\n$(WATERMARK_COLOR)"), (char *)NULL);
-  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select text color"));
-
-  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), g->colorpick, label, GTK_POS_RIGHT, 2, 1);
 
   // Text font
   label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font));
