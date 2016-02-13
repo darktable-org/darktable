@@ -24,7 +24,9 @@
 #endif
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "dtgtk/resetlabel.h"
@@ -156,8 +158,91 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_invert_data_t *const d = (dt_iop_invert_data_t *)piece->data;
+
+  const float *const m = piece->pipe->processed_maximum;
+
+  float film_rgb[4] = { d->color[0], d->color[1], d->color[2], 0.0f };
+
+  // Convert the RGB color to CYGM only if we're not in the preview pipe (which is already RGB)
+  if((self->dev->image_storage.flags & DT_IMAGE_4BAYER) && !dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    dt_iop_invert_data_t *d2 = (dt_iop_invert_data_t *)piece->data;
+    dt_colorspaces_rgb_to_cygm(film_rgb, 1, d2->RGB_to_CAM);
+  }
+
+  const float film_rgb_f[4] = { film_rgb[0] * m[0], film_rgb[1] * m[1], film_rgb[2] * m[2], film_rgb[3] * m[3] };
+
+  // FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
+  //   if(self->request_color_pick){
+  // do nothing
+  //   }
+
+  const int filters = dt_image_filter(&piece->pipe->image);
+  uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
+
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
+
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
+  { // xtrans float mosaiced
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const size_t p = (size_t)j * roi_out->width + i;
+        out[p] = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - in[p], 0.0f, 1.0f);
+      }
+    }
+
+    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
+  }
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  { // bayer float mosaiced
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const size_t p = (size_t)j * roi_out->width + i;
+        out[p] = CLAMP(film_rgb_f[FC(j + roi_out->y, i + roi_out->x, filters)] - in[p], 0.0f, 1.0f);
+      }
+    }
+
+    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
+  }
+  else
+  { // non-mosaiced
+    const int ch = piece->colors;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#endif
+    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        const size_t p = (size_t)k + c;
+        out[p] = d->color[c] - in[p];
+      }
+    }
+
+    if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  }
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
 
@@ -261,6 +346,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
 }
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
