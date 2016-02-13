@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "Cr2Decoder.h"
-#include "TiffParserHeaderless.h"
 #include "ByteStreamSwap.h"
 
 /*
