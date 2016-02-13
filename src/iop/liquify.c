@@ -1241,17 +1241,17 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     // we need to adjust the extent to be the union enclosing all the points (currently in extent) and
     // the warps that are in (possibly partly) in this same region.
 
-    cairo_region_t *roi_in_region = cairo_region_create_rectangle (&extent);
     dt_iop_roi_t roi_in = { .x = extent.x, .y = extent.y, .width = extent.width, .height = extent.height };
     _get_map_extent (&roi_in, interpolated, &extent);
-    cairo_region_union_rectangle (roi_in_region, &extent);
-    cairo_region_get_extents (roi_in_region, &extent);
-    cairo_region_destroy (roi_in_region);
 
     float complex *map = create_global_distortion_map (&extent, interpolated, inverted);
     g_list_free_full (interpolated, free);
 
     if (map == NULL) return 0;
+
+    const int map_size =  extent.width * extent.height;
+    const int x_last = extent.x + extent.width;
+    const int y_last = extent.y + extent.height;
 
     // apply distortion to all points (this is a simple displacement given by a vector at this same point in the map)
     for(size_t i = 0; i < points_count; i++)
@@ -1261,9 +1261,13 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       const float x = *px * scale;
       const float y = *py * scale;
       const int map_offset = ((int)(x - 0.5) - extent.x) + ((int)(y - 0.5) - extent.y) * extent.width;
-      const float complex dist = map[map_offset] / scale;
-      *px += creal(dist);
-      *py += cimag(dist);
+
+      if (x >= extent.x && x < x_last && y >= extent.y && y < y_last && map_offset >= 0 && map_offset < map_size)
+      {
+        const float complex dist = map[map_offset] / scale;
+        *px += creal(dist);
+        *py += cimag(dist);
+      }
     }
 
     dt_free_align ((void *) map);
