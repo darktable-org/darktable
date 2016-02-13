@@ -26,7 +26,8 @@
 
 namespace RawSpeed {
 
-CiffIFD::CiffIFD(FileMap* f, uint32 start, uint32 end) {
+CiffIFD::CiffIFD(FileMap* f, uint32 start, uint32 end, uint32 _depth) {
+  CIFF_DEPTH(_depth);
   mFile = f;
 
   uint32 valuedata_size = *(uint32 *) f->getData(end-4, 4);
@@ -52,7 +53,7 @@ CiffIFD::CiffIFD(FileMap* f, uint32 start, uint32 end) {
 
     if (t->type == CIFF_SUB1 || t->type == CIFF_SUB2) {
       try {
-        mSubIFD.push_back(new CiffIFD(f, t->data_offset, t->data_offset+t->count));
+        mSubIFD.push_back(new CiffIFD(f, t->data_offset, t->data_offset+t->count, depth));
         delete(t);
       } catch (CiffParserException) { // Unparsable subifds are added as entries
         mEntry[t->tag] = t;

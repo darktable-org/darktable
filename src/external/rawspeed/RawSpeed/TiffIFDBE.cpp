@@ -27,12 +27,12 @@
 namespace RawSpeed {
 
 TiffIFDBE::TiffIFDBE() {
-  SET_DEPTH(0);
+  TIFF_DEPTH(0);
   endian = big;
 }
 
 TiffIFDBE::TiffIFDBE(FileMap* f, uint32 offset, uint32 _depth) {
-  SET_DEPTH(_depth);
+  TIFF_DEPTH(_depth);
   mFile = f;
   endian = big;
   int entries;

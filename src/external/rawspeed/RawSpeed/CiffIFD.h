@@ -30,11 +30,12 @@
 
 namespace RawSpeed {
 
+#define CIFF_DEPTH(_depth) if((depth=_depth+1) > 10) ThrowCPE("CIFF: sub-micron matryoshka dolls are ignored");
 
 class CiffIFD
 {
 public:
-  CiffIFD(FileMap* f, uint32 start, uint32 end);
+  CiffIFD(FileMap* f, uint32 start, uint32 end, uint32 depth=0);
   virtual ~CiffIFD(void);
   vector<CiffIFD*> mSubIFD;
   map<CiffTag, CiffEntry*> mEntry;
@@ -50,6 +51,7 @@ public:
   FileMap* getFileMap() {return mFile;};
 protected:
   FileMap *mFile;
+  uint32 depth;
 };
 
 } // namespace RawSpeed

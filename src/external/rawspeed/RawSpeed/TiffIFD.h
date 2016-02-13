@@ -29,7 +29,7 @@
 
 namespace RawSpeed {
 
-#define SET_DEPTH(_depth) if((depth=_depth+1) > 10) ThrowTPE("TIFF: sub-micron matryoshka dolls are ignored"); 
+#define TIFF_DEPTH(_depth) if((depth=_depth+1) > 10) ThrowTPE("TIFF: sub-micron matryoshka dolls are ignored");
 
 class TiffIFD
 {

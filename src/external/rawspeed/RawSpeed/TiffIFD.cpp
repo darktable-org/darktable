@@ -27,21 +27,21 @@
 namespace RawSpeed {
 
 TiffIFD::TiffIFD() {
-  SET_DEPTH(0);
+  TIFF_DEPTH(0);
   nextIFD = 0;
   endian = little;
   mFile = 0;
 }
 
 TiffIFD::TiffIFD(FileMap* f) {
-  SET_DEPTH(0);
+  TIFF_DEPTH(0);
   nextIFD = 0;
   endian = little;
   mFile = f;
 }
 
 TiffIFD::TiffIFD(FileMap* f, uint32 offset, uint32 _depth) {
-  SET_DEPTH(_depth);
+  TIFF_DEPTH(_depth);
   mFile = f;
   uint32 entries;
   endian = little;
