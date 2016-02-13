@@ -1737,6 +1737,70 @@ dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt
   return NULL;
 }
 
+uint64_t dt_dev_hash(dt_develop_t *dev)
+{
+  return dt_dev_hash_plus(dev, dev->preview_pipe, 0, 99999);
+}
+
+uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax)
+{
+  uint64_t hash = 5381;
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  GList *modules = g_list_last(dev->iop);
+  GList *pieces = g_list_last(pipe->nodes);
+  while(modules)
+  {
+    if(!pieces)
+    {
+      dt_pthread_mutex_unlock(&dev->history_mutex);
+      return 0;
+    }
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    if(piece->enabled && module->priority <= pmax && module->priority >= pmin)
+    {
+      hash = ((hash << 5) + hash) ^ piece->hash;
+    }
+    modules = g_list_previous(modules);
+    pieces = g_list_previous(pieces);
+  }
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+  return hash;
+}
+
+uint64_t dt_dev_hash_distort(dt_develop_t *dev)
+{
+  return dt_dev_hash_distort_plus(dev, dev->preview_pipe, 0, 99999);
+}
+
+uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax)
+{
+  uint64_t hash = 5381;
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  GList *modules = g_list_last(dev->iop);
+  GList *pieces = g_list_last(pipe->nodes);
+  while(modules)
+  {
+    if(!pieces)
+    {
+      dt_pthread_mutex_unlock(&dev->history_mutex);
+      return 0;
+    }
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    if(piece->enabled && module->operation_tags() & IOP_TAG_DISTORT
+      && module->priority <= pmax && module->priority >= pmin)
+    {
+      hash = ((hash << 5) + hash) ^ piece->hash;
+    }
+    modules = g_list_previous(modules);
+    pieces = g_list_previous(pieces);
+  }
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+  return hash;
+}
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
