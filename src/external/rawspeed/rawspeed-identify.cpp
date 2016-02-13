@@ -150,8 +150,8 @@ int main(int argc, const char* argv[])
       for(uint32_t byte = 0; byte < ((uint32_t) dimUncropped.x*cpp*bpp) ; byte++)
         sum += (double) data[byte];
     }
-    fprintf(stderr, "Image byte sum: %lf\n", sum);
-    fprintf(stderr, "Image byte avg: %lf\n", sum/(dimUncropped.y*dimUncropped.x*cpp*bpp));
+    fprintf(stdout, "Image byte sum: %lf\n", sum);
+    fprintf(stdout, "Image byte avg: %lf\n", sum/(dimUncropped.y*dimUncropped.x*cpp*bpp));
   }
   catch(const std::exception &exc)
   {
