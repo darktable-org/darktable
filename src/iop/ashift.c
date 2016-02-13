@@ -650,10 +650,10 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   roi_out->height = floorf(yM - roi_out->y + 1);
 
   // sanity check.
-  roi_out->x = CLAMP(roi_out->x, 0, INT_MAX);
-  roi_out->y = CLAMP(roi_out->y, 0, INT_MAX);
-  roi_out->width = CLAMP(roi_out->width, 1, INT_MAX);
-  roi_out->height = CLAMP(roi_out->height, 1, INT_MAX);
+  //roi_out->x = CLAMP(roi_out->x, 0, INT_MAX);
+  //roi_out->y = CLAMP(roi_out->y, 0, INT_MAX);
+  //roi_out->width = CLAMP(roi_out->width, 1, INT_MAX);
+  //roi_out->height = CLAMP(roi_out->height, 1, INT_MAX);
 
   //_print_roi(roi_out, "roi_out");
   //_print_roi(roi_in, "roi_in");
@@ -1974,7 +1974,7 @@ static uint64_t grid_hash(dt_develop_t *dev, const int width, const int height, 
 
   // generate a hash out of the deltas of original and transformed points
   uint64_t hash = 5381;
-  for(int k = 0; k <= 2 * points_count; k++)
+  for(int k = 0; k < 2 * points_count; k++)
     hash = ((hash << 5) + hash) ^ (int)(points[k] - tpoints[k]);
 
   return hash;
@@ -2600,7 +2600,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   int isflipped = 0;
 
-  if(module && module->dev)
+  if(module->dev)
   {
     const dt_image_t *img = &module->dev->image_storage;
     isflipped = (img->orientation == ORIENTATION_ROTATE_CCW_90_DEG
@@ -2609,7 +2609,7 @@ void reload_defaults(dt_iop_module_t *module)
                     : 0;
   }
 
-  if(module && module->gui_data)
+  if(module->gui_data)
   {
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 

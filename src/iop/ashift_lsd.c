@@ -22,6 +22,7 @@
  *      do not include "lsd.h" (not needed)
  *      make all interface functions static
  *      comment out unsused function lsd()
+ *      catch (unlikely) division by zero near line 2035
  *
  */
 
@@ -2029,6 +2030,10 @@ static int refine( struct point * reg, int * reg_size, image_double modgrad,
           ++n;
         }
     }
+
+  /* should not happen */
+  if(n == 0) return FALSE;
+
   mean_angle = sum / (double) n;
   tau = 2.0 * sqrt( (s_sum - 2.0 * mean_angle * sum) / (double) n
                          + mean_angle*mean_angle ); /* 2 * standard deviation */
