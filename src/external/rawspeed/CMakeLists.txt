@@ -14,6 +14,18 @@ else(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif(WIN32)
 
+#
+# set development flags for rawspeed
+#
+if(NOT SOURCE_PACKAGE AND NOT APPLE)
+  # apple build fails on deprecated warnings..
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
+elseif(SOURCE_PACKAGE)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
+endif()
+
 add_definitions(-std=c++11)
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
 target_link_libraries(rawspeed ${RAWSPEED_LIBS})
