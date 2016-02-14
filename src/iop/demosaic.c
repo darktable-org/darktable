@@ -1238,27 +1238,33 @@ static void vng_interpolate(float *out, const float *const in,
     for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
 }
 
-/** 1:1 "demosaic" where in comes RGB buffer and out goes R=G=B=average(R,G,G,B) */
-static void rgb_monochrome(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
+/** monochrome "demosaic" where input is RGB buffer and output is R=G=B=average(R,G,G,B) */
+static void rgb_monochrome(float *out, float *in, const dt_iop_roi_t *const roi_out,
                            const dt_iop_roi_t *const roi_in)
 {
-  // we should always process buffers of exactly the same size
-  assert(roi_in->width == roi_out->width);
-  assert(roi_in->height == roi_out->height);
+  // If we're not doing 1:1 first scale roi_in into roi_out
+  if (roi_in->width != roi_out->width || roi_in->height != roi_out->height)
+  {
+    dt_iop_clip_and_zoom_roi(out, in, roi_in, roi_out, roi_in->width, roi_out->width);
+    in = out;
+  }
+
+  int width = roi_out->width;
+  int height = roi_out->height;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) shared(out, in, height, width) schedule(static) collapse(2)
 #endif
-  for(int row = 0; row < roi_out->height; row++)
+  for(int row = 0; row < height; row++)
   {
-    for(int col = 0; col < roi_out->width; col++)
+    for(int col = 0; col < width; col++)
     {
-      int pos = 4*(row*roi_in->width+col);
+      int pos = 4*(row*width+col);
+
       // Average four pixels giving green twice the weight because of RGGB
       float avg = (in[pos] + (in[pos+1] * 2.0f) + in[pos+2]) / 4.0f;
 
       // Set RGB all to the average
-      pos = 4*(row*roi_out->width+col);
       out[pos] = out[pos+1] = out[pos+2] = avg;
     }
   }
