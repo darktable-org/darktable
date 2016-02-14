@@ -1306,8 +1306,10 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   if(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_ELLIPSE) || (form->type & DT_MASKS_GRADIENT))
      && gui->creation)
     return;
+  dt_pthread_mutex_lock(&dev->preview_pipe->backbuf_mutex);
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
+  dt_pthread_mutex_unlock(&dev->preview_pipe->backbuf_mutex);
   if(wd < 1.0 || ht < 1.0) return;
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);

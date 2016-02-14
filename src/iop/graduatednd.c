@@ -196,15 +196,18 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
                                 float *rotation, float *offset)
 {
   // we want absolute positions
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   float pts[4]
       = { xa * self->dev->preview_pipe->backbuf_width, ya * self->dev->preview_pipe->backbuf_height,
           xb * self->dev->preview_pipe->backbuf_width, yb * self->dev->preview_pipe->backbuf_height };
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, pts, 2);
-  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-  pts[0] /= (float)piece->buf_out.width;
-  pts[2] /= (float)piece->buf_out.width;
-  pts[1] /= (float)piece->buf_out.height;
-  pts[3] /= (float)piece->buf_out.height;
+  dt_iop_roi_t buf_in, buf_out;
+  if(!dt_dev_get_iop_buffer_sizes(self->dev, self->dev->preview_pipe, self, &buf_in, &buf_out)) return 0;
+  pts[0] /= (float)buf_out.width;
+  pts[2] /= (float)buf_out.width;
+  pts[1] /= (float)buf_out.height;
+  pts[3] /= (float)buf_out.height;
 
   // we first need to find the rotation angle
   // weird dichotomic solution : we may use something more cool ...
@@ -273,9 +276,9 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   const float sinv = sin(v);
   float pts[4];
 
-  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-  if(!piece) return 0;
-  float wp = piece->buf_out.width, hp = piece->buf_out.height;
+  dt_iop_roi_t buf_in, buf_out;
+  if(!dt_dev_get_iop_buffer_sizes(self->dev, self->dev->preview_pipe, self, &buf_in, &buf_out)) return 0;
+  float wp = buf_out.width, hp = buf_out.height;
 
   // if sinv=0 then this is just the offset
   if(sinv == 0)
@@ -377,10 +380,12 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
 
   if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 999999, pts, 2))
     return 0;
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   *xa = pts[0] / self->dev->preview_pipe->backbuf_width;
   *ya = pts[1] / self->dev->preview_pipe->backbuf_height;
   *xb = pts[2] / self->dev->preview_pipe->backbuf_width;
   *yb = pts[3] / self->dev->preview_pipe->backbuf_height;
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   return 1;
 }
 
@@ -391,8 +396,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
+  dt_pthread_mutex_lock(&self->dev->preview_pipe->backbuf_mutex);
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
+  dt_pthread_mutex_unlock(&self->dev->preview_pipe->backbuf_mutex);
   float zoom_y = dt_control_get_dev_zoom_y();
   float zoom_x = dt_control_get_dev_zoom_x();
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
@@ -576,17 +583,12 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   if(g->dragging > 0)
   {
-    // dt_iop_graduatednd_params_t *p   = (dt_iop_graduatednd_params_t *)self->params;
-    // float wd = self->dev->preview_pipe->backbuf_width;
-    // float ht = self->dev->preview_pipe->backbuf_height;
     float pzx, pzy;
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
     pzx += 0.5f;
     pzy += 0.5f;
 
     float r = 0.0, o = 0.0;
-    // float pts[4];
-    // dt_dev_distort_backtransform(self->dev,pts,2);
     set_grad_from_points(self, g->xa, g->ya, g->xb, g->yb, &r, &o);
 
     // if this is a "line dragging, we reset extremities, to be sure they are not outside the image
@@ -601,7 +603,6 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     }
     self->dt->gui->reset = 1;
     dt_bauhaus_slider_set(g->scale3, r);
-    // dt_bauhaus_slider_set(g->scale4,o);
     self->dt->gui->reset = 0;
     p->rotation = r;
     p->offset = o;
@@ -894,8 +895,6 @@ static void rotation_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  // float wd = self->dev->preview_pipe->backbuf_width;
-  // float ht = self->dev->preview_pipe->backbuf_height;
   p->rotation = dt_bauhaus_slider_get(slider);
   set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, p->rotation, p->offset);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -945,10 +944,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);
 
-  // float wd = self->dev->preview_pipe->backbuf_width;
-  // float ht = self->dev->preview_pipe->backbuf_height;
   g->define = 0;
-  // set_points_from_grad(self,&g->xa,&g->ya,&g->xb,&g->yb,p->rotation,p->offset);
   update_saturation_slider_end_color(g->gslider2, p->hue);
 }
 

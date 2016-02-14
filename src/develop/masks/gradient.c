@@ -128,8 +128,10 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
       gui->form_rotating = TRUE;
     else
       gui->form_dragging = TRUE;
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe->backbuf_mutex);
     gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
     gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe->backbuf_mutex);
     gui->dx = gpt->points[0] - gui->posx;
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
@@ -151,8 +153,10 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
         = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
     // we change the offset value
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe->backbuf_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe->backbuf_mutex);
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
@@ -236,8 +240,10 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     gui->form_dragging = FALSE;
 
     // we change the center value
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe->backbuf_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe->backbuf_mutex);
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -263,8 +269,10 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     // we end the form rotating
     gui->form_rotating = FALSE;
 
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe->backbuf_mutex);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe->backbuf_mutex);
     float x = pzx * wd;
     float y = pzy * ht;
 
@@ -298,8 +306,10 @@ static int dt_gradient_events_mouse_moved(struct dt_iop_module_t *module, float 
 {
   if(gui->form_dragging || gui->form_rotating)
   {
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe->backbuf_mutex);
     gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
     gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe->backbuf_mutex);
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -308,10 +318,12 @@ static int dt_gradient_events_mouse_moved(struct dt_iop_module_t *module, float 
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     int closeup = dt_control_get_dev_closeup();
     float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, closeup ? 2 : 1, 1);
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe->backbuf_mutex);
     float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
     int in, inb, near, ins;
     float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     float y = pzy * darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe->backbuf_mutex);
     dt_gradient_get_distance(x, y, as, gui, index, &in, &inb, &near, &ins);
 
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);

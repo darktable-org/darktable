@@ -127,7 +127,9 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, closeup ? 2 : 1, 1);
+  dt_pthread_mutex_lock(&darktable.develop->preview_pipe->backbuf_mutex);
   float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
+  dt_pthread_mutex_unlock(&darktable.develop->preview_pipe->backbuf_mutex);
 
   // we first don't do anything if we are inside a scrolling session
 
@@ -186,8 +188,10 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     int inside, inside_border, near, inside_source;
     inside = inside_border = inside_source = 0;
     near = -1;
-    float xx = pzx * darktable.develop->preview_pipe->backbuf_width,
-          yy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_lock(&darktable.develop->preview_pipe->backbuf_mutex);
+    float xx = pzx * darktable.develop->preview_pipe->backbuf_width;
+    float yy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    dt_pthread_mutex_unlock(&darktable.develop->preview_pipe->backbuf_mutex);
     if(sel->type & DT_MASKS_CIRCLE)
       dt_circle_get_distance(xx, yy, as, gui, pos, &inside, &inside_border, &near, &inside_source);
     else if(sel->type & DT_MASKS_PATH)

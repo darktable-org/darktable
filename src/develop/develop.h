@@ -30,6 +30,7 @@
 #include "common/image.h"
 
 struct dt_iop_module_t;
+struct dt_iop_roi_t;
 
 typedef struct dt_dev_history_item_t
 {
@@ -317,9 +318,10 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *
                                   float *points, size_t points_count);
 int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax,
                                       float *points, size_t points_count);
-/** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
-struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
-                                                           struct dt_iop_module_t *module);
+/** get the sizes of an iop in and out buffers in the given pipe */
+gboolean dt_dev_get_iop_buffer_sizes(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
+                                     struct dt_iop_module_t *module, struct dt_iop_roi_t *buf_in,
+                                     struct dt_iop_roi_t *buf_out);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
