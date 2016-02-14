@@ -55,7 +55,7 @@ uint32_t container()
 
 int position()
 {
-  return 900;
+  return 850;
 }
 
 static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *self);
@@ -282,11 +282,16 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(tb));
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
-    
+    GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(sqlite3_column_int(stmt, 1)));
+    gtk_widget_set_size_request(bt, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
+    g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
+
     gtk_box_pack_start(GTK_BOX(hb), dr, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hb), tb, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hb), tb, FALSE, FALSE, 5);
     gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, FALSE, 0);
-    
+    gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
+
     gtk_box_pack_start(GTK_BOX(d->duplicate_box), hb, FALSE, FALSE, 0);
   }
   sqlite3_finalize (stmt);
