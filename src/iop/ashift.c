@@ -1766,6 +1766,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
     int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
+    // do modules coming before this one in pixelpipe have changed? -> check via hash value
+    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, 0, self->priority - 1);
+
     dt_pthread_mutex_lock(&g->lock);
     g->isflipped = isflipped;
 
@@ -1778,8 +1781,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       g->buf = malloc((size_t)width * height * 4 * sizeof(float));
     }
 
-    // do modules coming before this one in pixelpipe have changed? -> check via hash value
-    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, 0, self->priority - 1);
     if(g->buf && hash != g->buf_hash)
     {
       // copy data
@@ -1895,6 +1896,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
     int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
+    // do modules coming before this one in pixelpipe have changed? -> check via hash value
+    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, 0, self->priority - 1);
+
     dt_pthread_mutex_lock(&g->lock);
     g->isflipped = isflipped;
 
@@ -1907,8 +1911,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       g->buf = malloc((size_t)width * height * 4 * sizeof(float));
     }
 
-    // do modules coming before this one in pixelpipe have changed? -> check via hash value
-    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, 0, self->priority - 1);
     if(g->buf && hash != g->buf_hash)
     {
       // copy data
