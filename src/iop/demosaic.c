@@ -676,7 +676,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         /* Recalculate green from interpolated values of closer pixels: */
         if(pass)
         {
-          const int pad_g = 5;
+          const int pad_g = 6;
           for(int row = top + pad_g; row < mrow - pad_g; row++)
             for(int col = left + pad_g; col < mcol - pad_g; col++)
             {
@@ -694,7 +694,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         }
 
         /* Interpolate red and blue values for solitary green pixels:   */
-        const int pad_rb_g = 5;
+        const int pad_rb_g = (passes == 1) ? 6 : 5;
         for(int row = (top - sgrow + pad_rb_g + 2) / 3 * 3 + sgrow; row < mrow - pad_rb_g; row += 3)
           for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
           {
@@ -724,9 +724,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
 
         /* Interpolate red for blue pixels and vice versa:              */
-        const int pad_rb = (passes == 1) ? 5 : 3;
-        for(int row = top + pad_rb; row < mrow - pad_rb; row++)
-          for(int col = left + pad_rb; col < mcol - pad_rb; col++)
+        const int pad_rb_br = (passes == 1) ? 6 : 5;
+        for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
+          for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
           {
             int f = 2 - FCxtrans(row + yoff + 18, col + xoff + 18, xtrans);
             if(f == 1) continue;
@@ -784,7 +784,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       // camera RGB is roughly linear.
       for(int d = 0; d < ndir; d++)
       {
-        const int pad_yuv = 7;
+        const int pad_yuv = (passes == 1) ? 8 : 13;
         for(int row = pad_yuv; row < mrow - pad_yuv; row++)
           for(int col = pad_yuv; col < mcol - pad_yuv; col++)
           {
@@ -799,7 +799,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
           }
         const int f = dir[d & 3];
-        const int pad_drv = 8;
+        const int pad_drv = (passes == 1) ? 9 : 14;
         for(int row = pad_drv; row < mrow - pad_drv; row++)
           for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
@@ -812,7 +812,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Build homogeneity maps from the derivatives:                   */
       memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
-      const int pad_homo = 9;
+      const int pad_homo = (passes == 1) ? 10 : 15;
       for(int row = pad_homo; row < mrow - pad_homo; row++)
         for(int col = pad_homo; col < mcol - pad_homo; col++)
         {
