@@ -162,6 +162,14 @@ typedef enum dt_iop_ashift_nmsresult_t
   NMS_DID_NOT_CONVERGE = 2
 } dt_iop_ashift_nmsresult_t;
 
+typedef enum dt_iop_ashift_enhance_t
+{
+  ASHIFT_ENHANCE_NONE = 0,
+  ASHIFT_ENHANCE_HORIZONTAL = 1,
+  ASHIFT_ENHANCE_VERTICAL = 2,
+  ASHIFT_ENHANCE_EDGES = 3
+} dt_iop_ashift_enhance_t;
+
 typedef struct dt_iop_ashift_params_t
 {
   float rotation;
@@ -740,11 +748,108 @@ static void rgb2grey256(const float *in, double *out, const int width, const int
   }
 }
 
+// sobel edge enhancement in one direction
+static void edge_enhance_1d(const double *in, double *out, const int width, const int height,
+                            dt_iop_ashift_enhance_t dir)
+{
+  // Sobel kernels for both directions
+  const double hkernel[3][3] = { { 1.0, 0.0, -1.0 }, { 2.0, 0.0, -2.0 }, { 1.0, 0.0, -1.0 } };
+  const double vkernel[3][3] = { { 1.0, 2.0, 1.0 }, { 0.0, 0.0, 0.0 }, { -1.0, -2.0, -1.0 } };
+  const int kwidth = 3;
+  const int khwidth = kwidth / 2;
+
+  // select kernel
+  const double *kernel = (dir == ASHIFT_ENHANCE_HORIZONTAL) ? (const double *)hkernel : (const double *)vkernel;
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(in, out, kernel)
+#endif
+  // loop over image pixels and perform sobel convolution
+  for(int j = khwidth; j < height - khwidth; j++)
+  {
+    const double *inp = in + (size_t)j * width + khwidth;
+    double *outp = out + (size_t)j * width + khwidth;
+    for(int i = khwidth; i < width - khwidth; i++, inp++, outp++)
+    {
+      double sum = 0.0f;
+      for(int jj = 0; jj < kwidth; jj++)
+      {
+        const int k = jj * kwidth;
+        const int l = (jj - khwidth) * width;
+        for(int ii = 0; ii < kwidth; ii++)
+        {
+          sum += inp[l + ii - khwidth] * kernel[k + ii];
+        }
+      }
+      *outp = sum;
+    }
+  }
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(out)
+#endif
+  // border fill in output buffer, so we don't get pseudo lines at image frame
+  for(int j = 0; j < height; j++)
+    for(int i = 0; i < width; i++)
+    {
+      double val = out[j * width + i];
+
+      if(j < khwidth)
+        val = out[(khwidth - j) * width + i];
+      else if(j >= height - khwidth)
+        val = out[(j - khwidth) * width + i];
+      else if(i < khwidth)
+        val = out[j * width + (khwidth - i)];
+      else if(i >= width - khwidth)
+        val = out[j * width + (i - khwidth)];
+
+      out[j * width + i] = val;
+
+      // jump over center of image
+      if(i == khwidth && j >= khwidth && j < height - khwidth) i = width - khwidth;
+    }
+}
+
+// edge enhancement in both directions
+static int edge_enhance(const double *in, double *out, const int width, const int height)
+{
+  double *Gx = NULL;
+  double *Gy = NULL;
+
+  Gx = malloc((size_t)width * height * sizeof(double));
+  if(Gx == NULL) goto error;
+
+  Gy = malloc((size_t)width * height * sizeof(double));
+  if(Gy == NULL) goto error;
+
+  // perform edge enhancement in both directions
+  edge_enhance_1d(in, Gx, width, height, ASHIFT_ENHANCE_HORIZONTAL);
+  edge_enhance_1d(in, Gy, width, height, ASHIFT_ENHANCE_VERTICAL);
+
+// calculate absolute values
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(Gx, Gy, out)
+#endif
+  for(size_t k = 0; k < (size_t)width * height; k++)
+  {
+    out[k] = sqrt(Gx[k] * Gx[k] + Gy[k] * Gy[k]);
+  }
+
+  free(Gx);
+  free(Gy);
+  return TRUE;
+
+error:
+  if(Gx) free(Gx);
+  if(Gy) free(Gy);
+  return FALSE;
+}
+
 // do actual line_detection based on LSD algorithm and return results according to this module's
 // conventions
 static int line_detect(const float *in, const int width, const int height, const int x_off, const int y_off,
                        const float scale, dt_iop_ashift_line_t **alines, int *lcount, int *vcount, int *hcount,
-                       float *vweight, float *hweight)
+                       float *vweight, float *hweight, dt_iop_ashift_enhance_t enhance)
 {
   double *greyscale = NULL;
   double *lsd_lines = NULL;
@@ -761,6 +866,13 @@ static int line_detect(const float *in, const int width, const int height, const
 
   // generate greyscale image
   rgb2grey256(in, greyscale, width, height);
+
+  if(enhance == ASHIFT_ENHANCE_EDGES)
+  {
+    // if requested perform an additional edge enhancement step
+    if(!edge_enhance(greyscale, greyscale, width, height))
+      goto error;
+  }
 
   // call the line segment detector LSD;
   // LSD stores the number of found lines in lines_count.
@@ -891,7 +1003,7 @@ error:
 }
 
 // get image from buffer, analyze for structure and save results
-static int get_structure(dt_iop_module_t *module)
+static int get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhance)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -937,7 +1049,8 @@ static int get_structure(dt_iop_module_t *module)
 
   // get new structural data
   if(!line_detect(buffer, width, height, x_off, y_off, scale, &lines, &lines_count,
-                  &vertical_count, &horizontal_count, &vertical_weight, &horizontal_weight))
+                  &vertical_count, &horizontal_count, &vertical_weight, &horizontal_weight,
+                  enhance))
     goto error;
 
   // save new structural data
@@ -1588,7 +1701,8 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
 #endif
 
 // helper function to start analysis for structural data and report about errors
-static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
+static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
+                            dt_iop_ashift_enhance_t enhance)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -1606,7 +1720,7 @@ static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
     goto error;
   }
 
-  if(!get_structure(module))
+  if(!get_structure(module, enhance))
   {
     dt_control_log(_("could not detect structural data in image"));
     goto error;
@@ -1656,7 +1770,7 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
 
   // if no structure available get it
   if(g->lines == NULL)
-    if(!do_get_structure(module, p)) goto error;
+    if(!do_get_structure(module, p, ASHIFT_ENHANCE_NONE)) goto error;
 
   g->fitting = 1;
 
@@ -2446,17 +2560,29 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
   return FALSE;
 }
 
-static void structure_button_clicked(GtkButton *button, gpointer user_data)
+static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
-  (void)do_get_structure(self, p);
-  // hack to guarantee that module gets enabled on button click
-  if(!self->enabled) p->toggle ^= 1;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(darktable.gui->reset) return FALSE;
+
+  if(event->button == 1)
+  {
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+
+    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
+
+    dt_iop_request_focus(self);
+    dt_dev_reprocess_all(self->dev);
+    if(control)
+      (void)do_get_structure(self, p, ASHIFT_ENHANCE_EDGES);
+    else
+      (void)do_get_structure(self, p, ASHIFT_ENHANCE_NONE);
+    // hack to guarantee that module gets enabled on button click
+    if(!self->enabled) p->toggle ^= 1;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static void clean_button_clicked(GtkButton *button, gpointer user_data)
@@ -2779,7 +2905,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(g->fit_both, "tooltip-text", _("automatically correct for vertical and horizontal perspective distortions\n"
                                               "ctrl-click to only fit rotation\n"
                                               "shift-click to only fit lens shift"), (char *)NULL);
-  g_object_set(g->structure, "tooltip-text", _("analyse line structure in image"), (char *)NULL);
+  g_object_set(g->structure, "tooltip-text", _("analyse line structure in image\n"
+                                               "ctrl-click for additional edge enhancement"), (char *)NULL);
   g_object_set(g->clean, "tooltip-text", _("remove line structure information"), (char *)NULL);
   g_object_set(g->eye, "tooltip-text", _("toggle visibility of structure lines"), (char *)NULL);
 
@@ -2789,7 +2916,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->fit_v), "button-press-event", G_CALLBACK(fit_v_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->fit_h), "button-press-event", G_CALLBACK(fit_h_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->fit_both), "button-press-event", G_CALLBACK(fit_both_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->structure), "clicked", G_CALLBACK(structure_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->structure), "button-press-event", G_CALLBACK(structure_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(clean_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(eye_button_toggled), (gpointer)self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
