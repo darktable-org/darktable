@@ -107,7 +107,7 @@ RawImage MrwDecoder::decodeRawInternal() {
 }
 
 void MrwDecoder::checkSupportInternal(CameraMetaData *meta) {
-  if (!tiff_meta->hasEntry(MAKE) || !tiff_meta->hasEntry(MODEL))
+  if (!tiff_meta || !tiff_meta->hasEntry(MAKE) || !tiff_meta->hasEntry(MODEL))
     ThrowRDE("MRW: Couldn't find make and model");
 
   string make = tiff_meta->getEntry(MAKE)->getString();
