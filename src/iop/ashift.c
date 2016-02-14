@@ -249,6 +249,7 @@ typedef struct dt_iop_ashift_gui_data_t
   int buf_y_off;
   float buf_scale;
   uint64_t grid_hash;
+  uint64_t buf_hash;
   dt_iop_ashift_fitaxis_t lastfit;
   dt_pthread_mutex_t lock;
 } dt_iop_ashift_gui_data_t;
@@ -1769,24 +1770,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     g->isflipped = isflipped;
 
     // save a copy of preview input buffer for parameter fitting
-    // TODO: this should ideally be dependent on a hash value that represents image changes up to
-    // this module. piece->pipe->backbuf_hash is not suited as it does not depend on
-    // pixelpipe parameters
     if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
     {
+      // if needed allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
       g->buf = malloc((size_t)width * height * 4 * sizeof(float));
     }
 
-    // copy data
-    if(g->buf) memcpy(g->buf, ivoid, (size_t)width * height * 4 * sizeof(float));
+    // do modules coming before this one in pixelpipe have changed? -> check via hash value
+    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, 0, self->priority - 1);
+    if(g->buf && hash != g->buf_hash)
+    {
+      // copy data
+      memcpy(g->buf, ivoid, (size_t)width * height * 4 * sizeof(float));
 
-    g->buf_width = width;
-    g->buf_height = height;
-    g->buf_x_off = x_off;
-    g->buf_y_off = y_off;
-    g->buf_scale = scale;
+      g->buf_width = width;
+      g->buf_height = height;
+      g->buf_x_off = x_off;
+      g->buf_y_off = y_off;
+      g->buf_scale = scale;
+      g->buf_hash = hash;
+    }
 
     dt_pthread_mutex_unlock(&g->lock);
   }
@@ -1894,27 +1899,29 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     g->isflipped = isflipped;
 
     // save a copy of preview input buffer for parameter fitting
-    // TODO: this should ideally be dependent on a hash value that represents image changes up to
-    // this module. piece->pipe->backbuf_hash is not suited as it does not depend on
-    // pixelpipe parameters
     if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
     {
+      // if needed allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
       g->buf = malloc((size_t)width * height * 4 * sizeof(float));
     }
 
-    // copy data
-    if(g->buf)
+    // do modules coming before this one in pixelpipe have changed? -> check via hash value
+    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, 0, self->priority - 1);
+    if(g->buf && hash != g->buf_hash)
+    {
+      // copy data
       err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in, width, height, 4 * sizeof(float));
 
-    g->buf_width = width;
-    g->buf_height = height;
-    g->buf_x_off = x_off;
-    g->buf_y_off = y_off;
-    g->buf_scale = scale;
+      g->buf_width = width;
+      g->buf_height = height;
+      g->buf_x_off = x_off;
+      g->buf_y_off = y_off;
+      g->buf_scale = scale;
+      g->buf_hash = hash;
+    }
     dt_pthread_mutex_unlock(&g->lock);
-
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1939,45 +1946,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
-}
-
-// generate a hash that indicates distorting pixelpipe changes, i.e. changes
-// effecting the roi or significant effects of warping modules
-static uint64_t grid_hash(dt_develop_t *dev, const int width, const int height, const unsigned char steps)
-{
-  const int stride = steps + 1;
-  const int points_count = stride * stride;
-
-  // generate a grid of equally spaced point coordinates and a second copy
-  float points[2 * points_count];
-  float tpoints[2 * points_count];
-
-  const float xdelta = (float)(width - 1) / steps;
-  const float ydelta = (float)(height - 1) / steps;
-
-  float x = 0.0f;
-  float y = 0.0f;
-
-  // generate the grid
-  for(int j = 0; j <= steps; j++, y += ydelta)
-    for(int i = 0; i <= steps; i++, x += xdelta)
-    {
-      points[2 * (j * stride + i)] = x;
-      points[2 * (j * stride + i) + 1] = y;
-    }
-
-  // make the copy
-  memcpy(tpoints, points, sizeof(tpoints));
-
-  // transform the copy
-  dt_dev_distort_transform(dev, tpoints, points_count);
-
-  // generate a hash out of the deltas of original and transformed points
-  uint64_t hash = 5381;
-  for(int k = 0; k < 2 * points_count; k++)
-    hash = ((hash << 5) + hash) ^ (int)(points[k] - tpoints[k]);
-
-  return hash;
 }
 
 // gather information about "near"-ness in g->points_idx
@@ -2156,7 +2124,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(g->lines == NULL || g->lines_suppressed || !gui_has_focus(self)) return;
 
   // points data are missing or outdated, or distortion has changed? -> generate points
-  uint64_t hash = grid_hash(dev, g->buf_width, g->buf_height, 10);
+  uint64_t hash = dt_dev_hash_distort(dev);
+
   if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash || g->lines_version > g->points_version)
   {
     // we need to reprocess points;
@@ -2557,6 +2526,7 @@ void gui_update(struct dt_iop_module_t *self)
   g->buf_width = 0;
   g->buf_height = 0;
   g->buf_scale = 1.0f;
+  g->buf_hash = 0;
   g->isflipped = -1;
   g->lastfit = ASHIFT_FIT_NONE;
   dt_pthread_mutex_unlock(&g->lock);
@@ -2711,6 +2681,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->buf_width = 0;
   g->buf_height = 0;
   g->buf_scale = 1.0f;
+  g->buf_hash = 0;
   g->isflipped = -1;
   g->lastfit = ASHIFT_FIT_NONE;
   dt_pthread_mutex_unlock(&g->lock);
