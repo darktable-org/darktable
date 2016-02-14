@@ -182,7 +182,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   //   }
 
   const int filters = dt_image_filter(&piece->pipe->image);
-  uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])self->dev->image_storage.xtrans;
 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
