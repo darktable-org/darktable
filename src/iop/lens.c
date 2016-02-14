@@ -44,15 +44,6 @@
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
-#ifndef __GNUC_PREREQ
-// on OSX, gcc-4.6 and clang chokes if this is not here.
-#if defined __GNUC__ && defined __GNUC_MINOR__
-#define __GNUC_PREREQ(maj, min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
-#else
-#define __GNUC_PREREQ(maj, min) 0
-#endif
-#endif
-
 DT_MODULE_INTROSPECTION(5, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
