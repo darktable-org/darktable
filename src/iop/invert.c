@@ -169,10 +169,7 @@ static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
   // Convert the RGB color to CYGM only if we're not in the preview pipe (which is already RGB)
   if((self->dev->image_storage.flags & DT_IMAGE_4BAYER) && !dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
-  {
-    dt_iop_invert_data_t *d2 = (dt_iop_invert_data_t *)piece->data;
-    dt_colorspaces_rgb_to_cygm(film_rgb, 1, d2->RGB_to_CAM);
-  }
+    dt_colorspaces_rgb_to_cygm(film_rgb, 1, d->RGB_to_CAM);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
