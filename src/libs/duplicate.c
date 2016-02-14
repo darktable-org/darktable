@@ -79,6 +79,7 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
   int imgid = darktable.develop->image_storage.id;
   int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
+  dt_history_delete_on_image(newid);
   // to select the duplicate, we reuse the filmstrip proxy
   dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
 }
