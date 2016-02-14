@@ -2,6 +2,16 @@ project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
+include(CheckCCompilerFlag)
+include(TestBigEndian)
+
+# Check if this is source package build
+if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+  set(SOURCE_PACKAGE 1)
+else()
+  set(SOURCE_PACKAGE 0)
+endif()
+
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
 option(USE_COLORD "Enable colord support" ON)
@@ -26,6 +36,32 @@ option(USE_WEBP "Enable WebP export support" ON)
 option(BUILD_CMSTEST "Build a test program to check your system's color management setup" ON)
 option(USE_OPENEXR "Enable OpenEXR support" ON)
 option(BUILD_PRINT "Build the print module" ON)
+
+if(NOT SOURCE_PACKAGE)
+  OPTION(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
+
+  if(BUILD_SSE2_CODEPATHS)
+    CHECK_C_COMPILER_FLAG("-msse2" _MSSE2)
+    if(NOT _MSSE2)
+      MESSAGE(WARNING "Building of SSE2-optimized codepaths is enabled, but the compiler does not understand -msse2.")
+      set(BUILD_SSE2_CODEPATHS OFF)
+    endif()
+  endif()
+else()
+  set(BUILD_SSE2_CODEPATHS ON)
+endif()
+
+MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
+
+test_big_endian(BIGENDIAN)
+if(${BIGENDIAN})
+	# we do not really want those.
+	# besides, no one probably tried darktable on such systems
+	MESSAGE(FATAL_ERROR "Found big endian system. Bad.")
+else()
+	MESSAGE(STATUS "Found little endian system. Good.")
+endif(${BIGENDIAN})
+
 if(APPLE)
 	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
 else(APPLE)
@@ -80,12 +116,6 @@ if(WIN32)
   set(USE_CAMERA_SUPPORT OFF)
 endif(WIN32)
 
-# Check if this is source package build
-if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-  set(SOURCE_PACKAGE 1)
-else()
-  set(SOURCE_PACKAGE 0)
-endif()
 
 #
 # Set package version

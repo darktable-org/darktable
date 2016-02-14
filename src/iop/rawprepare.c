@@ -28,7 +28,9 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <stdint.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rawprepare_params_t)
 
@@ -215,8 +217,72 @@ static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t 
   return ((((row + roi_out->y + d->y) & 1) << 1) + ((col + roi_out->x + d->x) & 1));
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  { // raw mosaic
+
+    const uint16_t *const in = (const uint16_t *const)ivoid;
+    float *const out = (float *const)ovoid;
+
+    const int cx = d->x, cy = d->y;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const size_t pin = (size_t)(roi_in->width * (j + cy) + cx) + i;
+        const size_t pout = (size_t)j * roi_out->width + i;
+
+        const int id = BL(roi_out, d, j, i);
+        out[pout] = MAX(0.0f, (in[pin] - d->sub[id]) / d->div[id]);
+      }
+    }
+  }
+  else
+  { // pre-downsampled buffer that needs black/white scaling
+
+    const float *const in = (const float *const)ivoid;
+    float *const out = (float *const)ovoid;
+
+    const float scale = roi_in->scale / piece->iscale;
+    const int csx = d->x * scale, csy = d->y * scale;
+
+    const float sub = d->sub[0], div = d->div[0];
+
+    const int ch = piece->colors;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static) collapse(3)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        for(int c = 0; c < ch; c++)
+        {
+          const size_t pin = (size_t)ch * (roi_in->width * (j + csy) + csx + i) + c;
+          const size_t pout = (size_t)ch * (j * roi_out->width + i) + c;
+
+          out[pout] = MAX(0.0f, (in[pin] - sub) / div);
+        }
+      }
+    }
+  }
+}
+
+#if defined(__SSE__)
+void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
+                  const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
@@ -310,6 +376,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   _mm_sfence();
 }
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,

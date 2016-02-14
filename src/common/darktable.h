@@ -81,7 +81,7 @@ typedef unsigned int u_int;
 #include "common/poison.h"
 #endif
 
-#define DT_MODULE_VERSION 11 // version of dt's module interface
+#define DT_MODULE_VERSION 12 // version of dt's module interface
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -173,9 +173,16 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_CAMERA_SUPPORT = 1 << 16,
 } dt_debug_thread_t;
 
+typedef struct dt_codepath_t
+{
+  unsigned int SSE2 : 1;
+  unsigned int _no_intrinsics : 1;
+  unsigned int OPENMP_SIMD : 1; // always stays the last one
+} dt_codepath_t;
+
 typedef struct darktable_t
 {
-  uint32_t cpu_flags;
+  dt_codepath_t codepath;
   int32_t num_openmp_threads;
 
   int32_t unmuted;
@@ -483,6 +490,18 @@ void dt_configure_defaults();
 // helper function which loads whatever image_to_load points to: single image files or whole directories
 // it tells you if it was a single image or a directory in single_image (when it's not NULL)
 int dt_load_from_string(const gchar *image_to_load, gboolean open_image_in_dr, gboolean *single_image);
+
+#define dt_unreachable_codepath_with_desc(D)                                                                 \
+  dt_unreachable_codepath_with_caller(D, __FILE__, __LINE__, __FUNCTION__)
+#define dt_unreachable_codepath() dt_unreachable_codepath_with_caller(NULL, __FILE__, __LINE__, __FUNCTION__)
+static inline void dt_unreachable_codepath_with_caller(const char *description, const char *file,
+                                                       const int line, const char *function)
+{
+  fprintf(stderr, "[dt_unreachable_codepath] {%s} %s:%d (%s) - we should not be here. please report this to "
+                  "the developers.",
+          description, file, line, function);
+  __builtin_unreachable();
+}
 
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256

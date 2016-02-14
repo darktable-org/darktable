@@ -30,7 +30,9 @@
 #include "common/opencl.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 #define BLOCKSIZE                                                                                            \
   2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
@@ -276,6 +278,7 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
 // begin wavelet code:
 // =====================================================================================
 
+#if defined(__SSE__)
 static inline __m128 weight_sse(const __m128 *c1, const __m128 *c2, const float inv_sigma2)
 {
 // return _mm_set1_ps(1.0f);
@@ -489,6 +492,7 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
   }
   _mm_sfence();
 }
+
 // =====================================================================================
 
 void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
@@ -835,6 +839,7 @@ void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+#endif
 
 #ifdef HAVE_OPENCL
 static int bucket_next(unsigned int *state, unsigned int max)
@@ -1374,8 +1379,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif // HAVE_OPENCL
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   if(d->mode == MODE_NLMEANS)
@@ -1383,7 +1389,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   else
     process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
-
+#endif
 
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)

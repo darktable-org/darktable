@@ -25,7 +25,9 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 #include "common/opencl.h"
 #include "develop/develop.h"
@@ -85,7 +87,7 @@ typedef struct dt_iop_exposure_gui_data_t
 typedef struct dt_iop_exposure_data_t
 {
   float black;
-  float exposure;
+  float scale;
 } dt_iop_exposure_data_t;
 
 typedef struct dt_iop_exposure_global_data_t
@@ -319,9 +321,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
 
   cl_int err = -999;
-  const float black = d->black;
-  const float white = exposure2white(d->exposure);
-  const float scale = 1.0 / (white - black);
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -331,11 +330,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 4, sizeof(float), (void *)&black);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 4, sizeof(float), (void *)&(d->black));
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&(d->scale));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
   if(err != CL_SUCCESS) goto error;
-  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= scale;
+  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
 
   return TRUE;
 
@@ -345,17 +344,36 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
+  const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
 
-  const float black = d->black;
-  const float white = exposure2white(d->exposure);
   const int ch = piece->colors;
-  const float scale = 1.0 / (white - black);
-  const __m128 blackv = _mm_set1_ps(black);
-  const __m128 scalev = _mm_set1_ps(scale);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) schedule(static)
+#endif
+  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
+  {
+    ((float *)o)[k] = (((float *)i)[k] - d->black) * d->scale;
+  }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+
+  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
+
+  const int ch = piece->colors;
+  const __m128 blackv = _mm_set1_ps(d->black);
+  const __m128 scalev = _mm_set1_ps(d->scale);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_out, i, o) schedule(static)
 #endif
@@ -369,8 +387,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
-  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= scale;
+  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
 }
+#endif
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -380,7 +399,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   d->black = p->black;
-  d->exposure = p->exposure;
+
+  float exposure = p->exposure;
 
   if(p->mode == EXPOSURE_MODE_DEFLICKER && dt_image_is_raw(&self->dev->image_storage)
      && self->dev->image_storage.bpp == sizeof(uint16_t))
@@ -389,14 +409,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(g)
     {
       // histogram is precomputed and cached
-      compute_correction(self, p1, g->deflicker_histogram, &g->deflicker_histogram_stats, &d->exposure);
+      compute_correction(self, p1, g->deflicker_histogram, &g->deflicker_histogram_stats, &exposure);
     }
     else
     {
       uint32_t *histogram = NULL;
       dt_dev_histogram_stats_t histogram_stats;
       deflicker_prepare_histogram(self, &histogram, &histogram_stats);
-      compute_correction(self, p1, histogram, &histogram_stats, &d->exposure);
+      compute_correction(self, p1, histogram, &histogram_stats, &exposure);
       free(histogram);
     }
 
@@ -404,10 +424,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
       dt_pthread_mutex_lock(&g->lock);
-      g->deflicker_computed_exposure = d->exposure;
+      g->deflicker_computed_exposure = exposure;
       dt_pthread_mutex_unlock(&g->lock);
     }
   }
+
+  const float white = exposure2white(exposure);
+  d->scale = 1.0 / (white - d->black);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

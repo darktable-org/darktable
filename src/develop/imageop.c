@@ -45,7 +45,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gmodule.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #include <time.h>
 
 typedef struct dt_iop_gui_simple_callback_t
@@ -175,6 +177,21 @@ static int default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe
   return 1;
 }
 
+static void default_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i,
+                            void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
+{
+  if(darktable.codepath.OPENMP_SIMD && self->process_plain)
+    self->process_plain(self, piece, i, o, roi_in, roi_out);
+#if defined(__SSE__)
+  else if(darktable.codepath.SSE2 && self->process_sse2)
+    self->process_sse2(self, piece, i, o, roi_in, roi_out);
+#endif
+  else if(self->process_plain)
+    self->process_plain(self, piece, i, o, roi_in, roi_out);
+  else
+    dt_unreachable_codepath_with_desc(self->op);
+}
+
 static dt_introspection_field_t *default_get_introspection_linear()
 {
   return NULL;
@@ -271,9 +288,33 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
     module->init_pipe = default_init_pipe;
   if(!g_module_symbol(module->module, "cleanup_pipe", (gpointer) & (module->cleanup_pipe)))
     module->cleanup_pipe = default_cleanup_pipe;
-  if(!g_module_symbol(module->module, "process", (gpointer) & (module->process))) goto error;
+
+  module->process = default_process;
+
   if(!g_module_symbol(module->module, "process_tiling", (gpointer) & (module->process_tiling)))
     module->process_tiling = default_process_tiling;
+
+  if(!g_module_symbol(module->module, "process_sse2", (gpointer) & (module->process_sse2)))
+    module->process_sse2 = NULL;
+
+  if(!g_module_symbol(module->module, "process", (gpointer) & (module->process_plain)))
+  {
+    if(darktable.codepath._no_intrinsics || (
+#if defined(__SSE__)
+                                                (darktable.codepath.SSE2 && !(module->process_sse2))
+#else
+                                                1
+#endif
+                                                    ))
+    {
+      goto error;
+    }
+    else
+    {
+      module->process_plain = NULL;
+    }
+  }
+
   if(!darktable.opencl->inited
      || !g_module_symbol(module->module, "process_cl", (gpointer) & (module->process_cl)))
     module->process_cl = NULL;
@@ -386,6 +427,8 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->cleanup_pipe = so->cleanup_pipe;
   module->process = so->process;
   module->process_tiling = so->process_tiling;
+  module->process_plain = so->process_plain;
+  module->process_sse2 = so->process_sse2;
   module->process_cl = so->process_cl;
   module->process_tiling_cl = so->process_tiling_cl;
   module->distort_transform = so->distort_transform;
@@ -2066,15 +2109,68 @@ int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in, const 
 
 #endif
 
-/**
- * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
- * and writes it to out in float4 format.
- * resamping is done via bilateral filtering.
- */
-void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint16_t *const in,
-                                                          const dt_iop_roi_t *const roi_out,
-                                                          const dt_iop_roi_t *const roi_in,
-                                                          const int32_t out_stride, const int32_t in_stride)
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_plain(float *const out, const uint16_t *const in,
+                                                                const dt_iop_roi_t *const roi_out,
+                                                                const dt_iop_roi_t *const roi_in,
+                                                                const int32_t out_stride,
+                                                                const int32_t in_stride)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many pixels can be sampled inside that area
+  const int samples = round(px_footprint);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *outc = out + 4 * (out_stride * y);
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy;
+    py = MIN(((roi_in->height - 2)), py);
+
+    int maxj = MIN(((roi_in->height - 1)), py + samples);
+
+    float fx = roi_out->x * px_footprint;
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      fx += px_footprint;
+      int px = (int)fx;
+      px = MIN(((roi_in->width - 2)), px);
+
+      int maxi = MIN(((roi_in->width - 1)), px + samples);
+
+      int num = 0;
+
+      // pixels in the middle of sampling region
+      size_t sum = 0;
+
+      for(int j = py; j <= maxj; j++)
+        for(int i = px; i <= maxi; i++)
+        {
+          sum += in[i + in_stride * j];
+          num++;
+        }
+
+      const float pix = ((((float)sum) / 65535.0f) / num);
+      outc[0] = pix;
+      outc[1] = pix;
+      outc[2] = pix;
+      outc[3] = 0.0f;
+    }
+  }
+}
+
+#if defined(__SSE__)
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_sse2(float *out, const uint16_t *const in,
+                                                               const dt_iop_roi_t *const roi_out,
+                                                               const dt_iop_roi_t *const roi_in,
+                                                               const int32_t out_stride,
+                                                               const int32_t in_stride)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -2130,17 +2226,149 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint
   }
   _mm_sfence();
 }
+#endif
 
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
- * filters is the dcraw supplied int encoding of the bayer pattern, flipped with the buffer.
- * resamping is done via bilateral filtering and respecting the input mosaic pattern.
+ * resamping is done via bilateral filtering.
  */
-void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
-                                             const dt_iop_roi_t *const roi_out,
-                                             const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                             const int32_t in_stride, const unsigned int filters)
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint16_t *const in,
+                                                          const dt_iop_roi_t *const roi_out,
+                                                          const dt_iop_roi_t *const roi_in,
+                                                          const int32_t out_stride, const int32_t in_stride)
+{
+  if(darktable.codepath.OPENMP_SIMD)
+    return dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_plain(out, in, roi_out, roi_in, out_stride,
+                                                                      in_stride);
+#if defined(__SSE__)
+  else if(darktable.codepath.SSE2)
+    return dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_sse2(out, in, roi_out, roi_in, out_stride,
+                                                                     in_stride);
+#endif
+  else
+    dt_unreachable_codepath();
+}
+
+void dt_iop_clip_and_zoom_demosaic_half_size_plain(float *out, const uint16_t *const in,
+                                                   const dt_iop_roi_t *const roi_out,
+                                                   const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                   const int32_t in_stride, const unsigned int filters)
+{
+#if 0
+  printf("scale: %f\n",roi_out->scale);
+  struct timeval tm1,tm2;
+  gettimeofday(&tm1,NULL);
+  for (int k = 0 ; k < 100 ; k++)
+  {
+#endif
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = round(px_footprint / 2);
+
+  const float divs[4] = { 65535.0f, 2.0f * 65535.0f, 65535.0f, 0.0f };
+
+  // move p to point to an rggb block:
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx + 1, filters) != 1) trggbx++;
+  if(FC(trggby, trggbx, filters) != 0)
+  {
+    trggbx = (trggbx + 1) & 1;
+    trggby++;
+  }
+  const int rggbx = trggbx, rggby = trggby;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *outc = out + 4 * (out_stride * y);
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy & ~1;
+    py = MIN(((roi_in->height - 4) & ~1u), py) + rggby;
+
+    int maxj = MIN(((roi_in->height - 3) & ~1u) + rggby, py + 2 * samples);
+
+    float fx = roi_out->x * px_footprint;
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      fx += px_footprint;
+      int px = (int)fx & ~1;
+      px = MIN(((roi_in->width - 4) & ~1u), px) + rggbx;
+
+      int maxi = MIN(((roi_in->width - 3) & ~1u) + rggbx, px + 2 * samples);
+
+      int num = 0;
+
+      const int idx = px + in_stride * py;
+      const uint16_t pc = MAX(MAX(in[idx], in[idx + 1]), MAX(in[idx + in_stride], in[idx + 1 + in_stride]));
+
+      // 2x2 blocks in the middle of sampling region
+      size_t sum[4] = { 0, 0, 0, 0 };
+
+      for(int j = py; j <= maxj; j += 2)
+        for(int i = px; i <= maxi; i += 2)
+        {
+          const uint16_t p1 = in[i + in_stride * j];
+          const uint16_t p2 = in[i + 1 + in_stride * j];
+          const uint16_t p3 = in[i + in_stride * (j + 1)];
+          const uint16_t p4 = in[i + 1 + in_stride * (j + 1)];
+
+          if(!((pc >= 60000) ^ (MAX(MAX(p1, p2), MAX(p3, p4)) >= 60000)))
+          {
+            if(filters == 0xb4b4b4b4 || filters == 0x9c9c9c9c)
+            { // CYGM or RGBE so lets keep all four values
+              sum[0] += p1;
+              sum[1] += p2;
+              sum[2] += p4;
+              sum[3] += p3;
+            }
+            else
+            {
+              sum[0] += p1;
+              sum[1] += p2 + p3;
+              sum[2] += p4;
+            }
+            num++;
+          }
+        }
+
+      if(filters == 0xb4b4b4b4 || filters == 0x9c9c9c9c)
+      {
+        for(int c = 0; c < 4; c++)
+        {
+          outc[c] = ((((float)sum[c]) / 65535.0f) / num);
+        }
+      }
+      else
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          outc[c] = ((((float)sum[c]) / divs[c]) / num);
+        }
+        outc[3] = 0.0f;
+      }
+      outc += 4;
+    }
+  }
+#if 0
+  }
+  gettimeofday(&tm2,NULL);
+  float perf = (tm2.tv_sec-tm1.tv_sec)*1000.0f + (tm2.tv_usec-tm1.tv_usec)/1000.0f;
+  printf("time spent: %.4f\n",perf/100.0f);
+#endif
+}
+
+#if defined(__SSE__)
+void dt_iop_clip_and_zoom_demosaic_half_size_sse2(float *out, const uint16_t *const in,
+                                                  const dt_iop_roi_t *const roi_out,
+                                                  const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                  const int32_t in_stride, const unsigned int filters)
 {
 #if 0
   printf("scale: %f\n",roi_out->scale);
@@ -2239,6 +2467,30 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
   printf("time spent: %.4f\n",perf/100.0f);
 #endif
 }
+#endif
+
+/**
+ * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
+ * and writes it to out in float4 format.
+ * filters is the dcraw supplied int encoding of the bayer pattern, flipped with the buffer.
+ * resamping is done via bilateral filtering and respecting the input mosaic pattern.
+ */
+void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
+                                             const dt_iop_roi_t *const roi_out,
+                                             const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                             const int32_t in_stride, const unsigned int filters)
+{
+  if(darktable.codepath.OPENMP_SIMD)
+    return dt_iop_clip_and_zoom_demosaic_half_size_plain(out, in, roi_out, roi_in, out_stride, in_stride,
+                                                         filters);
+#if defined(__SSE__)
+  else if(darktable.codepath.SSE2)
+    return dt_iop_clip_and_zoom_demosaic_half_size_sse2(out, in, roi_out, roi_in, out_stride, in_stride,
+                                                        filters);
+#endif
+  else
+    dt_unreachable_codepath();
+}
 
 void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint16_t *const in,
                                                          dt_iop_roi_t *const roi_out,
@@ -2256,10 +2508,154 @@ void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint1
   dt_iop_clip_and_zoom_demosaic_half_size(out, in, roi_out, roi_in, roi_out->width, in_stride, filters);
 }
 
-void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
-                                                            const dt_iop_roi_t *const roi_out,
-                                                            const dt_iop_roi_t *const roi_in,
-                                                            const int32_t out_stride, const int32_t in_stride)
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f_plain(float *out, const float *const in,
+                                                                  const dt_iop_roi_t *const roi_out,
+                                                                  const dt_iop_roi_t *const roi_in,
+                                                                  const int32_t out_stride,
+                                                                  const int32_t in_stride)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many pixels can be sampled inside that area
+  const int samples = round(px_footprint);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *outc = out + 4 * (out_stride * y);
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy;
+    const float dy = fy - py;
+    py = MIN(((roi_in->height - 3)), py);
+
+    int maxj = MIN(((roi_in->height - 2)), py + samples);
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      float col = 0.0f;
+
+      float fx = (x + roi_out->x) * px_footprint;
+      int px = (int)fx;
+      const float dx = fx - px;
+      px = MIN(((roi_in->width - 3)), px);
+
+      int maxi = MIN(((roi_in->width - 2)), px + samples);
+
+      float p;
+      int i, j;
+      float num = 0;
+
+      // upper left pixel of sampling region
+      p = in[px + in_stride * py];
+      col += ((1 - dx) * (1 - dy)) * p;
+
+      // left pixel border of sampling region
+      for(j = py + 1; j <= maxj; j++)
+      {
+        p = in[px + in_stride * j];
+        col += (1 - dx) * p;
+      }
+
+      // upper pixel border of sampling region
+      for(i = px + 1; i <= maxi; i++)
+      {
+        p = in[i + in_stride * py];
+        col += (1 - dy) * p;
+      }
+
+      // pixels in the middle of sampling region
+      for(int j = py + 1; j <= maxj; j++)
+        for(int i = px + 1; i <= maxi; i++)
+        {
+          p = in[i + in_stride * j];
+          col += p;
+        }
+
+      if(maxi == px + samples && maxj == py + samples)
+      {
+        // right border
+        for(j = py + 1; j <= maxj; j++)
+        {
+          p = in[maxi + 1 + in_stride * j];
+          col += dx * p;
+        }
+
+        // upper right
+        p = in[maxi + 1 + in_stride * py];
+        col += (dx * (1 - dy)) * p;
+
+        // lower border
+        for(i = px + 1; i <= maxi; i++)
+        {
+          p = in[i + in_stride * (maxj + 1)];
+          col += dy * p;
+        }
+
+        // lower left pixel
+        p = in[px + in_stride * (maxj + 1)];
+        col += ((1 - dx) * dy) * p;
+
+        // lower right pixel
+        p = in[maxi + 1 + in_stride * (maxj + 1)];
+        col += (dx * dy) * p;
+
+        num = (samples + 1) * (samples + 1);
+      }
+      else if(maxi == px + samples)
+      {
+        // right border
+        for(j = py + 1; j <= maxj; j++)
+        {
+          p = in[maxi + 1 + in_stride * j];
+          col += dx * p;
+        }
+
+        // upper right
+        p = in[maxi + 1 + in_stride * py];
+        col += (dx * (1 - dy)) * p;
+
+        num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
+      }
+      else if(maxj == py + samples)
+      {
+        // lower border
+        for(i = px + 1; i <= maxi; i++)
+        {
+          p = in[i + in_stride * (maxj + 1)];
+          col += dy * p;
+        }
+
+        // lower left pixel
+        p = in[px + in_stride * (maxj + 1)];
+        col += ((1 - dx) * dy) * p;
+
+        num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
+      }
+      else
+      {
+        num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
+      }
+
+      const float pix = col / num;
+      outc[0] = pix;
+      outc[1] = pix;
+      outc[2] = pix;
+      outc[3] = 0.0f;
+      outc += 4;
+    }
+  }
+}
+
+#if defined(__SSE__)
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f_sse2(float *out, const float *const in,
+                                                                 const dt_iop_roi_t *const roi_out,
+                                                                 const dt_iop_roi_t *const roi_in,
+                                                                 const int32_t out_stride,
+                                                                 const int32_t in_stride)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -2395,6 +2791,24 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const fl
   }
   _mm_sfence();
 }
+#endif
+
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
+                                                            const dt_iop_roi_t *const roi_out,
+                                                            const dt_iop_roi_t *const roi_in,
+                                                            const int32_t out_stride, const int32_t in_stride)
+{
+  if(darktable.codepath.OPENMP_SIMD)
+    return dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f_plain(out, in, roi_out, roi_in, out_stride,
+                                                                        in_stride);
+#if defined(__SSE__)
+  else if(darktable.codepath.SSE2)
+    return dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f_sse2(out, in, roi_out, roi_in, out_stride,
+                                                                       in_stride);
+#endif
+  else
+    dt_unreachable_codepath();
+}
 
 #if 0 // gets rid of pink artifacts, but doesn't do sub-pixel sampling, so shows some staircasing artifacts.
 void
@@ -2480,12 +2894,192 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
   _mm_sfence();
 }
 
-#else // very fast and smooth, but doesn't handle highlights:
-void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
-                                               const dt_iop_roi_t *const roi_out,
-                                               const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                               const int32_t in_stride, const unsigned int filters,
-                                               const float clip)
+#else
+// very fast and smooth, but doesn't handle highlights:
+
+void dt_iop_clip_and_zoom_demosaic_half_size_f_plain(float *out, const float *const in,
+                                                     const dt_iop_roi_t *const roi_out,
+                                                     const dt_iop_roi_t *const roi_in,
+                                                     const int32_t out_stride, const int32_t in_stride,
+                                                     const unsigned int filters, const float clip)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = round(px_footprint / 2);
+
+  // move p to point to an rggb block:
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx + 1, filters) != 1) trggbx++;
+  if(FC(trggby, trggbx, filters) != 0)
+  {
+    trggbx = (trggbx + 1) & 1;
+    trggby++;
+  }
+  const int rggbx = trggbx, rggby = trggby;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *outc = out + 4 * (out_stride * y);
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy & ~1;
+    const float dy = (fy - py) / 2;
+    py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
+
+    int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      float col[4] = { 0, 0, 0, 0 };
+
+      float fx = (x + roi_out->x) * px_footprint;
+      int px = (int)fx & ~1;
+      const float dx = (fx - px) / 2;
+      px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
+
+      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
+
+      float p[3];
+      int i, j;
+      float num = 0;
+
+      // upper left 2x2 block of sampling region
+      p[0] = in[px + in_stride * py];
+      p[1] = in[px + 1 + in_stride * py] + in[px + in_stride * (py + 1)];
+      p[2] = in[px + 1 + in_stride * (py + 1)];
+      for(int c = 0; c < 3; c++) col[c] += ((1 - dx) * (1 - dy)) * p[c];
+
+      // left 2x2 block border of sampling region
+      for(j = py + 2; j <= maxj; j += 2)
+      {
+        p[0] = in[px + in_stride * j];
+        p[1] = in[px + 1 + in_stride * j] + in[px + in_stride * (j + 1)];
+        p[2] = in[px + 1 + in_stride * (j + 1)];
+        for(int c = 0; c < 3; c++) col[c] += (1 - dx) * p[c];
+      }
+
+      // upper 2x2 block border of sampling region
+      for(i = px + 2; i <= maxi; i += 2)
+      {
+        p[0] = in[i + in_stride * py];
+        p[1] = in[i + 1 + in_stride * py] + in[i + in_stride * (py + 1)];
+        p[2] = in[i + 1 + in_stride * (py + 1)];
+        for(int c = 0; c < 3; c++) col[c] += (1 - dy) * p[c];
+      }
+
+      // 2x2 blocks in the middle of sampling region
+      for(int j = py + 2; j <= maxj; j += 2)
+        for(int i = px + 2; i <= maxi; i += 2)
+        {
+          p[0] = in[i + in_stride * j];
+          p[1] = in[i + 1 + in_stride * j] + in[i + in_stride * (j + 1)];
+          p[2] = in[i + 1 + in_stride * (j + 1)];
+          for(int c = 0; c < 3; c++) col[c] += p[c];
+        }
+
+      if(maxi == px + 2 * samples && maxj == py + 2 * samples)
+      {
+        // right border
+        for(j = py + 2; j <= maxj; j += 2)
+        {
+          p[0] = in[maxi + 2 + in_stride * j];
+          p[1] = in[maxi + 3 + in_stride * j] + in[maxi + 2 + in_stride * (j + 1)];
+          p[2] = in[maxi + 3 + in_stride * (j + 1)];
+          for(int c = 0; c < 3; c++) col[c] += dx * p[c];
+        }
+
+        // upper right
+        p[0] = in[maxi + 2 + in_stride * py];
+        p[1] = in[maxi + 3 + in_stride * py] + in[maxi + 2 + in_stride * (py + 1)];
+        p[2] = in[maxi + 3 + in_stride * (py + 1)];
+        for(int c = 0; c < 3; c++) col[c] += (dx * (1 - dy)) * p[c];
+
+        // lower border
+        for(i = px + 2; i <= maxi; i += 2)
+        {
+          p[0] = in[i + in_stride * (maxj + 2)];
+          p[1] = in[i + 1 + in_stride * (maxj + 2)] + in[i + in_stride * (maxj + 3)];
+          p[2] = in[i + 1 + in_stride * (maxj + 3)];
+          for(int c = 0; c < 3; c++) col[c] += dy * p[c];
+        }
+
+        // lower left 2x2 block
+        p[0] = in[px + in_stride * (maxj + 2)];
+        p[1] = in[px + 1 + in_stride * (maxj + 2)] + in[px + in_stride * (maxj + 3)];
+        p[2] = in[px + 1 + in_stride * (maxj + 3)];
+        for(int c = 0; c < 3; c++) col[c] += ((1 - dx) * dy) * p[c];
+
+        // lower right 2x2 block
+        p[0] = in[maxi + 2 + in_stride * (maxj + 2)];
+        p[1] = in[maxi + 3 + in_stride * (maxj + 2)] + in[maxi + in_stride * (maxj + 3)];
+        p[2] = in[maxi + 3 + in_stride * (maxj + 3)];
+        for(int c = 0; c < 3; c++) col[c] += (dx * dy) * p[c];
+
+        num = (samples + 1) * (samples + 1);
+      }
+      else if(maxi == px + 2 * samples)
+      {
+        // right border
+        for(j = py + 2; j <= maxj; j += 2)
+        {
+          p[0] = in[maxi + 2 + in_stride * j];
+          p[1] = in[maxi + 3 + in_stride * j] + in[maxi + 2 + in_stride * (j + 1)];
+          p[2] = in[maxi + 3 + in_stride * (j + 1)];
+          for(int c = 0; c < 3; c++) col[c] += dx * p[c];
+        }
+
+        // upper right
+        p[0] = in[maxi + 2 + in_stride * py];
+        p[1] = in[maxi + 3 + in_stride * py] + in[maxi + 2 + in_stride * (py + 1)];
+        p[2] = in[maxi + 3 + in_stride * (py + 1)];
+        for(int c = 0; c < 3; c++) col[c] += (dx * (1 - dy)) * p[c];
+
+        num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
+      }
+      else if(maxj == py + 2 * samples)
+      {
+        // lower border
+        for(i = px + 2; i <= maxi; i += 2)
+        {
+          p[0] = in[i + in_stride * (maxj + 2)];
+          p[1] = in[i + 1 + in_stride * (maxj + 2)] + in[i + in_stride * (maxj + 3)];
+          p[2] = in[i + 1 + in_stride * (maxj + 3)];
+          for(int c = 0; c < 3; c++) col[c] += dy * p[c];
+        }
+
+        // lower left 2x2 block
+        p[0] = in[px + in_stride * (maxj + 2)];
+        p[1] = in[px + 1 + in_stride * (maxj + 2)] + in[px + in_stride * (maxj + 3)];
+        p[2] = in[px + 1 + in_stride * (maxj + 3)];
+        for(int c = 0; c < 3; c++) col[c] += ((1 - dx) * dy) * p[c];
+
+        num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
+      }
+      else
+      {
+        num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
+      }
+
+      outc[0] = col[0] / num;
+      outc[1] = (col[1] / num) / 2.0f;
+      outc[2] = col[2] / num;
+      outc[3] = 0.0f;
+      outc += 4;
+    }
+  }
+}
+
+#if defined(__SSE__)
+void dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(float *out, const float *const in,
+                                                    const dt_iop_roi_t *const roi_out,
+                                                    const dt_iop_roi_t *const roi_in,
+                                                    const int32_t out_stride, const int32_t in_stride,
+                                                    const unsigned int filters, const float clip)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -2658,6 +3252,25 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
   _mm_sfence();
 }
 #endif
+#endif
+
+void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
+                                               const dt_iop_roi_t *const roi_out,
+                                               const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                               const int32_t in_stride, const unsigned int filters,
+                                               const float clip)
+{
+  if(darktable.codepath.OPENMP_SIMD)
+    return dt_iop_clip_and_zoom_demosaic_half_size_f_plain(out, in, roi_out, roi_in, out_stride, in_stride,
+                                                           filters, clip);
+#if defined(__SSE__)
+  else if(darktable.codepath.SSE2)
+    return dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(out, in, roi_out, roi_in, out_stride, in_stride,
+                                                          filters, clip);
+#endif
+  else
+    dt_unreachable_codepath();
+}
 
 void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(float *out, const float *const in,
                                                            const struct dt_iop_roi_t *const roi_out,

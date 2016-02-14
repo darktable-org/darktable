@@ -55,7 +55,9 @@ static inline float dt_points_get()
 }
 #else
 
-#include <emmintrin.h>
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
 #include <inttypes.h>
 
 #define MEXP 19937

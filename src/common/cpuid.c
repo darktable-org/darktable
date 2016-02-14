@@ -152,6 +152,16 @@ dt_cpu_flags_t dt_detect_cpu_features()
 
 #undef cpuid
 }
+#else
+dt_cpu_flags_t dt_detect_cpu_features()
+{
+  static dt_cpu_flags_t cpuflags = 0;
+
+  fprintf(stderr, "[dt_detect_cpu_features] Not implemented for this architecture.\n");
+  fprintf(stderr, "[dt_detect_cpu_features] Please contribute a patch.\n");
+
+  return cpuflags;
+}
 #endif /* __i386__ || __x86_64__ */
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

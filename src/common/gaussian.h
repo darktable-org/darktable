@@ -21,7 +21,6 @@
 
 #include <math.h>
 #include <assert.h>
-#include <xmmintrin.h>
 #include "common/opencl.h"
 
 typedef enum dt_gaussian_order_t

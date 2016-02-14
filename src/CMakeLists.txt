@@ -337,11 +337,13 @@ endif(GPHOTO2_FOUND)
 # See https://llvm.org/bugs/show_bug.cgi?id=25510
 check_c_source_compiles("#include <stdio.h>
 int main() {
+  __builtin_cpu_init();
   printf(\"%d\", __builtin_cpu_supports(\"sse3\"));
 }" HAVE_BUILTIN_CPU_SUPPORTS)
 if(HAVE_BUILTIN_CPU_SUPPORTS)
   add_definitions("-DHAVE_BUILTIN_CPU_SUPPORTS")
 endif(HAVE_BUILTIN_CPU_SUPPORTS)
+MESSAGE(STATUS "Does the compiler support __builtin_cpu_supports(): ${HAVE_BUILTIN_CPU_SUPPORTS}")
 
 #
 # Set default compile flags for GCC
@@ -374,8 +376,10 @@ if(WIN32)
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
-  #we MUST always specify our requred instruction set, native might not detect it
-  set(DT_REQ_INSTRUCTIONS "-msse3")
+  if(BUILD_SSE2_CODEPATHS)
+    #we MUST always specify our requred instruction set, native might not detect it
+    set(DT_REQ_INSTRUCTIONS "-msse2")
+  endif()
 
   if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
     set(MARCH "-msse4.2")
@@ -397,6 +401,10 @@ if(NOT CUSTOM_CFLAGS)
     set(MARCH "-mtune=generic")
   endif()
 
+  #if(NOT BUILD_SSE2_CODEPATHS)
+  #  set(MARCH "${MARCH} -mno-sse2 -D__DISABLE_SSE2__ -U__SSE2__ -D__DISABLE_SSE__ -U__SSE__")
+  #endif()
+
   #-g MUST be set for ALL builds, or there will be no support for them when bugs happen
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2")
@@ -404,7 +412,10 @@ if(NOT CUSTOM_CFLAGS)
   if(CMAKE_COMPILER_IS_GNUCC)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
+    if(BUILD_SSE2_CODEPATHS)
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
+    endif()
+
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g3 -ggdb3")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
   else()
@@ -417,7 +428,10 @@ if(NOT CUSTOM_CFLAGS)
   if(CMAKE_COMPILER_IS_GNUCXX)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
+    if(BUILD_SSE2_CODEPATHS)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
+    endif()
+
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -ggdb3")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fexpensive-optimizations")
   else()
