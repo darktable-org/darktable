@@ -728,8 +728,10 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
         /* Recalculate green from interpolated values of closer pixels: */
         if(pass)
-          for(int row = top + 5; row < mrow - 5; row++)
-            for(int col = left + 5; col < mcol - 5; col++)
+        {
+          const int pad_g = 5;
+          for(int row = top + pad_g; row < mrow - pad_g; row++)
+            for(int col = left + pad_g; col < mcol - pad_g; col++)
             {
               int f = FCxtrans(row + yoff + 18, col + xoff + 18, NULL, xtrans);
               if(f == 1) continue;
@@ -742,10 +744,12 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 rfx[0][1] = CLAMPS(val / 3.0f, gmin[row - top][col - left], gmax[row - top][col - left]);
               }
             }
+        }
 
         /* Interpolate red and blue values for solitary green pixels:   */
-        for(int row = (top - sgrow + 7) / 3 * 3 + sgrow; row < mrow - 5; row += 3)
-          for(int col = (left - sgcol + 7) / 3 * 3 + sgcol; col < mcol - 5; col += 3)
+        const int pad_rb_g = 5;
+        for(int row = (top - sgrow + pad_rb_g + 2) / 3 * 3 + sgrow; row < mrow - pad_rb_g; row += 3)
+          for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int h = FCxtrans(row + yoff + 18, col + xoff + 19, NULL, xtrans);
@@ -792,10 +796,10 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
 
         /* Fill in red and blue for 2x2 blocks of green:                */
-        const int pad_g = (passes == 1) ? 7 : 3;
-        for(int row = top + pad_g; row < mrow - pad_g; row++)
+        const int pad_g22 = (passes == 1) ? 8 : 4;
+        for(int row = top + pad_g22; row < mrow - pad_g22; row++)
           if((row - sgrow) % 3)
-            for(int col = left + pad_g; col < mcol - pad_g; col++)
+            for(int col = left + pad_g22; col < mcol - pad_g22; col++)
               if((col - sgcol) % 3)
               {
                 float(*rfx)[3] = &rgb[0][row - top][col - left];
@@ -833,8 +837,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       // camera RGB is roughly linear.
       for(int d = 0; d < ndir; d++)
       {
-        for(int row = 7; row < mrow - 7; row++)
-          for(int col = 7; col < mcol - 7; col++)
+        const int pad_yuv = 7;
+        for(int row = pad_yuv; row < mrow - pad_yuv; row++)
+          for(int col = pad_yuv; col < mcol - pad_yuv; col++)
           {
             float *rx = rgb[d][row][col];
             // use ITU-R BT.2020 YPbPr, which is great, but could use
@@ -847,8 +852,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
           }
         const int f = dir[d & 3];
-        for(int row = 8; row < mrow - 8; row++)
-          for(int col = 8; col < mcol - 8; col++)
+        const int pad_drv = 8;
+        for(int row = pad_drv; row < mrow - pad_drv; row++)
+          for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
             float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
             drv[d][row][col] = SQR(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
@@ -859,8 +865,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Build homogeneity maps from the derivatives:                   */
       memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
-      for(int row = 9; row < mrow - 9; row++)
-        for(int col = 9; col < mcol - 9; col++)
+      const int pad_homo = 9;
+      for(int row = pad_homo; row < mrow - pad_homo; row++)
+        for(int col = pad_homo; col < mcol - pad_homo; col++)
         {
           float tr = FLT_MAX;
           for(int d = 0; d < ndir; d++)
