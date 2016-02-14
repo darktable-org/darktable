@@ -1532,7 +1532,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
                    const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  // this op is disabled for preview pipe/filters == 0
+  // this op is usually disabled for preview pipe/filters == 0
+  // it is enabled for monochrome preview though
 
   *roi_in = *roi_out;
   // need 1:1, demosaic and then sub-sample. or directly sample half-size
@@ -1541,25 +1542,29 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->width /= roi_out->scale;
   roi_in->height /= roi_out->scale;
   roi_in->scale = 1.0f;
-  // clamp to even x/y, to make demosaic pattern still hold..
-  if(data->filters != 9u)
-  {
-    roi_in->x = MAX(0, roi_in->x & ~1);
-    roi_in->y = MAX(0, roi_in->y & ~1);
-  }
-  else
-  {
-    // Markesteijn needs factors of 3
-    roi_in->x = MAX(0, roi_in->x - (roi_in->x % 3));
-    roi_in->y = MAX(0, roi_in->y - (roi_in->y % 3));
-  }
 
-  // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
-  if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f / roi_out->scale), 10))
-    roi_in->width = piece->pipe->image.width;
+  if (!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    // clamp to even x/y, to make demosaic pattern still hold..
+    if(data->filters != 9u)
+    {
+      roi_in->x = MAX(0, roi_in->x & ~1);
+      roi_in->y = MAX(0, roi_in->y & ~1);
+    }
+    else
+    {
+      // Markesteijn needs factors of 3
+      roi_in->x = MAX(0, roi_in->x - (roi_in->x % 3));
+      roi_in->y = MAX(0, roi_in->y - (roi_in->y % 3));
+    }
 
-  if(abs(piece->pipe->image.height - roi_in->height) < MAX(ceilf(1.0f / roi_out->scale), 10))
-    roi_in->height = piece->pipe->image.height;
+    // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
+    if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f / roi_out->scale), 10))
+      roi_in->width = piece->pipe->image.width;
+
+    if(abs(piece->pipe->image.height - roi_in->height) < MAX(ceilf(1.0f / roi_out->scale), 10))
+      roi_in->height = piece->pipe->image.height;
+  }
 }
 
 static int get_quality()
