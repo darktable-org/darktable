@@ -55,6 +55,12 @@ typedef enum dt_bauhaus_type_t
   // TODO: all the fancy color sliders..
 } dt_bauhaus_type_t;
 
+typedef enum dt_bauhaus_callback_t
+{
+  DT_BAUHAUS_SET = 1,
+  DT_BAUHAUS_GET = 2
+} dt_bauhaus_callback_t;
+
 // data portion for a slider
 typedef struct dt_bauhaus_slider_data_t
 {
@@ -79,6 +85,7 @@ typedef struct dt_bauhaus_slider_data_t
   int is_dragging;      // indicates is mouse is dragging slider
   int is_changed;       // indicates new data
   guint timeout_handle; // used to store id of timeout routine
+  float (*callback)(float, dt_bauhaus_callback_t); // callback function
 } dt_bauhaus_slider_data_t;
 
 // data portion for a combobox
@@ -251,6 +258,7 @@ void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max);
+void dt_bauhaus_slider_set_callback(GtkWidget *widget, float (*callback)(float value, dt_bauhaus_callback_t dir));
 
 // combobox:
 void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* widget,dt_iop_module_t *self);
