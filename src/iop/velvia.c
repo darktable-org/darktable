@@ -24,12 +24,14 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
-#include "develop/develop.h"
-#include "develop/imageop.h"
 #include "common/opencl.h"
 #include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #if defined(__SSE__)

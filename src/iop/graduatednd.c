@@ -24,17 +24,19 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
-#include "develop/develop.h"
-#include "develop/imageop.h"
-#include "develop/tiling.h"
-#include "control/control.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif

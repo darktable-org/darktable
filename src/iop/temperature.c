@@ -29,16 +29,17 @@
 #include <string.h>
 #include <lcms2.h>
 
-#include "common/darktable.h"
-#include "develop/develop.h"
-#include "develop/tiling.h"
-#include "control/control.h"
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
 #include "common/opencl.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
+#include "external/wb_presets.c"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "external/wb_presets.c"
-#include "bauhaus/bauhaus.h"
 
 // for Kelvin temperature and bogus WB
 #include "external/cie_colorimetric_tables.c"

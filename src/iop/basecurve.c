@@ -18,16 +18,18 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/develop.h"
-#include "develop/imageop.h"
-#include "control/control.h"
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/opencl.h"
-#include "gui/gtk.h"
-#include "gui/draw.h"
-#include "gui/presets.h"
-#include "bauhaus/bauhaus.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "dtgtk/drawingarea.h"
+#include "gui/draw.h"
+#include "gui/gtk.h"
+#include "gui/presets.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>

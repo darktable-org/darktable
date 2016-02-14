@@ -19,15 +19,16 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#include "develop/develop.h"
-#include "control/control.h"
 #include "bauhaus/bauhaus.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop_math.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_profilegamma_params_t)
 

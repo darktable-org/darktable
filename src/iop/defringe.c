@@ -18,14 +18,15 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <math.h>
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/gaussian.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
+#include <math.h>
 #include <stdlib.h>
-#include "common/gaussian.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_defringe_params_t)
 

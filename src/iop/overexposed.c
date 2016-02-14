@@ -25,10 +25,11 @@
 #endif
 #include <cairo.h>
 
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "common/opencl.h"
+#include "develop/imageop_math.h"
 #include "gui/accelerators.h"
 
 DT_MODULE(3)

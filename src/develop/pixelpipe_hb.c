@@ -17,17 +17,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "develop/pixelpipe.h"
-#include "develop/blend.h"
-#include "develop/tiling.h"
-#include "gui/gtk.h"
-#include "control/control.h"
-#include "control/signal.h"
-#include "common/opencl.h"
-#include "common/imageio.h"
-#include "libs/lib.h"
-#include "libs/colorpicker.h"
 #include "common/colorspaces.h"
 #include "common/histogram.h"
+#include "common/imageio.h"
+#include "common/opencl.h"
+#include "control/control.h"
+#include "control/signal.h"
+#include "develop/blend.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
+#include "gui/gtk.h"
+#include "libs/colorpicker.h"
+#include "libs/lib.h"
 
 #include <assert.h>
 #include <string.h>

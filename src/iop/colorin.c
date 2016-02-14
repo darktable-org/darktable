@@ -31,8 +31,10 @@
 #include "common/imageio_j2k.h"
 #endif
 #include "common/imageio_jpeg.h"
-#include "common/imageio_tiff.h"
 #include "common/imageio_png.h"
+#include "common/imageio_tiff.h"
+#include "develop/imageop_math.h"
+
 #include "external/adobe_coeff.c"
 #if defined(__SSE__)
 #include <xmmintrin.h>

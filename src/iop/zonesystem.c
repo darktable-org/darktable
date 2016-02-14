@@ -24,17 +24,19 @@
 #include <string.h>
 
 #include "common/darktable.h"
-#include "common/opencl.h"
 #include "common/gaussian.h"
+#include "common/opencl.h"
+#include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "dtgtk/togglebutton.h"
-#include "dtgtk/gradientslider.h"
+#include "develop/imageop_math.h"
 #include "dtgtk/drawingarea.h"
+#include "dtgtk/gradientslider.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif

@@ -18,10 +18,11 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/imageop.h"
 #include "common/interpolation.h"
-#include "develop/tiling.h"
 #include "common/opencl.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_finalscale_params_t)
 

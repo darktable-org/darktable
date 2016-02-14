@@ -29,8 +29,9 @@
 #endif
 #include "control/control.h"
 #include "develop/imageop.h"
-#include "dtgtk/resetlabel.h"
+#include "develop/imageop_math.h"
 #include "dtgtk/button.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 

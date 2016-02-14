@@ -25,8 +25,10 @@
 #include "common/gaussian.h"
 #include "control/control.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <strings.h>

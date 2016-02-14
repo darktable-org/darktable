@@ -19,14 +19,15 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/develop.h"
 #include "bauhaus/bauhaus.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop_math.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>

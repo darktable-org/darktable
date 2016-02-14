@@ -16,17 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/mipmap_cache.h"
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "common/exif.h"
 #include "common/grealpath.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "common/imageio_jpeg.h"
-#include "common/mipmap_cache.h"
+#include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/jobs.h"
-#include "common/debug.h"
+#include "develop/imageop_math.h"
 
 #include <assert.h>
 #include <string.h>

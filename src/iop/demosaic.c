@@ -17,17 +17,19 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "develop/imageop.h"
-#include "common/opencl.h"
 #include "bauhaus/bauhaus.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/interpolation.h"
-#include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "develop/tiling.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+
 #include <memory.h>
 #include <stdlib.h>
 #include <math.h>

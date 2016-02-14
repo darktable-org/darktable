@@ -15,18 +15,20 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "develop/imageop.h"
-#include "develop/tiling.h"
-#include "common/opencl.h"
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "control/conf.h"
+#include "control/control.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
-#include "gui/presets.h"
-#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
-#include "bauhaus/bauhaus.h"
-#include "control/control.h"
+#include "gui/presets.h"
+
 #include <memory.h>
 #include <stdlib.h>
 #if defined(__SSE__)

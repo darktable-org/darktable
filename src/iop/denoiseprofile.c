@@ -18,16 +18,18 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/imageop.h"
-#include "develop/tiling.h"
 #include "bauhaus/bauhaus.h"
-#include "control/control.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
-#include "gui/accelerators.h"
-#include "gui/presets.h"
-#include "gui/gtk.h"
 #include "common/opencl.h"
+#include "control/control.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "gui/presets.h"
+
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #if defined(__SSE__)

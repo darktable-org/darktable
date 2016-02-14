@@ -29,20 +29,21 @@
 #include <xmmintrin.h>
 #endif
 
+#include "bauhaus/bauhaus.h"
+#include "common/histogram.h"
+#include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "common/mipmap_cache.h"
-#include "common/image_cache.h"
-#include "control/control.h"
+#include "develop/imageop_math.h"
+#include "develop/pixelpipe.h"
+#include "dtgtk/paint.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "dtgtk/resetlabel.h"
-#include "dtgtk/paint.h"
-#include "bauhaus/bauhaus.h"
-#include "develop/pixelpipe.h"
-#include "common/histogram.h"
 
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(0.001, x))
