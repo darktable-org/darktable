@@ -55,8 +55,6 @@ int main(int argc, const char* argv[])
     return 2;
   }
 
-  FileReader f((char *) argv[1]);
-
 #ifdef __APPLE__
   std::auto_ptr<RawDecoder> d;
   std::auto_ptr<FileMap> m;
@@ -82,6 +80,12 @@ int main(int argc, const char* argv[])
   try
   {
     CameraMetaData *meta = new CameraMetaData(camfile);
+
+#ifdef __AFL_HAVE_MANUAL_CONTROL
+    __AFL_INIT();
+#endif
+
+    FileReader f((char *) argv[1]);
 
 #ifdef __APPLE__
     m = auto_ptr<FileMap>(f.readFile());
