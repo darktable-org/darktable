@@ -2,6 +2,18 @@ project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
+# Allow forcing the C/CPP compiler that is actually used during the compilation
+# to something other than what is used by the cmake run. This is useful when
+# the compiler for some reason breaks the initial cmake checks but works fine
+# for actually compiling darktable. This allows building darktable using
+# afl-clang-fast achieving a >4x speedup in fuzzing.
+IF(DEFINED DT_FORCE_C_COMPILER)
+  set(CMAKE_C_COMPILER ${DT_FORCE_C_COMPILER})
+endif()
+IF(DEFINED DT_FORCE_CXX_COMPILER)
+  set(CMAKE_CXX_COMPILER ${DT_FORCE_CXX_COMPILER})
+endif()
+
 include(CheckCCompilerFlag)
 include(TestBigEndian)
 
