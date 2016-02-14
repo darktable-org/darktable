@@ -256,7 +256,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float amount_1 = (1 - (d->amount) / 100.0);
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {

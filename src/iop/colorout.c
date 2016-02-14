@@ -310,7 +310,9 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
   }
 }
 
-#pragma omp declare simd
+#if defined(_OPENMP) && defined(OPENMP_SIMD_)
+#pragma omp declare SIMD()
+#endif
 static inline float lab_f_inv_m(const float x)
 {
   const float epsilon = (0.20689655172413796f); // cbrtf(216.0f/24389.0f);

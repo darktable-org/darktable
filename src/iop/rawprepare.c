@@ -234,7 +234,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int cx = d->x, cy = d->y;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -262,7 +262,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) collapse(3)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(3)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {

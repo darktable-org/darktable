@@ -25,6 +25,13 @@
 #endif
 #endif
 
+#if defined(_OPENMP) && __GNUC_PREREQ(4, 9)
+#define OPENMP_SIMD_
+#define SIMD() simd
+#else
+#define SIMD()
+#endif
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

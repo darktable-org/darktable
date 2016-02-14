@@ -458,7 +458,7 @@ static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   { // raw mosaic
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
@@ -470,7 +470,7 @@ static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const 
     const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
     {

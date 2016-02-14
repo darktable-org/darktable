@@ -277,7 +277,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const out = (float *const)ovoid;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {

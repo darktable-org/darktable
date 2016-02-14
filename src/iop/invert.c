@@ -190,7 +190,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
   { // xtrans float mosaiced
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -207,7 +207,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   { // bayer float mosaiced
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -225,7 +225,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
