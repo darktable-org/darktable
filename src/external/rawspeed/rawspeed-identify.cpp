@@ -159,7 +159,7 @@ int main(int argc, const char* argv[])
     double sum = 0.0f;
     for(uint32_t row = 0; row < ((uint32_t) dimUncropped.y); row++)
     {
-      uint8_t *data = r->getDataUncropped(0, 0);
+      uint8_t *data = r->getDataUncropped(0, row);
       for(uint32_t byte = 0; byte < ((uint32_t) dimUncropped.x*cpp*bpp) ; byte++)
         sum += (double) data[byte];
     }
