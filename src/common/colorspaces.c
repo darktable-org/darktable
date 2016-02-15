@@ -1797,7 +1797,7 @@ void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4])
   }
 }
 
-void dt_colorspaces_rgb_to_cygm(float *out, int num, const double RGB_to_CAM[4][3])
+void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3])
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(out, num, RGB_to_CAM) schedule(static)
