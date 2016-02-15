@@ -159,11 +159,12 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                 const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_invert_data_t *const d = (dt_iop_invert_data_t *)piece->data;
+
+  const float *const m = piece->pipe->processed_maximum;
 
   float film_rgb[4] = { d->color[0], d->color[1], d->color[2], 0.0f };
 
@@ -173,18 +174,6 @@ static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     dt_iop_invert_data_t *d2 = (dt_iop_invert_data_t *)piece->data;
     dt_colorspaces_rgb_to_cygm(film_rgb, 1, d2->RGB_to_CAM);
   }
-}
-
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_invert_data_t *const d = (dt_iop_invert_data_t *)piece->data;
-
-  process_common_setup(self, piece, ivoid, ovoid, roi_in, roi_out);
-
-  const float *const m = piece->pipe->processed_maximum;
-
-  float film_rgb[4] = { d->color[0], d->color[1], d->color[2], 0.0f };
 
   const float film_rgb_f[4] = { film_rgb[0] * m[0], film_rgb[1] * m[1], film_rgb[2] * m[2], film_rgb[3] * m[3] };
 
@@ -258,11 +247,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
 
-  process_common_setup(self, piece, ivoid, ovoid, roi_in, roi_out);
-
   const float *const m = piece->pipe->processed_maximum;
 
   float film_rgb[4] = { d->color[0], d->color[1], d->color[2], 0.0f };
+
+  // Convert the RGB color to CYGM only if we're not in the preview pipe (which is already RGB)
+  if((self->dev->image_storage.flags & DT_IMAGE_4BAYER) && !dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+    dt_colorspaces_rgb_to_cygm(film_rgb, 1, d->RGB_to_CAM);
 
   const float film_rgb_f[4] = { film_rgb[0] * m[0], film_rgb[1] * m[1], film_rgb[2] * m[2], film_rgb[3] * m[3] };
 
