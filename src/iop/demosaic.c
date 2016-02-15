@@ -596,7 +596,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row + yoff + 18, col + yoff + 18, NULL, xtrans);
+            const int c = FCxtrans(row + yoff + 18, col + xoff + 18, NULL, xtrans);
             for(int cc = 0; cc < 3; cc++)
               if(cc != c)
                 pix[cc] = 0.0f;
