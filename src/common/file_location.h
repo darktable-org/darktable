@@ -42,6 +42,11 @@ void dt_loc_get_plugindir(char *plugindir, size_t bufsize);
 void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize);
 void dt_loc_get_user_config_dir(char *configdir, size_t bufsize);
 void dt_loc_get_user_cache_dir(char *cachedir, size_t bufsize);
+
+#if defined(__MACH__) || defined(__APPLE__)
+char *dt_loc_find_install_dir(const char *suffix, const char *searchname);
+#endif
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

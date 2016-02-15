@@ -60,15 +60,19 @@ int main(int argc, const char* argv[])
   std::unique_ptr<RawDecoder> d;
   std::unique_ptr<FileMap> m;
 
-  char *datadir = NULL;
-#if defined(__MACH__) || defined(__APPLE__)
-  datadir = find_install_dir("/share/darktable");
-#endif
   char camfile[PATH_MAX] = { 0 };
-  if (datadir)
-    snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
-  else
-    snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", DARKTABLE_DATADIR);
+#if defined(__MACH__) || defined(__APPLE__)
+  char *directory = dt_loc_find_install_dir("/share/darktable", argv[0]);
+  if(!directory)
+  {
+    fprintf(stderr, "Couldn't find share/darktable folder\n");
+    return 2;
+  }
+  snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", directory);
+#else
+  snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", DARKTABLE_DATADIR);
+#endif
+  //fprintf(stderr, "Looking for cameras.xml in '%s'\n", camfile);
 
   try
   {
