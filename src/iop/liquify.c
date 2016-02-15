@@ -1217,16 +1217,16 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   const float scale = piece->iscale;
 
   // compute the extent of all points (all computations are done in RAW coordinate)
-  float xmin=9999999, xmax=0, ymin=9999999, ymax=0;
+  float xmin=FLT_MAX, xmax=FLT_MIN, ymin=FLT_MAX, ymax=FLT_MIN;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     const float x = points[i] * scale;
     const float y = points[i + 1] * scale;
-    if (xmin > x) xmin = x;
-    if (ymin > y) ymin = y;
-    if (xmax < x) xmax = x;
-    if (ymax < y) ymax = y;
+    xmin = fmin (xmin, x);
+    xmax = fmax (xmax, x);
+    ymin = fmin (ymin, y);
+    ymax = fmax (ymax, y);
   }
 
   cairo_rectangle_int_t extent = { .x = (int)(xmin - .5), .y = (int)(ymin - .5),
