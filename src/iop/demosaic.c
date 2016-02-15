@@ -549,6 +549,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
       }
 
+// succinct lookup for allhex[], making sure that row/col aren't negative
+#define HEXMAP(y,x) allhex[((y) + 18) % 3][((x) + 18) % 3]
+
   // extra passes propagates out errors at edges, hence need more padding
   const int pad_tile = (passes == 1) ? 12 : 17;
 #ifdef _OPENMP
@@ -666,7 +669,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           if(max == 0.0f)
           {
             float (*const pix)[3] = &rgb[0][row - top][col - left];
-            const short *const hex = allhex[(row + 18) % 3][(col + 18) % 3];
+            const short *const hex = HEXMAP(row,col);
             for(int c = 0; c < 6; c++)
             {
               const float val = pix[hex[c]][1];
@@ -702,7 +705,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           int f = FCxtrans(row, col, roi_in, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
-          short *hex = allhex[(row + 15) % 3][(col + 15) % 3];
+          short *hex = HEXMAP(row,col);
           // TODO: these constants come from integer math constants in
           // dcraw -- calculate them instead from interpolation math
           color[0] = 0.6796875f * (pix[hex[1]][1] + pix[hex[0]][1])
@@ -736,7 +739,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             {
               int f = FCxtrans(row, col, roi_in, xtrans);
               if(f == 1) continue;
-              short *hex = allhex[(row + 18) % 3][(col + 18) % 3];
+              short *hex = HEXMAP(row,col);
               for(int d = 3; d < 6; d++)
               {
                 float(*rfx)[3] = &rgb[(d - 2) ^ !((row - sgrow) % 3)][row - top][col - left];
@@ -804,7 +807,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
               if((col - sgcol) % 3)
               {
                 float(*rfx)[3] = &rgb[0][row - top][col - left];
-                short *hex = allhex[(row + 18) % 3][(col + 18) % 3];
+                short *hex = HEXMAP(row,col);
                 for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
                   if(hex[d] + hex[d + 1])
                   {
