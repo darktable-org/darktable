@@ -190,10 +190,12 @@ static inline int FC(const size_t row, const size_t col, const unsigned int filt
 static inline int FCxtrans(const size_t row, const size_t col, const dt_iop_roi_t *const roi,
                            const uint8_t (*const xtrans)[6])
 {
-  // add +6 to as offset can be -1 or -2 and need to ensure a
-  // non-negative array index.
-  int irow = row + 6;
-  int icol = col + 6;
+  // Add +18 (which must be a multiple of CFA width 6) as offset can
+  // be negative and need to ensure a non-negative array index. This
+  // offest is enough to handle negative offsets from both Markesteijn
+  // and VNG demosaic.
+  int irow = row + 18;
+  int icol = col + 18;
 
   if(roi)
   {

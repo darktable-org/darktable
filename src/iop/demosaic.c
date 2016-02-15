@@ -597,7 +597,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row + 12, col + 12, roi_in, xtrans);
+            const int c = FCxtrans(row, col, roi_in, xtrans);
             for(int cc = 0; cc < 3; cc++)
               if(cc != c)
                 pix[cc] = 0.0f;
@@ -653,7 +653,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
           // between each pair
-          if(FCxtrans(row + 12, col + 12, roi_in, xtrans) == 1)
+          if(FCxtrans(row, col, roi_in, xtrans) == 1)
           {
             min = FLT_MAX, max = 0.0f;
             continue;
@@ -699,7 +699,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
-          int f = FCxtrans(row + 12, col + 12, roi_in, xtrans);
+          int f = FCxtrans(row, col, roi_in, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
           short *hex = allhex[(row + 15) % 3][(col + 15) % 3];
@@ -734,7 +734,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           for(int row = top + pad_g_recalc; row < mrow - pad_g_recalc; row++)
             for(int col = left + pad_g_recalc; col < mcol - pad_g_recalc; col++)
             {
-              int f = FCxtrans(row + 12, col + 12, roi_in, xtrans);
+              int f = FCxtrans(row, col, roi_in, xtrans);
               if(f == 1) continue;
               short *hex = allhex[(row + 18) % 3][(col + 18) % 3];
               for(int d = 3; d < 6; d++)
@@ -753,7 +753,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
-            int h = FCxtrans(row + 12, col + 13, roi_in, xtrans);
+            int h = FCxtrans(row, col + 1, roi_in, xtrans);
             float diff[6] = { 0.0f };
             float color[3][8];
             for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
@@ -782,7 +782,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
           for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
           {
-            int f = 2 - FCxtrans(row + 12, col + 12, roi_in, xtrans);
+            int f = 2 - FCxtrans(row, col, roi_in, xtrans);
             if(f == 1) continue;
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int c = (row - sgrow) % 3 ? TS : 1;
