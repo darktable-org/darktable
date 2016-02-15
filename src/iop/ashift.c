@@ -66,6 +66,7 @@
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
+#define LSD_SCALE 1.0                       // scaling factor for LSD line detection
 #define RANSAC_RUNS 200                     // how many interations to run in ransac
 #define RANSAC_EPSILON 4                    // starting value for ransac epsilon (in -log10 units)
 #define RANSAC_EPSILON_STEP 1               // step size of epsilon optimization (log10 units)
@@ -878,7 +879,7 @@ static int line_detect(const float *in, const int width, const int height, const
   // LSD stores the number of found lines in lines_count.
   // it returns structural details as vector 'double lines[7 * lines_count]'
   int lines_count;
-  lsd_lines = lsd_scale(&lines_count, greyscale, width, height, 1.0);
+  lsd_lines = lsd_scale(&lines_count, greyscale, width, height, LSD_SCALE);
 
   // we count the lines that we really want to use
   int lct = 0;
@@ -1639,7 +1640,6 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
   if(dir == ASHIFT_FIT_NONE) return;
 
   double params[3];
-  int pcount = 0;
   int enough_lines = TRUE;
 
   // initialize fit parameters
@@ -1723,14 +1723,20 @@ static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
   if(!get_structure(module, enhance))
   {
     dt_control_log(_("could not detect structural data in image"));
+#ifdef ASHIFT_DEBUG
+    // find out more
+    printf("do_get_structure: buf %p, lines %p, lines_count %d\n", g->buf, g->lines, g->lines_count);
+#endif
     goto error;
   }
 
   if(!remove_outliers(module))
   {
-    // in fact currently remove_outliers() always returns TRUE. The log
-    // message here is implemented for future extensions
     dt_control_log(_("could not run outlier removal"));
+#ifdef ASHIFT_DEBUG
+    // find out more
+    printf("remove_outliers: buf %p, lines %p, lines_count %d\n", g->buf, g->lines, g->lines_count);
+#endif
     goto error;
   }
 
@@ -2835,6 +2841,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.01*ROTATION_RANGE, p->rotation, 2);
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
+  dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
   dt_bauhaus_slider_enable_soft_boundaries(g->rotation, -ROTATION_RANGE_SOFT, ROTATION_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
 
