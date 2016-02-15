@@ -30,7 +30,7 @@ extern "C" {
 #include "config.h"
 #include "common/file_location.h"
 #include <stdint.h>
-#include <unistd.h>
+#include <stdio.h>
 }
 
 // define this function, it is only declared in rawspeed:
@@ -51,7 +51,7 @@ int main(int argc, const char* argv[])
 
   if(argc != 2)
   {
-    fprintf(stderr, "Usage: rawspeed-identify <file>\n");
+    fprintf(stderr, "Usage: darktable-rs-identify <file>\n");
     return 2;
   }
 
@@ -116,11 +116,11 @@ int main(int argc, const char* argv[])
     fprintf(stdout, "whitePoint: %d\n", r->whitePoint);
 
     fprintf(stdout, "blackLevelSeparate: %d %d %d %d\n", 
-                    r->blackLevelSeparate[0], r->blackLevelSeparate[1], 
+                    r->blackLevelSeparate[0], r->blackLevelSeparate[1],
                     r->blackLevelSeparate[2], r->blackLevelSeparate[3]);
 
     fprintf(stdout, "wbCoeffs: %f %f %f %f\n", 
-                    r->metadata.wbCoeffs[0], r->metadata.wbCoeffs[1], 
+                    r->metadata.wbCoeffs[0], r->metadata.wbCoeffs[1],
                     r->metadata.wbCoeffs[2], r->metadata.wbCoeffs[3]);
 
     fprintf(stdout, "isCFA: %d\n", r->isCFA);
