@@ -20,6 +20,7 @@
 #include <omp.h>
 #endif
 
+#include <exception>
 #include <memory>
 
 #include "rawspeed/RawSpeed/RawSpeed-API.h"
@@ -28,9 +29,9 @@
 
 extern "C" {
 #include "config.h"
-#include "common/file_location.h"
+#include <limits.h>
 #include <stdint.h>
-#include <unistd.h>
+#include <stdio.h>
 }
 
 // define this function, it is only declared in rawspeed:
@@ -51,7 +52,7 @@ int main(int argc, const char* argv[])
 
   if(argc != 2)
   {
-    fprintf(stderr, "Usage: rawspeed-identify <file>\n");
+    fprintf(stderr, "Usage: %s <file>\n", argv[0]);
     return 2;
   }
 
@@ -62,6 +63,10 @@ int main(int argc, const char* argv[])
 
   char *datadir = NULL;
 #if defined(__MACH__) || defined(__APPLE__)
+  /*
+   * FIXME: following function is only available in libdarktable,
+   * but we can not link against it - #10913.
+   */
   datadir = find_install_dir("/share/darktable");
 #endif
   char camfile[PATH_MAX] = { 0 };
@@ -111,12 +116,12 @@ int main(int argc, const char* argv[])
     fprintf(stdout, "blackLevel: %d\n", r->blackLevel);
     fprintf(stdout, "whitePoint: %d\n", r->whitePoint);
 
-    fprintf(stdout, "blackLevelSeparate: %d %d %d %d\n", 
-                    r->blackLevelSeparate[0], r->blackLevelSeparate[1], 
+    fprintf(stdout, "blackLevelSeparate: %d %d %d %d\n",
+                    r->blackLevelSeparate[0], r->blackLevelSeparate[1],
                     r->blackLevelSeparate[2], r->blackLevelSeparate[3]);
 
-    fprintf(stdout, "wbCoeffs: %f %f %f %f\n", 
-                    r->metadata.wbCoeffs[0], r->metadata.wbCoeffs[1], 
+    fprintf(stdout, "wbCoeffs: %f %f %f %f\n",
+                    r->metadata.wbCoeffs[0], r->metadata.wbCoeffs[1],
                     r->metadata.wbCoeffs[2], r->metadata.wbCoeffs[3]);
 
     fprintf(stdout, "isCFA: %d\n", r->isCFA);

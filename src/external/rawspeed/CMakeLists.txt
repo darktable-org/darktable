@@ -15,6 +15,20 @@ else(WIN32)
 endif(WIN32)
 
 #
+# We need C++11
+#
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+	if (GCC_VERSION VERSION_LESS 4.7)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+	else()
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+	endif()
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
+
+#
 # set development flags for rawspeed
 #
 if(NOT SOURCE_PACKAGE AND NOT APPLE)
@@ -26,30 +40,5 @@ elseif(SOURCE_PACKAGE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
 endif()
 
-add_definitions(-std=c++11)
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
 target_link_libraries(rawspeed ${RAWSPEED_LIBS})
-
-# Adapted from src/cli/CMakeLists.txt
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
-
-add_executable(darktable-rs-identify rawspeed-identify.cpp)
-set_target_properties(darktable-rs-identify PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set_target_properties(darktable-rs-identify PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-if(APPLE)
-  set_target_properties(darktable-rs-identify PROPERTIES INSTALL_RPATH @loader_path/../${LIB_INSTALL}/darktable)
-else(APPLE)
-  set_target_properties(darktable-rs-identify PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
-endif(APPLE)
-set_target_properties(darktable-rs-identify PROPERTIES LINKER_LANGUAGE CXX)
-if(CMAKE_COMPILER_IS_GNUCC)
-	if (GCC_VERSION VERSION_GREATER 4.3)
-		if (CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
-			message("-- Force link to libintl on *BSD with GCC 4.3+")
-			target_link_libraries(darktable-rs-identify -lintl)
-		endif()
-	endif()
-endif()
-target_link_libraries(darktable-rs-identify lib_darktable)
-install(TARGETS darktable-rs-identify DESTINATION bin)

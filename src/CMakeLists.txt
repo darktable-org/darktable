@@ -735,7 +735,9 @@ else(WIN32)
 endif(WIN32)
 
 # make sure static libs is first
-list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})
+list(INSERT LIBS 0 ${STATIC_LIBS})
+list(APPEND _LIBS ${LIBS})
+list(INSERT LIBS 0 lib_darktable)
 
 # Compile views modules
 add_subdirectory(views)
@@ -759,6 +761,9 @@ add_subdirectory(cli)
 
 # have a command line utility to generate all the thumbnails
 add_subdirectory(generate-cache)
+
+# have a command line utility to get rawspeed vision of a raw file
+add_subdirectory(external/rawspeed/rawspeed-identify)
 
 # have a small test program that verifies your color management setup
 if(BUILD_CMSTEST)
