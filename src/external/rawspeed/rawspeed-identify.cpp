@@ -30,7 +30,7 @@ extern "C" {
 #include "config.h"
 #include "common/file_location.h"
 #include <stdint.h>
-#include <unistd.h>
+#include <stdio.h>
 }
 
 // define this function, it is only declared in rawspeed:
@@ -51,7 +51,7 @@ int main(int argc, const char* argv[])
 
   if(argc != 2)
   {
-    fprintf(stderr, "Usage: rawspeed-identify <file>\n");
+    fprintf(stderr, "Usage: darktable-rs-identify <file>\n");
     return 2;
   }
 
@@ -60,15 +60,19 @@ int main(int argc, const char* argv[])
   std::unique_ptr<RawDecoder> d;
   std::unique_ptr<FileMap> m;
 
-  char *datadir = NULL;
-#if defined(__MACH__) || defined(__APPLE__)
-  datadir = find_install_dir("/share/darktable");
-#endif
   char camfile[PATH_MAX] = { 0 };
-  if (datadir)
-    snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
-  else
-    snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", DARKTABLE_DATADIR);
+#if defined(__MACH__) || defined(__APPLE__)
+  char *directory = dt_loc_find_install_dir("/share/darktable", argv[0]);
+  if(!directory)
+  {
+    fprintf(stderr, "Couldn't find share/darktable folder\n");
+    return 2;
+  }
+  snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", directory);
+#else
+  snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", DARKTABLE_DATADIR);
+#endif
+  //fprintf(stderr, "Looking for cameras.xml in '%s'\n", camfile);
 
   try
   {
@@ -112,11 +116,11 @@ int main(int argc, const char* argv[])
     fprintf(stdout, "whitePoint: %d\n", r->whitePoint);
 
     fprintf(stdout, "blackLevelSeparate: %d %d %d %d\n", 
-                    r->blackLevelSeparate[0], r->blackLevelSeparate[1], 
+                    r->blackLevelSeparate[0], r->blackLevelSeparate[1],
                     r->blackLevelSeparate[2], r->blackLevelSeparate[3]);
 
     fprintf(stdout, "wbCoeffs: %f %f %f %f\n", 
-                    r->metadata.wbCoeffs[0], r->metadata.wbCoeffs[1], 
+                    r->metadata.wbCoeffs[0], r->metadata.wbCoeffs[1],
                     r->metadata.wbCoeffs[2], r->metadata.wbCoeffs[3]);
 
     fprintf(stdout, "isCFA: %d\n", r->isCFA);

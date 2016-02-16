@@ -108,21 +108,21 @@ void dt_loc_init_user_config_dir(const char *configdir)
 }
 
 #if defined(__MACH__) || defined(__APPLE__)
-static char *find_install_dir(const char *suffix)
+char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
 {
   gchar *curr = g_get_current_dir();
   int contains = 0;
   char tmp[PATH_MAX] = { 0 };
-  for(int k = 0; darktable.progname[k] != 0; k++)
-    if(darktable.progname[k] == '/')
+  for(int k = 0; searchname[k] != 0; k++)
+    if(searchname[k] == '/')
     {
       contains = 1;
       break;
     }
-  if(darktable.progname[0] == '/') // absolute path
-    snprintf(tmp, sizeof(tmp), "%s", darktable.progname);
+  if(searchname[0] == '/') // absolute path
+    snprintf(tmp, sizeof(tmp), "%s", searchname);
   else if(contains) // relative path
-    snprintf(tmp, sizeof(tmp), "%s/%s", curr, darktable.progname);
+    snprintf(tmp, sizeof(tmp), "%s/%s", curr, searchname);
   else
   {
     // no idea where we have been called. use compiled in path
@@ -165,7 +165,7 @@ void dt_loc_init_user_cache_dir(const char *cachedir)
 void dt_loc_init_plugindir(const char *plugindir)
 {
 #if defined(__MACH__) || defined(__APPLE__)
-  char *directory = find_install_dir("/lib/darktable");
+  char *directory = dt_loc_find_install_dir("/lib/darktable", darktable.progname);
   if(plugindir || !directory)
   {
     darktable.plugindir = dt_loc_init_generic(plugindir, DARKTABLE_LIBDIR);
@@ -182,7 +182,7 @@ void dt_loc_init_plugindir(const char *plugindir)
 void dt_loc_init_datadir(const char *datadir)
 {
 #if defined(__MACH__) || defined(__APPLE__)
-  char *directory = find_install_dir("/share/darktable");
+  char *directory = dt_loc_find_install_dir("/share/darktable", darktable.progname);
   if(datadir || !directory)
   {
     darktable.datadir = dt_loc_init_generic(datadir, DARKTABLE_DATADIR);
