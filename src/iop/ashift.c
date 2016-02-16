@@ -1902,7 +1902,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       g->buf = malloc((size_t)width * height * 4 * sizeof(float));
     }
 
-    if(g->buf && hash != g->buf_hash)
+    if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
       memcpy(g->buf, ivoid, (size_t)width * height * 4 * sizeof(float));
@@ -2032,7 +2032,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       g->buf = malloc((size_t)width * height * 4 * sizeof(float));
     }
 
-    if(g->buf && hash != g->buf_hash)
+    if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
       err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in, width, height, 4 * sizeof(float));
