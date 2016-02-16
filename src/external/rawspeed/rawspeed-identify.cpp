@@ -160,11 +160,11 @@ int main(int argc, const char* argv[])
     for(uint32_t row = 0; row < ((uint32_t) dimUncropped.y); row++)
     {
       uint8_t *data = r->getDataUncropped(0, row);
-      for(uint32_t byte = 0; byte < ((uint32_t) dimUncropped.x*cpp*bpp) ; byte++)
+      for(uint32_t byte = 0; byte < ((uint32_t) dimUncropped.x*bpp) ; byte++)
         sum += (double) data[byte];
     }
     fprintf(stdout, "Image byte sum: %lf\n", sum);
-    fprintf(stdout, "Image byte avg: %lf\n", sum/(dimUncropped.y*dimUncropped.x*cpp*bpp));
+    fprintf(stdout, "Image byte avg: %lf\n", sum/(dimUncropped.y*dimUncropped.x*bpp));
   }
   catch(const std::exception &exc)
   {
