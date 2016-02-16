@@ -68,6 +68,8 @@ static const uint32_t thumb_frame_color = 0x000000aa;
 
 /* proxy function to center map view on location at a zoom level */
 static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom);
+/* proxy function to center map view on a bounding box */
+static void _view_map_center_on_bbox(const dt_view_t *view, gdouble lon1, gdouble lat1, gdouble lon2, gdouble lat2);
 /* proxy function to show or hide the osd */
 static void _view_map_show_osd(const dt_view_t *view, gboolean enabled);
 /* proxy function to set the map source */
@@ -76,6 +78,7 @@ static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t ma
 static void _view_map_set_map_source_g_object(const dt_view_t *view, OsmGpsMapSource_t map_source);
 /* proxy function to check if preferences have changed */
 static void _view_map_check_preference_changed(gpointer instance, gpointer user_data);
+
 /* callback when the collection changs */
 static void _view_map_collection_changed(gpointer instance, gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
@@ -229,9 +232,8 @@ static int zoom_member(lua_State *L)
     return 0;
   }
 }
-
-
 #endif // USE_LUA
+
 static GdkPixbuf *init_pin()
 {
   int w = thumb_size + 2 * thumb_border, h = pin_size;
@@ -671,6 +673,7 @@ void enter(dt_view_t *self)
   /* setup proxy functions */
   darktable.view_manager->proxy.map.view = self;
   darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
+  darktable.view_manager->proxy.map.center_on_bbox = _view_map_center_on_bbox;
   darktable.view_manager->proxy.map.show_osd = _view_map_show_osd;
   darktable.view_manager->proxy.map.set_map_source = _view_map_set_map_source;
 
@@ -760,6 +763,12 @@ static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdo
 {
   dt_map_t *lib = (dt_map_t *)view->data;
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
+}
+
+static void _view_map_center_on_bbox(const dt_view_t *view, gdouble lon1, gdouble lat1, gdouble lon2, gdouble lat2)
+{
+  dt_map_t *lib = (dt_map_t *)view->data;
+  osm_gps_map_zoom_fit_bbox(lib->map, lat1, lat2, lon1, lon2);
 }
 
 static void _view_map_show_osd(const dt_view_t *view, gboolean enabled)

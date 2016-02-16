@@ -56,6 +56,7 @@ typedef struct _lib_location_result_t
   _lib_location_type_t type;
   float lon;
   float lat;
+  float bbox_lon1, bbox_lat1, bbox_lon2, bbox_lat2;
   gchar *name;
 
 } _lib_location_result_t;
@@ -105,7 +106,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = calloc(1, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
 
   /* add search box */
   lib->search = GTK_ENTRY(gtk_entry_new());
@@ -116,8 +117,8 @@ void gui_init(dt_lib_module_t *self)
                    (gpointer)self);
 
   /* add result vbox */
-  lib->result = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->result), TRUE, FALSE, 2);
+  lib->result = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(10));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->result), TRUE, FALSE, DT_PIXEL_APPLY_DPI(2));
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -131,30 +132,36 @@ void gui_cleanup(dt_lib_module_t *self)
 static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
 {
   GtkWidget *eb, *hb, *vb, *w;
-  char location[512];
   eb = gtk_event_box_new();
-  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-  vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(2));
+  vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(2));
 
   /* add name */
   w = gtk_label_new(place->name);
   gtk_label_set_line_wrap(GTK_LABEL(w), TRUE);
   gtk_widget_set_halign(w, GTK_ALIGN_START);
+  g_object_set(G_OBJECT(w), "xalign", 0.0, NULL);
   gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
 
   /* add location coord */
-  g_snprintf(location, sizeof(location), "lat: %.4f lon: %.4f", place->lat, place->lon);
+  gchar *lat = dt_util_latitude_str(place->lat);
+  gchar *lon = dt_util_longitude_str(place->lon);
+  gchar *location = g_strconcat(lat, ", ", lon, NULL);
   w = gtk_label_new(location);
+  g_free(lat);
+  g_free(lon);
+  g_free(location);
   gtk_label_set_line_wrap(GTK_LABEL(w), TRUE);
   gtk_widget_set_halign(w, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
 
   /* type icon */
-  GtkWidget *icon = dtgtk_icon_new(dtgtk_cairo_paint_store, 0);
+  GtkWidget *icon = dtgtk_icon_new(dtgtk_cairo_paint_triangle, CPF_DIRECTION_LEFT);
+  gtk_widget_set_size_request(icon, DT_PIXEL_APPLY_DPI(10), -1);
 
   /* setup layout */
-  gtk_box_pack_start(GTK_BOX(hb), icon, FALSE, FALSE, 2);
-  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 2);
+  gtk_box_pack_start(GTK_BOX(hb), icon, FALSE, FALSE, DT_PIXEL_APPLY_DPI(2));
+  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, DT_PIXEL_APPLY_DPI(2));
   gtk_container_add(GTK_CONTAINER(eb), hb);
 
   gtk_widget_show_all(eb);
@@ -209,6 +216,19 @@ static int32_t _lib_location_place_get_zoom(_lib_location_result_t *place)
   return 0;
 }
 
+static void _show_location(_lib_location_result_t *p)
+{
+  if(isnan(p->bbox_lon1) || isnan(p->bbox_lat1) || isnan(p->bbox_lon2) || isnan(p->bbox_lat2))
+  {
+    int32_t zoom = _lib_location_place_get_zoom(p);
+    dt_view_map_center_on_location(darktable.view_manager, p->lon, p->lat, zoom);
+  }
+  else
+  {
+    dt_view_map_center_on_bbox(darktable.view_manager, p->bbox_lon1, p->bbox_lat1, p->bbox_lon2, p->bbox_lat2);
+  }
+}
+
 /* called when search job has been processed and
    result has been parsed */
 static void _lib_location_search_finish(gpointer user_data)
@@ -224,7 +244,7 @@ static void _lib_location_search_finish(gpointer user_data)
   do
   {
     _lib_location_result_t *place = (_lib_location_result_t *)item->data;
-    gtk_box_pack_start(GTK_BOX(lib->result), _lib_location_place_widget_new(place), TRUE, TRUE, 2);
+    gtk_box_pack_start(GTK_BOX(lib->result), _lib_location_place_widget_new(place), TRUE, TRUE, 0);
     gtk_widget_show(lib->result);
   } while((item = g_list_next(item)) != NULL);
 
@@ -232,10 +252,8 @@ static void _lib_location_search_finish(gpointer user_data)
      set center location and zoom based on place type  */
   if(g_list_length(lib->places) == 1)
   {
-    int32_t zoom = 0;
     _lib_location_result_t *item = (_lib_location_result_t *)lib->places->data;
-    zoom = _lib_location_place_get_zoom(item);
-    dt_view_map_center_on_location(darktable.view_manager, item->lon, item->lat, zoom);
+    _show_location(item);
   }
 }
 
@@ -291,12 +309,12 @@ static gboolean _lib_location_search(gpointer user_data)
   GList *item = lib->places;
   if(!item) goto bail_out;
 
-  while(item)
-  {
-    _lib_location_result_t *p = (_lib_location_result_t *)item->data;
-    fprintf(stderr, "(%f,%f) %s\n", p->lon, p->lat, p->name);
-    item = g_list_next(item);
-  }
+//   while(item)
+//   {
+//     _lib_location_result_t *p = (_lib_location_result_t *)item->data;
+//     fprintf(stderr, "(%f,%f) %s\n", p->lon, p->lat, p->name);
+//     item = g_list_next(item);
+//   }
 
 /* cleanup an exit search job */
 bail_out:
@@ -323,9 +341,7 @@ bail_out:
 gboolean _lib_location_result_item_activated(GtkButton *button, GdkEventButton *ev, gpointer user_data)
 {
   _lib_location_result_t *p = (_lib_location_result_t *)user_data;
-  int32_t zoom = _lib_location_place_get_zoom(p);
-  fprintf(stderr, "zoom to: %d\n", zoom);
-  dt_view_map_center_on_location(darktable.view_manager, p->lon, p->lat, zoom);
+  _show_location(p);
   return TRUE;
 }
 
@@ -360,6 +376,10 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
 
   place->lon = NAN;
   place->lat = NAN;
+  place->bbox_lon1 = NAN;
+  place->bbox_lat1 = NAN;
+  place->bbox_lon2 = NAN;
+  place->bbox_lat2 = NAN;
 
   /* handle the element attribute values */
   const gchar **aname = attribute_names;
@@ -377,6 +397,33 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
         place->lon = g_strtod(*avalue, NULL);
       else if(strcmp(*aname, "lat") == 0)
         place->lat = g_strtod(*avalue, NULL);
+      else if(strcmp(*aname, "boundingbox") == 0)
+      {
+        char *endptr;
+        float lon1, lat1, lon2, lat2;
+
+        lat1 = g_ascii_strtod(*avalue, &endptr);
+        if(*endptr != ',') goto broken_bbox;
+        endptr++;
+
+        lat2 = g_ascii_strtod(endptr, &endptr);
+        if(*endptr != ',') goto broken_bbox;
+        endptr++;
+
+        lon1 = g_ascii_strtod(endptr, &endptr);
+        if(*endptr != ',') goto broken_bbox;
+        endptr++;
+
+        lon2 = g_ascii_strtod(endptr, &endptr);
+        if(*endptr != '\0') goto broken_bbox;
+
+        place->bbox_lon1 = lon1;
+        place->bbox_lat1 = lat1;
+        place->bbox_lon2 = lon2;
+        place->bbox_lat2 = lat2;
+broken_bbox:
+        ;
+      }
       else if(strcmp(*aname, "type") == 0)
       {
 
