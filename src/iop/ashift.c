@@ -103,6 +103,12 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
+int operation_tags_filter()
+{
+  // switch off clipping and decoration, we want to see the full image.
+  return IOP_TAG_DECORATION | IOP_TAG_CLIPPING;
+}
+
 typedef enum dt_iop_ashift_homodir_t
 {
   ASHIFT_HOMOGRAPH_FORWARD,
@@ -2808,7 +2814,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      dt_control_queue_redraw_center();
+      dt_dev_reprocess_all(self->dev);
+      //dt_control_queue_redraw_center();
     }
   }
 }

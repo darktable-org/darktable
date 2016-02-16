@@ -306,7 +306,7 @@ int flags()
 
 int operation_tags()
 {
-  return IOP_TAG_DISTORT;
+  return IOP_TAG_DISTORT | IOP_TAG_CLIPPING;
 }
 
 int operation_tags_filter()
