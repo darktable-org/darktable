@@ -962,7 +962,7 @@ static int line_detect(const float *in, const int width, const int height, const
       // the next valid line
       lct++;
     }
-
+  }
 #ifdef ASHIFT_DEBUG
     printf("%d lines (vertical %d, horizontal %d, not relevant %d)\n", lines_count, vertical_count,
            horizontal_count, lct - vertical_count - horizontal_count);
@@ -982,7 +982,6 @@ static int line_detect(const float *in, const int width, const int height, const
     }
     printf("xmin %.0f, xmax %.0f, ymin %.0f, ymax %.0f\n", xmin, xmax, ymin, ymax);
 #endif
-  }
 
   // store results in provided locations
   *lcount = lct;
@@ -995,7 +994,7 @@ static int line_detect(const float *in, const int width, const int height, const
   // free intermediate buffers
   free(lsd_lines);
   free(greyscale);
-  return TRUE;
+  return lct > 0 ? TRUE : FALSE;
 
 error:
   if(lsd_lines) free(lsd_lines);
@@ -1725,7 +1724,8 @@ static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
     dt_control_log(_("could not detect structural data in image"));
 #ifdef ASHIFT_DEBUG
     // find out more
-    printf("do_get_structure: buf %p, lines %p, lines_count %d\n", g->buf, g->lines, g->lines_count);
+    printf("do_get_structure: buf %p, buf_hash %lu, buf_width %d, buf_height %d, lines %p, lines_count %d\n",
+           g->buf, g->buf_hash, g->buf_width, g->buf_height, g->lines, g->lines_count);
 #endif
     goto error;
   }
@@ -1735,7 +1735,8 @@ static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
     dt_control_log(_("could not run outlier removal"));
 #ifdef ASHIFT_DEBUG
     // find out more
-    printf("remove_outliers: buf %p, lines %p, lines_count %d\n", g->buf, g->lines, g->lines_count);
+    printf("remove_outliers: buf %p, buf_hash %lu, buf_width %d, buf_height %d, lines %p, lines_count %d\n",
+           g->buf, g->buf_hash, g->buf_width, g->buf_height, g->lines, g->lines_count);
 #endif
     goto error;
   }
@@ -2652,32 +2653,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
-
-  dt_pthread_mutex_lock(&g->lock);
-  free(g->buf);
-  g->buf = NULL;
-  g->lines_count = 0;
-  g->buf_width = 0;
-  g->buf_height = 0;
-  g->buf_scale = 1.0f;
-  g->buf_hash = 0;
-  g->isflipped = -1;
-  g->lastfit = ASHIFT_FIT_NONE;
-  dt_pthread_mutex_unlock(&g->lock);
-
-  g->fitting = 0;
-  free(g->lines);
-  g->lines = NULL;
-  g->lines_count =0;
-  g->horizontal_count = 0;
-  g->vertical_count = 0;
-  g->grid_hash = 0;
-  g->rotation_range = ROTATION_RANGE;
-  g->lensshift_v_range = LENSSHIFT_RANGE;
-  g->lensshift_h_range = LENSSHIFT_RANGE;
-  g->lines_suppressed = 0;
-  g->lines_version++;
-  range_adjust(p, g);
 }
 
 void init(dt_iop_module_t *module)
@@ -2695,6 +2670,7 @@ void init(dt_iop_module_t *module)
 
 void reload_defaults(dt_iop_module_t *module)
 {
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)module->params;
   // our module is disabled by default
   module->default_enabled = 0;
   // init defaults:
@@ -2725,6 +2701,41 @@ void reload_defaults(dt_iop_module_t *module)
 
     dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
     dt_bauhaus_widget_set_label(g->lensshift_h, NULL, string_h);
+
+    dt_pthread_mutex_lock(&g->lock);
+    free(g->buf);
+    g->buf = NULL;
+    g->buf_width = 0;
+    g->buf_height = 0;
+    g->buf_x_off = 0;
+    g->buf_y_off = 0;
+    g->buf_scale = 1.0f;
+    g->buf_hash = 0;
+    g->isflipped = -1;
+    g->lastfit = ASHIFT_FIT_NONE;
+    dt_pthread_mutex_unlock(&g->lock);
+
+    g->fitting = 0;
+    free(g->lines);
+    g->lines = NULL;
+    g->lines_count =0;
+    g->horizontal_count = 0;
+    g->vertical_count = 0;
+    g->grid_hash = 0;
+    g->rotation_range = ROTATION_RANGE;
+    g->lensshift_v_range = LENSSHIFT_RANGE;
+    g->lensshift_h_range = LENSSHIFT_RANGE;
+    g->lines_suppressed = 0;
+    g->lines_version = 0;
+
+    free(g->points);
+    g->points = NULL;
+    free(g->points_idx);
+    g->points_idx = NULL;
+    g->points_lines_count = 0;
+    g->points_version = 0;
+
+    range_adjust(p, g);
   }
 }
 
