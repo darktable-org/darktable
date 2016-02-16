@@ -1645,6 +1645,11 @@ void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gd
   if(vm->proxy.map.view) vm->proxy.map.center_on_location(vm->proxy.map.view, lon, lat, zoom);
 }
 
+void dt_view_map_center_on_bbox(const dt_view_manager_t *vm, gdouble lon1, gdouble lat1, gdouble lon2, gdouble lat2)
+{
+  if(vm->proxy.map.view) vm->proxy.map.center_on_bbox(vm->proxy.map.view, lon1, lat1, lon2, lat2);
+}
+
 void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled)
 {
   if(vm->proxy.map.view) vm->proxy.map.show_osd(vm->proxy.map.view, enabled);
@@ -1663,6 +1668,7 @@ void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
     vm->proxy.print.print_settings(vm->proxy.print.view, pinfo);
 }
 #endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
