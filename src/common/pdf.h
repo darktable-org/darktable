@@ -22,6 +22,9 @@
  *  see the main() fucntion in pdf.c to see an example how to use this.
  */
 
+#ifndef __PDF_H__
+#define __PDF_H__
+
 #include <inttypes.h>
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -121,6 +124,7 @@ void dt_pdf_finish(dt_pdf_t *pdf, dt_pdf_page_t **pages, int n_pages);
 int dt_pdf_parse_length(const char *str, float *length);
 int dt_pdf_parse_paper_size(const char *str, float *width, float *height);
 
+#endif // __PDF_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
