@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 henrik andersson.
-    copyright (c) 2012 tobias ellinghaus.
+    copyright (c) 2012-2016 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -236,7 +236,7 @@ static int zoom_member(lua_State *L)
 
 static GdkPixbuf *init_pin()
 {
-  int w = thumb_size + 2 * thumb_border, h = pin_size;
+  int w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border), h = DT_PIXEL_APPLY_DPI(pin_size);
   float r, g, b, a;
   r = ((thumb_frame_color & 0xff000000) >> 24) / 255.0;
   g = ((thumb_frame_color & 0x00ff0000) >> 16) / 255.0;
@@ -442,7 +442,8 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
   /* add  all images to the map */
   gboolean needs_redraw = FALSE;
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, thumb_size, thumb_size);
+  const int _thumb_size = DT_PIXEL_APPLY_DPI(thumb_size);
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, _thumb_size, _thumb_size);
   while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(lib->statements.main_query, 0);
@@ -455,11 +456,12 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
       for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
 
-      int w = thumb_size, h = thumb_size;
+      int w = _thumb_size, h = _thumb_size;
+      const float _thumb_border = DT_PIXEL_APPLY_DPI(thumb_border), _pin_size = DT_PIXEL_APPLY_DPI(pin_size);
       if(buf.width < buf.height)
-        w = (buf.width * thumb_size) / buf.height; // portrait
+        w = (buf.width * _thumb_size) / buf.height; // portrait
       else
-        h = (buf.height * thumb_size) / buf.width; // landscape
+        h = (buf.height * _thumb_size) / buf.width; // landscape
 
       // next we get a pixbuf for the image
       source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width, buf.height,
@@ -467,17 +469,17 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
       if(!source) goto map_changed_failure;
 
       // now we want a slightly larger pixbuf that we can put the image on
-      thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w + 2 * thumb_border,
-                             h + 2 * thumb_border + pin_size);
+      thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w + 2 * _thumb_border,
+                             h + 2 * _thumb_border + _pin_size);
       if(!thumb) goto map_changed_failure;
       gdk_pixbuf_fill(thumb, thumb_frame_color);
 
       // put the image onto the frame
-      gdk_pixbuf_scale(source, thumb, thumb_border, thumb_border, w, h, thumb_border, thumb_border,
+      gdk_pixbuf_scale(source, thumb, _thumb_border, _thumb_border, w, h, _thumb_border, _thumb_border,
                        (1.0 * w) / buf.width, (1.0 * h) / buf.height, GDK_INTERP_HYPER);
 
       // and finally add the pin
-      gdk_pixbuf_copy_area(lib->pin, 0, 0, w + 2 * thumb_border, pin_size, thumb, 0, h + 2 * thumb_border);
+      gdk_pixbuf_copy_area(lib->pin, 0, 0, w + 2 * _thumb_border, _pin_size, thumb, 0, h + 2 * _thumb_border);
 
       const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       if(!cimg) goto map_changed_failure;
@@ -534,7 +536,7 @@ static int _view_map_get_img_at_pos(dt_view_t *self, double x, double y)
     OsmGpsMapPoint *pt = (OsmGpsMapPoint *)osm_gps_map_image_get_point(image);
     gint img_x = 0, img_y = 0;
     osm_gps_map_convert_geographic_to_screen(lib->map, pt, &img_x, &img_y);
-    img_y -= pin_size;
+    img_y -= DT_PIXEL_APPLY_DPI(pin_size);
     if(x >= img_x && x <= img_x + entry->width && y <= img_y && y >= img_y - entry->height)
       return entry->imgid;
   }
@@ -562,8 +564,11 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
     lib->start_drag = FALSE;
     GtkTargetList *targets = gtk_target_list_new(target_list_all, n_targets_all);
 
+    // FIXME: for some reason the image is only shown when it's above a certain size,
+    // which happens to be > than the normal-DPI one. When dragging from filmstrip it works though.
+    const int _thumb_size = DT_PIXEL_APPLY_DPI(thumb_size);
     dt_mipmap_buffer_t buf;
-    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, thumb_size, thumb_size);
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, _thumb_size, _thumb_size);
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, lib->selected_image, mip, DT_MIPMAP_BLOCKING, 'r');
 
     if(buf.buf)
@@ -572,22 +577,23 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
 
       for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
 
-      int w = thumb_size, h = thumb_size;
+      int w = _thumb_size, h = _thumb_size;
+      const float _thumb_border = DT_PIXEL_APPLY_DPI(thumb_border);
       if(buf.width < buf.height)
-        w = (buf.width * thumb_size) / buf.height; // portrait
+        w = (buf.width * _thumb_size) / buf.height; // portrait
       else
-        h = (buf.height * thumb_size) / buf.width; // landscape
+        h = (buf.height * _thumb_size) / buf.width; // landscape
 
       // next we get a pixbuf for the image
       source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width, buf.height,
                                         buf.width * 4, NULL, NULL);
 
       // now we want a slightly larger pixbuf that we can put the image on
-      thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w + 2 * thumb_border, h + 2 * thumb_border);
+      thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w + 2 * _thumb_border, h + 2 * _thumb_border);
       gdk_pixbuf_fill(thumb, thumb_frame_color);
 
       // put the image onto the frame
-      gdk_pixbuf_scale(source, thumb, thumb_border, thumb_border, w, h, thumb_border, thumb_border,
+      gdk_pixbuf_scale(source, thumb, _thumb_border, _thumb_border, w, h, _thumb_border, _thumb_border,
                        (1.0 * w) / buf.width, (1.0 * h) / buf.height, GDK_INTERP_HYPER);
 
 #if GTK_CHECK_VERSION(3, 10, 0)
@@ -598,7 +604,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
           = gtk_drag_begin(GTK_WIDGET(lib->map), targets, GDK_ACTION_COPY, 1, (GdkEvent *)e);
 #endif
 
-      gtk_drag_set_icon_pixbuf(context, thumb, 0, 0);
+      gtk_drag_set_icon_pixbuf(context, thumb, 0, h + 2 * _thumb_border);
 
       if(source) g_object_unref(source);
       if(thumb) g_object_unref(thumb);
