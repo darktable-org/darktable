@@ -57,8 +57,13 @@ int main(int argc, const char* argv[])
 
   FileReader f((char *) argv[1]);
 
+#ifdef __APPLE__
+  std::auto_ptr<RawDecoder> d;
+  std::auto_ptr<FileMap> m;
+#else
   std::unique_ptr<RawDecoder> d;
   std::unique_ptr<FileMap> m;
+#endif
 
   char camfile[PATH_MAX] = { 0 };
 #if defined(__MACH__) || defined(__APPLE__)
