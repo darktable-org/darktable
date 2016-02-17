@@ -16,27 +16,28 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the lighttable module.  */
-#include "views/view.h"
-#include "libs/lib.h"
-#include "control/jobs.h"
-#include "control/settings.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "common/image_cache.h"
-#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
-#include "common/selection.h"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/focus.h"
 #include "common/grouping.h"
 #include "common/history.h"
+#include "common/image_cache.h"
 #include "common/ratings.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
-#include "gui/draw.h"
+#include "common/selection.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
+#include "control/settings.h"
 #include "dtgtk/button.h"
-#include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
+#include "gui/draw.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "views/view.h"
+#include "views/view_api.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,7 +143,7 @@ const char *name(dt_view_t *self)
 }
 
 
-uint32_t view(dt_view_t *self)
+uint32_t view(const dt_view_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
@@ -1700,7 +1701,7 @@ void reset(dt_view_t *self)
 }
 
 
-void mouse_enter(dt_view_t *self)
+int mouse_enter(dt_view_t *self)
 {
   // TODO: In gtk.c the function center_leave return true. It is not needed when using arrows. the same for mouse_leave, mouse_move
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -1711,9 +1712,10 @@ void mouse_enter(dt_view_t *self)
       dt_control_set_mouse_over_id(
           lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
   }
+  return 0;
 }
 
-void mouse_leave(dt_view_t *self)
+int mouse_leave(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   if (lib->using_arrows == 0) 
@@ -1725,11 +1727,12 @@ void mouse_leave(dt_view_t *self)
       dt_control_queue_redraw_center();
     }
   }
+  return 0;
 }
 
 
 
-int scrolled(dt_view_t *self, double x, double y, int up, int state)
+void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
@@ -1768,13 +1771,13 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
     }
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
   }
-  return 0;
 }
 
 
-void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_control_queue_redraw_center();
+  return 0;
 }
 
 

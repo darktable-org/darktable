@@ -29,20 +29,21 @@
 */
 
 
-#include "libs/lib.h"
-#include "control/jobs.h"
-#include "control/settings.h"
-#include "control/control.h"
-#include "control/conf.h"
+#include "common/camera_control.h"
+#include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/import_session.h"
-#include "common/darktable.h"
-#include "common/camera_control.h"
-#include "common/variables.h"
 #include "common/utility.h"
+#include "common/variables.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
+#include "control/settings.h"
 #include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "views/view_api.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,7 +93,7 @@ const char *name(dt_view_t *self)
   return _("tethering");
 }
 
-uint32_t view(dt_view_t *self)
+uint32_t view(const dt_view_t *self)
 {
   return DT_VIEW_TETHERING;
 }
@@ -345,7 +346,7 @@ void reset(dt_view_t *self)
   // dt_control_set_mouse_over_id(-1);
 }
 
-void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
@@ -383,6 +384,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoomposition", str);
   }
   dt_control_queue_redraw_center();
+  return 0;
 }
 
 void init_key_accels(dt_view_t *self)
@@ -422,7 +424,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   return 0;
 }
 
-int button_released(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
   if(which == 1)

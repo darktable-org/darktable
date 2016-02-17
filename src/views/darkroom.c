@@ -17,29 +17,30 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the darkroom module.  */
-#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
-#include "views/view.h"
-#include "develop/develop.h"
-#include "control/jobs.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "dtgtk/button.h"
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "develop/masks.h"
+#include "common/darktable.h"
+#include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
-#include "common/debug.h"
-#include "common/tags.h"
 #include "common/styles.h"
+#include "common/tags.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
+#include "develop/blend.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/masks.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/colorpicker.h"
-#include "bauhaus/bauhaus.h"
+#include "views/view.h"
+#include "views/view_api.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -93,7 +94,7 @@ void init(dt_view_t *self)
   dt_dev_init((dt_develop_t *)self->data, 1);
 }
 
-uint32_t view(dt_view_t *self)
+uint32_t view(const dt_view_t *self)
 {
   return DT_VIEW_DARKROOM;
 }
@@ -1823,7 +1824,7 @@ void leave(dt_view_t *self)
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 
-void mouse_leave(dt_view_t *self)
+int mouse_leave(dt_view_t *self)
 {
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -1831,9 +1832,11 @@ void mouse_leave(dt_view_t *self)
 
   // reset any changes the selected plugin might have made.
   dt_control_change_cursor(GDK_LEFT_PTR);
+
+  return 0;
 }
 
-void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
   const int32_t capwd = self->width  - 2*tb;
@@ -1880,15 +1883,15 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
-    return;
+    return 0;
   }
   // masks
   if(dev->form_visible) handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
-  if(handled) return;
+  if(handled) return 0;
   // module
   if(dev->gui_module && dev->gui_module->mouse_moved)
     handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, pressure, which);
-  if(handled) return;
+  if(handled) return 0;
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
@@ -1911,6 +1914,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     dt_dev_invalidate(dev);
     dt_control_queue_redraw();
   }
+
+  return 0;
 }
 
 

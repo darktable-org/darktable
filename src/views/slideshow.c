@@ -16,17 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "views/view.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
-#include "common/colorspaces.h"
 #include "common/collection.h"
+#include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/dtpthread.h"
-#include "control/control.h"
+#include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "control/conf.h"
-#include "gui/gtk.h"
+#include "control/control.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "views/view.h"
+#include "views/view_api.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <stdint.h>
@@ -300,7 +301,7 @@ const char *name(dt_view_t *self)
   return _("slideshow");
 }
 
-uint32_t view(dt_view_t *self)
+uint32_t view(const dt_view_t *self)
 {
   return DT_VIEW_SLIDESHOW;
 }
@@ -408,15 +409,6 @@ void reset(dt_view_t *self)
   // dt_slideshow_t *lib = (dt_slideshow_t *)self->data;
 }
 
-
-void mouse_enter(dt_view_t *self)
-{
-}
-
-void mouse_leave(dt_view_t *self)
-{
-}
-
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   // draw front buffer.
@@ -448,12 +440,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   dt_pthread_mutex_unlock(&d->lock);
 }
 
-int scrolled(dt_view_t *self, double x, double y, int up, int state)
-{
-  return 0;
-}
-
-
 static gboolean _hide_mouse(gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
@@ -464,13 +450,15 @@ static gboolean _hide_mouse(gpointer user_data)
 }
 
 
-void mouse_moved(dt_view_t *self, double x, double y, int which)
+int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
 
   if(d->mouse_timeout > 0) g_source_remove(d->mouse_timeout);
   else dt_control_change_cursor(GDK_LEFT_PTR);
   d->mouse_timeout = g_timeout_add_seconds(1, _hide_mouse, self);
+
+  return 0;
 }
 
 
@@ -480,7 +468,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 }
 
 
-int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   if(which == 1)

@@ -65,6 +65,8 @@ typedef enum
 struct dt_view_t;
 typedef struct dt_view_t
 {
+  // !!! MUST BE KEPT IN SYNC WITH src/views/view_api.h !!!
+
   char module_name[64];
   // dlopened module
   GModule *module;
