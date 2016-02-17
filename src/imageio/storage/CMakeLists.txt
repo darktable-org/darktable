@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../" "${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_definitions(-include imageio/storage/imageio_storage_api.h)
+
 set(MODULES disk email gallery latex)
 
 if(FLICKCURL_FOUND)

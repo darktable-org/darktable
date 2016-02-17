@@ -16,25 +16,25 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "dtgtk/button.h"
 #include "bauhaus/bauhaus.h"
-#include "gui/gtk.h"
 #include "common/darktable.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio_module.h"
 #include "common/imageio.h"
-#include "common/tags.h"
-#include "common/pwstorage/pwstorage.h"
+#include "common/imageio_module.h"
 #include "common/metadata.h"
-#include "common/imageio_storage.h"
+#include "common/pwstorage/pwstorage.h"
+#include "common/tags.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgtk/button.h"
+#include "gui/gtk.h"
+#include "imageio/storage/imageio_storage_api.h"
+#include <curl/curl.h>
+#include <flickcurl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <curl/curl.h>
-#include <flickcurl.h>
 
 DT_MODULE(1)
 
