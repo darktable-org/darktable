@@ -792,11 +792,10 @@ void leave(dt_view_t *self)
   darktable.view_manager->proxy.map.view = NULL;
 }
 
-int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   // redraw center on mousemove
   dt_control_queue_redraw_center();
-  return 0;
 }
 
 void init_key_accels(dt_view_t *self)

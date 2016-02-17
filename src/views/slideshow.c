@@ -450,15 +450,13 @@ static gboolean _hide_mouse(gpointer user_data)
 }
 
 
-int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
 
   if(d->mouse_timeout > 0) g_source_remove(d->mouse_timeout);
   else dt_control_change_cursor(GDK_LEFT_PTR);
   d->mouse_timeout = g_timeout_add_seconds(1, _hide_mouse, self);
-
-  return 0;
 }
 
 

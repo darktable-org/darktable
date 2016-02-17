@@ -46,9 +46,10 @@ void leave(struct dt_view_t *self);    // mode left (is called after the new try
 void reset(struct dt_view_t *self);    // reset default appearance
 
 // event callbacks:
-int mouse_enter(struct dt_view_t *self);
-int mouse_leave(struct dt_view_t *self);
-int mouse_moved(struct dt_view_t *self, double x, double y, double pressure, int which);
+void mouse_enter(struct dt_view_t *self);
+void mouse_leave(struct dt_view_t *self);
+void mouse_moved(struct dt_view_t *self, double x, double y, double pressure, int which);
+
 int button_released(struct dt_view_t *self, double x, double y, int which, uint32_t state);
 int button_pressed(struct dt_view_t *self, double x, double y, double pressure, int which, int type,
                    uint32_t state);

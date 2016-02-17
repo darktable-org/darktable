@@ -1824,7 +1824,7 @@ void leave(dt_view_t *self)
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 
-int mouse_leave(dt_view_t *self)
+void mouse_leave(dt_view_t *self)
 {
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -1832,11 +1832,9 @@ int mouse_leave(dt_view_t *self)
 
   // reset any changes the selected plugin might have made.
   dt_control_change_cursor(GDK_LEFT_PTR);
-
-  return 0;
 }
 
-int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
   const int32_t capwd = self->width  - 2*tb;
@@ -1883,15 +1881,15 @@ int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
-    return 0;
+    return;
   }
   // masks
   if(dev->form_visible) handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
-  if(handled) return 0;
+  if(handled) return;
   // module
   if(dev->gui_module && dev->gui_module->mouse_moved)
     handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, pressure, which);
-  if(handled) return 0;
+  if(handled) return;
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
@@ -1914,8 +1912,6 @@ int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
     dt_dev_invalidate(dev);
     dt_control_queue_redraw();
   }
-
-  return 0;
 }
 
 

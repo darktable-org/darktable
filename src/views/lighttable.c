@@ -1701,7 +1701,7 @@ void reset(dt_view_t *self)
 }
 
 
-int mouse_enter(dt_view_t *self)
+void mouse_enter(dt_view_t *self)
 {
   // TODO: In gtk.c the function center_leave return true. It is not needed when using arrows. the same for mouse_leave, mouse_move
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -1712,10 +1712,9 @@ int mouse_enter(dt_view_t *self)
       dt_control_set_mouse_over_id(
           lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
   }
-  return 0;
 }
 
-int mouse_leave(dt_view_t *self)
+void mouse_leave(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   if (lib->using_arrows == 0) 
@@ -1727,7 +1726,6 @@ int mouse_leave(dt_view_t *self)
       dt_control_queue_redraw_center();
     }
   }
-  return 0;
 }
 
 
@@ -1774,10 +1772,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 }
 
 
-int mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_control_queue_redraw_center();
-  return 0;
 }
 
 
