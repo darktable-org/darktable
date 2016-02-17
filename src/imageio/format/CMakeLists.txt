@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../" "${CMAKE_CURRENT_SOURCE_DIR}")
 include_directories(SYSTEM "${PNG_PNG_INCLUDE_DIR}")
+
+add_definitions(-include imageio/format/imageio_format_api.h)
+
 set(MODULES copy jpeg pdf png ppm pfm tiff )
 
 add_library(copy MODULE "copy.c")

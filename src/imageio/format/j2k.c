@@ -50,16 +50,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "version.h"
-#include <stdlib.h>
-#include <stdio.h>
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "control/conf.h"
-#include "common/imageio_format.h"
-#include "bauhaus/bauhaus.h"
+#include "imageio/format/imageio_format_api.h"
+#include "version.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <openjpeg.h>
 

@@ -16,15 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <glib/gstdio.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
 #include "common/darktable.h"
-#include "common/imageio_module.h"
-#include "common/exif.h"
 #include "common/debug.h"
-#include "common/imageio_format.h"
+#include "common/exif.h"
+#include "common/imageio_module.h"
+#include "imageio/format/imageio_format_api.h"
+#include <glib/gstdio.h>
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 DT_MODULE(1)
 

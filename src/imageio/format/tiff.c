@@ -16,20 +16,20 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <memory.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stddef.h>
-#include <inttypes.h>
-#include <tiffio.h>
-#include "common/darktable.h"
-#include "common/imageio_module.h"
-#include "common/imageio.h"
-#include "common/exif.h"
-#include "common/colorspaces.h"
-#include "control/conf.h"
-#include "common/imageio_format.h"
 #include "bauhaus/bauhaus.h"
+#include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/exif.h"
+#include "common/imageio.h"
+#include "common/imageio_module.h"
+#include "control/conf.h"
+#include "imageio/format/imageio_format_api.h"
+#include <inttypes.h>
+#include <memory.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <tiffio.h>
 
 DT_MODULE(2)
 

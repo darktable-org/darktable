@@ -64,6 +64,8 @@ struct dt_imageio_module_format_t;
 /* responsible for image encoding, such as jpg,png,etc */
 typedef struct dt_imageio_module_format_t
 {
+  // !!! MUST BE KEPT IN SYNC WITH src/imageio/format/imageio_format_api.h !!!
+
   // office use only:
   char plugin_name[128];
   GModule *module;

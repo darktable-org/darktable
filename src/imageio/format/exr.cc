@@ -32,15 +32,15 @@
 #include <OpenEXR/ImfThreading.h>
 
 extern "C" {
+#include "bauhaus/bauhaus.h"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/colorspaces.h"
 #include "common/imageio.h"
-#include "control/conf.h"
-#include "common/imageio_module.h"
 #include "common/imageio_exr.h"
-#include "common/imageio_format.h"
-#include "bauhaus/bauhaus.h"
+#include "common/imageio_module.h"
+#include "control/conf.h"
+#include "imageio/format/imageio_format_api.h"
 }
 #include "common/imageio_exr.hh"
 
