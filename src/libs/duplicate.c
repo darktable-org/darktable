@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/metadata.h"
 #include "common/mipmap_cache.h"
 #include "common/history.h"
 #include "common/styles.h"
@@ -63,14 +64,11 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent *event, dt_lib_module_t *self)
 {
   int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
-  
-  sqlite3_stmt *stmt;
-  // we write the content of the texbox to the caption field
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set caption = ?1 where id = ?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(GTK_ENTRY(widget)), -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize (stmt);
+
+  // we write the content of the textbox to the caption field
+  dt_metadata_set(imgid, "Xmp.dc.title", gtk_entry_get_text(GTK_ENTRY(widget)));
+  dt_image_synch_xmp(imgid);
+
   return FALSE;
 }
 
@@ -100,9 +98,12 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                                    GTK_BUTTONS_YES_NO,
-                                    _("do you really want to remove 1 image from the collection?"));
+    // we use the plural form even if there's just 1 image to be sure translations stay in sync
+    dialog = gtk_message_dialog_new(
+        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        ngettext("do you really want to remove %d selected image from the collection?",
+                 "do you really want to remove %d selected images from the collection?", 1),
+        1);
 
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -155,17 +156,6 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
       // to select the duplicate, we reuse the filmstrip proxy
       dt_view_filmstrip_scroll_to_image(darktable.view_manager,imgid,TRUE);
     }
-  }
-  else if(event->button == 3)
-  {
-    // context-menu
-    GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
-    GtkWidget *item = gtk_menu_item_new_with_label(_("delete..."));
-    g_object_set_data(G_OBJECT(item), "imgid", GINT_TO_POINTER(imgid));
-    g_signal_connect(item, "activate", (GCallback)_lib_duplicate_delete, self);
-    gtk_menu_shell_append(menu, item);
-    gtk_widget_show_all(GTK_WIDGET(menu));
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gdk_event_get_time((GdkEvent *)event));
   }
 }
 
@@ -253,9 +243,14 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   dt_develop_t *dev = darktable.develop;
   
   // we get a summarize of all versions of the image
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select version, id, caption from images where film_id = ?1 and filename = ?2 order by version", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select i.version, i.id, m.value from images as "
+                                                             "i left join meta_data as m on m.id = i.id and "
+                                                             "m.key = ?3 where film_id = ?1 and filename = "
+                                                             "?2 order by i.version",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dev->image_storage.filename, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_METADATA_XMP_DC_TITLE);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -272,11 +267,11 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     }
 
     gchar chl[256];
-    gchar * path = (gchar *) sqlite3_column_text(stmt, 2);
+    gchar *path = (gchar *)sqlite3_column_text(stmt, 2);
     g_snprintf(chl, sizeof(chl), "(%d)", sqlite3_column_int(stmt, 0));
     
     GtkWidget *tb = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(tb), path);
+    if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
     gtk_entry_set_width_chars(GTK_ENTRY(tb), 15);
     g_object_set_data (G_OBJECT (tb),"imgid",GINT_TO_POINTER(sqlite3_column_int(stmt, 1)));
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
@@ -344,6 +339,8 @@ void gui_init(dt_lib_module_t *self)
   
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED, G_CALLBACK(_lib_duplicate_init_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE, G_CALLBACK(_lib_duplicate_init_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_lib_duplicate_init_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, G_CALLBACK(_lib_duplicate_mipmap_updated_callback), (gpointer)self);
 }
 
