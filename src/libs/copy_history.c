@@ -15,21 +15,22 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
-#include "common/history.h"
 #include "common/debug.h"
-#include "control/control.h"
+#include "common/history.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "control/jobs.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
 #include "libs/lib.h"
-#include <stdlib.h>
-#include <gtk/gtk.h>
+#include "libs/lib_api.h"
 #include <gdk/gdkkeysyms.h>
-#include "dtgtk/button.h"
-#include "bauhaus/bauhaus.h"
+#include <gtk/gtk.h>
+#include <stdlib.h>
 
 DT_MODULE(1)
 
@@ -44,17 +45,17 @@ typedef struct dt_lib_copy_history_t
   dt_gui_hist_dialog_t dg;
 } dt_lib_copy_history_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("history stack");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }

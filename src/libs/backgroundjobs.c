@@ -19,15 +19,16 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "control/progress.h"
 #include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/progress.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
-#include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -45,17 +46,17 @@ static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_background
                                         double value);
 
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("background jobs");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_PRINT;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_BOTTOM;
 }
@@ -65,7 +66,7 @@ int position()
   return 1;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

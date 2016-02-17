@@ -16,13 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
 #include "common/collection.h"
-#include "control/control.h"
+#include "common/darktable.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
 #include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -60,12 +61,12 @@ static void _lib_filter_update_query(dt_lib_module_t *self);
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self);
 
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("filter");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   /* for now, show in all view due this affects filmroll too
 
@@ -76,12 +77,12 @@ uint32_t views()
   return DT_VIEW_ALL;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

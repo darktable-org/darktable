@@ -16,15 +16,17 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <curl/curl.h>
+
 #include "common/darktable.h"
-#include "control/jobs.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "libs/lib.h"
-#include "gui/gtk.h"
-#include "dtgtk/icon.h"
 #include "common/geo.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
+#include "dtgtk/icon.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
+#include <curl/curl.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -86,17 +88,17 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
                                                const char **attribute_names, const gchar **attribute_values,
                                                gpointer user_data, GError **error);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("find location");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_MAP;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }

@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "views/view.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
@@ -25,14 +24,16 @@
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/selection.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
 #include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "gui/drag_and_drop.h"
+#include "gui/gtk.h"
 #include "gui/hist_dialog.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
+#include "views/view.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -136,22 +137,22 @@ static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *c
                                             gpointer user_data);
 static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gpointer user_data);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("filmstrip");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_BOTTOM;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

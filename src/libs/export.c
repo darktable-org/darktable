@@ -16,25 +16,26 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/debug.h"
-#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
+#include "common/collection.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/debug.h"
 #include "common/imageio_module.h"
 #include "common/styles.h"
-#include "common/collection.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
-#include "control/conf.h"
 #include "control/signal.h"
-#include "gui/gtk.h"
-#include "libs/lib.h"
-#include "gui/accelerators.h"
-#include "gui/presets.h"
-#include <stdlib.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
-#include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "gui/presets.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
+#include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
+#include <stdlib.h>
 
 DT_MODULE(4)
 
@@ -58,17 +59,17 @@ static void _update_dimensions(dt_lib_export_t *d);
 /** get the max output dimension supported by combination of storage and format.. */
 static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint32_t *height);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("export selected");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }

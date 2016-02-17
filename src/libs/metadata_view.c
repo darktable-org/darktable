@@ -16,17 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "develop/develop.h"
 #include "common/metadata.h"
-#include "common/debug.h"
 #include "common/collection.h"
-#include "control/control.h"
-#include "control/conf.h"
+#include "common/darktable.h"
+#include "common/debug.h"
 #include "common/image_cache.h"
-#include "libs/lib.h"
-#include "gui/gtk.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 #include <sys/param.h>
 #include <gdk/gdkkeysyms.h>
@@ -127,18 +128,18 @@ typedef struct dt_lib_metadata_view_t
   GtkLabel *metadata[md_size];
 } dt_lib_metadata_view_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("image information");
 }
 
 /* show module in left panel in all views */
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_ALL;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }

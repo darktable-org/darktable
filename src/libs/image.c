@@ -35,6 +35,7 @@
 #include "lua/image.h"
 #include "lua/call.h"
 #endif
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -45,17 +46,17 @@ typedef struct dt_lib_image_t
       *cache_button, *uncache_button;
 } dt_lib_image_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("selected image[s]");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
