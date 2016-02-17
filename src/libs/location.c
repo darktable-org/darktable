@@ -487,9 +487,12 @@ broken_bbox:
             place->marker_points = g_list_append(place->marker_points, p);
           }
         }
-        else if(g_str_has_prefix(*avalue, "LINESTRING") ||
-                g_str_has_prefix(*avalue, "POLYGON") ||
-                g_str_has_prefix(*avalue, "MULTIPOLYGON"))
+        else if(g_str_has_prefix(*avalue, "LINESTRING")
+#ifdef HAVE_OSMGPSMAP_110_OR_NEWER
+                || g_str_has_prefix(*avalue, "POLYGON")
+                || g_str_has_prefix(*avalue, "MULTIPOLYGON")
+#endif
+        )
         {
           gboolean error = FALSE;
           const char *startptr = *avalue;
@@ -524,7 +527,7 @@ broken_bbox:
           }
           else
           {
-            place->marker_type = g_str_has_prefix(*avalue, "POLYGON") ? MAP_DISPLAY_POLYGON : MAP_DISPLAY_TRACK;
+            place->marker_type = g_str_has_prefix(*avalue, "LINESTRING") ? MAP_DISPLAY_TRACK : MAP_DISPLAY_POLYGON;
           }
         }
         else

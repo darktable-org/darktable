@@ -243,6 +243,55 @@ static int zoom_member(lua_State *L)
 }
 #endif // USE_LUA
 
+#ifndef HAVE_OSMGPSMAP_110_OR_NEWER
+// the following functions were taken from libosmgpsmap
+// Copyright (C) Marcus Bauer 2008 <marcus.bauer@gmail.com>
+// Copyright (C) 2013 John Stowers <john.stowers@gmail.com>
+// Copyright (C) 2014 Martijn Goedhart <goedhart.martijn@gmail.com>
+
+#if FLT_RADIX == 2
+  #define LOG2(x) (ilogb(x))
+#else
+  #define LOG2(x) ((int)floor(log2(abs(x))))
+#endif
+
+#define TILESIZE 256
+
+static float deg2rad(float deg)
+{
+  return (deg * M_PI / 180.0);
+}
+
+static int latlon2zoom(int pix_height, int pix_width, float lat1, float lat2, float lon1, float lon2)
+{
+  float lat1_m = atanh(sin(lat1));
+  float lat2_m = atanh(sin(lat2));
+  int zoom_lon = LOG2((double)(2 * pix_width * M_PI) / (TILESIZE * (lon2 - lon1)));
+  int zoom_lat = LOG2((double)(2 * pix_height * M_PI) / (TILESIZE * (lat2_m - lat1_m)));
+  return MIN(zoom_lon, zoom_lat);
+}
+
+#undef LOG2
+#undef TILESIZE
+
+//  Copyright (C) 2013 John Stowers <john.stowers@gmail.com>
+//  Copyright (C) Marcus Bauer 2008 <marcus.bauer@gmail.com>
+//  Copyright (C) John Stowers 2009 <john.stowers@gmail.com>
+//  Copyright (C) Till Harbaum 2009 <till@harbaum.org>
+//
+//  Contributions by
+//  Everaldo Canuto 2009 <everaldo.canuto@gmail.com>
+static void osm_gps_map_zoom_fit_bbox(OsmGpsMap *map, float latitude1, float latitude2, float longitude1, float longitude2)
+{
+  GtkAllocation allocation;
+  int zoom;
+  gtk_widget_get_allocation(GTK_WIDGET (map), &allocation);
+  zoom = latlon2zoom(allocation.height, allocation.width, deg2rad(latitude1), deg2rad(latitude2), deg2rad(longitude1), deg2rad(longitude2));
+  osm_gps_map_set_center(map, (latitude1 + latitude2) / 2, (longitude1 + longitude2) / 2);
+  osm_gps_map_set_zoom(map, zoom);
+}
+#endif // HAVE_OSMGPSMAP_110_OR_NEWER
+
 static GdkPixbuf *init_image_pin()
 {
   int w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border), h = DT_PIXEL_APPLY_DPI(image_pin_size);
@@ -901,6 +950,7 @@ static gboolean _view_map_remove_pin(const dt_view_t *view, OsmGpsMapImage *pin)
   return osm_gps_map_image_remove(lib->map, pin);
 }
 
+#ifdef HAVE_OSMGPSMAP_110_OR_NEWER
 static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *points)
 {
   dt_map_t *lib = (dt_map_t *)view->data;
@@ -928,6 +978,7 @@ static gboolean _view_map_remove_polygon(const dt_view_t *view, OsmGpsMapPolygon
   dt_map_t *lib = (dt_map_t *)view->data;
   return osm_gps_map_polygon_remove(lib->map, polygon);
 }
+#endif
 
 static OsmGpsMapTrack *_view_map_add_track(const dt_view_t *view, GList *points)
 {
@@ -961,7 +1012,9 @@ static GObject *_view_map_add_marker(const dt_view_t *view, dt_geo_map_display_t
   {
     case MAP_DISPLAY_POINT: return G_OBJECT(_view_map_add_pin(view, points));
     case MAP_DISPLAY_TRACK: return G_OBJECT(_view_map_add_track(view, points));
+#ifdef HAVE_OSMGPSMAP_110_OR_NEWER
     case MAP_DISPLAY_POLYGON: return G_OBJECT(_view_map_add_polygon(view, points));
+#endif
     default: return NULL;
   }
 }
@@ -974,7 +1027,9 @@ static gboolean _view_map_remove_marker(const dt_view_t *view, dt_geo_map_displa
   {
     case MAP_DISPLAY_POINT: return _view_map_remove_pin(view, OSM_GPS_MAP_IMAGE(marker));
     case MAP_DISPLAY_TRACK: return _view_map_remove_track(view, OSM_GPS_MAP_TRACK(marker));
+#ifdef HAVE_OSMGPSMAP_110_OR_NEWER
     case MAP_DISPLAY_POLYGON: return _view_map_remove_polygon(view, OSM_GPS_MAP_POLYGON(marker));
+#endif
     default: return FALSE;
   }
 }
