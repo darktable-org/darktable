@@ -25,7 +25,8 @@
 #include "common/cups_print.h"
 #endif
 #ifdef HAVE_MAP
-#include <osm-gps-map-source.h>
+#include "common/geo.h"
+#include <osm-gps-map.h>
 #endif
 #include <inttypes.h>
 #include <gui/gtk.h>
@@ -256,6 +257,8 @@ typedef struct dt_view_manager_t
       void (*center_on_bbox)(const dt_view_t *view, gdouble lon1, gdouble lat1, gdouble lon2, gdouble lat2);
       void (*show_osd)(const dt_view_t *view, gboolean enabled);
       void (*set_map_source)(const dt_view_t *view, OsmGpsMapSource_t map_source);
+      GObject *(*add_marker)(const dt_view_t *view, dt_geo_map_display_t type, GList *points);
+      gboolean (*remove_marker)(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
     } map;
 #endif
 
@@ -368,6 +371,8 @@ void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gd
 void dt_view_map_center_on_bbox(const dt_view_manager_t *vm, gdouble lon1, gdouble lat1, gdouble lon2, gdouble lat2);
 void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled);
 void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source);
+GObject *dt_view_map_add_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GList *points);
+gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GObject *marker);
 #endif
 
 /*

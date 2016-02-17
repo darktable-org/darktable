@@ -1659,6 +1659,18 @@ void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t m
 {
   if(vm->proxy.map.view) vm->proxy.map.set_map_source(vm->proxy.map.view, map_source);
 }
+
+GObject *dt_view_map_add_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GList *points)
+{
+  if(vm->proxy.map.view) return vm->proxy.map.add_marker(vm->proxy.map.view, type, points);
+  return NULL;
+}
+
+gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GObject *marker)
+{
+  if(vm->proxy.map.view) return vm->proxy.map.remove_marker(vm->proxy.map.view, type, marker);
+  return FALSE;
+}
 #endif
 
 #ifdef HAVE_PRINT

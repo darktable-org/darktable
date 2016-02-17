@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2016 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
 #include "dtgtk/icon.h"
+#include "common/geo.h"
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -31,6 +33,7 @@ typedef struct dt_lib_location_t
 {
   GtkEntry *search;
   GtkWidget *result;
+  GList *callback_params;
 
   GList *places;
 
@@ -38,6 +41,9 @@ typedef struct dt_lib_location_t
   gchar *response;
   size_t response_size;
 
+  /* pin, track or polygon currently shown on the map */
+  GObject *marker;
+  dt_geo_map_display_t marker_type;
 } dt_lib_location_t;
 
 typedef enum _lib_location_type_t
@@ -57,10 +63,17 @@ typedef struct _lib_location_result_t
   float lon;
   float lat;
   float bbox_lon1, bbox_lat1, bbox_lon2, bbox_lat2;
+  dt_geo_map_display_t marker_type;
+  GList *marker_points;
   gchar *name;
 
 } _lib_location_result_t;
 
+typedef struct _callback_param_t
+{
+  dt_lib_location_t *lib;
+  _lib_location_result_t *result;
+} _callback_param_t;
 
 #define LIMIT_RESULT 5
 
@@ -129,7 +142,7 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
+static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib, _lib_location_result_t *place)
 {
   GtkWidget *eb, *hb, *vb, *w;
   eb = gtk_event_box_new();
@@ -167,8 +180,12 @@ static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
   gtk_widget_show_all(eb);
 
   /* connect button press signal for result item */
+  _callback_param_t *param = (_callback_param_t *)malloc(sizeof(_callback_param_t));
+  lib->callback_params = g_list_append(lib->callback_params, param);
+  param->lib = lib;
+  param->result = place;
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_lib_location_result_item_activated),
-                   (gpointer)place);
+                   (gpointer)param);
 
 
   return eb;
@@ -216,7 +233,16 @@ static int32_t _lib_location_place_get_zoom(_lib_location_result_t *place)
   return 0;
 }
 
-static void _show_location(_lib_location_result_t *p)
+static void _clear_markers(dt_lib_location_t *lib)
+{
+  if(lib->marker_type == MAP_DISPLAY_NONE) return;
+  dt_view_map_remove_marker(darktable.view_manager, lib->marker_type, lib->marker);
+  g_object_unref(lib->marker);
+  lib->marker = NULL;
+  lib->marker_type = MAP_DISPLAY_NONE;
+}
+
+static void _show_location(dt_lib_location_t *lib, _lib_location_result_t *p)
 {
   if(isnan(p->bbox_lon1) || isnan(p->bbox_lat1) || isnan(p->bbox_lon2) || isnan(p->bbox_lat2))
   {
@@ -227,6 +253,11 @@ static void _show_location(_lib_location_result_t *p)
   {
     dt_view_map_center_on_bbox(darktable.view_manager, p->bbox_lon1, p->bbox_lat1, p->bbox_lon2, p->bbox_lat2);
   }
+
+  _clear_markers(lib);
+
+  lib->marker = dt_view_map_add_marker(darktable.view_manager, p->marker_type, p->marker_points);
+  lib->marker_type = p->marker_type;
 }
 
 /* called when search job has been processed and
@@ -244,7 +275,7 @@ static void _lib_location_search_finish(gpointer user_data)
   do
   {
     _lib_location_result_t *place = (_lib_location_result_t *)item->data;
-    gtk_box_pack_start(GTK_BOX(lib->result), _lib_location_place_widget_new(place), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(lib->result), _lib_location_place_widget_new(lib, place), TRUE, TRUE, 0);
     gtk_widget_show(lib->result);
   } while((item = g_list_next(item)) != NULL);
 
@@ -253,7 +284,7 @@ static void _lib_location_search_finish(gpointer user_data)
   if(g_list_length(lib->places) == 1)
   {
     _lib_location_result_t *item = (_lib_location_result_t *)lib->places->data;
-    _show_location(item);
+    _show_location(lib, item);
   }
 }
 
@@ -282,9 +313,13 @@ static gboolean _lib_location_search(gpointer user_data)
   lib->places = NULL;
 
   gtk_container_foreach(GTK_CONTAINER(lib->result), (GtkCallback)gtk_widget_destroy, NULL);
+  g_list_free_full(lib->callback_params, free);
+  lib->callback_params = NULL;
+
+  _clear_markers(lib);
 
   /* build the query url */
-  query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d", text,
+  query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d&polygon_text=1", text,
                           LIMIT_RESULT);
   /* load url */
   curl = curl_easy_init();
@@ -340,8 +375,10 @@ bail_out:
 
 gboolean _lib_location_result_item_activated(GtkButton *button, GdkEventButton *ev, gpointer user_data)
 {
-  _lib_location_result_t *p = (_lib_location_result_t *)user_data;
-  _show_location(p);
+  _callback_param_t *param = (_callback_param_t *)user_data;
+  dt_lib_location_t *lib = param->lib;
+  _lib_location_result_t *result = param->result;
+  _show_location(lib, result);
   return TRUE;
 }
 
@@ -380,6 +417,11 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
   place->bbox_lat1 = NAN;
   place->bbox_lon2 = NAN;
   place->bbox_lat2 = NAN;
+  place->marker_type = MAP_DISPLAY_NONE;
+  place->marker_points = NULL;
+
+  gboolean show_outline = dt_conf_get_bool("plugins/map/show_outline");
+  int max_outline_nodes = dt_conf_get_int("plugins/map/max_outline_nodes");
 
   /* handle the element attribute values */
   const gchar **aname = attribute_names;
@@ -423,6 +465,72 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
         place->bbox_lat2 = lat2;
 broken_bbox:
         ;
+      }
+      // only use the first 'geotext' entry
+      else if(show_outline &&
+              strcmp(*aname, "geotext") == 0 &&
+              place->marker_type == MAP_DISPLAY_NONE)
+      {
+        if(g_str_has_prefix(*avalue, "POINT"))
+        {
+          char *endptr;
+          float lon = g_ascii_strtod(*avalue + strlen("POINT("), &endptr);
+          float lat = g_ascii_strtod(endptr, &endptr);
+          if(*endptr == ')')
+          {
+            place->marker_type = MAP_DISPLAY_POINT;
+            dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
+            p->lon = lon;
+            p->lat = lat;
+            place->marker_points = g_list_append(place->marker_points, p);
+          }
+        }
+        else if(g_str_has_prefix(*avalue, "LINESTRING") ||
+                g_str_has_prefix(*avalue, "POLYGON") ||
+                g_str_has_prefix(*avalue, "MULTIPOLYGON"))
+        {
+          gboolean error = FALSE;
+          const char *startptr = *avalue;
+          char *endptr;
+          while(startptr && (*startptr == ' ' || *startptr == '(' || (*startptr >= 'A' && *startptr <= 'Z')))
+            startptr++;
+
+          int i = 0;
+          while(1)
+          {
+            float lon = g_ascii_strtod(startptr, &endptr);
+            float lat = g_ascii_strtod(endptr, &endptr);
+
+            if(*endptr == ')') break; // TODO: support holes in POLYGON and several forms in MULTIPOLYGON?
+            if(*endptr != ',' || i > max_outline_nodes) // don't go too big for speed reasons
+            {
+              error = TRUE;
+              break;
+            }
+            dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
+            p->lon = lon;
+            p->lat = lat;
+            place->marker_points = g_list_append(place->marker_points, p);
+            startptr = endptr+1;
+            i++;
+          }
+
+          if(error)
+          {
+            g_list_free_full(place->marker_points, free);
+            place->marker_points = NULL;
+          }
+          else
+          {
+            place->marker_type = g_str_has_prefix(*avalue, "POLYGON") ? MAP_DISPLAY_POLYGON : MAP_DISPLAY_TRACK;
+          }
+        }
+        else
+        {
+          gchar *s = g_strndup(*avalue, 100);
+          fprintf(stderr, "unsupported outline: %s%s\n", s, strlen(s) == strlen(*avalue) ? "" : " ...");
+          g_free(s);
+        }
       }
       else if(strcmp(*aname, "type") == 0)
       {
