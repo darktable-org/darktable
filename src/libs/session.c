@@ -17,9 +17,10 @@
 */
 #include "common/darktable.h"
 #include "control/conf.h"
-#include "libs/lib.h"
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -41,17 +42,17 @@ typedef struct dt_lib_session_t
   } data;
 } dt_lib_session_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("session");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_TETHERING;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }

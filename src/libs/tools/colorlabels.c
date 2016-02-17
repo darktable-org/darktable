@@ -18,9 +18,10 @@
 
 #include "common/colorlabels.h"
 #include "control/control.h"
-#include "libs/lib.h"
-#include "gui/gtk.h"
 #include "dtgtk/button.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -32,22 +33,22 @@ typedef struct dt_lib_colorlabels_t
 /* callback when a colorlabel button is clicked */
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user_data);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("colorlabels");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

@@ -26,6 +26,7 @@
 // #include "dtgtk/paint.h"
 // #include "libs/lib.h"
 #include "control/jobs.h"
+#include "libs/lib_api.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -38,17 +39,17 @@ typedef struct dt_lib_geotagging_t
   GtkWidget *floating_window, *floating_window_ok, *floating_window_cancel, *floating_window_entry;
 } dt_lib_geotagging_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("geotagging");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }

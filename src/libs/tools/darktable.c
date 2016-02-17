@@ -18,12 +18,13 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
 #include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 #include "version.h"
 
 #include <librsvg/rsvg.h>
@@ -51,22 +52,22 @@ static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEvent
 /* show the about dialog */
 static void _lib_darktable_show_about_dialog();
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("darktable");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_ALL;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_TOP_LEFT;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

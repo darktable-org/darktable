@@ -18,12 +18,13 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -73,17 +74,17 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer user_data);
 
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("snapshots");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }

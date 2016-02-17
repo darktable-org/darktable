@@ -18,37 +18,37 @@
 
 #include <glib.h>
 
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
-#include "common/image_cache.h"
-#include "common/styles.h"
-#include "common/variables.h"
 #include "common/cups_print.h"
 #include "common/image_cache.h"
+#include "common/image_cache.h"
 #include "common/pdf.h"
-#include "common/tags.h"
 #include "common/printprof.h"
+#include "common/styles.h"
+#include "common/tags.h"
+#include "common/variables.h"
 #include "dtgtk/resetlabel.h"
-#include "libs/lib.h"
 #include "gui/gtk.h"
-#include "bauhaus/bauhaus.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(2)
 
 static gboolean _bauhaus_combobox_set_active_text(GtkWidget *cb, const gchar *text);
 
-const char*
-name ()
+const char *name(dt_lib_module_t *self)
 {
   return _("print settings");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_PRINT;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }

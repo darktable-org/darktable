@@ -16,10 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "libs/lib.h"
-#include "gui/gtk.h"
-#include "dtgtk/button.h"
 #include "control/signal.h"
+#include "dtgtk/button.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -40,22 +41,22 @@ typedef struct dt_lib_module_toolbox_t
   GList * child_views;
 } dt_lib_module_toolbox_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("module toolbox");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

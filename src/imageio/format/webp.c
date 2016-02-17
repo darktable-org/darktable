@@ -19,15 +19,15 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <stdio.h>
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
-#include "common/imageio_format.h"
 #include "control/conf.h"
-#include "bauhaus/bauhaus.h"
+#include "imageio/format/imageio_format_api.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <webp/encode.h>
 

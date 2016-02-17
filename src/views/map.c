@@ -17,20 +17,21 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "control/control.h"
-#include "control/conf.h"
-#include "common/debug.h"
 #include "common/collection.h"
 #include "common/darktable.h"
+#include "common/debug.h"
+#include "common/geo.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
-#include "common/geo.h"
-#include "views/view.h"
-#include "views/undo.h"
-#include "libs/lib.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/draw.h"
-#include "gui/accelerators.h"
+#include "libs/lib.h"
+#include "views/undo.h"
+#include "views/view.h"
+#include "views/view_api.h"
 #include <gdk/gdkkeysyms.h>
 
 #include <osm-gps-map.h>
@@ -123,7 +124,7 @@ const char *name(dt_view_t *self)
   return _("map");
 }
 
-uint32_t view(dt_view_t *self)
+uint32_t view(const dt_view_t *self)
 {
   return DT_VIEW_MAP;
 }

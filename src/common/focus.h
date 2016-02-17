@@ -18,6 +18,8 @@
 #ifndef DT_COMMON_FOCUS_H
 #define DT_COMMON_FOCUS_H
 
+#include "common/image_cache.h"
+
 typedef struct dt_focus_cluster_t
 {
   int64_t n;

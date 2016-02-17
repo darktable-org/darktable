@@ -17,16 +17,17 @@
 */
 #include <stdint.h>
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
-#include "gui/gtk.h"
 #include "gui/draw.h"
-#include "bauhaus/bauhaus.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -56,22 +57,22 @@ static gboolean _lib_histogram_enter_notify_callback(GtkWidget *widget, GdkEvent
 static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
                                                      gpointer user_data);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("histogram");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM | DT_VIEW_TETHERING;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_TOP;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

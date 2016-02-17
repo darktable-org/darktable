@@ -17,29 +17,30 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the darkroom module.  */
-#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
-#include "views/view.h"
-#include "develop/develop.h"
-#include "control/jobs.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "dtgtk/button.h"
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "develop/masks.h"
+#include "common/darktable.h"
+#include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
-#include "common/debug.h"
-#include "common/tags.h"
 #include "common/styles.h"
+#include "common/tags.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
+#include "develop/blend.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/masks.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/colorpicker.h"
-#include "bauhaus/bauhaus.h"
+#include "views/view.h"
+#include "views/view_api.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -93,7 +94,7 @@ void init(dt_view_t *self)
   dt_dev_init((dt_develop_t *)self->data, 1);
 }
 
-uint32_t view(dt_view_t *self)
+uint32_t view(const dt_view_t *self)
 {
   return DT_VIEW_DARKROOM;
 }

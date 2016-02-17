@@ -19,11 +19,12 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "common/selection.h"
-#include "control/control.h"
 #include "control/conf.h"
-#include "libs/lib.h"
+#include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -61,22 +62,22 @@ static gboolean _lib_lighttable_key_accel_select_callback(GtkAccelGroup *accel_g
                                                           gpointer data);
 
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("lighttable");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

@@ -16,17 +16,18 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "version.h"
+#include "common/pdf.h"
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "common/variables.h"
-#include "common/pdf.h"
 #include "control/control.h"
-#include "gui/gtkentry.h"
 #include "dtgtk/button.h"
-#include "bauhaus/bauhaus.h"
+#include "gui/gtkentry.h"
+#include "imageio/format/imageio_format_api.h"
+#include "version.h"
 
 DT_MODULE(1)
 

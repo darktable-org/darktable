@@ -19,10 +19,11 @@
 #include "common/ratings.h"
 #include "common/debug.h"
 #include "control/control.h"
-#include "libs/lib.h"
-#include "gui/gtk.h"
-#include "gui/draw.h"
 #include "dtgtk/button.h"
+#include "gui/draw.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -48,22 +49,22 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
 static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEventButton *event,
                                                      gpointer user_data);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("ratings");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

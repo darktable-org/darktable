@@ -38,6 +38,7 @@
 #include "gui/camera_import_dialog.h"
 #endif
 #include "libs/lib.h"
+#include "libs/lib_api.h"
 
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?
@@ -97,18 +98,18 @@ enum
   N_COLUMNS
 };
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("import");
 }
 
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }

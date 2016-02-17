@@ -20,13 +20,14 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
-#include "gui/gtk.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -50,17 +51,17 @@ static void _lib_modulelist_gui_update(struct dt_lib_module_t *);
 /* helper for sorting */
 static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("more modules");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM;
 }

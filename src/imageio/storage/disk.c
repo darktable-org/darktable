@@ -16,26 +16,26 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "common/utility.h"
 #include "common/variables.h"
-#include "control/control.h"
 #include "control/conf.h"
-#include "gui/gtk.h"
-#include "gui/gtkentry.h"
+#include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
-#include "bauhaus/bauhaus.h"
-#include "common/imageio_storage.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "gui/gtk.h"
+#include "gui/gtkentry.h"
+#include "imageio/storage/imageio_storage_api.h"
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 DT_MODULE(2)
 

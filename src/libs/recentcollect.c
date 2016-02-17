@@ -15,14 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
 #include "common/collection.h"
+#include "common/darktable.h"
 #include "control/conf.h"
 #include "control/signal.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "libs/lib.h"
 #include "libs/collect.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -45,17 +46,17 @@ typedef struct dt_lib_recentcollect_t
   int inited;
 } dt_lib_recentcollect_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("recently used collections");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
@@ -141,7 +142,7 @@ static void pretty_print(char *buf, char *out, size_t outsize)
   }
 }
 
-static void button_pressed(GtkButton *button, gpointer user_data)
+static void _button_pressed(GtkButton *button, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
@@ -328,7 +329,7 @@ void gui_init(dt_lib_module_t *self)
   {
     d->item[k].button = gtk_button_new();
     gtk_box_pack_start(GTK_BOX(self->widget), d->item[k].button, FALSE, TRUE, 0);
-    g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(button_pressed), (gpointer)self);
+    g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(d->item[k].button));

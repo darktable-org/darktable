@@ -16,17 +16,18 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
 #include "common/collection.h"
-#include "common/tags.h"
+#include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
+#include "common/tags.h"
 #include "control/conf.h"
-#include "libs/lib.h"
-#include "views/view.h"
+#include "control/control.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "dtgtk/button.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
+#include "views/view.h"
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
@@ -57,19 +58,19 @@ typedef enum dt_lib_tagging_cols_t
   DT_LIB_TAGGING_NUM_COLS
 } dt_lib_tagging_cols_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("tagging");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   uint32_t v = DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_TETHERING;
   if(dt_conf_get_bool("plugins/darkroom/tagging/visible")) v |= DT_VIEW_DARKROOM;
   return v;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)

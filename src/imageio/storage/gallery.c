@@ -16,23 +16,23 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "version.h"
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio_module.h"
 #include "common/imageio.h"
-#include "common/variables.h"
+#include "common/imageio_module.h"
 #include "common/metadata.h"
-#include "common/debug.h"
 #include "common/utility.h"
-#include "common/imageio_storage.h"
-#include "control/control.h"
+#include "common/variables.h"
 #include "control/conf.h"
-#include "gui/gtk.h"
-#include "gui/gtkentry.h"
+#include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
+#include "gui/gtk.h"
+#include "gui/gtkentry.h"
+#include "imageio/storage/imageio_storage_api.h"
+#include "version.h"
 #include <stdio.h>
 #include <stdlib.h>
 

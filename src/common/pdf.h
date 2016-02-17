@@ -25,9 +25,10 @@
 #ifndef __PDF_H__
 #define __PDF_H__
 
-#include <inttypes.h>
 #include <glib.h>
 #include <glib/gi18n.h>
+#include <inttypes.h>
+#include <stdio.h>
 
 // clang-format off
 

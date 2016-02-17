@@ -69,6 +69,8 @@ typedef struct dt_lib_t
 
 typedef struct dt_lib_module_t
 {
+  // !!! MUST BE KEPT IN SYNC WITH src/libs/lib_api.h !!!
+
   /** opened module. */
   GModule *module;
   /** reference for dlopened libs. */

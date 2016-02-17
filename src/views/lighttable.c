@@ -16,27 +16,28 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the lighttable module.  */
-#include "views/view.h"
-#include "libs/lib.h"
-#include "control/jobs.h"
-#include "control/settings.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "common/image_cache.h"
-#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
-#include "common/selection.h"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/focus.h"
 #include "common/grouping.h"
 #include "common/history.h"
+#include "common/image_cache.h"
 #include "common/ratings.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
-#include "gui/draw.h"
+#include "common/selection.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
+#include "control/settings.h"
 #include "dtgtk/button.h"
-#include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
+#include "gui/draw.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "views/view.h"
+#include "views/view_api.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,7 +143,7 @@ const char *name(dt_view_t *self)
 }
 
 
-uint32_t view(dt_view_t *self)
+uint32_t view(const dt_view_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
@@ -1729,7 +1730,7 @@ void mouse_leave(dt_view_t *self)
 
 
 
-int scrolled(dt_view_t *self, double x, double y, int up, int state)
+void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
@@ -1768,7 +1769,6 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
     }
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
   }
-  return 0;
 }
 
 

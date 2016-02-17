@@ -18,12 +18,13 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
 #include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -63,24 +64,24 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
 static void _lib_modulegroups_viewchanged_callback(gpointer instance, dt_view_t *old_view,
                                                    dt_view_t *new_view, gpointer data);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("modulegroups");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_TOP;
 }
 
 
 /* this module should always be shown without expander */
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }
