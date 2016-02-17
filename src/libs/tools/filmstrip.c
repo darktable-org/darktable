@@ -1063,7 +1063,7 @@ static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *c
 
 static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
 {
-  const int ts = 64;
+  const int ts = DT_PIXEL_APPLY_DPI(64);
 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
@@ -1108,7 +1108,7 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
       GdkPixbuf *source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width,
                                                    buf.height, buf.width * 4, NULL, NULL);
       GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
-      gtk_drag_set_icon_pixbuf(context, scaled, 0, 0);
+      gtk_drag_set_icon_pixbuf(context, scaled, 0, h);
 
       if(source) g_object_unref(source);
       if(scaled) g_object_unref(scaled);
