@@ -141,7 +141,7 @@ static void pretty_print(char *buf, char *out, size_t outsize)
   }
 }
 
-static void button_pressed(GtkButton *button, gpointer user_data)
+static void _button_pressed(GtkButton *button, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
@@ -328,7 +328,7 @@ void gui_init(dt_lib_module_t *self)
   {
     d->item[k].button = gtk_button_new();
     gtk_box_pack_start(GTK_BOX(self->widget), d->item[k].button, FALSE, TRUE, 0);
-    g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(button_pressed), (gpointer)self);
+    g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(d->item[k].button));
