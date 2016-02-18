@@ -422,7 +422,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   return 0;
 }
 
-int button_released(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
   if(which == 1)
