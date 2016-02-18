@@ -30,6 +30,10 @@ extern "C" {
 #include <glib.h>
 #include <stdint.h>
 
+#ifdef HAVE_OPENCL
+#include <CL/cl.h>
+#endif
+
 struct dt_iop_module_so_t;
 struct dt_iop_module_t;
 struct dt_dev_pixelpipe_t;
@@ -151,8 +155,8 @@ void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
 #ifdef HAVE_OPENCL
 /** the opencl equivalent of process(). */
-int process_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-               const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+int process_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+               cl_mem dev_out, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 /** a tiling variant of process_cl(). */
 int process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
                       const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
