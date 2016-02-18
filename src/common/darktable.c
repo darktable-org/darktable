@@ -397,6 +397,15 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   _dt_sigsegv_old_handler = signal(SIGSEGV, &_dt_sigsegv_handler);
 #endif
 
+#if !defined(__BYTE_ORDER__) || __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+#error "Unfortunately we only work on litte-endian systems."
+#endif
+
+#if !defined(__amd64__) && !defined(__amd64) && !defined(__x86_64__) && !defined(__x86_64)                   \
+    && !defined(__i386__) && !defined(__i386)
+#error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit)."
+#endif
+
 #ifndef __SSE3__
 #error "Unfortunately we depend on SSE3 instructions at this time."
 #error "Please contribute a backport patch (or buy a newer processor)."

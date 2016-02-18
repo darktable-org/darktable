@@ -2,6 +2,8 @@ project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
+include(TestBigEndian)
+
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
 option(USE_COLORD "Enable colord support" ON)
@@ -27,6 +29,16 @@ option(USE_WEBP "Enable WebP export support" ON)
 option(BUILD_CMSTEST "Build a test program to check your system's color management setup" ON)
 option(USE_OPENEXR "Enable OpenEXR support" ON)
 option(BUILD_PRINT "Build the print module" ON)
+
+test_big_endian(BIGENDIAN)
+if(${BIGENDIAN})
+	# we do not really want those.
+	# besides, no one probably tried darktable on such systems
+	MESSAGE(FATAL_ERROR "Found big endian system. Bad.")
+else()
+	MESSAGE(STATUS "Found little endian system. Good.")
+endif(${BIGENDIAN})
+
 if(APPLE)
 	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
 else(APPLE)
