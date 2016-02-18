@@ -141,25 +141,30 @@ int legacy_params(struct dt_iop_module_t *self, const void *const old_params, co
   * scaled to the same size width*height and contain a max of 3 floats. other color
   * formats may be filled by this callback, if the pipeline can handle it. */
 /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
-void process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+void process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
+             void *const o, const struct dt_iop_roi_t *const roi_in,
+             const struct dt_iop_roi_t *const roi_out);
 /** a tiling variant of process(). */
-void process_tiling(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                    const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
+void process_tiling(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                    void *const o, const struct dt_iop_roi_t *const roi_in,
+                    const struct dt_iop_roi_t *const roi_out, const int bpp);
 
 #if defined(__SSE2__)
 /** a variant process(), that can contain SSE2 intrinsics. */
-void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                  const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                  void *const o, const struct dt_iop_roi_t *const roi_in,
+                  const struct dt_iop_roi_t *const roi_out);
 #endif
 
 #ifdef HAVE_OPENCL
 /** the opencl equivalent of process(). */
 int process_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-               cl_mem dev_out, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+               cl_mem dev_out, const struct dt_iop_roi_t *const roi_in,
+               const struct dt_iop_roi_t *const roi_out);
 /** a tiling variant of process_cl(). */
-int process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                      const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
+int process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                      void *const o, const struct dt_iop_roi_t *const roi_in,
+                      const struct dt_iop_roi_t *const roi_out, const int bpp);
 #endif
 
 /** this functions are used for distort iop
