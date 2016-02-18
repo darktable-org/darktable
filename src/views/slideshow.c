@@ -464,7 +464,7 @@ static gboolean _hide_mouse(gpointer user_data)
 }
 
 
-void mouse_moved(dt_view_t *self, double x, double y, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
 
