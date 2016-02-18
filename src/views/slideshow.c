@@ -480,7 +480,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 }
 
 
-int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   if(which == 1)
