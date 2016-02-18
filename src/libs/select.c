@@ -83,6 +83,7 @@ int position()
   return 800;
 }
 
+#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
@@ -96,6 +97,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button;
 
   button = gtk_button_new_with_label(_("select all"));
+  ellipsize_button(button);
   d->select_all_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"),
                (char *)NULL);
@@ -103,6 +105,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
   button = gtk_button_new_with_label(_("select none"));
+  ellipsize_button(button);
   d->select_none_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("clear selection (ctrl-shift-a)"), (char *)NULL);
   gtk_grid_attach(grid, button, 1, line++, 1, 1);
@@ -110,6 +113,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   button = gtk_button_new_with_label(_("invert selection"));
+  ellipsize_button(button);
   g_object_set(G_OBJECT(button), "tooltip-text",
                _("select unselected images\nin current collection (ctrl-!)"), (char *)NULL);
   d->select_invert_button = button;
@@ -117,6 +121,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(2));
 
   button = gtk_button_new_with_label(_("select film roll"));
+  ellipsize_button(button);
   d->select_film_roll_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text",
                _("select all images which are in the same\nfilm roll as the selected images"), (char *)NULL);
@@ -125,12 +130,14 @@ void gui_init(dt_lib_module_t *self)
 
 
   button = gtk_button_new_with_label(_("select untouched"));
+  ellipsize_button(button);
   d->select_untouched_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("select untouched images in\ncurrent collection"),
                (char *)NULL);
   gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 }
+#undef ellipsize_button
 
 void gui_cleanup(dt_lib_module_t *self)
 {
