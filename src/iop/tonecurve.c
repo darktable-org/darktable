@@ -680,7 +680,7 @@ static void pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 }
 
 
-static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
@@ -777,7 +777,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(dt_iop_tonecurve_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(area_resized), self);
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(pick_toggled), self);
-  g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(scrolled), self);
+  g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
 
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("scale chroma"));
