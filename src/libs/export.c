@@ -572,6 +572,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10)));
   label = gtk_label_new(_("max size"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
   g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
   gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));

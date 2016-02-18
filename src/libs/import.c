@@ -257,7 +257,10 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   if(count == 0)
   {
     // No supported devices is detected lets notice user..
-    gtk_box_pack_start(GTK_BOX(d->devices), gtk_label_new(_("no supported devices found")), TRUE, TRUE, 0);
+    GtkWidget *label = gtk_label_new(_("no supported devices found"));
+    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+    g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+    gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
   }
   gtk_widget_show_all(GTK_WIDGET(d->devices));
 }

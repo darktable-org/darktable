@@ -224,6 +224,7 @@ int position()
   return 600;
 }
 
+#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
@@ -238,18 +239,21 @@ void gui_init(dt_lib_module_t *self)
 
 
   GtkWidget *copy_parts = gtk_button_new_with_label(_("copy"));
+  ellipsize_button(copy_parts);
   d->copy_parts_button = copy_parts;
   g_object_set(G_OBJECT(copy_parts), "tooltip-text",
                _("copy part history stack of\nfirst selected image (ctrl-shift-c)"), (char *)NULL);
   gtk_grid_attach(grid, copy_parts, 0, line, 2, 1);
 
   GtkWidget *copy = gtk_button_new_with_label(_("copy all"));
+  ellipsize_button(copy);
   d->copy_button = copy;
   g_object_set(G_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"),
                (char *)NULL);
   gtk_grid_attach(grid, copy, 2, line, 2, 1);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
+  ellipsize_button(delete);
   d->delete_button = delete;
   g_object_set(G_OBJECT(delete), "tooltip-text", _("discard history stack of\nall selected images"),
                (char *)NULL);
@@ -257,6 +261,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
+  ellipsize_button(d->paste_parts);
   g_object_set(G_OBJECT(d->paste_parts), "tooltip-text",
                _("paste part history stack to\nall selected images (ctrl-shift-v)"), (char *)NULL);
   d->imageid = -1;
@@ -264,6 +269,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, GTK_WIDGET(d->paste_parts), 0, line, 3, 1);
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste all")));
+  ellipsize_button(d->paste);
   g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"),
                (char *)NULL);
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
@@ -279,12 +285,14 @@ void gui_init(dt_lib_module_t *self)
 
 
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
+  ellipsize_button(loadbutton);
   d->load_button = loadbutton;
   g_object_set(G_OBJECT(loadbutton), "tooltip-text",
                _("open an XMP sidecar file\nand apply it to selected images"), (char *)NULL);
   gtk_grid_attach(grid, loadbutton, 0, line, 3, 1);
 
   GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
+  ellipsize_button(button);
   d->write_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("write history stack and tags to XMP sidecar files"),
                (char *)NULL);
@@ -301,6 +309,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(loadbutton), "clicked", G_CALLBACK(load_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), (gpointer)self);
 }
+#undef ellipsize_button
 
 void gui_cleanup(dt_lib_module_t *self)
 {
