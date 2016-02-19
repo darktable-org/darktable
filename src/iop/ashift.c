@@ -2916,6 +2916,9 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
     dt_bauhaus_widget_set_label(g->lensshift_h, NULL, string_h);
 
+    dt_bauhaus_slider_set_default(g->f_length, tmp.f_length);
+    dt_bauhaus_slider_set_default(g->crop_factor, tmp.crop_factor);
+
     dt_pthread_mutex_lock(&g->lock);
     free(g->buf);
     g->buf = NULL;
