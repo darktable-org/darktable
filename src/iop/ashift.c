@@ -270,6 +270,8 @@ typedef struct dt_iop_ashift_gui_data_t
   int fitting;
   int isflipped;
   int show_guides;
+  int isselecting;
+  int isdeselecting;
   float rotation_range;
   float lensshift_v_range;
   float lensshift_h_range;
@@ -2437,6 +2439,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  int handled = 0;
 
   float wd = self->dev->preview_pipe->backbuf_width;
   float ht = self->dev->preview_pipe->backbuf_height;
@@ -2450,8 +2453,30 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   // gather information about "near"-ness in g->points_idx
   get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, POINTS_NEAR_DELTA);
 
+  // if we are in sweeping mode iterate over lines as we move the pointer and change "selected" state.
+  if(g->isdeselecting || g->isselecting)
+  {
+    for(int n = 0; n < g->points_lines_count; n++)
+    {
+      if(g->points_idx[n].near == 0)
+        continue;
+
+      if(g->isdeselecting)
+        g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+      else if(g->isselecting)
+        g->lines[n].type |= ASHIFT_LINE_SELECTED;
+
+      handled = 1;
+    }
+  }
+
+  if(handled)
+    g->lines_version++;
+
   dt_control_queue_redraw_center();
-  return 0;
+
+  // if not in sweeping mode we need to pass the event
+  return (g->isdeselecting || g->isselecting);
 }
 
 int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
@@ -2460,8 +2485,16 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   int handled = 0;
 
-  // go through lines near to the pointer and change "selected" state.
-  // left-click sets and right-click unsets the state
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
+  const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
+  const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2.0 : 1.0, 0);
+
+  // if we are zoomed out (no panning possible) and we have lines to display we take control
+  int take_control = (cur_scale == min_scale) && (g->points_lines_count > 0);
+
+  // iterate over all lines close to the pointer and change "selected" state.
+  // left-click selects and right-click deselects the line
   for(int n = 0; n < g->points_lines_count; n++)
   {
     if(g->points_idx[n].near == 0)
@@ -2475,14 +2508,34 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     handled = 1;
   }
 
-  g->lines_version++;
+  // we switch into sweeping mode either if we anyhow take control
+  // or if cursor was close to a line when button was pressed. in other
+  // cases we hand over the event (for image panning)
+  if((take_control || handled) && which == 3)
+  {
+    dt_control_change_cursor(GDK_PIRATE);
+    g->isdeselecting = 1;
+  }
+  else if(take_control || handled)
+  {
+    dt_control_change_cursor(GDK_PLUS);
+    g->isselecting = 1;
+  }
 
-  return handled;
+  if(handled)
+    g->lines_version++;
+
+  return (take_control || handled);
 }
 
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
 {
-  // nothing to do
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  // end of sweeping mode
+  dt_control_change_cursor(GDK_LEFT_PTR);
+  g->isselecting = g->isdeselecting = 0;
+
   return 0;
 }
 
@@ -2945,6 +2998,8 @@ void reload_defaults(dt_iop_module_t *module)
     g->lines_suppressed = 0;
     g->lines_version = 0;
     g->show_guides = 0;
+    g->isselecting = 0;
+    g->isdeselecting = 0;
 
     free(g->points);
     g->points = NULL;
@@ -3099,6 +3154,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->lensshift_v_range = LENSSHIFT_RANGE;
   g->lensshift_h_range = LENSSHIFT_RANGE;
   g->show_guides = 0;
+  g->isselecting = 0;
+  g->isdeselecting = 0;
   range_adjust(p, g);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
