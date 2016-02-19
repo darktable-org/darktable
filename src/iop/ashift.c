@@ -2485,6 +2485,10 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   int handled = 0;
 
+  // do nothing if visibility of lines is switched off
+  if(g->lines_suppressed)
+    return FALSE;
+
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
   const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
