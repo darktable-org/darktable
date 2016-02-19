@@ -228,20 +228,17 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
   int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "formid"));
 
   // we add the form in this group
-  dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
-  grpt->formid = id;
-  grpt->parentid = grp->formid;
-  grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
-  if(g_list_length(grp->points) > 0) grpt->state |= DT_MASKS_STATE_UNION;
-  grpt->opacity = 1.0f;
-  grp->points = g_list_append(grp->points, grpt);
-  // we save the group
-  dt_masks_write_form(grp, darktable.develop);
+  dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
+  if(form && dt_masks_group_add_form(grp, form))
+  {
+    // we save the group
+    dt_masks_write_form(grp, darktable.develop);
 
-  // and we apply the change
-  dt_dev_masks_list_change(darktable.develop);
-  dt_masks_update_image(darktable.develop);
-  dt_dev_masks_selection_change(darktable.develop, grp->formid, TRUE);
+    // and we apply the change
+    dt_dev_masks_list_change(darktable.develop);
+    dt_masks_update_image(darktable.develop);
+    dt_dev_masks_selection_change(darktable.develop, grp->formid, TRUE);
+  }
 }
 
 static void _tree_group(GtkButton *button, dt_lib_module_t *self)
