@@ -1208,9 +1208,6 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
 static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in)
 {
-  roi_out->x = 0;
-  roi_out->y = 0;
-
   // we never want to access the input out of bounds though:
   assert(roi_in->width >= roi_out->width);
   assert(roi_in->height >= roi_out->height);
@@ -1235,9 +1232,6 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
 static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
                          const int filters, const float thrs)
 {
-  // snap to start of mosaic block:
-  roi_out->x = 0; // MAX(0, roi_out->x & ~1);
-  roi_out->y = 0; // MAX(0, roi_out->y & ~1);
   // offsets only where the buffer ends:
   const int offx = 3; // MAX(0, 3 - roi_out->x);
   const int offy = 3; // MAX(0, 3 - roi_out->y);
@@ -1455,6 +1449,15 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
   if(median) dt_free_align((float *)in);
 }
 
+void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
+{
+  *roi_out = *roi_in;
+
+  // snap to start of mosaic block:
+  roi_out->x = 0; // MAX(0, roi_out->x & ~1);
+  roi_out->y = 0; // MAX(0, roi_out->y & ~1);
+}
 
 // which roi input is needed to process to this output?
 // roi_out is unchanged, full buffer in is full buffer out.
