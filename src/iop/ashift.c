@@ -38,6 +38,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "gui/draw.h"
+#include "gui/guides.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -253,6 +254,7 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *rotation;
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
+  GtkWidget *guide_lines;
   GtkWidget *mode;
   GtkWidget *f_length;
   GtkWidget *crop_factor;
@@ -267,6 +269,7 @@ typedef struct dt_iop_ashift_gui_data_t
   int lines_suppressed;
   int fitting;
   int isflipped;
+  int show_guides;
   float rotation_range;
   float lensshift_v_range;
   float lensshift_h_range;
@@ -2320,6 +2323,34 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_develop_t *dev = self->dev;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
+  // the usual rescaling stuff
+  float wd = dev->preview_pipe->backbuf_width;
+  float ht = dev->preview_pipe->backbuf_height;
+  if(wd < 1.0 || ht < 1.0) return;
+  float zoom_y = dt_control_get_dev_zoom_y();
+  float zoom_x = dt_control_get_dev_zoom_x();
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+
+  if(g->show_guides)
+  {
+    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, 0);
+    double dashes = DT_PIXEL_APPLY_DPI(5.0);
+    cairo_save(cr);
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_clip(cr);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
+    cairo_set_source_rgb(cr, .8, .8, .8);
+    cairo_set_dash(cr, &dashes, 1, 0);
+    guide->draw(cr, 0, 0, width, height, 1.0, guide->user_data);
+    cairo_stroke_preserve(cr);
+    cairo_set_dash(cr, &dashes, 0, 0);
+    cairo_set_source_rgba(cr, 0.3, .3, .3, .8);
+    cairo_stroke(cr);
+    cairo_restore(cr);
+  }
+
   // structural data are currently being collected or fit procedure is running? -> skip
   if(g->fitting) return;
 
@@ -2349,15 +2380,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // a final check
   if(g->points == NULL || g->points_idx == NULL) return;
 
-  // the usual rescaling stuff
-  float wd = dev->preview_pipe->backbuf_width;
-  float ht = dev->preview_pipe->backbuf_height;
-  if(wd < 1.0 || ht < 1.0) return;
-  float zoom_y = dt_control_get_dev_zoom_y();
-  float zoom_x = dt_control_get_dev_zoom_x();
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
   cairo_save(cr);
   cairo_rectangle(cr, 0, 0, width, height);
@@ -2513,6 +2535,16 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
 #endif
   range_adjust(p, g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  g->show_guides = dt_bauhaus_combobox_get(widget);
+  dt_iop_request_focus(self);
+  dt_dev_reprocess_all(self->dev);
 }
 
 static void mode_callback(GtkWidget *widget, gpointer user_data)
@@ -2803,6 +2835,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->orthocorr, p->orthocorr);
   dt_bauhaus_slider_set(g->aspect, p->aspect);
   dt_bauhaus_combobox_set(g->mode, p->mode);
+  dt_bauhaus_combobox_set(g->guide_lines, g->show_guides);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
   switch(p->mode)
@@ -2908,6 +2941,7 @@ void reload_defaults(dt_iop_module_t *module)
     g->lensshift_h_range = LENSSHIFT_RANGE;
     g->lines_suppressed = 0;
     g->lines_version = 0;
+    g->show_guides = 0;
 
     free(g->points);
     g->points = NULL;
@@ -3061,6 +3095,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->rotation_range = ROTATION_RANGE;
   g->lensshift_v_range = LENSSHIFT_RANGE;
   g->lensshift_h_range = LENSSHIFT_RANGE;
+  g->show_guides = 0;
   range_adjust(p, g);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -3080,6 +3115,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
   dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_h, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
+
+  g->guide_lines = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
+  dt_bauhaus_combobox_add(g->guide_lines, _("off"));
+  dt_bauhaus_combobox_add(g->guide_lines, _("on"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("lens model"));
@@ -3191,6 +3232,8 @@ void gui_init(struct dt_iop_module_t *self)
                (char *)NULL);
   g_object_set(g->lensshift_h, "tooltip-text", _("apply lens shift correction in one direction"),
                (char *)NULL);
+  g_object_set(g->guide_lines, "tooltip-text", _("display guide lines overlay"),
+               (char *)NULL);
   g_object_set(g->mode, "tooltip-text", _("lens model of the perspective correction: generic or according to the focal length"),
                (char *)NULL);
   g_object_set(g->f_length, "tooltip-text", _("focal length of the lens, default value set from exif data if available"),
@@ -3219,6 +3262,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
+  g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guide_lines_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->f_length), "value-changed", G_CALLBACK(f_length_callback), self);
   g_signal_connect(G_OBJECT(g->crop_factor), "value-changed", G_CALLBACK(crop_factor_callback), self);
