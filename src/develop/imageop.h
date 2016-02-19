@@ -121,6 +121,8 @@ struct dt_iop_module_so_t;
 struct dt_iop_module_t;
 typedef struct dt_iop_module_so_t
 {
+  // !!! MUST BE KEPT IN SYNC WITH src/iop/iop_api.h !!!
+
   /** opened module. */
   GModule *module;
   /** string identifying this operation. */
@@ -229,6 +231,8 @@ typedef struct dt_iop_module_so_t
 
 typedef struct dt_iop_module_t
 {
+  // !!! MUST BE KEPT IN SYNC WITH src/iop/iop_api.h !!!
+
   /** opened module. */
   GModule *module;
   /** string identifying this operation. */
