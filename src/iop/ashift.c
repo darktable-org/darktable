@@ -2485,8 +2485,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   int handled = 0;
 
-  // do nothing if visibility of lines is switched off
-  if(g->lines_suppressed)
+  // do nothing if visibility of lines is switched off or no lines available
+  if(g->lines_suppressed || g->lines == NULL)
     return FALSE;
 
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
