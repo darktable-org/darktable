@@ -18,12 +18,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/imageop.h"
-#include "common/interpolation.h"
-#include "develop/tiling.h"
 #include "bauhaus/bauhaus.h"
-#include "gui/gtk.h"
+#include "common/interpolation.h"
+#include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>

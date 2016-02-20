@@ -24,14 +24,16 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
-#include "develop/imageop.h"
-#include "control/control.h"
 #include "common/opencl.h"
+#include "control/control.h"
+#include "develop/imageop.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
-#include <assert.h>
+
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif

@@ -44,6 +44,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
 
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(0.001, x))

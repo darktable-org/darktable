@@ -19,12 +19,13 @@
 #include "config.h"
 #endif
 // our includes go first:
-#include "develop/imageop.h"
-#include "develop/tiling.h"
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>

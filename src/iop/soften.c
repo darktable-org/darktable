@@ -26,15 +26,17 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "control/control.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif

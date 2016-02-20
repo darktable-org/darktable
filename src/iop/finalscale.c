@@ -23,6 +23,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
+#include "iop/iop_api.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_finalscale_params_t)
 

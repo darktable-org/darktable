@@ -33,6 +33,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <math.h>

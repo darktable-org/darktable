@@ -18,13 +18,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "gui/gtk.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 

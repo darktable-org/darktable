@@ -20,19 +20,20 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/develop.h"
-#include "develop/imageop.h"
-#include "develop/tiling.h"
-#include "control/control.h"
-#include "control/conf.h"
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
-#include "bauhaus/bauhaus.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "gui/accelerators.h"
-#include "gui/guides.h"
 #include "gui/gtk.h"
+#include "gui/guides.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
 
 #include <stdlib.h>
 #include <math.h>

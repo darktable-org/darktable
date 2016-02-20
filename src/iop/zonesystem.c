@@ -36,6 +36,7 @@
 #include "dtgtk/togglebutton.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>

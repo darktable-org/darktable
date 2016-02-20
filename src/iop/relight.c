@@ -24,16 +24,17 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
-#include "develop/develop.h"
-#include "develop/imageop.h"
-#include "control/control.h"
 #include "common/debug.h"
 #include "common/opencl.h"
-#include "dtgtk/togglebutton.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
 #include "dtgtk/gradientslider.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 

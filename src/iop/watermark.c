@@ -15,22 +15,23 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "version.h"
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "bauhaus/bauhaus.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
 #include "dtgtk/button.h"
-#include "dtgtk/togglebutton.h"
 #include "dtgtk/resetlabel.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
+#include "version.h"
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?

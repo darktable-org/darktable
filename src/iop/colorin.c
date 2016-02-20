@@ -34,6 +34,7 @@
 #include "common/imageio_png.h"
 #include "common/imageio_tiff.h"
 #include "develop/imageop_math.h"
+#include "iop/iop_api.h"
 
 #include "external/adobe_coeff.c"
 #if defined(__SSE__)

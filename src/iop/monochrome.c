@@ -18,22 +18,23 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#include "common/colorspaces.h"
-#include "common/opencl.h"
+#include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
-#include "bauhaus/bauhaus.h"
-#include "develop/develop.h"
-#include "develop/tiling.h"
+#include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "develop/imageop.h"
+#include "iop/iop_api.h"
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 DT_MODULE_INTROSPECTION(2, dt_iop_monochrome_params_t)
 

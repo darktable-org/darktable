@@ -18,23 +18,24 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <inttypes.h>
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/opencl.h"
-#include "develop/develop.h"
-#include "control/control.h"
 #include "control/conf.h"
-#include "gui/accelerators.h"
+#include "control/control.h"
+#include "develop/develop.h"
 #include "dtgtk/drawingarea.h"
-#include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
 #include "gui/presets.h"
-#include "bauhaus/bauhaus.h"
+#include "iop/iop_api.h"
+#include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_lowlight_params_t)
 

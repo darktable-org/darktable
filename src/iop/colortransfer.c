@@ -19,12 +19,13 @@
 #include "config.h"
 #endif
 #include "common/colorspaces.h"
+#include "common/points.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "common/points.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <stdlib.h>
 #include <math.h>

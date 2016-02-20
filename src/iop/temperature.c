@@ -40,6 +40,7 @@
 #include "external/wb_presets.c"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 // for Kelvin temperature and bogus WB
 #include "external/cie_colorimetric_tables.c"

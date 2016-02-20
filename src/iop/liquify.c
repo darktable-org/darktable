@@ -20,19 +20,21 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <complex.h>
-#include <assert.h>
 #include "bauhaus/bauhaus.h"
-#include "develop/imageop.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/imageop.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
+#include <assert.h>
 #include <cairo.h>
+#include <complex.h>
+#include <math.h>
+#include <stdlib.h>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif

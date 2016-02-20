@@ -23,12 +23,13 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "config.h"
 #endif
 // our includes go first:
-#include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
-#include "dtgtk/drawingarea.h"
-#include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "develop/imageop.h"
+#include "dtgtk/drawingarea.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>

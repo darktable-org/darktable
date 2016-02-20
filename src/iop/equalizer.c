@@ -18,18 +18,19 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "iop/equalizer_eaw.h"
 

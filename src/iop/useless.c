@@ -19,9 +19,10 @@
 #include "config.h"
 #endif
 // our includes go first:
-#include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
+#include "develop/imageop.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>

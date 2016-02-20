@@ -19,20 +19,21 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
+#include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "common/colorspaces.h"
+#include "common/opencl.h"
+#include "common/points.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "control/control.h"
-#include "common/points.h"
-#include "common/opencl.h"
-#include "gui/accelerators.h"
 #include "dtgtk/drawingarea.h"
-#include "gui/gtk.h"
-#include "bauhaus/bauhaus.h"
 #include "dtgtk/resetlabel.h"
-#include "common/bilateral.h"
-#include "common/bilateralcl.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <stdlib.h>
 #include <math.h>

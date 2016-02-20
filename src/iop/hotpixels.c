@@ -30,6 +30,7 @@
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>

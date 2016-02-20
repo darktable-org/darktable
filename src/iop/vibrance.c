@@ -24,12 +24,13 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "common/opencl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 

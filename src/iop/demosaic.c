@@ -29,6 +29,7 @@
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <memory.h>
 #include <stdlib.h>

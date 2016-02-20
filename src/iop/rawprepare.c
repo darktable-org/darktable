@@ -18,12 +18,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "bauhaus/bauhaus.h"
-#include "gui/gtk.h"
 #include "gui/accelerators.h"
-#include "common/opencl.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>

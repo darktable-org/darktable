@@ -19,12 +19,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
+#include "common/interpolation.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "common/interpolation.h"
-#include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <math.h>
 #include <stdlib.h>

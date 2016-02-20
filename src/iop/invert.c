@@ -34,6 +34,7 @@
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_invert_params_t)
 

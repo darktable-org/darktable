@@ -18,19 +18,20 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
-#include "bauhaus/bauhaus.h"
+#include "iop/iop_api.h"
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <stdlib.h>
 #include <math.h>
-#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)

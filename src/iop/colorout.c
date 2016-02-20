@@ -28,6 +28,7 @@
 #include "develop/imageop_math.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
