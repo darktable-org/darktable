@@ -651,6 +651,140 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
   return 0;
 }
 
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_graduatednd_data_t *const data = (const dt_iop_graduatednd_data_t *const)piece->data;
+  const int ch = piece->colors;
+
+  const int ix = (roi_in->x);
+  const int iy = (roi_in->y);
+  const float iw = piece->buf_in.width * roi_out->scale;
+  const float ih = piece->buf_in.height * roi_out->scale;
+  const float hw = iw / 2.0;
+  const float hh = ih / 2.0;
+  const float hw_inv = 1.0 / hw;
+  const float hh_inv = 1.0 / hh;
+  const float v = (-data->rotation / 180) * M_PI;
+  const float sinv = sin(v);
+  const float cosv = cos(v);
+  const float filter_radie = sqrt((hh * hh) + (hw * hw)) / hh;
+  const float offset = data->offset / 100.0 * 2;
+
+  float color[4];
+  hsl2rgb(color, data->hue, data->saturation, 0.5);
+  color[3] = 0.0f;
+
+  if(data->density < 0)
+    for(int l = 0; l < 3; l++) color[l] = 1.0 - color[l];
+
+  float color1[4];
+  for(int l = 0; l < 4; l++) color1[l] = 1.0 - color[l];
+
+#if 1
+  const float filter_compression
+      = 1.0 / filter_radie / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
+#else
+  const float compression = data->compression / 100.0f;
+  const float t = 1.0f - .8f / (.8f + compression);
+  const float c = 1.0f + 1000.0f * powf(4.0, compression);
+#endif
+
+
+  if(data->density > 0)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(color, color1) schedule(static)
+#endif
+    for(int y = 0; y < roi_out->height; y++)
+    {
+      size_t k = (size_t)roi_out->width * y * ch;
+      const float *in = (float *)ivoid + k;
+      float *out = (float *)ovoid + k;
+
+      float length = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + (iy + y) * hh_inv) - 1.0 + offset)
+                     * filter_compression;
+      const float length_inc = sinv * hw_inv * filter_compression;
+
+      for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
+      {
+#if 1
+        // !!! approximation is ok only when highest density is 8
+        // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
+        // use exp2f approximation to calculate e^(ln2*x/8)
+        // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
+        const float t = 0.693147181f /* ln2 */ * (data->density * CLIP(0.5f + length) / 8.0f);
+        float d1 = t * t * 0.5f;
+        float d2 = d1 * t * 0.333333333f;
+        float d3 = d2 * t * 0.25f;
+        float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
+        // printf("%d %d  %f\n",y,x,d);
+        float density = d;
+        density = density * density;
+        density = density * density;
+        density = density * density;
+#else
+        // use fair exp2f
+        float density = exp2f(data->density * CLIP(0.5f + length));
+#endif
+
+        for(int l = 0; l < 3; l++)
+        {
+          out[l] = MAX(0.0f, (in[l] / (color[l] + color1[l] * density)));
+        }
+
+        length += length_inc;
+      }
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(color, color1) schedule(static)
+#endif
+    for(int y = 0; y < roi_out->height; y++)
+    {
+      size_t k = (size_t)roi_out->width * y * ch;
+      const float *in = (float *)ivoid + k;
+      float *out = (float *)ovoid + k;
+
+      float length = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + (iy + y) * hh_inv) - 1.0f + offset)
+                     * filter_compression;
+      const float length_inc = sinv * hw_inv * filter_compression;
+
+      for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
+      {
+#if 1
+        // !!! approximation is ok only when lowest density is -8
+        // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
+        // use exp2f approximation to calculate e^(ln2*x/8)
+        // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
+        const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP(0.5f - length) / 8.0f);
+        float d1 = t * t * 0.5f;
+        float d2 = d1 * t * 0.333333333f;
+        float d3 = d2 * t * 0.25f;
+        float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
+        float density = d;
+        density = density * density;
+        density = density * density;
+        density = density * density;
+#else
+        float density = exp2f(-data->density * CLIP(0.5f - length));
+#endif
+
+        for(int l = 0; l < 3; l++)
+        {
+          out[l] = MAX(0.0f, (in[l] * (color[l] + color1[l] * density)));
+        }
+
+        length += length_inc;
+      }
+    }
+  }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+
 #if defined(__SSE__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
