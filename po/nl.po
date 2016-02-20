@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-20 10:59+0100\n"
-"PO-Revision-Date: 2016-02-20 12:00+0100\n"
+"POT-Creation-Date: 2016-02-20 13:06+0100\n"
+"PO-Revision-Date: 2016-02-20 13:35+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -673,15 +673,15 @@ msgstr "grafische vormgeving, fotografie, raw;"
 msgid ""
 "darktable manages your digital negatives in a database and lets you view them through a lighttable. It also enables you to develop raw images and enhance them in "
 "a darkroom."
-msgstr ""
+msgstr "darktable bewaart uw digitale negatieven in een database en toont ze in een bibliotheek, u kunt ze ontwikkelen en verbeteren in de ontwikkel-modulen"
 
 #: ../data/darktable.appdata.xml.in.h:3
 msgid "Other modes besides lighttable and darkroom are a map for geotagging, tethering, print and a slideshow."
-msgstr ""
+msgstr "overige modules naast de bibliotheek en ontwikkelen zijn kaart, tethering, afdrukken en presentatie"
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid "darktable supports most modern camera's raw formats, and does all of its processing at very high precision."
-msgstr ""
+msgstr "darktable ondersteunt van veel moderne camera's de raw-formaten en werkt met een zeer hoge precisie"
 
 #: ../src/cli/main.c:102
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
@@ -3823,12 +3823,11 @@ msgstr "draai afbeelding"
 
 #: ../src/iop/ashift.c:3295 ../src/iop/ashift.c:3297
 msgid "apply lens shift correction in one direction"
-msgstr "toepassen correctie lensverschuiving in een richting"
+msgstr "correctie lensverschuiving in één richting toepassen"
 
 #: ../src/iop/ashift.c:3299
-#, fuzzy
 msgid "display guide lines overlay"
-msgstr "schakel hulplijnen in om de compositie te verbeteren. "
+msgstr "weergeven rasterlijnen"
 
 #: ../src/iop/ashift.c:3301
 msgid "lens model of the perspective correction: generic or according to the focal length"
@@ -3836,11 +3835,11 @@ msgstr "perspectiefcorrectie voor type lens: algemeen of overeenkomstig brandpun
 
 #: ../src/iop/ashift.c:3303
 msgid "focal length of the lens, default value set from exif data if available"
-msgstr "brandpuntsafstand van de lens, indien aanwezig standaard waarde van exif gegevens"
+msgstr "brandpuntsafstand van de lens; indien aanwezig de standaard waarde van exif-data"
 
 #: ../src/iop/ashift.c:3305
 msgid "crop factor of the camera sensor, default value set from exif data if available,manual setting is often required"
-msgstr "cropfactor van de camera sensor, indien aanwezig een standaard waarde genomen van exif gegevens, vaak is een handmatige invoer vereist"
+msgstr "cropfactor van de camera sensor, indien aanwezig de standaard waarde genomen uit exif-data, vaak is een handmatige invoer vereist"
 
 #: ../src/iop/ashift.c:3308
 #, c-format
@@ -3848,9 +3847,8 @@ msgid "the level of lens dependent correction, 100%% for full dependency, 0%% fo
 msgstr "het niveau van de lens afhankelijke correctie, 100%% bij volledige afhankelijkheid, 0 %% voor algemene gevallen"
 
 #: ../src/iop/ashift.c:3310
-#, fuzzy
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
-msgstr "spiegel afbeelding horizontaal en/of verticaal"
+msgstr "aanpassen beeldverhouding door horizontaal en verticaal schalen"
 
 #: ../src/iop/ashift.c:3312
 msgid ""
@@ -3895,9 +3893,8 @@ msgid "remove line structure information"
 msgstr "verwijder lijnstructuur gegevens"
 
 #: ../src/iop/ashift.c:3324
-#, fuzzy
 msgid "toggle visibility of structure lines"
-msgstr "kaartomslag zichtbaarheid aan/uit"
+msgstr "zichtbaarheid structuurlijnen omkeren"
 
 #: ../src/iop/basecurve.c:93
 msgid "neutral"
@@ -4541,7 +4538,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2041 ../src/libs/live_view.c:373
 msgid "display guide lines to help compose your photograph"
-msgstr "schakel hulplijnen in om de compositie te verbeteren. "
+msgstr "inschakelen hulplijnen, vergemakkelijkt  compositie verbetering"
 
 #: ../src/iop/clipping.c:2045 ../src/iop/clipping.c:2050 ../src/libs/live_view.c:382
 msgid "flip guides"
@@ -4931,9 +4928,8 @@ msgid "hue"
 msgstr "tint"
 
 #: ../src/iop/colorreconstruction.c:649
-#, fuzzy
 msgid "module `color reconstruction' failed"
-msgstr "[kleur reconstructie] module mislukt"
+msgstr "module 'kleur reconstructie'  mislukte"
 
 #: ../src/iop/colorreconstruction.c:1369 ../src/iop/shadhi.c:844 ../src/iop/tonemap.cc:297
 msgid "spatial extent"
@@ -5110,9 +5106,9 @@ msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
 #: ../src/iop/demosaic.c:3550 ../src/iop/invert.c:465
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' color matrix not found for 4bayer image!\n"
-msgstr "`%s' kleuren matrix is niet gevonden"
+msgstr "`%s' kleuren matrix voor 4bayer afbeelding is niet gevonden!\n"
 
 #: ../src/iop/demosaic.c:3749 ../src/iop/demosaic.c:3759 ../src/iop/dither.c:563 ../src/iop/highlights.c:785
 msgid "method"
@@ -6094,14 +6090,13 @@ msgstr ""
 "verwijder pad met de rechtermuisknop"
 
 #: ../src/iop/liquify.c:3319
-#, fuzzy
 msgid ""
 "click and drag to move - click : linear or feathered\n"
 "ctrl+click : autosmooth, cups, smooth, symmetrical\n"
 "right-click to remove"
 msgstr ""
 "klik en sleep om te verplaatsen - klik: lineair of feathered\n"
-"ctrl+klik: symmetrisch, glad, knobbel, automatisch glad\n"
+"ctrl+klik: automatisch glad, cups, glad, symmetrisch\n"
 "rechtermuisknop om te verwijderen"
 
 #: ../src/iop/liquify.c:3320 ../src/iop/liquify.c:3321
@@ -6716,9 +6711,9 @@ msgid "temperature"
 msgstr "temperatuur"
 
 #: ../src/iop/temperature.c:654 ../src/iop/temperature.c:881
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' color matrix not found for 4bayer image\n"
-msgstr "`%s' kleuren matrix is niet gevonden"
+msgstr "`%s' kleuren matrix voor 4bayer afbeelding is niet gevonden\n"
 
 #: ../src/iop/temperature.c:695
 msgctxt "white balance"
@@ -6736,9 +6731,9 @@ msgid "spot"
 msgstr "spot"
 
 #: ../src/iop/temperature.c:872
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' color matrix not found for image\n"
-msgstr "`%s' kleuren matrix is niet gevonden"
+msgstr "`%s' kleuren matrix is niet gevonden\n"
 
 #: ../src/iop/temperature.c:926
 #, c-format
@@ -6754,9 +6749,8 @@ msgid "cyan"
 msgstr "cyaan"
 
 #: ../src/iop/temperature.c:1303
-#, fuzzy
 msgid "emerald"
-msgstr "algemeen"
+msgstr "smaragd"
 
 #: ../src/iop/temperature.c:1336
 msgid "tint"
@@ -7049,18 +7043,16 @@ msgid "color"
 msgstr "kleur "
 
 #: ../src/iop/watermark.c:1248
-#, fuzzy
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
 msgstr ""
-"tekst kleur, label:\n"
+"watermerk kleur, label:\n"
 "$(WATERMARK_COLOR)"
 
 #: ../src/iop/watermark.c:1252
-#, fuzzy
 msgid "select watermark color"
-msgstr "bepaal kleur toon"
+msgstr "bepaal watermerk kleur"
 
 #. Simple text
 #: ../src/iop/watermark.c:1258
