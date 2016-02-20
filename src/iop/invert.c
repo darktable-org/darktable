@@ -158,7 +158,7 @@ static int FC(const int row, const int col, const unsigned int filters)
 }
 
 static uint8_t FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
-                        uint8_t (*const xtrans)[6])
+                        const uint8_t (*const xtrans)[6])
 {
   return xtrans[(row + roi->y) % 6][(col + roi->x) % 6];
 }
