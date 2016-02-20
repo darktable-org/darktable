@@ -48,12 +48,12 @@ DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 
 typedef struct dt_iop_graduatednd_params_t
 {
-  float density;
-  float compression;
-  float rotation;
-  float offset;
-  float hue;
-  float saturation;
+  float density;     // The density of filter 0-8 EV
+  float compression; // Default 0% = soft and 100% = hard
+  float rotation;    // 2*PI -180 - +180
+  float offset;      // Default 50%, centered, can be offsetted...
+  float hue;         // the hue
+  float saturation;  // the saturation
 } dt_iop_graduatednd_params_t;
 
 typedef struct dt_iop_graduatednd_global_data_t
@@ -130,8 +130,8 @@ typedef struct dt_iop_graduatednd_data_t
   float compression; // Default 0% = soft and 100% = hard
   float rotation;    // 2*PI -180 - +180
   float offset;      // Default 50%, centered, can be offsetted...
-  float hue;         // the hue
-  float saturation;  // the saturation
+  float color[4];    // RGB color of gradient
+  float color1[4];   // inverted color (1 - c)
 } dt_iop_graduatednd_data_t;
 
 const char *name()
@@ -671,16 +671,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float filter_radie = sqrt((hh * hh) + (hw * hw)) / hh;
   const float offset = data->offset / 100.0 * 2;
 
-  float color[4];
-  hsl2rgb(color, data->hue, data->saturation, 0.5);
-  color[3] = 0.0f;
-
-  if(data->density < 0)
-    for(int l = 0; l < 3; l++) color[l] = 1.0 - color[l];
-
-  float color1[4];
-  for(int l = 0; l < 4; l++) color1[l] = 1.0 - color[l];
-
 #if 1
   const float filter_compression
       = 1.0 / filter_radie / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
@@ -694,7 +684,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(data->density > 0)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(color, color1) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -730,7 +720,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
         for(int l = 0; l < 3; l++)
         {
-          out[l] = MAX(0.0f, (in[l] / (color[l] + color1[l] * density)));
+          out[l] = MAX(0.0f, (in[l] / (data->color[l] + data->color1[l] * density)));
         }
 
         length += length_inc;
@@ -740,7 +730,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(color, color1) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -774,7 +764,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
         for(int l = 0; l < 3; l++)
         {
-          out[l] = MAX(0.0f, (in[l] * (color[l] + color1[l] * density)));
+          out[l] = MAX(0.0f, (in[l] * (data->color[l] + data->color1[l] * density)));
         }
 
         length += length_inc;
@@ -789,7 +779,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
+  const dt_iop_graduatednd_data_t *const data = (const dt_iop_graduatednd_data_t *const)piece->data;
   const int ch = piece->colors;
 
   const int ix = (roi_in->x);
@@ -806,11 +796,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float filter_radie = sqrt((hh * hh) + (hw * hw)) / hh;
   const float offset = data->offset / 100.0 * 2;
 
-  float color[3];
-  hsl2rgb(color, data->hue, data->saturation, 0.5);
-  if(data->density < 0)
-    for(int l = 0; l < 3; l++) color[l] = 1.0 - color[l];
-
 #if 1
   const float filter_compression = 1.0 / filter_radie
                                    / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
@@ -824,7 +809,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   if(data->density > 0)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(color, data) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -836,7 +821,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                      * filter_compression;
       const float length_inc = sinv * hw_inv * filter_compression;
 
-      __m128 c = _mm_set_ps(0, color[2], color[1], color[0]);
+      __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
       __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
 
       for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
@@ -872,7 +857,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(color, data) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -884,7 +869,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                      * filter_compression;
       const float length_inc = sinv * hw_inv * filter_compression;
 
-      __m128 c = _mm_set_ps(0, color[2], color[1], color[0]);
+      __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
       __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
 
       for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
@@ -949,11 +934,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float offset = data->offset / 100.0 * 2;
   const float density = data->density;
 
-  float color[4] = { 0.0f };
-  hsl2rgb(color, data->hue, data->saturation, 0.5);
-  if(density < 0)
-    for(int l = 0; l < 3; l++) color[l] = 1.0f - color[l];
-
 #if 1
   const float filter_compression = 1.0 / filter_radie
                                    / (1.0 - (0.5 + (data->compression / 100.0) * 0.9 / 2.0)) * 0.5;
@@ -976,7 +956,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, 4 * sizeof(float), (void *)color);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, 4 * sizeof(float), (void *)data->color);
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), (void *)&density);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), (void *)&length_base);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(float), (void *)&length_inc_x);
@@ -1052,8 +1032,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->compression = p->compression;
   d->rotation = p->rotation;
   d->offset = p->offset;
-  d->hue = p->hue;
-  d->saturation = p->saturation;
+
+  hsl2rgb(d->color, p->hue, p->saturation, 0.5);
+  d->color[3] = 0.0f;
+
+  if(d->density < 0)
+    for(int l = 0; l < 4; l++) d->color[l] = 1.0 - d->color[l];
+
+  for(int l = 0; l < 4; l++) d->color1[l] = 1.0 - d->color[l];
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
