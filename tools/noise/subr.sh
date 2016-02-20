@@ -318,8 +318,13 @@ get_image_camera_maker() {
 
 	tool_installed exiv2
 
-	maker=$(get_exif_key "$file" Exif.Image.Make)
-	maker=$(echo $maker | cut -c 1)$(echo $maker | cut -c 2- | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
+	first_model=$(echo $(get_exif_key "$file" Exif.Image.Model) | cut -d " " -f 1)
+	if [ "$first_model" = "PENTAX" ]; then
+		maker="Pentax"
+	else
+	  maker=$(get_exif_key "$file" Exif.Image.Make)
+	  maker=$(echo $maker | cut -c 1)$(echo $maker | cut -c 2- | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
+	fi
 	echo $maker
 }
 
@@ -332,7 +337,7 @@ get_image_camera_model() {
 	first_maker=$(echo $(get_exif_key "$file" Exif.Image.Make) | cut -d " " -f 1)
 	model=$(get_exif_key "$file" Exif.Image.Model)
 	first_model=$(echo $model | cut -d " " -f 1)
-	if [ "$first_maker" = "$first_model" ]; then
+	if [ "$first_maker" = "$first_model" ] || [ "$first_model" = "PENTAX" ]; then
 		model=$(echo $model | cut -d " " -f 2-)
 	fi
 	echo $model
