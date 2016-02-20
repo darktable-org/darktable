@@ -359,8 +359,8 @@ static int masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return res;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
   dt_develop_blend_params_t *bp = self->blend_params;
@@ -371,7 +371,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // we don't modify most of the image:
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out, in, roi_in, roi_out)
+#pragma omp parallel for schedule(static) default(none) shared(out, in)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {

@@ -155,7 +155,7 @@ error:
 }
 
 
-void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out)
+void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 {
 
   const int width = g->width;
@@ -173,7 +173,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out)
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,  \
+#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
                                               coefn) schedule(static)
 #endif
   for(int i = 0; i < width; i++)
@@ -245,7 +245,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out)
 
 // horizontal blur line by line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,      \
+#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
                                               coefn) schedule(static)
 #endif
   for(int j = 0; j < height; j++)
@@ -319,7 +319,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out)
 
 
 #if defined(__SSE__)
-static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, float *in, float *out)
+static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, const float *const in, float *const out)
 {
 
   const int width = g->width;
@@ -340,8 +340,7 @@ static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, float *in, float *out)
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, temp, a0, a1, a2, a3, b1, b2, coefp,                  \
-                                              coefn) schedule(static)
+#pragma omp parallel for default(none) shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
@@ -409,8 +408,7 @@ static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, float *in, float *out)
 
 // horizontal blur line by line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, temp, a0, a1, a2, a3, b1, b2, coefp,                      \
-                                              coefn) schedule(static)
+#pragma omp parallel for default(none) shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
 #endif
   for(size_t j = 0; j < height; j++)
   {
@@ -478,7 +476,7 @@ static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, float *in, float *out)
 }
 #endif
 
-void dt_gaussian_blur_4c(dt_gaussian_t *g, float *in, float *out)
+void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const out)
 {
   if(darktable.codepath.OPENMP_SIMD) return dt_gaussian_blur(g, in, out);
 #if defined(__SSE__)

@@ -98,7 +98,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->data;
@@ -154,7 +154,8 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
     return 4 * sizeof(float);
 }
 
-static inline void _interpolate_color_xtrans(void *ivoid, void *ovoid, const dt_iop_roi_t *const roi_in,
+static inline void _interpolate_color_xtrans(const void *const ivoid, void *const ovoid,
+                                             const dt_iop_roi_t *const roi_in,
                                              const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
                                              const float *clip, const uint8_t (*const xtrans)[6],
                                              const int pass)
@@ -304,8 +305,9 @@ static inline void _interpolate_color_xtrans(void *ivoid, void *ovoid, const dt_
   }
 }
 
-static inline void _interpolate_color(void *ivoid, void *ovoid, const dt_iop_roi_t *roi_out, int dim, int dir,
-                                      int other, const float *clip, const uint32_t filters, const int pass)
+static inline void _interpolate_color(const void *const ivoid, void *const ovoid,
+                                      const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
+                                      const float *clip, const uint32_t filters, const int pass)
 {
   float ratio = 1.0f;
   float *in, *out;
@@ -403,10 +405,11 @@ static inline void _interpolate_color(void *ivoid, void *ovoid, const dt_iop_roi
   }
 }
 
-static void process_lch_xtrans(void *ivoid, void *ovoid, const int width, const int height, const float clip)
+static void process_lch_xtrans(const void *const ivoid, void *const ovoid, const int width, const int height,
+                               const float clip)
 {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, ivoid)
+#pragma omp parallel for schedule(static) default(none)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -536,8 +539,8 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
     dt_unreachable_codepath();
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int filters = dt_image_filter(&piece->pipe->image);
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
@@ -564,7 +567,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       {
         const dt_image_t *img = &self->dev->image_storage;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, img)
+#pragma omp parallel for schedule(dynamic) default(none) shared(img)
 #endif
         for(int j = 0; j < roi_out->height; j++)
         {
@@ -572,7 +575,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
           _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, -1, j, clips, img->xtrans, 1);
         }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, img)
+#pragma omp parallel for schedule(dynamic) default(none) shared(img)
 #endif
         for(int i = 0; i < roi_out->width; i++)
         {
@@ -583,7 +586,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       }
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#pragma omp parallel for schedule(dynamic) default(none) shared(data, piece)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -593,7 +596,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // up/down directions
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#pragma omp parallel for schedule(dynamic) default(none) shared(data, piece)
 #endif
       for(int i = 0; i < roi_out->width; i++)
       {
@@ -609,7 +612,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         break;
       }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#pragma omp parallel for schedule(dynamic) default(none) shared(data, piece)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {

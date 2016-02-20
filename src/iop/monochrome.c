@@ -143,14 +143,14 @@ static float envelope(const float L)
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   const float sigma2 = (d->size * 128.0) * (d->size * 128.0f);
 // first pass: evaluate color filter:
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+#pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -177,7 +177,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   dt_bilateral_free(b);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+#pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -195,7 +195,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)self->data;

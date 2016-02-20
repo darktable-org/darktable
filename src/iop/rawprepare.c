@@ -281,8 +281,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
-void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
-                  const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
@@ -294,7 +294,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
     const int cx = d->x, cy = d->y;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(ovoid)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -356,7 +356,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
     const __m128 sub = _mm_load_ps(d->sub), div = _mm_load_ps(d->div);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(ovoid)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -444,7 +444,7 @@ error:
 }
 #endif
 
-void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;

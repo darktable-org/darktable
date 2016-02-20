@@ -497,8 +497,8 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
 
 // =====================================================================================
 
-void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                      void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -646,8 +646,8 @@ void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
 
-void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                     void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -687,8 +687,7 @@ void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide)                           \
-    shared(kj, ki, roi_out, roi_in, in, ovoid, Sa)
+#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, in, Sa)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -821,7 +820,7 @@ void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   }
 // normalize
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(ovoid, roi_out, d)
+#pragma omp parallel for default(none) schedule(static) shared(d)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -855,7 +854,7 @@ static int bucket_next(unsigned int *state, unsigned int max)
 }
 
 int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                       cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+                       cl_mem dev_out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
@@ -1055,7 +1054,7 @@ error:
 
 
 int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                        cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+                        cl_mem dev_out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
@@ -1366,7 +1365,7 @@ error:
 
 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
@@ -1382,8 +1381,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 #endif // HAVE_OPENCL
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   if(d->mode == MODE_NLMEANS)

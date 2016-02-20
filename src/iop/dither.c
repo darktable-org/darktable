@@ -182,8 +182,9 @@ static inline float clipnan(const float x)
   return r;
 }
 
-void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid,
-                             void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                             const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -258,7 +259,7 @@ void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -372,8 +373,8 @@ float tpdf(unsigned int urandom)
 }
 
 
-void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-                    const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                    void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -387,7 +388,7 @@ void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, tea_states) schedule(static)
+#pragma omp parallel for default(none) shared(tea_states) schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -411,8 +412,8 @@ void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 }
 
 
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 

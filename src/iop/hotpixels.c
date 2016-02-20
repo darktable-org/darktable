@@ -194,8 +194,8 @@ static int process_xtrans(const void *const i, void *o, const dt_iop_roi_t *cons
  * correcting pairs of hot pixels in adjacent sites. Replacement using
  * the maximum produces fewer artifacts when inadvertently replacing
  * non-hot pixels. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_image_t *img = &self->dev->image_storage;
   dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
@@ -222,7 +222,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // Bayer sensor array
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o) reduction(+ : fixed) schedule(static)
+#pragma omp parallel for default(none) reduction(+ : fixed) schedule(static)
 #endif
   for(int row = 2; row < roi_out->height - 2; row++)
   {

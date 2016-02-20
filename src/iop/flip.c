@@ -284,8 +284,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
 // do your best to fill the output region!
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
@@ -298,7 +298,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_flip_data_t *data = (dt_iop_flip_data_t *)piece->data;
   const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;

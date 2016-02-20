@@ -262,7 +262,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
@@ -301,15 +301,15 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   float *in = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, out, d, in) schedule(static)
+#pragma omp parallel for default(none) shared(out, d, in) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {

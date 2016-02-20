@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
+add_definitions(-include iop/iop_api.h)
+
 macro (add_iop _lib _src)
   string(LENGTH ${_lib} _lib_namelength)
   if(${_lib_namelength} GREATER 19)

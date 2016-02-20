@@ -651,8 +651,8 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
   const int ch = piece->colors;
@@ -689,7 +689,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
   if(data->density > 0)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, color, data, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(color, data) schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -737,7 +737,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, color, data, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(color, data) schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -789,7 +789,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
   dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)self->data;

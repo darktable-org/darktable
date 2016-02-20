@@ -209,7 +209,7 @@ static float lerp_lut(const float *const lut, const float v)
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
@@ -458,8 +458,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
@@ -470,7 +470,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(roi_in, roi_out, ivoid, ovoid)
+#pragma omp parallel for schedule(static) default(none)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -501,7 +501,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
     // fprintf(stderr,"Using xform codepath\n");
     const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_out)
+#pragma omp parallel for schedule(static) default(none)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {

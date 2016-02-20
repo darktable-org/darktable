@@ -95,8 +95,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale5));
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
   float *in = (float *)ivoid;
@@ -137,8 +137,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(ivoid, ovoid, roi_in, roi_out, m, mat,        \
-                                                               isig2col) private(in, out)
+#pragma omp parallel for default(none) schedule(static) shared(m, mat, isig2col) private(in, out)
 #endif
     for(int j = rad; j < roi_out->height - rad; j++)
     {

@@ -174,8 +174,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
@@ -190,7 +190,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
 
 // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(i, o, roi_in, roi_out, d)
+#pragma omp parallel for default(none) schedule(static) shared(d)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -230,7 +230,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorcontrast_data_t *data = (dt_iop_colorcontrast_data_t *)piece->data;
   dt_iop_colorcontrast_global_data_t *gd = (dt_iop_colorcontrast_global_data_t *)self->data;

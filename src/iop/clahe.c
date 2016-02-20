@@ -73,8 +73,8 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_DEPRECATED;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_rlce_data_t *data = (dt_iop_rlce_data_t *)piece->data;
   const int ch = piece->colors;
@@ -83,7 +83,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   float *luminance = (float *)malloc(((size_t)roi_out->width * roi_out->height) * sizeof(float));
 // double lsmax=0.0,lsmin=1.0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(luminance, roi_in, roi_out, ivoid)
+#pragma omp parallel for default(none) schedule(static) shared(luminance)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -108,7 +108,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // CLAHE
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(luminance, roi_in, roi_out, ivoid, ovoid)
+#pragma omp parallel for default(none) schedule(static) shared(luminance)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {

@@ -444,8 +444,8 @@ static int get_scales(float (*thrs)[4], float (*boost)[4], float *sharp, const d
 
 #if defined(__SSE__)
 /* just process the supplied image buffer, upstream default_process_tiling() does the rest */
-void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs[MAX_NUM_SCALES][4];
@@ -525,7 +525,7 @@ error:
 #ifdef HAVE_OPENCL
 /* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs[MAX_NUM_SCALES][4];

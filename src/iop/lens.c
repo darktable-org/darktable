@@ -328,7 +328,7 @@ static char *_lens_sanitize(const char *orig_lens)
   }
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_lensfun_data_t *const d = (dt_iop_lensfun_data_t *)piece->data;
@@ -367,7 +367,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       void *buf = dt_alloc_align(16, bufsize * dt_get_num_threads() * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf, modifier, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(buf, modifier) schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -421,7 +421,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ovoid, modifier) schedule(static)
+#pragma omp parallel for default(none) shared(modifier) schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -462,7 +462,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       void *buf2 = dt_alloc_align(16, buf2size * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf2, buf, modifier, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(buf2, buf, modifier) schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -525,7 +525,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
@@ -613,7 +613,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, d, modifier) schedule(static)
+#pragma omp parallel for default(none) shared(tmpbuf, d, modifier) schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -649,7 +649,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, modifier, d) schedule(static)
+#pragma omp parallel for default(none) shared(tmpbuf, modifier, d) schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -688,7 +688,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, modifier, d) schedule(static)
+#pragma omp parallel for default(none) shared(tmpbuf, modifier, d) schedule(static)
 #endif
       for(int y = 0; y < roi_in->height; y++)
       {
@@ -722,7 +722,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, roi_in, tmpbuf, d, modifier) schedule(static)
+#pragma omp parallel for default(none) shared(tmpbuf, d, modifier) schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
