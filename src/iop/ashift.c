@@ -272,6 +272,7 @@ typedef struct dt_iop_ashift_gui_data_t
   int show_guides;
   int isselecting;
   int isdeselecting;
+  int selecting_lines_version;
   float rotation_range;
   float lensshift_v_range;
   float lensshift_h_range;
@@ -296,6 +297,7 @@ typedef struct dt_iop_ashift_gui_data_t
   int buf_x_off;
   int buf_y_off;
   float buf_scale;
+  uint64_t lines_hash;
   uint64_t grid_hash;
   uint64_t buf_hash;
   dt_iop_ashift_fitaxis_t lastfit;
@@ -2195,6 +2197,55 @@ static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx
   }
 }
 
+// generate hash value for lines taking into account only the end point coordinates
+static uint64_t get_lines_hash(const dt_iop_ashift_line_t *lines, const int lines_count)
+{
+  uint64_t hash = 5381;
+  for(int n = 0; n < lines_count; n++)
+  {
+    float v[4] = { lines[n].p1[0], lines[n].p1[1], lines[n].p2[0], lines[n].p2[1] };
+
+    for(int i = 0; i < 4; i++)
+      hash = ((hash << 5) + hash) ^ ((uint32_t *)v)[i];
+  }
+  return hash;
+}
+
+// update color information in points_idx if lines have changed in terms of type (but not in terms
+// of number or position)
+static int update_colors(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *lines, const int lines_count,
+                         dt_iop_ashift_points_idx_t *points_idx, int points_lines_count)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  // is the display flipped relative to the original image?
+  const int isflipped = g->isflipped;
+
+  // sanity check
+  if(points_lines_count != lines_count) return FALSE;
+
+  // go through all lines
+  for(int n = 0; n < points_lines_count; n++)
+  {
+    const dt_iop_ashift_linetype_t type = lines[n].type;
+
+    // set line color according to line type/orientation
+    // note: if the screen display is flipped versus the original image we need
+    // to respect that fact in the color selection
+    if((type & ASHIFT_LINE_MASK) == ASHIFT_LINE_VERTICAL_SELECTED)
+      points_idx[n].color = isflipped ? ASHIFT_LINECOLOR_BLUE : ASHIFT_LINECOLOR_GREEN;
+    else if((type & ASHIFT_LINE_MASK) == ASHIFT_LINE_VERTICAL_NOT_SELECTED)
+      points_idx[n].color = isflipped ? ASHIFT_LINECOLOR_YELLOW : ASHIFT_LINECOLOR_RED;
+    else if((type & ASHIFT_LINE_MASK) == ASHIFT_LINE_HORIZONTAL_SELECTED)
+      points_idx[n].color = isflipped ? ASHIFT_LINECOLOR_GREEN : ASHIFT_LINECOLOR_BLUE;
+    else if((type & ASHIFT_LINE_MASK) == ASHIFT_LINE_HORIZONTAL_NOT_SELECTED)
+      points_idx[n].color = isflipped ? ASHIFT_LINECOLOR_RED : ASHIFT_LINECOLOR_YELLOW;
+    else
+      points_idx[n].color = ASHIFT_LINECOLOR_GREY;
+  }
+
+  return TRUE;
+}
 
 // get all the points to display lines in the gui
 static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *lines, const int lines_count,
@@ -2359,12 +2410,16 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // no structural data or visibility switched off? -> nothing to do
   if(g->lines == NULL || g->lines_suppressed || !gui_has_focus(self)) return;
 
-  // points data are missing or outdated, or distortion has changed? -> generate points
+  // get hash value that changes if distortions from here to the end of the pixelpipe changed
   uint64_t hash = dt_dev_hash_distort(dev);
+  // get hash value that changes if coordinates of lines have changed
+  uint64_t lines_hash = get_lines_hash(g->lines, g->lines_count);
 
-  if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash || g->lines_version > g->points_version)
+  // points data are missing or outdated, or distortion has changed?
+  if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash ||
+    (g->lines_version > g->points_version && g->lines_hash != lines_hash))
   {
-    // we need to reprocess points;
+    // we need to reprocess points
     free(g->points);
     g->points = NULL;
     free(g->points_idx);
@@ -2377,6 +2432,15 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     g->points_version = g->lines_version;
     g->grid_hash = hash;
+    g->lines_hash = lines_hash;
+  }
+  else if(g->lines_hash == lines_hash)
+  {
+    // coordinates of lines are unchanged -> we only need to update colors
+    if(!update_colors(self, g->lines, g->lines_count, g->points_idx, g->points_lines_count))
+      return;
+
+    g->points_version = g->lines_version;
   }
 
   // a final check
@@ -2456,7 +2520,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   // if we are in sweeping mode iterate over lines as we move the pointer and change "selected" state.
   if(g->isdeselecting || g->isselecting)
   {
-    for(int n = 0; n < g->points_lines_count; n++)
+    for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
     {
       if(g->points_idx[n].near == 0)
         continue;
@@ -2471,7 +2535,10 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   }
 
   if(handled)
+  {
     g->lines_version++;
+    g->selecting_lines_version++;
+  }
 
   dt_control_queue_redraw_center();
 
@@ -2497,9 +2564,13 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   // if we are zoomed out (no panning possible) and we have lines to display we take control
   int take_control = (cur_scale == min_scale) && (g->points_lines_count > 0);
 
+  // remember lines version at this stage so we can continuously monitor if the
+  // lines have changed in-between
+  g->selecting_lines_version = g->lines_version;
+
   // iterate over all lines close to the pointer and change "selected" state.
   // left-click selects and right-click deselects the line
-  for(int n = 0; n < g->points_lines_count; n++)
+  for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
   {
     if(g->points_idx[n].near == 0)
       continue;
@@ -2527,7 +2598,10 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   }
 
   if(handled)
+  {
     g->lines_version++;
+    g->selecting_lines_version++;
+  }
 
   return (take_control || handled);
 }
@@ -2996,6 +3070,7 @@ void reload_defaults(dt_iop_module_t *module)
     g->horizontal_count = 0;
     g->vertical_count = 0;
     g->grid_hash = 0;
+    g->lines_hash = 0;
     g->rotation_range = ROTATION_RANGE;
     g->lensshift_v_range = LENSSHIFT_RANGE;
     g->lensshift_h_range = LENSSHIFT_RANGE;
@@ -3004,6 +3079,7 @@ void reload_defaults(dt_iop_module_t *module)
     g->show_guides = 0;
     g->isselecting = 0;
     g->isdeselecting = 0;
+    g->selecting_lines_version = 0;
 
     free(g->points);
     g->points = NULL;
@@ -3154,12 +3230,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->points_lines_count = 0;
   g->points_version = 0;
   g->grid_hash = 0;
+  g->lines_hash = 0;
   g->rotation_range = ROTATION_RANGE;
   g->lensshift_v_range = LENSSHIFT_RANGE;
   g->lensshift_h_range = LENSSHIFT_RANGE;
   g->show_guides = 0;
   g->isselecting = 0;
   g->isdeselecting = 0;
+  g->selecting_lines_version = 0;
   range_adjust(p, g);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -3319,7 +3397,7 @@ void gui_init(struct dt_iop_module_t *self)
                                               "ctrl-click to only fit rotation\n"
                                               "shift-click to only fit lens shift"), (char *)NULL);
   g_object_set(g->structure, "tooltip-text", _("analyse line structure in image\n"
-                                               "ctrl-click for additional edge enhancement"), (char *)NULL);
+                                               "ctrl-click for an additional edge enhancement"), (char *)NULL);
   g_object_set(g->clean, "tooltip-text", _("remove line structure information"), (char *)NULL);
   g_object_set(g->eye, "tooltip-text", _("toggle visibility of structure lines"), (char *)NULL);
 
