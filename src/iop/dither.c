@@ -347,6 +347,7 @@ void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // copy alpha channel if needed
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+#endif
 
 
 void encrypt_tea(unsigned int *arg)
@@ -413,6 +414,18 @@ void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 }
 
 
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
+
+  if(data->dither_type == DITHER_RANDOM)
+    process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
+  else
+    __builtin_unreachable();
+}
+
+#if defined(__SSE__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
