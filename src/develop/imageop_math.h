@@ -181,13 +181,13 @@ static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int w
 }
 
 /** Calculate the bayer pattern color from the row and column **/
-static inline int FC(const int row, const int col, const unsigned int filters)
+static inline int FC(const size_t row, const size_t col, const unsigned int filters)
 {
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
 /** Calculate the xtrans pattern color from the row and column **/
-static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
+static inline int FCxtrans(const size_t row, const size_t col, const dt_iop_roi_t *const roi,
                            const uint8_t (*const xtrans)[6])
 {
   // add +6 to as offset can be -1 or -2 and need to ensure a
