@@ -1281,16 +1281,16 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 }
 
 void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const in,
-             void *const out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+             void *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // 1. copy the whole image (we'll change only a small part of it)
 
   const int ch = piece->colors;
   assert (ch == 4);
 
-  #ifdef _OPENMP
-  #pragma omp parallel for schedule (static) default (none) shared(in, out, roi_in, roi_out)
-  #endif
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
   for (int i = 0; i < roi_out->height; i++)
   {
     float *destrow = out + (size_t) ch * i * roi_out->width;
