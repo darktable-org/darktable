@@ -48,7 +48,7 @@
 DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
 #if defined(__SSE__)
-typedef __m128(_find_nearest_color)(float *val, const float f, const float rf);
+typedef __m128(_find_nearest_color_sse)(float *val, const float f, const float rf);
 #endif
 
 typedef enum dt_iop_dither_type_t
@@ -129,7 +129,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 #if defined(__SSE__)
 // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
-static __m128 _find_nearest_color_n_levels_gray(float *val, const float f, const float rf)
+static __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, const float rf)
 {
   __m128 err;
   __m128 new;
@@ -147,7 +147,7 @@ static __m128 _find_nearest_color_n_levels_gray(float *val, const float f, const
 }
 
 // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-static __m128 _find_nearest_color_n_levels_rgb(float *val, const float f, const float rf)
+static __m128 _find_nearest_color_n_levels_rgb_sse(float *val, const float f, const float rf)
 {
   __m128 old = _mm_load_ps(val);
   __m128 tmp = _mm_mul_ps(old, _mm_set1_ps(f));        // old * f
@@ -165,7 +165,7 @@ static __m128 _find_nearest_color_n_levels_rgb(float *val, const float f, const 
 }
 
 
-static inline void _diffuse_error(float *val, const __m128 err, const float factor)
+static inline void _diffuse_error_sse(float *val, const __m128 err, const float factor)
 {
   _mm_store_ps(val,
                _mm_add_ps(_mm_load_ps(val), _mm_mul_ps(err, _mm_set1_ps(factor)))); // *val += err * factor
@@ -183,9 +183,9 @@ static inline float clipnan(const float x)
   return r;
 }
 
-void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                             const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out)
+void process_floyd_steinberg_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -195,36 +195,36 @@ void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const float scale = roi_in->scale / piece->iscale;
   const int l1 = floorf(1.0f + dt_log2f(1.0f / scale));
 
-  _find_nearest_color *nearest_color = NULL;
+  _find_nearest_color_sse *nearest_color = NULL;
   unsigned int levels = 1;
   int bds = (piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
 
   switch(data->dither_type)
   {
     case DITHER_FS1BIT:
-      nearest_color = _find_nearest_color_n_levels_gray;
+      nearest_color = _find_nearest_color_n_levels_gray_sse;
       levels = MAX(2, MIN(bds + 1, 256));
       break;
     case DITHER_FS4BIT_GRAY:
-      nearest_color = _find_nearest_color_n_levels_gray;
+      nearest_color = _find_nearest_color_n_levels_gray_sse;
       levels = MAX(16, MIN(15 * bds + 1, 256));
       break;
     case DITHER_FS8BIT:
-      nearest_color = _find_nearest_color_n_levels_rgb;
+      nearest_color = _find_nearest_color_n_levels_rgb_sse;
       levels = 256;
       break;
     case DITHER_FS16BIT:
-      nearest_color = _find_nearest_color_n_levels_rgb;
+      nearest_color = _find_nearest_color_n_levels_rgb_sse;
       levels = 65536;
       break;
     case DITHER_FSAUTO:
       switch(piece->pipe->levels & IMAGEIO_CHANNEL_MASK)
       {
         case IMAGEIO_RGB:
-          nearest_color = _find_nearest_color_n_levels_rgb;
+          nearest_color = _find_nearest_color_n_levels_rgb_sse;
           break;
         case IMAGEIO_GRAY:
-          nearest_color = _find_nearest_color_n_levels_gray;
+          nearest_color = _find_nearest_color_n_levels_gray_sse;
           break;
       }
 
@@ -302,25 +302,25 @@ void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
     // first column
     err = nearest_color(out, f, rf);
-    _diffuse_error(out + ch, err, 7.0f / 16.0f);
-    _diffuse_error(out + ch * width, err, 5.0f / 16.0f);
-    _diffuse_error(out + ch * (width + 1), err, 1.0f / 16.0f);
+    _diffuse_error_sse(out + ch, err, 7.0f / 16.0f);
+    _diffuse_error_sse(out + ch * width, err, 5.0f / 16.0f);
+    _diffuse_error_sse(out + ch * (width + 1), err, 1.0f / 16.0f);
 
 
     // main part of image
     for(int i = 1; i < width - 1; i++)
     {
       err = nearest_color(out + ch * i, f, rf);
-      _diffuse_error(out + ch * (i + 1), err, 7.0f / 16.0f);
-      _diffuse_error(out + ch * (i - 1) + ch * width, err, 3.0f / 16.0f);
-      _diffuse_error(out + ch * i + ch * width, err, 5.0f / 16.0f);
-      _diffuse_error(out + ch * (i + 1) + ch * width, err, 1.0f / 16.0f);
+      _diffuse_error_sse(out + ch * (i + 1), err, 7.0f / 16.0f);
+      _diffuse_error_sse(out + ch * (i - 1) + ch * width, err, 3.0f / 16.0f);
+      _diffuse_error_sse(out + ch * i + ch * width, err, 5.0f / 16.0f);
+      _diffuse_error_sse(out + ch * (i + 1) + ch * width, err, 1.0f / 16.0f);
     }
 
     // last column
     err = nearest_color(out + ch * (width - 1), f, rf);
-    _diffuse_error(out + ch * (width - 2) + ch * width, err, 3.0f / 16.0f);
-    _diffuse_error(out + ch * (width - 1) + ch * width, err, 5.0f / 16.0f);
+    _diffuse_error_sse(out + ch * (width - 2) + ch * width, err, 3.0f / 16.0f);
+    _diffuse_error_sse(out + ch * (width - 1) + ch * width, err, 5.0f / 16.0f);
   }
 
   // last row
@@ -330,13 +330,13 @@ void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
     // lower left pixel
     err = nearest_color(out, f, rf);
-    _diffuse_error(out + ch, err, 7.0f / 16.0f);
+    _diffuse_error_sse(out + ch, err, 7.0f / 16.0f);
 
     // main part of last row
     for(int i = 1; i < width - 1; i++)
     {
       err = nearest_color(out + ch * i, f, rf);
-      _diffuse_error(out + ch * (i + 1), err, 7.0f / 16.0f);
+      _diffuse_error_sse(out + ch * (i + 1), err, 7.0f / 16.0f);
     }
 
     // lower right pixel
@@ -434,7 +434,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   if(data->dither_type == DITHER_RANDOM)
     process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
-    process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_floyd_steinberg_sse(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 #endif
 
