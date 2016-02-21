@@ -551,12 +551,14 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
       }
 
+  // extra passes propagates out errors at edges, hence need more padding
+  const int pad_tile = (passes == 1) ? 12 : 17;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out) schedule(dynamic)
 #endif
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border
-  for(int top = -11; top < height - 11; top += TS - 22)
+  for(int top = -pad_tile; top < height - pad_tile; top += TS - (pad_tile*2))
   {
     char *const buffer = all_buffers + dt_get_thread_num() * buffer_size;
     // rgb points to ndir TSxTS tiles of 3 channels (R, G, and B)
@@ -577,10 +579,10 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
     uint8_t (*const homosum)[TS][TS] = (uint8_t(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float)
                                                             + TS * TS * ndir * sizeof(uint8_t));
 
-    for(int left = -11; left < width - 11; left += TS - 22)
+    for(int left = -pad_tile; left < width - pad_tile; left += TS - (pad_tile*2))
     {
-      int mrow = MIN(top + TS, height + 11);
-      int mcol = MIN(left + TS, width + 11);
+      int mrow = MIN(top + TS, height + pad_tile);
+      int mcol = MIN(left + TS, width + pad_tile);
 
       // Copy current tile from in to image buffer. If border goes
       // beyond edges of image, fill with mirrored/interpolated edges.
@@ -597,7 +599,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row + yoff + 18, col + xoff + 18, NULL, xtrans);
+            const int c = FCxtrans(row + yoff + 24, col + xoff + 24, NULL, xtrans);
             for(int cc = 0; cc < 3; cc++)
               if(cc != c)
                 pix[cc] = 0.0f;
@@ -642,17 +644,18 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       // and g3 values to the min/max of green pixels surrounding the
       // pair. Use a 3 pixel border as gmin/gmax is used by
       // interpolate green which has a 3 pixel border.
-      for(int row = top + 3; row < mrow - 3; row++)
+      const int pad_g1_g3 = 3;
+      for(int row = top + pad_g1_g3; row < mrow - pad_g1_g3; row++)
       {
         // setting max to 0.0f signifies that this is a new pair, which
         // requires a new min/max calculation of its neighboring greens
         float min = FLT_MAX, max = 0.0f;
-        for(int col = left + 3; col < mcol - 3; col++)
+        for(int col = left + pad_g1_g3; col < mcol - pad_g1_g3; col++)
         {
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
           // between each pair
-          if(FCxtrans(yoff + row + 12, xoff + col + 12, NULL, xtrans) == 1)
+          if(FCxtrans(yoff + row + 18, xoff + col + 18, NULL, xtrans) == 1)
           {
             min = FLT_MAX, max = 0.0f;
             continue;
@@ -665,7 +668,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           if(max == 0.0f)
           {
             float (*const pix)[3] = &rgb[0][row - top][col - left];
-            const short *const hex = allhex[(row + 12) % 3][(col + 12) % 3];
+            const short *const hex = allhex[(row + 18) % 3][(col + 18) % 3];
             for(int c = 0; c < 6; c++)
             {
               const float val = pix[hex[c]][1];
@@ -693,14 +696,15 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Interpolate green horizontally, vertically, and along both diagonals: */
       // need a 3 pixel border here as 3*hex[] can have a 3 unit offset
-      for(int row = top + 3; row < mrow - 3; row++)
-        for(int col = left + 3; col < mcol - 3; col++)
+      const int pad_g_interp = 3;
+      for(int row = top + pad_g_interp; row < mrow - pad_g_interp; row++)
+        for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
-          int f = FCxtrans(row + yoff + 12, col + xoff + 12, NULL, xtrans);
+          int f = FCxtrans(row + yoff + 18, col + xoff + 18, NULL, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
-          short *hex = allhex[(row + 9) % 3][(col + 9) % 3];
+          short *hex = allhex[(row + 15) % 3][(col + 15) % 3];
           // TODO: these constants come from integer math constants in
           // dcraw -- calculate them instead from interpolation math
           color[0] = 0.6796875f * (pix[hex[1]][1] + pix[hex[0]][1])
@@ -727,12 +731,14 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
         /* Recalculate green from interpolated values of closer pixels: */
         if(pass)
-          for(int row = top + 5; row < mrow - 5; row++)
-            for(int col = left + 5; col < mcol - 5; col++)
+        {
+          const int pad_g_recalc = 6;
+          for(int row = top + pad_g_recalc; row < mrow - pad_g_recalc; row++)
+            for(int col = left + pad_g_recalc; col < mcol - pad_g_recalc; col++)
             {
-              int f = FCxtrans(row + yoff + 12, col + xoff + 12, NULL, xtrans);
+              int f = FCxtrans(row + yoff + 18, col + xoff + 18, NULL, xtrans);
               if(f == 1) continue;
-              short *hex = allhex[(row + 12) % 3][(col + 12) % 3];
+              short *hex = allhex[(row + 18) % 3][(col + 18) % 3];
               for(int d = 3; d < 6; d++)
               {
                 float(*rfx)[3] = &rgb[(d - 2) ^ !((row - sgrow) % 3)][row - top][col - left];
@@ -741,13 +747,15 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 rfx[0][1] = CLAMPS(val / 3.0f, gmin[row - top][col - left], gmax[row - top][col - left]);
               }
             }
+        }
 
         /* Interpolate red and blue values for solitary green pixels:   */
-        for(int row = (top - sgrow + 7) / 3 * 3 + sgrow; row < mrow - 5; row += 3)
-          for(int col = (left - sgcol + 7) / 3 * 3 + sgcol; col < mcol - 5; col += 3)
+        const int pad_rb_g = (passes == 1) ? 6 : 5;
+        for(int row = (top - sgrow + pad_rb_g + 2) / 3 * 3 + sgrow; row < mrow - pad_rb_g; row += 3)
+          for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
-            int h = FCxtrans(row + yoff + 12, col + xoff + 13, NULL, xtrans);
+            int h = FCxtrans(row + yoff + 18, col + xoff + 19, NULL, xtrans);
             float diff[6] = { 0.0f };
             float color[3][8];
             for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
@@ -772,10 +780,11 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
 
         /* Interpolate red for blue pixels and vice versa:              */
-        for(int row = top + 6; row < mrow - 6; row++)
-          for(int col = left + 6; col < mcol - 6; col++)
+        const int pad_rb_br = (passes == 1) ? 6 : 5;
+        for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
+          for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
           {
-            int f = 2 - FCxtrans(row + yoff + 12, col + xoff + 12, NULL, xtrans);
+            int f = 2 - FCxtrans(row + yoff + 18, col + xoff + 18, NULL, xtrans);
             if(f == 1) continue;
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int c = (row - sgrow) % 3 ? TS : 1;
@@ -790,13 +799,14 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
 
         /* Fill in red and blue for 2x2 blocks of green:                */
-        for(int row = top + 5; row < mrow - 5; row++)
+        const int pad_g22 = (passes == 1) ? 8 : 4;
+        for(int row = top + pad_g22; row < mrow - pad_g22; row++)
           if((row - sgrow) % 3)
-            for(int col = left + 5; col < mcol - 5; col++)
+            for(int col = left + pad_g22; col < mcol - pad_g22; col++)
               if((col - sgcol) % 3)
               {
                 float(*rfx)[3] = &rgb[0][row - top][col - left];
-                short *hex = allhex[(row + 12) % 3][(col + 12) % 3];
+                short *hex = allhex[(row + 18) % 3][(col + 18) % 3];
                 for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
                   if(hex[d] + hex[d + 1])
                   {
@@ -830,8 +840,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       // camera RGB is roughly linear.
       for(int d = 0; d < ndir; d++)
       {
-        for(int row = 7; row < mrow - 7; row++)
-          for(int col = 7; col < mcol - 7; col++)
+        const int pad_yuv = (passes == 1) ? 8 : 13;
+        for(int row = pad_yuv; row < mrow - pad_yuv; row++)
+          for(int col = pad_yuv; col < mcol - pad_yuv; col++)
           {
             float *rx = rgb[d][row][col];
             // use ITU-R BT.2020 YPbPr, which is great, but could use
@@ -844,8 +855,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
           }
         const int f = dir[d & 3];
-        for(int row = 8; row < mrow - 8; row++)
-          for(int col = 8; col < mcol - 8; col++)
+        const int pad_drv = (passes == 1) ? 9 : 14;
+        for(int row = pad_drv; row < mrow - pad_drv; row++)
+          for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
             float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
             drv[d][row][col] = SQR(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
@@ -856,8 +868,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Build homogeneity maps from the derivatives:                   */
       memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
-      for(int row = 9; row < mrow - 9; row++)
-        for(int col = 9; col < mcol - 9; col++)
+      const int pad_homo = (passes == 1) ? 10 : 15;
+      for(int row = pad_homo; row < mrow - pad_homo; row++)
+        for(int col = pad_homo; col < mcol - pad_homo; col++)
         {
           float tr = FLT_MAX;
           for(int d = 0; d < ndir; d++)
@@ -870,15 +883,15 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Build 5x5 sum of homogeneity maps for each pixel & direction */
       for(int d = 0; d < ndir; d++)
-        for(int row = 11; row < mrow - 11; row++)
+        for(int row = pad_tile; row < mrow - pad_tile; row++)
         {
           // start before first column where homo[d][row][col+2] != 0,
           // so can know v5sum and homosum[d][row][col] will be 0
-          int col = 6;
+          int col = pad_tile-5;
           uint8_t v5sum[5] = { 0 };
           homosum[d][row][col] = 0;
           // calculate by rolling through column sums
-          for(col++; col < mcol - 11; col++)
+          for(col++; col < mcol - pad_tile; col++)
           {
             uint8_t colsum = 0;
             for(int v = -2; v <= 2; v++) colsum += homo[d][row + v][col + 2];
@@ -888,8 +901,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         }
 
       /* Average the most homogenous pixels for the final result:       */
-      for(int row = 11; row < mrow - 11; row++)
-        for(int col = 11; col < mcol - 11; col++)
+      for(int row = pad_tile; row < mrow - pad_tile; row++)
+        for(int col = pad_tile; col < mcol - pad_tile; col++)
         {
           uint8_t hm[8] = { 0 };
           uint8_t maxval = 0;
