@@ -1176,12 +1176,6 @@ void modify_roi_in (struct dt_iop_module_t *module,
 
   distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
 
-  cairo_rectangle_int_t pipe_rect = {
-    0,
-    0,
-    piece->pipe->iwidth  * piece->pipe->iscale,
-    piece->pipe->iheight * piece->pipe->iscale
-  };
   cairo_rectangle_int_t roi_in_rect = {
     roi_in->x,
     roi_in->y,
@@ -1197,8 +1191,6 @@ void modify_roi_in (struct dt_iop_module_t *module,
 
   // (eventually) extend roi_in
   cairo_region_union_rectangle (roi_in_region, &extent);
-  // and clamp to pipe extent
-  cairo_region_intersect_rectangle (roi_in_region, &pipe_rect);
 
   // write new extent to roi_in
   cairo_region_get_extents (roi_in_region, &roi_in_rect);
@@ -1299,14 +1291,15 @@ void process (struct dt_iop_module_t *module,
   assert (ch == 4);
 
   #ifdef _OPENMP
-  #pragma omp parallel for schedule (static) default (shared)
+  #pragma omp parallel for schedule (static) default (none) shared(in, out, roi_in, roi_out)
   #endif
   for (int i = 0; i < roi_out->height; i++)
   {
     float *destrow = out + (size_t) ch * i * roi_out->width;
     const float *srcrow = in + (size_t) ch * (roi_in->width * (i + roi_out->y - roi_in->y) +
                                               roi_out->x - roi_in->x);
-    memcpy (destrow, srcrow, sizeof (float) * ch * roi_out->width);
+    for (int j=0; j < ch * roi_out->width; j++)
+      destrow[j] = srcrow[j];
   }
 
   // 2. build the distortion map
@@ -2579,7 +2572,7 @@ void gui_post_expose (struct dt_iop_module_t *module,
 
   // distort all points
   dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
-  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, module->priority + 1, 9999999 };
+  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, 0, 9999999 };
   _distort_paths (&d_params, &copy_params);
   dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
 
