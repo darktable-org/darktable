@@ -59,6 +59,8 @@ static void _lib_filter_compare_button_changed(GtkDarktableToggleButton *widget,
 static void _lib_filter_update_query(dt_lib_module_t *self);
 /* make sure that the comparator button matches what is shown in the filter dropdown */
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self);
+/* go through possible comparators when scrolling the button */
+static gboolean _comparator_scolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 
 
 const char *name(dt_lib_module_t *self)
@@ -111,6 +113,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(_lib_filter_compare_button_changed),
                    (gpointer)self);
+  gtk_widget_add_events(widget, GDK_SCROLL_MASK);
+  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(_comparator_scolled), self);
 
   /* create the filter combobox */
   d->filter = widget = gtk_combo_box_text_new();
@@ -274,12 +278,12 @@ static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget,
   _lib_filter_update_query(user_data);
 }
 
-static void _lib_filter_compare_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+static void _change_comparator(GtkWidget *widget, gpointer user_data, int change)
 {
   g_signal_handlers_block_by_func(widget, _lib_filter_compare_button_changed, user_data);
 
   dt_collection_rating_comperator_t comparator = dt_collection_get_rating_comparator(darktable.collection);
-  comparator = (comparator + 1) % DT_COLLECTION_RATING_N_COMPS;
+  comparator = ((comparator + DT_COLLECTION_RATING_N_COMPS + change) % DT_COLLECTION_RATING_N_COMPS);
   dt_collection_set_rating_comparator(darktable.collection, comparator);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
@@ -288,6 +292,26 @@ static void _lib_filter_compare_button_changed(GtkDarktableToggleButton *widget,
   g_signal_handlers_unblock_by_func(widget, _lib_filter_compare_button_changed, user_data);
 
   _lib_filter_update_query(user_data);
+}
+
+static void _lib_filter_compare_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+{
+  _change_comparator(GTK_WIDGET(widget), user_data, 1);
+}
+
+static gboolean _comparator_scolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  if(event->direction == 0)
+  {
+    // scrollled up
+    _change_comparator(GTK_WIDGET(widget), user_data, -1);
+  }
+  else
+  {
+    // scrolled down
+    _change_comparator(GTK_WIDGET(widget), user_data, 1);
+  }
+  return TRUE;
 }
 
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data)
@@ -342,6 +366,7 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
     gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), 0);
   }
 }
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
