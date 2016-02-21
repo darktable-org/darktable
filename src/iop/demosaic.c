@@ -590,12 +590,13 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       // and g3 values to the min/max of green pixels surrounding the
       // pair. Use a 3 pixel border as gmin/gmax is used by
       // interpolate green which has a 3 pixel border.
-      for(int row = top + 3; row < mrow - 3; row++)
+      const int pad_g1_g3 = 3;
+      for(int row = top + pad_g1_g3; row < mrow - pad_g1_g3; row++)
       {
         // setting max to 0.0f signifies that this is a new pair, which
         // requires a new min/max calculation of its neighboring greens
         float min = FLT_MAX, max = 0.0f;
-        for(int col = left + 3; col < mcol - 3; col++)
+        for(int col = left + pad_g1_g3; col < mcol - pad_g1_g3; col++)
         {
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
@@ -641,8 +642,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Interpolate green horizontally, vertically, and along both diagonals: */
       // need a 3 pixel border here as 3*hex[] can have a 3 unit offset
-      for(int row = top + 3; row < mrow - 3; row++)
-        for(int col = left + 3; col < mcol - 3; col++)
+      const int pad_g_interp = 3;
+      for(int row = top + pad_g_interp; row < mrow - pad_g_interp; row++)
+        for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
           int f = FCxtrans(row + yoff + 18, col + xoff + 18, xtrans);
@@ -676,9 +678,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         /* Recalculate green from interpolated values of closer pixels: */
         if(pass)
         {
-          const int pad_g = 6;
-          for(int row = top + pad_g; row < mrow - pad_g; row++)
-            for(int col = left + pad_g; col < mcol - pad_g; col++)
+          const int pad_g_recalc = 6;
+          for(int row = top + pad_g_recalc; row < mrow - pad_g_recalc; row++)
+            for(int col = left + pad_g_recalc; col < mcol - pad_g_recalc; col++)
             {
               int f = FCxtrans(row + yoff + 18, col + xoff + 18, xtrans);
               if(f == 1) continue;
