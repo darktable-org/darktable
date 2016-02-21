@@ -143,6 +143,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("id"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("color label"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("group"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("full path"));
 
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_collection_get_sort_field(darktable.collection));

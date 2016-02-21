@@ -64,7 +64,8 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_RATING,
   DT_COLLECTION_SORT_ID,
   DT_COLLECTION_SORT_COLOR,
-  DT_COLLECTION_SORT_GROUP
+  DT_COLLECTION_SORT_GROUP,
+  DT_COLLECTION_SORT_PATH
 } dt_collection_sort_t;
 
 typedef enum dt_collection_properties_t
