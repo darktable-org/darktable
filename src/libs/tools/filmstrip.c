@@ -788,7 +788,7 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
   dt_control_queue_redraw_widget(self->widget);
 }
 
-int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)
+static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
   return strip->activated_image;
