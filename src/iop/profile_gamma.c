@@ -25,6 +25,7 @@
 #include "develop/imageop_math.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -88,7 +89,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_profilegamma_data_t *d = (dt_iop_profilegamma_data_t *)piece->data;
   dt_iop_profilegamma_global_data_t *gd = (dt_iop_profilegamma_global_data_t *)self->data;
@@ -134,15 +135,15 @@ error:
 }
 #endif
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_profilegamma_data_t *data = (dt_iop_profilegamma_data_t *)piece->data;
 
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data) schedule(static)
+#pragma omp parallel for default(none) shared(data) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {

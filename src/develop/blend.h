@@ -367,8 +367,9 @@ typedef struct dt_iop_gui_blend_data_t
 void dt_develop_blend_init(dt_blendop_t *gd);
 
 /** apply blend */
-void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i,
-                              void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                              const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                              const struct dt_iop_roi_t *const roi_out);
 
 /** get blend version */
 int dt_develop_blend_version(void);

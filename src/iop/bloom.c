@@ -27,6 +27,7 @@
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -107,8 +108,8 @@ void connect_key_accels(dt_iop_module_t *self)
 #define GAUSS(a, b, c, x) (a * pow(2.718281828, (-pow((x - b), 2) / (pow(c, 2)))))
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_bloom_data_t *data = (dt_iop_bloom_data_t *)piece->data;
   float *in = (float *)ivoid;
@@ -127,8 +128,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 /* get the thresholded lights into buffer */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in, data,                           \
-                                              blurlightness) schedule(static)
+#pragma omp parallel for default(none) shared(data, blurlightness) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -147,7 +147,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(blurlightness, roi_out) schedule(static)
+#pragma omp parallel for default(none) shared(blurlightness) schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -179,7 +179,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     const int opoffs = -(hr + 1) * roi_out->width;
     const int npoffs = (hr)*roi_out->width;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(blurlightness, roi_out) schedule(static)
+#pragma omp parallel for default(none) shared(blurlightness) schedule(static)
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
@@ -212,7 +212,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 /* screen blend lightness with original */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, data, blurlightness) schedule(static)
+#pragma omp parallel for default(none) shared(in, out, data, blurlightness) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -240,7 +240,7 @@ static int bucket_next(unsigned int *state, unsigned int max)
 }
 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
   const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)self->data;

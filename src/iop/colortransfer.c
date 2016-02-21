@@ -19,12 +19,13 @@
 #include "config.h"
 #endif
 #include "common/colorspaces.h"
+#include "common/points.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "common/points.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -230,7 +231,7 @@ static int get_cluster(const float *col, const int n, float mean[n][2])
   return cluster;
 }
 
-static void kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n][2],
+static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n, float mean_out[n][2],
                    float var_out[n][2])
 {
   // TODO: check params here:
@@ -253,7 +254,7 @@ static void kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(roi, col, var, mean, mean_out, cnt)
+#pragma omp parallel for default(none) schedule(static) shared(col, var, mean, mean_out, cnt)
 #endif
     for(int s = 0; s < samples; s++)
     {
@@ -310,8 +311,8 @@ static void kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // FIXME: this returns nan!!
   dt_iop_colortransfer_data_t *data = (dt_iop_colortransfer_data_t *)piece->data;
@@ -346,7 +347,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     int hist[HISTN];
     capture_histogram(in, roi_in, hist);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(roi_out, data, in, out, hist)
+#pragma omp parallel for default(none) schedule(static) shared(data, in, out, hist)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -370,7 +371,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // for all pixels: find input cluster, transfer to mapped target cluster
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(roi_out, data, mean, var, mapio, in, out)
+#pragma omp parallel for default(none) schedule(static) shared(data, mean, var, mapio, in, out)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {

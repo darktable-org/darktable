@@ -20,19 +20,21 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <complex.h>
-#include <assert.h>
 #include "bauhaus/bauhaus.h"
-#include "develop/imageop.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/imageop.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
+#include <assert.h>
 #include <cairo.h>
+#include <complex.h>
+#include <math.h>
+#include <stdlib.h>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -1278,12 +1280,8 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   return _distort_xtransform(self, piece, points, points_count, FALSE);
 }
 
-void process (struct dt_iop_module_t *module,
-              dt_dev_pixelpipe_iop_t *piece,
-              const float *in,
-              float *out,
-              const dt_iop_roi_t *roi_in,
-              const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const in,
+             void *const out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // 1. copy the whole image (we'll change only a small part of it)
 

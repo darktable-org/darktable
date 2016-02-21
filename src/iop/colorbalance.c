@@ -23,12 +23,13 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "config.h"
 #endif
 // our includes go first:
-#include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
-#include "dtgtk/drawingarea.h"
-#include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "develop/imageop.h"
+#include "dtgtk/drawingarea.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -95,8 +96,8 @@ int groups()
 }
 
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   const int ch = piece->colors;
@@ -135,7 +136,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   };
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(i, o, roi_in, roi_out)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -183,7 +184,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)self->data;

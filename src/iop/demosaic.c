@@ -29,6 +29,7 @@
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <memory.h>
 #include <stdlib.h>
@@ -1208,9 +1209,6 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
 static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in)
 {
-  roi_out->x = 0;
-  roi_out->y = 0;
-
   // we never want to access the input out of bounds though:
   assert(roi_in->width >= roi_out->width);
   assert(roi_in->height >= roi_out->height);
@@ -1232,12 +1230,9 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
 }
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
-static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
-                         const int filters, const float thrs)
+static void demosaic_ppg(float *const out, const float *const in, const dt_iop_roi_t *const roi_out,
+                         const dt_iop_roi_t *const roi_in, const int filters, const float thrs)
 {
-  // snap to start of mosaic block:
-  roi_out->x = 0; // MAX(0, roi_out->x & ~1);
-  roi_out->y = 0; // MAX(0, roi_out->y & ~1);
   // offsets only where the buffer ends:
   const int offx = 3; // MAX(0, 3 - roi_out->x);
   const int offy = 3; // MAX(0, 3 - roi_out->y);
@@ -1279,20 +1274,21 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
     }
   const int median = thrs > 0.0f;
   // if(median) fbdd_green(out, in, roi_out, roi_in, filters);
+  const float *input = in;
   if(median)
   {
     float *med_in = (float *)dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
     pre_median(med_in, in, roi_in, filters, 1, thrs);
-    in = med_in;
+    input = med_in;
   }
 // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_in, roi_out, in, out) schedule(static)
+#pragma omp parallel for default(none) shared(input) schedule(static)
 #endif
   for(int j = offy; j < roi_out->height - offY; j++)
   {
     float *buf = out + (size_t)4 * roi_out->width * j + 4 * offx;
-    const float *buf_in = in + (size_t)roi_in->width * (j + roi_out->y) + offx + roi_out->x;
+    const float *buf_in = input + (size_t)roi_in->width * (j + roi_out->y) + offx + roi_out->x;
     for(int i = offx; i < roi_out->width - offX; i++)
     {
       const int c = FC(j, i, filters);
@@ -1367,7 +1363,7 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
 
 // for all pixels: interpolate colors into float array
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_in, roi_out, out) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = 1; j < roi_out->height - 1; j++)
   {
@@ -1452,9 +1448,18 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
     }
   }
   // _mm_sfence();
-  if(median) dt_free_align((float *)in);
+  if(median) dt_free_align((float *)input);
 }
 
+void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
+{
+  *roi_out = *roi_in;
+
+  // snap to start of mosaic block:
+  roi_out->x = 0; // MAX(0, roi_out->x & ~1);
+  roi_out->y = 0; // MAX(0, roi_out->y & ~1);
+}
 
 // which roi input is needed to process to this output?
 // roi_out is unchanged, full buffer in is full buffer out.
@@ -1527,8 +1532,8 @@ static int get_thumb_quality(int width, int height)
   return res;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_image_t *img = &self->dev->image_storage;
   const float threshold = 0.0001f * img->exif_iso;
@@ -1744,9 +1749,8 @@ blocksizeopt(const int devid, const int kernel, int *blocksizex, int *blocksizey
 }
 
 // color smoothing step by multiple passes of median filtering
-static int
-color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                   cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_out)
+static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+                              cl_mem dev_out, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
@@ -1825,9 +1829,9 @@ error:
   return FALSE;
 }
 
-static int
-process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-           const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+                              cl_mem dev_out, const dt_iop_roi_t *const roi_in,
+                              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
@@ -2029,9 +2033,8 @@ error:
   return FALSE;
 }
 
-static int
-process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-                const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+                          cl_mem dev_out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
@@ -2455,9 +2458,9 @@ error:
   return FALSE;
 }
 
-static int
-process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-                       const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+                                  cl_mem dev_out, const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
@@ -3217,9 +3220,8 @@ error:
   return FALSE;
 }
 
-int
-process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-           const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   const int demosaicing_method = data->demosaicing_method;

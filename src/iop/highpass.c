@@ -24,13 +24,14 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "control/control.h"
-#include "common/opencl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -128,7 +129,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
   dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->data;
@@ -276,8 +277,8 @@ error:
 #endif
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highpass_data_t *data = (dt_iop_highpass_data_t *)piece->data;
   float *in = (float *)ivoid;
@@ -286,7 +287,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 /* create inverted image and then blur */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, roi_out) schedule(static)
+#pragma omp parallel for default(none) shared(in, out) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     out[ch * k] = 100.0f - LCLIP(in[ch * k]); // only L in Lab space
@@ -363,7 +364,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   const float contrast_scale = ((data->contrast / 100.0) * 7.5);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {

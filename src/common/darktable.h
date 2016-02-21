@@ -81,7 +81,7 @@ typedef unsigned int u_int;
 #include "common/poison.h"
 #endif
 
-#define DT_MODULE_VERSION 13 // version of dt's module interface
+#define DT_MODULE_VERSION 14 // version of dt's module interface
 
 // every module has to define this:
 #ifdef _DEBUG

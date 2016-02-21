@@ -19,20 +19,21 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
+#include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "common/colorspaces.h"
+#include "common/opencl.h"
+#include "common/points.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "control/control.h"
-#include "common/points.h"
-#include "common/opencl.h"
-#include "gui/accelerators.h"
 #include "dtgtk/drawingarea.h"
-#include "gui/gtk.h"
-#include "bauhaus/bauhaus.h"
 #include "dtgtk/resetlabel.h"
-#include "common/bilateral.h"
-#include "common/bilateralcl.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -422,8 +423,8 @@ static void kmeans(const float *col, const int width, const int height, const in
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colormapping_data_t *data = (dt_iop_colormapping_data_t *)piece->data;
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
@@ -545,7 +546,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colormapping_data_t *data = (dt_iop_colormapping_data_t *)piece->data;
   dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)self->data;

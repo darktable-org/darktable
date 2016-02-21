@@ -177,8 +177,9 @@ static int default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe
   return 1;
 }
 
-static void default_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i,
-                            void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
+static void default_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                            const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                            const struct dt_iop_roi_t *const roi_out)
 {
   if(darktable.codepath.OPENMP_SIMD && self->process_plain)
     self->process_plain(self, piece, i, o, roi_in, roi_out);

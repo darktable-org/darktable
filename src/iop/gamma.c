@@ -23,10 +23,11 @@
 #include <assert.h>
 #include <string.h>
 
-#include "develop/develop.h"
 #include "control/control.h"
+#include "develop/develop.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_gamma_params_t)
 
@@ -58,8 +59,8 @@ int flags()
   return IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
   const int ch = piece->colors;
@@ -68,7 +69,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   {
     const float yellow[3] = { 1.0f, 1.0f, 0.0f };
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
+#pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -89,7 +90,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
+#pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {

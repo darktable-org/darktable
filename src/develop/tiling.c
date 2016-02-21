@@ -581,8 +581,9 @@ static int _fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_
 
 /* simple tiling algorithm for roi_in == roi_out, i.e. for pixel to pixel modules/operations */
 static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                        void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in,
-                                        const dt_iop_roi_t *roi_out, const int in_bpp)
+                                        const void *const ivoid, void *const ovoid,
+                                        const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                        const int in_bpp)
 {
   void *input = NULL;
   void *output = NULL;
@@ -749,7 +750,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 
 /* prepare input tile buffer */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input, width, ivoid, ioffs, wd, ht) schedule(static)
+#pragma omp parallel for default(none) shared(input, width, ioffs, wd, ht) schedule(static)
 #endif
       for(size_t j = 0; j < ht; j++)
         memcpy((char *)input + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch, (size_t)wd * in_bpp);
@@ -790,8 +791,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 
 /* copy "good" part of tile to output buffer */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ovoid, ooffs, output, width, origin, region,                   \
-                                              wd) schedule(static)
+#pragma omp parallel for default(none) shared(ooffs, output, width, origin, region, wd) schedule(static)
 #endif
       for(size_t j = 0; j < region[1]; j++)
         memcpy((char *)ovoid + ooffs + j * opitch,
@@ -825,8 +825,9 @@ fallback:
 /* more elaborate tiling algorithm for roi_in != roi_out: slower than the ptp variant,
    more tiles and larger overlap */
 static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                        void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in,
-                                        const dt_iop_roi_t *roi_out, const int in_bpp)
+                                        const void *const ivoid, void *const ovoid,
+                                        const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                        const int in_bpp)
 {
   void *input = NULL;
   void *output = NULL;
@@ -1088,7 +1089,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input, ivoid, ioffs, iroi_full) schedule(static)
+#pragma omp parallel for default(none) shared(input, ioffs, iroi_full) schedule(static)
 #endif
       for(size_t j = 0; j < iroi_full.height; j++)
         memcpy((char *)input + j * iroi_full.width * in_bpp, (char *)ivoid + ioffs + j * ipitch,
@@ -1117,7 +1118,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       const int origin_x = oroi_good.x - oroi_full.x;
       const int origin_y = oroi_good.y - oroi_full.y;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ovoid, ooffs, output, oroi_good, oroi_full) schedule(static)
+#pragma omp parallel for default(none) shared(ooffs, output, oroi_good, oroi_full) schedule(static)
 #endif
       for(size_t j = 0; j < oroi_good.height; j++)
         memcpy((char *)ovoid + ooffs + j * opitch,
@@ -1158,9 +1159,9 @@ fallback:
    _default_process_tiling_roi() takes care of all other cases where image gets distorted and for module
    "clipping",
    "flip" as this may flip or mirror the image. */
-void default_process_tiling(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid,
-                            void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                            const int in_bpp)
+void default_process_tiling(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                            const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                            const dt_iop_roi_t *const roi_out, const int in_bpp)
 {
   if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)) || (self->flags() & IOP_FLAGS_TILING_FULL_ROI))
     _default_process_tiling_roi(self, piece, ivoid, ovoid, roi_in, roi_out, in_bpp);
@@ -1174,8 +1175,9 @@ void default_process_tiling(struct dt_iop_module_t *self, struct dt_dev_pixelpip
 #ifdef HAVE_OPENCL
 /* simple tiling algorithm for roi_in == roi_out, i.e. for pixel to pixel modules/operations */
 static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                          void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in,
-                                          const dt_iop_roi_t *roi_out, const int in_bpp)
+                                          const void *const ivoid, void *const ovoid,
+                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                          const int in_bpp)
 {
   cl_int err = -999;
   cl_mem input = NULL;
@@ -1396,7 +1398,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       {
 /* prepare pinned input tile buffer: copy part of input image */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input_buffer, width, ivoid, ioffs, wd, ht) schedule(static)
+#pragma omp parallel for default(none) shared(input_buffer, width, ioffs, wd, ht) schedule(static)
 #endif
         for(size_t j = 0; j < ht; j++)
           memcpy((char *)input_buffer + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch,
@@ -1521,8 +1523,9 @@ error:
 /* more elaborate tiling algorithm for roi_in != roi_out: slower than the ptp variant,
    more tiles and larger overlap */
 static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                          void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in,
-                                          const dt_iop_roi_t *roi_out, const int in_bpp)
+                                          const void *const ivoid, void *const ovoid,
+                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                          const int in_bpp)
 {
   cl_int err = -999;
   cl_mem input = NULL;
@@ -1847,7 +1850,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       {
 /* prepare pinned input tile buffer: copy part of input image */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input_buffer, width, ivoid, ioffs, iroi_full) schedule(static)
+#pragma omp parallel for default(none) shared(input_buffer, width, ioffs, iroi_full) schedule(static)
 #endif
         for(size_t j = 0; j < iroi_full.height; j++)
           memcpy((char *)input_buffer + j * iroi_full.width * in_bpp, (char *)ivoid + ioffs + j * ipitch,
@@ -1894,7 +1897,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
 
 /* copy "good" part of tile from pinned output buffer to output image */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ovoid, ooffs, output_buffer, oroi_full, oorigin,               \
+#pragma omp parallel for default(none) shared(ooffs, output_buffer, oroi_full, oorigin,                      \
                                               oregion) schedule(static)
 #endif
         for(size_t j = 0; j < oregion[1]; j++)
@@ -1954,9 +1957,9 @@ error:
 /* if a module does not implement process_tiling_cl() by itself, this function is called instead.
    _default_process_tiling_cl_ptp() is able to handle standard cases where pixels do not change their places.
    _default_process_tiling_cl_roi() takes care of all other cases where image gets distorted. */
-int default_process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid,
-                              void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                              const int in_bpp)
+int default_process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                              const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                              const dt_iop_roi_t *const roi_out, const int in_bpp)
 {
   if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)) || (self->flags() & IOP_FLAGS_TILING_FULL_ROI))
     return _default_process_tiling_cl_roi(self, piece, ivoid, ovoid, roi_in, roi_out, in_bpp);

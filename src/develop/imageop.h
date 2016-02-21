@@ -121,6 +121,8 @@ struct dt_iop_module_so_t;
 struct dt_iop_module_t;
 typedef struct dt_iop_module_so_t
 {
+  // !!! MUST BE KEPT IN SYNC WITH src/iop/iop_api.h !!!
+
   /** opened module. */
   GModule *module;
   /** string identifying this operation. */
@@ -198,20 +200,24 @@ typedef struct dt_iop_module_so_t
   int (*legacy_params)(struct dt_iop_module_t *self, const void *const old_params, const int old_version,
                        void *new_params, const int new_version);
 
-  void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                  const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
-  void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                         const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
-                         const int bpp);
-  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                        const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
-  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                       const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
-  int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                    const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
-  int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i,
-                           void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
-                           const int bpp);
+  void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                  void *const o, const struct dt_iop_roi_t *const roi_in,
+                  const struct dt_iop_roi_t *const roi_out);
+  void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                         const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                         const struct dt_iop_roi_t *const roi_out, const int bpp);
+  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                        const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                        const struct dt_iop_roi_t *const roi_out);
+  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                       const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                       const struct dt_iop_roi_t *const roi_out);
+  int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                    void *const o, const struct dt_iop_roi_t *const roi_in,
+                    const struct dt_iop_roi_t *const roi_out);
+  int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                           const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                           const struct dt_iop_roi_t *const roi_out, const int bpp);
 
   int (*distort_transform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points,
                            size_t points_count);
@@ -229,6 +235,8 @@ typedef struct dt_iop_module_so_t
 
 typedef struct dt_iop_module_t
 {
+  // !!! MUST BE KEPT IN SYNC WITH src/iop/iop_api.h !!!
+
   /** opened module. */
   GModule *module;
   /** string identifying this operation. */
@@ -384,26 +392,30 @@ typedef struct dt_iop_module_t
     * scaled to the same size width*height and contain a max of 3 floats. other color
     * formats may be filled by this callback, if the pipeline can handle it. */
   /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
-  void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                  const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                  void *const o, const struct dt_iop_roi_t *const roi_in,
+                  const struct dt_iop_roi_t *const roi_out);
   /** a tiling variant of process(). */
-  void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                         const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
-                         const int bpp);
+  void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                         const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                         const struct dt_iop_roi_t *const roi_out, const int bpp);
   /** WARNING: in IOP implementation, it is called process()!!! */
   /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
-  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                        const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                        const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                        const struct dt_iop_roi_t *const roi_out);
   /** a variant process(), that can contain SSE2 intrinsics. */
-  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                       const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                       const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                       const struct dt_iop_roi_t *const roi_out);
   /** the opencl equivalent of process(). */
-  int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-                    const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                    void *const o, const struct dt_iop_roi_t *const roi_in,
+                    const struct dt_iop_roi_t *const roi_out);
   /** a tiling variant of process_cl(). */
-  int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i,
-                           void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
-                           const int bpp);
+  int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                           const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                           const struct dt_iop_roi_t *const roi_out, const int bpp);
 
   /** this functions are used for distort iop
    * points is an array of float {x1,y1,x2,y2,...}

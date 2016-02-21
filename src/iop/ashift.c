@@ -19,28 +19,29 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "bauhaus/bauhaus.h"
+#include "common/colorspaces.h"
+#include "common/debug.h"
+#include "common/interpolation.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "control/control.h"
-#include "common/debug.h"
-#include "common/opencl.h"
-#include "common/interpolation.h"
-#include "common/colorspaces.h"
-#include "dtgtk/resetlabel.h"
 #include "dtgtk/button.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
-#include "gui/gtk.h"
-#include "gui/presets.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
 #include "gui/guides.h"
+#include "gui/presets.h"
+#include "iop/iop_api.h"
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Inspiration for this module comes from the program ShiftN (http://www.shiftn.de) by
 // Marcus Hebel.
@@ -1894,8 +1895,8 @@ error:
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
@@ -1910,8 +1911,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_in, roi_out, ihomograph,    \
-                                                               interpolation)
+#pragma omp parallel for schedule(static) default(none) shared(ihomograph, interpolation)
 #endif
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
@@ -2008,7 +2008,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
   dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)self->data;

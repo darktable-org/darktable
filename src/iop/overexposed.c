@@ -31,6 +31,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/accelerators.h"
+#include "iop/iop_api.h"
 
 DT_MODULE(3)
 
@@ -157,7 +158,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #if defined(__SSE__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *const roi_out)
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_develop_t *dev = self->dev;
 
@@ -173,7 +174,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 lower_color = _mm_load_ps(dt_iop_overexposed_colors[colorscheme][1]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ovoid) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -207,7 +208,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_develop_t *dev = self->dev;
   dt_iop_overexposed_global_data_t *gd = (dt_iop_overexposed_global_data_t *)self->data;

@@ -19,12 +19,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
+#include "common/interpolation.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "common/interpolation.h"
-#include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -235,8 +236,8 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
 // do your best to fill the output region!
-void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, const void *const ivoid,
-             void *ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
@@ -248,7 +249,7 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation)
+#pragma omp parallel for schedule(static) default(none) shared(piece, interpolation)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?

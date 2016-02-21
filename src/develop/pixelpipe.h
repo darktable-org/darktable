@@ -64,7 +64,10 @@ typedef struct dt_dev_histogram_stats_t
   uint32_t ch;
 } dt_dev_histogram_stats_t;
 
+#ifndef DT_IOP_PARAMS_T
+#define DT_IOP_PARAMS_T
 typedef void dt_iop_params_t;
+#endif
 
 #include "develop/pixelpipe_hb.h"
 

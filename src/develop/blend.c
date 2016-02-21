@@ -2426,8 +2426,9 @@ static void _blend_HSV_color(const _blend_buffer_desc_t *bd, const float *a, flo
   }
 }
 
-void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i,
-                              void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
+void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                              const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                              const struct dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;           // the number of channels in the buffer
   const int bch = (ch == 1) ? 1 : ch - 1; // the number of channels to blend (all but alpha)
@@ -2645,9 +2646,9 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
-#pragma omp parallel for default(none) shared(i, roi_out, o, mask, blend, d, stderr)
+#pragma omp parallel for default(none) shared(mask, blend, d, stderr)
 #else
-#pragma omp parallel for shared(i, roi_out, o, mask, blend, d)
+#pragma omp parallel for shared(mask, blend, d)
 #endif
 #endif
     for(size_t y = 0; y < roi_out->height; y++)
@@ -2696,9 +2697,9 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__WIN32__)
-#pragma omp parallel for default(none) shared(roi_out, mask, stderr)
+#pragma omp parallel for default(none) shared(mask, stderr)
 #else
-#pragma omp parallel for shared(roi_out, mask)
+#pragma omp parallel for shared(mask)
 #endif
 #endif
       for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width; k++)
@@ -2711,9 +2712,9 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 /* now apply blending with per-pixel opacity value as defined in mask */
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__WIN32__)
-#pragma omp parallel for default(none) shared(i, roi_out, o, mask, blend, stderr)
+#pragma omp parallel for default(none) shared(mask, blend, stderr)
 #else
-#pragma omp parallel for shared(i, roi_out, o, mask, blend)
+#pragma omp parallel for shared(mask, blend)
 #endif
 #endif
   for(size_t y = 0; y < roi_out->height; y++)

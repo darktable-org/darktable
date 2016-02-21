@@ -31,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -114,7 +115,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
   dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)self->data;
@@ -455,8 +456,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-                  const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
   const int ch = piece->colors;
@@ -498,7 +499,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
 
 // gauss blur the image horizontally
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(mat) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -539,7 +540,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
 
 // gauss blur the image vertically
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(mat) schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - wd4 * 4 + rad; j++)
   {
@@ -567,7 +568,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
     }
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(mat) schedule(static)
 #endif
   for(int j = roi_out->height - wd4 * 4 + rad; j < roi_out->height - rad; j++)
   {
@@ -600,7 +601,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
   dt_free_align(tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - rad; j++)
   {
@@ -611,7 +612,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, v
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(data) schedule(static)
 #endif
   // subtract blurred image, if diff > thrs, add *amount to original image
   for(int j = 0; j < roi_out->height; j++)
