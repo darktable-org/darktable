@@ -20,6 +20,8 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
+#include <sqlite3.h>
+
 #ifdef _DEBUG
 #include <assert.h>
 #define __DT_DEBUG_ASSERT__(xin)                                                                             \
