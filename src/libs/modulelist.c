@@ -306,6 +306,64 @@ static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter *a, GtkTre
   gtk_tree_model_get(model, b, COL_MODULE, &moduleb, -1);
   return g_utf8_collate(modulea->name(), moduleb->name());
 }
+
+void init_presets(dt_lib_module_t *self)
+{
+  // we could have a "show all" preset, or "show simple set" but I don't think we need that.
+}
+
+void *get_params(dt_lib_module_t *self, int *size)
+{
+  int len = 0;
+  char *params = NULL;
+  for(GList *iter = g_list_first(darktable.iop); iter; iter = g_list_next(iter))
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)iter->data;
+    // skip modules not in the list
+    if(dt_iop_so_is_hidden(module) || (module->flags() & IOP_FLAGS_DEPRECATED)) continue;
+    int op_len = strlen(module->op) + 1;
+    int new_len = len + 1 + op_len;
+    params = realloc(params, new_len);
+    if(!params)
+    {
+      len = 0;
+      break;
+    }
+    memcpy(params + len, module->op, op_len);
+    params[new_len - 1] = (char)module->state;
+    len = new_len;
+  }
+
+  *size = len;
+  return params;
+}
+
+int set_params(dt_lib_module_t *self, const void *params, int size)
+{
+  const char *p = params;
+  int pos = 0;
+  while(pos < size)
+  {
+    const char *op = p + pos;
+    int op_len = strlen(op);
+    dt_iop_module_state_t state = p[pos + op_len + 1];
+
+    // look for the module in the list and ignore it if it's missing
+    for(GList *iter = g_list_first(darktable.iop); iter; iter = g_list_next(iter))
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)iter->data;
+      if(!g_strcmp0(op, module->op))
+      {
+        dt_iop_so_gui_set_state(module, state);
+        break;
+      }
+    }
+    pos += op_len + 2;
+  }
+
+  return pos != size;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
