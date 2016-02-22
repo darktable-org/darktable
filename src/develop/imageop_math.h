@@ -187,7 +187,7 @@ static inline int FC(const size_t row, const size_t col, const unsigned int filt
 }
 
 /** Calculate the xtrans pattern color from the row and column **/
-static inline int FCxtrans(const size_t row, const size_t col, const dt_iop_roi_t *const roi,
+static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
                            const uint8_t (*const xtrans)[6])
 {
   // Add +18 (which must be a multiple of CFA width 6) as offset can
