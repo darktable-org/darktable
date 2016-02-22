@@ -2774,9 +2774,9 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       }
 
       // interpolate red for blue pixels and vice versa
-      factors.xoffset = 2*1;
+      factors.xoffset = 2*3;
       factors.xfactor = 1;
-      factors.yoffset = 2*1;
+      factors.yoffset = 2*3;
       factors.yfactor = 1;
       factors.cellsize = 4 * sizeof(float);
       factors.overhead = 0;
@@ -2799,10 +2799,11 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 2, sizeof(int), (void *)&height);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 3, sizeof(int), (void *)&roi_in->x);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 4, sizeof(int), (void *)&roi_in->y);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 5, 2 * sizeof(char), (void *)sgreen);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 6, sizeof(cl_mem), (void *)&dev_xtrans);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 7,
-                                (blocksizex + 2*1) * (blocksizey + 2*1) * 4 * sizeof(float), NULL);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 5, sizeof(int), (void *)&d);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 6, 2 * sizeof(char), (void *)sgreen);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 7, sizeof(cl_mem), (void *)&dev_xtrans);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 8,
+                                (blocksizex + 2*3) * (blocksizey + 2*3) * 4 * sizeof(float), NULL);
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_red_and_blue, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }

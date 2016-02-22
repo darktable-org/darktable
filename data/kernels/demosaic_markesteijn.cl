@@ -398,7 +398,8 @@ markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global f
 // interpolate red for blue pixels and vice versa
 kernel void
 markesteijn_red_and_blue(global float *rgb, const int width, const int height, const int rin_x, const int rin_y,
-                         const char2 sgreen, global const unsigned char (*const xtrans)[6], local float *buffer)
+                         const int d, const char2 sgreen, global const unsigned char (*const xtrans)[6], 
+                         local float *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -414,14 +415,14 @@ markesteijn_red_and_blue(global float *rgb, const int width, const int height, c
   const int lsz = mul24(xlsz, ylsz);
 
   // stride and maximum capacity of local buffer
-  // cells of 4*float per pixel with a surrounding border of 1 cell
-  const int stride = xlsz + 2*1;
-  const int maxbuf = mul24(stride, ylsz + 2*1);
+  // cells of 4*float per pixel with a surrounding border of 3 cells
+  const int stride = xlsz + 2*3;
+  const int maxbuf = mul24(stride, ylsz + 2*3);
 
   // coordinates of top left pixel of buffer
-  // this is 1 pixel left and above of the work group origin
-  const int xul = mul24(xgid, xlsz) - 1;
-  const int yul = mul24(ygid, ylsz) - 1;
+  // this is 3 pixels left and above of the work group origin
+  const int xul = mul24(xgid, xlsz) - 3;
+  const int yul = mul24(ygid, ylsz) - 3;
 
   // total size of rgb (in units of 4*float)
   const int rgb_max = mul24(width, height);
@@ -441,10 +442,10 @@ markesteijn_red_and_blue(global float *rgb, const int width, const int height, c
   barrier(CLK_LOCAL_MEM_FENCE);
 
   // center the local buffer around current x,y-Pixel
-  local float *buff = buffer +  4 * mad24(ylid + 1, stride, xlid + 1);
+  local float *buff = buffer +  4 * mad24(ylid + 3, stride, xlid + 3);
   
   // take sufficient border into account
-  if(x < 1 || x >= width-1 || y < 1 || y >= height-1) return;
+  if(x < 6 || x >= width-6 || y < 6 || y >= height-6) return;
   
   // the "other" color relative to this pixel's one
   const int f = 2 -  FCxtrans(y + rin_y, x + rin_x, xtrans);
@@ -455,8 +456,13 @@ markesteijn_red_and_blue(global float *rgb, const int width, const int height, c
   // center rgb around current pixel
   rgb += 4 * mad24(y, width, x);
   
-  // in which direction to sample (y or x)
-  const int off = (y - sgreen.y) % 3 ? 4 * stride : 4;
+  // in which direction to sample for the second pixel of this pair (horizontally or vertically)
+  const int horiz = (y - sgreen.y) % 3 == 0 ? 1 : 0;
+  const int c = horiz ? 4 : 4 * stride;
+  const int h = horiz ? 12 * stride : 12;
+  const int off = d > 1 || ((d == 0) && (c == 4)) || ((d == 1) && (c != 4)) ||
+                  fabs((buff)[1] - (buff + c)[1]) + fabs((buff)[1] - (buff - c)[1]) <
+                  2.0f * (fabs((buff)[1] - (buff + h)[1]) + fabs((buff)[1] - (buff - h)[1])) ? c : h;
 
   rgb[f] = clamp(((buff + off)[f] + (buff - off)[f] + 2.0f * buff[1] - (buff + off)[1] - (buff - off)[1]) / 2.0f, 0.0f, 1.0f);
 }
