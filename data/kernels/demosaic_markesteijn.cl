@@ -65,7 +65,7 @@ markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int wi
 
 // find minimum and maximum allowed green values of red/blue pixel pairs
 kernel void
-markesteijn_green_minmax(global float *rgb, global float *gminmax, const int width, const int height, 
+markesteijn_green_minmax(global float *rgb, global float *gminmax, const int width, const int height, const int border,
                          const int rin_x, const int rin_y, const char2 sgreen, global const unsigned char (*const xtrans)[6], 
                          global const char2 (*const allhex)[3][8], local float *buffer)
 {
@@ -112,7 +112,7 @@ markesteijn_green_minmax(global float *rgb, global float *gminmax, const int wid
   local float *buff = buffer +  mad24(ylid + 3, stride, xlid + 3);
   
   // take sufficient border into account
-  if(x < 3 || x >= width-3 || y < 3 || y >= height-3) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
   
   // the color of this pixel
   const int f = FCxtrans(y + rin_y, x + rin_x, xtrans);
@@ -157,8 +157,8 @@ markesteijn_green_minmax(global float *rgb, global float *gminmax, const int wid
 // Interpolate green horizontally, vertically, and along both diagonals
 kernel void
 markesteijn_interpolate_green(global float *rgb_0, global float *rgb_1, global float *rgb_2, global float *rgb_3,
-                              global float *gminmax, const int width, const int height, const int rin_x, const int rin_y, 
-                              const char2 sgreen, global const unsigned char (*const xtrans)[6], 
+                              global float *gminmax, const int width, const int height, const int border,
+                              const int rin_x, const int rin_y, const char2 sgreen, global const unsigned char (*const xtrans)[6],
                               global const char2 (*const allhex)[3][8], local float *buffer)
 {
   const int x = get_global_id(0);
@@ -205,7 +205,7 @@ markesteijn_interpolate_green(global float *rgb_0, global float *rgb_1, global f
   local float *buff = buffer + 4 * mad24(ylid + 6, stride, xlid + 6);
   
   // take sufficient border into account
-  if(x < 3 || x >= width-3 || y < 3 || y >= height-3) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
   
   // the color of this pixel
   const int f = FCxtrans(y + rin_y, x + rin_x, xtrans);
@@ -254,7 +254,7 @@ markesteijn_interpolate_green(global float *rgb_0, global float *rgb_1, global f
 
 // interpolate red and blue values for solitary green pixels
 kernel void
-markesteijn_solitary_green(global float *rgb, global float *aux, const int width, const int height,
+markesteijn_solitary_green(global float *rgb, global float *aux, const int width, const int height, const int border,
                            const int rin_x, const int rin_y, const int d, const char2 dir, const int hcomp,
                            const char2 sgreen, global const unsigned char (*const xtrans)[6], local float *buffer)
 {
@@ -302,7 +302,7 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
   local float *buff = buffer +  4 * mad24(ylid + 2, stride, xlid + 2);
   
   // take sufficient border into account
-  if(x < 2 || x >= width-2 || y < 2 || y >= height-2) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
   
   // we only work on solitary green pixels
   if((x - sgreen.x) % 3 != 0 || (y - sgreen.y) % 3 != 0) return;
@@ -354,15 +354,15 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
 // recalculate green from interpolated values of closer pixels.
 kernel void
 markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global float *rgb_2, global float *rgb_3,
-                              global float *gminmax, const int width, const int height, const int rin_x, const int rin_y, 
-                              const char2 sgreen, global const unsigned char (*const xtrans)[6], 
-                              global const char2 (*const allhex)[3][8])
+                              global float *gminmax, const int width, const int height, const int border,
+                              const int rin_x, const int rin_y, const char2 sgreen,
+                              global const unsigned char (*const xtrans)[6], global const char2 (*const allhex)[3][8])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // take sufficient border into account
-  if(x < 5 || x >= width-5 || y < 5 || y >= height-5) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
   
   global float *rgb[4] = { rgb_0, rgb_1, rgb_2, rgb_3 };
   
@@ -397,9 +397,9 @@ markesteijn_recalculate_green(global float *rgb_0, global float *rgb_1, global f
 
 // interpolate red for blue pixels and vice versa
 kernel void
-markesteijn_red_and_blue(global float *rgb, const int width, const int height, const int rin_x, const int rin_y,
-                         const int d, const char2 sgreen, global const unsigned char (*const xtrans)[6], 
-                         local float *buffer)
+markesteijn_red_and_blue(global float *rgb, const int width, const int height, const int border,
+                         const int rin_x, const int rin_y, const int d, const char2 sgreen,
+                         global const unsigned char (*const xtrans)[6], local float *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -445,7 +445,7 @@ markesteijn_red_and_blue(global float *rgb, const int width, const int height, c
   local float *buff = buffer +  4 * mad24(ylid + 3, stride, xlid + 3);
   
   // take sufficient border into account
-  if(x < 6 || x >= width-6 || y < 6 || y >= height-6) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
   
   // the "other" color relative to this pixel's one
   const int f = 2 -  FCxtrans(y + rin_y, x + rin_x, xtrans);
@@ -470,9 +470,10 @@ markesteijn_red_and_blue(global float *rgb, const int width, const int height, c
 
 // interpolate red and blue for 2x2 blocks of green
 kernel void
-markesteijn_interpolate_twoxtwo(global float *rgb, const int width, const int height, const int rin_x, const int rin_y, 
-                                const int d, const char2 sgreen, global const unsigned char (*const xtrans)[6], 
-                                global const char2 (*const allhex)[3][8], local float *buffer)
+markesteijn_interpolate_twoxtwo(global float *rgb, const int width, const int height, const int border,
+                                const int rin_x, const int rin_y, const int d, const char2 sgreen,
+                                global const unsigned char (*const xtrans)[6], global const char2 (*const allhex)[3][8], 
+                                local float *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -518,7 +519,7 @@ markesteijn_interpolate_twoxtwo(global float *rgb, const int width, const int he
   local float *buff = buffer +  4 * mad24(ylid + 2, stride, xlid + 2);
   
   // take sufficient border into account
-  if(x < 1 || x >= width-1 || y < 1 || y >= height-1) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
   
   // we only work on pixels within an 2x2 block of green.
   // for all other pixels which are in the same row or column
@@ -561,13 +562,14 @@ markesteijn_interpolate_twoxtwo(global float *rgb, const int width, const int he
 
 // Convert to perceptual YPbPr colorspace
 kernel void
-markesteijn_convert_yuv(global float *rgb, global float *yuv, const int width, const int height)
+markesteijn_convert_yuv(global float *rgb, global float *yuv, const int width, const int height,
+                        const int border)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // take sufficient border into account
-  if(x < 7 || x >= width-7 || y < 7 || y >= height-7) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   // center input and output around current pixel
   const int idx = 4 * mad24(y, width, x);
@@ -585,7 +587,7 @@ markesteijn_convert_yuv(global float *rgb, global float *yuv, const int width, c
 // differentiate in all directions
 kernel void
 markesteijn_differentiate(global float *yuv, global float *drv, const int width, const int height,
-                          const int d, local float *buffer)
+                          const int border, const int d, local float *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -631,7 +633,7 @@ markesteijn_differentiate(global float *yuv, global float *drv, const int width,
   local float *buff = buffer +  4 * mad24(ylid + 1, stride, xlid + 1);
   
   // take sufficient border into account
-  if(x < 8 || x >= width-8 || y < 8 || y >= height-8) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   // center drv around current pixel
   drv += mad24(y, width, x);
@@ -648,13 +650,13 @@ markesteijn_differentiate(global float *yuv, global float *drv, const int width,
 // Get threshold for homogeneity maps
 kernel void
 markesteijn_homo_threshold(global float *drv, global float *thresh, const int width, const int height,
-                           const int d)
+                           const int border, const int d)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // take sufficient border into account
-  if(x < 9 || x >= width-9 || y < 9 || y >= height-9) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   // note: although *thresh points to a buffer of size width*height*4*sizeof(float) we only need one
   // float per cell, so we actually use only a quarter of the buffer
@@ -673,7 +675,7 @@ markesteijn_homo_threshold(global float *drv, global float *thresh, const int wi
 // set homogeneity maps
 kernel void
 markesteijn_homo_set(global float *drv, global float *thresh, global uchar *homo, 
-                     const int width, const int height, local float *buffer)
+                     const int width, const int height, const int border, local float *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -718,7 +720,7 @@ markesteijn_homo_set(global float *drv, global float *thresh, global uchar *homo
   local float *buff = buffer +  mad24(ylid + 1, stride, xlid + 1);
   
   // take sufficient border into account
-  if(x < 9 || x >= width-9 || y < 9 || y >= height-9) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   const int glidx = mad24(y, width, x);
   
@@ -739,7 +741,7 @@ markesteijn_homo_set(global float *drv, global float *thresh, global uchar *homo
 // set homogeneity maps
 kernel void
 markesteijn_homo_sum(global uchar *homo, global uchar *homosum, 
-                     const int width, const int height, local uchar *buffer)
+                     const int width, const int height, const int border, local uchar *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -784,7 +786,7 @@ markesteijn_homo_sum(global uchar *homo, global uchar *homosum,
   local uchar *buff = buffer +  mad24(ylid + 2, stride, xlid + 2);
   
   // take sufficient border into account
-  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   const int glidx = mad24(y, width, x);
  
@@ -803,13 +805,13 @@ markesteijn_homo_sum(global uchar *homo, global uchar *homosum,
 // get maximum value for homosum
 kernel void
 markesteijn_homo_max(global uchar *homosum, global uchar *maxval, const int width, const int height,
-                     const int d)
+                     const int border, const int d)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // take sufficient border into account
-  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   // note: although *maxval points to a buffer of size width*height*4*sizeof(float) we only need one
   // uchar per cell, so we actually only use a fraction of the buffer
@@ -828,13 +830,13 @@ markesteijn_homo_max(global uchar *homosum, global uchar *maxval, const int widt
 
 // adjust maximum value for homosum
 kernel void
-markesteijn_homo_max_corr(global uchar *maxval, const int width, const int height)
+markesteijn_homo_max_corr(global uchar *maxval, const int width, const int height, const int border)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // take sufficient border into account
-  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   // note: although *maxval points to a buffer of size width*height*4*sizeof(float) we only need one
   // uchar per cell, so we actually only use a fraction of the buffer
@@ -850,13 +852,14 @@ markesteijn_homo_max_corr(global uchar *maxval, const int width, const int heigh
 
 // for Markesteijn-3: only use one of two directions if one is better than the other
 kernel void
-markesteijn_homo_quench(global uchar *homosum1, global uchar *homosum2, const int width, const int height)
+markesteijn_homo_quench(global uchar *homosum1, global uchar *homosum2, const int width, const int height,
+                        const int border)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // take sufficient border into account
-  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
 
   const int glidx = mad24(y, width, x);
   
@@ -874,13 +877,13 @@ markesteijn_homo_quench(global uchar *homosum1, global uchar *homosum2, const in
 
 // Initialize output image to zero
 kernel void
-markesteijn_zero(write_only image2d_t out, const int width, const int height)
+markesteijn_zero(write_only image2d_t out, const int width, const int height, const int border)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // take sufficient border into account
-  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
  
   write_imagef(out, (int2)(x, y), (float4)0.0f);
 }
@@ -889,13 +892,14 @@ markesteijn_zero(write_only image2d_t out, const int width, const int height)
 // accumulate contributions of all directions into output image
 kernel void
 markesteijn_accu(read_only image2d_t in, write_only image2d_t out, global float *rgb,
-                 global uchar *homosum, global uchar *maxval, const int width, const int height)
+                 global uchar *homosum, global uchar *maxval, const int width, const int height,
+                 const int border)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // take sufficient border into account
-  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
   
   const int glidx = mad24(y, width, x);
 
@@ -911,13 +915,14 @@ markesteijn_accu(read_only image2d_t in, write_only image2d_t out, global float 
 
 // process the final image
 kernel void
-markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
+markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                  const int border)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // take sufficient border into account
-  if(x < 11 || x >= width-11 || y < 11 || y >= height-11) return;
+  if(x < border || x >= width-border || y < border || y >= height-border) return;
   
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
