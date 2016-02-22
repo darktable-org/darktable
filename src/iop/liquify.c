@@ -1293,9 +1293,9 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 #endif
   for (int i = 0; i < roi_out->height; i++)
   {
-    float *destrow = out + (size_t) ch * i * roi_out->width;
-    const float *srcrow = in + (size_t) ch * (roi_in->width * (i + roi_out->y - roi_in->y) +
-                                              roi_out->x - roi_in->x);
+    float *destrow = (float *)out + (size_t) ch * i * roi_out->width;
+    const float *srcrow = (float *)in + (size_t) ch * (roi_in->width * (i + roi_out->y - roi_in->y) +
+                                                       roi_out->x - roi_in->x);
     for (int j=0; j < ch * roi_out->width; j++)
       destrow[j] = srcrow[j];
   }
