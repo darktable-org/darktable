@@ -63,6 +63,8 @@ typedef struct dt_lib_collect_t
 
   GtkScrolledWindow *sw2;
 
+  int manual_select;
+
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
 
@@ -422,9 +424,117 @@ static gboolean list_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   gchar *haystack = g_utf8_strdown(str, -1);
   gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
 
-  if(strcmp(haystack, needle) == 0)
+  int property = gtk_combo_box_get_active(dr->combo);
+  if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+     || property == DT_COLLECTION_PROP_ISO)
   {
-    gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
+    // numeric values. we can have comparaison operators.
+    gboolean sel = FALSE;
+    gchar *operator, *number, *number2;
+    dt_collection_split_operator_number(needle, &number, &number2, &operator);
+    if(number)
+    {
+      float nb1 = g_strtod(number, NULL);
+      float nb2 = g_strtod(haystack, NULL);
+      if(operator&& strcmp(operator, ">") == 0)
+      {
+        sel = (nb2 > nb1);
+      }
+      else if(operator&& strcmp(operator, ">=") == 0)
+      {
+        sel = (nb2 >= nb1);
+      }
+      else if(operator&& strcmp(operator, "<") == 0)
+      {
+        sel = (nb2 < nb1);
+      }
+      else if(operator&& strcmp(operator, "<=") == 0)
+      {
+        sel = (nb2 <= nb1);
+      }
+      else if(operator&& strcmp(operator, "<>") == 0)
+      {
+        sel = (nb1 != nb2);
+      }
+      else if(operator&& number2 && strcmp(operator, "[]") == 0)
+      {
+        float nb3 = g_strtod(number2, NULL);
+        sel = (nb2 >= nb1 && nb2 <= nb3);
+      }
+      else
+      {
+        sel = (nb1 == nb2);
+      }
+    }
+    g_free(operator);
+    g_free(number);
+    g_free(number2);
+    if(sel) gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
+  }
+  else if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+  {
+    // date-time values. we can have comparaison operators.
+    gboolean sel = FALSE;
+    gchar *operator, *number, *number2;
+    dt_collection_split_operator_datetime(needle, &number, &number2, &operator);
+    if(number)
+    {
+      struct tm tm1 = { 0 };
+      if(strptime(haystack, "%Y:%m:%d %H:%M:%S", &tm1) || strptime(haystack, "%Y:%m:%d", &tm1))
+      {
+        struct tm tm2 = { 0 };
+        if(!operator|| strcmp(operator, "=") == 0 || strcmp(operator, "") == 0)
+        {
+          // we get "number" either with date and time or with date and %
+          if(g_str_has_suffix(number, "%")) number[strlen(number) - 1] = '\0';
+          sel = (g_str_has_prefix(haystack, number));
+        }
+        else if(strcmp(operator, "<>") == 0)
+        {
+          // we get "number" either with date and time or with date and %
+          if(g_str_has_suffix(number, "%")) number[strlen(number) - 1] = '\0';
+          sel = (!g_str_has_prefix(haystack, number));
+        }
+        else if(strptime(number, "%Y:%m:%d %H:%M:%S", &tm2))
+        {
+          if(strcmp(operator, ">") == 0)
+          {
+            sel = (difftime(mktime(&tm1), mktime(&tm2)) > 0);
+          }
+          else if(strcmp(operator, ">=") == 0)
+          {
+            sel = (difftime(mktime(&tm1), mktime(&tm2)) >= 0);
+          }
+          else if(strcmp(operator, "<") == 0)
+          {
+            sel = (difftime(mktime(&tm1), mktime(&tm2)) < 0);
+          }
+          else if(strcmp(operator, "<=") == 0)
+          {
+            sel = (difftime(mktime(&tm1), mktime(&tm2)) <= 0);
+          }
+          else if(number2 && strcmp(operator, "[]") == 0)
+          {
+            struct tm tm3 = { 0 };
+            if(strptime(number2, "%Y:%m:%d %H:%M:%S", &tm3))
+              sel = ((difftime(mktime(&tm1), mktime(&tm2)) >= 0)
+                     && (difftime(mktime(&tm1), mktime(&tm3)) <= 0));
+          }
+        }
+      }
+    }
+    g_free(operator);
+    g_free(number);
+    g_free(number2);
+    if(sel) gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
+  }
+  else
+  {
+    // no comparaison operators here, just string compare
+    if(strcmp(haystack, needle) == 0)
+    {
+      gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
+    }
   }
 
   g_free(haystack);
@@ -721,6 +831,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 {
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
+  d->manual_select = 1;
   int property = gtk_combo_box_get_active(dr->combo);
   gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
   gboolean tags = (property == DT_COLLECTION_PROP_TAG);
@@ -879,15 +990,20 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   // if needed, we restrict the tree to matching entries
   if(dr->typing) tree_set_visibility(model, dr);
   // we update tree expansion and selection
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->view), GTK_SELECTION_SINGLE);
+  // gtk_tree_view_set_rubber_banding(d->view, FALSE); => disabled due to a gtk bug if selecting empty portion
+  // :(
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
   gtk_tree_view_collapse_all(d->view);
   gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
+  d->manual_select = 0;
 }
 
 static void list_view(dt_lib_collect_rule_t *dr)
 {
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
+  d->manual_select = 1;
   int property = gtk_combo_box_get_active(dr->combo);
 
   set_properties(dr);
@@ -1082,17 +1198,33 @@ static void list_view(dt_lib_collect_rule_t *dr)
   }
 
   // if needed, we restrict the tree to matching entries
-  if(property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_CREATOR
-     || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_DESCRIPTION
-     || property == DT_COLLECTION_PROP_FILENAME || property == DT_COLLECTION_PROP_FILMROLL
-     || property == DT_COLLECTION_PROP_LENS || property == DT_COLLECTION_PROP_PUBLISHER
-     || property == DT_COLLECTION_PROP_RIGHTS || property == DT_COLLECTION_PROP_TIME
-     || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
-     || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO)
+  if((dr->typing && (property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME
+                     || property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+                     || property == DT_COLLECTION_PROP_ISO))
+     || property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_CREATOR
+     || property == DT_COLLECTION_PROP_DESCRIPTION || property == DT_COLLECTION_PROP_FILENAME
+     || property == DT_COLLECTION_PROP_FILMROLL || property == DT_COLLECTION_PROP_LENS
+     || property == DT_COLLECTION_PROP_PUBLISHER || property == DT_COLLECTION_PROP_RIGHTS
+     || property == DT_COLLECTION_PROP_TITLE)
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
   // we update list selection
+  if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME
+     || property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+     || property == DT_COLLECTION_PROP_ISO)
+  {
+    gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->view), GTK_SELECTION_MULTIPLE);
+    // gtk_tree_view_set_rubber_banding(d->view, TRUE);  => disabled due to a gtk bug if selecting empty
+    // portion :(
+  }
+  else
+  {
+    gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->view), GTK_SELECTION_SINGLE);
+    // gtk_tree_view_set_rubber_banding(d->view, FALSE);  => disabled due to a gtk bug if selecting empty
+    // portion :(
+  }
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
   gtk_tree_model_foreach(d->listfilter, (GtkTreeModelForeachFunc)list_select, dr);
+  d->manual_select = 0;
 }
 
 static void update_view(dt_lib_collect_rule_t *dr)
@@ -1263,6 +1395,114 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 
   update_view(d);
   dt_collection_update_query(darktable.collection);
+}
+
+static gchar *view_selection_get_string(dt_lib_collect_t *d)
+{
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
+  gchar *text = NULL;
+  text = dt_util_dstrcat(text, "%s", "");
+  int nb_select = gtk_tree_selection_count_selected_rows(selection);
+  if(nb_select == 0) return text;
+
+  if(gtk_tree_selection_get_mode(selection) == GTK_SELECTION_MULTIPLE)
+  {
+    GList *sels = gtk_tree_selection_get_selected_rows(selection, NULL);
+    if(sels)
+    {
+      GtkTreePath *path = (GtkTreePath *)sels->data;
+      if(nb_select == 1)
+      {
+        GtkTreeIter iter;
+        if(gtk_tree_model_get_iter(model, &iter, path))
+        {
+          gchar *str;
+          gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+          text = dt_util_dstrcat(text, "%s", str);
+          g_free(str);
+        }
+      }
+      else
+      {
+        sels = g_list_last(sels);
+        if(sels)
+        {
+          GtkTreePath *path2 = (GtkTreePath *)sels->data;
+          // we create the query
+          GtkTreeIter iter, iter2;
+          if(gtk_tree_model_get_iter(model, &iter, path) && gtk_tree_model_get_iter(model, &iter2, path2))
+          {
+            gchar *str, *str2;
+            gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+            gtk_tree_model_get(model, &iter2, DT_LIB_COLLECT_COL_PATH, &str2, -1);
+            const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[d->active_rule].combo));
+            if(item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME)
+              text = dt_util_dstrcat(text, "[%s;%s]", str2, str);
+            else
+              text = dt_util_dstrcat(text, "[%s;%s]", str, str2);
+            g_free(str);
+            g_free(str2);
+          }
+          // we ensure that the selection is continuous
+          d->manual_select = 1;
+          gtk_tree_selection_select_range(selection, path, path2);
+          d->manual_select = 0;
+        }
+      }
+    }
+    g_list_free_full(sels, (GDestroyNotify)gtk_tree_path_free);
+  }
+  else
+  {
+    GtkTreeIter iter;
+    if(!gtk_tree_selection_get_selected(selection, NULL, &iter)) return text;
+    gchar *str;
+    gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+    text = dt_util_dstrcat(text, "%s", str);
+    g_free(str);
+  }
+
+  return text;
+}
+
+static void view_selection_changed(GtkTreeSelection *treeselection, dt_lib_collect_t *d)
+{
+  if(d->manual_select) return;
+  gchar *text = view_selection_get_string(d);
+  const int active = d->active_rule;
+
+  if(strcmp(text, gtk_entry_get_text(GTK_ENTRY(d->rule[active].text))) == 0)
+  {
+    g_free(text);
+    return;
+  }
+
+  d->rule[active].typing = FALSE;
+  const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
+
+  g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text,
+                                  NULL);
+  g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
+  gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
+  gtk_editable_set_position(GTK_EDITABLE(d->rule[active].text), -1);
+  g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text,
+                                    NULL);
+  g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed,
+                                    NULL);
+  g_free(text);
+
+  if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS
+     || item == DT_COLLECTION_PROP_COLORLABEL || item == DT_COLLECTION_PROP_GEOTAGGING
+     || item == DT_COLLECTION_PROP_HISTORY || item == DT_COLLECTION_PROP_ISO
+     || item == DT_COLLECTION_PROP_FOCAL_LENGTH || item == DT_COLLECTION_PROP_APERTURE
+     || item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME)
+    set_properties(d->rule + active); // we just have to set the selection
+  else
+    update_view(d->rule + active); // we have to update visible items too
+
+  dt_collection_update_query(darktable.collection);
+  dt_control_queue_redraw_center();
 }
 
 static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d)
@@ -1624,6 +1864,23 @@ static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, 
   return TRUE;
 }
 
+static void view_set_click(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  if(dt_conf_get_bool("plugins/lighttable/collect/single-click"))
+  {
+    g_signal_handlers_disconnect_matched(d->view, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, row_activated, NULL);
+    g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(d->view)), "changed",
+                     G_CALLBACK(view_selection_changed), d);
+  }
+  else
+  {
+    g_signal_handlers_disconnect_matched(d->view, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, view_selection_changed,
+                                         NULL);
+    g_signal_connect(G_OBJECT(d->view), "row-activated", G_CALLBACK(row_activated), d);
+  }
+}
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
@@ -1684,7 +1941,7 @@ void gui_init(dt_lib_module_t *self)
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
-  g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(row_activated), d);
+  view_set_click(NULL, self);
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
 
@@ -1738,6 +1995,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(tag_changed),
                             self);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -1751,6 +2010,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(tag_changed), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(view_set_click), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   free(d->params);
 

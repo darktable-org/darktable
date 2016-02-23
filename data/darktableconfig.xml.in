@@ -752,6 +752,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>plugins/lighttable/collect/single-click</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>use single-click in the collect panel</shortdescription>
+    <longdescription>check this option to use single-click to select items in the collect panel. This will allow you to do range selections fro date-time and numeric values.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/expanded</name>
     <type>bool</type>
