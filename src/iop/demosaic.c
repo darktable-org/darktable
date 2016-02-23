@@ -550,7 +550,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       }
 
 // succinct lookup for allhex[], making sure that row/col aren't negative
-#define HEXMAP(y,x) allhex[((y) + 18) % 3][((x) + 18) % 3]
+#define HEXMAP(y,x) allhex[umod((y),3)][umod((x),3)]
 
   // extra passes propagates out errors at edges, hence need more padding
   const int pad_tile = (passes == 1) ? 12 : 17;
