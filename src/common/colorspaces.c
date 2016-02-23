@@ -212,69 +212,11 @@ int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matri
   return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0, intent);
 }
 
-cmsHPROFILE dt_colorspaces_create_lab_profile()
+static cmsHPROFILE dt_colorspaces_create_lab_profile()
 {
   return cmsCreateLab4Profile(cmsD50_xyY());
 }
 
-#if 0
-static cmsHPROFILE _colorspaces_create_srgb_profile(int v4)
-{
-  cmsHPROFILE hsRGB;
-
-  cmsCIEXYZTRIPLE Colorants = { { 0.436066, 0.222488, 0.013916 },
-                                { 0.385147, 0.716873, 0.097076 },
-                                { 0.143066, 0.060608, 0.714096 } };
-
-  cmsCIEXYZ black = { 0, 0, 0 };
-  cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
-  cmsToneCurve *transferFunction;
-
-  transferFunction
-      = cmsBuildTabulatedToneCurve16(NULL, dt_srgb_tone_curve_values_n, dt_srgb_tone_curve_values);
-
-  hsRGB = cmsCreateProfilePlaceholder(0);
-
-  cmsSetProfileVersion(hsRGB, 2.1);
-
-  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
-  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "sRGB");
-  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
-  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu3, "en", "US", "sRGB");
-  // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hsRGB, cmsSigCopyrightTag, mlu0);
-  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu1);
-  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag, mlu2);
-  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu3);
-  cmsMLUfree(mlu0);
-  cmsMLUfree(mlu1);
-  cmsMLUfree(mlu2);
-  cmsMLUfree(mlu3);
-
-  cmsSetDeviceClass(hsRGB, cmsSigDisplayClass);
-  cmsSetColorSpace(hsRGB, cmsSigRgbData);
-  cmsSetPCS(hsRGB, cmsSigXYZData);
-
-  cmsWriteTag(hsRGB, cmsSigMediaWhitePointTag, &D65);
-  cmsWriteTag(hsRGB, cmsSigMediaBlackPointTag, &black);
-
-  cmsWriteTag(hsRGB, cmsSigRedColorantTag, (void *)&Colorants.Red);
-  cmsWriteTag(hsRGB, cmsSigGreenColorantTag, (void *)&Colorants.Green);
-  cmsWriteTag(hsRGB, cmsSigBlueColorantTag, (void *)&Colorants.Blue);
-
-  cmsWriteTag(hsRGB, cmsSigRedTRCTag, (void *)transferFunction);
-  cmsLinkTag(hsRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag);
-  cmsLinkTag(hsRGB, cmsSigBlueTRCTag, cmsSigRedTRCTag);
-
-  cmsFreeToneCurve(transferFunction);
-
-  return hsRGB;
-}
-#else
 // code partly from elle, see http://ninedegreesbelow.com/photography/lcms-make-icc-profiles.html
 static cmsHPROFILE _colorspaces_create_srgb_profile(int v4)
 {
@@ -326,19 +268,68 @@ static cmsHPROFILE _colorspaces_create_srgb_profile(int v4)
   return hsRGB;
 }
 
-cmsHPROFILE dt_colorspaces_create_srgb_profile()
+static cmsHPROFILE dt_colorspaces_create_srgb_profile()
 {
   return _colorspaces_create_srgb_profile(0);
 }
 
-cmsHPROFILE dt_colorspaces_create_srgb_profile_v4()
+static cmsHPROFILE dt_colorspaces_create_srgb_profile_v4()
 {
   return _colorspaces_create_srgb_profile(1);
 }
-#endif
+
+static cmsHPROFILE dt_colorspaces_create_brg_profile()
+{
+  cmsHPROFILE hsRGB;
+
+  cmsCIExyYTRIPLE srgb_primaries_pre_quantized = {
+    {0.150002046, 0.059997204, 1.0}, // B
+    {0.639998686, 0.330010138, 1.0}, // R
+    {0.300003784, 0.600003357, 1.0}, // G
+  };
+  cmsCIEXYZ black = { 0, 0, 0 };
+  cmsCIExyY d65_srgb_adobe_specs = {0.3127, 0.3290, 1.0};
+
+  /* sRGB TRC */
+  cmsFloat64Number srgb_parameters[5] = { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
+  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
+  cmsToneCurve *srgb_parametric[3] = {transferFunction, transferFunction, transferFunction};
+
+  hsRGB = cmsCreateRGBProfile(&d65_srgb_adobe_specs, &srgb_primaries_pre_quantized, srgb_parametric);
+
+  cmsSetProfileVersion(hsRGB, 2.1);
+
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "BRG");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
+  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu3, "en", "US", "BRG");
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hsRGB, cmsSigCopyrightTag, mlu0);
+  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu1);
+  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag, mlu2);
+  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu3);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
+  cmsMLUfree(mlu3);
+
+  cmsSetDeviceClass(hsRGB, cmsSigDisplayClass);
+  cmsSetColorSpace(hsRGB, cmsSigRgbData);
+  cmsSetPCS(hsRGB, cmsSigXYZData);
+
+  cmsWriteTag(hsRGB, cmsSigMediaBlackPointTag, &black);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return hsRGB;
+}
 
 // Create the ICC virtual profile for adobe rgb space
-cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
+static cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
 {
   cmsHPROFILE hAdobeRGB;
 
@@ -684,7 +675,7 @@ cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel)
   return hp;
 }
 
-cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
+static cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
 {
   cmsHPROFILE hXYZ = cmsCreateXYZProfile();
   // revert some settings which prevent us from using XYZ as output profile:
@@ -713,7 +704,7 @@ cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
   return hXYZ;
 }
 
-cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
+static cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
 {
   cmsHPROFILE hRec709RGB;
 
@@ -769,7 +760,7 @@ cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
   return hRec709RGB;
 }
 
-cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
+static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
 {
   cmsHPROFILE hRec2020RGB;
 
@@ -825,7 +816,7 @@ cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
   return hRec2020RGB;
 }
 
-cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
+static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
 {
   // linear rgb with r and b swapped:
   cmsCIExyY D65;
@@ -931,7 +922,8 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
   return p;
 }
 
-void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3])
+#if 0
+static void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3])
 {
   // sRGB D65, the linear part:
   const float rgb_to_xyz[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
@@ -950,16 +942,9 @@ void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3])
     }
   }
 }
+#endif
 
-cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float mat[3][3])
-{
-  // mat: xyz -> cam
-  float imat[3][3];
-  mat3inv((float *)imat, (float *)mat);
-  return dt_colorspaces_create_xyzmatrix_profile(imat);
-}
-
-cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float mat[3][3])
+static cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float mat[3][3])
 {
   // mat: cam -> xyz
   cmsCIExyY D65;
@@ -997,6 +982,14 @@ cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float mat[3][3])
   cmsMLUfree(mlu2);
 
   return cmat;
+}
+
+cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float mat[3][3])
+{
+  // mat: xyz -> cam
+  float imat[3][3];
+  mat3inv((float *)imat, (float *)mat);
+  return dt_colorspaces_create_xyzmatrix_profile(imat);
 }
 
 void dt_colorspaces_cleanup_profile(cmsHPROFILE p)
@@ -1283,6 +1276,11 @@ dt_colorspaces_t *dt_colorspaces_init()
                                                                dt_colorspaces_create_linear_infrared_profile(),
                                                                _("linear infrared BGR"),
                                                                ++in_pos, -1, -1));
+
+  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_BRG,
+                                                               dt_colorspaces_create_brg_profile(),
+                                                               _("BRG (for testing)"),
+                                                               -1, ++out_pos, ++display_pos));
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
   snprintf(dirname, sizeof(dirname), "%s/color/in", confdir);
