@@ -49,7 +49,8 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_ENHANCED_MATRIX = 12,
   DT_COLORSPACE_VENDOR_MATRIX = 13,
   DT_COLORSPACE_ALTERNATE_MATRIX = 14,
-  DT_COLORSPACE_LAST = 15
+  DT_COLORSPACE_BRG = 15,
+  DT_COLORSPACE_LAST = 16
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t
@@ -110,34 +111,6 @@ int mat3inv(float *const dst, const float *const src);
 dt_colorspaces_t *dt_colorspaces_init();
 /** cleanup on shutdown */
 void dt_colorspaces_cleanup(dt_colorspaces_t *self);
-
-/** create the lab profile. */
-cmsHPROFILE dt_colorspaces_create_lab_profile();
-
-/** create the ICC virtual profile for srgb space. */
-cmsHPROFILE dt_colorspaces_create_srgb_profile(void);
-cmsHPROFILE dt_colorspaces_create_srgb_profile_v4(void);
-
-/** create the ICC virtual profile for linear rec709 rgb space. */
-cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void);
-
-/** create the ICC virtual profile for linear rec2020 rgb space. */
-cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void);
-
-/** create the ICC virtual profile for linear infrared bgr space. */
-cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void);
-
-/** create the ICC virtual profile for adobe rgb space. */
-cmsHPROFILE dt_colorspaces_create_adobergb_profile(void);
-
-/** create a ICC virtual profile for XYZ. */
-cmsHPROFILE dt_colorspaces_create_xyz_profile(void);
-
-/** create a RGB matrix from a color matrix from dcraw. */
-void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3]);
-
-/** create a profile from a camera->xyz matrix. */
-cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float cam_xyz[3][3]);
 
 /** create a profile from a xyz->camera matrix. */
 cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float cam_xyz[3][3]);

@@ -640,6 +640,38 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
 
 int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
 {
+  // ↑ ↑ ↓ ↓ ← → ← → b a
+  static int konami_state = 0;
+  static guint konami_sequence[] = {
+    GDK_KEY_Up,
+    GDK_KEY_Up,
+    GDK_KEY_Down,
+    GDK_KEY_Down,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_b,
+    GDK_KEY_a
+  };
+  if(key == konami_sequence[konami_state])
+  {
+    konami_state++;
+    if(konami_state == G_N_ELEMENTS(konami_sequence))
+    {
+      dt_control_log("todo: come up with an easter egg\n");
+      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+      darktable.color_profiles->display_type = DT_COLORSPACE_BRG;
+      darktable.color_profiles->display_filename[0] = '\0';
+      dt_colorspaces_update_display_transforms();
+      pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+      dt_control_queue_redraw_center();
+      konami_state = 0;
+    }
+  }
+  else
+    konami_state = 0;
+
   int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
