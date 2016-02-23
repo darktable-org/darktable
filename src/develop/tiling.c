@@ -1968,9 +1968,9 @@ int default_process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelp
 }
 
 #else
-int default_process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid,
-                              void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                              const int bpp)
+int default_process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                              const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                              const dt_iop_roi_t *const roi_out, const int in_bpp)
 {
   return FALSE;
 }
