@@ -786,7 +786,7 @@ msgstr "ארגן ופתח תמונות ממצלמות דיגיטליות"
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../data/darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
-msgstr "גרפיקה;צילום;raw"
+msgstr "גרפיקה;צילום;raw;"
 
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
