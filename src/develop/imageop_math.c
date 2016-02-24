@@ -228,6 +228,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_plain(float *const out
       outc[1] = pix;
       outc[2] = pix;
       outc[3] = 0.0f;
+      outc += 4;
     }
   }
 }
