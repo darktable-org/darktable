@@ -746,15 +746,23 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     // else, downsampling will be right after demosaic
 
     // so we need to turn temporarily disable in-pipe late downsampling iop.
-    GList *finalscalep = g_list_last(pipe.nodes);
-    dt_dev_pixelpipe_iop_t *finalscale = (dt_dev_pixelpipe_iop_t *)finalscalep->data;
-    while(strcmp(finalscale->module->op, "finalscale"))
+
+    // find the finalscale module
+    dt_dev_pixelpipe_iop_t *finalscale = NULL;
     {
-      finalscale = NULL;
-      finalscalep = g_list_previous(finalscalep);
-      if(!finalscalep) break;
-      finalscale = (dt_dev_pixelpipe_iop_t *)finalscalep->data;
+      GList *nodes = g_list_last(pipe.nodes);
+      while(nodes)
+      {
+        dt_dev_pixelpipe_iop_t *node = (dt_dev_pixelpipe_iop_t *)(nodes->data);
+        if(!strcmp(node->module->op, "finalscale"))
+        {
+          finalscale = node;
+          break;
+        }
+        nodes = g_list_previous(nodes);
+      }
     }
+
     if(finalscale) finalscale->enabled = 0;
 
     // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
