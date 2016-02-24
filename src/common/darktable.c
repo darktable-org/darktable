@@ -931,6 +931,9 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
+  // check whether we were able to load darkroom view. if we failed, we'll crash everywhere later on.
+  if(!darktable.develop) return 1;
+
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
