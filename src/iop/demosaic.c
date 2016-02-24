@@ -492,6 +492,20 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 // tile size, optimized to keep data in L2 cache
 #define TS 96
 
+/** Lookup for allhex[], making sure that row/col aren't negative **/
+static inline const short *const hexmap(const int row, const int col,
+                                        const short (*const allhex)[3][8])
+{
+  // Row and column offsets may be negative, but C's modulo function
+  // is not useful here with a negative dividend. To be safe, add a
+  // fairly large multiple of 3. In current code row and col will
+  // never be less than -9 (1-pass) or -14 (3-pass).
+  int irow = row + 600;
+  int icol = col + 600;
+  assert(irow >= 0 && icol >= 0);
+  return allhex[irow % 3][icol % 3];
+}
+
 /*
    Frank Markesteijn's algorithm for Fuji X-Trans sensors
  */
@@ -548,9 +562,6 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             allhex[row][col][c ^ (g * 2 & d)] = h + v * TS;
           }
       }
-
-// succinct lookup for allhex[], making sure that row/col aren't negative
-#define HEXMAP(y,x) allhex[umod((y),3)][umod((x),3)]
 
   // extra passes propagates out errors at edges, hence need more padding
   const int pad_tile = (passes == 1) ? 12 : 17;
@@ -669,7 +680,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           if(max == 0.0f)
           {
             float (*const pix)[3] = &rgb[0][row - top][col - left];
-            const short *const hex = HEXMAP(row,col);
+            const short *const hex = hexmap(row,col,allhex);
             for(int c = 0; c < 6; c++)
             {
               const float val = pix[hex[c]][1];
@@ -705,7 +716,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           int f = FCxtrans(row, col, roi_in, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
-          short *hex = HEXMAP(row,col);
+          const short *const hex = hexmap(row,col,allhex);
           // TODO: these constants come from integer math constants in
           // dcraw -- calculate them instead from interpolation math
           color[0] = 0.6796875f * (pix[hex[1]][1] + pix[hex[0]][1])
@@ -739,7 +750,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             {
               int f = FCxtrans(row, col, roi_in, xtrans);
               if(f == 1) continue;
-              short *hex = HEXMAP(row,col);
+              const short *const hex = hexmap(row,col,allhex);
               for(int d = 3; d < 6; d++)
               {
                 float(*rfx)[3] = &rgb[(d - 2) ^ !((row - sgrow) % 3)][row - top][col - left];
@@ -807,7 +818,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
               if((col - sgcol) % 3)
               {
                 float(*rfx)[3] = &rgb[0][row - top][col - left];
-                short *hex = HEXMAP(row,col);
+                const short *const hex = hexmap(row,col,allhex);
                 for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
                   if(hex[d] + hex[d + 1])
                   {

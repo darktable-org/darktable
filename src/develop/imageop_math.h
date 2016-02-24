@@ -186,27 +186,25 @@ static inline int FC(const size_t row, const size_t col, const unsigned int filt
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
-/** Calculate modulo with a positive result regardless of sign of a **/
-static inline int umod(const int a, const int n)
-{
-  // note that this does not produce a useful result if n is negative
-  const int r = a % n;
-  return (r >= 0) ? r : n + r;
-}
-
 /** Calculate the xtrans pattern color from the row and column **/
-static inline int FCxtrans(int row, int col, const dt_iop_roi_t *const roi,
+static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
                            const uint8_t (*const xtrans)[6])
 {
+  // Add +600 (which must be a multiple of CFA width 6) as offset can
+  // be negative and need to ensure a non-negative array index. The
+  // negative offsets in current code come from the demosaic iop:
+  // Markesteijn 1-pass (-12), Markesteijn 3-pass (-17), and VNG (-2).
+  int irow = row + 600;
+  int icol = col + 600;
+  assert(irow >= 0 && icol >= 0);
+
   if(roi)
   {
-    row += roi->y;
-    col += roi->x;
+    irow += roi->y;
+    icol += roi->x;
   }
 
-  // use unsigned modulo as offsets from demosaic iop may be negative
-  // but need to assure a non-negative array index
-  return xtrans[umod(row,6)][umod(col,6)];
+  return xtrans[irow % 6][icol % 6];
 }
 
 static inline int fcol(const int row, const int col, const unsigned int filters,
