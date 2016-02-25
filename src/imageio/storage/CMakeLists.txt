@@ -5,7 +5,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../" "${CMAKE_CURRENT_SOURCE
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-add_definitions(-include module_api.h)
+add_definitions(-include common/module_api.h)
 add_definitions(-include imageio/storage/imageio_storage_api.h)
 
 set(MODULES disk email gallery latex)

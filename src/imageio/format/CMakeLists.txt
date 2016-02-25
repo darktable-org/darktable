@@ -6,7 +6,7 @@ include_directories(SYSTEM "${PNG_PNG_INCLUDE_DIR}")
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-add_definitions(-include module_api.h)
+add_definitions(-include common/module_api.h)
 add_definitions(-include imageio/format/imageio_format_api.h)
 
 set(MODULES copy jpeg pdf png ppm pfm tiff )
