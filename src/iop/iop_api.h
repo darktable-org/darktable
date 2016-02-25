@@ -52,6 +52,8 @@ typedef void dt_iop_params_t;
 
 // !!! MUST BE KEPT IN SYNC WITH dt_iop_module_so_t and dt_iop_module_t defined in src/develop/imageop.h !!!
 
+#pragma GCC visibility push(default)
+
 /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
 void init_presets(struct dt_iop_module_so_t *self);
 /** called once per module, at startup. */
@@ -186,6 +188,8 @@ dt_introspection_t *get_introspection();
 dt_introspection_field_t *get_introspection_linear();
 void *get_p(const void *param, const char *name);
 dt_introspection_field_t *get_f(const char *name);
+
+#pragma GCC visibility pop
 
 #ifdef __cplusplus
 }
