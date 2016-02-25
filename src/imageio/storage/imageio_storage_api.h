@@ -35,6 +35,8 @@ struct dt_imageio_module_data_t;
 
 // !!! MUST BE KEPT IN SYNC WITH dt_imageio_module_storage_t defined in src/common/imageio_module.h !!!
 
+#pragma GCC visibility push(default)
+
 int version();
 /* get translated module name */
 const char *name(const struct dt_imageio_module_storage_t *self);
@@ -77,6 +79,8 @@ void free_params(struct dt_imageio_module_storage_t *self, struct dt_imageio_mod
 int set_params(struct dt_imageio_module_storage_t *self, const void *params, const int size);
 
 void export_dispatched(struct dt_imageio_module_storage_t *self);
+
+#pragma GCC visibility pop
 
 #ifdef __cplusplus
 }
