@@ -7,7 +7,7 @@ NEW_VERSION=$2
 
 VERSION_H_NEEDS_UPDATE=1
 if [ -z "$NEW_VERSION" ]; then
-  NEW_VERSION=`git describe --tags --dirty | sed 's,^release-,,;s,-,+,;s,-,~,;'`
+  NEW_VERSION=`./tools/get_git_version_string.sh`
 fi
 
 if [ -n  "`echo -e $NEW_VERSION | grep  Format`" ]; then

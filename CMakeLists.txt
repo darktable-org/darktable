@@ -163,8 +163,8 @@ else(DEFINED PROJECT_VERSION)
   if(NOT SOURCE_PACKAGE) # i.e., a git checkout
     # this part is setting the corresponding CMake variable which gets used for example when creating a source package
     execute_process(
-      COMMAND git describe --tags --dirty
-      COMMAND sed "s,^release-,,;s,-,+,;s,-,~,;" OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PROJECT_VERSION
+      COMMAND ${CMAKE_SOURCE_DIR}/tools/get_git_version_string.sh OUTPUT_STRIP_TRAILING_WHITESPACE
+      OUTPUT_VARIABLE PROJECT_VERSION
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     generate_version_gen_h()
   else(NOT SOURCE_PACKAGE)
