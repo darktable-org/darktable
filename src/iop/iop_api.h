@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+#include "common/introspection.h"
+
 #include <cairo/cairo.h>
 #include <glib.h>
 #include <stdint.h>
@@ -49,6 +51,8 @@ typedef void dt_iop_params_t;
 /* early definition of modules to do type checking */
 
 // !!! MUST BE KEPT IN SYNC WITH dt_iop_module_so_t and dt_iop_module_t defined in src/develop/imageop.h !!!
+
+#pragma GCC visibility push(default)
 
 /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
 void init_presets(struct dt_iop_module_so_t *self);
@@ -177,7 +181,15 @@ int distort_transform(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 int distort_backtransform(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count);
 
-// FIXME: introspection?
+
+// introspection related callbacks, will be auto-implemented if DT_MODULE_INTROSPECTION() is used,
+int introspection_init(struct dt_iop_module_so_t *self, int api_version);
+dt_introspection_t *get_introspection();
+dt_introspection_field_t *get_introspection_linear();
+void *get_p(const void *param, const char *name);
+dt_introspection_field_t *get_f(const char *name);
+
+#pragma GCC visibility pop
 
 #ifdef __cplusplus
 }

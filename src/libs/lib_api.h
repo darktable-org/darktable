@@ -36,6 +36,8 @@ struct dt_view_t;
 
 // !!! MUST BE KEPT IN SYNC WITH dt_lib_module_t defined in src/libs/lib.h !!!
 
+#pragma GCC visibility push(default)
+
 /** version */
 int version();
 /** get name of the module, to be translated. */
@@ -89,6 +91,8 @@ void init_presets(struct dt_lib_module_t *self);
 /** Optional callbacks for keyboard accelerators */
 void init_key_accels(struct dt_lib_module_t *self);
 void connect_key_accels(struct dt_lib_module_t *self);
+
+#pragma GCC visibility pop
 
 #ifdef __cplusplus
 }
