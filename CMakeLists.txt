@@ -169,7 +169,12 @@ else(DEFINED PROJECT_VERSION)
     generate_version_gen_h()
   else(NOT SOURCE_PACKAGE)
     if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
+      # should be expanded by git archive due to export-subst in .gitattributes
       set(PROJECT_VERSION "archive-$Format:%H$")
+      # but was it expanded?
+      if(PROJECT_VERSION MATCHES Format)
+        set(PROJECT_VERSION "unknown-version")
+      endif(PROJECT_VERSION MATCHES Format)
       generate_version_gen_h(${PROJECT_VERSION})
     else(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
       # no need to create version_gen.h if it's already shipped. that is for example the case with our release tarballs
