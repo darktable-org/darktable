@@ -34,6 +34,8 @@ struct dt_imageio_module_data_t;
 
 // !!! MUST BE KEPT IN SYNC WITH dt_imageio_module_format_t defined in src/common/imageio_module.h !!!
 
+#pragma GCC visibility push(default)
+
 // gui and management:
 /** version */
 int version();
@@ -82,6 +84,8 @@ int levels(struct dt_imageio_module_data_t *data);
 int flags(struct dt_imageio_module_data_t *data);
 
 int read_image(struct dt_imageio_module_data_t *data, uint8_t *out);
+
+#pragma GCC visibility pop
 
 #ifdef __cplusplus
 }
