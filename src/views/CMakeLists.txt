@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
 add_definitions(-include views/view_api.h)
 
 set(MODULES darkroom lighttable slideshow)

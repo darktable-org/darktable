@@ -33,6 +33,8 @@ struct dt_view_t;
 
 // !!! MUST BE KEPT IN SYNC WITH dt_view_t defined in src/views/view.h !!!
 
+#pragma GCC visibility push(default)
+
 const char *name(struct dt_view_t *self);    // get translatable name
 uint32_t view(const struct dt_view_t *self); // get the view type
 void init(struct dt_view_t *self);           // init *data
@@ -61,6 +63,8 @@ void scrolled(struct dt_view_t *self, double x, double y, int up, int state); //
 // keyboard accel callbacks
 void init_key_accels(struct dt_view_t *self);
 void connect_key_accels(struct dt_view_t *self);
+
+#pragma GCC visibility pop
 
 #ifdef __cplusplus
 }
