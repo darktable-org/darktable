@@ -69,6 +69,4 @@ ADD_CUSTOM_TARGET(pkgsrc
   COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/src/version_gen.h
 )
 
-if(DO_GENERATE_VERSION)
-  add_dependencies(pkgsrc generate_version)
-endif(DO_GENERATE_VERSION)
+add_dependencies(pkgsrc generate_version)

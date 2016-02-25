@@ -132,15 +132,33 @@ endif(WIN32)
 #
 # Set package version
 #
-set(DO_GENERATE_VERSION Off)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/") # the src/ subdirectory won't exist yet
+
+# adds custom command to generate header containing version info.
+# takes 1 optional parameter - version override.
+function(generate_version_gen_h)
+  if(ARGC EQUAL 1)
+    # if a version override was specified, use it
+    set(_VERSION "${ARGV0}")
+  else()
+    # else, the tool will autodetect the version
+    set(_VERSION "")
+  endif()
+
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h ${_VERSION}
+    DEPENDS ${CMAKE_SOURCE_DIR}/tools/create_version_h.sh
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Updating version string"
+    VERBATIM # else might break when export-subst was needed but did not happen
+  )
+endfunction(generate_version_gen_h)
+
 if(DEFINED PROJECT_VERSION)
   #project version is defined by -D on the cmake command line
-  # only use that value, do not upate it at make time
-  execute_process(
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h ${PROJECT_VERSION}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  )
+  # only use that value, do not update it at make time
+  generate_version_gen_h(${PROJECT_VERSION})
 else(DEFINED PROJECT_VERSION)
   if(NOT SOURCE_PACKAGE) # i.e., a git checkout
     # this part is setting the corresponding CMake variable which gets used for example when creating a source package
@@ -148,23 +166,31 @@ else(DEFINED PROJECT_VERSION)
       COMMAND git describe --tags --dirty
       COMMAND sed "s,^release-,,;s,-,+,;s,-,~,;" OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PROJECT_VERSION
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-    add_custom_target(generate_version ALL
-      COMMAND ${CMAKE_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
-      COMMENT "Updating version string"
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
-    set(DO_GENERATE_VERSION On)
-  elseif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
-  # no need to create version_gen.h if it's already shipped. that is for example the case with our release tarballs
-#   else(NOT SOURCE_PACKAGE)
-    set(PROJECT_VERSION "archive-$Format:%H$")
-    execute_process(
-      COMMAND ${CMAKE_SOURCE_DIR}/tools/create_version_h.sh ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h ${PROJECT_VERSION}
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
+    generate_version_gen_h()
+  else(NOT SOURCE_PACKAGE)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
+      set(PROJECT_VERSION "archive-$Format:%H$")
+      generate_version_gen_h(${PROJECT_VERSION})
+    else(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
+      # no need to create version_gen.h if it's already shipped. that is for example the case with our release tarballs
+      # but generate_version target expects it to be in build dir, so we need to copy it
+      add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Updating version string"
+      )
+    endif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
   endif(NOT SOURCE_PACKAGE)
 endif(DEFINED PROJECT_VERSION)
 
+# WARNING: no target should reference version_gen.h directly. instead, they should add_dependencies(yourtarget generate_version)
+add_custom_target(
+  generate_version ALL
+  DEPENDS ${CMAKE_SOURCE_DIR}/tools/create_version_h.sh
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 #
 # Initial cmake/debian/postinst and prerm script for debian package
