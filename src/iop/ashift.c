@@ -80,7 +80,7 @@
 #define NMS_EPSILON 1e-10                   // break criterion for Nelder-Mead simplex
 #define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
 #define NMS_ITERATIONS 200                  // maximum number of iterations for Nelder-Mead simplex
-#define ASHIFT_DEFAULT_F_LENGTH 28.0        // focal length we assume if no exif data are available
+#define DEFAULT_F_LENGTH 28.0               // focal length we assume if no exif data are available
 
 #undef ASHIFT_DEBUG
 
@@ -334,7 +334,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
     new->toggle = old->toggle;
-    new->f_length = ASHIFT_DEFAULT_F_LENGTH;
+    new->f_length = DEFAULT_F_LENGTH;
     new->crop_factor = 1.0f;
     new->orthocorr = 100.0f;
     new->aspect = 1.0f;
@@ -1604,7 +1604,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   fit.lines_count = g->lines_count;
   fit.width = g->lines_in_width;
   fit.height = g->lines_in_height;
-  fit.f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? ASHIFT_DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
+  fit.f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
   fit.orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   fit.aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
   fit.rotation = p->rotation;
@@ -1732,7 +1732,7 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
   fit.lines_count = g->lines_count;
   fit.width = g->lines_in_width;
   fit.height = g->lines_in_height;
-  fit.f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? ASHIFT_DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
+  fit.f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
   fit.orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   fit.aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
   fit.rotation = p->rotation;
@@ -2617,26 +2617,16 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   return 0;
 }
 
-// adjust the range values in gui data if needed from the narrow default boundaries
-// to soft boundaries
-static void range_adjust(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
-{
-  g->rotation_range = fabs(p->rotation) > ROTATION_RANGE ? ROTATION_RANGE_SOFT : g->rotation_range;
-  g->lensshift_v_range = fabs(p->lensshift_v) > LENSSHIFT_RANGE ? LENSSHIFT_RANGE_SOFT : g->lensshift_v_range;
-  g->lensshift_h_range = fabs(p->lensshift_h) > LENSSHIFT_RANGE ? LENSSHIFT_RANGE_SOFT : g->lensshift_h_range;
-}
-
 static void rotation_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   p->rotation = dt_bauhaus_slider_get(slider);
 #ifdef ASHIFT_DEBUG
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
-  range_adjust(p, g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2645,12 +2635,11 @@ static void lensshift_v_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   p->lensshift_v = dt_bauhaus_slider_get(slider);
 #ifdef ASHIFT_DEBUG
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
-  range_adjust(p, g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2659,12 +2648,11 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   p->lensshift_h = dt_bauhaus_slider_get(slider);
 #ifdef ASHIFT_DEBUG
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
-  range_adjust(p, g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2935,7 +2923,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->rotation = p->rotation;
   d->lensshift_v = p->lensshift_v;
   d->lensshift_h = p->lensshift_h;
-  d->f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? ASHIFT_DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
+  d->f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
 }
@@ -2995,19 +2983,18 @@ void init(dt_iop_module_t *module)
   module->priority = 252; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, ASHIFT_DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0 };
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0 };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
 }
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)module->params;
   // our module is disabled by default
   module->default_enabled = 0;
 
   int isflipped = 0;
-  float f_length = ASHIFT_DEFAULT_F_LENGTH;
+  float f_length = DEFAULT_F_LENGTH;
   float crop_factor = 1.0f;
 
   // try to get information on orientation, focal length and crop factor from image data
@@ -3071,9 +3058,9 @@ void reload_defaults(dt_iop_module_t *module)
     g->vertical_count = 0;
     g->grid_hash = 0;
     g->lines_hash = 0;
-    g->rotation_range = ROTATION_RANGE;
-    g->lensshift_v_range = LENSSHIFT_RANGE;
-    g->lensshift_h_range = LENSSHIFT_RANGE;
+    g->rotation_range = ROTATION_RANGE_SOFT;
+    g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
+    g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
     g->lines_suppressed = 0;
     g->lines_version = 0;
     g->show_guides = 0;
@@ -3087,8 +3074,6 @@ void reload_defaults(dt_iop_module_t *module)
     g->points_idx = NULL;
     g->points_lines_count = 0;
     g->points_version = 0;
-
-    range_adjust(p, g);
   }
 }
 
@@ -3231,14 +3216,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->points_version = 0;
   g->grid_hash = 0;
   g->lines_hash = 0;
-  g->rotation_range = ROTATION_RANGE;
-  g->lensshift_v_range = LENSSHIFT_RANGE;
-  g->lensshift_h_range = LENSSHIFT_RANGE;
+  g->rotation_range = ROTATION_RANGE_SOFT;
+  g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
+  g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
   g->show_guides = 0;
   g->isselecting = 0;
   g->isdeselecting = 0;
   g->selecting_lines_version = 0;
-  range_adjust(p, g);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -3274,12 +3258,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->f_length, NULL, _("focal length"));
   dt_bauhaus_slider_set_callback(g->f_length, log10_callback);
   dt_bauhaus_slider_set_format(g->f_length, "%.0fmm");
-  dt_bauhaus_slider_set_default(g->f_length, ASHIFT_DEFAULT_F_LENGTH);
-  dt_bauhaus_slider_set(g->f_length, ASHIFT_DEFAULT_F_LENGTH);
+  dt_bauhaus_slider_set_default(g->f_length, DEFAULT_F_LENGTH);
+  dt_bauhaus_slider_set(g->f_length, DEFAULT_F_LENGTH);
   dt_bauhaus_slider_enable_soft_boundaries(g->f_length, 1.0f, 2000.0f);
   gtk_box_pack_start(GTK_BOX(self->widget), g->f_length, TRUE, TRUE, 0);
 
-  g->crop_factor = dt_bauhaus_slider_new_with_range(self, 1.0f, 2.0f, 0.1f, p->crop_factor, 2);
+  g->crop_factor = dt_bauhaus_slider_new_with_range(self, 1.0f, 2.0f, 0.01f, p->crop_factor, 2);
   dt_bauhaus_widget_set_label(g->crop_factor, NULL, _("crop factor"));
   dt_bauhaus_slider_enable_soft_boundaries(g->crop_factor, 0.5f, 10.0f);
   gtk_box_pack_start(GTK_BOX(self->widget), g->crop_factor, TRUE, TRUE, 0);
