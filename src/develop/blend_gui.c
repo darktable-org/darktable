@@ -1344,6 +1344,7 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   g_list_free(bd->masks_combine);
   g_list_free(bd->masks_invert);
   g_list_free_full(bd->blend_modes_all, g_free);
+  free(bd->masks_combo_ids);
 
   memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
 

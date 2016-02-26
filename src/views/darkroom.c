@@ -552,10 +552,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   {
     dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
   }
-  dt_masks_init_form_gui(dev);
-  dev->form_visible = NULL;
-  dev->form_gui->pipe_hash = 0;
-  dev->form_gui->formid = 0;
+  dt_masks_change_form_gui(NULL);
 
   select_this_image(imgid);
 
@@ -1629,8 +1626,7 @@ void enter(dt_view_t *self)
   {
     dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
   }
-  dt_masks_init_form_gui(dev);
-  dev->form_visible = NULL;
+  dt_masks_change_form_gui(NULL);
   dev->form_gui->pipe_hash = 0;
   dev->form_gui->formid = 0;
   dev->gui_leaving = 0;
@@ -1813,7 +1809,7 @@ void leave(dt_view_t *self)
     dt_masks_clear_form_gui(dev);
     free(dev->form_gui);
     dev->form_gui = NULL;
-    dev->form_visible = NULL;
+    dt_masks_change_form_gui(NULL);
   }
 
   // take care of the overexposed window

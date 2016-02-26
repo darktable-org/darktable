@@ -484,7 +484,6 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->iop = dt_iop_load_modules(dev);
 
   dt_masks_read_forms(dev);
-  dev->form_visible = NULL;
 
   dt_dev_read_history(dev);
 

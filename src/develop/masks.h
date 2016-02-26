@@ -275,7 +275,6 @@ void dt_masks_update_image(dt_develop_t *dev);
 void dt_masks_cleanup_unused(dt_develop_t *dev);
 
 /** function used to manipulate forms for masks */
-void dt_masks_init_form_gui(dt_develop_t *dev);
 void dt_masks_change_form_gui(dt_masks_form_t *newform);
 void dt_masks_clear_form_gui(dt_develop_t *dev);
 void dt_masks_reset_form_gui(void);

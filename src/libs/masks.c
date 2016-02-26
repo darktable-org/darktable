@@ -117,8 +117,6 @@ static void _bt_add_circle(GtkWidget *widget, GdkEventButton *event, dt_lib_modu
   if(event->button == 1)
   {
     // we unset the creation mode
-    dt_masks_form_t *form = darktable.develop->form_visible;
-    if(form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
     _lib_masks_inactivate_icons(self);
     _tree_add_circle(NULL, NULL);
@@ -141,8 +139,6 @@ static void _bt_add_ellipse(GtkWidget *widget, GdkEventButton *event, dt_lib_mod
   if(event->button == 1)
   {
     // we unset the creation mode
-    dt_masks_form_t *form = darktable.develop->form_visible;
-    if(form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
     _lib_masks_inactivate_icons(self);
     _tree_add_ellipse(NULL, NULL);
@@ -165,8 +161,6 @@ static void _bt_add_path(GtkWidget *widget, GdkEventButton *event, dt_lib_module
   if(event->button == 1)
   {
     // we unset the creation mode
-    dt_masks_form_t *form = darktable.develop->form_visible;
-    if(form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
     _lib_masks_inactivate_icons(self);
     _tree_add_path(NULL, NULL);
@@ -189,8 +183,6 @@ static void _bt_add_gradient(GtkWidget *widget, GdkEventButton *event, dt_lib_mo
   if(event->button == 1)
   {
     // we unset the creation mode
-    dt_masks_form_t *form = darktable.develop->form_visible;
-    if(form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
     _lib_masks_inactivate_icons(self);
     _tree_add_gradient(NULL, NULL);
@@ -213,8 +205,6 @@ static void _bt_add_brush(GtkWidget *widget, GdkEventButton *event, dt_lib_modul
   if(event->button == 1)
   {
     // we unset the creation mode
-    dt_masks_form_t *form = darktable.develop->form_visible;
-    if(form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
     _lib_masks_inactivate_icons(self);
     _tree_add_brush(NULL, NULL);
@@ -662,8 +652,7 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
   // we first discard all visible shapes
-  dt_masks_clear_form_gui(darktable.develop);
-  darktable.develop->form_visible = NULL;
+  dt_masks_change_form_gui(NULL);
 
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
@@ -703,8 +692,7 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
   // we first discard all visible shapes
-  dt_masks_clear_form_gui(darktable.develop);
-  darktable.develop->form_visible = NULL;
+  dt_masks_change_form_gui(NULL);
 
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
@@ -743,8 +731,7 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
   // we first discard all visible shapes
-  dt_masks_clear_form_gui(darktable.develop);
-  darktable.develop->form_visible = NULL;
+  dt_masks_change_form_gui(NULL);
 
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
@@ -859,8 +846,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   int nb = gtk_tree_selection_count_selected_rows(selection);
   if(nb == 0)
   {
-    dt_masks_clear_form_gui(darktable.develop);
-    darktable.develop->form_visible = NULL;
+    dt_masks_change_form_gui(NULL);
     dt_control_queue_redraw_center();
     return;
   }
@@ -919,10 +905,10 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
     items = g_list_next(items);
   }
   dt_masks_form_t *grp2 = dt_masks_create(DT_MASKS_GROUP);
+  grp2->formid = 0;
   dt_masks_group_ungroup(grp2, grp);
-  free(grp);
-  dt_masks_clear_form_gui(darktable.develop);
-  darktable.develop->form_visible = grp2;
+  dt_masks_free_form(grp);
+  dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = DT_MASKS_EDIT_FULL;
   dt_control_queue_redraw_center();
 }

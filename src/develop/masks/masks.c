@@ -1349,6 +1349,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
 
 void dt_masks_clear_form_gui(dt_develop_t *dev)
 {
+  if(!dev->form_gui) return;
   g_list_free_full(dev->form_gui->points, dt_masks_form_gui_points_free);
   dev->form_gui->points = NULL;
   dt_masks_dynbuf_free(dev->form_gui->guipoints);
@@ -1374,27 +1375,21 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
 
   dev->form_gui->group_edited = -1;
   dev->form_gui->group_selected = -1;
-}
-
-void dt_masks_init_form_gui(dt_develop_t *dev)
-{
-  dt_masks_clear_form_gui(dev);
   dev->form_gui->edit_mode = DT_MASKS_EDIT_OFF;
-  dev->form_gui->guipoints = NULL;
-  dev->form_gui->guipoints_payload = NULL;
-  dev->form_gui->guipoints_count = 0;
 }
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
 {
   dt_masks_clear_form_gui(darktable.develop);
+  // free the actual mask form if it's id is 0 (temp mask)
+  if(darktable.develop->form_visible && darktable.develop->form_visible->formid == 0)
+    dt_masks_free_form(darktable.develop->form_visible);
   darktable.develop->form_visible = newform;
 }
 
 void dt_masks_reset_form_gui(void)
 {
-  darktable.develop->form_visible = NULL;
-  dt_masks_clear_form_gui(darktable.develop);
+  dt_masks_change_form_gui(NULL);
   dt_iop_module_t *m = darktable.develop->gui_module;
   if(m && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
   {
@@ -1884,11 +1879,11 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
   GList *forms = g_list_first(darktable.develop->forms);
   while(forms)
   {
-    dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
-    if(form->formid == id)
+    dt_masks_form_t *f = (dt_masks_form_t *)forms->data;
+    if(f->formid == id)
     {
-      darktable.develop->forms = g_list_remove(darktable.develop->forms, form);
-      dt_masks_free_form(form);
+      darktable.develop->forms = g_list_remove(darktable.develop->forms, f);
+      dt_masks_free_form(f);
       dt_masks_write_forms(darktable.develop);
       break;
     }
