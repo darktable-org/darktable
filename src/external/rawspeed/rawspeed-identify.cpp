@@ -19,13 +19,8 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-#include "rawspeed/RawSpeed/RawSpeed-API.h"
-
-#define __STDC_LIMIT_MACROS
-
-#include <stdint.h>
 #include <stdio.h>
+#include "rawspeed/RawSpeed/RawSpeed-API.h"
 
 // define this function, it is only declared in rawspeed:
 int rawspeed_get_number_of_processor_cores()
@@ -116,11 +111,11 @@ int main(int argc, const char* argv[])
                     r->metadata.wbCoeffs[2], r->metadata.wbCoeffs[3]);
 
     fprintf(stdout, "isCFA: %d\n", r->isCFA);
-    uint32_t filters = r->cfa.getDcrawFilter();
+    uint32 filters = r->cfa.getDcrawFilter();
     fprintf(stdout, "filters: %d (0x%x)\n", filters, filters);
-    uint32_t bpp = r->getBpp();
+    uint32 bpp = r->getBpp();
     fprintf(stdout, "bpp: %d\n", bpp);
-    uint32_t cpp = r->getCpp();
+    uint32 cpp = r->getCpp();
     fprintf(stdout, "cpp: %d\n", cpp);
     fprintf(stdout, "dataType: %d\n", r->getDataType());
 
@@ -140,10 +135,10 @@ int main(int argc, const char* argv[])
     fprintf(stdout, "pixel_aspect_ratio: %f\n", r->metadata.pixelAspectRatio);
 
     double sum = 0.0f;
-    for(uint32_t row = 0; row < ((uint32_t) dimUncropped.y); row++)
+    for(uint32 row = 0; row < ((uint32) dimUncropped.y); row++)
     {
-      uint8_t *data = r->getDataUncropped(0, row);
-      for(uint32_t byte = 0; byte < ((uint32_t) dimUncropped.x*bpp) ; byte++)
+      uchar8 *data = r->getDataUncropped(0, row);
+      for(uint32 byte = 0; byte < ((uint32) dimUncropped.x*bpp) ; byte++)
         sum += (double) data[byte];
     }
     fprintf(stdout, "Image byte sum: %lf\n", sum);
