@@ -677,7 +677,6 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    // as points are already in orignal image coordinates we can homograph them directly
     float pi[3] = { points[i], points[i + 1], 1.0f };
     float po[3];
     mat3mulv(po, (float *)homograph, pi);
@@ -703,7 +702,6 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    // as points are already in original image coordinates we can homograph them directly
     float pi[3] = { points[i], points[i + 1], 1.0f };
     float po[3];
     mat3mulv(po, (float *)ihomograph, pi);
@@ -1585,7 +1583,7 @@ static double model_fitness(double *params, void *data)
     vec3prodn(L, P1, P2);
 
     // normalize L so that x^2 + y^2 = 1; makes sure that
-    // y^2 = 1 / (1 + m^2) with the slope m of the line
+    // y^2 = 1 / (1 + m^2) and x^2 = m^2 / (1 + m^2) with m defining the slope of the line
     vec3lnorm(L, L);
 
     // get scalar product of line L with orthogonal axis A -> gives 0 if line is perpendicular
