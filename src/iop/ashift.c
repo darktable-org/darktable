@@ -49,18 +49,6 @@
 // Thanks to Marcus for his support when implementing part of the ShiftN functionality
 // to darktable.
 
-// For line detection we use the LSD algorithm as published by Rafael Grompone:
-//
-//  "LSD: a Line Segment Detector" by Rafael Grompone von Gioi,
-//  Jeremie Jakubowicz, Jean-Michel Morel, and Gregory Randall,
-//  Image Processing On Line, 2012. DOI:10.5201/ipol.2012.gjmr-lsd
-//  http://dx.doi.org/10.5201/ipol.2012.gjmr-lsd
-#include "ashift_lsd.c"
-
-// For parameter optimization we are using the Nelder-Mead simplex method
-// implemented by Michael F. Hutt.
-#include "ashift_nmsimplex.c"
-
 #define ROTATION_RANGE 10                   // allowed min/max default range for rotation parameter
 #define ROTATION_RANGE_SOFT 20              // allowed min/max range for rotation parameter with manual adjustment
 #define LENSSHIFT_RANGE 0.5                 // allowed min/max default range for lensshift paramters
@@ -79,10 +67,28 @@
 #define MINIMUM_FITLINES 4                  // minimum number of lines needed for automatic parameter fit
 #define NMS_EPSILON 1e-10                   // break criterion for Nelder-Mead simplex
 #define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
-#define NMS_ITERATIONS 200                  // maximum number of iterations for Nelder-Mead simplex
+#define NMS_ITERATIONS 200                  // number of iterations for Nelder-Mead simplex
+#define NMS_MAX_IT 1000                     // maximum number of iterations for Nelder-Mead simplex
+#define NMS_ALPHA 1.0                       // reflection coefficient for Nelder-Mead simplex
+#define NMS_BETA 0.5                        // contraction coefficient for Nelder-Mead simplex
+#define NMS_GAMMA 2.0                       // expansion coefficient for Nelder-Mead simplex
 #define DEFAULT_F_LENGTH 28.0               // focal length we assume if no exif data are available
 
+// define to get debugging output
 #undef ASHIFT_DEBUG
+
+// For line detection we use the LSD algorithm as published by Rafael Grompone:
+//
+//  "LSD: a Line Segment Detector" by Rafael Grompone von Gioi,
+//  Jeremie Jakubowicz, Jean-Michel Morel, and Gregory Randall,
+//  Image Processing On Line, 2012. DOI:10.5201/ipol.2012.gjmr-lsd
+//  http://dx.doi.org/10.5201/ipol.2012.gjmr-lsd
+#include "ashift_lsd.c"
+
+// For parameter optimization we are using the Nelder-Mead simplex method
+// implemented by Michael F. Hutt.
+#include "ashift_nmsimplex.c"
+
 
 DT_MODULE_INTROSPECTION(2, dt_iop_ashift_params_t)
 
@@ -418,6 +424,22 @@ static inline void vec3norm(float *dst, const float *const v)
   dst[1] = v[1] * f;
   dst[2] = v[2] * f;
 }
+
+// normalize a 3x1 vector so that x^2 + y^2 = 1; a useful normalization for
+// lines in homogeneous coordinates
+// dst and v may be the same
+static inline void vec3lnorm(float *dst, const float *const v)
+{
+  const float sq = sqrt(v[0] * v[0] + v[1] * v[1]);
+
+  // special handling for a point vector of the image center
+  const float f = sq > 0.0f ? 1.0f / sq : 1.0f;
+
+  dst[0] = v[0] * f;
+  dst[1] = v[1] * f;
+  dst[2] = v[2] * f;
+}
+
 
 // scalar product of two 3x1 vectors
 static inline float vec3scalar(const float *const v1, const float *const v2)
@@ -1479,8 +1501,6 @@ static inline double ilogit(double L, double min, double max)
 //    * generate new line out of transformed end points
 //    * calculate scalar product v of line with perpendicular axis
 //    * sum over weighted v^2 values
-// TODO: for fitting in both directions check if we should consolidate
-//       individually and combine with a 50:50 weighting
 static double model_fitness(double *params, void *data)
 {
   dt_iop_ashift_fit_params_t *fit = (dt_iop_ashift_fit_params_t *)data;
@@ -1538,6 +1558,8 @@ static double model_fitness(double *params, void *data)
   double sumsq_h = 0.0;
   double weight_v = 0.0;
   double weight_h = 0.0;
+  int count_v = 0;
+  int count_h = 0;
   int count = 0;
 
   // iterate over all lines
@@ -1547,11 +1569,11 @@ static double model_fitness(double *params, void *data)
     if((lines[n].type & fit->linemask) != fit->linetype)
       continue;
 
-    // the direction of this line (vertical)
-    const int vertical = lines[n].type & ASHIFT_LINE_DIRVERT;
+    // the direction of this line (vertical?)
+    const int isvertical = lines[n].type & ASHIFT_LINE_DIRVERT;
 
     // select the perpendicular reference axis
-    const float *A = vertical ? Ah : Av;
+    const float *A = isvertical ? Ah : Av;
 
     // apply homographic transformation to the end points
     float P1[3], P2[3];
@@ -1562,21 +1584,28 @@ static double model_fitness(double *params, void *data)
     float L[3];
     vec3prodn(L, P1, P2);
 
-    // get scalar product of line with orthogonal axis -> gives 0 if line is perpendicular
-    float v = vec3scalar(L, A);
+    // normalize L so that x^2 + y^2 = 1; makes sure that
+    // y^2 = 1 / (1 + m^2) with the slope m of the line
+    vec3lnorm(L, L);
 
-    // sum up weighted v^2 for both directions individually
-    sumsq_v += vertical ? v * v * lines[n].weight : 0.0;
-    weight_v  += vertical ? lines[n].weight : 0.0;
-    sumsq_h += !vertical ? v * v * lines[n].weight : 0.0;
-    weight_h  += !vertical ? lines[n].weight : 0.0;;
+    // get scalar product of line L with orthogonal axis A -> gives 0 if line is perpendicular
+    float s = vec3scalar(L, A);
+
+    // sum up weighted s^2 for both directions individually
+    sumsq_v += isvertical ? s * s * lines[n].weight : 0.0;
+    weight_v  += isvertical ? lines[n].weight : 0.0;
+    count_v += isvertical ? 1 : 0;
+    sumsq_h += !isvertical ? s * s * lines[n].weight : 0.0;
+    weight_h  += !isvertical ? lines[n].weight : 0.0;;
+    count_h += !isvertical ? 1 : 0;
     count++;
   }
 
-  sumsq_v = weight_v > 0.0f ? sumsq_v / weight_v : 0.0;
-  sumsq_h = weight_h > 0.0f ? sumsq_h / weight_h : 0.0;
+  const double v = weight_v > 0.0f && count > 0 ? sumsq_v / weight_v * (float)count_v / count : 0.0;
+  const double h = weight_h > 0.0f && count > 0 ? sumsq_h / weight_h * (float)count_h / count : 0.0;
 
-  double sum = sqrt(1.0 - (1.0 - sumsq_v) * (1.0 - sumsq_h)) * 1.0e6;
+  double sum = sqrt(1.0 - (1.0 - v) * (1.0 - h)) * 1.0e6;
+  //double sum = sqrt(v + h) * 1.0e6;
 
 #ifdef ASHIFT_DEBUG
   printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f -> lines %d, quality %10f\n",

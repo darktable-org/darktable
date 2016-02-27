@@ -20,6 +20,7 @@
  * implemented by Michael F. Hutt.
  * Changes versus the original code:
  *      do not include "nmsimplex.h" (not needed)
+ *      renamed configuration variables to NMS_*
  *      add additional argument to objfun for arbitrary parameters
  *      simplex() returns number of used interations intead of min value
  *      make interface function simplex() static
@@ -27,10 +28,6 @@
  *      comment out printing of status inormation
  *      reformat according to darktable's clang standards
  */
-#define MAX_IT 1000 /* maximum number of iterations */
-#define ALPHA 1.0   /* reflection coefficient */
-#define BETA 0.5    /* contraction coefficient */
-#define GAMMA 2.0   /* expansion coefficient */
 
 /*==================================================================================
  * begin nmsimplex code downloaded from http://www.mikehutt.com/neldermead.html
@@ -171,7 +168,7 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
 #endif
 
   /* begin the main loop of the minimization */
-  for(itr = 1; itr <= MAX_IT; itr++)
+  for(itr = 1; itr <= NMS_MAX_IT; itr++)
   {
     /* find the index of the largest value */
     vg = 0;
@@ -220,8 +217,8 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
     /* reflect vg to new vertex vr */
     for(j = 0; j <= n - 1; j++)
     {
-      /*vr[j] = (1+ALPHA)*vm[j] - ALPHA*v[vg][j];*/
-      vr[j] = vm[j] + ALPHA * (vm[j] - v[vg][j]);
+      /*vr[j] = (1+NMS_ALPHA)*vm[j] - NMS_ALPHA*v[vg][j];*/
+      vr[j] = vm[j] + NMS_ALPHA * (vm[j] - v[vg][j]);
     }
     if(constrain != NULL)
     {
@@ -244,8 +241,8 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
     {
       for(j = 0; j <= n - 1; j++)
       {
-        /*ve[j] = GAMMA*vr[j] + (1-GAMMA)*vm[j];*/
-        ve[j] = vm[j] + GAMMA * (vr[j] - vm[j]);
+        /*ve[j] = NMS_GAMMA*vr[j] + (1-NMS_GAMMA)*vm[j];*/
+        ve[j] = vm[j] + NMS_GAMMA * (vr[j] - vm[j]);
       }
       if(constrain != NULL)
       {
@@ -284,8 +281,8 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
         /* perform outside contraction */
         for(j = 0; j <= n - 1; j++)
         {
-          /*vc[j] = BETA*v[vg][j] + (1-BETA)*vm[j];*/
-          vc[j] = vm[j] + BETA * (vr[j] - vm[j]);
+          /*vc[j] = NMS_BETA*v[vg][j] + (1-NMS_BETA)*vm[j];*/
+          vc[j] = vm[j] + NMS_BETA * (vr[j] - vm[j]);
         }
         if(constrain != NULL)
         {
@@ -299,8 +296,8 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
         /* perform inside contraction */
         for(j = 0; j <= n - 1; j++)
         {
-          /*vc[j] = BETA*v[vg][j] + (1-BETA)*vm[j];*/
-          vc[j] = vm[j] - BETA * (vm[j] - v[vg][j]);
+          /*vc[j] = NMS_BETA*v[vg][j] + (1-NMS_BETA)*vm[j];*/
+          vc[j] = vm[j] - NMS_BETA * (vm[j] - v[vg][j]);
         }
         if(constrain != NULL)
         {
@@ -422,7 +419,3 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
  * end of nmsimplex code
  *==================================================================================*/
 
-#undef MAX_IT
-#undef ALPHA
-#undef BETA
-#undef GAMMA
