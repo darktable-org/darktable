@@ -20,18 +20,12 @@
 #include <omp.h>
 #endif
 
-#include <memory>
-
 #include "rawspeed/RawSpeed/RawSpeed-API.h"
 
 #define __STDC_LIMIT_MACROS
 
-extern "C" {
-#include "config.h"
-#include "common/file_location.h"
 #include <stdint.h>
 #include <stdio.h>
-}
 
 // define this function, it is only declared in rawspeed:
 int rawspeed_get_number_of_processor_cores()
@@ -55,26 +49,21 @@ int main(int argc, const char* argv[])
     return 2;
   }
 
-#ifdef __APPLE__
-  std::auto_ptr<RawDecoder> d;
-  std::auto_ptr<FileMap> m;
-#else
-  std::unique_ptr<RawDecoder> d;
-  std::unique_ptr<FileMap> m;
-#endif
-
-  char camfile[PATH_MAX] = { 0 };
-#if defined(__MACH__) || defined(__APPLE__)
-  char *directory = dt_loc_find_install_dir("/share/darktable", argv[0]);
-  if(!directory)
+  char bindir[1000] = { 0 };
+  size_t len = MIN(strlen(argv[0]), sizeof(bindir));
+  int found_slash = FALSE;
+  for (int i = len-1; i >= 0; i--)
   {
-    fprintf(stderr, "Couldn't find share/darktable folder\n");
-    return 2;
+    if (found_slash)
+      bindir[i] = argv[0][i];
+    else
+      bindir[i] = '\0';
+    if (argv[0][i] == '/')
+      found_slash = TRUE;
   }
-  snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", directory);
-#else
-  snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", DARKTABLE_DATADIR);
-#endif
+
+  char camfile[1000] = { 0 };
+  snprintf(camfile, sizeof(camfile), "%s/../share/darktable/rawspeed/cameras.xml", bindir);
   //fprintf(stderr, "Looking for cameras.xml in '%s'\n", camfile);
 
   try
@@ -86,21 +75,10 @@ int main(int argc, const char* argv[])
 #endif
 
     FileReader f((char *) argv[1]);
+    RawParser t(f.readFile());
+    RawDecoder *d = t.getDecoder(meta);
 
-#ifdef __APPLE__
-    m = auto_ptr<FileMap>(f.readFile());
-#else
-    m = unique_ptr<FileMap>(f.readFile());
-#endif
-
-    RawParser t(m.get());
-#ifdef __APPLE__
-    d = auto_ptr<RawDecoder>(t.getDecoder(meta));
-#else
-    d = unique_ptr<RawDecoder>(t.getDecoder(meta));
-#endif
-
-    if(!d.get())
+    if(!d)
     {
       fprintf(stderr, "ERROR: Couldn't get a RawDecoder instance\n");
       return 2;
