@@ -7600,6 +7600,9 @@
 	<Camera make="OnePlus" model="One A0001" mode="dng">
 		<ID make="OnePlus" model="One">OnePlus One</ID>
 	</Camera>
+	<Camera make="SAMSUNG DIGITAL IMA" model="SAMSUNG GX20" mode="dng">
+		<ID make="Samsung" model="GX20">Samsung GX20</ID>
+	</Camera>
 	<!-- CHDK Cameras -->
 	<Camera make="AVT" model="F-080C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
