@@ -106,14 +106,11 @@ int main(int argc, const char* argv[])
       return 2;
     }
 
+    d->applyCrop = false;
     d->failOnUnknown = true;
-    d->checkSupport(meta);
-    d->decodeRaw();
-    d->decodeMetaData(meta);
     RawImage r = d->mRaw;
 
-    for (uint32 i=0; i<r->errors.size(); i++)
-      fprintf(stderr, "WARNING: [rawspeed] %s\n", r->errors[i]);
+    d->decodeMetaData(meta);
 
     fprintf(stdout, "make: %s\n", r->metadata.make.c_str());
     fprintf(stdout, "model: %s\n", r->metadata.model.c_str());
@@ -121,6 +118,14 @@ int main(int argc, const char* argv[])
     fprintf(stdout, "canonical_make: %s\n", r->metadata.canonical_make.c_str());
     fprintf(stdout, "canonical_model: %s\n", r->metadata.canonical_model.c_str());
     fprintf(stdout, "canonical_alias: %s\n", r->metadata.canonical_alias.c_str());
+
+    d->checkSupport(meta);
+    d->decodeRaw();
+    d->decodeMetaData(meta);
+    r = d->mRaw;
+    for (uint32 i=0; i<r->errors.size(); i++)
+      fprintf(stderr, "WARNING: [rawspeed] %s\n", r->errors[i]);
+
     fprintf(stdout, "blackLevel: %d\n", r->blackLevel);
     fprintf(stdout, "whitePoint: %d\n", r->whitePoint);
 
