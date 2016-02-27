@@ -235,8 +235,6 @@ void Rw2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
   }
 }
 
-
-
 std::string Rw2Decoder::guessMode() {
   float ratio = 3.0f / 2.0f;  // Default
 
@@ -268,7 +266,6 @@ std::string Rw2Decoder::guessMode() {
   _RPT1(0, "Mode guess: '%s'\n", closest_match.c_str());
   return closest_match;
 }
-
 
 PanaBitpump::PanaBitpump(ByteStream* _input) : input(_input), vbits(0) {
 }

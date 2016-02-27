@@ -505,8 +505,8 @@ bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
     if (mode.length() == 0)
       writeLog(DEBUG_PRIO_WARNING, "Unable to find camera in database: %s %s %s\n", make.c_str(), model.c_str(), mode.c_str());
 
-     if (failOnUnknown)
-       ThrowRDE("Camera '%s' '%s', mode '%s' not supported, and not allowed to guess. Sorry.", make.c_str(), model.c_str(), mode.c_str());
+    if (failOnUnknown)
+      ThrowRDE("Camera '%s' '%s', mode '%s' not supported, and not allowed to guess. Sorry.", make.c_str(), model.c_str(), mode.c_str());
 
     // Assume the camera can be decoded, but return false, so decoders can see that we are unsure.
     return false;    
