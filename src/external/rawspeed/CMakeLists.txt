@@ -8,8 +8,7 @@ if(USE_XMLLINT)
 		RESULT_VARIABLE Xmllint_RES
 	)
 	if(NOT ${Xmllint_RES} EQUAL 0 )
-	  # should be FATAL_ERROR, but currently fails => no reason to just break build.
-		message(WARNING "external/rawspeed/data/cameras.xml is not valid")
+		message(FATAL_ERROR "external/rawspeed/data/cameras.xml is not valid")
 	endif(NOT ${Xmllint_RES} EQUAL 0 )
 endif(USE_XMLLINT)
 
