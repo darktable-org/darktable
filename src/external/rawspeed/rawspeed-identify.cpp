@@ -20,6 +20,10 @@
 #include <omp.h>
 #endif
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "rawspeed/RawSpeed/RawSpeed-API.h"
 
 // define this function, it is only declared in rawspeed:
@@ -44,22 +48,41 @@ int main(int argc, const char* argv[])
     return 2;
   }
 
-  char bindir[1000] = { 0 };
-  size_t len = MIN(strlen(argv[0]), sizeof(bindir));
-  int found_slash = FALSE;
-  for (int i = len-1; i >= 0; i--)
-  {
-    if (found_slash)
-      bindir[i] = argv[0][i];
-    else
-      bindir[i] = '\0';
-    if (argv[0][i] == '/')
-      found_slash = TRUE;
+  int found_cameras_xml = FALSE;
+  struct stat statbuf;
+#ifdef RS_CAMERAS_XML_PATH
+  char camfile[1000] = RS_CAMERAS_XML_PATH;
+  if (stat(camfile, &statbuf)) {
+    fprintf(stderr, "WARNING: Couldn't find cameras.xml in '%s'\n", camfile);
+  }
+  else
+    found_cameras_xml = TRUE;
+#else
+  char camfile[1000] = { 0 };
+#endif
+
+  if (!found_cameras_xml) {
+    char bindir[1000] = { 0 };
+    size_t len = MIN(strlen(argv[0]), sizeof(bindir));
+    int found_slash = FALSE;
+    for (int i = len-1; i >= 0; i--)
+    {
+      if (found_slash)
+        bindir[i] = argv[0][i];
+      else
+        bindir[i] = '\0';
+      if (argv[0][i] == '/')
+        found_slash = TRUE;
+    }
+    snprintf(camfile, sizeof(camfile), "%s/../share/darktable/rawspeed/cameras.xml", bindir);
   }
 
-  char camfile[1000] = { 0 };
-  snprintf(camfile, sizeof(camfile), "%s/../share/darktable/rawspeed/cameras.xml", bindir);
-  //fprintf(stderr, "Looking for cameras.xml in '%s'\n", camfile);
+  if (stat(camfile, &statbuf)) {
+    fprintf(stderr, "ERROR: Couldn't find cameras.xml in '%s'\n", camfile);
+    return 2;
+  }
+
+  //fprintf(stderr, "Using cameras.xml from '%s'\n", camfile);
 
   try
   {

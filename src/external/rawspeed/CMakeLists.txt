@@ -44,6 +44,7 @@ target_link_libraries(rawspeed ${RAWSPEED_LIBS})
 
 # Adapted from src/cli/CMakeLists.txt
 if (DEFINED DT_RS_IDENTIFY)
+  add_definitions(-DRS_CAMERAS_XML_PATH="@RUNTIME_INSTALL_PREFIX@/@SHARE_INSTALL@/darktable/rawspeed/cameras.xml")
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../..)
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
