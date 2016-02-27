@@ -703,6 +703,9 @@ add_custom_target(
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+if(USE_XMLLINT)
+  add_dependencies(generate_preferences validate_darktableconfig_xml)
+endif(USE_XMLLINT)
 
 #
 # Generate mapping of key strings to internal metadata id
