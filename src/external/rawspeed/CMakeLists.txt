@@ -1,15 +1,13 @@
 cmake_minimum_required(VERSION 2.6)
 
 if(USE_XMLLINT)
-	execute_process(
-		COMMAND ${Xmllint_BIN} --valid ${CMAKE_CURRENT_SOURCE_DIR}/data/cameras.xml
+	add_custom_target(
+		validate_cameras_xml ALL
+		COMMAND ${Xmllint_BIN} --valid --noout ${CMAKE_CURRENT_SOURCE_DIR}/data/cameras.xml
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/cameras.xml
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-		OUTPUT_QUIET ERROR_QUIET
-		RESULT_VARIABLE Xmllint_RES
+		COMMENT "Checking validity of external/rawspeed/data/cameras.xml"
 	)
-	if(NOT ${Xmllint_RES} EQUAL 0 )
-		message(FATAL_ERROR "external/rawspeed/data/cameras.xml is not valid")
-	endif(NOT ${Xmllint_RES} EQUAL 0 )
 endif(USE_XMLLINT)
 
 install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${SHARE_INSTALL}/darktable/rawspeed)
@@ -40,6 +38,9 @@ endif()
 
 add_definitions(-std=c++11)
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
+if(USE_XMLLINT)
+  add_dependencies(rawspeed validate_cameras_xml)
+endif(USE_XMLLINT)
 target_link_libraries(rawspeed ${RAWSPEED_LIBS})
 
 # Adapted from src/cli/CMakeLists.txt
