@@ -13,7 +13,7 @@
 <!DOCTYPE Cameras [
 <!ELEMENT BlackAreas ( Vertical*, Horizontal* ) >
 
-<!ELEMENT Camera ( CFA?, CFA2?, Crop, Sensor+, BlackAreas?, Aliases?, Hints?, ID? ) >
+<!ELEMENT Camera ( ID?, CFA?, CFA2?, Crop?, Sensor*, BlackAreas?, Aliases?, Hints? ) >
 <!ATTLIST Camera make CDATA #REQUIRED >
 <!ATTLIST Camera model CDATA #REQUIRED >
 <!ATTLIST Camera supported CDATA #IMPLIED >
@@ -70,8 +70,8 @@
 <!ELEMENT Alias (#PCDATA) >
 
 <!ELEMENT ID (#PCDATA) >
-<!ATTLIST Camera make CDATA #REQUIRED >
-<!ATTLIST Camera model CDATA #REQUIRED >
+<!ATTLIST ID make CDATA #REQUIRED >
+<!ATTLIST ID model CDATA #REQUIRED >
 ]>
 
 <Cameras>
@@ -173,13 +173,13 @@
 		</CFA>
 		<Crop x="74" y="12" width="3522" height="2348"/>
 		<Sensor black="126" white="4095"/>
-		<Hints>
-			<Hint name="wb_offset" value="50"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="72"/>
 			<Horizontal y="2" height="8"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="50"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 30D">
 		<ID make="Canon" model="EOS 30D">Canon EOS 30D</ID>
@@ -206,9 +206,6 @@
 		</CFA>
 		<Crop x="42" y="14" width="3474" height="2314"/>
 		<Sensor black="255" white="4095"/>
-		<Hints>
-			<Hint name="wb_offset" value="50"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="12"/>
@@ -219,6 +216,9 @@
 			<Alias id="EOS 350D">Canon EOS 350D</Alias>
 			<Alias id="EOS 350D">Canon EOS 350D Digital</Alias>
 		</Aliases>
+		<Hints>
+			<Hint name="wb_offset" value="50"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 40D" decoder_version="2">
 		<ID make="Canon" model="EOS 40D">Canon EOS 40D</ID>
@@ -866,13 +866,13 @@
 		</CFA>
 		<Crop x="74" y="12" width="3522" height="2348"/>
 		<Sensor black="127" white="3700"/>
-		<Hints>
-			<Hint name="wb_offset" value="68"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="72"/>
 			<Horizontal y="2" height="8"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="68"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS-1D Mark II N">
 		<ID make="Canon" model="EOS-1D Mark II N">Canon EOS-1D Mark II N</ID>
@@ -949,13 +949,13 @@
 		</CFA>
 		<Crop x="98" y="13" width="5010" height="3336"/>
 		<Sensor black="126" white="4060"/>
-		<Hints>
-			<Hint name="wb_offset" value="68"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="96"/>
 			<Horizontal y="2" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="68"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS-1Ds Mark III" decoder_version="1">
 		<ID make="Canon" model="EOS-1Ds Mark III">Canon EOS-1Ds Mark III</ID>
@@ -1046,12 +1046,12 @@
 		</CFA>
 		<Crop x="4" y="8" width="-52" height="-2"/>
 		<Sensor black="31" white="1023"/>
-		<Hints>
-			<Hint name="no_decompressed_lowbits" value=""/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="2094" width="50"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="no_decompressed_lowbits" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G2">
 		<ID make="Canon" model="PowerShot G2">Canon PowerShot G2</ID>
@@ -1063,13 +1063,13 @@
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-2"/>
 		<Sensor black="0" white="1023"/>
-		<Hints>
-			<Hint name="no_decompressed_lowbits" value=""/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="2326" width="50"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="no_decompressed_lowbits" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G3">
 		<ID make="Canon" model="PowerShot G3">Canon PowerShot G3</ID>
@@ -1176,13 +1176,13 @@
 		</CFA>
 		<Crop x="82" y="52" width="-14" height="0"/>
 		<Sensor black="0" white="16383"/>
-		<Hints>
-			<Hint name="wb_offset" value="142"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="68"/>
 			<Horizontal y="0" height="46"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1 X Mark II">
 		<ID make="Canon" model="PowerShot G1 X Mark II">Canon PowerShot G1 X Mark II</ID>
@@ -1212,13 +1212,13 @@
 		</CFA>
 		<Crop x="54" y="14" width="-12" height="-18"/>
 		<Sensor black="120" white="4095"/>
-		<Hints>
-			<Hint name="wb_offset" value="142"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="50"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G11">
 		<ID make="Canon" model="PowerShot G11">Canon PowerShot G11</ID>
@@ -1230,15 +1230,15 @@
 		</CFA>
 		<Crop x="10" y="18" width="-56" height="-14"/>
 		<Sensor black="120" white="4095"/>
-		<Hints>
-			<Hint name="wb_offset" value="142"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="10"/>
 			<Vertical x="3696" width="48"/>
 			<Horizontal y="0" height="14"/>
 			<Horizontal y="2778" height="6"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G10">
 		<ID make="Canon" model="PowerShot G10">Canon PowerShot G10</ID>
@@ -1250,13 +1250,13 @@
 		</CFA>
 		<Crop x="12" y="13" width="4432" height="3323"/>
 		<Sensor black="128" white="4095"/>
-		<Hints>
-			<Hint name="wb_offset" value="142"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="10"/>
 			<Horizontal y="0" height="8"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G9">
 		<ID make="Canon" model="PowerShot G9">Canon PowerShot G9</ID>
@@ -1320,13 +1320,13 @@
 		</CFA>
 		<Crop x="192" y="12" width="3958" height="2760"/>
 		<Sensor black="125" white="4095"/>
-		<Hints>
-			<Hint name="wb_offset" value="142"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="188"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S30">
 		<ID make="Canon" model="PowerShot S30">Canon PowerShot S30</ID>
@@ -1338,12 +1338,12 @@
 		</CFA>
 		<Crop x="4" y="8" width="-52" height="-2"/>
 		<Sensor black="31" white="1023"/>
-		<Hints>
-			<Hint name="no_decompressed_lowbits" value=""/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="2094" width="50"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="no_decompressed_lowbits" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S40">
 		<ID make="Canon" model="PowerShot S40">Canon PowerShot S40</ID>
@@ -1355,13 +1355,13 @@
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-2"/>
 		<Sensor black="0" white="1023"/>
-		<Hints>
-			<Hint name="no_decompressed_lowbits" value=""/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="2326" width="50"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="no_decompressed_lowbits" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S45">
 		<ID make="Canon" model="PowerShot S45">Canon PowerShot S45</ID>
@@ -1513,13 +1513,13 @@
 		</CFA>
 		<Crop x="121" y="30" width="-47" height="-14"/>
 		<Sensor black="0" white="4000"/>
-		<Hints>
-			<Hint name="wb_offset" value="142"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="74"/>
 			<Horizontal y="0" height="12"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot SX50 HS">
 		<ID make="Canon" model="PowerShot SX50 HS">Canon PowerShot SX50 HS</ID>
@@ -1531,13 +1531,13 @@
 		</CFA>
 		<Crop x="100" y="20" width="-10" height="0"/>
 		<Sensor black="127" white="4095"/>
-		<Hints>
-			<Hint name="wb_offset" value="142"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="6" width="70"/>
 			<Horizontal y="0" height="16"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot SX60 HS">
 		<ID make="Canon" model="PowerShot SX60 HS">Canon PowerShot SX60 HS</ID>
@@ -1549,13 +1549,13 @@
 		</CFA>
 		<Crop x="112" y="26" width="-24" height="-10"/>
 		<Sensor black="128" white="4000"/>
-		<Hints>
-			<Hint name="wb_offset" value="142"/>
-		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="70"/>
 			<Horizontal y="0" height="16"/>
 		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D100">
 		<ID make="Nikon" model="D100">Nikon D100</ID>
@@ -4883,7 +4883,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3986"/>
 	</Camera>
-	<Camera make="Panasonic" model="DMC-FZ8" mode="4:3"> decoder_version="2"
+	<Camera make="Panasonic" model="DMC-FZ8" mode="4:3" decoder_version="2">
 		<ID make="Panasonic" model="DMC-FZ8">Panasonic DMC-FZ8</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -6644,6 +6644,7 @@
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
 		</CFA2>
+    <Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="15872"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
@@ -6773,8 +6774,8 @@
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
 		</CFA2>
-		<Sensor black="128" white="4095"/>
 		<Crop x="32" y="32" width="-32" height="-32"/>
+		<Sensor black="128" white="4095"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
 		</Hints>
@@ -6830,14 +6831,14 @@
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
 		</CFA2>
-		<Sensor black="0" white="15872"/>
 		<Crop x="32" y="0" width="-32" height="0"/>
-		<Hints>
-			<Hint name="fuji_rotate" value=""/>
-		</Hints>
+		<Sensor black="0" white="15872"/>
 		<Aliases>
 			<Alias>FinePix S9000</Alias>
 		</Aliases>
+		<Hints>
+			<Hint name="fuji_rotate" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S9600">
 		<ID make="Fujifilm" model="FinePix S9600">Fujifilm FinePix S9600</ID>
@@ -6845,8 +6846,8 @@
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
 		</CFA2>
-		<Sensor black="0" white="15872"/>
 		<Crop x="32" y="0" width="-32" height="0"/>
+		<Sensor black="0" white="15872"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
 		</Hints>
@@ -6857,8 +6858,8 @@
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
 		</CFA2>
-		<Sensor black="0" white="15872"/>
 		<Crop x="64" y="0" width="-64" height="0"/>
+		<Sensor black="0" white="15872"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
 		</Hints>
@@ -7499,7 +7500,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="" white="32767"/>
+		<Sensor black="0" white="32767"/>
 	</Camera>
 	<Camera make="Hasselblad" model="Hasselblad H3D">
 		<ID make="Hasselblad" model="H3D">Hasselblad 39-Coated</ID>
@@ -7766,14 +7767,14 @@
 		</CFA2>
 		<Crop x="12" y="8" width="-44" height="0"/>
 		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="2632" width="40"/>
+		</BlackAreas>
 		<Hints>
 			<Hint name="filesize" value="6573120"/>
 			<Hint name="full_width" value="2672"/>
 			<Hint name="full_height" value="1968"/>
 		</Hints>
-		<BlackAreas>
-			<Vertical x="2632" width="40"/>
-		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot A530" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
@@ -7795,14 +7796,14 @@
 		</CFA2>
 		<Crop x="44" y="8" width="-4" height="0"/>
 		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="0" width="40"/>
+		</BlackAreas>
 		<Hints>
 			<Hint name="filesize" value="7710960"/>
 			<Hint name="full_width" value="2888"/>
 			<Hint name="full_height" value="2136"/>
 		</Hints>
-		<BlackAreas>
-			<Vertical x="0" width="40"/>
-		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot A620" mode="chdk">
 		<CFA2 width="2" height="2">
@@ -7811,14 +7812,14 @@
 		</CFA2>
 		<Crop x="36" y="12" width="-4" height="0"/>
 		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="0" width="30"/>
+		</BlackAreas>
 		<Hints>
 			<Hint name="filesize" value="9219600"/>
 			<Hint name="full_width" value="3152"/>
 			<Hint name="full_height" value="2340"/>
 		</Hints>
-		<BlackAreas>
-			<Vertical x="0" width="30"/>
-		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot A470" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
@@ -7840,14 +7841,14 @@
 		</CFA2>
 		<Crop x="6" y="5" width="-32" height="-3"/>
 		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="3306" width="30"/>
+		</BlackAreas>
 		<Hints>
 			<Hint name="filesize" value="10341600"/>
 			<Hint name="full_width" value="3336"/>
 			<Hint name="full_height" value="2480"/>
 		</Hints>
-		<BlackAreas>
-			<Vertical x="3306" width="30"/>
-		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot A630" mode="chdk">
 		<CFA2 width="2" height="2">
@@ -7856,14 +7857,14 @@
 		</CFA2>
 		<Crop x="12" y="6" width="-44" height="-6"/>
 		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="0" width="30"/>
+		</BlackAreas>
 		<Hints>
 			<Hint name="filesize" value="10383120"/>
 			<Hint name="full_width" value="3344"/>
 			<Hint name="full_height" value="2484"/>
 		</Hints>
-		<BlackAreas>
-			<Vertical x="0" width="30"/>
-		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot A640" mode="chdk">
 		<CFA2 width="2" height="2">
@@ -7872,14 +7873,14 @@
 		</CFA2>
 		<Crop x="12" y="6" width="-52" height="-6"/>
 		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="3686" width="50"/>
+		</BlackAreas>
 		<Hints>
 			<Hint name="filesize" value="12945240"/>
 			<Hint name="full_width" value="3736"/>
 			<Hint name="full_height" value="2772"/>
 		</Hints>
-		<BlackAreas>
-			<Vertical x="3686" width="50"/>
-		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot A650" mode="chdk">
 		<CFA2 width="2" height="2">
@@ -7888,14 +7889,14 @@
 		</CFA2>
 		<Crop x="48" y="12" width="-24" height="-12"/>
 		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="0" width="45"/>
+		</BlackAreas>
 		<Hints>
 			<Hint name="filesize" value="15636240"/>
 			<Hint name="full_width" value="4104"/>
 			<Hint name="full_height" value="3048"/>
 		</Hints>
-		<BlackAreas>
-			<Vertical x="0" width="45"/>
-		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot SX110 IS" mode="chdk">
 		<CFA2 width="2" height="2">
@@ -7904,14 +7905,14 @@
 		</CFA2>
 		<Crop x="6" y="12" width="-30" height="0"/>
 		<Sensor black="0" white="4095"/>
+		<BlackAreas>
+			<Vertical x="3690" width="30"/>
+		</BlackAreas>
 		<Hints>
 			<Hint name="filesize" value="15467760"/>
 			<Hint name="full_width" value="3720"/>
 			<Hint name="full_height" value="2772"/>
 		</Hints>
-		<BlackAreas>
-			<Vertical x="3690" width="30"/>
-		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot SX120 IS" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
