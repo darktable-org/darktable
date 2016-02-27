@@ -20,6 +20,7 @@
 #include <omp.h>
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -38,6 +39,52 @@ int rawspeed_get_number_of_processor_cores()
 
 using namespace RawSpeed;
 
+char *find_cameras_xml(const char *argv0)
+{
+  struct stat statbuf;
+
+#ifdef RS_CAMERAS_XML_PATH
+  static char set_camfile[] = RS_CAMERAS_XML_PATH;
+  if (stat(set_camfile, &statbuf))
+  {
+    fprintf(stderr, "WARNING: Couldn't find cameras.xml in '%s'\n", set_camfile);
+  }
+  else
+  {
+    return set_camfile;
+  }
+#endif
+
+  // If we haven't been provided with a valid cameras.xml path on compile try relative to argv[0]
+  size_t len = strlen(argv0);
+  char *bindir = (char *) calloc(len+1, sizeof(char));
+  int found_slash = FALSE;
+  for (int i = len-1; i >= 0; i--)
+  {
+    if (found_slash)
+    {
+      bindir[i] = argv0[i];
+    }
+    else
+    {
+      bindir[i] = '\0';
+      if (argv0[i] == '/')
+        found_slash = TRUE;
+    }
+  }
+  char *found_camfile = NULL;
+  if (asprintf(&found_camfile, "%s/../share/darktable/rawspeed/cameras.xml", bindir) == -1)
+  {
+    fprintf(stderr, "ERROR: Something is seriously broken here, bailing out");
+    return NULL;
+  }
+  if (stat(found_camfile, &statbuf))
+  {
+    fprintf(stderr, "ERROR: Couldn't find cameras.xml in '%s'\n", found_camfile);
+    return NULL;
+  }
+  return found_camfile;
+}
 
 int main(int argc, const char* argv[])
 {
@@ -48,40 +95,12 @@ int main(int argc, const char* argv[])
     return 2;
   }
 
-  int found_cameras_xml = FALSE;
-  struct stat statbuf;
-#ifdef RS_CAMERAS_XML_PATH
-  char camfile[1000] = RS_CAMERAS_XML_PATH;
-  if (stat(camfile, &statbuf)) {
-    fprintf(stderr, "WARNING: Couldn't find cameras.xml in '%s'\n", camfile);
-  }
-  else
-    found_cameras_xml = TRUE;
-#else
-  char camfile[1000] = { 0 };
-#endif
-
-  if (!found_cameras_xml) {
-    char bindir[1000] = { 0 };
-    size_t len = MIN(strlen(argv[0]), sizeof(bindir));
-    int found_slash = FALSE;
-    for (int i = len-1; i >= 0; i--)
-    {
-      if (found_slash)
-        bindir[i] = argv[0][i];
-      else
-        bindir[i] = '\0';
-      if (argv[0][i] == '/')
-        found_slash = TRUE;
-    }
-    snprintf(camfile, sizeof(camfile), "%s/../share/darktable/rawspeed/cameras.xml", bindir);
-  }
-
-  if (stat(camfile, &statbuf)) {
-    fprintf(stderr, "ERROR: Couldn't find cameras.xml in '%s'\n", camfile);
+  char *camfile = find_cameras_xml(argv[0]);
+  if (!camfile)
+  {
+    //fprintf(stderr, "ERROR: Couldn't find cameras.xml\n");
     return 2;
   }
-
   //fprintf(stderr, "Using cameras.xml from '%s'\n", camfile);
 
   try
