@@ -55,8 +55,6 @@ class Runner
           model = parts[1..-1].join(":").strip
         end
       end
-
-      return [maker, model] if (maker != "" && model != "")
     end
 
     if makermodel = @exif_alias_map[[maker, model]]
