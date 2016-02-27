@@ -722,11 +722,6 @@ add_custom_target(
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-# this is a dummy library whose sole purpose is to serve as a dependency for subdirs, such as imageio/storage/gallery.
-# cmake can't depend on custom targets in other directories than the current one.
-add_library(metadata_dummy ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h)
-add_dependencies(metadata_dummy generate_metadata)
-
 #
 # build libdarktable
 #

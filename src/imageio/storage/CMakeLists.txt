@@ -20,8 +20,8 @@ endif(JsonGlib_FOUND)
 
 foreach(module ${MODULES})
 	add_library(${module} MODULE "${module}.c")
+	add_dependencies(${module} generate_metadata)
 endforeach(module)
-add_dependencies(gallery metadata_dummy)
 
 foreach(module ${MODULES})
 	target_link_libraries(${module} ${LIBS})
