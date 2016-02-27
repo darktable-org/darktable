@@ -1,5 +1,18 @@
 cmake_minimum_required(VERSION 2.6)
 
+if(USE_XMLLINT)
+	execute_process(
+		COMMAND ${Xmllint_BIN} --valid ${CMAKE_CURRENT_SOURCE_DIR}/data/cameras.xml
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+		OUTPUT_QUIET ERROR_QUIET
+		RESULT_VARIABLE Xmllint_RES
+	)
+	if(NOT ${Xmllint_RES} EQUAL 0 )
+	  # should be FATAL_ERROR, but currently fails => no reason to just break build.
+		message(WARNING "external/rawspeed/data/cameras.xml is not valid")
+	endif(NOT ${Xmllint_RES} EQUAL 0 )
+endif(USE_XMLLINT)
+
 install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${SHARE_INSTALL}/darktable/rawspeed)
 
 FILE(GLOB RAWSPEED_SOURCES "RawSpeed/*.cpp")
