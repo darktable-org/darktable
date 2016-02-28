@@ -105,12 +105,12 @@ typedef struct FBAlbum
   FBAlbumPrivacyPolicy privacy;
 } FBAlbum;
 
-FBAlbum *fb_album_init()
+static FBAlbum *fb_album_init()
 {
   return (FBAlbum *)g_malloc0(sizeof(FBAlbum));
 }
 
-void fb_album_destroy(FBAlbum *album)
+static void fb_album_destroy(FBAlbum *album)
 {
   if(album == NULL) return;
   g_free(album->id);
@@ -128,12 +128,12 @@ typedef struct FBAccountInfo
   gchar *token;
 } FBAccountInfo;
 
-FBAccountInfo *fb_account_info_init()
+static FBAccountInfo *fb_account_info_init()
 {
   return (FBAccountInfo *)g_malloc0(sizeof(FBAccountInfo));
 }
 
-void fb_account_info_destroy(FBAccountInfo *account)
+static void fb_account_info_destroy(FBAccountInfo *account)
 {
   if(account == NULL) return;
   g_free(account->id);

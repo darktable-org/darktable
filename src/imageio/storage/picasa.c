@@ -91,12 +91,12 @@ typedef struct PicasaAlbum
   PicasaAlbumPrivacyPolicy privacy;
 } PicasaAlbum;
 
-PicasaAlbum *picasa_album_init()
+static PicasaAlbum *picasa_album_init()
 {
   return (PicasaAlbum *)g_malloc0(sizeof(PicasaAlbum));
 }
 
-void picasa_album_destroy(PicasaAlbum *album)
+static void picasa_album_destroy(PicasaAlbum *album)
 {
   if(album == NULL) return;
   g_free(album->id);
@@ -115,12 +115,12 @@ typedef struct PicasaAccountInfo
   gchar *refresh_token;
 } PicasaAccountInfo;
 
-PicasaAccountInfo *picasa_account_info_init()
+static PicasaAccountInfo *picasa_account_info_init()
 {
   return (PicasaAccountInfo *)g_malloc0(sizeof(PicasaAccountInfo));
 }
 
-void picasa_account_info_destroy(PicasaAccountInfo *account)
+static void picasa_account_info_destroy(PicasaAccountInfo *account)
 {
   if(account == NULL) return;
   g_free(account->id);
