@@ -112,7 +112,7 @@ void connect_key_accels(dt_lib_module_t *self)
 }
 
 /** Property changed*/
-void property_changed_callback(GtkComboBox *cb, gpointer data)
+static void property_changed_callback(GtkComboBox *cb, gpointer data)
 {
   dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)data;
   dt_camctl_camera_set_property_string(darktable.camctl, NULL, prop->property_name,
@@ -120,8 +120,8 @@ void property_changed_callback(GtkComboBox *cb, gpointer data)
 }
 
 /** Add  a new property of camera to the gui */
-dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gchar *label,
-                                                const gchar *propertyname)
+static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gchar *label,
+                                                       const gchar *propertyname)
 {
   if(dt_camctl_camera_property_exists(darktable.camctl, NULL, propertyname))
   {
@@ -161,7 +161,7 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gcha
   return NULL;
 }
 
-void _lib_property_free(gpointer data)
+static void _lib_property_free(gpointer data)
 {
   dt_lib_camera_property_t * prop = (dt_lib_camera_property_t *)data;
   g_object_unref(prop->osd);
@@ -170,7 +170,7 @@ void _lib_property_free(gpointer data)
   free(prop->property_name);
 }
 
-gint _compare_property_by_name(gconstpointer a, gconstpointer b)
+static gint _compare_property_by_name(gconstpointer a, gconstpointer b)
 {
   dt_lib_camera_property_t *ca = (dt_lib_camera_property_t *)a;
   return strcmp(ca->property_name, (char *)b);
@@ -204,7 +204,7 @@ static void _camera_property_accessibility_changed(const dt_camera_t *camera, co
 {
 }
 
-gboolean _bailout_of_tethering(gpointer user_data)
+static gboolean _bailout_of_tethering(gpointer user_data)
 {
   /* consider all error types as failure and bailout of tethering mode */
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
