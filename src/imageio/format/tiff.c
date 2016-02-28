@@ -334,11 +334,6 @@ int bpp(dt_imageio_module_data_t *p)
   return ((dt_imageio_tiff_t *)p)->bpp;
 }
 
-int compress(dt_imageio_module_data_t *p)
-{
-  return ((dt_imageio_tiff_t *)p)->compress;
-}
-
 int levels(dt_imageio_module_data_t *p)
 {
   int ret = IMAGEIO_RGB;

@@ -225,7 +225,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
   return 0;
 }
 
-int read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
+static int __attribute__((__unused__)) read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
 {
   dt_imageio_png_t *png = (dt_imageio_png_t *)p_tmp;
   png->f = fopen(filename, "rb");

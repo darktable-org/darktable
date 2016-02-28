@@ -399,7 +399,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   return 0;
 }
 
-int read_header(const char *filename, dt_imageio_jpeg_t *jpg)
+static int __attribute__((__unused__)) read_header(const char *filename, dt_imageio_jpeg_t *jpg)
 {
   jpg->f = fopen(filename, "rb");
   if(!jpg->f) return 1;

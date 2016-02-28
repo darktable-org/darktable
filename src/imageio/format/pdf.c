@@ -120,7 +120,7 @@ typedef struct dt_imageio_pdf_t
 // clang-format on
 
 #ifdef USE_LUA
-int orientation_member(lua_State*L)
+static int orientation_member(lua_State *L)
 {
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)lua_touserdata(L,1);
   dt_lua_orientation_t orientation;
