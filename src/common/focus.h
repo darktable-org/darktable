@@ -126,8 +126,8 @@ static void _dt_focus_update(dt_focus_cluster_t *f, int frows, int fcols, int i,
 
 
 // read 8-bit buffer and create focus clusters from it
-void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int fcols, uint8_t *buffer,
-                              int buffer_width, int buffer_height)
+static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int fcols, uint8_t *buffer,
+                                     int buffer_width, int buffer_height)
 {
   // mark in-focus pixels:
   const int wd = buffer_width;
@@ -216,8 +216,8 @@ void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int fcols, u
   }
 }
 
-void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid, int buffer_width,
-                            int buffer_height, dt_focus_cluster_t *focus, int frows, int fcols)
+static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid, int buffer_width,
+                                   int buffer_height, dt_focus_cluster_t *focus, int frows, int fcols)
 {
   const int fs = frows * fcols;
   cairo_save(cr);

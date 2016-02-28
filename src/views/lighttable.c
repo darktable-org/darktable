@@ -163,7 +163,7 @@ typedef enum direction
   CENTER = 10
 } direction;
 
-void switch_layout_to(dt_library_t *lib, int new_layout)
+static void switch_layout_to(dt_library_t *lib, int new_layout)
 {
   lib->layout = new_layout;
 
@@ -236,8 +236,8 @@ static void move_view(dt_library_t *lib, direction dir)
 
 /* This function allows the file manager view to zoom "around" the image
  * currently under the mouse cursor, instead of around the top left image */
-void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int width, int height,
-                       int old_images_in_row, int new_images_in_row)
+static void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int width, int height,
+                              int old_images_in_row, int new_images_in_row)
 {
   /* calculate which image number (relative to total collection)
    * is currently under the cursor, i.e. which image is the zoom anchor */
@@ -1206,8 +1206,8 @@ failure:
 /**
  * Displays a full screen preview of the image currently under the mouse pointer.
  */
-int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                         int32_t pointery)
+static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+                               int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   int offset = 0;
@@ -1658,11 +1658,6 @@ void enter(dt_view_t *self)
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
   }
-}
-
-void dt_lib_remove_child(GtkWidget *widget, gpointer data)
-{
-  gtk_container_remove(GTK_CONTAINER(data), widget);
 }
 
 void leave(dt_view_t *self)

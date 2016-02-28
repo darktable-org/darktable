@@ -316,11 +316,6 @@ void enter(dt_view_t *self)
   dt_camctl_register_listener(darktable.camctl, lib->listener);
 }
 
-void dt_lib_remove_child(GtkWidget *widget, gpointer data)
-{
-  gtk_container_remove(GTK_CONTAINER(data), widget);
-}
-
 void leave(dt_view_t *self)
 {
   dt_capture_t *cv = (dt_capture_t *)self->data;
