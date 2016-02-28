@@ -38,6 +38,7 @@ ArwDecoder::~ArwDecoder(void) {
 }
 
 RawImage ArwDecoder::decodeRawInternal() {
+  TiffIFD* raw = NULL;
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
   if (data.empty()) {
@@ -47,7 +48,11 @@ RawImage ArwDecoder::decodeRawInternal() {
       // We've caught the elusive A100 in the wild, a transitional format
       // between the simple sanity of the MRW custom format and the wordly
       // wonderfullness of the Tiff-based ARW format, let's shoot from the hip
-      uint32 off = mRootIFD->getEntryRecursive(SUBIFDS)->getInt();
+      data = mRootIFD->getIFDsWithTag(SUBIFDS);
+      if (data.empty())
+        ThrowRDE("ARW: A100 format, couldn't find offset");
+      raw = data[0];
+      uint32 off = raw->getEntry(SUBIFDS)->getInt();
       uint32 width = 3881;
       uint32 height = 2608;
 
@@ -64,17 +69,19 @@ RawImage ArwDecoder::decodeRawInternal() {
 
       return mRaw;
     } else if (hints.find("srf_format") != hints.end()) {
-      uint32 width = mRootIFD->getEntryRecursive(IMAGEWIDTH)->getInt();
-      uint32 height = mRootIFD->getEntryRecursive(IMAGELENGTH)->getInt();
+      data = mRootIFD->getIFDsWithTag(IMAGEWIDTH);
+      if (data.empty())
+        ThrowRDE("ARW: SRF format, couldn't find width/height");
+      raw = data[0];
+
+      uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+      uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
       uint32 len = width*height*2;
 
       // Constants taken from dcraw
       uint32 off = 862144;
       uint32 key_off = 200896;
       uint32 head_off = 164600;
-
-      if (mFile->getSize() < off+len)
-        ThrowRDE("ARW: SRF format, file too short, trying to read out of bounds");
 
       // Replicate the dcraw contortions to get the "decryption" key
       const uchar8 *data = mFile->getData(key_off, 1);
@@ -102,7 +109,7 @@ RawImage ArwDecoder::decodeRawInternal() {
     }
   }
 
-  TiffIFD* raw = data[0];
+  raw = data[0];
   int compression = raw->getEntry(COMPRESSION)->getInt();
   if (1 == compression) {
     try {
