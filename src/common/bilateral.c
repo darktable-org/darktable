@@ -28,7 +28,7 @@
 
 #ifdef HAVE_OPENCL
 // function definition on opencl path takes precedence
-#include "common/bilateralcl.h"
+#include "common/bilateralcl.c"
 #else
 size_t dt_bilateral_memory_use(const int width,     // width of input image
                                const int height,    // height of input image
@@ -214,8 +214,8 @@ static void blur_line(float *buf, const int offset1, const int offset2, const in
       for(int i = 2; i < size3 - 2; i++)
       {
         const float tmp3 = buf[index];
-        buf[index] = buf[index] * w0 + w1 * (buf[index + offset3] + tmp2)
-                     + w2 * (buf[index + 2 * offset3] + tmp1);
+        buf[index]
+            = buf[index] * w0 + w1 * (buf[index + offset3] + tmp2) + w2 * (buf[index + 2 * offset3] + tmp1);
         index += offset3;
         tmp1 = tmp2;
         tmp2 = tmp3;
@@ -273,9 +273,10 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
                                    + b->buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
                                    + b->buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
                                    + b->buf[gi + ox + oy] * (xf) * (yf) * (1.0f - zf)
-                                   + b->buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)+b->buf[gi + ox + oz]
-                                     * (xf) * (1.0f - yf) * (zf)+b->buf[gi + oy + oz] * (1.0f - xf) * (yf)
-                                     * (zf)+b->buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
+                                   + b->buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)
+                                   + b->buf[gi + ox + oz] * (xf) * (1.0f - yf) * (zf)
+                                   + b->buf[gi + oy + oz] * (1.0f - xf) * (yf) * (zf)
+                                   + b->buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
       out[index] = Lout;
       // and copy color and mask
       out[index + 1] = in[index + 1];
@@ -317,9 +318,10 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
                                  + b->buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
                                  + b->buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
                                  + b->buf[gi + ox + oy] * (xf) * (yf) * (1.0f - zf)
-                                 + b->buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)+b->buf[gi + ox + oz]
-                                   * (xf) * (1.0f - yf) * (zf)+b->buf[gi + oy + oz] * (1.0f - xf) * (yf)
-                                   * (zf)+b->buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
+                                 + b->buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)
+                                 + b->buf[gi + ox + oz] * (xf) * (1.0f - yf) * (zf)
+                                 + b->buf[gi + oy + oz] * (1.0f - xf) * (yf) * (zf)
+                                 + b->buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
       out[index] = MAX(0.0f, out[index] + Lout);
       index += 4;
     }

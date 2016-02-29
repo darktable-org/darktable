@@ -19,8 +19,8 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
-#include "common/bilateral.h"
-#include "common/bilateralcl.h"
+#include "common/bilateral.c"
+#include "common/bilateralcl.c"
 #include "common/debug.h"
 #include "common/gaussian.h"
 #include "common/opencl.h"

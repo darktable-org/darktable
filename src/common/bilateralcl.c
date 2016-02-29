@@ -115,7 +115,8 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
 
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
      && dt_opencl_get_kernel_work_group_size(devid, darktable.opencl->bilateral->kernel_splat,
-                                             &kernelworkgroupsize) == CL_SUCCESS)
+                                             &kernelworkgroupsize)
+            == CL_SUCCESS)
   {
     while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
           || localmemsize < blocksizex * blocksizey * (8 * sizeof(float) + sizeof(int))
