@@ -16,8 +16,12 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_COMMON_BILATERAL_H
-#define DT_COMMON_BILATERAL_H
+#include "common/bilateral.h"
+#include "common/darktable.h" // for CLAMPS, dt_alloc_align, dt_free_align
+#include <glib.h>             // for MIN, MAX
+#include <math.h>             // for roundf
+#include <stdlib.h>           // for size_t, free, malloc, NULL
+#include <string.h>           // for memset
 
 // these clamp away insane memory requirements.
 // they should reasonably faithfully represent the
@@ -26,10 +30,8 @@
 #define DT_COMMON_BILATERAL_MAX_RES_S 6000
 #define DT_COMMON_BILATERAL_MAX_RES_R 50
 
-#ifdef HAVE_OPENCL
+#ifndef HAVE_OPENCL
 // function definition on opencl path takes precedence
-#include "common/bilateralcl.c"
-#else
 size_t dt_bilateral_memory_use(const int width,     // width of input image
                                const int height,    // height of input image
                                const float sigma_s, // spatial sigma (blur pixel coords)
@@ -61,15 +63,6 @@ size_t dt_bilateral_singlebuffer_size(const int width,     // width of input ima
   return size_x * size_y * size_z * sizeof(float);
 }
 #endif
-
-
-typedef struct dt_bilateral_t
-{
-  size_t size_x, size_y, size_z;
-  int width, height;
-  float sigma_s, sigma_r;
-  float *buf;
-} dt_bilateral_t;
 
 static void image_to_grid(const dt_bilateral_t *const b, const int i, const int j, const float L, float *x,
                           float *y, float *z)
@@ -337,5 +330,3 @@ void dt_bilateral_free(dt_bilateral_t *b)
 
 #undef DT_COMMON_BILATERAL_MAX_RES_S
 #undef DT_COMMON_BILATERAL_MAX_RES_R
-
-#endif

@@ -20,7 +20,7 @@
 #ifdef HAVE_OPENCL
 
 #include "common/opencl.h"
-#include "common/bilateralcl.c"
+#include "common/bilateralcl.h"
 #include "common/darktable.h"
 #include "common/dlopencl.h"
 #include "common/gaussian.h"

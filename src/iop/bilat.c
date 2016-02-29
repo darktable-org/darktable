@@ -20,8 +20,8 @@
 #endif
 // our includes go first:
 #include "bauhaus/bauhaus.h"
-#include "common/bilateral.c"
-#include "common/bilateralcl.c"
+#include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"

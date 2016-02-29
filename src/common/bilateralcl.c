@@ -16,28 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_COMMON_BILATERAL_CL_H
-#define DT_COMMON_BILATERAL_CL_H
-
 #ifdef HAVE_OPENCL
-#include "common/opencl.h"
 
-typedef struct dt_bilateral_cl_global_t
-{
-  int kernel_zero, kernel_splat, kernel_blur_line, kernel_blur_line_z, kernel_slice, kernel_slice2;
-} dt_bilateral_cl_global_t;
-
-typedef struct dt_bilateral_cl_t
-{
-  dt_bilateral_cl_global_t *global;
-  int devid;
-  size_t size_x, size_y, size_z;
-  int width, height;
-  size_t blocksizex, blocksizey;
-  float sigma_s, sigma_r;
-  cl_mem dev_grid;
-  cl_mem dev_grid_tmp;
-} dt_bilateral_cl_t;
+#include "common/bilateralcl.h"
+#include "CL/cl.h"            // for _cl_mem, cl_mem, CL_SUCCESS
+#include "CL/cl_platform.h"   // for cl_int
+#include "common/darktable.h" // for CLAMPS, dt_print, darktable, darktable_t
+#include "common/opencl.h"    // for dt_opencl_set_kernel_arg, dt_opencl_cr...
+#include <glib.h>             // for MAX
+#include <math.h>             // for roundf
+#include <stdlib.h>           // for free, malloc
 
 dt_bilateral_cl_global_t *dt_bilateral_init_cl_global()
 {
@@ -340,5 +328,4 @@ void dt_bilateral_free_cl_global(dt_bilateral_cl_global_t *b)
   free(b);
 }
 
-#endif
 #endif
