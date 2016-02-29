@@ -1319,7 +1319,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
 // compute lanczos kernel. See: https://en.wikipedia.org/wiki/Lanczos_resampling#Lanczos_kernel
 
-float lanczos (const float a, const float x)
+static float lanczos(const float a, const float x)
 {
   if (fabs (x) >= a) return 0.0f;
   if (fabs (x) < CL_FLT_EPSILON) return 1.0f;
@@ -1332,7 +1332,7 @@ float lanczos (const float a, const float x)
 
 // compute bicubic kernel. See: https://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm
 
-float bicubic (const float a, const float x)
+static float bicubic(const float a, const float x)
 {
   const float absx = fabs (x);
 
@@ -2298,7 +2298,7 @@ static void smooth_path_linsys (size_t n,
   free (d);
 }
 
-const int path_length (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *n)
+static const int path_length(dt_iop_liquify_params_t *p, dt_liquify_path_data_t *n)
 {
   int count = 1;
   while (n->header.next != -1)

@@ -2092,7 +2092,7 @@ static _grab_region_t get_grab(float pzx, float pzy, dt_iop_clipping_gui_data_t 
 }
 
 // draw rounded rectangle
-void gui_draw_rounded_rectangle(cairo_t *cr, int width, int height, int x, int y)
+static void gui_draw_rounded_rectangle(cairo_t *cr, int width, int height, int x, int y)
 {
   float radius = height / 5.0f;
   float degrees = M_PI / 180.0;
@@ -2105,7 +2105,7 @@ void gui_draw_rounded_rectangle(cairo_t *cr, int width, int height, int x, int y
   cairo_fill(cr);
 }
 // draw symmetry signs
-void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
+static void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
 {
   PangoLayout *layout;
   PangoRectangle ink;
@@ -2526,7 +2526,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 }
 
 // determine the distance between the segment [(xa,ya)(xb,yb)] and the point (xc,yc)
-float dist_seg(float xa, float ya, float xb, float yb, float xc, float yc)
+static float dist_seg(float xa, float ya, float xb, float yb, float xc, float yc)
 {
   if(xa == xb && ya == yb) return (xc - xa) * (xc - xa) + (yc - ya) * (yc - ya);
 

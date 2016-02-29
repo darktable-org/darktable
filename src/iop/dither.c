@@ -229,9 +229,9 @@ static inline float clipnan(const float x)
   return r;
 }
 
-void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                             const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out)
+static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                    const void *const ivoid, void *const ovoid,
+                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -395,9 +395,9 @@ void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 }
 
 #if defined(__SSE__)
-void process_floyd_steinberg_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                 const dt_iop_roi_t *const roi_out)
+static void process_floyd_steinberg_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                        const void *const ivoid, void *const ovoid,
+                                        const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -562,7 +562,7 @@ void process_floyd_steinberg_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 #endif
 
 
-void encrypt_tea(unsigned int *arg)
+static void encrypt_tea(unsigned int *arg)
 {
   const unsigned int key[] = { 0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e };
   unsigned int v0 = arg[0], v1 = arg[1];
@@ -579,7 +579,7 @@ void encrypt_tea(unsigned int *arg)
 }
 
 
-float tpdf(unsigned int urandom)
+static float tpdf(unsigned int urandom)
 {
   float frandom = (float)urandom / 0xFFFFFFFFu;
 
@@ -587,8 +587,9 @@ float tpdf(unsigned int urandom)
 }
 
 
-void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                    void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                           const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                           const dt_iop_roi_t *const roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 

@@ -491,7 +491,7 @@ static gboolean dt_iop_zonesystem_bar_scrolled(GtkWidget *widget, GdkEventScroll
                                                dt_iop_module_t *self);
 
 
-void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation, gpointer user_data)
+static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;

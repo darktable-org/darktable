@@ -375,9 +375,9 @@ static void mul2temp(dt_iop_module_t *self, float coeffs[4], double *TempK, doub
 /*
  * interpolate values from p1 and p2 into out.
  */
-void dt_wb_preset_interpolate(const wb_data *const p1, // the smaller tuning
-                              const wb_data *const p2, // the larger tuning (can't be == p1)
-                              wb_data *out)            // has tuning initialized
+static void dt_wb_preset_interpolate(const wb_data *const p1, // the smaller tuning
+                                     const wb_data *const p2, // the larger tuning (can't be == p1)
+                                     wb_data *out)            // has tuning initialized
 {
   // stupid linear interpolation.
   // to be confirmed.
