@@ -157,12 +157,12 @@ void gui_init(dt_imageio_module_storage_t *self)
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
       _("enter the path where to put exported images\nrecognized variables:"),
       dt_gtkentry_get_default_path_compl_list());
-  g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
   g_free(tooltip_text);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER);
-  g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, _("select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
@@ -174,7 +174,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   d->title_entry = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title_entry));
-  g_object_set(G_OBJECT(d->title_entry), "tooltip-text", _("enter the title of the website"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->title_entry), _("enter the title of the website"));
   dir = dt_conf_get_string("plugins/imageio/storage/gallery/title");
   if(dir)
   {

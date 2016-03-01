@@ -1351,8 +1351,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->presets, NULL, _("preset"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->presets, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->presets), "tooltip-text", _("choose white balance preset from camera"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->presets, _("choose white balance preset from camera"));
 
   g->finetune = dt_bauhaus_slider_new_with_range(self, -9.0, 9.0, 1.0, 0.0, 0);
   dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
@@ -1360,7 +1359,7 @@ void gui_init(struct dt_iop_module_t *self)
   // initially doesn't have fine tuning stuff (camera wb)
   gtk_widget_set_sensitive(g->finetune, FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->finetune, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->finetune), "tooltip-text", _("fine tune white balance preset"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->finetune, _("fine tune white balance preset"));
 
   self->gui_update(self);
 

@@ -285,10 +285,8 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button = gtk_button_new_with_label(_("take snapshot"));
   d->take_button = button;
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
-  g_object_set(
-      button, "tooltip-text",
-      _("take snapshot to compare with another image or the same image at another stage of development"),
-      (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("take snapshot to compare with another image "
+                                        "or the same image at another stage of development"));
 
   /*
    * initialize snapshots

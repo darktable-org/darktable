@@ -455,21 +455,19 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* red */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED], 3);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("amount of red channel in the output channel"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("amount of red channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("red"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(red_callback), self);
 
   /* green */
   g->scale2 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED], 3);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale2, _("amount of green channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("green"));
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(green_callback), self);
 
   /* blue */
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED], 3);
-  g_object_set(g->scale3, "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale3, _("amount of blue channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("blue"));
   g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(blue_callback), self);
 

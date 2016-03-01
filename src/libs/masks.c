@@ -1630,14 +1630,14 @@ void gui_init(dt_lib_module_t *self)
   d->bt_gradient
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(d->bt_gradient), "button-press-event", G_CALLBACK(_bt_add_gradient), self);
-  g_object_set(G_OBJECT(d->bt_gradient), "tooltip-text", _("add gradient"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->bt_gradient, _("add gradient"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_gradient), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(d->bt_gradient), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_gradient, FALSE, FALSE, 0);
 
   d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_path), self);
-  g_object_set(G_OBJECT(d->bt_path), "tooltip-text", _("add path"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(d->bt_path), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_path, FALSE, FALSE, bs);
@@ -1645,7 +1645,7 @@ void gui_init(dt_lib_module_t *self)
   d->bt_ellipse
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(d->bt_ellipse), "button-press-event", G_CALLBACK(_bt_add_ellipse), self);
-  g_object_set(G_OBJECT(d->bt_ellipse), "tooltip-text", _("add ellipse"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->bt_ellipse, _("add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_ellipse), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(d->bt_ellipse), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_ellipse, FALSE, FALSE, 0);
@@ -1653,14 +1653,14 @@ void gui_init(dt_lib_module_t *self)
   d->bt_circle
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(d->bt_circle), "button-press-event", G_CALLBACK(_bt_add_circle), self);
-  g_object_set(G_OBJECT(d->bt_circle), "tooltip-text", _("add circle"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->bt_circle, _("add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_circle), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(d->bt_circle), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_circle, FALSE, FALSE, bs);
 
   d->bt_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(d->bt_brush), "button-press-event", G_CALLBACK(_bt_add_brush), self);
-  g_object_set(G_OBJECT(d->bt_brush), "tooltip-text", _("add brush"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->bt_brush, _("add brush"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_brush), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(d->bt_brush), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_brush, FALSE, FALSE, 0);

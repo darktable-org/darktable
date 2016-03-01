@@ -653,18 +653,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   GtkWidget *button;
   g->spinbutton = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, MAXN, 1));
-  g_object_set(G_OBJECT(g->spinbutton), "tooltip-text", _("number of clusters to find in image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->spinbutton), _("number of clusters to find in image"));
   gtk_box_pack_start(box, GTK_WIDGET(g->spinbutton), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->spinbutton), "value-changed", G_CALLBACK(spinbutton_changed), (gpointer)self);
 
   button = gtk_button_new_with_label(_("acquire"));
   g->acquire_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("analyze this image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("analyze this image"));
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_button_pressed), (gpointer)self);
 
   g->apply_button = gtk_button_new_with_label(_("apply"));
-  g_object_set(G_OBJECT(g->apply_button), "tooltip-text", _("apply previously analyzed image look to this image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->apply_button, _("apply previously analyzed image look to this image"));
   gtk_box_pack_start(box, g->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->apply_button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);
   FILE *f = fopen("/tmp/dt_colortransfer_loaded", "rb");

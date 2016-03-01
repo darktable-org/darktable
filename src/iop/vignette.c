@@ -1169,25 +1169,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->whratio, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->dithering, TRUE, TRUE, 0);
 
-  g_object_set(G_OBJECT(g->scale), "tooltip-text", _("the radii scale of vignette for start of fall-off"),
-               (char *)NULL);
-  g_object_set(G_OBJECT(g->falloff_scale), "tooltip-text",
-               _("the radii scale of vignette for end of fall-off"), (char *)NULL);
-  g_object_set(G_OBJECT(g->brightness), "tooltip-text", _("strength of effect on brightness"), (char *)NULL);
-  g_object_set(G_OBJECT(g->saturation), "tooltip-text", _("strength of effect on saturation"), (char *)NULL);
-  g_object_set(G_OBJECT(g->center_x), "tooltip-text", _("horizontal offset of center of the effect"),
-               (char *)NULL);
-  g_object_set(G_OBJECT(g->center_y), "tooltip-text", _("vertical offset of center of the effect"),
-               (char *)NULL);
-  g_object_set(
-      G_OBJECT(g->shape), "tooltip-text",
-      _("shape factor\n0 produces a rectangle\n1 produces a circle or ellipse\n2 produces a diamond"),
-      (char *)NULL);
-  g_object_set(G_OBJECT(g->autoratio), "tooltip-text",
-               _("enable to have the ratio automatically follow the image size"), (char *)NULL);
-  g_object_set(G_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
-  g_object_set(G_OBJECT(g->dithering), "tooltip-text", _("add some level of random noise to prevent banding"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale, _("the radii scale of vignette for start of fall-off"));
+  gtk_widget_set_tooltip_text(g->falloff_scale, _("the radii scale of vignette for end of fall-off"));
+  gtk_widget_set_tooltip_text(g->brightness, _("strength of effect on brightness"));
+  gtk_widget_set_tooltip_text(g->saturation, _("strength of effect on saturation"));
+  gtk_widget_set_tooltip_text(g->center_x, _("horizontal offset of center of the effect"));
+  gtk_widget_set_tooltip_text(g->center_y, _("vertical offset of center of the effect"));
+  gtk_widget_set_tooltip_text(g->shape, _("shape factor\n0 produces a rectangle\n1 produces a circle or ellipse\n"
+                                          "2 produces a diamond"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->autoratio), _("enable to have the ratio automatically follow the image size"));
+  gtk_widget_set_tooltip_text(g->whratio, _("width-to-height ratio"));
+  gtk_widget_set_tooltip_text(g->dithering, _("add some level of random noise to prevent banding"));
 
   g_signal_connect(G_OBJECT(g->scale), "value-changed", G_CALLBACK(scale_callback), self);
   g_signal_connect(G_OBJECT(g->falloff_scale), "value-changed", G_CALLBACK(falloff_scale_callback), self);

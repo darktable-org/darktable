@@ -1079,7 +1079,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT  | CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(GTK_WIDGET(tb), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick GUI color from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(tb, _("pick GUI color from image"));
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_end(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
 
@@ -1095,14 +1095,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->strength, "%.01f%%");
   dt_bauhaus_widget_set_label(c->strength, NULL, _("mix"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->strength, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(c->strength), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->strength, _("make effect stronger or weaker"));
   g_signal_connect(G_OBJECT(c->strength), "value-changed", G_CALLBACK(strength_changed), (gpointer)self);
 
   // select by which dimension
   c->select_by = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->select_by, NULL, _("select by"));
-  g_object_set(G_OBJECT(c->select_by), "tooltip-text",
-               _("choose selection criterion, will be the abscissa in the graph"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->select_by, _("choose selection criterion, will be the abscissa in the graph"));
   dt_bauhaus_combobox_add(c->select_by, _("hue"));
   dt_bauhaus_combobox_add(c->select_by, _("saturation"));
   dt_bauhaus_combobox_add(c->select_by, _("lightness"));

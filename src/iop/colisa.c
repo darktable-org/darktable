@@ -369,9 +369,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
 
-  g_object_set(g->contrast, "tooltip-text", _("contrast adjustment"), (char *)NULL);
-  g_object_set(g->brightness, "tooltip-text", _("brightness adjustment"), (char *)NULL);
-  g_object_set(g->saturation, "tooltip-text", _("color saturation adjustment"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->contrast, _("contrast adjustment"));
+  gtk_widget_set_tooltip_text(g->brightness, _("brightness adjustment"));
+  gtk_widget_set_tooltip_text(g->saturation, _("color saturation adjustment"));
 
   g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
   g_signal_connect(G_OBJECT(g->brightness), "value-changed", G_CALLBACK(brightness_callback), self);

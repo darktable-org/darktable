@@ -741,14 +741,14 @@ failure:
     char *tooltip = dt_history_get_items_as_string(strip->mouse_over_id);
     if(tooltip != NULL)
     {
-      g_object_set(G_OBJECT(strip->filmstrip), "tooltip-text", tooltip, (char *)NULL);
+      gtk_widget_set_tooltip_text(strip->filmstrip, tooltip);
       g_free(tooltip);
     }
   }
   else if(darktable.gui->center_tooltip == 2) // not set in this round
   {
     darktable.gui->center_tooltip = 0;
-    g_object_set(G_OBJECT(strip->filmstrip), "tooltip-text", "", (char *)NULL);
+    gtk_widget_set_tooltip_text(strip->filmstrip, "");
   }
 
 #ifdef _DEBUG

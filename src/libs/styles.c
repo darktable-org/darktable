@@ -310,13 +310,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->list), GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
 
-  g_object_set(G_OBJECT(d->list), "tooltip-text", _("available styles,\ndoubleclick to apply"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->list), _("available styles,\ndoubleclick to apply"));
   g_signal_connect(d->list, "row-activated", G_CALLBACK(_styles_row_activated_callback), d);
 
   /* filter entry */
   w = gtk_entry_new();
   d->entry = GTK_ENTRY(w);
-  g_object_set(G_OBJECT(w), "tooltip-text", _("enter style name"), (char *)NULL);
+  gtk_widget_set_tooltip_text(w, _("enter style name"));
   g_signal_connect(d->entry, "changed", G_CALLBACK(entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(entry_activated), d);
 
@@ -336,8 +336,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->duplicate, "toggled", G_CALLBACK(duplicate_callback), d);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate),
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
-  g_object_set(d->duplicate, "tooltip-text", _("creates a duplicate of the image before applying style"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(d->duplicate, _("creates a duplicate of the image before applying style"));
 
   GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -347,35 +346,34 @@ void gui_init(dt_lib_module_t *self)
   // create
   GtkWidget *cbutton = gtk_button_new_with_label(_("create"));
   g_signal_connect(G_OBJECT(cbutton), "clicked", G_CALLBACK(create_clicked), d);
-  g_object_set(G_OBJECT(cbutton), "tooltip-text", _("create styles from history stack of selected images"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(cbutton, _("create styles from history stack of selected images"));
   gtk_box_pack_start(GTK_BOX(hbox1), cbutton, TRUE, TRUE, 0);
 
   // edit
   GtkWidget *widget = gtk_button_new_with_label(_("edit"));
   d->edit_button = widget;
   g_signal_connect(widget, "clicked", G_CALLBACK(edit_clicked), d);
-  g_object_set(widget, "tooltip-text", _("edit the selected style in list above"), (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, _("edit the selected style in list above"));
   gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
 
   // delete
   widget = gtk_button_new_with_label(_("delete"));
   d->delete_button = widget;
   g_signal_connect(widget, "clicked", G_CALLBACK(delete_clicked), d);
-  g_object_set(widget, "tooltip-text", _("deletes the selected style in list above"), (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, _("deletes the selected style in list above"));
   gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
 
   // import button
   GtkWidget *importButton = gtk_button_new_with_label(C_("styles", "import"));
   d->import_button = importButton;
-  g_object_set(importButton, "tooltip-text", _("import style from a style file"), (char *)NULL);
+  gtk_widget_set_tooltip_text(importButton, _("import style from a style file"));
   g_signal_connect(importButton, "clicked", G_CALLBACK(import_clicked), d);
   gtk_box_pack_start(GTK_BOX(hbox2), importButton, TRUE, TRUE, 0);
 
   // export button
   GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
   d->export_button = exportButton;
-  g_object_set(exportButton, "tooltip-text", _("export the selected style into a style file"), (char *)NULL);
+  gtk_widget_set_tooltip_text(exportButton, _("export the selected style into a style file"));
   g_signal_connect(exportButton, "clicked", G_CALLBACK(export_clicked), d);
   gtk_box_pack_start(GTK_BOX(hbox2), exportButton, TRUE, TRUE, 0);
 

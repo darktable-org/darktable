@@ -716,10 +716,10 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->luma, "%.0f%%");
   dt_bauhaus_widget_set_label(g->chroma, NULL, _("chroma"));
   dt_bauhaus_slider_set_format(g->chroma, "%.0f%%");
-  g_object_set(G_OBJECT(g->radius), "tooltip-text", _("radius of the patches to match"), (char *)NULL);
-  g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of the effect"), (char *)NULL);
-  g_object_set(G_OBJECT(g->luma), "tooltip-text", _("how much to smooth brightness"), (char *)NULL);
-  g_object_set(G_OBJECT(g->chroma), "tooltip-text", _("how much to smooth colors"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match"));
+  gtk_widget_set_tooltip_text(g->strength, _("strength of the effect"));
+  gtk_widget_set_tooltip_text(g->luma, _("how much to smooth brightness"));
+  gtk_widget_set_tooltip_text(g->chroma, _("how much to smooth colors"));
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
   g_signal_connect(G_OBJECT(g->luma), "value-changed", G_CALLBACK(luma_callback), self);

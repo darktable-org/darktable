@@ -324,8 +324,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->linear, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->gamma, TRUE, TRUE, 0);
 
-  g_object_set(g->linear, "tooltip-text", _("linear part"), (char *)NULL);
-  g_object_set(g->gamma, "tooltip-text", _("gamma exponential factor"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->linear, _("linear part"));
+  gtk_widget_set_tooltip_text(g->gamma, _("gamma exponential factor"));
 
   g_signal_connect(G_OBJECT(g->linear), "value-changed", G_CALLBACK(linear_callback), self);
   g_signal_connect(G_OBJECT(g->gamma), "value-changed", G_CALLBACK(gamma_callback), self);

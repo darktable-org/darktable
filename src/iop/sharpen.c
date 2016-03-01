@@ -752,14 +752,14 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0000, 0.100, p->radius, 3);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the unblurring"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("spatial extent of the unblurring"));
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("radius"));
   dt_bauhaus_slider_enable_soft_boundaries(g->scale1, 0.0, 99.0);
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0000, 0.010, p->amount, 3);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("strength of the sharpen"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale2, _("strength of the sharpen"));
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("amount"));
   g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.00, 0.100, p->threshold, 3);
-  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("threshold to activate sharpen"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale3, _("threshold to activate sharpen"));
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("threshold"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale2, TRUE, TRUE, 0);

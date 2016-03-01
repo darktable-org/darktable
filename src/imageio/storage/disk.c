@@ -148,12 +148,12 @@ void gui_init(dt_imageio_module_storage_t *self)
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
   gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
-  g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
-  g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, _("select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 

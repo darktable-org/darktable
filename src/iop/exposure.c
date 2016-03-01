@@ -835,7 +835,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode), TRUE, TRUE, 0);
 
   g->black = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1, .001, p->black, 4);
-  g_object_set(G_OBJECT(g->black), "tooltip-text", _("adjust the black level"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->black, _("adjust the black level"));
   dt_bauhaus_slider_set_format(g->black, "%.4f");
   dt_bauhaus_widget_set_label(g->black, NULL, _("black"));
   dt_bauhaus_slider_enable_soft_boundaries(g->black, -1.0, 1.0);
@@ -848,14 +848,14 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   g->exposure = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, .02, p->exposure, 3);
-  g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
   dt_bauhaus_slider_set_format(g->exposure, "%.2fEV");
   dt_bauhaus_widget_set_label(g->exposure, NULL, _("exposure"));
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
   g->autoexpp = dt_bauhaus_slider_new_with_range(self, 0.0, 0.2, .001, 0.01, 3);
-  g_object_set(G_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out, toggle color picker to activate"), (char *)0);
+  gtk_widget_set_tooltip_text(g->autoexpp, _("percentage of bright values clipped out, toggle color picker to activate"));
   dt_bauhaus_slider_set_format(g->autoexpp, "%.3f%%");
   dt_bauhaus_widget_set_label(g->autoexpp, NULL, _("clipping threshold"));
   dt_bauhaus_widget_set_quad_paint(g->autoexpp, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
@@ -869,18 +869,17 @@ void gui_init(struct dt_iop_module_t *self)
   g->deflicker_percentile = dt_bauhaus_slider_new_with_range(self, 0, 100, 1.0, p->deflicker_percentile, 3);
   dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("percentile"));
   dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
-  g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text",
-               // xgettext:no-c-format
-               _("where in the histogram to meter for deflicking. E.g. 50% is median"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->deflicker_percentile,
+                              // xgettext:no-c-format
+                              _("where in the histogram to meter for deflicking. E.g. 50% is median"));
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_percentile), TRUE, TRUE, 0);
 
   g->deflicker_target_level
       = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .01, p->deflicker_target_level, 3);
   dt_bauhaus_widget_set_label(g->deflicker_target_level, NULL, _("target level"));
   dt_bauhaus_slider_set_format(g->deflicker_target_level, "%.2fEV");
-  g_object_set(G_OBJECT(g->deflicker_target_level), "tooltip-text",
-               _("where to place the exposure level for processed pics, EV below overexposure."),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->deflicker_target_level,
+                              _("where to place the exposure level for processed pics, EV below overexposure."));
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_target_level), TRUE, TRUE, 0);
 
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -888,8 +887,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(label), FALSE, FALSE, 0);
 
   g->deflicker_used_EC = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
-  g_object_set(G_OBJECT(g->deflicker_used_EC), "tooltip-text",
-               _("what exposure correction has actually been used"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->deflicker_used_EC), _("what exposure correction has actually been used"));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
 
   dt_pthread_mutex_lock(&g->lock);

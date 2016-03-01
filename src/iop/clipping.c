@@ -1856,8 +1856,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->hvflip, _("vertical"));
   dt_bauhaus_combobox_add(g->hvflip, _("both"));
   g_signal_connect(G_OBJECT(g->hvflip), "value-changed", G_CALLBACK(hvflip_callback), self);
-  g_object_set(G_OBJECT(g->hvflip), "tooltip-text", _("mirror image horizontally and/or vertically"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->hvflip, _("mirror image horizontally and/or vertically"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->hvflip, TRUE, TRUE, 0);
 
 
@@ -1865,8 +1864,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->angle, NULL, _("angle"));
   dt_bauhaus_slider_set_format(g->angle, "%.02f°");
   g_signal_connect(G_OBJECT(g->angle), "value-changed", G_CALLBACK(angle_callback), self);
-  g_object_set(G_OBJECT(g->angle), "tooltip-text",
-               _("right-click and drag a line on the image to drag a straight line"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->angle, _("right-click and drag a line on the image to drag a straight line"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->angle, TRUE, TRUE, 0);
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
@@ -1875,8 +1873,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->keystone_type, _("vertical"));
   dt_bauhaus_combobox_add(g->keystone_type, _("horizontal"));
   dt_bauhaus_combobox_add(g->keystone_type, _("full"));
-  g_object_set(G_OBJECT(g->keystone_type), "tooltip-text", _("set perspective correction for your image"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->keystone_type, _("set perspective correction for your image"));
   g_signal_connect(G_OBJECT(g->keystone_type), "value-changed", G_CALLBACK(keystone_type_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->keystone_type, TRUE, TRUE, 0);
 
@@ -1884,8 +1881,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->crop_auto, NULL, _("automatic cropping"));
   dt_bauhaus_combobox_add(g->crop_auto, _("no"));
   dt_bauhaus_combobox_add(g->crop_auto, _("yes"));
-  g_object_set(G_OBJECT(g->crop_auto), "tooltip-text", _("automatically crop to avoid black edges"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->crop_auto, _("automatically crop to avoid black edges"));
   g_signal_connect(G_OBJECT(g->crop_auto), "value-changed", G_CALLBACK(crop_auto_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->crop_auto, TRUE, TRUE, 0);
 
@@ -2001,9 +1997,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->aspect_presets, 0);
 
   g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed", G_CALLBACK(aspect_presets_changed), self);
-  g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text",
-               _("set the aspect ratio\nthe list is sorted: from most square to least square"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->aspect_presets, _("set the aspect ratio\n"
+                                                   "the list is sorted: from most square to least square"));
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
@@ -2038,8 +2033,7 @@ void gui_init(struct dt_iop_module_t *self)
   int guide = dt_conf_get_int("plugins/darkroom/clipping/guide");
   dt_bauhaus_combobox_set(g->guide_lines, guide);
 
-  g_object_set(G_OBJECT(g->guide_lines), "tooltip-text",
-               _("display guide lines to help compose your photograph"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->guide_lines, _("display guide lines to help compose your photograph"));
   g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guides_presets_changed), self);
 
   g->flip_guides = dt_bauhaus_combobox_new(self);
@@ -2048,7 +2042,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->flip_guides, _("horizontally"));
   dt_bauhaus_combobox_add(g->flip_guides, _("vertically"));
   dt_bauhaus_combobox_add(g->flip_guides, _("both"));
-  g_object_set(G_OBJECT(g->flip_guides), "tooltip-text", _("flip guides"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->flip_guides, _("flip guides"));
   g_signal_connect(G_OBJECT(g->flip_guides), "value-changed", G_CALLBACK(guides_flip_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->flip_guides, TRUE, TRUE, 0);
   dt_bauhaus_combobox_set(g->flip_guides, dt_conf_get_int("plugins/darkroom/clipping/flip_guides"));

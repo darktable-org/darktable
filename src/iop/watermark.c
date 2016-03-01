@@ -1230,7 +1230,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->watermarks = dt_bauhaus_combobox_new(self);
   gtk_widget_set_hexpand(GTK_WIDGET(g->watermarks), TRUE);
   char *tooltip = g_strdup_printf(_("SVG watermarks in %s/watermarks or %s/watermarks"), configdir, datadir);
-  g_object_set(G_OBJECT(g->watermarks), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(g->watermarks, tooltip);
   g_free(tooltip);
   g->refresh = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
@@ -1246,8 +1246,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
   g->colorpick = gtk_color_button_new_with_rgba(&color);
-  g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("watermark color, tag:\n$(WATERMARK_COLOR)"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
@@ -1260,7 +1259,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   g->text = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
-  g_object_set(G_OBJECT(g->text), "tooltip-text", _("text string, tag:\n$(WATERMARK_TEXT)"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->text, _("text string, tag:\n$(WATERMARK_TEXT)"));
   dt_gui_key_accel_block_on_focus_connect(g->text);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), g->text, label, GTK_POS_RIGHT, 2, 1);
@@ -1276,9 +1275,8 @@ void gui_init(struct dt_iop_module_t *self)
   GList *childs = gtk_container_get_children(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
   gtk_label_set_ellipsize(GTK_LABEL(childs->data), PANGO_ELLIPSIZE_MIDDLE);
   g_list_free(childs);
-  g_object_set(G_OBJECT(g->fontsel), "tooltip-text",
-               _("text font, tags:\n$(WATERMARK_FONT_FAMILY)\n$(WATERMARK_FONT_STYLE)\n$(WATERMARK_FONT_WEIGHT)"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->fontsel, _("text font, tags:\n$(WATERMARK_FONT_FAMILY)\n"
+                                            "$(WATERMARK_FONT_STYLE)\n$(WATERMARK_FONT_WEIGHT)"));
   gtk_font_button_set_show_size (GTK_FONT_BUTTON(g->fontsel), FALSE);
   g_free(str);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
@@ -1307,7 +1305,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->sizeto, _("smaller border"));
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
   dt_bauhaus_widget_set_label(g->sizeto, NULL, _("scale on"));
-  g_object_set(G_OBJECT(g->sizeto), "tooltip-text", _("size is relative to"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->sizeto, _("size is relative to"));
   gtk_grid_attach(GTK_GRID(self->widget), g->sizeto, 0, line++, 3, 1);
 
   gtk_grid_attach(GTK_GRID(self->widget), dt_ui_section_label_new(_("position")), 0, line++, 3, 1);
@@ -1338,9 +1336,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), g->y_offset, 0, line++, 3, 1);
 
   // Let's add some tooltips and hook up some signals...
-  g_object_set(G_OBJECT(g->opacity), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale), "tooltip-text", _("the scale of the watermark"), (char *)NULL);
-  g_object_set(G_OBJECT(g->rotate), "tooltip-text", _("the rotation of the watermark"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->opacity, _("the opacity of the watermark"));
+  gtk_widget_set_tooltip_text(g->scale, _("the scale of the watermark"));
+  gtk_widget_set_tooltip_text(g->rotate, _("the rotation of the watermark"));
 
   g_signal_connect(G_OBJECT(g->opacity), "value-changed", G_CALLBACK(opacity_callback), self);
   g_signal_connect(G_OBJECT(g->scale), "value-changed", G_CALLBACK(scale_callback), self);

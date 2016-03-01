@@ -372,14 +372,14 @@ void gui_init(dt_lib_module_t *self)
   button = gtk_button_new_with_label(_("clear"));
   d->clear_button = button;
   gtk_widget_set_hexpand(GTK_WIDGET(button), TRUE);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("remove metadata from selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("remove metadata from selected images"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
 
   button = gtk_button_new_with_label(_("apply"));
   d->apply_button = button;
   gtk_widget_set_hexpand(GTK_WIDGET(button), TRUE);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("write metadata for selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("write metadata for selected images"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   gtk_widget_set_margin_top(GTK_WIDGET(hbox), DT_PIXEL_APPLY_DPI(5));

@@ -79,9 +79,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(d->grouping_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 2);
   if(darktable.gui->grouping)
-    g_object_set(G_OBJECT(d->grouping_button), "tooltip-text", _("expand grouped images"), (char *)NULL);
+    gtk_widget_set_tooltip_text(d->grouping_button, _("expand grouped images"));
   else
-    g_object_set(G_OBJECT(d->grouping_button), "tooltip-text", _("collapse grouped images"), (char *)NULL);
+    gtk_widget_set_tooltip_text(d->grouping_button, _("collapse grouped images"));
   g_signal_connect(G_OBJECT(d->grouping_button), "clicked", G_CALLBACK(_lib_filter_grouping_button_clicked),
                    NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), darktable.gui->grouping);
@@ -91,9 +91,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(d->overlays_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 2);
   if(darktable.gui->show_overlays)
-    g_object_set(G_OBJECT(d->overlays_button), "tooltip-text", _("hide image overlays"), (char *)NULL);
+    gtk_widget_set_tooltip_text(d->overlays_button, _("hide image overlays"));
   else
-    g_object_set(G_OBJECT(d->overlays_button), "tooltip-text", _("show image overlays"), (char *)NULL);
+    gtk_widget_set_tooltip_text(d->overlays_button, _("show image overlays"));
   g_signal_connect(G_OBJECT(d->overlays_button), "clicked", G_CALLBACK(_lib_overlays_button_clicked), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), darktable.gui->show_overlays);
 
@@ -101,7 +101,7 @@ void gui_init(dt_lib_module_t *self)
   d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
   gtk_widget_set_size_request(d->preferences_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 2);
-  g_object_set(G_OBJECT(d->preferences_button), "tooltip-text", _("show global preferences"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
                    NULL);
 }
@@ -122,9 +122,9 @@ static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user
 
   darktable.gui->grouping = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if(darktable.gui->grouping)
-    g_object_set(G_OBJECT(widget), "tooltip-text", _("expand grouped images"), (char *)NULL);
+    gtk_widget_set_tooltip_text(widget, _("expand grouped images"));
   else
-    g_object_set(G_OBJECT(widget), "tooltip-text", _("collapse grouped images"), (char *)NULL);
+    gtk_widget_set_tooltip_text(widget, _("collapse grouped images"));
   dt_conf_set_bool("ui_last/grouping", darktable.gui->grouping);
   darktable.gui->expanded_group_id = -1;
   dt_collection_update_query(darktable.collection);
@@ -141,9 +141,9 @@ static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   darktable.gui->show_overlays = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if(darktable.gui->show_overlays)
-    g_object_set(G_OBJECT(widget), "tooltip-text", _("hide image overlays"), (char *)NULL);
+    gtk_widget_set_tooltip_text(widget, _("hide image overlays"));
   else
-    g_object_set(G_OBJECT(widget), "tooltip-text", _("show image overlays"), (char *)NULL);
+    gtk_widget_set_tooltip_text(widget, _("show image overlays"));
   dt_conf_set_bool("lighttable/ui/expose_statuses", darktable.gui->show_overlays);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 

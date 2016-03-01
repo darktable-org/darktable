@@ -179,7 +179,7 @@ static void _metadata_update_value(GtkLabel *label, const char *value)
   const gchar *str = validated ? value : NODATA_STRING;
   gtk_label_set_text(GTK_LABEL(label), str);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-  g_object_set(G_OBJECT(label), "tooltip-text", str, (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
 }
 
 static void _metadata_update_value_end(GtkLabel *label, const char *value)
@@ -188,7 +188,7 @@ static void _metadata_update_value_end(GtkLabel *label, const char *value)
   const gchar *str = validated ? value : NODATA_STRING;
   gtk_label_set_text(GTK_LABEL(label), str);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  g_object_set(G_OBJECT(label), "tooltip-text", str, (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
 }
 
 
@@ -237,7 +237,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     const int tp = 512;
     char tooltip[tp];
     snprintf(tooltip, tp, _("double click to jump to film roll\n%s"), value);
-    g_object_set(G_OBJECT(d->metadata[md_internal_filmroll]), "tooltip-text", tooltip, (char *)NULL);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_filmroll]), tooltip);
 
     snprintf(value, sizeof(value), "%d", img->id);
     _metadata_update_value(d->metadata[md_internal_imgid], value);
@@ -397,7 +397,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_free(loader_tooltip);
 
       _metadata_update_value(d->metadata[md_internal_flags], value);
-      g_object_set(G_OBJECT(d->metadata[md_internal_flags]), "tooltip-text", tooltip, (char *)NULL);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_flags]), tooltip);
 
       g_free(star_string);
       g_free(tooltip);

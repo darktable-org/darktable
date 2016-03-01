@@ -1391,8 +1391,7 @@ void gui_init(dt_view_t *self)
   /* create favorite plugin preset popup tool */
   GtkWidget *favorite_presets
       = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-  g_object_set(G_OBJECT(favorite_presets), "tooltip-text", _("quick access to presets of your favorites"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets of your favorites"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets, DT_VIEW_DARKROOM);
@@ -1400,8 +1399,7 @@ void gui_init(dt_view_t *self)
   /* create quick styles popup menu tool */
   GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(styles), "clicked", G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
-  g_object_set(G_OBJECT(styles), "tooltip-text", _("quick access for applying any of your styles"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
   /* create overexposed popup tool */
@@ -1409,8 +1407,8 @@ void gui_init(dt_view_t *self)
     // the button
     dev->overexposed.button
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(dev->overexposed.button), "tooltip-text",
-                 _("toggle over/under exposed indication\nright click for options"), (char *)NULL);
+    gtk_widget_set_tooltip_text(dev->overexposed.button,
+                                _("toggle over/under exposed indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
                      G_CALLBACK(_overexposed_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->overexposed.button), "button-press-event",
@@ -1456,8 +1454,7 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_combobox_add(colorscheme, _("red & blue"));
     dt_bauhaus_combobox_add(colorscheme, _("purple & green"));
     dt_bauhaus_combobox_set(colorscheme, dev->overexposed.colorscheme);
-    g_object_set(G_OBJECT(colorscheme), "tooltip-text", _("select colors to indicate over/under exposure"),
-                 (char *)NULL);
+    gtk_widget_set_tooltip_text(colorscheme, _("select colors to indicate over/under exposure"));
     g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(colorscheme_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
     gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
@@ -1467,8 +1464,7 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
     dt_bauhaus_slider_set_format(lower, "%.0f%%");
     dt_bauhaus_widget_set_label(lower, NULL, _("lower threshold"));
-    g_object_set(G_OBJECT(lower), "tooltip-text", _("threshold of what shall be considered underexposed"),
-                 (char *)NULL);
+    gtk_widget_set_tooltip_text(lower, _("threshold of what shall be considered underexposed"));
     g_signal_connect(G_OBJECT(lower), "value-changed", G_CALLBACK(lower_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lower), TRUE, TRUE, 0);
 
@@ -1477,8 +1473,7 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_slider_set(upper, dev->overexposed.upper);
     dt_bauhaus_slider_set_format(upper, "%.0f%%");
     dt_bauhaus_widget_set_label(upper, NULL, _("upper threshold"));
-    g_object_set(G_OBJECT(upper), "tooltip-text", _("threshold of what shall be considered overexposed"),
-                 (char *)NULL);
+    gtk_widget_set_tooltip_text(upper, _("threshold of what shall be considered overexposed"));
     g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
   }
@@ -1488,8 +1483,8 @@ void gui_init(dt_view_t *self)
     // the softproof button
     dev->profile.softproof_button
     = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(dev->profile.softproof_button), "tooltip-text",
-                 _("toggle softproofing\nright click for profile options"), (char *)NULL);
+    gtk_widget_set_tooltip_text(dev->profile.softproof_button,
+                                _("toggle softproofing\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
                      G_CALLBACK(_softproof_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "button-press-event",
@@ -1501,8 +1496,8 @@ void gui_init(dt_view_t *self)
     // the gamut check button
     dev->profile.gamut_button
     = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(dev->profile.gamut_button), "tooltip-text",
-                 _("toggle gamut checking\nright click for profile options"), (char *)NULL);
+    gtk_widget_set_tooltip_text(dev->profile.gamut_button,
+                 _("toggle gamut checking\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
                      G_CALLBACK(_gamut_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "button-press-event",
@@ -1596,10 +1591,10 @@ void gui_init(dt_view_t *self)
     char tooltip[1024];
     snprintf(tooltip, sizeof(tooltip), _("display ICC profiles in %s/color/out or %s/color/out"), confdir,
              datadir);
-    g_object_set(G_OBJECT(display_profile), "tooltip-text", tooltip, (char *)NULL);
+    gtk_widget_set_tooltip_text(display_profile, tooltip);
     snprintf(tooltip, sizeof(tooltip), _("softproof ICC profiles in %s/color/out or %s/color/out"), confdir,
              datadir);
-    g_object_set(G_OBJECT(softproof_profile), "tooltip-text", tooltip, (char *)NULL);
+    gtk_widget_set_tooltip_text(softproof_profile, tooltip);
 
     g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), dev);
     g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);

@@ -172,13 +172,13 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gcw->entry), TRUE, TRUE, 0);
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_store, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-  g_object_set(button, "tooltip-text", _("store value as default"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("store value as default"));
   gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_gcw_store_callback), gcw);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-  g_object_set(button, "tooltip-text", _("reset value to default"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("reset value to default"));
   gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_gcw_reset_callback), gcw);
@@ -264,10 +264,9 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
   data->settings.general.ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));
-  g_object_set(data->settings.general.ignore_jpeg, "tooltip-text",
+  gtk_widget_set_tooltip_text(data->settings.general.ignore_jpeg,
                _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are "
-                 "raw+JPEG in a directory."),
-               NULL);
+                 "raw+JPEG in a directory."));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->settings.general.ignore_jpeg),
                                dt_conf_get_bool("ui_last/import_ignore_jpegs"));
   gtk_box_pack_start(GTK_BOX(data->settings.page), data->settings.general.ignore_jpeg, FALSE, FALSE, 0);
@@ -277,10 +276,9 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   data->settings.general.date_override = gtk_check_button_new_with_label(_("override today's date"));
   gtk_box_pack_start(GTK_BOX(hbox), data->settings.general.date_override, FALSE, FALSE, 0);
-  g_object_set(data->settings.general.date_override, "tooltip-text",
+  gtk_widget_set_tooltip_text(data->settings.general.date_override,
                _("check this, if you want to override the timestamp used when expanding variables:\n$(YEAR), "
-                 "$(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),
-               (char *)NULL);
+                 "$(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"));
 
   data->settings.general.date_entry = gtk_entry_new();
   gtk_widget_set_sensitive(data->settings.general.date_entry, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(

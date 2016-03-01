@@ -3257,63 +3257,65 @@ void gui_init (dt_iop_module_t *module)
   module->widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
 
   GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
-  g_object_set (G_OBJECT (hbox), "tooltip-text",
-                _("use a tool to add warps.\nright-click to remove a warp."), (char *) NULL);
+  gtk_widget_set_tooltip_text(hbox, _("use a tool to add warps.\nright-click to remove a warp."));
 
-  gtk_box_pack_start ((GtkBox *) hbox, gtk_label_new (_("warps|nodes count:")), FALSE, TRUE, 0);
-  g->label = (GtkLabel *) gtk_label_new ("-");
-  gtk_box_pack_start ((GtkBox *) hbox, (GtkWidget *) g->label, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new (_("warps|nodes count:")), FALSE, TRUE, 0);
+  g->label = GTK_LABEL(gtk_label_new ("-"));
+  gtk_box_pack_start (GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
 
-  g->btn_node_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_node_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-  g_signal_connect (G_OBJECT (g->btn_node_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_node_tool), "tooltip-text", _("node tool: edit, add and delete nodes"), (char *) NULL);
+  g->btn_node_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_node_tool,
+                                                              CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+  g_signal_connect(G_OBJECT(g->btn_node_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_node_tool), _("node tool: edit, add and delete nodes"));
   gtk_toggle_button_set_active (g->btn_node_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_node_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) (hbox), (GtkWidget *) g->btn_node_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request(GTK_WIDGET(g->btn_node_tool), bs, bs);
+  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(g->btn_node_tool), FALSE, FALSE, 0);
 
-  g->btn_curve_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_curve_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_curve_tool,
+                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   g_signal_connect (G_OBJECT (g->btn_curve_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_curve_tool), "tooltip-text", _("curve tool: draw curves"), (char *) NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_curve_tool), _("curve tool: draw curves"));
   gtk_toggle_button_set_active (g->btn_curve_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_curve_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) hbox, (GtkWidget *) g->btn_curve_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request (GTK_WIDGET(g->btn_curve_tool), bs, bs);
+  gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_curve_tool), FALSE, FALSE, 0);
 
-  g->btn_line_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_line_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g->btn_line_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_line_tool,
+                                                              CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   g_signal_connect (G_OBJECT (g->btn_line_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_line_tool), "tooltip-text", _("line tool: draw lines"), (char *) NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_line_tool), _("line tool: draw lines"));
   gtk_toggle_button_set_active (g->btn_line_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_line_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) hbox, (GtkWidget *) g->btn_line_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request (GTK_WIDGET(g->btn_line_tool), bs, bs);
+  gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_line_tool), FALSE, FALSE, 0);
 
-  g->btn_point_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_point_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g->btn_point_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_point_tool,
+                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   g_signal_connect (G_OBJECT (g->btn_point_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_point_tool), "tooltip-text", _("point tool: draw points"), (char *) NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_point_tool), _("point tool: draw points"));
   gtk_toggle_button_set_active (g->btn_point_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_point_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) hbox, (GtkWidget *) g->btn_point_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request (GTK_WIDGET(g->btn_point_tool), bs, bs);
+  gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_point_tool), FALSE, FALSE, 0);
 
-  g->btn_no_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_no_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g->btn_no_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_no_tool,
+                                                            CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   g_signal_connect (G_OBJECT (g->btn_no_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_no_tool), "tooltip-text", _("disable all tools"), (char *) NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_no_tool), _("disable all tools"));
   gtk_toggle_button_set_active (g->btn_no_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_no_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) hbox, (GtkWidget *) g->btn_no_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request (GTK_WIDGET(g->btn_no_tool), bs, bs);
+  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(g->btn_no_tool), FALSE, FALSE, 0);
 
-  gtk_box_pack_start ((GtkBox *) module->widget, hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
 
   dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click to add node\nright click to remove path");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click : linear or feathered\nctrl+click : autosmooth, cups, smooth, symmetrical\nright-click to remove");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click : linear or feathered\n"
+                                                              "ctrl+click : autosmooth, cups, smooth, symmetrical\n"
+                                                              "right-click to remove");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_RADIUSPOINT].hint    = _("drag to adjust warp radius");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT1].hint = _("drag to adjust hardness (center)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT2].hint = _("drag to adjust hardness (feather)");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\nctrl+click : linear, grow, and shrink");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\n"
+                                                              "ctrl+click : linear, grow, and shrink");
 }
 
 void gui_cleanup (dt_iop_module_t *module)

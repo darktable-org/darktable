@@ -242,7 +242,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->amount_scale, "%.0f%%");
   dt_bauhaus_widget_set_label(g->amount_scale, NULL, _("vibrance"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->amount_scale), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->amount_scale), "tooltip-text", _("the amount of vibrance"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->amount_scale, _("the amount of vibrance"));
   g_signal_connect(G_OBJECT(g->amount_scale), "value-changed", G_CALLBACK(amount_callback), self);
 }
 

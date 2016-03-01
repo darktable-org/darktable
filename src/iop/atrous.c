@@ -1404,21 +1404,17 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
                            GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("luma")));
-  g_object_set(
-      G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))),
-      "tooltip-text", _("change lightness at each feature size"), NULL);
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              _("change lightness at each feature size"));
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
                            GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("chroma")));
-  g_object_set(
-      G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))),
-      "tooltip-text", _("change color saturation at each feature size"), NULL);
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              _("change color saturation at each feature size"));
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
                            GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("edges")));
-  g_object_set(
-      G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))),
-      "tooltip-text",
-      _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"), NULL);
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
@@ -1445,7 +1441,7 @@ void gui_init(struct dt_iop_module_t *self)
   // mix slider
   c->mix = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.1f, 1.0f, 3);
   dt_bauhaus_widget_set_label(c->mix, NULL, _("mix"));
-  g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->mix, _("make effect stronger or weaker"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->mix, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->mix), "value-changed", G_CALLBACK(mix_callback), self);
 }

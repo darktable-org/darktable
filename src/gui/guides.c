@@ -372,7 +372,7 @@ static GtkWidget *_guides_gui_golden_mean(dt_iop_module_t *self, void *user_data
   dt_bauhaus_combobox_add(golden_extras, _("golden spiral sections"));
   dt_bauhaus_combobox_add(golden_extras, _("golden spiral"));
   dt_bauhaus_combobox_add(golden_extras, _("all"));
-  g_object_set(G_OBJECT(golden_extras), "tooltip-text", _("show some extra guides"), (char *)NULL);
+  gtk_widget_set_tooltip_text(golden_extras, _("show some extra guides"));
   dt_bauhaus_combobox_set(golden_extras, data->which);
   g_signal_connect(G_OBJECT(golden_extras), "value-changed", G_CALLBACK(_golden_mean_changed), user_data);
 

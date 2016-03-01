@@ -841,7 +841,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->scale_blueness = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->blueness, 2);
   dt_bauhaus_widget_set_label(c->scale_blueness, NULL, _("blue shift"));
   dt_bauhaus_slider_set_format(c->scale_blueness, "%0.2f%%");
-  g_object_set(G_OBJECT(c->scale_blueness), "tooltip-text", _("blueness in shadows"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->scale_blueness, _("blueness in shadows"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 5);
 

@@ -442,7 +442,7 @@ static gboolean _dt_ctl_switch_mode_to(gpointer user_data)
   darktable.control->button_down_which = 0;
   darktable.gui->center_tooltip = 0;
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
-  g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, "");
 
   if(!dt_view_manager_switch(darktable.view_manager, mode))
     dt_conf_set_int("ui_last/view", mode);

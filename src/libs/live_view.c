@@ -288,11 +288,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), lib->rotate_cw, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->flip, TRUE, TRUE, 0);
 
-  g_object_set(G_OBJECT(lib->live_view), "tooltip-text", _("toggle live view"), (char *)NULL);
-  g_object_set(G_OBJECT(lib->live_view_zoom), "tooltip-text", _("zoom live view"), (char *)NULL);
-  g_object_set(G_OBJECT(lib->rotate_ccw), "tooltip-text", _("rotate 90 degrees ccw"), (char *)NULL);
-  g_object_set(G_OBJECT(lib->rotate_cw), "tooltip-text", _("rotate 90 degrees cw"), (char *)NULL);
-  g_object_set(G_OBJECT(lib->flip), "tooltip-text", _("flip live view horizontally"), (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->live_view, _("toggle live view"));
+  gtk_widget_set_tooltip_text(lib->live_view_zoom, _("zoom live view"));
+  gtk_widget_set_tooltip_text(lib->rotate_ccw, _("rotate 90 degrees ccw"));
+  gtk_widget_set_tooltip_text(lib->rotate_cw, _("rotate 90 degrees cw"));
+  gtk_widget_set_tooltip_text(lib->flip, _("flip live view horizontally"));
 
   g_signal_connect(G_OBJECT(lib->live_view), "clicked", G_CALLBACK(_toggle_live_view_clicked), lib);
   g_signal_connect(G_OBJECT(lib->live_view_zoom), "clicked", G_CALLBACK(_zoom_live_view_clicked), lib);
@@ -318,14 +318,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), lib->focus_out_small, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->focus_out_big, TRUE, TRUE, 0);
 
-  g_object_set(G_OBJECT(lib->focus_in_big), "tooltip-text", _("move focus point in (big steps)"),
-               (char *)NULL);
-  g_object_set(G_OBJECT(lib->focus_in_small), "tooltip-text", _("move focus point in (small steps)"),
-               (char *)NULL);
-  g_object_set(G_OBJECT(lib->focus_out_small), "tooltip-text", _("move focus point out (small steps)"),
-               (char *)NULL);
-  g_object_set(G_OBJECT(lib->focus_out_big), "tooltip-text", _("move focus point out (big steps)"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->focus_in_big, _("move focus point in (big steps)"));
+  gtk_widget_set_tooltip_text(lib->focus_in_small, _("move focus point in (small steps)"));
+  gtk_widget_set_tooltip_text(lib->focus_out_small, _("move focus point out (small steps)"));
+  gtk_widget_set_tooltip_text(lib->focus_out_big, _("move focus point out (big steps)"));
 
   // Near 3
   g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked", G_CALLBACK(_focus_button_clicked),
@@ -369,8 +365,7 @@ void gui_init(dt_lib_module_t *self)
   }
   gtk_widget_set_no_show_all(lib->guides_widgets, TRUE);
 
-  g_object_set(G_OBJECT(lib->guide_selector), "tooltip-text",
-               _("display guide lines to help compose your photograph"), (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->guide_selector, _("display guide lines to help compose your photograph"));
   g_signal_connect(G_OBJECT(lib->guide_selector), "value-changed", G_CALLBACK(guides_presets_changed), lib);
 
   lib->flip_guides = dt_bauhaus_combobox_new(NULL);
@@ -379,7 +374,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->flip_guides, _("horizontally"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("vertically"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("both"));
-  g_object_set(G_OBJECT(lib->flip_guides), "tooltip-text", _("flip guides"), (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->flip_guides, _("flip guides"));
   gtk_box_pack_start(GTK_BOX(self->widget), lib->flip_guides, TRUE, TRUE, 0);
 
   lib->overlay = dt_bauhaus_combobox_new(NULL);
@@ -387,8 +382,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->overlay, _("none"));
   dt_bauhaus_combobox_add(lib->overlay, _("selected image"));
   dt_bauhaus_combobox_add(lib->overlay, _("id"));
-  g_object_set(G_OBJECT(lib->overlay), "tooltip-text", _("overlay another image over the live view"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->overlay, _("overlay another image over the live view"));
   g_signal_connect(G_OBJECT(lib->overlay), "value-changed", G_CALLBACK(overlay_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay, TRUE, TRUE, 0);
 
@@ -397,8 +391,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   lib->overlay_id = gtk_spin_button_new_with_range(0, 1000000000, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(lib->overlay_id), 0);
-  g_object_set(G_OBJECT(lib->overlay_id), "tooltip-text", _("enter image id of the overlay manually"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->overlay_id, _("enter image id of the overlay manually"));
   g_signal_connect(G_OBJECT(lib->overlay_id), "value-changed", G_CALLBACK(_overlay_id_changed), lib);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(lib->overlay_id),
                             dt_conf_get_int("plugins/lighttable/live_view/overlay_imgid"));
@@ -431,7 +424,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL color"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL luminosity"));
 #endif
-  g_object_set(G_OBJECT(lib->overlay_mode), "tooltip-text", _("mode of the overlay"), (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->overlay_mode, _("mode of the overlay"));
   dt_bauhaus_combobox_set(lib->overlay_mode, dt_conf_get_int("plugins/lighttable/live_view/overlay_mode"));
   g_signal_connect(G_OBJECT(lib->overlay_mode), "value-changed", G_CALLBACK(_overlay_mode_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_mode, TRUE, TRUE, 0);
@@ -440,8 +433,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_widget_set_label(lib->overlay_splitline, NULL, _("split line"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("off"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("on"));
-  g_object_set(G_OBJECT(lib->overlay_splitline), "tooltip-text", _("only draw part of the overlay"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->overlay_splitline, _("only draw part of the overlay"));
   dt_bauhaus_combobox_set(lib->overlay_splitline, dt_conf_get_int("plugins/lighttable/live_view/splitline"));
   g_signal_connect(G_OBJECT(lib->overlay_splitline), "value-changed", G_CALLBACK(_overlay_splitline_changed),
                    lib);

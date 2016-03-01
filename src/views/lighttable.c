@@ -938,14 +938,14 @@ after_drawing:
     char *tooltip = dt_history_get_items_as_string(mouse_over_id);
     if(tooltip != NULL)
     {
-      g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", tooltip, (char *)NULL);
+      gtk_widget_set_tooltip_text(dt_ui_center(darktable.gui->ui), tooltip);
       g_free(tooltip);
     }
   }
   else if(darktable.gui->center_tooltip == 2) // not set in this round
   {
     darktable.gui->center_tooltip = 0;
-    g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", "", (char *)NULL);
+    gtk_widget_set_tooltip_text(dt_ui_center(darktable.gui->ui), "");
   }
   return missing;
 }
@@ -2416,7 +2416,7 @@ void gui_init(dt_view_t *self)
 
   // create display profile button
   lib->profile.button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-  g_object_set(G_OBJECT(lib->profile.button), "tooltip-text", _("set display profile"), (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->profile.button, _("set display profile"));
   g_signal_connect(G_OBJECT(lib->profile.button), "button-press-event", G_CALLBACK(_profile_quickbutton_pressed), lib);
   dt_view_manager_module_toolbox_add(darktable.view_manager, lib->profile.button, DT_VIEW_LIGHTTABLE);
 
@@ -2491,7 +2491,7 @@ void gui_init(dt_view_t *self)
   char tooltip[1024];
   snprintf(tooltip, sizeof(tooltip), _("display ICC profiles in %s/color/out or %s/color/out"), confdir,
            datadir);
-  g_object_set(G_OBJECT(display_profile), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(display_profile, tooltip);
 
   g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), NULL);
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);

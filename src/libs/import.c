@@ -215,13 +215,13 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       /* set camera summary if available */
       if(*camera->summary.text)
       {
-        g_object_set(G_OBJECT(label), "tooltip-text", camera->summary.text, (char *)NULL);
+        gtk_widget_set_tooltip_text(label, camera->summary.text);
       }
       else
       {
         snprintf(buffer, sizeof(buffer), _("device \"%s\" connected on port \"%s\"."), camera->model,
                  camera->port);
-        g_object_set(G_OBJECT(label), "tooltip-text", buffer, (char *)NULL);
+        gtk_widget_set_tooltip_text(label, buffer);
       }
 
       /* add camera actions buttons */
@@ -437,16 +437,15 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   {
     // recursive opening.
     recursive = gtk_check_button_new_with_label(_("import directories recursively"));
-    g_object_set(recursive, "tooltip-text",
-                 _("recursively import subdirectories. each directory goes into a new film roll."), NULL);
+    gtk_widget_set_tooltip_text(recursive,
+                                _("recursively import subdirectories. each directory goes into a new film roll."));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(recursive), dt_conf_get_bool("ui_last/import_recursive"));
     gtk_box_pack_start(GTK_BOX(extra), recursive, FALSE, FALSE, 0);
 
     // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
     ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));
-    g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this "
-                                                "can be useful when there are raw+JPEG in a directory."),
-                 NULL);
+    gtk_widget_set_tooltip_text(ignore_jpeg, _("do not load files with an extension of .jpg or .jpeg. this "
+                                               "can be useful when there are raw+JPEG in a directory."));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ignore_jpeg),
                                  dt_conf_get_bool("ui_last/import_ignore_jpegs"));
     gtk_box_pack_start(GTK_BOX(extra), ignore_jpeg, FALSE, FALSE, 0);
@@ -456,7 +455,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   GtkWidget *apply_metadata;
   GtkWidget *grid, *label, *creator, *publisher, *rights, *tags;
   apply_metadata = gtk_check_button_new_with_label(_("apply metadata on import"));
-  g_object_set(apply_metadata, "tooltip-text", _("apply some metadata to all newly imported images."), NULL);
+  gtk_widget_set_tooltip_text(apply_metadata, _("apply some metadata to all newly imported images."));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(apply_metadata),
                                dt_conf_get_bool("ui_last/import_apply_metadata"));
   gtk_box_pack_start(GTK_BOX(extra), apply_metadata, FALSE, FALSE, 0);
@@ -502,7 +501,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
 
   tags = gtk_entry_new();
   str = dt_conf_get_string("ui_last/import_last_tags");
-  g_object_set(tags, "tooltip-text", _("comma separated list of tags"), NULL);
+  gtk_widget_set_tooltip_text(tags, _("comma separated list of tags"));
   gtk_entry_set_text(GTK_ENTRY(tags), str);
   g_free(str);
 
@@ -1004,7 +1003,7 @@ void gui_init(dt_lib_module_t *self)
   GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
   d->scan_devices = scan;
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_START);
-  g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(scan), _("scan for newly attached devices"));
   g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scan), TRUE, TRUE, 0);
 

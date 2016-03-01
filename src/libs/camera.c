@@ -141,8 +141,7 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
       g_object_ref_sink(prop->osd);
       gtk_widget_set_size_request(GTK_WIDGET(prop->osd), DT_PIXEL_APPLY_DPI(14), -1);
-      g_object_set(G_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"),
-                   (char *)NULL);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
       do
       {
         dt_bauhaus_combobox_add(prop->values, g_dgettext("libgphoto2-2", value));
@@ -479,22 +478,18 @@ void gui_init(dt_lib_module_t *self)
   lib->gui.button1 = gtk_button_new_with_label(_("capture image(s)"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.button1), 0, lib->gui.rows++, 2, 1);
 
-  g_object_set(G_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), (char *)NULL);
-  g_object_set(G_OBJECT(lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), (char *)NULL);
-  g_object_set(G_OBJECT(lib->gui.tb3), "tooltip-text", _("toggle bracketed capture mode"), (char *)NULL);
-  g_object_set(G_OBJECT(lib->gui.sb1), "tooltip-text",
-               _("the count of seconds before actually doing a capture"), (char *)NULL);
-  g_object_set(G_OBJECT(lib->gui.sb2), "tooltip-text",
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.tb1), _("toggle delayed capture mode"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.tb2), _("toggle sequenced capture mode"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.tb3), _("toggle bracketed capture mode"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.sb1), _("the count of seconds before actually doing a capture"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.sb2),
                _("the amount of images to capture in a sequence,\nyou can use this in conjunction with "
-                 "delayed mode to create stop-motion sequences."),
-               (char *)NULL);
-  g_object_set(G_OBJECT(lib->gui.sb3), "tooltip-text",
-               _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."),
-               (char *)NULL);
-  g_object_set(G_OBJECT(lib->gui.sb4), "tooltip-text",
+                 "delayed mode to create stop-motion sequences."));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.sb3),
+               _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.sb4),
                _("the amount of steps per bracket, steps is camera configurable and usually 3 steps per "
-                 "stop\nwith other words, 3 steps is 1EV exposure step between brackets."),
-               (char *)NULL);
+                 "stop\nwith other words, 3 steps is 1EV exposure step between brackets."));
 
   g_signal_connect(G_OBJECT(lib->gui.tb1), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.tb2), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);

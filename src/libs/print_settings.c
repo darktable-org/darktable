@@ -18,6 +18,7 @@
 
 #include <glib.h>
 
+#include "gui/accelerators.h"
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
@@ -1040,7 +1041,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
 
   snprintf(tooltip, sizeof(tooltip), _("printer ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
-  g_object_set(G_OBJECT(d->pprofile), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(d->pprofile, tooltip);
   g_signal_connect(G_OBJECT(d->pprofile), "value-changed", G_CALLBACK(_printer_profile_changed), (gpointer)self);
 
   //  Add printer intent combo
@@ -1065,8 +1066,8 @@ gui_init (dt_lib_module_t *self)
   d->v_black_point_compensation = dt_conf_get_bool("plugins/print/print/black_point_compensation");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->black_point_compensation), d->v_black_point_compensation);
 
-  g_object_set(d->black_point_compensation, "tooltip-text",
-               _("activate black point compensation when applying the printer profile"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->black_point_compensation,
+                              _("activate black point compensation when applying the printer profile"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->pintent), combo_idx==0?FALSE:TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(d->black_point_compensation), combo_idx==0?FALSE:TRUE);
@@ -1125,11 +1126,11 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hboxinfo),GTK_WIDGET(label),TRUE,TRUE,0);
   d->info = gtk_label_new("1.0");
   gtk_box_pack_start(GTK_BOX(hboxinfo),GTK_WIDGET(d->info),TRUE,TRUE,0);
-  g_object_set(G_OBJECT(hboxinfo), "tooltip-text",
+  gtk_widget_set_tooltip_text(hboxinfo,
                _("image scale factor from native printer DPI:\n"
                  " < 1 means that it is downscaled (best quality)\n"
                  " > 1 means that the image is upscaled\n"
-                 " a too large value may result in poor print quality"), (char *)NULL);
+                 " a too large value may result in poor print quality"));
 
   //// borders
 
@@ -1140,23 +1141,23 @@ gui_init (dt_lib_module_t *self)
   d->lock_activated = FALSE;
 
   //d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(G_OBJECT(d->b_top), "tooltip-text", _("top margin"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->b_top), _("top margin"));
   gtk_grid_attach(bds, GTK_WIDGET(d->b_top), 1, 0, 1, 1);
 
   //d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(G_OBJECT(d->b_left), "tooltip-text", _("left margin"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->b_left), _("left margin"));
   gtk_grid_attach(bds, GTK_WIDGET(d->b_left), 0, 1, 1, 1);
 
   d->lock_button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("lock")));
-  g_object_set(G_OBJECT(d->lock_button), "tooltip-text", _("change all margins uniformly"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->lock_button), _("change all margins uniformly"));
   gtk_grid_attach(bds, GTK_WIDGET(d->lock_button), 1, 1, 1, 1);
 
   //d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(G_OBJECT(d->b_right), "tooltip-text", _("right margin"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->b_right), _("right margin"));
   gtk_grid_attach(bds, GTK_WIDGET(d->b_right), 2, 1, 1, 1);
 
   //d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(G_OBJECT(d->b_bottom), "tooltip-text", _("bottom margin"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->b_bottom), _("bottom margin"));
   gtk_grid_attach(bds, GTK_WIDGET(d->b_bottom), 1, 2, 1, 1);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(bds), TRUE, TRUE, 0);
@@ -1249,7 +1250,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->profile, combo_idx);
 
   snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
-  g_object_set(G_OBJECT(d->profile), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(d->profile, tooltip);
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(_profile_changed), (gpointer)self);
 
   //  Add export intent combo
@@ -1295,7 +1296,7 @@ gui_init (dt_lib_module_t *self)
   g_free(current_style);
   g_list_free_full(styles, dt_style_free);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to use while printing"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->style, _("temporary style to use while printing"));
 
   // style not found, maybe a style has been removed? revert to none
   if (combo_idx == -1)
@@ -1323,8 +1324,8 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->style_mode, d->v_style_append?1:0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style_mode), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style items are appended to the history or replacing the history"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(d->style_mode,
+                              _("whether the style items are appended to the history or replacing the history"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), combo_idx==0?FALSE:TRUE);
 
@@ -1334,7 +1335,7 @@ gui_init (dt_lib_module_t *self)
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("print")));
   d->print_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("print with current settings (ctrl-p)"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("print with current settings (ctrl-p)"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (button), "clicked",

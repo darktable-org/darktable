@@ -492,7 +492,7 @@ static inline int gui_init_tab(struct dt_iop_module_t *self, int line, const cha
   dt_bauhaus_slider_set_stop(hue, 0.664f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 1.0f, 1.0f, 0.0f, 0.0f);
-  g_object_set(G_OBJECT(hue), "tooltip-text", _("select the hue tone"), (char *)NULL);
+  gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
 
   // saturation slider
   GtkWidget *saturation;
@@ -500,7 +500,7 @@ static inline int gui_init_tab(struct dt_iop_module_t *self, int line, const cha
   dt_bauhaus_widget_set_label(saturation, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
-  g_object_set(G_OBJECT(saturation), "tooltip-text", _("select the saturation tone"), (char *)NULL);
+  gtk_widget_set_tooltip_text(saturation, _("select the saturation tone"));
 
   // pack the widgets
   gtk_widget_set_hexpand(hue, TRUE); // make sure that the color picker doesn't become HUGE
@@ -552,9 +552,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, g->scale2, 0, line++, 2, 1);
 
 
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the balance of center of splittoning"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text",
-               _("compress the effect on highlights/shadows and\npreserve midtones"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("the balance of center of splittoning"));
+  gtk_widget_set_tooltip_text(g->scale2, _("compress the effect on highlights/shadows and\npreserve midtones"));
 
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(hue_callback), self);
   g_signal_connect(G_OBJECT(g->gslider3), "value-changed", G_CALLBACK(hue_callback), self);

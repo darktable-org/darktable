@@ -1405,11 +1405,11 @@ void gui_init(struct dt_iop_module_t *self)
       break;
   }
 
-  g_object_set(g->threshold, "tooltip-text", _("pixels with lightness values above this threshold are corrected"), (char *)NULL);
-  g_object_set(g->spatial, "tooltip-text", _("how far to look for replacement colors in spatial dimensions"), (char *)NULL);
-  g_object_set(g->range, "tooltip-text", _("how far to look for replacement colors in the luminance dimension"), (char *)NULL);
-  g_object_set(g->precedence, "tooltip-text", _("if and how to give precedence to specific replacement colors"), (char *)NULL);
-  g_object_set(g->hue, "tooltip-text", _("the hue tone which should be given precedence over other hue tones"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->threshold, _("pixels with lightness values above this threshold are corrected"));
+  gtk_widget_set_tooltip_text(g->spatial, _("how far to look for replacement colors in spatial dimensions"));
+  gtk_widget_set_tooltip_text(g->range, _("how far to look for replacement colors in the luminance dimension"));
+  gtk_widget_set_tooltip_text(g->precedence, _("if and how to give precedence to specific replacement colors"));
+  gtk_widget_set_tooltip_text(g->hue, _("the hue tone which should be given precedence over other hue tones"));
 
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
   g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);

@@ -131,8 +131,7 @@ void gui_init(dt_lib_module_t *self)
                                       GDK_SCROLL | GDK_SCROLL_MASK);
 
   /* connect callbacks */
-  g_object_set(G_OBJECT(self->widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets"));
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-press-event",
                    G_CALLBACK(_lib_histogram_button_press_callback), self);
@@ -486,13 +485,13 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
       switch(darktable.develop->histogram_type)
       {
         case DT_DEV_HISTOGRAM_LOGARITHMIC:
-          g_object_set(G_OBJECT(widget), "tooltip-text", _("set histogram mode to linear"), (char *)NULL);
+          gtk_widget_set_tooltip_text(widget, _("set histogram mode to linear"));
           break;
         case DT_DEV_HISTOGRAM_LINEAR:
-          g_object_set(G_OBJECT(widget), "tooltip-text", _("set histogram mode to waveform"), (char *)NULL);
+          gtk_widget_set_tooltip_text(widget, _("set histogram mode to waveform"));
           break;
         case DT_DEV_HISTOGRAM_WAVEFORM:
-          g_object_set(G_OBJECT(widget), "tooltip-text", _("set histogram mode to logarithmic"), (char *)NULL);
+          gtk_widget_set_tooltip_text(widget, _("set histogram mode to logarithmic"));
           break;
         case DT_DEV_HISTOGRAM_N:
           g_assert_not_reached();
@@ -501,33 +500,28 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     else if(x > d->red_x && x < d->red_x + d->color_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 4;
-      g_object_set(G_OBJECT(widget), "tooltip-text",
-                   d->red ? _("click to hide red channel") : _("click to show red channel"), (char *)NULL);
+      gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide red channel") : _("click to show red channel"));
     }
     else if(x > d->green_x && x < d->green_x + d->color_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 5;
-      g_object_set(G_OBJECT(widget), "tooltip-text",
-                   d->red ? _("click to hide green channel") : _("click to show green channel"),
-                   (char *)NULL);
+      gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide green channel")
+                                                 : _("click to show green channel"));
     }
     else if(x > d->blue_x && x < d->blue_x + d->color_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = 6;
-      g_object_set(G_OBJECT(widget), "tooltip-text",
-                   d->red ? _("click to hide blue channel") : _("click to show blue channel"), (char *)NULL);
+      gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide blue channel") : _("click to show blue channel"));
     }
     else if(pos < 0.2)
     {
       d->highlight = 1;
-      g_object_set(G_OBJECT(widget), "tooltip-text", _("drag to change black point,\ndoubleclick resets"),
-                   (char *)NULL);
+      gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets"));
     }
     else
     {
       d->highlight = 2;
-      g_object_set(G_OBJECT(widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"),
-                   (char *)NULL);
+      gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets"));
     }
     gtk_widget_queue_draw(widget);
   }

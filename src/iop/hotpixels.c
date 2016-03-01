@@ -430,7 +430,7 @@ void gui_init(dt_iop_module_t *self)
   g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.005, p->threshold, 4);
   dt_bauhaus_slider_set_format(g->threshold, "%.4f");
   dt_bauhaus_widget_set_label(g->threshold, NULL, _("threshold"));
-  g_object_set(G_OBJECT(g->threshold), "tooltip-text", _("lower threshold for hot pixel"), NULL);
+  gtk_widget_set_tooltip_text(g->threshold, _("lower threshold for hot pixel"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
 
@@ -438,7 +438,7 @@ void gui_init(dt_iop_module_t *self)
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, p->strength, 4);
   dt_bauhaus_slider_set_format(g->threshold, "%.4f");
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
-  g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of hot pixel correction"), NULL);
+  gtk_widget_set_tooltip_text(g->strength, _("strength of hot pixel correction"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
 

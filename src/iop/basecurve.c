@@ -856,8 +856,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
-  g_object_set(G_OBJECT(c->area), "tooltip-text",
-               _("abscissa: input, ordinate: output. works on RGB channels"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("abscissa: input, ordinate: output. works on RGB channels"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
@@ -865,9 +864,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
   dt_bauhaus_combobox_add(c->scale, _("linear"));
   dt_bauhaus_combobox_add(c->scale, _("logarithmic"));
-  g_object_set(c->scale, "tooltip-text",
-               _("scale to use in the graph. use logarithmic scale for more precise control near the blacks"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
+                                          "more precise control near the blacks"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
 

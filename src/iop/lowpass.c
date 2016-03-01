@@ -648,7 +648,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_text_append_text(g->order, _("0th order"));
   gtk_combo_box_text_append_text(g->order, _("1st order"));
   gtk_combo_box_text_append_text(g->order, _("2nd order"));
-  g_object_set(g->order, "tooltip-text", _("filter order of gaussian blur"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->order, _("filter order of gaussian blur"));
   gtk_box_pack_start(hbox, GTK_WIDGET(g->order), TRUE, TRUE, 0);
 #endif
 
@@ -672,11 +672,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
-  g_object_set(g->radius, "tooltip-text", _("radius of gaussian/bilateral blur"), (char *)NULL);
-  g_object_set(g->contrast, "tooltip-text", _("contrast of lowpass filter"), (char *)NULL);
-  g_object_set(g->brightness, "tooltip-text", _("brightness adjustment of lowpass filter"), (char *)NULL);
-  g_object_set(g->saturation, "tooltip-text", _("color saturation of lowpass filter"), (char *)NULL);
-  g_object_set(g->lowpass_algo, "tooltip-text", _("which filter to use for blurring"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->radius, _("radius of gaussian/bilateral blur"));
+  gtk_widget_set_tooltip_text(g->contrast, _("contrast of lowpass filter"));
+  gtk_widget_set_tooltip_text(g->brightness, _("brightness adjustment of lowpass filter"));
+  gtk_widget_set_tooltip_text(g->saturation, _("color saturation of lowpass filter"));
+  gtk_widget_set_tooltip_text(g->lowpass_algo, _("which filter to use for blurring"));
 
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
   g_signal_connect(G_OBJECT(g->lowpass_algo), "value-changed", G_CALLBACK(lowpass_algo_callback), self);

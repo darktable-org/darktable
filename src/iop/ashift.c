@@ -3380,37 +3380,34 @@ void gui_init(struct dt_iop_module_t *self)
       break;
   }
 
-  g_object_set(g->rotation, "tooltip-text", _("rotate image"), (char *)NULL);
-  g_object_set(g->lensshift_v, "tooltip-text", _("apply lens shift correction in one direction"),
-               (char *)NULL);
-  g_object_set(g->lensshift_h, "tooltip-text", _("apply lens shift correction in one direction"),
-               (char *)NULL);
-  g_object_set(g->guide_lines, "tooltip-text", _("display guide lines overlay"),
-               (char *)NULL);
-  g_object_set(g->mode, "tooltip-text", _("lens model of the perspective correction: generic or according to the focal length"),
-               (char *)NULL);
-  g_object_set(g->f_length, "tooltip-text", _("focal length of the lens, default value set from exif data if available"),
-               (char *)NULL);
-  g_object_set(g->crop_factor, "tooltip-text", _("crop factor of the camera sensor, default value set from exif data if available,"
-                                                 "manual setting is often required"),
-               (char *)NULL);
-  g_object_set(g->orthocorr, "tooltip-text", _("the level of lens dependent correction, 100%% for full dependency, 0%% for the generic case"),
-               (char *)NULL);
-  g_object_set(g->aspect, "tooltip-text", _("adjust aspect ratio of image by horizontal and vertical scaling"),
-               (char *)NULL);
-  g_object_set(g->fit_v, "tooltip-text", _("automatically correct for vertical perspective distortion\n"
-                                           "ctrl-click to only fit rotation\n"
-                                           "shift-click to only fit lens shift"), (char *)NULL);
-  g_object_set(g->fit_h, "tooltip-text", _("automatically correct for horizontal perspective distortion\n"
-                                           "ctrl-click to only fit rotation\n"
-                                           "shift-click to only fit lens shift"), (char *)NULL);
-  g_object_set(g->fit_both, "tooltip-text", _("automatically correct for vertical and horizontal perspective distortions\n"
-                                              "ctrl-click to only fit rotation\n"
-                                              "shift-click to only fit lens shift"), (char *)NULL);
-  g_object_set(g->structure, "tooltip-text", _("analyse line structure in image\n"
-                                               "ctrl-click for an additional edge enhancement"), (char *)NULL);
-  g_object_set(g->clean, "tooltip-text", _("remove line structure information"), (char *)NULL);
-  g_object_set(g->eye, "tooltip-text", _("toggle visibility of structure lines"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->rotation, _("rotate image"));
+  gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
+  gtk_widget_set_tooltip_text(g->lensshift_h, _("apply lens shift correction in one direction"));
+  gtk_widget_set_tooltip_text(g->guide_lines, _("display guide lines overlay"));
+  gtk_widget_set_tooltip_text(g->mode, _("lens model of the perspective correction: "
+                                         "generic or according to the focal length"));
+  gtk_widget_set_tooltip_text(g->f_length, _("focal length of the lens, "
+                                             "default value set from exif data if available"));
+  gtk_widget_set_tooltip_text(g->crop_factor, _("crop factor of the camera sensor, "
+                                                "default value set from exif data if available, "
+                                                "manual setting is often required"));
+  gtk_widget_set_tooltip_text(g->orthocorr, _("the level of lens dependent correction, 100% for full dependency, "
+                                              "0% for the generic case"));
+  gtk_widget_set_tooltip_text(g->aspect, _("adjust aspect ratio of image by horizontal and vertical scaling"));
+  gtk_widget_set_tooltip_text(g->fit_v, _("automatically correct for vertical perspective distortion\n"
+                                          "ctrl-click to only fit rotation\n"
+                                          "shift-click to only fit lens shift"));
+  gtk_widget_set_tooltip_text(g->fit_h, _("automatically correct for horizontal perspective distortion\n"
+                                          "ctrl-click to only fit rotation\n"
+                                          "shift-click to only fit lens shift"));
+  gtk_widget_set_tooltip_text(g->fit_both, _("automatically correct for vertical and "
+                                             "horizontal perspective distortions\n"
+                                             "ctrl-click to only fit rotation\n"
+                                             "shift-click to only fit lens shift"));
+  gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
+                                              "ctrl-click for an additional edge enhancement"));
+  gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
+  gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);

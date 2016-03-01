@@ -839,16 +839,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows_ccorrect, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights_ccorrect, TRUE, TRUE, 0);
 
-  g_object_set(g->shadows, "tooltip-text", _("correct shadows"), (char *)NULL);
-  g_object_set(g->highlights, "tooltip-text", _("correct highlights"), (char *)NULL);
-  g_object_set(g->whitepoint, "tooltip-text", _("shift white point"), (char *)NULL);
-  g_object_set(g->radius, "tooltip-text", _("spatial extent"), (char *)NULL);
-  g_object_set(g->shadhi_algo, "tooltip-text", _("filter to use for softening. bilateral avoids halos"),
-               (char *)NULL);
-  g_object_set(g->compress, "tooltip-text",
-               _("compress the effect on shadows/highlights and\npreserve midtones"), (char *)NULL);
-  g_object_set(g->shadows_ccorrect, "tooltip-text", _("adjust saturation of shadows"), (char *)NULL);
-  g_object_set(g->highlights_ccorrect, "tooltip-text", _("adjust saturation of highlights"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->shadows, _("correct shadows"));
+  gtk_widget_set_tooltip_text(g->highlights, _("correct highlights"));
+  gtk_widget_set_tooltip_text(g->whitepoint, _("shift white point"));
+  gtk_widget_set_tooltip_text(g->radius, _("spatial extent"));
+  gtk_widget_set_tooltip_text(g->shadhi_algo, _("filter to use for softening. bilateral avoids halos"));
+  gtk_widget_set_tooltip_text(g->compress, _("compress the effect on shadows/highlights and\npreserve midtones"));
+  gtk_widget_set_tooltip_text(g->shadows_ccorrect, _("adjust saturation of shadows"));
+  gtk_widget_set_tooltip_text(g->highlights_ccorrect, _("adjust saturation of highlights"));
 
   g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);

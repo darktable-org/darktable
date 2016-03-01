@@ -484,7 +484,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("sharpness"));
   dt_bauhaus_slider_set_format(g->scale1, "%.0f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  g_object_set(g->scale1, "tooltip-text", _("the sharpness of highpass filter"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("the sharpness of highpass filter"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(sharpness_callback), self);
 
   /* contrast boost */
@@ -492,7 +492,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("contrast boost"));
   dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  g_object_set(g->scale2, "tooltip-text", _("the contrast of highpass filter"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale2, _("the contrast of highpass filter"));
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(contrast_callback), self);
 }
 

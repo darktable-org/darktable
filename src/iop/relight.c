@@ -352,15 +352,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.05, p->ev, 2);
   dt_bauhaus_slider_set_format(g->scale1, "%.2fEV");
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("exposure"));
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("the fill-light in EV"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(ev_callback), self);
   /* width*/
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 2, 10, 0.5, p->width, 1);
   dt_bauhaus_slider_set_format(g->scale2, "%.1f");
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("width"));
   /* xgettext:no-c-format */
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale2, _("width of fill-light area defined in zones"));
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(width_callback), self);
 
   /* lightnessslider */
@@ -371,7 +370,7 @@ void gui_init(struct dt_iop_module_t *self)
       = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
   g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color(_gradient_L[0], _gradient_L[1]));
 
-  g_object_set(G_OBJECT(g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->gslider1), _("select the center of fill-light"));
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(center_callback), self);
   g->tbutton1 = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
   gtk_widget_set_size_request(GTK_WIDGET(g->tbutton1), DT_PIXEL_APPLY_DPI(22), DT_PIXEL_APPLY_DPI(22));
@@ -387,8 +386,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, FALSE, 0);
 
 
-  g_object_set(G_OBJECT(g->tbutton1), "tooltip-text", _("toggle tool for picking median lightness in image"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->tbutton1), _("toggle tool for picking median lightness in image"));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

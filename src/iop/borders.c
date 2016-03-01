@@ -977,8 +977,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->size, NULL, _("border size"));
   dt_bauhaus_slider_set_format(g->size, "%.2f%%");
   g_signal_connect(G_OBJECT(g->size), "value-changed", G_CALLBACK(size_callback), self);
-  g_object_set(G_OBJECT(g->size), "tooltip-text", _("size of the border in percent of the full image"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->size, TRUE, TRUE, 0);
 
   g->aspect = dt_bauhaus_combobox_new(self);
@@ -987,16 +986,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
   gui_init_aspect(self);
   g_signal_connect(G_OBJECT(g->aspect), "value-changed", G_CALLBACK(aspect_changed), self);
-  g_object_set(G_OBJECT(g->aspect), "tooltip-text",
-               _("select the aspect ratio or right click and type your own (w:h)"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->aspect, _("select the aspect ratio or right click and type your own (w:h)"));
 
   g->aspect_orient = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->aspect_orient, NULL, _("orientation"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("auto"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("portrait"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("landscape"));
-  g_object_set(G_OBJECT(g->aspect_orient), "tooltip-text",
-               _("aspect ratio orientation of the image with border"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->aspect_orient, _("aspect ratio orientation of the image with border"));
   g_signal_connect(G_OBJECT(g->aspect_orient), "value-changed", G_CALLBACK(aspect_orient_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_orient, TRUE, TRUE, 0);
 
@@ -1005,35 +1002,29 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->pos_h, NULL, _("horizontal position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->pos_h), "value-changed", G_CALLBACK(position_h_changed), self);
-  g_object_set(
-      G_OBJECT(g->pos_h), "tooltip-text",
-      _("select the horizontal position ratio relative to top or right click and type your own (y:h)"),
-      (char *)NULL);
+  gtk_widget_set_tooltip_text(g->pos_h, _("select the horizontal position ratio relative to top "
+                                          "or right click and type your own (y:h)"));
   g->pos_v = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_v, 1);
   dt_bauhaus_widget_set_label(g->pos_v, NULL, _("vertical position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->pos_v), "value-changed", G_CALLBACK(position_v_changed), self);
-  g_object_set(
-      G_OBJECT(g->pos_v), "tooltip-text",
-      _("select the vertical position ratio relative to left or right click and type your own (x:w)"),
-      (char *)NULL);
+  gtk_widget_set_tooltip_text(g->pos_v, _("select the vertical position ratio relative to left "
+                                          "or right click and type your own (x:w)"));
   gui_init_positions(self);
 
   g->frame_size = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_size * 100.0, 2);
   dt_bauhaus_widget_set_label(g->frame_size, NULL, _("frame line size"));
   dt_bauhaus_slider_set_format(g->frame_size, "%.2f%%");
   g_signal_connect(G_OBJECT(g->frame_size), "value-changed", G_CALLBACK(frame_size_callback), self);
-  g_object_set(G_OBJECT(g->frame_size), "tooltip-text",
-               _("size of the frame line in percent of min border width"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->frame_size, _("size of the frame line in percent of min border width"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->frame_size, TRUE, TRUE, 0);
 
   g->frame_offset = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_offset * 100.0, 2);
   dt_bauhaus_widget_set_label(g->frame_offset, NULL, _("frame line offset"));
   dt_bauhaus_slider_set_format(g->frame_offset, "%.2f%%");
   g_signal_connect(G_OBJECT(g->frame_offset), "value-changed", G_CALLBACK(frame_offset_callback), self);
-  g_object_set(G_OBJECT(g->frame_offset), "tooltip-text",
-               _("offset of the frame line beginning on picture side"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->frame_offset, _("offset of the frame line beginning on picture side"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->frame_offset, TRUE, TRUE, 0);
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
@@ -1047,7 +1038,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(colorpick_color_set), self);
 
   g->border_picker = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
-  g_object_set(G_OBJECT(g->border_picker), "tooltip-text", _("pick border color from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->border_picker), _("pick border color from image"));
   gtk_widget_set_size_request(GTK_WIDGET(g->border_picker), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->border_picker), "toggled", G_CALLBACK(request_pick_toggled_border), self);
 
@@ -1065,7 +1056,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->frame_colorpick), "color-set", G_CALLBACK(frame_colorpick_color_set), self);
 
   g->frame_picker = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
-  g_object_set(G_OBJECT(g->frame_picker), "tooltip-text", _("pick frame line color from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->frame_picker), _("pick frame line color from image"));
   gtk_widget_set_size_request(GTK_WIDGET(g->frame_picker), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->frame_picker), "toggled", G_CALLBACK(request_pick_toggled_frame), self);
 

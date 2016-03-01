@@ -621,7 +621,7 @@ void gui_init(dt_iop_module_t *self)
     g->black_level_separate[i]
         = dt_bauhaus_slider_new_with_range(self, 0, 16384, 1, p->raw_black_level_separate[i], 0);
     dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, label);
-    g_object_set(G_OBJECT(g->black_level_separate[i]), "tooltip-text", label, (char *)NULL);
+    gtk_widget_set_tooltip_text(g->black_level_separate[i], label);
     gtk_box_pack_start(GTK_BOX(g->box_raw), g->black_level_separate[i], FALSE, FALSE, 0);
     dt_bauhaus_slider_enable_soft_boundaries(g->black_level_separate[i], 0, UINT16_MAX);
     g_signal_connect(G_OBJECT(g->black_level_separate[i]), "value-changed", G_CALLBACK(callback), self);
@@ -631,7 +631,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->white_point = dt_bauhaus_slider_new_with_range(self, 0, 16384, 1, p->raw_white_point, 0);
   dt_bauhaus_widget_set_label(g->white_point, NULL, _("white point"));
-  g_object_set(G_OBJECT(g->white_point), "tooltip-text", _("white point"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->white_point, _("white point"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), g->white_point, FALSE, FALSE, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->white_point, 0, UINT16_MAX);
   g_signal_connect(G_OBJECT(g->white_point), "value-changed", G_CALLBACK(callback), self);

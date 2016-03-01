@@ -400,7 +400,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->current), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(d->current, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  g_object_set(G_OBJECT(d->current), "tooltip-text", _("attached tags,\ndoubleclick to detach"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->current), _("attached tags,\ndoubleclick to detach"));
   g_signal_connect(G_OBJECT(d->current), "row-activated", G_CALLBACK(detach_activated), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->current));
 
@@ -409,13 +409,13 @@ void gui_init(dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("attach"));
   d->attach_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("attach tag to all selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("attach tag to all selected images"));
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(attach_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("detach"));
   d->detach_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("detach tag from all selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("detach tag from all selected images"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(detach_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
 
@@ -427,7 +427,7 @@ void gui_init(dt_lib_module_t *self)
 
   // text entry and new button
   w = gtk_entry_new();
-  g_object_set(G_OBJECT(w), "tooltip-text", _("enter tag name"), (char *)NULL);
+  gtk_widget_set_tooltip_text(w, _("enter tag name"));
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   // g_signal_connect(G_OBJECT(w), "key-release-event",
@@ -452,7 +452,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->related), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(d->related, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  g_object_set(G_OBJECT(d->related), "tooltip-text", _("related tags,\ndoubleclick to attach"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->related), _("related tags,\ndoubleclick to attach"));
   g_signal_connect(G_OBJECT(d->related), "row-activated", G_CALLBACK(attach_activated), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
 
@@ -461,14 +461,13 @@ void gui_init(dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("new"));
   d->new_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("create a new tag with the\nname you entered"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("create a new tag with the\nname you entered"));
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("delete"));
   d->delete_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("delete selected tag"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("delete selected tag"));
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
 

@@ -446,14 +446,12 @@ void gui_init(dt_iop_module_t *module)
   dt_bauhaus_combobox_add(g->mode_select, _("global average (fast)"));   // 0
   dt_bauhaus_combobox_add(g->mode_select, _("local average (slow)"));    // 1
   dt_bauhaus_combobox_add(g->mode_select, _("static threshold (fast)")); // 2
-  g_object_set(
-      G_OBJECT(g->mode_select), "tooltip-text",
+  gtk_widget_set_tooltip_text(g->mode_select,
       _("method for color protection:\n - global average: fast, might show slightly wrong previews in high "
         "magnification; might sometimes protect saturation too much or too low in comparison to local "
         "average\n - local average: slower, might protect saturation better than global average by using "
         "near pixels as color reference, so it can still allow for more desaturation where required\n - "
-        "static: fast, only uses the threshold as a static limit"),
-      (char *)NULL);
+        "static: fast, only uses the threshold as a static limit"));
   g_signal_connect(G_OBJECT(g->mode_select), "value-changed", G_CALLBACK(mode_callback), module);
 
   /* radius and threshold sliders */
@@ -466,9 +464,8 @@ void gui_init(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->radius_scale), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->thresh_scale), TRUE, TRUE, 0);
 
-  g_object_set(G_OBJECT(g->radius_scale), "tooltip-text", _("radius for detecting fringe"), (char *)NULL);
-  g_object_set(G_OBJECT(g->thresh_scale), "tooltip-text",
-               _("threshold for defringe, higher values mean less defringing"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->radius_scale, _("radius for detecting fringe"));
+  gtk_widget_set_tooltip_text(g->thresh_scale, _("threshold for defringe, higher values mean less defringing"));
 
   g_signal_connect(G_OBJECT(g->radius_scale), "value-changed", G_CALLBACK(radius_slider_callback), module);
   g_signal_connect(G_OBJECT(g->thresh_scale), "value-changed", G_CALLBACK(thresh_slider_callback), module);

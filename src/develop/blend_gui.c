@@ -1069,9 +1069,9 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_notebook_append_page(GTK_NOTEBOOK(bd->channel_tabs),
                                GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                                gtk_label_new(labels[ch]));
-      g_object_set(G_OBJECT(gtk_notebook_get_tab_label(bd->channel_tabs,
-                                                       gtk_notebook_get_nth_page(bd->channel_tabs, -1))),
-                   "tooltip-text", tooltips[ch], NULL);
+      gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(bd->channel_tabs,
+                                                             gtk_notebook_get_nth_page(bd->channel_tabs, -1)),
+                                  tooltips[ch]);
     }
 
     gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(bd->channel_tabs, bd->tab)));
@@ -1082,15 +1082,15 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->colorpicker
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(bd->colorpicker), "tooltip-text", _("pick GUI color from image"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->colorpicker), bs, bs);
 
     GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(res), "tooltip-text", _("reset blend mask settings"), (char *)NULL);
+    gtk_widget_set_tooltip_text(res, _("reset blend mask settings"));
     gtk_widget_set_size_request(res, bs, bs);
 
     GtkWidget *inv = dtgtk_button_new(dtgtk_cairo_paint_invert, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(inv), "tooltip-text", _("invert all channel's polarities"), (char *)NULL);
+    gtk_widget_set_tooltip_text(inv, _("invert all channel's polarities"));
     gtk_widget_set_size_request(inv, bs, bs);
 
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
@@ -1103,13 +1103,11 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->lower_polarity
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(bd->lower_polarity), "tooltip-text",
-                 _("toggle polarity. best seen by enabling 'display mask'"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->lower_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
 
     bd->upper_polarity
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(bd->upper_polarity), "tooltip-text",
-                 _("toggle polarity. best seen by enabling 'display mask'"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->upper_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
 
     gtk_box_pack_start(GTK_BOX(upslider), GTK_WIDGET(bd->upper_slider), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(upslider), GTK_WIDGET(bd->upper_polarity), FALSE, FALSE, 0);
@@ -1140,10 +1138,10 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
     }
 
-    g_object_set(bd->lower_slider, "tooltip-text", _("double click to reset"), (char *)NULL);
-    g_object_set(bd->upper_slider, "tooltip-text", _("double click to reset"), (char *)NULL);
-    g_object_set(output, "tooltip-text", ttoutput, (char *)NULL);
-    g_object_set(input, "tooltip-text", ttinput, (char *)NULL);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_slider), _("double click to reset"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset"));
+    gtk_widget_set_tooltip_text(output, ttoutput);
+    gtk_widget_set_tooltip_text(input, ttinput);
 
     g_signal_connect(G_OBJECT(bd->lower_slider), "draw", G_CALLBACK(_blendop_blendif_draw), module);
 
@@ -1264,15 +1262,14 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_edit), "button-press-event", G_CALLBACK(_blendop_masks_show_and_edit),
                      module);
-    g_object_set(G_OBJECT(bd->masks_edit), "tooltip-text", _("show and edit mask elements"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_edit, _("show and edit mask elements"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_edit), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_edit, FALSE, FALSE, 0);
 
     bd->masks_polarity
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(bd->masks_polarity), "tooltip-text", _("toggle polarity of drawn mask"),
-                 (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_polarity, _("toggle polarity of drawn mask"));
     g_signal_connect(G_OBJECT(bd->masks_polarity), "toggled", G_CALLBACK(_blendop_masks_polarity_callback),
                      module);
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_polarity), bs, bs);
@@ -1283,7 +1280,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_gradient), "button-press-event",
                      G_CALLBACK(_blendop_masks_add_gradient), module);
-    g_object_set(G_OBJECT(bd->masks_gradient), "tooltip-text", _("add gradient"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_gradient, _("add gradient"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_gradient), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_gradient), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_gradient, FALSE, FALSE, 0);
@@ -1292,7 +1289,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_path), "button-press-event", G_CALLBACK(_blendop_masks_add_path),
                      module);
-    g_object_set(G_OBJECT(bd->masks_path), "tooltip-text", _("add path"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_path, _("add path"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_path), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_path), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_path, FALSE, FALSE, bs);
@@ -1301,7 +1298,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_ellipse), "button-press-event",
                      G_CALLBACK(_blendop_masks_add_ellipse), module);
-    g_object_set(G_OBJECT(bd->masks_ellipse), "tooltip-text", _("add ellipse"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_ellipse, _("add ellipse"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_ellipse), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_ellipse), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_ellipse, FALSE, FALSE, 0);
@@ -1310,7 +1307,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_circle), "button-press-event", G_CALLBACK(_blendop_masks_add_circle),
                      module);
-    g_object_set(G_OBJECT(bd->masks_circle), "tooltip-text", _("add circle"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_circle, _("add circle"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_circle), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_circle), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_circle, FALSE, FALSE, bs);
@@ -1319,7 +1316,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_brush), "button-press-event", G_CALLBACK(_blendop_masks_add_brush),
                      module);
-    g_object_set(G_OBJECT(bd->masks_brush), "tooltip-text", _("add brush"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_brush, _("add brush"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_brush), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_brush), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_brush, FALSE, FALSE, 0);
@@ -1628,10 +1625,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     }
 
     dt_bauhaus_combobox_set(bd->masks_modes_combo, 0);
-    g_object_set(
-        bd->masks_modes_combo, "tooltip-text",
-        _("activate blending: uniformly, with drawn mask, with parametric mask, or combination of both"),
-        (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_modes_combo,_("activate blending: uniformly, with drawn mask, with "
+                                                        "parametric mask, or combination of both"));
     g_signal_connect(G_OBJECT(bd->masks_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_mode_callback), bd);
 
@@ -1639,7 +1634,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend"), _("blend mode"));
-    g_object_set(bd->blend_modes_combo, "tooltip-text", _("choose blending mode"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->blend_modes_combo, _("choose blending mode"));
 
     /** populate combobox depending on the color space this module acts in */
     switch(bd->csp)
@@ -1788,7 +1783,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(bd->opacity_slider, _("blend"), _("opacity"));
     dt_bauhaus_slider_set_format(bd->opacity_slider, "%.0f%%");
     module->fusion_slider = bd->opacity_slider;
-    g_object_set(bd->opacity_slider, "tooltip-text", _("set the opacity of the blending"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->opacity_slider, _("set the opacity of the blending"));
     g_signal_connect(G_OBJECT(bd->opacity_slider), "value-changed", G_CALLBACK(_blendop_opacity_callback), bd);
 
 
@@ -1808,9 +1803,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_INV_INCL));
 
     dt_bauhaus_combobox_set(bd->masks_combine_combo, 0);
-    g_object_set(bd->masks_combine_combo, "tooltip-text",
-                 _("how to combine individual drawn mask and different channels of parametric mask"),
-                 (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_combine_combo,
+                                _("how to combine individual drawn mask and different channels of parametric mask"));
     g_signal_connect(G_OBJECT(bd->masks_combine_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_combine_callback), bd);
 
@@ -1825,8 +1819,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->masks_invert = g_list_append(bd->masks_invert, GUINT_TO_POINTER(DEVELOP_COMBINE_INV));
 
     dt_bauhaus_combobox_set(bd->masks_invert_combo, 0);
-    g_object_set(bd->masks_invert_combo, "tooltip-text", _("apply mask in normal or inverted mode"),
-                 (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->masks_invert_combo, _("apply mask in normal or inverted mode"));
     g_signal_connect(G_OBJECT(bd->masks_invert_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_invert_callback), bd);
 
@@ -1835,21 +1828,20 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0.1, 0.0, 1);
     dt_bauhaus_widget_set_label(bd->radius_slider, _("blend"), _("mask blur"));
     dt_bauhaus_slider_set_format(bd->radius_slider, "%.1f");
-    g_object_set(bd->radius_slider, "tooltip-text", _("radius for gaussian blur of blend mask"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->radius_slider, _("radius for gaussian blur of blend mask"));
     g_signal_connect(G_OBJECT(bd->radius_slider), "value-changed",
                      G_CALLBACK(_blendop_blendif_radius_callback), bd);
 
 
     bd->showmask = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(bd->showmask), "tooltip-text", _("display mask"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->showmask, _("display mask"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->showmask), bs, bs);
     g_signal_connect(G_OBJECT(bd->showmask), "toggled", G_CALLBACK(_blendop_blendif_showmask_toggled), module);
 
 
     bd->suppress
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-    g_object_set(G_OBJECT(bd->suppress), "tooltip-text",
-                 _("temporarily switch off blend mask. only for module in focus"), (char *)NULL);
+    gtk_widget_set_tooltip_text(bd->suppress, _("temporarily switch off blend mask. only for module in focus"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->suppress), bs, bs);
     g_signal_connect(G_OBJECT(bd->suppress), "toggled", G_CALLBACK(_blendop_blendif_suppress_toggled), module);
 

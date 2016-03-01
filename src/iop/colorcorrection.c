@@ -260,10 +260,9 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
-                                                    "bright means highlights, dark means shadows. "
-                                                    "use mouse wheel to change saturation."),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag the line for split toning. "
+                                                     "bright means highlights, dark means shadows. "
+                                                     "use mouse wheel to change saturation."));
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -279,7 +278,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->slider = dt_bauhaus_slider_new_with_range(self, -3.0f, 3.0f, 0.01f, 1.0f, 2);
   gtk_box_pack_start(GTK_BOX(self->widget), g->slider, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->slider), "tooltip-text", _("set the global saturation"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->slider, _("set the global saturation"));
   dt_bauhaus_widget_set_label(g->slider, NULL, _("saturation"));
 
   g_signal_connect(G_OBJECT(g->slider), "value-changed", G_CALLBACK(sat_callback), self);

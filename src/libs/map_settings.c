@@ -90,8 +90,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label;
 
   d->show_osd_checkbutton = gtk_check_button_new_with_label(_("show OSD"));
-  g_object_set(G_OBJECT(d->show_osd_checkbutton), "tooltip-text",
-               _("toggle the visibility of the map overlays"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->show_osd_checkbutton, _("toggle the visibility of the map overlays"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_osd_checkbutton),
                                dt_conf_get_bool("plugins/map/show_map_osd"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->show_osd_checkbutton, TRUE, TRUE, 0);
@@ -105,8 +104,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
   d->map_source_dropdown = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
-  g_object_set(G_OBJECT(d->map_source_dropdown), "tooltip-text",
-               _("select the source of the map. some entries might not work"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->map_source_dropdown, _("select the source of the map. some entries might not work"));
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, FALSE);
   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, "text", 0, NULL);

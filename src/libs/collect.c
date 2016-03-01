@@ -1190,12 +1190,12 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     {
       // only clear
       button->icon = dtgtk_cairo_paint_cancel;
-      g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
     }
     else if(i == active)
     {
       button->icon = dtgtk_cairo_paint_dropdown;
-      g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule or add new rules"), (char *)NULL);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule or add new rules"));
     }
     else
     {
@@ -1204,7 +1204,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       if(mode == DT_LIB_COLLECT_MODE_AND) button->icon = dtgtk_cairo_paint_and;
       if(mode == DT_LIB_COLLECT_MODE_OR) button->icon = dtgtk_cairo_paint_or;
       if(mode == DT_LIB_COLLECT_MODE_AND_NOT) button->icon = dtgtk_cairo_paint_andnot;
-      g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
     }
   }
 
@@ -1245,20 +1245,17 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
      || property == DT_COLLECTION_PROP_ISO)
   {
-    g_object_set(G_OBJECT(d->text), "tooltip-text",
-                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators"), (char *)NULL);
+    gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
   }
   else if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
   {
-    g_object_set(G_OBJECT(d->text), "tooltip-text",
-                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in the form : "
-                   "YYYY:MM:DD HH:MM:SS (time part facultative)"),
-                 (char *)NULL);
+    gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators, "
+                                           "type dates in the form : YYYY:MM:DD HH:MM:SS (time part facultative)"));
   }
   else
   {
     /* xgettext:no-c-format */
-    g_object_set(G_OBJECT(d->text), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
+    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard"));
   }
 
   update_view(d);
@@ -1659,7 +1656,7 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(entry_focus_in_callback), d->rule + i);
 
     /* xgettext:no-c-format */
-    g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
+    gtk_widget_set_tooltip_text(w, _("type your query, use `%' as wildcard"));
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_insert_text), d->rule + i);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);

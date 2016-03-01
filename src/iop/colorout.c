@@ -822,9 +822,9 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   char tooltip[1024];
-  g_object_set(G_OBJECT(g->output_intent), "tooltip-text", _("rendering intent"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->output_intent, _("rendering intent"));
   snprintf(tooltip, sizeof(tooltip), _("ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
-  g_object_set(G_OBJECT(g->output_profile), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(g->output_profile, tooltip);
 
   g_signal_connect(G_OBJECT(g->output_intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed", G_CALLBACK(output_profile_changed), (gpointer)self);

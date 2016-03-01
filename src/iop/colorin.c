@@ -1475,7 +1475,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   char tooltip[1024];
   snprintf(tooltip, sizeof(tooltip), _("ICC profiles in %s/color/in or %s/color/in"), confdir, datadir);
-  g_object_set(G_OBJECT(g->profile_combobox), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(g->profile_combobox, tooltip);
 
   g_signal_connect(G_OBJECT(g->profile_combobox), "value-changed", G_CALLBACK(profile_changed), (gpointer)self);
 
@@ -1488,8 +1488,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec709 RGB"));
   dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec2020 RGB"));
 
-  g_object_set(G_OBJECT(g->clipping_combobox), "tooltip-text", _("confine Lab values to gamut of RGB color space"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->clipping_combobox, _("confine Lab values to gamut of RGB color space"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->clipping_combobox, TRUE, TRUE, 0);
 

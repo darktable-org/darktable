@@ -472,7 +472,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_entry_set_width_chars(GTK_ENTRY(ui->user_entry), 0);
 
   button = gtk_button_new_with_label(_("login"));
-  g_object_set(G_OBJECT(button), "tooltip-text", _("flickr login"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("flickr login"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->user_entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -514,7 +514,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), ui->album_list, TRUE, TRUE, 0);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("refresh album list"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("refresh album list"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 

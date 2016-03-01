@@ -523,7 +523,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
 
   g->picker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(g->picker), "tooltip-text", _("pick color of film material from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->picker, _("pick color of film material from image"));
   gtk_widget_set_size_request(g->picker, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), g->picker, TRUE, TRUE, 5);

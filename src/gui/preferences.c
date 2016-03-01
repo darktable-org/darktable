@@ -229,10 +229,9 @@ static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected + 1);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(language_callback), 0);
-  g_object_set(labelev,  "tooltip-text", _("double click to reset to the system language"), (char *)NULL);
+  gtk_widget_set_tooltip_text(labelev,  _("double click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-  g_object_set(widget, "tooltip-text", _("set the language of the user interface (needs a restart)"), (char
-*)NULL);
+  gtk_widget_set_tooltip_text(widget, _("set the language of the user interface (needs a restart)"));
   gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget),
@@ -1229,17 +1228,15 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
 
   g->description = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
-  g_object_set(G_OBJECT(g->description), "tooltip-text", _("description or further information"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->description), _("description or further information"));
 
   g->autoapply
       = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto apply this preset to matching images")));
   gtk_box_pack_start(box, GTK_WIDGET(g->autoapply), FALSE, FALSE, 0);
   g->filter
       = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("only show this preset for matching images")));
-  g_object_set(G_OBJECT(g->filter), "tooltip-text",
-               _("be very careful with this option. this might be the last time you see your preset."),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->filter),
+                              _("be very careful with this option. this might be the last time you see your preset."));
   gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
   g_signal_connect(G_OBJECT(g->filter), "toggled", G_CALLBACK(check_buttons_activated), g);
@@ -1253,8 +1250,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   // model, maker, lens
   g->model = GTK_ENTRY(gtk_entry_new());
   /* xgettext:no-c-format */
-  g_object_set(G_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->model), _("string to match model (use % as wildcard)"));
   label = gtk_label_new(_("model"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
@@ -1262,8 +1258,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
 
   g->maker = GTK_ENTRY(gtk_entry_new());
   /* xgettext:no-c-format */
-  g_object_set(G_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->maker), _("string to match maker (use % as wildcard)"));
   label = gtk_label_new(_("maker"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
@@ -1271,7 +1266,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
 
   g->lens = GTK_ENTRY(gtk_entry_new());
   /* xgettext:no-c-format */
-  g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->lens), _("string to match lens (use % as wildcard)"));
   label = gtk_label_new(_("lens"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
@@ -1281,10 +1276,10 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   label = gtk_label_new(_("ISO"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
-  g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum ISO value"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->iso_min), _("minimum ISO value"));
   gtk_spin_button_set_digits(g->iso_min, 0);
   g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
-  g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum ISO value"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->iso_max), _("maximum ISO value"));
   gtk_spin_button_set_digits(g->iso_max, 0);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), GTK_WIDGET(g->iso_min), label, GTK_POS_RIGHT, 1, 1);
@@ -1295,8 +1290,8 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   g->exposure_min = dt_bauhaus_combobox_new(NULL);
   g->exposure_max = dt_bauhaus_combobox_new(NULL);
-  g_object_set(G_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
-  g_object_set(G_OBJECT(g->exposure_max), "tooltip-text", _("maximum exposure time"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->exposure_min, _("minimum exposure time"));
+  gtk_widget_set_tooltip_text(g->exposure_max, _("maximum exposure time"));
   for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
     dt_bauhaus_combobox_add(g->exposure_min, dt_gui_presets_exposure_value_str[k]);
   for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
@@ -1310,8 +1305,8 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   g->aperture_min = dt_bauhaus_combobox_new(NULL);
   g->aperture_max = dt_bauhaus_combobox_new(NULL);
-  g_object_set(G_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
-  g_object_set(G_OBJECT(g->aperture_max), "tooltip-text", _("maximum aperture value"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->aperture_min, _("minimum aperture value"));
+  gtk_widget_set_tooltip_text(g->aperture_max, _("maximum aperture value"));
   for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
     dt_bauhaus_combobox_add(g->aperture_min, dt_gui_presets_aperture_value_str[k]);
   for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
@@ -1326,8 +1321,8 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   g->focal_length_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
   gtk_spin_button_set_digits(g->focal_length_min, 0);
   g->focal_length_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
-  g_object_set(G_OBJECT(g->focal_length_min), "tooltip-text", _("minimum focal length"), (char *)NULL);
-  g_object_set(G_OBJECT(g->focal_length_max), "tooltip-text", _("maximum focal length"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->focal_length_min), _("minimum focal length"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->focal_length_max), _("maximum focal length"));
   gtk_spin_button_set_digits(g->focal_length_max, 0);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), GTK_WIDGET(g->focal_length_min), label, GTK_POS_RIGHT, 1, 1);

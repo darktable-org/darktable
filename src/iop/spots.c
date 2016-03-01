@@ -642,13 +642,12 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *label = gtk_label_new(_("number of strokes:"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
   g->label = GTK_LABEL(gtk_label_new("-1"));
-  g_object_set(G_OBJECT(hbox), "tooltip-text", _("click on a shape and drag on canvas.\nuse the mouse wheel "
-                                                 "to adjust size.\nright click to remove a shape."),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(hbox, _("click on a shape and drag on canvas.\nuse the mouse wheel "
+                                      "to adjust size.\nright click to remove a shape."));
 
   g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(_add_path), self);
-  g_object_set(G_OBJECT(g->bt_path), "tooltip-text", _("add path"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_path), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_path, FALSE, FALSE, 0);
@@ -656,7 +655,7 @@ void gui_init(dt_iop_module_t *self)
   g->bt_ellipse
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(_add_ellipse), self);
-  g_object_set(G_OBJECT(g->bt_ellipse), "tooltip-text", _("add ellipse"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_ellipse, _("add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_ellipse), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_ellipse, FALSE, FALSE, 0);
@@ -664,7 +663,7 @@ void gui_init(dt_iop_module_t *self)
   g->bt_circle
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(_add_circle), self);
-  g_object_set(G_OBJECT(g->bt_circle), "tooltip-text", _("add circle"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_circle, _("add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_circle), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_circle, FALSE, FALSE, 0);

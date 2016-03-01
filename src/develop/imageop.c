@@ -882,30 +882,29 @@ static void dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
   GtkWidget *item;
 
   item = gtk_menu_item_new_with_label(_("new instance"));
-  // g_object_set(G_OBJECT(item), "tooltip-text", _("add a new instance of this module to the pipe"), (char
-  // *)NULL);
+  // gtk_widget_set_tooltip_text(item, _("add a new instance of this module to the pipe"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dt_iop_gui_copy_callback), module);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("duplicate instance"));
-  // g_object_set(G_OBJECT(item), "tooltip-text", _("add a copy of this instance to the pipe"), (char *)NULL);
+  // gtk_widget_set_tooltip_text(item, _("add a copy of this instance to the pipe"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dt_iop_gui_duplicate_callback), module);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move up"));
-  // g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance up"), (char *)NULL);
+  // gtk_widget_set_tooltip_text(item, _("move this instance up"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dt_iop_gui_moveup_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_up);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move down"));
-  // g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance down"), (char *)NULL);
+  // gtk_widget_set_tooltip_text(item, _("move this instance down"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dt_iop_gui_movedown_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_down);
   gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("delete"));
-  // g_object_set(G_OBJECT(item), "tooltip-text", _("delete this instance"), (char *)NULL);
+  // gtk_widget_set_tooltip_text(item, _("delete this instance"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dt_iop_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_close);
   gtk_menu_shell_append(menu, item);
@@ -931,7 +930,7 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
   g_free(module_label);
-  g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(togglebutton), tooltip);
   gtk_widget_queue_draw(GTK_WIDGET(togglebutton));
 }
 
@@ -981,7 +980,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
     tooltip = g_strdup_printf("%s %s", module->name(), module->multi_name);
   gtk_label_set_markup(GTK_LABEL(lab), label);
   gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_MIDDLE);
-  g_object_set(G_OBJECT(lab), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(lab, tooltip);
   g_free(label);
   g_free(tooltip);
 }
@@ -1811,7 +1810,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add duplicate button */
   /*hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   module->duplicate_button = GTK_WIDGET(hw[idx]);
-  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("add new instance"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("add new instance"));
   g_signal_connect (G_OBJECT (hw[idx]), "clicked",
                     G_CALLBACK (dt_iop_gui_duplicate_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);*/
@@ -1869,7 +1868,7 @@ got_image:
   {
     hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     module->multimenu_button = GTK_WIDGET(hw[idx]);
-    g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("multiple instances actions"), (char *)NULL);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("multiple instances actions"));
     g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_iop_gui_multimenu_callback), module);
     gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
   }
@@ -1877,7 +1876,7 @@ got_image:
   /* add reset button */
   hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   module->reset_button = GTK_WIDGET(hw[idx]);
-  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("reset parameters"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("reset parameters"));
   g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_iop_gui_reset_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
@@ -1885,7 +1884,7 @@ got_image:
   /* add preset button if module has implementation */
   hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   module->presets_button = GTK_WIDGET(hw[idx]);
-  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("presets"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
   g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
@@ -1901,7 +1900,7 @@ got_image:
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
   g_free(module_label);
-  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), tooltip);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
   g_signal_connect(G_OBJECT(hw[idx]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
   module->off = DTGTK_TOGGLEBUTTON(hw[idx]);

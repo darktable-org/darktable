@@ -431,7 +431,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->gslider1, 0.664f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->gslider1, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->gslider1, 1.0f, 1.0f, 0.0f, 0.0f);
-  g_object_set(G_OBJECT(g->gslider1), "tooltip-text", _("select the hue tone"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->gslider1, _("select the hue tone"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->gslider1, TRUE, TRUE, 0);
 
@@ -441,7 +441,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->gslider2, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(g->gslider2, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->gslider2, 1.0f, 1.0f, 1.0f, 1.0f);
-  g_object_set(G_OBJECT(g->gslider2), "tooltip-text", _("select the saturation shadow tone"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->gslider2, _("select the saturation shadow tone"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->gslider2, TRUE, TRUE, 0);
 
@@ -457,8 +457,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("lightness of color"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("mix value of source lightness"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("lightness of color"));
+  gtk_widget_set_tooltip_text(g->scale2, _("mix value of source lightness"));
 
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(hue_callback), self);
   g_signal_connect(G_OBJECT(g->gslider2), "value-changed", G_CALLBACK(saturation_callback), self);

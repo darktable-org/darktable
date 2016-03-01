@@ -1673,15 +1673,12 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
-  g_object_set(G_OBJECT(g->profile), "tooltip-text", _("profile used for variance stabilization"),
-               (char *)NULL);
-  g_object_set(G_OBJECT(g->mode), "tooltip-text",
-               _("method used in the denoising core. non-local means works best for `lightness' blending, "
-                 "wavelets work best for `color' blending"),
-               (char *)NULL);
-  g_object_set(G_OBJECT(g->radius), "tooltip-text",
-               _("radius of the patches to match. increase for more sharpness"), (char *)NULL);
-  g_object_set(G_OBJECT(g->strength), "tooltip-text", _("finetune denoising strength"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->profile, _("profile used for variance stabilization"));
+  gtk_widget_set_tooltip_text(g->mode, _("method used in the denoising core. "
+                                         "non-local means works best for `lightness' blending, "
+                                         "wavelets work best for `color' blending"));
+  gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match. increase for more sharpness"));
+  gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);

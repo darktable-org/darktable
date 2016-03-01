@@ -389,7 +389,7 @@ void gui_init(dt_iop_module_t *self)
   g->a_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.01, p->a_steepness, 2);
   dt_bauhaus_widget_set_label(g->a_scale, NULL, _("green vs magenta"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->a_scale), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->a_scale), "tooltip-text", _("steepness of the a* curve in Lab"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->a_scale, _("steepness of the a* curve in Lab"));
   g_signal_connect(G_OBJECT(g->a_scale), "value-changed", G_CALLBACK(a_slider_callback), self);
 
 
@@ -397,7 +397,7 @@ void gui_init(dt_iop_module_t *self)
   g->b_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.01, p->b_steepness, 2);
   dt_bauhaus_widget_set_label(g->b_scale, NULL, _("blue vs yellow"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->b_scale), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->b_scale), "tooltip-text", _("steepness of the b* curve in Lab"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->b_scale, _("steepness of the b* curve in Lab"));
   g_signal_connect(G_OBJECT(g->b_scale), "value-changed", G_CALLBACK(b_slider_callback), self);
 }
 

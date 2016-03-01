@@ -341,10 +341,10 @@ void gui_init(dt_iop_module_t *self)
   g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[2], 4);
   g->scale4 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[3], 4);
   g->scale5 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[4], 4);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the gaussian"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("how much to blur red"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("spatial extent of the gaussian"));
+  gtk_widget_set_tooltip_text(g->scale3, _("how much to blur red"));
+  gtk_widget_set_tooltip_text(g->scale4, _("how much to blur green"));
+  gtk_widget_set_tooltip_text(g->scale5, _("how much to blur blue"));
 
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("radius"));
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("red"));
