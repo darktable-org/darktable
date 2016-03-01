@@ -374,6 +374,198 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
+  // get our data struct:
+  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
+
+  // adjust to zoom size:
+  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
+  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
+  const float sharpness = 3000.0f / (1.0f + d->strength);
+  if(P < 1)
+  {
+    // nothing to do from this distance:
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * 4 * roi_out->width * roi_out->height);
+    return;
+  }
+
+  // adjust to Lab, make L more important
+  // float max_L = 100.0f, max_C = 256.0f;
+  // float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
+  float max_L = 120.0f, max_C = 512.0f;
+  float nL = 1.0f / max_L, nC = 1.0f / max_C;
+  const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
+
+  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
+  // we want to sum up weights in col[3], so need to init to 0:
+  memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
+
+  // for each shift vector
+  for(int kj = -K; kj <= K; kj++)
+  {
+    for(int ki = -K; ki <= K; ki++)
+    {
+      int inited_slide = 0;
+// don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
+// we will add up errors)
+// do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
+// memory
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, Sa)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+      {
+        if(j + kj < 0 || j + kj >= roi_out->height) continue;
+        float *S = Sa + (size_t)dt_get_thread_num() * roi_out->width;
+        const float *ins = ((float *)ivoid) + 4 * ((size_t)roi_in->width * (j + kj) + ki);
+        float *out = ((float *)ovoid) + 4 * (size_t)roi_out->width * j;
+
+        const int Pm = MIN(MIN(P, j + kj), j);
+        const int PM = MIN(MIN(P, roi_out->height - 1 - j - kj), roi_out->height - 1 - j);
+        // first line of every thread
+        // TODO: also every once in a while to assert numerical precision!
+        if(!inited_slide)
+        {
+          // sum up a line
+          memset(S, 0x0, sizeof(float) * roi_out->width);
+          for(int jj = -Pm; jj <= PM; jj++)
+          {
+            int i = MAX(0, -ki);
+            float *s = S + i;
+            const float *inp = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j + jj);
+            const float *inps = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j + jj + kj) + ki);
+            const int last = roi_out->width + MIN(0, -ki);
+            for(; i < last; i++, inp += 4, inps += 4, s++)
+            {
+              for(int k = 0; k < 3; k++) s[0] += (inp[k] - inps[k]) * (inp[k] - inps[k]) * norm2[k];
+            }
+          }
+          // only reuse this if we had a full stripe
+          if(Pm == P && PM == P) inited_slide = 1;
+        }
+
+        // sliding window for this line:
+        float *s = S;
+        float slide = 0.0f;
+        // sum up the first -P..P
+        for(int i = 0; i < 2 * P + 1; i++) slide += s[i];
+        for(int i = 0; i < roi_out->width; i++)
+        {
+          if(i - P > 0 && i + P < roi_out->width) slide += s[P] - s[-P - 1];
+          if(i + ki >= 0 && i + ki < roi_out->width)
+          {
+            const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
+            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(gh(slide, sharpness)));
+          }
+          s++;
+          ins += 4;
+          out += 4;
+        }
+        if(inited_slide && j + P + 1 + MAX(0, kj) < roi_out->height)
+        {
+          // sliding window in j direction:
+          int i = MAX(0, -ki);
+          float *s = S + i;
+          const float *inp = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j + P + 1);
+          const float *inps = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j + P + 1 + kj) + ki);
+          const float *inm = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j - P);
+          const float *inms = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j - P + kj) + ki);
+          const int last = roi_out->width + MIN(0, -ki);
+          for(; ((intptr_t)s & 0xf) != 0 && i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
+          {
+            float stmp = s[0];
+            for(int k = 0; k < 3; k++)
+              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]))
+                      * norm2[k];
+            s[0] = stmp;
+          }
+          /* Process most of the line 4 pixels at a time */
+          for(; i < last - 4; i += 4, inp += 16, inps += 16, inm += 16, inms += 16, s += 4)
+          {
+            __m128 sv = _mm_load_ps(s);
+            const __m128 inp1 = _mm_load_ps(inp) - _mm_load_ps(inps);
+            const __m128 inp2 = _mm_load_ps(inp + 4) - _mm_load_ps(inps + 4);
+            const __m128 inp3 = _mm_load_ps(inp + 8) - _mm_load_ps(inps + 8);
+            const __m128 inp4 = _mm_load_ps(inp + 12) - _mm_load_ps(inps + 12);
+
+            const __m128 inp12lo = _mm_unpacklo_ps(inp1, inp2);
+            const __m128 inp34lo = _mm_unpacklo_ps(inp3, inp4);
+            const __m128 inp12hi = _mm_unpackhi_ps(inp1, inp2);
+            const __m128 inp34hi = _mm_unpackhi_ps(inp3, inp4);
+
+            const __m128 inpv0 = _mm_movelh_ps(inp12lo, inp34lo);
+            sv += inpv0 * inpv0 * _mm_set1_ps(norm2[0]);
+
+            const __m128 inpv1 = _mm_movehl_ps(inp34lo, inp12lo);
+            sv += inpv1 * inpv1 * _mm_set1_ps(norm2[1]);
+
+            const __m128 inpv2 = _mm_movelh_ps(inp12hi, inp34hi);
+            sv += inpv2 * inpv2 * _mm_set1_ps(norm2[2]);
+
+            const __m128 inm1 = _mm_load_ps(inm) - _mm_load_ps(inms);
+            const __m128 inm2 = _mm_load_ps(inm + 4) - _mm_load_ps(inms + 4);
+            const __m128 inm3 = _mm_load_ps(inm + 8) - _mm_load_ps(inms + 8);
+            const __m128 inm4 = _mm_load_ps(inm + 12) - _mm_load_ps(inms + 12);
+
+            const __m128 inm12lo = _mm_unpacklo_ps(inm1, inm2);
+            const __m128 inm34lo = _mm_unpacklo_ps(inm3, inm4);
+            const __m128 inm12hi = _mm_unpackhi_ps(inm1, inm2);
+            const __m128 inm34hi = _mm_unpackhi_ps(inm3, inm4);
+
+            const __m128 inmv0 = _mm_movelh_ps(inm12lo, inm34lo);
+            sv -= inmv0 * inmv0 * _mm_set1_ps(norm2[0]);
+
+            const __m128 inmv1 = _mm_movehl_ps(inm34lo, inm12lo);
+            sv -= inmv1 * inmv1 * _mm_set1_ps(norm2[1]);
+
+            const __m128 inmv2 = _mm_movelh_ps(inm12hi, inm34hi);
+            sv -= inmv2 * inmv2 * _mm_set1_ps(norm2[2]);
+
+            _mm_store_ps(s, sv);
+          }
+          for(; i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
+          {
+            float stmp = s[0];
+            for(int k = 0; k < 3; k++)
+              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]))
+                      * norm2[k];
+            s[0] = stmp;
+          }
+        }
+        else
+          inited_slide = 0;
+      }
+    }
+  }
+  // normalize and apply chroma/luma blending
+  // bias a bit towards higher values for low input values:
+  // const __m128 weight = _mm_set_ps(1.0f, powf(d->chroma, 0.6), powf(d->chroma, 0.6), powf(d->luma, 0.6));
+  const __m128 weight = _mm_set_ps(1.0f, d->chroma, d->chroma, d->luma);
+  const __m128 invert = _mm_sub_ps(_mm_set1_ps(1.0f), weight);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(d)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    float *out = ((float *)ovoid) + 4 * (size_t)roi_out->width * j;
+    float *in = ((float *)ivoid) + 4 * (size_t)roi_out->width * j;
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      _mm_store_ps(out, _mm_add_ps(_mm_mul_ps(_mm_load_ps(in), invert),
+                                   _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
+      out += 4;
+      in += 4;
+    }
+  }
+  // free shared tmp memory:
+  dt_free_align(Sa);
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+
 #if defined(__SSE__)
 /** process, all real work is done here. */
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
