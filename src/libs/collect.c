@@ -1043,8 +1043,10 @@ static void list_view(dt_lib_collect_rule_t *dr)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
         const char *folder = (const char *)sqlite3_column_text(stmt, 0);
+        if(folder == NULL) continue; // safeguard against degenerated db entries
+
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
         if(property == DT_COLLECTION_PROP_FILMROLL)
         {
           folder = dt_image_film_roll_name(folder);
