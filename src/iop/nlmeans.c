@@ -379,7 +379,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
+  const dt_iop_nlmeans_params_t *const d = (dt_iop_nlmeans_params_t *)piece->data;
+
+  const int ch = piece->colors;
 
   // adjust to zoom size:
   const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
@@ -452,17 +454,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         float slide = 0.0f;
         // sum up the first -P..P
         for(int i = 0; i < 2 * P + 1; i++) slide += s[i];
-        for(int i = 0; i < roi_out->width; i++)
+        for(int i = 0; i < roi_out->width; i++, s++, ins += 4, out += 4)
         {
           if(i - P > 0 && i + P < roi_out->width) slide += s[P] - s[-P - 1];
           if(i + ki >= 0 && i + ki < roi_out->width)
           {
-            const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
-            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(gh(slide, sharpness)));
+            const float iv[4] = { ins[0], ins[1], ins[2], 1.0f };
+#if defined(_OPENMP) && defined(OPENMP_SIMD_)
+#pragma omp SIMD()
+#endif
+            for(size_t c = 0; c < 4; c++)
+            {
+              out[c] += iv[c] * gh(slide, sharpness);
+            }
           }
-          s++;
-          ins += 4;
-          out += 4;
         }
         if(inited_slide && j + P + 1 + MAX(0, kj) < roi_out->height)
         {
@@ -474,58 +479,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           const float *inm = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j - P);
           const float *inms = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j - P + kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
-          for(; ((intptr_t)s & 0xf) != 0 && i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
-          {
-            float stmp = s[0];
-            for(int k = 0; k < 3; k++)
-              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]))
-                      * norm2[k];
-            s[0] = stmp;
-          }
-          /* Process most of the line 4 pixels at a time */
-          for(; i < last - 4; i += 4, inp += 16, inps += 16, inm += 16, inms += 16, s += 4)
-          {
-            __m128 sv = _mm_load_ps(s);
-            const __m128 inp1 = _mm_load_ps(inp) - _mm_load_ps(inps);
-            const __m128 inp2 = _mm_load_ps(inp + 4) - _mm_load_ps(inps + 4);
-            const __m128 inp3 = _mm_load_ps(inp + 8) - _mm_load_ps(inps + 8);
-            const __m128 inp4 = _mm_load_ps(inp + 12) - _mm_load_ps(inps + 12);
-
-            const __m128 inp12lo = _mm_unpacklo_ps(inp1, inp2);
-            const __m128 inp34lo = _mm_unpacklo_ps(inp3, inp4);
-            const __m128 inp12hi = _mm_unpackhi_ps(inp1, inp2);
-            const __m128 inp34hi = _mm_unpackhi_ps(inp3, inp4);
-
-            const __m128 inpv0 = _mm_movelh_ps(inp12lo, inp34lo);
-            sv += inpv0 * inpv0 * _mm_set1_ps(norm2[0]);
-
-            const __m128 inpv1 = _mm_movehl_ps(inp34lo, inp12lo);
-            sv += inpv1 * inpv1 * _mm_set1_ps(norm2[1]);
-
-            const __m128 inpv2 = _mm_movelh_ps(inp12hi, inp34hi);
-            sv += inpv2 * inpv2 * _mm_set1_ps(norm2[2]);
-
-            const __m128 inm1 = _mm_load_ps(inm) - _mm_load_ps(inms);
-            const __m128 inm2 = _mm_load_ps(inm + 4) - _mm_load_ps(inms + 4);
-            const __m128 inm3 = _mm_load_ps(inm + 8) - _mm_load_ps(inms + 8);
-            const __m128 inm4 = _mm_load_ps(inm + 12) - _mm_load_ps(inms + 12);
-
-            const __m128 inm12lo = _mm_unpacklo_ps(inm1, inm2);
-            const __m128 inm34lo = _mm_unpacklo_ps(inm3, inm4);
-            const __m128 inm12hi = _mm_unpackhi_ps(inm1, inm2);
-            const __m128 inm34hi = _mm_unpackhi_ps(inm3, inm4);
-
-            const __m128 inmv0 = _mm_movelh_ps(inm12lo, inm34lo);
-            sv -= inmv0 * inmv0 * _mm_set1_ps(norm2[0]);
-
-            const __m128 inmv1 = _mm_movehl_ps(inm34lo, inm12lo);
-            sv -= inmv1 * inmv1 * _mm_set1_ps(norm2[1]);
-
-            const __m128 inmv2 = _mm_movelh_ps(inm12hi, inm34hi);
-            sv -= inmv2 * inmv2 * _mm_set1_ps(norm2[2]);
-
-            _mm_store_ps(s, sv);
-          }
           for(; i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
           {
             float stmp = s[0];
@@ -540,26 +493,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
   }
+
   // normalize and apply chroma/luma blending
-  // bias a bit towards higher values for low input values:
-  // const __m128 weight = _mm_set_ps(1.0f, powf(d->chroma, 0.6), powf(d->chroma, 0.6), powf(d->luma, 0.6));
-  const __m128 weight = _mm_set_ps(1.0f, d->chroma, d->chroma, d->luma);
-  const __m128 invert = _mm_sub_ps(_mm_set1_ps(1.0f), weight);
+  const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
+  const float invert[4] = { 1.0f - d->luma, 1.0f - d->chroma, 1.0f - d->chroma, 0.0f };
+
+  const float *const in = ((const float *const)ivoid);
+  float *const out = ((float *const)ovoid);
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(d)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
 #endif
-  for(int j = 0; j < roi_out->height; j++)
+  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
-    float *out = ((float *)ovoid) + 4 * (size_t)roi_out->width * j;
-    float *in = ((float *)ivoid) + 4 * (size_t)roi_out->width * j;
-    for(int i = 0; i < roi_out->width; i++)
+    for(size_t c = 0; c < 4; c++)
     {
-      _mm_store_ps(out, _mm_add_ps(_mm_mul_ps(_mm_load_ps(in), invert),
-                                   _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
-      out += 4;
-      in += 4;
+      out[k + c] = (in[k + c] * invert[c]) + (out[k + c] * (weight[c] / out[k + 3]));
     }
   }
+
   // free shared tmp memory:
   dt_free_align(Sa);
 
