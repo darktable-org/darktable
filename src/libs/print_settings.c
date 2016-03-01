@@ -1335,7 +1335,7 @@ gui_init (dt_lib_module_t *self)
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("print")));
   d->print_button = button;
-  gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("print with current settings (ctrl-p)"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("print with current settings"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (button), "clicked",

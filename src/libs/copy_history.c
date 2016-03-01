@@ -241,13 +241,13 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *copy_parts = gtk_button_new_with_label(_("copy"));
   ellipsize_button(copy_parts);
   d->copy_parts_button = copy_parts;
-  gtk_widget_set_tooltip_text(copy_parts, _("copy part history stack of\nfirst selected image (ctrl-shift-c)"));
+  gtk_widget_set_tooltip_text(copy_parts, _("copy part history stack of\nfirst selected image"));
   gtk_grid_attach(grid, copy_parts, 0, line, 2, 1);
 
   GtkWidget *copy = gtk_button_new_with_label(_("copy all"));
   ellipsize_button(copy);
   d->copy_button = copy;
-  gtk_widget_set_tooltip_text(copy, _("copy history stack of\nfirst selected image (ctrl-c)"));
+  gtk_widget_set_tooltip_text(copy, _("copy history stack of\nfirst selected image"));
   gtk_grid_attach(grid, copy, 2, line, 2, 1);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
@@ -259,15 +259,14 @@ void gui_init(dt_lib_module_t *self)
 
   d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
   ellipsize_button(d->paste_parts);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste_parts),
-                              _("paste part history stack to\nall selected images (ctrl-shift-v)"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste_parts), _("paste part history stack to\nall selected images"));
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste_parts), 0, line, 3, 1);
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste all")));
   ellipsize_button(d->paste);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste), _("paste history stack to\nall selected images (ctrl-v)"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste), _("paste history stack to\nall selected images"));
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste), 3, line++, 3, 1);
 
@@ -297,8 +296,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(delete), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(d->paste_parts), "clicked", G_CALLBACK(paste_parts_button_clicked),
-                   (gpointer)self);
+  g_signal_connect(G_OBJECT(d->paste_parts), "clicked", G_CALLBACK(paste_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste), "clicked", G_CALLBACK(paste_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(loadbutton), "clicked", G_CALLBACK(load_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), (gpointer)self);

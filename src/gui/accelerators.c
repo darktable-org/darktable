@@ -268,7 +268,7 @@ static void _connect_local_accel(dt_iop_module_t *module, dt_accel_t *accel)
   module->accel_closures_local = g_slist_prepend(module->accel_closures_local, accel);
 }
 
-void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure)
+dt_accel_t *dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure)
 {
   dt_accel_t *accel = NULL;
   gchar accel_path[256];
@@ -289,20 +289,23 @@ void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *
     gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
     module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
+
+  return accel;
 }
 
-void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure)
+dt_accel_t *dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure)
 {
   gchar accel_path[256];
   dt_accel_path_lib(accel_path, sizeof(accel_path), module->plugin_name, path);
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
 
   dt_accel_t *accel = _lookup_accel(accel_path);
-  if(!accel) return; // this happens when the path doesn't match any accel (typos, ...)
+  if(!accel) return NULL; // this happens when the path doesn't match any accel (typos, ...)
 
   accel->closure = closure;
 
   module->accel_closures = g_slist_prepend(module->accel_closures, accel);
+  return accel;
 }
 
 void dt_accel_connect_lua(const gchar *path, GClosure *closure)
@@ -323,16 +326,48 @@ static gboolean _press_button_callback(GtkAccelGroup *accel_group, GObject *acce
   return TRUE;
 }
 
+static gboolean _tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
+                                  GtkTooltip *tooltip, gpointer user_data)
+{
+  char *text = gtk_widget_get_tooltip_text(widget);
+
+  GtkAccelKey key;
+  dt_accel_t *accel = g_object_get_data(G_OBJECT(widget), "dt-accel");
+  if(accel && gtk_accel_map_lookup_entry(accel->path, &key))
+  {
+    gchar *key_name = gtk_accelerator_get_label(key.accel_key, key.accel_mods);
+    if(key_name && *key_name)
+    {
+      char *tmp = g_strdup_printf("%s (%s)", text, key_name);
+      g_free(text);
+      text = tmp;
+    }
+    g_free(key_name);
+  }
+
+  gtk_tooltip_set_text(tooltip, text);
+  g_free(text);
+  return TRUE;
+}
+
 void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button)
 {
   GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback), button, NULL);
-  dt_accel_connect_iop(module, path, closure);
+  dt_accel_t *accel = dt_accel_connect_iop(module, path, closure);
+  g_object_set_data(G_OBJECT(button), "dt-accel", accel);
+
+  if(gtk_widget_get_has_tooltip(button))
+    g_signal_connect(G_OBJECT(button), "query-tooltip", G_CALLBACK(_tooltip_callback), NULL);
 }
 
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button)
 {
   GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback), button, NULL);
-  dt_accel_connect_lib(module, path, closure);
+  dt_accel_t *accel = dt_accel_connect_lib(module, path, closure);
+  g_object_set_data(G_OBJECT(button), "dt-accel", accel);
+
+  if(gtk_widget_get_has_tooltip(button))
+    g_signal_connect(G_OBJECT(button), "query-tooltip", G_CALLBACK(_tooltip_callback), NULL);
 }
 
 static gboolean bauhaus_slider_edit_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,

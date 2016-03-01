@@ -2215,13 +2215,6 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "navigate page up"), GDK_KEY_Page_Up, 0);
   dt_accel_register_view(self, NC_("accel", "navigate page down"), GDK_KEY_Page_Down, 0);
 
-  // Color keys
-  dt_accel_register_view(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
-  dt_accel_register_view(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
-  dt_accel_register_view(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
-  dt_accel_register_view(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
-  dt_accel_register_view(self, NC_("accel", "color purple"), GDK_KEY_F5, 0);
-
   // Scroll keys
   dt_accel_register_view(self, NC_("accel", "scroll up"), GDK_KEY_Up, 0);
   dt_accel_register_view(self, NC_("accel", "scroll down"), GDK_KEY_Down, 0);
@@ -2275,17 +2268,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "select single image", closure);
   closure = g_cclosure_new(G_CALLBACK(realign_key_accel_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "realign images to grid", closure);
-  // Color keys
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(0), NULL);
-  dt_accel_connect_view(self, "color red", closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(1), NULL);
-  dt_accel_connect_view(self, "color yellow", closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(2), NULL);
-  dt_accel_connect_view(self, "color green", closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(3), NULL);
-  dt_accel_connect_view(self, "color blue", closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(4), NULL);
-  dt_accel_connect_view(self, "color purple", closure);
 }
 
 
