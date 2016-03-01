@@ -400,7 +400,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
 
   g->description = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(G_OBJECT(g->description), _("description or further information"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->description), _("description or further information"));
 
   g->autoapply
       = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto apply this preset to matching images")));
