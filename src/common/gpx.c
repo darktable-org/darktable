@@ -60,6 +60,14 @@ static GMarkupParser _gpx_parser
     = { _gpx_parser_start_element, _gpx_parser_end_element, _gpx_parser_text, NULL, NULL };
 
 
+static gint _sort_track(gconstpointer a, gconstpointer b)
+{
+  const _gpx_track_point_t *pa = (const _gpx_track_point_t *)a;
+  const _gpx_track_point_t *pb = (const _gpx_track_point_t *)b;
+  glong diff = pa->time.tv_sec - pb->time.tv_sec;
+  return diff != 0 ? diff : pa->time.tv_usec - pb->time.tv_usec;
+}
+
 dt_gpx_t *dt_gpx_new(const gchar *filename)
 {
   dt_gpx_t *gpx = NULL;
@@ -90,6 +98,9 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
   /* cleanup and return gpx context */
   g_markup_parse_context_free(ctx);
   g_mapped_file_unref(gpxmf);
+
+  /* safeguard against corrupt gpx files that have the points not ordered by time */
+  gpx->track = g_list_sort(gpx->track, _sort_track);
 
   return gpx;
 
