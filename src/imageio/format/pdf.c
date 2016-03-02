@@ -299,7 +299,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
   }
 
-  uint8_t *image_data = NULL;
+  void *image_data = NULL;
 
   // TODO
   // decide if we want to push that conversion step into the pdf lib and maybe do it on the fly while writing.
@@ -308,9 +308,9 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   {
     if(d->params.bpp == 8)
     {
-      image_data = (uint8_t *)malloc(data->width * data->height * 3);
+      image_data = malloc(data->width * data->height * 3);
       const uint8_t *in_ptr = (const uint8_t *)in;
-      uint8_t *out_ptr = image_data;
+      uint8_t *out_ptr = (uint8_t *)image_data;
       for(int y = 0; y < data->height; y++)
       {
         for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
@@ -319,7 +319,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
     else
     {
-      image_data = (uint8_t *)malloc(data->width * data->height * 3 * sizeof(uint16_t));
+      image_data = malloc(data->width * data->height * 3 * sizeof(uint16_t));
       const uint16_t *in_ptr = (const uint16_t *)in;
       uint16_t *out_ptr = (uint16_t *)image_data;
       for(int y = 0; y < data->height; y++)
