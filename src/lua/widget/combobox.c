@@ -128,6 +128,29 @@ static int value_member(lua_State*L)
   return 1;
 }
 
+static int selected_member(lua_State*L)
+{
+  lua_combobox combobox;
+  luaA_to(L,lua_combobox,&combobox,1);
+  int length = dt_bauhaus_combobox_length(combobox->widget);
+  if(lua_gettop(L) > 2) {
+    if(lua_isnil(L,3)) {
+      dt_bauhaus_combobox_set(combobox->widget,-1);
+    } else if(lua_isnumber(L,3)) {
+      int index = lua_tointeger(L,3) ;
+      if(index < 0 || index > length) {
+        return luaL_error(L,"Invalid index for combo box : %d\n",index);
+      }
+      dt_bauhaus_combobox_set(combobox->widget,index -1);
+    } else {
+      return luaL_error(L,"Invalid type for combo box selected\n");
+    }
+    return 0;
+  }
+  lua_pushinteger(L,dt_bauhaus_combobox_get(combobox->widget) + 1);
+  return 1;
+}
+
 static void changed_callback(GtkButton *widget, gpointer user_data)
 {
   dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
@@ -162,6 +185,9 @@ int dt_lua_init_widget_combobox(lua_State* L)
   lua_pushcfunction(L,value_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_combobox, "value");
+  lua_pushcfunction(L,selected_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_combobox, "selected");
   dt_lua_widget_register_gtk_callback(L,lua_combobox,"value-changed","changed_callback",G_CALLBACK(changed_callback));
   lua_pushcfunction(L,label_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

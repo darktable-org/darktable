@@ -935,6 +935,10 @@ local widget = dt.new_widget("button"){
       "You can set it to a number to select the corresponding entry from the menu"..para()..
       "If the combo box is editable, you can set it to any string"..para()..
       "You can set it to nil to deselect all entries")
+  types.lua_combobox.selected:set_text("The index of the selected entry, or 0 if nothing is selected"..para()..
+      "You can set it to a number to select the corresponding entry from the menu, or to 0 to select nothing"..para()..
+      "You can set it to nil to deselect all entries")
+  types.lua_combobox.selected:set_reported_type("integer")
   types.lua_combobox["#"]:set_text("The various menu entries."..para()..
       "You can add new entries by writing to the first element beyond the end"..para()..
       "You can removes entries by setting them to nil")
