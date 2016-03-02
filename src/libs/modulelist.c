@@ -323,11 +323,16 @@ void *get_params(dt_lib_module_t *self, int *size)
     if(dt_iop_so_is_hidden(module) || (module->flags() & IOP_FLAGS_DEPRECATED)) continue;
     int op_len = strlen(module->op) + 1;
     int new_len = len + 1 + op_len;
-    params = realloc(params, new_len);
-    if(!params)
+    char *tmp = realloc(params, new_len);
+    if(!tmp)
     {
+      free(params);
       len = 0;
       break;
+    }
+    else
+    {
+      params = tmp;
     }
     memcpy(params + len, module->op, op_len);
     params[new_len - 1] = (char)module->state;
