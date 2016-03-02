@@ -652,7 +652,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if (!dt_colorspaces_conversion_matrices_rgb(camera, d->RGB_to_CAM, d->CAM_to_RGB, NULL))
     {
       fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image\n", camera);
-      dt_control_log(_("`%s' color matrix not found for 4bayer image\n"), camera);
+      dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
     }
   }
 }
@@ -870,7 +870,7 @@ static void prepare_matrices(dt_iop_module_t *module)
                                                       g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
     fprintf(stderr, "[temperature] `%s' color matrix not found for image\n", camera);
-    dt_control_log(_("`%s' color matrix not found for image\n"), camera);
+    dt_control_log(_("`%s' color matrix not found for image"), camera);
   }
 
   if (module->dev->image_storage.flags & DT_IMAGE_4BAYER)
@@ -879,7 +879,7 @@ static void prepare_matrices(dt_iop_module_t *module)
     if (!dt_colorspaces_conversion_matrices_rgb(camera, g->RGB_to_CAM, NULL, NULL))
     {
       fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image\n", camera);
-      dt_control_log(_("`%s' color matrix not found for 4bayer image\n"), camera);
+      dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
     }
   }
 }

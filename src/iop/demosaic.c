@@ -3603,7 +3603,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, d->CAM_to_RGB, NULL))
     {
       fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
-      dt_control_log(_("`%s' color matrix not found for 4bayer image!\n"), camera);
+      dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
     }
   }
 }

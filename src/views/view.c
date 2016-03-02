@@ -659,7 +659,7 @@ int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
     konami_state++;
     if(konami_state == G_N_ELEMENTS(konami_sequence))
     {
-      dt_control_log("todo: come up with an easter egg\n");
+      dt_control_log("todo: come up with an easter egg");
       pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
       darktable.color_profiles->display_type = DT_COLORSPACE_BRG;
       darktable.color_profiles->display_filename[0] = '\0';

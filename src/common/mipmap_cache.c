@@ -1096,7 +1096,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
             if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, CAM_to_RGB, NULL))
             {
               fprintf(stderr, "[init_f] `%s' color matrix not found for 4bayer image!\n", camera);
-              dt_control_log(_("[init_f] `%s' color matrix not found for 4bayer image!\n"), camera);
+              dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
             }
             dt_colorspaces_cygm_to_rgb(out, roi_out.width*roi_out.height, CAM_to_RGB);
           }
