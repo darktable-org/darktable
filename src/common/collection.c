@@ -624,7 +624,7 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
     else
       *number2 = dt_util_dstrcat(*number2, " 23:59:59");
 
-    if(number1_time) g_free(number1_time);
+    g_free(number1_time);
     g_match_info_free(match_info);
     g_regex_unref(regex);
     return;
@@ -736,8 +736,7 @@ void dt_collection_get_makermodel(const gchar *filter, GList **sanitized, GList 
     g_free(haystack);
   }
   sqlite3_finalize(stmt);
-  if(needle)
-    g_free(needle);
+  g_free(needle);
 
   if(sanitized)
   {

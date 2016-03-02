@@ -1096,8 +1096,8 @@ static int line_detect(const float *in, const int width, const int height, const
   return lct > 0 ? TRUE : FALSE;
 
 error:
-  if(lsd_lines) free(lsd_lines);
-  if(greyscale) free(greyscale);
+  free(lsd_lines);
+  free(greyscale);
   return FALSE;
 }
 

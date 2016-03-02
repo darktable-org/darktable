@@ -715,7 +715,7 @@ _style_callback(GtkWidget *widget, dt_lib_module_t *self)
     gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), TRUE);
   }
 
-  if (ps->v_style) g_free(ps->v_style);
+  g_free(ps->v_style);
   ps->v_style = dt_conf_get_string("plugins/print/print/style");
 }
 
@@ -1287,7 +1287,7 @@ gui_init (dt_lib_module_t *self)
     n++;
     if (g_strcmp0(style->name,current_style)==0)
     {
-      if(d->v_style) g_free(d->v_style);
+      g_free(d->v_style);
       d->v_style = g_strdup(current_style);
       combo_idx=n;
     }
@@ -1302,7 +1302,7 @@ gui_init (dt_lib_module_t *self)
   if (combo_idx == -1)
   {
     dt_conf_set_string("plugins/print/print/style", "");
-    if(d->v_style) g_free(d->v_style);
+    g_free(d->v_style);
     d->v_style = g_strdup("");
     combo_idx=0;
   }
