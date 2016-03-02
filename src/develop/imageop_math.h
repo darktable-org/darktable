@@ -187,13 +187,16 @@ static inline int FC(const size_t row, const size_t col, const unsigned int filt
 }
 
 /** Calculate the xtrans pattern color from the row and column **/
-static inline int FCxtrans(const size_t row, const size_t col, const dt_iop_roi_t *const roi,
+static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
                            const uint8_t (*const xtrans)[6])
 {
-  // add +6 to as offset can be -1 or -2 and need to ensure a
-  // non-negative array index.
-  int irow = row + 6;
-  int icol = col + 6;
+  // Add +600 (which must be a multiple of CFA width 6) as offset can
+  // be negative and need to ensure a non-negative array index. The
+  // negative offsets in current code come from the demosaic iop:
+  // Markesteijn 1-pass (-12), Markesteijn 3-pass (-17), and VNG (-2).
+  int irow = row + 600;
+  int icol = col + 600;
+  assert(irow >= 0 && icol >= 0);
 
   if(roi)
   {
@@ -208,9 +211,7 @@ static inline int fcol(const int row, const int col, const unsigned int filters,
                        const uint8_t (*const xtrans)[6])
 {
   if(filters == 9)
-    // There are a few cases in VNG demosaic in which row or col is -1
-    // or -2. The +6 ensures a non-negative array index.
-    return FCxtrans(row + 6, col + 6, NULL, xtrans);
+    return FCxtrans(row, col, NULL, xtrans);
   else
     return FC(row, col, filters);
 }
