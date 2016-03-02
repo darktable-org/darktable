@@ -167,6 +167,11 @@ int dt_collection_update(const dt_collection_t *collection)
     selq = dt_util_dstrcat(selq, "select distinct id from (select * from images where %s) as a left outer "
                                  "join color_labels as b on a.id = b.imgid",
                            wq);
+  else if(collection->params.sort == DT_COLLECTION_SORT_PATH
+          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+    selq = dt_util_dstrcat(selq, "select distinct id from (select * from images where %s) join (select id as "
+                                 "film_rolls_id, folder from film_rolls) on film_id = film_rolls_id",
+                           wq);
   else if(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT)
     selq = dt_util_dstrcat(selq, "select distinct images.id from images %s", wq);
   else
@@ -341,6 +346,10 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "group_id desc, id-group_id != 0, id desc");
         break;
 
+      case DT_COLLECTION_SORT_PATH:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "folder desc, filename desc, version");
+        break;
+
       case DT_COLLECTION_SORT_NONE:
         // shouldn't happen
         break;
@@ -372,6 +381,10 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
       case DT_COLLECTION_SORT_GROUP:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "group_id, id-group_id != 0, id");
+        break;
+
+      case DT_COLLECTION_SORT_PATH:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "folder, filename, version");
         break;
 
       case DT_COLLECTION_SORT_NONE:
@@ -468,6 +481,10 @@ GList *dt_collection_get_all(const dt_collection_t *collection, int limit)
   if(collection->params.sort == DT_COLLECTION_SORT_COLOR
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
     query = dt_util_dstrcat(query, "as a left outer join color_labels as b on a.id = b.imgid ");
+  else if(collection->params.sort == DT_COLLECTION_SORT_PATH
+          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+    query = dt_util_dstrcat(
+        query, "join (select id as film_rolls_id, folder from film_rolls) on film_id = film_rolls_id ");
 
   query = dt_util_dstrcat(query, "%s limit ?1", sq);
 
@@ -509,6 +526,10 @@ GList *dt_collection_get_selected(const dt_collection_t *collection, int limit)
   if(collection->params.sort == DT_COLLECTION_SORT_COLOR
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
     query = dt_util_dstrcat(query, "as a left outer join color_labels as b on a.id = b.imgid ");
+  else if(collection->params.sort == DT_COLLECTION_SORT_PATH
+          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+    query = dt_util_dstrcat(
+        query, "join (select id as film_rolls_id, folder from film_rolls) on film_id = film_rolls_id ");
 
   query = dt_util_dstrcat(query, "where id in (select imgid from selected_images) %s limit ?1", sq);
 
