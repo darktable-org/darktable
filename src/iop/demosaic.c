@@ -494,7 +494,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 
 /** Lookup for allhex[], making sure that row/col aren't negative **/
 static inline const short *const hexmap(const int row, const int col,
-                                        const short (*const allhex)[3][8])
+                                        short (*const allhex)[3][8])
 {
   // Row and column offsets may be negative, but C's modulo function
   // is not useful here with a negative dividend. To be safe, add a
