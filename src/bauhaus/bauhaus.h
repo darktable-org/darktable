@@ -252,7 +252,11 @@ float dt_bauhaus_slider_get_hard_min(GtkWidget* w);
 void dt_bauhaus_slider_set_hard_max(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_hard_max(GtkWidget* w);
 
-float dt_bauhaus_slider_get_step(GtkWidget *widget);
+void dt_bauhaus_slider_set_digits(GtkWidget *w, int val);
+int dt_bauhaus_slider_get_digits(GtkWidget *w);
+void dt_bauhaus_slider_set_step(GtkWidget *w, float val);
+float dt_bauhaus_slider_get_step(GtkWidget *w);
+
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);

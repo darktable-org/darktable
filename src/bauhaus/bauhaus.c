@@ -1893,6 +1893,41 @@ void dt_bauhaus_slider_set(GtkWidget *widget, float pos)
   dt_bauhaus_slider_set_normalized(w, (rawval - d->min) / (d->max - d->min));
 }
 
+void dt_bauhaus_slider_set_digits(GtkWidget *widget, int val)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  d->digits = val;
+  snprintf(d->format, sizeof(d->format), "%%.0%df", val);
+}
+
+int dt_bauhaus_slider_get_digits(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+
+  if(w->type != DT_BAUHAUS_SLIDER) return 0;
+
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  return d->digits;
+}
+
+void dt_bauhaus_slider_set_step(GtkWidget *widget, float val)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  d->step = val;
+  d->scale = 5.0f * d->step / (d->max - d->min);
+}
+
 float dt_bauhaus_slider_get_step(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
