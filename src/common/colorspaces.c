@@ -901,11 +901,8 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
   {
     // return the profile specified in export
     p = dt_colorspaces_get_profile(over_type, over_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-
-    // the profile asked for doesn't exist, fall back to sRGB
-    if(!p) p = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT);
   }
-  else
+  else if(colorout)
   {
     // get the profile assigned from colorout
     // FIXME: does this work when using JPEG thumbs and the image was never opened?
@@ -926,10 +923,10 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
                                                           DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
     }
     sqlite3_finalize(stmt);
-
-    // couldn't get it from colorout -> fall back to sRGB
-    if(!p) p = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT);
   }
+
+  // if all else fails -> fall back to sRGB
+  if(!p) p = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT);
 
   return p;
 }
