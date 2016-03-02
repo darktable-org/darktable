@@ -902,7 +902,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
     // return the profile specified in export
     p = dt_colorspaces_get_profile(over_type, over_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   }
-  else if(colorout)
+  else if(colorout && colorout->get_p)
   {
     // get the profile assigned from colorout
     // FIXME: does this work when using JPEG thumbs and the image was never opened?
