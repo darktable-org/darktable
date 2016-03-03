@@ -2570,7 +2570,7 @@ void gui_post_expose (struct dt_iop_module_t *module,
 
   // distort all points
   dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
-  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, 0, 9999999 };
+  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, module->priority + 1, 9999999 };
   _distort_paths (&d_params, &copy_params);
   dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
 
