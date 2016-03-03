@@ -825,10 +825,6 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   dt_loc_init_user_config_dir(configdir_from_command);
   dt_loc_init_user_cache_dir(cachedir_from_command);
 
-#if !GLIB_CHECK_VERSION(2, 35, 0)
-  g_type_init();
-#endif
-
 #ifdef USE_LUA
   dt_lua_init_early(L);
 #endif
