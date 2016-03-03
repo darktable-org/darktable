@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, 
+# Foundation, Inc., 59 Temple Place, Suite 330,
 # Boston, MA 02111-1307, USA.
 
 include(LibFindMacros)
@@ -84,8 +84,8 @@ find_library(GDKPIXBUF_LIBRARY NAMES gdk_pixbuf-2.0
 # Glib
 
 # NOTE: must be one of the macros listed in https://developer.gnome.org/glib/stable/glib-Version-Information.html
-find_package(Glib REQUIRED 2.32)
-set(GTK3_DEFINITIONS ${GTK3_DEFINITIONS} "-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_32")
+find_package(Glib REQUIRED 2.40)
+set(GTK3_DEFINITIONS ${GTK3_DEFINITIONS} "-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_40")
 set(GTK3_DEFINITIONS ${GTK3_DEFINITIONS} "-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_MIN_REQUIRED")
 
 if(NOT Glib_FOUND)
