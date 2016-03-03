@@ -26,6 +26,9 @@ else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 
 add_custom_target(darktablerc.html_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html)
+if(USE_XMLLINT)
+  add_dependencies(darktablerc.html_file validate_darktableconfig_xml)
+endif(USE_XMLLINT)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html DESTINATION ${SHARE_INSTALL}/doc/darktable)
 

@@ -1,6 +1,6 @@
-project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
-cmake_policy(VERSION 2.6)
+
+project(darktable CXX C)
 
 # Allow forcing the C/CPP compiler that is actually used during the compilation
 # to something other than what is used by the cmake run. This is useful when
