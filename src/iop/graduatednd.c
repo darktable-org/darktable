@@ -204,7 +204,7 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   float pts[4]
       = { xa * self->dev->preview_pipe->backbuf_width, ya * self->dev->preview_pipe->backbuf_height,
           xb * self->dev->preview_pipe->backbuf_width, yb * self->dev->preview_pipe->backbuf_height };
-  dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, pts, 2);
+  dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, NULL, pts, 2);
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   pts[0] /= (float)piece->buf_out.width;
   pts[2] /= (float)piece->buf_out.width;
@@ -380,7 +380,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   }
   // now we want that points to take care of distort modules
 
-  if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 999999, pts, 2))
+  if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 999999, NULL, pts, 2))
     return 0;
   *xa = pts[0] / self->dev->preview_pipe->backbuf_width;
   *ya = pts[1] / self->dev->preview_pipe->backbuf_height;

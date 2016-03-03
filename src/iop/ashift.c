@@ -1989,7 +1989,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points,
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, NULL, points,
                                       2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
@@ -2119,7 +2119,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points,
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, NULL, points,
                                       2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
@@ -2299,7 +2299,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   for(int n = 0; n < lines_count; n++)
   {
     const int length = lines[n].length;
-    
+
     total_points += length;
 
     my_points_idx[n].length = length;
@@ -2350,7 +2350,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   }
 
   // third step: transform all points
-  if(!dt_dev_distort_transform_plus(dev, dev->preview_pipe, self->priority, 9999999, my_points, total_points))
+  if(!dt_dev_distort_transform_plus(dev, dev->preview_pipe, self->priority, 9999999, NULL, my_points, total_points))
     goto error;
 
   // fourth step: get bounding box in final coordinates (used later for checking "near"-ness to mouse pointer)

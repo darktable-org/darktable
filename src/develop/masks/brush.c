@@ -847,9 +847,9 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   start2 = dt_get_wtime();
 
   // and we transform them with all distorted modules
-  if(dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, *points, *points_count))
+  if(dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, NULL, *points, *points_count))
   {
-    if(!border || dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, *border, *border_count))
+    if(!border || dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, NULL, *border, *border_count))
     {
       if(darktable.unmuted & DT_DEBUG_PERF)
         dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points transform took %0.04f sec\n", form->name,
