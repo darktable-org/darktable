@@ -444,7 +444,7 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt
     // transform back to current module coordinates
     dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
                                       module->priority + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
-                                      99999, fbox, 2);
+                                      99999, NULL, fbox, 2);
 
     fbox[0] -= roi->x;
     fbox[1] -= roi->y;
@@ -528,7 +528,7 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt
     // transform back to current module coordinates
     dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
                                       module->priority  + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
-                                      99999, fpoint, 1);
+                                      99999, NULL, fpoint, 1);
 
     point[0] = fpoint[0] - roi->x;
     point[1] = fpoint[1] - roi->y;
@@ -587,7 +587,7 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
   // transform back to current module coordinates
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
                                     module->priority  + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
-                                    99999, fbox, 2);
+                                    99999, NULL, fbox, 2);
 
   fbox[0] -= roi->x;
   fbox[1] -= roi->y;

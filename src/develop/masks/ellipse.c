@@ -1103,7 +1103,7 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
   }
 
   // and we transform them with all distorted modules
-  if(!dt_dev_distort_transform_plus(darktable.develop, piece->pipe, 0, module->priority, points, l + 5))
+  if(!dt_dev_distort_transform_plus(darktable.develop, piece->pipe, 0, module->priority, NULL, points, l + 5))
   {
     free(points);
     return 0;
@@ -1189,7 +1189,7 @@ static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   }
 
   // and we transform them with all distorted modules
-  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, 0, module->priority, points, l + 5))
+  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, 0, module->priority, NULL, points, l + 5))
   {
     free(points);
     return 0;
@@ -1246,7 +1246,7 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   start2 = dt_get_wtime();
 
   // we back transform all this points
-  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points, w * h))
+  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, NULL, points, w * h))
   {
     free(points);
     return 0;
@@ -1359,7 +1359,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   start2 = dt_get_wtime();
 
   // we back transform all these points
-  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points,
+  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, NULL, points,
                                         (size_t)mw * mh))
   {
     free(points);

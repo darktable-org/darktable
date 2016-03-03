@@ -1661,15 +1661,15 @@ gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module)
 
 int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)
 {
-  return dt_dev_distort_transform_plus(dev, dev->preview_pipe, 0, 99999, points, points_count);
+  return dt_dev_distort_transform_plus(dev, dev->preview_pipe, 0, 99999, NULL, points, points_count);
 }
 int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count)
 {
-  return dt_dev_distort_backtransform_plus(dev, dev->preview_pipe, 0, 99999, points, points_count);
+  return dt_dev_distort_backtransform_plus(dev, dev->preview_pipe, 0, 99999, NULL, points, points_count);
 }
 
 int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax,
-                                  float *points, size_t points_count)
+                                  struct dt_iop_module_t *except, float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_first(dev->iop);
@@ -1683,7 +1683,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
-    if(piece->enabled && module->priority <= pmax && module->priority >= pmin &&
+    if(piece->enabled && module->priority <= pmax && module->priority >= pmin && module != except &&
       !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
       module->distort_transform(module, piece, points, points_count);
@@ -1696,7 +1696,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
 }
 
 int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax,
-                                      float *points, size_t points_count)
+                                      struct dt_iop_module_t *except, float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_last(dev->iop);
@@ -1710,7 +1710,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
-    if(piece->enabled && module->priority <= pmax && module->priority >= pmin &&
+    if(piece->enabled && module->priority <= pmax && module->priority >= pmin && module != except &&
       !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
       module->distort_backtransform(module, piece, points, points_count);

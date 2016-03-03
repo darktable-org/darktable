@@ -606,7 +606,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
     dt_masks_dynbuf_add(dpoints, rc[0]);
     dt_masks_dynbuf_add(dpoints, rc[1]);
-    
+
     border_init[k * 6 + 4] = dborder ? -dt_masks_dynbuf_position(dborder) : 0;
 
     if(dborder)
@@ -677,9 +677,9 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   }
 
   // and we transform them with all distorted modules
-  if(dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, *points, *points_count))
+  if(dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, NULL, *points, *points_count))
   {
-    if(!border || dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, *border, *border_count))
+    if(!border || dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, NULL, *border, *border_count))
     {
       if(darktable.unmuted & DT_DEBUG_PERF)
         dt_print(DT_DEBUG_MASKS, "[masks %s] path_points transform took %0.04f sec\n", form->name,

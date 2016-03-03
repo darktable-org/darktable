@@ -483,6 +483,7 @@ typedef struct {
   float to_scale;
   int pmin;
   int pmax;
+  dt_iop_module_t *except;
 } distort_params_t;
 
 static void _distort_paths (const distort_params_t *params, const dt_iop_liquify_params_t *p)
@@ -544,7 +545,7 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
     }
   }
 
-  dt_dev_distort_transform_plus (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
+  dt_dev_distort_transform_plus (params->develop, params->pipe, params->pmin, params->pmax, params->except, buffer, len);
 
   // record back the transformed points
 
@@ -586,7 +587,7 @@ static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
                                         const float roi_in_scale,
                                         dt_iop_liquify_params_t *p)
 {
-  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, 0, module->priority - 1 };
+  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, 0, module->priority - 1, NULL };
   _distort_paths (&params, p);
 }
 
@@ -2570,7 +2571,7 @@ void gui_post_expose (struct dt_iop_module_t *module,
 
   // distort all points
   dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
-  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, module->priority + 1, 9999999 };
+  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, 0, 9999999, module };
   _distort_paths (&d_params, &copy_params);
   dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
 
@@ -2633,7 +2634,7 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   float ht = darktable.develop->preview_pipe->backbuf_height;
   float pts[2] = { pzx * wd, pzy * ht };
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                    module->priority + 1, 9999999, pts, 1);
+                                    0, 9999999, module, pts, 1);
   float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 

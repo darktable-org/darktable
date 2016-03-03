@@ -755,7 +755,7 @@ static int dt_gradient_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   points[7] = ht;
 
   // and we transform them with all distorted modules
-  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, 0, module->priority, points, 4)) return 0;
+  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, 0, module->priority, NULL, points, 4)) return 0;
 
   // now we search min and max
   float xmin, xmax, ymin, ymax;
@@ -826,7 +826,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   start2 = dt_get_wtime();
 
   // we backtransform all these points
-  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points, mw * mh))
+  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, NULL, points, mw * mh))
   {
     free(points);
     return 0;
@@ -955,7 +955,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   start2 = dt_get_wtime();
 
   // we backtransform all these points
-  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points,
+  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, NULL, points,
                                         (size_t)mw * mh))
   {
     free(points);
