@@ -1164,6 +1164,9 @@ static int luaA_call_entry(lua_State* L) {
     arg_heap = true;
     arg_data = malloc(arg_size);
     if (arg_data == NULL) {
+      if (ret_heap) {
+        free(ret_data);
+      }
       lua_pushfstring(L, "luaA_call: Out of memory!");
       lua_error(L);
       return 0;
