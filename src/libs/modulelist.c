@@ -327,6 +327,7 @@ void *get_params(dt_lib_module_t *self, int *size)
     if(!tmp)
     {
       free(params);
+      params = NULL;
       len = 0;
       break;
     }
