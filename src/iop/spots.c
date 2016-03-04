@@ -166,8 +166,6 @@ static void _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_ellipse)))
   {
     // we unset the creation mode
-    dt_masks_form_t *form = darktable.develop->form_visible;
-    if(form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
   }
   if (widget != g->bt_path) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
