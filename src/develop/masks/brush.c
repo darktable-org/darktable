@@ -1360,7 +1360,6 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
       // if the form doesn't below to a group, we don't delete it
       if(parentid <= 0) return 1;
 
-      dt_masks_clear_form_gui(darktable.develop);
       // we hide the form
       if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
         dt_masks_change_form_gui(NULL);
@@ -1368,6 +1367,8 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
         dt_masks_change_form_gui(NULL);
       else
       {
+        int emode = gui->edit_mode;
+        dt_masks_clear_form_gui(darktable.develop);
         GList *forms = g_list_first(darktable.develop->form_visible->points);
         while(forms)
         {
@@ -1381,6 +1382,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
           }
           forms = g_list_next(forms);
         }
+        gui->edit_mode = emode;
       }
 
       // we delete or remove the shape
@@ -1427,7 +1429,6 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
   }
   else if(which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    dt_masks_clear_form_gui(darktable.develop);
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
       dt_masks_change_form_gui(NULL);
@@ -1435,6 +1436,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
       dt_masks_change_form_gui(NULL);
     else
     {
+      dt_masks_clear_form_gui(darktable.develop);
       GList *forms = g_list_first(darktable.develop->form_visible->points);
       while(forms)
       {
@@ -1448,6 +1450,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
         }
         forms = g_list_next(forms);
       }
+      gui->edit_mode = DT_MASKS_EDIT_FULL;
     }
 
     // we remove the shape

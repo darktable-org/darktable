@@ -427,7 +427,6 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
 {
   if(which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    dt_masks_clear_form_gui(darktable.develop);
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
       dt_masks_change_form_gui(NULL);
@@ -435,6 +434,7 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
       dt_masks_change_form_gui(NULL);
     else
     {
+      dt_masks_clear_form_gui(darktable.develop);
       GList *forms = g_list_first(darktable.develop->form_visible->points);
       while(forms)
       {
@@ -448,6 +448,7 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
         }
         forms = g_list_next(forms);
       }
+      gui->edit_mode = DT_MASKS_EDIT_FULL;
     }
 
     // we remove the shape
