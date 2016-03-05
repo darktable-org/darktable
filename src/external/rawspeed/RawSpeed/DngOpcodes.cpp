@@ -161,16 +161,14 @@ OpcodeFixBadPixelsList::OpcodeFixBadPixelsList( const uchar8* parameters, int pa
   if (param_max_bytes < 12)
     ThrowRDE("OpcodeFixBadPixelsList: Not enough data to read parameters, only %d bytes left.", param_max_bytes);
   // Skip phase - we don't care
-  int BadPointCount = getLong(&parameters[4]);
-  int BadRectCount = getLong(&parameters[8]);
-  bytes_used[0] = 12; 
-  if (BadPointCount < 0 || BadRectCount < 0)
-    ThrowRDE("OpcodeFixBadPixelsList: negative point or rect count number");
-  if (12 + BadPointCount * 8 + BadRectCount * 16 > param_max_bytes)
+  uint64 BadPointCount = getLong(&parameters[4]);
+  uint64 BadRectCount = getLong(&parameters[8]);
+  bytes_used[0] = 12;
+  if (12 + BadPointCount * 8 + BadRectCount * 16 > (uint64) param_max_bytes)
     ThrowRDE("OpcodeFixBadPixelsList: Ran out parameter space, only %d bytes left.", param_max_bytes);
 
   // Read points
-  for (int i = 0; i < BadPointCount; i++) {
+  for (uint64 i = 0; i < BadPointCount; i++) {
     uint32 BadPointRow = (uint32)getLong(&parameters[bytes_used[0]]);
     uint32 BadPointCol = (uint32)getLong(&parameters[bytes_used[0]+4]);
     bytes_used[0] += 8;
@@ -178,7 +176,7 @@ OpcodeFixBadPixelsList::OpcodeFixBadPixelsList( const uchar8* parameters, int pa
   }
 
   // Read rects
-  for (int i = 0; i < BadRectCount; i++) {
+  for (uint64 i = 0; i < BadRectCount; i++) {
     uint32 BadRectTop = (uint32)getLong(&parameters[bytes_used[0]]);
     uint32 BadRectLeft = (uint32)getLong(&parameters[bytes_used[0]+4]);
     uint32 BadRectBottom = (uint32)getLong(&parameters[bytes_used[0]]);
