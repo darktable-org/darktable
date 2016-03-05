@@ -68,7 +68,9 @@
 #define NMS_EPSILON 1e-10                   // break criterion for Nelder-Mead simplex
 #define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
 #define NMS_ITERATIONS 200                  // number of iterations for Nelder-Mead simplex
-#define NMS_MAX_IT 1000                     // maximum number of iterations for Nelder-Mead simplex
+#define NMS_CROP_EPSILON 100.0              // break criterion for Nelder-Mead simplex on crop fitting
+#define NMS_CROP_SCALE 0.5                  // scaling factor for Nelder-Mead simplex on crop fitting
+#define NMS_CROP_ITERATIONS 200             // number of iterations for Nelder-Mead simplex on crop fitting
 #define NMS_ALPHA 1.0                       // reflection coefficient for Nelder-Mead simplex
 #define NMS_BETA 0.5                        // contraction coefficient for Nelder-Mead simplex
 #define NMS_GAMMA 2.0                       // expansion coefficient for Nelder-Mead simplex
@@ -76,6 +78,8 @@
 
 // define to get debugging output
 #undef ASHIFT_DEBUG
+
+#define SQR(a) ((a) * (a))
 
 // For line detection we use the LSD algorithm as published by Rafael Grompone:
 //
@@ -192,6 +196,13 @@ typedef enum dt_iop_ashift_mode_t
   ASHIFT_MODE_SPECIFIC = 1
 } dt_iop_ashift_mode_t;
 
+typedef enum dt_iop_ashift_crop_t
+{
+  ASHIFT_CROP_OFF = 0,
+  ASHIFT_CROP_LARGEST = 1,
+  ASHIFT_CROP_ASPECT = 2
+} dt_iop_ashift_crop_t;
+
 typedef struct dt_iop_ashift_params1_t
 {
   float rotation;
@@ -256,12 +267,24 @@ typedef struct dt_iop_ashift_fit_params_t
   float lensshift_h_range;
 } dt_iop_ashift_fit_params_t;
 
+typedef struct dt_iop_ashift_cropfit_params_t
+{
+  int width;
+  int height;
+  float x;
+  float y;
+  float alpha;
+  float homograph[3][3];
+  float edges[4][3];
+} dt_iop_ashift_cropfit_params_t;
+
 typedef struct dt_iop_ashift_gui_data_t
 {
   GtkWidget *rotation;
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
   GtkWidget *guide_lines;
+  GtkWidget *crop;
   GtkWidget *mode;
   GtkWidget *f_length;
   GtkWidget *crop_factor;
@@ -309,6 +332,13 @@ typedef struct dt_iop_ashift_gui_data_t
   uint64_t buf_hash;
   dt_iop_ashift_fitaxis_t lastfit;
   dt_pthread_mutex_t lock;
+#if 1
+  dt_iop_ashift_crop_t cropmode;
+  float cl;
+  float ct;
+  float cr;
+  float cb;
+#endif
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -454,8 +484,8 @@ static inline int vec3isnull(const float *const v)
   return (fabs(v[0]) < eps && fabs(v[1]) < eps && fabs(v[2]) < eps);
 }
 
-#if 0
-static void _print_roi(const dt_iop_roi_t *roi, const char *label)
+#ifdef ASHIFT_DEBUG
+static void print_roi(const dt_iop_roi_t *roi, const char *label)
 {
   printf("{ %5d  %5d  %5d  %5d  %.6f } %s\n", roi->x, roi->y, roi->width, roi->height, roi->scale, label);
 }
@@ -763,9 +793,10 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   //roi_out->y = CLAMP(roi_out->y, 0, INT_MAX);
   //roi_out->width = CLAMP(roi_out->width, 1, INT_MAX);
   //roi_out->height = CLAMP(roi_out->height, 1, INT_MAX);
-
-  //_print_roi(roi_out, "roi_out");
-  //_print_roi(roi_in, "roi_in");
+#ifdef ASHIFT_DEBUG
+  print_roi(roi_out, "roi_out (after modify_roi_out)");
+  print_roi(roi_in, "roi_in (after modify_roi_out)");
+#endif
 }
 
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -823,9 +854,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
   roi_in->width = CLAMP(roi_in->width, 1, (int)floorf(orig_w) - roi_in->x);
   roi_in->height = CLAMP(roi_in->height, 1, (int)floorf(orig_h) - roi_in->y);
-
-  //_print_roi(roi_out, "roi_out");
-  //_print_roi(roi_in, "roi_in");
+#ifdef ASHIFT_DEBUG
+  print_roi(roi_out, "roi_out (after modify_roi_in)");
+  print_roi(roi_in, "roi_in (after modify_roi_in)");
+#endif
 }
 
 // simple conversion of rgb image into greyscale variant suitable for line segment detection
@@ -1814,6 +1846,244 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
 }
 #endif
 
+// function to keep crop fit parameters within contraints
+static void crop_constraint(double *params, int pcount)
+{
+  if(pcount > 0) params[0] = fabs(params[0]);
+  if(pcount > 1) params[1] = fabs(params[1]);
+  if(pcount > 2) params[2] = fabs(params[2]);
+
+  if(pcount > 0 && params[0] > 1.0) params[0] = 1.0 - params[0];
+  if(pcount > 1 && params[1] > 1.0) params[1] = 1.0 - params[1];
+  if(pcount > 2 && params[2] > 0.5*M_PI) params[2] = 0.5*M_PI - params[2];
+}
+
+// helper function for getting the best fitting crop area;
+// returns the negative area of the largest rectangle that fits within the
+// defined image with a given rectangle's center and its aspect angle;
+// the trick: the rectangle center coordinates are given in the input
+// image coordinates so we know for sure that it also lies within the image after
+// conversion to the output coordinates
+static double crop_fitness(double *params, void *data)
+{
+  dt_iop_ashift_cropfit_params_t *cropfit = (dt_iop_ashift_cropfit_params_t *)data;
+
+  const float wd = cropfit->width;
+  const float ht = cropfit->height;
+
+  // get variable and constant parameters, respectively
+  const float x = isnan(cropfit->x) ? params[0] : cropfit->x;
+  const float y = isnan(cropfit->y) ? params[1] : cropfit->y;
+  const float alpha = isnan(cropfit->alpha) ? params[2] : cropfit->alpha;
+
+  // the center of the rectangle in input image coordinates
+  const float Pc[3] = { x * wd, y * ht, 1.0f };
+
+  // convert to the output image coordinates and normalize
+  float P[3];
+  mat3mulv(P, (float *)cropfit->homograph, Pc);
+  P[0] /= P[2];
+  P[1] /= P[2];
+  P[2] = 1.0f;
+
+  // two auxiliary points (some arbitrary distance away from P) to contruct the diagonals
+  const float Pa[2][3] = { { P[0] + 10.0f * cos(alpha), P[1] + 10.0f * sin(alpha), 1.0f },
+                           { P[0] + 10.0f * cos(alpha), P[1] - 10.0f * sin(alpha), 1.0f } };
+
+  // the two diagonals: D = P x Pa
+  float D[2][3];
+  vec3prodn(D[0], P, Pa[0]);
+  vec3prodn(D[1], P, Pa[1]);
+
+  // find all intersection points of all four edges with both diagonals (I = E x D);
+  // the shortest distance d2min of the intersection point I to the crop area center P determines
+  // the size of the crop area that still fits into the image (for the given center and aspect angle)
+  float d2min = FLT_MAX;
+  for(int k = 0; k < 4; k++)
+    for(int l = 0; l < 2; l++)
+    {
+      // the intersection point
+      float I[3];
+      vec3prodn(I, cropfit->edges[k], D[l]);
+
+      // special case: I is all null -> E and D are identical -> P lies on E -> d2min = 0
+      if(vec3isnull(I))
+      {
+        d2min = 0.0f;
+        continue;
+      }
+
+      // special case: I[2] is 0.0f -> E and D are parallel and intersect at infinity -> no relevant point
+      if(I[2] == 0.0f)
+        continue;
+
+      // the default case -> normlize I
+      I[0] /= I[2];
+      I[1] /= I[2];
+
+      // calculate distance from I to P
+      const float d2 = SQR(P[0] - I[0]) + SQR(P[1] - I[1]);
+
+      // the minimum distance over all intersection points
+      d2min = MIN(d2min, d2);
+    }
+
+  // calculate the area of the rectangle
+  const float A = 2.0f * d2min * sin(2.0f * alpha);
+
+#ifdef ASHIFT_DEBUG
+  printf("crop fitness with x %f, y %f, angle %f -> distance %f, area %f\n",
+         x, y, alpha, d2min, A);
+#endif
+  // and return -A to allow Nelder-Mead simplex to search for the minimum
+  return -A;
+}
+
+// strategy: for a given center of the crop area and a specific aspect angle
+// we calculate the largest crop area that still lies within the output image;
+// now we allow a Nelder-Mead simplex to search for the center coordinates
+// (and optionally the aspect angle) that delivers the largest overall crop area.
+static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+  // skip if fitting is still running
+  if(g->fitting) return;
+
+  // reset fit margins if auto-cropping is off
+  if(g->cropmode == ASHIFT_CROP_OFF)
+  {
+    g->cl = 0.0f;
+    g->cr = 1.0f;
+    g->ct = 0.0f;
+    g->cb = 1.0f;
+    return;
+  }
+
+  g->fitting = 1;
+
+  double params[3];
+  int pcount;
+
+  // get parameters for the homograph
+  const float f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
+  const float orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
+  const float aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
+  const float rotation = p->rotation;
+  const float lensshift_v = p->lensshift_v;
+  const float lensshift_h = p->lensshift_h;
+
+  // prepare structure of constant parameters
+  dt_iop_ashift_cropfit_params_t cropfit;
+  cropfit.width = g->buf_width;
+  cropfit.height = g->buf_height;
+  homography((float *)cropfit.homograph, rotation, lensshift_v, lensshift_h, f_length_kb,
+             orthocorr, aspect, cropfit.width, cropfit.height, ASHIFT_HOMOGRAPH_FORWARD);
+
+  const float wd = cropfit.width;
+  const float ht = cropfit.height;
+
+  // the four vertices of the image in input image coordinates
+  const float Vc[4][3] = { { 0.0f, 0.0f, 1.0f },
+                           { 0.0f,   ht, 1.0f },
+                           {   wd,   ht, 1.0f },
+                           {   wd, 0.0f, 1.0f } };
+
+  // convert the vertices to output image coordinates
+  float V[4][3];
+  for(int n = 0; n < 4; n++)
+    mat3mulv(V[n], (float *)cropfit.homograph, Vc[n]);
+
+  // get width and height of output image for later use
+  float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
+  for(int n = 0; n < 4; n++)
+  {
+    // normalize V
+    V[n][0] /= V[n][2];
+    V[n][1] /= V[n][2];
+    V[n][2] = 1.0f;
+    xmin = MIN(xmin, V[n][0]);
+    xmax = MAX(xmax, V[n][0]);
+    ymin = MIN(ymin, V[n][1]);
+    ymax = MAX(ymax, V[n][1]);
+  }
+  const float owd = xmax - xmin;
+  const float oht = ymax - ymin;
+
+  // calculate the lines defining the four edges of the image area: E = V[n] x V[n+1]
+  for(int n = 0; n < 4; n++)
+    vec3prodn(cropfit.edges[n], V[n], V[(n + 1) % 4]);
+
+  // initial fit parameters: crop area is centered and aspect angle is that of the original image
+  // number of parameters: fit only crop center coordinates with a fixed aspect ratio, or fit all three variables
+  if(g->cropmode == ASHIFT_CROP_LARGEST)
+  {
+    params[0] = 0.5;
+    params[1] = 0.5;
+    params[2] = atan2((float)cropfit.height, (float)cropfit.width);
+    cropfit.x = NAN;
+    cropfit.y = NAN;
+    cropfit.alpha = NAN;
+    pcount = 3;
+  }
+  else //(g->cropmode == ASHIFT_CROP_ASPECT)
+  {
+    params[0] = 0.5;
+    params[1] = 0.5;
+    cropfit.x = NAN;
+    cropfit.y = NAN;
+    cropfit.alpha = atan2((float)cropfit.height, (float)cropfit.width);
+    pcount = 2;
+  }
+
+  // start the simplex fit
+  int iter = simplex(crop_fitness, params, pcount, NMS_CROP_EPSILON, NMS_CROP_SCALE, NMS_CROP_ITERATIONS,
+                     crop_constraint, (void*)&cropfit);
+
+
+  if(iter >= NMS_CROP_ITERATIONS)
+  {
+    // in case the fit did not converge -> reset crop margins to the full image area
+    g->cl = 0.0f;
+    g->cr = 1.0f;
+    g->ct = 0.0f;
+    g->cb = 1.0f;
+  }
+  else
+  {
+    // the fit did converge -> get clipping margins out of params:
+    cropfit.x = isnan(cropfit.x) ? params[0] : cropfit.x;
+    cropfit.y = isnan(cropfit.y) ? params[1] : cropfit.y;
+    cropfit.alpha = isnan(cropfit.alpha) ? params[2] : cropfit.alpha;
+    // the area of the best fitting rectangle
+    const float A = fabs(crop_fitness(params, (void*)&cropfit));
+    // we need the half diagonal of that rectangle (this is in output image dimensions)
+    const float d = sqrt(A / (2.0f * sin(2.0f * cropfit.alpha)));
+
+    // the rectangle's center in input image (homogeneous) coordinates
+    const float Pc[3] = { cropfit.x * wd, cropfit.y * ht, 1.0f };
+
+    // convert rectangle center to output image coordinates and normalize
+    float P[3];
+    mat3mulv(P, (float *)cropfit.homograph, Pc);
+    P[0] /= P[2];
+    P[1] /= P[2];
+
+    // calculate clipping margins relative to output image dimensions
+    g->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+    g->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+    g->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+    g->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+  }
+
+  g->fitting = 0;
+
+#ifdef ASHIFT_DEBUG
+  printf("margins after crop fitting: iter %d, x %f, y %f, angle %f, crop area (%f %f %f %f), width %f, height %f\n",
+         iter, cropfit.x, cropfit.y, cropfit.alpha, g->cl, g->cr, g->ct, g->cb, wd, ht);
+#endif
+}
+
 // helper function to start analysis for structural data and report about errors
 static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
                             dt_iop_ashift_enhance_t enhance)
@@ -1914,6 +2184,10 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
   }
 
   g->fitting = 0;
+
+  // finally apply cropping
+  do_crop(module, p);
+
   return TRUE;
 
 error:
@@ -2413,6 +2687,83 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
+  // we draw the cropping area; we need x_off/y_off/width/height which is only availabe
+  // after g->buf has been processed
+  if(g->buf && (g->cl != 0.0f || g->cr != 1.0f || g->ct != 0.0f || g->cb != 1.0f))
+  {
+    float iwd = g->buf_width;
+    float iht = g->buf_height;
+    float ixo = g->buf_x_off;
+    float iyo = g->buf_y_off;
+
+    // the four corners of the input buffer of this module
+    const float V[4][2] = { { ixo,        iyo        },
+                          {   ixo,        iyo + iht  },
+                          {   ixo + iwd,  iyo +  iht },
+                          {   ixo + iwd,  iyo        } };
+
+    // convert coordinates of corners to output buffer coordinates of this module
+    if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority, self->priority + 1,
+      (float *)V, 4))
+      return;
+
+    // get x/y-offset as well as width and height of output buffer
+    float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
+    for(int n = 0; n < 4; n++)
+    {
+      xmin = MIN(xmin, V[n][0]);
+      xmax = MAX(xmax, V[n][0]);
+      ymin = MIN(ymin, V[n][1]);
+      ymax = MAX(ymax, V[n][1]);
+    }
+    const float owd = xmax - xmin;
+    const float oht = ymax - ymin;
+
+    // the four clipping corners
+    const float C[4][2] = { { xmin + g->cl * owd, ymin + g->ct * oht },
+                            { xmin + g->cl * owd, ymin + g->cb * oht },
+                            { xmin + g->cr * owd, ymin + g->cb * oht },
+                            { xmin + g->cr * owd, ymin + g->ct * oht } };
+
+    // convert clipping corners to output image
+    if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999,
+      (float *)C, 4))
+      return;
+
+    cairo_save(cr);
+
+    double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
+    cairo_set_dash(cr, &dashes, 0, 0);
+
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_clip(cr);
+
+    // mask parts of image outside of clipping area in dark grey
+    cairo_set_source_rgba(cr, .2, .2, .2, .8);
+    cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_translate(cr, width / 2.0, height / 2.0);
+    cairo_scale(cr, zoom_scale, zoom_scale);
+    cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+    cairo_move_to(cr, C[0][0], C[0][1]);
+    cairo_line_to(cr, C[1][0], C[1][1]);
+    cairo_line_to(cr, C[2][0], C[2][1]);
+    cairo_line_to(cr, C[3][0], C[3][1]);
+    cairo_close_path(cr);
+    cairo_fill(cr);
+
+    // draw white outline around clipping area
+    cairo_set_source_rgb(cr, .7, .7, .7);
+    cairo_move_to(cr, C[0][0], C[0][1]);
+    cairo_line_to(cr, C[1][0], C[1][1]);
+    cairo_line_to(cr, C[2][0], C[2][1]);
+    cairo_line_to(cr, C[3][0], C[3][1]);
+    cairo_close_path(cr);
+    cairo_stroke(cr);
+
+    cairo_restore(cr);
+  }
+
   if(g->show_guides)
   {
     dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, 0);
@@ -2472,7 +2823,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // a final check
   if(g->points == NULL || g->points_idx == NULL) return;
-
 
   cairo_save(cr);
   cairo_rectangle(cr, 0, 0, width, height);
@@ -2654,6 +3004,7 @@ static void rotation_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
+  do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2667,6 +3018,7 @@ static void lensshift_v_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
+  do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2680,6 +3032,7 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
+  do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2689,6 +3042,18 @@ static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   g->show_guides = dt_bauhaus_combobox_get(widget);
+  dt_iop_request_focus(self);
+  dt_dev_reprocess_all(self->dev);
+}
+
+static void cropping_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  g->cropmode = dt_bauhaus_combobox_get(widget);
+  do_crop(self, p);
   dt_iop_request_focus(self);
   dt_dev_reprocess_all(self->dev);
 }
@@ -2717,6 +3082,8 @@ static void mode_callback(GtkWidget *widget, gpointer user_data)
       gtk_widget_show(g->aspect);
       break;
   }
+
+  do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2726,6 +3093,7 @@ static void f_length_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->f_length = dt_bauhaus_slider_get(slider);
+  do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2735,6 +3103,7 @@ static void crop_factor_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->crop_factor = dt_bauhaus_slider_get(slider);
+  do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2744,6 +3113,7 @@ static void orthocorr_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->orthocorr = dt_bauhaus_slider_get(slider);
+  do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2753,6 +3123,7 @@ static void aspect_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->aspect = dt_bauhaus_slider_get(slider);
+  do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2982,6 +3353,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->aspect, p->aspect);
   dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_combobox_set(g->guide_lines, g->show_guides);
+  dt_bauhaus_combobox_set(g->crop, g->cropmode);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
   switch(p->mode)
@@ -3101,6 +3473,14 @@ void reload_defaults(dt_iop_module_t *module)
     g->points_idx = NULL;
     g->points_lines_count = 0;
     g->points_version = 0;
+
+#if 1
+    g->cropmode = ASHIFT_CROP_OFF;
+    g->cl = 0.0f;
+    g->ct = 0.0f;
+    g->cr = 1.0f;
+    g->cb = 1.0f;
+#endif
   }
 }
 
@@ -3224,6 +3604,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->buf = NULL;
   g->buf_width = 0;
   g->buf_height = 0;
+  g->buf_x_off = 0;
+  g->buf_y_off = 0;
   g->buf_scale = 1.0f;
   g->buf_hash = 0;
   g->isflipped = -1;
@@ -3251,6 +3633,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->isdeselecting = 0;
   g->selecting_lines_version = 0;
 
+#if 1
+  g->cropmode = ASHIFT_CROP_OFF;
+  g->cl = 0.0f;
+  g->ct = 0.0f;
+  g->cr = 1.0f;
+  g->cb = 1.0f;
+#endif
+
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.01*ROTATION_RANGE, p->rotation, 2);
@@ -3274,6 +3664,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->guide_lines, _("off"));
   dt_bauhaus_combobox_add(g->guide_lines, _("on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
+
+  g->crop = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->crop, NULL, _("automatic cropping"));
+  dt_bauhaus_combobox_add(g->crop, _("off"));
+  dt_bauhaus_combobox_add(g->crop, _("largest area"));
+  dt_bauhaus_combobox_add(g->crop, _("original aspect"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->crop, TRUE, TRUE, 0);
 
   g->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("lens model"));
@@ -3384,6 +3781,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->lensshift_h, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->guide_lines, _("display guide lines overlay"));
+  gtk_widget_set_tooltip_text(g->crop, _("automatically crop to avoid black edges"));
   gtk_widget_set_tooltip_text(g->mode, _("lens model of the perspective correction: "
                                          "generic or according to the focal length"));
   gtk_widget_set_tooltip_text(g->f_length, _("focal length of the lens, "
@@ -3413,6 +3811,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
   g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guide_lines_callback), self);
+  g_signal_connect(G_OBJECT(g->crop), "value-changed", G_CALLBACK(cropping_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->f_length), "value-changed", G_CALLBACK(f_length_callback), self);
   g_signal_connect(G_OBJECT(g->crop_factor), "value-changed", G_CALLBACK(crop_factor_callback), self);
