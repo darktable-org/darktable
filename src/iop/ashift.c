@@ -65,12 +65,12 @@
 #define RANSAC_OPTIMIZATION_DRY_RUNS 50     // how man runs per optimization steps
 #define RANSAC_HURDLE 5                     // hurdle rate: the number of lines below which we do a complete permutation instead of random sampling
 #define MINIMUM_FITLINES 4                  // minimum number of lines needed for automatic parameter fit
-#define NMS_EPSILON 1e-10                   // break criterion for Nelder-Mead simplex
+#define NMS_EPSILON 1e-3                    // break criterion for Nelder-Mead simplex
 #define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
 #define NMS_ITERATIONS 200                  // number of iterations for Nelder-Mead simplex
 #define NMS_CROP_EPSILON 100.0              // break criterion for Nelder-Mead simplex on crop fitting
 #define NMS_CROP_SCALE 0.5                  // scaling factor for Nelder-Mead simplex on crop fitting
-#define NMS_CROP_ITERATIONS 200             // number of iterations for Nelder-Mead simplex on crop fitting
+#define NMS_CROP_ITERATIONS 100             // number of iterations for Nelder-Mead simplex on crop fitting
 #define NMS_ALPHA 1.0                       // reflection coefficient for Nelder-Mead simplex
 #define NMS_BETA 0.5                        // contraction coefficient for Nelder-Mead simplex
 #define NMS_GAMMA 2.0                       // expansion coefficient for Nelder-Mead simplex
