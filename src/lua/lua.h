@@ -69,6 +69,10 @@ typedef struct
   dt_pthread_mutex_t mutex;
   int pending_threads ;
   bool ending;
+// HORRIBLE HACK, STABLE BRANCH ONLY
+// allow the mouse event to be skipped very early
+// if no callback for it was registered
+  bool mouse_event_registered;
 
 } dt_lua_state_t;
 

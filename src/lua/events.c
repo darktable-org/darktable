@@ -211,6 +211,9 @@ static int lua_register_event(lua_State *L)
     lua_pop(L, 2);
     return luaL_error(L, "unknown event type : %s\n", evt_name);
   }
+  if(!strcmp(evt_name,"mouse-over-image-changed")) {
+    darktable.lua_state.mouse_event_registered = true;
+  }
   lua_getfield(L, -1, "on_register");
   lua_getfield(L, -2, "data");
   for(int i = 1; i <= nparams; i++) lua_pushvalue(L, i);

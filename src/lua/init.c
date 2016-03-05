@@ -80,6 +80,7 @@ void dt_lua_init_early(lua_State *L)
   }
   darktable.lua_state.state = L;
   darktable.lua_state.ending = false;
+  darktable.lua_state.mouse_event_registered = false;
   darktable.lua_state.pending_threads = 0;
   dt_lua_init_lock(); // lock is initialized in the locked state
   luaL_openlibs(darktable.lua_state.state);

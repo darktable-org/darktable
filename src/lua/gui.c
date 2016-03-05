@@ -216,8 +216,10 @@ static int lua_job_valid(lua_State *L)
   }
 }
 
+
 static void on_mouse_over_image_changed(gpointer instance, gpointer user_data)
 {
+  if(!darktable.lua_state.mouse_event_registered) return;
   int imgid = dt_control_get_mouse_over_id();
   if(imgid != -1) {
   dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
