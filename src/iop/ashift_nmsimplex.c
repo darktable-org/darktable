@@ -23,6 +23,7 @@
  *      renamed configuration variables to NMS_*
  *      add additional argument to objfun for arbitrary parameters
  *      simplex() returns number of used interations intead of min value
+ *      maximum number of iterations as function parameter
  *      make interface function simplex() static
  *      initialize i and j to avoid compiler warnings
  *      comment out printing of status inormation
@@ -168,7 +169,7 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
 #endif
 
   /* begin the main loop of the minimization */
-  for(itr = 1; itr <= NMS_MAX_IT; itr++)
+  for(itr = 1; itr <= maxiter; itr++)
   {
     /* find the index of the largest value */
     vg = 0;
