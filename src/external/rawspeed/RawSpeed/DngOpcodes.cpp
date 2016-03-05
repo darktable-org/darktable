@@ -164,6 +164,8 @@ OpcodeFixBadPixelsList::OpcodeFixBadPixelsList( const uchar8* parameters, int pa
   int BadPointCount = getLong(&parameters[4]);
   int BadRectCount = getLong(&parameters[8]);
   bytes_used[0] = 12; 
+  if (BadPointCount < 0 || BadRectCount < 0)
+    ThrowRDE("OpcodeFixBadPixelsList: negative point or rect count number");
   if (12 + BadPointCount * 8 + BadRectCount * 16 > param_max_bytes)
     ThrowRDE("OpcodeFixBadPixelsList: Ran out parameter space, only %d bytes left.", param_max_bytes);
 
