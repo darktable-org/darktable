@@ -103,9 +103,11 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
 void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch, int bitPerPixel, BitOrder order) {
   uchar8* data = mRaw->getData();
   uint32 outPitch = mRaw->pitch;
-  uint32 w = size.x;
-  uint32 h = size.y;
+  uint64 w = size.x;
+  uint64 h = size.y;
   uint32 cpp = mRaw->getCpp();
+  uint64 ox = offset.x;
+  uint64 oy = offset.y;
 
   if (input.getRemainSize() < (inputPitch*h)) {
     if ((int)input.getRemainSize() > inputPitch) {
@@ -118,13 +120,13 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
     ThrowRDE("readUncompressedRaw: Unsupported bit depth");
 
   uint32 skipBits = inputPitch - w * bitPerPixel / 8;  // Skip per line
-  if (offset.y > mRaw->dim.y)
+  if (oy > (uint64) mRaw->dim.y)
     ThrowRDE("readUncompressedRaw: Invalid y offset");
-  if (offset.x + size.x > mRaw->dim.x)
+  if (ox + size.x > (uint64)mRaw->dim.x)
     ThrowRDE("readUncompressedRaw: Invalid x offset");
 
-  uint32 y = offset.y;
-  h = MIN(h + (uint32)offset.y, (uint32)mRaw->dim.y);
+  uint64 y = oy;
+  h = MIN(h + oy, (uint32)mRaw->dim.y);
 
   if (mRaw->getDataType() == TYPE_FLOAT32)
   {
