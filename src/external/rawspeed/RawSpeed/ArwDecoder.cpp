@@ -437,7 +437,7 @@ void ArwDecoder::GetWB() {
 void ArwDecoder::decodeThreaded(RawDecoderThread * t) {
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
-  uint32 w = mRaw->dim.x;
+  int32 w = mRaw->dim.x;
 
   BitPumpPlain bits(in);
   for (uint32 y = t->start_y; y < t->end_y; y++) {
@@ -447,7 +447,7 @@ void ArwDecoder::decodeThreaded(RawDecoderThread * t) {
     uint32 random = bits.peekBits(24);
 
     // Process 32 pixels (16x2) per loop.
-    for (uint32 x = 0; x < w - 30;) {
+    for (int32 x = 0; x < w - 30;) {
       bits.checkPos();
       int _max = bits.getBits(11);
       int _min = bits.getBits(11);
