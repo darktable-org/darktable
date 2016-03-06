@@ -613,7 +613,7 @@ void *RawDecoderDecodeThread(void *_this) {
 void RawDecoder::startThreads() {
   uint32 threads;
   bool fail = false;
-  threads = getThreadCount(); 
+  threads = MIN(mRaw->dim.y, getThreadCount());
   int y_offset = 0;
   int y_per_thread = (mRaw->dim.y + threads - 1) / threads;
   RawDecoderThread *t = new RawDecoderThread[threads];
