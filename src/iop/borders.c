@@ -168,7 +168,7 @@ int groups()
 
 int operation_tags()
 {
-  return IOP_TAG_DISTORT;
+  return IOP_TAG_DISTORT | IOP_TAG_DECORATION;
 }
 
 int flags()
