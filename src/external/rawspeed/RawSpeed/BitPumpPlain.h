@@ -45,7 +45,7 @@ public:
 	uchar8 getByteSafe();
 	void setAbsoluteOffset(uint32 offset);
   uint32 getOffset() { return off>>3;}
-  __inline void checkPos()  { if (off>size) throw IOException("Out of buffer read");};        // Check if we have a valid position
+  __inline void checkPos()  { if (off>=size) throw IOException("Out of buffer read");};        // Check if we have a valid position
 
   virtual ~BitPumpPlain(void);
 protected:
