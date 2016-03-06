@@ -382,7 +382,7 @@ OpcodeDeltaPerRow::OpcodeDeltaPerRow(const uchar8* parameters, uint32 param_max_
   if ((uint64)mAoi.getHeight() != mCount)
     ThrowRDE("OpcodeDeltaPerRow: Element count (%llu) does not match height of area (%d.", mCount, mAoi.getHeight());
 
-  for (uint64 i = 0; i <= mCount; i++)
+  for (uint64 i = 0; i < mCount; i++)
     mDelta[i] = getFloat(&parameters[36+4*i]);
   *bytes_used += 4*mCount;
   mFlags = MultiThreaded;
@@ -456,7 +456,7 @@ OpcodeDeltaPerCol::OpcodeDeltaPerCol(const uchar8* parameters, uint32 param_max_
   if ((uint64)mAoi.getWidth() != mCount)
     ThrowRDE("OpcodeDeltaPerRow: Element count (%llu) does not match width of area (%d).", mCount, mAoi.getWidth());
 
-  for (uint64 i = 0; i <= mCount; i++)
+  for (uint64 i = 0; i < mCount; i++)
     mDelta[i] = getFloat(&parameters[36+4*i]);
   *bytes_used += 4*mCount;
   mFlags = MultiThreaded;
@@ -544,7 +544,7 @@ OpcodeScalePerRow::OpcodeScalePerRow(const uchar8* parameters, uint32 param_max_
   if ((uint64)mAoi.getHeight() != mCount)
     ThrowRDE("OpcodeScalePerRow: Element count (%llu) does not match height of area (%d).", mCount, mAoi.getHeight());
 
-  for (uint64 i = 0; i <= mCount; i++)
+  for (uint64 i = 0; i < mCount; i++)
     mDelta[i] = getFloat(&parameters[36+4*i]);
   *bytes_used += 4*mCount;
   mFlags = MultiThreaded;
@@ -618,7 +618,7 @@ OpcodeScalePerCol::OpcodeScalePerCol(const uchar8* parameters, uint32 param_max_
   if ((uint64)mAoi.getWidth() != mCount)
     ThrowRDE("OpcodeScalePerCol: Element count (%llu) does not match width of area (%d).", mCount, mAoi.getWidth());
 
-  for (uint64 i = 0; i <= mCount; i++)
+  for (uint64 i = 0; i < mCount; i++)
     mDelta[i] = getFloat(&parameters[36+4*i]);
   *bytes_used += 4*mCount;
   mFlags = MultiThreaded;
