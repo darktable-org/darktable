@@ -129,7 +129,6 @@ void connect_key_accels(dt_iop_module_t *self)
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
 // *roi_out, dt_iop_roi_t *roi_in);
 
-#if defined(__SSE__)
 typedef union floatint_t
 {
   float f;
@@ -156,7 +155,6 @@ static float gh(const float f, const float sharpness)
   // const float spread = 100.f;
   // return 1.0f/(1.0f + fabsf(f)*spread);
 }
-#endif
 
 #ifdef HAVE_OPENCL
 static int bucket_next(unsigned int *state, unsigned int max)
