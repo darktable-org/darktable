@@ -94,7 +94,7 @@
 #include "ashift_nmsimplex.c"
 
 
-DT_MODULE_INTROSPECTION(2, dt_iop_ashift_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_ashift_params_t)
 
 const char *name()
 {
@@ -211,6 +211,19 @@ typedef struct dt_iop_ashift_params1_t
   int toggle;
 } dt_iop_ashift_params1_t;
 
+typedef struct dt_iop_ashift_params2_t
+{
+  float rotation;
+  float lensshift_v;
+  float lensshift_h;
+  float f_length;
+  float crop_factor;
+  float orthocorr;
+  float aspect;
+  dt_iop_ashift_mode_t mode;
+  int toggle;
+} dt_iop_ashift_params2_t;
+
 typedef struct dt_iop_ashift_params_t
 {
   float rotation;
@@ -222,7 +235,13 @@ typedef struct dt_iop_ashift_params_t
   float aspect;
   dt_iop_ashift_mode_t mode;
   int toggle;
+  dt_iop_ashift_crop_t cropmode;
+  float cl;
+  float ct;
+  float cr;
+  float cb;
 } dt_iop_ashift_params_t;
+
 
 typedef struct dt_iop_ashift_line_t
 {
@@ -332,13 +351,6 @@ typedef struct dt_iop_ashift_gui_data_t
   uint64_t buf_hash;
   dt_iop_ashift_fitaxis_t lastfit;
   dt_pthread_mutex_t lock;
-#if 1
-  dt_iop_ashift_crop_t cropmode;
-  float cl;
-  float ct;
-  float cr;
-  float cb;
-#endif
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -349,6 +361,10 @@ typedef struct dt_iop_ashift_data_t
   float f_length_kb;
   float orthocorr;
   float aspect;
+  float cl;
+  float ct;
+  float cr;
+  float cb;
 } dt_iop_ashift_data_t;
 
 typedef struct dt_iop_ashift_global_data_t
@@ -362,7 +378,7 @@ typedef struct dt_iop_ashift_global_data_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     const dt_iop_ashift_params1_t *old = old_params;
     dt_iop_ashift_params_t *new = new_params;
@@ -375,6 +391,31 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->orthocorr = 100.0f;
     new->aspect = 1.0f;
     new->mode = ASHIFT_MODE_GENERIC;
+    new->cropmode = ASHIFT_CROP_OFF;
+    new->cl = 0.0f;
+    new->cr = 1.0f;
+    new->ct = 0.0f;
+    new->cb = 1.0f;
+    return 0;
+  }
+  if(old_version == 2 && new_version == 3)
+  {
+    const dt_iop_ashift_params2_t *old = old_params;
+    dt_iop_ashift_params_t *new = new_params;
+    new->rotation = old->rotation;
+    new->lensshift_v = old->lensshift_v;
+    new->lensshift_h = old->lensshift_h;
+    new->toggle = old->toggle;
+    new->f_length = old->f_length;
+    new->crop_factor = old->crop_factor;
+    new->orthocorr = old->orthocorr;
+    new->aspect = old->aspect;
+    new->mode = old->mode;
+    new->cropmode = ASHIFT_CROP_OFF;
+    new->cl = 0.0f;
+    new->cr = 1.0f;
+    new->ct = 0.0f;
+    new->cb = 1.0f;
     return 0;
   }
   return 1;
@@ -1951,12 +1992,12 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   if(g->fitting) return;
 
   // reset fit margins if auto-cropping is off
-  if(g->cropmode == ASHIFT_CROP_OFF)
+  if(p->cropmode == ASHIFT_CROP_OFF)
   {
-    g->cl = 0.0f;
-    g->cr = 1.0f;
-    g->ct = 0.0f;
-    g->cb = 1.0f;
+    p->cl = 0.0f;
+    p->cr = 1.0f;
+    p->ct = 0.0f;
+    p->cb = 1.0f;
     return;
   }
 
@@ -2016,7 +2057,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 
   // initial fit parameters: crop area is centered and aspect angle is that of the original image
   // number of parameters: fit only crop center coordinates with a fixed aspect ratio, or fit all three variables
-  if(g->cropmode == ASHIFT_CROP_LARGEST)
+  if(p->cropmode == ASHIFT_CROP_LARGEST)
   {
     params[0] = 0.5;
     params[1] = 0.5;
@@ -2026,7 +2067,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
     cropfit.alpha = NAN;
     pcount = 3;
   }
-  else //(g->cropmode == ASHIFT_CROP_ASPECT)
+  else //(p->cropmode == ASHIFT_CROP_ASPECT)
   {
     params[0] = 0.5;
     params[1] = 0.5;
@@ -2044,10 +2085,10 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   if(iter >= NMS_CROP_ITERATIONS)
   {
     // in case the fit did not converge -> reset crop margins to the full image area
-    g->cl = 0.0f;
-    g->cr = 1.0f;
-    g->ct = 0.0f;
-    g->cb = 1.0f;
+    p->cl = 0.0f;
+    p->cr = 1.0f;
+    p->ct = 0.0f;
+    p->cb = 1.0f;
   }
   else
   {
@@ -2070,10 +2111,10 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
     P[1] /= P[2];
 
     // calculate clipping margins relative to output image dimensions
-    g->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-    g->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-    g->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
-    g->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+    p->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+    p->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+    p->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+    p->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
   }
 
   g->fitting = 0;
@@ -2676,6 +2717,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 {
   dt_develop_t *dev = self->dev;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
   // the usual rescaling stuff
   float wd = dev->preview_pipe->backbuf_width;
@@ -2689,20 +2731,21 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only availabe
   // after g->buf has been processed
-  if(g->buf && (g->cl != 0.0f || g->cr != 1.0f || g->ct != 0.0f || g->cb != 1.0f))
+  if(g->buf && (p->cl != 0.0f || p->cr != 1.0f || p->ct != 0.0f || p->cb != 1.0f))
   {
+    // roi data of the preview pipe input buffer
     float iwd = g->buf_width;
     float iht = g->buf_height;
     float ixo = g->buf_x_off;
     float iyo = g->buf_y_off;
 
     // the four corners of the input buffer of this module
-    const float V[4][2] = { { ixo,        iyo        },
-                          {   ixo,        iyo + iht  },
-                          {   ixo + iwd,  iyo +  iht },
-                          {   ixo + iwd,  iyo        } };
+    const float V[4][2] = { { ixo,        iyo       },
+                          {   ixo,        iyo + iht },
+                          {   ixo + iwd,  iyo + iht },
+                          {   ixo + iwd,  iyo       } };
 
-    // convert coordinates of corners to output buffer coordinates of this module
+    // convert coordinates of corners to coordinates of this module's output
     if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority, self->priority + 1,
       (float *)V, 4))
       return;
@@ -2720,12 +2763,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float oht = ymax - ymin;
 
     // the four clipping corners
-    const float C[4][2] = { { xmin + g->cl * owd, ymin + g->ct * oht },
-                            { xmin + g->cl * owd, ymin + g->cb * oht },
-                            { xmin + g->cr * owd, ymin + g->cb * oht },
-                            { xmin + g->cr * owd, ymin + g->ct * oht } };
+    const float C[4][2] = { { xmin + p->cl * owd, ymin + p->ct * oht },
+                            { xmin + p->cl * owd, ymin + p->cb * oht },
+                            { xmin + p->cr * owd, ymin + p->cb * oht },
+                            { xmin + p->cr * owd, ymin + p->ct * oht } };
 
-    // convert clipping corners to output image
+    // convert clipping corners to final output image
     if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999,
       (float *)C, 4))
       return;
@@ -2764,6 +2807,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_restore(cr);
   }
 
+  // show guide lines on request
   if(g->show_guides)
   {
     dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, 0);
@@ -2785,7 +2829,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // structural data are currently being collected or fit procedure is running? -> skip
   if(g->fitting) return;
 
-  // no structural data or visibility switched off? -> nothing to do
+  // no structural data or visibility switched off? -> stop here
   if(g->lines == NULL || g->lines_suppressed || !gui_has_focus(self)) return;
 
   // get hash value that changes if distortions from here to the end of the pixelpipe changed
@@ -3051,11 +3095,9 @@ static void cropping_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  g->cropmode = dt_bauhaus_combobox_get(widget);
+  p->cropmode = dt_bauhaus_combobox_get(widget);
   do_crop(self, p);
-  dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void mode_callback(GtkWidget *widget, gpointer user_data)
@@ -3324,6 +3366,21 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
+
+  if(gui_has_focus(self))
+  {
+    d->cl = 0.0f;
+    d->cr = 1.0f;
+    d->ct = 0.0f;
+    d->cb = 1.0f;
+  }
+  else
+  {
+    d->cl = p->cl;
+    d->cr = p->cr;
+    d->ct = p->ct;
+    d->cb = p->cb;
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -3353,7 +3410,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->aspect, p->aspect);
   dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_combobox_set(g->guide_lines, g->show_guides);
-  dt_bauhaus_combobox_set(g->crop, g->cropmode);
+  dt_bauhaus_combobox_set(g->crop, p->cropmode);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
   switch(p->mode)
@@ -3382,7 +3439,8 @@ void init(dt_iop_module_t *module)
   module->priority = 252; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0 };
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
+                                                         ASHIFT_CROP_OFF, 0.0f, 1.0f, 0.0f, 1.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
 }
@@ -3415,7 +3473,8 @@ void reload_defaults(dt_iop_module_t *module)
   }
 
   // init defaults:
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, f_length, crop_factor, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0 };
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, f_length, crop_factor, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
+                                                         ASHIFT_CROP_OFF, 0.0f, 1.0f, 0.0f, 1.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
 
@@ -3473,14 +3532,6 @@ void reload_defaults(dt_iop_module_t *module)
     g->points_idx = NULL;
     g->points_lines_count = 0;
     g->points_version = 0;
-
-#if 1
-    g->cropmode = ASHIFT_CROP_OFF;
-    g->cl = 0.0f;
-    g->ct = 0.0f;
-    g->cr = 1.0f;
-    g->cb = 1.0f;
-#endif
   }
 }
 
@@ -3633,14 +3684,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->isdeselecting = 0;
   g->selecting_lines_version = 0;
 
-#if 1
-  g->cropmode = ASHIFT_CROP_OFF;
-  g->cl = 0.0f;
-  g->ct = 0.0f;
-  g->cr = 1.0f;
-  g->cb = 1.0f;
-#endif
-
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.01*ROTATION_RANGE, p->rotation, 2);
@@ -3669,7 +3712,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->crop, NULL, _("automatic cropping"));
   dt_bauhaus_combobox_add(g->crop, _("off"));
   dt_bauhaus_combobox_add(g->crop, _("largest area"));
-  dt_bauhaus_combobox_add(g->crop, _("original aspect"));
+  dt_bauhaus_combobox_add(g->crop, _("original format"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->crop, TRUE, TRUE, 0);
 
   g->mode = dt_bauhaus_combobox_new(self);
