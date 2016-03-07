@@ -237,8 +237,8 @@ typedef struct dt_iop_ashift_params_t
   int toggle;
   dt_iop_ashift_crop_t cropmode;
   float cl;
-  float ct;
   float cr;
+  float ct;
   float cb;
 } dt_iop_ashift_params_t;
 
@@ -303,7 +303,7 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
   GtkWidget *guide_lines;
-  GtkWidget *crop;
+  GtkWidget *cropmode;
   GtkWidget *mode;
   GtkWidget *f_length;
   GtkWidget *crop_factor;
@@ -362,8 +362,8 @@ typedef struct dt_iop_ashift_data_t
   float orthocorr;
   float aspect;
   float cl;
-  float ct;
   float cr;
+  float ct;
   float cb;
 } dt_iop_ashift_data_t;
 
@@ -743,6 +743,12 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
+  // clipping offset
+  const float fullwidth = (float)piece->buf_out.width / (data->cr - data->cl);
+  const float fullheight = (float)piece->buf_out.height / (data->cb - data->ct);
+  const float cx = fullwidth * data->cl;
+  const float cy = fullheight * data->ct;
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(points, points_count, homograph)
 #endif
@@ -751,8 +757,8 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
     float pi[3] = { points[i], points[i + 1], 1.0f };
     float po[3];
     mat3mulv(po, (float *)homograph, pi);
-    points[i] = po[0] / po[2];
-    points[i + 1] = po[1] / po[2];
+    points[i] = po[0] / po[2] - cx;
+    points[i + 1] = po[1] / po[2] - cy;
   }
 
   return 1;
@@ -768,12 +774,18 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
+  // clipping offset
+  const float fullwidth = (float)piece->buf_out.width / (data->cr - data->cl);
+  const float fullheight = (float)piece->buf_out.height / (data->cb - data->ct);
+  const float cx = fullwidth * data->cl;
+  const float cy = fullheight * data->ct;
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(points, points_count, ihomograph)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float pi[3] = { points[i], points[i + 1], 1.0f };
+    float pi[3] = { points[i] + cx, points[i + 1] + cy, 1.0f };
     float po[3];
     mat3mulv(po, (float *)ihomograph, pi);
     points[i] = po[0] / po[2];
@@ -823,20 +835,19 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       yM = MAX(yM, pout[1]);
     }
   }
+  float width = xM - xm + 1;
+  float height = yM - ym + 1;
 
-  roi_out->x = fmaxf(0.0f, xm);
-  roi_out->y = fmaxf(0.0f, ym);
-  roi_out->width = floorf(xM - roi_out->x + 1);
-  roi_out->height = floorf(yM - roi_out->y + 1);
+  // clipping adjustments
+  width *= data->cr - data->cl;
+  height *= data->cb - data->ct;
 
-  // sanity check.
-  //roi_out->x = CLAMP(roi_out->x, 0, INT_MAX);
-  //roi_out->y = CLAMP(roi_out->y, 0, INT_MAX);
-  //roi_out->width = CLAMP(roi_out->width, 1, INT_MAX);
-  //roi_out->height = CLAMP(roi_out->height, 1, INT_MAX);
+  roi_out->width = floorf(width);
+  roi_out->height = floorf(height);
+
 #ifdef ASHIFT_DEBUG
+  print_roi(roi_in, "roi_in (going into modify_roi_out)");
   print_roi(roi_out, "roi_out (after modify_roi_out)");
-  print_roi(roi_in, "roi_in (after modify_roi_out)");
 #endif
 }
 
@@ -853,6 +864,12 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   const float orig_w = roi_in->scale * piece->buf_in.width;
   const float orig_h = roi_in->scale * piece->buf_in.height;
 
+  // clipping offset
+  const float fullwidth = (float)piece->buf_out.width / (data->cr - data->cl);
+  const float fullheight = (float)piece->buf_out.height / (data->cb - data->ct);
+  const float cx = roi_out->scale * fullwidth * data->cl;
+  const float cy = roi_out->scale * fullheight * data->ct;
+
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
 
   // go through all four vertices of output roi and convert coordinates to input
@@ -863,8 +880,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       float pin[3], pout[3];
 
       // convert from output image coordinates to original image coordinates
-      pout[0] = roi_out->x + x;
-      pout[1] = roi_out->y + y;
+      pout[0] = roi_out->x + x + cx;
+      pout[1] = roi_out->y + y + cy;
       pout[0] /= roi_out->scale;
       pout[1] /= roi_out->scale;
       pout[2] = 1.0f;
@@ -896,7 +913,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->width = CLAMP(roi_in->width, 1, (int)floorf(orig_w) - roi_in->x);
   roi_in->height = CLAMP(roi_in->height, 1, (int)floorf(orig_h) - roi_in->y);
 #ifdef ASHIFT_DEBUG
-  print_roi(roi_out, "roi_out (after modify_roi_in)");
+  print_roi(roi_out, "roi_out (going into modify_roi_in)");
   print_roi(roi_in, "roi_in (after modify_roi_in)");
 #endif
 }
@@ -1450,7 +1467,8 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
 }
 
 
-// try to clean up structural lines to increase chance of a convergent fitting
+// try to clean up structural data by eliminating outliers and thereby increasing
+// the chance of a convergent fitting
 static int remove_outliers(dt_iop_module_t *module)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
@@ -1550,8 +1568,8 @@ error:
 static inline double logit(double x, double min, double max)
 {
   const double eps = 1.0e-6;
-  // make sure p does not touch the borders of ist definition area
-  // not critical as logit() is only used on initial fit parameters
+  // make sure p does not touch the borders of its definition area,
+  // not critical for data accuracy as logit() is only used on initial fit parameters
   double p = CLAMP((x - min) / (max - min), eps, 1.0 - eps);
 
   return (2.0 * atanh(2.0 * p - 1.0));
@@ -1887,7 +1905,7 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
 }
 #endif
 
-// function to keep crop fit parameters within contraints
+// function to keep crop fitting parameters within contraints
 static void crop_constraint(double *params, int pcount)
 {
   if(pcount > 0) params[0] = fabs(params[0]);
@@ -1951,7 +1969,7 @@ static double crop_fitness(double *params, void *data)
       if(vec3isnull(I))
       {
         d2min = 0.0f;
-        continue;
+        break;
       }
 
       // special case: I[2] is 0.0f -> E and D are parallel and intersect at infinity -> no relevant point
@@ -2081,48 +2099,60 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   int iter = simplex(crop_fitness, params, pcount, NMS_CROP_EPSILON, NMS_CROP_SCALE, NMS_CROP_ITERATIONS,
                      crop_constraint, (void*)&cropfit);
 
+  // in case the fit did not converge ...
+  if(iter >= NMS_CROP_ITERATIONS) goto failed;
 
-  if(iter >= NMS_CROP_ITERATIONS)
-  {
-    // in case the fit did not converge -> reset crop margins to the full image area
-    p->cl = 0.0f;
-    p->cr = 1.0f;
-    p->ct = 0.0f;
-    p->cb = 1.0f;
-  }
-  else
-  {
-    // the fit did converge -> get clipping margins out of params:
-    cropfit.x = isnan(cropfit.x) ? params[0] : cropfit.x;
-    cropfit.y = isnan(cropfit.y) ? params[1] : cropfit.y;
-    cropfit.alpha = isnan(cropfit.alpha) ? params[2] : cropfit.alpha;
-    // the area of the best fitting rectangle
-    const float A = fabs(crop_fitness(params, (void*)&cropfit));
-    // we need the half diagonal of that rectangle (this is in output image dimensions)
-    const float d = sqrt(A / (2.0f * sin(2.0f * cropfit.alpha)));
+  // the fit did converge -> get clipping margins out of params:
+  cropfit.x = isnan(cropfit.x) ? params[0] : cropfit.x;
+  cropfit.y = isnan(cropfit.y) ? params[1] : cropfit.y;
+  cropfit.alpha = isnan(cropfit.alpha) ? params[2] : cropfit.alpha;
 
-    // the rectangle's center in input image (homogeneous) coordinates
-    const float Pc[3] = { cropfit.x * wd, cropfit.y * ht, 1.0f };
+  // the area of the best fitting rectangle
+  const float A = fabs(crop_fitness(params, (void*)&cropfit));
 
-    // convert rectangle center to output image coordinates and normalize
-    float P[3];
-    mat3mulv(P, (float *)cropfit.homograph, Pc);
-    P[0] /= P[2];
-    P[1] /= P[2];
+  // unlikely to happen but we need to catch this case
+  if(A == 0.0f) goto failed;
 
-    // calculate clipping margins relative to output image dimensions
-    p->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-    p->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-    p->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
-    p->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
-  }
+  // we need the half diagonal of that rectangle (this is in output image dimensions);
+  // no need to check for division by zero here as this case implies A == 0.0f, catched above
+  const float d = sqrt(A / (2.0f * sin(2.0f * cropfit.alpha)));
+
+  // the rectangle's center in input image (homogeneous) coordinates
+  const float Pc[3] = { cropfit.x * wd, cropfit.y * ht, 1.0f };
+
+  // convert rectangle center to output image coordinates and normalize
+  float P[3];
+  mat3mulv(P, (float *)cropfit.homograph, Pc);
+  P[0] /= P[2];
+  P[1] /= P[2];
+
+  // calculate clipping margins relative to output image dimensions
+  p->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+  p->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+  p->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+  p->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+
+  // final sanity check
+  if(p->cr - p->cl <= 0.0f || p->cb - p->ct <= 0.0f) goto failed;
 
   g->fitting = 0;
 
 #ifdef ASHIFT_DEBUG
   printf("margins after crop fitting: iter %d, x %f, y %f, angle %f, crop area (%f %f %f %f), width %f, height %f\n",
-         iter, cropfit.x, cropfit.y, cropfit.alpha, g->cl, g->cr, g->ct, g->cb, wd, ht);
+         iter, cropfit.x, cropfit.y, cropfit.alpha, p->cl, p->cr, p->ct, p->cb, wd, ht);
 #endif
+  return;
+
+failed:
+  p->cl = 0.0f;
+  p->cr = 1.0f;
+  p->ct = 0.0f;
+  p->cb = 1.0f;
+  p->cropmode = ASHIFT_CROP_OFF;
+  dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
+  g->fitting = 0;
+  dt_control_log(_("automatic cropping failed"));
+  return;
 }
 
 // helper function to start analysis for structural data and report about errors
@@ -2252,6 +2282,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
+  // clipping offset
+  const float fullwidth = (float)piece->buf_out.width / (data->cr - data->cl);
+  const float fullheight = (float)piece->buf_out.height / (data->cb - data->ct);
+  const float cx = roi_out->scale * fullwidth * data->cl;
+  const float cy = roi_out->scale * fullheight * data->ct;
+
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(ihomograph, interpolation)
 #endif
@@ -2264,8 +2301,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float pin[3], pout[3];
 
       // convert output pixel coordinates to original image coordinates
-      pout[0] = roi_out->x + i;
-      pout[1] = roi_out->y + j;
+      pout[0] = roi_out->x + i + cx;
+      pout[1] = roi_out->y + j + cy;
       pout[0] /= roi_out->scale;
       pout[1] /= roi_out->scale;
       pout[2] = 1.0f;
@@ -2360,6 +2397,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h, d->f_length_kb,
              d->orthocorr, d->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
+  // clipping offset
+  const float fullwidth = (float)piece->buf_out.width / (d->cr - d->cl);
+  const float fullheight = (float)piece->buf_out.height / (d->cb - d->ct);
+  const float cx = roi_out->scale * fullwidth * d->cl;
+  const float cy = roi_out->scale * fullheight * d->ct;
+
   cl_int err = -999;
   cl_mem dev_homo = NULL;
 
@@ -2376,6 +2419,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int oroi[2] = { roi_out->x, roi_out->y };
   const float in_scale = roi_in->scale;
   const float out_scale = roi_out->scale;
+  const float clip[2] = { cx, cy };
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -2411,7 +2455,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, ldkernel, 7, 2 * sizeof(int), (void *)oroi);
   dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(float), (void *)&in_scale);
   dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(float), (void *)&out_scale);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 10, sizeof(cl_mem), (void *)&dev_homo);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 10, 2 * sizeof(float), (void *)clip);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 11, sizeof(cl_mem), (void *)&dev_homo);
   err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -2731,7 +2776,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only availabe
   // after g->buf has been processed
-  if(g->buf && (p->cl != 0.0f || p->cr != 1.0f || p->ct != 0.0f || p->cb != 1.0f))
+  if(g->buf  && (p->cropmode != ASHIFT_CROP_OFF))
   {
     // roi data of the preview pipe input buffer
     float iwd = g->buf_width;
@@ -3090,7 +3135,7 @@ static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
   dt_dev_reprocess_all(self->dev);
 }
 
-static void cropping_callback(GtkWidget *widget, gpointer user_data)
+static void cropmode_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -3410,7 +3455,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->aspect, p->aspect);
   dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_combobox_set(g->guide_lines, g->show_guides);
-  dt_bauhaus_combobox_set(g->crop, p->cropmode);
+  dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
   switch(p->mode)
@@ -3596,18 +3641,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   if(self->enabled)
-  {
-    if(in)
-    {
-      // got focus. make it redraw in full
-      dt_dev_reprocess_all(self->dev);
-    }
-    else
-    {
-      dt_dev_reprocess_all(self->dev);
-      //dt_control_queue_redraw_center();
-    }
-  }
+    dt_dev_reprocess_all(self->dev);
 }
 
 static float log10_callback(GtkWidget *self, float inval, dt_bauhaus_callback_t dir)
@@ -3708,12 +3742,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->guide_lines, _("on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
-  g->crop = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->crop, NULL, _("automatic cropping"));
-  dt_bauhaus_combobox_add(g->crop, _("off"));
-  dt_bauhaus_combobox_add(g->crop, _("largest area"));
-  dt_bauhaus_combobox_add(g->crop, _("original format"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->crop, TRUE, TRUE, 0);
+  g->cropmode = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->cropmode, NULL, _("automatic cropping"));
+  dt_bauhaus_combobox_add(g->cropmode, _("off"));
+  dt_bauhaus_combobox_add(g->cropmode, _("largest area"));
+  dt_bauhaus_combobox_add(g->cropmode, _("original format"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cropmode, TRUE, TRUE, 0);
 
   g->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("lens model"));
@@ -3824,7 +3858,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->lensshift_h, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->guide_lines, _("display guide lines overlay"));
-  gtk_widget_set_tooltip_text(g->crop, _("automatically crop to avoid black edges"));
+  gtk_widget_set_tooltip_text(g->cropmode, _("automatically crop to avoid black edges"));
   gtk_widget_set_tooltip_text(g->mode, _("lens model of the perspective correction: "
                                          "generic or according to the focal length"));
   gtk_widget_set_tooltip_text(g->f_length, _("focal length of the lens, "
@@ -3854,7 +3888,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
   g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guide_lines_callback), self);
-  g_signal_connect(G_OBJECT(g->crop), "value-changed", G_CALLBACK(cropping_callback), self);
+  g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->f_length), "value-changed", G_CALLBACK(f_length_callback), self);
   g_signal_connect(G_OBJECT(g->crop_factor), "value-changed", G_CALLBACK(crop_factor_callback), self);

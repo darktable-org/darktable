@@ -1162,7 +1162,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
 kernel void
 ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                 const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
-                const float in_scale, const float out_scale, global float *homograph)
+                const float in_scale, const float out_scale, const float2 clip, global float *homograph)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1172,8 +1172,8 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   float pin[3], pout[3];
 
   // convert output pixel coordinates to original image coordinates
-  pout[0] = roi_out.x + x;
-  pout[1] = roi_out.y + y;
+  pout[0] = roi_out.x + x + clip.x;
+  pout[1] = roi_out.y + y + clip.y;
   pout[0] /= out_scale;
   pout[1] /= out_scale;
   pout[2] = 1.0f;
@@ -1206,7 +1206,7 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
 kernel void
 ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                 const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
-                const float in_scale, const float out_scale, global float *homograph)
+                const float in_scale, const float out_scale, const float2 clip, global float *homograph)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1218,8 +1218,8 @@ ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int widt
   float pin[3], pout[3];
 
   // convert output pixel coordinates to original image coordinates
-  pout[0] = roi_out.x + x;
-  pout[1] = roi_out.y + y;
+  pout[0] = roi_out.x + x + clip.x;
+  pout[1] = roi_out.y + y + clip.y;
   pout[0] /= out_scale;
   pout[1] /= out_scale;
   pout[2] = 1.0f;
@@ -1271,7 +1271,7 @@ ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int widt
 kernel void
 ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                 const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
-                const float in_scale, const float out_scale, global float *homograph)
+                const float in_scale, const float out_scale, const float2 clip, global float *homograph)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1283,8 +1283,8 @@ ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int widt
   float pin[3], pout[3];
 
   // convert output pixel coordinates to original image coordinates
-  pout[0] = roi_out.x + x;
-  pout[1] = roi_out.y + y;
+  pout[0] = roi_out.x + x + clip.x;
+  pout[1] = roi_out.y + y + clip.y;
   pout[0] /= out_scale;
   pout[1] /= out_scale;
   pout[2] = 1.0f;
@@ -1336,7 +1336,7 @@ ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int widt
 kernel void
 ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                 const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
-                const float in_scale, const float out_scale, global float *homograph)
+                const float in_scale, const float out_scale, const float2 clip, global float *homograph)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1348,8 +1348,8 @@ ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int widt
   float pin[3], pout[3];
 
   // convert output pixel coordinates to original image coordinates
-  pout[0] = roi_out.x + x;
-  pout[1] = roi_out.y + y;
+  pout[0] = roi_out.x + x + clip.x;
+  pout[1] = roi_out.y + y + clip.y;
   pout[0] /= out_scale;
   pout[1] /= out_scale;
   pout[2] = 1.0f;
