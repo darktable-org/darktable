@@ -647,10 +647,208 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
+#endif
 
 static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                             const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                             const dt_iop_roi_t *const roi_out)
+{
+  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
+  // get our data struct:
+  const dt_iop_denoiseprofile_params_t *const d = (const dt_iop_denoiseprofile_params_t *const)piece->data;
+
+  // TODO: fixed K to use adaptive size trading variance and bias!
+  // adjust to zoom size:
+  const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);         // nbhood
+
+  // P == 0 : this will degenerate to a (fast) bilateral filter.
+
+  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
+  // we want to sum up weights in col[3], so need to init to 0:
+  memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
+  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
+
+  const float wb[3] = { piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
+                        piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
+                        piece->pipe->processed_maximum[2] * d->strength * (scale * scale) };
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
+
+  // for each shift vector
+  for(int kj = -K; kj <= K; kj++)
+  {
+    for(int ki = -K; ki <= K; ki++)
+    {
+      // TODO: adaptive K tests here!
+      // TODO: expf eval for real bilateral experience :)
+
+      int inited_slide = 0;
+// don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
+// we will add up errors)
+// do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
+// memory
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, in, Sa)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+      {
+        if(j + kj < 0 || j + kj >= roi_out->height) continue;
+        float *S = Sa + dt_get_thread_num() * roi_out->width;
+        const float *ins = in + 4l * ((size_t)roi_in->width * (j + kj) + ki);
+        float *out = ((float *)ovoid) + (size_t)4 * roi_out->width * j;
+
+        const int Pm = MIN(MIN(P, j + kj), j);
+        const int PM = MIN(MIN(P, roi_out->height - 1 - j - kj), roi_out->height - 1 - j);
+        // first line of every thread
+        // TODO: also every once in a while to assert numerical precision!
+        if(!inited_slide)
+        {
+          // sum up a line
+          memset(S, 0x0, sizeof(float) * roi_out->width);
+          for(int jj = -Pm; jj <= PM; jj++)
+          {
+            int i = MAX(0, -ki);
+            float *s = S + i;
+            const float *inp = in + 4 * i + (size_t)4 * roi_in->width * (j + jj);
+            const float *inps = in + 4 * i + 4l * ((size_t)roi_in->width * (j + jj + kj) + ki);
+            const int last = roi_out->width + MIN(0, -ki);
+            for(; i < last; i++, inp += 4, inps += 4, s++)
+            {
+              for(int k = 0; k < 3; k++) s[0] += (inp[k] - inps[k]) * (inp[k] - inps[k]);
+            }
+          }
+          // only reuse this if we had a full stripe
+          if(Pm == P && PM == P) inited_slide = 1;
+        }
+
+        // sliding window for this line:
+        float *s = S;
+        float slide = 0.0f;
+        // sum up the first -P..P
+        for(int i = 0; i < 2 * P + 1; i++) slide += s[i];
+        for(int i = 0; i < roi_out->width; i++)
+        {
+          // FIXME: the comment above is actually relevant even for 1000 px width already.
+          // XXX    numerical precision will not forgive us:
+          if(i - P > 0 && i + P < roi_out->width) slide += s[P] - s[-P - 1];
+          if(i + ki >= 0 && i + ki < roi_out->width)
+          {
+            // TODO: could put that outside the loop.
+            // DEBUG XXX bring back to computable range:
+            const float norm = .015f / (2 * P + 1);
+            const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
+            _mm_store_ps(out,
+                         _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide * norm - 2.0f))));
+            // _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide*norm))));
+          }
+          s++;
+          ins += 4;
+          out += 4;
+        }
+        if(inited_slide && j + P + 1 + MAX(0, kj) < roi_out->height)
+        {
+          // sliding window in j direction:
+          int i = MAX(0, -ki);
+          float *s = S + i;
+          const float *inp = in + 4 * i + 4l * (size_t)roi_in->width * (j + P + 1);
+          const float *inps = in + 4 * i + 4l * ((size_t)roi_in->width * (j + P + 1 + kj) + ki);
+          const float *inm = in + 4 * i + 4l * (size_t)roi_in->width * (j - P);
+          const float *inms = in + 4 * i + 4l * ((size_t)roi_in->width * (j - P + kj) + ki);
+          const int last = roi_out->width + MIN(0, -ki);
+          for(; ((intptr_t)s & 0xf) != 0 && i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
+          {
+            float stmp = s[0];
+            for(int k = 0; k < 3; k++)
+              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]));
+            s[0] = stmp;
+          }
+          /* Process most of the line 4 pixels at a time */
+          for(; i < last - 4; i += 4, inp += 16, inps += 16, inm += 16, inms += 16, s += 4)
+          {
+            __m128 sv = _mm_load_ps(s);
+            const __m128 inp1 = _mm_sub_ps(_mm_load_ps(inp), _mm_load_ps(inps));
+            const __m128 inp2 = _mm_sub_ps(_mm_load_ps(inp + 4), _mm_load_ps(inps + 4));
+            const __m128 inp3 = _mm_sub_ps(_mm_load_ps(inp + 8), _mm_load_ps(inps + 8));
+            const __m128 inp4 = _mm_sub_ps(_mm_load_ps(inp + 12), _mm_load_ps(inps + 12));
+
+            const __m128 inp12lo = _mm_unpacklo_ps(inp1, inp2);
+            const __m128 inp34lo = _mm_unpacklo_ps(inp3, inp4);
+            const __m128 inp12hi = _mm_unpackhi_ps(inp1, inp2);
+            const __m128 inp34hi = _mm_unpackhi_ps(inp3, inp4);
+
+            const __m128 inpv0 = _mm_movelh_ps(inp12lo, inp34lo);
+            sv += inpv0 * inpv0;
+
+            const __m128 inpv1 = _mm_movehl_ps(inp34lo, inp12lo);
+            sv += inpv1 * inpv1;
+
+            const __m128 inpv2 = _mm_movelh_ps(inp12hi, inp34hi);
+            sv += inpv2 * inpv2;
+
+            const __m128 inm1 = _mm_sub_ps(_mm_load_ps(inm), _mm_load_ps(inms));
+            const __m128 inm2 = _mm_sub_ps(_mm_load_ps(inm + 4), _mm_load_ps(inms + 4));
+            const __m128 inm3 = _mm_sub_ps(_mm_load_ps(inm + 8), _mm_load_ps(inms + 8));
+            const __m128 inm4 = _mm_sub_ps(_mm_load_ps(inm + 12), _mm_load_ps(inms + 12));
+
+            const __m128 inm12lo = _mm_unpacklo_ps(inm1, inm2);
+            const __m128 inm34lo = _mm_unpacklo_ps(inm3, inm4);
+            const __m128 inm12hi = _mm_unpackhi_ps(inm1, inm2);
+            const __m128 inm34hi = _mm_unpackhi_ps(inm3, inm4);
+
+            const __m128 inmv0 = _mm_movelh_ps(inm12lo, inm34lo);
+            sv -= inmv0 * inmv0;
+
+            const __m128 inmv1 = _mm_movehl_ps(inm34lo, inm12lo);
+            sv -= inmv1 * inmv1;
+
+            const __m128 inmv2 = _mm_movelh_ps(inm12hi, inm34hi);
+            sv -= inmv2 * inmv2;
+
+            _mm_store_ps(s, sv);
+          }
+          for(; i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
+          {
+            float stmp = s[0];
+            for(int k = 0; k < 3; k++)
+              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]));
+            s[0] = stmp;
+          }
+        }
+        else
+          inited_slide = 0;
+      }
+    }
+  }
+// normalize
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    float *out = ((float *)ovoid) + (size_t)4 * roi_out->width * j;
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      if(out[3] > 0.0f) _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), _mm_set1_ps(1.0f / out[3])));
+      // DEBUG show weights
+      // _mm_store_ps(out, _mm_set1_ps(1.0f/out[3]));
+      out += 4;
+    }
+  }
+  // free shared tmp memory:
+  dt_free_align(Sa);
+  dt_free_align(in);
+  backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+
+#if defined(__SSE__)
+static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -1385,13 +1583,23 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif // HAVE_OPENCL
 
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
+  if(d->mode == MODE_NLMEANS)
+    process_nlmeans(self, piece, ivoid, ovoid, roi_in, roi_out);
+  else
+    __builtin_unreachable();
+}
+
 #if defined(__SSE__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   if(d->mode == MODE_NLMEANS)
-    process_nlmeans(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_nlmeans_sse(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
     process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
