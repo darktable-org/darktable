@@ -345,9 +345,33 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 #undef ROW_PROLOGUE
 #undef SUM_PIXEL_PROLOGUE
 #undef SUM_PIXEL_EPILOGUE
+#endif
 
-static void eaw_synthesize(float *const out, const float *const in, const float *const detail,
-                           const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+static void __attribute__((__unused__))
+eaw_synthesize(float *const out, const float *const in, const float *const detail, const float *thrsf,
+               const float *boostf, const int32_t width, const int32_t height)
+{
+  const float threshold[4] = { thrsf[0], thrsf[1], thrsf[2], thrsf[3] };
+  const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#endif
+  for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
+  {
+    for(size_t c = 0; c < 4; c++)
+    {
+      const float absamt = MAX(0.0f, (fabsf(detail[k + c]) - threshold[c]));
+      const float amount = copysignf(absamt, detail[k + c]);
+      out[k + c] = in[k + c] + (boost[c] * amount);
+    }
+  }
+}
+
+#if defined(__SSE__)
+static void eaw_synthesize_sse2(float *const out, const float *const in, const float *const detail,
+                                const float *thrsf, const float *boostf, const int32_t width,
+                                const int32_t height)
 {
   const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
   const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
@@ -501,7 +525,7 @@ void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   for(int scale = max_scale - 1; scale >= 0; scale--)
   {
-    eaw_synthesize(buf2, buf1, detail[scale], thrs[scale], boost[scale], width, height);
+    eaw_synthesize_sse2(buf2, buf1, detail[scale], thrs[scale], boost[scale], width, height);
     float *buf3 = buf2;
     buf2 = buf1;
     buf1 = buf3;
