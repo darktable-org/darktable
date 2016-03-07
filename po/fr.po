@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-02 22:49+0100\n"
-"PO-Revision-Date: 2016-03-02 22:55+0100\n"
+"POT-Creation-Date: 2016-03-07 21:41+0100\n"
+"PO-Revision-Date: 2016-03-07 21:45+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1072,7 +1072,7 @@ msgstr ""
 #: ../src/common/history.c:425 ../src/common/history.c:428
 #: ../src/common/history.c:444 ../src/common/styles.c:716
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1818
-#: ../src/develop/develop.c:1313 ../src/iop/ashift.c:3275
+#: ../src/develop/develop.c:1313 ../src/iop/ashift.c:3742
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activé(e)"
@@ -1082,7 +1082,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1600
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1313
 #: ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
-#: ../src/iop/ashift.c:3274 ../src/iop/colorin.c:1485
+#: ../src/iop/ashift.c:3741 ../src/iop/ashift.c:3747 ../src/iop/colorin.c:1485
 #: ../src/iop/demosaic.c:3830 ../src/iop/vignette.c:1139
 #: ../src/libs/history.c:149 ../src/libs/live_view.c:434
 msgid "off"
@@ -1851,17 +1851,17 @@ msgstr "inverser la polarité du masque dessiné"
 msgid "add gradient"
 msgstr "ajouter un dégradé"
 
-#: ../src/develop/blend_gui.c:1292 ../src/iop/spots.c:650
+#: ../src/develop/blend_gui.c:1292 ../src/iop/spots.c:648
 #: ../src/libs/masks.c:989 ../src/libs/masks.c:1028 ../src/libs/masks.c:1640
 msgid "add path"
 msgstr "ajouter un chemin"
 
-#: ../src/develop/blend_gui.c:1301 ../src/iop/spots.c:658
+#: ../src/develop/blend_gui.c:1301 ../src/iop/spots.c:656
 #: ../src/libs/masks.c:985 ../src/libs/masks.c:1024 ../src/libs/masks.c:1648
 msgid "add ellipse"
 msgstr "ajouter une forme elliptique"
 
-#: ../src/develop/blend_gui.c:1310 ../src/iop/spots.c:666
+#: ../src/develop/blend_gui.c:1310 ../src/iop/spots.c:664
 #: ../src/libs/masks.c:981 ../src/libs/masks.c:1020 ../src/libs/masks.c:1656
 msgid "add circle"
 msgstr "ajouter une forme circulaire"
@@ -2647,67 +2647,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:843
+#: ../src/gui/gtk.c:839
 msgctxt "accel"
 msgid "tethering view"
 msgstr "capture"
 
-#: ../src/gui/gtk.c:844
+#: ../src/gui/gtk.c:840
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "table lumineuse"
 
-#: ../src/gui/gtk.c:845
+#: ../src/gui/gtk.c:841
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "chambre noire"
 
-#: ../src/gui/gtk.c:846
+#: ../src/gui/gtk.c:842
 msgctxt "accel"
 msgid "map view"
 msgstr "vue carte"
 
-#: ../src/gui/gtk.c:847
+#: ../src/gui/gtk.c:843
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "diaporama"
 
-#: ../src/gui/gtk.c:848
+#: ../src/gui/gtk.c:844
 msgctxt "accel"
 msgid "print view"
 msgstr "impression"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:871
+#: ../src/gui/gtk.c:867
 msgctxt "accel"
 msgid "quit"
 msgstr "quitter"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:876
+#: ../src/gui/gtk.c:872
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activer/désactiver le plein écran"
 
-#: ../src/gui/gtk.c:877
+#: ../src/gui/gtk.c:873
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "quitter le mode plein écran"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:885
+#: ../src/gui/gtk.c:881
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activer/désactiver les panneaux latéraux"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:888
+#: ../src/gui/gtk.c:884
 msgctxt "accel"
 msgid "toggle header"
 msgstr "activer/désactiver le panneau supérieur"
 
 #. View-switch
-#: ../src/gui/gtk.c:891
+#: ../src/gui/gtk.c:887
 msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
@@ -2988,7 +2988,7 @@ msgstr "ouverture"
 
 #. focal length
 #: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1319
-#: ../src/gui/presets.c:489 ../src/iop/ashift.c:3285 ../src/libs/camera.c:575
+#: ../src/gui/presets.c:489 ../src/iop/ashift.c:3759 ../src/libs/camera.c:575
 #: ../src/libs/collect.h:34 ../src/libs/metadata_view.c:107
 msgid "focal length"
 msgstr "focale"
@@ -4064,7 +4064,7 @@ msgstr "net"
 msgid "dull"
 msgstr "flou"
 
-#: ../src/iop/atrous.c:1406 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:859
+#: ../src/iop/atrous.c:1406 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:857
 msgid "luma"
 msgstr "luma"
 
@@ -4072,7 +4072,7 @@ msgstr "luma"
 msgid "change lightness at each feature size"
 msgstr "changer la luminosité pour chaque taille"
 
-#: ../src/iop/atrous.c:1411 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:861
+#: ../src/iop/atrous.c:1411 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:859
 msgid "chroma"
 msgstr "chroma"
 
@@ -4101,126 +4101,146 @@ msgstr "fusion"
 msgid "make effect stronger or weaker"
 msgstr "rend l'effet plus fort ou plus faible"
 
-#: ../src/iop/ashift.c:97
+#: ../src/iop/ashift.c:101
 msgid "perspective correction"
 msgstr "correction de perspective"
 
-#: ../src/iop/ashift.c:355 ../src/iop/watermark.c:254
+#: ../src/iop/ashift.c:426 ../src/iop/watermark.c:254
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:356
+#: ../src/iop/ashift.c:427
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "correction d'objectif (v)"
 
-#: ../src/iop/ashift.c:357
+#: ../src/iop/ashift.c:428
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "correction d'objectif (h)"
 
-#: ../src/iop/ashift.c:1833
+#: ../src/iop/ashift.c:2154
+msgid "automatic cropping failed"
+msgstr "recadrage automatique impossible"
+
+#: ../src/iop/ashift.c:2174
 msgid "data pending - please repeat"
 msgstr "données en attente, merci de recommencer"
 
-#: ../src/iop/ashift.c:1839
+#: ../src/iop/ashift.c:2180
 msgid "could not detect structural data in image"
 msgstr "impossible de détecter les structures dans l'image"
 
-#: ../src/iop/ashift.c:1850
+#: ../src/iop/ashift.c:2191
 msgid "could not run outlier removal"
 msgstr "impossible de supprimer les lignes de contrôle"
 
-#: ../src/iop/ashift.c:1904
+#: ../src/iop/ashift.c:2245
 msgid "not enough structure for automatic correction"
 msgstr "pas assez de structure pour corriger automatiquement"
 
-#: ../src/iop/ashift.c:1908
+#: ../src/iop/ashift.c:2249
 msgid "automatic correction failed, please correct manually"
 msgstr "correction automatique impossible, merci de corriger manuellement"
 
-#: ../src/iop/ashift.c:3058 ../src/iop/ashift.c:3059 ../src/iop/ashift.c:3153
-#: ../src/iop/ashift.c:3154
+#: ../src/iop/ashift.c:3534 ../src/iop/ashift.c:3535 ../src/iop/ashift.c:3629
+#: ../src/iop/ashift.c:3630
 #, c-format
 msgid "lens shift (%s)"
 msgstr "correction d'objectif (%s)"
 
-#: ../src/iop/ashift.c:3058 ../src/iop/ashift.c:3059 ../src/iop/ashift.c:3153
-#: ../src/iop/ashift.c:3154 ../src/iop/clipping.c:1566
+#: ../src/iop/ashift.c:3534 ../src/iop/ashift.c:3535 ../src/iop/ashift.c:3629
+#: ../src/iop/ashift.c:3630 ../src/iop/clipping.c:1566
 #: ../src/iop/clipping.c:1855 ../src/iop/clipping.c:1874
 msgid "horizontal"
 msgstr "horizontale"
 
-#: ../src/iop/ashift.c:3058 ../src/iop/ashift.c:3059 ../src/iop/ashift.c:3153
-#: ../src/iop/ashift.c:3154 ../src/iop/clipping.c:1565
+#: ../src/iop/ashift.c:3534 ../src/iop/ashift.c:3535 ../src/iop/ashift.c:3629
+#: ../src/iop/ashift.c:3630 ../src/iop/clipping.c:1565
 #: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1873
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/ashift.c:3257 ../src/iop/graduatednd.c:1154
+#: ../src/iop/ashift.c:3724 ../src/iop/graduatednd.c:1154
 #: ../src/iop/watermark.c:1297
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:3263
+#: ../src/iop/ashift.c:3730
 msgid "lens shift (vertical)"
 msgstr "correction d'objectif (verticale)"
 
-#: ../src/iop/ashift.c:3268
+#: ../src/iop/ashift.c:3735
 msgid "lens shift (horizontal)"
 msgstr "correction d'objectif (horizontale)"
 
-#: ../src/iop/ashift.c:3273 ../src/iop/clipping.c:2007
+#: ../src/iop/ashift.c:3740 ../src/iop/clipping.c:2007
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/ashift.c:3279
+#: ../src/iop/ashift.c:3746 ../src/iop/clipping.c:1881
+msgid "automatic cropping"
+msgstr "recadrage"
+
+#: ../src/iop/ashift.c:3748
+msgid "largest area"
+msgstr "plus grand coté"
+
+#: ../src/iop/ashift.c:3749
+msgid "original format"
+msgstr "format d'origine"
+
+#: ../src/iop/ashift.c:3753
 msgid "lens model"
 msgstr "modèle d'objectif"
 
-#: ../src/iop/ashift.c:3280
+#: ../src/iop/ashift.c:3754
 msgid "generic"
 msgstr "générique"
 
-#: ../src/iop/ashift.c:3281
+#: ../src/iop/ashift.c:3755
 msgid "specific"
 msgstr "spécifique"
 
-#: ../src/iop/ashift.c:3294
+#: ../src/iop/ashift.c:3768
 msgid "crop factor"
 msgstr "facteur de cadrage"
 
-#: ../src/iop/ashift.c:3299
+#: ../src/iop/ashift.c:3773
 msgid "lens dependence"
 msgstr "dépendance à l'objectif"
 
-#: ../src/iop/ashift.c:3309
+#: ../src/iop/ashift.c:3783
 msgid "aspect adjust"
 msgstr "ajustement aspect"
 
-#: ../src/iop/ashift.c:3319
+#: ../src/iop/ashift.c:3793
 msgid "automatic fit"
 msgstr "correction automatique"
 
-#: ../src/iop/ashift.c:3338
+#: ../src/iop/ashift.c:3812
 msgid "get structure"
 msgstr "récupère les structures"
 
-#: ../src/iop/ashift.c:3383
+#: ../src/iop/ashift.c:3857
 msgid "rotate image"
 msgstr "rotation de l'image"
 
-#: ../src/iop/ashift.c:3384 ../src/iop/ashift.c:3385
+#: ../src/iop/ashift.c:3858 ../src/iop/ashift.c:3859
 msgid "apply lens shift correction in one direction"
 msgstr "applique la correction d'objectif dans une direction"
 
-#: ../src/iop/ashift.c:3386
+#: ../src/iop/ashift.c:3860
 msgid "display guide lines overlay"
 msgstr "superpose des lignes guides"
 
-#: ../src/iop/ashift.c:3387
+#: ../src/iop/ashift.c:3861 ../src/iop/clipping.c:1884
+msgid "automatically crop to avoid black edges"
+msgstr "recadre automatique pour éviter les bords noirs"
+
+#: ../src/iop/ashift.c:3862
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -4228,13 +4248,13 @@ msgstr ""
 "modèle d'objectif pour la correction de perspective: générique ou fonction "
 "de la longueur focale"
 
-#: ../src/iop/ashift.c:3389
+#: ../src/iop/ashift.c:3864
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "longueur focale de l'objectif, valeur par défaut depuis les exif si "
 "disponible"
 
-#: ../src/iop/ashift.c:3391
+#: ../src/iop/ashift.c:3866
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -4242,7 +4262,7 @@ msgstr ""
 "facteur de cadrage du capteur de l'appareil, valeur par défaut depuis les "
 "exif si disponible, positionnement manuel souvent nécessaire"
 
-#: ../src/iop/ashift.c:3394
+#: ../src/iop/ashift.c:3869
 #, c-format
 msgid ""
 "the level of lens dependent correction, 100% for full dependency, 0% for the "
@@ -4251,13 +4271,13 @@ msgstr ""
 "le niveau de correction dépendant de l'objectif, 100%% pour une dépendance "
 "totale, 0%% pour un modèle générique"
 
-#: ../src/iop/ashift.c:3396
+#: ../src/iop/ashift.c:3871
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "ajuste les dimensions de l'image en redimensionnant horizontalement ou "
 "verticalement"
 
-#: ../src/iop/ashift.c:3397
+#: ../src/iop/ashift.c:3872
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4267,7 +4287,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:3400
+#: ../src/iop/ashift.c:3875
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4277,7 +4297,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:3403
+#: ../src/iop/ashift.c:3878
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions\n"
 "ctrl-click to only fit rotation\n"
@@ -4288,7 +4308,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:3407
+#: ../src/iop/ashift.c:3882
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement"
@@ -4296,11 +4316,11 @@ msgstr ""
 "analyse les lignes de structure dans l'image\n"
 "ctrl-clic pour une amélioration des bords accrue"
 
-#: ../src/iop/ashift.c:3409
+#: ../src/iop/ashift.c:3884
 msgid "remove line structure information"
 msgstr "supprime la visualisation des lignes de structure"
 
-#: ../src/iop/ashift.c:3410
+#: ../src/iop/ashift.c:3885
 msgid "toggle visibility of structure lines"
 msgstr "active/désactive l'affichage des lignes de structure"
 
@@ -4513,7 +4533,7 @@ msgid "the threshold of light"
 msgstr "seuil de lumière"
 
 #: ../src/iop/bloom.c:525 ../src/iop/denoiseprofile.c:1673
-#: ../src/iop/grain.c:528 ../src/iop/hotpixels.c:440 ../src/iop/nlmeans.c:857
+#: ../src/iop/grain.c:528 ../src/iop/hotpixels.c:440 ../src/iop/nlmeans.c:855
 #: ../src/iop/velvia.c:378
 msgid "strength"
 msgstr "force"
@@ -4835,7 +4855,7 @@ msgstr "quantité"
 msgid "size of features to preserve"
 msgstr "taille des caractéristiques à preserver"
 
-#: ../src/iop/clahe.c:326 ../src/iop/nlmeans.c:864
+#: ../src/iop/clahe.c:326 ../src/iop/nlmeans.c:862
 msgid "strength of the effect"
 msgstr "force de l'effet"
 
@@ -4887,14 +4907,6 @@ msgstr "perspective"
 #: ../src/iop/clipping.c:1876
 msgid "set perspective correction for your image"
 msgstr "règle la correction de perspective"
-
-#: ../src/iop/clipping.c:1881
-msgid "automatic cropping"
-msgstr "recadrage"
-
-#: ../src/iop/clipping.c:1884
-msgid "automatically crop to avoid black edges"
-msgstr "recadre automatique pour éviter les bords noirs"
 
 #: ../src/iop/clipping.c:1888
 msgid "freehand"
@@ -5668,7 +5680,7 @@ msgstr "interpolé depuis ISO %d et %d"
 msgid "mode"
 msgstr "mode"
 
-#: ../src/iop/denoiseprofile.c:1671 ../src/iop/nlmeans.c:855
+#: ../src/iop/denoiseprofile.c:1671 ../src/iop/nlmeans.c:853
 msgid "patch size"
 msgstr "taille"
 
@@ -6492,23 +6504,23 @@ msgstr "blanc"
 msgid "liquify"
 msgstr "liquéfier"
 
-#: ../src/iop/liquify.c:3217
+#: ../src/iop/liquify.c:3231
 msgid "click and drag to add point"
 msgstr "cliquer et tracer pour ajouter un point"
 
-#: ../src/iop/liquify.c:3219
+#: ../src/iop/liquify.c:3233
 msgid "click to add line"
 msgstr "cliquer pour ajouter une ligne"
 
-#: ../src/iop/liquify.c:3221
+#: ../src/iop/liquify.c:3235
 msgid "click to add curve"
 msgstr "cliquer pour ajouter une courbe"
 
-#: ../src/iop/liquify.c:3223
+#: ../src/iop/liquify.c:3237
 msgid "click to edit nodes"
 msgstr "cliquer pour éditer les points"
 
-#: ../src/iop/liquify.c:3260
+#: ../src/iop/liquify.c:3274
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -6516,31 +6528,31 @@ msgstr ""
 "utiliser un outil pour ajouter une forme.\n"
 "clic-droit pour supprimer une forme."
 
-#: ../src/iop/liquify.c:3262
+#: ../src/iop/liquify.c:3276
 msgid "warps|nodes count:"
 msgstr "nb formes|points:"
 
-#: ../src/iop/liquify.c:3269
+#: ../src/iop/liquify.c:3283
 msgid "node tool: edit, add and delete nodes"
 msgstr "outil point: éditer, ajouter et supprimer des points"
 
-#: ../src/iop/liquify.c:3277
+#: ../src/iop/liquify.c:3291
 msgid "curve tool: draw curves"
 msgstr "outil courbe: dessiner des courbes"
 
-#: ../src/iop/liquify.c:3285
+#: ../src/iop/liquify.c:3299
 msgid "line tool: draw lines"
 msgstr "outil ligne: dessiner des lignes"
 
-#: ../src/iop/liquify.c:3293
+#: ../src/iop/liquify.c:3307
 msgid "point tool: draw points"
 msgstr "outil point: placer des points"
 
-#: ../src/iop/liquify.c:3301
+#: ../src/iop/liquify.c:3315
 msgid "disable all tools"
 msgstr "désactiver les outils"
 
-#: ../src/iop/liquify.c:3308
+#: ../src/iop/liquify.c:3322
 msgid ""
 "ctrl+click to add node\n"
 "right click to remove path"
@@ -6548,7 +6560,7 @@ msgstr ""
 "ctrl-clic pour ajouter un point\n"
 "clic-droit pour supprimer un chemin"
 
-#: ../src/iop/liquify.c:3309
+#: ../src/iop/liquify.c:3323
 msgid ""
 "click and drag to move - click : linear or feathered\n"
 "ctrl+click : autosmooth, cups, smooth, symmetrical\n"
@@ -6558,23 +6570,23 @@ msgstr ""
 "ctrl-clic : automatique, courbe, doux, symétrique\n"
 "clic-droit pour supprimer"
 
-#: ../src/iop/liquify.c:3312 ../src/iop/liquify.c:3313
+#: ../src/iop/liquify.c:3326 ../src/iop/liquify.c:3327
 msgid "drag to change shape of path"
 msgstr "déplacer pour changer le chemin"
 
-#: ../src/iop/liquify.c:3314
+#: ../src/iop/liquify.c:3328
 msgid "drag to adjust warp radius"
 msgstr "déplacer pour ajuster le rayon"
 
-#: ../src/iop/liquify.c:3315
+#: ../src/iop/liquify.c:3329
 msgid "drag to adjust hardness (center)"
 msgstr "déplacer pour ajuster la dureté (centre)"
 
-#: ../src/iop/liquify.c:3316
+#: ../src/iop/liquify.c:3330
 msgid "drag to adjust hardness (feather)"
 msgstr "déplacer pour ajuster la dureté (progressif)"
 
-#: ../src/iop/liquify.c:3317
+#: ../src/iop/liquify.c:3331
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click : linear, grow, and shrink"
@@ -6582,27 +6594,27 @@ msgstr ""
 "déplacer pour ajuster la force du point\n"
 "ctrl-clic : linéaire, augmente et diminue"
 
-#: ../src/iop/liquify.c:3335
+#: ../src/iop/liquify.c:3349
 msgctxt "accel"
 msgid "point tool"
 msgstr "outil point"
 
-#: ../src/iop/liquify.c:3336
+#: ../src/iop/liquify.c:3350
 msgctxt "accel"
 msgid "line tool"
 msgstr "outil ligne"
 
-#: ../src/iop/liquify.c:3337
+#: ../src/iop/liquify.c:3351
 msgctxt "accel"
 msgid "curve tool"
 msgstr "outil courbe"
 
-#: ../src/iop/liquify.c:3338
+#: ../src/iop/liquify.c:3352
 msgctxt "accel"
 msgid "node tool"
 msgstr "édition des chemins"
 
-#: ../src/iop/liquify.c:3339
+#: ../src/iop/liquify.c:3353
 msgctxt "accel"
 msgid "disable tools"
 msgstr "désactiver les outils"
@@ -6775,15 +6787,15 @@ msgctxt "accel"
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/iop/nlmeans.c:863
+#: ../src/iop/nlmeans.c:861
 msgid "radius of the patches to match"
 msgstr "rayon des éléments à identifier"
 
-#: ../src/iop/nlmeans.c:865
+#: ../src/iop/nlmeans.c:863
 msgid "how much to smooth brightness"
 msgstr "force du flou pour la luminosité"
 
-#: ../src/iop/nlmeans.c:866
+#: ../src/iop/nlmeans.c:864
 msgid "how much to smooth colors"
 msgstr "force du flou pour les couleurs"
 
@@ -7134,11 +7146,11 @@ msgstr ""
 msgid "spot removal"
 msgstr "correction des taches"
 
-#: ../src/iop/spots.c:642
+#: ../src/iop/spots.c:640
 msgid "number of strokes:"
 msgstr "nombre de corrections :"
 
-#: ../src/iop/spots.c:645
+#: ../src/iop/spots.c:643
 msgid ""
 "click on a shape and drag on canvas.\n"
 "use the mouse wheel to adjust size.\n"
@@ -7148,17 +7160,17 @@ msgstr ""
 "défiler à la souris pour ajuster la taille.\n"
 "clic-droit pour supprimer."
 
-#: ../src/iop/spots.c:692
+#: ../src/iop/spots.c:690
 msgctxt "accel"
 msgid "spot circle tool"
 msgstr "cercle de correction des taches"
 
-#: ../src/iop/spots.c:693
+#: ../src/iop/spots.c:691
 msgctxt "accel"
 msgid "spot elipse tool"
 msgstr "ellipse de correction des taches"
 
-#: ../src/iop/spots.c:694
+#: ../src/iop/spots.c:692
 msgctxt "accel"
 msgid "spot path tool"
 msgstr "chemin de correction des taches"
