@@ -657,6 +657,8 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   // get our data struct:
   const dt_iop_denoiseprofile_params_t *const d = (const dt_iop_denoiseprofile_params_t *const)piece->data;
 
+  const int ch = piece->colors;
+
   // TODO: fixed K to use adaptive size trading variance and bias!
   // adjust to zoom size:
   const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
@@ -729,7 +731,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
         float slide = 0.0f;
         // sum up the first -P..P
         for(int i = 0; i < 2 * P + 1; i++) slide += s[i];
-        for(int i = 0; i < roi_out->width; i++)
+        for(int i = 0; i < roi_out->width; i++, s++, ins += 4, out += 4)
         {
           // FIXME: the comment above is actually relevant even for 1000 px width already.
           // XXX    numerical precision will not forgive us:
@@ -739,14 +741,15 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
             // TODO: could put that outside the loop.
             // DEBUG XXX bring back to computable range:
             const float norm = .015f / (2 * P + 1);
-            const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
-            _mm_store_ps(out,
-                         _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide * norm - 2.0f))));
-            // _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(fast_mexp2f(fmaxf(0.0f, slide*norm))));
+            const float iv[4] = { ins[0], ins[1], ins[2], 1.0f };
+#if defined(_OPENMP) && defined(OPENMP_SIMD_)
+#pragma omp SIMD()
+#endif
+            for(size_t c = 0; c < 4; c++)
+            {
+              out[c] += iv[c] * fast_mexp2f(fmaxf(0.0f, slide * norm - 2.0f));
+            }
           }
-          s++;
-          ins += 4;
-          out += 4;
         }
         if(inited_slide && j + P + 1 + MAX(0, kj) < roi_out->height)
         {
@@ -758,57 +761,6 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
           const float *inm = in + 4 * i + 4l * (size_t)roi_in->width * (j - P);
           const float *inms = in + 4 * i + 4l * ((size_t)roi_in->width * (j - P + kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
-          for(; ((intptr_t)s & 0xf) != 0 && i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
-          {
-            float stmp = s[0];
-            for(int k = 0; k < 3; k++)
-              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]));
-            s[0] = stmp;
-          }
-          /* Process most of the line 4 pixels at a time */
-          for(; i < last - 4; i += 4, inp += 16, inps += 16, inm += 16, inms += 16, s += 4)
-          {
-            __m128 sv = _mm_load_ps(s);
-            const __m128 inp1 = _mm_sub_ps(_mm_load_ps(inp), _mm_load_ps(inps));
-            const __m128 inp2 = _mm_sub_ps(_mm_load_ps(inp + 4), _mm_load_ps(inps + 4));
-            const __m128 inp3 = _mm_sub_ps(_mm_load_ps(inp + 8), _mm_load_ps(inps + 8));
-            const __m128 inp4 = _mm_sub_ps(_mm_load_ps(inp + 12), _mm_load_ps(inps + 12));
-
-            const __m128 inp12lo = _mm_unpacklo_ps(inp1, inp2);
-            const __m128 inp34lo = _mm_unpacklo_ps(inp3, inp4);
-            const __m128 inp12hi = _mm_unpackhi_ps(inp1, inp2);
-            const __m128 inp34hi = _mm_unpackhi_ps(inp3, inp4);
-
-            const __m128 inpv0 = _mm_movelh_ps(inp12lo, inp34lo);
-            sv += inpv0 * inpv0;
-
-            const __m128 inpv1 = _mm_movehl_ps(inp34lo, inp12lo);
-            sv += inpv1 * inpv1;
-
-            const __m128 inpv2 = _mm_movelh_ps(inp12hi, inp34hi);
-            sv += inpv2 * inpv2;
-
-            const __m128 inm1 = _mm_sub_ps(_mm_load_ps(inm), _mm_load_ps(inms));
-            const __m128 inm2 = _mm_sub_ps(_mm_load_ps(inm + 4), _mm_load_ps(inms + 4));
-            const __m128 inm3 = _mm_sub_ps(_mm_load_ps(inm + 8), _mm_load_ps(inms + 8));
-            const __m128 inm4 = _mm_sub_ps(_mm_load_ps(inm + 12), _mm_load_ps(inms + 12));
-
-            const __m128 inm12lo = _mm_unpacklo_ps(inm1, inm2);
-            const __m128 inm34lo = _mm_unpacklo_ps(inm3, inm4);
-            const __m128 inm12hi = _mm_unpackhi_ps(inm1, inm2);
-            const __m128 inm34hi = _mm_unpackhi_ps(inm3, inm4);
-
-            const __m128 inmv0 = _mm_movelh_ps(inm12lo, inm34lo);
-            sv -= inmv0 * inmv0;
-
-            const __m128 inmv1 = _mm_movehl_ps(inm34lo, inm12lo);
-            sv -= inmv1 * inmv1;
-
-            const __m128 inmv2 = _mm_movelh_ps(inm12hi, inm34hi);
-            sv -= inmv2 * inmv2;
-
-            _mm_store_ps(s, sv);
-          }
           for(; i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
           {
             float stmp = s[0];
@@ -822,21 +774,22 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
       }
     }
   }
+
+  float *const out = ((float *const)ovoid);
+
 // normalize
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
-  for(int j = 0; j < roi_out->height; j++)
+  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
-    float *out = ((float *)ovoid) + (size_t)4 * roi_out->width * j;
-    for(int i = 0; i < roi_out->width; i++)
+    if(out[k + 3] <= 0.0f) continue;
+    for(size_t c = 0; c < 4; c++)
     {
-      if(out[3] > 0.0f) _mm_store_ps(out, _mm_mul_ps(_mm_load_ps(out), _mm_set1_ps(1.0f / out[3])));
-      // DEBUG show weights
-      // _mm_store_ps(out, _mm_set1_ps(1.0f/out[3]));
-      out += 4;
+      out[k + c] *= (1.0f / out[k + 3]);
     }
   }
+
   // free shared tmp memory:
   dt_free_align(Sa);
   dt_free_align(in);
