@@ -137,7 +137,7 @@ typedef struct dt_iop_demosaic_data_t
   double CAM_to_RGB[3][4];
 } dt_iop_demosaic_data_t;
 
-static void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                               const float *const in, float *out, const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out, const int filters);
 
@@ -3865,7 +3865,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-#include "iop/amaze_demosaic_RT.cc"
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

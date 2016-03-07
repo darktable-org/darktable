@@ -6634,9 +6634,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="0"/>
-		<Hints>
-			<Hint name="ignore_bytecount" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S6000fd">
 		<ID make="Fujifilm" model="FinePix S6000fd">Fujifilm FinePix S6000fd</ID>

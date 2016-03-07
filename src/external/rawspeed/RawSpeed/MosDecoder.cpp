@@ -188,8 +188,14 @@ void MosDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   // Fetch the white balance (see dcraw.c parse_mos for more metadata that can be gotten)
   if (mRootIFD->hasEntryRecursive(LEAFMETADATA)) {
     TiffEntry *meta = mRootIFD->getEntryRecursive(LEAFMETADATA);
+
     uchar8 *buffer = meta->getDataWrt();
     uint32 size = meta->count;
+
+    // We need at least 17+44 bytes for the NeutObj_neutrals section itself
+    if(size < 1)
+      ThrowRDE("Can't parse a zero sized meta entry");
+
     //Make sure the data is NUL terminated so that scanf never reads beyond limits
     //This is not a string though, it will have other NUL's in the middle
     buffer[size-1] = 0;
@@ -197,7 +203,7 @@ void MosDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     // dcraw does actual parsing, since we just want one field we bruteforce it
     uchar8 *neutobj = NULL;
     // We need at least 17+44 bytes for the NeutObj_neutrals section itself
-    for(uint32 i=0; i<size-17-44; i++) {
+    for(uint32 i=0; (int32)i < (int32)size-17-44; i++) {
       if (!strncmp("NeutObj_neutrals", (const char *) buffer+i, 16)) {
         neutobj = buffer+i;
         break;
