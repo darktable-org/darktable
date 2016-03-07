@@ -32,6 +32,7 @@
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
+#include <math.h>
 #include <stdlib.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -461,9 +462,33 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 #undef ROW_PROLOGUE
 #undef SUM_PIXEL_PROLOGUE
 #undef SUM_PIXEL_EPILOGUE
+#endif
 
-static void eaw_synthesize(float *const out, const float *const in, const float *const detail,
-                           const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+static void __attribute__((__unused__))
+eaw_synthesize(float *const out, const float *const in, const float *const detail, const float *thrsf,
+               const float *boostf, const int32_t width, const int32_t height)
+{
+  const float threshold[4] = { thrsf[0], thrsf[1], thrsf[2], thrsf[3] };
+  const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#endif
+  for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
+  {
+    for(size_t c = 0; c < 4; c++)
+    {
+      const float absamt = MAX(0.0f, (fabsf(detail[k + c]) - threshold[c]));
+      const float amount = copysignf(absamt, detail[k + c]);
+      out[k + c] = in[k + c] + (boost[c] * amount);
+    }
+  }
+}
+
+#if defined(__SSE__)
+static void eaw_synthesize_sse2(float *const out, const float *const in, const float *const detail,
+                                const float *thrsf, const float *boostf, const int32_t width,
+                                const int32_t height)
 {
   const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
   const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
@@ -495,9 +520,11 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
   }
   _mm_sfence();
 }
+#endif
 
 // =====================================================================================
 
+#if defined(__SSE__)
 static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                              const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                              const dt_iop_roi_t *const roi_out)
@@ -631,7 +658,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #endif
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     // const float thrs[4] = { 0.0, 0.0, 0.0, 0.0 };
-    eaw_synthesize(buf2, buf1, buf[scale], thrs, boost, width, height);
+    eaw_synthesize_sse2(buf2, buf1, buf[scale], thrs, boost, width, height);
     // DEBUG: clean out temporary memory:
     // memset(buf1, 0, sizeof(float)*4*width*height);
 
