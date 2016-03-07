@@ -45,6 +45,7 @@ static __inline float clampnan(const float x, const float m, const float M)
   return r;
 }
 
+#ifndef __SSE2__
 static __inline float xmul2f(float d)
 {
   if(*(int *)&d & 0x7FFFFFFF) // if f==0 do nothing
@@ -53,6 +54,7 @@ static __inline float xmul2f(float d)
   }
   return d;
 }
+#endif
 
 static __inline float xdiv2f(float d)
 {
@@ -170,10 +172,6 @@ static INLINE vmask vmaskf_lt(vfloat x, vfloat y)
 static INLINE vmask vmaskf_gt(vfloat x, vfloat y)
 {
   return (__m128i)_mm_cmpgt_ps(x, y);
-}
-static INLINE vfloat LIMV(vfloat a, vfloat b, vfloat c)
-{
-  return vmaxf(b, vminf(a, c));
 }
 static INLINE vfloat ULIMV(vfloat a, vfloat b, vfloat c)
 {
