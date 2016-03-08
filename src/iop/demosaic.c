@@ -487,7 +487,8 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 
 // xtrans_interpolate adapted from dcraw 9.20
 
-#define CLIPF(x) CLAMPS(x, 0.0f, 1.0f)
+// #define CLIPF(x) CLAMPS(x, 0.0f, 1.0f)
+#define CLIPF(x) (x)
 #define SQR(x) ((x) * (x))
 // tile size, optimized to keep data in L2 cache
 #define TS 96
