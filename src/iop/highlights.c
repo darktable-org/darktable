@@ -166,7 +166,8 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
 static inline void _interpolate_color_xtrans(const void *const ivoid, void *const ovoid,
                                              const dt_iop_roi_t *const roi_in,
                                              const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
-                                             const float *clip, const uint8_t (*const xtrans)[6],
+                                             const float *const clip, const float max_clip,
+                                             const uint8_t (*const xtrans)[6],
                                              const int pass)
 {
   // similar to Bayer version, but in Bayer each row/column has only
@@ -300,7 +301,7 @@ static inline void _interpolate_color_xtrans(const void *const ivoid, void *cons
         if(pass == 0)
           out[0] = add;
         else if(pass == 3)
-          out[0] = (out[0] + add) / 4.0f;
+          out[0] = fminf(max_clip, (out[0] + add) / 4.0f);
         else
           out[0] += add;
       }
@@ -640,22 +641,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       if(filters == 9u)
       {
-        const dt_image_t *img = &self->dev->image_storage;
+        const uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
+        const float max_clip = fmaxf(piece->pipe->processed_maximum[0],
+                                     fmaxf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(img)
+#pragma omp parallel for schedule(dynamic) default(none)
 #endif
         for(int j = 0; j < roi_out->height; j++)
         {
-          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, 1, j, clips, img->xtrans, 0);
-          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, -1, j, clips, img->xtrans, 1);
+          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, 1, j, clips, max_clip, xtrans, 0);
+          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, -1, j, clips, max_clip, xtrans, 1);
         }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(img)
+#pragma omp parallel for schedule(dynamic) default(none)
 #endif
         for(int i = 0; i < roi_out->width; i++)
         {
-          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, 1, i, clips, img->xtrans, 2);
-          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, -1, i, clips, img->xtrans, 3);
+          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, 1, i, clips, max_clip, xtrans, 2);
+          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, -1, i, clips, max_clip, xtrans, 3);
         }
       }
       else
