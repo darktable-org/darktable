@@ -414,6 +414,58 @@ static inline void _interpolate_color(const void *const ivoid, void *const ovoid
   }
 }
 
+static void process_lch_bayer(
+    const void *const ivoid,
+    void *const ovoid,
+    const int width,
+    const int height,
+    const float clip)
+{
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    float *out = (float *)ovoid + (size_t)width * j;
+    float *in = (float *)ivoid + (size_t)width * j;
+    for(int i = 0; i < width; i++)
+    {
+      if(i == 0 || i == width - 1 || j == 0 || j == height - 1)
+      {
+        // fast path for border
+        out[0] = in[0];
+      }
+      else
+      {
+        // analyse one bayer block to get same number of rggb pixels each time
+        const float near_clip = 0.96f * clip;
+        const float post_clip = 1.10f * clip;
+        float blend = 0.0f;
+        float mean = 0.0f;
+        for(int jj = 0; jj <= 1; jj++)
+        {
+          for(int ii = 0; ii <= 1; ii++)
+          {
+            const float val = in[(size_t)jj * width + ii];
+            mean += val * 0.25f;
+            blend += (fminf(post_clip, val) - near_clip) / (post_clip - near_clip);
+          }
+        }
+        blend = CLAMP(blend, 0.0f, 1.0f);
+        if(blend > 0)
+        {
+          // recover:
+          out[0] = blend * mean + (1.f - blend) * in[0];
+        }
+        else
+          out[0] = in[0];
+      }
+      out++;
+      in++;
+    }
+  }
+}
+
 static void process_lch_xtrans(
     const void *const ivoid,
     void *const ovoid,
@@ -605,85 +657,41 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, 1, i, clips, img->xtrans, 2);
           _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, -1, i, clips, img->xtrans, 3);
         }
-        break;
       }
-
+      else
+      {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none) shared(data, piece)
 #endif
-      for(int j = 0; j < roi_out->height; j++)
-      {
-        _interpolate_color(ivoid, ovoid, roi_out, 0, 1, j, clips, filters, 0);
-        _interpolate_color(ivoid, ovoid, roi_out, 0, -1, j, clips, filters, 1);
-      }
+        for(int j = 0; j < roi_out->height; j++)
+        {
+          _interpolate_color(ivoid, ovoid, roi_out, 0, 1, j, clips, filters, 0);
+          _interpolate_color(ivoid, ovoid, roi_out, 0, -1, j, clips, filters, 1);
+        }
 
 // up/down directions
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none) shared(data, piece)
 #endif
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        _interpolate_color(ivoid, ovoid, roi_out, 1, 1, i, clips, filters, 2);
-        _interpolate_color(ivoid, ovoid, roi_out, 1, -1, i, clips, filters, 3);
+        for(int i = 0; i < roi_out->width; i++)
+        {
+          _interpolate_color(ivoid, ovoid, roi_out, 1, 1, i, clips, filters, 2);
+          _interpolate_color(ivoid, ovoid, roi_out, 1, -1, i, clips, filters, 3);
+        }
       }
       break;
     }
     case DT_IOP_HIGHLIGHTS_LCH:
       if(filters == 9u)
-      {
-        process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip, roi_in, self->dev->image_storage.xtrans);
-        break;
-      }
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(data, piece)
-#endif
-      for(int j = 0; j < roi_out->height; j++)
-      {
-        float *out = (float *)ovoid + (size_t)roi_out->width * j;
-        float *in = (float *)ivoid + (size_t)roi_out->width * j;
-        for(int i = 0; i < roi_out->width; i++)
-        {
-          if(i == 0 || i == roi_out->width - 1 || j == 0 || j == roi_out->height - 1)
-          {
-            // fast path for border
-            out[0] = in[0];
-          }
-          else
-          {
-            // analyse one bayer block to get same number of rggb pixels each time
-            const float near_clip = 0.96f * clip;
-            const float post_clip = 1.10f * clip;
-            float blend = 0.0f;
-            float mean = 0.0f;
-            for(int jj = 0; jj <= 1; jj++)
-            {
-              for(int ii = 0; ii <= 1; ii++)
-              {
-                const float val = in[(size_t)jj * roi_out->width + ii];
-                mean += val * 0.25f;
-                blend += (fminf(post_clip, val) - near_clip) / (post_clip - near_clip);
-              }
-            }
-            blend = CLAMP(blend, 0.0f, 1.0f);
-            if(blend > 0)
-            {
-              // recover:
-              out[0] = blend * mean + (1.f - blend) * in[0];
-            }
-            else
-              out[0] = in[0];
-          }
-          out++;
-          in++;
-        }
-      }
+        process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip,
+                           roi_in, self->dev->image_storage.xtrans);
+      else
+        process_lch_bayer(ivoid, ovoid, roi_out->width, roi_out->height, clip);
       break;
     default:
     case DT_IOP_HIGHLIGHTS_CLIP:
-    {
       process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
-    }
   }
 
   // update processed maximum
