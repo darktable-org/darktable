@@ -298,23 +298,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "process_sse2", (gpointer) & (module->process_sse2)))
     module->process_sse2 = NULL;
 
-  if(!g_module_symbol(module->module, "process", (gpointer) & (module->process_plain)))
-  {
-    if(darktable.codepath._no_intrinsics || (
-#if defined(__SSE__)
-                                                (darktable.codepath.SSE2 && !(module->process_sse2))
-#else
-                                                1
-#endif
-                                                    ))
-    {
-      goto error;
-    }
-    else
-    {
-      module->process_plain = NULL;
-    }
-  }
+  if(!g_module_symbol(module->module, "process", (gpointer) & (module->process_plain))) goto error;
 
   if(!darktable.opencl->inited
      || !g_module_symbol(module->module, "process_cl", (gpointer) & (module->process_cl)))
