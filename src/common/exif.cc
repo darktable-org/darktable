@@ -78,6 +78,11 @@ const char *dt_xmp_keys[]
 
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of XmpBag XmpSeq keys that dt uses
 
+static gboolean _str_is_ascii(const char *str)
+{
+  while(*str) if((guchar)*str >= 0x80) return FALSE;
+  return TRUE;
+}
 
 /* a few helper functions inspired by
    https://projects.kde.org/projects/kde/kdegraphics/libs/libkexiv2/repository/revisions/master/entry/libkexiv2/kexiv2gps.cpp
@@ -1291,7 +1296,7 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
       if(res != NULL)
       {
         char *desc = (char *)res->data;
-        if(g_str_is_ascii(desc))
+        if(_str_is_ascii(desc))
           exifData["Exif.Image.ImageDescription"] = desc;
         else
           exifData["Exif.Photo.UserComment"] = desc;
