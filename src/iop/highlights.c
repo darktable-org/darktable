@@ -406,8 +406,14 @@ static inline void _interpolate_color(const void *const ivoid, void *const ovoid
   }
 }
 
-static void process_lch_xtrans(const void *const ivoid, void *const ovoid, const int width, const int height,
-                               const float clip)
+static void process_lch_xtrans(
+    const void *const ivoid,
+    void *const ovoid,
+    const int width,
+    const int height,
+    const float clip,
+    const dt_iop_roi_t *const roi_in,
+    const uint8_t (*const xtrans)[6])
 {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
@@ -427,23 +433,28 @@ static void process_lch_xtrans(const void *const ivoid, void *const ovoid, const
       {
         const float near_clip = 0.96f * clip;
         const float post_clip = 1.10f * clip;
-        float blend = 0.0f;
-        float mean = 0.0f;
-        for(int jj = -3; jj < 3; jj++)
+        float blend[3] = {0.0f};
+        float mean[3] = {0.0f};
+        int cnt[3] = {0};
+        for(int jj = -1; jj <= 1; jj++)
         {
-          for(int ii = -3; ii < 3; ii++)
+          for(int ii = -1; ii <= 1; ii++)
           {
             const float val = in[(size_t)jj * width + ii];
-            mean += val;
-            blend += (fminf(post_clip, val) - near_clip) / (post_clip - near_clip);
+            const int c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
+            mean[c] += val;
+            cnt[c]++;
+            blend[c] = fmaxf(blend[c], (fminf(post_clip, val) - near_clip) / (post_clip - near_clip));
           }
         }
-        blend = CLAMP(blend, 0.0f, 1.0f);
-        if(blend > 0)
-        {
-          // recover:
-          mean /= 36.0f;
-          out[0] = blend * mean + (1.f - blend) * in[0];
+        if(blend[0] + blend[1] + blend[2] > 0)
+        { // recover:
+          // options: use max colour and mean blend weight.
+          // const float m = fmaxf(mean[0]/cnt[0], fmaxf(mean[1]/cnt[1], mean[2]/cnt[2]));
+          // const float b = (blend[0] + blend[1] + blend[2])/3.0f;
+          const float m = (mean[0]/cnt[0] + mean[1]/cnt[1] + mean[2]/cnt[2])/3.0f;
+          const float b = fmaxf(fmaxf(blend[0], blend[1]), blend[2]);
+          out[0] = b * m + (1.0f-b) * in[0];
         }
         else
           out[0] = in[0];
@@ -609,7 +620,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case DT_IOP_HIGHLIGHTS_LCH:
       if(filters == 9u)
       {
-        process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip);
+        process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip, roi_in, self->dev->image_storage.xtrans);
         break;
       }
 #ifdef _OPENMP
