@@ -139,6 +139,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_1f, sizes);
     if(err != CL_SUCCESS) goto error;
   }
+
+  // update processed maximum
+  const float m = fmaxf(fmaxf(
+        piece->pipe->processed_maximum[0],
+        piece->pipe->processed_maximum[1]),
+      piece->pipe->processed_maximum[2]);
+  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] = m;
+
   return TRUE;
 
 error:
@@ -564,6 +572,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
     process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
+    for(int k=0;k<3;k++)
+      piece->pipe->processed_maximum[k] = fminf(piece->pipe->processed_maximum[0],
+          fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
     return;
   }
 
@@ -674,6 +685,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
     }
   }
+
+  // update processed maximum
+  const float m = fmaxf(fmaxf(
+        piece->pipe->processed_maximum[0],
+        piece->pipe->processed_maximum[1]),
+      piece->pipe->processed_maximum[2]);
+  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] = m;
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
