@@ -487,7 +487,7 @@ static void process_lch_xtrans(
       if(i < 3 || i > width - 3 || j < 3 || j > height - 3)
       {
         // fast path for border
-        out[0] = in[0];
+        out[0] = MIN(clip, in[0]);
       }
       else
       {
