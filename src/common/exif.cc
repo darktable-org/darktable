@@ -80,7 +80,7 @@ static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of X
 
 static gboolean _str_is_ascii(const char *str)
 {
-  while(*str) if((guchar)*str >= 0x80) return FALSE;
+  while(*str) if((guchar)*str++ >= 0x80) return FALSE;
   return TRUE;
 }
 
