@@ -163,59 +163,89 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
     return 4 * sizeof(float);
 }
 
-static inline void _interpolate_color_xtrans(const void *const ivoid, void *const ovoid,
-                                             const dt_iop_roi_t *const roi_in,
-                                             const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
-                                             const float *const clip, const float max_clip,
-                                             const uint8_t (*const xtrans)[6],
-                                             const int pass)
+/* interpolate value for a pixel, ideal via ratio to nearby pixel */
+static inline float interp_pix_xtrans(const int ratio_next,
+                                      const ssize_t offset_next,
+                                      const float clip0, const float clip_next,
+                                      const float *const in,
+                                      const float *const ratios)
 {
-  // similar to Bayer version, but in Bayer each row/column has only
-  // green/red or green/blue transitions, in x-trans there can be
-  // red/green, red/blue, and green/blue
-  float ratios[2][3] = { { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f } };
-  float *in, *out;
-
-  int i = 0, j = 0;
-  if(dim == 0)
-    j = other;
+  assert(ratio_next != 0);
+  // it's OK to exceed clipping of current pixel's color based on a
+  // neighbor -- that is the purpose of interpolating highlight
+  // colors
+  const float clip_val = fmaxf(clip0, clip_next);
+  if(in[offset_next] >= clip_next - 1e-5f)
+  {
+    // next pixel is also clipped
+    return clip_val;
+  }
   else
-    i = other;
-  ssize_t offs = dim ? roi_out->width : 1;
-  if(dir < 0) offs = -offs;
+  {
+    // set this pixel in ratio to the next
+    assert(ratio_next != 0);
+    if (ratio_next > 0)
+      return fminf(in[offset_next] / ratios[ratio_next], clip_val);
+    else
+      return fminf(in[offset_next] * ratios[-ratio_next], clip_val);
+  }
+}
+
+static inline void interpolate_color_xtrans(const void *const ivoid, void *const ovoid,
+                                            const dt_iop_roi_t *const roi_in,
+                                            const dt_iop_roi_t *const roi_out,
+                                            int dim, int dir, int other,
+                                            const float *const clip,
+                                            const uint8_t (*const xtrans)[6],
+                                            const int pass)
+{
+  // In Bayer each row/col has only green/red or green/blue
+  // transitions, hence can reconstruct color by single ratio per
+  // row. In x-trans there can be transitions between arbitary colors
+  // in a row/col (and 2x2 green blocks which provide no color
+  // transition information). Hence calculate multiple color ratios
+  // for each row/col.
+
+  // Lookup for color ratios, e.g. red -> blue is roff[0][2] and blue
+  // -> red is roff[2][0]. Returned value is an index into ratios. If
+  // negative, then need to invert the ratio. Identity color
+  // transitions aren't used.
+  const int roff[3][3] = {{ 0, -1, -2},
+                          { 1,  0, -3},
+                          { 2,  3,  0}};
+  // record ratios of color transitions 0:unused, 1:RG, 2:RB, and 3:GB
+  float ratios[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+  // passes are 0:+x, 1:-x, 2:+y, 3:-y
+  // dims are 0:traverse a row, 1:traverse a column
+  // dir is 1:left to right, -1: right to left
+  int i = (dim == 0) ? 0 : other;
+  int j = (dim == 0) ? other : 0;
+  const ssize_t offs = (dim ? roi_out->width : 1) * ((dir < 0) ? -1 : 1);
+  const ssize_t offl = offs - (dim ? 1 : roi_out->width);
+  const ssize_t offr = offs + (dim ? 1 : roi_out->width);
   int beg, end;
-  if(dim == 0 && dir == 1)
+  if(dir == 1)
   {
     beg = 0;
-    end = roi_out->width;
-  }
-  else if(dim == 0 && dir == -1)
-  {
-    beg = roi_out->width - 1;
-    end = -1;
-  }
-  else if(dim == 1 && dir == 1)
-  {
-    beg = 0;
-    end = roi_out->height;
-  }
-  else if(dim == 1 && dir == -1)
-  {
-    beg = roi_out->height - 1;
-    end = -1;
+    end = (dim == 0) ? roi_out->width : roi_out->height;
   }
   else
-    return;
+  {
+    beg = ((dim == 0) ? roi_out->width : roi_out->height) - 1;
+    end = -1;
+  }
 
+  float *in, *out;
   if(dim == 1)
   {
-    out = (float *)ovoid + i + (size_t)beg * roi_out->width;
-    in = (float *)ivoid + i + (size_t)beg * roi_out->width;
+    out = (float *)ovoid + (size_t)i + (size_t)beg * roi_out->width;
+    in = (float *)ivoid + (size_t)i + (size_t)beg * roi_in->width;
   }
   else
   {
-    out = (float *)ovoid + beg + (size_t)j * roi_out->width;
-    in = (float *)ivoid + beg + (size_t)j * roi_out->width;
+    out = (float *)ovoid + (size_t)beg + (size_t)j * roi_out->width;
+    in = (float *)ivoid + (size_t)beg + (size_t)j * roi_in->width;
   }
 
   for(int k = beg; k != end; k += dir)
@@ -224,89 +254,61 @@ static inline void _interpolate_color_xtrans(const void *const ivoid, void *cons
       j = k;
     else
       i = k;
-    if(i < 2 || i > roi_out->width - 3 || j < 2 || j > roi_out->height - 3)
+
+    const uint8_t f0 = FCxtrans(j, i, roi_in, xtrans);
+    const uint8_t f1 = FCxtrans(dim ? (j + dir) : j, dim ? i : (i + dir), roi_in, xtrans);
+    const uint8_t fl = FCxtrans(dim ? (j + dir) : (j - 1), dim ? (i - 1) : (i + dir), roi_in, xtrans);
+    const uint8_t fr = FCxtrans(dim ? (j + dir) : (j + 1), dim ? (i + 1) : (i + dir), roi_in, xtrans);
+    const float clip0 = clip[f0];
+    const float clip1 = clip[f1];
+    const float clipl = clip[fl];
+    const float clipr = clip[fr];
+    const float clip_max = fmaxf(fmaxf(clip[0], clip[1]), clip[2]);
+
+    if(i == 0 || i == roi_out->width - 1 || j == 0 || j == roi_out->height - 1)
     {
-      if(pass == 3) out[0] = in[0];
+      if(pass == 3) out[0] = fminf(clip_max, in[0]);
     }
     else
     {
-      const uint8_t f0 = FCxtrans(j, i, roi_in, xtrans);
-      const uint8_t f1 = FCxtrans(dim ? (j + dir) : j, dim ? i : (i + dir), roi_in, xtrans);
-      const uint8_t f2 = FCxtrans(dim ? (j + dir * 2) : j, dim ? i : (i + dir * 2), roi_in, xtrans);
-      const float clip0 = clip[f0];
-      const float clip1 = clip[f1];
-      const float clip2 = clip[f2];
-
-      // record ratio to next different-colored pixel if this & next unclamped
-      if(in[0] < clip0 && in[0] > 1e-5f)
+      // ratio to next pixel if this & next are unclamped and not in
+      // 2x2 green block
+      if ((f0 != f1) &&
+          (in[0] < clip0 && in[0] > 1e-5f) &&
+          (in[offs] < clip1 && in[offs] > 1e-5f))
       {
-        if(in[offs] < clip1 && in[offs] > 1e-5f)
-        {
-          if(f0 != f1)
-          { // not first of gg block
-            if(f0 < f1)
-              ratios[f0][f1] = (3.0f * ratios[f0][f1] + in[0] / in[offs]) / 4.0f;
-            else
-              ratios[f1][f0] = (3.0f * ratios[f1][f0] + in[offs] / in[0]) / 4.0f;
-          }
-          else
-          {
-            if(in[offs * 2] < clip2 && in[offs * 2] > 1e-5f)
-            {
-              if(f0 < f2)
-                ratios[f0][f2] = (3.0f * ratios[f0][f2] + in[0] / in[offs * 2]) / 4.0f;
-              else
-                ratios[f2][f0] = (3.0f * ratios[f2][f0] + in[offs * 2] / in[0]) / 4.0f;
-            }
-          }
-        }
+        const int r = roff[f0][f1];
+        assert(r != 0);
+        if (r > 0)
+          ratios[r] = (3.f * ratios[r] + (in[offs] / in[0])) / 4.f;
+        else
+          ratios[-r] = (3.f * ratios[-r] + (in[0] / in[offs])) / 4.f;
       }
 
       if(in[0] >= clip0 - 1e-5f)
       {
-        float add = 0.0f;
-        if(f0 != f1) // not double green block
-        {
-          if(in[offs] >= clip1 - 1e-5f)
-          {
-            add = fmaxf(clip0, clip1);
-          }
-          else
-          {
-            if(f0 < f1)
-              add = in[offs] * ratios[f0][f1];
-            else
-              add = in[offs] / ratios[f1][f0];
-          }
-        }
+        // interplate color for clipped pixel
+        float add;
+        if(f0 != f1)
+          // next pixel is different color
+          add =
+            interp_pix_xtrans(roff[f0][f1], offs, clip0, clip1, in, ratios);
         else
-        {
-          if(1 && in[offs] < clip1 - 1e-5f) // adjacent green isn't clipped
-          {
-            add = in[offs];
-          }
-          else if(in[offs * 2] >= clip2 - 1e-5f)
-          {
-            add = fmaxf(clip0, clip2);
-          }
-          else
-          {
-            if(f0 < f2)
-              add = in[offs * 2] * ratios[f0][f2];
-            else
-              add = in[offs * 2] / ratios[f2][f0];
-          }
-        }
+          // at start of 2x2 green block, look diagonally
+          add = (fl != f0) ?
+            interp_pix_xtrans(roff[f0][fl], offl, clip0, clipl, in, ratios) :
+            interp_pix_xtrans(roff[f0][fr], offr, clip0, clipr, in, ratios);
 
         if(pass == 0)
           out[0] = add;
         else if(pass == 3)
-          out[0] = fminf(max_clip, (out[0] + add) / 4.0f);
+          out[0] = fminf(clip_max, (out[0] + add) / 4.0f);
         else
           out[0] += add;
       }
       else
       {
+        // pixel is not clipped
         if(pass == 3) out[0] = in[0];
       }
     }
@@ -315,9 +317,9 @@ static inline void _interpolate_color_xtrans(const void *const ivoid, void *cons
   }
 }
 
-static inline void _interpolate_color(const void *const ivoid, void *const ovoid,
-                                      const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
-                                      const float *clip, const uint32_t filters, const int pass)
+static inline void interpolate_color(const void *const ivoid, void *const ovoid,
+                                     const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
+                                     const float *clip, const uint32_t filters, const int pass)
 {
   float ratio = 1.0f;
   float *in, *out;
@@ -642,23 +644,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(filters == 9u)
       {
         const uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
-        const float max_clip = fmaxf(piece->pipe->processed_maximum[0],
-                                     fmaxf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none)
 #endif
         for(int j = 0; j < roi_out->height; j++)
         {
-          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, 1, j, clips, max_clip, xtrans, 0);
-          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, -1, j, clips, max_clip, xtrans, 1);
+          interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, 1, j, clips, xtrans, 0);
+          interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, -1, j, clips, xtrans, 1);
         }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none)
 #endif
         for(int i = 0; i < roi_out->width; i++)
         {
-          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, 1, i, clips, max_clip, xtrans, 2);
-          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, -1, i, clips, max_clip, xtrans, 3);
+          interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, 1, i, clips, xtrans, 2);
+          interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, -1, i, clips, xtrans, 3);
         }
       }
       else
@@ -668,8 +668,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
         for(int j = 0; j < roi_out->height; j++)
         {
-          _interpolate_color(ivoid, ovoid, roi_out, 0, 1, j, clips, filters, 0);
-          _interpolate_color(ivoid, ovoid, roi_out, 0, -1, j, clips, filters, 1);
+          interpolate_color(ivoid, ovoid, roi_out, 0, 1, j, clips, filters, 0);
+          interpolate_color(ivoid, ovoid, roi_out, 0, -1, j, clips, filters, 1);
         }
 
 // up/down directions
@@ -678,8 +678,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
         for(int i = 0; i < roi_out->width; i++)
         {
-          _interpolate_color(ivoid, ovoid, roi_out, 1, 1, i, clips, filters, 2);
-          _interpolate_color(ivoid, ovoid, roi_out, 1, -1, i, clips, filters, 3);
+          interpolate_color(ivoid, ovoid, roi_out, 1, 1, i, clips, filters, 2);
+          interpolate_color(ivoid, ovoid, roi_out, 1, -1, i, clips, filters, 3);
         }
       }
       break;
