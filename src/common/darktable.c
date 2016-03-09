@@ -453,23 +453,30 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #error "Unfortunately we only work on litte-endian systems."
 #endif
 
-#if !defined(__amd64__) && !defined(__amd64) && !defined(__x86_64__) && !defined(__x86_64)                   \
-    && !defined(__i386__) && !defined(__i386)                                                                \
-    && !(defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A))
+#define DT_SUPPORTED_X86                                                                                     \
+  (defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(__i386__)   \
+   || defined(__i386))
+#define DT_SUPPORTED_ARMv8A                                                                                  \
+  (defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A))
+
+#if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A
 #error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit) and ARMv8-A (64-bit only)."
 #endif
 
-#if defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A)
+#if !DT_SUPPORTED_X86
 #if !defined(__SIZEOF_POINTER__) || __SIZEOF_POINTER__ < 8
-#error "On ARMv8-A, we only support 64-bit."
+#error "On non-x86, we only support 64-bit."
 #else
   if(sizeof(void *) < 8)
   {
-    fprintf(stderr, "[dt_init] On ARMv8-A, we only support 64-bit.\n");
+    fprintf(stderr, "[dt_init] On non-x86, we only support 64-bit.\n");
     return 1;
   }
 #endif
 #endif
+
+#undef DT_SUPPORTED_ARMv8A
+#undef DT_SUPPORTED_X86
 
 #ifndef __SSE2__
 #pragma message "Building without SSE2 is highly experimental."
