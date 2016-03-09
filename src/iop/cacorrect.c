@@ -339,7 +339,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   //     plistener->setProgress(progress);
   //   }
 
-  const bool autoCA = (cared == 0 && cablue == 0);
+  const gboolean autoCA = (cared == 0 && cablue == 0);
   // local variables
   //   const int width = W, height = H;
   // temporary array to store simple interpolation of G
@@ -352,7 +352,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
         blockdenom[2][2] = { { 0, 0 }, { 0, 0 } }, blockvar[2][2];
 
   // Because we can't break parallel processing, we need a switch do handle the errors
-  bool processpasstwo = true;
+  gboolean processpasstwo = TRUE;
 
   const int border = 8;
   const int border2 = 16;
@@ -892,7 +892,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             }
             else
             {
-              processpasstwo = false;
+              processpasstwo = FALSE;
               printf("blockdenom vanishes \n");
               break;
             }
@@ -1040,7 +1040,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             {
 
               printf("numblox = %d \n", numblox[1]);
-              processpasstwo = false;
+              processpasstwo = FALSE;
             }
           }
 
@@ -1055,7 +1055,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                   printf("CA correction pass failed -- can't solve linear equations for colour %d direction "
                          "%d...\n",
                          c, dir);
-                  processpasstwo = false;
+                  processpasstwo = FALSE;
                 }
               }
         }
