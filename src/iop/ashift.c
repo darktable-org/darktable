@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Inspiration for this module comes from the program ShiftN (http://www.shiftn.de) by
+// Inspiration to this module comes from the program ShiftN (http://www.shiftn.de) by
 // Marcus Hebel.
 
 // Thanks to Marcus for his support when implementing part of the ShiftN functionality
@@ -1485,7 +1485,7 @@ static int remove_outliers(dt_iop_module_t *module)
   // holds the result of ransac
   int inout_set[g->lines_count];
 
-  // some counter variables
+  // some counting variables
   int vnb = 0, vcount = 0;
   int hnb = 0, hcount = 0;
 
@@ -1588,8 +1588,8 @@ static inline double ilogit(double L, double min, double max)
 //    * generate homography matrix out of fixed parameters and fitting parameters
 //    * apply homography to all end points of affected lines
 //    * generate new line out of transformed end points
-//    * calculate scalar product v of line with perpendicular axis
-//    * sum over weighted v^2 values
+//    * calculate scalar product s of line with perpendicular axis
+//    * sum over weighted s^2 values
 static double model_fitness(double *params, void *data)
 {
   dt_iop_ashift_fit_params_t *fit = (dt_iop_ashift_fit_params_t *)data;
@@ -2099,7 +2099,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   int iter = simplex(crop_fitness, params, pcount, NMS_CROP_EPSILON, NMS_CROP_SCALE, NMS_CROP_ITERATIONS,
                      crop_constraint, (void*)&cropfit);
 
-  // in case the fit did not converge ...
+  // in case the fit did not converge -> failed
   if(iter >= NMS_CROP_ITERATIONS) goto failed;
 
   // the fit did converge -> get clipping margins out of params:
@@ -2144,6 +2144,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   return;
 
 failed:
+  // in case of failure: reset clipping margins, set "automatic cropping" parameter
+  // to "off" state, and display warning message
   p->cl = 0.0f;
   p->cr = 1.0f;
   p->ct = 0.0f;
@@ -3414,6 +3416,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   if(gui_has_focus(self))
   {
+    // if gui has focus we want to see the full uncropped image
     d->cl = 0.0f;
     d->cr = 1.0f;
     d->ct = 0.0f;
@@ -3449,8 +3452,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
   dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-  dt_bauhaus_slider_set(g->f_length, p->f_length);
-  dt_bauhaus_slider_set(g->crop_factor, p->crop_factor);
+  dt_bauhaus_slider_set_soft(g->f_length, p->f_length);
+  dt_bauhaus_slider_set_soft(g->crop_factor, p->crop_factor);
   dt_bauhaus_slider_set(g->orthocorr, p->orthocorr);
   dt_bauhaus_slider_set(g->aspect, p->aspect);
   dt_bauhaus_combobox_set(g->mode, p->mode);
