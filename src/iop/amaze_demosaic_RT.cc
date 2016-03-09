@@ -249,12 +249,12 @@ template <typename _Tp> static inline const _Tp intp(const _Tp a, const _Tp b, c
   return a * (b - c) + c;
 }
 
-template <typename _Tp> static inline const _Tp LIM(const _Tp &a, const _Tp &b, const _Tp &c)
+template <typename _Tp> static inline const _Tp LIM(const _Tp a, const _Tp b, const _Tp c)
 {
   return std::max(b, std::min(a, c));
 }
 
-template <typename _Tp> static inline const _Tp ULIM(const _Tp &a, const _Tp &b, const _Tp &c)
+template <typename _Tp> static inline const _Tp ULIM(const _Tp a, const _Tp b, const _Tp c)
 {
   return ((b < c) ? LIM(a, b, c) : LIM(a, c, b));
 }
