@@ -3414,9 +3414,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
 
-  if(gui_has_focus(self) && self->enabled)
+  if(gui_has_focus(self))
   {
-    // if gui has focus and the module is enabled we want to see the full uncropped image
+    // if gui has focus we want to see the full uncropped image
     d->cl = 0.0f;
     d->cr = 1.0f;
     d->ct = 0.0f;
