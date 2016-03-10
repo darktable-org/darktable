@@ -535,8 +535,6 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
       SUM_PIXEL_EPILOGUE
     }
   }
-
-  _mm_sfence();
 }
 
 #undef SUM_PIXEL_CONTRIBUTION_COMMON
