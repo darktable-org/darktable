@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define __STDC_FORMAT_MACROS
+
 #include <algorithm>
 
 extern "C" {
