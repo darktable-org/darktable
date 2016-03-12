@@ -279,13 +279,6 @@ static float lr2dt_blacks(float value)
   return get_interpolate(lr2dt_blacks_table, value);
 }
 
-static float lr2dt_exposure(float value)
-{
-  lr2dt_t lr2dt_exposure_table[] = { { -5, -4.5 }, { 0, 0 }, { 5, 4.5 } };
-
-  return get_interpolate(lr2dt_exposure_table, value);
-}
-
 static float lr2dt_vignette_gain(float value)
 {
   lr2dt_t lr2dt_vignette_table[] = { { -100, -1 }, { -50, -0.7 }, { 0, 0 }, { 50, 0.5 }, { 100, 1 } };
@@ -614,7 +607,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       if(v != 0.0)
       {
         has_exposure = TRUE;
-        pe.exposure = lr2dt_exposure(v);
+        pe.exposure = v;
       }
     }
     else if(!xmlStrcmp(attribute->name, (const xmlChar *)"PostCropVignetteAmount"))
