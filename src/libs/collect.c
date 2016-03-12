@@ -87,6 +87,7 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_COL_PATH,
   DT_LIB_COLLECT_COL_VISIBLE,
   DT_LIB_COLLECT_COL_UNREACHABLE,
+  DT_LIB_COLLECT_COL_COUNT,
   DT_LIB_COLLECT_NUM_COLS
 } dt_lib_collect_cols_t;
 
@@ -434,6 +435,19 @@ static gboolean list_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   return FALSE;
 }
 
+static gboolean tree_show_count(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  gchar *str = NULL;
+  int count = 0;
+
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_TEXT, &str, DT_LIB_COLLECT_COL_COUNT, &count, -1);
+  str = dt_util_dstrcat(str, " (%d)", count);
+  gtk_tree_store_set(GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_TEXT, str, -1);
+
+  g_free(str);
+  return FALSE;
+}
+
 static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
@@ -724,6 +738,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   int property = gtk_combo_box_get_active(dr->combo);
   gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
   gboolean tags = (property == DT_COLLECTION_PROP_TAG);
+  gboolean datetime = (property == DT_COLLECTION_PROP_TIME);
 
   set_properties(dr);
 
@@ -750,6 +765,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                "SELECT distinct folder, id FROM film_rolls ORDER BY UPPER(folder) DESC");
     else if(tags)
       snprintf(query, sizeof(query), "SELECT distinct name, id FROM tags ORDER BY UPPER(name) DESC");
+    else if(datetime)
+      snprintf(query, sizeof(query),
+               "SELECT DISTINCT datetime_taken, 1 FROM images ORDER BY datetime_taken DESC");
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -779,7 +797,25 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         int level = 0;
         GtkTreeIter current, iter;
         char **pch = NULL;
-        if(tags)
+        char **date_text = NULL;
+        if(datetime)
+        {
+          struct tm tm1 = { 0 };
+          char t_text[256] = { 0 };
+          char t_vals[256] = { 0 };
+          if(strptime(name, "%Y:%m:%d %H:%M:%S", &tm1))
+          {
+            strftime(t_text, sizeof(t_text), "%Y|%B|%A %d|%H:%M|%H:%M:%S", &tm1);
+            strftime(t_vals, sizeof(t_vals), "%Y|%Y:%m|%Y:%m:%d|%Y:%m:%d %H:%M|%Y:%m:%d %H:%M:%S", &tm1);
+          }
+          else
+          {
+            snprintf(t_text, sizeof(t_text), _("no valid dates"));
+          }
+          pch = g_strsplit(t_vals, "|", -1);
+          date_text = g_strsplit(t_text, "|", -1);
+        }
+        else if(tags)
           pch = g_strsplit(name, "|", -1);
         else if(folders)
           pch = g_strsplit(name, "/", -1);
@@ -807,12 +843,15 @@ static void tree_view(dt_lib_collect_rule_t *dr)
               if(gtk_tree_model_iter_nth_child(model, &iter, level > 0 ? &current : NULL, k))
               {
                 char *value;
-                gtk_tree_model_get(model, &iter, 0, &value, -1);
+                int count;
+                gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &value, DT_LIB_COLLECT_COL_COUNT,
+                                   &count, -1);
 
-                if(strcmp(value, pch[j]) == 0)
+                if((datetime && strcmp(value, date_text[j]) == 0) || strcmp(value, pch[j]) == 0)
                 {
                   g_free(value);
                   current = iter;
+                  gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_COUNT, count + 1, -1);
                   found = TRUE;
                   break;
                 }
@@ -825,26 +864,39 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             if(!found && pch[j] && *pch[j])
             {
               gchar *pth2 = NULL;
+              gchar *pth3 = NULL;
 
               if(folders) pth2 = dt_util_dstrcat(pth2, "/");
 
-              for(int i = 0; i <= level; i++)
+              if(datetime)
               {
-                if(tags)
-                  pth2 = dt_util_dstrcat(pth2, "%s|", pch[i]);
-                else if(folders)
-                  pth2 = dt_util_dstrcat(pth2, "%s/", pch[i + 1]);
+                pth2 = dt_util_dstrcat(pth2, "%s", pch[j]);
               }
-              gchar *pth3 = g_strdup(pth2);
-
-              if(folders || level == max_level)
-                pth2[strlen(pth2) - 1] = '\0';
               else
-                pth2 = dt_util_dstrcat(pth2, "%%");
+              {
+                for(int i = 0; i <= level; i++)
+                {
+                  if(tags)
+                    pth2 = dt_util_dstrcat(pth2, "%s|", pch[i]);
+                  else if(folders)
+                    pth2 = dt_util_dstrcat(pth2, "%s/", pch[i + 1]);
+                }
+                pth3 = g_strdup(pth2);
+                if(folders || level == max_level)
+                  pth2[strlen(pth2) - 1] = '\0';
+                else
+                  pth2 = dt_util_dstrcat(pth2, "%%");
+              }
 
               gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, level > 0 ? &current : NULL, 0);
-              gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
-                                 DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
+              if(datetime)
+                gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, date_text[j],
+                                   DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
+                                   DT_LIB_COLLECT_COL_COUNT, 1, -1);
+              else
+                gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
+                                   DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
+
               if(folders)
                 gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_UNREACHABLE,
                                    !(g_file_test(pth3, G_FILE_TEST_IS_DIR)), -1);
@@ -858,12 +910,16 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           }
 
           g_strfreev(pch);
+          if(datetime) g_strfreev(date_text);
         }
       }
     }
     sqlite3_finalize(stmt);
 
+    if(datetime) gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_show_count, NULL);
+
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
+
 
     d->treefilter = _create_filtered_model(model, dr);
 
@@ -1028,11 +1084,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
                  "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images ORDER BY datetime_taken DESC");
         break;
 
-      case DT_COLLECTION_PROP_TIME:
-        snprintf(query, sizeof(query),
-                 "SELECT DISTINCT datetime_taken, 1 FROM images ORDER BY datetime_taken DESC");
-        break;
-
       default: // filmroll
         snprintf(query, sizeof(query), "select distinct folder, id from film_rolls order by folder desc");
         break;
@@ -1088,9 +1139,9 @@ static void list_view(dt_lib_collect_rule_t *dr)
      || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_DESCRIPTION
      || property == DT_COLLECTION_PROP_FILENAME || property == DT_COLLECTION_PROP_FILMROLL
      || property == DT_COLLECTION_PROP_LENS || property == DT_COLLECTION_PROP_PUBLISHER
-     || property == DT_COLLECTION_PROP_RIGHTS || property == DT_COLLECTION_PROP_TIME
-     || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
-     || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO)
+     || property == DT_COLLECTION_PROP_RIGHTS || property == DT_COLLECTION_PROP_TITLE
+     || property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+     || property == DT_COLLECTION_PROP_ISO)
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
   // we update list selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
@@ -1101,7 +1152,8 @@ static void update_view(dt_lib_collect_rule_t *dr)
 {
   int property = gtk_combo_box_get_active(dr->combo);
 
-  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG)
+  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_TIME)
     tree_view(dr);
   else
     list_view(dr);
@@ -1239,7 +1291,8 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 
   int property = gtk_combo_box_get_active(d->combo);
 
-  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG)
+  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_TIME)
   {
     d->typing = FALSE;
   }
@@ -1278,9 +1331,8 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
   d->rule[active].typing = FALSE;
 
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
-  if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
-     item == DT_COLLECTION_PROP_TAG ||      // or tags
-     item == DT_COLLECTION_PROP_FOLDERS)    // or folders
+  if(item == DT_COLLECTION_PROP_FILMROLL || item == DT_COLLECTION_PROP_TAG
+     || item == DT_COLLECTION_PROP_FOLDERS || item == DT_COLLECTION_PROP_TIME)
     gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
   else
     gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
@@ -1297,7 +1349,7 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
 
   if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS
      || item == DT_COLLECTION_PROP_COLORLABEL || item == DT_COLLECTION_PROP_GEOTAGGING
-     || item == DT_COLLECTION_PROP_HISTORY)
+     || item == DT_COLLECTION_PROP_HISTORY || item == DT_COLLECTION_PROP_TIME)
     set_properties(d->rule + active); // we just have to set the selection
   else
     update_view(d->rule + active); // we have to update visible items too
@@ -1317,7 +1369,8 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 
   property = gtk_combo_box_get_active(d->combo);
 
-  if(property != DT_COLLECTION_PROP_FOLDERS && property != DT_COLLECTION_PROP_TAG)
+  if(property != DT_COLLECTION_PROP_FOLDERS && property != DT_COLLECTION_PROP_TAG
+     && property != DT_COLLECTION_PROP_TIME)
   {
     view = c->view;
     model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
@@ -1331,8 +1384,7 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
       {
         gchar *text;
         const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->combo));
-        if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
-           item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS) // or folders
+        if(item == DT_COLLECTION_PROP_FILMROLL)
           gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
         else
           gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
@@ -1698,13 +1750,13 @@ void gui_init(dt_lib_module_t *self)
 
   GtkTreeModel *listmodel
       = GTK_TREE_MODEL(gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN));
+                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT));
   d->listfilter = gtk_tree_model_filter_new(listmodel, NULL);
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(d->listfilter), DT_LIB_COLLECT_COL_VISIBLE);
 
   GtkTreeModel *treemodel
       = GTK_TREE_MODEL(gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN));
+                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT));
   d->treefilter = gtk_tree_model_filter_new(treemodel, NULL);
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(d->treefilter), DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
