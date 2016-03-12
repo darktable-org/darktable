@@ -27,7 +27,7 @@ namespace RawSpeed {
 FileMap::FileMap(uint32 _size) : size(_size) {
   if (!size)
     throw FileIOException("Filemap of 0 bytes not possible");
-  data = (uchar8*)_aligned_malloc(size + 16, 16);
+  data = (uchar8*)_aligned_malloc(size + FILEMAP_MARGIN, 16);
   if (!data) {
     throw FileIOException("Not enough memory to open file.");
   }
@@ -38,6 +38,16 @@ FileMap::FileMap(uchar8* _data, uint32 _size): data(_data), size(_size) {
   mOwnAlloc = false;
 }
 
+FileMap::FileMap(FileMap *f, uint32 offset) {
+  size = f->getSize()-offset;
+  data = f->getDataWrt(offset, size+FILEMAP_MARGIN);
+  mOwnAlloc = false;
+}
+
+FileMap::FileMap(FileMap *f, uint32 offset, uint32 size) {
+  data = f->getDataWrt(offset, size+FILEMAP_MARGIN);
+  mOwnAlloc = false;
+}
 
 FileMap::~FileMap(void) {
   if (data && mOwnAlloc) {
@@ -67,10 +77,25 @@ void FileMap::corrupt(int errors) {
   }
 }
 
-const uchar8* FileMap::getData( uint32 offset )
+bool FileMap::isValid(uint32 offset, uint32 count)
 {
-  if (offset >= size)
-    throw IOException("FileMap: Attempting to read out of file.");
+  uint64 totaloffset = (uint64)offset + (uint64)count - 1;
+  return (isValid(offset) && totaloffset < size);
+}
+
+const uchar8* FileMap::getData( uint32 offset, uint32 count )
+{
+  if (count == 0)
+    throw IOException("FileMap: Trying to get a zero sized buffer?!");
+
+  uint64 totaloffset = (uint64)offset + (uint64)count - 1;
+  uint64 totalsize = (uint64)size + FILEMAP_MARGIN;
+
+  // Give out data up to FILEMAP_MARGIN more bytes than are really in the
+  // file as that is useful for some of the BitPump code
+  if (!isValid(offset) || totaloffset > totalsize)
+    throw IOException("FileMap: Attempting to read file out of bounds.");
   return &data[offset];
 }
+
 } // namespace RawSpeed

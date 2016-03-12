@@ -678,9 +678,9 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_float), cur_elt);
         break;
     }
-    g_object_set(labelev, "tooltip-text", tooltip, (char *)NULL);
+    gtk_widget_set_tooltip_text(labelev, tooltip);
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-    g_object_set(cur_elt->widget, "tooltip-text", cur_elt->tooltip, (char *)NULL);
+    gtk_widget_set_tooltip_text(cur_elt->widget, cur_elt->tooltip);
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
     gtk_grid_attach_next_to(GTK_GRID(grid), cur_elt->widget, labelev, GTK_POS_RIGHT, 1, 1);
     cur_elt = cur_elt->next;

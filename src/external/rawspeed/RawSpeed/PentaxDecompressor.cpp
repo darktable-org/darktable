@@ -113,7 +113,7 @@ void PentaxDecompressor::decodePentax(TiffIFD *root, uint32 offset, uint32 size)
   mUseBigtable = true;
   createHuffmanTable(dctbl1);
 
-  pentaxBits = new BitPumpMSB(mFile->getData(offset), size);
+  pentaxBits = new BitPumpMSB(mFile, offset, size);
   uchar8 *draw = mRaw->getData();
   ushort16 *dest;
   uint32 w = mRaw->dim.x;

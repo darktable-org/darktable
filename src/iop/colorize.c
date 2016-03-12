@@ -21,11 +21,12 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -124,8 +125,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "source mix", GTK_WIDGET(g->scale2));
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   float *in, *out;
   dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
@@ -138,7 +139,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const float Lmlmix = L - (mix * 100.0f) / 2.0f;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out) private(in, out) schedule(static)
+#pragma omp parallel for default(none) private(in, out) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -160,7 +161,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorize_data_t *data = (dt_iop_colorize_data_t *)piece->data;
   dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)self->data;
@@ -430,7 +431,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->gslider1, 0.664f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->gslider1, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->gslider1, 1.0f, 1.0f, 0.0f, 0.0f);
-  g_object_set(G_OBJECT(g->gslider1), "tooltip-text", _("select the hue tone"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->gslider1, _("select the hue tone"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->gslider1, TRUE, TRUE, 0);
 
@@ -440,7 +441,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->gslider2, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(g->gslider2, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->gslider2, 1.0f, 1.0f, 1.0f, 1.0f);
-  g_object_set(G_OBJECT(g->gslider2), "tooltip-text", _("select the saturation shadow tone"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->gslider2, _("select the saturation shadow tone"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->gslider2, TRUE, TRUE, 0);
 
@@ -456,8 +457,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("lightness of color"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("mix value of source lightness"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("lightness of color"));
+  gtk_widget_set_tooltip_text(g->scale2, _("mix value of source lightness"));
 
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(hue_callback), self);
   g_signal_connect(G_OBJECT(g->gslider2), "value-changed", G_CALLBACK(saturation_callback), self);

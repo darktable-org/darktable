@@ -19,9 +19,10 @@
 #include "config.h"
 #endif
 // our includes go first:
-#include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
+#include "develop/imageop.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -98,8 +99,8 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 // *roi_out, dt_iop_roi_t *roi_in);
 
 /** process, all real work is done here. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -112,7 +113,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
 // optional: parallelize it!
-#pragma omp parallel for default(none) schedule(static) shared(i, o, roi_in, roi_out, d)
+#pragma omp parallel for default(none) schedule(static) shared(d)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {

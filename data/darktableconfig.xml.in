@@ -1004,6 +1004,20 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/map/show_outline</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>Whether to highlight the search result on the map</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/map/max_outline_nodes</name>
+    <type>int</type>
+    <default>10000</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/map/filter_images_drawn</name>
     <type>bool</type>
@@ -2393,5 +2407,19 @@
     <default>false</default>
     <shortdescription>if using a 32-bit build, hide the message recommending a 64-bit build</shortdescription>
     <longdescription>the 32-bit build of darktable is known to exhibit sporadic issues and crashes. we show a warning message hinting at this issue. with this option, you can suppress the warning.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>codepaths/sse2</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>enable usage of SSE2-optimized codepaths</shortdescription>
+    <longdescription></longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>codepaths/openmp_simd</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>enable usage of OpenMP SIMD codepaths. If enabled, and such codepath exists, it will have the highest priority</shortdescription>
+    <longdescription></longdescription>
   </dtconfig>
 </dtconfiglist>

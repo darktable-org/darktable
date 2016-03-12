@@ -442,7 +442,7 @@ static gboolean _dt_ctl_switch_mode_to(gpointer user_data)
   darktable.control->button_down_which = 0;
   darktable.gui->center_tooltip = 0;
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
-  g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, "");
 
   if(!dt_view_manager_switch(darktable.view_manager, mode))
     dt_conf_set_int("ui_last/view", mode);
@@ -500,7 +500,10 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
     if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
     {
       if(darktable.control->log_message_timeout_id)
+      {
         g_source_remove(darktable.control->log_message_timeout_id);
+        darktable.control->log_message_timeout_id = 0;
+      }
       darktable.control->log_ack = (darktable.control->log_ack + 1) % DT_CTL_LOG_SIZE;
       dt_pthread_mutex_unlock(&darktable.control->log_mutex);
       return;

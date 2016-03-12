@@ -17,17 +17,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "develop/pixelpipe.h"
-#include "develop/blend.h"
-#include "develop/tiling.h"
-#include "gui/gtk.h"
-#include "control/control.h"
-#include "control/signal.h"
-#include "common/opencl.h"
-#include "common/imageio.h"
-#include "libs/lib.h"
-#include "libs/colorpicker.h"
 #include "common/colorspaces.h"
 #include "common/histogram.h"
+#include "common/imageio.h"
+#include "common/opencl.h"
+#include "control/control.h"
+#include "control/signal.h"
+#include "develop/blend.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
+#include "gui/gtk.h"
+#include "libs/colorpicker.h"
+#include "libs/lib.h"
 
 #include <assert.h>
 #include <string.h>
@@ -2114,7 +2115,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             box[k] = MIN(roi_out->width - 1,
                          MAX(0, dev->gui_module->color_picker_box[k] * (roi_out->width - 1)));
           for(int k = 1; k < 4; k += 2)
-            box[k] = MIN(roi_out->height - 1, MAX(0, module->color_picker_box[k] * (roi_out->height - 1)));
+            box[k] = MIN(roi_out->height - 1,
+                         MAX(0, dev->gui_module->color_picker_box[k] * (roi_out->height - 1)));
         }
         else
         {
@@ -2122,7 +2124,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             box[k] = MIN(roi_out->width - 1,
                          MAX(0, dev->gui_module->color_picker_point[0] * (roi_out->width - 1)));
           for(int k = 1; k < 4; k += 2)
-            box[k] = MIN(roi_out->height - 1, MAX(0, module->color_picker_point[1] * (roi_out->height - 1)));
+            box[k] = MIN(roi_out->height - 1,
+                         MAX(0, dev->gui_module->color_picker_point[1] * (roi_out->height - 1)));
         }
       }
       else

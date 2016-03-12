@@ -27,7 +27,7 @@
 #define gbuf(BUF, A, B) ((BUF)[4 * ((size_t)width * ((B)) + ((A))) + ch])
 
 
-void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int width, const int height)
+static void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int width, const int height)
 {
   const int wd = (int)(1 + (width >> (l - 1))), ht = (int)(1 + (height >> (l - 1)));
   int ch = 0;
@@ -93,7 +93,7 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
   }
 }
 
-void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int width, const int height)
+static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int width, const int height)
 {
   const int step = 1 << l;
   const int st = step / 2;

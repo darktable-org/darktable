@@ -78,7 +78,9 @@
 #include <sys/wait.h>
 #endif
 #include <locale.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #endif
@@ -383,6 +385,53 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
   return id;
 }
 
+static void dt_codepaths_init()
+{
+#ifdef HAVE_BUILTIN_CPU_SUPPORTS
+  __builtin_cpu_init();
+#endif
+
+  memset(&(darktable.codepath), 0, sizeof(darktable.codepath));
+
+  // first, enable whatever codepath this CPU supports
+  {
+#ifdef HAVE_BUILTIN_CPU_SUPPORTS
+    darktable.codepath.SSE2 = (__builtin_cpu_supports("sse") && __builtin_cpu_supports("sse2"));
+#else
+    dt_cpu_flags_t flags = dt_detect_cpu_features();
+    darktable.codepath.SSE2 = ((flags & (CPU_FLAG_SSE)) && (flags & (CPU_FLAG_SSE2)));
+#endif
+  }
+
+  // second, apply overrides from conf
+  // NOTE: all intrinsics sets can only be overridden to OFF
+  if(!dt_conf_get_bool("codepaths/sse2")) darktable.codepath.SSE2 = 0;
+
+  // last: do we have any intrinsics sets enabled?
+  darktable.codepath._no_intrinsics = !(darktable.codepath.SSE2);
+
+// if there is no SSE, we must enable plain codepath by default,
+// else, enable it conditionally.
+#if defined(__SSE__)
+  // disabled by default, needs to be manually enabled if needed.
+  // disabling all optimized codepaths enables it automatically.
+  if(dt_conf_get_bool("codepaths/openmp_simd") || darktable.codepath._no_intrinsics)
+#endif
+  {
+    darktable.codepath.OPENMP_SIMD = 1;
+    fprintf(stderr, "[dt_codepaths_init] will be using HIGHLY EXPERIMENTAL plain OpenMP SIMD codepath.\n");
+  }
+
+#if defined(__SSE__)
+  if(darktable.codepath._no_intrinsics)
+#endif
+  {
+    fprintf(stderr, "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
+    fprintf(stderr,
+            "[dt_codepaths_init] expect a LOT of functionality to be broken. you have been warned.\n");
+  }
+}
+
 int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 {
 #ifndef __WIN32__
@@ -391,31 +440,63 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
         "WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
 #endif
 
+#if defined(__SSE__)
   // make everything go a lot faster.
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+#endif
+
 #if !defined __APPLE__ && !defined __WIN32__
   _dt_sigsegv_old_handler = signal(SIGSEGV, &_dt_sigsegv_handler);
 #endif
 
-#ifndef __SSE3__
-#error "Unfortunately we depend on SSE3 instructions at this time."
-#error "Please contribute a backport patch (or buy a newer processor)."
-#else
-  int sse3_supported = 0;
-
-#ifdef HAVE_BUILTIN_CPU_SUPPORTS
-  // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
-  sse3_supported = __builtin_cpu_supports("sse3");
-#else
-  sse3_supported = dt_detect_cpu_features() & CPU_FLAG_SSE3;
+#if !defined(__BYTE_ORDER__) || __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+#error "Unfortunately we only work on litte-endian systems."
 #endif
-  if(!sse3_supported)
+
+#define DT_SUPPORTED_X86                                                                                     \
+  (defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(__i386__)   \
+   || defined(__i386))
+#define DT_SUPPORTED_ARMv8A                                                                                  \
+  (defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A))
+
+#if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A
+#error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit) and ARMv8-A (64-bit only)."
+#endif
+
+#if !DT_SUPPORTED_X86
+#if !defined(__SIZEOF_POINTER__) || __SIZEOF_POINTER__ < 8
+#error "On non-x86, we only support 64-bit."
+#else
+  if(sizeof(void *) < 8)
   {
-    fprintf(stderr, "[dt_init] unfortunately we depend on SSE3 instructions at this time.\n");
-    fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
+    fprintf(stderr, "[dt_init] On non-x86, we only support 64-bit.\n");
     return 1;
   }
 #endif
+#endif
+
+#undef DT_SUPPORTED_ARMv8A
+#undef DT_SUPPORTED_X86
+
+#ifndef __SSE2__
+#pragma message "Building without SSE2 is highly experimental."
+#pragma message "Expect a LOT of functionality to be broken. You have been warned."
+#endif
+
+  int sse2_supported = 0;
+
+#ifdef HAVE_BUILTIN_CPU_SUPPORTS
+  // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+  __builtin_cpu_init();
+  sse2_supported = __builtin_cpu_supports("sse2");
+#else
+  sse2_supported = dt_detect_cpu_features() & CPU_FLAG_SSE2;
+#endif
+  if(!sse2_supported)
+  {
+    fprintf(stderr, "[dt_init] SSE2 instruction set is unavailable.\n");
+    fprintf(stderr, "[dt_init] expect a LOT of functionality to be broken. you have been warned.\n");
+  }
 
 #ifdef M_MMAP_THRESHOLD
   mallopt(M_MMAP_THRESHOLD, 128 * 1024); /* use mmap() for large allocations */
@@ -751,16 +832,6 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   dt_loc_init_user_config_dir(configdir_from_command);
   dt_loc_init_user_cache_dir(cachedir_from_command);
 
-#if !GLIB_CHECK_VERSION(2, 35, 0)
-  g_type_init();
-#endif
-
-// does not work, as gtk is not inited yet.
-// even if it were, it's a super bad idea to invoke gtk stuff from
-// a signal handler.
-/* check cput caps */
-// dt_check_cpu(argc,argv);
-
 #ifdef USE_LUA
   dt_lua_init_early(L);
 #endif
@@ -787,6 +858,9 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     setenv("LANG", lang, 1);
   }
   g_free((gchar *)lang);
+
+  // detect cpu features and decide which codepaths to enable
+  dt_codepaths_init();
 
   // get the list of color profiles
   darktable.color_profiles = dt_colorspaces_init();
@@ -912,6 +986,9 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
+
+  // check whether we were able to load darkroom view. if we failed, we'll crash everywhere later on.
+  if(!darktable.develop) return 1;
 
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);

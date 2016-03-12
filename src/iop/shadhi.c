@@ -18,28 +18,29 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#include "develop/develop.h"
-#include "develop/imageop.h"
-#include "develop/tiling.h"
-#include "control/control.h"
-#include "common/debug.h"
-#include "common/opencl.h"
+#include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "common/debug.h"
 #include "common/gaussian.h"
+#include "common/opencl.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
 #include "dtgtk/togglebutton.h"
-#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <xmmintrin.h>
-
 
 #define UNBOUND_L 1
 #define UNBOUND_A 2
@@ -58,7 +59,6 @@
 
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 #define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
-#define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
 
 #define BLOCKSIZE 64 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed  \
                         */
@@ -316,8 +316,8 @@ static inline float sign(float x)
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_shadhi_data_t *data = (dt_iop_shadhi_data_t *)piece->data;
   float *in = (float *)ivoid;
@@ -375,7 +375,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // invert and desaturate
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, roi_out) schedule(static)
+#pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)roi_out->width * roi_out->height * 4; j += 4)
   {
@@ -487,7 +487,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;
   dt_iop_shadhi_global_data_t *gd = (dt_iop_shadhi_global_data_t *)self->data;
@@ -839,16 +839,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows_ccorrect, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights_ccorrect, TRUE, TRUE, 0);
 
-  g_object_set(g->shadows, "tooltip-text", _("correct shadows"), (char *)NULL);
-  g_object_set(g->highlights, "tooltip-text", _("correct highlights"), (char *)NULL);
-  g_object_set(g->whitepoint, "tooltip-text", _("shift white point"), (char *)NULL);
-  g_object_set(g->radius, "tooltip-text", _("spatial extent"), (char *)NULL);
-  g_object_set(g->shadhi_algo, "tooltip-text", _("filter to use for softening. bilateral avoids halos"),
-               (char *)NULL);
-  g_object_set(g->compress, "tooltip-text",
-               _("compress the effect on shadows/highlights and\npreserve midtones"), (char *)NULL);
-  g_object_set(g->shadows_ccorrect, "tooltip-text", _("adjust saturation of shadows"), (char *)NULL);
-  g_object_set(g->highlights_ccorrect, "tooltip-text", _("adjust saturation of highlights"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->shadows, _("correct shadows"));
+  gtk_widget_set_tooltip_text(g->highlights, _("correct highlights"));
+  gtk_widget_set_tooltip_text(g->whitepoint, _("shift white point"));
+  gtk_widget_set_tooltip_text(g->radius, _("spatial extent"));
+  gtk_widget_set_tooltip_text(g->shadhi_algo, _("filter to use for softening. bilateral avoids halos"));
+  gtk_widget_set_tooltip_text(g->compress, _("compress the effect on shadows/highlights and\npreserve midtones"));
+  gtk_widget_set_tooltip_text(g->shadows_ccorrect, _("adjust saturation of shadows"));
+  gtk_widget_set_tooltip_text(g->highlights_ccorrect, _("adjust saturation of highlights"));
 
   g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);

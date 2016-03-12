@@ -16,15 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
 #include "gui/gtk.h"
-#include "bauhaus/bauhaus.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -59,22 +60,22 @@ static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget, GdkEven
 /* helper function for position set */
 static void _lib_navigation_set_position(struct dt_lib_module_t *self, double x, double y, int wd, int ht);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("navigation");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_TOP;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }

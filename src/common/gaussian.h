@@ -21,7 +21,6 @@
 
 #include <math.h>
 #include <assert.h>
-#include <xmmintrin.h>
 #include "common/opencl.h"
 
 typedef enum dt_gaussian_order_t
@@ -49,9 +48,9 @@ size_t dt_gaussian_memory_use(const int width, const int height, const int chann
 
 size_t dt_gaussian_singlebuffer_size(const int width, const int height, const int channels);
 
-void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out);
+void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out);
 
-void dt_gaussian_blur_4c(dt_gaussian_t *g, float *in, float *out);
+void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const out);
 
 void dt_gaussian_free(dt_gaussian_t *g);
 

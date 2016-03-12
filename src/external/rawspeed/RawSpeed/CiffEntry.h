@@ -34,12 +34,6 @@ const uint32 ciff_datasizes[] = {0,1,1,2,4,8,1,1,2,4, 8, 4, 8, 4};
                       // 0-1-2-3-4-5-6-7-8-9-10-11-12-13
 const uint32 ciff_datashifts[] = {0,0,0,1,2,3,0,0,1,2, 3, 2, 3, 2};
 
-#ifdef CHECKSIZE
-#undef CHECKSIZE
-#endif
-
-#define CHECKSIZE(A) if (A > f->getSize() || A < 1) ThrowCPE("Error reading CIFF Entry structure size. File Corrupt")
-
 // 0-1-2-3-4-5-6-7-8-9-10-11-12-13
 /*
  * Tag data type information.

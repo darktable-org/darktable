@@ -35,25 +35,35 @@ class Runner
     end
   end
 
-  def get_exif_key(key, file)
-    out = IO.popen("exiftool -S -#{key} \"#{file}\" 2>/dev/null","r").read
-    if out && out.size > 0
-      return (out.split(":")[1..-1]||[]).join(":").strip
-    else
-      return ""
-    end
-  end
-
   def get_makermodel(file)
-    exif_maker = get_exif_key("Make", file)
-    exif_model = get_exif_key("Model", file)
-    if makermodel = @exif_alias_map[[exif_maker, exif_model]]
+    def get_exif_key(key, file)
+      IO.popen("exiv2 -g \"#{key}\" -Pt \"#{file}\" 2>/dev/null","r").read
+    end
+
+    maker = get_exif_key("Exif.Image.Make", file)
+    maker = maker[0..6] == "SAMSUNG" ? "SAMSUNG" : maker.strip
+    model = get_exif_key("Exif.Image.Model", file)
+    model = model[0..5] == "NX2000" ? "NX2000" : model.strip
+
+    if (maker == "" || model == "") # Try with rawspeed instead
+      IO.popen("darktable-rs-identify \"#{file}\"","r").each do |line|
+        parts = line.split(":")
+        case parts[0].strip
+        when "make"
+          maker = parts[1..-1].join(":").strip
+        when "model"
+          model = parts[1..-1].join(":").strip
+        end
+      end
+    end
+
+    if makermodel = @exif_alias_map[[maker, model]]
       return makermodel
     else
-      $stderr.puts "Warning: Couldn't find make and model for '#{exif_maker}' '#{exif_model}'"
-      exif_maker = "Unknown" if !exif_maker || exif_maker == ''
-      exif_model = File.basename(file) if !exif_model || exif_model == ''
-      return [exif_maker, exif_model]
+      $stderr.puts "Warning: Couldn't find make and model for '#{maker}' '#{model}'"
+      maker = "Unknown" if !maker || maker == ''
+      model = File.basename(file) if !model || model == ''
+      return [maker, model]
     end
   end
 

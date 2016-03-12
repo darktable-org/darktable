@@ -110,7 +110,7 @@ def add_edges(gr):
   gr.add_edge(('scalepixels', 'rotatepixels'))
 
   # flip is a distortion plugin, and as such has to go after spot removal
-  # and lens correction, which depend on original input buffers.
+  # and lens correction, perspective correction which depend on original input buffers.
   # and after buffer has been downscaled/demosaiced
   gr.add_edge(('flip', 'demosaic'))
   gr.add_edge(('flip', 'scalepixels'))
@@ -118,6 +118,13 @@ def add_edges(gr):
   gr.add_edge(('flip', 'lens'))
   gr.add_edge(('flip', 'spots'))
   gr.add_edge(('flip', 'liquify'))
+  gr.add_edge(('flip', 'ashift'))
+  
+  # ashift wants a lens corrected image with straight lines.
+  # therefore lens shoucl come before and liquify should come after ashift
+  gr.add_edge(('ashift', 'lens'))
+  gr.add_edge(('liquify', 'ashift'))
+
   # plus, it confuses crop/rotate, vignetting and graduated density
   gr.add_edge(('clipping', 'flip'))
   gr.add_edge(('graduatednd', 'flip'))
@@ -416,6 +423,7 @@ def add_edges(gr):
 gr = digraph()
 gr.add_nodes([
 'atrous',
+'ashift',
 'basecurve',
 'bilateral',
 'bilat',

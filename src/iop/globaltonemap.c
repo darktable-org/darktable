@@ -18,23 +18,25 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "bauhaus/bauhaus.h"
-#include "develop/develop.h"
-#include "develop/imageop.h"
-#include "develop/tiling.h"
-#include "control/control.h"
-#include "common/opencl.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "common/opencl.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <xmmintrin.h>
 
 #define BLOCKSIZE                                                                                            \
   2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
@@ -126,8 +128,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid,
-                                    void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                    const void *const ivoid, void *const ovoid,
+                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                                     dt_iop_global_tonemap_data_t *data)
 {
   float *in = (float *)ivoid;
@@ -135,7 +138,7 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -148,9 +151,9 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
   }
 }
 
-static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid,
-                                 void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                                 dt_iop_global_tonemap_data_t *data)
+static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out, dt_iop_global_tonemap_data_t *data)
 {
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   float *in = (float *)ivoid;
@@ -199,7 +202,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const float bl = logf(fmaxf(eps, data->drago.bias)) / logf(0.5);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, lwmax) schedule(static)
+#pragma omp parallel for default(none) shared(in, out, lwmax) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -213,8 +216,9 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
-static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid,
-                                  void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                  const void *const ivoid, void *const ovoid,
+                                  const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                                   dt_iop_global_tonemap_data_t *data)
 {
   float *in = (float *)ivoid;
@@ -222,7 +226,7 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -236,8 +240,8 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_global_tonemap_data_t *data = (dt_iop_global_tonemap_data_t *)piece->data;
   const float scale = piece->iscale / roi_in->scale;
@@ -279,7 +283,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
   dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->data;
@@ -675,16 +679,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->operator, "filmic");
   dt_bauhaus_combobox_add(g->operator, "drago");
 
-  g_object_set(G_OBJECT(g->operator), "tooltip-text", _("the global tonemap operator"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->operator, _("the global tonemap operator"));
   g_signal_connect(G_OBJECT(g->operator), "value-changed", G_CALLBACK(operator_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->operator), TRUE, TRUE, 0);
 
   /* drago bias */
   g->drago.bias = dt_bauhaus_slider_new_with_range(self, 0.5, 1.0, 0.05, p->drago.bias, 2);
   dt_bauhaus_widget_set_label(g->drago.bias, NULL, _("bias"));
-  g_object_set(G_OBJECT(g->drago.bias), "tooltip-text",
-               _("the bias for tonemapper controls the linearity, the higher the more details in blacks"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->drago.bias, _("the bias for tonemapper controls the linearity, "
+                                               "the higher the more details in blacks"));
   g_signal_connect(G_OBJECT(g->drago.bias), "value-changed", G_CALLBACK(_drago_bias_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->drago.bias, TRUE, TRUE, 0);
 
@@ -692,8 +695,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* drago bias */
   g->drago.max_light = dt_bauhaus_slider_new_with_range(self, 1, 500, 10, p->drago.max_light, 2);
   dt_bauhaus_widget_set_label(g->drago.max_light, NULL, _("target"));
-  g_object_set(G_OBJECT(g->drago.max_light), "tooltip-text",
-               _("the target light for tonemapper specified as cd/m2"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->drago.max_light, _("the target light for tonemapper specified as cd/m2"));
   g_signal_connect(G_OBJECT(g->drago.max_light), "value-changed", G_CALLBACK(_drago_max_light_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->drago.max_light, TRUE, TRUE, 0);
 

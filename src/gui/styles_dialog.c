@@ -271,8 +271,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
     g_strlcat(title, name, sizeof(title));
     g_strlcat(title, "\"", sizeof(title));
     sd->duplicate = gtk_check_button_new_with_label(_("duplicate style"));
-    g_object_set(sd->duplicate, "tooltip-text", _("creates a duplicate of the style before applying changes"),
-                 (char *)NULL);
+    gtk_widget_set_tooltip_text(sd->duplicate, _("creates a duplicate of the style before applying changes"));
   }
   else
   {
@@ -293,11 +292,11 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   gtk_container_add(content_area, GTK_WIDGET(box));
 
   sd->name = gtk_entry_new();
-  g_object_set(sd->name, "tooltip-text", _("enter a name for the new style"), (char *)NULL);
+  gtk_widget_set_tooltip_text(sd->name, _("enter a name for the new style"));
 
   sd->description = gtk_entry_new();
-  g_object_set(sd->description, "tooltip-text",
-               _("enter a description for the new style, this description is searchable"), (char *)NULL);
+  gtk_widget_set_tooltip_text(sd->description,
+                              _("enter a description for the new style, this description is searchable"));
 
   /*set values*/
   if(edit && name)

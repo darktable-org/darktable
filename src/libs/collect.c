@@ -16,19 +16,20 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
-#include "common/film.h"
+#include "libs/collect.h"
 #include "common/collection.h"
+#include "common/darktable.h"
 #include "common/debug.h"
+#include "common/film.h"
+#include "common/metadata.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
-#include "gui/gtk.h"
 #include "dtgtk/button.h"
+#include "gui/gtk.h"
 #include "libs/lib.h"
-#include "common/metadata.h"
-#include "common/utility.h"
-#include "libs/collect.h"
+#include "libs/lib_api.h"
 #include "views/view.h"
 
 DT_MODULE(1)
@@ -105,7 +106,7 @@ static void entry_insert_text(GtkWidget *entry, gchar *new_text, gint new_length
 static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr);
 static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("collect images");
 }
@@ -199,12 +200,12 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 }
 
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_PRINT;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
@@ -1042,8 +1043,10 @@ static void list_view(dt_lib_collect_rule_t *dr)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
         const char *folder = (const char *)sqlite3_column_text(stmt, 0);
+        if(folder == NULL) continue; // safeguard against degenerated db entries
+
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
         if(property == DT_COLLECTION_PROP_FILMROLL)
         {
           folder = dt_image_film_roll_name(folder);
@@ -1189,12 +1192,12 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     {
       // only clear
       button->icon = dtgtk_cairo_paint_cancel;
-      g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
     }
     else if(i == active)
     {
       button->icon = dtgtk_cairo_paint_dropdown;
-      g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule or add new rules"), (char *)NULL);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule or add new rules"));
     }
     else
     {
@@ -1203,7 +1206,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       if(mode == DT_LIB_COLLECT_MODE_AND) button->icon = dtgtk_cairo_paint_and;
       if(mode == DT_LIB_COLLECT_MODE_OR) button->icon = dtgtk_cairo_paint_or;
       if(mode == DT_LIB_COLLECT_MODE_AND_NOT) button->icon = dtgtk_cairo_paint_andnot;
-      g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
     }
   }
 
@@ -1244,20 +1247,18 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
      || property == DT_COLLECTION_PROP_ISO)
   {
-    g_object_set(G_OBJECT(d->text), "tooltip-text",
-                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators"), (char *)NULL);
+    gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
   }
   else if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
   {
-    g_object_set(G_OBJECT(d->text), "tooltip-text",
-                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in the form : "
-                   "YYYY:MM:DD HH:MM:SS (time part facultative)"),
-                 (char *)NULL);
+    gtk_widget_set_tooltip_text(d->text,
+                                _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
+                                  "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
   }
   else
   {
     /* xgettext:no-c-format */
-    g_object_set(G_OBJECT(d->text), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
+    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard"));
   }
 
   update_view(d);
@@ -1658,7 +1659,7 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(entry_focus_in_callback), d->rule + i);
 
     /* xgettext:no-c-format */
-    g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
+    gtk_widget_set_tooltip_text(w, _("type your query, use `%' as wildcard"));
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_insert_text), d->rule + i);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);

@@ -31,20 +31,21 @@
 #include "lua/image.h"
 #include "lua/call.h"
 #endif
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("select");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
@@ -83,6 +84,7 @@ int position()
   return 800;
 }
 
+#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
@@ -96,41 +98,43 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button;
 
   button = gtk_button_new_with_label(_("select all"));
+  ellipsize_button(button);
   d->select_all_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("select all images in current collection"));
   gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
   button = gtk_button_new_with_label(_("select none"));
+  ellipsize_button(button);
   d->select_none_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("clear selection (ctrl-shift-a)"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("clear selection"));
   gtk_grid_attach(grid, button, 1, line++, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
 
 
   button = gtk_button_new_with_label(_("invert selection"));
-  g_object_set(G_OBJECT(button), "tooltip-text",
-               _("select unselected images\nin current collection (ctrl-!)"), (char *)NULL);
+  ellipsize_button(button);
+  gtk_widget_set_tooltip_text(button, _("select unselected images\nin current collection"));
   d->select_invert_button = button;
   gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(2));
 
   button = gtk_button_new_with_label(_("select film roll"));
+  ellipsize_button(button);
   d->select_film_roll_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text",
-               _("select all images which are in the same\nfilm roll as the selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("select all images which are in the same\nfilm roll as the selected images"));
   gtk_grid_attach(grid, button, 1, line++, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
 
   button = gtk_button_new_with_label(_("select untouched"));
+  ellipsize_button(button);
   d->select_untouched_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("select untouched images in\ncurrent collection"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("select untouched images in\ncurrent collection"));
   gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 }
+#undef ellipsize_button
 
 void gui_cleanup(dt_lib_module_t *self)
 {
@@ -207,7 +211,7 @@ static int lua_register_selection(lua_State *L)
   GtkWidget* button = gtk_button_new_with_label(key);
   const char * tooltip = lua_tostring(L,3);
   if(tooltip)  {
-    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
+    gtk_widget_set_tooltip_text(button, tooltip);
   }
   gtk_grid_attach_next_to(GTK_GRID(self->widget), button, NULL, GTK_POS_BOTTOM, 2, 1);
 
@@ -238,6 +242,27 @@ void init(struct dt_lib_module_t *self)
   lua_pop(L,2);
 }
 #endif
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "select all"), GDK_KEY_a, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "select none"), GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "invert selection"), GDK_KEY_i, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "select film roll"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "select untouched"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_select_t *d = (dt_lib_select_t *)self->data;
+
+  dt_accel_connect_button_lib(self, "select all", GTK_WIDGET(d->select_all_button));
+  dt_accel_connect_button_lib(self, "select none", GTK_WIDGET(d->select_none_button));
+  dt_accel_connect_button_lib(self, "invert selection", GTK_WIDGET(d->select_invert_button));
+  dt_accel_connect_button_lib(self, "select film roll", GTK_WIDGET(d->select_film_roll_button));
+  dt_accel_connect_button_lib(self, "select untouched", GTK_WIDGET(d->select_untouched_button));
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

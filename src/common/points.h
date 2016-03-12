@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2015 johannes hanika
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,42 +21,66 @@
 
 #ifndef __SSE2__
 
-// lamer version for obsolete archs:
-
 #if !defined _XOPEN_SOURCE && !defined(__DragonFly__) && !defined(__FreeBSD__) && !defined(__NetBSD__)       \
     && !defined(__OpenBSD__) && !defined(__WIN32__)
 #define _XOPEN_SOURCE
 #endif
 
 #include <stdlib.h>
-double drand48(void);
-void srand48(long int seedval);
+
+// xorshift128+, period 2^128-1, apparently passes all TestU01 suite tests.
+typedef struct dt_points_state_t
+{
+  uint64_t state0;
+  uint64_t state1;
+} dt_points_state_t;
 
 typedef struct dt_points_t
 {
+  dt_points_state_t *s;
 } dt_points_t;
 
 static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads)
 {
-  srand48(0x1337ul);
+  p->s = (dt_points_state_t *)malloc(sizeof(dt_points_state_t) * num_threads);
+  for(int k = 0; k < num_threads; k++)
+  {
+    p->s[k].state0 = 1 + k;
+    p->s[k].state1 = 2 + k;
+  }
 }
 
 static inline void dt_points_cleanup(dt_points_t *p)
 {
+  free(p->s);
 }
 
 static inline float dt_points_get_for(dt_points_t *p, const unsigned int thread_num)
 {
-  return drand48();
+  uint64_t s1 = p->s[thread_num].state0;
+  uint64_t s0 = p->s[thread_num].state1;
+  p->s[thread_num].state0 = s0;
+  s1 ^= s1 << 23;
+  s1 ^= s1 >> 17;
+  s1 ^= s0;
+  s1 ^= s0 >> 26;
+  p->s[thread_num].state1 = s1;
+  // return (state0 + state1) / ((double)((uint64_t)-1) + 1.0);
+  uint32_t v = 0x3f800000
+               | ((p->s[thread_num].state0 + p->s[thread_num].state1) >> 41); // faster than double version.
+  return (*(float *)&v) - 1.0f;
 }
 
 static inline float dt_points_get()
 {
-  return drand48();
+  return dt_points_get_for(darktable.points, dt_get_thread_num());
 }
+
 #else
 
-#include <emmintrin.h>
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
 #include <inttypes.h>
 
 #define MEXP 19937

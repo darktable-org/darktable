@@ -1347,8 +1347,6 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     gui->guipoints = NULL;
     gui->guipoints_payload = NULL;
     gui->guipoints_count = 0;
-    darktable.develop->form_visible = NULL;
-    dt_masks_clear_form_gui(darktable.develop);
     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
     dt_masks_iop_update(module);
     dt_control_queue_redraw_center();
@@ -1362,14 +1360,15 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
       // if the form doesn't below to a group, we don't delete it
       if(parentid <= 0) return 1;
 
-      dt_masks_clear_form_gui(darktable.develop);
       // we hide the form
       if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
-        darktable.develop->form_visible = NULL;
+        dt_masks_change_form_gui(NULL);
       else if(g_list_length(darktable.develop->form_visible->points) < 2)
-        darktable.develop->form_visible = NULL;
+        dt_masks_change_form_gui(NULL);
       else
       {
+        int emode = gui->edit_mode;
+        dt_masks_clear_form_gui(darktable.develop);
         GList *forms = g_list_first(darktable.develop->form_visible->points);
         while(forms)
         {
@@ -1378,10 +1377,12 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
           {
             darktable.develop->form_visible->points
                 = g_list_remove(darktable.develop->form_visible->points, gpt);
+            free(gpt);
             break;
           }
           forms = g_list_next(forms);
         }
+        gui->edit_mode = emode;
       }
 
       // we delete or remove the shape
@@ -1390,7 +1391,10 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
       dt_control_queue_redraw_center();
       return 1;
     }
-    form->points = g_list_delete_link(form->points, g_list_nth(form->points, gui->point_selected));
+    dt_masks_point_brush_t *point
+        = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->point_selected);
+    form->points = g_list_remove(form->points, point);
+    free(point);
     gui->point_selected = -1;
     _brush_init_ctrl_points(form);
 
@@ -1425,14 +1429,14 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
   }
   else if(which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    dt_masks_clear_form_gui(darktable.develop);
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
-      darktable.develop->form_visible = NULL;
+      dt_masks_change_form_gui(NULL);
     else if(g_list_length(darktable.develop->form_visible->points) < 2)
-      darktable.develop->form_visible = NULL;
+      dt_masks_change_form_gui(NULL);
     else
     {
+      dt_masks_clear_form_gui(darktable.develop);
       GList *forms = g_list_first(darktable.develop->form_visible->points);
       while(forms)
       {
@@ -1441,10 +1445,12 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
         {
           darktable.develop->form_visible->points
               = g_list_remove(darktable.develop->form_visible->points, gpt);
+          free(gpt);
           break;
         }
         forms = g_list_next(forms);
       }
+      gui->edit_mode = DT_MASKS_EDIT_FULL;
     }
 
     // we remove the shape
@@ -1595,8 +1601,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
 
       // we remove the form
       dt_masks_free_form(form);
-      darktable.develop->form_visible = NULL;
-      dt_masks_clear_form_gui(darktable.develop);
+      dt_masks_change_form_gui(NULL);
     }
 
     dt_control_queue_redraw_center();

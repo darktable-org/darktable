@@ -17,18 +17,19 @@
 */
 
 /** this is the view for the print module.  */
-#include "common/darktable.h"
 #include "common/collection.h"
-#include "views/view.h"
-#include "develop/develop.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "common/image_cache.h"
-#include "common/debug.h"
 #include "common/cups_print.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "views/view.h"
+#include "views/view_api.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -51,7 +52,7 @@ const char
   return C_("view", "print");
 }
 
-uint32_t view(dt_view_t *self)
+uint32_t view(const dt_view_t *self)
 {
   return DT_VIEW_PRINT;
 }

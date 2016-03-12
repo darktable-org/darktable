@@ -64,8 +64,8 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
 // Accelerator connection functions
 void dt_accel_connect_global(const gchar *path, GClosure *closure);
 void dt_accel_connect_view(dt_view_t *self, const gchar *path, GClosure *closure);
-void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure);
-void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure);
+dt_accel_t *dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure);
+dt_accel_t *dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure);
 void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *slider);

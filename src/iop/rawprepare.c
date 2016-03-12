@@ -18,17 +18,20 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "bauhaus/bauhaus.h"
-#include "gui/gtk.h"
 #include "gui/accelerators.h"
-#include "common/opencl.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <stdint.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rawprepare_params_t)
 
@@ -215,8 +218,72 @@ static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t 
   return ((((row + roi_out->y + d->y) & 1) << 1) + ((col + roi_out->x + d->x) & 1));
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  { // raw mosaic
+
+    const uint16_t *const in = (const uint16_t *const)ivoid;
+    float *const out = (float *const)ovoid;
+
+    const int cx = d->x, cy = d->y;
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const size_t pin = (size_t)(roi_in->width * (j + cy) + cx) + i;
+        const size_t pout = (size_t)j * roi_out->width + i;
+
+        const int id = BL(roi_out, d, j, i);
+        out[pout] = MAX(0.0f, (in[pin] - d->sub[id]) / d->div[id]);
+      }
+    }
+  }
+  else
+  { // pre-downsampled buffer that needs black/white scaling
+
+    const float *const in = (const float *const)ivoid;
+    float *const out = (float *const)ovoid;
+
+    const float scale = roi_in->scale / piece->iscale;
+    const int csx = d->x * scale, csy = d->y * scale;
+
+    const float sub = d->sub[0], div = d->div[0];
+
+    const int ch = piece->colors;
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(3)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        for(int c = 0; c < ch; c++)
+        {
+          const size_t pin = (size_t)ch * (roi_in->width * (j + csy) + csx + i) + c;
+          const size_t pout = (size_t)ch * (j * roi_out->width + i) + c;
+
+          out[pout] = MAX(0.0f, (in[pin] - sub) / div);
+        }
+      }
+    }
+  }
+}
+
+#if defined(__SSE__)
+void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
@@ -228,7 +295,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     const int cx = d->x, cy = d->y;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(ovoid)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -290,7 +357,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     const __m128 sub = _mm_load_ps(d->sub), div = _mm_load_ps(d->div);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(ovoid)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -310,6 +377,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   _mm_sfence();
 }
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -377,7 +445,7 @@ error:
 }
 #endif
 
-void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;
@@ -553,7 +621,7 @@ void gui_init(dt_iop_module_t *self)
     g->black_level_separate[i]
         = dt_bauhaus_slider_new_with_range(self, 0, 16384, 1, p->raw_black_level_separate[i], 0);
     dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, label);
-    g_object_set(G_OBJECT(g->black_level_separate[i]), "tooltip-text", label, (char *)NULL);
+    gtk_widget_set_tooltip_text(g->black_level_separate[i], label);
     gtk_box_pack_start(GTK_BOX(g->box_raw), g->black_level_separate[i], FALSE, FALSE, 0);
     dt_bauhaus_slider_enable_soft_boundaries(g->black_level_separate[i], 0, UINT16_MAX);
     g_signal_connect(G_OBJECT(g->black_level_separate[i]), "value-changed", G_CALLBACK(callback), self);
@@ -563,7 +631,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->white_point = dt_bauhaus_slider_new_with_range(self, 0, 16384, 1, p->raw_white_point, 0);
   dt_bauhaus_widget_set_label(g->white_point, NULL, _("white point"));
-  g_object_set(G_OBJECT(g->white_point), "tooltip-text", _("white point"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->white_point, _("white point"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), g->white_point, FALSE, FALSE, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->white_point, 0, UINT16_MAX);
   g_signal_connect(G_OBJECT(g->white_point), "value-changed", G_CALLBACK(callback), self);

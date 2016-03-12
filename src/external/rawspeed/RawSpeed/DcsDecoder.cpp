@@ -61,7 +61,7 @@ RawImage DcsDecoder::decodeRawInternal() {
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), mFile->getSize() - off);
+  ByteStream input(mFile, off);
 
   TiffEntry *linearization = mRootIFD->getEntryRecursive(GRAYRESPONSECURVE);
   if (!linearization || linearization->count != 256 || linearization->type != TIFF_SHORT)

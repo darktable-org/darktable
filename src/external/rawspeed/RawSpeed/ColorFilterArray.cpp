@@ -76,6 +76,8 @@ void ColorFilterArray::setSize( iPoint2D _size )
   if (cfa)
     delete[] cfa;
   cfa = NULL;
+  if (size.area() > 100)
+    ThrowRDE("ColorFilterArray:setSize if your CFA pattern is really %d pixels in area we may as well give up now", size.area());
   if (size.area() <= 0)
     return;
   cfa = new CFAColor[size.area()];

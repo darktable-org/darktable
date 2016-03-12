@@ -23,16 +23,17 @@
 #include <assert.h>
 #include <string.h>
 
+#include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
+#include "control/control.h"
+#include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "common/opencl.h"
-#include "bauhaus/bauhaus.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
-#include "gui/presets.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
+#include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -667,8 +668,8 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   return 0;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   const dt_iop_roi_t *buf_in = &piece->buf_in;
@@ -738,8 +739,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data, yscale, xscale, tea_states,       \
-                                              dither) schedule(static)
+#pragma omp parallel for default(none) shared(data, yscale, xscale, tea_states, dither) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -812,7 +812,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   dt_iop_vignette_global_data_t *gd = (dt_iop_vignette_global_data_t *)self->data;
@@ -1169,25 +1169,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->whratio, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->dithering, TRUE, TRUE, 0);
 
-  g_object_set(G_OBJECT(g->scale), "tooltip-text", _("the radii scale of vignette for start of fall-off"),
-               (char *)NULL);
-  g_object_set(G_OBJECT(g->falloff_scale), "tooltip-text",
-               _("the radii scale of vignette for end of fall-off"), (char *)NULL);
-  g_object_set(G_OBJECT(g->brightness), "tooltip-text", _("strength of effect on brightness"), (char *)NULL);
-  g_object_set(G_OBJECT(g->saturation), "tooltip-text", _("strength of effect on saturation"), (char *)NULL);
-  g_object_set(G_OBJECT(g->center_x), "tooltip-text", _("horizontal offset of center of the effect"),
-               (char *)NULL);
-  g_object_set(G_OBJECT(g->center_y), "tooltip-text", _("vertical offset of center of the effect"),
-               (char *)NULL);
-  g_object_set(
-      G_OBJECT(g->shape), "tooltip-text",
-      _("shape factor\n0 produces a rectangle\n1 produces a circle or ellipse\n2 produces a diamond"),
-      (char *)NULL);
-  g_object_set(G_OBJECT(g->autoratio), "tooltip-text",
-               _("enable to have the ratio automatically follow the image size"), (char *)NULL);
-  g_object_set(G_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
-  g_object_set(G_OBJECT(g->dithering), "tooltip-text", _("add some level of random noise to prevent banding"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale, _("the radii scale of vignette for start of fall-off"));
+  gtk_widget_set_tooltip_text(g->falloff_scale, _("the radii scale of vignette for end of fall-off"));
+  gtk_widget_set_tooltip_text(g->brightness, _("strength of effect on brightness"));
+  gtk_widget_set_tooltip_text(g->saturation, _("strength of effect on saturation"));
+  gtk_widget_set_tooltip_text(g->center_x, _("horizontal offset of center of the effect"));
+  gtk_widget_set_tooltip_text(g->center_y, _("vertical offset of center of the effect"));
+  gtk_widget_set_tooltip_text(g->shape, _("shape factor\n0 produces a rectangle\n1 produces a circle or ellipse\n"
+                                          "2 produces a diamond"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->autoratio), _("enable to have the ratio automatically follow the image size"));
+  gtk_widget_set_tooltip_text(g->whratio, _("width-to-height ratio"));
+  gtk_widget_set_tooltip_text(g->dithering, _("add some level of random noise to prevent banding"));
 
   g_signal_connect(G_OBJECT(g->scale), "value-changed", G_CALLBACK(scale_callback), self);
   g_signal_connect(G_OBJECT(g->falloff_scale), "value-changed", G_CALLBACK(falloff_scale_callback), self);

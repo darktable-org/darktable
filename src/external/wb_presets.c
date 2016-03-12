@@ -5035,6 +5035,16 @@ const wb_data wb_preset[] =
   { "Pentax", "K-x", Tungsten, 0,		{ 1.0463, 1, 3.4015, 0 } },
   { "Pentax", "K-x", Flash, 0,			{ 2.1120, 1, 1.2741, 0 } },
 
+  { "Pentax", "K-S2", Daylight                     , 0, { 2.257812, 1, 1.683594, 0 } },
+  { "Pentax", "K-S2", Shade                        , 0, { 2.882812, 1, 1.218750, 0 } },
+  { "Pentax", "K-S2", Cloudy                       , 0, { 2.574219, 1, 1.414062, 0 } },
+  { "Pentax", "K-S2", Tungsten                     , 0, { 1.234375, 1, 3.644531, 0 } },
+  { "Pentax", "K-S2", WarmWhiteFluorescent         , 0, { 1.785156, 1, 2.769531, 0 } },
+  { "Pentax", "K-S2", DayWhiteFluorescent          , 0, { 2.367188, 1, 1.832031, 0 } },
+  { "Pentax", "K-S2", DaylightFluorescent          , 0, { 2.804688, 1, 1.625000, 0 } },
+  { "Pentax", "K-S2", WhiteFluorescent             , 0, { 2.125000, 1, 2.199219, 0 } },
+  { "Pentax", "K-S2", Flash                        , 0, { 2.746094, 1, 1.359375, 0 } },
+
   /* Pentax Q Firmware Version Pentax Q Ver 1.00 */
   { "Pentax", "Q", Daylight, 0,               { 1.51513671875, 1, 1.85888970408413, 0 } },
   { "Pentax", "Q", Shade, 0,                  { 1.8182373046875, 1, 1.4179505991685, 0 } },

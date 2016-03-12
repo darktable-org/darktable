@@ -25,16 +25,18 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "develop/imageop.h"
-#include "develop/develop.h"
-#include "control/control.h"
-#include "gui/draw.h"
-#include "gui/presets.h"
-#include "dtgtk/drawingarea.h"
-#include "gui/gtk.h"
-#include "common/colorspaces.h"
 #include "bauhaus/bauhaus.h"
+#include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
+#include "dtgtk/drawingarea.h"
+#include "gui/draw.h"
+#include "gui/gtk.h"
+#include "gui/presets.h"
+#include "iop/iop_api.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_GUI_CURVE_INFL .3f
@@ -267,8 +269,8 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   }
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
   const dt_iop_levels_data_t *const d = (dt_iop_levels_data_t *)piece->data;
@@ -279,7 +281,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ovoid) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -326,7 +328,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *const roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
   dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
@@ -565,8 +567,8 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
-  g_object_set(G_OBJECT(c->area), "tooltip-text",
-               _("drag handles to set black, gray, and white points.  operates on L channel."), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("drag handles to set black, gray, and white points. "
+                                                    "operates on L channel."));
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -579,17 +581,17 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(dt_iop_levels_scroll), self);
 
   GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
-  g_object_set(G_OBJECT(autobutton), "tooltip-text", _("apply auto levels"), (char *)NULL);
+  gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
   gtk_widget_set_size_request(autobutton, -1, DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(blackpick), "tooltip-text", _("pick black point from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(blackpick, _("pick black point from image"));
 
   GtkWidget *greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(greypick), "tooltip-text", _("pick medium gray point from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(greypick, _("pick medium gray point from image"));
 
   GtkWidget *whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(whitepick), "tooltip-text", _("pick white point from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(whitepick, _("pick white point from image"));
 
   GdkRGBA color = { 0 };
   color.alpha = 1.0;
@@ -611,17 +613,17 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(c->mode_stack), vbox_manual, "manual");
 
   c->percentile_black = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[0], 3);
-  g_object_set(G_OBJECT(c->percentile_black), "tooltip-text", _("black percentile"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->percentile_black, _("black percentile"));
   dt_bauhaus_slider_set_format(c->percentile_black, "%.1f%%");
   dt_bauhaus_widget_set_label(c->percentile_black, NULL, _("black"));
 
   c->percentile_grey = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[1], 3);
-  g_object_set(G_OBJECT(c->percentile_grey), "tooltip-text", _("gray percentile"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->percentile_grey, _("gray percentile"));
   dt_bauhaus_slider_set_format(c->percentile_grey, "%.1f%%");
   dt_bauhaus_widget_set_label(c->percentile_grey, NULL, _("gray"));
 
   c->percentile_white = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[2], 3);
-  g_object_set(G_OBJECT(c->percentile_white), "tooltip-text", _("white percentile"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->percentile_white, _("white percentile"));
   dt_bauhaus_slider_set_format(c->percentile_white, "%.1f%%");
   dt_bauhaus_widget_set_label(c->percentile_white, NULL, _("white"));
 

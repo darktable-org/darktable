@@ -136,8 +136,6 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
   }
   else if(gui->creation && (which == 3))
   {
-    darktable.develop->form_visible = NULL;
-    dt_masks_clear_form_gui(darktable.develop);
     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
     dt_masks_iop_update(module);
     dt_control_queue_redraw_center();
@@ -199,14 +197,14 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
 {
   if(which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    dt_masks_clear_form_gui(darktable.develop);
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
-      darktable.develop->form_visible = NULL;
+      dt_masks_change_form_gui(NULL);
     else if(g_list_length(darktable.develop->form_visible->points) < 2)
-      darktable.develop->form_visible = NULL;
+      dt_masks_change_form_gui(NULL);
     else
     {
+      dt_masks_clear_form_gui(darktable.develop);
       GList *forms = g_list_first(darktable.develop->form_visible->points);
       while(forms)
       {
@@ -215,10 +213,12 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
         {
           darktable.develop->form_visible->points
               = g_list_remove(darktable.develop->form_visible->points, gpt);
+          free(gpt);
           break;
         }
         forms = g_list_next(forms);
       }
+      gui->edit_mode = DT_MASKS_EDIT_FULL;
     }
 
     // we remove the shape
@@ -485,10 +485,9 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cairo_set_line_width(cr, 1.0 / zoom_scale);
     cairo_stroke(cr);
 
-    _gradient_point_transform(xref, yref, gpt->points[2] + dx, gpt->points[3] + dy, sinv, cosv, &x, &y);
+    // dark side of the gradient
     cairo_arc(cr, x, y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
-
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_stroke(cr);
 
@@ -499,9 +498,12 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cairo_line_to(cr, x, y);
     cairo_stroke(cr);
 
-    _gradient_point_transform(xref, yref, gpt->points[4] + dx, gpt->points[5] + dy, sinv, cosv, &x, &y);
+    // light side of the gradient
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_arc(cr, x, y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_stroke(cr);
 
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_stroke(cr);

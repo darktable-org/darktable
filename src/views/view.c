@@ -640,6 +640,38 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
 
 int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
 {
+  // ↑ ↑ ↓ ↓ ← → ← → b a
+  static int konami_state = 0;
+  static guint konami_sequence[] = {
+    GDK_KEY_Up,
+    GDK_KEY_Up,
+    GDK_KEY_Down,
+    GDK_KEY_Down,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_b,
+    GDK_KEY_a
+  };
+  if(key == konami_sequence[konami_state])
+  {
+    konami_state++;
+    if(konami_state == G_N_ELEMENTS(konami_sequence))
+    {
+      dt_control_log("todo: come up with an easter egg");
+      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+      darktable.color_profiles->display_type = DT_COLORSPACE_BRG;
+      darktable.color_profiles->display_filename[0] = '\0';
+      dt_colorspaces_update_display_transforms();
+      pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+      dt_control_queue_redraw_center();
+      konami_state = 0;
+    }
+  }
+  else
+    konami_state = 0;
+
   int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
@@ -1028,10 +1060,11 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       cairo_rectangle(cr, 0, 0, buf.width, buf.height);
       cairo_fill(cr);
       cairo_surface_destroy(surface);
-      free(rgbbuf);
 
       cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     }
+
+    free(rgbbuf);
 
     if (image_only)
     {
@@ -1645,6 +1678,11 @@ void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gd
   if(vm->proxy.map.view) vm->proxy.map.center_on_location(vm->proxy.map.view, lon, lat, zoom);
 }
 
+void dt_view_map_center_on_bbox(const dt_view_manager_t *vm, gdouble lon1, gdouble lat1, gdouble lon2, gdouble lat2)
+{
+  if(vm->proxy.map.view) vm->proxy.map.center_on_bbox(vm->proxy.map.view, lon1, lat1, lon2, lat2);
+}
+
 void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled)
 {
   if(vm->proxy.map.view) vm->proxy.map.show_osd(vm->proxy.map.view, enabled);
@@ -1653,6 +1691,18 @@ void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled)
 void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source)
 {
   if(vm->proxy.map.view) vm->proxy.map.set_map_source(vm->proxy.map.view, map_source);
+}
+
+GObject *dt_view_map_add_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GList *points)
+{
+  if(vm->proxy.map.view) return vm->proxy.map.add_marker(vm->proxy.map.view, type, points);
+  return NULL;
+}
+
+gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GObject *marker)
+{
+  if(vm->proxy.map.view) return vm->proxy.map.remove_marker(vm->proxy.map.view, type, marker);
+  return FALSE;
 }
 #endif
 
@@ -1663,6 +1713,7 @@ void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
     vm->proxy.print.print_settings(vm->proxy.print.view, pinfo);
 }
 #endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

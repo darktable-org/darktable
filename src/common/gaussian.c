@@ -19,12 +19,18 @@
 
 #include <math.h>
 #include <assert.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #include "common/opencl.h"
 #include "common/gaussian.h"
 
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+
+#if defined(__SSE__)
 #define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
+#endif
+
 #define BLOCKSIZE 32
 
 static void compute_gauss_params(const float sigma, dt_gaussian_order_t order, float *a0, float *a1,
@@ -149,7 +155,7 @@ error:
 }
 
 
-void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out)
+void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 {
 
   const int width = g->width;
@@ -167,7 +173,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out)
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,  \
+#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
                                               coefn) schedule(static)
 #endif
   for(int i = 0; i < width; i++)
@@ -239,7 +245,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out)
 
 // horizontal blur line by line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,      \
+#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
                                               coefn) schedule(static)
 #endif
   for(int j = 0; j < height; j++)
@@ -312,7 +318,8 @@ void dt_gaussian_blur(dt_gaussian_t *g, float *in, float *out)
 
 
 
-void dt_gaussian_blur_4c(dt_gaussian_t *g, float *in, float *out)
+#if defined(__SSE__)
+static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, const float *const in, float *const out)
 {
 
   const int width = g->width;
@@ -333,8 +340,7 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, float *in, float *out)
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, temp, a0, a1, a2, a3, b1, b2, coefp,                  \
-                                              coefn) schedule(static)
+#pragma omp parallel for default(none) shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
@@ -402,8 +408,7 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, float *in, float *out)
 
 // horizontal blur line by line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, temp, a0, a1, a2, a3, b1, b2, coefp,                      \
-                                              coefn) schedule(static)
+#pragma omp parallel for default(none) shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
 #endif
   for(size_t j = 0; j < height; j++)
   {
@@ -469,7 +474,18 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, float *in, float *out)
     }
   }
 }
+#endif
 
+void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const out)
+{
+  if(darktable.codepath.OPENMP_SIMD) return dt_gaussian_blur(g, in, out);
+#if defined(__SSE__)
+  else if(darktable.codepath.SSE2)
+    return dt_gaussian_blur_4c_sse(g, in, out);
+#endif
+  else
+    dt_unreachable_codepath();
+}
 
 void dt_gaussian_free(dt_gaussian_t *g)
 {

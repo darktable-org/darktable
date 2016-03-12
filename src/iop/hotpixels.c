@@ -26,9 +26,12 @@
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
+
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -192,8 +195,8 @@ static int process_xtrans(const void *const i, void *o, const dt_iop_roi_t *cons
  * correcting pairs of hot pixels in adjacent sites. Replacement using
  * the maximum produces fewer artifacts when inadvertently replacing
  * non-hot pixels. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_image_t *img = &self->dev->image_storage;
   dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
@@ -220,7 +223,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // Bayer sensor array
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o) reduction(+ : fixed) schedule(static)
+#pragma omp parallel for default(none) reduction(+ : fixed) schedule(static)
 #endif
   for(int row = 2; row < roi_out->height - 2; row++)
   {
@@ -427,7 +430,7 @@ void gui_init(dt_iop_module_t *self)
   g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.005, p->threshold, 4);
   dt_bauhaus_slider_set_format(g->threshold, "%.4f");
   dt_bauhaus_widget_set_label(g->threshold, NULL, _("threshold"));
-  g_object_set(G_OBJECT(g->threshold), "tooltip-text", _("lower threshold for hot pixel"), NULL);
+  gtk_widget_set_tooltip_text(g->threshold, _("lower threshold for hot pixel"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
 
@@ -435,7 +438,7 @@ void gui_init(dt_iop_module_t *self)
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, p->strength, 4);
   dt_bauhaus_slider_set_format(g->threshold, "%.4f");
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
-  g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of hot pixel correction"), NULL);
+  gtk_widget_set_tooltip_text(g->strength, _("strength of hot pixel correction"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
 

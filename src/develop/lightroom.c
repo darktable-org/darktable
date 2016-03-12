@@ -237,7 +237,6 @@ typedef struct lr2dt
 char *dt_get_lightroom_xmp(int imgid)
 {
   char pathname[DT_MAX_FILENAME_LEN];
-  struct stat buf;
   gboolean from_cache = TRUE;
 
   // Get full pathname
@@ -247,17 +246,18 @@ char *dt_get_lightroom_xmp(int imgid)
   char *pos = strrchr(pathname, '.');
 
   if(pos == NULL)
-  {
     return NULL;
-  }
 
   // If found, replace extension with xmp
   strncpy(pos + 1, "xmp", 4);
-
-  if(!stat(pathname, &buf))
+  if(g_file_test(pathname, G_FILE_TEST_EXISTS))
     return g_strdup(pathname);
-  else
-    return NULL;
+
+  strncpy(pos + 1, "XMP", 4);
+  if(g_file_test(pathname, G_FILE_TEST_EXISTS))
+    return g_strdup(pathname);
+
+  return NULL;
 }
 
 static float get_interpolate(lr2dt_t lr2dt_table[], float value)
@@ -277,13 +277,6 @@ static float lr2dt_blacks(float value)
       = { { -100, 0.020 }, { -50, 0.005 }, { 0, 0 }, { 50, -0.005 }, { 100, -0.010 } };
 
   return get_interpolate(lr2dt_blacks_table, value);
-}
-
-static float lr2dt_exposure(float value)
-{
-  lr2dt_t lr2dt_exposure_table[] = { { -5, -4.5 }, { 0, 0 }, { 5, 4.5 } };
-
-  return get_interpolate(lr2dt_exposure_table, value);
 }
 
 static float lr2dt_vignette_gain(float value)
@@ -359,6 +352,14 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, LRDT_BLEND_VERSION);
 
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // also bump history_end
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) FROM history WHERE imgid = ?1) WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -457,14 +458,16 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     }
     xmlFree(value);
   }
-  else
-  {
-    xmlXPathFreeObject(xpathObj);
-    xmlXPathFreeContext(xpathCtx);
-    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
-    g_free(pathname);
-    return;
-  }
+// we could bail out here if we ONLY wanted to load a file known to be from lightroom.
+// if we don't know who created it we will just import it however.
+//   else
+//   {
+//     xmlXPathFreeObject(xpathObj);
+//     xmlXPathFreeContext(xpathCtx);
+//     if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+//     g_free(pathname);
+//     return;
+//   }
 
   xmlXPathFreeObject(xpathObj);
   xmlXPathFreeContext(xpathCtx);
@@ -604,7 +607,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       if(v != 0.0)
       {
         has_exposure = TRUE;
-        pe.exposure = lr2dt_exposure(v);
+        pe.exposure = v;
       }
     }
     else if(!xmlStrcmp(attribute->name, (const xmlChar *)"PostCropVignetteAmount"))

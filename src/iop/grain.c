@@ -24,11 +24,12 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -368,8 +369,8 @@ static unsigned int _hash_string(char *s)
   return h;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_grain_data_t *data = (dt_iop_grain_data_t *)piece->data;
 
@@ -387,7 +388,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // pixelpipe iscale)
   const double filtermul = piece->iscale / (roi_out->scale * wd);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, roi_in, ovoid, ivoid, data, hash)
+#pragma omp parallel for default(none) shared(data, hash)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -519,7 +520,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("coarseness"));
   dt_bauhaus_slider_set_format(g->scale1, "%.0fISO");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the grain size (~ISO of the film)"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("the grain size (~ISO of the film)"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(scale_callback), self);
 
   /* strength */
@@ -527,7 +528,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("strength"));
   dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale2, _("the strength of applied grain"));
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(strength_callback), self);
 }
 

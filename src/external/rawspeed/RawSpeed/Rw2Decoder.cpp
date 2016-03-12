@@ -69,7 +69,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
     mRaw->createData();
 
     uint32 size = mFile->getSize() - off;
-    input_start = new ByteStream(mFile->getData(off), mFile->getSize() - off);
+    input_start = new ByteStream(mFile, off);
 
     if (size >= width*height*2) {
       // It's completely unpacked little-endian
@@ -98,7 +98,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
     if (!mFile->isValid(off))
       ThrowRDE("RW2 Decoder: Invalid image data offset, cannot decode.");
 
-    input_start = new ByteStream(mFile->getData(off), mFile->getSize() - off);
+    input_start = new ByteStream(mFile, off);
     DecodeRw2();
   }
   // Read blacklevels
@@ -132,6 +132,8 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
   uint32 y;
 
   bool zero_is_bad = true;
+  if (hints.find("zero_is_not_bad") != hints.end())
+    zero_is_bad = false;
 
   /* 9 + 1/7 bits per pixel */
   int skip = w * 14 * t->start_y * 9;
@@ -233,8 +235,6 @@ void Rw2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
   }
 }
 
-
-
 std::string Rw2Decoder::guessMode() {
   float ratio = 3.0f / 2.0f;  // Default
 
@@ -266,7 +266,6 @@ std::string Rw2Decoder::guessMode() {
   _RPT1(0, "Mode guess: '%s'\n", closest_match.c_str());
   return closest_match;
 }
-
 
 PanaBitpump::PanaBitpump(ByteStream* _input) : input(_input), vbits(0) {
 }

@@ -94,19 +94,17 @@ if(APPLE)
   set(DEFCONFIG_AUDIOPLAYER "afplay")
 endif(APPLE)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml )
-execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd)
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd COPYONLY )
 
 
 if(USE_XMLLINT)
-	execute_process(
-		COMMAND ${Xmllint_BIN} --valid ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
-		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-		OUTPUT_QUIET ERROR_QUIET
-		RESULT_VARIABLE Xmllint_RES
-	)
-	if(NOT ${Xmllint_RES} EQUAL 0 )
-		message(FATAL_ERROR "data/darktableconfig.xml is not valid")
-	endif(NOT ${Xmllint_RES} EQUAL 0 )
+  add_custom_target(
+    validate_darktableconfig_xml ALL
+    COMMAND ${Xmllint_BIN} --valid --noout ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    COMMENT "Checking validity of data/darktableconfig.xml"
+  )
 endif(USE_XMLLINT)
 
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
@@ -127,7 +125,13 @@ else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   endif(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
 endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 
-add_custom_target(darktablerc_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc)
+add_custom_target(
+  darktablerc_file ALL
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+)
+if(USE_XMLLINT)
+  add_dependencies(darktablerc_file validate_darktableconfig_xml)
+endif(USE_XMLLINT)
 
 # first of all install darktablerc file into share as template
 # postinst script should copy this into users homedirectory

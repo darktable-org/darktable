@@ -18,12 +18,13 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
 #include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -63,24 +64,24 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
 static void _lib_modulegroups_viewchanged_callback(gpointer instance, dt_view_t *old_view,
                                                    dt_view_t *new_view, gpointer data);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("modulegroups");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_TOP;
 }
 
 
 /* this module should always be shown without expander */
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }
@@ -104,40 +105,39 @@ void gui_init(dt_lib_module_t *self)
   d->buttons[DT_MODULEGROUP_FAVORITES] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_favorites, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_FAVORITES], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
                    self);
-  g_object_set(d->buttons[DT_MODULEGROUP_FAVORITES], "tooltip-text",
-               _("show only your favourite modules (selected in `more modules' below)"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_FAVORITES],
+                              _("show only your favourite modules (selected in `more modules' below)"));
 
   /* active */
   d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
                    self);
-  g_object_set(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "tooltip-text", _("show only active modules"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], _("show only active modules"));
 
   /* basic */
   d->buttons[DT_MODULEGROUP_BASIC] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basic, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_BASIC], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  g_object_set(d->buttons[DT_MODULEGROUP_BASIC], "tooltip-text", _("basic group"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_BASIC], _("basic group"));
 
   /* correct */
   d->buttons[DT_MODULEGROUP_CORRECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_correct, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_CORRECT], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  g_object_set(d->buttons[DT_MODULEGROUP_CORRECT], "tooltip-text", _("correction group"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_CORRECT], _("correction group"));
 
   /* color */
   d->buttons[DT_MODULEGROUP_COLOR] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_color, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_COLOR], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  g_object_set(d->buttons[DT_MODULEGROUP_COLOR], "tooltip-text", _("color group"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_COLOR], _("color group"));
 
   /* tone */
   d->buttons[DT_MODULEGROUP_TONE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_tone, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_TONE], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  g_object_set(d->buttons[DT_MODULEGROUP_TONE], "tooltip-text", _("tone group"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_TONE], _("tone group"));
 
   /* effect */
   d->buttons[DT_MODULEGROUP_EFFECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_effect, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_EFFECT], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  g_object_set(d->buttons[DT_MODULEGROUP_EFFECT], "tooltip-text", _("effects group"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_EFFECT], _("effects group"));
 
   /* minimize table height before adding the buttons */
   gtk_widget_set_size_request(self->widget, -1, -1);

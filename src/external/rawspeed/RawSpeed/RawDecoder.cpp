@@ -65,7 +65,7 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
 
     offY += yPerSlice;
 
-    if (mFile->isValid(slice.offset + slice.count)) // Only decode if size is valid
+    if (mFile->isValid(slice.offset, slice.count)) // Only decode if size is valid
       slices.push_back(slice);
   }
 
@@ -79,7 +79,7 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
   offY = 0;
   for (uint32 i = 0; i < slices.size(); i++) {
     RawSlice slice = slices[i];
-    ByteStream in(mFile->getData(slice.offset), slice.count);
+    ByteStream in(mFile, slice.offset, slice.count);
     iPoint2D size(width, slice.h);
     iPoint2D pos(0, offY);
     bitPerPixel = (int)((uint64)((uint64)slice.count * 8u) / (slice.h * width));
@@ -103,9 +103,11 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
 void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch, int bitPerPixel, BitOrder order) {
   uchar8* data = mRaw->getData();
   uint32 outPitch = mRaw->pitch;
-  uint32 w = size.x;
-  uint32 h = size.y;
+  uint64 w = size.x;
+  uint64 h = size.y;
   uint32 cpp = mRaw->getCpp();
+  uint64 ox = offset.x;
+  uint64 oy = offset.y;
 
   if (input.getRemainSize() < (inputPitch*h)) {
     if ((int)input.getRemainSize() > inputPitch) {
@@ -118,13 +120,13 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
     ThrowRDE("readUncompressedRaw: Unsupported bit depth");
 
   uint32 skipBits = inputPitch - w * bitPerPixel / 8;  // Skip per line
-  if (offset.y > mRaw->dim.y)
+  if (oy > (uint64) mRaw->dim.y)
     ThrowRDE("readUncompressedRaw: Invalid y offset");
-  if (offset.x + size.x > mRaw->dim.x)
+  if (ox + size.x > (uint64)mRaw->dim.x)
     ThrowRDE("readUncompressedRaw: Invalid x offset");
 
-  uint32 y = offset.y;
-  h = MIN(h + (uint32)offset.y, (uint32)mRaw->dim.y);
+  uint64 y = oy;
+  h = MIN(h + oy, (uint32)mRaw->dim.y);
 
   if (mRaw->getDataType() == TYPE_FLOAT32)
   {
@@ -505,8 +507,8 @@ bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
     if (mode.length() == 0)
       writeLog(DEBUG_PRIO_WARNING, "Unable to find camera in database: %s %s %s\n", make.c_str(), model.c_str(), mode.c_str());
 
-     if (failOnUnknown)
-       ThrowRDE("Camera '%s' '%s', mode '%s' not supported, and not allowed to guess. Sorry.", make.c_str(), model.c_str(), mode.c_str());
+    if (failOnUnknown)
+      ThrowRDE("Camera '%s' '%s', mode '%s' not supported, and not allowed to guess. Sorry.", make.c_str(), model.c_str(), mode.c_str());
 
     // Assume the camera can be decoded, but return false, so decoders can see that we are unsure.
     return false;    
@@ -611,7 +613,7 @@ void *RawDecoderDecodeThread(void *_this) {
 void RawDecoder::startThreads() {
   uint32 threads;
   bool fail = false;
-  threads = getThreadCount(); 
+  threads = MIN(mRaw->dim.y, getThreadCount());
   int y_offset = 0;
   int y_per_thread = (mRaw->dim.y + threads - 1) / threads;
   RawDecoderThread *t = new RawDecoderThread[threads];

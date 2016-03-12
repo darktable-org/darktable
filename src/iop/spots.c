@@ -18,13 +18,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "gui/gtk.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -165,8 +166,6 @@ static void _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_ellipse)))
   {
     // we unset the creation mode
-    dt_masks_form_t *form = darktable.develop->form_visible;
-    if(form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
   }
   if (widget != g->bt_path) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
@@ -359,8 +358,8 @@ static int masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return res;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
   dt_develop_blend_params_t *bp = self->blend_params;
@@ -371,7 +370,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // we don't modify most of the image:
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out, in, roi_in, roi_out)
+#pragma omp parallel for schedule(static) default(none) shared(out, in)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -641,13 +640,12 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *label = gtk_label_new(_("number of strokes:"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
   g->label = GTK_LABEL(gtk_label_new("-1"));
-  g_object_set(G_OBJECT(hbox), "tooltip-text", _("click on a shape and drag on canvas.\nuse the mouse wheel "
-                                                 "to adjust size.\nright click to remove a shape."),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(hbox, _("click on a shape and drag on canvas.\nuse the mouse wheel "
+                                      "to adjust size.\nright click to remove a shape."));
 
   g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(_add_path), self);
-  g_object_set(G_OBJECT(g->bt_path), "tooltip-text", _("add path"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_path), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_path, FALSE, FALSE, 0);
@@ -655,7 +653,7 @@ void gui_init(dt_iop_module_t *self)
   g->bt_ellipse
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(_add_ellipse), self);
-  g_object_set(G_OBJECT(g->bt_ellipse), "tooltip-text", _("add ellipse"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_ellipse, _("add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_ellipse), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_ellipse, FALSE, FALSE, 0);
@@ -663,7 +661,7 @@ void gui_init(dt_iop_module_t *self)
   g->bt_circle
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(_add_circle), self);
-  g_object_set(G_OBJECT(g->bt_circle), "tooltip-text", _("add circle"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_circle, _("add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_circle), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_circle, FALSE, FALSE, 0);

@@ -22,14 +22,19 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
-#include "develop/develop.h"
-#include "develop/imageop.h"
-#include "control/control.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
+#endif
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -94,7 +99,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->data;
@@ -150,7 +155,8 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
     return 4 * sizeof(float);
 }
 
-static inline void _interpolate_color_xtrans(void *ivoid, void *ovoid, const dt_iop_roi_t *const roi_in,
+static inline void _interpolate_color_xtrans(const void *const ivoid, void *const ovoid,
+                                             const dt_iop_roi_t *const roi_in,
                                              const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
                                              const float *clip, const uint8_t (*const xtrans)[6],
                                              const int pass)
@@ -300,8 +306,9 @@ static inline void _interpolate_color_xtrans(void *ivoid, void *ovoid, const dt_
   }
 }
 
-static inline void _interpolate_color(void *ivoid, void *ovoid, const dt_iop_roi_t *roi_out, int dim, int dir,
-                                      int other, const float *clip, const uint32_t filters, const int pass)
+static inline void _interpolate_color(const void *const ivoid, void *const ovoid,
+                                      const dt_iop_roi_t *const roi_out, int dim, int dir, int other,
+                                      const float *clip, const uint32_t filters, const int pass)
 {
   float ratio = 1.0f;
   float *in, *out;
@@ -399,10 +406,11 @@ static inline void _interpolate_color(void *ivoid, void *ovoid, const dt_iop_roi
   }
 }
 
-static void process_lch_xtrans(void *ivoid, void *ovoid, const int width, const int height, const float clip)
+static void process_lch_xtrans(const void *const ivoid, void *const ovoid, const int width, const int height,
+                               const float clip)
 {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, ivoid)
+#pragma omp parallel for schedule(static) default(none)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -446,35 +454,105 @@ static void process_lch_xtrans(void *ivoid, void *ovoid, const int width, const 
   }
 }
 
+static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                               const float clip)
+{
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  { // raw mosaic
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static)
+#endif
+    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+    {
+      out[k] = MIN(clip, in[k]);
+    }
+  }
+  else
+  {
+    const int ch = piece->colors;
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static)
+#endif
+    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
+    {
+      out[k] = MIN(clip, in[k]);
+    }
+  }
+}
+
+#if defined(__SSE__)
+static void process_clip_sse2(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                              const float clip)
+{
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  { // raw mosaic
+    const __m128 clipm = _mm_set1_ps(clip);
+    const size_t n = (size_t)roi_out->height * roi_out->width;
+    float *const out = (float *)ovoid;
+    float *const in = (float *)ivoid;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
+    for(size_t j = 0; j < (n & ~3u); j += 4) _mm_stream_ps(out + j, _mm_min_ps(clipm, _mm_load_ps(in + j)));
+    _mm_sfence();
+    // lets see if there's a non-multiple of four rest to process:
+    if(n & 3)
+      for(size_t j = n & ~3u; j < n; j++) out[j] = MIN(clip, in[j]);
+  }
+  else
+  {
+    const __m128 clipm = _mm_set1_ps(clip);
+    const int ch = piece->colors;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      float *out = (float *)ovoid + (size_t)ch * roi_out->width * j;
+      float *in = (float *)ivoid + (size_t)ch * roi_in->width * j;
+      for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+      {
+        _mm_stream_ps(out, _mm_min_ps(clipm, _mm_set_ps(in[3], in[2], in[1], in[0])));
+      }
+    }
+    _mm_sfence();
+  }
+}
+#endif
+
+static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                         const float clip)
+{
+  if(darktable.codepath.OPENMP_SIMD) process_clip_plain(piece, ivoid, ovoid, roi_in, roi_out, clip);
+#if defined(__SSE__)
+  else if(darktable.codepath.SSE2)
+    process_clip_sse2(piece, ivoid, ovoid, roi_in, roi_out, clip);
+#endif
+  else
+    dt_unreachable_codepath();
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int filters = dt_image_filter(&piece->pipe->image);
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
 
-  const float clip = data->clip
-                     * fminf(piece->pipe->processed_maximum[0],
-                             fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+  const float clip
+      = data->clip * fminf(piece->pipe->processed_maximum[0],
+                           fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   // const int ch = piece->colors;
   if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
-    const __m128 clipm = _mm_set1_ps(clip);
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      float *out = (float *)ovoid + (size_t)4 * roi_out->width * j;
-      float *in = (float *)ivoid + (size_t)4 * roi_in->width * j;
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        _mm_stream_ps(out, _mm_min_ps(clipm, _mm_set_ps(in[3], in[2], in[1], in[0])));
-        in += 4;
-        out += 4;
-      }
-    }
-    _mm_sfence();
+    process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
     return;
   }
 
@@ -490,7 +568,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       {
         const dt_image_t *img = &self->dev->image_storage;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, img)
+#pragma omp parallel for schedule(dynamic) default(none) shared(img)
 #endif
         for(int j = 0; j < roi_out->height; j++)
         {
@@ -498,7 +576,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
           _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, -1, j, clips, img->xtrans, 1);
         }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, img)
+#pragma omp parallel for schedule(dynamic) default(none) shared(img)
 #endif
         for(int i = 0; i < roi_out->width; i++)
         {
@@ -509,7 +587,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       }
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#pragma omp parallel for schedule(dynamic) default(none) shared(data, piece)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -519,7 +597,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // up/down directions
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#pragma omp parallel for schedule(dynamic) default(none) shared(data, piece)
 #endif
       for(int i = 0; i < roi_out->width; i++)
       {
@@ -535,7 +613,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         break;
       }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#pragma omp parallel for schedule(dynamic) default(none) shared(data, piece)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -581,18 +659,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     default:
     case DT_IOP_HIGHLIGHTS_CLIP:
     {
-      const __m128 clipm = _mm_set1_ps(clip);
-      const size_t n = (size_t)roi_out->height * roi_out->width;
-      float *const out = (float *)ovoid;
-      float *const in = (float *)ivoid;
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
-#endif
-      for(size_t j = 0; j < (n & ~3u); j += 4) _mm_stream_ps(out + j, _mm_min_ps(clipm, _mm_load_ps(in + j)));
-      _mm_sfence();
-      // lets see if there's a non-multiple of four rest to process:
-      if(n & 3)
-        for(size_t j = n & ~3u; j < n; j++) out[j] = MIN(clip, in[j]);
+      process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
     }
   }
@@ -723,13 +790,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->mode, _("clip highlights"));
   dt_bauhaus_combobox_add(g->mode, _("reconstruct in LCh"));
   dt_bauhaus_combobox_add(g->mode, _("reconstruct color"));
-  g_object_set(G_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->mode, _("highlight reconstruction method"));
 
   g->clip = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->clip, 3);
-  g_object_set(G_OBJECT(g->clip), "tooltip-text",
-               _("manually adjust the clipping threshold against"
-                 " magenta highlights (you shouldn't ever need to touch this)"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold against "
+                                         "magenta highlights (you shouldn't ever need to touch this)"));
   dt_bauhaus_widget_set_label(g->clip, NULL, _("clipping threshold"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->clip, TRUE, TRUE, 0);
 

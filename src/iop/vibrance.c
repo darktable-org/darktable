@@ -24,15 +24,15 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "common/opencl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <xmmintrin.h>
 
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x) (((x) >= 0.0) ? ((x) <= 1.0 ? (x) : 1.0) : 0.0)
@@ -88,8 +88,8 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_vibrance_data_t *d = (dt_iop_vibrance_data_t *)piece->data;
   const float *in = (float *)ivoid;
@@ -99,7 +99,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const float amount = (d->amount * 0.01);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out) schedule(static)
+#pragma omp parallel for default(none) shared(in, out) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -121,7 +121,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_vibrance_data_t *data = (dt_iop_vibrance_data_t *)piece->data;
   dt_iop_vibrance_global_data_t *gd = (dt_iop_vibrance_global_data_t *)self->data;
@@ -242,7 +242,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->amount_scale, "%.0f%%");
   dt_bauhaus_widget_set_label(g->amount_scale, NULL, _("vibrance"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->amount_scale), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->amount_scale), "tooltip-text", _("the amount of vibrance"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->amount_scale, _("the amount of vibrance"));
   g_signal_connect(G_OBJECT(g->amount_scale), "value-changed", G_CALLBACK(amount_callback), self);
 }
 

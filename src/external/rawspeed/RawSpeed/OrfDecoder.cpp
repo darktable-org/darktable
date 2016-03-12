@@ -63,7 +63,7 @@ RawImage OrfDecoder::decodeRawInternal() {
   for (uint32 i=0; i < counts->count; i++)
     size += sizes[i];
 
-  if (!mFile->isValid(off + size))
+  if (!mFile->isValid(off, size))
     ThrowRDE("ORF Decoder: Truncated file");
 
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
@@ -73,7 +73,7 @@ RawImage OrfDecoder::decodeRawInternal() {
   mRaw->createData();
 
   // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
-  ByteStream input(mFile->getData(off), MIN(size+3, mFile->getSize() - off));
+  ByteStream input(mFile, off, size+3);
 
   try {
     if (offsets->count != 1 || (hints.find(string("force_uncompressed")) != hints.end()))

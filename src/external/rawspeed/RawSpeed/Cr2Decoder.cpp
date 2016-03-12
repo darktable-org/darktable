@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "Cr2Decoder.h"
-#include "TiffParserHeaderless.h"
 #include "ByteStreamSwap.h"
 
 /*
@@ -58,9 +57,9 @@ RawImage Cr2Decoder::decodeRawInternal() {
 
     ByteStream *b;
     if (getHostEndianness() == big)
-      b = new ByteStream(mFile->getData(off+41), mFile->getSize());
+      b = new ByteStream(mFile, off+41);
     else
-      b = new ByteStreamSwap(mFile->getData(off+41), mFile->getSize());
+      b = new ByteStreamSwap(mFile, off+41);
     uint32 height = b->getShort();
     uint32 width = b->getShort();
 
@@ -153,7 +152,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
         if (slices[0].w != slice.w)
           ThrowRDE("CR2 Decoder: Slice width does not match.");
 
-      if (mFile->isValid(slice.offset + slice.count)) // Only decode if size is valid
+      if (mFile->isValid(slice.offset, slice.count)) // Only decode if size is valid
         slices.push_back(slice);
       completeH += slice.h;
     }

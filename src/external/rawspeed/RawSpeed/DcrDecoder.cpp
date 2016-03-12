@@ -55,7 +55,7 @@ RawImage DcrDecoder::decodeRawInternal() {
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), mFile->getSize() - off);
+  ByteStream input(mFile, off);
 
   int compression = raw->getEntry(COMPRESSION)->getInt();
   if (65000 == compression) {

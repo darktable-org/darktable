@@ -22,7 +22,9 @@
 #include "develop/pixelpipe_hb.h"
 #include "common/opencl.h"
 
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 /** Available interpolations */
 enum dt_interpolation_type
@@ -40,8 +42,10 @@ enum dt_interpolation_type
 /** Interpolation function */
 typedef float (*dt_interpolation_func)(float width, float t);
 
+#if defined(__SSE__)
 /** Interpolation function (SSE) */
 typedef __m128 (*dt_interpolation_sse_func)(__m128 width, __m128 t);
+#endif
 
 /** Interpolation structure */
 struct dt_interpolation
@@ -50,7 +54,9 @@ struct dt_interpolation
   const char *name;                  /**< internal name  */
   int width;                         /**< Half width of its kernel support */
   dt_interpolation_func func;        /**< Kernel function */
+#if defined(__SSE__)
   dt_interpolation_sse_func funcsse; /**< Kernel function (four params a time) */
+#endif
 };
 
 /** Compute a single interpolated sample.

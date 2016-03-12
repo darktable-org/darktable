@@ -16,17 +16,18 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "version.h"
+#include "common/pdf.h"
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "common/variables.h"
-#include "common/pdf.h"
 #include "control/control.h"
-#include "gui/gtkentry.h"
 #include "dtgtk/button.h"
-#include "bauhaus/bauhaus.h"
+#include "gui/gtkentry.h"
+#include "imageio/format/imageio_format_api.h"
+#include "version.h"
 
 DT_MODULE(1)
 
@@ -119,7 +120,7 @@ typedef struct dt_imageio_pdf_t
 // clang-format on
 
 #ifdef USE_LUA
-int orientation_member(lua_State*L)
+static int orientation_member(lua_State *L)
 {
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)lua_touserdata(L,1);
   dt_lua_orientation_t orientation;
@@ -298,7 +299,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
   }
 
-  uint8_t *image_data = NULL;
+  void *image_data = NULL;
 
   // TODO
   // decide if we want to push that conversion step into the pdf lib and maybe do it on the fly while writing.
@@ -307,9 +308,9 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   {
     if(d->params.bpp == 8)
     {
-      image_data = (uint8_t *)malloc(data->width * data->height * 3);
+      image_data = malloc(data->width * data->height * 3);
       const uint8_t *in_ptr = (const uint8_t *)in;
-      uint8_t *out_ptr = image_data;
+      uint8_t *out_ptr = (uint8_t *)image_data;
       for(int y = 0; y < data->height; y++)
       {
         for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
@@ -318,7 +319,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
     else
     {
-      image_data = (uint8_t *)malloc(data->width * data->height * 3 * sizeof(uint16_t));
+      image_data = malloc(data->width * data->height * 3 * sizeof(uint16_t));
       const uint16_t *in_ptr = (const uint16_t *)in;
       uint16_t *out_ptr = (uint16_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -585,7 +586,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
   gtk_grid_attach(grid, GTK_WIDGET(d->title), 1, line, 1, 1);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title));
-  g_object_set(G_OBJECT(d->title), "tooltip-text", _("enter the title of the pdf"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->title), _("enter the title of the pdf"));
   gchar *str = dt_conf_get_string("plugins/imageio/format/pdf/title");
   if(str)
   {
@@ -603,7 +604,9 @@ void gui_init(dt_imageio_module_format_t *self)
     dt_bauhaus_combobox_add(d->size, _(dt_pdf_paper_sizes[i].name));
   gtk_grid_attach(grid, GTK_WIDGET(d->size), 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->size), "value-changed", G_CALLBACK(size_toggle_callback), self);
-  g_object_set(G_OBJECT(d->size), "tooltip-text", _("paper size of the pdf\neither one from the list or \"<width> [unit] x <height> <unit>\nexample: 210 mm x 2.97 cm"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->size, _("paper size of the pdf\neither one from the list or "
+                                         "\"<width> [unit] x <height> <unit>\n"
+                                         "example: 210 mm x 2.97 cm"));
   str = dt_conf_get_string("plugins/imageio/format/pdf/size");
   _set_paper_size(self, str);
   g_free(str);
@@ -616,7 +619,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(d->orientation, _("landscape"));
   gtk_grid_attach(grid, GTK_WIDGET(d->orientation), 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->orientation), "value-changed", G_CALLBACK(orientation_toggle_callback), self);
-  g_object_set(G_OBJECT(d->orientation), "tooltip-text", _("paper orientation of the pdf"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->orientation, _("paper orientation of the pdf"));
   dt_bauhaus_combobox_set(d->orientation, dt_conf_get_int("plugins/imageio/format/pdf/orientation"));
 
   // border
@@ -631,7 +634,8 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_entry_set_placeholder_text(d->border, "0 mm");
   gtk_grid_attach(grid, GTK_WIDGET(d->border), 1, line, 1, 1);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->border));
-  g_object_set(G_OBJECT(d->border), "tooltip-text", _("empty space around the pdf\nformat: size + unit\nexamples: 10 mm, 1 inch"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->border), _("empty space around the pdf\n"
+                                                       "format: size + unit\nexamples: 10 mm, 1 inch"));
   str = dt_conf_get_string("plugins/imageio/format/pdf/border");
   if(str)
   {
@@ -650,7 +654,7 @@ void gui_init(dt_imageio_module_format_t *self)
   d->dpi = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 5000, 1));
   gtk_grid_attach(grid, GTK_WIDGET(d->dpi), 1, line, 1, 1);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->dpi));
-  g_object_set(G_OBJECT(d->dpi), "tooltip-text", _("dpi of the images inside the pdf"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->dpi), _("dpi of the images inside the pdf"));
   gtk_spin_button_set_value(d->dpi, dt_conf_get_float("plugins/imageio/format/pdf/dpi"));
   g_signal_connect(G_OBJECT(d->dpi), "value-changed", G_CALLBACK(dpi_changed_callback), self);
 
@@ -662,9 +666,8 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(d->rotate, _("yes"));
   gtk_grid_attach(grid, GTK_WIDGET(d->rotate), 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->rotate), "value-changed", G_CALLBACK(rotate_toggle_callback), self);
-  g_object_set(G_OBJECT(d->rotate), "tooltip-text",
-               _("images can be rotated to match the pdf orientation to waste less space when printing"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(d->rotate, _("images can be rotated to match the pdf orientation "
+                                           "to waste less space when printing"));
   dt_bauhaus_combobox_set(d->rotate, dt_conf_get_bool("plugins/imageio/format/pdf/rotate"));
 
   // pages all|single images|contact sheet
@@ -676,7 +679,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(d->pages, _("contact sheet"));
 //   gtk_grid_attach(grid, GTK_WIDGET(d->pages), 0, ++line, 2, 1);
 //   g_signal_connect(G_OBJECT(d->pages), "value-changed", G_CALLBACK(pages_toggle_callback), self);
-  g_object_set(G_OBJECT(d->pages), "tooltip-text", _("what pages should be added to the pdf"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->pages, _("what pages should be added to the pdf"));
   dt_bauhaus_combobox_set(d->pages, dt_conf_get_int("plugins/imageio/format/pdf/pages"));
   gtk_widget_set_sensitive(d->pages, FALSE); // TODO
 
@@ -688,7 +691,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(d->icc, _("yes"));
   gtk_grid_attach(grid, GTK_WIDGET(d->icc), 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->icc), "value-changed", G_CALLBACK(icc_toggle_callback), self);
-  g_object_set(G_OBJECT(d->icc), "tooltip-text", _("images can be tagged with their icc profile"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->icc, _("images can be tagged with their icc profile"));
   dt_bauhaus_combobox_set(d->icc, dt_conf_get_bool("plugins/imageio/format/pdf/icc"));
 
   // bpp
@@ -704,7 +707,7 @@ void gui_init(dt_imageio_module_format_t *self)
   }
   gtk_grid_attach(grid, GTK_WIDGET(d->bpp), 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->bpp), "value-changed", G_CALLBACK(bpp_toggle_callback), self);
-  g_object_set(G_OBJECT(d->bpp), "tooltip-text", _("bits per channel of the embedded images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->bpp, _("bits per channel of the embedded images"));
   dt_bauhaus_combobox_set(d->bpp, sel);
 
   // compression
@@ -715,7 +718,9 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(d->compression, _("deflate"));
   gtk_grid_attach(grid, GTK_WIDGET(d->compression), 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->compression), "value-changed", G_CALLBACK(compression_toggle_callback), self);
-  g_object_set(G_OBJECT(d->compression), "tooltip-text", _("method used for image compression\nuncompressed -- fast but big files\ndeflate -- smaller files but slower"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->compression, _("method used for image compression\n"
+                                                "uncompressed -- fast but big files\n"
+                                                "deflate -- smaller files but slower"));
   dt_bauhaus_combobox_set(d->compression, dt_conf_get_int("plugins/imageio/format/pdf/compression"));
 
   // image mode normal|draft|debug
@@ -727,11 +732,9 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(d->mode, _("debug"));
   gtk_grid_attach(grid, GTK_WIDGET(d->mode), 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->mode), "value-changed", G_CALLBACK(mode_toggle_callback), self);
-  g_object_set(G_OBJECT(d->mode), "tooltip-text",
-               _("normal -- just put the images into the pdf\n"
-               "draft -- images are replaced with boxes\n"
-               "debug -- only show the outlines and bounding boxen"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(d->mode, _("normal -- just put the images into the pdf\n"
+                                         "draft -- images are replaced with boxes\n"
+                                         "debug -- only show the outlines and bounding boxen"));
   dt_bauhaus_combobox_set(d->mode, dt_conf_get_int("plugins/imageio/format/pdf/mode"));
 }
 

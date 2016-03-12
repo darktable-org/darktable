@@ -16,26 +16,26 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "common/utility.h"
 #include "common/variables.h"
-#include "control/control.h"
 #include "control/conf.h"
-#include "gui/gtk.h"
-#include "gui/gtkentry.h"
+#include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
-#include "bauhaus/bauhaus.h"
-#include "common/imageio_storage.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "gui/gtk.h"
+#include "gui/gtkentry.h"
+#include "imageio/storage/imageio_storage_api.h"
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 DT_MODULE(2)
 
@@ -148,12 +148,12 @@ void gui_init(dt_imageio_module_storage_t *self)
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
   gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
-  g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
-  g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
+  gtk_widget_set_tooltip_text(widget, _("select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 

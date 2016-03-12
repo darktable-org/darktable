@@ -160,6 +160,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   TIFFGetField(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
   TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
+
+  if(TIFFRasterScanlineSize(t.tiff) != TIFFScanlineSize(t.tiff)) return DT_IMAGEIO_FILE_CORRUPTED;
+
   t.scanlinesize = TIFFScanlineSize(t.tiff);
 
   dt_print(DT_DEBUG_CAMERA_SUPPORT, "[tiff_open] %dx%d %dbpp, %d samples per pixel.\n", t.width, t.height, t.bpp, t.spp);

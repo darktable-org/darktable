@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "views/view.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
@@ -25,14 +24,16 @@
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/selection.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "develop/develop.h"
-#include "libs/lib.h"
 #include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "gui/drag_and_drop.h"
+#include "gui/gtk.h"
 #include "gui/hist_dialog.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
+#include "views/view.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -136,22 +137,22 @@ static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *c
                                             gpointer user_data);
 static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gpointer user_data);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("filmstrip");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_BOTTOM;
 }
 
-int expandable()
+int expandable(dt_lib_module_t *self)
 {
   return 0;
 }
@@ -740,14 +741,14 @@ failure:
     char *tooltip = dt_history_get_items_as_string(strip->mouse_over_id);
     if(tooltip != NULL)
     {
-      g_object_set(G_OBJECT(strip->filmstrip), "tooltip-text", tooltip, (char *)NULL);
+      gtk_widget_set_tooltip_text(strip->filmstrip, tooltip);
       g_free(tooltip);
     }
   }
   else if(darktable.gui->center_tooltip == 2) // not set in this round
   {
     darktable.gui->center_tooltip = 0;
-    g_object_set(G_OBJECT(strip->filmstrip), "tooltip-text", "", (char *)NULL);
+    gtk_widget_set_tooltip_text(strip->filmstrip, "");
   }
 
 #ifdef _DEBUG
@@ -787,7 +788,7 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
   dt_control_queue_redraw_widget(self->widget);
 }
 
-int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)
+static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
   return strip->activated_image;
@@ -1063,7 +1064,7 @@ static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *c
 
 static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
 {
-  const int ts = 64;
+  const int ts = DT_PIXEL_APPLY_DPI(64);
 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
@@ -1108,7 +1109,7 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
       GdkPixbuf *source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width,
                                                    buf.height, buf.width * 4, NULL, NULL);
       GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
-      gtk_drag_set_icon_pixbuf(context, scaled, 0, 0);
+      gtk_drag_set_icon_pixbuf(context, scaled, 0, h);
 
       if(source) g_object_unref(source);
       if(scaled) g_object_unref(scaled);

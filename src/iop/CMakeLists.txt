@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
+add_definitions(-include common/module_api.h)
+add_definitions(-include iop/iop_api.h)
+
 macro (add_iop _lib _src)
   string(LENGTH ${_lib} _lib_namelength)
   if(${_lib_namelength} GREATER 19)
@@ -16,7 +22,7 @@ macro (add_iop _lib _src)
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/introspection/
     COMMAND ${perl_BIN} ${CMAKE_SOURCE_DIR}/tools/introspection/parser.pl ${CMAKE_CURRENT_SOURCE_DIR}/../ ${_input} ${_output}
   )
-  add_library(${_lib} MODULE ${_output})
+  add_library(${_lib} MODULE ${_output} ${ARGN})
   target_link_libraries(${_lib} ${LIBS})
   install(TARGETS  ${_lib} DESTINATION ${LIB_INSTALL}/darktable/plugins)
 endmacro (add_iop)
@@ -59,7 +65,7 @@ add_iop(channelmixer "channelmixer.c")
 add_iop(graduatednd "graduatednd.c")
 add_iop(relight "relight.c")
 add_iop(zonesystem "zonesystem.c")
-add_iop(demosaic "demosaic.c")
+add_iop(demosaic "demosaic.c" "amaze_demosaic_RT.cc")
 add_iop(rotatepixels "rotatepixels.c")
 add_iop(scalepixels "scalepixels.c")
 add_iop(atrous "atrous.c")
@@ -83,6 +89,7 @@ add_iop(globaltonemap "globaltonemap.c")
 add_iop(bilat "bilat.c")
 add_iop(denoiseprofile "denoiseprofile.c")
 add_iop(defringe "defringe.c")
+add_iop(ashift "ashift.c")
 
 if(RSVG2_FOUND)
   add_iop(watermark "watermark.c")

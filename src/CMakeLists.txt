@@ -10,6 +10,8 @@ include(CheckCSourceCompiles)
 #
 FILE(GLOB SOURCE_FILES
   "bauhaus/bauhaus.c"
+  "common/bilateral.c"
+  "common/bilateralcl.c"
   "common/cache.c"
   "common/calculator.c"
   "common/collection.c"
@@ -69,6 +71,7 @@ FILE(GLOB SOURCE_FILES
   "control/signal.c"
   "develop/develop.c"
   "develop/imageop.c"
+  "develop/imageop_math.c"
   "develop/lightroom.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
@@ -337,11 +340,13 @@ endif(GPHOTO2_FOUND)
 # See https://llvm.org/bugs/show_bug.cgi?id=25510
 check_c_source_compiles("#include <stdio.h>
 int main() {
+  __builtin_cpu_init();
   printf(\"%d\", __builtin_cpu_supports(\"sse3\"));
 }" HAVE_BUILTIN_CPU_SUPPORTS)
 if(HAVE_BUILTIN_CPU_SUPPORTS)
   add_definitions("-DHAVE_BUILTIN_CPU_SUPPORTS")
 endif(HAVE_BUILTIN_CPU_SUPPORTS)
+MESSAGE(STATUS "Does the compiler support __builtin_cpu_supports(): ${HAVE_BUILTIN_CPU_SUPPORTS}")
 
 #
 # Set default compile flags for GCC
@@ -351,6 +356,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
 
 if(NOT WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif(NOT WIN32)
 
 if(WIN32)
@@ -374,8 +380,10 @@ if(WIN32)
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
-  #we MUST always specify our requred instruction set, native might not detect it
-  set(DT_REQ_INSTRUCTIONS "-msse3")
+  if(BUILD_SSE2_CODEPATHS)
+    #we MUST always specify our requred instruction set, native might not detect it
+    set(DT_REQ_INSTRUCTIONS "-msse2")
+  endif()
 
   if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
     set(MARCH "-msse4.2")
@@ -397,6 +405,10 @@ if(NOT CUSTOM_CFLAGS)
     set(MARCH "-mtune=generic")
   endif()
 
+  #if(NOT BUILD_SSE2_CODEPATHS)
+  #  set(MARCH "${MARCH} -mno-sse2 -D__DISABLE_SSE2__ -U__SSE2__ -D__DISABLE_SSE__ -U__SSE__")
+  #endif()
+
   #-g MUST be set for ALL builds, or there will be no support for them when bugs happen
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2")
@@ -404,7 +416,10 @@ if(NOT CUSTOM_CFLAGS)
   if(CMAKE_COMPILER_IS_GNUCC)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
+    if(BUILD_SSE2_CODEPATHS)
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
+    endif()
+
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g3 -ggdb3")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
   else()
@@ -417,7 +432,10 @@ if(NOT CUSTOM_CFLAGS)
   if(CMAKE_COMPILER_IS_GNUCXX)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
+    if(BUILD_SSE2_CODEPATHS)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
+    endif()
+
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -ggdb3")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fexpensive-optimizations")
   else()
@@ -526,6 +544,9 @@ if(USE_GEO)
   if(OSMGPSMAP_FOUND)
     message(STATUS "Map mode: enabled")
     add_definitions("-DHAVE_MAP")
+    if(NOT OSMGPSMAP_VERSION VERSION_LESS 1.1.0)
+      add_definitions("-DHAVE_OSMGPSMAP_110_OR_NEWER")
+    endif()
     include_directories(SYSTEM ${OSMGPSMAP_INCLUDE_DIRS})
     list(APPEND LIBS ${OSMGPSMAP_LIBRARIES})
     add_definitions(${OSMGPSMAP_DEFINITIONS})
@@ -662,21 +683,32 @@ endif(CMAKE_C_COMPILER_ID STREQUAL "GCC")
 #
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   add_custom_command(
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
     COMMAND ${Xsltproc_BIN} --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+    COMMENT "Generating preferences"
   )
 else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
     add_custom_command(
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
       COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl HAVE_OPENCL=${HAVE_OPENCL} > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+      COMMENT "Generating preferences"
     )
   else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
     message(FATAL_ERROR "Don't know how to generate preferences")
   endif(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
 endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+
+add_custom_target(
+  generate_preferences ALL
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+if(USE_XMLLINT)
+  add_dependencies(generate_preferences validate_darktableconfig_xml)
+endif(USE_XMLLINT)
 
 #
 # Generate mapping of key strings to internal metadata id
@@ -685,16 +717,22 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Generating metadata .c/.h"
 )
-
-# this is a dummy library whose sole purpose is to serve as a dependency for subdirs, such as imageio/storage/gallery.
-# cmake can't depend on custom targets in other directories than the current one.
-add_library(metadata_dummy ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h)
+add_custom_target(
+  generate_metadata ALL
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 #
 # build libdarktable
 #
 add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
+add_dependencies(lib_darktable generate_version)
+add_dependencies(lib_darktable generate_preferences)
+add_dependencies(lib_darktable generate_metadata)
+
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES MACOSX_RPATH TRUE)
 endif(APPLE)

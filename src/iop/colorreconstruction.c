@@ -19,23 +19,24 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "bauhaus/bauhaus.h"
+#include "common/colorspaces.h"
+#include "common/debug.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "control/control.h"
-#include "common/debug.h"
-#include "common/opencl.h"
-#include "common/colorspaces.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_S 500
 #define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_R 100
@@ -500,8 +501,10 @@ static void dt_iop_colorreconstruct_bilateral_blur(dt_iop_colorreconstruct_bilat
   blur_line(b->buf, 1, b->size_x, b->size_x * b->size_y, b->size_x, b->size_y, b->size_z);
 }
 
-static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruct_bilateral_t *const b, const float *const in, float *out,
-                                                    const float threshold, const dt_iop_roi_t *roi, const float iscale)
+static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruct_bilateral_t *const b,
+                                                    const float *const in, float *const out,
+                                                    const float threshold, const dt_iop_roi_t *const roi,
+                                                    const float iscale)
 {
   if(!b) return;
 
@@ -510,7 +513,7 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, roi)
+#pragma omp parallel for default(none)
 #endif
   for(int j = 0; j < roi->height; j++)
   {
@@ -580,8 +583,8 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorreconstruct_data_t *data = (dt_iop_colorreconstruct_data_t *)piece->data;
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
@@ -646,7 +649,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   return;
 
 error:
-  dt_control_log(_("[color reconstruction] module failed."));
+  dt_control_log(_("module `color reconstruction' failed"));
   dt_iop_colorreconstruct_bilateral_free(b);
   memcpy(ovoid, ivoid, (size_t)sizeof(float) * piece->colors * roi_out->width * roi_out->height);
 }
@@ -1066,7 +1069,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct
 }
 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorreconstruct_data_t *d = (dt_iop_colorreconstruct_data_t *)piece->data;
   dt_iop_colorreconstruct_global_data_t *gd = (dt_iop_colorreconstruct_global_data_t *)self->data;
@@ -1402,11 +1405,11 @@ void gui_init(struct dt_iop_module_t *self)
       break;
   }
 
-  g_object_set(g->threshold, "tooltip-text", _("pixels with lightness values above this threshold are corrected"), (char *)NULL);
-  g_object_set(g->spatial, "tooltip-text", _("how far to look for replacement colors in spatial dimensions"), (char *)NULL);
-  g_object_set(g->range, "tooltip-text", _("how far to look for replacement colors in the luminance dimension"), (char *)NULL);
-  g_object_set(g->precedence, "tooltip-text", _("if and how to give precedence to specific replacement colors"), (char *)NULL);
-  g_object_set(g->hue, "tooltip-text", _("the hue tone which should be given precedence over other hue tones"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->threshold, _("pixels with lightness values above this threshold are corrected"));
+  gtk_widget_set_tooltip_text(g->spatial, _("how far to look for replacement colors in spatial dimensions"));
+  gtk_widget_set_tooltip_text(g->range, _("how far to look for replacement colors in the luminance dimension"));
+  gtk_widget_set_tooltip_text(g->precedence, _("if and how to give precedence to specific replacement colors"));
+  gtk_widget_set_tooltip_text(g->hue, _("the hue tone which should be given precedence over other hue tones"));
 
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
   g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);

@@ -20,19 +20,21 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <complex.h>
-#include <assert.h>
 #include "bauhaus/bauhaus.h"
-#include "develop/imageop.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/imageop.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
+#include <assert.h>
 #include <cairo.h>
+#include <complex.h>
+#include <math.h>
+#include <stdlib.h>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -273,6 +275,11 @@ int flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+int operation_tags()
+{
+   return IOP_TAG_DISTORT;
+}
+
 /******************************************************************************/
 /* Code common to op-engine and gui.                                          */
 /******************************************************************************/
@@ -344,7 +351,7 @@ static void node_gc (dt_iop_liquify_params_t *p)
   {
     if (p->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
     {
-      for (int e=0; e<=last; e++)
+      for (int e=0; e<last; e++)
       {
         //  then move slot if above position k
         if (e >= k)                       p->nodes[e] = p->nodes[e+1];
@@ -474,12 +481,12 @@ typedef struct {
   dt_dev_pixelpipe_t *pipe;
   float from_scale;
   float to_scale;
-  gboolean direction; ///< to raw == false
   int pmin;
   int pmax;
 } distort_params_t;
 
-static void _distort_paths (const distort_params_t *params, const dt_iop_liquify_params_t *p)
+static void _distort_paths (const struct dt_iop_module_t *module,
+                            const distort_params_t *params, const dt_iop_liquify_params_t *p)
 {
   int len = 0;
 
@@ -538,12 +545,13 @@ static void _distort_paths (const distort_params_t *params, const dt_iop_liquify
     }
   }
 
-  // transform points
-
-  if (params->direction)
-    dt_dev_distort_transform_plus     (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
+  if (params->pmin < module->priority && params->pmax > module->priority)
+  {
+    dt_dev_distort_transform_plus (params->develop, params->pipe, params->pmin, module->priority - 1, buffer, len);
+    dt_dev_distort_transform_plus (params->develop, params->pipe, module->priority + 1, params->pmax, buffer, len);
+  }
   else
-    dt_dev_distort_backtransform_plus (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
+    dt_dev_distort_transform_plus (params->develop, params->pipe, params->pmin, params->pmax, buffer, len);
 
   // record back the transformed points
 
@@ -585,8 +593,8 @@ static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
                                         const float roi_in_scale,
                                         dt_iop_liquify_params_t *p)
 {
-  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, TRUE, 0, module->priority };
-  _distort_paths (&params, p);
+  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, 0, module->priority - 1 };
+  _distort_paths (module, &params, p);
 }
 
 // op-engine code
@@ -832,7 +840,9 @@ static void build_round_stamp (float complex **pstamp,
                                  * stamp_extent->width * stamp_extent->height);
 
   // clear memory
+  #ifdef _OPENMP
   #pragma omp parallel for schedule (static) default (shared)
+  #endif
 
   for (int i = 0; i < stamp_extent->height; i++)
   {
@@ -850,7 +860,9 @@ static void build_round_stamp (float complex **pstamp,
   // The expensive operation here is hypotf ().  By dividing the
   // circle in octants and doing only the inside we have to calculate
   // hypotf only for PI / 32 = 0.098 of the stamp area.
+  #ifdef _OPENMP
   #pragma omp parallel for schedule (dynamic, 1) default (shared)
+  #endif
 
   for (int y = 0; y <= iradius; y++)
   {
@@ -937,7 +949,9 @@ static void add_to_global_distortion_map (float complex *global_map,
   cairo_region_get_extents (mmreg, &cmmext);
   free (mmreg);
 
+  #ifdef _OPENMP
   #pragma omp parallel for schedule (static) default (shared)
+  #endif
 
   for (int y = cmmext.y; y < cmmext.y + cmmext.height; y++)
   {
@@ -974,7 +988,9 @@ static void apply_global_distortion_map (struct dt_iop_module_t *module,
   const struct dt_interpolation * const interpolation =
     dt_interpolation_new (DT_INTERPOLATION_USERPREF);
 
+  #ifdef _OPENMP
   #pragma omp parallel for schedule (static) default (shared)
+  #endif
 
   for (int y = extent->y; y < extent->y + extent->height; y++)
   {
@@ -1037,6 +1053,87 @@ static void _get_map_extent (const dt_iop_roi_t *roi_out,
   cairo_region_destroy (roi_out_region);
 }
 
+static float complex *create_global_distortion_map (const cairo_rectangle_int_t *map_extent,
+                                                    GList *interpolated,
+                                                    gboolean inverted)
+{
+  // allocate distortion map big enough to contain all paths
+  const int mapsize = map_extent->width * map_extent->height;
+  float complex * map = dt_alloc_align (16, mapsize * sizeof (float complex));
+  memset (map, 0, mapsize * sizeof (float complex));
+
+  // build map
+  for (GList *i = interpolated; i != NULL; i = i->next)
+  {
+    const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
+    float complex *stamp = NULL;
+    cairo_rectangle_int_t r;
+    build_round_stamp (&stamp, &r, warp);
+    add_to_global_distortion_map (map, map_extent, warp, stamp, &r);
+    free ((void *) stamp);
+  }
+
+  if (inverted)
+  {
+    float complex * const imap = dt_alloc_align (16, mapsize * sizeof (float complex));
+    memset (imap, 0, mapsize * sizeof (float complex));
+
+    // copy map into imap (inverted map).
+    // imap [ n + dx(map[n]) , n + dy(map[n]) ] = -map[n]
+
+    #ifdef _OPENMP
+    #pragma omp parallel for schedule (static) default (shared)
+    #endif
+
+    for (int y = 0; y <  map_extent->height; y++)
+    {
+      const float complex *row = map + y * map_extent->width;
+      for (int x = 0; x < map_extent->width; x++)
+      {
+        const float complex d = *(row + x);
+        // compute new position (nx,ny) given the displacement d
+        const int nx = x + (int)creal(d);
+        const int ny = y + (int)cimag(d);
+
+        // if the point falls into the extent, set it
+        if (nx>0 && nx<map_extent->width && ny>0 && ny<map_extent->height)
+          imap[nx + ny * map_extent->width] = -d;
+      }
+    }
+
+    dt_free_align ((void *) map);
+
+    // now just do a pass to avoid gap with a displacement of zero, note that we do not need high
+    // precision here as the inverted distortion mask is only used to compute a final displacement
+    // of points.
+
+    #ifdef _OPENMP
+    #pragma omp parallel for schedule (dynamic) default (shared)
+    #endif
+
+    for (int y = 0; y <  map_extent->height; y++)
+    {
+      float complex *row = imap + y * map_extent->width;
+      float complex last[2] = { 0, 0 };
+      for (int x = 0; x < map_extent->width / 2 + 1; x++)
+      {
+        float complex *cl = row + x;
+        float complex *cr = row + map_extent->width - x;
+        if (x!=0)
+        {
+          if (*cl == 0) *cl = last[0];
+          if (*cr == 0) *cr = last[1];
+        }
+        last[0] = *cl; last[1] = *cr;
+      }
+    }
+
+    map = imap;
+  }
+
+  return map;
+}
+
 static float complex *build_global_distortion_map (struct dt_iop_module_t *module,
                                                    const dt_dev_pixelpipe_iop_t *piece,
                                                    const dt_iop_roi_t *roi_in,
@@ -1053,35 +1150,24 @@ static float complex *build_global_distortion_map (struct dt_iop_module_t *modul
 
   _get_map_extent (roi_out, interpolated, map_extent);
 
-  // allocate distortion map big enough to contain all paths
-  const int mapsize = map_extent->width * map_extent->height;
-  float complex * const map = dt_alloc_align (16, mapsize * sizeof (float complex));
-  memset (map, 0, mapsize * sizeof (float complex));
-
-  // build map
-  for (GList *i = interpolated; i != NULL; i = i->next)
-  {
-    const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
-    float complex *stamp = NULL;
-    cairo_rectangle_int_t r;
-    build_round_stamp (&stamp, &r, warp);
-    add_to_global_distortion_map (map, map_extent, warp, stamp, &r);
-    free ((void *) stamp);
-  }
+  float complex *map = create_global_distortion_map(map_extent, interpolated, FALSE);
 
   g_list_free_full (interpolated, free);
   return map;
 }
 
-
+// 1st pass: how large would the output be, given this input roi?
+// this is always called with the full buffer before processing.
 void modify_roi_out (struct dt_iop_module_t *module,
                      struct dt_dev_pixelpipe_iop_t *piece,
                      dt_iop_roi_t *roi_out,
                      const dt_iop_roi_t *roi_in)
 {
+  // output is same size as input
   *roi_out = *roi_in;
 }
 
+// 2nd pass: which roi would this operation need as input to fill the given output region?
 void modify_roi_in (struct dt_iop_module_t *module,
                     struct dt_dev_pixelpipe_iop_t *piece,
                     const dt_iop_roi_t *roi_out,
@@ -1099,12 +1185,9 @@ void modify_roi_in (struct dt_iop_module_t *module,
 
   distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
 
-  cairo_rectangle_int_t pipe_rect = {
-    0,
-    0,
-    piece->pipe->iwidth  * roi_in->scale, // FIXME: why is this -1
-    piece->pipe->iheight * roi_in->scale  // in spots.c ?
-  };
+  cairo_rectangle_int_t pipe_rect
+      = { 0, 0, piece->buf_in.width * roi_in->scale, piece->buf_in.height * roi_in->scale };
+
   cairo_rectangle_int_t roi_in_rect = {
     roi_in->x,
     roi_in->y,
@@ -1135,37 +1218,112 @@ void modify_roi_in (struct dt_iop_module_t *module,
   g_list_free_full (interpolated, free);
 }
 
-void process (struct dt_iop_module_t *module,
-              dt_dev_pixelpipe_iop_t *piece,
-              const float *in,
-              float *out,
-              const dt_iop_roi_t *roi_in,
-              const dt_iop_roi_t *roi_out)
+static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count, gboolean inverted)
+{
+  const float scale = piece->iscale;
+
+  // compute the extent of all points (all computations are done in RAW coordinate)
+  float xmin=FLT_MAX, xmax=FLT_MIN, ymin=FLT_MAX, ymax=FLT_MIN;
+
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    const float x = points[i] * scale;
+    const float y = points[i + 1] * scale;
+    xmin = fmin (xmin, x);
+    xmax = fmax (xmax, x);
+    ymin = fmin (ymin, y);
+    ymax = fmax (ymax, y);
+  }
+
+  cairo_rectangle_int_t extent = { .x = (int)(xmin - .5), .y = (int)(ymin - .5),
+                                   .width = (int)(xmax - xmin + 2.5), .height = (int)(ymax - ymin + 2.5) };
+
+  if (extent.width != 0 && extent.height != 0)
+  {
+    // create the distortion map for this extent
+
+    GList *interpolated = interpolate_paths ((dt_iop_liquify_params_t *)piece->data);
+
+    // we need to adjust the extent to be the union enclosing all the points (currently in extent) and
+    // the warps that are in (possibly partly) in this same region.
+
+    dt_iop_roi_t roi_in = { .x = extent.x, .y = extent.y, .width = extent.width, .height = extent.height };
+    _get_map_extent (&roi_in, interpolated, &extent);
+
+    float complex *map = create_global_distortion_map (&extent, interpolated, inverted);
+    g_list_free_full (interpolated, free);
+
+    if (map == NULL) return 0;
+
+    const int map_size =  extent.width * extent.height;
+    const int x_last = extent.x + extent.width;
+    const int y_last = extent.y + extent.height;
+
+    // apply distortion to all points (this is a simple displacement given by a vector at this same point in the map)
+    for(size_t i = 0; i < points_count; i++)
+    {
+      float *px = &points[i*2];
+      float *py = &points[i*2+1];
+      const float x = *px * scale;
+      const float y = *py * scale;
+      const int map_offset = ((int)(x - 0.5) - extent.x) + ((int)(y - 0.5) - extent.y) * extent.width;
+
+      if (x >= extent.x && x < x_last && y >= extent.y && y < y_last && map_offset >= 0 && map_offset < map_size)
+      {
+        const float complex dist = map[map_offset] / scale;
+        *px += creal(dist);
+        *py += cimag(dist);
+      }
+    }
+
+    dt_free_align ((void *) map);
+  }
+
+  return 1;
+}
+
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  return _distort_xtransform(self, piece, points, points_count, TRUE);
+}
+
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  return _distort_xtransform(self, piece, points, points_count, FALSE);
+}
+
+void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const in,
+             void *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // 1. copy the whole image (we'll change only a small part of it)
 
   const int ch = piece->colors;
   assert (ch == 4);
 
-  #pragma omp parallel for schedule (static) default (shared)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
   for (int i = 0; i < roi_out->height; i++)
   {
-    float *destrow = out + (size_t) ch * i * roi_out->width;
-    const float *srcrow = in + (size_t) ch * (roi_in->width * (i + roi_out->y - roi_in->y) +
-                                              roi_out->x - roi_in->x);
-    memcpy (destrow, srcrow, sizeof (float) * ch * roi_out->width);
+    float *destrow = (float *)out + (size_t) ch * i * roi_out->width;
+    const float *srcrow = (float *)in + (size_t) ch * (roi_in->width * (i + roi_out->y - roi_in->y) +
+                                                       roi_out->x - roi_in->x);
+    for (int j=0; j < ch * roi_out->width; j++)
+      destrow[j] = srcrow[j];
   }
 
   // 2. build the distortion map
 
   cairo_rectangle_int_t map_extent;
   float complex *map = build_global_distortion_map (module, piece, roi_in, roi_out, &map_extent);
-  if (map == NULL || map_extent.width == 0 || map_extent.height == 0)
+  if (map == NULL)
     return;
 
   // 3. apply the map
 
-  apply_global_distortion_map (module, piece, in, out, roi_in, roi_out, map, &map_extent);
+  if (map_extent.width != 0 && map_extent.height != 0)
+    apply_global_distortion_map (module, piece, in, out, roi_in, roi_out, map, &map_extent);
+
   dt_free_align ((void *) map);
 }
 
@@ -1173,7 +1331,7 @@ void process (struct dt_iop_module_t *module,
 
 // compute lanczos kernel. See: https://en.wikipedia.org/wiki/Lanczos_resampling#Lanczos_kernel
 
-float lanczos (const float a, const float x)
+static float lanczos(const float a, const float x)
 {
   if (fabs (x) >= a) return 0.0f;
   if (fabs (x) < CL_FLT_EPSILON) return 1.0f;
@@ -1186,7 +1344,7 @@ float lanczos (const float a, const float x)
 
 // compute bicubic kernel. See: https://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm
 
-float bicubic (const float a, const float x)
+static float bicubic(const float a, const float x)
 {
   const float absx = fabs (x);
 
@@ -1328,12 +1486,14 @@ int process_cl (struct dt_iop_module_t *module,
 
   cairo_rectangle_int_t map_extent;
   const float complex *map = build_global_distortion_map (module, piece, roi_in, roi_out, &map_extent);
-  if (map == NULL || map_extent.width == 0 || map_extent.height == 0)
+  if (map == NULL)
     return TRUE;
 
   // 3. apply the map
 
-  err = apply_global_distortion_map_cl (module, piece, dev_in, dev_out, roi_in, roi_out, map, &map_extent);
+  if (map_extent.width != 0 && map_extent.height != 0)
+    err = apply_global_distortion_map_cl (module, piece, dev_in, dev_out, roi_in, roi_out, map, &map_extent);
+
   dt_free_align ((void *) map);
   if (err != CL_SUCCESS) goto error;
 
@@ -2150,7 +2310,7 @@ static void smooth_path_linsys (size_t n,
   free (d);
 }
 
-const int path_length (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *n)
+static const int path_length(dt_iop_liquify_params_t *p, dt_liquify_path_data_t *n)
 {
   int count = 1;
   while (n->header.next != -1)
@@ -2422,8 +2582,8 @@ void gui_post_expose (struct dt_iop_module_t *module,
 
   // distort all points
   dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
-  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, TRUE, 0, 99999 };
-  _distort_paths (&d_params, &copy_params);
+  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, 0, 9999999 };
+  _distort_paths (module, &d_params, &copy_params);
   dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
 
   // You're not supposed to understand this
@@ -2484,7 +2644,10 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   float wd = darktable.develop->preview_pipe->backbuf_width;
   float ht = darktable.develop->preview_pipe->backbuf_height;
   float pts[2] = { pzx * wd, pzy * ht };
-  dt_dev_distort_backtransform(darktable.develop, pts, 1);
+  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
+                                    module->priority + 1, 9999999, pts, 1);
+  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
+                                    0, module->priority - 1, pts, 1);
   float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
@@ -2819,14 +2982,14 @@ int button_released (struct dt_iop_module_t *module,
     }
     if (gtk_toggle_button_get_active (g->btn_curve_tool))
     {
+      const int prev_index = g->node_index;
+      g->temp = alloc_curve_to (module, pt);
+      if (!g->temp) goto done;
       // user dragged, make it a symmetrical node
       if (dragged)
       {
         g->temp->header.node_type = DT_LIQUIFY_NODE_TYPE_SYMMETRICAL;
       }
-      const int prev_index = g->node_index;
-      g->temp = alloc_curve_to (module, pt);
-      if (!g->temp) goto done;
       g->temp->warp.radius = pt +
         (dt_conf_key_exists(CONF_RADIUS) ? dt_conf_get_float(CONF_RADIUS) : GET_UI_WIDTH (DEFAULT_RADIUS));
       g->temp->warp.strength = pt + GET_UI_WIDTH (DEFAULT_STRENGTH);
@@ -3108,63 +3271,65 @@ void gui_init (dt_iop_module_t *module)
   module->widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
 
   GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
-  g_object_set (G_OBJECT (hbox), "tooltip-text",
-                _("use a tool to add warps.\nright-click to remove a warp."), (char *) NULL);
+  gtk_widget_set_tooltip_text(hbox, _("use a tool to add warps.\nright-click to remove a warp."));
 
-  gtk_box_pack_start ((GtkBox *) hbox, gtk_label_new (_("warps|nodes count:")), FALSE, TRUE, 0);
-  g->label = (GtkLabel *) gtk_label_new ("-");
-  gtk_box_pack_start ((GtkBox *) hbox, (GtkWidget *) g->label, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new (_("warps|nodes count:")), FALSE, TRUE, 0);
+  g->label = GTK_LABEL(gtk_label_new ("-"));
+  gtk_box_pack_start (GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
 
-  g->btn_node_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_node_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-  g_signal_connect (G_OBJECT (g->btn_node_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_node_tool), "tooltip-text", _("node tool: edit, add and delete nodes"), (char *) NULL);
+  g->btn_node_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_node_tool,
+                                                              CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+  g_signal_connect(G_OBJECT(g->btn_node_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_node_tool), _("node tool: edit, add and delete nodes"));
   gtk_toggle_button_set_active (g->btn_node_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_node_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) (hbox), (GtkWidget *) g->btn_node_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request(GTK_WIDGET(g->btn_node_tool), bs, bs);
+  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(g->btn_node_tool), FALSE, FALSE, 0);
 
-  g->btn_curve_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_curve_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_curve_tool,
+                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   g_signal_connect (G_OBJECT (g->btn_curve_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_curve_tool), "tooltip-text", _("curve tool: draw curves"), (char *) NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_curve_tool), _("curve tool: draw curves"));
   gtk_toggle_button_set_active (g->btn_curve_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_curve_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) hbox, (GtkWidget *) g->btn_curve_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request (GTK_WIDGET(g->btn_curve_tool), bs, bs);
+  gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_curve_tool), FALSE, FALSE, 0);
 
-  g->btn_line_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_line_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g->btn_line_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_line_tool,
+                                                              CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   g_signal_connect (G_OBJECT (g->btn_line_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_line_tool), "tooltip-text", _("line tool: draw lines"), (char *) NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_line_tool), _("line tool: draw lines"));
   gtk_toggle_button_set_active (g->btn_line_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_line_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) hbox, (GtkWidget *) g->btn_line_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request (GTK_WIDGET(g->btn_line_tool), bs, bs);
+  gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_line_tool), FALSE, FALSE, 0);
 
-  g->btn_point_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_point_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g->btn_point_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_point_tool,
+                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   g_signal_connect (G_OBJECT (g->btn_point_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_point_tool), "tooltip-text", _("point tool: draw points"), (char *) NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_point_tool), _("point tool: draw points"));
   gtk_toggle_button_set_active (g->btn_point_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_point_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) hbox, (GtkWidget *) g->btn_point_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request (GTK_WIDGET(g->btn_point_tool), bs, bs);
+  gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_point_tool), FALSE, FALSE, 0);
 
-  g->btn_no_tool = (GtkToggleButton *) dtgtk_togglebutton_new (
-    _liquify_cairo_paint_no_tool, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g->btn_no_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_no_tool,
+                                                            CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   g_signal_connect (G_OBJECT (g->btn_no_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  g_object_set (G_OBJECT (g->btn_no_tool), "tooltip-text", _("disable all tools"), (char *) NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_no_tool), _("disable all tools"));
   gtk_toggle_button_set_active (g->btn_no_tool, 0);
-  gtk_widget_set_size_request ((GtkWidget *) g->btn_no_tool, bs, bs);
-  gtk_box_pack_end ((GtkBox *) hbox, (GtkWidget *) g->btn_no_tool, FALSE, FALSE, 0);
+  gtk_widget_set_size_request (GTK_WIDGET(g->btn_no_tool), bs, bs);
+  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(g->btn_no_tool), FALSE, FALSE, 0);
 
-  gtk_box_pack_start ((GtkBox *) module->widget, hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
 
   dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click to add node\nright click to remove path");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click : linear or feathered\nctrl+click : symmetrical, smooth, cusp, autosmooth\nright-click to remove");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click : linear or feathered\n"
+                                                              "ctrl+click : autosmooth, cups, smooth, symmetrical\n"
+                                                              "right-click to remove");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_RADIUSPOINT].hint    = _("drag to adjust warp radius");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT1].hint = _("drag to adjust hardness (center)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT2].hint = _("drag to adjust hardness (feather)");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\nctrl+click : linear, grow, and shrink");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\n"
+                                                              "ctrl+click : linear, grow, and shrink");
 }
 
 void gui_cleanup (dt_iop_module_t *module)

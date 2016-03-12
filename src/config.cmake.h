@@ -16,6 +16,22 @@
 #define SHARED_MODULE_PREFIX "@CMAKE_SHARED_MODULE_PREFIX@"
 #define SHARED_MODULE_SUFFIX "@CMAKE_SHARED_MODULE_SUFFIX@"
 
+#ifndef __GNUC_PREREQ
+// on OSX, gcc-4.6 and clang chokes if this is not here.
+#if defined __GNUC__ && defined __GNUC_MINOR__
+#define __GNUC_PREREQ(maj, min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+#else
+#define __GNUC_PREREQ(maj, min) 0
+#endif
+#endif
+
+#if defined(_OPENMP) && __GNUC_PREREQ(4, 9)
+#define OPENMP_SIMD_
+#define SIMD() simd
+#else
+#define SIMD()
+#endif
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

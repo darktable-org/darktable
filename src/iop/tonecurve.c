@@ -25,15 +25,17 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "bauhaus/bauhaus.h"
-#include "gui/draw.h"
+#include "develop/imageop_math.h"
 #include "dtgtk/drawingarea.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "common/opencl.h"
+#include "iop/iop_api.h"
 #include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
@@ -199,7 +201,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)piece->data;
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
@@ -266,8 +268,8 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
@@ -285,7 +287,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const int unbound_ab = d->unbound_ab;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(i, o, d) schedule(static)
+#pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
   for(int k = 0; k < height; k++)
   {
@@ -679,7 +681,7 @@ static void pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 }
 
 
-static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
@@ -731,26 +733,23 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
                            GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  L  ")));
-  g_object_set(
-      G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))),
-      "tooltip-text", _("tonecurve for L channel"), NULL);
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              _("tonecurve for L channel"));
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
                            GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  a  ")));
-  g_object_set(
-      G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))),
-      "tooltip-text", _("tonecurve for a channel"), NULL);
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              _("tonecurve for a channel"));
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
                            GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  b  ")));
-  g_object_set(
-      G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))),
-      "tooltip-text", _("tonecurve for b channel"), NULL);
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              _("tonecurve for b channel"));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
 
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(GTK_WIDGET(tb), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick GUI color from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(tb, _("pick GUI color from image"));
 
   GtkWidget *notebook = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
@@ -764,7 +763,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(c->area), "tooltip-text", _("double click to reset curve"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("double click to reset curve"));
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -776,17 +775,16 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(dt_iop_tonecurve_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(area_resized), self);
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(pick_toggled), self);
-  g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(scrolled), self);
+  g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
 
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("scale chroma"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic"));
   dt_bauhaus_combobox_add(c->autoscale_ab, C_("scale", "manual"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(c->autoscale_ab), "tooltip-text",
-               _("if set to auto, a and b curves have no effect and are not displayed. chroma values (a and "
-                 "b) of each pixel are then adjusted based on L curve data."),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(c->autoscale_ab, _("if set to auto, a and b curves have no effect and are "
+                                                 "not displayed. chroma values (a and b) of each pixel are "
+                                                 "then adjusted based on L curve data."));
   g_signal_connect(G_OBJECT(c->autoscale_ab), "value-changed", G_CALLBACK(autoscale_ab_callback), self);
 
   c->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));

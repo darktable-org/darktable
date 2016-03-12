@@ -81,7 +81,7 @@ RawImage NefDecoder::decodeRawInternal() {
   if (counts->count != offsets->count) {
     ThrowRDE("NEF Decoder: Byte count number does not match strip size: count:%u, strips:%u ", counts->count, offsets->count);
   }
-  if (!mFile->isValid(offsets->getInt() + counts->getInt()))
+  if (!mFile->isValid(offsets->getInt(), counts->getInt()))
     ThrowRDE("NEF Decoder: Invalid strip byte count. File probably truncated.");
 
 
@@ -133,7 +133,7 @@ are only needed for the D100, thanks to a bug in some cameras
 that tags all images as "compressed".
 */
 bool NefDecoder::D100IsCompressed(uint32 offset) {
-  const uchar8 *test = mFile->getData(offset);
+  const uchar8 *test = mFile->getData(offset, 256);
   int i;
 
   for (i = 15; i < 256; i += 16)
@@ -204,7 +204,7 @@ void NefDecoder::DecodeUncompressed() {
 
     offY = MIN(height, offY + yPerSlice);
 
-    if (mFile->isValid(slice.offset + slice.count)) // Only decode if size is valid
+    if (mFile->isValid(slice.offset, slice.count)) // Only decode if size is valid
       slices.push_back(slice);
   }
 
@@ -230,7 +230,7 @@ void NefDecoder::DecodeUncompressed() {
   offY = 0;
   for (uint32 i = 0; i < slices.size(); i++) {
     NefSlice slice = slices[i];
-    ByteStream in(mFile->getData(slice.offset), slice.count);
+    ByteStream in(mFile, slice.offset, slice.count);
     iPoint2D size(width, slice.h);
     iPoint2D pos(0, offY);
     try {
@@ -338,7 +338,7 @@ void NefDecoder::DecodeD100Uncompressed() {
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(offset), mFile->getSize()-offset);
+  ByteStream input(mFile, offset);
 
   Decode12BitRawBEWithControl(input, width, height);
 }
@@ -355,7 +355,7 @@ void NefDecoder::DecodeSNefUncompressed() {
   mRaw->isCFA = false;
   mRaw->createData();
 
-  ByteStream in(mFile->getData(offset), mFile->getSize()-offset);
+  ByteStream in(mFile, offset);
 
   DecodeNikonSNef(in, width, height);
 }

@@ -19,16 +19,16 @@
 
 #ifdef HAVE_OPENCL
 
-#include "common/darktable.h"
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
+#include "common/darktable.h"
+#include "common/dlopencl.h"
 #include "common/gaussian.h"
 #include "common/interpolation.h"
-#include "common/dlopencl.h"
 #include "common/nvidia_gpus.h"
-#include "develop/pixelpipe.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "develop/pixelpipe.h"
 
 #include <string.h>
 #include <stdio.h>

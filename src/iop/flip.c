@@ -26,19 +26,20 @@
 #include <gdk/gdkkeysyms.h>
 #include <assert.h>
 
-#include "develop/develop.h"
-#include "develop/imageop.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "common/debug.h"
 #include "common/imageio.h"
 #include "common/opencl.h"
-#include "dtgtk/resetlabel.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
 #include "dtgtk/button.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_flip_params_t)
 
@@ -284,8 +285,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
 // do your best to fill the output region!
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
@@ -298,7 +299,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_flip_data_t *data = (dt_iop_flip_data_t *)piece->data;
   const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;
@@ -508,13 +509,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(button, -1, DT_PIXEL_APPLY_DPI(24));
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees CCW"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CCW"));
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 1);
   gtk_widget_set_size_request(button, -1, DT_PIXEL_APPLY_DPI(24));
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees CW"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CW"));
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);
 }

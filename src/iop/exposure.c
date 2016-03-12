@@ -25,22 +25,26 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
+#include "bauhaus/bauhaus.h"
+#include "common/histogram.h"
+#include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "common/mipmap_cache.h"
-#include "common/image_cache.h"
-#include "control/control.h"
+#include "develop/imageop_math.h"
+#include "develop/pixelpipe.h"
+#include "dtgtk/paint.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "dtgtk/resetlabel.h"
-#include "dtgtk/paint.h"
-#include "bauhaus/bauhaus.h"
-#include "develop/pixelpipe.h"
-#include "common/histogram.h"
+#include "iop/iop_api.h"
 
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(0.001, x))
@@ -85,7 +89,7 @@ typedef struct dt_iop_exposure_gui_data_t
 typedef struct dt_iop_exposure_data_t
 {
   float black;
-  float exposure;
+  float scale;
 } dt_iop_exposure_data_t;
 
 typedef struct dt_iop_exposure_global_data_t
@@ -313,15 +317,12 @@ static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, const
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
 
   cl_int err = -999;
-  const float black = d->black;
-  const float white = exposure2white(d->exposure);
-  const float scale = 1.0 / (white - black);
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -331,11 +332,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 4, sizeof(float), (void *)&black);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 4, sizeof(float), (void *)&(d->black));
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&(d->scale));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
   if(err != CL_SUCCESS) goto error;
-  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= scale;
+  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
 
   return TRUE;
 
@@ -345,19 +346,38 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
+  const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
 
-  const float black = d->black;
-  const float white = exposure2white(d->exposure);
   const int ch = piece->colors;
-  const float scale = 1.0 / (white - black);
-  const __m128 blackv = _mm_set1_ps(black);
-  const __m128 scalev = _mm_set1_ps(scale);
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o) schedule(static)
+#pragma omp parallel for SIMD() default(none) schedule(static)
+#endif
+  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
+  {
+    ((float *)o)[k] = (((float *)i)[k] - d->black) * d->scale;
+  }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+
+  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i,
+                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
+
+  const int ch = piece->colors;
+  const __m128 blackv = _mm_set1_ps(d->black);
+  const __m128 scalev = _mm_set1_ps(d->scale);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -369,8 +389,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
-  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= scale;
+  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
 }
+#endif
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -380,7 +401,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   d->black = p->black;
-  d->exposure = p->exposure;
+
+  float exposure = p->exposure;
 
   if(p->mode == EXPOSURE_MODE_DEFLICKER && dt_image_is_raw(&self->dev->image_storage)
      && self->dev->image_storage.bpp == sizeof(uint16_t))
@@ -389,14 +411,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(g)
     {
       // histogram is precomputed and cached
-      compute_correction(self, p1, g->deflicker_histogram, &g->deflicker_histogram_stats, &d->exposure);
+      compute_correction(self, p1, g->deflicker_histogram, &g->deflicker_histogram_stats, &exposure);
     }
     else
     {
       uint32_t *histogram = NULL;
       dt_dev_histogram_stats_t histogram_stats;
       deflicker_prepare_histogram(self, &histogram, &histogram_stats);
-      compute_correction(self, p1, histogram, &histogram_stats, &d->exposure);
+      compute_correction(self, p1, histogram, &histogram_stats, &exposure);
       free(histogram);
     }
 
@@ -404,10 +426,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
       dt_pthread_mutex_lock(&g->lock);
-      g->deflicker_computed_exposure = d->exposure;
+      g->deflicker_computed_exposure = exposure;
       dt_pthread_mutex_unlock(&g->lock);
     }
   }
+
+  const float white = exposure2white(exposure);
+  d->scale = 1.0 / (white - d->black);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -810,7 +835,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode), TRUE, TRUE, 0);
 
   g->black = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1, .001, p->black, 4);
-  g_object_set(G_OBJECT(g->black), "tooltip-text", _("adjust the black level"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->black, _("adjust the black level"));
   dt_bauhaus_slider_set_format(g->black, "%.4f");
   dt_bauhaus_widget_set_label(g->black, NULL, _("black"));
   dt_bauhaus_slider_enable_soft_boundaries(g->black, -1.0, 1.0);
@@ -823,14 +848,14 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   g->exposure = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, .02, p->exposure, 3);
-  g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
   dt_bauhaus_slider_set_format(g->exposure, "%.2fEV");
   dt_bauhaus_widget_set_label(g->exposure, NULL, _("exposure"));
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
   g->autoexpp = dt_bauhaus_slider_new_with_range(self, 0.0, 0.2, .001, 0.01, 3);
-  g_object_set(G_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out, toggle color picker to activate"), (char *)0);
+  gtk_widget_set_tooltip_text(g->autoexpp, _("percentage of bright values clipped out, toggle color picker to activate"));
   dt_bauhaus_slider_set_format(g->autoexpp, "%.3f%%");
   dt_bauhaus_widget_set_label(g->autoexpp, NULL, _("clipping threshold"));
   dt_bauhaus_widget_set_quad_paint(g->autoexpp, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
@@ -844,18 +869,17 @@ void gui_init(struct dt_iop_module_t *self)
   g->deflicker_percentile = dt_bauhaus_slider_new_with_range(self, 0, 100, 1.0, p->deflicker_percentile, 3);
   dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("percentile"));
   dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
-  g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text",
-               // xgettext:no-c-format
-               _("where in the histogram to meter for deflicking. E.g. 50% is median"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->deflicker_percentile,
+                              // xgettext:no-c-format
+                              _("where in the histogram to meter for deflicking. E.g. 50% is median"));
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_percentile), TRUE, TRUE, 0);
 
   g->deflicker_target_level
       = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .01, p->deflicker_target_level, 3);
   dt_bauhaus_widget_set_label(g->deflicker_target_level, NULL, _("target level"));
   dt_bauhaus_slider_set_format(g->deflicker_target_level, "%.2fEV");
-  g_object_set(G_OBJECT(g->deflicker_target_level), "tooltip-text",
-               _("where to place the exposure level for processed pics, EV below overexposure."),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->deflicker_target_level,
+                              _("where to place the exposure level for processed pics, EV below overexposure."));
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(g->deflicker_target_level), TRUE, TRUE, 0);
 
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -863,8 +887,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(label), FALSE, FALSE, 0);
 
   g->deflicker_used_EC = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
-  g_object_set(G_OBJECT(g->deflicker_used_EC), "tooltip-text",
-               _("what exposure correction has actually been used"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->deflicker_used_EC), _("what exposure correction has actually been used"));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
 
   dt_pthread_mutex_lock(&g->lock);

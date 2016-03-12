@@ -35,18 +35,26 @@ TiffEntry::TiffEntry() {
 TiffEntry::TiffEntry(FileMap* f, uint32 offset, uint32 up_offset) {
   parent_offset = up_offset;
   own_data = NULL;
+  empty_data = 0;
   file = f;
-  unsigned short* p = (unsigned short*)f->getData(offset);
+  unsigned short* p = (unsigned short*)f->getData(offset, 2);
   tag = (TiffTag)p[0];
   type = (TiffDataType)p[1];
-  count = *(int*)f->getData(offset + 4);
+  count = *(int*)f->getData(offset + 4, 4);
+
   if (type > 13)
     ThrowTPE("Error reading TIFF structure. Unknown Type 0x%x encountered.", type);
-  uint32 bytesize = count << datashifts[type];
-  if (bytesize <= 4) {
-    data = f->getDataWrt(offset + 8);
-  } else { // offset
-    data_offset = *(uint32*)f->getData(offset + 8);
+
+  uint64 bytesize = (uint64)count << datashifts[type];
+  if (bytesize > UINT32_MAX)
+    ThrowTPE("TIFF entry is supposedly %llu bytes", bytesize);
+
+  if (bytesize == 0) // Better return empty than NULL-dereference later
+    data = (uchar8 *) &empty_data;
+  else if (bytesize <= 4)
+    data = f->getDataWrt(offset + 8, bytesize);
+  else { // offset
+    data_offset = *(uint32*)f->getData(offset + 8, 4);
     fetchData();
   }
 #ifdef _DEBUG
@@ -61,13 +69,12 @@ TiffEntry::TiffEntry(FileMap* f, uint32 offset, uint32 up_offset) {
 }
 
 void TiffEntry::fetchData() {
-  FileMap *f = file; // CHECKSIZE uses f
   if(file) {
     uint32 bytesize = count << datashifts[type];
-    CHECKSIZE(data_offset + bytesize);
-    data = file->getDataWrt(data_offset);
+    data = file->getDataWrt(data_offset, bytesize);
   }
 }
+
 
 TiffEntry::TiffEntry(TiffTag _tag, TiffDataType _type, uint32 _count, const uchar8* _data )
 {
@@ -123,7 +130,7 @@ unsigned short TiffEntry::getShort() {
 }
 
 const uint32* TiffEntry::getIntArray() {
-  if (type != TIFF_LONG && type != TIFF_SLONG && type != TIFF_RATIONAL && type != TIFF_SRATIONAL && type != TIFF_UNDEFINED )
+  if (type != TIFF_LONG && type != TIFF_SLONG && type != TIFF_RATIONAL && type != TIFF_SRATIONAL && type != TIFF_UNDEFINED && type != TIFF_OFFSET)
     ThrowTPE("TIFF, getIntArray: Wrong type 0x%x encountered. Expected Long", type);
   return (uint32*)&data[0];
 }
@@ -174,6 +181,10 @@ float TiffEntry::getFloat() {
 string TiffEntry::getString() {
   if (type != TIFF_ASCII && type != TIFF_BYTE)
     ThrowTPE("TIFF, getString: Wrong type 0x%x encountered. Expected Ascii or Byte", type);
+
+  if (count == 0)
+    return string("");
+
   if (!own_data) {
     own_data = new uchar8[count];
     memcpy(own_data, data, count);

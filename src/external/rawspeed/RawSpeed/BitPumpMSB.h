@@ -36,6 +36,8 @@ class BitPumpMSB
 public:
   BitPumpMSB(ByteStream *s);
   BitPumpMSB(const uchar8* _buffer, uint32 _size );
+  BitPumpMSB(FileMap *f, uint32 offset, uint32 _size );
+  BitPumpMSB(FileMap *f, uint32 offset );
 	uint32 getBitsSafe(uint32 nbits);
 	uint32 getBitSafe();
 	uchar8 getByteSafe();
@@ -131,7 +133,7 @@ protected:
   void __inline init();
   uchar8 current_buffer[16];
   const uchar8* buffer;
-  const uint32 size;            // This if the end of buffer.
+  uint32 size;            // This if the end of buffer.
   char mLeft;
   uint32 off;                  // Offset in bytes
   int mStuffed;

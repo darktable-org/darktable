@@ -18,19 +18,20 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
-#include "bauhaus/bauhaus.h"
+#include "iop/iop_api.h"
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <stdlib.h>
 #include <math.h>
-#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
@@ -73,8 +74,8 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_DEPRECATED;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_rlce_data_t *data = (dt_iop_rlce_data_t *)piece->data;
   const int ch = piece->colors;
@@ -83,7 +84,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   float *luminance = (float *)malloc(((size_t)roi_out->width * roi_out->height) * sizeof(float));
 // double lsmax=0.0,lsmin=1.0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(luminance, roi_in, roi_out, ivoid)
+#pragma omp parallel for default(none) schedule(static) shared(luminance)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -108,7 +109,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // CLAHE
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(luminance, roi_in, roi_out, ivoid, ovoid)
+#pragma omp parallel for default(none) schedule(static) shared(luminance)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -321,8 +322,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("size of features to preserve"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("strength of the effect"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale1), _("size of features to preserve"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale2), _("strength of the effect"));
 
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(radius_callback), self);
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(slope_callback), self);

@@ -16,27 +16,28 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the lighttable module.  */
-#include "views/view.h"
-#include "libs/lib.h"
-#include "control/jobs.h"
-#include "control/settings.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "common/image_cache.h"
-#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
-#include "common/selection.h"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/focus.h"
 #include "common/grouping.h"
 #include "common/history.h"
+#include "common/image_cache.h"
 #include "common/ratings.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
-#include "gui/draw.h"
+#include "common/selection.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
+#include "control/settings.h"
 #include "dtgtk/button.h"
-#include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
+#include "gui/draw.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "views/view.h"
+#include "views/view_api.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,7 +143,7 @@ const char *name(dt_view_t *self)
 }
 
 
-uint32_t view(dt_view_t *self)
+uint32_t view(const dt_view_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
@@ -162,7 +163,7 @@ typedef enum direction
   CENTER = 10
 } direction;
 
-void switch_layout_to(dt_library_t *lib, int new_layout)
+static void switch_layout_to(dt_library_t *lib, int new_layout)
 {
   lib->layout = new_layout;
 
@@ -235,8 +236,8 @@ static void move_view(dt_library_t *lib, direction dir)
 
 /* This function allows the file manager view to zoom "around" the image
  * currently under the mouse cursor, instead of around the top left image */
-void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int width, int height,
-                       int old_images_in_row, int new_images_in_row)
+static void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int width, int height,
+                              int old_images_in_row, int new_images_in_row)
 {
   /* calculate which image number (relative to total collection)
    * is currently under the cursor, i.e. which image is the zoom anchor */
@@ -937,14 +938,14 @@ after_drawing:
     char *tooltip = dt_history_get_items_as_string(mouse_over_id);
     if(tooltip != NULL)
     {
-      g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", tooltip, (char *)NULL);
+      gtk_widget_set_tooltip_text(dt_ui_center(darktable.gui->ui), tooltip);
       g_free(tooltip);
     }
   }
   else if(darktable.gui->center_tooltip == 2) // not set in this round
   {
     darktable.gui->center_tooltip = 0;
-    g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", "", (char *)NULL);
+    gtk_widget_set_tooltip_text(dt_ui_center(darktable.gui->ui), "");
   }
   return missing;
 }
@@ -1205,8 +1206,8 @@ failure:
 /**
  * Displays a full screen preview of the image currently under the mouse pointer.
  */
-int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                         int32_t pointery)
+static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+                               int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   int offset = 0;
@@ -1659,11 +1660,6 @@ void enter(dt_view_t *self)
   }
 }
 
-void dt_lib_remove_child(GtkWidget *widget, gpointer data)
-{
-  gtk_container_remove(GTK_CONTAINER(data), widget);
-}
-
 void leave(dt_view_t *self)
 {
   gtk_drag_dest_unset(dt_ui_center(darktable.gui->ui));
@@ -1729,7 +1725,7 @@ void mouse_leave(dt_view_t *self)
 
 
 
-int scrolled(dt_view_t *self, double x, double y, int up, int state)
+void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
@@ -1768,7 +1764,6 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
     }
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
   }
-  return 0;
 }
 
 
@@ -2220,13 +2215,6 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "navigate page up"), GDK_KEY_Page_Up, 0);
   dt_accel_register_view(self, NC_("accel", "navigate page down"), GDK_KEY_Page_Down, 0);
 
-  // Color keys
-  dt_accel_register_view(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
-  dt_accel_register_view(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
-  dt_accel_register_view(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
-  dt_accel_register_view(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
-  dt_accel_register_view(self, NC_("accel", "color purple"), GDK_KEY_F5, 0);
-
   // Scroll keys
   dt_accel_register_view(self, NC_("accel", "scroll up"), GDK_KEY_Up, 0);
   dt_accel_register_view(self, NC_("accel", "scroll down"), GDK_KEY_Down, 0);
@@ -2280,17 +2268,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "select single image", closure);
   closure = g_cclosure_new(G_CALLBACK(realign_key_accel_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "realign images to grid", closure);
-  // Color keys
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(0), NULL);
-  dt_accel_connect_view(self, "color red", closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(1), NULL);
-  dt_accel_connect_view(self, "color yellow", closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(2), NULL);
-  dt_accel_connect_view(self, "color green", closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(3), NULL);
-  dt_accel_connect_view(self, "color blue", closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback), GINT_TO_POINTER(4), NULL);
-  dt_accel_connect_view(self, "color purple", closure);
 }
 
 
@@ -2421,7 +2398,7 @@ void gui_init(dt_view_t *self)
 
   // create display profile button
   lib->profile.button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-  g_object_set(G_OBJECT(lib->profile.button), "tooltip-text", _("set display profile"), (char *)NULL);
+  gtk_widget_set_tooltip_text(lib->profile.button, _("set display profile"));
   g_signal_connect(G_OBJECT(lib->profile.button), "button-press-event", G_CALLBACK(_profile_quickbutton_pressed), lib);
   dt_view_manager_module_toolbox_add(darktable.view_manager, lib->profile.button, DT_VIEW_LIGHTTABLE);
 
@@ -2496,7 +2473,7 @@ void gui_init(dt_view_t *self)
   char tooltip[1024];
   snprintf(tooltip, sizeof(tooltip), _("display ICC profiles in %s/color/out or %s/color/out"), confdir,
            datadir);
-  g_object_set(G_OBJECT(display_profile), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(display_profile, tooltip);
 
   g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), NULL);
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);

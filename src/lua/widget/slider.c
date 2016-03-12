@@ -53,6 +53,32 @@ static int label_member(lua_State *L)
   return 1;
 }
 
+static int digits_member(lua_State*L)
+{
+  lua_slider slider;
+  luaA_to(L,lua_slider,&slider,1);
+  if(lua_gettop(L) > 2) {
+    int value = lua_tointeger(L,3);
+    dt_bauhaus_slider_set_digits(slider->widget,value);
+    return 0;
+  }
+  lua_pushinteger(L,dt_bauhaus_slider_get_digits(slider->widget));
+  return 1;
+}
+
+static int step_member(lua_State*L)
+{
+  lua_slider slider;
+  luaA_to(L,lua_slider,&slider,1);
+  if(lua_gettop(L) > 2) {
+    float value = luaL_checknumber(L,3);
+    dt_bauhaus_slider_set_step(slider->widget,value);
+    return 0;
+  }
+  lua_pushnumber(L,dt_bauhaus_slider_get_step(slider->widget));
+  return 1;
+}
+
 static int hard_min_member(lua_State*L)
 {
   lua_slider slider;
@@ -137,6 +163,12 @@ int dt_lua_init_widget_slider(lua_State* L)
   lua_pushcfunction(L, tostring_member);
   lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
   dt_lua_type_setmetafield(L, lua_slider, "__tostring");
+  lua_pushcfunction(L,digits_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_slider, "digits");
+  lua_pushcfunction(L,step_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_slider, "step");
   lua_pushcfunction(L,hard_min_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_slider, "hard_min");

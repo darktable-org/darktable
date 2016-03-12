@@ -24,11 +24,6 @@
 
 namespace RawSpeed {
 
-#if defined(CHECKSIZE)
-#undef CHECKSIZE
-#endif
-#define CHECKSIZE(A) if (A > size) ThrowIOE("Error decoding DNG Slice (invalid size). File Corrupt")
-
 void *DecodeThread(void *_this) {
   DngDecoderThread* me = (DngDecoderThread*)_this;
   DngDecoderSlices* parent = me->parent;
@@ -169,13 +164,10 @@ void DngDecoderSlices::decodeSlice(DngDecoderThread* t) {
       JSAMPARRAY buffer = (JSAMPARRAY)malloc(sizeof(JSAMPROW));
 
       try {
-        uint32 size = mFile->getSize();
         jpeg_create_decompress(&dinfo);
         dinfo.err = jpeg_std_error(&jerr);
         jerr.error_exit = my_error_throw;
-        CHECKSIZE(e.byteOffset);
-        CHECKSIZE(e.byteOffset+e.byteCount);
-        JPEG_MEMSRC(&dinfo, (unsigned char*)mFile->getData(e.byteOffset), e.byteCount);
+        JPEG_MEMSRC(&dinfo, (unsigned char*)mFile->getData(e.byteOffset, e.byteCount), e.byteCount);
 
         if (JPEG_HEADER_OK != jpeg_read_header(&dinfo, TRUE))
           ThrowRDE("DngDecoderSlices: Unable to read JPEG header");

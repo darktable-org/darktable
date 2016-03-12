@@ -20,14 +20,18 @@
 #include "config.h"
 #endif
 #include <stdlib.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #include <cairo.h>
 
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "common/opencl.h"
+#include "develop/imageop_math.h"
 #include "gui/accelerators.h"
+#include "iop/iop_api.h"
 
 DT_MODULE(3)
 
@@ -104,7 +108,57 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 // }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *const roi_out)
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_develop_t *dev = self->dev;
+
+  const int ch = piece->colors;
+
+  const float lower = dev->overexposed.lower / 100.0;
+  const float upper = dev->overexposed.upper / 100.0;
+
+  const int colorscheme = dev->overexposed.colorscheme;
+  const float *const upper_color = dt_iop_overexposed_colors[colorscheme][0];
+  const float *const lower_color = dt_iop_overexposed_colors[colorscheme][1];
+
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+  {
+    if(in[k + 0] >= upper || in[k + 1] >= upper || in[k + 2] >= upper)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        out[k + c] = upper_color[c];
+      }
+    }
+    else if(in[k + 0] <= lower || in[k + 1] <= lower || in[k + 2] <= lower)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        out[k + c] = lower_color[c];
+      }
+    }
+    else
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        const size_t p = (size_t)k + c;
+        out[p] = in[p];
+      }
+    }
+  }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_develop_t *dev = self->dev;
 
@@ -120,7 +174,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const __m128 lower_color = _mm_load_ps(dt_iop_overexposed_colors[colorscheme][1]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ovoid) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -150,10 +204,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_develop_t *dev = self->dev;
   dt_iop_overexposed_global_data_t *gd = (dt_iop_overexposed_global_data_t *)self->data;

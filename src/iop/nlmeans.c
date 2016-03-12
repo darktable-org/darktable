@@ -18,16 +18,21 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/imageop.h"
-#include "develop/tiling.h"
 #include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
 #include "control/control.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
+#include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "common/opencl.h"
+#include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
+
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 
 #define BLOCKSIZE                                                                                            \
@@ -163,7 +168,7 @@ static int bucket_next(unsigned int *state, unsigned int max)
 }
 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
   dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->data;
@@ -367,11 +372,154 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
+  // get our data struct:
+  const dt_iop_nlmeans_params_t *const d = (dt_iop_nlmeans_params_t *)piece->data;
 
+  const int ch = piece->colors;
 
+  // adjust to zoom size:
+  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
+  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
+  const float sharpness = 3000.0f / (1.0f + d->strength);
+  if(P < 1)
+  {
+    // nothing to do from this distance:
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * 4 * roi_out->width * roi_out->height);
+    return;
+  }
+
+  // adjust to Lab, make L more important
+  // float max_L = 100.0f, max_C = 256.0f;
+  // float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
+  float max_L = 120.0f, max_C = 512.0f;
+  float nL = 1.0f / max_L, nC = 1.0f / max_C;
+  const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
+
+  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
+  // we want to sum up weights in col[3], so need to init to 0:
+  memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
+
+  // for each shift vector
+  for(int kj = -K; kj <= K; kj++)
+  {
+    for(int ki = -K; ki <= K; ki++)
+    {
+      int inited_slide = 0;
+// don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
+// we will add up errors)
+// do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
+// memory
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, Sa)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+      {
+        if(j + kj < 0 || j + kj >= roi_out->height) continue;
+        float *S = Sa + (size_t)dt_get_thread_num() * roi_out->width;
+        const float *ins = ((float *)ivoid) + 4 * ((size_t)roi_in->width * (j + kj) + ki);
+        float *out = ((float *)ovoid) + 4 * (size_t)roi_out->width * j;
+
+        const int Pm = MIN(MIN(P, j + kj), j);
+        const int PM = MIN(MIN(P, roi_out->height - 1 - j - kj), roi_out->height - 1 - j);
+        // first line of every thread
+        // TODO: also every once in a while to assert numerical precision!
+        if(!inited_slide)
+        {
+          // sum up a line
+          memset(S, 0x0, sizeof(float) * roi_out->width);
+          for(int jj = -Pm; jj <= PM; jj++)
+          {
+            int i = MAX(0, -ki);
+            float *s = S + i;
+            const float *inp = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j + jj);
+            const float *inps = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j + jj + kj) + ki);
+            const int last = roi_out->width + MIN(0, -ki);
+            for(; i < last; i++, inp += 4, inps += 4, s++)
+            {
+              for(int k = 0; k < 3; k++) s[0] += (inp[k] - inps[k]) * (inp[k] - inps[k]) * norm2[k];
+            }
+          }
+          // only reuse this if we had a full stripe
+          if(Pm == P && PM == P) inited_slide = 1;
+        }
+
+        // sliding window for this line:
+        float *s = S;
+        float slide = 0.0f;
+        // sum up the first -P..P
+        for(int i = 0; i < 2 * P + 1; i++) slide += s[i];
+        for(int i = 0; i < roi_out->width; i++, s++, ins += 4, out += 4)
+        {
+          if(i - P > 0 && i + P < roi_out->width) slide += s[P] - s[-P - 1];
+          if(i + ki >= 0 && i + ki < roi_out->width)
+          {
+            const float iv[4] = { ins[0], ins[1], ins[2], 1.0f };
+#if defined(_OPENMP) && defined(OPENMP_SIMD_)
+#pragma omp SIMD()
+#endif
+            for(size_t c = 0; c < 4; c++)
+            {
+              out[c] += iv[c] * gh(slide, sharpness);
+            }
+          }
+        }
+        if(inited_slide && j + P + 1 + MAX(0, kj) < roi_out->height)
+        {
+          // sliding window in j direction:
+          int i = MAX(0, -ki);
+          float *s = S + i;
+          const float *inp = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j + P + 1);
+          const float *inps = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j + P + 1 + kj) + ki);
+          const float *inm = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j - P);
+          const float *inms = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j - P + kj) + ki);
+          const int last = roi_out->width + MIN(0, -ki);
+          for(; i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
+          {
+            float stmp = s[0];
+            for(int k = 0; k < 3; k++)
+              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]))
+                      * norm2[k];
+            s[0] = stmp;
+          }
+        }
+        else
+          inited_slide = 0;
+      }
+    }
+  }
+
+  // normalize and apply chroma/luma blending
+  const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
+  const float invert[4] = { 1.0f - d->luma, 1.0f - d->chroma, 1.0f - d->chroma, 0.0f };
+
+  const float *const in = ((const float *const)ivoid);
+  float *const out = ((float *const)ovoid);
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#endif
+  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+  {
+    for(size_t c = 0; c < 4; c++)
+    {
+      out[k + c] = (in[k + c] * invert[c]) + (out[k + c] * (weight[c] / out[k + 3]));
+    }
+  }
+
+  // free shared tmp memory:
+  dt_free_align(Sa);
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+
+#if defined(__SSE__)
 /** process, all real work is done here. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -410,8 +558,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide)                           \
-    shared(kj, ki, roi_out, roi_in, ivoid, ovoid, Sa)
+#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, Sa)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -543,7 +690,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const __m128 weight = _mm_set_ps(1.0f, d->chroma, d->chroma, d->luma);
   const __m128 invert = _mm_sub_ps(_mm_set1_ps(1.0f), weight);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(ovoid, ivoid, roi_out, d)
+#pragma omp parallel for default(none) schedule(static) shared(d)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -562,6 +709,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+#endif
 
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
@@ -710,10 +858,10 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->luma, "%.0f%%");
   dt_bauhaus_widget_set_label(g->chroma, NULL, _("chroma"));
   dt_bauhaus_slider_set_format(g->chroma, "%.0f%%");
-  g_object_set(G_OBJECT(g->radius), "tooltip-text", _("radius of the patches to match"), (char *)NULL);
-  g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of the effect"), (char *)NULL);
-  g_object_set(G_OBJECT(g->luma), "tooltip-text", _("how much to smooth brightness"), (char *)NULL);
-  g_object_set(G_OBJECT(g->chroma), "tooltip-text", _("how much to smooth colors"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match"));
+  gtk_widget_set_tooltip_text(g->strength, _("strength of the effect"));
+  gtk_widget_set_tooltip_text(g->luma, _("how much to smooth brightness"));
+  gtk_widget_set_tooltip_text(g->chroma, _("how much to smooth colors"));
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
   g_signal_connect(G_OBJECT(g->luma), "value-changed", G_CALLBACK(luma_callback), self);

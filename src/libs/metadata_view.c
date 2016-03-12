@@ -16,17 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "develop/develop.h"
 #include "common/metadata.h"
-#include "common/debug.h"
 #include "common/collection.h"
-#include "control/control.h"
-#include "control/conf.h"
+#include "common/darktable.h"
+#include "common/debug.h"
 #include "common/image_cache.h"
-#include "libs/lib.h"
-#include "gui/gtk.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 #include <sys/param.h>
 #include <gdk/gdkkeysyms.h>
@@ -127,18 +128,18 @@ typedef struct dt_lib_metadata_view_t
   GtkLabel *metadata[md_size];
 } dt_lib_metadata_view_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("image information");
 }
 
 /* show module in left panel in all views */
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_ALL;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
@@ -178,7 +179,7 @@ static void _metadata_update_value(GtkLabel *label, const char *value)
   const gchar *str = validated ? value : NODATA_STRING;
   gtk_label_set_text(GTK_LABEL(label), str);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-  g_object_set(G_OBJECT(label), "tooltip-text", str, (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
 }
 
 static void _metadata_update_value_end(GtkLabel *label, const char *value)
@@ -187,7 +188,7 @@ static void _metadata_update_value_end(GtkLabel *label, const char *value)
   const gchar *str = validated ? value : NODATA_STRING;
   gtk_label_set_text(GTK_LABEL(label), str);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  g_object_set(G_OBJECT(label), "tooltip-text", str, (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
 }
 
 
@@ -236,7 +237,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     const int tp = 512;
     char tooltip[tp];
     snprintf(tooltip, tp, _("double click to jump to film roll\n%s"), value);
-    g_object_set(G_OBJECT(d->metadata[md_internal_filmroll]), "tooltip-text", tooltip, (char *)NULL);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_filmroll]), tooltip);
 
     snprintf(value, sizeof(value), "%d", img->id);
     _metadata_update_value(d->metadata[md_internal_imgid], value);
@@ -396,7 +397,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_free(loader_tooltip);
 
       _metadata_update_value(d->metadata[md_internal_flags], value);
-      g_object_set(G_OBJECT(d->metadata[md_internal_flags]), "tooltip-text", tooltip, (char *)NULL);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_flags]), tooltip);
 
       g_free(star_string);
       g_free(tooltip);

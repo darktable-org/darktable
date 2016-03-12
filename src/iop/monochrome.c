@@ -18,22 +18,23 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#include "common/colorspaces.h"
-#include "common/opencl.h"
+#include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
-#include "bauhaus/bauhaus.h"
-#include "develop/develop.h"
-#include "develop/tiling.h"
+#include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "develop/imageop.h"
+#include "iop/iop_api.h"
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 DT_MODULE_INTROSPECTION(2, dt_iop_monochrome_params_t)
 
@@ -143,14 +144,14 @@ static float envelope(const float L)
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   const float sigma2 = (d->size * 128.0) * (d->size * 128.0f);
 // first pass: evaluate color filter:
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+#pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -177,7 +178,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   dt_bilateral_free(b);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+#pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -195,7 +196,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)self->data;
@@ -533,8 +534,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->area), "tooltip-text",
-               _("drag and scroll mouse wheel to adjust the virtual color filter"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag and scroll mouse wheel to adjust the virtual color filter"));
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -549,7 +549,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
 
   g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
-  g_object_set(G_OBJECT(g->highlights), "tooltip-text", _("how much to keep highlights"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->highlights, _("how much to keep highlights"));
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);

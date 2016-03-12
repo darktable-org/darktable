@@ -34,6 +34,19 @@ ByteStream::ByteStream(const ByteStream *b) :
 
 }
 
+ByteStream::ByteStream(FileMap *f, uint32 offset, uint32 _size) :
+    size(_size) {
+  buffer = f->getData(offset, size);
+  off = 0;
+}
+
+ByteStream::ByteStream(FileMap *f, uint32 offset)
+{
+  size = f->getSize() - offset;
+  buffer = f->getData(offset, size);
+  off = 0;
+}
+
 ByteStream::~ByteStream(void) {
 
 }

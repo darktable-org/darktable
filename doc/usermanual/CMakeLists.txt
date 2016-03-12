@@ -133,6 +133,7 @@ if(can_build_usermanual)
 		COMMENT "Building usermanual" VERBATIM
 	)
 	add_custom_target(darktable-usermanual DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf)
+  add_dependencies(usermanual darktable-usermanual)
 	add_dependencies(darktable-usermanual target_media_images darktable_single_xml )
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
 
@@ -304,6 +305,7 @@ if(can_build_usermanual)
 		COMMENT "Building Lua API" VERBATIM
 	)
 	add_custom_target(darktable-lua-api DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf)
+  add_dependencies(lua-api darktable-lua-api)
 	add_dependencies(darktable-lua-api target_media_images )
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf DESTINATION ./share/doc/darktable/lua-api OPTIONAL)
 

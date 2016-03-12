@@ -60,15 +60,9 @@ dt_cpu_flags_t dt_detect_cpu_features()
 #endif
 
   static dt_cpu_flags_t cpuflags = -1;
-#if defined(GLIB_CHECK_VERSION) && GLIB_CHECK_VERSION(2, 32, 0)
   static GMutex lock;
 
   g_mutex_lock(&lock);
-#else
-  static GStaticMutex lock = G_STATIC_MUTEX_INIT;
-
-  g_static_mutex_lock(&lock);
-#endif
   if(cpuflags == (dt_cpu_flags_t)-1)
   {
     cpuflags = 0;
@@ -122,11 +116,7 @@ dt_cpu_flags_t dt_detect_cpu_features()
       }
     }
   }
-#if defined(GLIB_CHECK_VERSION) && GLIB_CHECK_VERSION(2, 32, 0)
   g_mutex_unlock(&lock);
-#else
-  g_static_mutex_unlock(&lock);
-#endif
 
 #if 0
   if(darktable.unmuted & DT_DEBUG_PERF)
@@ -151,6 +141,16 @@ dt_cpu_flags_t dt_detect_cpu_features()
   return cpuflags;
 
 #undef cpuid
+}
+#else
+dt_cpu_flags_t dt_detect_cpu_features()
+{
+  static dt_cpu_flags_t cpuflags = 0;
+
+  fprintf(stderr, "[dt_detect_cpu_features] Not implemented for this architecture.\n");
+  fprintf(stderr, "[dt_detect_cpu_features] Please contribute a patch.\n");
+
+  return cpuflags;
 }
 #endif /* __i386__ || __x86_64__ */
 

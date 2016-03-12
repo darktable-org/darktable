@@ -22,17 +22,19 @@ extern "C" {
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
+#include "bauhaus/bauhaus.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "develop/tiling.h"
-#include "control/control.h"
-#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 }
 #include "iop/Permutohedral.h"
 extern "C" {
@@ -94,8 +96,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale5));
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
   float *in = (float *)ivoid;
@@ -136,8 +138,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(ivoid, ovoid, roi_in, roi_out, m, mat,        \
-                                                               isig2col) private(in, out)
+#pragma omp parallel for default(none) schedule(static) shared(m, mat, isig2col) private(in, out)
 #endif
     for(int j = rad; j < roi_out->height - rad; j++)
     {
@@ -340,10 +341,10 @@ void gui_init(dt_iop_module_t *self)
   g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[2], 4);
   g->scale4 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[3], 4);
   g->scale5 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[4], 4);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the gaussian"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("how much to blur red"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("spatial extent of the gaussian"));
+  gtk_widget_set_tooltip_text(g->scale3, _("how much to blur red"));
+  gtk_widget_set_tooltip_text(g->scale4, _("how much to blur green"));
+  gtk_widget_set_tooltip_text(g->scale5, _("how much to blur blue"));
 
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("radius"));
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("red"));

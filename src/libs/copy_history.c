@@ -15,21 +15,22 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
-#include "common/history.h"
 #include "common/debug.h"
-#include "control/control.h"
+#include "common/history.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "control/jobs.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
 #include "libs/lib.h"
-#include <stdlib.h>
-#include <gtk/gtk.h>
+#include "libs/lib_api.h"
 #include <gdk/gdkkeysyms.h>
-#include "dtgtk/button.h"
-#include "bauhaus/bauhaus.h"
+#include <gtk/gtk.h>
+#include <stdlib.h>
 
 DT_MODULE(1)
 
@@ -44,17 +45,17 @@ typedef struct dt_lib_copy_history_t
   dt_gui_hist_dialog_t dg;
 } dt_lib_copy_history_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("history stack");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
@@ -223,6 +224,7 @@ int position()
   return 600;
 }
 
+#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
@@ -237,34 +239,34 @@ void gui_init(dt_lib_module_t *self)
 
 
   GtkWidget *copy_parts = gtk_button_new_with_label(_("copy"));
+  ellipsize_button(copy_parts);
   d->copy_parts_button = copy_parts;
-  g_object_set(G_OBJECT(copy_parts), "tooltip-text",
-               _("copy part history stack of\nfirst selected image (ctrl-shift-c)"), (char *)NULL);
+  gtk_widget_set_tooltip_text(copy_parts, _("copy part history stack of\nfirst selected image"));
   gtk_grid_attach(grid, copy_parts, 0, line, 2, 1);
 
   GtkWidget *copy = gtk_button_new_with_label(_("copy all"));
+  ellipsize_button(copy);
   d->copy_button = copy;
-  g_object_set(G_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(copy, _("copy history stack of\nfirst selected image"));
   gtk_grid_attach(grid, copy, 2, line, 2, 1);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
+  ellipsize_button(delete);
   d->delete_button = delete;
-  g_object_set(G_OBJECT(delete), "tooltip-text", _("discard history stack of\nall selected images"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(delete, _("discard history stack of\nall selected images"));
   gtk_grid_attach(grid, delete, 4, line++, 2, 1);
 
 
   d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
-  g_object_set(G_OBJECT(d->paste_parts), "tooltip-text",
-               _("paste part history stack to\nall selected images (ctrl-shift-v)"), (char *)NULL);
+  ellipsize_button(d->paste_parts);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste_parts), _("paste part history stack to\nall selected images"));
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste_parts), 0, line, 3, 1);
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste all")));
-  g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"),
-               (char *)NULL);
+  ellipsize_button(d->paste);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste), _("paste history stack to\nall selected images"));
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste), 3, line++, 3, 1);
 
@@ -272,21 +274,21 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_widget_set_label(d->pastemode, NULL, _("mode"));
   dt_bauhaus_combobox_add(d->pastemode, _("append"));
   dt_bauhaus_combobox_add(d->pastemode, _("overwrite"));
-  g_object_set(G_OBJECT(d->pastemode), "tooltip-text", _("how to handle existing history"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->pastemode, _("how to handle existing history"));
   gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
   dt_bauhaus_combobox_set(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
 
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
+  ellipsize_button(loadbutton);
   d->load_button = loadbutton;
-  g_object_set(G_OBJECT(loadbutton), "tooltip-text",
-               _("open an XMP sidecar file\nand apply it to selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(loadbutton, _("open an XMP sidecar file\nand apply it to selected images"));
   gtk_grid_attach(grid, loadbutton, 0, line, 3, 1);
 
   GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
+  ellipsize_button(button);
   d->write_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("write history stack and tags to XMP sidecar files"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("write history stack and tags to XMP sidecar files"));
   gtk_grid_attach(grid, button, 3, line, 3, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 
@@ -294,12 +296,12 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(delete), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(d->paste_parts), "clicked", G_CALLBACK(paste_parts_button_clicked),
-                   (gpointer)self);
+  g_signal_connect(G_OBJECT(d->paste_parts), "clicked", G_CALLBACK(paste_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste), "clicked", G_CALLBACK(paste_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(loadbutton), "clicked", G_CALLBACK(load_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), (gpointer)self);
 }
+#undef ellipsize_button
 
 void gui_cleanup(dt_lib_module_t *self)
 {

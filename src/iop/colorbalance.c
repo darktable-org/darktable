@@ -23,12 +23,13 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "config.h"
 #endif
 // our includes go first:
-#include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
-#include "dtgtk/drawingarea.h"
-#include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "develop/imageop.h"
+#include "dtgtk/drawingarea.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -95,8 +96,8 @@ int groups()
 }
 
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   const int ch = piece->colors;
@@ -135,7 +136,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   };
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(i, o, roi_in, roi_out)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -183,7 +184,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)self->data;
@@ -564,122 +565,85 @@ void gui_init(dt_iop_module_t *self)
 //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 #endif
 
+
+#define ADD_FACTOR(which) \
+  g->which##_factor = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->which[CHANNEL_FACTOR] - 1.0f, 3);\
+  dt_bauhaus_slider_set_stop(g->which##_factor, 0.0, 0.0, 0.0, 0.0);\
+  dt_bauhaus_slider_set_stop(g->which##_factor, 1.0, 1.0, 1.0, 1.0);\
+  gtk_widget_set_tooltip_text(g->which##_factor, _("factor of " #which));\
+  dt_bauhaus_widget_set_label(g->which##_factor, _(#which), _("factor"));\
+  g_signal_connect(G_OBJECT(g->which##_factor), "value-changed", G_CALLBACK(which##_factor_callback), self);\
+  gtk_box_pack_start(GTK_BOX(self->widget), g->which##_factor, TRUE, TRUE, 0);
+
+#define ADD_CHANNEL(which, c, n, N) \
+  g->which##_##c = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->which[CHANNEL_##N] - 1.0f, 3);\
+  gtk_widget_set_tooltip_text(g->which##_##c, _("factor of " #n " for " #which));\
+  dt_bauhaus_widget_set_label(g->which##_##c, _(#which), _(#n));\
+  g_signal_connect(G_OBJECT(g->which##_##c), "value-changed", G_CALLBACK(which##_##n##_callback), self);\
+  gtk_box_pack_start(GTK_BOX(self->widget), g->which##_##c, TRUE, TRUE, 0);
+
   /* lift */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("lift")), FALSE, FALSE, 5);
 
-  g->lift_factor
-      = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->lift[CHANNEL_FACTOR] - 1.0f, 3);
-  dt_bauhaus_slider_set_stop(g->lift_factor, 0.0, 0.0, 0.0, 0.0);
-  dt_bauhaus_slider_set_stop(g->lift_factor, 1.0, 1.0, 1.0, 1.0);
-  g_object_set(g->lift_factor, "tooltip-text", _("factor of lift"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->lift_factor, _("lift"), _("factor"));
-  g_signal_connect(G_OBJECT(g->lift_factor), "value-changed", G_CALLBACK(lift_factor_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->lift_factor, TRUE, TRUE, 0);
+  ADD_FACTOR(lift)
 
-  g->lift_r = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->lift[CHANNEL_RED] - 1.0f, 3);
+  ADD_CHANNEL(lift, r, red, RED)
   dt_bauhaus_slider_set_stop(g->lift_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_r, 1.0, 1.0, 0.0, 0.0);
-  g_object_set(g->lift_r, "tooltip-text", _("factor of red for lift"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->lift_r, _("lift"), _("red"));
-  g_signal_connect(G_OBJECT(g->lift_r), "value-changed", G_CALLBACK(lift_red_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->lift_r, TRUE, TRUE, 0);
 
-  g->lift_g = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->lift[CHANNEL_GREEN] - 1.0f, 3);
+  ADD_CHANNEL(lift, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->lift_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_g, 1.0, 0.0, 1.0, 0.0);
-  g_object_set(g->lift_g, "tooltip-text", _("factor of green for lift"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->lift_g, _("lift"), _("green"));
-  g_signal_connect(G_OBJECT(g->lift_g), "value-changed", G_CALLBACK(lift_green_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->lift_g, TRUE, TRUE, 0);
 
-  g->lift_b = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->lift[CHANNEL_BLUE] - 1.0f, 3);
+  ADD_CHANNEL(lift, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->lift_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->lift_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_b, 1.0, 0.0, 0.0, 1.0);
-  g_object_set(g->lift_b, "tooltip-text", _("factor of blue for lift"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->lift_b, _("lift"), _("blue"));
-  g_signal_connect(G_OBJECT(g->lift_b), "value-changed", G_CALLBACK(lift_blue_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->lift_b, TRUE, TRUE, 0);
 
   /* gamma */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gamma")), FALSE, FALSE, 5);
 
-  g->gamma_factor
-      = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gamma[CHANNEL_FACTOR] - 1.0f, 3);
-  dt_bauhaus_slider_set_stop(g->gamma_factor, 0.0, 0.0, 0.0, 0.0);
-  dt_bauhaus_slider_set_stop(g->gamma_factor, 1.0, 1.0, 1.0, 1.0);
-  g_object_set(g->gamma_factor, "tooltip-text", _("factor of gamma"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->gamma_factor, _("gamma"), _("factor"));
-  g_signal_connect(G_OBJECT(g->gamma_factor), "value-changed", G_CALLBACK(gamma_factor_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gamma_factor, TRUE, TRUE, 0);
+  ADD_FACTOR(gamma)
 
-  g->gamma_r = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gamma[CHANNEL_RED] - 1.0f, 3);
+  ADD_CHANNEL(gamma, r, red, RED)
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 1.0, 1.0, 0.0, 0.0);
-  g_object_set(g->gamma_r, "tooltip-text", _("factor of red for gamma"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->gamma_r, _("gamma"), _("red"));
-  g_signal_connect(G_OBJECT(g->gamma_r), "value-changed", G_CALLBACK(gamma_red_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gamma_r, TRUE, TRUE, 0);
 
-  g->gamma_g = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gamma[CHANNEL_GREEN] - 1.0f, 3);
+  ADD_CHANNEL(gamma, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 1.0, 0.0, 1.0, 0.0);
-  g_object_set(g->gamma_g, "tooltip-text", _("factor of green for gamma"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->gamma_g, _("gamma"), _("green"));
-  g_signal_connect(G_OBJECT(g->gamma_g), "value-changed", G_CALLBACK(gamma_green_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gamma_g, TRUE, TRUE, 0);
 
-  g->gamma_b = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gamma[CHANNEL_BLUE] - 1.0f, 3);
+  ADD_CHANNEL(gamma, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_b, 1.0, 0.0, 0.0, 1.0);
-  g_object_set(g->gamma_b, "tooltip-text", _("factor of blue for gamma"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->gamma_b, _("gamma"), _("blue"));
-  g_signal_connect(G_OBJECT(g->gamma_b), "value-changed", G_CALLBACK(gamma_blue_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gamma_b, TRUE, TRUE, 0);
 
   /* gain */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gain")), FALSE, FALSE, 5);
 
-  g->gain_factor
-      = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gain[CHANNEL_FACTOR] - 1.0f, 3);
-  dt_bauhaus_slider_set_stop(g->gain_factor, 0.0, 0.0, 0.0, 0.0);
-  dt_bauhaus_slider_set_stop(g->gain_factor, 1.0, 1.0, 1.0, 1.0);
-  g_object_set(g->gain_factor, "tooltip-text", _("factor of gain"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->gain_factor, _("gain"), _("factor"));
-  g_signal_connect(G_OBJECT(g->gain_factor), "value-changed", G_CALLBACK(gain_factor_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gain_factor, TRUE, TRUE, 0);
+  ADD_FACTOR(gain)
 
-  g->gain_r = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gain[CHANNEL_RED] - 1.0f, 3);
+  ADD_CHANNEL(gain, r, red, RED)
   dt_bauhaus_slider_set_stop(g->gain_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_r, 1.0, 1.0, 0.0, 0.0);
-  g_object_set(g->gain_r, "tooltip-text", _("factor of red for gain"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->gain_r, _("gain"), _("red"));
-  g_signal_connect(G_OBJECT(g->gain_r), "value-changed", G_CALLBACK(gain_red_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gain_r, TRUE, TRUE, 0);
 
-  g->gain_g = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gain[CHANNEL_GREEN] - 1.0f, 3);
+  ADD_CHANNEL(gain, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->gain_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_g, 1.0, 0.0, 1.0, 0.0);
-  g_object_set(g->gain_g, "tooltip-text", _("factor of green for gain"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->gain_g, _("gain"), _("green"));
-  g_signal_connect(G_OBJECT(g->gain_g), "value-changed", G_CALLBACK(gain_green_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gain_g, TRUE, TRUE, 0);
 
-  g->gain_b = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gain[CHANNEL_BLUE] - 1.0f, 3);
+  ADD_CHANNEL(gain, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->gain_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->gain_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_b, 1.0, 0.0, 0.0, 1.0);
-  g_object_set(g->gain_b, "tooltip-text", _("factor of blue for gain"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->gain_b, _("gain"), _("blue"));
-  g_signal_connect(G_OBJECT(g->gain_b), "value-changed", G_CALLBACK(gain_blue_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gain_b, TRUE, TRUE, 0);
+
+#undef ADD_FACTOR
+#undef ADD_CHANNEL
 }
 
 void gui_cleanup(dt_iop_module_t *self)

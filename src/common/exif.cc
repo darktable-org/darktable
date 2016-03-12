@@ -187,6 +187,15 @@ static void dt_remove_known_keys(Exiv2::XmpData &xmp)
   }
 }
 
+static void dt_remove_exif_keys(Exiv2::ExifData &exif, const char *keys[], unsigned int n_keys)
+{
+  for(unsigned int i = 0; i < n_keys; i++)
+  {
+    Exiv2::ExifData::iterator pos = exif.findKey(Exiv2::ExifKey(keys[i]));
+    if(pos != exif.end()) exif.erase(pos);
+  }
+}
+
 static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterator *pos, string key)
 {
   try
@@ -572,6 +581,16 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_focal_length = pos->toFloat();
     }
 
+    /* Read focal length in 35mm if available and try to calculate crop factor */
+    if(FIND_EXIF_TAG("Exif.Photo.FocalLengthIn35mmFilm"))
+    {
+      const float focal_length_35mm = pos->toFloat();
+      if(focal_length_35mm > 0.0f && img->exif_focal_length > 0.0f)
+        img->exif_crop = focal_length_35mm / img->exif_focal_length;
+      else
+        img->exif_crop = 1.0f;
+    }
+
     if(FIND_EXIF_TAG("Exif.NikonLd2.FocusDistance"))
     {
       float value = pos->toFloat();
@@ -816,9 +835,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm1_pos->toFloat(i);
       else if(is_2_65 == 1 && cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
         for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm2_pos->toFloat(i);
-      else if(is_1_65 == 0 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+      else if(cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
         for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm1_pos->toFloat(i);
-      else if(is_2_65 == 0 && cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
+      else if(cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
         for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm2_pos->toFloat(i);
     }
 
@@ -1066,28 +1085,30 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
 
       imgExifData.add(Exiv2::ExifKey(i->key()), &i->value());
     }
-    // Remove thumbnail
-    if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.Compression"))) != imgExifData.end())
-      imgExifData.erase(it);
-    if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.XResolution"))) != imgExifData.end())
-      imgExifData.erase(it);
-    if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.YResolution"))) != imgExifData.end())
-      imgExifData.erase(it);
-    if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.ResolutionUnit"))) != imgExifData.end())
-      imgExifData.erase(it);
-    if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.JPEGInterchangeFormat"))) != imgExifData.end())
-      imgExifData.erase(it);
-    if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.JPEGInterchangeFormatLength")))
-       != imgExifData.end())
-      imgExifData.erase(it);
+
+    {
+      // Remove thumbnail
+      static const char *keys[] = {
+        "Exif.Thumbnail.Compression",
+        "Exif.Thumbnail.XResolution",
+        "Exif.Thumbnail.YResolution",
+        "Exif.Thumbnail.ResolutionUnit",
+        "Exif.Thumbnail.JPEGInterchangeFormat",
+        "Exif.Thumbnail.JPEGInterchangeFormatLength"
+      };
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(imgExifData, keys, n_keys);
+    }
 
     // only compressed images may set PixelXDimension and PixelYDimension
     if(!compressed)
     {
-      if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Photo.PixelXDimension"))) != imgExifData.end())
-        imgExifData.erase(it);
-      if((it = imgExifData.findKey(Exiv2::ExifKey("Exif.Photo.PixelYDimension"))) != imgExifData.end())
-        imgExifData.erase(it);
+      static const char *keys[] = {
+        "Exif.Photo.PixelXDimension",
+        "Exif.Photo.PixelYDimension"
+      };
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(imgExifData, keys, n_keys);
     }
 
     imgExifData.sortByTag();
@@ -1122,33 +1143,26 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
 
     // ufraw-style exif stripping:
     Exiv2::ExifData::iterator pos;
+    {
     /* Delete original TIFF data, which is irrelevant*/
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ImageWidth"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ImageLength"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.BitsPerSample"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.Compression"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.PhotometricInterpretation"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.FillOrder"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.SamplesPerPixel"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.StripOffsets"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.RowsPerStrip"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.StripByteCounts"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.PlanarConfiguration"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.DNGVersion"))) != exifData.end())
-      exifData.erase(pos);
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.DNGBackwardVersion"))) != exifData.end())
-      exifData.erase(pos);
+      static const char *keys[] = {
+        "Exif.Image.ImageWidth",
+        "Exif.Image.ImageLength",
+        "Exif.Image.BitsPerSample",
+        "Exif.Image.Compression",
+        "Exif.Image.PhotometricInterpretation",
+        "Exif.Image.FillOrder",
+        "Exif.Image.SamplesPerPixel",
+        "Exif.Image.StripOffsets",
+        "Exif.Image.RowsPerStrip",
+        "Exif.Image.StripByteCounts",
+        "Exif.Image.PlanarConfiguration",
+        "Exif.Image.DNGVersion",
+        "Exif.Image.DNGBackwardVersion"
+      };
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(exifData, keys, n_keys);
+    }
 
     if(!dng_mode)
     {
@@ -1156,89 +1170,68 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
 
       exifData["Exif.Image.Orientation"] = uint16_t(1);
 
-      // Canon color space info
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.ColorSpace"))) != exifData.end())
-        exifData.erase(pos);
+      {
+        static const char *keys[] = {
+          // Canon color space info
+          "Exif.Canon.ColorSpace",
 
-      // Nikon thumbnail data
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Preview"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.NikonPreview.JPEGInterchangeFormat"))) != exifData.end())
-        exifData.erase(pos);
+          // Nikon thumbnail data
+          "Exif.Nikon3.Preview",
+          "Exif.NikonPreview.JPEGInterchangeFormat",
 
-      // DNG private data
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.DNGPrivateData"))) != exifData.end())
-        exifData.erase(pos);
+          // DNG private data
+          "Exif.Image.DNGPrivateData",
 
-      // Pentax thumbnail data
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewResolution"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewLength"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewOffset"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.PentaxDng.PreviewResolution"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.PentaxDng.PreviewLength"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.PentaxDng.PreviewOffset"))) != exifData.end())
-        exifData.erase(pos);
+          // Pentax thumbnail data
+          "Exif.Pentax.PreviewResolution",
+          "Exif.Pentax.PreviewLength",
+          "Exif.Pentax.PreviewOffset",
+          "Exif.PentaxDng.PreviewResolution",
+          "Exif.PentaxDng.PreviewLength",
+          "Exif.PentaxDng.PreviewOffset",
 
-      // Minolta thumbnail data
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Minolta.Thumbnail"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Minolta.ThumbnailOffset"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Minolta.ThumbnailLength"))) != exifData.end())
-        exifData.erase(pos);
+          // Minolta thumbnail data
+          "Exif.Minolta.Thumbnail",
+          "Exif.Minolta.ThumbnailOffset",
+          "Exif.Minolta.ThumbnailLength",
 
-      // Sony thumbnail data
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.SonyMinolta.ThumbnailOffset"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.SonyMinolta.ThumbnailLength"))) != exifData.end())
-        exifData.erase(pos);
+          // Sony thumbnail data
+          "Exif.SonyMinolta.ThumbnailOffset",
+          "Exif.SonyMinolta.ThumbnailLength",
 
-      // Olympus thumbnail data
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Olympus.Thumbnail"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Olympus.ThumbnailOffset"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Olympus.ThumbnailLength"))) != exifData.end())
-        exifData.erase(pos);
+          // Olympus thumbnail data
+          "Exif.Olympus.Thumbnail",
+          "Exif.Olympus.ThumbnailOffset",
+          "Exif.Olympus.ThumbnailLength"
+        };
+        static const guint n_keys = G_N_ELEMENTS(keys);
+        dt_remove_exif_keys(exifData, keys, n_keys);
+      }
 
 #if EXIV2_MINOR_VERSION >= 23
-      // Exiv2 versions older than 0.23 drop all EXIF if the code below is executed
-      // Samsung makernote cleanup, the entries below have no relevance for exported images
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.SensorAreas"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ColorSpace"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.EncryptionKey"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsUncorrected"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsAuto"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsIlluminator1"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsIlluminator2"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.WB_RGGBLevelsBlack"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ColorMatrix"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ColorMatrixSRGB"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ColorMatrixAdobeRGB"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ToneCurve1"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ToneCurve2"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ToneCurve3"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Samsung2.ToneCurve4"))) != exifData.end())
-        exifData.erase(pos);
+      {
+        // Exiv2 versions older than 0.23 drop all EXIF if the code below is executed
+        // Samsung makernote cleanup, the entries below have no relevance for exported images
+        static const char *keys[] = {
+          "Exif.Samsung2.SensorAreas",
+          "Exif.Samsung2.ColorSpace",
+          "Exif.Samsung2.EncryptionKey",
+          "Exif.Samsung2.WB_RGGBLevelsUncorrected",
+          "Exif.Samsung2.WB_RGGBLevelsAuto",
+          "Exif.Samsung2.WB_RGGBLevelsIlluminator1",
+          "Exif.Samsung2.WB_RGGBLevelsIlluminator2",
+          "Exif.Samsung2.WB_RGGBLevelsBlack",
+          "Exif.Samsung2.ColorMatrix",
+          "Exif.Samsung2.ColorMatrixSRGB",
+          "Exif.Samsung2.ColorMatrixAdobeRGB",
+          "Exif.Samsung2.ToneCurve1",
+          "Exif.Samsung2.ToneCurve2",
+          "Exif.Samsung2.ToneCurve3",
+          "Exif.Samsung2.ToneCurve4"
+        };
+        static const guint n_keys = G_N_ELEMENTS(keys);
+        dt_remove_exif_keys(exifData, keys, n_keys);
+      }
 #endif
 
       /* Write appropriate color space tag if using sRGB output */
@@ -1262,12 +1255,13 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
     }
     else
     {
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.XResolution"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.YResolution"))) != exifData.end())
-        exifData.erase(pos);
-      if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ResolutionUnit"))) != exifData.end())
-        exifData.erase(pos);
+      static const char *keys[] = {
+        "Exif.Image.XResolution",
+        "Exif.Image.YResolution",
+        "Exif.Image.ResolutionUnit"
+      };
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(exifData, keys, n_keys);
     }
 
     exifData["Exif.Image.Software"] = PACKAGE_STRING;
@@ -1277,6 +1271,25 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
     //       And shall we add a description of the history stack to Exif.Image.ImageHistory?
     if(imgid >= 0)
     {
+      /* Delete metadata taken from the original file if it's fileds we manage in dt, too */
+      static const char * keys[] = {
+        "Exif.Image.Artist",
+        "Exif.Image.ImageDescription",
+        "Exif.Photo.UserComment",
+        "Exif.Image.Copyright",
+        "Exif.Image.Rating",
+        "Exif.Image.RatingPercent",
+        "Exif.GPSInfo.GPSVersionID",
+        "Exif.GPSInfo.GPSLongitudeRef",
+        "Exif.GPSInfo.GPSLatitudeRef",
+        "Exif.GPSInfo.GPSLongitude",
+        "Exif.GPSInfo.GPSLatitude",
+        "Exif.GPSInfo.GPSAltitudeRef",
+        "Exif.GPSInfo.GPSAltitude"
+      };
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(exifData, keys, n_keys);
+
       GList *res = dt_metadata_get(imgid, "Xmp.dc.creator", NULL);
       if(res != NULL)
       {
@@ -1284,17 +1297,14 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
         g_list_free_full(res, &g_free);
       }
 
-      res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
-      if(res != NULL)
-      {
-        exifData["Exif.Image.ImageDescription"] = (char *)res->data;
-        g_list_free_full(res, &g_free);
-      }
-
       res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
       if(res != NULL)
       {
-        exifData["Exif.Photo.UserComment"] = (char *)res->data;
+        char *desc = (char *)res->data;
+        if(g_str_is_ascii(desc))
+          exifData["Exif.Image.ImageDescription"] = desc;
+        else
+          exifData["Exif.Photo.UserComment"] = desc;
         g_list_free_full(res, &g_free);
       }
 

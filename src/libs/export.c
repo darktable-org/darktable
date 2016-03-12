@@ -16,25 +16,26 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/debug.h"
-#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
+#include "common/collection.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/debug.h"
 #include "common/imageio_module.h"
 #include "common/styles.h"
-#include "common/collection.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
-#include "control/conf.h"
 #include "control/signal.h"
-#include "gui/gtk.h"
-#include "libs/lib.h"
-#include "gui/accelerators.h"
-#include "gui/presets.h"
-#include <stdlib.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
-#include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "gui/presets.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
+#include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
+#include <stdlib.h>
 
 DT_MODULE(4)
 
@@ -58,17 +59,17 @@ static void _update_dimensions(dt_lib_export_t *d);
 /** get the max output dimension supported by combination of storage and format.. */
 static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint32_t *height);
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("export selected");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
@@ -559,11 +560,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
   d->width = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
-  g_object_set(G_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->width), _("maximum output width\nset to 0 for no scaling"));
   d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
-  g_object_set(G_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->height), _("maximum output height\nset to 0 for no scaling"));
 
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->width));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->height));
@@ -571,6 +570,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10)));
   label = gtk_label_new(_("max size"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
   g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
   gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
@@ -607,7 +607,7 @@ void gui_init(dt_lib_module_t *self)
   char tooltip[1024];
   snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir,
            datadir);
-  g_object_set(G_OBJECT(d->profile), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(d->profile, tooltip);
 
   //  Add intent combo
 
@@ -626,8 +626,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_widget_set_label(d->style, NULL, _("style"));
   _lib_export_styles_changed_callback(NULL, self);
   gtk_box_pack_start(GTK_BOX(self->widget), d->style, FALSE, TRUE, 0);
-  g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to use while exporting"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(d->style, _("temporary style to use while exporting"));
 
   //  Add check to control whether the style is to replace or append the current module
 
@@ -641,9 +640,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->style_mode, 0);
 
-  g_object_set(G_OBJECT(d->style_mode), "tooltip-text",
-               _("whether the style items are appended to the history or replacing the history"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(d->style_mode,
+                              _("whether the style items are appended to the history or replacing the history"));
 
   //  Set callback signals
 
@@ -660,7 +658,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   d->export_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("export with current settings"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), FALSE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);

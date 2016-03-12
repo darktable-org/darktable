@@ -38,6 +38,19 @@ BitPumpJPEG::BitPumpJPEG(const uchar8* _buffer, uint32 _size) :
   init();
 }
 
+BitPumpJPEG::BitPumpJPEG(FileMap *f, uint32 offset, uint32 _size) :
+    size(_size + sizeof(uint32)), mLeft(0), off(0), stuffed(0) {
+  buffer = f->getDataWrt(offset, size);
+  init();
+}
+
+BitPumpJPEG::BitPumpJPEG(FileMap *f, uint32 offset) :
+    mLeft(0), off(0), stuffed(0) {
+  size = f->getSize() + sizeof(uint32) - offset;
+  buffer = f->getDataWrt(offset, size);
+  init();
+}
+
 __inline void BitPumpJPEG::init() {
   memset(current_buffer,0,16);
   fill();

@@ -26,6 +26,7 @@
 // #include "dtgtk/paint.h"
 // #include "libs/lib.h"
 #include "control/jobs.h"
+#include "libs/lib_api.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -38,17 +39,17 @@ typedef struct dt_lib_geotagging_t
   GtkWidget *floating_window, *floating_window_ok, *floating_window_cancel, *floating_window_entry;
 } dt_lib_geotagging_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("geotagging");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
@@ -387,8 +388,8 @@ static void _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_
   gtk_widget_add_events(d->floating_window_entry, GDK_FOCUS_CHANGE_MASK);
   g_signal_connect_swapped(d->floating_window, "focus-out-event", G_CALLBACK(gtk_widget_destroy),
                            d->floating_window);
-  g_object_set(G_OBJECT(d->floating_window_entry), "tooltip-text",
-               _("enter the time shown on the selected picture\nformat: hh:mm:ss"), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->floating_window_entry,
+                              _("enter the time shown on the selected picture\nformat: hh:mm:ss"));
 
   gtk_editable_select_region(GTK_EDITABLE(d->floating_window_entry), 0, -1);
   gtk_box_pack_start(GTK_BOX(vbox), d->floating_window_entry, TRUE, TRUE, 0);
@@ -475,10 +476,8 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
   // add time zone selection
   GtkWidget *extra_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *label = gtk_label_new(_("camera time zone"));
-  g_object_set(G_OBJECT(label), "tooltip-text",
-               _("most cameras don't store the time zone in EXIF. give the correct time zone so the GPX data "
-                 "can be correctly matched"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(label, _("most cameras don't store the time zone in EXIF. "
+                                       "give the correct time zone so the GPX data can be correctly matched"));
   GtkWidget *tz_selection = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), "UTC");
   gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), 0);
@@ -616,8 +615,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, d->offset_entry, TRUE, TRUE, 0);
   g_signal_connect(d->offset_entry, "key-press-event", G_CALLBACK(_lib_geotagging_offset_key_press), self);
   g_signal_connect(d->offset_entry, "focus-out-event", G_CALLBACK(_lib_geotagging_offset_focus_out), self);
-  g_object_set(G_OBJECT(d->offset_entry), "tooltip-text", _("time offset\nformat: [+-]?[[hh:]mm:]ss"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(d->offset_entry, _("time offset\nformat: [+-]?[[hh:]mm:]ss"));
   gchar *str = dt_conf_get_string("plugins/lighttable/geotagging/offset");
   if(_lib_geotagging_parse_offset(str, NULL))
     gtk_entry_set_text(GTK_ENTRY(d->offset_entry), str);
@@ -627,12 +625,12 @@ void gui_init(dt_lib_module_t *self)
 
   GtkBox *button_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   button = dtgtk_button_new(dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("calculate the time offset from an image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("calculate the time offset from an image"));
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_show_offset_window), self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("apply time offset to selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("apply time offset to selected images"));
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_apply_offset_callback), self);
 
@@ -641,8 +639,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* gpx */
   button = gtk_button_new_with_label(_("apply GPX track file"));
-  g_object_set(G_OBJECT(button), "tooltip-text",
-               _("parses a GPX file and updates location of selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("parses a GPX file and updates location of selected images"));
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_gpx_callback), self);
 }

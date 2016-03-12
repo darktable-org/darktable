@@ -1349,6 +1349,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
 
 void dt_masks_clear_form_gui(dt_develop_t *dev)
 {
+  if(!dev->form_gui) return;
   g_list_free_full(dev->form_gui->points, dt_masks_form_gui_points_free);
   dev->form_gui->points = NULL;
   dt_masks_dynbuf_free(dev->form_gui->guipoints);
@@ -1374,27 +1375,21 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
 
   dev->form_gui->group_edited = -1;
   dev->form_gui->group_selected = -1;
-}
-
-void dt_masks_init_form_gui(dt_develop_t *dev)
-{
-  dt_masks_clear_form_gui(dev);
   dev->form_gui->edit_mode = DT_MASKS_EDIT_OFF;
-  dev->form_gui->guipoints = NULL;
-  dev->form_gui->guipoints_payload = NULL;
-  dev->form_gui->guipoints_count = 0;
 }
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
 {
   dt_masks_clear_form_gui(darktable.develop);
+  // free the actual mask form if it's id is 0 (temp mask)
+  if(darktable.develop->form_visible && darktable.develop->form_visible->formid == 0)
+    dt_masks_free_form(darktable.develop->form_visible);
   darktable.develop->form_visible = newform;
 }
 
 void dt_masks_reset_form_gui(void)
 {
-  darktable.develop->form_visible = NULL;
-  dt_masks_clear_form_gui(darktable.develop);
+  dt_masks_change_form_gui(NULL);
   dt_iop_module_t *m = darktable.develop->gui_module;
   if(m && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
   {
@@ -1540,6 +1535,8 @@ static void _menu_add_brush(struct dt_iop_module_t *module)
 static void _menu_add_exist(dt_iop_module_t *module, int formid)
 {
   if(!module) return;
+  dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
+  if(!form) return;
 
   // is there already a masks group for this module ?
   int grpid = module->blend_params->mask_id;
@@ -1556,13 +1553,7 @@ static void _menu_add_exist(dt_iop_module_t *module, int formid)
     module->blend_params->mask_id = grpid = grp->formid;
   }
   // we add the form in this group
-  dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
-  grpt->formid = formid;
-  grpt->parentid = grpid;
-  grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
-  if(g_list_length(grp->points) > 0) grpt->state |= DT_MASKS_STATE_UNION;
-  grpt->opacity = 1.0f;
-  grp->points = g_list_append(grp->points, grpt);
+  dt_masks_group_add_form(grp, form);
   // we save the group
   dt_masks_write_form(grp, darktable.develop);
 
@@ -1600,12 +1591,16 @@ void dt_masks_iop_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
   while(points)
   {
     dt_masks_point_group_t *pt = (dt_masks_point_group_t *)points->data;
-    dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
-    grpt->formid = pt->formid;
-    grpt->parentid = grpid;
-    grpt->state = pt->state;
-    grpt->opacity = pt->opacity;
-    grp->points = g_list_append(grp->points, grpt);
+    dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, pt->formid);
+    if(form)
+    {
+      dt_masks_point_group_t *grpt = dt_masks_group_add_form(grp, form);
+      if(grpt)
+      {
+        grpt->state = pt->state;
+        grpt->opacity = pt->opacity;
+      }
+    }
     points = g_list_next(points);
   }
 
@@ -1884,11 +1879,11 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
   GList *forms = g_list_first(darktable.develop->forms);
   while(forms)
   {
-    dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
-    if(form->formid == id)
+    dt_masks_form_t *f = (dt_masks_form_t *)forms->data;
+    if(f->formid == id)
     {
-      darktable.develop->forms = g_list_remove(darktable.develop->forms, form);
-      dt_masks_free_form(form);
+      darktable.develop->forms = g_list_remove(darktable.develop->forms, f);
+      dt_masks_free_form(f);
       dt_masks_write_forms(darktable.develop);
       break;
     }
@@ -1963,6 +1958,48 @@ void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up)
     grp->points = g_list_insert(grp->points, grpt, pos);
     dt_masks_write_form(grp, darktable.develop);
   }
+}
+
+static int _find_in_group(dt_masks_form_t *grp, int formid)
+{
+  if(!(grp->type & DT_MASKS_GROUP)) return 0;
+  if(grp->formid == formid) return 1;
+  GList *forms = g_list_first(grp->points);
+  int nb = 0;
+  while(forms)
+  {
+    dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
+    dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, grpt->formid);
+    if(form)
+    {
+      if(form->type & DT_MASKS_GROUP) nb += _find_in_group(form, formid);
+    }
+    forms = g_list_next(forms);
+  }
+  return nb;
+}
+
+dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_form_t *form)
+{
+  // add a form to group and check for self inclusion
+
+  if(!(grp->type & DT_MASKS_GROUP)) return NULL;
+  // either the form to add is not a group, so no risk
+  // or we go throught all points of form to see if we find a ref to grp->formid
+  if(!(form->type & DT_MASKS_GROUP) || _find_in_group(form, grp->formid) == 0)
+  {
+    dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
+    grpt->formid = form->formid;
+    grpt->parentid = grp->formid;
+    grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
+    if(g_list_length(grp->points) > 0) grpt->state |= DT_MASKS_STATE_UNION;
+    grpt->opacity = 1.0f;
+    grp->points = g_list_append(grp->points, grpt);
+    return grpt;
+  }
+
+  dt_control_log(_("masks can not contain themselves"));
+  return NULL;
 }
 
 void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp)

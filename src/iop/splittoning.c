@@ -18,25 +18,26 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "dtgtk/resetlabel.h"
-#include "dtgtk/gradientslider.h"
 #include "dtgtk/button.h"
+#include "dtgtk/gradientslider.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 DT_MODULE_INTROSPECTION(1, dt_iop_splittoning_params_t)
@@ -153,8 +154,8 @@ void init_presets(dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_splittoning_data_t *data = (dt_iop_splittoning_data_t *)piece->data;
   float *in;
@@ -163,7 +164,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   const float compress = (data->compress / 110.0) / 2.0; // Dont allow 100% compression..
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, data) private(in, out) schedule(static)
+#pragma omp parallel for default(none) shared(data) private(in, out) schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -203,7 +204,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_splittoning_data_t *d = (dt_iop_splittoning_data_t *)piece->data;
   dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)self->data;
@@ -491,7 +492,7 @@ static inline int gui_init_tab(struct dt_iop_module_t *self, int line, const cha
   dt_bauhaus_slider_set_stop(hue, 0.664f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 1.0f, 1.0f, 0.0f, 0.0f);
-  g_object_set(G_OBJECT(hue), "tooltip-text", _("select the hue tone"), (char *)NULL);
+  gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
 
   // saturation slider
   GtkWidget *saturation;
@@ -499,7 +500,7 @@ static inline int gui_init_tab(struct dt_iop_module_t *self, int line, const cha
   dt_bauhaus_widget_set_label(saturation, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
-  g_object_set(G_OBJECT(saturation), "tooltip-text", _("select the saturation tone"), (char *)NULL);
+  gtk_widget_set_tooltip_text(saturation, _("select the saturation tone"));
 
   // pack the widgets
   gtk_widget_set_hexpand(hue, TRUE); // make sure that the color picker doesn't become HUGE
@@ -551,9 +552,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, g->scale2, 0, line++, 2, 1);
 
 
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the balance of center of splittoning"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text",
-               _("compress the effect on highlights/shadows and\npreserve midtones"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("the balance of center of splittoning"));
+  gtk_widget_set_tooltip_text(g->scale2, _("compress the effect on highlights/shadows and\npreserve midtones"));
 
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(hue_callback), self);
   g_signal_connect(G_OBJECT(g->gslider3), "value-changed", G_CALLBACK(hue_callback), self);

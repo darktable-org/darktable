@@ -18,12 +18,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/imageop.h"
-#include "common/interpolation.h"
-#include "develop/tiling.h"
 #include "bauhaus/bauhaus.h"
-#include "gui/gtk.h"
+#include "common/interpolation.h"
+#include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -178,8 +179,8 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->y = roi_out->y * d->y_scale;
 }
 
-void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, const void *const ivoid,
-             void *ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
@@ -187,7 +188,7 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
   const dt_iop_scalepixels_data_t * const d = piece->data;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation)
+#pragma omp parallel for schedule(static) default(none) shared(interpolation)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
@@ -205,7 +206,7 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
   }
 }
 
-void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_scalepixels_params_t *p = params;

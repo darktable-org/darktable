@@ -35,6 +35,7 @@
 #include "lua/image.h"
 #include "lua/call.h"
 #endif
+#include "libs/lib_api.h"
 
 DT_MODULE(1)
 
@@ -45,17 +46,17 @@ typedef struct dt_lib_image_t
       *cache_button, *uncache_button;
 } dt_lib_image_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("selected image[s]");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
@@ -154,7 +155,7 @@ static void _image_preference_changed(gpointer instance, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t*)user_data;
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   gtk_button_set_label(GTK_BUTTON(d->delete_button), _image_get_delete_button_label());
-  g_object_set(G_OBJECT(d->delete_button), "tooltip-text", _image_get_delete_button_tooltip(), (char *)NULL);
+  gtk_widget_set_tooltip_text(d->delete_button, _image_get_delete_button_tooltip());
 }
 
 int position()
@@ -162,6 +163,7 @@ int position()
   return 700;
 }
 
+#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
@@ -176,89 +178,96 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button;
 
   button = gtk_button_new_with_label(_("remove"));
+  ellipsize_button(button);
   d->remove_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("remove from the collection"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("remove from the collection"));
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
   button = gtk_button_new_with_label(_image_get_delete_button_label());
+  ellipsize_button(button);
   d->delete_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _image_get_delete_button_tooltip(), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _image_get_delete_button_tooltip());
   gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
 
 
   button = gtk_button_new_with_label(_("move"));
+  ellipsize_button(button);
   d->move_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("move to other folder"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("move to other folder"));
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(8));
 
   button = gtk_button_new_with_label(_("copy"));
+  ellipsize_button(button);
   d->copy_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("copy to other folder"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("copy to other folder"));
   gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(9));
 
 
   button = gtk_button_new_with_label(_("create HDR"));
+  ellipsize_button(button);
   d->create_hdr_button = button;
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(7));
-  g_object_set(G_OBJECT(button), "tooltip-text", _("create a high dynamic range image from selected shots"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("create a high dynamic range image from selected shots"));
 
   button = gtk_button_new_with_label(_("duplicate"));
+  ellipsize_button(button);
   d->duplicate_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text",
-               _("add a duplicate to the collection, including its history stack"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("add a duplicate to the collection, including its history stack"));
   gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER);
   d->rotate_ccw_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees CCW"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("rotate selected images 90 degrees CCW"));
   gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1 | CPF_DO_NOT_USE_BORDER);
   d->rotate_cw_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees CW"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("rotate selected images 90 degrees CW"));
   gtk_grid_attach(grid, button, 1, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(5));
 
   button = gtk_button_new_with_label(_("reset rotation"));
+  ellipsize_button(button);
   d->reset_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("reset rotation to EXIF data"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("reset rotation to EXIF data"));
   gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(6));
 
 
   button = gtk_button_new_with_label(_("copy locally"));
+  ellipsize_button(button);
   d->cache_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("copy the image locally"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("copy the image locally"));
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(12));
 
   button = gtk_button_new_with_label(_("resync local copy"));
+  ellipsize_button(button);
   d->uncache_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("synchronize the image's XMP and remove the local copy"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("synchronize the image's XMP and remove the local copy"));
   gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(13));
 
 
   button = gtk_button_new_with_label(_("group"));
+  ellipsize_button(button);
   d->group_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text",
-               _("add selected images to expanded group or create a new one"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("add selected images to expanded group or create a new one"));
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(10));
 
   button = gtk_button_new_with_label(_("ungroup"));
+  ellipsize_button(button);
   d->ungroup_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("remove selected images from the group"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("remove selected images from the group"));
   gtk_grid_attach(grid, button, 2, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(11));
 
@@ -269,6 +278,7 @@ void gui_init(dt_lib_module_t *self)
       G_CALLBACK(_image_preference_changed),
       (gpointer)self);
 }
+#undef ellipsize_button
 
 void gui_cleanup(dt_lib_module_t *self)
 {
@@ -361,7 +371,7 @@ static int lua_register_action(lua_State *L)
   GtkWidget* button = gtk_button_new_with_label(key);
   const char * tooltip = lua_tostring(L,3);
   if(tooltip)  {
-    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
+    gtk_widget_set_tooltip_text(button, tooltip);
   }
   gtk_grid_attach_next_to(GTK_GRID(self->widget), button, NULL, GTK_POS_BOTTOM, 4, 1);
 

@@ -19,12 +19,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
+#include "common/interpolation.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
-#include "common/interpolation.h"
-#include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -175,12 +176,13 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
    *        -------
    */
 
-  const float scale = roi_in->scale / piece->iscale, T = d->ry * scale;
+  const float scale = roi_in->scale / piece->iscale, T = (float)d->ry * scale;
 
-  const float y = sqrtf(2.0f * T * T), x = sqrtf(2.0f * (roi_in->width - T) * (roi_in->width - T));
+  const float y = sqrtf(2.0f * T * T),
+              x = sqrtf(2.0f * ((float)roi_in->width - T) * ((float)roi_in->width - T));
 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  const float IW = interpolation->width * scale;
+  const float IW = (float)interpolation->width * scale;
 
   roi_out->width = y - IW;
   roi_out->height = x - IW;
@@ -215,19 +217,27 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   }
 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  const float IW = interpolation->width * scale;
+  const float IW = (float)interpolation->width * scale;
+
+  const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
 
   // adjust roi_in to minimally needed region
-  roi_in->x = aabb_in[0] - IW;
-  roi_in->y = aabb_in[1] - IW;
-  roi_in->width = aabb_in[2] - roi_in->x + IW;
-  roi_in->height = aabb_in[3] - roi_in->y + IW;
+  roi_in->x = fmaxf(0.0f, aabb_in[0] - IW);
+  roi_in->y = fmaxf(0.0f, aabb_in[1] - IW);
+  roi_in->width = fminf(orig_w - roi_in->x, aabb_in[2] - roi_in->x + IW);
+  roi_in->height = fminf(orig_h - roi_in->y, aabb_in[3] - roi_in->y + IW);
+
+  // sanity check.
+  roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(orig_w));
+  roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
+  roi_in->width = CLAMP(roi_in->width, 1, (int)ceilf(orig_w) - roi_in->x);
+  roi_in->height = CLAMP(roi_in->height, 1, (int)ceilf(orig_h) - roi_in->y);
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
 // do your best to fill the output region!
-void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, const void *const ivoid,
-             void *ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
@@ -239,7 +249,7 @@ void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, c
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation)
+#pragma omp parallel for schedule(static) default(none) shared(piece, interpolation)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?

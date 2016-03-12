@@ -20,14 +20,16 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/debug.h"
 #include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "common/debug.h"
+#include "develop/imageop_math.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -141,8 +143,8 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
   const gboolean gray_mix_mode = (data->red[CHANNEL_GRAY] != 0.0 || data->green[CHANNEL_GRAY] != 0.0
@@ -152,7 +154,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid, ovoid, roi_in, roi_out, data) schedule(static)
+#pragma omp parallel for default(none) shared(data) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -232,7 +234,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
   dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)self->data;
@@ -453,21 +455,19 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* red */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED], 3);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("amount of red channel in the output channel"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("amount of red channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("red"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(red_callback), self);
 
   /* green */
   g->scale2 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED], 3);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale2, _("amount of green channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("green"));
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(green_callback), self);
 
   /* blue */
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED], 3);
-  g_object_set(g->scale3, "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale3, _("amount of blue channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("blue"));
   g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(blue_callback), self);
 

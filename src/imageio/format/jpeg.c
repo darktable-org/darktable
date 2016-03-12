@@ -20,17 +20,17 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/darktable.h"
-#include "common/imageio_module.h"
-#include "common/imageio.h"
-#include "common/colorspaces.h"
-#include "control/conf.h"
-#include "common/imageio_format.h"
 #include "bauhaus/bauhaus.h"
-#include <setjmp.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/imageio.h"
+#include "common/imageio_module.h"
+#include "control/conf.h"
+#include "imageio/format/imageio_format_api.h"
 #include <inttypes.h>
+#include <setjmp.h>
+#include <stdio.h>
+#include <stdlib.h>
 // this fixes a rather annoying, long time bug in libjpeg :(
 #undef HAVE_STDLIB_H
 #undef HAVE_STDDEF_H
@@ -399,7 +399,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   return 0;
 }
 
-int read_header(const char *filename, dt_imageio_jpeg_t *jpg)
+static int __attribute__((__unused__)) read_header(const char *filename, dt_imageio_jpeg_t *jpg)
 {
   jpg->f = fopen(filename, "rb");
   if(!jpg->f) return 1;

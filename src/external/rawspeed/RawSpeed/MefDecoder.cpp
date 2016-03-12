@@ -51,7 +51,7 @@ RawImage MefDecoder::decodeRawInternal() {
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), mFile->getSize() - off);
+  ByteStream input(mFile, off);
 
   Decode12BitRawBE(input, width, height);
   return mRaw;

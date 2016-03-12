@@ -201,7 +201,7 @@ RawImage DngDecoder::decodeRawInternal() {
 
           offY += yPerSlice;
 
-          if (mFile->isValid(slice.offset + slice.count)) // Only decode if size is valid
+          if (mFile->isValid(slice.offset, slice.count)) // Only decode if size is valid
             slices.push_back(slice);
         }
 
@@ -209,9 +209,8 @@ RawImage DngDecoder::decodeRawInternal() {
 
         for (uint32 i = 0; i < slices.size(); i++) {
           DngStrip slice = slices[i];
-          if (hints.find("ignore_bytecount") != hints.end())
-            slice.count = mFile->getSize() - slice.offset;
-          ByteStream in(mFile->getData(slice.offset), slice.count);
+          slice.count = mFile->getSize() - slice.offset;
+          ByteStream in(mFile, slice.offset, slice.count);
           iPoint2D size(width, slice.h);
           iPoint2D pos(0, slice.offsetY);
 
@@ -292,7 +291,7 @@ RawImage DngDecoder::decodeRawInternal() {
             e.mUseBigtable = yPerSlice * mRaw->dim.y > 1024 * 1024;
             offY += yPerSlice;
 
-            if (mFile->isValid(e.byteOffset + e.byteCount)) // Only decode if size is valid
+            if (mFile->isValid(e.byteOffset, e.byteCount)) // Only decode if size is valid
               slices.addSlice(e);
           }
         }

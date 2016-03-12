@@ -234,12 +234,11 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
   g->original_name = name;
   gtk_entry_set_text(g->name, name);
   gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
-  g_object_set(G_OBJECT(g->name), "tooltip-text", _("name of the preset"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->name), _("name of the preset"));
 
   g->description = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
-  g_object_set(G_OBJECT(g->description), "tooltip-text", _("description or further information"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->description), _("description or further information"));
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -449,7 +448,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       mi = gtk_menu_item_new_with_label((const char *)name);
     }
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), minfo);
-    g_object_set(G_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), (char *)NULL);
+    gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt++;
   }
@@ -983,7 +982,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   hw[idx] = gtk_label_new("");
   gtk_widget_set_name(hw[idx], "panel_label");
   gtk_label_set_markup(GTK_LABEL(hw[idx]), label);
-  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", module->name(module), (char *)NULL);
+  gtk_widget_set_tooltip_text(hw[idx], module->name(module));
   gtk_label_set_ellipsize(GTK_LABEL(hw[idx++]), PANGO_ELLIPSIZE_MIDDLE);
 
   /* add reset button if module has implementation */
@@ -991,7 +990,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   {
     hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     module->reset_button = GTK_WIDGET(hw[idx]);
-    g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("reset parameters"), (char *)NULL);
+    gtk_widget_set_tooltip_text(hw[idx], _("reset parameters"));
     g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
   }
   else
@@ -1003,7 +1002,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   {
     hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     module->presets_button = GTK_WIDGET(hw[idx]);
-    g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("presets"), (char *)NULL);
+    gtk_widget_set_tooltip_text(hw[idx], _("presets"));
     g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
   }
   else

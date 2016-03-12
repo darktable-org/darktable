@@ -29,13 +29,14 @@
 
 namespace RawSpeed {
 
+#define TIFF_DEPTH(_depth) if((depth=_depth+1) > 10) ThrowTPE("TIFF: sub-micron matryoshka dolls are ignored");
 
 class TiffIFD
 {
 public:
   TiffIFD();
   TiffIFD(FileMap* f);
-  TiffIFD(FileMap* f, uint32 offset);
+  TiffIFD(FileMap* f, uint32 offset, uint32 depth=0);
   virtual ~TiffIFD(void);
   vector<TiffIFD*> mSubIFD;
   map<TiffTag, TiffEntry*> mEntry;
@@ -56,6 +57,7 @@ public:
 protected:
   int nextIFD;
   FileMap *mFile;
+  uint32 depth;
 };
 
 inline bool isTiffSameAsHost(const ushort16* tifftag) {

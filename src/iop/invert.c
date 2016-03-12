@@ -24,13 +24,17 @@
 #endif
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #include "control/control.h"
 #include "develop/imageop.h"
-#include "dtgtk/resetlabel.h"
+#include "develop/imageop_math.h"
 #include "dtgtk/button.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "iop/iop_api.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_invert_params_t)
 
@@ -55,8 +59,7 @@ typedef struct dt_iop_invert_global_data_t
 
 typedef struct dt_iop_invert_data_t
 {
-  float color[3]; // color of film material
-  double RGB_to_CAM[4][3]; // Matrix to convert CYGM to RGB for this camera
+  float color[4]; // color of film material
 } dt_iop_invert_data_t;
 
 const char *name()
@@ -156,20 +159,90 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_invert_data_t *const d = (dt_iop_invert_data_t *)piece->data;
+
+  const float *const m = piece->pipe->processed_maximum;
+
+  const float film_rgb_f[4]
+      = { d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2], d->color[3] * m[3] };
+
+  // FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
+  //   if(self->request_color_pick){
+  // do nothing
+  //   }
+
+  const int filters = dt_image_filter(&piece->pipe->image);
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])self->dev->image_storage.xtrans;
+
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
+
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
+  { // xtrans float mosaiced
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const size_t p = (size_t)j * roi_out->width + i;
+        out[p] = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - in[p], 0.0f, 1.0f);
+      }
+    }
+
+    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
+  }
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  { // bayer float mosaiced
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const size_t p = (size_t)j * roi_out->width + i;
+        out[p] = CLAMP(film_rgb_f[FC(j + roi_out->y, i + roi_out->x, filters)] - in[p], 0.0f, 1.0f);
+      }
+    }
+
+    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
+  }
+  else
+  { // non-mosaiced
+    const int ch = piece->colors;
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#endif
+    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        const size_t p = (size_t)k + c;
+        out[p] = d->color[c] - in[p];
+      }
+    }
+
+    if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  }
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
 
   const float *const m = piece->pipe->processed_maximum;
 
-  float film_rgb[4] = { d->color[0], d->color[1], d->color[2], 0.0f };
-
-  // Convert the RGB color to CYGM only if we're not in the preview pipe (which is already RGB)
-  if((self->dev->image_storage.flags & DT_IMAGE_4BAYER) && !dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
-    dt_colorspaces_rgb_to_cygm(film_rgb, 1, d->RGB_to_CAM);
-
-  const float film_rgb_f[4] = { film_rgb[0] * m[0], film_rgb[1] * m[1], film_rgb[2] * m[2], film_rgb[3] * m[3] };
+  const float film_rgb_f[4]
+      = { d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2], d->color[3] * m[3] };
 
   // FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
   //   if(self->request_color_pick){
@@ -182,7 +255,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
   { // xtrans float mosaiced
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -201,7 +274,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     const __m128 val_max = _mm_set1_ps(1.0f);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -240,10 +313,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   { // non-mosaiced
     const int ch = piece->colors;
 
-    const __m128 film = _mm_set_ps(1.0f, film_rgb[2], film_rgb[1], film_rgb[0]);
+    const __m128 film = _mm_set_ps(1.0f, d->color[2], d->color[1], d->color[0]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -261,10 +334,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
 }
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
   dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)self->data;
@@ -275,16 +349,21 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   int kernel = -1;
 
+  float film_rgb_f[4] = { d->color[0], d->color[1], d->color[2], d->color[3] };
+
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
   {
     kernel = gd->kernel_invert_1f;
+
+    const float *const m = piece->pipe->processed_maximum;
+    for(int c = 0; c < 4; c++) film_rgb_f[c] *= m[c];
   }
   else
   {
     kernel = gd->kernel_invert_4f;
   }
 
-  dev_color = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->color);
+  dev_color = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, film_rgb_f);
   if(dev_color == NULL) goto error;
 
   const int width = roi_in->width;
@@ -366,19 +445,31 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   for(int k = 0; k < 3; k++)
     d->color[k] = p->color[k];
 
+  d->color[3] = 0.0f;
+
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
 
-  if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  // 4Bayer images not implemented in OpenCL yet
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
+
+  // 4Bayer: convert the RGB color to CYGM only if we're not in the preview pipe (which is already RGB)
+  if((self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+     && !dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
   {
-    // 4Bayer images not implemented in OpenCL yet
-    piece->process_cl_ready = 0;
+    double RGB_to_CAM[4][3];
 
     char *camera = self->dev->image_storage.camera_makermodel;
-    if (!dt_colorspaces_conversion_matrices_rgb(camera, d->RGB_to_CAM, NULL, NULL))
+    if(!dt_colorspaces_conversion_matrices_rgb(camera, RGB_to_CAM, NULL, NULL))
     {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image!\n", camera);
-      dt_control_log(_("[temperature] `%s' color matrix not found for 4bayer image!\n"), camera);
+      fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
+
+      // piece->enabled = 0; ???
+    }
+    else
+    {
+      dt_colorspaces_rgb_to_cygm(d->color, 1, RGB_to_CAM);
     }
   }
 }
@@ -432,7 +523,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
 
   g->picker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(g->picker), "tooltip-text", _("pick color of film material from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->picker, _("pick color of film material from image"));
   gtk_widget_set_size_request(g->picker, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), g->picker, TRUE, TRUE, 5);

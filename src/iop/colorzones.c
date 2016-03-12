@@ -18,18 +18,19 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/opencl.h"
-#include "develop/develop.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
 #include "dtgtk/drawingarea.h"
-#include "gui/gtk.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
 #include "gui/presets.h"
-#include "bauhaus/bauhaus.h"
+#include "iop/iop_api.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -193,13 +194,13 @@ static float strength(float value, float strength)
   return value + (value - 0.5) * (strength / 100.0);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o)
+#pragma omp parallel for default(none) schedule(static) shared(d)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -239,7 +240,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)piece->data;
   dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)self->data;
@@ -1078,7 +1079,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT  | CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(GTK_WIDGET(tb), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick GUI color from image"), (char *)NULL);
+  gtk_widget_set_tooltip_text(tb, _("pick GUI color from image"));
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_end(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
 
@@ -1094,14 +1095,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->strength, "%.01f%%");
   dt_bauhaus_widget_set_label(c->strength, NULL, _("mix"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->strength, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(c->strength), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->strength, _("make effect stronger or weaker"));
   g_signal_connect(G_OBJECT(c->strength), "value-changed", G_CALLBACK(strength_changed), (gpointer)self);
 
   // select by which dimension
   c->select_by = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->select_by, NULL, _("select by"));
-  g_object_set(G_OBJECT(c->select_by), "tooltip-text",
-               _("choose selection criterion, will be the abscissa in the graph"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->select_by, _("choose selection criterion, will be the abscissa in the graph"));
   dt_bauhaus_combobox_add(c->select_by, _("hue"));
   dt_bauhaus_combobox_add(c->select_by, _("saturation"));
   dt_bauhaus_combobox_add(c->select_by, _("lightness"));

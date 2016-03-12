@@ -46,7 +46,7 @@ void FileWriter::writeFile(FileMap* filemap, uint32 size) {
   if (file == NULL)
     throw FileIOException("Could not open file.");
 
-  src = (char *)filemap->getData(0);
+  src = (char *)filemap->getData(0, filemap->getSize());
   bytes_written = fwrite(src, 1, size ? size : filemap->getSize(), file);
   fclose(file);
   if (size != bytes_written) {
@@ -61,7 +61,7 @@ void FileWriter::writeFile(FileMap* filemap, uint32 size) {
   }
 
   DWORD bytes_written;
-  if (! WriteFile(file_h, filemap->getData(0), size ? size : filemap->getSize(), &bytes_written, NULL)) {
+  if (! WriteFile(file_h, filemap->getData(0, filemap->getSize()), size ? size : filemap->getSize(), &bytes_written, NULL)) {
     CloseHandle(file_h);
     throw FileIOException("Could not read file.");
   }

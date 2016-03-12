@@ -16,17 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
 #include "common/metadata.h"
-#include "common/debug.h"
 #include "common/collection.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "control/signal.h"
-#include "control/conf.h"
-#include "libs/lib.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "dtgtk/button.h"
+#include "libs/lib.h"
+#include "libs/lib_api.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -50,17 +51,17 @@ typedef struct dt_lib_metadata_t
   GtkWidget *apply_button;
 } dt_lib_metadata_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("metadata editor");
 }
 
-uint32_t views()
+uint32_t views(dt_lib_module_t *self)
 {
   return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
@@ -371,14 +372,14 @@ void gui_init(dt_lib_module_t *self)
   button = gtk_button_new_with_label(_("clear"));
   d->clear_button = button;
   gtk_widget_set_hexpand(GTK_WIDGET(button), TRUE);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("remove metadata from selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("remove metadata from selected images"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
 
   button = gtk_button_new_with_label(_("apply"));
   d->apply_button = button;
   gtk_widget_set_hexpand(GTK_WIDGET(button), TRUE);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("write metadata for selected images"), (char *)NULL);
+  gtk_widget_set_tooltip_text(button, _("write metadata for selected images"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   gtk_widget_set_margin_top(GTK_WIDGET(hbox), DT_PIXEL_APPLY_DPI(5));

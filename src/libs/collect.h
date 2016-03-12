@@ -17,6 +17,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <glib.h>
+#include <glib/gi18n.h>
+
 typedef enum dt_lib_collect_mode_t
 {
   DT_LIB_COLLECT_MODE_AND = 0,

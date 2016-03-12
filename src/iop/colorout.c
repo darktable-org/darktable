@@ -19,16 +19,20 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/develop.h"
 #include "bauhaus/bauhaus.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop_math.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
 
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -206,7 +210,7 @@ static float lerp_lut(const float *const lut, const float v)
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
@@ -259,7 +263,76 @@ error:
 }
 #endif
 
-static inline __m128 lab_f_inv_m(const __m128 x)
+static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                              const void *const ivoid, void *const ovoid,
+                                              const dt_iop_roi_t *const roi_in,
+                                              const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+  const int ch = piece->colors;
+
+  if(!isnan(d->cmatrix[0]))
+  {
+    // out is already converted to RGB from Lab.
+
+    // do we have any lut to apply, or is this a linear profile?
+    if((d->lut[0][0] >= 0.0f) && (d->lut[1][0] >= 0.0f) && (d->lut[2][0] >= 0.0f))
+    { // apply profile
+      float *const out = (float *const)ovoid;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
+      for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          out[k + c] = (out[k + c] < 1.0f) ? lerp_lut(d->lut[c], out[k + c])
+                                           : dt_iop_eval_exp(d->unbounded_coeffs[c], out[k + c]);
+        }
+      }
+    }
+    else if((d->lut[0][0] >= 0.0f) || (d->lut[1][0] >= 0.0f) || (d->lut[2][0] >= 0.0f))
+    { // apply profile
+      float *const out = (float *const)ovoid;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
+      for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          if(d->lut[c][0] >= 0.0f)
+          {
+            out[k + c] = (out[k + c] < 1.0f) ? lerp_lut(d->lut[c], out[k + c])
+                                             : dt_iop_eval_exp(d->unbounded_coeffs[c], out[k + c]);
+          }
+        }
+      }
+    }
+  }
+}
+
+#if defined(_OPENMP) && defined(OPENMP_SIMD_)
+#pragma omp declare SIMD()
+#endif
+static inline float lab_f_inv_m(const float x)
+{
+  const float epsilon = (0.20689655172413796f); // cbrtf(216.0f/24389.0f);
+  const float kappa_rcp_x16 = (16.0f * 27.0f / 24389.0f);
+  const float kappa_rcp_x116 = (116.0f * 27.0f / 24389.0f);
+
+  // x > epsilon
+  float res_big = x * x * x;
+
+  // x <= epsilon
+  float res_small = ((kappa_rcp_x116 * x) - kappa_rcp_x16);
+
+  // blend results according to whether each component is > epsilon or not
+  return ((x > epsilon) ? res_big : res_small);
+}
+
+#if defined(__SSE__)
+static inline __m128 lab_f_inv_m_SSE(const __m128 x)
 {
   const __m128 epsilon = _mm_set1_ps(0.20689655172413796f); // cbrtf(216.0f/24389.0f);
   const __m128 kappa_rcp_x16 = _mm_set1_ps(16.0f * 27.0f / 24389.0f);
@@ -274,7 +347,37 @@ static inline __m128 lab_f_inv_m(const __m128 x)
   const __m128 mask = _mm_cmpgt_ps(x, epsilon);
   return _mm_or_ps(_mm_and_ps(mask, res_big), _mm_andnot_ps(mask, res_small));
 }
+#endif
 
+static inline void _dt_Lab_to_XYZ(const float *const Lab, float *const xyz)
+{
+  const float d50[] = { 0.9642f, 1.0f, 0.8249f };
+  const float coef[] = { 1.0f / 500.0f, 1.0f / 116.0f, -1.0f / 200.0f };
+  const float offset = (0.137931034f);
+
+  float _F[3];
+  _F[0] = Lab[1];
+  _F[1] = Lab[0];
+  _F[2] = Lab[2];
+
+  for(int c = 0; c < 3; c++)
+  {
+    _F[c] *= coef[c];
+  }
+
+  float _F1[3];
+  _F1[0] = _F[1];
+  _F1[1] = 0.0f;
+  _F1[2] = _F[1];
+
+  for(int c = 0; c < 3; c++)
+  {
+    const float f = _F[c] + _F1[c] + offset;
+    xyz[c] = d50[c] * lab_f_inv_m(f);
+  }
+}
+
+#if defined(__SSE__)
 static inline __m128 dt_Lab_to_XYZ_SSE(const __m128 Lab)
 {
   const __m128 d50 = _mm_set_ps(0.0f, 0.8249f, 1.0f, 0.9642f);
@@ -286,11 +389,12 @@ static inline __m128 dt_Lab_to_XYZ_SSE(const __m128 Lab)
   const __m128 f = _mm_mul_ps(_mm_shuffle_ps(Lab, Lab, _MM_SHUFFLE(0, 2, 0, 1)), coef);
 
   return _mm_mul_ps(
-      d50, lab_f_inv_m(_mm_add_ps(_mm_add_ps(f, _mm_shuffle_ps(f, f, _MM_SHUFFLE(1, 1, 3, 1))), offset)));
+      d50, lab_f_inv_m_SSE(_mm_add_ps(_mm_add_ps(f, _mm_shuffle_ps(f, f, _MM_SHUFFLE(1, 1, 3, 1))), offset)));
 }
+#endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
@@ -301,7 +405,73 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(roi_in, roi_out, ivoid, ovoid)
+#pragma omp parallel for schedule(static) default(none)
+#endif
+    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    {
+      const float *const in = (const float *const)ivoid + (size_t)k;
+      float *out = (float *)ovoid + (size_t)k;
+
+      float xyz[3];
+      _dt_Lab_to_XYZ(in, xyz);
+
+      for(int c = 0; c < 3; c++)
+      {
+        out[c] = 0.0f;
+        for(int i = 0; i < 3; i++)
+        {
+          out[c] += d->cmatrix[3 * c + i] * xyz[i];
+        }
+      }
+    }
+
+    process_fastpath_apply_tonecurves(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+// fprintf(stderr,"Using xform codepath\n");
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
+    for(int k = 0; k < roi_out->height; k++)
+    {
+      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+
+      cmsDoTransform(d->xform, in, out, roi_out->width);
+
+      if(gamutcheck)
+      {
+        for(int j = 0; j < roi_out->width; j++, out += 4)
+        {
+          if(out[0] < 0.0f || out[1] < 0.0f || out[2] < 0.0f)
+          {
+            out[0] = 0.0f;
+            out[1] = 1.0f;
+            out[2] = 1.0f;
+          }
+        }
+      }
+    }
+  }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+  const int ch = piece->colors;
+  const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
+
+  if(!isnan(d->cmatrix[0]))
+  {
+// fprintf(stderr,"Using cmatrix codepath\n");
+// convert to rgb using matrix
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -324,51 +494,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       }
     }
     _mm_sfence();
-// apply profile
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(roi_in, roi_out, ivoid, ovoid)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
 
-      float *in = (float *)ivoid + (size_t)ch * roi_in->width * j;
-      float *out = (float *)ovoid + (size_t)ch * roi_out->width * j;
-
-      for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
-      {
-        for(int i = 0; i < 3; i++)
-          if(d->lut[i][0] >= 0.0f)
-          {
-            out[i] = (out[i] < 1.0f) ? lerp_lut(d->lut[i], out[i])
-                                     : dt_iop_eval_exp(d->unbounded_coeffs[i], out[i]);
-          }
-      }
-    }
+    process_fastpath_apply_tonecurves(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
   else
   {
     // fprintf(stderr,"Using xform codepath\n");
     const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_out)
+#pragma omp parallel for schedule(static) default(none)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
       const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
       float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
 
-      if(!gamutcheck)
+      cmsDoTransform(d->xform, in, out, roi_out->width);
+
+      if(gamutcheck)
       {
-        cmsDoTransform(d->xform, in, out, roi_out->width);
-      }
-      else
-      {
-        void *rgb = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-        cmsDoTransform(d->xform, in, rgb, roi_out->width);
-        float *rgbptr = (float *)rgb;
-        for(int j = 0; j < roi_out->width; j++, rgbptr += 4, out += 4)
+        for(int j = 0; j < roi_out->width; j++, out += 4)
         {
-          const __m128 pixel = _mm_load_ps(rgbptr);
+          const __m128 pixel = _mm_load_ps(out);
           __m128 ingamut = _mm_cmplt_ps(pixel, _mm_set_ps(-FLT_MAX, 0.0f, 0.0f, 0.0f));
 
           ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
@@ -378,7 +525,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
               = _mm_or_ps(_mm_and_ps(ingamut, outofgamutpixel), _mm_andnot_ps(ingamut, pixel));
           _mm_stream_ps(out, result);
         }
-        dt_free_align(rgb);
       }
     }
     _mm_sfence();
@@ -386,6 +532,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+#endif
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -675,9 +822,9 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   char tooltip[1024];
-  g_object_set(G_OBJECT(g->output_intent), "tooltip-text", _("rendering intent"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->output_intent, _("rendering intent"));
   snprintf(tooltip, sizeof(tooltip), _("ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
-  g_object_set(G_OBJECT(g->output_profile), "tooltip-text", tooltip, (char *)NULL);
+  gtk_widget_set_tooltip_text(g->output_profile, tooltip);
 
   g_signal_connect(G_OBJECT(g->output_intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed", G_CALLBACK(output_profile_changed), (gpointer)self);

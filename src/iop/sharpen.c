@@ -18,20 +18,25 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#if defined(__SSE__)
 #include <xmmintrin.h>
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
+#endif
+#include "bauhaus/bauhaus.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "develop/tiling.h"
-#include "control/control.h"
-#include "common/opencl.h"
-#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "iop/iop_api.h"
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -110,7 +115,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
   dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)self->data;
@@ -270,8 +275,189 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_sharpen_data_t *const data = (dt_iop_sharpen_data_t *)piece->data;
+  const int ch = piece->colors;
+  const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
+  if(rad == 0)
+  {
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    return;
+  }
+
+  // special case handling: very small image with one or two dimensions below 2*rad+1 => no sharpening
+  // avoids handling of all kinds of border cases below
+  if(roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1)
+  {
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    return;
+  }
+
+  float *const tmp = dt_alloc_align(16, (size_t)sizeof(float) * roi_out->width * roi_out->height);
+  if(tmp == NULL)
+  {
+    fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
+    return;
+  }
+
+  const int wd = 2 * rad + 1;
+  const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
+  __attribute__((aligned(16))) float mat[wd4 * 4];
+
+  memset(mat, 0, sizeof(mat));
+
+  const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
+                       * (data->radius * roi_in->scale / piece->iscale);
+  float weight = 0.0f;
+
+  // init gaussian kernel
+  for(int l = -rad; l <= rad; l++) weight += mat[l + rad] = expf(-l * l / (2.f * sigma2));
+  for(int l = -rad; l <= rad; l++) mat[l + rad] /= weight;
+
+// gauss blur the image horizontally
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(mat) schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    const float *in = ((float *)ivoid) + (size_t)ch * (j * roi_in->width + rad);
+    float *out = tmp + (size_t)j * roi_out->width + rad;
+    int i;
+    for(i = rad; i < roi_out->width - wd4 * 4 + rad; i++)
+    {
+      const float *inp = in - ch * rad;
+      __attribute__((aligned(16))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+      for(int k = 0; k < wd4 * 4; k += 4, inp += 4 * ch)
+      {
+        for(int c = 0; c < 4; c++)
+        {
+          sum[c] += ((mat[k + c]) * (inp[ch * c]));
+        }
+      }
+      *out = sum[0] + sum[1] + sum[2] + sum[3];
+      out++;
+      in += ch;
+    }
+    for(; i < roi_out->width - rad; i++)
+    {
+      const float *inp = in - ch * rad;
+      const float *m = mat;
+      float sum = 0.0f;
+      for(int k = -rad; k <= rad; k++, m++, inp += ch)
+      {
+        sum += *m * *inp;
+      }
+      *out = sum;
+      out++;
+      in += ch;
+    }
+  }
+
+// gauss blur the image vertically
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(mat) schedule(static)
+#endif
+  for(int j = rad; j < roi_out->height - wd4 * 4 + rad; j++)
+  {
+    const float *in = tmp + (size_t)j * roi_in->width;
+    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+
+    const int step = roi_in->width;
+
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      const float *inp = in - step * rad;
+      __attribute__((aligned(16))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+      for(int k = 0; k < wd4 * 4; k += 4, inp += step * 4)
+      {
+        for(int c = 0; c < 4; c++)
+        {
+          sum[c] += ((mat[k + c]) * (inp[step * c]));
+        }
+      }
+      *out = sum[0] + sum[1] + sum[2] + sum[3];
+      out += ch;
+      in++;
+    }
+  }
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(mat) schedule(static)
+#endif
+  for(int j = roi_out->height - wd4 * 4 + rad; j < roi_out->height - rad; j++)
+  {
+    const float *in = tmp + (size_t)j * roi_in->width;
+    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+    const int step = roi_in->width;
+
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      const float *inp = in - step * rad;
+      const float *m = mat;
+      float sum = 0.0f;
+      for(int k = -rad; k <= rad; k++, m++, inp += step) sum += *m * *inp;
+      *out = sum;
+      out += ch;
+      in++;
+    }
+  }
+
+  // fill unsharpened border
+  for(int j = 0; j < rad; j++)
+    memcpy(((float *)ovoid) + (size_t)ch * j * roi_out->width,
+           ((float *)ivoid) + (size_t)ch * j * roi_in->width, (size_t)ch * sizeof(float) * roi_out->width);
+  for(int j = roi_out->height - rad; j < roi_out->height; j++)
+    memcpy(((float *)ovoid) + (size_t)ch * j * roi_out->width,
+           ((float *)ivoid) + (size_t)ch * j * roi_in->width, (size_t)ch * sizeof(float) * roi_out->width);
+
+  dt_free_align(tmp);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j = rad; j < roi_out->height - rad; j++)
+  {
+    float *in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
+    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
+    for(int i = 0; i < rad; i++) out[ch * i] = in[ch * i];
+    for(int i = roi_out->width - rad; i < roi_out->width; i++) out[ch * i] = in[ch * i];
+  }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  // subtract blurred image, if diff > thrs, add *amount to original image
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    float *in = (float *)ivoid + (size_t)j * ch * roi_out->width;
+    float *out = (float *)ovoid + (size_t)j * ch * roi_out->width;
+
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      out[1] = in[1];
+      out[2] = in[2];
+      const float diff = in[0] - out[0];
+      if(fabsf(diff) > data->threshold)
+      {
+        const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
+        out[0] = in[0] + detail * data->amount;
+      }
+      else
+        out[0] = in[0];
+      out += ch;
+      in += ch;
+    }
+  }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
   const int ch = piece->colors;
@@ -313,7 +499,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // gauss blur the image horizontally
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(mat) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -354,7 +540,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
 // gauss blur the image vertically
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(mat) schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - wd4 * 4 + rad; j++)
   {
@@ -382,7 +568,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     }
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(mat) schedule(static)
 #endif
   for(int j = roi_out->height - wd4 * 4 + rad; j < roi_out->height - rad; j++)
   {
@@ -415,7 +601,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   dt_free_align(tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - rad; j++)
   {
@@ -426,7 +612,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(data) schedule(static)
 #endif
   // subtract blurred image, if diff > thrs, add *amount to original image
   for(int j = 0; j < roi_out->height; j++)
@@ -453,6 +639,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+#endif
 
 static void radius_callback(GtkWidget *slider, gpointer user_data)
 {
@@ -565,14 +752,14 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0000, 0.100, p->radius, 3);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the unblurring"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale1, _("spatial extent of the unblurring"));
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("radius"));
   dt_bauhaus_slider_enable_soft_boundaries(g->scale1, 0.0, 99.0);
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0000, 0.010, p->amount, 3);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("strength of the sharpen"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale2, _("strength of the sharpen"));
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("amount"));
   g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.00, 0.100, p->threshold, 3);
-  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("threshold to activate sharpen"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->scale3, _("threshold to activate sharpen"));
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("threshold"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale2, TRUE, TRUE, 0);

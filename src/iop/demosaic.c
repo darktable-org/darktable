@@ -17,24 +17,29 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "develop/imageop.h"
-#include "common/opencl.h"
 #include "bauhaus/bauhaus.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/interpolation.h"
-#include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "develop/tiling.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "iop/iop_api.h"
+
 #include <memory.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
 
 // we assume people have -msee support.
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 
 DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
 
@@ -132,7 +137,7 @@ typedef struct dt_iop_demosaic_data_t
   double CAM_to_RGB[3][4];
 } dt_iop_demosaic_data_t;
 
-static void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                               const float *const in, float *out, const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out, const int filters);
 
@@ -487,6 +492,20 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 // tile size, optimized to keep data in L2 cache
 #define TS 96
 
+/** Lookup for allhex[], making sure that row/col aren't negative **/
+static inline const short *const hexmap(const int row, const int col,
+                                        short (*const allhex)[3][8])
+{
+  // Row and column offsets may be negative, but C's modulo function
+  // is not useful here with a negative dividend. To be safe, add a
+  // fairly large multiple of 3. In current code row and col will
+  // never be less than -9 (1-pass) or -14 (3-pass).
+  int irow = row + 600;
+  int icol = col + 600;
+  assert(irow >= 0 && icol >= 0);
+  return allhex[irow % 3][icol % 3];
+}
+
 /*
    Frank Markesteijn's algorithm for Fuji X-Trans sensors
  */
@@ -507,8 +526,6 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  const int xoff = roi_in->x;
-  const int yoff = roi_in->y;
   const int ndir = 4 << (passes > 1);
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
@@ -525,7 +542,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       for(int ng = 0, d = 0; d < 10; d += 2)
       {
         int g = FCxtrans(row, col, NULL, xtrans) == 1;
-        if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, NULL, xtrans) == 1)
+        if(FCxtrans(row + orth[d], col + orth[d + 2], NULL, xtrans) == 1)
           ng = 0;
         else
           ng++;
@@ -546,12 +563,14 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
       }
 
+  // extra passes propagates out errors at edges, hence need more padding
+  const int pad_tile = (passes == 1) ? 12 : 17;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out) schedule(dynamic)
 #endif
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border
-  for(int top = -11; top < height - 11; top += TS - 22)
+  for(int top = -pad_tile; top < height - pad_tile; top += TS - (pad_tile*2))
   {
     char *const buffer = all_buffers + dt_get_thread_num() * buffer_size;
     // rgb points to ndir TSxTS tiles of 3 channels (R, G, and B)
@@ -572,10 +591,10 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
     uint8_t (*const homosum)[TS][TS] = (uint8_t(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float)
                                                             + TS * TS * ndir * sizeof(uint8_t));
 
-    for(int left = -11; left < width - 11; left += TS - 22)
+    for(int left = -pad_tile; left < width - pad_tile; left += TS - (pad_tile*2))
     {
-      int mrow = MIN(top + TS, height + 11);
-      int mcol = MIN(left + TS, width + 11);
+      int mrow = MIN(top + TS, height + pad_tile);
+      int mcol = MIN(left + TS, width + pad_tile);
 
       // Copy current tile from in to image buffer. If border goes
       // beyond edges of image, fill with mirrored/interpolated edges.
@@ -586,13 +605,13 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           float(*const pix) = rgb[0][row - top][col - left];
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
-            const int f = FCxtrans(row + yoff, col + xoff, NULL, xtrans);
+            const int f = FCxtrans(row, col, roi_in, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0;
           }
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row + yoff + 18, col + yoff + 18, NULL, xtrans);
+            const int c = FCxtrans(row, col, roi_in, xtrans);
             for(int cc = 0; cc < 3; cc++)
               if(cc != c)
                 pix[cc] = 0.0f;
@@ -600,7 +619,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
               {
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 1) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
-                if(c == FCxtrans(cy + yoff, cx + xoff, NULL, xtrans))
+                if(c == FCxtrans(cy, cx, roi_in, xtrans))
                   pix[c] = in[roi_in->width * cy + cx];
                 else
                 {
@@ -611,7 +630,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                     for(int x = col - 1; x <= col + 1; x++)
                     {
                       const int yy = TRANSLATE(y, height), xx = TRANSLATE(x, width);
-                      const int ff = FCxtrans(yy + yoff, xx + xoff, NULL, xtrans);
+                      const int ff = FCxtrans(yy, xx, roi_in, xtrans);
                       if(ff == c)
                       {
                         sum += in[roi_in->width * yy + xx];
@@ -637,17 +656,18 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       // and g3 values to the min/max of green pixels surrounding the
       // pair. Use a 3 pixel border as gmin/gmax is used by
       // interpolate green which has a 3 pixel border.
-      for(int row = top + 3; row < mrow - 3; row++)
+      const int pad_g1_g3 = 3;
+      for(int row = top + pad_g1_g3; row < mrow - pad_g1_g3; row++)
       {
         // setting max to 0.0f signifies that this is a new pair, which
         // requires a new min/max calculation of its neighboring greens
         float min = FLT_MAX, max = 0.0f;
-        for(int col = left + 3; col < mcol - 3; col++)
+        for(int col = left + pad_g1_g3; col < mcol - pad_g1_g3; col++)
         {
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
           // between each pair
-          if(FCxtrans(yoff + row + 12, xoff + col + 12, NULL, xtrans) == 1)
+          if(FCxtrans(row, col, roi_in, xtrans) == 1)
           {
             min = FLT_MAX, max = 0.0f;
             continue;
@@ -660,7 +680,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           if(max == 0.0f)
           {
             float (*const pix)[3] = &rgb[0][row - top][col - left];
-            const short *const hex = allhex[(row + 12) % 3][(col + 12) % 3];
+            const short *const hex = hexmap(row,col,allhex);
             for(int c = 0; c < 6; c++)
             {
               const float val = pix[hex[c]][1];
@@ -688,14 +708,15 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Interpolate green horizontally, vertically, and along both diagonals: */
       // need a 3 pixel border here as 3*hex[] can have a 3 unit offset
-      for(int row = top + 3; row < mrow - 3; row++)
-        for(int col = left + 3; col < mcol - 3; col++)
+      const int pad_g_interp = 3;
+      for(int row = top + pad_g_interp; row < mrow - pad_g_interp; row++)
+        for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
-          int f = FCxtrans(row + yoff + 12, col + xoff + 12, NULL, xtrans);
+          int f = FCxtrans(row, col, roi_in, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
-          short *hex = allhex[(row + 9) % 3][(col + 9) % 3];
+          const short *const hex = hexmap(row,col,allhex);
           // TODO: these constants come from integer math constants in
           // dcraw -- calculate them instead from interpolation math
           color[0] = 0.6796875f * (pix[hex[1]][1] + pix[hex[0]][1])
@@ -722,12 +743,14 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
         /* Recalculate green from interpolated values of closer pixels: */
         if(pass)
-          for(int row = top + 5; row < mrow - 5; row++)
-            for(int col = left + 5; col < mcol - 5; col++)
+        {
+          const int pad_g_recalc = 6;
+          for(int row = top + pad_g_recalc; row < mrow - pad_g_recalc; row++)
+            for(int col = left + pad_g_recalc; col < mcol - pad_g_recalc; col++)
             {
-              int f = FCxtrans(row + yoff + 12, col + xoff + 12, NULL, xtrans);
+              int f = FCxtrans(row, col, roi_in, xtrans);
               if(f == 1) continue;
-              short *hex = allhex[(row + 12) % 3][(col + 12) % 3];
+              const short *const hex = hexmap(row,col,allhex);
               for(int d = 3; d < 6; d++)
               {
                 float(*rfx)[3] = &rgb[(d - 2) ^ !((row - sgrow) % 3)][row - top][col - left];
@@ -736,13 +759,15 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 rfx[0][1] = CLAMPS(val / 3.0f, gmin[row - top][col - left], gmax[row - top][col - left]);
               }
             }
+        }
 
         /* Interpolate red and blue values for solitary green pixels:   */
-        for(int row = (top - sgrow + 7) / 3 * 3 + sgrow; row < mrow - 5; row += 3)
-          for(int col = (left - sgcol + 7) / 3 * 3 + sgcol; col < mcol - 5; col += 3)
+        const int pad_rb_g = (passes == 1) ? 6 : 5;
+        for(int row = (top - sgrow + pad_rb_g + 2) / 3 * 3 + sgrow; row < mrow - pad_rb_g; row += 3)
+          for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
-            int h = FCxtrans(row + yoff + 12, col + xoff + 13, NULL, xtrans);
+            int h = FCxtrans(row, col + 1, roi_in, xtrans);
             float diff[6] = { 0.0f };
             float color[3][8];
             for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
@@ -767,10 +792,11 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
 
         /* Interpolate red for blue pixels and vice versa:              */
-        for(int row = top + 6; row < mrow - 6; row++)
-          for(int col = left + 6; col < mcol - 6; col++)
+        const int pad_rb_br = (passes == 1) ? 6 : 5;
+        for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
+          for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
           {
-            int f = 2 - FCxtrans(row + yoff + 12, col + xoff + 12, NULL, xtrans);
+            int f = 2 - FCxtrans(row, col, roi_in, xtrans);
             if(f == 1) continue;
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int c = (row - sgrow) % 3 ? TS : 1;
@@ -785,13 +811,14 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
 
         /* Fill in red and blue for 2x2 blocks of green:                */
-        for(int row = top + 5; row < mrow - 5; row++)
+        const int pad_g22 = (passes == 1) ? 8 : 4;
+        for(int row = top + pad_g22; row < mrow - pad_g22; row++)
           if((row - sgrow) % 3)
-            for(int col = left + 5; col < mcol - 5; col++)
+            for(int col = left + pad_g22; col < mcol - pad_g22; col++)
               if((col - sgcol) % 3)
               {
                 float(*rfx)[3] = &rgb[0][row - top][col - left];
-                short *hex = allhex[(row + 12) % 3][(col + 12) % 3];
+                const short *const hex = hexmap(row,col,allhex);
                 for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
                   if(hex[d] + hex[d + 1])
                   {
@@ -825,8 +852,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       // camera RGB is roughly linear.
       for(int d = 0; d < ndir; d++)
       {
-        for(int row = 7; row < mrow - 7; row++)
-          for(int col = 7; col < mcol - 7; col++)
+        const int pad_yuv = (passes == 1) ? 8 : 13;
+        for(int row = pad_yuv; row < mrow - pad_yuv; row++)
+          for(int col = pad_yuv; col < mcol - pad_yuv; col++)
           {
             float *rx = rgb[d][row][col];
             // use ITU-R BT.2020 YPbPr, which is great, but could use
@@ -839,8 +867,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
           }
         const int f = dir[d & 3];
-        for(int row = 8; row < mrow - 8; row++)
-          for(int col = 8; col < mcol - 8; col++)
+        const int pad_drv = (passes == 1) ? 9 : 14;
+        for(int row = pad_drv; row < mrow - pad_drv; row++)
+          for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
             float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
             drv[d][row][col] = SQR(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
@@ -851,8 +880,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Build homogeneity maps from the derivatives:                   */
       memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
-      for(int row = 9; row < mrow - 9; row++)
-        for(int col = 9; col < mcol - 9; col++)
+      const int pad_homo = (passes == 1) ? 10 : 15;
+      for(int row = pad_homo; row < mrow - pad_homo; row++)
+        for(int col = pad_homo; col < mcol - pad_homo; col++)
         {
           float tr = FLT_MAX;
           for(int d = 0; d < ndir; d++)
@@ -865,15 +895,15 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Build 5x5 sum of homogeneity maps for each pixel & direction */
       for(int d = 0; d < ndir; d++)
-        for(int row = 11; row < mrow - 11; row++)
+        for(int row = pad_tile; row < mrow - pad_tile; row++)
         {
           // start before first column where homo[d][row][col+2] != 0,
           // so can know v5sum and homosum[d][row][col] will be 0
-          int col = 6;
+          int col = pad_tile-5;
           uint8_t v5sum[5] = { 0 };
           homosum[d][row][col] = 0;
           // calculate by rolling through column sums
-          for(col++; col < mcol - 11; col++)
+          for(col++; col < mcol - pad_tile; col++)
           {
             uint8_t colsum = 0;
             for(int v = -2; v <= 2; v++) colsum += homo[d][row + v][col + 2];
@@ -883,8 +913,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         }
 
       /* Average the most homogenous pixels for the final result:       */
-      for(int row = 11; row < mrow - 11; row++)
-        for(int col = 11; col < mcol - 11; col++)
+      for(int row = pad_tile; row < mrow - pad_tile; row++)
+        for(int col = pad_tile; col < mcol - pad_tile; col++)
         {
           uint8_t hm[8] = { 0 };
           uint8_t maxval = 0;
@@ -1204,9 +1234,6 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
 static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in)
 {
-  roi_out->x = 0;
-  roi_out->y = 0;
-
   // we never want to access the input out of bounds though:
   assert(roi_in->width >= roi_out->width);
   assert(roi_in->height >= roi_out->height);
@@ -1228,12 +1255,9 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
 }
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
-static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
-                         const int filters, const float thrs)
+static void demosaic_ppg(float *const out, const float *const in, const dt_iop_roi_t *const roi_out,
+                         const dt_iop_roi_t *const roi_in, const int filters, const float thrs)
 {
-  // snap to start of mosaic block:
-  roi_out->x = 0; // MAX(0, roi_out->x & ~1);
-  roi_out->y = 0; // MAX(0, roi_out->y & ~1);
   // offsets only where the buffer ends:
   const int offx = 3; // MAX(0, 3 - roi_out->x);
   const int offy = 3; // MAX(0, 3 - roi_out->y);
@@ -1275,23 +1299,25 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
     }
   const int median = thrs > 0.0f;
   // if(median) fbdd_green(out, in, roi_out, roi_in, filters);
+  const float *input = in;
   if(median)
   {
     float *med_in = (float *)dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
     pre_median(med_in, in, roi_in, filters, 1, thrs);
-    in = med_in;
+    input = med_in;
   }
 // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_in, roi_out, in, out) schedule(static)
+#pragma omp parallel for default(none) shared(input) schedule(static)
 #endif
   for(int j = offy; j < roi_out->height - offY; j++)
   {
     float *buf = out + (size_t)4 * roi_out->width * j + 4 * offx;
-    const float *buf_in = in + (size_t)roi_in->width * (j + roi_out->y) + offx + roi_out->x;
+    const float *buf_in = input + (size_t)roi_in->width * (j + roi_out->y) + offx + roi_out->x;
     for(int i = offx; i < roi_out->width - offX; i++)
     {
       const int c = FC(j, i, filters);
+#if defined(__SSE__)
       // prefetch what we need soon (load to cpu caches)
       _mm_prefetch((char *)buf_in + 256, _MM_HINT_NTA); // TODO: try HINT_T0-3
       _mm_prefetch((char *)buf_in + roi_in->width + 256, _MM_HINT_NTA);
@@ -1300,8 +1326,14 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
       _mm_prefetch((char *)buf_in - roi_in->width + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf_in - 2 * roi_in->width + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf_in - 3 * roi_in->width + 256, _MM_HINT_NTA);
+#endif
+
+#if defined(__SSE__)
       __m128 col = _mm_load_ps(buf);
       float *color = (float *)&col;
+#else
+      float color[4] = { buf[0], buf[1], buf[2], buf[3] };
+#endif
       const float pc = buf_in[0];
       // if(__builtin_expect(c == 0 || c == 2, 1))
       if(c == 0 || c == 2)
@@ -1356,7 +1388,7 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
 
 // for all pixels: interpolate colors into float array
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_in, roi_out, out) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = 1; j < roi_out->height - 1; j++)
   {
@@ -1364,13 +1396,19 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
     for(int i = 1; i < roi_out->width - 1; i++)
     {
       // also prefetch direct nbs top/bottom
+#if defined(__SSE__)
       _mm_prefetch((char *)buf + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf - roi_out->width * 4 * sizeof(float) + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf + roi_out->width * 4 * sizeof(float) + 256, _MM_HINT_NTA);
+#endif
 
       const int c = FC(j, i, filters);
+#if defined(__SSE__)
       __m128 col = _mm_load_ps(buf);
       float *color = (float *)&col;
+#else
+      float color[4] = { buf[0], buf[1], buf[2], buf[3] };
+#endif
       // fill all four pixels with correctly interpolated stuff: r/b for green1/2
       // b for r and r for b
       if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
@@ -1435,9 +1473,18 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
     }
   }
   // _mm_sfence();
-  if(median) dt_free_align((float *)in);
+  if(median) dt_free_align((float *)input);
 }
 
+void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
+{
+  *roi_out = *roi_in;
+
+  // snap to start of mosaic block:
+  roi_out->x = 0; // MAX(0, roi_out->x & ~1);
+  roi_out->y = 0; // MAX(0, roi_out->y & ~1);
+}
 
 // which roi input is needed to process to this output?
 // roi_out is unchanged, full buffer in is full buffer out.
@@ -1510,8 +1557,8 @@ static int get_thumb_quality(int width, int height)
   return res;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_image_t *img = &self->dev->image_storage;
   const float threshold = 0.0001f * img->exif_iso;
@@ -1727,9 +1774,8 @@ blocksizeopt(const int devid, const int kernel, int *blocksizex, int *blocksizey
 }
 
 // color smoothing step by multiple passes of median filtering
-static int
-color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                   cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_out)
+static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+                              cl_mem dev_out, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
@@ -1808,9 +1854,9 @@ error:
   return FALSE;
 }
 
-static int
-process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-           const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+                              cl_mem dev_out, const dt_iop_roi_t *const roi_in,
+                              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
@@ -2012,9 +2058,8 @@ error:
   return FALSE;
 }
 
-static int
-process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-                const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+                          cl_mem dev_out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
@@ -2438,9 +2483,9 @@ error:
   return FALSE;
 }
 
-static int
-process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-                       const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
+                                  cl_mem dev_out, const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
@@ -2493,6 +2538,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     int height = roi_in->height;
     const int passes = (data->demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 3 : 1;
     const int ndir = 4 << (passes > 1);
+    const int pad_tile = (passes == 1) ? 12 : 17;
 
     static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                        patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -2590,6 +2636,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     }
 
     // find minimum and maximum allowed green values of red/blue pixel pairs
+    const int pad_g1_g3 = 3;
     factors.xoffset = 2*3;
     factors.xfactor = 1;
     factors.yoffset = 2*3;
@@ -2611,17 +2658,19 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 1, sizeof(cl_mem), (void *)&dev_gminmax);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 4, sizeof(int), (void *)&roi_in->x);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 5, sizeof(int), (void *)&roi_in->y);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 6, 2 * sizeof(char), (void *)sgreen);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 7, sizeof(cl_mem), (void *)&dev_xtrans);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 8, sizeof(cl_mem), (void *)&dev_allhex);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 9,
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 4, sizeof(int), (void *)&pad_g1_g3);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 5, sizeof(int), (void *)&roi_in->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 6, sizeof(int), (void *)&roi_in->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 7, 2 * sizeof(char), (void *)sgreen);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 8, sizeof(cl_mem), (void *)&dev_xtrans);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 9, sizeof(cl_mem), (void *)&dev_allhex);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 10,
                              (blocksizex + 2*3) * (blocksizey + 2*3) * sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_green_minmax, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
     // interpolate green horizontally, vertically, and along both diagonals
+    const int pad_g_interp = 3;
     factors.xoffset = 2*6;
     factors.xfactor = 1;
     factors.yoffset = 2*6;
@@ -2646,12 +2695,13 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 4, sizeof(cl_mem), (void *)&dev_gminmax);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 5, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 6, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 7, sizeof(int), (void *)&roi_in->x);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 8, sizeof(int), (void *)&roi_in->y);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 9, 2 * sizeof(char), (void *)sgreen);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 10, sizeof(cl_mem), (void *)&dev_xtrans);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 11, sizeof(cl_mem), (void *)&dev_allhex);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 12,
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 7, sizeof(int), (void *)&pad_g_interp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 8, sizeof(int), (void *)&roi_in->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 9, sizeof(int), (void *)&roi_in->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 10, 2 * sizeof(char), (void *)sgreen);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 11, sizeof(cl_mem), (void *)&dev_xtrans);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 12, sizeof(cl_mem), (void *)&dev_allhex);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 13,
                              (blocksizex + 2*6) * (blocksizey + 2*6) * 4 * sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_green, sizes, local);
     if(err != CL_SUCCESS) goto error;
@@ -2677,6 +2727,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       if(pass)
       {
         // recalculate green from interpolated values of closer pixels
+        const int pad_g_recalc = 6;
         sizes[0] = ROUNDUPWD(width);
         sizes[1] = ROUNDUPHT(height);
         sizes[2] = 1;
@@ -2687,16 +2738,18 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 4, sizeof(cl_mem), (void *)&dev_gminmax);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 5, sizeof(int), (void *)&width);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 6, sizeof(int), (void *)&height);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 7, sizeof(int), (void *)&roi_in->x);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 8, sizeof(int), (void *)&roi_in->y);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 9, 2 * sizeof(char), (void *)sgreen);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 10, sizeof(cl_mem), (void *)&dev_xtrans);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 11, sizeof(cl_mem), (void *)&dev_allhex);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 7, sizeof(int), (void *)&pad_g_recalc);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 8, sizeof(int), (void *)&roi_in->x);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 9, sizeof(int), (void *)&roi_in->y);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 10, 2 * sizeof(char), (void *)sgreen);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 11, sizeof(cl_mem), (void *)&dev_xtrans);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_recalculate_green, 12, sizeof(cl_mem), (void *)&dev_allhex);
         err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_recalculate_green, sizes);
         if(err != CL_SUCCESS) goto error;
       }
 
       // interpolate red and blue values for solitary green pixels
+      const int pad_rb_g = (passes == 1) ? 6 : 5;
       factors.xoffset = 2*2;
       factors.xfactor = 1;
       factors.yoffset = 2*2;
@@ -2725,14 +2778,15 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 1, sizeof(cl_mem), (void *)&dev_aux);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 2, sizeof(int), (void *)&width);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 3, sizeof(int), (void *)&height);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 4, sizeof(int), (void *)&roi_in->x);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 5, sizeof(int), (void *)&roi_in->y);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 6, sizeof(int), (void *)&d);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 7, 2 * sizeof(char), (void *)dir);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 8, sizeof(int), (void *)&h);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 9, 2 * sizeof(char), (void *)sgreen);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 10, sizeof(cl_mem), (void *)&dev_xtrans);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 11,
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 4, sizeof(int), (void *)&pad_rb_g);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 5, sizeof(int), (void *)&roi_in->x);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 6, sizeof(int), (void *)&roi_in->y);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 7, sizeof(int), (void *)&d);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 8, 2 * sizeof(char), (void *)dir);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 9, sizeof(int), (void *)&h);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 10, 2 * sizeof(char), (void *)sgreen);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 11, sizeof(cl_mem), (void *)&dev_xtrans);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 12,
                                 (blocksizex + 2*2) * (blocksizey + 2*2) * 4 * sizeof(float), NULL);
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_solitary_green, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -2741,9 +2795,10 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       }
 
       // interpolate red for blue pixels and vice versa
-      factors.xoffset = 2*1;
+      const int pad_rb_br = (passes == 1) ? 6 : 5;
+      factors.xoffset = 2*3;
       factors.xfactor = 1;
-      factors.yoffset = 2*1;
+      factors.yoffset = 2*3;
       factors.yfactor = 1;
       factors.cellsize = 4 * sizeof(float);
       factors.overhead = 0;
@@ -2764,17 +2819,20 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 0, sizeof(cl_mem), (void *)&dev_rgb[d]);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 1, sizeof(int), (void *)&width);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 2, sizeof(int), (void *)&height);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 3, sizeof(int), (void *)&roi_in->x);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 4, sizeof(int), (void *)&roi_in->y);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 5, 2 * sizeof(char), (void *)sgreen);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 6, sizeof(cl_mem), (void *)&dev_xtrans);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 7,
-                                (blocksizex + 2*1) * (blocksizey + 2*1) * 4 * sizeof(float), NULL);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 3, sizeof(int), (void *)&pad_rb_br);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 4, sizeof(int), (void *)&roi_in->x);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 5, sizeof(int), (void *)&roi_in->y);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 6, sizeof(int), (void *)&d);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 7, 2 * sizeof(char), (void *)sgreen);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 8, sizeof(cl_mem), (void *)&dev_xtrans);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 9,
+                                (blocksizex + 2*3) * (blocksizey + 2*3) * 4 * sizeof(float), NULL);
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_red_and_blue, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }
 
       // interpolate red and blue for 2x2 blocks of green
+      const int pad_g22 = (passes == 1) ? 8 : 4;
       factors.xoffset = 2*2;
       factors.xfactor = 1;
       factors.yoffset = 2*2;
@@ -2798,13 +2856,14 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 0, sizeof(cl_mem), (void *)&dev_rgb[n]);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 1, sizeof(int), (void *)&width);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 2, sizeof(int), (void *)&height);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 3, sizeof(int), (void *)&roi_in->x);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 4, sizeof(int), (void *)&roi_in->y);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 5, sizeof(int), (void *)&d);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 6, 2 * sizeof(char), (void *)sgreen);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 7, sizeof(cl_mem), (void *)&dev_xtrans);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 8, sizeof(cl_mem), (void *)&dev_allhex);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 9,
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 3, sizeof(int), (void *)&pad_g22);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 4, sizeof(int), (void *)&roi_in->x);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 5, sizeof(int), (void *)&roi_in->y);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 6, sizeof(int), (void *)&d);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 7, 2 * sizeof(char), (void *)sgreen);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 8, sizeof(cl_mem), (void *)&dev_xtrans);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 9, sizeof(cl_mem), (void *)&dev_allhex);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 10,
                                 (blocksizex + 2*2) * (blocksizey + 2*2) * 4 * sizeof(float), NULL);
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_twoxtwo, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -2827,6 +2886,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     }
 
     // convert to perceptual colorspace and differentiate in all directions
+    const int pad_yuv = (passes == 1) ? 8 : 13;
     factors.xoffset = 2*1;
     factors.xfactor = 1;
     factors.yoffset = 2*1;
@@ -2848,6 +2908,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_convert_yuv, 1, sizeof(cl_mem), (void *)&dev_aux);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_convert_yuv, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_convert_yuv, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_convert_yuv, 4, sizeof(int), (void *)&pad_yuv);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_convert_yuv, sizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -2863,8 +2924,9 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 1, sizeof(cl_mem), (void *)&dev_drv[d]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 4, sizeof(int), (void *)&d);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 5,
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 4, sizeof(int), (void *)&pad_yuv);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 5, sizeof(int), (void *)&d);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 6,
                               (blocksizex + 2*1) * (blocksizey + 2*1) * 4 * sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_differentiate, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -2883,6 +2945,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     // get thresholds for homogeneity map (store them in dev_aux)
     for(int d = 0; d < ndir; d++)
     {
+      const int pad_homo = (passes == 1) ? 10 : 15;
       sizes[0] = ROUNDUPWD(width);
       sizes[1] = ROUNDUPHT(height);
       sizes[2] = 1;
@@ -2890,12 +2953,14 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 1, sizeof(cl_mem), (void *)&dev_aux);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 4, sizeof(int), (void *)&d);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 4, sizeof(int), (void *)&pad_homo);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_threshold, 5, sizeof(int), (void *)&d);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_homo_threshold, sizes);
       if(err != CL_SUCCESS) goto error;
     }
 
     // set homogeneity maps
+    const int pad_homo = (passes == 1) ? 10 : 15;
     factors.xoffset = 2*1;
     factors.xfactor = 1;
     factors.yoffset = 2*1;
@@ -2920,7 +2985,8 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 2, sizeof(cl_mem), (void *)&dev_homo[d]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 3, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 4, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 5,
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 5, sizeof(int), (void *)&pad_homo);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 6,
                               (blocksizex + 2*1) * (blocksizey + 2*1) * sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_homo_set, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -2950,7 +3016,8 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 1, sizeof(cl_mem), (void *)&dev_homosum[d]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 4,
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 4, sizeof(int), (void *)&pad_tile);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 5,
                               (blocksizex + 2*2) * (blocksizey + 2*2) * sizeof(char), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_homo_sum, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -2966,7 +3033,8 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 1, sizeof(cl_mem), (void *)&dev_aux);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 4, sizeof(int), (void *)&d);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 4, sizeof(int), (void *)&pad_tile);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max, 5, sizeof(int), (void *)&d);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_homo_max, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -2978,6 +3046,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max_corr, 0, sizeof(cl_mem), (void *)&dev_aux);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max_corr, 1, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max_corr, 2, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max_corr, 3, sizeof(int), (void *)&pad_tile);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_homo_max_corr, sizes);
     if(err != CL_SUCCESS) goto error;
 
@@ -2991,6 +3060,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_quench, 1, sizeof(cl_mem), (void *)&dev_homosum[d + 4]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_quench, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_quench, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_quench, 4, sizeof(int), (void *)&pad_tile);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_homo_quench, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -3002,6 +3072,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_zero, 0, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_zero, 1, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_zero, 2, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_zero, 3, sizeof(int), (void *)&pad_tile);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_zero, sizes);
     if(err != CL_SUCCESS) goto error;
 
@@ -3019,6 +3090,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 4, sizeof(cl_mem), (void *)&dev_aux);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 5, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 6, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 7, sizeof(int), (void *)&pad_tile);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_accu, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -3031,6 +3103,7 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 4, sizeof(int), (void *)&pad_tile);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_final, sizes);
     if(err != CL_SUCCESS) goto error;
 
@@ -3072,16 +3145,16 @@ process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     dev_green_eq = NULL;
 
 
-    // take care of image borders. the algorihm above leaves an unprocessed border of 11px.
+    // take care of image borders. the algorihm above leaves an unprocessed border of pad_tile pixels.
     // strategy: take the four edges and process them each with process_vng_cl(). as VNG produces
-    // an image with a border with only linear interpolation we process edges of 15px and
+    // an image with a border with only linear interpolation we process edges of pad_tile+3px and
     // drop 3px on the inner side if possible
 
     // take care of some degenerate cases (which might happen if we are called in a tiling context)
-    const int wd = (width > 15) ? 15 : width;
-    const int ht = (height > 15) ? 15 : height;
-    const int wdc = (wd >= 15) ? 3 : 0;
-    const int htc = (ht >= 15) ? 3 : 0;
+    const int wd = (width > pad_tile+3) ? pad_tile+3 : width;
+    const int ht = (height > pad_tile+3) ? pad_tile+3 : height;
+    const int wdc = (wd >= pad_tile+3) ? 3 : 0;
+    const int htc = (ht >= pad_tile+3) ? 3 : 0;
 
     // the data of all four edges:
     // total edge: x-offset, y-offset, width, height,
@@ -3200,9 +3273,8 @@ error:
   return FALSE;
 }
 
-int
-process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-           const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   const int demosaicing_method = data->demosaicing_method;
@@ -3315,6 +3387,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     // X-Trans pattern full Markesteijn processing
     const int ndir = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 8 : 4;
+    const int overlap = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 17 : 12;
 
     tiling->factor = 1.0f + ioratio;
     tiling->factor += ndir * 1.0f      // rgb
@@ -3333,7 +3406,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->overhead = 0;
     tiling->xalign = 3;
     tiling->yalign = 3;
-    tiling->overlap = 11;
+    tiling->overlap = overlap;
   }
   else
   {
@@ -3530,7 +3603,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, d->CAM_to_RGB, NULL))
     {
       fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
-      dt_control_log(_("[colorspaces] `%s' color matrix not found for 4bayer image!\n"), camera);
+      dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
     }
   }
 }
@@ -3735,8 +3808,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("AMaZE (slow)"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("passthrough (monochrome) (experimental)"));
-  g_object_set(G_OBJECT(g->demosaic_method_bayer), "tooltip-text", _("demosaicing raw data method"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("demosaicing raw data method"));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->demosaic_method_xtrans, NULL, _("method"));
@@ -3744,13 +3816,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
-  g_object_set(G_OBJECT(g->demosaic_method_xtrans), "tooltip-text", _("demosaicing raw data method"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
 
   g->median_thrs = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
-  g_object_set(G_OBJECT(g->median_thrs), "tooltip-text",
-               _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off.\n"
+                                                "set to 1.0 to ignore edges."));
   dt_bauhaus_widget_set_label(g->median_thrs, NULL, _("edge threshold"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), g->median_thrs, TRUE, TRUE, 0);
 
@@ -3763,8 +3833,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->color_smoothing, _("three times"));
   dt_bauhaus_combobox_add(g->color_smoothing, _("four times"));
   dt_bauhaus_combobox_add(g->color_smoothing, _("five times"));
-  g_object_set(G_OBJECT(g->color_smoothing), "tooltip-text",
-               _("how many color smoothing median steps after demosaicing"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));
 
   g->greeneq = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(g->box_raw), g->greeneq, TRUE, TRUE, 0);
@@ -3773,7 +3842,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->greeneq, _("local average"));
   dt_bauhaus_combobox_add(g->greeneq, _("full average"));
   dt_bauhaus_combobox_add(g->greeneq, _("full and local average"));
-  g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("green channels matching method"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method"));
 
   g_signal_connect(G_OBJECT(g->median_thrs), "value-changed", G_CALLBACK(median_thrs_callback), self);
   g_signal_connect(G_OBJECT(g->color_smoothing), "value-changed", G_CALLBACK(color_smoothing_callback), self);
@@ -3796,7 +3865,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-#include "iop/amaze_demosaic_RT.cc"
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

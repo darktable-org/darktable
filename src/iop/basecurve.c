@@ -18,16 +18,19 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/develop.h"
-#include "develop/imageop.h"
-#include "control/control.h"
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/opencl.h"
-#include "gui/gtk.h"
-#include "gui/draw.h"
-#include "gui/presets.h"
-#include "bauhaus/bauhaus.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "dtgtk/drawingarea.h"
+#include "gui/draw.h"
+#include "gui/gtk.h"
+#include "gui/presets.h"
+#include "iop/iop_api.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>
@@ -260,7 +263,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
@@ -299,15 +302,15 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
-             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   float *in = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, out, d, in) schedule(static)
+#pragma omp parallel for default(none) shared(out, d, in) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -804,7 +807,7 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
   return TRUE;
 }
 
-static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
@@ -853,8 +856,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
-  g_object_set(G_OBJECT(c->area), "tooltip-text",
-               _("abscissa: input, ordinate: output. works on RGB channels"), (char *)NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("abscissa: input, ordinate: output. works on RGB channels"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
@@ -862,9 +864,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
   dt_bauhaus_combobox_add(c->scale, _("linear"));
   dt_bauhaus_combobox_add(c->scale, _("logarithmic"));
-  g_object_set(c->scale, "tooltip-text",
-               _("scale to use in the graph. use logarithmic scale for more precise control near the blacks"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
+                                          "more precise control near the blacks"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
 
@@ -877,7 +878,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_basecurve_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(dt_iop_basecurve_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(area_resized), self);
-  g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(scrolled), self);
+  g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

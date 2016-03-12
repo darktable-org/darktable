@@ -17,25 +17,25 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "dtgtk/button.h"
-#include "gui/gtk.h"
 #include "common/darktable.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio_module.h"
 #include "common/imageio.h"
-#include "common/tags.h"
-#include "common/pwstorage/pwstorage.h"
+#include "common/imageio_module.h"
 #include "common/metadata.h"
-#include "common/imageio_storage.h"
+#include "common/pwstorage/pwstorage.h"
+#include "common/tags.h"
 #include "control/conf.h"
 #include "control/control.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "dtgtk/button.h"
+#include "gui/gtk.h"
+#include "imageio/storage/imageio_storage_api.h"
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
 #include <libxml/parser.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 DT_MODULE(2)
 
@@ -91,12 +91,12 @@ typedef struct PicasaAlbum
   PicasaAlbumPrivacyPolicy privacy;
 } PicasaAlbum;
 
-PicasaAlbum *picasa_album_init()
+static PicasaAlbum *picasa_album_init()
 {
   return (PicasaAlbum *)g_malloc0(sizeof(PicasaAlbum));
 }
 
-void picasa_album_destroy(PicasaAlbum *album)
+static void picasa_album_destroy(PicasaAlbum *album)
 {
   if(album == NULL) return;
   g_free(album->id);
@@ -115,12 +115,12 @@ typedef struct PicasaAccountInfo
   gchar *refresh_token;
 } PicasaAccountInfo;
 
-PicasaAccountInfo *picasa_account_info_init()
+static PicasaAccountInfo *picasa_account_info_init()
 {
   return (PicasaAccountInfo *)g_malloc0(sizeof(PicasaAccountInfo));
 }
 
-void picasa_account_info_destroy(PicasaAccountInfo *account)
+static void picasa_account_info_destroy(PicasaAccountInfo *account)
 {
   if(account == NULL) return;
   g_free(account->id);

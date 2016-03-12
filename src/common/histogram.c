@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2015 LebedevRI.
+    copyright (c) 2014-2016 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,9 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
+#if defined(__SSE__)
 #include <xmmintrin.h>
+#endif
 #include <stdlib.h>
 #include <assert.h>
 
@@ -89,6 +91,7 @@ static void inline __attribute__((__unused__)) histogram_helper_cs_rgb_helper_pr
   histogram[4 * B + 2]++;
 }
 
+#if defined(__SSE__)
 static void inline histogram_helper_cs_rgb_helper_process_pixel_m128(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
     uint32_t *histogram)
@@ -113,6 +116,7 @@ static void inline histogram_helper_cs_rgb_helper_process_pixel_m128(
   histogram[4 * valuesi[1] + 1]++;
   histogram[4 * valuesi[2] + 2]++;
 }
+#endif
 
 static void inline histogram_helper_cs_rgb(const dt_dev_histogram_collection_params_t *const histogram_params,
                                            const void *pixel, uint32_t *histogram, int j)
@@ -122,7 +126,16 @@ static void inline histogram_helper_cs_rgb(const dt_dev_histogram_collection_par
 
   // process aligned pixels with SSE
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++, in += 4)
-    histogram_helper_cs_rgb_helper_process_pixel_m128(histogram_params, in, histogram);
+  {
+    if(darktable.codepath.OPENMP_SIMD)
+      histogram_helper_cs_rgb_helper_process_pixel_float(histogram_params, in, histogram);
+#if defined(__SSE__)
+    else if(darktable.codepath.SSE2)
+      histogram_helper_cs_rgb_helper_process_pixel_m128(histogram_params, in, histogram);
+#endif
+    else
+      dt_unreachable_codepath();
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -143,6 +156,7 @@ static void inline __attribute__((__unused__)) histogram_helper_cs_Lab_helper_pr
   histogram[4 * b + 2]++;
 }
 
+#if defined(__SSE__)
 static void inline histogram_helper_cs_Lab_helper_process_pixel_m128(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
     uint32_t *histogram)
@@ -171,6 +185,7 @@ static void inline histogram_helper_cs_Lab_helper_process_pixel_m128(
   histogram[4 * valuesi[1] + 1]++;
   histogram[4 * valuesi[2] + 2]++;
 }
+#endif
 
 static void inline histogram_helper_cs_Lab(const dt_dev_histogram_collection_params_t *const histogram_params,
                                            const void *pixel, uint32_t *histogram, int j)
@@ -180,7 +195,16 @@ static void inline histogram_helper_cs_Lab(const dt_dev_histogram_collection_par
 
   // process aligned pixels with SSE
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++, in += 4)
-    histogram_helper_cs_Lab_helper_process_pixel_m128(histogram_params, in, histogram);
+  {
+    if(darktable.codepath.OPENMP_SIMD)
+      histogram_helper_cs_Lab_helper_process_pixel_float(histogram_params, in, histogram);
+#if defined(__SSE__)
+    else if(darktable.codepath.SSE2)
+      histogram_helper_cs_Lab_helper_process_pixel_m128(histogram_params, in, histogram);
+#endif
+    else
+      dt_unreachable_codepath();
+  }
 }
 
 //==============================================================================

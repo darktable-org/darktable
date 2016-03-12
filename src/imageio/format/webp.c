@@ -19,15 +19,15 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <stdio.h>
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
-#include "common/imageio_format.h"
 #include "control/conf.h"
-#include "bauhaus/bauhaus.h"
+#include "imageio/format/imageio_format_api.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <webp/encode.h>
 
@@ -308,7 +308,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_widget_set_label(gui->quality, NULL, _("quality"));
   dt_bauhaus_slider_set_default(gui->quality, 95);
   dt_bauhaus_slider_set_format(gui->quality, "%.2f%%");
-  g_object_set(G_OBJECT(gui->quality), "tooltip-text", _("applies only to lossy setting"), (char *)NULL);
+  gtk_widget_set_tooltip_text(gui->quality, _("applies only to lossy setting"));
   if(quality > 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), (gpointer)0);
@@ -316,12 +316,11 @@ void gui_init(dt_imageio_module_format_t *self)
 
   gui->hint = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gui->hint, NULL, _("image hint"));
-  g_object_set(G_OBJECT(gui->hint), "tooltip-text",
+  gtk_widget_set_tooltip_text(gui->hint,
                _("image characteristics hint for the underlying encoder.\n"
                "picture : digital picture, like portrait, inner shot\n"
                "photo   : outdoor photograph, with natural lighting\n"
-               "graphic : discrete tone image (graph, map-tile etc)"),
-               (char *)NULL);
+               "graphic : discrete tone image (graph, map-tile etc)"));
   dt_bauhaus_combobox_add(gui->hint, _("default"));
   dt_bauhaus_combobox_add(gui->hint, _("picture"));
   dt_bauhaus_combobox_add(gui->hint, _("photo"));
