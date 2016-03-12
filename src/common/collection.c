@@ -607,6 +607,66 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
   g_match_info_free(match_info);
   g_regex_unref(regex);
 }
+
+static char *_dt_collection_compute_datetime(const char *operator, const char *input)
+{
+  int len = strlen(input);
+  if(len < 4) return NULL;
+
+  struct tm tm1 = { 0 };
+
+  // we initialise all the values of tm, depending of the operator
+  // we allow unreal values like "2014:02:31" as it's just text comparison at the end
+  if(strcmp(operator, ">") == 0 || strcmp(operator, "<=") == 0)
+  {
+    // we set all values to their maximum
+    tm1.tm_mon = 11;
+    tm1.tm_mday = 31;
+    tm1.tm_hour = 23;
+    tm1.tm_min = 59;
+    tm1.tm_sec = 59;
+  }
+
+  // we read the input date, depending of his length
+  if(len < 7)
+  {
+    if(!strptime(input, "%Y", &tm1)) return NULL;
+  }
+  else if(len < 10)
+  {
+    if(!strptime(input, "%Y:%m", &tm1)) return NULL;
+  }
+  else if(len < 13)
+  {
+    if(!strptime(input, "%Y:%m:%d", &tm1)) return NULL;
+  }
+  else if(len < 16)
+  {
+    if(!strptime(input, "%Y:%m:%d %H", &tm1)) return NULL;
+  }
+  else if(len < 19)
+  {
+    if(!strptime(input, "%Y:%m:%d %H:%M", &tm1)) return NULL;
+  }
+  else
+  {
+    if(!strptime(input, "%Y:%m:%d %H:%M:%S", &tm1)) return NULL;
+  }
+
+  // we return the created date
+  char *ret = (char *)g_malloc0_n(20, sizeof(char));
+  strftime(ret, 20, "%Y:%m:%d %H:%M:%S", &tm1);
+  return ret;
+}
+/* splits an input string into a date-time part and an optional operator part.
+   operator can be any of "=", "<", ">", "<=", ">=" and "<>".
+   range notation [x;y] can also be used
+   datetime values should follow the pattern YYYY:mm:dd HH:MM:SS
+   but only year part is mandatory
+
+   datetime and operator are returned as pointers to null terminated strings in g_mallocated
+   memory (to be g_free'd after use) - or NULL if no match is found.
+*/
 void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2, char **operator)
 {
   GRegex *regex;
@@ -616,36 +676,22 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
   *number1 = *number2 = *operator= NULL;
 
   // we test the range expression first
-  // 4 elements : date1 time1(optional) date2 time2(optional)
-  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}:\\d{2}:\\d{2})\\s*( "
-                      "\\d{2}:\\d{2}:\\d{2})?\\s*;\\s*(\\d{4}:\\d{2}:\\d{2})\\s*( "
-                      "\\d{2}:\\d{2}:\\d{2})?\\s*\\]\\s*$",
-                      0, 0, NULL);
+  // 2 elements : date-time1 and  date-time2
+  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}[:\\d\\s]*)\\s*;\\s*(\\d{4}[:\\d\\s]*)\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
 
-  if(match_count >= 4)
+  if(match_count == 3)
   {
-    *number1 = g_match_info_fetch(match_info, 1);
-    gchar *number1_time = g_match_info_fetch(match_info, 2);
-    *number2 = g_match_info_fetch(match_info, 3);
+    gchar *txt = g_match_info_fetch(match_info, 1);
+    gchar *txt2 = g_match_info_fetch(match_info, 2);
+
+    *number1 = _dt_collection_compute_datetime(">=", txt);
+    *number2 = _dt_collection_compute_datetime("<=", txt2);
     *operator= g_strdup("[]");
 
-    if(!number1_time || strcmp(number1_time, "") == 0)
-      *number1 = dt_util_dstrcat(*number1, " 00:00:00");
-    else
-      *number1 = dt_util_dstrcat(*number1, "%s", number1_time);
-
-    if(match_count == 5)
-    {
-      gchar *number2_time = g_match_info_fetch(match_info, 4);
-      *number2 = dt_util_dstrcat(*number2, "%s", number2_time);
-      g_free(number2_time);
-    }
-    else
-      *number2 = dt_util_dstrcat(*number2, " 23:59:59");
-
-    g_free(number1_time);
+    g_free(txt);
+    g_free(txt2);
     g_match_info_free(match_info);
     g_regex_unref(regex);
     return;
@@ -655,46 +701,26 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
   g_regex_unref(regex);
 
   // and we test the classic comparaison operators
-  // 2 elements : date time(optional)
-  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(\\d{4}:\\d{2}:\\d{2})\\s*( \\d{2}:\\d{2}:\\d{2})?\\s*$", 0,
-                      0, NULL);
+  // 2 elements : operator and date-time
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(\\d{4}[:\\d\\s]*)?\\s*%?\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
 
-  if(match_count >= 3)
+  if(match_count == 3)
   {
     *operator= g_match_info_fetch(match_info, 1);
-    *number1 = g_match_info_fetch(match_info, 2);
-    // we fill the time part if it's not set
-    if(match_count == 4)
-    {
-      gchar *nb_time = g_match_info_fetch(match_info, 3);
-      *number1 = dt_util_dstrcat(*number1, "%s", nb_time);
-      g_free(nb_time);
-    }
-    else if(*operator&& strcmp(*operator, ">") == 0)
-      *number1 = dt_util_dstrcat(*number1, " 23:59:59");
-    else if(*operator&& strcmp(*operator, ">=") == 0)
-      *number1 = dt_util_dstrcat(*number1, " 00:00:00");
-    else if(*operator&& strcmp(*operator, "<") == 0)
-      *number1 = dt_util_dstrcat(*number1, " 00:00:00");
-    else if(*operator&& strcmp(*operator, "<=") == 0)
-      *number1 = dt_util_dstrcat(*number1, " 23:59:59");
-    else if(*operator&& strcmp(*operator, "=") == 0)
-      *number1 = dt_util_dstrcat(*number1, "%%");
-    else if(*operator&& strcmp(*operator, "<>") == 0)
-      *number1 = dt_util_dstrcat(*number1, "%%");
-    else if(*operator&& strcmp(*operator, "") == 0)
-      *number1 = dt_util_dstrcat(*number1, "%%");
-    else if(!*operator)
-      *number1 = dt_util_dstrcat(*number1, "%%");
+    gchar *txt = g_match_info_fetch(match_info, 2);
 
-    if(*operator&& strcmp(*operator, "") == 0)
-    {
-      g_free(*operator);
-      *operator= NULL;
-    }
+    if(strcmp(*operator, "") == 0 || strcmp(*operator, "=") == 0 || strcmp(*operator, "<>") == 0)
+      *number1 = dt_util_dstrcat(*number1, "%s%%", txt);
+    else
+      *number1 = _dt_collection_compute_datetime(*operator, txt);
+
+    g_free(txt);
   }
+
+  // ensure operator is not null
+  if(!*operator) *operator= g_strdup("");
 
   g_match_info_free(match_info);
   g_regex_unref(regex);
@@ -962,20 +988,18 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
           query = dt_util_dstrcat(query, "((datetime_taken >= '%s') AND (datetime_taken <= '%s'))", number1,
                                   number2);
       }
-      else if(operator&& strcmp(operator, "=") == 0 && number1)
+      else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
         query = dt_util_dstrcat(query, "(datetime_taken like '%s')", number1);
-      else if(operator&& strcmp(operator, "<>") == 0 && number1)
+      else if(strcmp(operator, "<>") == 0 && number1)
         query = dt_util_dstrcat(query, "(datetime_taken not like '%s')", number1);
-      else if(operator&& number1)
-        query = dt_util_dstrcat(query, "(datetime_taken %s '%s')", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(datetime_taken like '%s')", number1);
+        query = dt_util_dstrcat(query, "(datetime_taken %s '%s')", operator, number1);
       else
         query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);
 
