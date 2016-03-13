@@ -26,6 +26,30 @@
 #include <inttypes.h>
 #include <assert.h>
 
+static void *dt_cache_ht_malloc(size_t size)
+{
+  return malloc(size);
+}
+
+static void dt_cache_ht_free(void *p, size_t size, bool defer)
+{
+  (void)size;
+  (void)defer;
+  free(p);
+}
+
+static struct ck_malloc dt_cache_ht_allocator = {.malloc = dt_cache_ht_malloc, .free = dt_cache_ht_free };
+
+static void dt_cache_ht_hash(ck_ht_hash_t *h, const void *key, size_t key_length, uint64_t seed)
+{
+  const uintptr_t *value = key;
+  (void)key_length;
+  (void)seed;
+  h->value = *value;
+  return;
+}
+
+
 // this implements a concurrent LRU cache
 
 void dt_cache_init(
@@ -42,12 +66,14 @@ void dt_cache_init(
   cache->allocate_data = 0;
   cache->cleanup = 0;
   cache->cleanup_data = 0;
-  cache->hashtable = g_hash_table_new(0, 0);
+
+  ck_ht_init(&(cache->hashtable), CK_HT_MODE_DIRECT, dt_cache_ht_hash, &dt_cache_ht_allocator, 8,
+             /* unused */ 0);
 }
 
 void dt_cache_cleanup(dt_cache_t *cache)
 {
-  g_hash_table_destroy(cache->hashtable);
+  ck_ht_destroy(&(cache->hashtable));
 
   struct dt_cache_entry *entry;
   while((entry = CK_STAILQ_FIRST(&(cache->lru))) != NULL)
@@ -65,12 +91,49 @@ void dt_cache_cleanup(dt_cache_t *cache)
   dt_pthread_mutex_destroy(&cache->lock);
 }
 
+static bool dt_cache_ht_remove(ck_ht_t *ht, uintptr_t key)
+{
+  ck_ht_entry_t entry;
+  ck_ht_hash_t h;
+
+  ck_ht_hash_direct(&h, ht, key);
+  ck_ht_entry_key_set_direct(&entry, key);
+  return ck_ht_remove_spmc(ht, h, &entry);
+}
+
+static void *dt_cache_ht_get(ck_ht_t *ht, uintptr_t key)
+{
+  ck_ht_entry_t entry;
+  ck_ht_hash_t h;
+
+  ck_ht_hash_direct(&h, ht, key);
+  ck_ht_entry_key_set_direct(&entry, key);
+  if(ck_ht_get_spmc(ht, h, &entry) == true) return (void *)ck_ht_entry_value_direct(&entry);
+
+  return NULL;
+}
+
+static bool dt_cache_ht_insert(ck_ht_t *ht, const uintptr_t key, const void *value)
+{
+  ck_ht_entry_t entry;
+  ck_ht_hash_t h;
+
+  ck_ht_hash_direct(&h, ht, key);
+  ck_ht_entry_set_direct(&entry, h, key, (uintptr_t)value);
+  return ck_ht_put_spmc(ht, h, &entry);
+}
+
 int32_t dt_cache_contains(dt_cache_t *cache, const uint32_t key)
 {
   dt_pthread_mutex_lock(&cache->lock);
-  int32_t result = g_hash_table_contains(cache->hashtable, GINT_TO_POINTER(key));
+  ck_ht_entry_t entry;
+  ck_ht_hash_t h;
+
+  ck_ht_hash_direct(&h, &(cache->hashtable), key);
+  ck_ht_entry_key_set_direct(&entry, key);
+  const bool found = ck_ht_get_spmc(&(cache->hashtable), h, &entry);
   dt_pthread_mutex_unlock(&cache->lock);
-  return result;
+  return found;
 }
 
 int dt_cache_for_all(
@@ -79,14 +142,12 @@ int dt_cache_for_all(
     void *user_data)
 {
   dt_pthread_mutex_lock(&cache->lock);
-  GHashTableIter iter;
-  gpointer key, value;
-
-  g_hash_table_iter_init (&iter, cache->hashtable);
-  while (g_hash_table_iter_next (&iter, &key, &value))
+  ck_ht_iterator_t iterator = CK_HT_ITERATOR_INITIALIZER;
+  ck_ht_entry_t *cursor;
+  while(ck_ht_next(&(cache->hashtable), &iterator, &cursor) == true)
   {
-    dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
-    const int err = process(GPOINTER_TO_INT(key), entry->data, user_data);
+    dt_cache_entry_t *entry = (dt_cache_entry_t *)ck_ht_entry_value_direct(cursor);
+    const int err = process(entry->key, entry->data, user_data);
     if(err)
     {
       dt_pthread_mutex_unlock(&cache->lock);
@@ -101,17 +162,16 @@ int dt_cache_for_all(
 // never attempt to allocate a new slot.
 dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char mode)
 {
-  gpointer orig_key, value;
-  gboolean res;
-  int result;
   double start = dt_get_wtime();
   dt_pthread_mutex_lock(&cache->lock);
-  res = g_hash_table_lookup_extended(
-      cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
-  if(res)
+
+  void *value = dt_cache_ht_get(&(cache->hashtable), key);
+
+  if(value)
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
     // lock the cache entry
+    int result;
     if(mode == 'w') result = dt_pthread_rwlock_trywrlock(&entry->lock);
     else            result = dt_pthread_rwlock_tryrdlock(&entry->lock);
     if(result)
@@ -143,17 +203,16 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 // found using the given key later on.
 dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key, char mode, const char *file, int line)
 {
-  gpointer orig_key, value;
-  gboolean res;
-  int result;
   double start = dt_get_wtime();
 restart:
   dt_pthread_mutex_lock(&cache->lock);
-  res = g_hash_table_lookup_extended(
-      cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
-  if(res)
+
+  void *value = dt_cache_ht_get(&(cache->hashtable), key);
+
+  if(value)
   { // yay, found. read lock and pass on.
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
+    int result;
     if(mode == 'w') result = dt_pthread_rwlock_trywrlock_with_caller(&entry->lock, file, line);
     else            result = dt_pthread_rwlock_tryrdlock_with_caller(&entry->lock, file, line);
     if(result)
@@ -203,7 +262,7 @@ restart:
   entry->cost = cache->entry_size;
   entry->key = key;
   entry->_lock_demoting = 0;
-  g_hash_table_insert(cache->hashtable, GINT_TO_POINTER(key), entry);
+  dt_cache_ht_insert(&(cache->hashtable), key, entry);
   // if allocate callback is given, always return a write lock
   int write = ((mode == 'w') || cache->allocate);
   if(cache->allocate)
@@ -227,23 +286,20 @@ restart:
 
 int dt_cache_remove(dt_cache_t *cache, const uint32_t key)
 {
-  gpointer orig_key, value;
-  gboolean res;
-  int result;
-  dt_cache_entry_t *entry;
 restart:
   dt_pthread_mutex_lock(&cache->lock);
 
-  res = g_hash_table_lookup_extended(
-      cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
-  entry = (dt_cache_entry_t *)value;
-  if(!res)
+  void *value = dt_cache_ht_get(&(cache->hashtable), key);
+
+  if(!value)
   { // not found in cache, not deleting.
     dt_pthread_mutex_unlock(&cache->lock);
     return 1;
   }
+
   // need write lock to be able to delete:
-  result = dt_pthread_rwlock_trywrlock(&entry->lock);
+  dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
+  int result = dt_pthread_rwlock_trywrlock(&entry->lock);
   if(result)
   {
     dt_pthread_mutex_unlock(&cache->lock);
@@ -260,7 +316,7 @@ restart:
     goto restart;
   }
 
-  gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
+  gboolean removed = (true == dt_cache_ht_remove(&(cache->hashtable), key));
   (void)removed; // make non-assert compile happy
   assert(removed);
 
@@ -301,7 +357,9 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     }
 
     // delete!
-    g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(entry->key));
+    gboolean removed = (true == dt_cache_ht_remove(&(cache->hashtable), entry->key));
+    (void)removed; // make non-assert compile happy
+    assert(removed);
 
     CK_STAILQ_REMOVE(&(cache->lru), entry, dt_cache_entry, list_entry);
 
@@ -315,6 +373,8 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     dt_pthread_rwlock_destroy(&entry->lock);
     g_slice_free1(sizeof(*entry), entry);
   }
+
+  // ck_ht_gc(&(cache->hashtable), 0, lrand48());
 }
 
 void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry)
