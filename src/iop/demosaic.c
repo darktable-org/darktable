@@ -489,7 +489,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 
 #define SQR(x) ((x) * (x))
 // tile size, optimized to keep data in L2 cache
-#define TS 96
+#define TS 122
 
 /** Lookup for allhex[], making sure that row/col aren't negative **/
 static inline const short *const hexmap(const int row, const int col,
