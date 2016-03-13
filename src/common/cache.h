@@ -19,21 +19,26 @@
 #ifndef DT_COMMON_CACHE_H
 #define DT_COMMON_CACHE_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-fpermissive"
+#include <ck_pr.h>
+#include <ck_queue.h>
+#pragma GCC diagnostic pop
+
 #include "common/dtpthread.h"
 #include <inttypes.h>
 #include <stddef.h>
 #include <glib.h>
 
-typedef struct dt_cache_entry_t
+typedef struct dt_cache_entry
 {
   void *data;
   size_t cost;
-  GList *link;
   dt_pthread_rwlock_t lock;
   int _lock_demoting;
   uint32_t key;
-}
-dt_cache_entry_t;
+  CK_STAILQ_ENTRY(dt_cache_entry) list_entry;
+} dt_cache_entry_t;
 
 typedef struct dt_cache_t
 {
@@ -44,7 +49,10 @@ typedef struct dt_cache_t
   size_t cost_quota; // quota to try and meet. but don't use as hard limit.
 
   GHashTable *hashtable; // stores (key, entry) pairs
-  GList *lru;            // last element is most recently used, first is about to be kicked from cache.
+
+  // last element is most recently used, first is about to be kicked from cache.
+  // NOTE: TAILQ would be better, but it is not yet implemented in CK
+  CK_STAILQ_HEAD(dt_cache_lru, dt_cache_entry) lru;
 
   // callback functions for cache misses/garbage collection
   void (*allocate)(void *userdata, dt_cache_entry_t *entry);

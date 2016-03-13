@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2014 johannes hanika.
-    copyright (c) 2015 LebedevRI
+    copyright (c) 2015-2016 LebedevRI
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ void dt_cache_init(
     size_t cost_quota)
 {
   cache->cost = 0;
-  cache->lru = 0;
+  CK_STAILQ_INIT(&(cache->lru));
   cache->entry_size = entry_size;
   cache->cost_quota = cost_quota;
   dt_pthread_mutex_init(&cache->lock, 0);
@@ -48,19 +48,20 @@ void dt_cache_init(
 void dt_cache_cleanup(dt_cache_t *cache)
 {
   g_hash_table_destroy(cache->hashtable);
-  GList *l = cache->lru;
-  while(l)
+
+  struct dt_cache_entry *entry;
+  while((entry = CK_STAILQ_FIRST(&(cache->lru))) != NULL)
   {
-    dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+    CK_STAILQ_REMOVE_HEAD(&(cache->lru), list_entry);
+
     if(cache->cleanup)
       cache->cleanup(cache->cleanup_data, entry);
     else
       dt_free_align(entry->data);
     dt_pthread_rwlock_destroy(&entry->lock);
     g_slice_free1(sizeof(*entry), entry);
-    l = g_list_next(l);
   }
-  g_list_free(cache->lru);
+
   dt_pthread_mutex_destroy(&cache->lock);
 }
 
@@ -119,9 +120,11 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
       dt_pthread_mutex_unlock(&cache->lock);
       return 0;
     }
+
     // bubble up in lru list:
-    cache->lru = g_list_remove_link(cache->lru, entry->link);
-    cache->lru = g_list_concat(cache->lru, entry->link);
+    CK_STAILQ_REMOVE(&(cache->lru), entry, dt_cache_entry, list_entry);
+    CK_STAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
+
     dt_pthread_mutex_unlock(&cache->lock);
     double end = dt_get_wtime();
     if(end - start > 0.1)
@@ -160,9 +163,11 @@ restart:
       g_usleep(5);
       goto restart;
     }
+
     // bubble up in lru list:
-    cache->lru = g_list_remove_link(cache->lru, entry->link);
-    cache->lru = g_list_concat(cache->lru, entry->link);
+    CK_STAILQ_REMOVE(&(cache->lru), entry, dt_cache_entry, list_entry);
+    CK_STAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
+
     dt_pthread_mutex_unlock(&cache->lock);
 
 #ifdef _DEBUG
@@ -196,7 +201,6 @@ restart:
   if(ret) fprintf(stderr, "rwlock init: %d\n", ret);
   entry->data = 0;
   entry->cost = cache->entry_size;
-  entry->link = g_list_append(0, entry);
   entry->key = key;
   entry->_lock_demoting = 0;
   g_hash_table_insert(cache->hashtable, GINT_TO_POINTER(key), entry);
@@ -212,7 +216,7 @@ restart:
   cache->cost += entry->cost;
 
   // put at end of lru list (most recently used):
-  cache->lru = g_list_concat(cache->lru, entry->link);
+  CK_STAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
 
   dt_pthread_mutex_unlock(&cache->lock);
   double end = dt_get_wtime();
@@ -259,7 +263,8 @@ restart:
   gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
   (void)removed; // make non-assert compile happy
   assert(removed);
-  cache->lru = g_list_delete_link(cache->lru, entry->link);
+
+  CK_STAILQ_REMOVE(&(cache->lru), entry, dt_cache_entry, list_entry);
 
   if(cache->cleanup)
     cache->cleanup(cache->cleanup_data, entry);
@@ -277,14 +282,12 @@ restart:
 // best-effort garbage collection. never blocks, never fails. well, sometimes it just doesn't free anything.
 void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
-  GList *l = cache->lru;
   int cnt = 0;
-  while(l)
+  struct dt_cache_entry *entry, *safe;
+  CK_STAILQ_FOREACH_SAFE(entry, &(cache->lru), list_entry, safe)
   {
     cnt++;
-    dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
-    assert(entry->link->data == entry);
-    l = g_list_next(l); // we might remove this element, so walk to the next one while we still have the pointer..
+
     if(cache->cost < cache->cost_quota * fill_ratio) break;
 
     // if still locked by anyone else give up:
@@ -299,7 +302,9 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 
     // delete!
     g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(entry->key));
-    cache->lru = g_list_delete_link(cache->lru, entry->link);
+
+    CK_STAILQ_REMOVE(&(cache->lru), entry, dt_cache_entry, list_entry);
+
     cache->cost -= entry->cost;
 
     if(cache->cleanup)
