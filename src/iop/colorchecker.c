@@ -472,7 +472,7 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  // dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
@@ -482,6 +482,13 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
   const float my = mouse_y * 4.0f / (float)height;
   int patch = CLAMP((int)mx + 6*(int)my, 0, 23);
   dt_bauhaus_combobox_set(g->combobox_patch, patch);
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  { // reset on double click
+    p->target_L[patch] = colorchecker_Lab[3*patch+0];
+    p->target_a[patch] = colorchecker_Lab[3*patch+1];
+    p->target_b[patch] = colorchecker_Lab[3*patch+2];
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
   return TRUE;
 }
 
