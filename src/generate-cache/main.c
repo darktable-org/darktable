@@ -83,7 +83,7 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
       // else, generate thumbnail and store in mipmap cache.
       dt_mipmap_buffer_t buf;
       dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
     }
 
     // and immediately write thumbs to disc and remove from mipmap cache.

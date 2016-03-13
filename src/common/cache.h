@@ -25,6 +25,7 @@
 #include <ck_pr.h>
 #include <ck_queue.h>
 #include <ck_spinlock.h>
+#include <ck_rwlock.h>
 #pragma GCC diagnostic pop
 
 #include "common/dtpthread.h"
@@ -34,10 +35,9 @@
 
 typedef struct dt_cache_entry
 {
+  ck_rwlock_t lock;
   void *data;
   size_t cost;
-  dt_pthread_rwlock_t lock;
-  int _lock_demoting;
   uint32_t key;
   CK_STAILQ_ENTRY(dt_cache_entry) list_entry;
 } dt_cache_entry_t;
@@ -90,8 +90,10 @@ static inline void dt_cache_set_cleanup_callback(
 dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key, char mode, const char *file, int line);
 // same but returns 0 if not allocated yet (both will block and wait for entry rw locks to be released)
 dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char mode);
-// release a lock on a cache entry. the cache knows which one you mean (r or w).
-void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry);
+// degrades the caller's write-side acquisition to a read-side acquisition
+void dt_cache_downgrade(dt_cache_t *cache, dt_cache_entry_t *entry);
+// release a lock on a cache entry.
+void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry, char mode);
 
 // 0: not contained
 int32_t dt_cache_contains(dt_cache_t *cache, const uint32_t key);

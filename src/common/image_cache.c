@@ -187,7 +187,7 @@ void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
 {
   if(!img || img->id <= 0) return;
   // just force the dt_image_t struct to make sure it has been locked before.
-  dt_cache_release(&cache->cache, img->cache_entry);
+  dt_cache_release(&cache->cache, img->cache_entry, 'r');
 }
 
 // drops the write privileges on an image struct.
@@ -242,7 +242,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
     // also synch dttags file:
     dt_image_write_sidecar_file(img->id);
   }
-  dt_cache_release(&cache->cache, img->cache_entry);
+  dt_cache_release(&cache->cache, img->cache_entry, 'w');
 }
 
 

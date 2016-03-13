@@ -620,7 +620,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
     }
     else
       needs_redraw = TRUE;
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
   }
 
   // not exactly thread safe, but should be good enough for updating the display
@@ -728,7 +728,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
       if(thumb) g_object_unref(thumb);
     }
 
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
 
     gtk_target_list_unref(targets);
     return TRUE;

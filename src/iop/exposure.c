@@ -245,7 +245,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
   if(!buf.buf)
   {
     dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
     return;
   }
 
@@ -267,7 +267,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
                       dt_histogram_helper_cs_RAW_uint16);
   histogram_stats->ch = 1u;
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
 }
 
 /* input: 0 - 65535 (valid range: from black level to white level) */

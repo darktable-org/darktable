@@ -837,7 +837,7 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
   else
     ps->prt.page.landscape = FALSE;
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
 }
 
 static void _print_settings_filmstrip_activate_callback(gpointer instance,gpointer user_data)

@@ -613,7 +613,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       cairo_surface_destroy(surface);
     }
     cairo_restore(cr);
-    if(buf.buf) dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    if(buf.buf) dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
     if(img) dt_image_cache_read_release(darktable.image_cache, img);
 
     // ON CANVAS CONTROLS

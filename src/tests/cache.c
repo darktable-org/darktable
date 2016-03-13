@@ -56,8 +56,8 @@ static void test_cache(dt_cache_t *const cache)
     if(!(val2->key == k)) exit(EXIT_FAILURE);
 #endif
 
-    dt_cache_release(cache, val1);
-    dt_cache_release(cache, val2);
+    dt_cache_release(cache, val1, 'r');
+    dt_cache_release(cache, val2, 'r');
   }
 
   fprintf(stderr,

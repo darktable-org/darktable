@@ -244,7 +244,7 @@ restart:
     dt_control_log_busy_leave();
     dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
     dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
     return;
   }
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -261,7 +261,7 @@ restart:
       dt_control_log_busy_leave();
       dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
       return;
     }
     else
@@ -277,7 +277,7 @@ restart:
   if(dev->gui_attached) dt_control_queue_redraw();
   dt_control_log_busy_leave();
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
@@ -340,7 +340,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
 restart:
   if(dev->gui_leaving)
   {
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
     dt_control_log_busy_leave();
     dev->image_status = DT_DEV_PIXELPIPE_INVALID;
     dt_pthread_mutex_unlock(&dev->pipe_mutex);
@@ -385,7 +385,7 @@ restart:
     // interrupted because image changed?
     if(dev->image_force_reload)
     {
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
       dt_control_log_busy_leave();
       dev->image_status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&dev->pipe_mutex);
@@ -405,7 +405,7 @@ restart:
   dev->image_status = DT_DEV_PIXELPIPE_VALID;
   dev->image_loading = 0;
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
   // redraw the whole thing, to also update color picker values and histograms etc.
   if(dev->gui_attached) dt_control_queue_redraw();
   dt_control_log_busy_leave();
@@ -420,7 +420,7 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
   dt_times_t start;
   dt_get_times(&start);
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
   dt_show_times(&start, "[dev]", "to load the image.");
 
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');

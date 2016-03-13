@@ -743,32 +743,11 @@ void dt_mipmap_cache_get_with_caller(
     }
 
     // image cache is leaving the write lock in place in case the image has been newly allocated.
-    // this leads to a slight increase in thread contention, so we opt for dropping the write lock
-    // and acquiring a read lock immediately after. since this opens a small window for other threads
-    // to get in between, we need to take some care to re-init cache entries and dsc.
-    // note that concurrencykit has rw locks that can be demoted from w->r without losing the lock in between.
-    if(mode == 'r')
+    // this leads to a slight increase in thread contention, so we downgrade the lock.
+    if((ck_rwlock_locked_writer(&entry->lock) == true) && (mode == 'r'))
     {
-      entry->_lock_demoting = 1;
-      // drop the write lock
-      dt_cache_release(&_get_cache(cache, mip)->cache, entry);
-      // get a read lock
-      buf->cache_entry = entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
-      entry->_lock_demoting = 0;
-      dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
+      dt_cache_downgrade(&_get_cache(cache, mip)->cache, entry);
     }
-
-#ifdef _DEBUG
-    const pthread_t writer = dt_pthread_rwlock_get_writer(&(buf->cache_entry->lock));
-    if(mode == 'w')
-    {
-      assert(pthread_equal(writer, pthread_self()));
-    }
-    else
-    {
-      assert(!pthread_equal(writer, pthread_self()));
-    }
-#endif
 
     if(mipmap_generated)
     {
@@ -852,14 +831,14 @@ void dt_mipmap_cache_write_get_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_b
   dt_mipmap_cache_get_with_caller(cache, buf, imgid, mip, DT_MIPMAP_BLOCKING, 'w', file, line);
 }
 
-void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf)
+void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, char mode)
 {
   if(buf->size == DT_MIPMAP_NONE) return;
   assert(buf->imgid > 0);
   // assert(buf->size >= DT_MIPMAP_0); // breaks gcc-4.6/4.7 build
   assert(buf->size < DT_MIPMAP_NONE);
   assert(buf->cache_entry);
-  dt_cache_release(&_get_cache(cache, buf->size)->cache, buf->cache_entry);
+  dt_cache_release(&_get_cache(cache, buf->size)->cache, buf->cache_entry, mode);
   buf->size = DT_MIPMAP_NONE;
   buf->buf = NULL;
 }
@@ -900,7 +879,7 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
     {
       struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
       dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
-      dt_cache_release(&_get_cache(cache, k)->cache, entry);
+      dt_cache_release(&_get_cache(cache, k)->cache, entry, 'w');
 
       // due to DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE, removes thumbnail from disc
       dt_cache_remove(&_get_cache(cache, k)->cache, key);
@@ -1129,7 +1108,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
     dt_iop_clip_and_zoom(out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width, roi_in.width);
   }
   dt_image_cache_read_release(darktable.image_cache, image);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
 
   *width = roi_out.width;
   *height = roi_out.height;
@@ -1245,7 +1224,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, dt_colorspa
       *color_space = tmp.color_space;
       // downsample
       dt_iop_clip_and_zoom_8(tmp.buf, 0, 0, tmp.width, tmp.height, tmp.width, tmp.height, buf, 0, 0, *width, *height, *width, *height);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &tmp, 'r');
       res = 0;
       break;
     }

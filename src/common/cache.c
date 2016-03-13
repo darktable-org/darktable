@@ -88,7 +88,7 @@ void dt_cache_cleanup(dt_cache_t *cache)
       cache->cleanup(cache->cleanup_data, entry);
     else
       dt_free_align(entry->data);
-    dt_pthread_rwlock_destroy(&entry->lock);
+
     g_slice_free1(sizeof(*entry), entry);
   }
 }
@@ -173,6 +173,7 @@ int dt_cache_for_all(
 dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char mode)
 {
   assert((key > 0) /*&& (key < UINTPTR_MAX)*/);
+  assert((mode == 'w') || (mode == 'r'));
 
   double start = dt_get_wtime();
   ck_spinlock_fas_lock(&(cache->spinlock));
@@ -183,10 +184,12 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
     // lock the cache entry
-    int result;
-    if(mode == 'w') result = dt_pthread_rwlock_trywrlock(&entry->lock);
-    else            result = dt_pthread_rwlock_tryrdlock(&entry->lock);
-    if(result)
+    bool result;
+    if(mode == 'w')
+      result = ck_rwlock_write_trylock(&entry->lock);
+    else
+      result = ck_rwlock_read_trylock(&entry->lock);
+    if(result == false)
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
       ck_spinlock_fas_unlock(&(cache->spinlock));
@@ -216,6 +219,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key, char mode, const char *file, int line)
 {
   assert((key > 0) /*&& (key < UINTPTR_MAX)*/);
+  assert((mode == 'w') || (mode == 'r'));
 
   double start = dt_get_wtime();
 restart:
@@ -226,10 +230,12 @@ restart:
   if(value)
   { // yay, found. read lock and pass on.
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
-    int result;
-    if(mode == 'w') result = dt_pthread_rwlock_trywrlock_with_caller(&entry->lock, file, line);
-    else            result = dt_pthread_rwlock_tryrdlock_with_caller(&entry->lock, file, line);
-    if(result)
+    bool result;
+    if(mode == 'w')
+      result = ck_rwlock_write_trylock(&entry->lock);
+    else
+      result = ck_rwlock_read_trylock(&entry->lock);
+    if(result == false)
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
       ck_spinlock_fas_unlock(&(cache->spinlock));
@@ -242,18 +248,6 @@ restart:
     CK_STAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
 
     ck_spinlock_fas_unlock(&(cache->spinlock));
-
-#ifdef _DEBUG
-    const pthread_t writer = dt_pthread_rwlock_get_writer(&entry->lock);
-    if(mode == 'w')
-    {
-      assert(pthread_equal(writer, pthread_self()));
-    }
-    else
-    {
-      assert(!pthread_equal(writer, pthread_self()));
-    }
-#endif
 
     return entry;
   }
@@ -270,12 +264,10 @@ restart:
 
   // here dies your 32-bit system:
   dt_cache_entry_t *entry = (dt_cache_entry_t *)g_slice_alloc(sizeof(dt_cache_entry_t));
-  int ret = dt_pthread_rwlock_init(&entry->lock, 0);
-  if(ret) fprintf(stderr, "rwlock init: %d\n", ret);
+  ck_rwlock_init(&entry->lock);
   entry->data = 0;
   entry->cost = cache->entry_size;
   entry->key = key;
-  entry->_lock_demoting = 0;
   dt_cache_ht_insert(&(cache->hashtable), key, entry);
   // if allocate callback is given, always return a write lock
   int write = ((mode == 'w') || cache->allocate);
@@ -284,8 +276,10 @@ restart:
   else
     entry->data = dt_alloc_align(16, cache->entry_size);
   // write lock in case the caller requests it:
-  if(write) dt_pthread_rwlock_wrlock_with_caller(&entry->lock, file, line);
-  else      dt_pthread_rwlock_rdlock_with_caller(&entry->lock, file, line);
+  if(write)
+    ck_rwlock_write_lock(&entry->lock);
+  else
+    ck_rwlock_read_lock(&entry->lock);
   cache->cost += entry->cost;
 
   // put at end of lru list (most recently used):
@@ -313,18 +307,8 @@ restart:
 
   // need write lock to be able to delete:
   dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
-  int result = dt_pthread_rwlock_trywrlock(&entry->lock);
-  if(result)
+  if(ck_rwlock_write_trylock(&entry->lock) == false)
   {
-    ck_spinlock_fas_unlock(&(cache->spinlock));
-    g_usleep(5);
-    goto restart;
-  }
-
-  if(entry->_lock_demoting)
-  {
-    // oops, we are currently demoting (rw -> r) lock to this entry in some thread. do not touch!
-    dt_pthread_rwlock_unlock(&entry->lock);
     ck_spinlock_fas_unlock(&(cache->spinlock));
     g_usleep(5);
     goto restart;
@@ -340,8 +324,7 @@ restart:
     cache->cleanup(cache->cleanup_data, entry);
   else
     dt_free_align(entry->data);
-  dt_pthread_rwlock_unlock(&entry->lock);
-  dt_pthread_rwlock_destroy(&entry->lock);
+  ck_rwlock_write_unlock(&entry->lock);
   cache->cost -= entry->cost;
   g_slice_free1(sizeof(*entry), entry);
 
@@ -361,14 +344,7 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     if(cache->cost < cache->cost_quota * fill_ratio) break;
 
     // if still locked by anyone else give up:
-    if(dt_pthread_rwlock_trywrlock(&entry->lock)) continue;
-
-    if(entry->_lock_demoting)
-    {
-      // oops, we are currently demoting (rw -> r) lock to this entry in some thread. do not touch!
-      dt_pthread_rwlock_unlock(&entry->lock);
-      continue;
-    }
+    if(ck_rwlock_write_trylock(&entry->lock) == false) continue;
 
     // delete!
     gboolean removed = (true == dt_cache_ht_remove(&(cache->hashtable), entry->key));
@@ -383,17 +359,37 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
       cache->cleanup(cache->cleanup_data, entry);
     else
       dt_free_align(entry->data);
-    dt_pthread_rwlock_unlock(&entry->lock);
-    dt_pthread_rwlock_destroy(&entry->lock);
+    ck_rwlock_write_unlock(&entry->lock);
     g_slice_free1(sizeof(*entry), entry);
   }
 
   // ck_ht_gc(&(cache->hashtable), 0, lrand48());
 }
 
-void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry)
+void dt_cache_downgrade(dt_cache_t *cache, dt_cache_entry_t *entry)
 {
-  dt_pthread_rwlock_unlock(&entry->lock);
+  assert(ck_rwlock_locked_writer(&entry->lock));
+  assert(!ck_rwlock_locked_reader(&entry->lock));
+
+  ck_rwlock_write_downgrade(&entry->lock);
+}
+
+void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry, char mode)
+{
+  assert((mode == 'w') || (mode == 'r'));
+
+  if(mode == 'w')
+  {
+    assert(ck_rwlock_locked_writer(&entry->lock));
+    assert(!ck_rwlock_locked_reader(&entry->lock));
+    ck_rwlock_write_unlock(&entry->lock);
+  }
+  else
+  {
+    assert(ck_rwlock_locked_reader(&entry->lock));
+    assert(!ck_rwlock_locked_writer(&entry->lock));
+    ck_rwlock_read_unlock(&entry->lock);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
