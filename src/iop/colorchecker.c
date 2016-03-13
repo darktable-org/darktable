@@ -335,7 +335,7 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  // dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -346,11 +346,7 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
   cairo_set_source_rgb(cr, .2, .2, .2);
   cairo_paint(cr);
 
-  const float inset = .02*width;
-  cairo_translate(cr, inset, inset);
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
-  width -= 2 * inset;
-  height -= 2 * inset;
   const int cells_x = 6, cells_y = 4;
   for(int j = 0; j < cells_y; j++)
   {
@@ -368,21 +364,29 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
           width / (float)cells_x - DT_PIXEL_APPLY_DPI(1),
           height / (float)cells_y - DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
+      if(p->target_L[patch] != colorchecker_Lab[3*patch+0] ||
+         p->target_a[patch] != colorchecker_Lab[3*patch+1] ||
+         p->target_b[patch] != colorchecker_Lab[3*patch+2])
+      {
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+        cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
+        cairo_rectangle(cr,
+            width * i / (float)cells_x + DT_PIXEL_APPLY_DPI(1),
+            height * j / (float)cells_y + DT_PIXEL_APPLY_DPI(1),
+            width / (float)cells_x - DT_PIXEL_APPLY_DPI(3),
+            height / (float)cells_y - DT_PIXEL_APPLY_DPI(3));
+        cairo_stroke(cr);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+        cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+        cairo_rectangle(cr,
+            width * i / (float)cells_x + DT_PIXEL_APPLY_DPI(2),
+            height * j / (float)cells_y + DT_PIXEL_APPLY_DPI(2),
+            width / (float)cells_x - DT_PIXEL_APPLY_DPI(5),
+            height / (float)cells_y - DT_PIXEL_APPLY_DPI(5));
+        cairo_stroke(cr);
+      }
     }
   }
-#if 0 // TODO: draw altered ones with black outline
-  cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
-  float loa, hia, lob, hib;
-  loa = .5f * (width + width * p->loa / (float)DT_COLORCORRECTION_MAX);
-  hia = .5f * (width + width * p->hia / (float)DT_COLORCORRECTION_MAX);
-  lob = .5f * (height + height * p->lob / (float)DT_COLORCORRECTION_MAX);
-  hib = .5f * (height + height * p->hib / (float)DT_COLORCORRECTION_MAX);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  cairo_move_to(cr, loa, lob);
-  cairo_line_to(cr, hia, hib);
-  cairo_stroke(cr);
-#endif
 
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
@@ -395,15 +399,39 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
     gpointer user_data)
 {
   // highlight?
-  // return TRUE; // handled?
-  return FALSE;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  // dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
+  const float mouse_x = CLAMP(event->x, 0, width);
+  const float mouse_y = CLAMP(event->y, 0, height);
+  const float mx = mouse_x * 6.0f / (float)width;
+  const float my = mouse_y * 4.0f / (float)height;
+  int patch = CLAMP((int)mx + 6*(int)my, 0, 23);
+  char tooltip[1024];
+  snprintf(tooltip, sizeof(tooltip), _("select patch `%s' (altered patches are marked with an outline)"), colorchecker_name[patch]);
+  gtk_widget_set_tooltip_text(g->area, tooltip);
+  return TRUE;
 }
 
 static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
                                                     gpointer user_data)
 {
-  // return TRUE; // ?
-  return FALSE;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  // dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
+  const float mouse_x = CLAMP(event->x, 0, width);
+  const float mouse_y = CLAMP(event->y, 0, height);
+  const float mx = mouse_x * 6.0f / (float)width;
+  const float my = mouse_y * 4.0f / (float)height;
+  int patch = CLAMP((int)mx + 6*(int)my, 0, 23);
+  dt_bauhaus_combobox_set(g->combobox_patch, patch);
+  return TRUE;
 }
 
 static gboolean checker_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
@@ -422,7 +450,6 @@ void gui_init(struct dt_iop_module_t *self)
   // TODO: draw custom 24-patch widget instead of/in addition to combo box
   g->area = dtgtk_drawing_area_new_with_aspect_ratio(4.0/6.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->area, _("select the color patch to edit. changed entries are marked by outline"));
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
