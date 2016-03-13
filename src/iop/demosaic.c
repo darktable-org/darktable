@@ -487,7 +487,6 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 
 // xtrans_interpolate adapted from dcraw 9.20
 
-#define CLIPF(x) CLAMPS(x, 0.0f, 1.0f)
 #define SQR(x) ((x) * (x))
 // tile size, optimized to keep data in L2 cache
 #define TS 96
@@ -510,6 +509,7 @@ static inline const short *const hexmap(const int row, const int col,
    Frank Markesteijn's algorithm for Fuji X-Trans sensors
  */
 static void xtrans_markesteijn_interpolate(float *out, const float *const in,
+                                           const float *const processed_maximum,
                                            const dt_iop_roi_t *const roi_out,
                                            const dt_iop_roi_t *const roi_in, const dt_image_t *img,
                                            const uint8_t (*const xtrans)[6], const int passes)
@@ -606,7 +606,11 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
             const int f = FCxtrans(row, col, roi_in, xtrans);
-            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0;
+            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
+            // There will be no negative values as rawprepare iop
+            // clamps at zero. Sanity check this and that values are
+            // within processed_maximum.
+            assert(pix[f] >= 0.f && pix[f] <= processed_maximum[f]);
           }
           else
           {
@@ -785,7 +789,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                   for(int c = 0; c < 2; c++) color[c * 2][d] = color[c * 2][d - 1];
               if(d < 2 || (d & 1))
               {
-                for(int c = 0; c < 2; c++) rfx[0][c * 2] = CLIPF(color[c * 2][d] / 2);
+                for(int c = 0; c < 2; c++) rfx[0][c * 2] = color[c * 2][d] / 2.f;
                 rfx += TS * TS;
               }
             }
@@ -806,7 +810,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
               int i = d > 1 || ((d ^ c) & 1) ||
                 ((fabsf(rfx[0][1]-rfx[c][1]) + fabsf(rfx[0][1]-rfx[-c][1])) <
                  2.f*(fabsf(rfx[0][1]-rfx[h][1]) + fabsf(rfx[0][1]-rfx[-h][1]))) ? c:h;
-              rfx[0][f] = CLIPF((rfx[i][f] + rfx[-i][f] + 2 * rfx[0][1] - rfx[i][1] - rfx[-i][1]) / 2);
+              rfx[0][f] = (rfx[i][f] + rfx[-i][f] + 2.f * rfx[0][1] - rfx[i][1] - rfx[-i][1]) / 2.f;
             }
           }
 
@@ -822,15 +826,15 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
                   if(hex[d] + hex[d + 1])
                   {
-                    float g = 3 * rfx[0][1] - 2 * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
+                    float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
                     for(int c = 0; c < 4; c += 2)
-                      rfx[0][c] = CLIPF((g + 2 * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3);
+                      rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
                   }
                   else
                   {
-                    float g = 2 * rfx[0][1] - rfx[hex[d]][1] - rfx[hex[d + 1]][1];
+                    float g = 2.f * rfx[0][1] - rfx[hex[d]][1] - rfx[hex[d + 1]][1];
                     for(int c = 0; c < 4; c += 2)
-                      rfx[0][c] = CLIPF((g + rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 2);
+                      rfx[0][c] = (g + rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 2.f;
                   }
               }
       } // end of multipass loop
@@ -936,7 +940,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
               for(int c = 0; c < 3; c++) avg[c] += rgb[d][row][col][c];
               avg[3]++;
             }
-          for(int c = 0; c < 3; c++) out[4 * (width * (row + top) + col + left) + c] = avg[c] / avg[3];
+          for(int c = 0; c < 3; c++)
+            out[4 * (width * (row + top) + col + left) + c] =
+              CLAMPS(avg[c] / avg[3], 0.f, processed_maximum[c]);
         }
     }
   }
@@ -1062,7 +1068,9 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
    I've extended the basic idea to work with non-Bayer filter arrays.
    Gradients are numbered clockwise from NW=0 to W=7.
  */
-static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
+static void vng_interpolate(float *out, const float *const in,
+                            const float *const processed_maximum,
+                            const dt_iop_roi_t *const roi_out,
                             const dt_iop_roi_t *const roi_in, const unsigned int filters,
                             const uint8_t (*const xtrans)[6], const int only_vng_linear)
 {
@@ -1209,7 +1217,7 @@ static void vng_interpolate(float *out, const float *const in, const dt_iop_roi_
       {
         float tot = pix[color];
         if(c != color) tot += (sum[c] - sum[color]) / num;
-        brow[2][col][c] = CLIPF(tot);
+        brow[2][col][c] = CLAMPS(tot, 0.f, processed_maximum[c]);
       }
     }
     if(row > 3) /* Write buffer to image */
@@ -1626,10 +1634,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(img->filters == 9u)
     {
       if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && xtrans_full_markesteijn_demosaicing)
-        xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, img, img->xtrans,
+        xtrans_markesteijn_interpolate(tmp, pixels,
+                                       piece->pipe->processed_maximum,
+                                       &roo, &roi, img, img->xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
       else
-        vng_interpolate(tmp, pixels, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
+        vng_interpolate(tmp, pixels, piece->pipe->processed_maximum,
+                        &roo, &roi, data->filters, img->xtrans, only_vng_linear);
     }
     else
     {
@@ -1661,7 +1672,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         passthrough_monochrome(tmp, in, &roo, &roi);
       else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
       {
-        vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans, only_vng_linear);
+        vng_interpolate(tmp, in, piece->pipe->processed_maximum,
+                        &roo, &roi, data->filters, img->xtrans, only_vng_linear);
         if (img->flags & DT_IMAGE_4BAYER)
         {
           dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, data->CAM_to_RGB);
