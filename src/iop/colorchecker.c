@@ -17,10 +17,12 @@
 */
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
+#include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -101,8 +103,9 @@ typedef struct dt_iop_colorchecker_params_t
 
 typedef struct dt_iop_colorchecker_gui_data_t
 {
-  GtkWidget *combobox_patch, *scale_L, *scale_a, *scale_b;
+  GtkWidget *area, *combobox_patch, *scale_L, *scale_a, *scale_b;
   int patch;
+  cmsHTRANSFORM xform;
 } dt_iop_colorchecker_gui_data_t;
 
 typedef struct dt_iop_colorchecker_data_t
@@ -265,6 +268,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)module->params;
+  if(g->patch >= 24 || g->patch < 0) return;
   dt_bauhaus_slider_set(g->scale_L, p->target_L[g->patch] - colorchecker_Lab[3*g->patch+0]);
   dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - colorchecker_Lab[3*g->patch+1]);
   dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - colorchecker_Lab[3*g->patch+2]);
@@ -327,6 +331,87 @@ static void patch_callback(GtkWidget *combo, gpointer user_data)
   self->gui_update(self);
 }
 
+static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  // dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+  // clear bg
+  cairo_set_source_rgb(cr, .2, .2, .2);
+  cairo_paint(cr);
+
+  const float inset = .02*width;
+  cairo_translate(cr, inset, inset);
+  cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
+  width -= 2 * inset;
+  height -= 2 * inset;
+  const int cells_x = 6, cells_y = 4;
+  for(int j = 0; j < cells_y; j++)
+  {
+    for(int i = 0; i < cells_x; i++)
+    {
+      double rgb[3] = { 0.5, 0.5, 0.5 }; // Lab: rgb grey converted to Lab
+      cmsCIELab Lab;
+      const int patch = i + j*cells_x;
+      Lab.L = colorchecker_Lab[3*patch];
+      Lab.a = colorchecker_Lab[3*patch+1];
+      Lab.b = colorchecker_Lab[3*patch+2];
+      cmsDoTransform(g->xform, &Lab, rgb, 1);
+      cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
+      cairo_rectangle(cr, width * i / (float)cells_x, height * j / (float)cells_y,
+          width / (float)cells_x - DT_PIXEL_APPLY_DPI(1),
+          height / (float)cells_y - DT_PIXEL_APPLY_DPI(1));
+      cairo_fill(cr);
+    }
+  }
+#if 0 // TODO: draw altered ones with black outline
+  cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+  float loa, hia, lob, hib;
+  loa = .5f * (width + width * p->loa / (float)DT_COLORCORRECTION_MAX);
+  hia = .5f * (width + width * p->hia / (float)DT_COLORCORRECTION_MAX);
+  lob = .5f * (height + height * p->lob / (float)DT_COLORCORRECTION_MAX);
+  hib = .5f * (height + height * p->hib / (float)DT_COLORCORRECTION_MAX);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+  cairo_move_to(cr, loa, lob);
+  cairo_line_to(cr, hia, hib);
+  cairo_stroke(cr);
+#endif
+
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
+  return TRUE;
+}
+
+static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
+    gpointer user_data)
+{
+  // highlight?
+  // return TRUE; // handled?
+  return FALSE;
+}
+
+static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
+                                                    gpointer user_data)
+{
+  // return TRUE; // ?
+  return FALSE;
+}
+
+static gboolean checker_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
+                                                    gpointer user_data)
+{
+  return FALSE; // ?
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colorchecker_gui_data_t));
@@ -334,7 +419,19 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  // TODO: draw custom 24-patch widget instead of combo box
+  // TODO: draw custom 24-patch widget instead of/in addition to combo box
+  g->area = dtgtk_drawing_area_new_with_aspect_ratio(4.0/6.0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->area, _("select the color patch to edit. changed entries are marked by outline"));
+
+  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+                                             | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(checker_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(checker_button_press), self);
+  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(checker_motion_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(checker_leave_notify), self);
+
   g->combobox_patch = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->combobox_patch, NULL, _("patch"));
   gtk_widget_set_tooltip_text(g->combobox_patch, _("color checker patch"));
@@ -368,10 +465,17 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->scale_L), "value-changed", G_CALLBACK(target_L_callback), self);
   g_signal_connect(G_OBJECT(g->scale_a), "value-changed", G_CALLBACK(target_a_callback), self);
   g_signal_connect(G_OBJECT(g->scale_b), "value-changed", G_CALLBACK(target_b_callback), self);
+
+  cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
+  cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL,
+                                0); // cmsFLAGS_NOTPRECALC);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  cmsDeleteTransform(g->xform);
   free(self->gui_data);
   self->gui_data = NULL;
 }
