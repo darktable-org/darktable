@@ -230,12 +230,12 @@ static gboolean LinEqSolve(int nDim, double *pfMatr, double *pfVect, double *pfS
   for(k = 0; k < (nDim - 1); k++)
   { // base row of matrix
     // search of line with max element
-    fMaxElem = fabsf(pfMatr[k * nDim + k]);
+    fMaxElem = fabs(pfMatr[k * nDim + k]);
     m = k;
 
     for(i = k + 1; i < nDim; i++)
     {
-      if(fMaxElem < fabsf(pfMatr[i * nDim + k]))
+      if(fMaxElem < fabs(pfMatr[i * nDim + k]))
       {
         fMaxElem = pfMatr[i * nDim + k];
         m = i;
