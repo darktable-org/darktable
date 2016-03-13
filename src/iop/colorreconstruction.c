@@ -573,8 +573,9 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
                          + b->buf[gi + oy + oz].weight * (1.0f - xf) * (yf) * (zf)
                          + b->buf[gi + ox + oy + oz].weight * (xf) * (yf) * (zf);
 
-      out[index + 1] = (weight > 0.0f) ? ain * (1.0f - blend) + aout * Lin/Lout * blend : ain;
-      out[index + 2] = (weight > 0.0f) ? bin * (1.0f - blend) + bout * Lin/Lout * blend : bin;
+      const float lout = fmax(Lout, 0.01f);
+      out[index + 1] = (weight > 0.0f) ? ain * (1.0f - blend) + aout * Lin/lout * blend : ain;
+      out[index + 2] = (weight > 0.0f) ? bin * (1.0f - blend) + bout * Lin/lout * blend : bin;
     }
   }
 }
