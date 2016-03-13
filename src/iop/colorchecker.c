@@ -69,30 +69,30 @@ static const char* colorchecker_name[] =
 };
 static const float colorchecker_Lab[] =
 {
-39.19, 13.76,  14.29,
-65.18, 19.00,  17.32,
-49.46, -4.23, -22.95,
-42.85,-13.33,  22.12,
-55.18,  9.44, -24.94,
-70.36,-32.77,  -0.04,
-62.92, 35.49,  57.10,
-40.75, 11.41, -46.03,
-52.10, 48.11,  16.89,
-30.67, 21.19, -20.81,
-73.08,-23.55,  56.97,
-72.43, 17.48,  68.20,
-30.97, 12.67, -46.30,
-56.43,-40.66,  31.94,
-43.40, 50.68,  28.84,
-82.45,  2.41,  80.25,
-51.98, 50.68, -14.84,
-51.02,-27.63, -28.03,
-95.97, -0.40,   1.24,
-81.10, -0.83,  -0.43,
-66.81, -1.08,  -0.70,
-50.98, -0.19,  -0.30,
-35.72, -0.69,  -1.11,
-21.46,  0.06,  -0.95,
+39.19, 13.76,  14.29, // dark skin
+65.18, 19.00,  17.32, // light skin
+49.46, -4.23, -22.95, // blue sky
+42.85,-13.33,  22.12, // foliage
+55.18,  9.44, -24.94, // blue flower
+70.36,-32.77,  -0.04, // bluish green  
+62.92, 35.49,  57.10, // orange
+40.75, 11.41, -46.03, // purple red
+52.10, 48.11,  16.89, // moderate red  
+30.67, 21.19, -20.81, // purple
+73.08,-23.55,  56.97, // yellow green  
+72.43, 17.48,  68.20, // orange yellow 
+30.97, 12.67, -46.30, // blue
+56.43,-40.66,  31.94, // green
+43.40, 50.68,  28.84, // red
+82.45,  2.41,  80.25, // yellow
+51.98, 50.68, -14.84, // magenta
+51.02,-27.63, -28.03, // cyan
+95.97, -0.40,   1.24, // white
+81.10, -0.83,  -0.43, // neutral 8
+66.81, -1.08,  -0.70, // neutral 65
+50.98, -0.19,  -0.30, // neutral 5
+35.72, -0.69,  -1.11, // neutral 35
+21.46,  0.06,  -0.95, // black
 };
 
 typedef struct dt_iop_colorchecker_params_t
@@ -104,7 +104,7 @@ typedef struct dt_iop_colorchecker_params_t
 
 typedef struct dt_iop_colorchecker_gui_data_t
 {
-  GtkWidget *area, *combobox_patch, *scale_L, *scale_a, *scale_b;
+  GtkWidget *area, *combobox_patch, *scale_L, *scale_a, *scale_b, *scale_C;
   int patch;
   cmsHTRANSFORM xform;
 } dt_iop_colorchecker_gui_data_t;
@@ -273,6 +273,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_L, p->target_L[g->patch] - colorchecker_Lab[3*g->patch+0]);
   dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - colorchecker_Lab[3*g->patch+1]);
   dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - colorchecker_Lab[3*g->patch+2]);
+  const float Cin = sqrtf(
+      colorchecker_Lab[3*g->patch+1]*colorchecker_Lab[3*g->patch+1]+
+      colorchecker_Lab[3*g->patch+2]*colorchecker_Lab[3*g->patch+2]);
+  const float Cout = sqrtf(
+      p->target_a[g->patch]*p->target_a[g->patch]+
+      p->target_b[g->patch]*p->target_b[g->patch]);
+  dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
 }
 
 void init(dt_iop_module_t *module)
@@ -334,6 +341,16 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   p->target_a[g->patch] = CLAMP(colorchecker_Lab[3*g->patch + 1] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
+  const float Cin = sqrtf(
+      colorchecker_Lab[3*g->patch+1]*colorchecker_Lab[3*g->patch+1]+
+      colorchecker_Lab[3*g->patch+2]*colorchecker_Lab[3*g->patch+2]);
+  const float Cout = sqrtf(
+      p->target_a[g->patch]*p->target_a[g->patch]+
+      p->target_b[g->patch]*p->target_b[g->patch]);
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1; // avoid history item
+  dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
+  darktable.gui->reset = reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -343,6 +360,38 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   p->target_b[g->patch] = CLAMP(colorchecker_Lab[3*g->patch + 2] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
+  const float Cin = sqrtf(
+      colorchecker_Lab[3*g->patch+1]*colorchecker_Lab[3*g->patch+1]+
+      colorchecker_Lab[3*g->patch+2]*colorchecker_Lab[3*g->patch+2]);
+  const float Cout = sqrtf(
+      p->target_a[g->patch]*p->target_a[g->patch]+
+      p->target_b[g->patch]*p->target_b[g->patch]);
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1; // avoid history item
+  dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
+  darktable.gui->reset = reset;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void target_C_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  const float Cin = sqrtf(
+      colorchecker_Lab[3*g->patch+1]*colorchecker_Lab[3*g->patch+1]+
+      colorchecker_Lab[3*g->patch+2]*colorchecker_Lab[3*g->patch+2]);
+  const float Cout = sqrtf(
+      p->target_a[g->patch]*p->target_a[g->patch]+
+      p->target_b[g->patch]*p->target_b[g->patch]);
+  const float Cnew = CLAMP(Cin + dt_bauhaus_slider_get(slider), 0.01, 128.0);
+  p->target_a[g->patch] = CLAMP(p->target_a[g->patch]*Cnew/Cout, -128.0, 128.0);
+  p->target_b[g->patch] = CLAMP(p->target_b[g->patch]*Cnew/Cout, -128.0, 128.0);
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1; // avoid history item
+  dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - colorchecker_Lab[3*g->patch+1]);
+  dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - colorchecker_Lab[3*g->patch+2]);
+  darktable.gui->reset = reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -488,6 +537,7 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
     p->target_a[patch] = colorchecker_Lab[3*patch+1];
     p->target_b[patch] = colorchecker_Lab[3*patch+2];
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    self->gui_update(self);
   }
   return TRUE;
 }
@@ -543,16 +593,22 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->scale_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 1.0, 1.0, 0.0);
 
+  g->scale_C = dt_bauhaus_slider_new_with_range(self, -128.0, 128.0, 1.0f, 0.0f, 2);
+  gtk_widget_set_tooltip_text(g->scale_C, _("saturation offset"));
+  dt_bauhaus_widget_set_label(g->scale_C, NULL, _("saturation"));
+
   gtk_box_pack_start(GTK_BOX(self->widget), g->combobox_patch, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_L, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_a, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale_C, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(g->combobox_patch), "value-changed", G_CALLBACK(patch_callback), self);
   g_signal_connect(G_OBJECT(g->combobox_patch), "quad-pressed", G_CALLBACK(picker_callback), self);
   g_signal_connect(G_OBJECT(g->scale_L), "value-changed", G_CALLBACK(target_L_callback), self);
   g_signal_connect(G_OBJECT(g->scale_a), "value-changed", G_CALLBACK(target_a_callback), self);
   g_signal_connect(G_OBJECT(g->scale_b), "value-changed", G_CALLBACK(target_b_callback), self);
+  g_signal_connect(G_OBJECT(g->scale_C), "value-changed", G_CALLBACK(target_C_callback), self);
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
