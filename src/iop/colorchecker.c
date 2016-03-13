@@ -28,6 +28,7 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "iop/svd.h"
+#include "libs/colorpicker.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -296,6 +297,28 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+static void picker_callback(GtkWidget *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+  else
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+
+  dt_iop_request_focus(self);
+
+  /* set the area sample size */
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    dt_dev_reprocess_all(self->dev);
+  }
+  else
+    dt_control_queue_redraw();
+}
+
 static void target_L_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -346,6 +369,8 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
   cairo_set_source_rgb(cr, .2, .2, .2);
   cairo_paint(cr);
 
+  const float *picked_mean = self->picked_color;
+  int besti = 0, bestj = 0;
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
   const int cells_x = 6, cells_y = 4;
   for(int j = 0; j < cells_y; j++)
@@ -358,6 +383,19 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
       Lab.L = colorchecker_Lab[3*patch];
       Lab.a = colorchecker_Lab[3*patch+1];
       Lab.b = colorchecker_Lab[3*patch+2];
+      if((picked_mean[0] - Lab.L)*(picked_mean[0] - Lab.L) +
+         (picked_mean[1] - Lab.a)*(picked_mean[1] - Lab.a) +
+         (picked_mean[2] - Lab.b)*(picked_mean[2] - Lab.b) <
+         (picked_mean[0] - colorchecker_Lab[3*(6*bestj+besti)+0])*
+         (picked_mean[0] - colorchecker_Lab[3*(6*bestj+besti)+0])+
+         (picked_mean[1] - colorchecker_Lab[3*(6*bestj+besti)+1])*
+         (picked_mean[1] - colorchecker_Lab[3*(6*bestj+besti)+1])+
+         (picked_mean[2] - colorchecker_Lab[3*(6*bestj+besti)+2])*
+         (picked_mean[2] - colorchecker_Lab[3*(6*bestj+besti)+2]))
+      {
+        besti = i;
+        bestj = j;
+      }
       cmsDoTransform(g->xform, &Lab, rgb, 1);
       cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
       cairo_rectangle(cr, width * i / (float)cells_x, height * j / (float)cells_y,
@@ -386,6 +424,19 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
         cairo_stroke(cr);
       }
     }
+  }
+
+  // highlight patch that is closest to picked colour:
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  {
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+    cairo_rectangle(cr,
+        width * besti / (float)cells_x + DT_PIXEL_APPLY_DPI(5),
+        height * bestj / (float)cells_y + DT_PIXEL_APPLY_DPI(5),
+        width / (float)cells_x - DT_PIXEL_APPLY_DPI(11),
+        height / (float)cells_y - DT_PIXEL_APPLY_DPI(11));
+    cairo_stroke(cr);
   }
 
   cairo_destroy(cr);
@@ -447,7 +498,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  // TODO: draw custom 24-patch widget instead of/in addition to combo box
+  // custom 24-patch widget in addition to combo box
   g->area = dtgtk_drawing_area_new_with_aspect_ratio(4.0/6.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
 
@@ -464,6 +515,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->combobox_patch, _("color checker patch"));
   for(int k=0;k<24;k++)
     dt_bauhaus_combobox_add(g->combobox_patch, colorchecker_name[k]);
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  dt_bauhaus_widget_set_quad_paint(g->combobox_patch, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
 
   g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_L, _("lightness offset"));
@@ -488,7 +541,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_a, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(g->combobox_patch), "value-changed", G_CALLBACK(patch_callback), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->combobox_patch), "value-changed", G_CALLBACK(patch_callback), self);
+  g_signal_connect(G_OBJECT(g->combobox_patch), "quad-pressed", G_CALLBACK(picker_callback), self);
   g_signal_connect(G_OBJECT(g->scale_L), "value-changed", G_CALLBACK(target_L_callback), self);
   g_signal_connect(G_OBJECT(g->scale_a), "value-changed", G_CALLBACK(target_a_callback), self);
   g_signal_connect(G_OBJECT(g->scale_b), "value-changed", G_CALLBACK(target_b_callback), self);

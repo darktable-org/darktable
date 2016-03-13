@@ -31,6 +31,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "dtgtk/paint.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
