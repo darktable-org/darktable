@@ -23,10 +23,11 @@
 #pragma GCC diagnostic warning "-fpermissive"
 #include <ck_ht.h>
 #include <ck_pr.h>
-#include <ck_queue.h>
 #include <ck_spinlock.h>
 #include <ck_rwlock.h>
 #pragma GCC diagnostic pop
+
+#include <sys/queue.h>
 
 #include "common/dtpthread.h"
 #include <inttypes.h>
@@ -39,7 +40,7 @@ typedef struct dt_cache_entry
   void *data;
   size_t cost;
   uint32_t key;
-  CK_STAILQ_ENTRY(dt_cache_entry) list_entry;
+  TAILQ_ENTRY(dt_cache_entry) list_entry;
 } dt_cache_entry_t;
 
 typedef struct dt_cache_t
@@ -53,8 +54,8 @@ typedef struct dt_cache_t
   ck_ht_t hashtable; // stores (key, entry) pairs
 
   // last element is most recently used, first is about to be kicked from cache.
-  // NOTE: TAILQ would be better, but it is not yet implemented in CK
-  CK_STAILQ_HEAD(dt_cache_lru, dt_cache_entry) lru;
+  // NOTE: CK-based implementation would be better, but it is not yet implemented as of 0.5.1
+  TAILQ_HEAD(dt_cache_lru, dt_cache_entry) lru;
 
   // callback functions for cache misses/garbage collection
   void (*allocate)(void *userdata, dt_cache_entry_t *entry);

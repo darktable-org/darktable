@@ -26,6 +26,12 @@
 #include <inttypes.h>
 #include <assert.h>
 
+// following macros is based on bsd sys/queue.h, almost no other queue.h has it
+#ifndef TAILQ_FOREACH_SAFE
+#define TAILQ_FOREACH_SAFE(var, head, field, tvar)                                                           \
+  for((var) = TAILQ_FIRST((head)); (var) && ((tvar) = TAILQ_NEXT((var), field), 1); (var) = (tvar))
+#endif
+
 static void *dt_cache_ht_malloc(size_t size)
 {
   return malloc(size);
@@ -63,7 +69,7 @@ void dt_cache_init(
   ck_spinlock_fas_init(&(cache->spinlock));
 
   cache->cost = 0;
-  CK_STAILQ_INIT(&(cache->lru));
+  TAILQ_INIT(&(cache->lru));
   cache->entry_size = entry_size;
   cache->cost_quota = cost_quota;
   cache->allocate = 0;
@@ -80,9 +86,9 @@ void dt_cache_cleanup(dt_cache_t *cache)
   ck_ht_destroy(&(cache->hashtable));
 
   struct dt_cache_entry *entry;
-  while((entry = CK_STAILQ_FIRST(&(cache->lru))) != NULL)
+  while((entry = TAILQ_FIRST(&(cache->lru))) != NULL)
   {
-    CK_STAILQ_REMOVE_HEAD(&(cache->lru), list_entry);
+    TAILQ_REMOVE(&(cache->lru), entry, list_entry);
 
     if(cache->cleanup)
       cache->cleanup(cache->cleanup_data, entry);
@@ -197,8 +203,8 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
     }
 
     // bubble up in lru list:
-    CK_STAILQ_REMOVE(&(cache->lru), entry, dt_cache_entry, list_entry);
-    CK_STAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
+    TAILQ_REMOVE(&(cache->lru), entry, list_entry);
+    TAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
 
     ck_spinlock_fas_unlock(&(cache->spinlock));
     double end = dt_get_wtime();
@@ -244,8 +250,8 @@ restart:
     }
 
     // bubble up in lru list:
-    CK_STAILQ_REMOVE(&(cache->lru), entry, dt_cache_entry, list_entry);
-    CK_STAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
+    TAILQ_REMOVE(&(cache->lru), entry, list_entry);
+    TAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
 
     ck_spinlock_fas_unlock(&(cache->spinlock));
 
@@ -283,7 +289,7 @@ restart:
   cache->cost += entry->cost;
 
   // put at end of lru list (most recently used):
-  CK_STAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
+  TAILQ_INSERT_TAIL(&(cache->lru), entry, list_entry);
 
   ck_spinlock_fas_unlock(&(cache->spinlock));
   double end = dt_get_wtime();
@@ -318,7 +324,7 @@ restart:
   (void)removed; // make non-assert compile happy
   assert(removed);
 
-  CK_STAILQ_REMOVE(&(cache->lru), entry, dt_cache_entry, list_entry);
+  TAILQ_REMOVE(&(cache->lru), entry, list_entry);
 
   if(cache->cleanup)
     cache->cleanup(cache->cleanup_data, entry);
@@ -337,7 +343,7 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
   int cnt = 0;
   struct dt_cache_entry *entry, *safe;
-  CK_STAILQ_FOREACH_SAFE(entry, &(cache->lru), list_entry, safe)
+  TAILQ_FOREACH_SAFE(entry, &(cache->lru), list_entry, safe)
   {
     cnt++;
 
@@ -351,7 +357,7 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     (void)removed; // make non-assert compile happy
     assert(removed);
 
-    CK_STAILQ_REMOVE(&(cache->lru), entry, dt_cache_entry, list_entry);
+    TAILQ_REMOVE(&(cache->lru), entry, list_entry);
 
     cache->cost -= entry->cost;
 
