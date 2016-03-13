@@ -123,7 +123,6 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   }
   sqlite3_finalize(stmt);
   img->cache_entry = entry; // init backref
-  // could downgrade lock write->read on entry->lock if we were using concurrencykit..
   dt_image_refresh_makermodel(img);
 }
 
@@ -169,6 +168,14 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const uint32_t imgid, ch
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
+
+  // image cache is leaving the write lock in place in case the image has been newly allocated.
+  // this leads to a slight increase in thread contention, so we downgrade the lock.
+  if((ck_rwlock_locked_writer(&entry->lock) == true) && (mode == 'r'))
+  {
+    dt_cache_downgrade(&cache->cache, entry);
+  }
+
   return img;
 }
 
