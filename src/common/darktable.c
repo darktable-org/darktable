@@ -453,11 +453,18 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #error "Unfortunately we only work on litte-endian systems."
 #endif
 
-#define DT_SUPPORTED_X86                                                                                     \
-  (defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(__i386__)   \
-   || defined(__i386))
-#define DT_SUPPORTED_ARMv8A                                                                                  \
-  (defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A))
+#if(defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(__i386__)  \
+    || defined(__i386))
+#define DT_SUPPORTED_X86 1
+#else
+#define DT_SUPPORTED_X86 0
+#endif
+
+#if defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A)
+#define DT_SUPPORTED_ARMv8A 1
+#else
+#define DT_SUPPORTED_ARMv8A 0
+#endif
 
 #if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A
 #error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit) and ARMv8-A (64-bit only)."
