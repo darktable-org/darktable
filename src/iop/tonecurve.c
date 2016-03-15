@@ -68,6 +68,15 @@ typedef struct dt_iop_tonecurve_node_t
   float y;
 } dt_iop_tonecurve_node_t;
 
+typedef enum dt_iop_tonecurve_autoscale_t
+{
+  s_scale_manual = 0,           // user specified curves
+  s_scale_automatic = 1,        // automatically adjust saturation based on L_out/L_in
+  s_scale_automatic_xyz = 2,    // automatically adjust saturation by
+                                // transforming the curve C to C' like:
+                                // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
+                                // channels, too (and then transforming it back to Lab of course)
+} dt_iop_tonecurve_autoscale_t;
 
 // parameter structure of tonecurve 1st version, needed for use in legacy_params()
 typedef struct dt_iop_tonecurve_params1_t
@@ -302,7 +311,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0xfffful), 0, 0xffff)]
                              : dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
 
-      if(autoscale_ab == 0)
+      if(autoscale_ab == s_scale_manual)
       {
         const float a_in = (in[1] + 128.0f) / 256.0f;
         const float b_in = (in[2] + 128.0f) / 256.0f;
@@ -327,7 +336,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          : d->table[ch_b][CLAMP((int)(b_in * 0xfffful), 0, 0xffff)]);
         }
       }
-      else
+      else if(autoscale_ab == s_scale_automatic)
       {
         // in Lab: correct compressed Luminance for saturation:
         if(L_in > 0.01f)
@@ -340,6 +349,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           out[1] = in[1] * low_approximation;
           out[2] = in[2] * low_approximation;
         }
+      }
+      else if(autoscale_ab == s_scale_automatic_xyz)
+      {
+        float XYZ[3];
+        dt_Lab_to_XYZ(in, XYZ);
+        for(int c=0;c<3;c++)
+          XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0xfffful), 0, 0xffff)]
+                                   : dt_iop_eval_exp(d->unbounded_coeffs_L, XYZ[c]);
+        dt_XYZ_to_Lab(XYZ, out);
       }
 
       out[3] = in[3];
@@ -383,7 +401,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve_type[ch_a] = CUBIC_SPLINE;
   p.tonecurve_type[ch_b] = CUBIC_SPLINE;
   p.tonecurve_preset = 0;
-  p.tonecurve_autoscale_ab = 1;
+  p.tonecurve_autoscale_ab = s_scale_automatic;
   p.tonecurve_unbound_ab = 1;
 
   float linear_L[6] = { 0.0, 0.08, 0.4, 0.6, 0.92, 1.0 };
@@ -491,6 +509,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   for(int k = 0; k < 0x10000; k++) d->table[ch_a][k] = d->table[ch_a][k] * 256.0f - 128.0f;
   for(int k = 0; k < 0x10000; k++) d->table[ch_b][k] = d->table[ch_b][k] * 256.0f - 128.0f;
 
+  piece->process_cl_ready = 1;
+  if(p->tonecurve_autoscale_ab == s_scale_automatic_xyz)
+  {
+    piece->process_cl_ready = 0; // XXX TODO: implement this in opencl, too (should be trivial once we know we want it)
+    // derive curve for XYZ:
+    for(int k=0;k<0x10000;k++)
+    {
+      float XYZ[3] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
+      float Lab[3] = {0.0};
+      dt_XYZ_to_Lab(XYZ, Lab);
+      Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)];
+      dt_Lab_to_XYZ(Lab, XYZ);
+      d->table[ch_L][k] = XYZ[1]; // now mapping Y_in to Y_out
+    }
+  }
+
   d->autoscale_ab = p->tonecurve_autoscale_ab;
   d->unbound_ab = p->tonecurve_unbound_ab;
 
@@ -546,7 +580,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
   dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
   piece->data = (void *)d;
-  d->autoscale_ab = 1;
+  d->autoscale_ab = s_scale_automatic;
   d->unbound_ab = 1;
   for(int ch = 0; ch < ch_max; ch++)
   {
@@ -575,7 +609,9 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  dt_bauhaus_combobox_set(g->autoscale_ab, 1 - p->tonecurve_autoscale_ab);
+  if(p->tonecurve_autoscale_ab == 0) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic);
+  if(p->tonecurve_autoscale_ab == 1) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_manual);
+  if(p->tonecurve_autoscale_ab == 2) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_xyz);
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -601,7 +637,7 @@ void init(dt_iop_module_t *module)
     // { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
-    1, // autoscale_ab
+    s_scale_automatic, // autoscale_ab
     0,
     1 // unbound_ab
   };
@@ -637,7 +673,10 @@ static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  p->tonecurve_autoscale_ab = 1 - dt_bauhaus_combobox_get(g->autoscale_ab);
+  const int combo = dt_bauhaus_combobox_get(g->autoscale_ab);
+  if(combo == 0) p->tonecurve_autoscale_ab = s_scale_automatic;
+  if(combo == 1) p->tonecurve_autoscale_ab = s_scale_manual;
+  if(combo == 2) p->tonecurve_autoscale_ab = s_scale_automatic_xyz;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -693,7 +732,7 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
   // if autoscale_ab is on: do not modify a and b curves
-  if(autoscale_ab && ch != ch_L) return TRUE;
+  if((autoscale_ab != s_scale_manual) && ch != ch_L) return TRUE;
 
   if(c->selected >= 0)
   {
@@ -782,10 +821,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("scale chroma"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic"));
   dt_bauhaus_combobox_add(c->autoscale_ab, C_("scale", "manual"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic in XYZ"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->autoscale_ab, _("if set to auto, a and b curves have no effect and are "
                                                  "not displayed. chroma values (a and b) of each pixel are "
-                                                 "then adjusted based on L curve data."));
+                                                 "then adjusted based on L curve data. auto XYZ is similar "
+                                                 "but applies the saturation changes in XYZ space."));
   g_signal_connect(G_OBJECT(c->autoscale_ab), "value-changed", G_CALLBACK(autoscale_ab_callback), self);
 
   c->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));
@@ -936,7 +977,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // if autoscale_ab is on: do not display a and b curves
-  if(autoscale_ab && ch != ch_L) goto finally;
+  if((autoscale_ab != s_scale_manual) && ch != ch_L) goto finally;
 
   // draw nodes positions
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
@@ -1122,7 +1163,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
   // if autoscale_ab is on: do not modify a and b curves
-  if(autoscale_ab && ch != ch_L) goto finally;
+  if((autoscale_ab != s_scale_manual) && ch != ch_L) goto finally;
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -1262,7 +1303,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
     {
       // reset current curve
       // if autoscale_ab is on: allow only reset of L curve
-      if(!(autoscale_ab && ch != ch_L))
+      if(!((autoscale_ab != s_scale_manual) && ch != ch_L))
       {
         p->tonecurve_nodes[ch] = d->tonecurve_nodes[ch];
         p->tonecurve_type[ch] = d->tonecurve_type[ch];
@@ -1279,9 +1320,11 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       {
         if(ch != ch_L)
         {
-          p->tonecurve_autoscale_ab = 0;
+          p->tonecurve_autoscale_ab = s_scale_manual;
           c->selected = -2; // avoid motion notify re-inserting immediately.
-          dt_bauhaus_combobox_set(c->autoscale_ab, 1 - p->tonecurve_autoscale_ab);
+          if(p->tonecurve_autoscale_ab == 0) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic);
+          if(p->tonecurve_autoscale_ab == 1) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_manual);
+          if(p->tonecurve_autoscale_ab == 2) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic_xyz);
           dt_dev_add_history_item(darktable.develop, self, TRUE);
           gtk_widget_queue_draw(self->widget);
         }
