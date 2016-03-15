@@ -178,6 +178,13 @@ int main(int argc, char *arg[])
     xmp_filename = NULL;
   }
 
+  if(g_file_test(output_filename, G_FILE_TEST_IS_DIR))
+  {
+    fprintf(stderr, _("error: output file is a directory. please specify file name"));
+    fprintf(stderr, "\n");
+    exit(1);
+  }
+
   // the output file already exists, so there will be a sequence number added
   if(g_file_test(output_filename, G_FILE_TEST_EXISTS))
   {
