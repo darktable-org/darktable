@@ -53,6 +53,7 @@
 #define ROTATION_RANGE_SOFT 20              // allowed min/max range for rotation parameter with manual adjustment
 #define LENSSHIFT_RANGE 0.5                 // allowed min/max default range for lensshift paramters
 #define LENSSHIFT_RANGE_SOFT 1              // allowed min/max range for lensshift paramters with manual adjustment
+#define SHEAR_RANGE 0.5                     // allowed min/max range for shdar parameter
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
@@ -320,6 +321,7 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *rotation;
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
+  GtkWidget *shear;
   GtkWidget *guide_lines;
   GtkWidget *cropmode;
   GtkWidget *mode;
@@ -3170,6 +3172,20 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void shear_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  p->shear = dt_bauhaus_slider_get(slider);
+#ifdef ASHIFT_DEBUG
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  model_probe(self, p, g->lastfit);
+#endif
+  do_crop(self, p);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -3496,6 +3512,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
   dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+  dt_bauhaus_slider_set(g->shear, p->shear);
   dt_bauhaus_slider_set_soft(g->f_length, p->f_length);
   dt_bauhaus_slider_set_soft(g->crop_factor, p->crop_factor);
   dt_bauhaus_slider_set(g->orthocorr, p->orthocorr);
@@ -3783,6 +3800,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_h, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
 
+  g->shear = dt_bauhaus_slider_new_with_range(self, -SHEAR_RANGE, SHEAR_RANGE, 0.01*SHEAR_RANGE, p->shear, 3);
+  dt_bauhaus_widget_set_label(g->shear, NULL, _("shear"));
+  //dt_bauhaus_slider_enable_soft_boundaries(g->shear, -SHEAR_RANGE_SOFT, SHEAR_RANGE_SOFT);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->shear, TRUE, TRUE, 0);
+
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
   dt_bauhaus_combobox_add(g->guide_lines, _("off"));
@@ -3904,6 +3926,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->rotation, _("rotate image"));
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->lensshift_h, _("apply lens shift correction in one direction"));
+  gtk_widget_set_tooltip_text(g->shear, _("shear the image along one diagonal"));
   gtk_widget_set_tooltip_text(g->guide_lines, _("display guide lines overlay"));
   gtk_widget_set_tooltip_text(g->cropmode, _("automatically crop to avoid black edges"));
   gtk_widget_set_tooltip_text(g->mode, _("lens model of the perspective correction: "
@@ -3934,6 +3957,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
+  g_signal_connect(G_OBJECT(g->shear), "value-changed", G_CALLBACK(shear_callback), self);
   g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guide_lines_callback), self);
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
