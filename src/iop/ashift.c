@@ -94,7 +94,7 @@
 #include "ashift_nmsimplex.c"
 
 
-DT_MODULE_INTROSPECTION(3, dt_iop_ashift_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_ashift_params_t)
 
 const char *name()
 {
@@ -224,7 +224,7 @@ typedef struct dt_iop_ashift_params2_t
   int toggle;
 } dt_iop_ashift_params2_t;
 
-typedef struct dt_iop_ashift_params_t
+typedef struct dt_iop_ashift_params3_t
 {
   float rotation;
   float lensshift_v;
@@ -240,8 +240,26 @@ typedef struct dt_iop_ashift_params_t
   float cr;
   float ct;
   float cb;
-} dt_iop_ashift_params_t;
+} dt_iop_ashift_params3_t;
 
+typedef struct dt_iop_ashift_params_t
+{
+  float rotation;
+  float lensshift_v;
+  float lensshift_h;
+  float shear;
+  float f_length;
+  float crop_factor;
+  float orthocorr;
+  float aspect;
+  dt_iop_ashift_mode_t mode;
+  int toggle;
+  dt_iop_ashift_crop_t cropmode;
+  float cl;
+  float cr;
+  float ct;
+  float cb;
+} dt_iop_ashift_params_t;
 
 typedef struct dt_iop_ashift_line_t
 {
@@ -358,6 +376,7 @@ typedef struct dt_iop_ashift_data_t
   float rotation;
   float lensshift_v;
   float lensshift_h;
+  float shear;
   float f_length_kb;
   float orthocorr;
   float aspect;
@@ -378,13 +397,14 @@ typedef struct dt_iop_ashift_global_data_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     const dt_iop_ashift_params1_t *old = old_params;
     dt_iop_ashift_params_t *new = new_params;
     new->rotation = old->rotation;
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
+    new->shear = 0.0f;
     new->toggle = old->toggle;
     new->f_length = DEFAULT_F_LENGTH;
     new->crop_factor = 1.0f;
@@ -398,13 +418,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->cb = 1.0f;
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
     const dt_iop_ashift_params2_t *old = old_params;
     dt_iop_ashift_params_t *new = new_params;
     new->rotation = old->rotation;
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
+    new->shear = 0.0f;
     new->toggle = old->toggle;
     new->f_length = old->f_length;
     new->crop_factor = old->crop_factor;
@@ -418,6 +439,28 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->cb = 1.0f;
     return 0;
   }
+  if(old_version == 3 && new_version == 4)
+  {
+    const dt_iop_ashift_params3_t *old = old_params;
+    dt_iop_ashift_params_t *new = new_params;
+    new->rotation = old->rotation;
+    new->lensshift_v = old->lensshift_v;
+    new->lensshift_h = old->lensshift_h;
+    new->shear = 0.0f;
+    new->toggle = old->toggle;
+    new->f_length = old->f_length;
+    new->crop_factor = old->crop_factor;
+    new->orthocorr = old->orthocorr;
+    new->aspect = old->aspect;
+    new->mode = old->mode;
+    new->cropmode = old->cropmode;
+    new->cl = old->cl;
+    new->cr = old->cr;
+    new->ct = old->ct;
+    new->cb = old->cb;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -3410,6 +3453,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->rotation = p->rotation;
   d->lensshift_v = p->lensshift_v;
   d->lensshift_h = p->lensshift_h;
+  d->shear = p->shear;
   d->f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
@@ -3487,7 +3531,7 @@ void init(dt_iop_module_t *module)
   module->priority = 252; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
                                                          ASHIFT_CROP_OFF, 0.0f, 1.0f, 0.0f, 1.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
@@ -3521,7 +3565,7 @@ void reload_defaults(dt_iop_module_t *module)
   }
 
   // init defaults:
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, f_length, crop_factor, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, f_length, crop_factor, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
                                                          ASHIFT_CROP_OFF, 0.0f, 1.0f, 0.0f, 1.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
