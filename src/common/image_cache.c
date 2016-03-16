@@ -16,10 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/image.h"
+#include "common/cache.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
-#include "common/image.h"
 #include "common/image_cache.h"
 #include "control/conf.h"
 #include "develop/develop.h"
@@ -28,11 +29,9 @@
 
 void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
 {
-  entry->cost = sizeof(dt_image_t);
-
   dt_image_t *img = (dt_image_t *)g_malloc(sizeof(dt_image_t));
   dt_image_init(img);
-  entry->data = img;
+  dt_cache_entry_set_data(entry, img);
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
@@ -43,7 +42,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       "raw_parameters, longitude, latitude, altitude, color_matrix, colorspace, version, raw_black, "
       "raw_maximum FROM images WHERE id = ?1",
       -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dt_cache_entry_get_key(entry));
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     img->id = sqlite3_column_int(stmt, 0);
@@ -118,8 +117,8 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   else
   {
     img->id = -1;
-    fprintf(stderr, "[image_cache_allocate] failed to open image %d from database: %s\n", entry->key,
-            sqlite3_errmsg(dt_database_get(darktable.db)));
+    fprintf(stderr, "[image_cache_allocate] failed to open image %d from database: %s\n",
+            dt_cache_entry_get_key(entry), sqlite3_errmsg(dt_database_get(darktable.db)));
   }
   sqlite3_finalize(stmt);
   img->cache_entry = entry; // init backref
@@ -128,7 +127,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
 
 void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = dt_cache_entry_get_data(entry);
   g_free(img->profile);
   g_free(img);
 }
@@ -143,37 +142,38 @@ void dt_image_cache_init(dt_image_cache_t *cache)
   //       can we get away with a fixed size?
   const uint32_t max_mem = 50 * 1024 * 1024;
   uint32_t num = (uint32_t)(1.5f * max_mem / sizeof(dt_image_t));
-  dt_cache_init(&cache->cache, sizeof(dt_image_t), max_mem);
-  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate, cache);
-  dt_cache_set_cleanup_callback(&cache->cache, &dt_image_cache_deallocate, cache);
+  cache->cache = dt_cache_init(sizeof(dt_image_t), max_mem);
+  dt_cache_set_allocate_callback(cache->cache, &dt_image_cache_allocate, cache);
+  dt_cache_set_cleanup_callback(cache->cache, &dt_image_cache_deallocate, cache);
 
   dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
 }
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)
 {
-  dt_cache_cleanup(&cache->cache);
+  dt_cache_cleanup(cache->cache);
 }
 
 void dt_image_cache_print(dt_image_cache_t *cache)
 {
-  printf("[image cache] fill %.2f/%.2f MB (%.2f%%)\n", cache->cache.cost / (1024.0 * 1024.0),
-         cache->cache.cost_quota / (1024.0 * 1024.0),
-         (float)cache->cache.cost / (float)cache->cache.cost_quota);
+  printf("[image cache] fill %.2f/%.2f MB (%.2f%%)\n",
+         (float)dt_cache_get_cost(cache->cache) / (1024.0f * 1024.0f),
+         (float)dt_cache_get_cost_quota(cache->cache) / (1024.0f * 1024.0f),
+         dt_cache_get_usage_percentage(cache->cache));
 }
 
 dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const uint32_t imgid, char mode)
 {
   if(imgid <= 0) return NULL;
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_cache_entry_t *entry = dt_cache_get(cache->cache, imgid, mode);
+  dt_image_t *img = dt_cache_entry_get_data(entry);
   img->cache_entry = entry;
 
   // image cache is leaving the write lock in place in case the image has been newly allocated.
   // this leads to a slight increase in thread contention, so we downgrade the lock.
-  if((ck_rwlock_locked_writer(&entry->lock) == true) && (mode == 'r'))
+  if((dt_cache_entry_locked_writer(entry) == true) && (mode == 'r'))
   {
-    dt_cache_downgrade(&cache->cache, entry);
+    dt_cache_downgrade(cache->cache, entry);
   }
 
   return img;
@@ -182,9 +182,9 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const uint32_t imgid, ch
 dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const uint32_t imgid, char mode)
 {
   if(imgid <= 0) return 0;
-  dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
+  dt_cache_entry_t *entry = dt_cache_testget(cache->cache, imgid, mode);
   if(!entry) return 0;
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = dt_cache_entry_get_data(entry);
   img->cache_entry = entry;
   return img;
 }
@@ -194,7 +194,7 @@ void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
 {
   if(!img || img->id <= 0) return;
   // just force the dt_image_t struct to make sure it has been locked before.
-  dt_cache_release(&cache->cache, img->cache_entry, 'r');
+  dt_cache_release(cache->cache, img->cache_entry, 'r');
 }
 
 // drops the write privileges on an image struct.
@@ -249,14 +249,14 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
     // also synch dttags file:
     dt_image_write_sidecar_file(img->id);
   }
-  dt_cache_release(&cache->cache, img->cache_entry, 'w');
+  dt_cache_release(cache->cache, img->cache_entry, 'w');
 }
 
 
 // remove the image from the cache
 void dt_image_cache_remove(dt_image_cache_t *cache, const uint32_t imgid)
 {
-  dt_cache_remove(&cache->cache, imgid);
+  dt_cache_remove(cache->cache, imgid);
 }
 
 

@@ -18,13 +18,47 @@
 */
 
 #include "common/cache.h"
-#include "common/dtpthread.h"
-#include "common/darktable.h"
+#include "common/darktable.h" // for dt_get_wtime, dt_free_align, dt_alloc_...
+#include <assert.h>           // for assert
+#include <ck_ht.h>            // for ck_ht_hash_direct, ck_ht_entry_key_set...
+#include <ck_malloc.h>        // for ck_malloc
+#include <ck_rwlock.h>        // for ck_rwlock_write_trylock, ck_rwlock_wri...
+#include <ck_spinlock.h>      // for ck_spinlock_fas_unlock, ck_spinlock_fa...
+#include <glib.h>             // for g_slice_free1, g_usleep, g_slice_alloc
+#include <stdio.h>            // for fprintf, stderr
+#include <stdlib.h>           // for free, malloc
+#include <sys/queue.h>        // for dt_cache_entry_t::(anonymous), TAILQ_R...
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <assert.h>
+struct dt_cache_entry_t
+{
+  ck_rwlock_t lock;
+  void *data;
+  size_t cost;
+  uint32_t key;
+  TAILQ_ENTRY(dt_cache_entry_t) list_entry;
+};
+
+struct dt_cache_t
+{
+  ck_spinlock_fas_t spinlock; // big fat lock. we're only expecting a couple hand full of cpu threads to use
+                              // this concurrently.
+
+  size_t entry_size; // cache line allocation
+  size_t cost;       // user supplied cost per cache line (bytes?)
+  size_t cost_quota; // quota to try and meet. but don't use as hard limit.
+
+  ck_ht_t hashtable; // stores (key, entry) pairs
+
+  // last element is most recently used, first is about to be kicked from cache.
+  // NOTE: CK-based implementation would be better, but it is not yet implemented as of 0.5.1
+  TAILQ_HEAD(dt_cache_lru, dt_cache_entry_t) lru;
+
+  // callback functions for cache misses/garbage collection
+  dt_cache_allocate_callback_t allocate;
+  dt_cache_cleanup_callback_t cleanup;
+  void *allocate_data;
+  void *cleanup_data;
+};
 
 // following macros is based on bsd sys/queue.h, almost no other queue.h has it
 #ifndef TAILQ_FOREACH_SAFE
@@ -59,13 +93,42 @@ static void dt_cache_ht_hash(ck_ht_hash_t *h, const void *key, size_t key_length
 }
 
 
+void dt_cache_entry_set_data(dt_cache_entry_t *entry, void *data)
+{
+  entry->data = data;
+}
+
+void *dt_cache_entry_get_data(dt_cache_entry_t *entry)
+{
+  return entry->data;
+}
+
+void dt_cache_entry_set_cost(dt_cache_entry_t *entry, size_t cost)
+{
+  entry->cost = cost;
+}
+
+size_t dt_cache_entry_get_cost(dt_cache_entry_t *entry)
+{
+  return entry->cost;
+}
+
+uint32_t dt_cache_entry_get_key(dt_cache_entry_t *entry)
+{
+  return entry->key;
+}
+
+bool dt_cache_entry_locked_writer(dt_cache_entry_t *entry)
+{
+  return (ck_rwlock_locked_writer(&entry->lock) == true);
+}
+
 // this implements a concurrent LRU cache
 
-void dt_cache_init(
-    dt_cache_t *cache,
-    size_t entry_size,
-    size_t cost_quota)
+dt_cache_t *dt_cache_init(size_t entry_size, size_t cost_quota)
 {
+  dt_cache_t *cache = malloc(sizeof(dt_cache_t));
+
   ck_spinlock_fas_init(&(cache->spinlock));
 
   cache->cost = 0;
@@ -79,13 +142,15 @@ void dt_cache_init(
 
   ck_ht_init(&(cache->hashtable), CK_HT_MODE_DIRECT, dt_cache_ht_hash, &dt_cache_ht_allocator, 8,
              /* unused */ 0);
+
+  return cache;
 }
 
 void dt_cache_cleanup(dt_cache_t *cache)
 {
   ck_ht_destroy(&(cache->hashtable));
 
-  struct dt_cache_entry *entry;
+  dt_cache_entry_t *entry;
   while((entry = TAILQ_FIRST(&(cache->lru))) != NULL)
   {
     TAILQ_REMOVE(&(cache->lru), entry, list_entry);
@@ -97,6 +162,41 @@ void dt_cache_cleanup(dt_cache_t *cache)
 
     g_slice_free1(sizeof(*entry), entry);
   }
+
+  free(cache);
+}
+
+void dt_cache_set_allocate_callback(dt_cache_t *cache, dt_cache_allocate_callback_t allocate,
+                                    void *allocate_data)
+{
+  cache->allocate = allocate;
+  cache->allocate_data = allocate_data;
+}
+
+void dt_cache_set_cleanup_callback(dt_cache_t *cache, dt_cache_cleanup_callback_t cleanup, void *cleanup_data)
+{
+  cache->cleanup = cleanup;
+  cache->cleanup_data = cleanup_data;
+}
+
+dt_cache_cleanup_callback_t dt_cache_get_cleanup_callback(dt_cache_t *cache)
+{
+  return cache->cleanup;
+}
+
+float dt_cache_get_usage_percentage(dt_cache_t *cache)
+{
+  return 100.0f * (float)cache->cost / (float)cache->cost_quota;
+}
+
+size_t dt_cache_get_cost(dt_cache_t *cache)
+{
+  return cache->cost;
+}
+
+size_t dt_cache_get_cost_quota(dt_cache_t *cache)
+{
+  return cache->cost_quota;
 }
 
 static bool dt_cache_ht_remove(ck_ht_t *ht, uintptr_t key)
@@ -342,7 +442,7 @@ restart:
 void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
   int cnt = 0;
-  struct dt_cache_entry *entry, *safe;
+  dt_cache_entry_t *entry, *safe;
   TAILQ_FOREACH_SAFE(entry, &(cache->lru), list_entry, safe)
   {
     cnt++;

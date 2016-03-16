@@ -75,7 +75,7 @@ typedef struct dt_mipmap_buffer_t
 typedef struct dt_mipmap_cache_one_t
 {
   // one cache per mipmap scale!
-  dt_cache_t cache;
+  dt_cache_t *cache;
 
   // a few stats on usage in this run.
   // long int to give 32-bits on old archs, so __sync* calls will work.

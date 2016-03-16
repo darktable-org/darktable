@@ -18,11 +18,12 @@
 */
 
 // unit test for the concurrent LRU cache
-#include "common/cache.h"
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "common/cache.h"
+#include <assert.h> // for assert
+#include <stdio.h>  // for fprintf, stderr
+#include <stdlib.h> // for exit, EXIT_SUCCESS
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -48,50 +49,42 @@ static void test_cache(dt_cache_t *const cache)
     assert(con1 == 0);
     assert(con2 == 1);
     assert(val1 == val2);
-    assert(val2->key == k);
+    assert(dt_cache_entry_get_key(val2) == k);
 #else
     if(!(con1 == 0)) exit(EXIT_FAILURE);
     if(!(con2 == 1)) exit(EXIT_FAILURE);
     if(!(val1 == val2)) exit(EXIT_FAILURE);
-    if(!(val2->key == k)) exit(EXIT_FAILURE);
+    if(!(dt_cache_entry_get_key(val2) == k)) exit(EXIT_FAILURE);
 #endif
 
     dt_cache_release(cache, val1, 'r');
     dt_cache_release(cache, val2, 'r');
   }
 
-  fprintf(stderr,
-          "[passed] inserting %zu entries concurrently; cost = %zu; cost quota = %zu; usage = %05.2f%%\n",
-          goal, cache->cost, cache->cost_quota, 100.0f * (double)cache->cost / (double)cache->cost_quota);
+  fprintf(
+      stderr, "[passed] inserting %zu entries concurrently; cost = %zu; cost quota = %zu; usage = %05.2f%%\n",
+      goal, dt_cache_get_cost(cache), dt_cache_get_cost_quota(cache), dt_cache_get_usage_percentage(cache));
 }
 
 int main(int argc, char *arg[])
 {
   {
-    dt_cache_t cache;
-
     // really hammer it, make quota insanely low:
     const size_t entry_size = 100;
     const size_t cost_quota = (double)entry_size * (double)goal * (double)0.5;
 
-    dt_cache_init(&cache, entry_size, cost_quota);
-
-    test_cache(&cache);
-
-    dt_cache_cleanup(&cache);
+    dt_cache_t *cache = dt_cache_init(entry_size, cost_quota);
+    test_cache(cache);
+    dt_cache_cleanup(cache);
   }
 
   {
     // now a harder case: a cache with only one entry and a lot of threads fighting over it:
 
-    dt_cache_t cache;
-
     // really hammer it, make quota insanely low:
-    dt_cache_init(&cache, 1, 2);
-
-    test_cache(&cache);
-
-    dt_cache_cleanup(&cache);
+    dt_cache_t *cache = dt_cache_init(1, 2);
+    test_cache(cache);
+    dt_cache_cleanup(cache);
   }
 
   exit(EXIT_SUCCESS);

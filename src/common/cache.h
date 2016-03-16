@@ -19,72 +19,40 @@
 #ifndef DT_COMMON_CACHE_H
 #define DT_COMMON_CACHE_H
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-fpermissive"
-#include <ck_ht.h>
-#include <ck_pr.h>
-#include <ck_spinlock.h>
-#include <ck_rwlock.h>
-#pragma GCC diagnostic pop
+#include <stdbool.h> // for bool
+#include <stddef.h>  // for size_t
+#include <stdint.h>  // for uint32_t, int32_t
 
-#include <sys/queue.h>
+typedef struct dt_cache_entry_t dt_cache_entry_t;
+typedef struct dt_cache_t dt_cache_t;
 
-#include "common/dtpthread.h"
-#include <inttypes.h>
-#include <stddef.h>
-#include <glib.h>
+typedef void((*dt_cache_allocate_callback_t)(void *, dt_cache_entry_t *entry));
+typedef void((*dt_cache_cleanup_callback_t)(void *, dt_cache_entry_t *entry));
 
-typedef struct dt_cache_entry
-{
-  ck_rwlock_t lock;
-  void *data;
-  size_t cost;
-  uint32_t key;
-  TAILQ_ENTRY(dt_cache_entry) list_entry;
-} dt_cache_entry_t;
+void dt_cache_entry_set_data(dt_cache_entry_t *entry, void *data);
+void *dt_cache_entry_get_data(dt_cache_entry_t *entry);
 
-typedef struct dt_cache_t
-{
-  ck_spinlock_fas_t spinlock; // big fat lock. we're only expecting a couple hand full of cpu threads to use this concurrently.
+void dt_cache_entry_set_cost(dt_cache_entry_t *entry, size_t cost);
+size_t dt_cache_entry_get_cost(dt_cache_entry_t *entry);
 
-  size_t entry_size; // cache line allocation
-  size_t cost;       // user supplied cost per cache line (bytes?)
-  size_t cost_quota; // quota to try and meet. but don't use as hard limit.
+uint32_t dt_cache_entry_get_key(dt_cache_entry_t *entry);
 
-  ck_ht_t hashtable; // stores (key, entry) pairs
-
-  // last element is most recently used, first is about to be kicked from cache.
-  // NOTE: CK-based implementation would be better, but it is not yet implemented as of 0.5.1
-  TAILQ_HEAD(dt_cache_lru, dt_cache_entry) lru;
-
-  // callback functions for cache misses/garbage collection
-  void (*allocate)(void *userdata, dt_cache_entry_t *entry);
-  void (*cleanup)(void *userdata, dt_cache_entry_t *entry);
-  void *allocate_data;
-  void *cleanup_data;
-}
-dt_cache_t;
+bool dt_cache_entry_locked_writer(dt_cache_entry_t *entry);
 
 // entry size is only used if alloc callback is 0
-void dt_cache_init(dt_cache_t *cache, size_t entry_size, size_t cost_quota);
+dt_cache_t *dt_cache_init(size_t entry_size, size_t cost_quota);
 void dt_cache_cleanup(dt_cache_t *cache);
 
-static inline void dt_cache_set_allocate_callback(
-    dt_cache_t *cache,
-    void (*allocate)(void *, dt_cache_entry_t *entry),
-    void *allocate_data)
-{
-  cache->allocate = allocate;
-  cache->allocate_data = allocate_data;
-}
-static inline void dt_cache_set_cleanup_callback(
-    dt_cache_t *cache,
-    void (*cleanup)(void *, dt_cache_entry_t *entry),
-    void *cleanup_data)
-{
-  cache->cleanup = cleanup;
-  cache->cleanup_data = cleanup_data;
-}
+void dt_cache_set_allocate_callback(dt_cache_t *cache, dt_cache_allocate_callback_t allocate,
+                                    void *allocate_data);
+
+void dt_cache_set_cleanup_callback(dt_cache_t *cache, dt_cache_cleanup_callback_t cleanup, void *cleanup_data);
+
+dt_cache_cleanup_callback_t dt_cache_get_cleanup_callback(dt_cache_t *cache);
+
+float dt_cache_get_usage_percentage(dt_cache_t *cache);
+size_t dt_cache_get_cost(dt_cache_t *cache);
+size_t dt_cache_get_cost_quota(dt_cache_t *cache);
 
 // returns a slot in the cache for this key (newly allocated if need be), locked according to mode (r, w)
 #define dt_cache_get(A, B, C)  dt_cache_get_with_caller(A, B, C, __FILE__, __LINE__)
@@ -114,6 +82,7 @@ int dt_cache_for_all(dt_cache_t *cache,
     void *user_data);
 
 #endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
