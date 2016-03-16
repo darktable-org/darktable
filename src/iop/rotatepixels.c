@@ -324,7 +324,7 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_rotatepixels_params_t tmp = { 0 };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!self || !self->dev) goto end;
+  if(!self->dev) goto end;
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
