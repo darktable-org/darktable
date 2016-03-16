@@ -310,20 +310,21 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
   if(darktable.gui->reset) return;
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+  }
   else
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   dt_iop_request_focus(self);
 
-  /* set the area sample size */
   if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     dt_dev_reprocess_all(self->dev);
-  }
   else
     dt_control_queue_redraw();
+
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 }
 
 static void target_L_callback(GtkWidget *slider, gpointer user_data)
