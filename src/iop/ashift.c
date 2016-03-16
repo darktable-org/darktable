@@ -158,8 +158,9 @@ typedef enum dt_iop_ashift_fitaxis_t
   ASHIFT_FIT_ROTATION      = 1 << 0,  // flag indicates to fit rotation angle
   ASHIFT_FIT_LENS_VERT     = 1 << 1,  // flag indicates to fit vertical lens shift
   ASHIFT_FIT_LENS_HOR      = 1 << 2,  // flag indicates to fit horizontal lens shift
-  ASHIFT_FIT_LINES_VERT    = 1 << 3,  // use vertical lines for fitting
-  ASHIFT_FIT_LINES_HOR     = 1 << 4,  // use horizontal lines for fitting
+  ASHIFT_FIT_SHEAR         = 1 << 3,  // flag indicates to fit shear parameter
+  ASHIFT_FIT_LINES_VERT    = 1 << 4,  // use vertical lines for fitting
+  ASHIFT_FIT_LINES_HOR     = 1 << 5,  // use horizontal lines for fitting
   ASHIFT_FIT_LENS_BOTH = ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR,
   ASHIFT_FIT_LINES_BOTH = ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
   ASHIFT_FIT_VERTICALLY = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LINES_VERT,
@@ -170,6 +171,8 @@ typedef enum dt_iop_ashift_fitaxis_t
   ASHIFT_FIT_HORIZONTALLY_NO_ROTATION = ASHIFT_FIT_LENS_HOR | ASHIFT_FIT_LINES_HOR,
   ASHIFT_FIT_BOTH_NO_ROTATION = ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR |
                                 ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
+  ASHIFT_FIT_BOTH_SHEAR = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR |
+                    ASHIFT_FIT_SHEAR | ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
   ASHIFT_FIT_ROTATION_VERTICAL_LINES = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LINES_VERT,
   ASHIFT_FIT_ROTATION_HORIZONTAL_LINES = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LINES_HOR,
   ASHIFT_FIT_ROTATION_BOTH_LINES = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
@@ -300,9 +303,11 @@ typedef struct dt_iop_ashift_fit_params_t
   float rotation;
   float lensshift_v;
   float lensshift_h;
+  float shear;
   float rotation_range;
   float lensshift_v_range;
   float lensshift_h_range;
+  float shear_range;
 } dt_iop_ashift_fit_params_t;
 
 typedef struct dt_iop_ashift_cropfit_params_t
@@ -345,6 +350,7 @@ typedef struct dt_iop_ashift_gui_data_t
   float rotation_range;
   float lensshift_v_range;
   float lensshift_h_range;
+  float shear_range;
   dt_iop_ashift_line_t *lines;
   int lines_in_width;
   int lines_in_height;
@@ -1171,7 +1177,7 @@ static int line_detect(const float *in, const int width, const int height, const
       ashift_lines[lct].p1[2] = 1.0f;
       ashift_lines[lct].p2[0] = px2;
       ashift_lines[lct].p2[1] = py2;
-      ashift_lines[lct].p2[2] = 1.0f;;
+      ashift_lines[lct].p2[2] = 1.0f;
 
       // calculate homogeneous coordinates of connecting line (defined by the two points)
       vec3prodn(ashift_lines[lct].L, ashift_lines[lct].p1, ashift_lines[lct].p2);
@@ -1664,10 +1670,11 @@ static double model_fitness(double *params, void *data)
   float rotation = fit->rotation;
   float lensshift_v = fit->lensshift_v;
   float lensshift_h = fit->lensshift_h;
-  float shear = 0.0f;
+  float shear = fit->shear;
   float rotation_range = fit->rotation_range;
   float lensshift_v_range = fit->lensshift_v_range;
   float lensshift_h_range = fit->lensshift_h_range;
+  float shear_range = fit->shear_range;
 
   int pcount = 0;
 
@@ -1687,6 +1694,12 @@ static double model_fitness(double *params, void *data)
   if(isnan(lensshift_h))
   {
     lensshift_h = ilogit(params[pcount], -lensshift_h_range, lensshift_h_range);
+    pcount++;
+  }
+
+  if(isnan(shear))
+  {
+    shear = ilogit(params[pcount], -shear_range, shear_range);
     pcount++;
   }
 
@@ -1744,7 +1757,7 @@ static double model_fitness(double *params, void *data)
     weight_v  += isvertical ? lines[n].weight : 0.0;
     count_v += isvertical ? 1 : 0;
     sumsq_h += !isvertical ? s * s * lines[n].weight : 0.0;
-    weight_h  += !isvertical ? lines[n].weight : 0.0;;
+    weight_h  += !isvertical ? lines[n].weight : 0.0;
     count_h += !isvertical ? 1 : 0;
     count++;
   }
@@ -1756,8 +1769,8 @@ static double model_fitness(double *params, void *data)
   //double sum = sqrt(v + h) * 1.0e6;
 
 #ifdef ASHIFT_DEBUG
-  printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f -> lines %d, quality %10f\n",
-         rotation, lensshift_v, lensshift_h, count, sum);
+  printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f, shear %f -> lines %d, quality %10f\n",
+         rotation, lensshift_v, lensshift_h, shear, count, sum);
 #endif
 
   return sum;
@@ -1771,7 +1784,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   if(!g->lines) return NMS_NOT_ENOUGH_LINES;
   if(dir == ASHIFT_FIT_NONE) return NMS_SUCCESS;
 
-  double params[3];
+  double params[4];
   int pcount = 0;
   int enough_lines = TRUE;
 
@@ -1787,9 +1800,11 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   fit.rotation = p->rotation;
   fit.lensshift_v = p->lensshift_v;
   fit.lensshift_h = p->lensshift_h;
+  fit.shear = p->shear;
   fit.rotation_range = g->rotation_range;
   fit.lensshift_v_range = g->lensshift_v_range;
   fit.lensshift_h_range = g->lensshift_h_range;
+  fit.shear_range = g->shear_range;
   fit.linetype = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
   fit.linemask = ASHIFT_LINE_MASK;
   fit.params_count = 0;
@@ -1840,6 +1855,15 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
     fit.lensshift_h = NAN;
   }
 
+  if(mdir & ASHIFT_FIT_SHEAR)
+  {
+    // we fit the shear parameter
+    fit.params_count++;
+    params[pcount] = logit(fit.shear, -fit.shear_range, fit.shear_range);
+    pcount++;
+    fit.shear = NAN;
+  }
+
   if(mdir & ASHIFT_FIT_LINES_VERT)
   {
     // we use vertical lines for fitting
@@ -1881,10 +1905,10 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   p->rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range) : fit.rotation;
   p->lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range) : fit.lensshift_v;
   p->lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
-
+  p->shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
 #ifdef ASHIFT_DEBUG
-  printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f\n",
-         iter, p->rotation, p->lensshift_v, p->lensshift_h);
+  printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f, shear %f\n",
+         iter, p->rotation, p->lensshift_v, p->lensshift_h, shear);
 #endif
 
   return NMS_SUCCESS;
@@ -1900,7 +1924,7 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
   if(!g->lines) return;
   if(dir == ASHIFT_FIT_NONE) return;
 
-  double params[3];
+  double params[4];
   int enough_lines = TRUE;
 
   // initialize fit parameters
@@ -1915,6 +1939,7 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
   fit.rotation = p->rotation;
   fit.lensshift_v = p->lensshift_v;
   fit.lensshift_h = p->lensshift_h;
+  fit.shear = p->shear;
   fit.linetype = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
   fit.linemask = ASHIFT_LINE_MASK;
   fit.params_count = 0;
@@ -1959,8 +1984,8 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
 
   double quality = model_fitness(params, (void *)&fit);
 
-  printf("model fitness: %.8f (rotation %f, lensshift_v %f, lensshift_h %f)\n",
-         quality, p->rotation, p->lensshift_v, p->lensshift_h);
+  printf("model fitness: %.8f (rotation %f, lensshift_v %f, lensshift_h %f, shear %f)\n",
+         quality, p->rotation, p->lensshift_v, p->lensshift_h, shear);
 }
 #endif
 
@@ -3320,6 +3345,7 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+      dt_bauhaus_slider_set(g->shear, p->shear);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -3364,6 +3390,7 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+      dt_bauhaus_slider_set(g->shear, p->shear);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -3393,7 +3420,9 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
-    if(control)
+    if(control && shift)
+      fitaxis = ASHIFT_FIT_BOTH_SHEAR;
+    else if(control)
       fitaxis = ASHIFT_FIT_ROTATION_BOTH_LINES;
     else if(shift)
       fitaxis = ASHIFT_FIT_BOTH_NO_ROTATION;
@@ -3408,6 +3437,7 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
       dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+      dt_bauhaus_slider_set(g->shear, p->shear);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -3643,6 +3673,7 @@ void reload_defaults(dt_iop_module_t *module)
     g->rotation_range = ROTATION_RANGE_SOFT;
     g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
     g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
+    g->shear_range = SHEAR_RANGE;
     g->lines_suppressed = 0;
     g->lines_version = 0;
     g->show_guides = 0;
@@ -3792,6 +3823,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->rotation_range = ROTATION_RANGE_SOFT;
   g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
   g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
+  g->shear_range = SHEAR_RANGE;
   g->show_guides = 0;
   g->isselecting = 0;
   g->isdeselecting = 0;
@@ -3963,7 +3995,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->fit_both, _("automatically correct for vertical and "
                                              "horizontal perspective distortions\n"
                                              "ctrl-click to only fit rotation\n"
-                                             "shift-click to only fit lens shift"));
+                                             "shift-click to only fit lens shift"
+                                             "shift-ctrl-click to also fit shear"));
   gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
                                               "ctrl-click for an additional edge enhancement"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
