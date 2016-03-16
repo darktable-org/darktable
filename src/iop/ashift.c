@@ -3998,7 +3998,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->fit_both, _("automatically correct for vertical and "
                                              "horizontal perspective distortions\n"
                                              "ctrl-click to only fit rotation\n"
-                                             "shift-click to only fit lens shift"
+                                             "shift-click to only fit lens shift\n"
                                              "shift-ctrl-click to also fit shear"));
   gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
                                               "ctrl-click for an additional edge enhancement"));
