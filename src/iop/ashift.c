@@ -53,7 +53,8 @@
 #define ROTATION_RANGE_SOFT 20              // allowed min/max range for rotation parameter with manual adjustment
 #define LENSSHIFT_RANGE 0.5                 // allowed min/max default range for lensshift paramters
 #define LENSSHIFT_RANGE_SOFT 1              // allowed min/max range for lensshift paramters with manual adjustment
-#define SHEAR_RANGE 0.5                     // allowed min/max range for shdar parameter
+#define SHEAR_RANGE 0.2                     // allowed min/max range for shear parameter
+#define SHEAR_RANGE_SOFT 0.5                // allowed min/max range for shear parameter with manual adjustment
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
@@ -3345,7 +3346,7 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-      dt_bauhaus_slider_set(g->shear, p->shear);
+      dt_bauhaus_slider_set_soft(g->shear, p->shear);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -3390,7 +3391,7 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-      dt_bauhaus_slider_set(g->shear, p->shear);
+      dt_bauhaus_slider_set_soft(g->shear, p->shear);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -3437,7 +3438,7 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
       dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-      dt_bauhaus_slider_set(g->shear, p->shear);
+      dt_bauhaus_slider_set_soft(g->shear, p->shear);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -3557,7 +3558,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
   dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-  dt_bauhaus_slider_set(g->shear, p->shear);
+  dt_bauhaus_slider_set_soft(g->shear, p->shear);
   dt_bauhaus_slider_set_soft(g->f_length, p->f_length);
   dt_bauhaus_slider_set_soft(g->crop_factor, p->crop_factor);
   dt_bauhaus_slider_set(g->orthocorr, p->orthocorr);
@@ -3673,7 +3674,7 @@ void reload_defaults(dt_iop_module_t *module)
     g->rotation_range = ROTATION_RANGE_SOFT;
     g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
     g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
-    g->shear_range = SHEAR_RANGE;
+    g->shear_range = SHEAR_RANGE_SOFT;
     g->lines_suppressed = 0;
     g->lines_version = 0;
     g->show_guides = 0;
@@ -3823,7 +3824,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->rotation_range = ROTATION_RANGE_SOFT;
   g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
   g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
-  g->shear_range = SHEAR_RANGE;
+  g->shear_range = SHEAR_RANGE_SOFT;
   g->show_guides = 0;
   g->isselecting = 0;
   g->isdeselecting = 0;
@@ -3849,7 +3850,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->shear = dt_bauhaus_slider_new_with_range(self, -SHEAR_RANGE, SHEAR_RANGE, 0.01*SHEAR_RANGE, p->shear, 3);
   dt_bauhaus_widget_set_label(g->shear, NULL, _("shear"));
-  //dt_bauhaus_slider_enable_soft_boundaries(g->shear, -SHEAR_RANGE_SOFT, SHEAR_RANGE_SOFT);
+  dt_bauhaus_slider_enable_soft_boundaries(g->shear, -SHEAR_RANGE_SOFT, SHEAR_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->shear, TRUE, TRUE, 0);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
