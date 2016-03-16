@@ -580,7 +580,7 @@ static void print_roi(const dt_iop_roi_t *roi, const char *label)
 #define MAT3SWAP(a, b) { float (*tmp)[3] = (a); (a) = (b); (b) = tmp; }
 
 static void homography(float *homograph, const float angle, const float shift_v, const float shift_h,
-                       const float f_length_kb, const float orthocorr, const float aspect,
+                       const float shear, const float f_length_kb, const float orthocorr, const float aspect,
                        const int width, const int height, dt_iop_ashift_homodir_t dir)
 {
   // calculate homograph that combines all translations, rotations
@@ -727,8 +727,20 @@ static void homography(float *homograph, const float angle, const float shift_v,
   // multiply mwork * minput -> moutput
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
+  // Step 9: apply shearing
+  memset(mwork, 0, 9 * sizeof(float));
+  mwork[0][0] = 1.0f;
+  mwork[0][1] = shear;
+  mwork[1][1] = 1.0f;
+  mwork[1][0] = shear;
+  mwork[2][2] = 1.0f;
 
-  // Step 9: find x/y offsets and apply according correction so that
+  // moutput (of last calculation) -> minput
+  MAT3SWAP(minput, moutput);
+  // multiply mwork * minput -> moutput
+  mat3mul((float *)moutput, (float *)mwork, (float *)minput);
+
+  // Step 10: find x/y offsets and apply according correction so that
   // no negative coordinates occur in output vector
   float umin = FLT_MAX, vmin = FLT_MAX;
   // visit all four corners
@@ -739,11 +751,12 @@ static void homography(float *homograph, const float angle, const float shift_v,
       pi[0] = x;
       pi[1] = y;
       pi[2] = 1.0f;
-      // m2 expects input in (x:y:1) format and gives output as (x:y:1)
-      mat3mulv(po, (float *)minput, pi);
+      // moutput expects input in (x:y:1) format and gives output as (x:y:1)
+      mat3mulv(po, (float *)moutput, pi);
       umin = fmin(umin, po[0] / po[2]);
       vmin = fmin(vmin, po[1] / po[2]);
     }
+
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = 1.0f;
   mwork[1][1] = 1.0f;
@@ -785,7 +798,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   // clipping offset
@@ -816,7 +829,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   // clipping offset
@@ -847,7 +860,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   *roi_out = *roi_in;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
@@ -903,7 +916,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   *roi_in = *roi_out;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   const float orig_w = roi_in->scale * piece->buf_in.width;
@@ -1651,6 +1664,7 @@ static double model_fitness(double *params, void *data)
   float rotation = fit->rotation;
   float lensshift_v = fit->lensshift_v;
   float lensshift_h = fit->lensshift_h;
+  float shear = 0.0f;
   float rotation_range = fit->rotation_range;
   float lensshift_v_range = fit->lensshift_v_range;
   float lensshift_h_range = fit->lensshift_h_range;
@@ -1684,7 +1698,7 @@ static double model_fitness(double *params, void *data)
 
   // generate homograph out of the parameters
   float homograph[3][3];
-  homography((float *)homograph, rotation, lensshift_v, lensshift_h, f_length_kb,
+  homography((float *)homograph, rotation, lensshift_v, lensshift_h, shear, f_length_kb,
              orthocorr, aspect, width, height, ASHIFT_HOMOGRAPH_FORWARD);
 
   // accounting variables
@@ -2076,12 +2090,13 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   const float rotation = p->rotation;
   const float lensshift_v = p->lensshift_v;
   const float lensshift_h = p->lensshift_h;
+  const float shear = p->shear;
 
   // prepare structure of constant parameters
   dt_iop_ashift_cropfit_params_t cropfit;
   cropfit.width = g->buf_width;
   cropfit.height = g->buf_height;
-  homography((float *)cropfit.homograph, rotation, lensshift_v, lensshift_h, f_length_kb,
+  homography((float *)cropfit.homograph, rotation, lensshift_v, lensshift_h, shear, f_length_kb,
              orthocorr, aspect, cropfit.width, cropfit.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   const float wd = cropfit.width;
@@ -2326,7 +2341,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   // clipping offset
@@ -2441,7 +2456,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h, d->f_length_kb,
+  homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h, d->shear, d->f_length_kb,
              d->orthocorr, d->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   // clipping offset
