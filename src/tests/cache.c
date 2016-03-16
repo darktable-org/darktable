@@ -37,7 +37,7 @@ static void test_cache(dt_cache_t *const cache)
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(guided) num_threads(threads)
 #endif
-  for(size_t k = 0; k < goal; k++)
+  for(size_t k = 1; k < goal; k++)
   {
     const int con1 = dt_cache_contains(cache, k);
     dt_cache_entry_t *val1 = dt_cache_get(cache, k, 'r');

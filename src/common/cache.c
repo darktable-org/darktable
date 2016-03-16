@@ -43,6 +43,9 @@ static struct ck_malloc dt_cache_ht_allocator = {.malloc = dt_cache_ht_malloc, .
 static void dt_cache_ht_hash(ck_ht_hash_t *h, const void *key, size_t key_length, uint64_t seed)
 {
   const uintptr_t *value = key;
+
+  assert((*value > 0) && (*value < UINTPTR_MAX));
+
   (void)key_length;
   (void)seed;
   h->value = *value;
@@ -93,6 +96,8 @@ void dt_cache_cleanup(dt_cache_t *cache)
 
 static bool dt_cache_ht_remove(ck_ht_t *ht, uintptr_t key)
 {
+  assert((key > 0) && (key < UINTPTR_MAX));
+
   ck_ht_entry_t entry;
   ck_ht_hash_t h;
 
@@ -103,6 +108,8 @@ static bool dt_cache_ht_remove(ck_ht_t *ht, uintptr_t key)
 
 static void *dt_cache_ht_get(ck_ht_t *ht, uintptr_t key)
 {
+  assert((key > 0) && (key < UINTPTR_MAX));
+
   ck_ht_entry_t entry;
   ck_ht_hash_t h;
 
@@ -115,6 +122,8 @@ static void *dt_cache_ht_get(ck_ht_t *ht, uintptr_t key)
 
 static bool dt_cache_ht_insert(ck_ht_t *ht, const uintptr_t key, const void *value)
 {
+  assert((key > 0) && (key < UINTPTR_MAX));
+
   ck_ht_entry_t entry;
   ck_ht_hash_t h;
 
@@ -125,6 +134,8 @@ static bool dt_cache_ht_insert(ck_ht_t *ht, const uintptr_t key, const void *val
 
 int32_t dt_cache_contains(dt_cache_t *cache, const uint32_t key)
 {
+  assert((key > 0) /*&& (key < UINTPTR_MAX)*/);
+
   dt_pthread_mutex_lock(&cache->lock);
   ck_ht_entry_t entry;
   ck_ht_hash_t h;
@@ -162,6 +173,8 @@ int dt_cache_for_all(
 // never attempt to allocate a new slot.
 dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char mode)
 {
+  assert((key > 0) /*&& (key < UINTPTR_MAX)*/);
+
   double start = dt_get_wtime();
   dt_pthread_mutex_lock(&cache->lock);
 
@@ -203,6 +216,8 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 // found using the given key later on.
 dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key, char mode, const char *file, int line)
 {
+  assert((key > 0) /*&& (key < UINTPTR_MAX)*/);
+
   double start = dt_get_wtime();
 restart:
   dt_pthread_mutex_lock(&cache->lock);

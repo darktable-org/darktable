@@ -156,21 +156,25 @@ static inline int32_t buffer_is_broken(dt_mipmap_buffer_t *buf)
 }
 #endif
 
+#define SIZE_SHIFT (28)
+
 static inline uint32_t get_key(const uint32_t imgid, const dt_mipmap_size_t size)
 {
   // imgid can't be >= 2^28 (~250 million images)
-  return (((uint32_t)size) << 28) | (imgid - 1);
+  return ((((uint32_t)size) << (SIZE_SHIFT)) | (imgid));
 }
 
 static inline uint32_t get_imgid(const uint32_t key)
 {
-  return (key & 0xfffffff) + 1;
+  return (key & ((1 << (SIZE_SHIFT)) - 1));
 }
 
 static inline dt_mipmap_size_t get_size(const uint32_t key)
 {
-  return (dt_mipmap_size_t)(key >> 28);
+  return (dt_mipmap_size_t)(key >> (SIZE_SHIFT));
 }
+
+#undef SIZE_SHIFT
 
 static int dt_mipmap_cache_get_filename(gchar *mipmapfilename, size_t size)
 {
