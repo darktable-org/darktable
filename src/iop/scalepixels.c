@@ -250,7 +250,7 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_scalepixels_params_t tmp = (dt_iop_scalepixels_params_t){ .pixel_aspect_ratio = 1.0f };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!self || !self->dev) goto end;
+  if(!self->dev) goto end;
 
   const dt_image_t *const image = &(self->dev->image_storage);
 

@@ -1103,7 +1103,7 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_lensfun_params_t tmp = { 0 };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module || !module->dev) goto end;
+  if(!module->dev) goto end;
 
   const dt_image_t *img = &module->dev->image_storage;
 

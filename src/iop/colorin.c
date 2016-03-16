@@ -995,7 +995,7 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .blue_mapping = 0 };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module || !module->dev) goto end;
+  if(!module->dev) goto end;
 
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
