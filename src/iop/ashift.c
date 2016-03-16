@@ -888,7 +888,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       pin[1] /= roi_in->scale;
       pin[2] = 1.0f;
 
-      // apply hompgraph
+      // apply homograph
       mat3mulv(pout, (float *)homograph, pin);
 
       // convert to output image coordinates
@@ -1383,7 +1383,7 @@ static int fact(const int n)
 // combined with the highest total weight wins.
 // Disadvantage: compared to the original RANSAC we don't get any model parameters that
 // we could use for the following NMS fit.
-// Self optimization: we optimize "epsilon", the hurdle line to reject a line as an outlier,
+// Self optimization: we optimize "epsilon", the hurdle rate to reject a line as an outlier,
 // by a number of dry runs first. The target average percentage value of lines to eliminate as
 // outliers (without judging on the quality of the model) is given by RANSAC_ELIMINATION_RATIO,
 // note: the actual percentage of outliers removed in the final run will be lower because we
@@ -1552,7 +1552,7 @@ static int remove_outliers(dt_iop_module_t *module)
   // holds the result of ransac
   int inout_set[g->lines_count];
 
-  // some counting variables
+  // some accounting variables
   int vnb = 0, vcount = 0;
   int hnb = 0, hcount = 0;
 
@@ -1911,7 +1911,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   p->shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
 #ifdef ASHIFT_DEBUG
   printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f, shear %f\n",
-         iter, p->rotation, p->lensshift_v, p->lensshift_h, shear);
+         iter, p->rotation, p->lensshift_v, p->lensshift_h, p->shear);
 #endif
 
   return NMS_SUCCESS;
@@ -1988,7 +1988,7 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
   double quality = model_fitness(params, (void *)&fit);
 
   printf("model fitness: %.8f (rotation %f, lensshift_v %f, lensshift_h %f, shear %f)\n",
-         quality, p->rotation, p->lensshift_v, p->lensshift_h, shear);
+         quality, p->rotation, p->lensshift_v, p->lensshift_h, p->shear);
 }
 #endif
 
