@@ -69,7 +69,7 @@
 #define MINIMUM_FITLINES 4                  // minimum number of lines needed for automatic parameter fit
 #define NMS_EPSILON 1e-3                    // break criterion for Nelder-Mead simplex
 #define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
-#define NMS_ITERATIONS 200                  // number of iterations for Nelder-Mead simplex
+#define NMS_ITERATIONS 400                  // number of iterations for Nelder-Mead simplex
 #define NMS_CROP_EPSILON 100.0              // break criterion for Nelder-Mead simplex on crop fitting
 #define NMS_CROP_SCALE 0.5                  // scaling factor for Nelder-Mead simplex on crop fitting
 #define NMS_CROP_ITERATIONS 100             // number of iterations for Nelder-Mead simplex on crop fitting
