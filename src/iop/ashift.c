@@ -655,7 +655,21 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 3: apply vertical lens shift effect
+  // Step 3: apply shearing
+  memset(mwork, 0, 9 * sizeof(float));
+  mwork[0][0] = 1.0f;
+  mwork[0][1] = shear;
+  mwork[1][1] = 1.0f;
+  mwork[1][0] = shear;
+  mwork[2][2] = 1.0f;
+
+  // moutput (of last calculation) -> minput
+  MAT3SWAP(minput, moutput);
+  // multiply mwork * minput -> moutput
+  mat3mul((float *)moutput, (float *)mwork, (float *)minput);
+
+
+  // Step 4: apply vertical lens shift effect
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = exppa_v;
   mwork[1][0] = 0.5f * ((exppa_v - 1.0f) * u) / v;
@@ -670,7 +684,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 4: horizontal compression
+  // Step 5: horizontal compression
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = 1.0f;
   mwork[1][1] = r_v;
@@ -683,7 +697,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 5: flip x and y back again
+  // Step 6: flip x and y back again
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][1] = 1.0f;
   mwork[1][0] = 1.0f;
@@ -697,7 +711,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
   // from here output vectors would be in (x : y : 1) format
 
-  // Step 6: now we can apply horizontal lens shift with the same matrix format as above
+  // Step 7: now we can apply horizontal lens shift with the same matrix format as above
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = exppa_h;
   mwork[1][0] = 0.5f * ((exppa_h - 1.0f) * v) / u;
@@ -712,7 +726,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 7: vertical compression
+  // Step 8: vertical compression
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = 1.0f;
   mwork[1][1] = r_h;
@@ -725,7 +739,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 8: apply aspect ratio scaling
+  // Step 9: apply aspect ratio scaling
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = 1.0f * ascale;
   mwork[1][1] = 1.0f / ascale;
@@ -736,18 +750,6 @@ static void homography(float *homograph, const float angle, const float shift_v,
   // multiply mwork * minput -> moutput
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
-  // Step 9: apply shearing
-  memset(mwork, 0, 9 * sizeof(float));
-  mwork[0][0] = 1.0f;
-  mwork[0][1] = shear;
-  mwork[1][1] = 1.0f;
-  mwork[1][0] = shear;
-  mwork[2][2] = 1.0f;
-
-  // moutput (of last calculation) -> minput
-  MAT3SWAP(minput, moutput);
-  // multiply mwork * minput -> moutput
-  mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
   // Step 10: find x/y offsets and apply according correction so that
   // no negative coordinates occur in output vector
@@ -3424,13 +3426,13 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
     if(control && shift)
-      fitaxis = ASHIFT_FIT_BOTH_SHEAR;
+      fitaxis = ASHIFT_FIT_BOTH;
     else if(control)
       fitaxis = ASHIFT_FIT_ROTATION_BOTH_LINES;
     else if(shift)
       fitaxis = ASHIFT_FIT_BOTH_NO_ROTATION;
     else
-      fitaxis = ASHIFT_FIT_BOTH;
+      fitaxis = ASHIFT_FIT_BOTH_SHEAR;
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
@@ -3996,10 +3998,11 @@ void gui_init(struct dt_iop_module_t *self)
                                           "ctrl-click to only fit rotation\n"
                                           "shift-click to only fit lens shift"));
   gtk_widget_set_tooltip_text(g->fit_both, _("automatically correct for vertical and "
-                                             "horizontal perspective distortions\n"
+                                             "horizontal perspective distortions; fitting rotation,"
+                                             "lens shift in both directions, and shear\n"
                                              "ctrl-click to only fit rotation\n"
                                              "shift-click to only fit lens shift\n"
-                                             "shift-ctrl-click to also fit shear"));
+                                             "ctrl-shift-click to only fit rotation and lens shift"));
   gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
                                               "ctrl-click for an additional edge enhancement"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
