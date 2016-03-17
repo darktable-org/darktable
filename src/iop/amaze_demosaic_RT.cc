@@ -18,7 +18,7 @@
 
 #define __STDC_FORMAT_MACROS
 
-#include <algorithm>
+#define POISON_H
 
 extern "C" {
 #include "develop/imageop.h"
@@ -30,6 +30,8 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                        float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                        const int filters);
 }
+
+#include <algorithm>
 
 static __inline float clampnan(const float x, const float m, const float M)
 {
