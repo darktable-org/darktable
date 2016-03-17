@@ -489,7 +489,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 
 #define SQR(x) ((x) * (x))
 // tile size, optimized to keep data in L2 cache
-#define TS 96
+#define TS 122
 
 /** Lookup for allhex[], making sure that row/col aren't negative **/
 static inline const short *const hexmap(const int row, const int col,
@@ -3460,7 +3460,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_demosaic_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 133; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 123; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
