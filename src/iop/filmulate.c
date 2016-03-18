@@ -95,11 +95,11 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 /** modify regions of interest; filmulation requires the full image. **/
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);
-void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, 
-                   const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
-{
-  *roi_in = piece->buf_in;
-}
+//void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, 
+//                   const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+//{
+//  *roi_in = piece->buf_in;
+//}
 
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
@@ -268,8 +268,8 @@ void gui_init(dt_iop_module_t *self)
   g->drama = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 0.0f, 20.0f, 2);
   g->overdrive = dt_bauhaus_combobox_new(self);
 
-  dt_bauhaus_combobox_add(g->overdrive, _("Off"));
-  dt_bauhaus_combobox_add(g->overdrive, _("On"));
+  dt_bauhaus_combobox_add(g->overdrive, _("off"));
+  dt_bauhaus_combobox_add(g->overdrive, _("on"));
   
   dt_bauhaus_widget_set_label(g->rolloff_boundary, NULL, _("rolloff boundary"));
   gtk_widget_set_tooltip_text(g->rolloff_boundary, _("sets the point above which the highlights gently stop getting brighter. if you've got completely unclipped highlights before filmulation, raise this to 1."));
