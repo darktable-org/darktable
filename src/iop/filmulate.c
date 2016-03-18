@@ -66,7 +66,7 @@ typedef struct dt_iop_filmulate_global_data_t
 const char *name()
 {
   // make sure you put all your translatable strings into _() !
-  return _("Filmulate");
+  return _("filmulate");
 }
 
 // some additional flags (self explanatory i think):
@@ -98,29 +98,19 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, 
                    const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
-  *roi_in = (piece->buf_in);
+  *roi_in = piece->buf_in;
 }
 
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  /*
   dt_iop_color_intent_t intent = DT_INTENT_PERCEPTUAL;
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   const cmsHPROFILE Rec2020 = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_ANY)->profile;
   cmsHTRANSFORM transform_lab_to_lin_rec2020 = cmsCreateTransform(Lab, TYPE_RGBA_FLT, Rec2020, TYPE_RGBA_FLT, intent, 0);
   cmsHTRANSFORM transform_lin_rec2020_to_lab = cmsCreateTransform(Rec2020, TYPE_RGBA_FLT, Lab, TYPE_RGBA_FLT, intent, 0);
-
-
-
-
-  //TODO: WHAT THE HECK IS BUF?===============================================================
-
-
-
-
-
-
 
   //Temp buffer for the whole image
   float *rgbbuf = (float *)calloc(roi_in->width * roi_in->height * 4, sizeof(float));
@@ -153,6 +143,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *out = o + y * width * 4;
     cmsDoTransform(transform_lin_rec2020_to_lab, in, out, width);
   }
+  */
+  memcpy(o, i, roi_in->width * roi_in->height * 4 * sizeof(float));
 }
 
 /** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip
@@ -175,7 +167,7 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 901; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 354; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_filmulate_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -279,14 +271,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->overdrive, _("Off"));
   dt_bauhaus_combobox_add(g->overdrive, _("On"));
   
-  dt_bauhaus_widget_set_label(g->rolloff_boundary, NULL, _("Rolloff Boundary"));
-  gtk_widget_set_tooltip_text(g->rolloff_boundary, _("Sets the point above which the highlights gently stop getting brighter. If you've got completely unclipped highlights before filmulation, raise this to 1."));
-  dt_bauhaus_widget_set_label(g->film_area, NULL, _("Film Area"));
-  gtk_widget_set_tooltip_text(g->film_area, _("Larger sizes emphasize smaller details and overall flatten the image. Smaller sizes emphasize larger regional contrasts. Don't use larger sizes with high drama or you'll get the HDR look."));
-  dt_bauhaus_widget_set_label(g->drama, NULL, _("Drama"));
-  gtk_widget_set_tooltip_text(g->drama, _("Pulls down highlights to retain detail. This is the real \"filmy\" effect. This not only helps bring down highlights, but can rescue extremely saturated regions such as flowers."));
-  dt_bauhaus_widget_set_label(g->overdrive, NULL, _("Overdrive Mode"));
-  gtk_widget_set_tooltip_text(g->overdrive, _("In case of emergency, break glass and press this button. This increases the filminess, in case 100 Drama was not enough for you."));
+  dt_bauhaus_widget_set_label(g->rolloff_boundary, NULL, _("rolloff boundary"));
+  gtk_widget_set_tooltip_text(g->rolloff_boundary, _("sets the point above which the highlights gently stop getting brighter. if you've got completely unclipped highlights before filmulation, raise this to 1."));
+  dt_bauhaus_widget_set_label(g->film_area, NULL, _("film area"));
+  gtk_widget_set_tooltip_text(g->film_area, _("larger sizes emphasize smaller details and overall flatten the image. smaller sizes emphasize larger regional contrasts. don't use larger sizes with high drama or you'll get the HDR look."));
+  dt_bauhaus_widget_set_label(g->drama, NULL, _("drama"));
+  gtk_widget_set_tooltip_text(g->drama, _("pulls down highlights to retain detail. this is the real \"filmy\" effect. this not only helps bring down highlights, but can rescue extremely saturated regions such as flowers."));
+  dt_bauhaus_widget_set_label(g->overdrive, NULL, _("overdrive mode"));
+  gtk_widget_set_tooltip_text(g->overdrive, _("in case of emergency, break glass and press this button. this increases the filminess, in case 100 Drama was not enough for you."));
 
   //Add widgets to the gui
   gtk_box_pack_start(GTK_BOX(self->widget), g->rolloff_boundary, TRUE, TRUE, 0);
