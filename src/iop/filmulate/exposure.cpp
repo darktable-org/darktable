@@ -45,7 +45,7 @@ matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
     {
         for(int col = 0; col<ncols; col++)
         {
-            input = max(0.0f,input_image(row,col));
+            input = std::max(0.0f,input_image(row,col));
             if(input > rolloff_boundary)
                 input = 65535-(crystal_headroom*crystal_headroom/
                         (input+crystal_headroom-rolloff_boundary));

@@ -25,7 +25,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "jpeglib.h"
-//#include <setjmp.h>
+#include <setjmp.h>
 #include "matrix.hpp"
 
 //#ifdef DOUT

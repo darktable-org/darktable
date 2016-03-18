@@ -68,9 +68,9 @@ void filmulate(const float *const in,
     {
         for (int j = 0; j < ncols; j++)
         {
-            input_image(i, j*3    ) = in[(j + i*ncols)*4    ];
-            input_image(i, j*3 + 1) = in[(j + i*ncols)*4 + 1];
-            input_image(i, j*3 + 2) = in[(j + i*ncols)*4 + 2];
+            input_image(i, j*3    ) = 65535.0f*in[(j + i*ncols)*4    ];
+            input_image(i, j*3 + 1) = 65535.0f*in[(j + i*ncols)*4 + 1];
+            input_image(i, j*3 + 2) = 65535.0f*in[(j + i*ncols)*4 + 2];
         }
     }
 
@@ -173,7 +173,7 @@ void filmulate(const float *const in,
     //nonexistant. It works okay, for now...
     //The output is crystal_radius^2 * active_crystals_per_pixel
 
-    const matrix<float> output_density = crystal_radius % crystal_radius % active_crystals_per_pixel;
+    const matrix<float> output_density = crystal_radius % crystal_radius % active_crystals_per_pixel * 500;
 
     //Convert back to darktable's RGBA.
 #ifdef _OPENMP
