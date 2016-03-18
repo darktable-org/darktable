@@ -99,13 +99,13 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
     int col = 0;
     int pass = 0;
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel shared(developer_concentration,convlength,convrad,order,\
         length,width,paddedwidth,pad,swell_factor)\
     firstprivate(row,col,pass,htemp,running_sum,hpadded)
 #endif
     {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic) nowait
 #endif
         for (row = 0; row<length;row++)
@@ -241,7 +241,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                           coeff[3] * attenuationX[i+3];
     }
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for
 #endif
     for (int i = 0; i < width; i++)
@@ -287,7 +287,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                           coeff[3] * attenuationY[i+3];
     }
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for
 #endif
     for (int i = 0; i < height; i++)
@@ -304,17 +304,21 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 
 
     //Set up variables for use inside loops
-    int row, col, slice, offset, iter;
+    int row = 0;
+    int col = 0;
+    int slice = 0;
+    int offset = 0;
+    int iter = 0;
 
     //X direction blurring.
     //We slice by individual rows.
     vector<double> devel_concX(paddedWidth);
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel shared(developer_concentration, height, width, coeff, attenuationX,\
     paddedWidth) firstprivate(devel_concX, row, col)
 #endif
     {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
         for (row = 0; row < height; row++)
@@ -355,7 +359,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                                    coeff[3] * devel_concX[col+3];
             }
             //And undo the attenuation, copying back from the temp.
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp simd
 #endif
             for (col = 0; col < width; col++)
@@ -371,12 +375,12 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
     int thickness = 8;//of the slice
     devel_concY.set_size(paddedHeight,thickness);
     int slices = ceil(width/float(thickness));
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel shared(developer_concentration, height, width, coeff, attenuationY,\
     paddedHeight, slices, thickness) firstprivate(devel_concY, row, col, slice, offset, iter)
 #endif
     {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
         for (slice = 0; slice < slices; slice++)
@@ -403,7 +407,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             {
                 for (row = 0; row < height; row++)
                 {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp simd
 #endif
                     for (col = 0; col < 8; col++)
@@ -414,7 +418,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             }
 
             //Set up the boundary.
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp simd
 #endif
             for (col = 0; col < 8; col++)
@@ -429,7 +433,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //Iterate over the main part of the image, except for the setup.
             for (row = 3; row < height; row++)
             {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp simd
 #endif
                 for (col = 0; col < 8; col++)
@@ -443,7 +447,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //Iterate over the zeroed tail
             for (row = height; row < paddedHeight; row++)
             {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp simd
 #endif
                 for (col = 0; col < 8; col++)
@@ -456,7 +460,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //And go back
             for (row = paddedHeight - 3 - 1; row >= 0; row--)
             {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp simd
 #endif
                 for (col = 0; col < 8; col++)
@@ -482,7 +486,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             {
                 for (row = 0; row < height; row++)
                 {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp simd
 #endif
                     for (col = 0; col < 8; col++)

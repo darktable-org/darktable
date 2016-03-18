@@ -17,6 +17,9 @@
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
 #include "filmSim.hpp"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 void develop( matrix<float> &crystalRad,
               float crystalGrowthConst,
@@ -51,7 +54,7 @@ void develop( matrix<float> &crystalRad,
     //These are the column indices for red, green, and blue.
     int row, col, colr, colg, colb;
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel shared( develConcentration, silverSaltDensity,\
         crystalRad, activeCrystalsPerPixel, cgc, dcc, sscc )\
         private( row, col,\
@@ -61,7 +64,7 @@ void develop( matrix<float> &crystalRad,
 #endif
     {
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp for schedule( dynamic ) nowait
 #endif
         for ( row = 0; row < height; row++ )

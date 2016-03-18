@@ -18,6 +18,9 @@
  */
 #include "filmSim.hpp"
 #include <math.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 //This function implements diffusion between the active developer layer
 // adjacent to the film and the reservoir of inactive developer.
@@ -47,12 +50,12 @@ void layer_mix(matrix<float> &developer_concentration,
     double sum = 0;
 
     //Here we add developer to the layer.
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel shared(developer_concentration) \
         firstprivate(layer_mix, reservoir_portion) reduction(+:sum)
 #endif
     {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic) nowait
 #endif
         for(int row=0; row<length; row++)

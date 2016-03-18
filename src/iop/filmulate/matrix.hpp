@@ -24,7 +24,7 @@
 #include <emmintrin.h>
 #include <iostream>
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 
@@ -226,7 +226,7 @@ matrix<T>& matrix<T>::operator=(const matrix<T> &toCopy)
 	
 	set_size(toCopy.nr(),toCopy.nc());
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(toCopy)
 #endif
 	for(int row = 0; row < num_rows; row++)
@@ -240,7 +240,7 @@ template <class T> template<class U>
 matrix<T>& matrix<T>::operator=(const U value)
 {
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -257,7 +257,7 @@ const matrix<T> matrix<T>::add(const matrix<U> &rhs) const
 
     T* pdata = data;
     int pnum_cols = num_cols;
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(pdata,pnum_cols,result,rhs)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -275,7 +275,7 @@ const matrix<T> matrix<T>::add(const U value) const
 
     T* pdata = data;
     int pnum_cols = num_cols;
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(pdata,pnum_cols)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -291,7 +291,7 @@ const matrix<T>& matrix<T>::add_this(const U value)
 {
     T* pdata = data;
     int pnum_cols = num_cols;
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(pdata,pnum_cols)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -308,7 +308,7 @@ const matrix<T> matrix<T>::subtract(const matrix<U> &rhs) const
 
     T* pdata = data;
     int pnum_cols = num_cols;
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(pdata,pnum_cols,result,rhs)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -326,7 +326,7 @@ const matrix<T> matrix<T>::subtract(const U value) const
 
     T* pdata = data;
     int pnum_cols = num_cols;
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(pdata,pnum_cols,result)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -342,7 +342,7 @@ const matrix<T> matrix<T>::pointmult(const matrix<U> &rhs) const
 {
 	matrix<T> result(num_rows,num_cols);
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(result,rhs)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -358,7 +358,7 @@ const matrix<T> matrix<T>::mult(const U value) const
 {
 	matrix<T> result(num_rows,num_cols);
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(result)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -373,7 +373,7 @@ template <class T> template<class U>
 const matrix<T>& matrix<T>::mult_this(const U value)
 {
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -387,7 +387,7 @@ const matrix<T> matrix<T>::divide(const U value) const
 {
 	matrix<T> result(num_rows,num_cols);
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(result)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -403,7 +403,7 @@ inline void matrix<T>::slow_transpose_to (const matrix<T> &target) const
 {
     assert(target.num_rows == num_cols && target.num_cols == num_rows);
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for shared(target)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -465,7 +465,7 @@ inline void matrix<T>::transpose_block_SSE4x4(float *A, float *B, const int n,
                                    const int m, const int lda, const int ldb,
                                    const int block_size) const
 {
-#ifndef _OPENMP
+#ifdef _OPENMP
     #pragma omp parallel for
 #endif
     for(int i=0; i<n; i+=block_size)
@@ -482,7 +482,7 @@ inline void matrix<T>::transpose_block_SSE4x4(float *A, float *B, const int n,
 
 template<class T>
 inline void matrix<T>::transpose_scalar_block(float *A, float *B, const int lda, const int ldb, const int block_size) const {
-#ifndef _OPENMP
+#ifdef _OPENMP
     #pragma omp parallel for
 #endif
     for(int i=0; i<block_size; i++) {
@@ -494,7 +494,7 @@ inline void matrix<T>::transpose_scalar_block(float *A, float *B, const int lda,
 
 template<class T>
 inline void matrix<T>::transpose_block(float *A, float *B, const int n, const int m, const int lda, const int ldb, const int block_size) const {
-#ifndef _OPENMP
+#ifdef _OPENMP
     #pragma omp parallel for
 #endif
     for(int i=0; i<n; i+=block_size) {
@@ -509,7 +509,7 @@ double matrix<T>::sum()
 {
 	double sum = 0;
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for reduction(+:sum)
 #endif
     for(int row = 0; row < num_rows; row++)
@@ -523,18 +523,18 @@ T matrix<T>::max()
 {
     T shared_max;
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel
 #endif
     {
 	T max = std::numeric_limits<T>::min();
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
     for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			max = std::max(data[row*num_cols + col],max);
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp critical
 #endif
         {
@@ -552,18 +552,18 @@ T matrix<T>::min()
 
     T* pdata = data;
     int pnum_cols = num_cols;
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel shared(pdata, pnum_cols)
 #endif
     {
 	T min = std::numeric_limits<T>::max();
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
     for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			min = std::min(data[row*num_cols + col],min);
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp critical
 #endif
         {
@@ -588,7 +588,7 @@ double matrix<T>::variance()
 	double size = num_rows*num_cols;
 	double variance = 0;
 
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel for reduction(+:variance)
 #endif
     for(int row = 0; row < num_rows; row++)

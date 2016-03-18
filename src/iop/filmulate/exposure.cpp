@@ -17,6 +17,9 @@
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
 #include "filmSim.hpp"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
         float rolloff_boundary)
@@ -33,12 +36,12 @@ matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
     int ncols = input_image.nc();
     float input;
     float crystal_headroom = 65535-rolloff_boundary;
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel shared(input_image, crystals_per_pixel, rolloff_boundary,\
         nrows, ncols, crystal_headroom) private(input)
 #endif
     {
-#ifndef _OPENMP
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic) nowait
 #endif
     for(int row = 0; row < nrows; row++)
