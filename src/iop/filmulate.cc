@@ -15,6 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "iop/filmulate/filmSim.hpp"
+
+extern "C"
+{
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -101,37 +105,51 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cmsHTRANSFORM transform_lin_rec2020_to_lab = cmsCreateTransform(Rec2020, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT, intent, 0);
 
   //Temp buffer for the whole image
-  float *rgbbuf = (float *)calloc(roi_in->width * roi_in->height * 4, sizeof(float));
+  float *rgbbufin = (float *)calloc(roi_in->width * roi_in->height * 4, sizeof(float));
+  float *rgbbufout = (float *)calloc(roi_in->width * roi_in->height * 4, sizeof(float));
 
   const int width = roi_in->width;
   const int height = roi_in->height;
   
   //Turn Lab into linear Rec2020
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(rgbbuf, transform_lab_to_lin_rec2020)
+#pragma omp parallel for schedule(static) default(none) shared(rgbbufin, transform_lab_to_lin_rec2020)
 #endif
   for(int y = 0; y < height; y++)
   {
     const float *in = (float*)i + y * width * 4;
-    float *out = rgbbuf + y * width * 4;
+    float *out = rgbbufin + y * width * 4;
     cmsDoTransform(transform_lab_to_lin_rec2020, in, out, width);
   }
 
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // Get the data struct.
-  //dt_iop_filmulate_params_t *d = (dt_iop_filmulate_params_t *)piece->data;
+  dt_iop_filmulate_params_t *d = (dt_iop_filmulate_params_t *)piece->data;
+  float rolloff_boundary = d->rolloff_boundary;
+  float film_area = d->film_area;
+  float layer_mix_const = d->layer_mix_const;
+  int agitate_count = (int)d->agitate_count;
 
+  //Filmulate things!
+  filmulate(rgbbufin, rgbbufout,
+            width, height,
+            rolloff_boundary,
+            film_area,
+            layer_mix_const,
+            agitate_count);
+
+  free(rgbbufin);
   //Turn back to Lab
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(rgbbuf, transform_lin_rec2020_to_lab)
+#pragma omp parallel for schedule(static) default(none) shared(rgbbufout, transform_lin_rec2020_to_lab)
 #endif
   for(int y = 0; y < height; y++)
   {
-    const float *in = rgbbuf + y * width * 4;
+    const float *in = rgbbufout + y * width * 4;
     float *out = (float*)o + y * width * 4;
     cmsDoTransform(transform_lin_rec2020_to_lab, in, out, width);
   }
-  //memcpy(o, i, roi_in->width * roi_in->height * 4 * sizeof(float));
+  free(rgbbufout);
 }
 
 /** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip
@@ -286,6 +304,8 @@ void gui_cleanup(dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
+}//extern "C"
 
 /** additional, optional callbacks to capture darkroom center events. */
 // void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,

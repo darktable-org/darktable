@@ -91,7 +91,7 @@ add_iop(bilat "bilat.c")
 add_iop(denoiseprofile "denoiseprofile.c")
 add_iop(defringe "defringe.c")
 add_iop(ashift "ashift.c")
-add_iop(filmulate "filmulate.c")
+add_iop(filmulate "filmulate.cc" "filmulate/filmulate.cpp" "filmulate/agitate.cpp" "filmulate/develop.cpp" "filmulate/diffuse.cpp")
 
 if(RSVG2_FOUND)
   add_iop(watermark "watermark.c")
