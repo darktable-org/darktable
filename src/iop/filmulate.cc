@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "iop/filmulate/filmSim.hpp"
+#include <stdio.h>
+using std::cout;
+using std::endl;
 
 extern "C"
 {
@@ -216,9 +219,7 @@ static void rolloff_boundary_callback(GtkWidget *w, dt_iop_module_t *self)
   }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
-  printf("rolloff_boundary callback 1\n");
-  p->rolloff_boundary = dt_bauhaus_combobox_get(w)*65535.0f;
-  printf("rolloff_boundary callback 2\n");
+  p->rolloff_boundary = dt_bauhaus_slider_get(w)*65535.0f;
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   printf("rolloff_boundary callback 3\n");
@@ -234,28 +235,35 @@ static void film_area_callback(GtkWidget *w, dt_iop_module_t *self)
 
   //The film area control is logarithmic WRT the linear dimensions of film.
   //But in the backend, it's actually using square millimeters of simulated film.
-  p->film_area = powf(expf(dt_bauhaus_combobox_get(w)),2.0f);
+  p->film_area = powf(expf(dt_bauhaus_slider_get(w)),2.0f);
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void drama_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   //This is important to avoid cycles!
-  if(darktable.gui -> reset) 
+  if(self->dt->gui->reset)
   {
     return;
   }
+//  //This is important to avoid cycles!
+//  if(darktable.gui -> reset)
+//  {
+//    return;
+//  }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
   //Drama goes from 0 to 100, but the relevant parameter in the backend is 0 to 1.
-  p->layer_mix_const = dt_bauhaus_combobox_get(w);
+  p->layer_mix_const = dt_bauhaus_slider_get(w);
+  cout << "layer mix const at callback: " << p->layer_mix_const << endl;
+  cout << "layer mix const at callback2: " << dt_bauhaus_slider_get(w) << endl;
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void overdrive_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   //This is important to avoid cycles!
-  if(darktable.gui -> reset) 
+  if(self->dt->gui->reset)
   {
     return;
   }
