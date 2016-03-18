@@ -124,22 +124,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   //Temp buffer for the whole image
   float *rgbbuf = (float *)calloc(roi_in->width * roi_in->height * 4, sizeof(float));
-  
-  const int height = roi_in->height;
-  const int width = roi_in->width;
 
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  
   //Turn Lab into linear Rec2020
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(rgbbuf, transform_lab_to_lin_rec2020)
 #endif
-  for(int i = 0; i < height; i++)
+  for(int y = 0; y < height; y++)
   {
-    for(int j = 0; j < width; j++)
-    {
-      const float *in = roi_in + j * 4;
-      float *out = rgbbuf + j * 4;
-    }
-
+    const float *in = i + y * width * 4;
+    float *out = rgbbuf + y * width * 4;
     cmsDoTransform(transform_lab_to_lin_rec2020, in, out, width);
   }
 
@@ -151,11 +147,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(rgbbuf, transform_lin_rec2020_to_lab)
 #endif
-  for(int i = 0; i < height; i++)
+  for(int y = 0; y < height; y++)
   {
-    const float *in = rgbbuf + i * width * 4;
-    float *out = roi_out + i * width * 4;
-
+    const float *in = rgbbuf + y * width * 4;
+    float *out = o + y * width * 4;
     cmsDoTransform(transform_lin_rec2020_to_lab, in, out, width);
   }
 }
