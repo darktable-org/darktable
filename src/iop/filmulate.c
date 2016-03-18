@@ -81,17 +81,6 @@ int groups()
   return IOP_GROUP_BASIC;
 }
 
-// implement this, if you have esoteric output bytes per pixel. default is 4*float
-/*
-int
-output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(float);
-  else return 4*sizeof(float);
-}
-*/
-
-
 /** modify regions of interest; filmulation requires the full image. **/
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);
@@ -123,7 +112,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
   for(int y = 0; y < height; y++)
   {
-    const float *in = i + y * width * 4;
+    const float *in = (float*)i + y * width * 4;
     float *out = rgbbuf + y * width * 4;
     cmsDoTransform(transform_lab_to_lin_rec2020, in, out, width);
   }
@@ -139,7 +128,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int y = 0; y < height; y++)
   {
     const float *in = rgbbuf + y * width * 4;
-    float *out = o + y * width * 4;
+    float *out = (float*)o + y * width * 4;
     cmsDoTransform(transform_lin_rec2020_to_lab, in, out, width);
   }
   //memcpy(o, i, roi_in->width * roi_in->height * 4 * sizeof(float));
