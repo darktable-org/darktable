@@ -208,6 +208,13 @@ typedef enum dt_iop_ashift_crop_t
   ASHIFT_CROP_ASPECT = 2
 } dt_iop_ashift_crop_t;
 
+typedef enum dt_iop_ashift_bounding_t
+{
+  ASHIFT_BOUNDING_OFF = 0,
+  ASHIFT_BOUNDING_SELECT = 1,
+  ASHIFT_BOUNDING_DESELECT = 2
+} dt_iop_ashift_bounding_t;
+
 typedef struct dt_iop_ashift_params1_t
 {
   float rotation;
@@ -283,6 +290,8 @@ typedef struct dt_iop_ashift_points_idx_t
   size_t offset;
   int length;
   int near;
+  int bounded;
+  dt_iop_ashift_linetype_t type;
   dt_iop_ashift_linecolor_t color;
   // bounding box:
   float bbx, bby, bbX, bbY;
@@ -347,6 +356,7 @@ typedef struct dt_iop_ashift_gui_data_t
   int show_guides;
   int isselecting;
   int isdeselecting;
+  dt_iop_ashift_bounding_t isbounding;
   int selecting_lines_version;
   float rotation_range;
   float lensshift_v_range;
@@ -378,6 +388,8 @@ typedef struct dt_iop_ashift_gui_data_t
   uint64_t buf_hash;
   dt_iop_ashift_fitaxis_t lastfit;
   dt_pthread_mutex_t lock;
+  float lastx;
+  float lasty;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -2647,6 +2659,10 @@ static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx
   {
     points_idx[n].near = 0;
 
+    // skip irrelevant lines
+    if(points_idx[n].type == ASHIFT_LINE_IRRELEVANT)
+      continue;
+
     // first check if the mouse pointer is outside the bounding box of the line -> skip this line
     if(pzx < points_idx[n].bbx - delta &&
        pzx > points_idx[n].bbX + delta &&
@@ -2676,6 +2692,53 @@ static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx
   }
 }
 
+// mark lines which are inside a rectangular area in isbounding mode
+static void get_bounded_inside(const float *points, dt_iop_ashift_points_idx_t *points_idx,
+                               const int points_lines_count, float pzx, float pzy, float pzx2, float pzy2,
+                               dt_iop_ashift_bounding_t mode)
+{
+  // get bounding box coordinates
+  float ax = pzx;
+  float ay = pzy;
+  float bx = pzx2;
+  float by = pzy2;
+  if(pzx > pzx2)
+  {
+    ax = pzx2;
+    bx = pzx;
+  }
+  if(pzy > pzy2)
+  {
+    ay = pzy2;
+    by = pzy;
+  }
+
+  // we either look for the selected or the deselected lines
+  dt_iop_ashift_linetype_t mask = ASHIFT_LINE_SELECTED;
+  dt_iop_ashift_linetype_t state = (mode == ASHIFT_BOUNDING_DESELECT) ? ASHIFT_LINE_SELECTED : 0;
+
+  for(int n = 0; n < points_lines_count; n++)
+  {
+    // mark line as "not near" and "not bounded"
+    points_idx[n].near = 0;
+    points_idx[n].bounded = 0;
+
+    // skip irrelevant lines
+    if(points_idx[n].type == ASHIFT_LINE_IRRELEVANT)
+      continue;
+
+    // is the line inside the box ?
+    if(points_idx[n].bbx >= ax && points_idx[n].bbx <= bx && points_idx[n].bbX >= ax
+       && points_idx[n].bbX <= bx && points_idx[n].bby >= ay && points_idx[n].bby <= by
+       && points_idx[n].bbY >= ay && points_idx[n].bbY <= by)
+    {
+      points_idx[n].bounded = 1;
+      // only mark "near"-ness of those lines we are interested in
+      points_idx[n].near = ((points_idx[n].type & mask) != state) ? 0 : 1;
+    }
+  }
+}
+
 // generate hash value for lines taking into account only the end point coordinates
 static uint64_t get_lines_hash(const dt_iop_ashift_line_t *lines, const int lines_count)
 {
@@ -2692,21 +2755,18 @@ static uint64_t get_lines_hash(const dt_iop_ashift_line_t *lines, const int line
 
 // update color information in points_idx if lines have changed in terms of type (but not in terms
 // of number or position)
-static int update_colors(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *lines, const int lines_count,
-                         dt_iop_ashift_points_idx_t *points_idx, int points_lines_count)
+static int update_colors(struct dt_iop_module_t *self, dt_iop_ashift_points_idx_t *points_idx,
+                         int points_lines_count)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   // is the display flipped relative to the original image?
   const int isflipped = g->isflipped;
 
-  // sanity check
-  if(points_lines_count != lines_count) return FALSE;
-
   // go through all lines
   for(int n = 0; n < points_lines_count; n++)
   {
-    const dt_iop_ashift_linetype_t type = lines[n].type;
+    const dt_iop_ashift_linetype_t type = points_idx[n].type;
 
     // set line color according to line type/orientation
     // note: if the screen display is flipped versus the original image we need
@@ -2756,8 +2816,10 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
 
     my_points_idx[n].length = length;
     my_points_idx[n].near = 0;
+    my_points_idx[n].bounded = 0;
 
     const dt_iop_ashift_linetype_t type = lines[n].type;
+    my_points_idx[n].type = type;
 
     // set line color according to line type/orientation
     // note: if the screen display is flipped versus the original image we need
@@ -2995,8 +3057,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
   else if(g->lines_hash == lines_hash)
   {
+    // update line type information in points_idx
+    for(int n = 0; n < g->points_lines_count; n++)
+      g->points_idx[n].type = g->lines[n].type;
+
     // coordinates of lines are unchanged -> we only need to update colors
-    if(!update_colors(self, g->lines, g->lines_count, g->points_idx, g->points_lines_count))
+    if(!update_colors(self, g->points_idx, g->points_lines_count))
       return;
 
     g->points_version = g->lines_version;
@@ -3055,7 +3121,50 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_stroke(cr);
   }
 
+  // and we draw the selection box if any
+  if(g->isbounding != ASHIFT_BOUNDING_OFF)
+  {
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    double dashed[] = { 4.0, 4.0 };
+    dashed[0] /= zoom_scale;
+    dashed[1] /= zoom_scale;
+    int len = sizeof(dashed) / sizeof(dashed[0]);
+
+    cairo_rectangle(cr, g->lastx * wd, g->lasty * ht, (pzx - g->lastx) * wd, (pzy - g->lasty) * ht);
+
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    cairo_set_line_width(cr, 1.0 / zoom_scale);
+    cairo_set_dash(cr, dashed, len, 0);
+    cairo_stroke_preserve(cr);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_set_dash(cr, dashed, len, 4);
+    cairo_stroke(cr);
+  }
+
   cairo_restore(cr);
+}
+
+// update the number of selected vertical and horizontal lines
+void update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
+                        int *vertical_count, int *horizontal_count)
+{
+  int vlines = 0;
+  int hlines = 0;
+
+  for(int n = 0; n < lines_count; n++)
+  {
+    if((lines[n].type & ASHIFT_LINE_MASK) == ASHIFT_LINE_VERTICAL_SELECTED)
+      vlines++;
+    else if((lines[n].type & ASHIFT_LINE_MASK) == ASHIFT_LINE_HORIZONTAL_SELECTED)
+      hlines++;
+  }
+
+  *vertical_count = vlines;
+  *horizontal_count = hlines;
 }
 
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
@@ -3071,6 +3180,30 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
+
+  // if in rectangle selecting mode adjust "near"-ness of lines according to
+  // the rectangular selection
+  if(g->isbounding != ASHIFT_BOUNDING_OFF)
+  {
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    float wd = self->dev->preview_pipe->backbuf_width;
+    float ht = self->dev->preview_pipe->backbuf_height;
+
+    if(wd >= 1.0 && ht >= 1.0)
+    {
+      // mark lines inside the rectangle
+      get_bounded_inside(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->lastx * wd,
+                         g->lasty * ht, g->isbounding);
+    }
+
+    dt_control_queue_redraw_center();
+    return FALSE;
+  }
 
   // gather information about "near"-ness in g->points_idx
   get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, POINTS_NEAR_DELTA);
@@ -3094,6 +3227,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
   if(handled)
   {
+    update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
     g->lines_version++;
     g->selecting_lines_version++;
   }
@@ -3114,6 +3248,28 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   if(g->lines_suppressed || g->lines == NULL)
     return FALSE;
 
+  // remember lines version at this stage so we can continuously monitor if the
+  // lines have changed in-between
+  g->selecting_lines_version = g->lines_version;
+
+  // if shift button is pressed go into bounding mode (selecting or deselecting
+  // in a rectangle area)
+  if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  {
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    g->lastx = pzx;
+    g->lasty = pzy;
+
+    g->isbounding = (which == 3) ? ASHIFT_BOUNDING_DESELECT : ASHIFT_BOUNDING_SELECT;
+    dt_control_change_cursor(GDK_CROSS);
+
+    return TRUE;
+  }
+
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
   const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
@@ -3121,10 +3277,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   // if we are zoomed out (no panning possible) and we have lines to display we take control
   int take_control = (cur_scale == min_scale) && (g->points_lines_count > 0);
-
-  // remember lines version at this stage so we can continuously monitor if the
-  // lines have changed in-between
-  g->selecting_lines_version = g->lines_version;
 
   // iterate over all lines close to the pointer and change "selected" state.
   // left-click selects and right-click deselects the line
@@ -3157,6 +3309,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   if(handled)
   {
+    update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
     g->lines_version++;
     g->selecting_lines_version++;
   }
@@ -3168,9 +3321,57 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  // end of sweeping mode
+  // finalize the isbounding mode
+  // if user has released the shift button in-between -> do nothing
+  if(g->isbounding != ASHIFT_BOUNDING_OFF && (state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  {
+    int handled = 0;
+
+    // we compute the rectangle selection
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    float wd = self->dev->preview_pipe->backbuf_width;
+    float ht = self->dev->preview_pipe->backbuf_height;
+
+    if(wd >= 1.0 && ht >= 1.0)
+    {
+      // mark lines inside the rectangle
+      get_bounded_inside(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->lastx * wd,
+                         g->lasty * ht, g->isbounding);
+
+      // select or deselect lines within the rectangle according to isbounding state
+      for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
+      {
+        if(g->points_idx[n].bounded == 0) continue;
+
+        if(g->isbounding == ASHIFT_BOUNDING_DESELECT)
+          g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+        else
+          g->lines[n].type |= ASHIFT_LINE_SELECTED;
+
+        handled = 1;
+      }
+
+      if(handled)
+      {
+        update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
+        g->lines_version++;
+        g->selecting_lines_version++;
+      }
+
+    dt_control_queue_redraw_center();
+    }
+  }
+
+  // end of sweeping/isbounding mode
   dt_control_change_cursor(GDK_LEFT_PTR);
   g->isselecting = g->isdeselecting = 0;
+  g->isbounding = ASHIFT_BOUNDING_OFF;
+  g->lastx = g->lasty = -1;
 
   return 0;
 }
@@ -3684,6 +3885,7 @@ void reload_defaults(dt_iop_module_t *module)
     g->show_guides = 0;
     g->isselecting = 0;
     g->isdeselecting = 0;
+    g->isbounding = ASHIFT_BOUNDING_OFF;
     g->selecting_lines_version = 0;
 
     free(g->points);
@@ -3832,6 +4034,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->show_guides = 0;
   g->isselecting = 0;
   g->isdeselecting = 0;
+  g->isbounding = ASHIFT_BOUNDING_OFF;
   g->selecting_lines_version = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
