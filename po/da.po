@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-12 20:42+0100\n"
-"PO-Revision-Date: 2016-03-12 21:10+0100\n"
+"POT-Creation-Date: 2016-03-18 21:15+0100\n"
+"PO-Revision-Date: 2016-03-18 22:25+0100\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -124,7 +124,7 @@ msgid ""
 "supports it"
 msgstr ""
 "send filer til papirkurven i stedet for permanent at slette filer på "
-"systemer, der understøtter det"
+"systemer, der understøtter dette"
 
 #: ../build/src/preferences_gen.h:1565
 msgid "ask before moving images from film roll folder"
@@ -304,7 +304,7 @@ msgid ""
 "is taken directly as attribute value or multiplied with pre-defined setting."
 msgstr ""
 "fra – aflæsning af tryk ignoreres, hårdhed/uigennemsigtighed/penselstørrelse "
-"– specificeret attribut for trykaflæsning, absolut/relativ – trykaflæsning "
+"– angivet attribut for trykaflæsning, absolut/relativ – trykaflæsning "
 "bruges direkte som attribut eller multipliceres med prædefineret indstilling."
 
 #: ../build/src/preferences_gen.h:1938
@@ -332,7 +332,7 @@ msgid ""
 "nodes and easier editing but with lower control of accuracy."
 msgstr ""
 "sætter niveauet af udjævning af penselstrøg. stærkere udjævning leder til "
-"færre noder og lettere redigering men med lavere præcisionsstyring."
+"færre punkter og lettere redigering men med lavere præcisionsstyring."
 
 #: ../build/src/preferences_gen.h:1984
 msgid "ask before deleting a tag"
@@ -505,7 +505,7 @@ msgid ""
 msgstr ""
 "hvis slået til skrives miniaturebilleder til disk (.cache/darktable/) under "
 "kassering fra hukommelsescachen. bemærk at dette kan bruge en masse "
-"hukommelse (adskillige gigabyte for 20k-billeder) og vil aldrig slette "
+"hukommelse (adskillige gigabyte for 20.000 billeder) og vil aldrig slette "
 "cachede miniaturebilleder igen. det er dog sikkert at slette disse manuelt, "
 "hvis du vil. lysbordets ydelse vil øges betydeligt under større mængder "
 "browsing. for at generere alle miniaturebilleder for hele din samling "
@@ -553,7 +553,7 @@ msgstr ""
 "denne variabel styrer den maksimale mængde hukommelse (i MB), som et modul "
 "kan bruge under billedbearbejdning. lavere værdier vil tvinge "
 "hukommelsessultne moduler til at behandle billeder med et større antal "
-"tiles. ved at sætte dette til 0 vil enhver begrænsning ses bort fra. værdier "
+"fliser. ved at sætte dette til 0 vil enhver begrænsning ses bort fra. værdier "
 "under 500 vil opfattes som 500 (der kræves en genstart)."
 
 #: ../build/src/preferences_gen.h:2398
@@ -668,7 +668,7 @@ msgid ""
 msgstr ""
 "interpolering, når der ikke vises 1:1 i mørkekammer-tilstand: bilineær er "
 "hurtigst, men ikke så skarp. mellemgrund bruger PPG- + "
-"interpoleringstilstand specificeret herunder, fuld bruger præcis de samme "
+"interpoleringstilstand angivet herunder, fuld bruger præcis de samme "
 "indstillinger som fuld-størrelseseksport. X-Trans-sensorer bruger VNG frem "
 "for PPG som mellemgrund."
 
@@ -706,7 +706,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2649
 msgid "password storage backend to use"
-msgstr "backend for opbevaring af passwords"
+msgstr "backend for opbevaring af adgangskoder"
 
 #: ../build/src/preferences_gen.h:2660 ../build/src/preferences_gen.h:2692
 msgctxt "preferences"
@@ -731,7 +731,8 @@ msgstr "kwallet"
 #: ../build/src/preferences_gen.h:2695
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet"
-msgstr "backend for password-opbevaring: auto, ingen, libsecret, kwallet"
+msgstr ""
+"backend for opbevaring af adgangskoder: auto, ingen, libsecret, kwallet"
 
 #: ../build/src/preferences_gen.h:2702
 msgid "look for updated xmp files on startup"
@@ -759,14 +760,14 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2744
 msgid "auto-apply per camera basecurve presets"
-msgstr "anvend automatisk kameraspicifikke basekurve-indstillinger"
+msgstr "anvend automatisk kameraspecifikke basiskurve-indstillinger"
 
 #: ../build/src/preferences_gen.h:2756
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available (needs a restart)"
 msgstr ""
-"brug kameraspecifik basekurvesom standard i stedet for den generiske fra "
+"brug kameraspecifik basiskurve som standard i stedet for den generiske fra "
 "producenten, hvis der er en tilgængelig (genstart nødvendig)"
 
 #: ../build/src/preferences_gen.h:2789
@@ -845,20 +846,25 @@ msgstr "ukendt valgmulighed for --hq"
 msgid "unknown option for --upscale"
 msgstr "ukendt valgmulighed for --upscale"
 
-#: ../src/cli/main.c:184
+#: ../src/cli/main.c:183
+#, c-format
+msgid "error: output file is a directory. please specify file name"
+msgstr "fejl: outputfil er en mappe. angiv venligst filnavn"
+
+#: ../src/cli/main.c:191
 msgid "output file already exists, it will get renamed"
 msgstr "output-fil eksisterer allerede; den vil blive omdøbt"
 
-#: ../src/cli/main.c:199
+#: ../src/cli/main.c:206
 #, c-format
 msgid "error: can't open file %s"
 msgstr "fejl: kan ikke åbne fil %s"
 
-#: ../src/cli/main.c:221
+#: ../src/cli/main.c:228
 msgid "empty history stack"
 msgstr "tom historikstak"
 
-#: ../src/cli/main.c:244
+#: ../src/cli/main.c:251
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -866,17 +872,17 @@ msgstr ""
 "kan ikke finde disk-opbevaringsmodul. tjek venligst din installation; noget "
 "ser ud til ikke at fungere."
 
-#: ../src/cli/main.c:251
+#: ../src/cli/main.c:258
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "hentning af parametre fra opbevaringsmodul mislykkedes, eksport afbrydes…"
 
-#: ../src/cli/main.c:263
+#: ../src/cli/main.c:270
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "ukendt endelse \".%s\""
 
-#: ../src/cli/main.c:271
+#: ../src/cli/main.c:278
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "hentning af parametre fra formateringsmodul mislykkedes, eksport afbrydes…"
@@ -1069,7 +1075,7 @@ msgstr ""
 #: ../src/common/history.c:425 ../src/common/history.c:428
 #: ../src/common/history.c:444 ../src/common/styles.c:716
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1818
-#: ../src/develop/develop.c:1313 ../src/iop/ashift.c:3745
+#: ../src/develop/develop.c:1313 ../src/iop/ashift.c:4066
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "til"
@@ -1079,8 +1085,8 @@ msgstr "til"
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1600
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1313
 #: ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
-#: ../src/iop/ashift.c:3744 ../src/iop/ashift.c:3750 ../src/iop/colorin.c:1485
-#: ../src/iop/demosaic.c:3830 ../src/iop/vignette.c:1139
+#: ../src/iop/ashift.c:4065 ../src/iop/ashift.c:4071 ../src/iop/colorin.c:1485
+#: ../src/iop/demosaic.c:3854 ../src/iop/vignette.c:1139
 #: ../src/libs/history.c:149 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "fra"
@@ -1164,11 +1170,11 @@ msgstr ""
 "kunne ikke udvide til et unikt filnavn for session, tjek venligst dine "
 "indstillinger for importeringssession."
 
-#: ../src/common/mipmap_cache.c:1099 ../src/iop/demosaic.c:3606
+#: ../src/common/mipmap_cache.c:1099 ../src/iop/demosaic.c:3630
 #: ../src/iop/invert.c:466
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "\"%s\" farvematriks ikke fundet for 4bayer-billede!"
+msgstr "farvematricen \"%s\" ikke fundet for 4bayer-billede!"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1276,7 +1282,7 @@ msgstr "stil %s blev succesfuldt importeret"
 #: ../src/common/variables.c:304 ../src/iop/clipping.c:1564
 #: ../src/iop/clipping.c:1854 ../src/iop/clipping.c:1872
 #: ../src/iop/clipping.c:2014 ../src/iop/clipping.c:2041
-#: ../src/iop/colorreconstruction.c:1377 ../src/iop/lens.c:2028
+#: ../src/iop/colorreconstruction.c:1378 ../src/iop/lens.c:2028
 #: ../src/libs/export.c:486 ../src/libs/live_view.c:348
 #: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
 #: ../src/libs/print_settings.c:1008 ../src/libs/print_settings.c:1277
@@ -1304,7 +1310,7 @@ msgstr "m"
 
 #: ../src/control/control.c:362
 msgid "working.."
-msgstr "arbejder …"
+msgstr "arbejder…"
 
 #: ../src/control/crawler.c:340 ../src/libs/select.c:40
 msgid "select"
@@ -1374,7 +1380,7 @@ msgstr[1] "importerer %d billeder fra kamera"
 #: ../src/control/jobs/control_jobs.c:134
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
-"oprettelse af filmrulle i destinationsmappe mislykkedes, flytning afbrudt …"
+"oprettelse af filmrulle i destinationsmappe mislykkedes, flytning afbrudt…"
 
 #: ../src/control/jobs/control_jobs.c:313
 msgid "exposure bracketing only works on Bayer raw images."
@@ -1514,8 +1520,8 @@ msgstr[1] "fjerner lokale kopier af %d billeder"
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
-msgstr[0] "eksporterer %d billede …"
-msgstr[1] "eksporterer %d billeder …"
+msgstr[0] "eksporterer %d billede…"
+msgstr[1] "eksporterer %d billeder…"
 
 #: ../src/control/jobs/control_jobs.c:1189
 #, c-format
@@ -1584,7 +1590,7 @@ msgstr "vælg mappe"
 #: ../src/libs/import.c:772 ../src/libs/import.c:871 ../src/libs/lib.c:216
 #: ../src/libs/styles.c:209 ../src/libs/styles.c:229
 msgid "_cancel"
-msgstr "_annuller"
+msgstr "_annullér"
 
 #: ../src/control/jobs/control_jobs.c:1444
 #: ../src/control/jobs/control_jobs.c:1498
@@ -1629,8 +1635,8 @@ msgstr[1] "kopiér billeder?"
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"hentning af parametre fra opbevaringsmodul \"%s\" mislykkedes, eksport "
-"afbrydes …"
+"hentning af parametre fra opbevaringsmodulet \"%s\" mislykkedes, eksport "
+"afbrydes…"
 
 #: ../src/control/jobs/control_jobs.c:1643
 #, c-format
@@ -1660,7 +1666,7 @@ msgstr "importerer billede %s"
 #: ../src/develop/blend.c:2462 ../src/develop/blend.c:2778
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "sprang blending i modul \"%s\" over: roi passer ikke sammen"
+msgstr "sprang blending i modulet \"%s\" over: roi passer ikke sammen"
 
 #: ../src/develop/blend.c:2574 ../src/develop/blend.c:2831
 msgid "could not allocate buffer for blending"
@@ -1767,7 +1773,7 @@ msgstr ""
 "* interval mellem nærliggende øvre/nedre markører: blend gradvist"
 
 #: ../src/develop/blend_gui.c:1085 ../src/iop/colorzones.c:1082
-#: ../src/iop/tonecurve.c:752
+#: ../src/iop/tonecurve.c:791
 msgid "pick GUI color from image"
 msgstr "vælg GUI-farve fra billede"
 
@@ -2091,7 +2097,7 @@ msgstr "slå midlertidigt blend-maske fra. kun for modul i fokus"
 #: ../src/develop/develop.c:1116
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s: modul \"%s\" versionsuoverensstemmelse: %d != %d"
+msgstr "%s: modulet \"%s\" versionsuoverensstemmelse: %d != %d"
 
 #: ../src/develop/imageop.c:868
 msgid "new instance"
@@ -2312,7 +2318,8 @@ msgstr ""
 #: ../src/develop/tiling.c:810 ../src/develop/tiling.c:1142
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
-msgstr "tiling for modul \"%s\" mislykkedes. output kan være mangelfuldt."
+msgstr ""
+"fliselægning for modulet \"%s\" mislykkedes. output kan være mangelfuldt."
 
 #: ../src/dtgtk/resetlabel.c:58
 msgid "double-click to reset"
@@ -2463,10 +2470,10 @@ msgid ""
 "need to enable disk backend for thumbnail cache\n"
 "no thumbnails to be generated, done."
 msgstr ""
-"advarsel: disk-backend for miniaturebillede-cache er deaktiveret "
+"advarsel: disk-backend for miniaturebilledcache er deaktiveret "
 "(cache_disk_backend)\n"
 "hvis du vil prægenerere miniaturebilleder og lade darktable bruge dem, skal "
-"du aktivere disk-backend for miniaturebillede-cache\n"
+"du aktivere disk-backend for miniaturebilledcache\n"
 "ingen miniaturebilleder at generere; udført."
 
 #: ../src/generate-cache/main.c:168
@@ -2542,7 +2549,7 @@ msgstr "importér billeder fra kamera"
 
 #: ../src/gui/camera_import_dialog.c:205 ../src/libs/geotagging.c:400
 msgid "cancel"
-msgstr "annuller"
+msgstr "annullér"
 
 #: ../src/gui/camera_import_dialog.c:205
 msgctxt "camera import"
@@ -2704,7 +2711,7 @@ msgstr "$(FILE_EXTENSION) – inputfilens endelse"
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(VERSION) - duplicate version"
-msgstr "$(VERSION) – dublikér version"
+msgstr "$(VERSION) – duplikér version"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
@@ -2736,27 +2743,27 @@ msgstr "$(SECOND) – sekund"
 
 #: ../src/gui/gtkentry.c:198
 msgid "$(EXIF_YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) – EXIF år"
+msgstr "$(EXIF_YEAR) – EXIF-år"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(EXIF_MONTH) - EXIF month"
-msgstr "$(EXIF_MONTH) – EXIF måned"
+msgstr "$(EXIF_MONTH) – EXIF-måned"
 
 #: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_DAY) - EXIF day"
-msgstr "$(EXIF_DAY) – EXIF dag"
+msgstr "$(EXIF_DAY) – EXIF-dag"
 
 #: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_HOUR) - EXIF hour"
-msgstr "$(EXIF_HOUR) – EXIF time"
+msgstr "$(EXIF_HOUR) – EXIF-time"
 
 #: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_MINUTE) - EXIF minute"
-msgstr "$(EXIF_MINUTE) – EXIF minut"
+msgstr "$(EXIF_MINUTE) – EXIF-minut"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_SECOND) - EXIF second"
-msgstr "$(EXIF_SECOND) – EXIF sekund"
+msgstr "$(EXIF_SECOND) – EXIF-sekund"
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_ISO) - ISO value"
@@ -2792,7 +2799,7 @@ msgstr "$(DESKTOP) – skrivebordsmappe"
 
 #: ../src/gui/gtkentry.c:212
 msgid "$(TITLE) - title from metadata"
-msgstr "$(title) – titel fra metadata"
+msgstr "$(TITLE) – titel fra metadata"
 
 #: ../src/gui/gtkentry.c:213
 msgid "$(CREATOR) - creator from metadata"
@@ -2963,7 +2970,7 @@ msgstr "blænde"
 
 #. focal length
 #: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1319
-#: ../src/gui/presets.c:489 ../src/iop/ashift.c:3762 ../src/libs/camera.c:575
+#: ../src/gui/presets.c:489 ../src/iop/ashift.c:4083 ../src/libs/camera.c:575
 #: ../src/libs/collect.h:34 ../src/libs/metadata_view.c:107
 msgid "focal length"
 msgstr "brændvidde"
@@ -3050,7 +3057,7 @@ msgstr ""
 #: ../src/gui/preferences.c:1208 ../src/gui/presets.c:379
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "redigér \"%s\" for modul \"%s\""
+msgstr "redigér \"%s\" for modulet \"%s\""
 
 #: ../src/gui/preferences.c:1231 ../src/gui/presets.c:403
 #: ../src/libs/lib.c:241
@@ -3170,7 +3177,7 @@ msgstr "slået fra: forkert modulversion"
 
 #: ../src/gui/presets.c:890 ../src/libs/lib.c:464
 msgid "edit this preset.."
-msgstr "redigér denne forudindstilling …"
+msgstr "redigér denne forudindstilling…"
 
 #: ../src/gui/presets.c:894 ../src/libs/lib.c:468
 msgid "delete this preset"
@@ -3178,7 +3185,7 @@ msgstr "slet denne forudindstilling"
 
 #: ../src/gui/presets.c:900 ../src/libs/lib.c:475
 msgid "store new preset.."
-msgstr "gem ny forudindstilling …"
+msgstr "gem ny forudindstilling…"
 
 #: ../src/gui/presets.c:906 ../src/libs/lib.c:482
 msgid "update preset"
@@ -4079,221 +4086,238 @@ msgstr "miks"
 msgid "make effect stronger or weaker"
 msgstr "gør effekt stærkere eller svagere"
 
-#: ../src/iop/ashift.c:101
+#: ../src/iop/ashift.c:103
 msgid "perspective correction"
 msgstr "perspektivkorrektion"
 
-#: ../src/iop/ashift.c:426 ../src/iop/watermark.c:254
+#: ../src/iop/ashift.c:490 ../src/iop/watermark.c:254
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotering"
 
-#: ../src/iop/ashift.c:427
+#: ../src/iop/ashift.c:491
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "objektivforskydning (v)"
 
-#: ../src/iop/ashift.c:428
+#: ../src/iop/ashift.c:492
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "objektivforskydning (h)"
 
-#: ../src/iop/ashift.c:2156
+#: ../src/iop/ashift.c:493
+msgctxt "accel"
+msgid "shear"
+msgstr "skævvrid"
+
+#: ../src/iop/ashift.c:2258
 msgid "automatic cropping failed"
 msgstr "automatisk beskæring mislykkedes"
 
-#: ../src/iop/ashift.c:2176
+#: ../src/iop/ashift.c:2278
 msgid "data pending - please repeat"
 msgstr "data afventer – gentag venligst"
 
-#: ../src/iop/ashift.c:2182
+#: ../src/iop/ashift.c:2284
 msgid "could not detect structural data in image"
 msgstr "kunne ikke detektere skruktureret data i billede"
 
-#: ../src/iop/ashift.c:2193
+#: ../src/iop/ashift.c:2295
 msgid "could not run outlier removal"
 msgstr "kunne ikke køre outlier-fjernelse"
 
-#: ../src/iop/ashift.c:2247
+#: ../src/iop/ashift.c:2349
 msgid "not enough structure for automatic correction"
 msgstr "ikke nok struktur for automatisk korrektion"
 
-#: ../src/iop/ashift.c:2251
+#: ../src/iop/ashift.c:2353
 msgid "automatic correction failed, please correct manually"
 msgstr "automatisk korrektion mislykkedes; korrigér venligst manuelt"
 
-#: ../src/iop/ashift.c:3537 ../src/iop/ashift.c:3538 ../src/iop/ashift.c:3632
-#: ../src/iop/ashift.c:3633
+#: ../src/iop/ashift.c:3849 ../src/iop/ashift.c:3850 ../src/iop/ashift.c:3946
+#: ../src/iop/ashift.c:3947
 #, c-format
 msgid "lens shift (%s)"
 msgstr "objektivforskydning (%s)"
 
-#: ../src/iop/ashift.c:3537 ../src/iop/ashift.c:3538 ../src/iop/ashift.c:3632
-#: ../src/iop/ashift.c:3633 ../src/iop/clipping.c:1566
+#: ../src/iop/ashift.c:3849 ../src/iop/ashift.c:3850 ../src/iop/ashift.c:3946
+#: ../src/iop/ashift.c:3947 ../src/iop/clipping.c:1566
 #: ../src/iop/clipping.c:1855 ../src/iop/clipping.c:1874
 msgid "horizontal"
 msgstr "vandret"
 
-#: ../src/iop/ashift.c:3537 ../src/iop/ashift.c:3538 ../src/iop/ashift.c:3632
-#: ../src/iop/ashift.c:3633 ../src/iop/clipping.c:1565
+#: ../src/iop/ashift.c:3849 ../src/iop/ashift.c:3850 ../src/iop/ashift.c:3946
+#: ../src/iop/ashift.c:3947 ../src/iop/clipping.c:1565
 #: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1873
 msgid "vertical"
 msgstr "lodret"
 
-#: ../src/iop/ashift.c:3727 ../src/iop/graduatednd.c:1154
+#: ../src/iop/ashift.c:4043 ../src/iop/graduatednd.c:1154
 #: ../src/iop/watermark.c:1297
 msgid "rotation"
 msgstr "rotering"
 
-#: ../src/iop/ashift.c:3733
+#: ../src/iop/ashift.c:4049
 msgid "lens shift (vertical)"
 msgstr "objektivforskydning (lodret)"
 
-#: ../src/iop/ashift.c:3738
+#: ../src/iop/ashift.c:4054
 msgid "lens shift (horizontal)"
 msgstr "objektivforskydning (vandret)"
 
-#: ../src/iop/ashift.c:3743 ../src/iop/clipping.c:2007
+#: ../src/iop/ashift.c:4059
+msgid "shear"
+msgstr "skævvrid"
+
+#: ../src/iop/ashift.c:4064 ../src/iop/clipping.c:2007
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "guider"
 
-#: ../src/iop/ashift.c:3749 ../src/iop/clipping.c:1881
+#: ../src/iop/ashift.c:4070 ../src/iop/clipping.c:1881
 msgid "automatic cropping"
 msgstr "automatisk beskæring"
 
-#: ../src/iop/ashift.c:3751
+#: ../src/iop/ashift.c:4072
 msgid "largest area"
-msgstr "større område"
+msgstr "største område"
 
-#: ../src/iop/ashift.c:3752
+#: ../src/iop/ashift.c:4073
 msgid "original format"
 msgstr "originalformat"
 
-#: ../src/iop/ashift.c:3756
+#: ../src/iop/ashift.c:4077
 msgid "lens model"
 msgstr "objektivmodel"
 
-#: ../src/iop/ashift.c:3757
+#: ../src/iop/ashift.c:4078
 msgid "generic"
 msgstr "generisk"
 
-#: ../src/iop/ashift.c:3758
+#: ../src/iop/ashift.c:4079
 msgid "specific"
 msgstr "specifik"
 
-#: ../src/iop/ashift.c:3771
+#: ../src/iop/ashift.c:4092
 msgid "crop factor"
 msgstr "beskæringsfaktor"
 
-#: ../src/iop/ashift.c:3776
+#: ../src/iop/ashift.c:4097
 msgid "lens dependence"
 msgstr "objektivafhængighed"
 
-#: ../src/iop/ashift.c:3786
+#: ../src/iop/ashift.c:4107
 msgid "aspect adjust"
 msgstr "justering af forhold"
 
-#: ../src/iop/ashift.c:3796
+#: ../src/iop/ashift.c:4117
 msgid "automatic fit"
 msgstr "automatisk tilpasning"
 
-#: ../src/iop/ashift.c:3815
+#: ../src/iop/ashift.c:4136
 msgid "get structure"
 msgstr "hent struktur"
 
-#: ../src/iop/ashift.c:3860
+#: ../src/iop/ashift.c:4181
 msgid "rotate image"
 msgstr "rotér billede"
 
-#: ../src/iop/ashift.c:3861 ../src/iop/ashift.c:3862
+#: ../src/iop/ashift.c:4182 ../src/iop/ashift.c:4183
 msgid "apply lens shift correction in one direction"
 msgstr "anvend objektivforskydningskorrektion i én retning"
 
-#: ../src/iop/ashift.c:3863
-msgid "display guide lines overlay"
-msgstr "vis overlægning med guidelinjer"
+#: ../src/iop/ashift.c:4184
+msgid "shear the image along one diagonal"
+msgstr "skævvrid billedet langs én diagonal"
 
-#: ../src/iop/ashift.c:3864 ../src/iop/clipping.c:1884
+#: ../src/iop/ashift.c:4185
+msgid "display guide lines overlay"
+msgstr "vis overlægning med hjælpelinjer"
+
+#: ../src/iop/ashift.c:4186 ../src/iop/clipping.c:1884
 msgid "automatically crop to avoid black edges"
 msgstr "beskær automatisk for at undgå sorte kanter"
 
-#: ../src/iop/ashift.c:3865
+#: ../src/iop/ashift.c:4187
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
 msgstr ""
 "objektivmodel for perspektivkorrektionen: generisk eller efter brændvidden"
 
-#: ../src/iop/ashift.c:3867
+#: ../src/iop/ashift.c:4189
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "objektivets brændvidde; standardværdi sættes ud fra exif-data, hvis muligt"
 
-#: ../src/iop/ashift.c:3869
+#: ../src/iop/ashift.c:4191
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
 msgstr ""
-"kamerasensorens beskæringsfaktor; standardværdi sættes ud fra exif-data, hvis "
-"muligt; manuel opsætning er ofte nødvendig"
+"kamerasensorens beskæringsfaktor; standardværdi sættes ud fra exif-data, "
+"hvis muligt; manuel opsætning er ofte nødvendig"
 
-#: ../src/iop/ashift.c:3872
+#: ../src/iop/ashift.c:4194
 #, c-format
 msgid ""
 "the level of lens dependent correction, 100% for full dependency, 0% for the "
 "generic case"
 msgstr ""
-"niveauet for objektivafhængighedskorrektionen; 100% for fuld afhængighed, 0% "
-"for generisk"
+"niveauet for objektivafhængighedskorrektionen; 100% for fuld afhængighed, "
+"0% for generisk"
 
-#: ../src/iop/ashift.c:3874
+#: ../src/iop/ashift.c:4196
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr "justér størrelsesforhold for billede ved vandret og lodret skalering"
 
-#: ../src/iop/ashift.c:3875
+#: ../src/iop/ashift.c:4197
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
 "shift-click to only fit lens shift"
 msgstr ""
 "korrigér automatisk for lodret perspektivforvrængning\n"
-"ctrl-klik for kun at passe med rotering\n"
-"shift-klik for kun at passe med objektivforskydning"
+"ctrl-klik for kun at tilpasse rotering\n"
+"shift-klik for kun at tilpasse objektivforskydning"
 
-#: ../src/iop/ashift.c:3878
+#: ../src/iop/ashift.c:4200
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
 "shift-click to only fit lens shift"
 msgstr ""
 "korrigér automatisk for vandret perspektivforvrængning\n"
-"ctrl-klik for kun at passe med rotering\n"
-"shift-klik for kun at passe med objektivforskydning"
+"ctrl-klik for kun at tilpasse rotering\n"
+"shift-klik for kun at tilpasse objektivforskydning"
 
-#: ../src/iop/ashift.c:3881
+#: ../src/iop/ashift.c:4203
 msgid ""
-"automatically correct for vertical and horizontal perspective distortions\n"
+"automatically correct for vertical and horizontal perspective distortions; "
+"fitting rotation,lens shift in both directions, and shear\n"
 "ctrl-click to only fit rotation\n"
-"shift-click to only fit lens shift"
+"shift-click to only fit lens shift\n"
+"ctrl-shift-click to only fit rotation and lens shift"
 msgstr ""
-"korrigér automatisk for lodret og vandret perspektivforvrængning\n"
-"ctrl-klik for kun at passe med rotering\n"
-"shift-klik for kun at passe med objektivforskydning"
+"korrigér automatisk for lodret og vandret perspektivforvrængning; tilpasning "
+"af rotering, objektivforskydning i begge retninger og skævvridning\n"
+"ctrl-klik for kun at tilpasse rotering\n"
+"shift-klik for kun at tilpasse objektivforskydning\n"
+"strl-shift-klik for kun at tilpasse rotering og objektivforskydning"
 
-#: ../src/iop/ashift.c:3885
+#: ../src/iop/ashift.c:4209
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement"
 msgstr ""
-"analysér linjestruktor i billede\n"
+"analysér linjestruktur i billede\n"
 "ctrl-klik for endnu en kantforbedring"
 
-#: ../src/iop/ashift.c:3887
+#: ../src/iop/ashift.c:4211
 msgid "remove line structure information"
 msgstr "fjern information om linjestrukturer"
 
-#: ../src/iop/ashift.c:3888
+#: ../src/iop/ashift.c:4212
 msgid "toggle visibility of structure lines"
 msgstr "slå synlighed for strukturlinjer til og fra"
 
@@ -4384,7 +4408,7 @@ msgid "scale"
 msgstr "skalér"
 
 #: ../src/iop/basecurve.c:865 ../src/iop/profile_gamma.c:321
-#: ../src/iop/tonecurve.c:415
+#: ../src/iop/tonecurve.c:434
 msgid "linear"
 msgstr "lineær"
 
@@ -4489,7 +4513,7 @@ msgstr "størrelse"
 msgid "the size of bloom"
 msgstr "størrelsen af bloom"
 
-#: ../src/iop/bloom.c:519 ../src/iop/colorreconstruction.c:1371
+#: ../src/iop/bloom.c:519 ../src/iop/colorreconstruction.c:1372
 #: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:432
 #: ../src/iop/sharpen.c:763
 msgid "threshold"
@@ -4735,7 +4759,7 @@ msgstr "destination"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/iop/channelmixer.c:445 ../src/iop/colorize.c:427
-#: ../src/iop/colorreconstruction.c:1374 ../src/iop/colorreconstruction.c:1379
+#: ../src/iop/colorreconstruction.c:1375 ../src/iop/colorreconstruction.c:1380
 #: ../src/iop/colorzones.c:1074 ../src/iop/colorzones.c:1105
 #: ../src/iop/graduatednd.c:1168 ../src/iop/splittoning.c:488
 msgid "hue"
@@ -4959,7 +4983,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2036 ../src/libs/live_view.c:368
 msgid "display guide lines to help compose your photograph"
-msgstr "vis guidelinjer for at hjælpe med at komponere dit fotografi"
+msgstr "vis hjælpelinjer for at hjælpe med at komponere dit fotografi"
 
 #: ../src/iop/clipping.c:2040 ../src/iop/clipping.c:2045
 #: ../src/libs/live_view.c:377
@@ -5113,7 +5137,7 @@ msgstr "input-farveprofil"
 #: ../src/iop/colorin.c:1049
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "\"%s\" farvematriks ikke fundet!"
+msgstr "farvematricen \"%s\" ikke fundet!"
 
 #: ../src/iop/colorin.c:1083
 msgid "input profile could not be generated!"
@@ -5321,47 +5345,47 @@ msgctxt "accel"
 msgid "hue"
 msgstr "farvetone"
 
-#: ../src/iop/colorreconstruction.c:652
+#: ../src/iop/colorreconstruction.c:653
 msgid "module `color reconstruction' failed"
-msgstr "modul \"farverekonstruktion\" mislykkedes"
+msgstr "modulet \"farverekonstruktion\" mislykkedes"
 
-#: ../src/iop/colorreconstruction.c:1372 ../src/iop/shadhi.c:845
+#: ../src/iop/colorreconstruction.c:1373 ../src/iop/shadhi.c:845
 #: ../src/iop/tonemap.cc:298
 msgid "spatial extent"
 msgstr "rækkevidde"
 
-#: ../src/iop/colorreconstruction.c:1373
+#: ../src/iop/colorreconstruction.c:1374
 msgid "range extent"
 msgstr "rækkevidde"
 
-#: ../src/iop/colorreconstruction.c:1376
+#: ../src/iop/colorreconstruction.c:1377
 msgid "precedence"
 msgstr "præcedens"
 
-#: ../src/iop/colorreconstruction.c:1378
+#: ../src/iop/colorreconstruction.c:1379
 msgid "saturated colors"
 msgstr "mættede farver"
 
-#: ../src/iop/colorreconstruction.c:1408
+#: ../src/iop/colorreconstruction.c:1409
 msgid "pixels with lightness values above this threshold are corrected"
 msgstr "pixels med lysskarphedsværdier over denne grænseværdi rettes"
 
-#: ../src/iop/colorreconstruction.c:1409
+#: ../src/iop/colorreconstruction.c:1410
 msgid "how far to look for replacement colors in spatial dimensions"
 msgstr ""
 "hvor langt der skal kigges efter erstatningsfarver i de rumlige dimensioner"
 
-#: ../src/iop/colorreconstruction.c:1410
+#: ../src/iop/colorreconstruction.c:1411
 msgid "how far to look for replacement colors in the luminance dimension"
 msgstr ""
 "hvor langt der skal kigges efter erstatningsfarver i luminansdimensionen"
 
-#: ../src/iop/colorreconstruction.c:1411
+#: ../src/iop/colorreconstruction.c:1412
 msgid "if and how to give precedence to specific replacement colors"
 msgstr ""
 "om og hvordan der skal gives præcedens til specifikke erstatningsfarver"
 
-#: ../src/iop/colorreconstruction.c:1412
+#: ../src/iop/colorreconstruction.c:1413
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "farvetonen, som skal have højere prioritet end andre farvetoner"
 
@@ -5505,44 +5529,44 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "grænseværdi for kanter"
 
-#: ../src/iop/demosaic.c:3805 ../src/iop/demosaic.c:3814
-#: ../src/iop/dither.c:791 ../src/iop/highlights.c:789
+#: ../src/iop/demosaic.c:3829 ../src/iop/demosaic.c:3838
+#: ../src/iop/dither.c:791 ../src/iop/highlights.c:829
 msgid "method"
 msgstr "metode"
 
-#: ../src/iop/demosaic.c:3807
+#: ../src/iop/demosaic.c:3831
 msgid "PPG (fast)"
 msgstr "PPG (hurtig)"
 
-#: ../src/iop/demosaic.c:3808
+#: ../src/iop/demosaic.c:3832
 msgid "AMaZE (slow)"
 msgstr "AMaZE (langsom)"
 
-#: ../src/iop/demosaic.c:3809
+#: ../src/iop/demosaic.c:3833
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3810
+#: ../src/iop/demosaic.c:3834
 msgid "passthrough (monochrome) (experimental)"
 msgstr "gennemgang (monokrom) (eksperimentelt)"
 
-#: ../src/iop/demosaic.c:3811 ../src/iop/demosaic.c:3819
+#: ../src/iop/demosaic.c:3835 ../src/iop/demosaic.c:3843
 msgid "demosaicing raw data method"
 msgstr "metode for demosaicing raw-data"
 
-#: ../src/iop/demosaic.c:3816
+#: ../src/iop/demosaic.c:3840
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3817
+#: ../src/iop/demosaic.c:3841
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-omgang"
 
-#: ../src/iop/demosaic.c:3818
+#: ../src/iop/demosaic.c:3842
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-omgange (langsom)"
 
-#: ../src/iop/demosaic.c:3822
+#: ../src/iop/demosaic.c:3846
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5552,63 +5576,63 @@ msgstr ""
 "sæt til 0,0 for at slå fra.\n"
 "sæt til 1,0 for at ignorere kanter."
 
-#: ../src/iop/demosaic.c:3824
+#: ../src/iop/demosaic.c:3848
 msgid "edge threshold"
 msgstr "grænseværdi for kanter"
 
-#: ../src/iop/demosaic.c:3828
+#: ../src/iop/demosaic.c:3852
 msgid "color smoothing"
 msgstr "farveudjævning"
 
-#: ../src/iop/demosaic.c:3831
+#: ../src/iop/demosaic.c:3855
 msgid "one time"
 msgstr "en gang"
 
-#: ../src/iop/demosaic.c:3832
+#: ../src/iop/demosaic.c:3856
 msgid "two times"
 msgstr "to gange"
 
-#: ../src/iop/demosaic.c:3833
+#: ../src/iop/demosaic.c:3857
 msgid "three times"
 msgstr "tre gange"
 
-#: ../src/iop/demosaic.c:3834
+#: ../src/iop/demosaic.c:3858
 msgid "four times"
 msgstr "fire gange"
 
-#: ../src/iop/demosaic.c:3835
+#: ../src/iop/demosaic.c:3859
 msgid "five times"
 msgstr "fem gange"
 
-#: ../src/iop/demosaic.c:3836
+#: ../src/iop/demosaic.c:3860
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "hvor mange median-trin for farveudjævning efter demosaicing"
 
-#: ../src/iop/demosaic.c:3840
+#: ../src/iop/demosaic.c:3864
 msgid "match greens"
 msgstr "match grønne"
 
-#: ../src/iop/demosaic.c:3841
+#: ../src/iop/demosaic.c:3865
 msgid "disabled"
 msgstr "slået fra"
 
-#: ../src/iop/demosaic.c:3842
+#: ../src/iop/demosaic.c:3866
 msgid "local average"
 msgstr "lokalt gennemsnit"
 
-#: ../src/iop/demosaic.c:3843
+#: ../src/iop/demosaic.c:3867
 msgid "full average"
 msgstr "fuldt gennemsnit"
 
-#: ../src/iop/demosaic.c:3844
+#: ../src/iop/demosaic.c:3868
 msgid "full and local average"
 msgstr "fuldt og lokalt gennemsnit"
 
-#: ../src/iop/demosaic.c:3845
+#: ../src/iop/demosaic.c:3869
 msgid "green channels matching method"
 msgstr "matching-metode for grønne kanaler"
 
-#: ../src/iop/demosaic.c:3857
+#: ../src/iop/demosaic.c:3881
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -5798,7 +5822,7 @@ msgid "manual"
 msgstr "manuel"
 
 #: ../src/iop/exposure.c:829 ../src/iop/levels.c:555
-#: ../src/iop/tonecurve.c:782 ../src/iop/vignette.c:1136
+#: ../src/iop/tonecurve.c:821 ../src/iop/vignette.c:1136
 msgid "automatic"
 msgstr "automatisk"
 
@@ -5821,7 +5845,7 @@ msgstr ""
 "procentdel af lyse værdier klippet fra; slå farvevælger til og fra for at "
 "aktivere"
 
-#: ../src/iop/exposure.c:860 ../src/iop/highlights.c:798
+#: ../src/iop/exposure.c:860 ../src/iop/highlights.c:838
 msgid "clipping threshold"
 msgstr "grænseværdi for klipning"
 
@@ -6062,23 +6086,23 @@ msgstr "styrken af det anvendte korn"
 msgid "highlight reconstruction"
 msgstr "højlys-rekonstruktion"
 
-#: ../src/iop/highlights.c:790
+#: ../src/iop/highlights.c:830
 msgid "clip highlights"
 msgstr "klip højlys"
 
-#: ../src/iop/highlights.c:791
+#: ../src/iop/highlights.c:831
 msgid "reconstruct in LCh"
 msgstr "rekonstruér i LCh"
 
-#: ../src/iop/highlights.c:792
+#: ../src/iop/highlights.c:832
 msgid "reconstruct color"
 msgstr "rekonstruér farve"
 
-#: ../src/iop/highlights.c:793
+#: ../src/iop/highlights.c:833
 msgid "highlight reconstruction method"
 msgstr "metode for højlys-rekonstruktion"
 
-#: ../src/iop/highlights.c:796
+#: ../src/iop/highlights.c:836
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -6540,7 +6564,7 @@ msgid ""
 "ctrl+click : linear, grow, and shrink"
 msgstr ""
 "træk for at justere styrke på vridning\n"
-"ctrl+klik: lineær, voks og skrump"
+"ctrl+klik: lineær, ændr størrelse"
 
 #: ../src/iop/liquify.c:3349
 msgctxt "accel"
@@ -7133,7 +7157,7 @@ msgstr "temperatur"
 #: ../src/iop/temperature.c:655 ../src/iop/temperature.c:882
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "\"%s\" farvematriks ikke fundet for 4bayer-billede"
+msgstr "farvematricen \"%s\" ikke fundet for 4bayer-billede"
 
 #: ../src/iop/temperature.c:696
 msgctxt "white balance"
@@ -7153,7 +7177,7 @@ msgstr "spot"
 #: ../src/iop/temperature.c:873
 #, c-format
 msgid "`%s' color matrix not found for image"
-msgstr "\"%s\" farvematriks ikke fundet for billede"
+msgstr "farvematricen \"%s\" ikke fundet for billede"
 
 #: ../src/iop/temperature.c:927
 #, c-format
@@ -7198,67 +7222,72 @@ msgstr "%.0f justeret"
 msgid "fine tune white balance preset"
 msgstr "finjustér forudindstilling for hvidbalance"
 
-#: ../src/iop/tonecurve.c:139
+#: ../src/iop/tonecurve.c:149
 msgid "tone curve"
 msgstr "tonekurve"
 
-#: ../src/iop/tonecurve.c:411
+#: ../src/iop/tonecurve.c:430
 msgid "low contrast"
 msgstr "lav kontrast"
 
-#: ../src/iop/tonecurve.c:425
+#: ../src/iop/tonecurve.c:444
 msgid "med contrast"
 msgstr "medium kontrast"
 
-#: ../src/iop/tonecurve.c:435
+#: ../src/iop/tonecurve.c:454
 msgid "high contrast"
 msgstr "høj kontrast"
 
-#: ../src/iop/tonecurve.c:735
+#: ../src/iop/tonecurve.c:774
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:737
+#: ../src/iop/tonecurve.c:776
 msgid "tonecurve for L channel"
 msgstr "tonekurve for L-kanal"
 
-#: ../src/iop/tonecurve.c:739
+#: ../src/iop/tonecurve.c:778
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:741
+#: ../src/iop/tonecurve.c:780
 msgid "tonecurve for a channel"
 msgstr "tonekurve for a-kanal"
 
-#: ../src/iop/tonecurve.c:743
+#: ../src/iop/tonecurve.c:782
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:745
+#: ../src/iop/tonecurve.c:784
 msgid "tonecurve for b channel"
 msgstr "tonekurve for b-kanal"
 
-#: ../src/iop/tonecurve.c:766
+#: ../src/iop/tonecurve.c:805
 msgid "double click to reset curve"
 msgstr "dobbeltklik for at nulstille kurve"
 
-#: ../src/iop/tonecurve.c:781
+#: ../src/iop/tonecurve.c:820
 msgid "scale chroma"
 msgstr "skalér kroma"
 
-#: ../src/iop/tonecurve.c:783
+#: ../src/iop/tonecurve.c:822
 msgctxt "scale"
 msgid "manual"
 msgstr "manuel"
 
-#: ../src/iop/tonecurve.c:785
+#: ../src/iop/tonecurve.c:823
+msgid "automatic in XYZ"
+msgstr "automatisk i XYZ"
+
+#: ../src/iop/tonecurve.c:825
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
-"values (a and b) of each pixel are then adjusted based on L curve data."
+"values (a and b) of each pixel are then adjusted based on L curve data. auto "
+"XYZ is similar but applies the saturation changes in XYZ space."
 msgstr ""
 "hvis sat til auto, har a- og b-kurverne ingen effekt og vises ikke. "
 "kromaværdier (a og b) for hver pixel bliver så justeret baseret på L-"
-"kurvedata."
+"kurvedata. auto-XYZ ligeledes men anvender mætningsændringerne i XYZ-rum."
 
 #: ../src/iop/tonemap.cc:73
 msgid "tone mapping"
@@ -7761,15 +7790,15 @@ msgstr "fjern denne regel eller tilføj nye regler"
 
 #: ../src/libs/collect.c:1250
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
-msgstr "indtast din forespørgsel; brug <, <=, >, >=, <>, =, [;] som operatører"
+msgstr "indtast din forespørgsel; brug <, <=, >, >=, <>, =, [;] som operatorer"
 
 #: ../src/libs/collect.c:1255
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
 msgstr ""
-"indtast din forespørgsel; brug <, <=, >, >=, <>, =, [;] som operatører; "
-"indtast datoer på formen: ÅÅÅÅ:MM:DD TT:MM:SS (kun året et obligatorisk)"
+"indtast din forespørgsel; brug <, <=, >, >=, <>, =, [;] som operatorer; "
+"indtast datoer på formen: ÅÅÅÅ:MM:DD TT:MM:SS (kun året er obligatorisk)"
 
 #: ../src/libs/collect.c:1261 ../src/libs/collect.c:1662
 #, no-c-format
@@ -9186,7 +9215,7 @@ msgid ""
 msgstr ""
 "skaleringsfaktor for billede fra printerens medfødte DPI:\n"
 " < 1 betyder at det vil blive nedskaleret (bedste kvalitet)\n"
-" > 1 betyder at billedet er opskaleret\n"
+" > 1 betyder at billedet vil blive opskaleret\n"
 " en for stor værdi kan resultere i dårlig udskriftskvalitet"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
@@ -9983,7 +10012,7 @@ msgstr "zoom udfyld"
 #: ../src/views/darkroom.c:2191
 msgctxt "accel"
 msgid "zoom fit"
-msgstr "zoom-tilpasning"
+msgstr "tilpas zoom"
 
 #. Shortcut to skip images
 #: ../src/views/darkroom.c:2197
@@ -10209,11 +10238,11 @@ msgstr "ny session startet \"%s\""
 
 #: ../src/views/tethering.c:243
 msgid "no camera with tethering support available for use..."
-msgstr "intet kamera med tethering-understøttelse er tilgængeligt for brug…"
+msgstr "intet kamera med tethering-understøttelse er tilgængeligt…"
 
 #: ../src/views/view.c:315
 msgid "you are making a mistake!"
-msgstr "du begår en fejl!"
+msgstr "du er ved at begå en fejl!"
 
 #: ../src/views/view.c:316
 msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
