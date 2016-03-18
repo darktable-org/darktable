@@ -105,12 +105,11 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  /*
   dt_iop_color_intent_t intent = DT_INTENT_PERCEPTUAL;
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   const cmsHPROFILE Rec2020 = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_ANY)->profile;
-  cmsHTRANSFORM transform_lab_to_lin_rec2020 = cmsCreateTransform(Lab, TYPE_RGBA_FLT, Rec2020, TYPE_RGBA_FLT, intent, 0);
-  cmsHTRANSFORM transform_lin_rec2020_to_lab = cmsCreateTransform(Rec2020, TYPE_RGBA_FLT, Lab, TYPE_RGBA_FLT, intent, 0);
+  cmsHTRANSFORM transform_lab_to_lin_rec2020 = cmsCreateTransform(Lab, TYPE_LabA_FLT, Rec2020, TYPE_RGBA_FLT, intent, 0);
+  cmsHTRANSFORM transform_lin_rec2020_to_lab = cmsCreateTransform(Rec2020, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT, intent, 0);
 
   //Temp buffer for the whole image
   float *rgbbuf = (float *)calloc(roi_in->width * roi_in->height * 4, sizeof(float));
@@ -143,8 +142,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *out = o + y * width * 4;
     cmsDoTransform(transform_lin_rec2020_to_lab, in, out, width);
   }
-  */
-  memcpy(o, i, roi_in->width * roi_in->height * 4 * sizeof(float));
+  //memcpy(o, i, roi_in->width * roi_in->height * 4 * sizeof(float));
 }
 
 /** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip
