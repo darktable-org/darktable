@@ -19,6 +19,8 @@
 #include "filmSim.hpp"
 #include <algorithm>
 #include <stdio.h>
+using std::cout;
+using std::endl;
 #include <unistd.h>
 
 #ifdef _OPENMP
@@ -36,6 +38,7 @@ void filmulate(const float *const in,
                const int agitate_count)
 {
 
+    cout << "=====================================================" << endl;
     //Magic numbers
     float initial_developer_concentration = 1.0f;
     float reservoir_thickness = 1000.0f;
@@ -48,15 +51,21 @@ void filmulate(const float *const in,
     float silver_salt_consumption_const = 2000000.0f;
     float total_development_time = 100.0f;
     //int agitate_count =
+    cout << "agitate count: " << agitate_count << endl;
     int development_steps = 12;
     //float film_area =
+    cout << "film_area: " << film_area << endl;
     float sigma_const = 0.2f;
     //float layer_mix_const =
+    cout << "layer_mix_const: " << layer_mix_const << endl;
     float layer_time_divisor = 20.0f;
     //float rolloff_boundary =
+    cout << "rolloff_boundary: " << rolloff_boundary << endl;
 
     const int nrows = height;
     const int ncols = width;
+    cout << "filmulate.cpp number of rows: " << nrows << endl;
+    cout << "filmulate.cpp number of cols: " << ncols << endl;
 
     //Load things into matrices for Filmulator.
     matrix<float> input_image;
@@ -68,11 +77,14 @@ void filmulate(const float *const in,
     {
         for (int j = 0; j < ncols; j++)
         {
-            input_image(i, j*3    ) = 65535.0f*in[(j + i*ncols)*4    ];
-            input_image(i, j*3 + 1) = 65535.0f*in[(j + i*ncols)*4 + 1];
-            input_image(i, j*3 + 2) = 65535.0f*in[(j + i*ncols)*4 + 2];
+            input_image(i, j*3    ) = 20000 * in[(j + i*ncols)*4    ];
+            input_image(i, j*3 + 1) = 20000 * in[(j + i*ncols)*4 + 1];
+            input_image(i, j*3 + 2) = 20000 * in[(j + i*ncols)*4 + 2];
         }
     }
+    cout << endl << "filmulate.cpp max of input: " << max(input_image) << endl;
+    cout << "filmulate.cpp min of input: " << min(input_image) << endl;
+    cout << "filmulate.cpp mean of input: " << mean(input_image) << endl << endl;
 
     int npix = nrows*ncols;
 
@@ -137,6 +149,7 @@ void filmulate(const float *const in,
         //Now, we are going to perform the diffusion part.
         //Here we mix the layer among itself, which grants us the
         // local contrast increases.
+        //diffuse(developer_concentration,
         diffuse_short_convolution(developer_concentration,
                                   sigma_const,
                                   pixels_per_millimeter,
@@ -173,19 +186,25 @@ void filmulate(const float *const in,
     //nonexistant. It works okay, for now...
     //The output is crystal_radius^2 * active_crystals_per_pixel
 
-    const matrix<float> output_density = crystal_radius % crystal_radius % active_crystals_per_pixel * 500;
+    matrix<float> output_density = crystal_radius % crystal_radius % active_crystals_per_pixel * 500.0f;
+    cout << "filmulate.cpp max of acp: " << max(active_crystals_per_pixel) << endl;
+    cout << "filmulate.cpp min of acp: " << min(active_crystals_per_pixel) << endl;
+    cout << "filmulate.cpp max of rad: " << max(crystal_radius) << endl;
+    cout << "filmulate.cpp min of rad: " << min(crystal_radius) << endl;
+    cout << "filmulate.cpp max of output: " << max(output_density) << endl;
+    cout << "filmulate.cpp mean of output: " << mean(output_density) << endl;
 
     //Convert back to darktable's RGBA.
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for schedule(static) default(none) shared(output_density)
 #endif
     for (int i = 0; i < nrows; i++)
     {
         for (int j = 0; j < ncols; j++)
         {
-            out[(j + i*ncols)*4    ] = output_density(i, j*3    );
-            out[(j + i*ncols)*4 + 1] = output_density(i, j*3 + 1);
-            out[(j + i*ncols)*4 + 2] = output_density(i, j*3 + 2);
+            out[(j + i*ncols)*4    ] = std::min(1.0f,std::max(0.0f,output_density(i, j*3    )));
+            out[(j + i*ncols)*4 + 1] = std::min(1.0f,std::max(0.0f,output_density(i, j*3 + 1)));
+            out[(j + i*ncols)*4 + 2] = std::min(1.0f,std::max(0.0f,output_density(i, j*3 + 2)));
             out[(j + i*ncols)*4 + 3] = in[(j + i*ncols)*4 + 3];//copy the alpha channel
         }
     }

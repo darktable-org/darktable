@@ -550,10 +550,10 @@ T matrix<T>::min()
 {
     T shared_min;
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
+    //T* pdata = data;
+    //int pnum_cols = num_cols;
 #ifdef _OPENMP
-#pragma omp parallel shared(pdata, pnum_cols)
+#pragma omp parallel //shared(pdata, pnum_cols)
 #endif
     {
 	T min = std::numeric_limits<T>::max();

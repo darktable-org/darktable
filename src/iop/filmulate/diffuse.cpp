@@ -123,7 +123,7 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
             //Mirror the row onto the end of padded.
             for (col = 0; col < pad + 1; col++)
             {
-                hpadded[col+pad+width] = 
+                hpadded[col+pad+width] =
                     developer_concentration(row,width-2-col);
             }
             for (pass = 0; pass < order; pass++)
@@ -180,11 +180,11 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                                const float pixels_per_millimeter,
                                const float timestep)
 {
-    int height = developer_concentration.nr();
-    int width = developer_concentration.nc();
+    const int height = developer_concentration.nr();
+    const int width = developer_concentration.nc();
 
     //Compute the standard deviation of the blur we want, in pixels.
-    double sigma = sqrt(timestep*pow(sigma_const*pixels_per_millimeter,2));
+    const double sigma = sqrt(timestep*pow(sigma_const*pixels_per_millimeter,2));
 
     //We set the padding to be 4 standard deviations so as to catch as much as possible.
     int paddedWidth = width + 4*sigma + 3;
@@ -302,29 +302,20 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
         }
     }
 
-
-    //Set up variables for use inside loops
-    int row = 0;
-    int col = 0;
-    int slice = 0;
-    int offset = 0;
-    int iter = 0;
-
-    //X direction blurring.
-    //We slice by individual rows.
-    vector<double> devel_concX(paddedWidth);
 #ifdef _OPENMP
-#pragma omp parallel shared(developer_concentration, height, width, coeff, attenuationX,\
-    paddedWidth) firstprivate(devel_concX, row, col)
+#pragma omp parallel shared(developer_concentration, coeff, attenuationX)
 #endif
     {
+        //X direction blurring.
+        //We slice by individual rows.
+        vector<double> devel_concX(paddedWidth);
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
-        for (row = 0; row < height; row++)
+        for (int row = 0; row < height; row++)
         {
             //Copy data into the temp.
-            for (col = 0; col < width; col++)
+            for (int col = 0; col < width; col++)
             {
                 devel_concX[col] = double(developer_concentration(row,col));
             }
@@ -336,7 +327,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                              coeff[1] * devel_concX[1] +
                              coeff[2] * devel_concX[0];
             //Iterate over the main part of the image, except for the setup
-            for (col = 3; col < width; col++)
+            for (int col = 3; col < width; col++)
             {
                 devel_concX[col] = coeff[0] * devel_concX[col  ] +
                                    coeff[1] * devel_concX[col-1] +
@@ -344,14 +335,14 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                                    coeff[3] * devel_concX[col-3];
             }
             //Iterate over the zeroed tail
-            for (col = width; col < paddedWidth; col++)
+            for (int col = width; col < paddedWidth; col++)
             {
                 devel_concX[col] = coeff[1] * devel_concX[col-1] +
                                    coeff[2] * devel_concX[col-2] +
                                    coeff[3] * devel_concX[col-3];
             }
             //And go back
-            for (col = paddedWidth - 3 - 1; col >= 0; col--)
+            for (int col = paddedWidth - 3 - 1; col >= 0; col--)
             {
                 devel_concX[col] = coeff[0] * devel_concX[col  ] +
                                    coeff[1] * devel_concX[col+1] +
@@ -362,31 +353,30 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-            for (col = 0; col < width; col++)
+            for (int col = 0; col < width; col++)
             {
                 developer_concentration(row,col) = devel_concX[col]*attenuationX[col];
             }
         }
     }
 
-    //Y direction blurring. We slice into columns a whole number of cache lines wide.
-    //Each cache line is 8 doubles wide.
-    matrix<double> devel_concY;
-    int thickness = 8;//of the slice
-    devel_concY.set_size(paddedHeight,thickness);
-    int slices = ceil(width/float(thickness));
 #ifdef _OPENMP
-#pragma omp parallel shared(developer_concentration, height, width, coeff, attenuationY,\
-    paddedHeight, slices, thickness) firstprivate(devel_concY, row, col, slice, offset, iter)
+#pragma omp parallel shared(developer_concentration, coeff, attenuationY)
 #endif
     {
+        //Y direction blurring. We slice into columns a whole number of cache lines wide.
+        //Each cache line is 8 doubles wide.
+        matrix<double> devel_concY;
+        int thickness = 8;//of the slice
+        devel_concY.set_size(paddedHeight,thickness);
+        int slices = ceil(width/float(thickness));
 #ifdef _OPENMP
 #pragma omp for schedule(dynamic)
 #endif
-        for (slice = 0; slice < slices; slice++)
+        for (int slice = 0; slice < slices; slice++)
         {
-            offset = slice*thickness;
-            iter = thickness;//number of columns to loop through
+            int offset = slice*thickness;
+            int iter = thickness;//number of columns to loop through
             if (offset + thickness > width) //If it's the last row,
             {
                 iter = width - offset;//Don't go beyond the bounds
@@ -395,9 +385,9 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //Copy data into the temp.
             if (iter < 8) //we can't SIMD this nicely
             {
-                for (row = 0; row < height; row++)
+                for (int row = 0; row < height; row++)
                 {
-                    for (col = 0; col < iter; col++)
+                    for (int col = 0; col < iter; col++)
                     {
                         devel_concY(row,col) = developer_concentration(row,col+offset);
                     }
@@ -405,12 +395,12 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             }
             else //we can simd this
             {
-                for (row = 0; row < height; row++)
+                for (int row = 0; row < height; row++)
                 {
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-                    for (col = 0; col < 8; col++)
+                    for (int col = 0; col < 8; col++)
                     {
                         devel_concY(row,col) = developer_concentration(row,col+offset);
                     }
@@ -421,7 +411,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-            for (col = 0; col < 8; col++)
+            for (int col = 0; col < 8; col++)
             {
                 devel_concY(0,col) = coeff[0] * devel_concY(0,col);
                 devel_concY(1,col) = coeff[0] * devel_concY(1,col) +
@@ -431,12 +421,12 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                                      coeff[2] * devel_concY(0,col);
             }
             //Iterate over the main part of the image, except for the setup.
-            for (row = 3; row < height; row++)
+            for (int row = 3; row < height; row++)
             {
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-                for (col = 0; col < 8; col++)
+                for (int col = 0; col < 8; col++)
                 {
                     devel_concY(row,col) = coeff[0] * devel_concY(row  ,col) +
                                            coeff[1] * devel_concY(row-1,col) +
@@ -445,12 +435,12 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                 }
             }
             //Iterate over the zeroed tail
-            for (row = height; row < paddedHeight; row++)
+            for (int row = height; row < paddedHeight; row++)
             {
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-                for (col = 0; col < 8; col++)
+                for (int col = 0; col < 8; col++)
                 {
                     devel_concY(row,col) = coeff[1] * devel_concY(row-1,col) +
                                            coeff[2] * devel_concY(row-2,col) +
@@ -458,12 +448,12 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                 }
             }
             //And go back
-            for (row = paddedHeight - 3 - 1; row >= 0; row--)
+            for (int row = paddedHeight - 3 - 1; row >= 0; row--)
             {
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-                for (col = 0; col < 8; col++)
+                for (int col = 0; col < 8; col++)
                 {
                     devel_concY(row,col) = coeff[0] * devel_concY(row  ,col) +
                                            coeff[1] * devel_concY(row+1,col) +
@@ -474,9 +464,9 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //And undo the attenuation, copying back from the temp.
             if (iter < 8) //we can't SIMD this nicely
             {
-                for (row = 0; row < height; row++)
+                for (int row = 0; row < height; row++)
                 {
-                    for (col = 0; col < iter; col++)
+                    for (int col = 0; col < iter; col++)
                     {
                         developer_concentration(row,col+offset) = devel_concY(row,col)*attenuationY[row];
                     }
@@ -484,12 +474,12 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             }
             else
             {
-                for (row = 0; row < height; row++)
+                for (int row = 0; row < height; row++)
                 {
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-                    for (col = 0; col < 8; col++)
+                    for (int col = 0; col < 8; col++)
                     {
                         developer_concentration(row,col+offset) = devel_concY(row,col)*attenuationY[row];
                     }

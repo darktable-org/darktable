@@ -127,7 +127,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_filmulate_params_t *d = (dt_iop_filmulate_params_t *)piece->data;
   float rolloff_boundary = d->rolloff_boundary;
   float film_area = d->film_area;
+  if (film_area < 100.0f)
+  {
+      film_area = 400.0f;
+  }
+  if (film_area > 100000.0f)
+  {
+      film_area = 10000.0f;
+  }
   float layer_mix_const = d->layer_mix_const;
+  if (layer_mix_const < 0.0f)
+  {
+      layer_mix_const = 0.4f;
+  }
+  if (layer_mix_const > 1.0f)
+  {
+      layer_mix_const = 1.0f;
+  }
   int agitate_count = (int)d->agitate_count;
 
   //Filmulate things!
@@ -176,7 +192,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_filmulate_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_filmulate_params_t tmp = (dt_iop_filmulate_params_t){ 50 };
+  dt_iop_filmulate_params_t tmp = (dt_iop_filmulate_params_t){ 51275.0f, 864.0f, 0.2f, 1 };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_filmulate_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmulate_params_t));
@@ -199,9 +215,13 @@ static void rolloff_boundary_callback(GtkWidget *w, dt_iop_module_t *self)
     return;
   }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
-  p->rolloff_boundary = dt_bauhaus_combobox_get(w);
+
+  printf("rolloff_boundary callback 1\n");
+  p->rolloff_boundary = dt_bauhaus_combobox_get(w)*65535.0f;
+  printf("rolloff_boundary callback 2\n");
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  printf("rolloff_boundary callback 3\n");
 }
 static void film_area_callback(GtkWidget *w, dt_iop_module_t *self)
 {
@@ -214,7 +234,7 @@ static void film_area_callback(GtkWidget *w, dt_iop_module_t *self)
 
   //The film area control is logarithmic WRT the linear dimensions of film.
   //But in the backend, it's actually using square millimeters of simulated film.
-  p->film_area = powf(expf(dt_bauhaus_combobox_get(w)),2);
+  p->film_area = powf(expf(dt_bauhaus_combobox_get(w)),2.0f);
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -228,7 +248,7 @@ static void drama_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
   //Drama goes from 0 to 100, but the relevant parameter in the backend is 0 to 1.
-  p->layer_mix_const = dt_bauhaus_combobox_get(w)/100;
+  p->layer_mix_const = dt_bauhaus_combobox_get(w);
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -268,9 +288,9 @@ void gui_init(dt_iop_module_t *self)
   //Create the widgets
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->rolloff_boundary = dt_bauhaus_slider_new_with_range(self, 1.0f/65535.0f, 1, 0, 51275.0f/65535.0f, 2);
+  g->rolloff_boundary = dt_bauhaus_slider_new_with_range(self, 1.0f, 65535.0f, 0, 51275.0f/65535.0f, 2);
   g->film_area = dt_bauhaus_slider_new_with_range(self, 1.2f, 6.0f, 0.001f, 3.3808f, 2);
-  g->drama = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 0.0f, 20.0f, 2);
+  g->drama = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.0f, 0.2f, 2);
   g->overdrive = dt_bauhaus_combobox_new(self);
 
   dt_bauhaus_combobox_add(g->overdrive, _("off"));
