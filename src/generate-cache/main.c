@@ -131,7 +131,7 @@ int main(int argc, char *arg[])
       printf("this is darktable-generate-cache\ncopyright (c) 2014 johannes hanika; 2015 LebedevRI\n");
       exit(EXIT_FAILURE);
     }
-    else if(!strcmp(arg[k], "-m") || !strcmp(arg[k], "--max-mip"))
+    else if((!strcmp(arg[k], "-m") || !strcmp(arg[k], "--max-mip")) && argc > k + 1)
     {
       k++;
       max_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), 0), 7);
