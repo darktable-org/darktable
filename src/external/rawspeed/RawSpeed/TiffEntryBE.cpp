@@ -105,6 +105,7 @@ const uint32* TiffEntryBE::getIntArray() {
     return (uint32*)own_data;
 
   uint32 ncount = count * ((type == TIFF_RATIONAL ||  type == TIFF_SRATIONAL) ? 2 : 1);
+  if (type == TIFF_UNDEFINED) ncount /= 4;
   own_data = new uchar8[ncount*4];
   uint32* d = (uint32*)own_data;
   for (uint32 i = 0; i < ncount; i++) {
@@ -124,9 +125,11 @@ const ushort16* TiffEntryBE::getShortArray() {
   if (own_data)
     return (unsigned short*)own_data;
 
-  own_data = new uchar8[count*2];
+  uint32 ncount = count;
+  if (type == TIFF_UNDEFINED) ncount /= 2;
+  own_data = new uchar8[ncount*2];
   ushort16* d = (ushort16*)own_data;
-  for (uint32 i = 0; i < count; i++) {
+  for (uint32 i = 0; i < ncount; i++) {
     d[i] = (ushort16)data[i*2+0] << 8 | (ushort16)data[i*2+1];
   }
   return d;
@@ -139,9 +142,11 @@ const short16* TiffEntryBE::getSignedShortArray() {
   if (own_data)
     return (short16 *)own_data;
 
-  own_data = new uchar8[count*2];
+  uint32 ncount = count;
+  if (type == TIFF_UNDEFINED) ncount /= 2;
+  own_data = new uchar8[ncount*2];
   ushort16* d = (ushort16*)own_data;
-  for (uint32 i = 0; i < count; i++) {
+  for (uint32 i = 0; i < ncount; i++) {
     d[i] = (ushort16)data[i*2+0] << 8 | (ushort16)data[i*2+1];
   }
   return (short16 *)d;
