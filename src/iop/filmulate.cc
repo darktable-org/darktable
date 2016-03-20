@@ -334,7 +334,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_filmulate_gui_data_t *g = (dt_iop_filmulate_gui_data_t *)self->gui_data;
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
   dt_bauhaus_slider_set(g->rolloff_boundary, p->rolloff_boundary);
-  dt_bauhaus_slider_set(g->film_area, logf(sqrtf(p->film_area)));
+  dt_bauhaus_slider_set(g->film_area, p->film_area);
   dt_bauhaus_slider_set(g->drama, p->layer_mix_const);
   dt_bauhaus_combobox_set(g->overdrive, (p->agitate_count == 0) ? 1 : 0);
 }
