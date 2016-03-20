@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-19 19:17+0100\n"
-"PO-Revision-Date: 2016-03-19 19:45+0100\n"
+"POT-Creation-Date: 2016-03-20 20:48+0100\n"
+"PO-Revision-Date: 2016-03-20 21:08+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -4362,13 +4362,13 @@ msgid "hue"
 msgstr "tint "
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:446 ../src/iop/colisa.c:366 ../src/iop/colorcorrection.c:282 ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1072
-#: ../src/iop/colorzones.c:1106 ../src/iop/graduatednd.c:1182 ../src/iop/lowpass.c:663 ../src/iop/soften.c:707 ../src/iop/splittoning.c:500
-#: ../src/iop/vignette.c:1148
+#: ../src/iop/channelmixer.c:446 ../src/iop/colisa.c:366 ../src/iop/colorcorrection.c:282 ../src/iop/colorchecker.c:599 ../src/iop/colorize.c:441
+#: ../src/iop/colorzones.c:1072 ../src/iop/colorzones.c:1106 ../src/iop/graduatednd.c:1182 ../src/iop/lowpass.c:663 ../src/iop/soften.c:707
+#: ../src/iop/splittoning.c:500 ../src/iop/vignette.c:1148
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/channelmixer.c:447 ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1069 ../src/iop/colorzones.c:1107
+#: ../src/iop/channelmixer.c:447 ../src/iop/colorchecker.c:581 ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1069 ../src/iop/colorzones.c:1107
 msgid "lightness"
 msgstr "helderheid"
 
@@ -4716,6 +4716,143 @@ msgstr "sleep de lijn voor split toning, helder betekent hooglichten, donker bet
 #: ../src/iop/colorcorrection.c:281
 msgid "set the global saturation"
 msgstr "kies globale verzadiging"
+
+#: ../src/iop/colorchecker.c:45
+msgid "dark skin :A0"
+msgstr "donkere huidskleur :A0"
+
+#: ../src/iop/colorchecker.c:46
+msgid "light skin :A1"
+msgstr "lichte huidskleur :A1"
+
+#: ../src/iop/colorchecker.c:47
+msgid "blue sky :A2"
+msgstr "hemelsblauw :A2"
+
+#: ../src/iop/colorchecker.c:48
+msgid "foliage :A3"
+msgstr "gebladerte :A3"
+
+#: ../src/iop/colorchecker.c:49
+msgid "blue flower :A4"
+msgstr "blauwe bloem: A4"
+
+#: ../src/iop/colorchecker.c:50
+msgid "bluish green :A5"
+msgstr "blauwig-groen :A5"
+
+#: ../src/iop/colorchecker.c:51
+msgid "orange :B0"
+msgstr "oranje :B0"
+
+#: ../src/iop/colorchecker.c:52
+msgid "purple red :B1"
+msgstr "paars rood :B1"
+
+#: ../src/iop/colorchecker.c:53
+msgid "moderate red :B2"
+msgstr "gematigd rood: B2"
+
+#: ../src/iop/colorchecker.c:54
+msgid "purple :B3"
+msgstr "paars :B3"
+
+#: ../src/iop/colorchecker.c:55
+msgid "yellow green :B4"
+msgstr "geel groen :B4"
+
+#: ../src/iop/colorchecker.c:56
+msgid "orange yellow :B5"
+msgstr "oranje geel :B5"
+
+#: ../src/iop/colorchecker.c:57
+msgid "blue :C0"
+msgstr "blauw :C0"
+
+#: ../src/iop/colorchecker.c:58
+msgid "green :C1"
+msgstr "groen :C1"
+
+#: ../src/iop/colorchecker.c:59
+msgid "red :C2"
+msgstr "rood :C2"
+
+#: ../src/iop/colorchecker.c:60
+msgid "yellow :C3"
+msgstr "geel :C3"
+
+#: ../src/iop/colorchecker.c:61
+msgid "magenta :C4"
+msgstr "magenta :C4"
+
+#: ../src/iop/colorchecker.c:62
+msgid "cyan :C5"
+msgstr "cyaan :C5"
+
+#: ../src/iop/colorchecker.c:63
+msgid "white :D0"
+msgstr "wit :D0"
+
+#: ../src/iop/colorchecker.c:64
+msgid "neutral 8 :D1"
+msgstr "neutraal 8 :D1"
+
+#: ../src/iop/colorchecker.c:65
+msgid "neutral 65 :D2"
+msgstr "neutraal 65 :D2"
+
+#: ../src/iop/colorchecker.c:66
+msgid "neutral 5 :D3"
+msgstr "neutraal 5 : D3"
+
+#: ../src/iop/colorchecker.c:67
+msgid "neutral 35 :D4"
+msgstr "neutraal 35 :D4"
+
+#: ../src/iop/colorchecker.c:68
+msgid "black :D5"
+msgstr "zwart :D5"
+
+#: ../src/iop/colorchecker.c:121
+msgid "color checker lut"
+msgstr "color checker lut"
+
+#: ../src/iop/colorchecker.c:515
+#, c-format
+msgid "select patch `%s' (altered patches are marked with an outline)"
+msgstr "selecteer patch `%s' (gewijzigde patches worden gemarkeerd met een contour)"
+
+#: ../src/iop/colorchecker.c:572
+msgid "patch"
+msgstr "patch"
+
+#: ../src/iop/colorchecker.c:573
+msgid "color checker patch"
+msgstr "color checker patch"
+
+#: ../src/iop/colorchecker.c:580
+msgid "lightness offset"
+msgstr "compenseer helderheid"
+
+#: ../src/iop/colorchecker.c:584
+msgid "chroma offset green/red"
+msgstr "compenseer kleurwaarde groen/rood"
+
+#: ../src/iop/colorchecker.c:585
+msgid "green/red"
+msgstr "groen/rood"
+
+#: ../src/iop/colorchecker.c:591
+msgid "chroma offset blue/yellow"
+msgstr "compenseer kleurwaarde blauw/geel"
+
+#: ../src/iop/colorchecker.c:592
+msgid "blue/yellow"
+msgstr "blauw/geel"
+
+#: ../src/iop/colorchecker.c:598
+msgid "saturation offset"
+msgstr "compenseer verzadiging"
 
 #: ../src/iop/colorin.c:108
 msgid "input color profile"
@@ -5249,7 +5386,7 @@ msgstr "gebruikte ontruis-kernmethode, non-local werkt het best bij het mengen v
 
 #: ../src/iop/denoiseprofile.c:2067
 msgid "radius of the patches to match. increase for more sharpness"
-msgstr "straal van de patches om aan te passen, vergroot voor meer scherpte"
+msgstr "straal van de patches om aan te passen, verhoog voor meer scherpte"
 
 #: ../src/iop/denoiseprofile.c:2068
 msgid "finetune denoising strength"
@@ -9983,9 +10120,6 @@ msgstr ""
 #~ msgid "spatial blur"
 #~ msgstr "ruimtelijke vervaging"
 
-#~ msgid "range blur"
-#~ msgstr "range vervaging"
-
 #~ msgid "pixels with L values below this threshold are not affected"
 #~ msgstr "pixels met L-waarden onder deze drempel worden niet beïnvloed"
 
@@ -10675,9 +10809,6 @@ msgstr ""
 #~ msgctxt "accel"
 #~ msgid "gamma exponential part"
 #~ msgstr "gamma exponentiële factor"
-
-#~ msgid " green "
-#~ msgstr "groen"
 
 #~ msgid " chroma "
 #~ msgstr "kleurwaarde"
