@@ -135,19 +135,20 @@ class Runner
       basename = File.basename file
       values = {}
 
-      values["name"] = "#{brandname}-#{cameraname}-#{basename}-#{xmpname}"
+      # Make sure to remove any "/" from names to avoid broken paths
+      values["name"] = "#{brandname}-#{cameraname}-#{basename}-#{xmpname}".tr("/","-")
       values["brand"] = brandname
       values["camera"] = cameraname
       values["file"] = file
       values["xmp"] = xmpname
 
-      outfile1 = "#{outputdir}/#{brandname}-#{cameraname}-#{basename}-#{xmpname}-1.jpg"
+      outfile1 = "#{outputdir}/#{values["name"]}-1.jpg"
       values["file1"] = outfile1
       ret1, out1 = dtbuildfrom.export(file, xmpfile, outfile1)
       values["output1"] = out1
       values["version1"] = dtbuildfrom.version
 
-      outfile2 = "#{outputdir}/#{brandname}-#{cameraname}-#{basename}-#{xmpname}-2.jpg"
+      outfile2 = "#{outputdir}/#{values["name"]}-2.jpg"
       values["file2"] = outfile2
       ret2, out2 = dtbuildto.export(file, xmpfile, outfile2)
       values["output2"] = out2
@@ -172,11 +173,11 @@ class Runner
           yield [:still_pass, values] if block_given?
         else
           # We have caught a difference
-          difffile = "#{outputdir}/#{brandname}-#{cameraname}-#{basename}-#{xmpname}-diff.jpg"
+          difffile = "#{outputdir}/#{values["name"]}-diff.jpg"
           values["difffile"] = difffile
           calc_image_diff outfile1, outfile2, difffile
 
-          stretch_difffile = "#{outputdir}/#{brandname}-#{cameraname}-#{basename}-#{xmpname}-diff-stretch.jpg"
+          stretch_difffile = "#{outputdir}/#{values["name"]}-diff-stretch.jpg"
           values["stretch_difffile"] = stretch_difffile
           constrast_stretch_image difffile, stretch_difffile
           if pdiff && pdiff < DIFF_LEVEL
