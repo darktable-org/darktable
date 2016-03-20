@@ -84,6 +84,7 @@ src/iop/colisa.c
 src/iop/colorbalance.c
 src/iop/colorcontrast.c
 src/iop/colorcorrection.c
+src/iop/colorchecker.c
 src/iop/colorin.c
 src/iop/colorize.c
 src/iop/colormapping.c
