@@ -18,20 +18,21 @@
 
 #include <glib.h>
 
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
-#include "common/image_cache.h"
-#include "common/styles.h"
-#include "common/variables.h"
 #include "common/cups_print.h"
 #include "common/image_cache.h"
+#include "common/image_cache.h"
 #include "common/pdf.h"
-#include "common/tags.h"
 #include "common/printprof.h"
+#include "common/styles.h"
+#include "common/tags.h"
+#include "common/variables.h"
 #include "dtgtk/resetlabel.h"
-#include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "bauhaus/bauhaus.h"
+#include "libs/lib.h"
 
 DT_MODULE(2)
 
@@ -1789,6 +1790,18 @@ gui_reset (dt_lib_module_t *self)
   _set_orientation (ps);
 
   dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape?1:0);
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "print"), GDK_KEY_p, GDK_CONTROL_MASK);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *d = (dt_lib_print_settings_t *)self->data;
+
+  dt_accel_connect_button_lib(self, "print", GTK_WIDGET(d->print_button));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
