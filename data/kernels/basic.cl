@@ -414,7 +414,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   }
   else
   {
-    if(pixel.x > 0.01f)
+    if(L_in > 0.01f)
     {
       pixel.y *= L/pixel.x;
       pixel.z *= L/pixel.x;
