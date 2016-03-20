@@ -191,7 +191,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_filmulate_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_filmulate_params_t tmp = (dt_iop_filmulate_params_t){ 51275.0f, 864.0f, 0.2f, 1 };
+  dt_iop_filmulate_params_t tmp = (dt_iop_filmulate_params_t){51275.0f/65535.0f, sqrtf(864.0f), 20.0f, 1};
 
   memcpy(module->params, &tmp, sizeof(dt_iop_filmulate_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmulate_params_t));

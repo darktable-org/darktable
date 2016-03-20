@@ -77,9 +77,9 @@ void filmulate(const float *const in,
     {
         for (int j = 0; j < ncols; j++)
         {
-            input_image(i, j*3    ) = 20000 * in[(j + i*ncols)*4    ];
-            input_image(i, j*3 + 1) = 20000 * in[(j + i*ncols)*4 + 1];
-            input_image(i, j*3 + 2) = 20000 * in[(j + i*ncols)*4 + 2];
+            input_image(i, j*3    ) = 65535.0f * in[(j + i*ncols)*4    ];
+            input_image(i, j*3 + 1) = 65535.0f * in[(j + i*ncols)*4 + 1];
+            input_image(i, j*3 + 2) = 65535.0f * in[(j + i*ncols)*4 + 2];
         }
     }
     cout << endl << "filmulate.cpp max of input: " << max(input_image) << endl;
