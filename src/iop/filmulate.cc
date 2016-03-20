@@ -91,7 +91,7 @@ int groups()
 /** modify regions of interest; filmulation requires the full image. **/
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);
-//void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, 
+//void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
 //                   const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 //{
 //  *roi_in = piece->buf_in;
@@ -219,7 +219,8 @@ static void rolloff_boundary_callback(GtkWidget *w, dt_iop_module_t *self)
   }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
-  p->rolloff_boundary = dt_bauhaus_slider_get(w)*65535.0f;
+//  p->rolloff_boundary = dt_bauhaus_slider_get(w)*65535.0f;
+  p->rolloff_boundary = dt_bauhaus_slider_get(w);
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   printf("rolloff_boundary callback 3\n");
@@ -242,18 +243,14 @@ static void film_area_callback(GtkWidget *w, dt_iop_module_t *self)
 static void drama_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   //This is important to avoid cycles!
-  if(self->dt->gui->reset)
+  if(darktable.gui -> reset)
   {
     return;
   }
-//  //This is important to avoid cycles!
-//  if(darktable.gui -> reset)
-//  {
-//    return;
-//  }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
   //Drama goes from 0 to 100, but the relevant parameter in the backend is 0 to 1.
+//  p->layer_mix_const = dt_bauhaus_slider_get(w)/100.0f;
   p->layer_mix_const = dt_bauhaus_slider_get(w);
   cout << "layer mix const at callback: " << p->layer_mix_const << endl;
   cout << "layer mix const at callback2: " << dt_bauhaus_slider_get(w) << endl;
@@ -263,7 +260,7 @@ static void drama_callback(GtkWidget *w, dt_iop_module_t *self)
 static void overdrive_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   //This is important to avoid cycles!
-  if(self->dt->gui->reset)
+  if(darktable.gui->reset)
   {
     return;
   }
@@ -283,7 +280,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
   dt_bauhaus_slider_set(g->rolloff_boundary, p->rolloff_boundary);
   dt_bauhaus_slider_set(g->film_area, logf(sqrtf(p->film_area)));
-  dt_bauhaus_slider_set(g->drama, 100*(p->layer_mix_const));
+  dt_bauhaus_slider_set(g->drama, p->layer_mix_const);
   dt_bauhaus_combobox_set(g->overdrive, (p->agitate_count == 0) ? 1 : 0);
 }
 
@@ -296,7 +293,7 @@ void gui_init(dt_iop_module_t *self)
   //Create the widgets
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->rolloff_boundary = dt_bauhaus_slider_new_with_range(self, 1.0f, 65535.0f, 0, 51275.0f/65535.0f, 2);
+  g->rolloff_boundary = dt_bauhaus_slider_new_with_range(self, 1.0f, 65535.0f, 0, 51275.0f, 2);
   g->film_area = dt_bauhaus_slider_new_with_range(self, 1.2f, 6.0f, 0.001f, 3.3808f, 2);
   g->drama = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.0f, 0.2f, 2);
   g->overdrive = dt_bauhaus_combobox_new(self);
