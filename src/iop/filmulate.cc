@@ -53,7 +53,7 @@ typedef struct dt_iop_filmulate_params_t
   float rolloff_boundary;
   float film_area;
   float layer_mix_const;
-  int32_t agitate_count;
+  int agitate_count;
 } dt_iop_filmulate_params_t;
 
 typedef struct dt_iop_filmulate_gui_data_t
@@ -86,6 +86,18 @@ int flags()
 int groups()
 {
   return IOP_GROUP_BASIC;
+}
+
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)p1;
+  dt_iop_filmulate_params_t *d = (dt_iop_filmulate_params_t *)piece->data;
+
+  d->rolloff_boundary = p->rolloff_boundary*65535.0f;
+  d->film_area = powf(p->film_area,2.0f);
+  d->layer_mix_const = p->layer_mix_const/100.0f;
+  d->agitate_count = p->agitate_count;
 }
 
 /** modify regions of interest; filmulation requires the full image. **/
@@ -130,24 +142,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_filmulate_params_t *d = (dt_iop_filmulate_params_t *)piece->data;
   float rolloff_boundary = d->rolloff_boundary;
   float film_area = d->film_area;
-  if (film_area < 100.0f)
-  {
-      film_area = 400.0f;
-  }
-  if (film_area > 100000.0f)
-  {
-      film_area = 10000.0f;
-  }
   float layer_mix_const = d->layer_mix_const;
-  if (layer_mix_const < 0.0f)
-  {
-      layer_mix_const = 0.4f;
-  }
-  if (layer_mix_const > 1.0f)
-  {
-      layer_mix_const = 1.0f;
-  }
-  int agitate_count = (int)d->agitate_count;
+  int agitate_count = d->agitate_count;
 
   //Filmulate things!
   filmulate(rgbbufin, rgbbufout,
@@ -219,12 +215,30 @@ static void rolloff_boundary_callback(GtkWidget *w, dt_iop_module_t *self)
   }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
-//  p->rolloff_boundary = dt_bauhaus_slider_get(w)*65535.0f;
   p->rolloff_boundary = dt_bauhaus_slider_get(w);
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   printf("rolloff_boundary callback 3\n");
 }
+
+//The slider goes from 0 to 65535, but we want to show 0 to 1.
+static float rolloff_boundary_scaled_callback(GtkWidget *self, float input, dt_bauhaus_callback_t dir)
+{
+  float output;
+  switch(dir)
+  {
+    case DT_BAUHAUS_SET:
+      output = input*65535.0f;
+      break;
+    case DT_BAUHAUS_GET:
+      output = input/65535.0f;
+      break;
+    default:
+      output = input;
+  }
+  return output;
+}
+
 static void film_area_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   //This is important to avoid cycles!
@@ -236,10 +250,32 @@ static void film_area_callback(GtkWidget *w, dt_iop_module_t *self)
 
   //The film area control is logarithmic WRT the linear dimensions of film.
   //But in the backend, it's actually using square millimeters of simulated film.
-  p->film_area = powf(expf(dt_bauhaus_slider_get(w)),2.0f);
+  //p->film_area = powf(expf(dt_bauhaus_slider_get(w)),2.0f);
+  p->film_area = dt_bauhaus_slider_get(w);
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
+
+//The film size slider displays the exponential of the linear slider position.
+static float film_dimensions_callback(GtkWidget *self, float input, dt_bauhaus_callback_t dir)
+{
+  float output;
+  switch(dir)
+  {
+    case DT_BAUHAUS_SET:
+      //output = exp(input);
+      output = log(fmax(input, 1e-15f));
+      break;
+    case DT_BAUHAUS_GET:
+      //output = log(fmax(input, 1e-15f));
+      output = exp(input);
+      break;
+    default:
+      output = input;
+  }
+  return output;
+}
+
 static void drama_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   //This is important to avoid cycles!
@@ -257,6 +293,25 @@ static void drama_callback(GtkWidget *w, dt_iop_module_t *self)
   //Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
+
+//The slider goes from 0 to 1, but we want to show 0 to 100.
+static float drama_scaled_callback(GtkWidget *self, float input, dt_bauhaus_callback_t dir)
+{
+  float output;
+  switch(dir)
+  {
+    case DT_BAUHAUS_SET:
+      output = input/100.0f;
+      break;
+    case DT_BAUHAUS_GET:
+      output = input*100.0f;
+      break;
+    default:
+      output = input;
+  }
+  return output;
+}
+
 static void overdrive_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   //This is important to avoid cycles!
@@ -294,16 +349,19 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->rolloff_boundary = dt_bauhaus_slider_new_with_range(self, 1.0f, 65535.0f, 0, 51275.0f, 2);
-  g->film_area = dt_bauhaus_slider_new_with_range(self, 1.2f, 6.0f, 0.001f, 3.3808f, 2);
+  g->film_area = dt_bauhaus_slider_new_with_range(self, 1.2f, 6.0f, 0.001f, logf(sqrtf(864.0f)), 2);
   g->drama = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.0f, 0.2f, 2);
   g->overdrive = dt_bauhaus_combobox_new(self);
 
+  dt_bauhaus_slider_set_callback(g->rolloff_boundary, rolloff_boundary_scaled_callback);
+  dt_bauhaus_slider_set_callback(g->film_area, film_dimensions_callback);
+  dt_bauhaus_slider_set_callback(g->drama, drama_scaled_callback);
   dt_bauhaus_combobox_add(g->overdrive, _("off"));
   dt_bauhaus_combobox_add(g->overdrive, _("on"));
   
   dt_bauhaus_widget_set_label(g->rolloff_boundary, NULL, _("rolloff boundary"));
   gtk_widget_set_tooltip_text(g->rolloff_boundary, _("sets the point above which the highlights gently stop getting brighter. if you've got completely unclipped highlights before filmulation, raise this to 1."));
-  dt_bauhaus_widget_set_label(g->film_area, NULL, _("film area"));
+  dt_bauhaus_widget_set_label(g->film_area, NULL, _("film size"));
   gtk_widget_set_tooltip_text(g->film_area, _("larger sizes emphasize smaller details and overall flatten the image. smaller sizes emphasize larger regional contrasts. don't use larger sizes with high drama or you'll get the HDR look."));
   dt_bauhaus_widget_set_label(g->drama, NULL, _("drama"));
   gtk_widget_set_tooltip_text(g->drama, _("pulls down highlights to retain detail. this is the real \"filmy\" effect. this not only helps bring down highlights, but can rescue extremely saturated regions such as flowers."));
