@@ -84,24 +84,24 @@ int main(int argc, char *arg[])
         printf("this is darktable-cli " PACKAGE_VERSION  "\ncopyright (c) 2012-2015 johannes hanika, tobias ellinghaus\n");
         exit(1);
       }
-      else if(!strcmp(arg[k], "--width"))
+      else if(!strcmp(arg[k], "--width") && argc > k + 1)
       {
         k++;
         width = MAX(atoi(arg[k]), 0);
       }
-      else if(!strcmp(arg[k], "--height"))
+      else if(!strcmp(arg[k], "--height") && argc > k + 1)
       {
         k++;
         height = MAX(atoi(arg[k]), 0);
       }
-      else if(!strcmp(arg[k], "--bpp"))
+      else if(!strcmp(arg[k], "--bpp") && argc > k + 1)
       {
         k++;
         bpp = MAX(atoi(arg[k]), 0);
         fprintf(stderr, "%s %d\n",
                 _("TODO: sorry, due to API restrictions we currently cannot set the BPP to"), bpp);
       }
-      else if(!strcmp(arg[k], "--hq"))
+      else if(!strcmp(arg[k], "--hq") && argc > k + 1)
       {
         k++;
         gchar *str = g_ascii_strup(arg[k], -1);
@@ -117,7 +117,7 @@ int main(int argc, char *arg[])
         }
         g_free(str);
       }
-      else if(!strcmp(arg[k], "--upscale"))
+      else if(!strcmp(arg[k], "--upscale") && argc > k + 1)
       {
         k++;
         gchar *str = g_ascii_strup(arg[k], -1);
