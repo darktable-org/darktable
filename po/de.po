@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-02 00:28+0100\n"
-"PO-Revision-Date: 2016-03-02 00:29+0100\n"
+"POT-Creation-Date: 2016-03-21 10:32+0100\n"
+"PO-Revision-Date: 2016-03-21 10:37+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -834,20 +834,26 @@ msgstr "Unbekannte Option für --hq"
 msgid "unknown option for --upscale"
 msgstr "Unbekannte Option für --upscale"
 
-#: ../src/cli/main.c:184
+#: ../src/cli/main.c:183
+#, c-format
+msgid "error: output file is a directory. please specify file name"
+msgstr ""
+"Fehler: Ausgabedatei ist ein Verzeichnis. Bitte einen Dateinamen angeben"
+
+#: ../src/cli/main.c:191
 msgid "output file already exists, it will get renamed"
 msgstr "Ausgabedatei existiert bereits, sie wird umbenannt"
 
-#: ../src/cli/main.c:199
+#: ../src/cli/main.c:206
 #, c-format
 msgid "error: can't open file %s"
 msgstr "Fehler: kann Datei %s nicht öffnen"
 
-#: ../src/cli/main.c:221
+#: ../src/cli/main.c:228
 msgid "empty history stack"
 msgstr "leerer Verlaufsstapel"
 
-#: ../src/cli/main.c:244
+#: ../src/cli/main.c:251
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -855,17 +861,17 @@ msgstr ""
 "kann Modul zum Speichern auf der Festplatten nicht finden. Bitte die "
 "Installation prüfen, irgendwas scheint kaputt zu sein."
 
-#: ../src/cli/main.c:251
+#: ../src/cli/main.c:258
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "Konnte keine Einstellungen vom Speicher-Modul bekommen, breche Export ab …"
 
-#: ../src/cli/main.c:263
+#: ../src/cli/main.c:270
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "unbekannte Datei-Erweiterung '.%s'"
 
-#: ../src/cli/main.c:271
+#: ../src/cli/main.c:278
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "Konnte keine Einstellungen vom Format-Modul bekommen, breche Export ab …"
@@ -925,72 +931,72 @@ msgstr[0] "%d Bild von %d ist in der aktuellen Sammlung ausgewählt"
 msgstr[1] "%d Bilder von %d sind in der aktuellen Sammlung ausgewählt"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1119 ../src/iop/colorin.c:1223
+#: ../src/common/colorspaces.c:1116 ../src/iop/colorin.c:1223
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1120 ../src/common/colorspaces.c:1262
-#: ../src/iop/colorin.c:1224 ../src/libs/print_settings.c:869
+#: ../src/common/colorspaces.c:1117 ../src/common/colorspaces.c:1259
+#: ../src/iop/colorin.c:1224 ../src/libs/print_settings.c:870
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
-#: ../src/common/colorspaces.c:1121 ../src/common/colorspaces.c:1267
+#: ../src/common/colorspaces.c:1118 ../src/common/colorspaces.c:1264
 #: ../src/iop/colorin.c:1225
 msgid "linear Rec709 RGB"
 msgstr "lineares Rec709-RGB"
 
-#: ../src/common/colorspaces.c:1122 ../src/common/colorspaces.c:1272
+#: ../src/common/colorspaces.c:1119 ../src/common/colorspaces.c:1269
 #: ../src/iop/colorin.c:1226
 msgid "linear Rec2020 RGB"
 msgstr "lineares Rec2020-RGB"
 
-#: ../src/common/colorspaces.c:1123 ../src/common/colorspaces.c:1277
+#: ../src/common/colorspaces.c:1120 ../src/common/colorspaces.c:1274
 msgid "linear XYZ"
 msgstr "lineares XYZ"
 
-#: ../src/common/colorspaces.c:1124 ../src/common/colorspaces.c:1282
+#: ../src/common/colorspaces.c:1121 ../src/common/colorspaces.c:1279
 #: ../src/libs/colorpicker.c:540 ../src/libs/colorpicker.c:578
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1125 ../src/common/colorspaces.c:1287
+#: ../src/common/colorspaces.c:1122 ../src/common/colorspaces.c:1284
 msgid "linear infrared BGR"
 msgstr "linears Infrarot-BGR"
 
-#: ../src/common/colorspaces.c:1126 ../src/common/colorspaces.c:1246
+#: ../src/common/colorspaces.c:1123 ../src/common/colorspaces.c:1243
 msgid "system display profile"
 msgstr "System-Bildschirmprofil"
 
-#: ../src/common/colorspaces.c:1127
+#: ../src/common/colorspaces.c:1124
 msgid "embedded ICC profile"
 msgstr "eingebettetes ICC-Profil"
 
-#: ../src/common/colorspaces.c:1128
+#: ../src/common/colorspaces.c:1125
 msgid "embedded matrix"
 msgstr "eingebettete Matrix"
 
-#: ../src/common/colorspaces.c:1129
+#: ../src/common/colorspaces.c:1126
 msgid "standard color matrix"
 msgstr "Standard-Farb-Matrix"
 
-#: ../src/common/colorspaces.c:1130
+#: ../src/common/colorspaces.c:1127
 msgid "enhanced color matrix"
 msgstr "Erweiterte Farb-Matrix"
 
-#: ../src/common/colorspaces.c:1131
+#: ../src/common/colorspaces.c:1128
 msgid "vendor color matrix"
 msgstr "Hersteller-Farb-Matrix"
 
-#: ../src/common/colorspaces.c:1132
+#: ../src/common/colorspaces.c:1129
 msgid "alternate color matrix"
 msgstr "Alternative Farb-Matrix"
 
-#: ../src/common/colorspaces.c:1252
+#: ../src/common/colorspaces.c:1249
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (z.B. JPEG)"
 
-#: ../src/common/colorspaces.c:1257 ../src/libs/print_settings.c:862
+#: ../src/common/colorspaces.c:1254 ../src/libs/print_settings.c:863
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sicher)"
 
@@ -1165,15 +1171,15 @@ msgid "noiseprofile file `%s' is not valid"
 msgstr "Rauschprofildatei „%s“ ist defekt"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.c:1713
-#: ../src/libs/print_settings.c:1096
+#: ../src/libs/print_settings.c:1097
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1097
+#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1098
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1098
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1099
 msgid "inch"
 msgstr "inch"
 
@@ -1261,10 +1267,10 @@ msgstr "Stil ‚%s‘ erfolgreich importiert"
 #: ../src/common/variables.c:304 ../src/iop/clipping.c:1563
 #: ../src/iop/clipping.c:1853 ../src/iop/clipping.c:1873
 #: ../src/iop/clipping.c:2018 ../src/iop/clipping.c:2046
-#: ../src/iop/colorreconstruction.c:1374 ../src/iop/lens.c:2049
+#: ../src/iop/colorreconstruction.c:1375 ../src/iop/lens.c:2049
 #: ../src/libs/export.c:485 ../src/libs/live_view.c:351
 #: ../src/libs/live_view.c:377 ../src/libs/live_view.c:386
-#: ../src/libs/print_settings.c:1007 ../src/libs/print_settings.c:1276
+#: ../src/libs/print_settings.c:1008 ../src/libs/print_settings.c:1277
 msgid "none"
 msgstr "keine"
 
@@ -2300,7 +2306,7 @@ msgstr "gleiche Form verwenden wie"
 msgid "masks can not contain themselves"
 msgstr "Masken können sich nicht selbst enthalten"
 
-#: ../src/develop/pixelpipe_hb.c:2415
+#: ../src/develop/pixelpipe_hb.c:2417
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -3367,7 +3373,7 @@ msgid "enter the title of the pdf"
 msgstr "Titel des PDFs eingeben"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:601 ../src/libs/print_settings.c:1081
+#: ../src/imageio/format/pdf.c:601 ../src/libs/print_settings.c:1082
 msgid "paper size"
 msgstr "Papierformat"
 
@@ -3386,12 +3392,12 @@ msgid "page orientation"
 msgstr "Seitenausrichtung"
 
 #: ../src/imageio/format/pdf.c:615 ../src/iop/borders.c:995
-#: ../src/libs/print_settings.c:1090
+#: ../src/libs/print_settings.c:1091
 msgid "portrait"
 msgstr "Hochformat"
 
 #: ../src/imageio/format/pdf.c:616 ../src/iop/borders.c:996
-#: ../src/libs/print_settings.c:1091
+#: ../src/libs/print_settings.c:1092
 msgid "landscape"
 msgstr "Querformat"
 
@@ -4284,7 +4290,7 @@ msgstr "Größe"
 msgid "the size of bloom"
 msgstr "Größe der Überstrahlung"
 
-#: ../src/iop/bloom.c:532 ../src/iop/colorreconstruction.c:1368
+#: ../src/iop/bloom.c:532 ../src/iop/colorreconstruction.c:1369
 #: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:437
 #: ../src/iop/sharpen.c:591
 msgid "threshold"
@@ -4423,7 +4429,7 @@ msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr "Seitenverhältnis wählen oder Rechtsklick zum Eintippen (b:h)"
 
 #: ../src/iop/borders.c:993 ../src/iop/flip.c:73
-#: ../src/libs/print_settings.c:1089
+#: ../src/libs/print_settings.c:1090
 msgid "orientation"
 msgstr "Drehung"
 
@@ -4534,7 +4540,7 @@ msgstr "Ziel"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/iop/channelmixer.c:458 ../src/iop/colorize.c:442
-#: ../src/iop/colorreconstruction.c:1371 ../src/iop/colorreconstruction.c:1376
+#: ../src/iop/colorreconstruction.c:1372 ../src/iop/colorreconstruction.c:1377
 #: ../src/iop/colorzones.c:1081 ../src/iop/colorzones.c:1113
 #: ../src/iop/graduatednd.c:1059 ../src/iop/splittoning.c:502
 msgid "hue"
@@ -5000,8 +5006,8 @@ msgstr ""
 "Nicht unterstütztes Eingabeprofil wurde durch lineares Rec709-RGB ersetzt!"
 
 #: ../src/iop/colorin.c:1205 ../src/iop/denoiseprofile.c:1657
-#: ../src/libs/export.c:598 ../src/libs/print_settings.c:996
-#: ../src/libs/print_settings.c:1212
+#: ../src/libs/export.c:598 ../src/libs/print_settings.c:997
+#: ../src/libs/print_settings.c:1213
 msgid "profile"
 msgstr "Profil"
 
@@ -5143,26 +5149,26 @@ msgid "output intent"
 msgstr "Ausgabevorsatz"
 
 #: ../src/iop/colorout.c:657 ../src/libs/export.c:618
-#: ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261
+#: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
 #: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2448
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
 #: ../src/iop/colorout.c:658 ../src/libs/export.c:619
-#: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
+#: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
 #: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2449
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
 #: ../src/iop/colorout.c:659 ../src/libs/export.c:620
-#: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
+#: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
 #: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2450
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
 #: ../src/iop/colorout.c:660 ../src/libs/export.c:621
-#: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
+#: ../src/libs/print_settings.c:1054 ../src/libs/print_settings.c:1265
 #: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2451
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
@@ -5199,44 +5205,44 @@ msgctxt "accel"
 msgid "hue"
 msgstr "Farbton"
 
-#: ../src/iop/colorreconstruction.c:649
+#: ../src/iop/colorreconstruction.c:650
 msgid "[color reconstruction] module failed."
 msgstr "[Farbrekonstruktion] Modul fehlgeschlagen."
 
-#: ../src/iop/colorreconstruction.c:1369 ../src/iop/shadhi.c:849
+#: ../src/iop/colorreconstruction.c:1370 ../src/iop/shadhi.c:849
 #: ../src/iop/tonemap.cc:299
 msgid "spatial extent"
 msgstr "räumliche Ausdehnung"
 
-#: ../src/iop/colorreconstruction.c:1370
+#: ../src/iop/colorreconstruction.c:1371
 msgid "range extent"
 msgstr "Werte-Ausdehnung"
 
-#: ../src/iop/colorreconstruction.c:1373
+#: ../src/iop/colorreconstruction.c:1374
 msgid "precedence"
 msgstr "Priorität"
 
-#: ../src/iop/colorreconstruction.c:1375
+#: ../src/iop/colorreconstruction.c:1376
 msgid "saturated colors"
 msgstr "gesättigte Farben"
 
-#: ../src/iop/colorreconstruction.c:1405
+#: ../src/iop/colorreconstruction.c:1406
 msgid "pixels with lightness values above this threshold are corrected"
 msgstr "Pixel mit einer Helligkeit über diesem Schwellwert werden korrigiert"
 
-#: ../src/iop/colorreconstruction.c:1406
+#: ../src/iop/colorreconstruction.c:1407
 msgid "how far to look for replacement colors in spatial dimensions"
 msgstr "wie weit soll im räumlichen Umfeld nach Farben gesucht werden"
 
-#: ../src/iop/colorreconstruction.c:1407
+#: ../src/iop/colorreconstruction.c:1408
 msgid "how far to look for replacement colors in the luminance dimension"
 msgstr "wie weit darf sich eine Farbe von der Helligkeit her unterscheiden"
 
-#: ../src/iop/colorreconstruction.c:1408
+#: ../src/iop/colorreconstruction.c:1409
 msgid "if and how to give precedence to specific replacement colors"
 msgstr "ob und wie Ersatzfarben bevorzugt werden"
 
-#: ../src/iop/colorreconstruction.c:1409
+#: ../src/iop/colorreconstruction.c:1410
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "der Farbton, der gegenüber anderen bevorzugt werden soll"
 
@@ -5510,7 +5516,7 @@ msgstr "aus ISO %d und %d interpoliert"
 #: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:799
 #: ../src/iop/lens.c:2199 ../src/iop/levels.c:548
 #: ../src/libs/copy_history.c:278 ../src/libs/export.c:636
-#: ../src/libs/print_settings.c:1317
+#: ../src/libs/print_settings.c:1318
 msgid "mode"
 msgstr "Modus"
 
@@ -6617,7 +6623,7 @@ msgid "the fill-light in EV"
 msgstr "Füllicht in EV"
 
 #: ../src/iop/relight.c:376 ../src/libs/metadata_view.c:110
-#: ../src/libs/print_settings.c:1114
+#: ../src/libs/print_settings.c:1115
 msgid "width"
 msgstr "Breite"
 
@@ -7303,7 +7309,7 @@ msgid "position"
 msgstr "Position"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1328 ../src/libs/print_settings.c:1199
+#: ../src/iop/watermark.c:1328 ../src/libs/print_settings.c:1200
 msgid "alignment"
 msgstr "Position"
 
@@ -7868,21 +7874,21 @@ msgid "allow upscaling"
 msgstr "Vergrößern erlauben"
 
 #: ../src/libs/export.c:600 ../src/libs/export.c:617
-#: ../src/libs/print_settings.c:1215 ../src/libs/print_settings.c:1260
+#: ../src/libs/print_settings.c:1216 ../src/libs/print_settings.c:1261
 msgid "image settings"
 msgstr "Bildeinstellungen"
 
-#: ../src/libs/export.c:609 ../src/libs/print_settings.c:1251
+#: ../src/libs/export.c:609 ../src/libs/print_settings.c:1252
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "Ausgabe-ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/libs/export.c:616 ../src/libs/print_settings.c:1049
-#: ../src/libs/print_settings.c:1258
+#: ../src/libs/export.c:616 ../src/libs/print_settings.c:1050
+#: ../src/libs/print_settings.c:1259
 msgid "intent"
 msgstr "Vorsatz"
 
-#: ../src/libs/export.c:627 ../src/libs/print_settings.c:1274
+#: ../src/libs/export.c:627 ../src/libs/print_settings.c:1275
 msgid "style"
 msgstr "Stil"
 
@@ -7890,15 +7896,15 @@ msgstr "Stil"
 msgid "temporary style to use while exporting"
 msgstr "Stil, der beim Export vorübergehend angewandt werden soll"
 
-#: ../src/libs/export.c:640 ../src/libs/print_settings.c:1319
+#: ../src/libs/export.c:640 ../src/libs/print_settings.c:1320
 msgid "replace history"
 msgstr "Verlauf ersetzen"
 
-#: ../src/libs/export.c:641 ../src/libs/print_settings.c:1320
+#: ../src/libs/export.c:641 ../src/libs/print_settings.c:1321
 msgid "append history"
 msgstr "Verlauf hinzufügen"
 
-#: ../src/libs/export.c:646 ../src/libs/print_settings.c:1326
+#: ../src/libs/export.c:646 ../src/libs/print_settings.c:1327
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
@@ -8707,7 +8713,7 @@ msgstr "Fokus-Entfernung"
 msgid "datetime"
 msgstr "Datum/Uhrzeit"
 
-#: ../src/libs/metadata_view.c:111 ../src/libs/print_settings.c:1118
+#: ../src/libs/metadata_view.c:111 ../src/libs/print_settings.c:1119
 msgid "height"
 msgstr "Höhe"
 
@@ -8851,72 +8857,72 @@ msgid "200%"
 msgstr "200%"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1206
+#: ../src/libs/print_settings.c:44 ../src/libs/print_settings.c:1207
 msgid "print settings"
 msgstr "Druckeinstellungen"
 
-#: ../src/libs/print_settings.c:175
+#: ../src/libs/print_settings.c:176
 msgid "cannot print until a picture is selected"
 msgstr "vor dem Drucken ein Bild auswählen"
 
-#: ../src/libs/print_settings.c:180
+#: ../src/libs/print_settings.c:181
 msgid "cannot print until a printer is selected"
 msgstr "vor dem Drucken einen Drucker auswählen"
 
-#: ../src/libs/print_settings.c:185
+#: ../src/libs/print_settings.c:186
 msgid "cannot print until a paper is selected"
 msgstr "vor dem Drucken ein Papierformat auswählen"
 
-#: ../src/libs/print_settings.c:189
+#: ../src/libs/print_settings.c:190
 #, c-format
 msgid "prepare printing image %d on `%s'"
 msgstr "bereite Druck von Bild %d auf ‚%s‘ vor"
 
-#: ../src/libs/print_settings.c:284
+#: ../src/libs/print_settings.c:285
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "Konnte Druckerprofile ‚%s‘ nicht anwenden"
 
-#: ../src/libs/print_settings.c:525
+#: ../src/libs/print_settings.c:526
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (DPI:%d)"
 
-#: ../src/libs/print_settings.c:985
+#: ../src/libs/print_settings.c:986
 msgid "printer"
 msgstr "Drucker"
 
-#: ../src/libs/print_settings.c:1042
+#: ../src/libs/print_settings.c:1043
 #, c-format
 msgid "printer ICC profiles in %s/color/out or %s/color/out"
 msgstr "Drucker-ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/libs/print_settings.c:1061
+#: ../src/libs/print_settings.c:1062
 msgid "black point compensation"
 msgstr "Tiefenkompensation"
 
-#: ../src/libs/print_settings.c:1069
+#: ../src/libs/print_settings.c:1070
 msgid "activate black point compensation when applying the printer profile"
 msgstr "aktiviere Tiefenkompensation wenn das Druckerprofile angewandt wird"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:1076
+#: ../src/libs/print_settings.c:1077
 msgid "page"
 msgstr "Seite"
 
-#: ../src/libs/print_settings.c:1112
+#: ../src/libs/print_settings.c:1113
 msgid "image width/height"
 msgstr "Bildbreite/-höhe"
 
-#: ../src/libs/print_settings.c:1116
+#: ../src/libs/print_settings.c:1117
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:1124
+#: ../src/libs/print_settings.c:1125
 msgid "scale factor"
 msgstr "Skalierungsfaktor"
 
-#: ../src/libs/print_settings.c:1129
+#: ../src/libs/print_settings.c:1130
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -8929,45 +8935,50 @@ msgstr ""
 "ein zu großer Wert kann zu schlechter Druckqualität führen"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1143
+#: ../src/libs/print_settings.c:1144
 msgid "top margin"
 msgstr "oberer Rand"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1147
+#: ../src/libs/print_settings.c:1148
 msgid "left margin"
 msgstr "linker Rand"
 
-#: ../src/libs/print_settings.c:1150
+#: ../src/libs/print_settings.c:1151
 msgid "lock"
 msgstr "sperren"
 
-#: ../src/libs/print_settings.c:1151
+#: ../src/libs/print_settings.c:1152
 msgid "change all margins uniformly"
 msgstr "alle Ränder einheitlich ändern"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1155
+#: ../src/libs/print_settings.c:1156
 msgid "right margin"
 msgstr "rechter Rand"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1159
+#: ../src/libs/print_settings.c:1160
 msgid "bottom margin"
 msgstr "unterer Rand"
 
-#: ../src/libs/print_settings.c:1298
+#: ../src/libs/print_settings.c:1299
 msgid "temporary style to use while printing"
 msgstr "Stil, der beim Drucken vorübergehend angewandt werden soll"
 
 #. Print button
-#: ../src/libs/print_settings.c:1335
+#: ../src/libs/print_settings.c:1336
 msgid "print"
 msgstr "drucken"
 
-#: ../src/libs/print_settings.c:1337
+#: ../src/libs/print_settings.c:1338
 msgid "print with current settings (ctrl-p)"
 msgstr "mit aktuellen Einstellungen drucken (Strg-p)"
+
+#: ../src/libs/print_settings.c:1797
+msgctxt "accel"
+msgid "print"
+msgstr "Drucken"
 
 #: ../src/libs/recentcollect.c:50
 msgid "recently used collections"
