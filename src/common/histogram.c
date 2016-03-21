@@ -91,7 +91,7 @@ static void inline __attribute__((__unused__)) histogram_helper_cs_rgb_helper_pr
   histogram[4 * B + 2]++;
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 static void inline histogram_helper_cs_rgb_helper_process_pixel_m128(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
     uint32_t *histogram)
@@ -129,7 +129,7 @@ static void inline histogram_helper_cs_rgb(const dt_dev_histogram_collection_par
   {
     if(darktable.codepath.OPENMP_SIMD)
       histogram_helper_cs_rgb_helper_process_pixel_float(histogram_params, in, histogram);
-#if defined(__SSE__)
+#if defined(__SSE2__)
     else if(darktable.codepath.SSE2)
       histogram_helper_cs_rgb_helper_process_pixel_m128(histogram_params, in, histogram);
 #endif
@@ -156,7 +156,7 @@ static void inline __attribute__((__unused__)) histogram_helper_cs_Lab_helper_pr
   histogram[4 * b + 2]++;
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 static void inline histogram_helper_cs_Lab_helper_process_pixel_m128(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
     uint32_t *histogram)
@@ -198,7 +198,7 @@ static void inline histogram_helper_cs_Lab(const dt_dev_histogram_collection_par
   {
     if(darktable.codepath.OPENMP_SIMD)
       histogram_helper_cs_Lab_helper_process_pixel_float(histogram_params, in, histogram);
-#if defined(__SSE__)
+#if defined(__SSE2__)
     else if(darktable.codepath.SSE2)
       histogram_helper_cs_Lab_helper_process_pixel_m128(histogram_params, in, histogram);
 #endif

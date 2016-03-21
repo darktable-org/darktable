@@ -146,7 +146,7 @@ static void _find_nearest_color_n_levels_gray(float *val, float *err, const floa
   }
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
 static __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, const float rf)
 {
@@ -181,9 +181,9 @@ static void _find_nearest_color_n_levels_rgb(float *val, float *err, const float
   }
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-static __m128 _find_nearest_color_n_levels_rgb_sse(float *val, const float f, const float rf)
+static __m128 _find_nearest_color_n_levels_rgb_sse2(float *val, const float f, const float rf)
 {
   __m128 old = _mm_load_ps(val);
   __m128 tmp = _mm_mul_ps(old, _mm_set1_ps(f));        // old * f
@@ -394,10 +394,10 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
-#if defined(__SSE__)
-static void process_floyd_steinberg_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                        const void *const ivoid, void *const ovoid,
-                                        const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+#if defined(__SSE2__)
+static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                         const void *const ivoid, void *const ovoid,
+                                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -422,18 +422,18 @@ static void process_floyd_steinberg_sse(struct dt_iop_module_t *self, dt_dev_pix
       levels = MAX(16, MIN(15 * bds + 1, 256));
       break;
     case DITHER_FS8BIT:
-      nearest_color = _find_nearest_color_n_levels_rgb_sse;
+      nearest_color = _find_nearest_color_n_levels_rgb_sse2;
       levels = 256;
       break;
     case DITHER_FS16BIT:
-      nearest_color = _find_nearest_color_n_levels_rgb_sse;
+      nearest_color = _find_nearest_color_n_levels_rgb_sse2;
       levels = 65536;
       break;
     case DITHER_FSAUTO:
       switch(piece->pipe->levels & IMAGEIO_CHANNEL_MASK)
       {
         case IMAGEIO_RGB:
-          nearest_color = _find_nearest_color_n_levels_rgb_sse;
+          nearest_color = _find_nearest_color_n_levels_rgb_sse2;
           break;
         case IMAGEIO_GRAY:
           nearest_color = _find_nearest_color_n_levels_gray_sse;
@@ -638,7 +638,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -647,7 +647,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   if(data->dither_type == DITHER_RANDOM)
     process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
-    process_floyd_steinberg_sse(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_floyd_steinberg_sse2(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 #endif
 

@@ -42,7 +42,7 @@ enum dt_interpolation_type
 /** Interpolation function */
 typedef float (*dt_interpolation_func)(float width, float t);
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 /** Interpolation function (SSE) */
 typedef __m128 (*dt_interpolation_sse_func)(__m128 width, __m128 t);
 #endif
@@ -54,7 +54,7 @@ struct dt_interpolation
   const char *name;                  /**< internal name  */
   int width;                         /**< Half width of its kernel support */
   dt_interpolation_func func;        /**< Kernel function */
-#if defined(__SSE__)
+#if defined(__SSE2__)
   dt_interpolation_sse_func funcsse; /**< Kernel function (four params a time) */
 #endif
 };
