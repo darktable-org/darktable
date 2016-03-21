@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-20 20:48+0100\n"
-"PO-Revision-Date: 2016-03-20 21:08+0100\n"
+"POT-Creation-Date: 2016-03-21 14:58+0100\n"
+"PO-Revision-Date: 2016-03-21 14:59+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -3886,9 +3886,8 @@ msgid "crop factor of the camera sensor, default value set from exif data if ava
 msgstr "cropfactor van de camera sensor, indien aanwezig de standaard waarde genomen van exif-data, vaak is een handmatige invoer vereist"
 
 #: ../src/iop/ashift.c:4194
-#, c-format
-msgid "the level of lens dependent correction, 100% for full dependency, 0% for the generic case"
-msgstr "het niveau van de lens afhankelijke correctie, 100% bij volledige afhankelijkheid, 0% voor algemene gevallen"
+msgid "the level of lens dependent correction, set to maximum for full lens dependency, set to zero for the generic case"
+msgstr "het niveau van de lens afhankelijke correctie, geef maximaal voor volledige afhankelijkheid, kies nul voor algemene gevallen"
 
 #: ../src/iop/ashift.c:4196
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
