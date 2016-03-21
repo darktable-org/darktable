@@ -4191,8 +4191,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->crop_factor, _("crop factor of the camera sensor, "
                                                 "default value set from exif data if available, "
                                                 "manual setting is often required"));
-  gtk_widget_set_tooltip_text(g->orthocorr, _("the level of lens dependent correction, 100% for full dependency, "
-                                              "0% for the generic case"));
+  gtk_widget_set_tooltip_text(g->orthocorr, _("the level of lens dependent correction, set to maximum for full lens dependency, "
+                                              "set to zero for the generic case"));
   gtk_widget_set_tooltip_text(g->aspect, _("adjust aspect ratio of image by horizontal and vertical scaling"));
   gtk_widget_set_tooltip_text(g->fit_v, _("automatically correct for vertical perspective distortion\n"
                                           "ctrl-click to only fit rotation\n"
