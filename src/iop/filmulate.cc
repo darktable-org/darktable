@@ -85,7 +85,7 @@ int flags()
 // where does it appear in the gui?
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_TONE;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -101,13 +101,70 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 }
 
 /** modify regions of interest; filmulation requires the full image. **/
-// void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
-// *roi_out, const dt_iop_roi_t *roi_in);
-//void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-//                   const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
-//{
-//  *roi_in = piece->buf_in;
-//}
+//The region of interest out is going to be the same as what it's given.
+//Filmulator does not change this.
+/*
+void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                    dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
+{
+  *roi_out = *roi_in;
+  cout << "modify roi out ==============================" << endl;
+  cout << "roi in x: " << roi_in->x << endl;
+  cout << "roi in y: " << roi_in->y << endl;
+  cout << "roi in width: " << roi_in->width << endl;
+  cout << "roi in height: " << roi_in->height << endl;
+  cout << "roi in scale: " << roi_in->scale << endl;
+  cout << "roi out x: " << roi_out->x << endl;
+  cout << "roi out y: " << roi_out->y << endl;
+  cout << "roi out width: " << roi_out->width << endl;
+  cout << "roi out height: " << roi_out->height << endl;
+  cout << "roi out scale: " << roi_out->scale << endl;
+}
+*/
+
+// dt_iop_roi_t has 5 components: x, y, width, height, scale.
+// The width and height are the viewport size.
+//  When modifying roi_in, filmulator wants to change this to be the full image, scaled by the scale.
+// The scale is the output relative to the input.
+//===================NO IT ISN'T; we basically ignore it.
+//  Filmulator doesn't want to change this.
+// x and y are the viewport location relative to the full image area, at the viewport scale.
+//  Filmulator wants to set this to 0.
+void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                   const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+{
+  /*
+  cout << "modify roi in ==============================" << endl;
+  cout << "roi in x: " << roi_in->x << endl;
+  cout << "roi in y: " << roi_in->y << endl;
+  cout << "roi in width: " << roi_in->width << endl;
+  cout << "roi in height: " << roi_in->height << endl;
+  cout << "roi in scale: " << roi_in->scale << endl;
+  cout << "roi out x: " << roi_out->x << endl;
+  cout << "roi out y: " << roi_out->y << endl;
+  cout << "roi out width: " << roi_out->width << endl;
+  cout << "roi out height: " << roi_out->height << endl;
+  cout << "roi out scale: " << roi_out->scale << endl;
+  */
+  //roi_in->x = roi_out->x;
+  //roi_in->y = roi_out->y;
+  //roi_in->width = roi_out->width;
+  //roi_in->height = roi_out->height;
+  roi_in->scale = roi_out->scale;
+
+  roi_in->x = 0;
+  roi_in->y = 0;
+  roi_in->width = round(piece->buf_in.width * roi_out->scale);
+  roi_in->height = round(piece->buf_in.height * roi_out->scale);
+  /*
+  cout << "roi in x: " << roi_in->x << endl;
+  cout << "roi in y: " << roi_in->y << endl;
+  cout << "roi in width: " << roi_in->width << endl;
+  cout << "roi in height: " << roi_in->height << endl;
+  cout << "roi in scale: " << roi_in->scale << endl;
+  */
+  //*roi_in = *roi_out;
+}
 
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
@@ -119,22 +176,26 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cmsHTRANSFORM transform_lab_to_lin_rec2020 = cmsCreateTransform(Lab, TYPE_LabA_FLT, Rec2020, TYPE_RGBA_FLT, intent, 0);
   cmsHTRANSFORM transform_lin_rec2020_to_lab = cmsCreateTransform(Rec2020, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT, intent, 0);
 
-  //Temp buffer for the whole image
-  float *rgbbufin = (float *)calloc(roi_in->width * roi_in->height * 4, sizeof(float));
-  float *rgbbufout = (float *)calloc(roi_in->width * roi_in->height * 4, sizeof(float));
+  const int width_in = roi_in->width;
+  const int height_in = roi_in->height;
+  const int x_out = roi_out->x;
+  const int y_out = roi_out->y;
+  const int width_out = roi_out->width;
+  const int height_out = roi_out->height;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-  
+  //Temp buffer for the whole image
+  float *rgbbufin = (float *)calloc(width_in * height_in * 4, sizeof(float));
+  float *rgbbufout = (float *)calloc(width_out * height_out * 4, sizeof(float));
+
   //Turn Lab into linear Rec2020
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(rgbbufin, transform_lab_to_lin_rec2020)
 #endif
-  for(int y = 0; y < height; y++)
+  for(int y = 0; y < height_in; y++)
   {
-    const float *in = (float*)i + y * width * 4;
-    float *out = rgbbufin + y * width * 4;
-    cmsDoTransform(transform_lab_to_lin_rec2020, in, out, width);
+    const float *in = (float*)i + y * width_in * 4;
+    float *out = rgbbufin + y * width_in * 4;
+    cmsDoTransform(transform_lab_to_lin_rec2020, in, out, width_in);
   }
 
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
@@ -147,7 +208,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   //Filmulate things!
   filmulate(rgbbufin, rgbbufout,
-            width, height,
+            width_in, height_in,
+            x_out, y_out,
+            width_out, height_out,
             rolloff_boundary,
             film_area,
             layer_mix_const,
@@ -158,11 +221,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(rgbbufout, transform_lin_rec2020_to_lab)
 #endif
-  for(int y = 0; y < height; y++)
+  for(int y = 0; y < height_out; y++)
   {
-    const float *in = rgbbufout + y * width * 4;
-    float *out = (float*)o + y * width * 4;
-    cmsDoTransform(transform_lin_rec2020_to_lab, in, out, width);
+    const float *in = rgbbufout + y * width_out * 4;
+    float *out = (float*)o + y * width_out * 4;
+    cmsDoTransform(transform_lin_rec2020_to_lab, in, out, width_out);
   }
   free(rgbbufout);
 }

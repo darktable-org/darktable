@@ -30,8 +30,12 @@ using std::endl;
 //Function-------------------------------------------------------------------------
 void filmulate(const float *const in,
                float *const out,
-               const int width,
-               const int height,
+               const int width_in,
+               const int height_in,
+               const int x_out,
+               const int y_out,
+               const int width_out,
+               const int height_out,
                const float rolloff_boundary,
                const float film_area,
                const float layer_mix_const,
@@ -50,22 +54,16 @@ void filmulate(const float *const in,
     float crystal_growth_const = 0.00001f;
     float silver_salt_consumption_const = 2000000.0f;
     float total_development_time = 100.0f;
-    //int agitate_count =
-    cout << "agitate count: " << agitate_count << endl;
+    //int agitate_count = 1;
     int development_steps = 12;
-    //float film_area =
-    cout << "film_area: " << film_area << endl;
+    //float film_area = 864.0f;
     float sigma_const = 0.2f;
-    //float layer_mix_const =
-    cout << "layer_mix_const: " << layer_mix_const << endl;
+    //float layer_mix_const = 0.2f;
     float layer_time_divisor = 20.0f;
-    //float rolloff_boundary =
-    cout << "rolloff_boundary: " << rolloff_boundary << endl;
+    //float rolloff_boundary = 51275.0f;
 
-    const int nrows = height;
-    const int ncols = width;
-    cout << "filmulate.cpp number of rows: " << nrows << endl;
-    cout << "filmulate.cpp number of cols: " << ncols << endl;
+    const int nrows = height_in;
+    const int ncols = width_in;
 
     //Load things into matrices for Filmulator.
     matrix<float> input_image;
@@ -82,9 +80,6 @@ void filmulate(const float *const in,
             input_image(i, j*3 + 2) = 65535.0f * in[(j + i*ncols)*4 + 2];
         }
     }
-    cout << endl << "filmulate.cpp max of input: " << max(input_image) << endl;
-    cout << "filmulate.cpp min of input: " << min(input_image) << endl;
-    cout << "filmulate.cpp mean of input: " << mean(input_image) << endl << endl;
 
     int npix = nrows*ncols;
 
@@ -187,25 +182,19 @@ void filmulate(const float *const in,
     //The output is crystal_radius^2 * active_crystals_per_pixel
 
     matrix<float> output_density = crystal_radius % crystal_radius % active_crystals_per_pixel * 500.0f;
-    cout << "filmulate.cpp max of acp: " << max(active_crystals_per_pixel) << endl;
-    cout << "filmulate.cpp min of acp: " << min(active_crystals_per_pixel) << endl;
-    cout << "filmulate.cpp max of rad: " << max(crystal_radius) << endl;
-    cout << "filmulate.cpp min of rad: " << min(crystal_radius) << endl;
-    cout << "filmulate.cpp max of output: " << max(output_density) << endl;
-    cout << "filmulate.cpp mean of output: " << mean(output_density) << endl;
 
     //Convert back to darktable's RGBA.
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(output_density)
 #endif
-    for (int i = 0; i < nrows; i++)
+    for (int i = 0; i < height_out; i++)
     {
-        for (int j = 0; j < ncols; j++)
+        for (int j = 0; j < width_out; j++)
         {
-            out[(j + i*ncols)*4    ] = std::min(1.0f,std::max(0.0f,output_density(i, j*3    )));
-            out[(j + i*ncols)*4 + 1] = std::min(1.0f,std::max(0.0f,output_density(i, j*3 + 1)));
-            out[(j + i*ncols)*4 + 2] = std::min(1.0f,std::max(0.0f,output_density(i, j*3 + 2)));
-            out[(j + i*ncols)*4 + 3] = in[(j + i*ncols)*4 + 3];//copy the alpha channel
+            out[(j + i*width_out)*4    ] = std::min(1.0f,std::max(0.0f,output_density(i + y_out, (j + x_out)*3    )));
+            out[(j + i*width_out)*4 + 1] = std::min(1.0f,std::max(0.0f,output_density(i + y_out, (j + x_out)*3 + 1)));
+            out[(j + i*width_out)*4 + 2] = std::min(1.0f,std::max(0.0f,output_density(i + y_out, (j + x_out)*3 + 2)));
+            out[(j + i*width_out)*4 + 3] = in[(j + i*ncols)*4 + 3];//copy the alpha channel
         }
     }
 }
