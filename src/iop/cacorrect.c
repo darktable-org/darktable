@@ -346,7 +346,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   float *Gtmp = (float(*))calloc((height) * (width), sizeof *Gtmp);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-  float *RawDataTmp = (float *)malloc(height * width * sizeof(float) / 2);
+  float *RawDataTmp = (float *)malloc(height * width * sizeof(float) / 2 + 4);
 
   float blockave[2][2] = { { 0, 0 }, { 0, 0 } }, blocksqave[2][2] = { { 0, 0 }, { 0, 0 } },
         blockdenom[2][2] = { { 0, 0 }, { 0, 0 } }, blockvar[2][2];
