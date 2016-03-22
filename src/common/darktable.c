@@ -485,7 +485,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #undef DT_SUPPORTED_ARMv8A
 #undef DT_SUPPORTED_X86
 
-#ifndef __SSE2__
+#if !defined(__SSE2__) || !defined(__SSE__)
 #pragma message "Building without SSE2 is highly experimental."
 #pragma message "Expect a LOT of functionality to be broken. You have been warned."
 #endif

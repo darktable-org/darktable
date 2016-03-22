@@ -512,7 +512,7 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   const float my = mouse_y * 4.0f / (float)height;
   int patch = CLAMP((int)mx + 6*(int)my, 0, 23);
   char tooltip[1024];
-  snprintf(tooltip, sizeof(tooltip), _("select patch `%s' (altered patches are marked with an outline)"), colorchecker_name[patch]);
+  snprintf(tooltip, sizeof(tooltip), _("select patch `%s' (altered patches are marked with an outline)"), _(colorchecker_name[patch]));
   gtk_widget_set_tooltip_text(g->area, tooltip);
   return TRUE;
 }
@@ -572,7 +572,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->combobox_patch, NULL, _("patch"));
   gtk_widget_set_tooltip_text(g->combobox_patch, _("color checker patch"));
   for(int k=0;k<24;k++)
-    dt_bauhaus_combobox_add(g->combobox_patch, colorchecker_name[k]);
+    dt_bauhaus_combobox_add(g->combobox_patch, _(colorchecker_name[k]));
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   dt_bauhaus_widget_set_quad_paint(g->combobox_patch, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
 
