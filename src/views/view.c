@@ -75,6 +75,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 #ifdef HAVE_PRINT
                       "print",
 #endif
+                      "knight",
                       NULL };
   char *module = modules[midx];
   while(module != NULL)
@@ -118,6 +119,12 @@ int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod)
   return vm->num_views++;
 }
 
+/* default flags for view which does not implement the flags() function */
+static uint32_t default_flags()
+{
+  return 0;
+}
+
 /** load a view module */
 int dt_view_load_module(dt_view_t *view, const char *module)
 {
@@ -151,6 +158,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   }
   if(!g_module_symbol(view->module, "name", (gpointer) & (view->name))) view->name = NULL;
   if(!g_module_symbol(view->module, "view", (gpointer) & (view->view))) view->view = NULL;
+  if(!g_module_symbol(view->module, "flags", (gpointer) & (view->flags))) view->flags = default_flags;
   if(!g_module_symbol(view->module, "init", (gpointer) & (view->init))) view->init = NULL;
   if(!g_module_symbol(view->module, "gui_init", (gpointer) & (view->gui_init))) view->gui_init = NULL;
   if(!g_module_symbol(view->module, "cleanup", (gpointer) & (view->cleanup))) view->cleanup = NULL;
@@ -655,13 +663,7 @@ int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
     konami_state++;
     if(konami_state == G_N_ELEMENTS(konami_sequence))
     {
-      dt_control_log("todo: come up with an easter egg");
-      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-      darktable.color_profiles->display_type = DT_COLORSPACE_BRG;
-      darktable.color_profiles->display_filename[0] = '\0';
-      dt_colorspaces_update_display_transforms();
-      pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-      dt_control_queue_redraw_center();
+      dt_ctl_switch_mode_to(DT_KNIGHT);
       konami_state = 0;
     }
   }

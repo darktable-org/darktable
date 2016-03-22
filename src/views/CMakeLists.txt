@@ -8,11 +8,12 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 add_definitions(-include common/module_api.h)
 add_definitions(-include views/view_api.h)
 
-set(MODULES darkroom lighttable slideshow)
+set(MODULES darkroom lighttable slideshow knight)
 
 add_library(darkroom MODULE "darkroom.c")
 add_library(lighttable MODULE "lighttable.c")
 add_library(slideshow MODULE "slideshow.c")
+add_library(knight MODULE "knight.c")
 
 if(USE_GEO)
     add_library(map MODULE "map.c")

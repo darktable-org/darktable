@@ -1018,6 +1018,12 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   }
 
   dt_control_gui_mode_t mode = DT_LIBRARY;
+  // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
+  time_t now;
+  time(&now);
+  struct tm lt;
+  localtime_r(&now, &lt);
+  if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = DT_KNIGHT;
   if(init_gui)
   {
     // init the gui part of views
