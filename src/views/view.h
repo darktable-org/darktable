@@ -53,10 +53,19 @@ typedef enum
   DT_VIEW_MAP = 8,
   DT_VIEW_SLIDESHOW = 16,
   DT_VIEW_PRINT = 32,
-}dt_view_type_flags_t;
+  DT_VIEW_KNIGHT = 64
+} dt_view_type_flags_t;
 
-#define DT_VIEW_ALL                                                                                          \
-  (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | DT_VIEW_PRINT)
+// flags that a view can set in flags()
+typedef enum dt_view_flags_t
+{
+  VIEW_FLAGS_NONE = 0,
+  VIEW_FLAGS_HIDDEN = 1 << 0,       // Hide the view from userinterface
+} dt_view_flags_t;
+
+#define DT_VIEW_ALL                                                                              \
+  (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
+   DT_VIEW_PRINT | DT_VIEW_KNIGHT)
 
 /**
  * main dt view module (as lighttable or darkroom)
@@ -76,6 +85,7 @@ typedef struct dt_view_t
   float hscroll_size, hscroll_viewport_size, hscroll_pos;
   const char *(*name)(struct dt_view_t *self);    // get translatable name
   uint32_t (*view)(const struct dt_view_t *self); // get the view type
+  uint32_t (*flags)();                            // get the view flags
   void (*init)(struct dt_view_t *self);           // init *data
   void (*gui_init)(struct dt_view_t *self);       // create gtk elements, called after libs are created
   void (*cleanup)(struct dt_view_t *self);        // cleanup *data

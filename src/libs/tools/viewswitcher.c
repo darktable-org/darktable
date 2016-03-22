@@ -74,23 +74,28 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
+  int n_added = 0;
   for(int k = 0; k < darktable.view_manager->num_views; k++)
   {
     if(darktable.view_manager->view[k].module)
     {
-      /* create view label */
       dt_view_t *v = &darktable.view_manager->view[k];
-      GtkWidget *w = _lib_viewswitcher_create_label(v);
-      gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 0);
+
+      // skip hidden views
+      if(v->flags() & VIEW_FLAGS_HIDDEN) continue;
 
       /* create space if more views */
-      if(k < darktable.view_manager->num_views - 1)
+      if(n_added++ > 0)
       {
         GtkWidget *w = gtk_label_new("|");
         gtk_widget_set_halign(w, GTK_ALIGN_START);
         gtk_widget_set_name(w, "view_label");
         gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 5);
       }
+
+      /* create view label */
+      GtkWidget *w = _lib_viewswitcher_create_label(v);
+      gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 0);
     }
   }
 
@@ -209,7 +214,7 @@ static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventBu
     else if(which == DT_VIEW_SLIDESHOW)
       dt_ctl_switch_mode_to(DT_SLIDESHOW);
 #ifdef HAVE_PRINT
-    else if (which == DT_VIEW_PRINT)
+    else if(which == DT_VIEW_PRINT)
       dt_ctl_switch_mode_to(DT_PRINT);
 #endif
 

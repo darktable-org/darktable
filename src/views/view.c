@@ -74,6 +74,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 #ifdef HAVE_PRINT
                       "print",
 #endif
+                      "knight",
                       NULL };
   char *module = modules[midx];
   while(module != NULL)
@@ -117,6 +118,12 @@ int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod)
   return vm->num_views++;
 }
 
+/* default flags for view which does not implement the flags() function */
+static uint32_t default_flags()
+{
+  return 0;
+}
+
 /** load a view module */
 int dt_view_load_module(dt_view_t *view, const char *module)
 {
@@ -150,6 +157,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   }
   if(!g_module_symbol(view->module, "name", (gpointer) & (view->name))) view->name = NULL;
   if(!g_module_symbol(view->module, "view", (gpointer) & (view->view))) view->view = NULL;
+  if(!g_module_symbol(view->module, "flags", (gpointer) & (view->flags))) view->flags = default_flags;
   if(!g_module_symbol(view->module, "init", (gpointer) & (view->init))) view->init = NULL;
   if(!g_module_symbol(view->module, "gui_init", (gpointer) & (view->gui_init))) view->gui_init = NULL;
   if(!g_module_symbol(view->module, "cleanup", (gpointer) & (view->cleanup))) view->cleanup = NULL;
@@ -639,6 +647,32 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
 
 int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
 {
+  // ↑ ↑ ↓ ↓ ← → ← → b a
+  static int konami_state = 0;
+  static guint konami_sequence[] = {
+    GDK_KEY_Up,
+    GDK_KEY_Up,
+    GDK_KEY_Down,
+    GDK_KEY_Down,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_b,
+    GDK_KEY_a
+  };
+  if(key == konami_sequence[konami_state])
+  {
+    konami_state++;
+    if(konami_state == G_N_ELEMENTS(konami_sequence))
+    {
+      dt_ctl_switch_mode_to(DT_KNIGHT);
+      konami_state = 0;
+    }
+  }
+  else
+    konami_state = 0;
+
   int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;

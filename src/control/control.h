@@ -53,6 +53,7 @@ typedef enum dt_control_gui_mode_t
 #ifdef HAVE_PRINT
   DT_PRINT,
 #endif
+  DT_KNIGHT,
   DT_MODE_NONE
 } dt_control_gui_mode_t;
 
