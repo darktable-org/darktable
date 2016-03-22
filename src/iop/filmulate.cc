@@ -154,15 +154,17 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   roi_in->x = 0;
   roi_in->y = 0;
+  //cout << "unrounded width: " << piece->buf_in.width * roi_out->scale << endl;
+  //cout << "unrounded height: " << piece->buf_in.height * roi_out->scale << endl;
   roi_in->width = round(piece->buf_in.width * roi_out->scale);
   roi_in->height = round(piece->buf_in.height * roi_out->scale);
-  /*
-  cout << "roi in x: " << roi_in->x << endl;
-  cout << "roi in y: " << roi_in->y << endl;
-  cout << "roi in width: " << roi_in->width << endl;
-  cout << "roi in height: " << roi_in->height << endl;
-  cout << "roi in scale: " << roi_in->scale << endl;
-  */
+  //roi_in->width = floor(piece->buf_in.width * roi_out->scale);
+  //roi_in->height = floor(piece->buf_in.height * roi_out->scale);
+  //cout << "roi in x: " << roi_in->x << endl;
+  //cout << "roi in y: " << roi_in->y << endl;
+  //cout << "roi in width: " << roi_in->width << endl;
+  //cout << "roi in height: " << roi_in->height << endl;
+  //cout << "roi in scale: " << roi_in->scale << endl;
   //*roi_in = *roi_out;
 }
 

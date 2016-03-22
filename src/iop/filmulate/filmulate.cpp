@@ -42,7 +42,6 @@ void filmulate(const float *const in,
                const int agitate_count)
 {
 
-    cout << "=====================================================" << endl;
     //Magic numbers
     float initial_developer_concentration = 1.0f;
     float reservoir_thickness = 1000.0f;
