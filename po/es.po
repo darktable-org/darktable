@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-01-24 19:29-0430\n"
-"PO-Revision-Date: 2016-01-24 19:30-0430\n"
+"PO-Revision-Date: 2016-03-23 20:30+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -4766,7 +4766,7 @@ msgstr "ángulo"
 
 #: ../src/iop/colisa.c:74
 msgid "contrast brightness saturation"
-msgstr "contraste de saturación de brillo"
+msgstr "contraste brillo saturación"
 
 #: ../src/iop/colisa.c:90 ../src/iop/lowpass.c:194
 msgctxt "accel"
