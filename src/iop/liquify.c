@@ -758,23 +758,24 @@ static const float complex point_at_arc_length (const float complex points[],
 static float *
 build_lookup_table (const int distance, const float control1, const float control2)
 {
-  float complex *clookup = dt_alloc_align (16, (distance + 1) * sizeof (float complex));
+  float complex *clookup = dt_alloc_align (16, (distance + 2) * sizeof (float complex));
 
-  interpolate_cubic_bezier (I, control1 + I, control2, 1.0, clookup, distance + 1);
+  interpolate_cubic_bezier (I, control1 + I, control2, 1.0, clookup, distance + 2);
 
   // reparameterize bezier by x and keep only y values
 
   float *lookup = dt_alloc_align (16, (distance + 1) * sizeof (float));
   float *ptr = lookup;
   float complex *cptr = clookup + 1;
+  const float complex *cptr_end = cptr + distance;
   const float step = 1.0 / (float) distance;
   float x = 0.0;
 
   *ptr++ = 1.0;
-  for (int i = 1; i < distance; i++)
+  for (int i = 1; i < distance && cptr < cptr_end; i++)
   {
     x += step;
-    while (creal (*cptr) < x)
+    while (creal (*cptr) < x && cptr < cptr_end)
       cptr++;
     const float dx1 = creal (cptr[0] - cptr[-1]);
     const float dx2 = x - creal (cptr[-1]);
