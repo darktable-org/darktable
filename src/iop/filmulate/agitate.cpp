@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of Filmulator.
  *
  * Copyright 2013 Omer Mano and Carlo Vaccari
@@ -18,21 +18,14 @@
  */
 #include "filmSim.hpp"
 
-void agitate ( matrix<float> &developerConcentration,
-               float activeLayerThickness,
-               float &reservoirDeveloperConcentration,
-               float reservoirThickness,
-               float pixelsPerMillimeter )
+void agitate(matrix<float> &developerConcentration, float activeLayerThickness,
+             float &reservoirDeveloperConcentration, float reservoirThickness, float pixelsPerMillimeter)
 {
-    int npixels = developerConcentration.nc()*
-        developerConcentration.nr();
-    float totalDeveloper = sum( developerConcentration ) *
-        activeLayerThickness / pow( pixelsPerMillimeter, 2 ) +
-        reservoirDeveloperConcentration * reservoirThickness;
-    float contactLayerSize = npixels * activeLayerThickness /
-        pow( pixelsPerMillimeter, 2 );
-    reservoirDeveloperConcentration = totalDeveloper / ( reservoirThickness +
-        contactLayerSize );
-    developerConcentration = reservoirDeveloperConcentration;
-    return;
+  int npixels = developerConcentration.nc() * developerConcentration.nr();
+  float totalDeveloper = sum(developerConcentration) * activeLayerThickness / pow(pixelsPerMillimeter, 2)
+                         + reservoirDeveloperConcentration * reservoirThickness;
+  float contactLayerSize = npixels * activeLayerThickness / pow(pixelsPerMillimeter, 2);
+  reservoirDeveloperConcentration = totalDeveloper / (reservoirThickness + contactLayerSize);
+  developerConcentration = reservoirDeveloperConcentration;
+  return;
 }

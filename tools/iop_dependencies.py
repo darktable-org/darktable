@@ -466,6 +466,7 @@ def add_edges(gr):
   gr.add_edge(('filmulate', 'basecurve'))#It can benefit from having a curve before,
                                          # but you'd usually disable base curve
   gr.add_edge(('filmulate', 'bloom'))#bloom probably likes linear input
+  gr.add_edge(('filmulate', 'graduatednd'))#the ND should be in linear space
   gr.add_edge(('grain', 'filmulate'))#Grain should apply to the result
   gr.add_edge(('globaltonemap', 'filmulate'))#filmulator competes with tone mapping
   

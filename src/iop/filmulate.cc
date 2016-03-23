@@ -20,8 +20,7 @@
 using std::cout;
 using std::endl;
 
-extern "C"
-{
+extern "C" {
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -96,15 +95,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_filmulate_params_t *d = (dt_iop_filmulate_params_t *)piece->data;
 
   d->color_space_size = p->color_space_size;
-  d->rolloff_boundary = p->rolloff_boundary*65535.0f;
-  d->film_area = powf(p->film_area,2.0f);
-  d->layer_mix_const = p->layer_mix_const/100.0f;
+  d->rolloff_boundary = p->rolloff_boundary * 65535.0f;
+  d->film_area = powf(p->film_area, 2.0f);
+  d->layer_mix_const = p->layer_mix_const / 100.0f;
   d->agitate_count = p->agitate_count;
 }
 
 /** modify regions of interest; filmulation requires the full image. **/
-//The region of interest out is going to be the same as what it's given.
-//Filmulator does not change this.
+// The region of interest out is going to be the same as what it's given.
+// Filmulator does not change this.
 /*
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
@@ -145,9 +144,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int agitate_count = d->agitate_count;
   dt_iop_color_intent_t intent = DT_INTENT_PERCEPTUAL;
 
-  const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
-  const cmsHPROFILE Rec2020 = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_ANY)->profile;
-  const cmsHPROFILE Rec709 = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC709, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const cmsHPROFILE Lab
+      = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const cmsHPROFILE Rec2020
+      = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const cmsHPROFILE Rec709
+      = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC709, "", DT_PROFILE_DIRECTION_ANY)->profile;
   cmsHTRANSFORM transform_lab_to_lin_rgba, transform_lin_rgba_to_lab;
   if(0 == color_space_size)
   {
@@ -167,41 +169,39 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int width_out = roi_out->width;
   const int height_out = roi_out->height;
 
-  //Temp buffer for the whole image
+  // Temp buffer for the whole image
   float *rgbbufin = (float *)calloc(width_in * height_in * 4, sizeof(float));
   float *rgbbufout = (float *)calloc(width_out * height_out * 4, sizeof(float));
 
-  //Turn Lab into linear Rec2020
+// Turn Lab into linear Rec2020
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(rgbbufin, transform_lab_to_lin_rgba)
 #endif
   for(int y = 0; y < height_in; y++)
   {
-    const float *in = (float*)i + y * width_in * 4;
+    const float *in = (float *)i + y * width_in * 4;
     float *out = rgbbufin + y * width_in * 4;
     cmsDoTransform(transform_lab_to_lin_rgba, in, out, width_in);
   }
 
 
-  //Filmulate things!
+  // Filmulate things!
   filmulate(rgbbufin, rgbbufout,
             width_in, height_in,
             x_out, y_out,
             width_out, height_out,
-            rolloff_boundary,
-            film_area,
-            layer_mix_const,
-            agitate_count);
+            rolloff_boundary, film_area,
+            layer_mix_const, agitate_count);
 
   free(rgbbufin);
-  //Turn back to Lab
+// Turn back to Lab
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(rgbbufout, transform_lin_rgba_to_lab)
 #endif
   for(int y = 0; y < height_out; y++)
   {
     const float *in = rgbbufout + y * width_out * 4;
-    float *out = (float*)o + y * width_out * 4;
+    float *out = (float *)o + y * width_out * 4;
     cmsDoTransform(transform_lin_rgba_to_lab, in, out, width_out);
   }
   free(rgbbufout);
@@ -231,7 +231,8 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_filmulate_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_filmulate_params_t tmp = (dt_iop_filmulate_params_t){0, 51275.0f/65535.0f, sqrtf(864.0f), 20.0f, 1};
+  dt_iop_filmulate_params_t tmp
+      = (dt_iop_filmulate_params_t){ 0, 51275.0f / 65535.0f, sqrtf(864.0f), 20.0f, 1 };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_filmulate_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmulate_params_t));
@@ -248,45 +249,45 @@ void cleanup(dt_iop_module_t *module)
 /** put your local callbacks here, be sure to make them static so they won't be visible outside this file! */
 static void color_space_size_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  //This is important to avoid cycles!
+  // This is important to avoid cycles!
   if(darktable.gui->reset)
   {
     return;
   }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
-  //If overdrive is off, we agitate once. If overdrive is on, we don't agitate.
+  // If overdrive is off, we agitate once. If overdrive is on, we don't agitate.
   p->color_space_size = dt_bauhaus_combobox_get(w);
-  //Let core know of the changes
+  // Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void rolloff_boundary_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  //This is important to avoid cycles!
-  if(darktable.gui -> reset) 
+  // This is important to avoid cycles!
+  if(darktable.gui->reset)
   {
     return;
   }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
   p->rolloff_boundary = dt_bauhaus_slider_get(w);
-  //Let core know of the changes
+  // Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   printf("rolloff_boundary callback 3\n");
 }
 
-//The slider goes from 0 to 65535, but we want to show 0 to 1.
+// The slider goes from 0 to 65535, but we want to show 0 to 1.
 static float rolloff_boundary_scaled_callback(GtkWidget *self, float input, dt_bauhaus_callback_t dir)
 {
   float output;
   switch(dir)
   {
     case DT_BAUHAUS_SET:
-      output = input*65535.0f;
+      output = input * 65535.0f;
       break;
     case DT_BAUHAUS_GET:
-      output = input/65535.0f;
+      output = input / 65535.0f;
       break;
     default:
       output = input;
@@ -296,33 +297,33 @@ static float rolloff_boundary_scaled_callback(GtkWidget *self, float input, dt_b
 
 static void film_area_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  //This is important to avoid cycles!
-  if(darktable.gui -> reset) 
+  // This is important to avoid cycles!
+  if(darktable.gui->reset)
   {
     return;
   }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
-  //The film area control is logarithmic WRT the linear dimensions of film.
-  //But in the backend, it's actually using square millimeters of simulated film.
-  //p->film_area = powf(expf(dt_bauhaus_slider_get(w)),2.0f);
+  // The film area control is logarithmic WRT the linear dimensions of film.
+  // But in the backend, it's actually using square millimeters of simulated film.
+  // p->film_area = powf(expf(dt_bauhaus_slider_get(w)),2.0f);
   p->film_area = dt_bauhaus_slider_get(w);
-  //Let core know of the changes
+  // Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-//The film size slider displays the exponential of the linear slider position.
+// The film size slider displays the exponential of the linear slider position.
 static float film_dimensions_callback(GtkWidget *self, float input, dt_bauhaus_callback_t dir)
 {
   float output;
   switch(dir)
   {
     case DT_BAUHAUS_SET:
-      //output = exp(input);
+      // output = exp(input);
       output = log(fmax(input, 1e-15f));
       break;
     case DT_BAUHAUS_GET:
-      //output = log(fmax(input, 1e-15f));
+      // output = log(fmax(input, 1e-15f));
       output = exp(input);
       break;
     default:
@@ -333,30 +334,30 @@ static float film_dimensions_callback(GtkWidget *self, float input, dt_bauhaus_c
 
 static void drama_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  //This is important to avoid cycles!
-  if(darktable.gui -> reset)
+  // This is important to avoid cycles!
+  if(darktable.gui->reset)
   {
     return;
   }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
-  //Drama goes from 0 to 100, but the relevant parameter in the backend is 0 to 1.
+  // Drama goes from 0 to 100, but the relevant parameter in the backend is 0 to 1.
   p->layer_mix_const = dt_bauhaus_slider_get(w);
-  //Let core know of the changes
+  // Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-//The slider goes from 0 to 1, but we want to show 0 to 100.
+// The slider goes from 0 to 1, but we want to show 0 to 100.
 static float drama_scaled_callback(GtkWidget *self, float input, dt_bauhaus_callback_t dir)
 {
   float output;
   switch(dir)
   {
     case DT_BAUHAUS_SET:
-      output = input/100.0f;
+      output = input / 100.0f;
       break;
     case DT_BAUHAUS_GET:
-      output = input*100.0f;
+      output = input * 100.0f;
       break;
     default:
       output = input;
@@ -366,16 +367,16 @@ static float drama_scaled_callback(GtkWidget *self, float input, dt_bauhaus_call
 
 static void overdrive_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-  //This is important to avoid cycles!
+  // This is important to avoid cycles!
   if(darktable.gui->reset)
   {
     return;
   }
   dt_iop_filmulate_params_t *p = (dt_iop_filmulate_params_t *)self->params;
 
-  //If overdrive is off, we agitate once. If overdrive is on, we don't agitate.
+  // If overdrive is off, we agitate once. If overdrive is on, we don't agitate.
   p->agitate_count = (dt_bauhaus_combobox_get(w) == 0) ? 1 : 0;
-  //Let core know of the changes
+  // Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -398,7 +399,7 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_filmulate_gui_data_t));
   dt_iop_filmulate_gui_data_t *g = (dt_iop_filmulate_gui_data_t *)self->gui_data;
 
-  //Create the widgets
+  // Create the widgets
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->color_space_size = dt_bauhaus_combobox_new(self);
@@ -407,38 +408,52 @@ void gui_init(dt_iop_module_t *self)
   g->drama = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.0f, 0.2f, 2);
   g->overdrive = dt_bauhaus_combobox_new(self);
 
-  //Scaling things for the sliders
+  // Scaling things for the sliders
   dt_bauhaus_slider_set_callback(g->rolloff_boundary, rolloff_boundary_scaled_callback);
   dt_bauhaus_slider_set_callback(g->film_area, film_dimensions_callback);
   dt_bauhaus_slider_set_callback(g->drama, drama_scaled_callback);
 
-  //Values for the comboboxes
+  // Values for the comboboxes
   dt_bauhaus_combobox_add(g->color_space_size, _("Rec2020"));
   dt_bauhaus_combobox_add(g->color_space_size, _("Rec709"));
   dt_bauhaus_combobox_add(g->overdrive, _("off"));
   dt_bauhaus_combobox_add(g->overdrive, _("on"));
-  
-  dt_bauhaus_widget_set_label(g->color_space_size, NULL, _("color space size"));
-  gtk_widget_set_tooltip_text(g->color_space_size, _("filmulation works in RGB. Rec2020 is a bigger space, good if you're using larger output spaces. Rec709 is good for sRGB output color space, and helps attenuate the value of bright colors naturally."));
-  dt_bauhaus_widget_set_label(g->rolloff_boundary, NULL, _("rolloff boundary"));
-  gtk_widget_set_tooltip_text(g->rolloff_boundary, _("sets the point above which the highlights gently stop getting brighter. if you've got completely unclipped highlights before filmulation, raise this to 1."));
-  dt_bauhaus_widget_set_label(g->film_area, NULL, _("film size"));
-  gtk_widget_set_tooltip_text(g->film_area, _("larger sizes emphasize smaller details and overall flatten the image. smaller sizes emphasize larger regional contrasts. don't use larger sizes with high drama or you'll get the hdr look."));
-  dt_bauhaus_widget_set_label(g->drama, NULL, _("drama"));
-  gtk_widget_set_tooltip_text(g->drama, _("pulls down highlights to retain detail. this is the real \"filmy\" effect. this not only helps bring down highlights, but can rescue extremely saturated regions such as flowers."));
-  dt_bauhaus_widget_set_label(g->overdrive, NULL, _("overdrive mode"));
-  gtk_widget_set_tooltip_text(g->overdrive, _("in case of emergency, break glass and press this button. this increases the filminess, in case 100 Drama was not enough for you."));
 
-  //Add widgets to the gui
+  dt_bauhaus_widget_set_label(g->color_space_size, NULL, _("color space size"));
+  gtk_widget_set_tooltip_text(g->color_space_size,
+                              _("filmulation works in RGB.\nRec2020 is a bigger space, good if you're using "
+                                "larger output spaces.\nRec709 is good for sRGB output color space, and helps "
+                                "attenuate the value of bright colors naturally."));
+  dt_bauhaus_widget_set_label(g->rolloff_boundary, NULL, _("rolloff boundary"));
+  gtk_widget_set_tooltip_text(g->rolloff_boundary, _("sets the point above which the highlights gently stop "
+                                                     "getting brighter. if you've got completely unclipped "
+                                                     "highlights before filmulation, raise this to 1."));
+  dt_bauhaus_widget_set_label(g->film_area, NULL, _("film size"));
+  gtk_widget_set_tooltip_text(
+      g->film_area,
+      _("larger sizes emphasize smaller details and overall flatten the image. smaller sizes emphasize "
+        "larger regional contrasts. don't use larger sizes with high drama or you'll get the hdr look."));
+  dt_bauhaus_widget_set_label(g->drama, NULL, _("drama"));
+  gtk_widget_set_tooltip_text(g->drama, _("pulls down highlights to retain detail. this is the real "
+                                          "\"filmy\" effect. this not only helps bring down highlights, but "
+                                          "can rescue extremely saturated regions such as flowers."));
+  dt_bauhaus_widget_set_label(g->overdrive, NULL, _("overdrive mode"));
+  gtk_widget_set_tooltip_text(g->overdrive,
+                              _("in case of emergency, break glass and press this button. this increases the "
+                                "filminess, in case 100 Drama was not enough for you."));
+
+  // Add widgets to the gui
   gtk_box_pack_start(GTK_BOX(self->widget), g->color_space_size, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->rolloff_boundary, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->film_area, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->drama, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->overdrive, TRUE, TRUE, 0);
 
-  //Connect to the signals when widgets are changed
-  g_signal_connect(G_OBJECT(g->color_space_size), "value-changed", G_CALLBACK(color_space_size_callback), self);
-  g_signal_connect(G_OBJECT(g->rolloff_boundary), "value-changed", G_CALLBACK(rolloff_boundary_callback), self);
+  // Connect to the signals when widgets are changed
+  g_signal_connect(G_OBJECT(g->color_space_size), "value-changed", G_CALLBACK(color_space_size_callback),
+                   self);
+  g_signal_connect(G_OBJECT(g->rolloff_boundary), "value-changed", G_CALLBACK(rolloff_boundary_callback),
+                   self);
   g_signal_connect(G_OBJECT(g->film_area), "value-changed", G_CALLBACK(film_area_callback), self);
   g_signal_connect(G_OBJECT(g->drama), "value-changed", G_CALLBACK(drama_callback), self);
   g_signal_connect(G_OBJECT(g->overdrive), "value-changed", G_CALLBACK(overdrive_callback), self);
@@ -451,7 +466,7 @@ void gui_cleanup(dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-}//extern "C"
+} // extern "C"
 
 /** additional, optional callbacks to capture darkroom center events. */
 // void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
