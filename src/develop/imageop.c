@@ -232,6 +232,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "groups", (gpointer) & (module->groups)))
     module->groups = default_groups;
   if(!g_module_symbol(module->module, "flags", (gpointer) & (module->flags))) module->flags = default_flags;
+  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = NULL;
   if(!g_module_symbol(module->module, "operation_tags", (gpointer) & (module->operation_tags)))
     module->operation_tags = default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter", (gpointer) & (module->operation_tags_filter)))
@@ -385,6 +386,7 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->name = so->name;
   module->groups = so->groups;
   module->flags = so->flags;
+  module->description = so->description;
   module->operation_tags = so->operation_tags;
   module->operation_tags_filter = so->operation_tags_filter;
   module->output_bpp = so->output_bpp;
@@ -1644,6 +1646,7 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolea
   if(collapse_others)
   {
     int current_group = dt_dev_modulegroups_get(module->dev);
+    printf("group: %d\n", current_group);
     GList *iop = g_list_first(module->dev->iop);
     gboolean all_other_closed = TRUE;
     while(iop)
