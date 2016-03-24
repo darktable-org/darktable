@@ -1646,7 +1646,6 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolea
   if(collapse_others)
   {
     int current_group = dt_dev_modulegroups_get(module->dev);
-    printf("group: %d\n", current_group);
     GList *iop = g_list_first(module->dev->iop);
     gboolean all_other_closed = TRUE;
     while(iop)
