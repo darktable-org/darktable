@@ -61,14 +61,6 @@ typedef struct dt_iop_filmulate_gui_data_t
   GtkWidget *color_space_size, *rolloff_boundary, *film_area, *drama, *overdrive;
 } dt_iop_filmulate_gui_data_t;
 
-typedef struct dt_iop_filmulate_global_data_t
-{
-  // this is optionally stored in self->global_data
-  // and can be used to alloc globally needed stuff
-  // which is needed in gui mode and during processing.
-
-} dt_iop_filmulate_global_data_t;
-
 // this returns a translatable name
 const char *name()
 {
@@ -220,7 +212,6 @@ void reload_defaults(dt_iop_module_t *module)
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = malloc(sizeof(dt_iop_filmulate_global_data_t));
   module->params = calloc(1, sizeof(dt_iop_filmulate_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_filmulate_params_t));
   // our module is disabled by default
@@ -242,8 +233,9 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-  free(module->data);
-  module->data = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
+
 }
 
 /** put your local callbacks here, be sure to make them static so they won't be visible outside this file! */
