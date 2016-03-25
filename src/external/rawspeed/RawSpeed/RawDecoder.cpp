@@ -119,7 +119,7 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
   if (bitPerPixel > 16 && mRaw->getDataType() == TYPE_USHORT16)
     ThrowRDE("readUncompressedRaw: Unsupported bit depth");
 
-  uint32 skipBits = inputPitch - w * bitPerPixel / 8;  // Skip per line
+  uint32 skipBits = inputPitch - w * cpp * bitPerPixel / 8;  // Skip per line
   if (oy > (uint64) mRaw->dim.y)
     ThrowRDE("readUncompressedRaw: Invalid y offset");
   if (ox + size.x > (uint64)mRaw->dim.x)
