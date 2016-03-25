@@ -71,7 +71,7 @@ const char *name()
 //this returns a tooltip for the 'more modules' list
 const char *description()
 {
-  return _("tone mapping based on literally simulating film development")
+  return _("tone mapping based on literally simulating film development");
 }
 
 // some additional flags (self explanatory i think):
