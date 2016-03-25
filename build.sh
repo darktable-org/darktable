@@ -145,6 +145,56 @@ EOF
 }
 
 # ---------------------------------------------------------------------------
+# utility functions
+# ---------------------------------------------------------------------------
+
+num_cpu()
+{
+	local ncpu
+	local platform=$(uname -s)
+
+	case "$platform" in
+	SunOS)
+		ncpu=$(/usr/sbin/psrinfo |wc -l)
+		;;
+	Linux)
+		if [ -r /proc/cpuinfo ]; then
+			ncpu=$(grep -c "^processor" /proc/cpuinfo)
+		elif [ -x /sbin/sysctl ]; then
+			ncpu=$(/sbin/sysctl -n hw.ncpu 2>/dev/null)
+			if [ $? -neq 0 ]; then
+				ncpu=-1
+			fi
+		fi
+		;;
+	*)
+		printf "warning: unable to determine number of CPU on $platform\n"
+		ncpu=-1
+		;;
+	esac
+
+	if [ $ncpu -lt 1 ] ; then
+		ncpu=1
+	fi
+	printf "$ncpu"
+}
+
+make_name()
+{
+	local make="make"
+	local platform=$(uname -s)
+
+	case "$platform" in
+	SunOS)
+		PATH="/usr/gnu/bin:$PATH"
+		export PATH
+		make="gmake"
+		;;
+	esac
+	printf "$make"
+}
+
+# ---------------------------------------------------------------------------
 # Let's process the user's wishes
 # ---------------------------------------------------------------------------
 
@@ -155,32 +205,8 @@ if [ $PRINT_HELP -ne 0 ] ; then
 	exit 1
 fi
 
-KERNELNAME=$(uname -s)
-# If no Make tasks given, try to be smart
-if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
-	if [ "$KERNELNAME" = "SunOS" ]; then
-		MAKE_TASKS=$( /usr/sbin/psrinfo |wc -l )
-	else
-		if [ -r /proc/cpuinfo ]; then
-			MAKE_TASKS=$(grep -c "^processor" /proc/cpuinfo)
-		elif [ -x /sbin/sysctl ]; then
-			TMP_CORES=$(/sbin/sysctl -n hw.ncpu 2>/dev/null)
-			if [ "$?" = "0" ]; then
-				MAKE_TASKS=$TMP_CORES
-			fi
-		fi
-	fi
-fi
-
-if [ "$KERNELNAME" = "SunOS" ]; then
-	MAKE=gmake
-	PATH=/usr/gnu/bin:$PATH ; export PATH
-fi
-
-# Being smart may fail :D
-if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
-	MAKE_TASKS=1
-fi
+MAKE_TASKS=$(num_cpu)
+MAKE=$(make_name)
 
 cmake_boolean_option()
 {
