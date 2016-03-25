@@ -1,7 +1,7 @@
 #!/bin/sh
 
-DT_SRC_DIR=`dirname "$0"`
-DT_SRC_DIR=`cd "$DT_SRC_DIR"; pwd`
+DT_SRC_DIR=$(dirname "$0")
+DT_SRC_DIR=$(cd "$DT_SRC_DIR"; pwd)
 
 cd $DT_SRC_DIR;
 
@@ -157,7 +157,7 @@ if [ "$BUILD_TYPE" =  "" ]; then
 	BUILD_TYPE="RelWithDebInfo"
 fi
 
-KERNELNAME=`uname -s`
+KERNELNAME=$(uname -s)
 # If no Make tasks given, try to be smart
 if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
 	if [ "$KERNELNAME" = "SunOS" ]; then
