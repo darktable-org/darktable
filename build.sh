@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 DT_SRC_DIR=$(dirname "$0")
 DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 
@@ -244,8 +246,6 @@ if [ $ADDRESS_SANITIZER -ne 0 ] ; then
 	PREPEND="$PREPEND CXXFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
 	PREPEND="$PREPEND LDFLAGS=\"-fsanitize=address\""
 fi
-
-set -e 
 
 OLDPWD="$(pwd)"
 cd "$BUILD_DIR"
