@@ -336,12 +336,14 @@ template <class T> inline void matrix<T>::slow_transpose_to(const matrix<T> &tar
     for(int col = 0; col < num_cols; col++) target.data[col * num_rows + row] = data[row * num_cols + col];
 }
 
+/*
 template <> inline void matrix<float>::fast_transpose_to(const matrix<float> &target) const
 {
   assert(target.num_rows == num_cols && target.num_cols == num_rows);
 
   transpose_block_SSE4x4(data, target.data, num_rows, num_cols, num_cols, num_rows, 16);
 }
+*/
 
 // There is no fast transpose in the general case
 template <class T> inline void matrix<T>::fast_transpose_to(const matrix<T> &target) const
@@ -354,6 +356,7 @@ template <class T> inline void matrix<T>::transpose_to(const matrix<T> &target) 
   slow_transpose_to(target);
 }
 
+/*
 template <> inline void matrix<float>::transpose_to(const matrix<float> &target) const
 {
   // Fast transpose only work with matricies with dimensions of multiples of 16
@@ -362,7 +365,9 @@ template <> inline void matrix<float>::transpose_to(const matrix<float> &target)
   else
     fast_transpose_to(target);
 }
+*/
 
+/*
 template <class T>
 inline void matrix<T>::transpose4x4_SSE(float *A, float *B, const int lda, const int ldb) const
 {
@@ -376,7 +381,9 @@ inline void matrix<T>::transpose4x4_SSE(float *A, float *B, const int lda, const
   _mm_store_ps(&B[2 * ldb], row3);
   _mm_store_ps(&B[3 * ldb], row4);
 }
+*/
 
+/*
 // block_size = 16 works best
 template <class T>
 inline void matrix<T>::transpose_block_SSE4x4(float *A, float *B, const int n, const int m, const int lda,
@@ -395,6 +402,7 @@ inline void matrix<T>::transpose_block_SSE4x4(float *A, float *B, const int n, c
           transpose4x4_SSE(&A[i2 * lda + j2], &B[j2 * ldb + i2], lda, ldb);
     }
 }
+*/
 
 template <class T>
 inline void matrix<T>::transpose_scalar_block(float *A, float *B, const int lda, const int ldb,
