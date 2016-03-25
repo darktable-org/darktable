@@ -12,7 +12,8 @@ cd $DT_SRC_DIR;
 INSTALL_PREFIX=""
 BUILD_TYPE=""
 MAKE_TASKS=-1
-BUILD_DIR="./build"
+BUILD_DIR_DEFAULT="$DT_SRC_DIR/build"
+BUILD_DIR="$BUILD_DIR_DEFAULT"
 BUILD_GENERATOR="Unix Makefiles"
 ADDRESS_SANITIZER=0
 
@@ -110,9 +111,10 @@ Installation:
    --prefix         <string>  Install directory prefix (default: /opt/darktable)
 
 Build:
-   --build-dir      <string>  Building directory (default: $DT_SRC_DIR/build)
+   --build-dir      <string>  Building directory
+                              (default: $BUILD_DIR_DEFAULT)
    --build-type     <string>  Build type (Release, Debug, RelWithDebInfo)
-                              (default:RelWithDebInfo)
+                              (default: RelWithDebInfo)
    --build-generator <string> Build tool (default: Unix Makefiles)
 -j --jobs <integer>           Number of tasks (default: number of CPUs)
 
