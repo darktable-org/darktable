@@ -119,6 +119,9 @@ RawImage DngDecoder::decodeRawInternal() {
         if (raw->getEntry(CFALAYOUT)->getShort() != 1)
           ThrowRDE("DNG Decoder: Unsupported CFA Layout.");
 
+      TiffEntry *cfadim = raw->getEntry(CFAREPEATPATTERNDIM);
+      if (cfadim->count != 2)
+        ThrowRDE("DNG Decoder: Couldn't read CFA pattern dimension");
       const unsigned short* pDim = raw->getEntry(CFAREPEATPATTERNDIM)->getShortArray(); // Get the size
       const uchar8* cPat = raw->getEntry(CFAPATTERN)->getData();                 // Does NOT contain dimensions as some documents state
       /*
