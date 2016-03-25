@@ -194,20 +194,6 @@ make_name()
 	printf "$make"
 }
 
-# ---------------------------------------------------------------------------
-# Let's process the user's wishes
-# ---------------------------------------------------------------------------
-
-parse_args "$@"
-
-if [ $PRINT_HELP -ne 0 ] ; then
-	print_help
-	exit 1
-fi
-
-MAKE_TASKS=$(num_cpu)
-MAKE=$(make_name)
-
 cmake_boolean_option()
 {
 	name=$1
@@ -224,6 +210,21 @@ cmake_boolean_option()
 		;;
 	esac
 }
+
+# ---------------------------------------------------------------------------
+# Let's process the user's wishes
+# ---------------------------------------------------------------------------
+
+parse_args "$@"
+
+if [ $PRINT_HELP -ne 0 ] ; then
+	print_help
+	exit 1
+fi
+
+MAKE_TASKS=$(num_cpu)
+MAKE=$(make_name)
+
 
 CMAKE_MORE_OPTIONS=""
 cmake_boolean_option USE_FLICKR $OPT_FLICKR
