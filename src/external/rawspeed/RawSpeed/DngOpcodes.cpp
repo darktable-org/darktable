@@ -165,9 +165,10 @@ OpcodeFixBadPixelsList::OpcodeFixBadPixelsList( const uchar8* parameters, uint32
   if (param_max_bytes < 12)
     ThrowRDE("OpcodeFixBadPixelsList: Not enough data to read parameters, only %u bytes left.", param_max_bytes);
   // Skip phase - we don't care
-  uint64 BadPointCount = getLong(&parameters[4]);
-  uint64 BadRectCount = getLong(&parameters[8]);
+  uint64 BadPointCount = (uint32)getLong(&parameters[4]);
+  uint64 BadRectCount = (uint32)getLong(&parameters[8]);
   bytes_used[0] = 12;
+
   if (12 + BadPointCount * 8 + BadRectCount * 16 > (uint64) param_max_bytes)
     ThrowRDE("OpcodeFixBadPixelsList: Ran out parameter space, only %u bytes left.", param_max_bytes);
 
