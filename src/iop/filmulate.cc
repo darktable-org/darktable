@@ -68,6 +68,12 @@ const char *name()
   return _("filmulate");
 }
 
+//this returns a tooltip for the 'more modules' list
+const char *description()
+{
+  return _("tone mapping based on literally simulating film development")
+}
+
 // some additional flags (self explanatory i think):
 int flags()
 {
