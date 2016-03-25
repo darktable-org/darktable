@@ -22,17 +22,11 @@ ADDRESS_SANITIZER=0
 
 PRINT_HELP=0
 
-OPT_FLICKR=-1
-OPT_LIBSECRET=-1
-OPT_KWALLET=-1
-OPT_OPENMP=-1
-OPT_OPENCL=-1
-OPT_UNITY=-1
-OPT_TETHERING=-1
-OPT_LUA=-1
-OPT_GEO=-1
-OPT_OPENEXR=-1
-OPT_WEBP=-1
+FEATURES="FLICKR LIBSECRET KWALLET OPENMP OPENCL UNITY TETHERING GEO LUA OPENEXR WEBP"
+
+# prepare a lowercase version with a space before and after
+# it's very important for parse_feature, has no impact in for loop expansions
+FEATURES_=$(for i in $FEATURES ; do printf " $(printf $i|tr A-Z a-z) "; done)
 
 # ---------------------------------------------------------------------------
 # Parsing functions
@@ -40,17 +34,14 @@ OPT_WEBP=-1
 
 parse_feature()
 {
-	feature=$1
-	value=$2
+	local feature="$1"
+	local value="$2"
 
-	case $feature in
-	flickr|libsecret|kwallet|openmp|opencl|unity|tethering|lua|geo|openexr|webp)
-		eval "OPT_$(printf $feature|tr a-z A-Z)"=$value
-		;;
-	*)
-		echo "warning: unknown feature '$feature'"
-		;;
-	esac
+	if printf "$FEATURES_" | grep -q " $feature " ; then
+		eval "FEAT_$(printf $feature|tr a-z A-Z)"=$value
+	else
+		printf "warning: unknown feature '$feature'\n"
+	fi
 }
 
 parse_args()
@@ -125,18 +116,8 @@ Build:
 Features:
 By default cmake will enabel the features it autodetects on the build machine.
 Specifying the option on the command line forces the feature on or off.
-All these options have a --disable-* equivalent. 
-   --enable-flickr
-   --enable-libsecret
-   --enable-kwallet
-   --enable-openmp
-   --enable-opencl
-   --enable-unity
-   --enable-tethering
-   --enable-geo
-   --enable-lua
-   --enable-openexr
-   --enable-webp
+All these options have a --disable-* equivalent.
+$(for i in $FEATURES_ ; do printf "    --enable-$i\n"; done)
 
 Extra:
 -h --help                Print help message
@@ -194,6 +175,13 @@ make_name()
 	printf "$make"
 }
 
+features_set_to_autodetect()
+{
+	for i in $FEATURES; do
+		eval FEAT_$i=-1
+	done
+}
+
 cmake_boolean_option()
 {
 	name=$1
@@ -215,6 +203,7 @@ cmake_boolean_option()
 # Let's process the user's wishes
 # ---------------------------------------------------------------------------
 
+features_set_to_autodetect
 parse_args "$@"
 
 if [ $PRINT_HELP -ne 0 ] ; then
@@ -225,19 +214,10 @@ fi
 MAKE_TASKS=$(num_cpu)
 MAKE=$(make_name)
 
-
 CMAKE_MORE_OPTIONS=""
-cmake_boolean_option USE_FLICKR $OPT_FLICKR
-cmake_boolean_option USE_LIBSECRET $OPT_LIBSECRET
-cmake_boolean_option USE_KWALLET $OPT_KWALLET
-cmake_boolean_option USE_OPENMP $OPT_OPENMP
-cmake_boolean_option USE_OPENCL $OPT_OPENCL
-cmake_boolean_option USE_UNITY $OPT_UNITY
-cmake_boolean_option USE_CAMERA_SUPPORT $OPT_TETHERING
-cmake_boolean_option USE_GEO $OPT_GEO
-cmake_boolean_option USE_LUA $OPT_LUA
-cmake_boolean_option USE_OPENEXR $OPT_OPENEXR
-cmake_boolean_option USE_WEBP $OPT_WEBP
+for i in $FEATURES; do
+	eval cmake_boolean_option USE_$i \$FEAT_$i
+done
 
 # Some people might need this, but ignore if unset in environment
 CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:-}
