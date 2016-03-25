@@ -29,10 +29,16 @@ DngOpcodes::DngOpcodes(TiffEntry *entry)
   host = getHostEndianness();
   const uchar8* data = entry->getData();
   uint32 entry_size = entry->count;
-  uint32 opcode_count = getULong(&data[0]);
 
+  if (entry_size < 20)
+    ThrowRDE("DngOpcodes: Not enough bytes to read a single opcode");
+
+  uint32 opcode_count = getULong(&data[0]);
   int bytes_used = 4;
   for (uint32 i = 0; i < opcode_count; i++) {
+    if ((int)entry_size - bytes_used < 16)
+      ThrowRDE("DngOpcodes: Not enough bytes to read a new opcode");
+
     uint32 code = getULong(&data[bytes_used]);
     //uint32 version = getULong(&data[bytes_used+4]);
     uint32 flags = getULong(&data[bytes_used+8]);
@@ -76,8 +82,6 @@ DngOpcodes::DngOpcodes(TiffEntry *entry)
     if (opcode_used != expected_size)
       ThrowRDE("DngOpcodes: Inconsistent length of opcode");
     bytes_used += opcode_used;
-    if (bytes_used > (int)entry_size)
-      ThrowRDE("DngOpcodes: More codes than entry size (should be caught earlier)");
   }
 }
 
