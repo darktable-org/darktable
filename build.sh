@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DT_SRC_DIR=$(dirname "$0")
-DT_SRC_DIR=$(cd "$DT_SRC_DIR"; pwd)
+DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 
 # ---------------------------------------------------------------------------
 # Set default values to option vars
