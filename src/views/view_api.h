@@ -37,6 +37,7 @@ struct dt_view_t;
 
 const char *name(struct dt_view_t *self);    // get translatable name
 uint32_t view(const struct dt_view_t *self); // get the view type
+uint32_t flags();                            // get flags of the view
 void init(struct dt_view_t *self);           // init *data
 void gui_init(struct dt_view_t *self);       // create gtk elements, called after libs are created
 void cleanup(struct dt_view_t *self);        // cleanup *data

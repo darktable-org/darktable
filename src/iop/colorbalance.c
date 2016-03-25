@@ -85,6 +85,11 @@ const char *name()
   return _("color balance");
 }
 
+const char *description()
+{
+  return _("lift/gamma/gain controls as seen in video editors");
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;

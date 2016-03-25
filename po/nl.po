@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-21 14:58+0100\n"
-"PO-Revision-Date: 2016-03-21 14:59+0100\n"
+"POT-Creation-Date: 2016-03-24 17:19+0100\n"
+"PO-Revision-Date: 2016-03-24 17:21+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1854,78 +1854,78 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' versie komt niet overeen: %d != %d"
 
-#: ../src/develop/imageop.c:868
+#: ../src/develop/imageop.c:870
 msgid "new instance"
 msgstr "nieuw exemplaar"
 
-#: ../src/develop/imageop.c:873
+#: ../src/develop/imageop.c:875
 msgid "duplicate instance"
 msgstr "dupliceer exemplaar"
 
-#: ../src/develop/imageop.c:878 ../src/libs/masks.c:1153
+#: ../src/develop/imageop.c:880 ../src/libs/masks.c:1153
 msgid "move up"
 msgstr "eerder"
 
-#: ../src/develop/imageop.c:884 ../src/libs/masks.c:1156
+#: ../src/develop/imageop.c:886 ../src/libs/masks.c:1156
 msgid "move down"
 msgstr "later"
 
 #. delete
-#: ../src/develop/imageop.c:890 ../src/libs/image.c:141 ../src/libs/styles.c:360 ../src/libs/tagging.c:468
+#: ../src/develop/imageop.c:892 ../src/libs/image.c:141 ../src/libs/styles.c:360 ../src/libs/tagging.c:468
 msgid "delete"
 msgstr "verwijderen"
 
-#: ../src/develop/imageop.c:914 ../src/develop/imageop.c:1884
+#: ../src/develop/imageop.c:916 ../src/develop/imageop.c:1886
 #, c-format
 msgid "%s is switched on"
 msgstr "%s is ingeschakeld"
 
-#: ../src/develop/imageop.c:914 ../src/develop/imageop.c:1884
+#: ../src/develop/imageop.c:916 ../src/develop/imageop.c:1886
 #, c-format
 msgid "%s is switched off"
 msgstr "%s is uitgeschakeld"
 
-#: ../src/develop/imageop.c:1236 ../src/gui/accelerators.c:631 ../src/gui/accelerators.c:716 ../src/gui/accelerators.c:882 ../src/gui/accelerators.c:908
+#: ../src/develop/imageop.c:1238 ../src/gui/accelerators.c:631 ../src/gui/accelerators.c:716 ../src/gui/accelerators.c:882 ../src/gui/accelerators.c:908
 #: ../src/gui/presets.c:191 ../src/gui/presets.c:297 ../src/gui/presets.c:639 ../src/iop/temperature.c:1352 ../src/libs/import.c:553 ../src/libs/lib.c:308
 #: ../src/libs/lib.c:333 ../src/libs/lib.c:1151
 msgid "preset"
 msgstr "voorkeur"
 
-#: ../src/develop/imageop.c:1280
+#: ../src/develop/imageop.c:1282
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusie"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1285
+#: ../src/develop/imageop.c:1287
 msgctxt "accel"
 msgid "show module"
 msgstr "toon module"
 
-#: ../src/develop/imageop.c:1286
+#: ../src/develop/imageop.c:1288
 msgctxt "accel"
 msgid "enable module"
 msgstr "inschakelen module"
 
-#: ../src/develop/imageop.c:1288 ../src/libs/lib.c:583
+#: ../src/develop/imageop.c:1290 ../src/libs/lib.c:583
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "reset module"
 
-#: ../src/develop/imageop.c:1289 ../src/libs/lib.c:587
+#: ../src/develop/imageop.c:1291 ../src/libs/lib.c:587
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "toon vooraf ingesteld menu"
 
-#: ../src/develop/imageop.c:1855
+#: ../src/develop/imageop.c:1857
 msgid "multiple instances actions"
 msgstr "meerdere exemplaren"
 
-#: ../src/develop/imageop.c:1863 ../src/libs/lib.c:993
+#: ../src/develop/imageop.c:1865 ../src/libs/lib.c:993
 msgid "reset parameters"
 msgstr "reset"
 
-#: ../src/develop/imageop.c:1871 ../src/gui/preferences.c:428 ../src/libs/lib.c:1005
+#: ../src/develop/imageop.c:1873 ../src/gui/preferences.c:428 ../src/libs/lib.c:1005
 msgid "presets"
 msgstr "voorkeuren"
 
@@ -4638,26 +4638,30 @@ msgstr "aanpassen kleurverzadiging"
 msgid "color balance"
 msgstr "kleurenbalans"
 
-#: ../src/iop/colorbalance.c:573 ../src/iop/colorbalance.c:580
+#: ../src/iop/colorbalance.c:90
+msgid "lift/gamma/gain controls as seen in video editors"
+msgstr "lift/gamma/gain controle zoals in video editors"
+
+#: ../src/iop/colorbalance.c:578 ../src/iop/colorbalance.c:585
 msgid "factor of "
 msgstr "factor van"
 
-#: ../src/iop/colorbalance.c:574
+#: ../src/iop/colorbalance.c:579
 msgid "factor"
 msgstr "factor"
 
 #. lift
-#: ../src/iop/colorbalance.c:586
+#: ../src/iop/colorbalance.c:591
 msgid "lift"
 msgstr "lift"
 
 #. gamma
-#: ../src/iop/colorbalance.c:606 ../src/iop/profile_gamma.c:322
+#: ../src/iop/colorbalance.c:611 ../src/iop/profile_gamma.c:322
 msgid "gamma"
 msgstr "gamma"
 
 #. gain
-#: ../src/iop/colorbalance.c:626
+#: ../src/iop/colorbalance.c:631
 msgid "gain"
 msgstr "gain"
 
@@ -6158,23 +6162,23 @@ msgstr "wit"
 msgid "liquify"
 msgstr "uitvloeien"
 
-#: ../src/iop/liquify.c:3231
+#: ../src/iop/liquify.c:3232
 msgid "click and drag to add point"
 msgstr "voeg een punt toe door te klikken en te slepen"
 
-#: ../src/iop/liquify.c:3233
+#: ../src/iop/liquify.c:3234
 msgid "click to add line"
 msgstr "voeg een lijn toe door te klikken"
 
-#: ../src/iop/liquify.c:3235
+#: ../src/iop/liquify.c:3236
 msgid "click to add curve"
 msgstr "voeg een curve toe door te klikken "
 
-#: ../src/iop/liquify.c:3237
+#: ../src/iop/liquify.c:3238
 msgid "click to edit nodes"
 msgstr "bewerk knooppunten door te klikken"
 
-#: ../src/iop/liquify.c:3274
+#: ../src/iop/liquify.c:3275
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -6182,31 +6186,31 @@ msgstr ""
 "voeg verdraaiingen toe met de gereedschappen\n"
 "verwijder een verdraaiing met de rechtermuisknop"
 
-#: ../src/iop/liquify.c:3276
+#: ../src/iop/liquify.c:3277
 msgid "warps|nodes count:"
 msgstr "verdraaiingen|knooppunten:"
 
-#: ../src/iop/liquify.c:3283
+#: ../src/iop/liquify.c:3284
 msgid "node tool: edit, add and delete nodes"
 msgstr "gereedschap knooppunt: bewerk, voeg toe en verwijder knooppunten"
 
-#: ../src/iop/liquify.c:3291
+#: ../src/iop/liquify.c:3292
 msgid "curve tool: draw curves"
 msgstr "gereedschap kromme: teken curven"
 
-#: ../src/iop/liquify.c:3299
+#: ../src/iop/liquify.c:3300
 msgid "line tool: draw lines"
 msgstr "gereedschap lijn: teken lijnen"
 
-#: ../src/iop/liquify.c:3307
+#: ../src/iop/liquify.c:3308
 msgid "point tool: draw points"
 msgstr "gereedschap punt: teken punten"
 
-#: ../src/iop/liquify.c:3315
+#: ../src/iop/liquify.c:3316
 msgid "disable all tools"
 msgstr "alle gereedschappen uitschakelen"
 
-#: ../src/iop/liquify.c:3322
+#: ../src/iop/liquify.c:3323
 msgid ""
 "ctrl+click to add node\n"
 "right click to remove path"
@@ -6214,7 +6218,7 @@ msgstr ""
 "ctrl+klik voegt een knooppunt toe\n"
 "verwijder pad met de rechtermuisknop"
 
-#: ../src/iop/liquify.c:3323
+#: ../src/iop/liquify.c:3324
 msgid ""
 "click and drag to move - click : linear or feathered\n"
 "ctrl+click : autosmooth, cups, smooth, symmetrical\n"
@@ -6224,23 +6228,23 @@ msgstr ""
 "ctrl+klik: automatisch glad, cups, glad, symmetrisch\n"
 "rechtermuisknop om te verwijderen"
 
-#: ../src/iop/liquify.c:3326 ../src/iop/liquify.c:3327
+#: ../src/iop/liquify.c:3327 ../src/iop/liquify.c:3328
 msgid "drag to change shape of path"
 msgstr "wijzig vorm van een pad door slepen"
 
-#: ../src/iop/liquify.c:3328
+#: ../src/iop/liquify.c:3329
 msgid "drag to adjust warp radius"
 msgstr "wijzig radius verdraaiingen door slepen"
 
-#: ../src/iop/liquify.c:3329
+#: ../src/iop/liquify.c:3330
 msgid "drag to adjust hardness (center)"
 msgstr "wijzig hardheid door slepen (centrum)"
 
-#: ../src/iop/liquify.c:3330
+#: ../src/iop/liquify.c:3331
 msgid "drag to adjust hardness (feather)"
 msgstr "wijzig hardheid door slepen (feather)"
 
-#: ../src/iop/liquify.c:3331
+#: ../src/iop/liquify.c:3332
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click : linear, grow, and shrink"
@@ -6248,27 +6252,27 @@ msgstr ""
 "sleep om de kracht van verdraaiing te wijzigen\n"
 "ctrl+klik: lineair, groeien of krimpen"
 
-#: ../src/iop/liquify.c:3349
+#: ../src/iop/liquify.c:3350
 msgctxt "accel"
 msgid "point tool"
 msgstr "gereedschap punt"
 
-#: ../src/iop/liquify.c:3350
+#: ../src/iop/liquify.c:3351
 msgctxt "accel"
 msgid "line tool"
 msgstr "gereedschap lijn"
 
-#: ../src/iop/liquify.c:3351
+#: ../src/iop/liquify.c:3352
 msgctxt "accel"
 msgid "curve tool"
 msgstr "gereedschap curve"
 
-#: ../src/iop/liquify.c:3352
+#: ../src/iop/liquify.c:3353
 msgctxt "accel"
 msgid "node tool"
 msgstr "gereedschap knooppunt"
 
-#: ../src/iop/liquify.c:3353
+#: ../src/iop/liquify.c:3354
 msgctxt "accel"
 msgid "disable tools"
 msgstr "gereedschappen uitschakelen"
@@ -9299,6 +9303,10 @@ msgstr "verwijder kleurlabels"
 msgid "darktable"
 msgstr "darktable"
 
+#: ../src/libs/tools/darktable.c:289
+msgid "copyright (c) the authors 2009-2016"
+msgstr "copyright (c) auteurs 2009-2016"
+
 #: ../src/libs/tools/darktable.c:291
 msgid "organize and develop images from digital cameras"
 msgstr "organiseer en ontwikkel afbeeldingen van digitale camera's"
@@ -9505,7 +9513,7 @@ msgstr "schermwisselaar"
 
 #. char *italic = g_strdup_printf("<i>%s</i>", _("other"));
 #. italic
-#: ../src/libs/tools/viewswitcher.c:144
+#: ../src/libs/tools/viewswitcher.c:147
 msgid "other"
 msgstr "overige"
 
@@ -9892,15 +9900,15 @@ msgstr "nieuwe sessie gestart-'%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "geen camera met tetheringondersteuning aanwezig"
 
-#: ../src/views/view.c:315
+#: ../src/views/view.c:323
 msgid "you are making a mistake!"
 msgstr "u maakt een vergissing!"
 
-#: ../src/views/view.c:316
+#: ../src/views/view.c:324
 msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
 msgstr "_ik begrijp het, ik accepteer dit bij het gebruik van een 32-bit darktable"
 
-#: ../src/views/view.c:320
+#: ../src/views/view.c:328
 msgid ""
 "warning!\n"
 "you are using a 32-bit build of darktable.\n"

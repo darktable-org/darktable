@@ -111,6 +111,9 @@ void gui_init(dt_lib_module_t *self)
       /* create view label */
       dt_view_t *v = &darktable.view_manager->view[k];
 
+      // skip hidden views
+      if(v->flags() & VIEW_FLAGS_HIDDEN) continue;
+
       if(!g_strcmp0(v->module_name, "lighttable") || !g_strcmp0(v->module_name, "darkroom"))
       {
         GtkWidget *w = _lib_viewswitcher_create_label(v);
@@ -284,7 +287,7 @@ static void _switch_view(int which)
   else if(which == DT_VIEW_SLIDESHOW)
     dt_ctl_switch_mode_to(DT_SLIDESHOW);
 #ifdef HAVE_PRINT
-  else if (which == DT_VIEW_PRINT)
+  else if(which == DT_VIEW_PRINT)
     dt_ctl_switch_mode_to(DT_PRINT);
 #endif
 }

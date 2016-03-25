@@ -70,6 +70,9 @@ int groups();
 /** get the iop module flags. */
 int flags();
 
+/** get a descriptive text used for example in a tooltip in more modules */
+const char *description();
+
 int operation_tags();
 int operation_tags_filter();
 
