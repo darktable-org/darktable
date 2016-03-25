@@ -9,12 +9,15 @@ DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 # Set default values to option vars
 # ---------------------------------------------------------------------------
 
-INSTALL_PREFIX=""
-BUILD_TYPE=""
-MAKE_TASKS=-1
+INSTALL_PREFIX_DEFAULT="/opt/darktable"
+INSTALL_PREFIX="$INSTALL_PREFIX_DEFAULT"
+BUILD_TYPE_DEFAULT="RelWithDebInfo"
+BUILD_TYPE="$BUILD_TYPE_DEFAULT"
 BUILD_DIR_DEFAULT="$DT_SRC_DIR/build"
 BUILD_DIR="$BUILD_DIR_DEFAULT"
-BUILD_GENERATOR="Unix Makefiles"
+BUILD_GENERATOR_DFEAULT="Unix Makefiles"
+BUILD_GENERATOR="$BUILD_GENERATOR_DFEAULT"
+MAKE_TASKS=-1
 ADDRESS_SANITIZER=0
 
 PRINT_HELP=0
@@ -108,13 +111,14 @@ $(basename $0) [OPTIONS]
 
 Options:
 Installation:
-   --prefix         <string>  Install directory prefix (default: /opt/darktable)
+   --prefix         <string>  Install directory prefix
+                              (default: $INSTALL_PREFIX_DEFAULT)
 
 Build:
    --build-dir      <string>  Building directory
                               (default: $BUILD_DIR_DEFAULT)
    --build-type     <string>  Build type (Release, Debug, RelWithDebInfo)
-                              (default: RelWithDebInfo)
+                              (default: $BUILD_TYPE_DEFAULT)
    --build-generator <string> Build tool (default: Unix Makefiles)
 -j --jobs <integer>           Number of tasks (default: number of CPUs)
 
@@ -149,14 +153,6 @@ parse_args "$@"
 if [ $PRINT_HELP -ne 0 ] ; then
 	print_help
 	exit 1
-fi
-
-if [ "$INSTALL_PREFIX" =  "" ]; then
-	INSTALL_PREFIX=/opt/darktable/
-fi
-
-if [ "$BUILD_TYPE" =  "" ]; then
-	BUILD_TYPE="RelWithDebInfo"
 fi
 
 KERNELNAME=$(uname -s)
