@@ -1199,11 +1199,12 @@ static int line_detect(const float *in, const int width, const int height, const
       // calculate homogeneous coordinates of connecting line (defined by the two points)
       vec3prodn(ashift_lines[lct].L, ashift_lines[lct].p1, ashift_lines[lct].p2);
 
-      // length and width of rectangle (see LSD) and weight (= length * width)
+      // length and width of rectangle (see LSD)
       ashift_lines[lct].length = sqrt((px2 - px1) * (px2 - px1) + (py2 - py1) * (py2 - py1));
       ashift_lines[lct].width = lsd_lines[n * 7 + 4] / scale;
 
-      const float weight = ashift_lines[lct].length * ashift_lines[lct].width;
+      // ...  and weight (= length * width * angle precision)
+      const float weight = ashift_lines[lct].length * ashift_lines[lct].width * lsd_lines[n * 7 + 5];
       ashift_lines[lct].weight = weight;
 
 
