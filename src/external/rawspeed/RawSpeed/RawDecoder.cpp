@@ -222,9 +222,12 @@ void RawDecoder::Decode8BitRaw(ByteStream &input, uint32 w, uint32 h) {
 }
 
 void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
+  if(w<2) ThrowIOE("Are you mad? 1 pixel wide raw images are no fun");
+
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
   const uchar8 *in = input.getData();
+
   if (input.getRemainSize() < ((w*12/8)*h)) {
     if ((uint32)input.getRemainSize() > (w*12/8)) {
       h = input.getRemainSize() / (w*12/8) - 1;
@@ -245,6 +248,8 @@ void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
 }
 
 void RawDecoder::Decode12BitRawWithControl(ByteStream &input, uint32 w, uint32 h) {
+  if(w<2) ThrowIOE("Are you mad? 1 pixel wide raw images are no fun");
+
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
   const uchar8 *in = input.getData();
@@ -280,6 +285,8 @@ void RawDecoder::Decode12BitRawWithControl(ByteStream &input, uint32 w, uint32 h
 }
 
 void RawDecoder::Decode12BitRawBEWithControl(ByteStream &input, uint32 w, uint32 h) {
+  if(w<2) ThrowIOE("Are you mad? 1 pixel wide raw images are no fun");
+
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
   const uchar8 *in = input.getData();
@@ -315,6 +322,8 @@ void RawDecoder::Decode12BitRawBEWithControl(ByteStream &input, uint32 w, uint32
 }
 
 void RawDecoder::Decode12BitRawBE(ByteStream &input, uint32 w, uint32 h) {
+  if(w<2) ThrowIOE("Are you mad? 1 pixel wide raw images are no fun");
+
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
   const uchar8 *in = input.getData();
@@ -338,6 +347,8 @@ void RawDecoder::Decode12BitRawBE(ByteStream &input, uint32 w, uint32 h) {
 }
 
 void RawDecoder::Decode12BitRawBEInterlaced(ByteStream &input, uint32 w, uint32 h) {
+  if(w<2) ThrowIOE("Are you mad? 1 pixel wide raw images are no fun");
+
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
   const uchar8 *in = input.getData();
