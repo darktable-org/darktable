@@ -672,7 +672,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_enabled = 0;
-  module->priority = 846; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 848; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_soften_params_t);
   module->gui_data = NULL;
   dt_iop_soften_params_t tmp = (dt_iop_soften_params_t){ 50, 100.0, 0.33, 50 };

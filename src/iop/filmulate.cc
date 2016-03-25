@@ -218,7 +218,7 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 354; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 515; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_filmulate_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -266,7 +266,6 @@ static void rolloff_boundary_callback(GtkWidget *w, dt_iop_module_t *self)
   p->rolloff_boundary = dt_bauhaus_slider_get(w);
   // Let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  printf("rolloff_boundary callback 3\n");
 }
 
 // The slider goes from 0 to 65535, but we want to show 0 to 1.
@@ -395,9 +394,9 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->color_space_size = dt_bauhaus_combobox_new(self);
-  g->rolloff_boundary = dt_bauhaus_slider_new_with_range(self, 1.0f, 65535.0f, 0, 51275.0f, 2);
-  g->film_area = dt_bauhaus_slider_new_with_range(self, 1.2f, 6.0f, 0.001f, logf(sqrtf(864.0f)), 2);
-  g->drama = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.0f, 0.2f, 2);
+  g->rolloff_boundary = dt_bauhaus_slider_new_with_range(self, 1.0f, 65535.0f, 512.0f, 51275.0f, 2);
+  g->film_area = dt_bauhaus_slider_new_with_range(self, 1.2f, 6.0f, 0.1f, logf(sqrtf(864.0f)), 2);
+  g->drama = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.2f, 2);
   g->overdrive = dt_bauhaus_combobox_new(self);
 
   // Scaling things for the sliders
