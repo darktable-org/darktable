@@ -617,7 +617,7 @@ bool DngDecoder::decodeBlackLevels(TiffIFD* raw) {
     return FALSE;
 
   TiffEntry* black_entry = raw->getEntry(BLACKLEVEL);
-  if (black_entry->count < blackdim.x*blackdim.y)
+  if ((int)black_entry->count < blackdim.x*blackdim.y)
     ThrowRDE("DNG: BLACKLEVEL entry is too small");
 
   const uint32* iblackarray = NULL;
@@ -665,7 +665,7 @@ bool DngDecoder::decodeBlackLevels(TiffIFD* raw) {
   // DNG Spec says we must add black in deltav and deltah
   if (raw->hasEntry(BLACKLEVELDELTAV)) {
     TiffEntry *blackleveldeltav = raw->getEntry(BLACKLEVELDELTAV);
-    if (blackleveldeltav->count < mRaw->dim.y * 2 + 1)
+    if ((int)blackleveldeltav->count < mRaw->dim.y * 2 + 1)
       ThrowRDE("DNG: BLACKLEVELDELTAV array is too small");
     const int *blackarrayv = (const int*)blackleveldeltav->getIntArray();
     float black_sum[2] = {0.0f, 0.0f};
@@ -679,7 +679,7 @@ bool DngDecoder::decodeBlackLevels(TiffIFD* raw) {
 
   if (raw->hasEntry(BLACKLEVELDELTAH)){
     TiffEntry *blackleveldeltah = raw->getEntry(BLACKLEVELDELTAH);
-    if (blackleveldeltah->count < mRaw->dim.y * 2 + 1)
+    if ((int)blackleveldeltah->count < mRaw->dim.y * 2 + 1)
       ThrowRDE("DNG: BLACKLEVELDELTAH array is too small");
     const int *blackarrayh = (const int*)blackleveldeltah->getIntArray();
     float black_sum[2] = {0.0f, 0.0f};
