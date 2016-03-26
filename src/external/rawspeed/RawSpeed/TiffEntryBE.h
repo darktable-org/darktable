@@ -36,10 +36,10 @@ public:
   TiffEntryBE(TiffTag tag, TiffDataType type, uint32 count, const uchar8* data = NULL);
   virtual ~TiffEntryBE(void);
   virtual uint32 getInt(uint32 num=0);
+  virtual int32 getSInt(uint32 num=0);
   virtual ushort16 getShort(uint32 num=0);
-  virtual const uint32* getIntArray();
-  virtual const ushort16* getShortArray();
-  virtual const short16* getSignedShortArray();
+  virtual short16 getSShort(uint32 num=0);
+  virtual float getFloat(uint32 num=0);
   virtual void setData(const void *in_data, uint32 byte_count );
 };
 

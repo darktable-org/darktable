@@ -97,10 +97,8 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset, uint32 _depth) {
       case SUBIFDS:
       case EXIFIFDPOINTER:
         try {
-          const unsigned int* sub_offsets = t->getIntArray();
-
           for (uint32 j = 0; j < t->count; j++) {
-            mSubIFD.push_back(new TiffIFD(f, sub_offsets[j], depth));
+            mSubIFD.push_back(new TiffIFD(f, t->getInt(j), depth));
           }
           delete(t);
         } catch (TiffParserException) { // Unparsable subifds are added as entries

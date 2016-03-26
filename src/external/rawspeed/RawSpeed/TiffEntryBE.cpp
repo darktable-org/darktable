@@ -84,7 +84,7 @@ TiffEntryBE::~TiffEntryBE(void) {
 ushort16 TiffEntryBE::getShort(uint32 num) {
   if (type == TIFF_BYTE) return getByte(num);
   if (type != TIFF_SHORT && type != TIFF_UNDEFINED)
-    ThrowTPE("TIFF, getShort: Wrong type %u encountered. Expected Short or Undefined", type);
+    ThrowTPE("TIFF, getShort: Wrong type %u encountered. Expected Short or Undefined on 0x%x", type, tag);
 
   if (num*2+1 >= bytesize)
     ThrowTPE("TIFF, getShort: Trying to read out of bounds");
@@ -92,11 +92,21 @@ ushort16 TiffEntryBE::getShort(uint32 num) {
   return get2BE(data, num*2);
 }
 
+short16 TiffEntryBE::getSShort(uint32 num) {
+  if (type != TIFF_SSHORT && type != TIFF_UNDEFINED)
+    ThrowTPE("TIFF, getSShort: Wrong type %u encountered. Expected Short or Undefined on 0x%x", type, tag);
+
+  if (num*2+1 >= bytesize)
+    ThrowTPE("TIFF, getSShort: Trying to read out of bounds");
+
+  return (short16) get2LE(data, num*2);
+}
+
 uint32 TiffEntryBE::getInt(uint32 num) {
   if (type == TIFF_BYTE) return getByte(num);
   if (type == TIFF_SHORT) return getShort(num);
-  if (!(type == TIFF_LONG || type == TIFF_OFFSET || type == TIFF_UNDEFINED))
-    ThrowTPE("TIFF, getInt: Wrong type %u encountered. Expected Long, Offset or Undefined", type);
+  if (!(type == TIFF_LONG || type == TIFF_OFFSET || type == TIFF_UNDEFINED || type == TIFF_RATIONAL || type == TIFF_SRATIONAL))
+    ThrowTPE("TIFF, getInt: Wrong type %u encountered. Expected Long, Offset or Undefined on 0x%x", type, tag);
 
   if (num*4+3 >= bytesize)
     ThrowTPE("TIFF, getInt: Trying to read out of bounds");
@@ -104,58 +114,45 @@ uint32 TiffEntryBE::getInt(uint32 num) {
   return get4BE(data, num*4);
 }
 
-const uint32* TiffEntryBE::getIntArray() {
-  if (!(type == TIFF_LONG || type == TIFF_SLONG || type == TIFF_UNDEFINED || type == TIFF_RATIONAL || type == TIFF_SRATIONAL || type == TIFF_OFFSET))
-    ThrowTPE("TIFF, getIntArray: Wrong type 0x%x encountered. Expected Int", type);
-  if (own_data)
-    return (uint32*)own_data;
+int32 TiffEntryBE::getSInt(uint32 num) {
+  if (type == TIFF_SSHORT) return getSShort(num);
+  if (!(type == TIFF_SLONG || type == TIFF_UNDEFINED))
+    ThrowTPE("TIFF, getSInt: Wrong type %u encountered. Expected SLong or Undefined on 0x%x", type, tag);
 
-  uint32 ncount = count * ((type == TIFF_RATIONAL ||  type == TIFF_SRATIONAL) ? 2 : 1);
-  if (type == TIFF_UNDEFINED) ncount /= 4;
-  own_data = new uchar8[ncount*4];
-  uint32* d = (uint32*)own_data;
-  for (uint32 i = 0; i < ncount; i++) {
-#ifdef LE_PLATFORM_HAS_BSWAP
-      d[i] = PLATFORM_BSWAP32(*(uint32*)&data[i*4]);
-#else
-      d[i] = (unsigned int)data[i*4+0] << 24 | (unsigned int)data[i*4+1] << 16 | (unsigned int)data[i*4+2] << 8 | (unsigned int)data[i*4+3];
-#endif
-  }
-  return (uint32*)own_data;
+  if (num*4+3 >= bytesize)
+    ThrowTPE("TIFF, getSInt: Trying to read out of bounds");
+
+  return get4BE(data, num*4);
 }
 
-const ushort16* TiffEntryBE::getShortArray() {
-  if (!(type == TIFF_SHORT || type == TIFF_UNDEFINED))
-    ThrowTPE("TIFF, getShortArray: Wrong type 0x%x encountered. Expected Short", type);
+float TiffEntryBE::getFloat(uint32 num) {
+  if (!isFloat())
+    ThrowTPE("TIFF, getFloat: Wrong type 0x%x encountered. Expected Float or something convertible on 0x%x", type, tag);
 
-  if (own_data)
-    return (unsigned short*)own_data;
-
-  uint32 ncount = count;
-  if (type == TIFF_UNDEFINED) ncount /= 2;
-  own_data = new uchar8[ncount*2];
-  ushort16* d = (ushort16*)own_data;
-  for (uint32 i = 0; i < ncount; i++) {
-    d[i] = (ushort16)data[i*2+0] << 8 | (ushort16)data[i*2+1];
+  if (type == TIFF_DOUBLE) {
+    if (num*8+7 >= bytesize)
+      ThrowTPE("TIFF, getFloat: Trying to read out of bounds");
+    return (float) get8BE(data, num*8);
+  } else if (type == TIFF_FLOAT) {
+    if (num*4+3 >= bytesize)
+      ThrowTPE("TIFF, getFloat: Trying to read out of bounds");
+    return (float) get4BE(data, num*4);
+  } else if (type == TIFF_LONG || type == TIFF_SHORT) {
+    return (float)getInt(num);
+  } else if (type == TIFF_SLONG || type == TIFF_SSHORT) {
+    return (float)getSInt(num);
+  } else if (type == TIFF_RATIONAL) {
+    uint32 a = getInt(num*2);
+    uint32 b = getInt(num*2+1);
+    if (b)
+      return (float) a/b;
+  } else if (type == TIFF_SRATIONAL) {
+    int a = (int) getInt(num*2);
+    int b = (int) getInt(num*2+1);
+    if (b)
+      return (float) a/b;
   }
-  return d;
-}
-
-const short16* TiffEntryBE::getSignedShortArray() {
-  if (!(type == TIFF_SSHORT))
-    ThrowTPE("TIFF, getShortArray: Wrong type 0x%x encountered. Expected SShort", type);
-
-  if (own_data)
-    return (short16 *)own_data;
-
-  uint32 ncount = count;
-  if (type == TIFF_UNDEFINED) ncount /= 2;
-  own_data = new uchar8[ncount*2];
-  ushort16* d = (ushort16*)own_data;
-  for (uint32 i = 0; i < ncount; i++) {
-    d[i] = (ushort16)data[i*2+0] << 8 | (ushort16)data[i*2+1];
-  }
-  return (short16 *)d;
+  return 0.0f;
 }
 
 void TiffEntryBE::setData( const void *in_data, uint32 byte_count )

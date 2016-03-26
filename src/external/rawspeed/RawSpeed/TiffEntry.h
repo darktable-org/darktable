@@ -66,12 +66,14 @@ public:
   virtual ~TiffEntry(void);
   uchar8 getByte(uint32 num=0);
   virtual uint32 getInt(uint32 num=0);
+  virtual int32 getSInt(uint32 num=0);
   virtual ushort16 getShort(uint32 num=0);
-  float getFloat();
-  virtual const uint32* getIntArray();
-  virtual const ushort16* getShortArray();
-  virtual const short16* getSignedShortArray();
+  virtual short16 getSShort(uint32 num=0);
+  virtual float getFloat(uint32 num=0);
   string getString();
+  void getShortArray(ushort16 *array, uint32 num);
+  void getIntArray(uint32 *array, uint32 num);
+  void getFloatArray(float *array, uint32 num);
   const uchar8* getData() {return data;};
   uchar8* getDataWrt();;
   virtual void setData(const void *data, uint32 byte_count );

@@ -102,16 +102,19 @@ RawImage Cr2Decoder::decodeRawInternal() {
     if (mRootIFD->getEntryRecursive((TiffTag)0x123)) {
       TiffEntry *curve = mRootIFD->getEntryRecursive((TiffTag)0x123);
       if (curve->type == TIFF_SHORT && curve->count == 4096) {
-        const ushort16 *linearization = mRootIFD->getEntryRecursive((TiffTag)0x123)->getShortArray();
+        TiffEntry *linearization = mRootIFD->getEntryRecursive((TiffTag)0x123);
+        uint32 len = linearization->count;
+        ushort16 *table = new ushort16[len];
+        linearization->getShortArray(table, len);
         if (!uncorrectedRawValues) {
-          mRaw->setTable(linearization, 4096, true);
+          mRaw->setTable(table, 4096, true);
           // Apply table
           mRaw->sixteenBitLookup();
           // Delete table
           mRaw->setTable(NULL);
         } else {
           // We want uncorrected, but we store the table.
-          mRaw->setTable(linearization, 4096, false);
+          mRaw->setTable(table, 4096, false);
         }
       }
     }
@@ -193,11 +196,11 @@ RawImage Cr2Decoder::decodeRawInternal() {
 
   vector<int> s_width;
   if (raw->hasEntry(CANONCR2SLICE)) {
-    const ushort16 *ss = raw->getEntry(CANONCR2SLICE)->getShortArray();
-    for (int i = 0; i < ss[0]; i++) {
-      s_width.push_back(ss[1]);
+    TiffEntry *ss = raw->getEntry(CANONCR2SLICE);
+    for (int i = 0; i < ss->getShort(0); i++) {
+      s_width.push_back(ss->getShort(1));
     }
-    s_width.push_back(ss[2]);
+    s_width.push_back(ss->getShort(2));
   } else {
     s_width.push_back(slices[0].w);
   }
@@ -299,13 +302,11 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
      * as TIFF_UNDEFINED, while they still write normal TIFF_SHORT data there
      */
     if ((color_data->type == TIFF_SHORT || color_data->count == 5120) && color_data->count >= (uint32)(offset/2) + 3) {
-      const ushort16* data = color_data->getShortArray();
-
       // RGGB !
       float cam_mul[4];
       for(int c = 0; c < 4; c++)
       {
-        cam_mul[c] = (float) data[offset/2 + c];
+        cam_mul[c] = (float) color_data->getShort(offset/2 + c);
       }
       if (cam_mul[1] + cam_mul[2] > 0) {
         const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
@@ -328,7 +329,7 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
       TiffEntry *shot_info = mRootIFD->getEntryRecursive(CANONSHOTINFO);
       if (shot_info->type == TIFF_SHORT && shot_info->count >= 7) {
-        ushort16 wb_index = shot_info->getShortArray()[14/2];
+        ushort16 wb_index = shot_info->getShort(7);
 
         /* Canon PowerShot G9 */
         TiffEntry *g9_wb = mRootIFD->getEntryRecursive(CANONPOWERSHOTG9WB);
@@ -360,10 +361,9 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
       // WB for the old 1D and 1DS
       TiffEntry *wb = mRootIFD->getEntryRecursive((TiffTag) 0xa4);
       if (wb->count >= 3) {
-        const ushort16 *tmp = wb->getShortArray();
-        mRaw->metadata.wbCoeffs[0] = (float)tmp[0];
-        mRaw->metadata.wbCoeffs[1] = (float)tmp[1];
-        mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
+        mRaw->metadata.wbCoeffs[0] = wb->getFloat(0);
+        mRaw->metadata.wbCoeffs[1] = wb->getFloat(1);
+        mRaw->metadata.wbCoeffs[2] = wb->getFloat(2);
       }
     }
   }
@@ -393,14 +393,13 @@ void Cr2Decoder::sRawInterpolate() {
   if (data.empty())
     ThrowRDE("CR2 sRaw: Unable to locate WB info.");
 
-  const ushort16 *wb_data = data[0]->getEntry(CANONCOLORDATA)->getShortArray();
-
+  TiffEntry *wb = data[0]->getEntry(CANONCOLORDATA);
   // Offset to sRaw coefficients used to reconstruct uncorrected RGB data.
-  wb_data = &wb_data[4+(126+22)/2];
+  uint32 offset = 78;
 
-  sraw_coeffs[0] = wb_data[0];
-  sraw_coeffs[1] = (wb_data[1] + wb_data[2] + 1) >> 1;
-  sraw_coeffs[2] = wb_data[3];
+  sraw_coeffs[0] = wb->getShort(offset+0);
+  sraw_coeffs[1] = (wb->getShort(offset+1) + wb->getShort(offset+2) + 1) >> 1;
+  sraw_coeffs[2] = wb->getShort(offset+3);
 
   if (hints.find("invert_sraw_wb") != hints.end()) {
     sraw_coeffs[0] = (int)(1024.0f/((float)sraw_coeffs[0]/1024.0f));

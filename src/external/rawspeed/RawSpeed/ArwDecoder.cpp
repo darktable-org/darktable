@@ -159,11 +159,11 @@ RawImage ArwDecoder::decodeRawInternal() {
   mRaw->createData();
 
   ushort16 curve[0x4001];
-  const ushort16* c = raw->getEntry(SONY_CURVE)->getShortArray();
+  TiffEntry *c = raw->getEntry(SONY_CURVE);
   uint32 sony_curve[] = { 0, 0, 0, 0, 0, 4095 };
 
   for (uint32 i = 0; i < 4; i++)
-    sony_curve[i+1] = (c[i] >> 2) & 0xfff;
+    sony_curve[i+1] = (c->getShort(i) >> 2) & 0xfff;
 
   for (uint32 i = 0; i < 0x4001; i++)
     curve[i] = i;
@@ -406,26 +406,16 @@ void ArwDecoder::GetWB() {
       TiffEntry *wb = sony_private->getEntry(SONYGRBGLEVELS);
       if (wb->count != 4)
         ThrowRDE("ARW: WB has %d entries instead of 4", wb->count);
-      if (wb->type == TIFF_SHORT) { // We're probably in the SR2 format
-        const ushort16 *tmp = wb->getShortArray();
-        mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
-        mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
-        mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
-      }
-      else {
-        const short16 *tmp = wb->getSignedShortArray();
-        mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
-        mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
-        mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
-      }
+      mRaw->metadata.wbCoeffs[0] = wb->getFloat(1);
+      mRaw->metadata.wbCoeffs[1] = wb->getFloat(0);
+      mRaw->metadata.wbCoeffs[2] = wb->getFloat(2);
     } else if (sony_private->hasEntry(SONYRGGBLEVELS)){
       TiffEntry *wb = sony_private->getEntry(SONYRGGBLEVELS);
       if (wb->count != 4)
         ThrowRDE("ARW: WB has %d entries instead of 4", wb->count);
-      const short16 *tmp = wb->getSignedShortArray();
-      mRaw->metadata.wbCoeffs[0] = (float)tmp[0];
-      mRaw->metadata.wbCoeffs[1] = (float)tmp[1];
-      mRaw->metadata.wbCoeffs[2] = (float)tmp[3];
+      mRaw->metadata.wbCoeffs[0] = wb->getFloat(0);
+      mRaw->metadata.wbCoeffs[1] = wb->getFloat(1);
+      mRaw->metadata.wbCoeffs[2] = wb->getFloat(3);
     }
     if (sony_private)
       delete(sony_private);

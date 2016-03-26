@@ -490,13 +490,10 @@ void SrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     TiffEntry *wb_black = mRootIFD->getEntryRecursive(SAMSUNG_WB_RGGBLEVELSBLACK);
     if (wb_levels->count == 4 && wb_black->count == 4) {
       wb_levels->offsetFromParent();
-      const uint32 *levels = wb_levels->getIntArray();
       wb_black->offsetFromParent();
-      const uint32 *blacks = wb_black->getIntArray();
-
-      mRaw->metadata.wbCoeffs[0] = (float)(levels[0] - blacks[0]);
-      mRaw->metadata.wbCoeffs[1] = (float)(levels[1] - blacks[1]);
-      mRaw->metadata.wbCoeffs[2] = (float)(levels[3] - blacks[3]);
+      mRaw->metadata.wbCoeffs[0] = wb_levels->getFloat(0) - wb_black->getFloat(0);
+      mRaw->metadata.wbCoeffs[1] = wb_levels->getFloat(1) - wb_black->getFloat(1);
+      mRaw->metadata.wbCoeffs[2] = wb_levels->getFloat(3) - wb_black->getFloat(3);
     }
   }
 }

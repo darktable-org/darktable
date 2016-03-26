@@ -44,8 +44,8 @@ RawDecoder::~RawDecoder(void) {
 
 void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
   uint32 nslices = rawIFD->getEntry(STRIPOFFSETS)->count;
-  const uint32 *offsets = rawIFD->getEntry(STRIPOFFSETS)->getIntArray();
-  const uint32 *counts = rawIFD->getEntry(STRIPBYTECOUNTS)->getIntArray();
+  TiffEntry *offsets = rawIFD->getEntry(STRIPOFFSETS);
+  TiffEntry *counts = rawIFD->getEntry(STRIPBYTECOUNTS);
   uint32 yPerSlice = rawIFD->getEntry(ROWSPERSTRIP)->getInt();
   uint32 width = rawIFD->getEntry(IMAGEWIDTH)->getInt();
   uint32 height = rawIFD->getEntry(IMAGELENGTH)->getInt();
@@ -56,8 +56,8 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
 
   for (uint32 s = 0; s < nslices; s++) {
     RawSlice slice;
-    slice.offset = offsets[s];
-    slice.count = counts[s];
+    slice.offset = offsets->getInt(s);
+    slice.count = counts->getInt(s);
     if (offY + yPerSlice > height)
       slice.h = height - offY;
     else
