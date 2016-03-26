@@ -19,6 +19,7 @@ BUILD_GENERATOR_DFEAULT="Unix Makefiles"
 BUILD_GENERATOR="$BUILD_GENERATOR_DFEAULT"
 MAKE_TASKS=-1
 ADDRESS_SANITIZER=0
+DO_CONFIG=1
 DO_BUILD=1
 DO_INSTALL=0
 SUDO=""
@@ -83,6 +84,9 @@ parse_args()
 		--asan)
 			ADDRESS_SANITIZER=1
 			;;
+		--skip-config)
+			DO_CONFIG=0
+			;;
 		--skip-build)
 			DO_BUILD=0
 			;;
@@ -90,7 +94,7 @@ parse_args()
 			DO_INSTALL=1
 			;;
 		--sudo)
-			SUDO="sudo"
+			SUDO="sudo "
 			;;
 		-h|--help)
 			PRINT_HELP=1
@@ -269,41 +273,54 @@ EOF
 if [ $ADDRESS_SANITIZER -ne 0 ] ; then
 	ASAN_FLAGS="CFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
 	ASAN_FLAGS="$ASAN_FLAGS CXXFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
-	ASAN_FLAGS="$ASAN_FLAGS LDFLAGS=\"-fsanitize=address\""
+	ASAN_FLAGS="$ASAN_FLAGS LDFLAGS=\"-fsanitize=address\" "
 fi
+
+
+cmd_config="${ASAN_FLAGS}cmake -G \"$BUILD_GENERATOR\" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_MORE_OPTIONS} \"$DT_SRC_DIR\""
+cmd_build="cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS"
+cmd_install="${SUDO}cmake --build \"$BUILD_DIR\" --target install -- -j$MAKE_TASKS"
+
 
 OLDPWD="$(pwd)"
 
+if [ $DO_CONFIG -eq 0 ] ; then
+	cat <<EOF
+The script would have configured, built, and installed with these commands:
+\$ $(printf "$cmd_config")
+\$ $(printf "$cmd_build")
+\$ $(printf "$cmd_install")
+EOF
+	exit 0
+fi
+
 # configure the build
 cd "$BUILD_DIR"
-eval $ASAN_FLAGS \
-cmake \
-	-G \"$BUILD_GENERATOR\" \
-	-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-	-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-	${CMAKE_MORE_OPTIONS} \
-	\"$DT_SRC_DIR\" 
+eval "$cmd_config"
 cd "$OLDPWD"
 
-install_cmd="$SUDO cmake --build \"$BUILD_DIR\" --target install -- -j$MAKE_TASKS"
+
 if [ $DO_BUILD -eq 0 ] ; then
 	cat <<EOF
 Darktable configuration is finished, to actually build and install darktable
 you need to type:
-\$ cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS
-\$ $(printf "$install_cmd")
+\$ $(printf "$cmd_build")
+\$ $(printf "$cmd_install")
 EOF
 	exit 0
 fi
 
 # build the binaries
-cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS
+eval "$cmd_build"
 
 if [ $DO_INSTALL -eq 0 ] ; then
 	cat <<EOF
 Darktable finished building, to actually install darktable you need to type:
-\$ $(printf "$install_cmd")
+\$ $(printf "$cmd_install")
 EOF
-else
-	eval "$install_cmd"
+	exit 0
 fi
+
+# install the binaries
+eval "$cmd_install"
+
