@@ -21,6 +21,7 @@ MAKE_TASKS=-1
 ADDRESS_SANITIZER=0
 DO_BUILD=1
 DO_INSTALL=0
+SUDO=""
 
 PRINT_HELP=0
 
@@ -87,6 +88,9 @@ parse_args()
 			;;
 		--install)
 			DO_INSTALL=1
+			;;
+		--sudo)
+			SUDO="sudo"
 			;;
 		-h|--help)
 			PRINT_HELP=1
@@ -271,13 +275,13 @@ cmake \
 	\"$DT_SRC_DIR\" 
 cd "$OLDPWD"
 
-install_cmd="cmake --build \"$BUILD_DIR\" --target install -- -j$MAKE_TASKS"
+install_cmd="$SUDO cmake --build \"$BUILD_DIR\" --target install -- -j$MAKE_TASKS"
 if [ $DO_BUILD -eq 0 ] ; then
 	cat <<EOF
 Darktable configuration is finished, to actually build and install darktable
 you need to type:
 \$ cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS
-\$ $(printf "$install_cmd") # optionally prefixed by sudo
+\$ $(printf "$install_cmd")
 EOF
 	exit 0
 fi
@@ -288,7 +292,7 @@ cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS
 if [ $DO_INSTALL -eq 0 ] ; then
 	cat <<EOF
 Darktable finished building, to actually install darktable you need to type:
-\$ $(printf "$install_cmd") # optionally prefixed by sudo
+\$ $(printf "$install_cmd")
 EOF
 else
 	eval "$install_cmd"
