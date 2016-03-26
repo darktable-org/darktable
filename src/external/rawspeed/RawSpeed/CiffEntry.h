@@ -30,15 +30,8 @@
 
 namespace RawSpeed {
 
-const uint32 ciff_datasizes[] = {0,1,1,2,4,8,1,1,2,4, 8, 4, 8, 4};
-                      // 0-1-2-3-4-5-6-7-8-9-10-11-12-13
-const uint32 ciff_datashifts[] = {0,0,0,1,2,3,0,0,1,2, 3, 2, 3, 2};
-
-// 0-1-2-3-4-5-6-7-8-9-10-11-12-13
 /*
  * Tag data type information.
- *
- * Note: RATIONALs are the ratio of two 32-bit integer values.
  */
 typedef	enum {
 	CIFF_BYTE  = 0x0000,	/* 8-bit unsigned integer */
@@ -65,13 +58,14 @@ public:
   uchar8 getByte();
   const uchar8* getData() {return data;};
   uchar8* getDataWrt();;
-  virtual void setData(const void *data, uint32 byte_count );
-  int getElementSize();
-  int getElementShift();
+  void setData(const void *data, uint32 byte_count );
+  uint32 getElementSize();
+  uint32 getElementShift();
 // variables:
   CiffTag tag;
   CiffDataType type;
   uint32 count;
+  uint32 bytesize;
   uint32 data_offset;
   uint32 getDataOffset() const { return data_offset; }
   bool isInt();

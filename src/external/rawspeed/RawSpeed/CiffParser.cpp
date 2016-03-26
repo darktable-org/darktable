@@ -39,9 +39,6 @@ CiffParser::~CiffParser(void) {
 }
 
 void CiffParser::parseData() {
-  if (little != getHostEndianness())
-    ThrowCPE("CIFF parsing not supported on big-endian architectures yet");
-
   if (mInput->getSize() < 16)
     ThrowCPE("Not a CIFF file (size too small)");
   const unsigned char* data = mInput->getData(0, 16);
