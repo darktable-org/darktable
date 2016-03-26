@@ -341,7 +341,8 @@ void ArwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   } else { // Everything else but the A100
     try {
       GetWB();
-    } catch (...) {
+    } catch (const std::exception& e) {
+      mRaw->setError(e.what());
       // We caught an exception reading WB, just ignore it
     }
   }
