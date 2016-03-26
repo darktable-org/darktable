@@ -536,7 +536,7 @@ if cycle_list:
 # replace all the priorities with garbage. to make sure all the iops are in this file.
 for filename in glob.glob(os.path.join(os.path.dirname(__file__), '../src/iop/*.c')) + glob.glob(os.path.join(os.path.dirname(__file__), '../src/iop/*.cc')):
   if apply_changes:
-    replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %s; // module order created by iop_dependencies.py, do not edit!\n"%"NAN")
+    replace_all(filename, "( )*?(?P<identifier>((\w)*))( )*?->( )*?priority( )*?(=).*?(;).*\n", "  \g<identifier>->priority = %s; // module order created by iop_dependencies.py, do not edit!\n"%"NAN")
 
 # get us some sort order!
 sorted_nodes = topological_sorting(gr)
@@ -553,7 +553,7 @@ for n in sorted_nodes:
       print("could not find file `%s'"%filename)
     continue
   if apply_changes:
-    replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
+    replace_all(filename, "( )*?(?P<identifier>((\w)*))( )*?->( )*?priority( )*?(=).*?(;).*\n", "  \g<identifier>->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
   priority -= 1000.0/(length-1.0)
 
 # beauty-print the sorted pipe as pdf:
