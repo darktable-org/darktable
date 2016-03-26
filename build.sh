@@ -116,17 +116,27 @@ Options:
 Installation:
    --prefix         <string>  Install directory prefix
                               (default: $INSTALL_PREFIX_DEFAULT)
+   --sudo                     Use sudo when doing the install
 
 Build:
    --build-dir      <string>  Building directory
                               (default: $BUILD_DIR_DEFAULT)
    --build-type     <string>  Build type (Release, Debug, RelWithDebInfo)
                               (default: $BUILD_TYPE_DEFAULT)
-   --build-generator <string> Build tool (default: Unix Makefiles)
+   --build-generator <string> Build tool
+                              (default: Unix Makefiles)
 
--j --jobs <integer>           Number of tasks (default: number of CPUs)
+-j --jobs <integer>           Number of tasks
+                              (default: number of CPUs)
 
+   --asan                     Enable address sanitizer options
+                              (default: disabled)
+
+Actual actions:
    --skip-build               Configure but exit before building the binaries
+                              (default: disabled)
+   --install                  After building the binaries, install them
+                              (default: disabled)
 
 Features:
 By default cmake will enabel the features it autodetects on the build machine.
