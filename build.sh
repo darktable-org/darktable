@@ -241,16 +241,15 @@ Build tasks:         $MAKE_TASKS
 
 EOF
 
-PREPEND=""
 if [ $ADDRESS_SANITIZER -ne 0 ] ; then
-	PREPEND="CFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
-	PREPEND="$PREPEND CXXFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
-	PREPEND="$PREPEND LDFLAGS=\"-fsanitize=address\""
+	ASAN_FLAGS="CFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
+	ASAN_FLAGS="$ASAN_FLAGS CXXFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
+	ASAN_FLAGS="$ASAN_FLAGS LDFLAGS=\"-fsanitize=address\""
 fi
 
 OLDPWD="$(pwd)"
 cd "$BUILD_DIR"
-eval $PREPEND \
+eval $ASAN_FLAGS \
 cmake \
 	-G \"$BUILD_GENERATOR\" \
 	-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
