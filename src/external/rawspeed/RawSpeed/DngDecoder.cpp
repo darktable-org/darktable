@@ -600,7 +600,10 @@ bool DngDecoder::decodeMaskedAreas(TiffIFD* raw) {
 bool DngDecoder::decodeBlackLevels(TiffIFD* raw) {
   iPoint2D blackdim(1,1);
   if (raw->hasEntry(BLACKLEVELREPEATDIM)) {
-    const ushort16 *dim = raw->getEntry(BLACKLEVELREPEATDIM)->getShortArray();
+    TiffEntry *bleveldim = raw->getEntry(BLACKLEVELREPEATDIM);
+    if (bleveldim->count != 2)
+      return FALSE;
+    const ushort16 *dim = bleveldim->getShortArray();
     blackdim = iPoint2D(dim[0], dim[1]);
   }
 
