@@ -85,8 +85,8 @@ TiffEntry::TiffEntry(TiffTag _tag, TiffDataType _type, uint32 _count, const ucha
   type = _type;
   count = _count;
   data_offset = -1; // Set nonsense value in case someone tries to use it
+  bytesize = _count << datashifts[_type];
   if (NULL == _data) {
-    bytesize = _count << datashifts[_type];
     own_data = new uchar8[bytesize];
     memset(own_data,0,bytesize);
     data = own_data;
