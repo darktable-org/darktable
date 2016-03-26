@@ -617,6 +617,9 @@ bool DngDecoder::decodeBlackLevels(TiffIFD* raw) {
     return FALSE;
 
   TiffEntry* black_entry = raw->getEntry(BLACKLEVEL);
+  if (black_entry->count < blackdim.x*blackdim.y)
+    ThrowRDE("DNG: BLACKLEVEL entry is too small");
+
   const uint32* iblackarray = NULL;
   const ushort16* sblackarray = NULL;
   if (black_entry->type == TIFF_SHORT)
