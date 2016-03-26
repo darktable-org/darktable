@@ -588,6 +588,8 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 // Note that values are scaled. See comment below on details.
 // OPTME: It would be trivial to run this multithreaded.
 void NefDecoder::DecodeNikonSNef(ByteStream &input, uint32 w, uint32 h) {
+  if(w<6) ThrowIOE("NEF: got a %u wide sNEF, aborting", w);
+
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
   const uchar8 *in = input.getData();
