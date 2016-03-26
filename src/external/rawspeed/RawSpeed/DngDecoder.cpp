@@ -177,11 +177,11 @@ RawImage DngDecoder::decodeRawInternal() {
           ThrowRDE("DNG Decoder: More than 4 samples per pixel is not supported.");
         mRaw->setCpp(cpp);
 
-        uint32 nslices = raw->getEntry(STRIPOFFSETS)->count;
         TiffEntry *TEoffsets = raw->getEntry(STRIPOFFSETS);
         TiffEntry *TEcounts = raw->getEntry(STRIPBYTECOUNTS);
         const uint32* offsets = TEoffsets->getIntArray();
         const uint32* counts = TEcounts->getIntArray();
+        uint32 nslices = TEoffsets->count;
         uint32 yPerSlice = raw->getEntry(ROWSPERSTRIP)->getInt();
         uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
         uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
