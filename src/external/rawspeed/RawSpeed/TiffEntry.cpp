@@ -145,9 +145,8 @@ short16 TiffEntry::getSShort(uint32 num) {
 }
 
 uint32 TiffEntry::getInt(uint32 num) {
-  if (type == TIFF_BYTE) return getByte(num);
   if (type == TIFF_SHORT) return getShort(num);
-  if (!(type == TIFF_LONG || type == TIFF_OFFSET || type == TIFF_UNDEFINED || type == TIFF_RATIONAL || type == TIFF_SRATIONAL))
+  if (!(type == TIFF_LONG || type == TIFF_OFFSET || type == TIFF_BYTE || type == TIFF_UNDEFINED || type == TIFF_RATIONAL || type == TIFF_SRATIONAL))
     ThrowTPE("TIFF, getInt: Wrong type %u encountered. Expected Long, Offset, Rational or Undefined on 0x%x", type, tag);
 
   if (num*4+3 >= bytesize)
