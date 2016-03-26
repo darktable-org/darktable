@@ -556,4 +556,4 @@ for n in sorted_nodes:
 dot = write(gr)
 gvv = gv.AGraph(dot)
 gvv.layout(prog='dot')
-gvv.draw('iop_deps.pdf')
+gvv.draw(os.path.join(os.path.dirname(__file__), 'iop_deps.pdf'))
