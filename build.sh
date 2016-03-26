@@ -258,12 +258,7 @@ cmake \
 	\"$DT_SRC_DIR\" 
 cd "$OLDPWD"
 cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS
-
-if [ $? = 0 ]; then
-	cat <<EOF
+cat <<EOF
 Darktable finished building, to actually install darktable you need to type:
 \$ cmake --build "$BUILD_DIR" --target install # optionnaly prefixed by sudo
 EOF
-else
-   exit 1
-fi
