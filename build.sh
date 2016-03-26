@@ -19,6 +19,8 @@ BUILD_GENERATOR_DFEAULT="Unix Makefiles"
 BUILD_GENERATOR="$BUILD_GENERATOR_DFEAULT"
 MAKE_TASKS=-1
 ADDRESS_SANITIZER=0
+DO_BUILD=1
+DO_INSTALL=0
 
 PRINT_HELP=0
 
@@ -80,6 +82,12 @@ parse_args()
 		--asan)
 			ADDRESS_SANITIZER=1
 			;;
+		--skip-build)
+			DO_BUILD=0
+			;;
+		--install)
+			DO_INSTALL=1
+			;;
 		-h|--help)
 			PRINT_HELP=1
 			;;
@@ -111,7 +119,10 @@ Build:
    --build-type     <string>  Build type (Release, Debug, RelWithDebInfo)
                               (default: $BUILD_TYPE_DEFAULT)
    --build-generator <string> Build tool (default: Unix Makefiles)
+
 -j --jobs <integer>           Number of tasks (default: number of CPUs)
+
+   --skip-build               Configure but exit before building the binaries
 
 Features:
 By default cmake will enabel the features it autodetects on the build machine.
@@ -248,6 +259,8 @@ if [ $ADDRESS_SANITIZER -ne 0 ] ; then
 fi
 
 OLDPWD="$(pwd)"
+
+# configure the build
 cd "$BUILD_DIR"
 eval $ASAN_FLAGS \
 cmake \
@@ -257,8 +270,26 @@ cmake \
 	${CMAKE_MORE_OPTIONS} \
 	\"$DT_SRC_DIR\" 
 cd "$OLDPWD"
-cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS
-cat <<EOF
-Darktable finished building, to actually install darktable you need to type:
-\$ cmake --build "$BUILD_DIR" --target install # optionnaly prefixed by sudo
+
+install_cmd="cmake --build \"$BUILD_DIR\" --target install -- -j$MAKE_TASKS"
+if [ $DO_BUILD -eq 0 ] ; then
+	cat <<EOF
+Darktable configuration is finished, to actually build and install darktable
+you need to type:
+\$ cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS
+\$ $(printf "$install_cmd") # optionally prefixed by sudo
 EOF
+	exit 0
+fi
+
+# build the binaries
+cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS
+
+if [ $DO_INSTALL -eq 0 ] ; then
+	cat <<EOF
+Darktable finished building, to actually install darktable you need to type:
+\$ $(printf "$install_cmd") # optionally prefixed by sudo
+EOF
+else
+	eval "$install_cmd"
+fi
