@@ -33,6 +33,7 @@ from pygraph.readwrite.dot import read
 import fileinput
 import sys
 import os.path
+import glob
 import re
 
 def replace_all(file,searchExp,replaceExp):
@@ -528,6 +529,11 @@ if cycle_list:
   print(cycle_list)
   exit(1)
 
+# replace all the priorities with garbage. to make sure all the iops are in this file.
+for filename in glob.glob(os.path.join(os.path.dirname(__file__), '../src/iop/*.c')) + glob.glob(os.path.join(os.path.dirname(__file__), '../src/iop/*.cc')):
+  if apply_changes:
+    replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %s; // module order created by iop_dependencies.py, do not edit!\n"%"NAN")
+
 # get us some sort order!
 sorted_nodes = topological_sorting(gr)
 length=len(sorted_nodes)
@@ -550,4 +556,4 @@ for n in sorted_nodes:
 dot = write(gr)
 gvv = gv.AGraph(dot)
 gvv.layout(prog='dot')
-gvv.draw('iop_deps.pdf')
+gvv.draw(os.path.join(os.path.dirname(__file__), 'iop_deps.pdf'))
