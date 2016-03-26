@@ -52,8 +52,8 @@ RawImage CrwDecoder::decodeRawInternal() {
   if (!sensorInfo || sensorInfo->count < 6 || sensorInfo->type != CIFF_SHORT)
     ThrowRDE("CRW: Couldn't find image sensor info");
 
-  uint32 width = sensorInfo->getShortArray()[1];
-  uint32 height = sensorInfo->getShortArray()[2];
+  uint32 width = sensorInfo->getShort(1);
+  uint32 height = sensorInfo->getShort(2);
 
   CiffEntry *decTable = mRootIFD->getEntryRecursive(CIFF_DECODERTABLE);
   if (!decTable || decTable->type != CIFF_LONG)
@@ -135,21 +135,18 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x102c);
     if (entry->type == CIFF_SHORT && entry->getShort() > 512) {
       // G1/Pro90 CYGM pattern
-      const ushort16 *data = entry->getShortArray();
-      mRaw->metadata.wbCoeffs[0] = (float) data[62];
-      mRaw->metadata.wbCoeffs[1] = (float) data[63];
-      mRaw->metadata.wbCoeffs[2] = (float) data[60];
-      mRaw->metadata.wbCoeffs[3] = (float) data[61];
+      mRaw->metadata.wbCoeffs[0] = (float) entry->getShort(62);
+      mRaw->metadata.wbCoeffs[1] = (float) entry->getShort(63);
+      mRaw->metadata.wbCoeffs[2] = (float) entry->getShort(60);
+      mRaw->metadata.wbCoeffs[3] = (float) entry->getShort(61);
     } else if (entry->type == CIFF_SHORT) {
       /* G2, S30, S40 */
-
-      const ushort16 *data = entry->getShortArray();
 
       // RGBG !
       float cam_mul[4];
       for(int c = 0; c < 4; c++)
       {
-        cam_mul[c ^ (c >> 1) ^ 1] = (float) data[50 + c];
+        cam_mul[c ^ (c >> 1) ^ 1] = (float) entry->getShort(50 + c);
       }
 
       const float green = (cam_mul[1] + cam_mul[3]) / 2.0f;
@@ -162,7 +159,7 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     CiffEntry *shot_info = mRootIFD->getEntryRecursive(CIFF_SHOTINFO);
 
     if (shot_info->type == CIFF_SHORT) {
-      ushort16 wb_index = shot_info->getShortArray()[14/2];
+      ushort16 wb_index = shot_info->getShort(7);
 
       CiffEntry *wb_data = mRootIFD->getEntryRecursive(CIFF_WHITEBALANCE);
       if (wb_data->type == CIFF_SHORT) {
@@ -170,12 +167,10 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
         int wb_offset = (wb_index < 18) ? "0134567028"[wb_index]-'0' : 0;
         wb_offset = 1+wb_offset*4;
 
-        const ushort16 *data = wb_data->getShortArray();
-
         // RGGB !
         float cam_mul[4];
         for(int c = 0; c < 4; c++) {
-          cam_mul[c] = (float) data[wb_offset + c];
+          cam_mul[c] = (float) wb_data->getShort(wb_offset + c);
         }
 
         // NOTE: dcraw just uses first green level, so the values are different.

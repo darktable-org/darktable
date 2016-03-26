@@ -48,14 +48,12 @@ class CiffEntry
 {
 public:
   CiffEntry(FileMap* f, uint32 value_data, uint32 offset);
-  virtual ~CiffEntry(void);
-  virtual uint32 getInt();
-  virtual ushort16 getShort();
-  virtual const uint32* getIntArray();
-  virtual const ushort16* getShortArray();
+  ~CiffEntry(void);
+  uint32 getInt(uint32 num=0);
+  ushort16 getShort(uint32 num=0);
   string getString();
   vector<string> getStrings();
-  uchar8 getByte();
+  uchar8 getByte(uint32 num=0);
   const uchar8* getData() {return data;};
   uchar8* getDataWrt();;
   void setData(const void *data, uint32 byte_count );
