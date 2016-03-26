@@ -227,6 +227,8 @@ CMAKE_MORE_OPTIONS="${CMAKE_MORE_OPTIONS} ${CMAKE_PREFIX_PATH}"
 # Let's go
 # ---------------------------------------------------------------------------
 
+mkdir -p "$BUILD_DIR"
+
 cat <<EOF
 Darktable build script
 
@@ -238,10 +240,6 @@ Build tasks:         $MAKE_TASKS
 
 
 EOF
-
-if [ ! -d "$BUILD_DIR" ]; then
-	mkdir "$BUILD_DIR"
-fi
 
 PREPEND=""
 if [ $ADDRESS_SANITIZER -ne 0 ] ; then
