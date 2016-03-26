@@ -64,14 +64,14 @@ public:
   TiffEntry(TiffTag tag, TiffDataType type, uint32 count, const uchar8* data = NULL);
   TiffEntry(FileMap* f, uint32 offset, uint32 up_offset);
   virtual ~TiffEntry(void);
-  virtual uint32 getInt();
+  uchar8 getByte(uint32 num=0);
+  virtual uint32 getInt(uint32 num=0);
+  virtual ushort16 getShort(uint32 num=0);
   float getFloat();
-  virtual ushort16 getShort();
   virtual const uint32* getIntArray();
   virtual const ushort16* getShortArray();
   virtual const short16* getSignedShortArray();
   string getString();
-  uchar8 getByte();
   const uchar8* getData() {return data;};
   uchar8* getDataWrt();;
   virtual void setData(const void *data, uint32 byte_count );
@@ -94,6 +94,7 @@ protected:
   uchar8* own_data;
   const uchar8* data;
   uint32 data_offset;
+  uint64 bytesize;
   FileMap *file;
 #ifdef _DEBUG
   int debug_intVal;

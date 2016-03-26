@@ -37,15 +37,17 @@ TiffEntry::TiffEntry(FileMap* f, uint32 offset, uint32 up_offset) {
   own_data = NULL;
   empty_data = 0;
   file = f;
-  unsigned short* p = (unsigned short*)f->getData(offset, 2);
-  tag = (TiffTag)p[0];
-  type = (TiffDataType)p[1];
-  count = *(int*)f->getData(offset + 4, 4);
+  type = TIFF_UNDEFINED;  // We set type to undefined to avoid debug assertion errors.
+
+  const uchar8 *temp_data = f->getData(offset, 8);
+  tag = (TiffTag) get2LE(temp_data, 0);
+  type = (TiffDataType) get2LE(temp_data, 2);
+  count = get4LE(temp_data,4);
 
   if (type > 13)
     ThrowTPE("Error reading TIFF structure. Unknown Type 0x%x encountered.", type);
 
-  uint64 bytesize = (uint64)count << datashifts[type];
+  bytesize = (uint64)count << datashifts[type];
   if (bytesize > UINT32_MAX)
     ThrowTPE("TIFF entry is supposedly %llu bytes", bytesize);
 
@@ -54,7 +56,7 @@ TiffEntry::TiffEntry(FileMap* f, uint32 offset, uint32 up_offset) {
   else if (bytesize <= 4)
     data = f->getDataWrt(offset + 8, bytesize);
   else { // offset
-    data_offset = *(uint32*)f->getData(offset + 8, 4);
+    data_offset = get4LE(f->getData(offset+8, 4),0);
     fetchData();
   }
 #ifdef _DEBUG
@@ -70,7 +72,6 @@ TiffEntry::TiffEntry(FileMap* f, uint32 offset, uint32 up_offset) {
 
 void TiffEntry::fetchData() {
   if(file) {
-    uint32 bytesize = count << datashifts[type];
     data = file->getDataWrt(data_offset, bytesize);
   }
 }
@@ -85,7 +86,7 @@ TiffEntry::TiffEntry(TiffTag _tag, TiffDataType _type, uint32 _count, const ucha
   count = _count;
   data_offset = -1; // Set nonsense value in case someone tries to use it
   if (NULL == _data) {
-    uint32 bytesize = _count << datashifts[_type];
+    bytesize = _count << datashifts[_type];
     own_data = new uchar8[bytesize];
     memset(own_data,0,bytesize);
     data = own_data;
@@ -113,20 +114,37 @@ bool TiffEntry::isInt() {
   return (type == TIFF_LONG || type == TIFF_SHORT || type ==  TIFF_BYTE);
 }
 
-unsigned int TiffEntry::getInt() {
-  if (!(type == TIFF_LONG || type == TIFF_SHORT || type == TIFF_BYTE || type == TIFF_OFFSET))
-    ThrowTPE("TIFF, getInt: Wrong type 0x%x encountered. Expected Long, Short or Byte", type);
-  if (type == TIFF_BYTE)
-    return getByte();
-  if (type == TIFF_SHORT)
-    return getShort();
-  return (uint32)data[3] << 24 | (uint32)data[2] << 16 | (uint32)data[1] << 8 | (uint32)data[0];
+uchar8 TiffEntry::getByte(uint32 num) {
+  if (type != TIFF_BYTE)
+    ThrowTPE("TIFF, getByte: Wrong type %u encountered. Expected Byte", type);
+
+  if (num >= bytesize)
+    ThrowTPE("TIFF, getByte: Trying to read out of bounds");
+
+  return data[num];
 }
 
-unsigned short TiffEntry::getShort() {
-  if (type != TIFF_SHORT)
-    ThrowTPE("TIFF, getShort: Wrong type 0x%x encountered. Expected Short", type);
-  return ((ushort16)data[1] << 8) | (ushort16)data[0];
+ushort16 TiffEntry::getShort(uint32 num) {
+  if (type == TIFF_BYTE) return getByte(num);
+  if (type != TIFF_SHORT && type != TIFF_UNDEFINED)
+    ThrowTPE("TIFF, getShort: Wrong type %u encountered. Expected Short or Undefined", type);
+
+  if (num*2+1 >= bytesize)
+    ThrowTPE("TIFF, getShort: Trying to read out of bounds");
+
+  return get2LE(data, num*2);
+}
+
+uint32 TiffEntry::getInt(uint32 num) {
+  if (type == TIFF_BYTE) return getByte(num);
+  if (type == TIFF_SHORT) return getShort(num);
+  if (!(type == TIFF_LONG || type == TIFF_OFFSET || type == TIFF_UNDEFINED))
+    ThrowTPE("TIFF, getInt: Wrong type %u encountered. Expected Long, Offset or Undefined", type);
+
+  if (num*4+3 >= bytesize)
+    ThrowTPE("TIFF, getInt: Trying to read out of bounds");
+
+  return get4LE(data, num*4);
 }
 
 const uint32* TiffEntry::getIntArray() {
@@ -145,12 +163,6 @@ const short16* TiffEntry::getSignedShortArray() {
   if (!(type == TIFF_SSHORT))
     ThrowTPE("TIFF, getShortArray: Wrong type 0x%x encountered. Expected Signed Short", type);
   return (short16*)&data[0];
-}
-
-uchar8 TiffEntry::getByte() {
-  if (type != TIFF_BYTE)
-    ThrowTPE("TIFF, getByte: Wrong type 0x%x encountered. Expected Byte", type);
-  return data[0];
 }
 
 bool TiffEntry::isFloat() {
