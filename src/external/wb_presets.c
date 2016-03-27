@@ -730,6 +730,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 5D Mark III", Flash, 8,	{ 2.509766, 1, 1.297852, 0 } },
   { "Canon", "EOS 5D Mark III", Flash, 9,	{ 2.541016, 1, 1.278320, 0 } },
 
+  { "Canon", "EOS 5DS", Daylight            , 0, { 2.255859, 1, 1.717773, 0 } },
+  { "Canon", "EOS 5DS", Shade               , 0, { 2.605469, 1, 1.484375, 0 } },
+  { "Canon", "EOS 5DS", Cloudy              , 0, { 2.438477, 1, 1.589844, 0 } },
+  { "Canon", "EOS 5DS", Tungsten            , 0, { 1.605469, 1, 2.467773, 0 } },
+  { "Canon", "EOS 5DS", CoolWhiteFluorescent, 0, { 1.931641, 1, 2.354492, 0 } },
+  { "Canon", "EOS 5DS", Flash               , 0, { 2.528320, 1, 1.583008, 0 } },
+
   /* Canon EOS 6D Firmware Version 1.0.9 */
   { "Canon", "EOS 6D", Daylight, 0,		{ 1.976562, 1, 1.635742, 0 } },
   { "Canon", "EOS 6D", Shade, 0,		{ 2.265625, 1, 1.371094, 0 } },
