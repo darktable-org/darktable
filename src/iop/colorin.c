@@ -452,8 +452,8 @@ static inline float _cbrtf(const float x)
   return dataout.f;
 }
 
-#if defined(__SSE__)
-static inline __m128 _cbrtf_SSE(const __m128 x)
+#if defined(__SSE2__)
+static inline __m128 _cbrtf_sse2(const __m128 x)
 {
   return (_mm_castsi128_ps(
       _mm_add_epi32(_mm_cvtps_epi32(_mm_div_ps(_mm_cvtepi32_ps(_mm_castps_si128(x)), _mm_set1_ps(3.0f))),
@@ -479,15 +479,15 @@ static inline float lab_f_m(const float x)
   return ((x > epsilon) ? res_big : res_small);
 }
 
-#if defined(__SSE__)
-static inline __m128 lab_f_m_SSE(const __m128 x)
+#if defined(__SSE2__)
+static inline __m128 lab_f_m_sse2(const __m128 x)
 {
   const __m128 epsilon = _mm_set1_ps(216.0f / 24389.0f);
   const __m128 kappa = _mm_set1_ps(24389.0f / 27.0f);
 
   // calculate as if x > epsilon : result = cbrtf(x)
   // approximate cbrtf(x):
-  const __m128 a = _cbrtf_SSE(x);
+  const __m128 a = _cbrtf_sse2(x);
   const __m128 a3 = _mm_mul_ps(_mm_mul_ps(a, a), a);
   const __m128 res_big
       = _mm_div_ps(_mm_mul_ps(a, _mm_add_ps(a3, _mm_add_ps(x, x))), _mm_add_ps(_mm_add_ps(a3, a3), x));
@@ -533,12 +533,12 @@ static inline void _dt_XYZ_to_Lab(const float *const XYZ, float *const Lab)
   }
 }
 
-#if defined(__SSE__)
-static inline __m128 dt_XYZ_to_Lab_SSE(const __m128 XYZ)
+#if defined(__SSE2__)
+static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
 {
   const __m128 d50_inv = _mm_set_ps(0.0f, 1.0f / 0.8249f, 1.0f, 1.0f / 0.9642f);
   const __m128 coef = _mm_set_ps(0.0f, 200.0f, 500.0f, 116.0f);
-  const __m128 f = lab_f_m_SSE(_mm_mul_ps(XYZ, d50_inv));
+  const __m128 f = lab_f_m_sse2(_mm_mul_ps(XYZ, d50_inv));
   // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
   return _mm_mul_ps(coef, _mm_sub_ps(_mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 1, 0, 1)),
                                      _mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 2, 1, 3))));
@@ -728,7 +728,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -806,7 +806,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           __m128 xyz = _mm_add_ps(
               _mm_add_ps(_mm_mul_ps(cm0, _mm_set1_ps(cam[0])), _mm_mul_ps(cm1, _mm_set1_ps(cam[1]))),
               _mm_mul_ps(cm2, _mm_set1_ps(cam[2])));
-          _mm_stream_ps(buf_out, dt_XYZ_to_Lab_SSE(xyz));
+          _mm_stream_ps(buf_out, dt_XYZ_to_Lab_sse2(xyz));
         }
         else
         {
@@ -818,7 +818,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
               = _mm_add_ps(_mm_add_ps(_mm_mul_ps(lm0, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0))),
                                       _mm_mul_ps(lm1, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1)))),
                            _mm_mul_ps(lm2, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
-          _mm_stream_ps(buf_out, dt_XYZ_to_Lab_SSE(xyz));
+          _mm_stream_ps(buf_out, dt_XYZ_to_Lab_sse2(xyz));
         }
       }
     }
@@ -1256,7 +1256,7 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .blue_mapping = 0 };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module || !module->dev) goto end;
+  if(!module->dev) goto end;
 
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
@@ -1328,7 +1328,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 350; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 353; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
 }
@@ -1509,4 +1509,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -232,6 +232,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "groups", (gpointer) & (module->groups)))
     module->groups = default_groups;
   if(!g_module_symbol(module->module, "flags", (gpointer) & (module->flags))) module->flags = default_flags;
+  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = NULL;
   if(!g_module_symbol(module->module, "operation_tags", (gpointer) & (module->operation_tags)))
     module->operation_tags = default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter", (gpointer) & (module->operation_tags_filter)))
@@ -385,6 +386,7 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->name = so->name;
   module->groups = so->groups;
   module->flags = so->flags;
+  module->description = so->description;
   module->operation_tags = so->operation_tags;
   module->operation_tags_filter = so->operation_tags_filter;
   module->output_bpp = so->output_bpp;
@@ -2132,4 +2134,4 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

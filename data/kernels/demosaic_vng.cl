@@ -152,7 +152,7 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
 
 kernel void
 vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int rin_x, const int rin_y, const unsigned int filters,
+                const int rin_x, const int rin_y, const unsigned int filters, const float4 processed_maximum,
                 global const unsigned char (*const xtrans)[6], global const int (*const ips),
                 global const int (*const code)[16], local float *buffer)
 {
@@ -292,7 +292,10 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
     if(c != color) tot += (sum[c] - sum[color]) / num;
     o[c] = clamp(tot, 0.0f, 1.0f);
   }
-  write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
+  
+  float4 opixel = clamp((float4)(o[0], o[1], o[2], o[3]), (float4)0.0f, processed_maximum);
+  
+  write_imagef(out, (int2)(x, y), opixel);
 }
 
 kernel void

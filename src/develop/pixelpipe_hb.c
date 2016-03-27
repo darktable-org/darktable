@@ -2115,7 +2115,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             box[k] = MIN(roi_out->width - 1,
                          MAX(0, dev->gui_module->color_picker_box[k] * (roi_out->width - 1)));
           for(int k = 1; k < 4; k += 2)
-            box[k] = MIN(roi_out->height - 1, MAX(0, module->color_picker_box[k] * (roi_out->height - 1)));
+            box[k] = MIN(roi_out->height - 1,
+                         MAX(0, dev->gui_module->color_picker_box[k] * (roi_out->height - 1)));
         }
         else
         {
@@ -2123,7 +2124,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             box[k] = MIN(roi_out->width - 1,
                          MAX(0, dev->gui_module->color_picker_point[0] * (roi_out->width - 1)));
           for(int k = 1; k < 4; k += 2)
-            box[k] = MIN(roi_out->height - 1, MAX(0, module->color_picker_point[1] * (roi_out->height - 1)));
+            box[k] = MIN(roi_out->height - 1,
+                         MAX(0, dev->gui_module->color_picker_point[1] * (roi_out->height - 1)));
         }
       }
       else
@@ -2495,4 +2497,4 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

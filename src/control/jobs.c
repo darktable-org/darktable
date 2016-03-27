@@ -383,8 +383,8 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
       if(dt_control_job_equal(job, other_job))
       {
         dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in scheduled: ");
-        dt_print(DT_DEBUG_CONTROL, "\n");
         dt_control_job_print(other_job);
+        dt_print(DT_DEBUG_CONTROL, "\n");
 
         dt_pthread_mutex_unlock(&control->queue_mutex);
 
@@ -576,4 +576,4 @@ void dt_control_jobs_cleanup(dt_control_t *control)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

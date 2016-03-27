@@ -283,7 +283,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_enabled = 0;
-  module->priority = 916; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 907; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
   dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t){ 64, 1.25 };
@@ -337,4 +337,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -118,7 +118,7 @@ static inline float ceil_fast(float x)
   }
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 /** Compute absolute value
  * @param t Vector of 4 floats
  * @return Vector of their absolute values
@@ -237,7 +237,7 @@ static inline float sinf_fast(float t)
   return t * (p * (fabsf(t) - 1) + 1);
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 /** Compute an approximate sine (SSE version, four sines a call).
  * This function behaves correctly for the range [-pi pi] only.
  * It has the following properties:
@@ -296,7 +296,7 @@ static inline float bilinear(float width, float t)
   return r;
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 static inline __m128 bilinear_sse(__m128 width, __m128 t)
 {
   static const __m128 one = { 1.f, 1.f, 1.f, 1.f };
@@ -329,7 +329,7 @@ static inline float bicubic(float width, float t)
   return r;
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 static inline __m128 bicubic_sse(__m128 width, __m128 t)
 {
   static const __m128 half = { .5f, .5f, .5f, .5f };
@@ -440,8 +440,8 @@ static inline float lanczos(float width, float t)
          / (DT_LANCZOS_EPSILON + M_PI * M_PI * t * t);
 }
 
-#if defined(__SSE__)
-static inline __m128 lanczos_sse(__m128 width, __m128 t)
+#if defined(__SSE2__)
+static inline __m128 lanczos_sse2(__m128 width, __m128 t)
 {
   /* Compute a value for sinf(pi.t) in [-pi pi] for which the value will be
    * correct */
@@ -490,7 +490,7 @@ static const struct dt_interpolation dt_interpolator[] = {
    .name = "bilinear",
    .width = 1,
    .func = &bilinear,
-#if defined(__SSE__)
+#if defined(__SSE2__)
    .funcsse = &bilinear_sse
 #endif
   },
@@ -498,7 +498,7 @@ static const struct dt_interpolation dt_interpolator[] = {
    .name = "bicubic",
    .width = 2,
    .func = &bicubic,
-#if defined(__SSE__)
+#if defined(__SSE2__)
    .funcsse = &bicubic_sse
 #endif
   },
@@ -506,16 +506,16 @@ static const struct dt_interpolation dt_interpolator[] = {
    .name = "lanczos2",
    .width = 2,
    .func = &lanczos,
-#if defined(__SSE__)
-   .funcsse = &lanczos_sse
+#if defined(__SSE2__)
+   .funcsse = &lanczos_sse2
 #endif
   },
   {.id = DT_INTERPOLATION_LANCZOS3,
    .name = "lanczos3",
    .width = 3,
    .func = &lanczos,
-#if defined(__SSE__)
-   .funcsse = &lanczos_sse
+#if defined(__SSE2__)
+   .funcsse = &lanczos_sse2
 #endif
   },
 };
@@ -561,7 +561,7 @@ static inline void compute_upsampling_kernel_plain(const struct dt_interpolation
   }
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 /** Computes an upsampling filtering kernel (SSE version, four taps per inner loop)
  *
  * @param itor [in] Interpolator used
@@ -631,7 +631,7 @@ static inline void compute_upsampling_kernel(const struct dt_interpolation *itor
                                              int *first, float t)
 {
   if(darktable.codepath.OPENMP_SIMD) return compute_upsampling_kernel_plain(itor, kernel, norm, first, t);
-#if defined(__SSE__)
+#if defined(__SSE2__)
   else if(darktable.codepath.SSE2)
     return compute_upsampling_kernel_sse(itor, kernel, norm, first, t);
 #endif
@@ -686,7 +686,7 @@ static inline void compute_downsampling_kernel_plain(const struct dt_interpolati
 }
 
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 /** Computes a downsampling filtering kernel (SSE version, four taps per inner loop iteration)
  *
  * @param itor [in] Interpolator used
@@ -762,7 +762,7 @@ static inline void compute_downsampling_kernel(const struct dt_interpolation *it
 {
   if(darktable.codepath.OPENMP_SIMD)
     return compute_downsampling_kernel_plain(itor, taps, first, kernel, norm, outoinratio, xout);
-#if defined(__SSE__)
+#if defined(__SSE2__)
   else if(darktable.codepath.SSE2)
     return compute_downsampling_kernel_sse(itor, taps, first, kernel, norm, outoinratio, xout);
 #endif
@@ -963,7 +963,7 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
   }
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *itor, const float *in,
                                                  float *out, const float x, const float y, const int width,
                                                  const int height, const int linestride)
@@ -1072,7 +1072,7 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor, const
 {
   if(darktable.codepath.OPENMP_SIMD)
     return dt_interpolation_compute_pixel4c_plain(itor, in, out, x, y, width, height, linestride);
-#if defined(__SSE__)
+#if defined(__SSE2__)
   else if(darktable.codepath.SSE2)
     return dt_interpolation_compute_pixel4c_sse(itor, in, out, x, y, width, height, linestride);
 #endif
@@ -1507,7 +1507,7 @@ exit:
   dt_free_align(vlength);
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, float *out,
                                           const dt_iop_roi_t *const roi_out, const int32_t out_stride,
                                           const float *const in, const dt_iop_roi_t *const roi_in,
@@ -1680,7 +1680,7 @@ void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
 {
   if(darktable.codepath.OPENMP_SIMD)
     return dt_interpolation_resample_plain(itor, out, roi_out, out_stride, in, roi_in, in_stride);
-#if defined(__SSE__)
+#if defined(__SSE2__)
   else if(darktable.codepath.SSE2)
     return dt_interpolation_resample_sse(itor, out, roi_out, out_stride, in, roi_in, in_stride);
 #endif
@@ -1979,4 +1979,4 @@ int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor, int de
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

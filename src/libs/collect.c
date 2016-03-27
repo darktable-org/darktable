@@ -1251,8 +1251,9 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   }
   else if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
   {
-    gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators, "
-                                           "type dates in the form : YYYY:MM:DD HH:MM:SS (time part facultative)"));
+    gtk_widget_set_tooltip_text(d->text,
+                                _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
+                                  "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
   }
   else
   {
@@ -1917,4 +1918,4 @@ void init(struct dt_lib_module_t *self)
 #undef MAX_RULES
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

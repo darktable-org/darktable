@@ -37,6 +37,7 @@ struct dt_view_t;
 
 const char *name(struct dt_view_t *self);    // get translatable name
 uint32_t view(const struct dt_view_t *self); // get the view type
+uint32_t flags();                            // get flags of the view
 void init(struct dt_view_t *self);           // init *data
 void gui_init(struct dt_view_t *self);       // create gtk elements, called after libs are created
 void cleanup(struct dt_view_t *self);        // cleanup *data
@@ -74,4 +75,4 @@ void connect_key_accels(struct dt_view_t *self);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

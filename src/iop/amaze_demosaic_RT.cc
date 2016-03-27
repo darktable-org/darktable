@@ -16,18 +16,26 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>
+#define __STDC_FORMAT_MACROS
+
+#define POISON_H
 
 extern "C" {
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 // otherwise the name will be mangled and the linker won't be able to see the function ...
 void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
                        float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                        const int filters);
 }
+
+#include <algorithm>
+#include <cmath>
 
 static __inline float clampnan(const float x, const float m, const float M)
 {
@@ -249,12 +257,12 @@ template <typename _Tp> static inline const _Tp intp(const _Tp a, const _Tp b, c
   return a * (b - c) + c;
 }
 
-template <typename _Tp> static inline const _Tp LIM(const _Tp &a, const _Tp &b, const _Tp &c)
+template <typename _Tp> static inline const _Tp LIM(const _Tp a, const _Tp b, const _Tp c)
 {
   return std::max(b, std::min(a, c));
 }
 
-template <typename _Tp> static inline const _Tp ULIM(const _Tp &a, const _Tp &b, const _Tp &c)
+template <typename _Tp> static inline const _Tp ULIM(const _Tp a, const _Tp b, const _Tp c)
 {
   return ((b < c) ? LIM(a, b, c) : LIM(a, c, b));
 }
@@ -2403,4 +2411,4 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

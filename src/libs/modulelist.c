@@ -107,6 +107,7 @@ enum
 {
   COL_IMAGE = 0,
   COL_MODULE,
+  COL_DESCRIPTION,
   NUM_COLS
 };
 static void image_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
@@ -179,7 +180,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
     color.alpha = 1.0;
   }
 
-  store = gtk_list_store_new(NUM_COLS, GDK_TYPE_PIXBUF, G_TYPE_POINTER);
+  store = gtk_list_store_new(NUM_COLS, GDK_TYPE_PIXBUF, G_TYPE_POINTER, G_TYPE_STRING);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), GTK_TREE_MODEL(store));
   g_object_unref(store);
 
@@ -209,6 +210,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(view), FALSE);
+  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), COL_DESCRIPTION);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_NONE);
 
@@ -261,7 +263,8 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 
     end:
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, COL_IMAGE, pixbuf, COL_MODULE, module, -1);
+      gtk_list_store_set(store, &iter, COL_IMAGE, pixbuf, COL_MODULE, module,
+                         COL_DESCRIPTION, module->description ? module->description() : module->name(), -1);
       g_object_unref(pixbuf);
     }
 
@@ -372,4 +375,4 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

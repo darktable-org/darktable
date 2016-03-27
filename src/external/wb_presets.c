@@ -730,6 +730,20 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 5D Mark III", Flash, 8,	{ 2.509766, 1, 1.297852, 0 } },
   { "Canon", "EOS 5D Mark III", Flash, 9,	{ 2.541016, 1, 1.278320, 0 } },
 
+  { "Canon", "EOS 5DS", Daylight            , 0, { 2.255859, 1, 1.717773, 0 } },
+  { "Canon", "EOS 5DS", Shade               , 0, { 2.605469, 1, 1.484375, 0 } },
+  { "Canon", "EOS 5DS", Cloudy              , 0, { 2.438477, 1, 1.589844, 0 } },
+  { "Canon", "EOS 5DS", Tungsten            , 0, { 1.605469, 1, 2.467773, 0 } },
+  { "Canon", "EOS 5DS", CoolWhiteFluorescent, 0, { 1.931641, 1, 2.354492, 0 } },
+  { "Canon", "EOS 5DS", Flash               , 0, { 2.528320, 1, 1.583008, 0 } },
+
+  { "Canon", "EOS 5DS R", Daylight            , 0, { 2.192383, 1, 1.738281, 0 } },
+  { "Canon", "EOS 5DS R", Shade               , 0, { 2.541016, 1, 1.497070, 0 } },
+  { "Canon", "EOS 5DS R", Cloudy              , 0, { 2.370117, 1, 1.607422, 0 } },
+  { "Canon", "EOS 5DS R", Tungsten            , 0, { 1.546875, 1, 2.503906, 0 } },
+  { "Canon", "EOS 5DS R", CoolWhiteFluorescent, 0, { 1.865234, 1, 2.386719, 0 } },
+  { "Canon", "EOS 5DS R", Flash               , 0, { 2.461914, 1, 1.599609, 0 } },
+
   /* Canon EOS 6D Firmware Version 1.0.9 */
   { "Canon", "EOS 6D", Daylight, 0,		{ 1.976562, 1, 1.635742, 0 } },
   { "Canon", "EOS 6D", Shade, 0,		{ 2.265625, 1, 1.371094, 0 } },
@@ -1474,6 +1488,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 700D", Flash, 0,		{ 2.2607, 1, 1.5166, 0 } },
   { "Canon", "EOS 700D", Flash, 3,		{ 2.3701, 1, 1.4502, 0 } },
 
+  { "Canon", "EOS 750D", Daylight            , 0, { 2.115234, 1, 1.701172, 0 } },
+  { "Canon", "EOS 750D", Shade               , 0, { 2.461914, 1, 1.458984, 0 } },
+  { "Canon", "EOS 750D", Cloudy              , 0, { 2.286133, 1, 1.570312, 0 } },
+  { "Canon", "EOS 750D", Tungsten            , 0, { 1.473633, 1, 2.467773, 0 } },
+  { "Canon", "EOS 750D", CoolWhiteFluorescent, 0, { 1.784180, 1, 2.300781, 0 } },
+  { "Canon", "EOS 750D", Flash               , 0, { 2.359375, 1, 1.548828, 0 } },
+
   // Firmware version 1.0.0
   { "Canon", "EOS 760D", Daylight, 0,{ 2.169921875, 1, 1.7099609375, 0 } },
   { "Canon", "EOS 760D", Shade, 0,{ 2.5283203125, 1, 1.466796875, 0 } },
@@ -1495,6 +1516,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 1100D", Tungsten, 0,		{ 1.5654, 1, 2.2402, 0 } },
   { "Canon", "EOS 1100D", WhiteFluorescent, 0,	{ 1.9541, 1, 2.0732, 0 } },
   { "Canon", "EOS 1100D", Flash, 0,		{ 2.5283, 1, 1.3584, 0 } },
+
+  { "Canon", "EOS 1200D", Daylight            , 0, { 2.007812, 1, 1.599609, 0 } },
+  { "Canon", "EOS 1200D", Shade               , 0, { 2.322266, 1, 1.361328, 0 } },
+  { "Canon", "EOS 1200D", Cloudy              , 0, { 2.160156, 1, 1.471680, 0 } },
+  { "Canon", "EOS 1200D", Tungsten            , 0, { 1.444336, 1, 2.392578, 0 } },
+  { "Canon", "EOS 1200D", CoolWhiteFluorescent, 0, { 1.759766, 1, 2.275391, 0 } },
+  { "Canon", "EOS 1200D", Flash               , 0, { 2.246094, 1, 1.452148, 0 } },
 
   { "Canon", "EOS-1Ds", Daylight, 0,		{ 1.6133, 1, 1.2500, 0 } }, /* 5302K */
   { "Canon", "EOS-1Ds", Shade, 0,		{ 1.8477, 1, 1.0684, 0 } }, /* 6685K */
@@ -1790,6 +1818,14 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-Pro1", Incandescent, 0,	{ 1.225166, 1, 2.708609, 0 } },
   { "Fujifilm", "X-Pro1", Underwater, 0,	{ 1.860927, 1, 1.708609, 0 } },
   { "Fujifilm", "X-Pro1", "5000K", 0,		{ 1.857616, 1, 1.701987, 0 } },
+
+  { "Fujifilm", "X-Pro2", Daylight           , 0, { 1.947020, 1, 1.831126, 0 } },
+  { "Fujifilm", "X-Pro2", Cloudy             , 0, { 2.145695, 1, 1.582781, 0 } },
+  { "Fujifilm", "X-Pro2", Incandescent       , 0, { 1.264901, 1, 2.754967, 0 } },
+  { "Fujifilm", "X-Pro2", DayWhiteFluorescent, 0, { 2.069536, 1, 1.950331, 0 } },
+  { "Fujifilm", "X-Pro2", DaylightFluorescent, 0, { 2.463576, 1, 1.602649, 0 } },
+  { "Fujifilm", "X-Pro2", WhiteFluorescent   , 0, { 1.973510, 1, 2.513245, 0 } },
+  { "Fujifilm", "X-Pro2", Underwater         , 0, { 1.943709, 1, 1.827815, 0 } },
 
   { "Kodak", "DCS Pro 14N", Daylight, 0,	{ 1, 1.055126, 1.353602, 0 } },
   { "Kodak", "DCS Pro 14N", Tungsten, 0,	{ 1, 1.337688, 2.218852, 0 } },

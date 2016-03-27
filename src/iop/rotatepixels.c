@@ -324,7 +324,7 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_rotatepixels_params_t tmp = { 0 };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!self || !self->dev) goto end;
+  if(!self->dev) goto end;
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
@@ -378,4 +378,4 @@ void gui_cleanup(dt_iop_module_t *self)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

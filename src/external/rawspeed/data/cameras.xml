@@ -585,9 +585,22 @@
 			<Vertical x="0" width="150"/>
 			<Horizontal y="2" height="60"/>
 		</BlackAreas>
-		<Aliases>
-			<Alias id="EOS 5DS R">Canon EOS 5DS R</Alias>
-		</Aliases>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS 5DS R" decoder_version="6">
+		<ID make="Canon" model="EOS 5DS R">Canon EOS 5DS R</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="160" y="64" width="-2" height="0"/>
+		<Sensor black="2048" white="15181"/>
+		<Sensor black="2048" white="14466" iso_list="50 100"/>
+		<BlackAreas>
+			<Vertical x="0" width="150"/>
+			<Horizontal y="2" height="60"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 6D" decoder_version="2">
 		<ID make="Canon" model="EOS 6D">Canon EOS 6D</ID>
@@ -3062,6 +3075,17 @@
 		<Crop x="0" y="0" width="-26" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
+	<Camera make="OLYMPUS CORPORATION" model="PEN-F">
+		<ID make="Olympus" model="PEN-F">Olympus PEN-F</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="254" white="4000"/>
+	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="XZ-1">
 		<ID make="Olympus" model="XZ-1">Olympus XZ-1</ID>
 		<CFA width="2" height="2">
@@ -4727,6 +4751,17 @@
 			<Color x="1" y="1">RED</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-44" height="0"/>
+		<Sensor black="15" white="3971"/>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-LX3" mode="1:1">
+		<ID make="Panasonic" model="DMC-LX3">Panasonic DMC-LX3</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-74" height="0"/>
 		<Sensor black="15" white="3971"/>
 	</Camera>
 	<Camera make="LEICA" model="DIGILUX 2" decoder_version="2">
@@ -6965,6 +7000,19 @@
 			<ColorRow y="5">GGRGGB</ColorRow>
 		</CFA2>
 		<Crop x="0" y="0" width="-128" height="0"/>
+		<Sensor black="1024" white="16383"/>
+	</Camera>
+	<Camera make="FUJIFILM" model="X70">
+		<ID make="Fujifilm" model="X70">Fujifilm X70</ID>
+		<CFA2 width="6" height="6">
+			<ColorRow y="0">RBGBRG</ColorRow>
+			<ColorRow y="1">GGRGGB</ColorRow>
+			<ColorRow y="2">GGBGGR</ColorRow>
+			<ColorRow y="3">BRGRBG</ColorRow>
+			<ColorRow y="4">GGBGGR</ColorRow>
+			<ColorRow y="5">GGRGGB</ColorRow>
+		</CFA2>
+		<Crop x="4" y="0" width="-52" height="0"/>
 		<Sensor black="1024" white="16383"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="XF1">

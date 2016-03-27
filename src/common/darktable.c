@@ -453,11 +453,18 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #error "Unfortunately we only work on litte-endian systems."
 #endif
 
-#define DT_SUPPORTED_X86                                                                                     \
-  (defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(__i386__)   \
-   || defined(__i386))
-#define DT_SUPPORTED_ARMv8A                                                                                  \
-  (defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A))
+#if(defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(__i386__)  \
+    || defined(__i386))
+#define DT_SUPPORTED_X86 1
+#else
+#define DT_SUPPORTED_X86 0
+#endif
+
+#if defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A)
+#define DT_SUPPORTED_ARMv8A 1
+#else
+#define DT_SUPPORTED_ARMv8A 0
+#endif
 
 #if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A
 #error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit) and ARMv8-A (64-bit only)."
@@ -478,7 +485,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #undef DT_SUPPORTED_ARMv8A
 #undef DT_SUPPORTED_X86
 
-#ifndef __SSE2__
+#if !defined(__SSE2__) || !defined(__SSE__)
 #pragma message "Building without SSE2 is highly experimental."
 #pragma message "Expect a LOT of functionality to be broken. You have been warned."
 #endif
@@ -1011,6 +1018,12 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   }
 
   dt_control_gui_mode_t mode = DT_LIBRARY;
+  // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
+  time_t now;
+  time(&now);
+  struct tm lt;
+  localtime_r(&now, &lt);
+  if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = DT_KNIGHT;
   if(init_gui)
   {
     // init the gui part of views
@@ -1310,4 +1323,4 @@ void dt_capabilities_cleanup()
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

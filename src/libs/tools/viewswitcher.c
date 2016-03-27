@@ -111,6 +111,9 @@ void gui_init(dt_lib_module_t *self)
       /* create view label */
       dt_view_t *v = &darktable.view_manager->view[k];
 
+      // skip hidden views
+      if(v->flags() & VIEW_FLAGS_HIDDEN) continue;
+
       if(!g_strcmp0(v->module_name, "lighttable") || !g_strcmp0(v->module_name, "darkroom"))
       {
         GtkWidget *w = _lib_viewswitcher_create_label(v);
@@ -284,7 +287,7 @@ static void _switch_view(int which)
   else if(which == DT_VIEW_SLIDESHOW)
     dt_ctl_switch_mode_to(DT_SLIDESHOW);
 #ifdef HAVE_PRINT
-  else if (which == DT_VIEW_PRINT)
+  else if(which == DT_VIEW_PRINT)
     dt_ctl_switch_mode_to(DT_PRINT);
 #endif
 }
@@ -303,4 +306,4 @@ static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventBu
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

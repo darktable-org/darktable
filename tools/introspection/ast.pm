@@ -395,6 +395,8 @@ sub set_signed
 
 sub get_type
 {
+  my $self = shift;
+  return "UChar" if($self->{unsigned});
   return "Char";
 }
 
@@ -434,6 +436,7 @@ sub set_signed
 
 sub get_type
 {
+  my $self = shift;
   return "UShort" if($self->{unsigned});
   return "Short";
 }
@@ -549,6 +552,8 @@ sub set_signed
 
 sub get_type
 {
+  my $self = shift;
+  return "ULong" if($self->{unsigned});
   return "Long";
 }
 

@@ -165,11 +165,20 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_useless_params_t));
 }
 
+void init_global(dt_iop_module_so_t *module)
+{
+  module->data = malloc(sizeof(dt_iop_useless_global_data_t));
+}
+
 void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-  free(module->data); // just to be sure
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  free(module->data);
   module->data = NULL;
 }
 
@@ -221,4 +230,4 @@ void gui_cleanup(dt_iop_module_t *self)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

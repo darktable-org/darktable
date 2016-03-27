@@ -344,7 +344,7 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
     for(int c = 0; c < 2; c++) color[c * 2] = (ocolor[3] < diff) ?  ocolor[c * 2] : color[c * 2];
     
   if((d < 2) || (d & 1))
-    for(int c = 0; c < 2; c++) rgb[c * 2] = clamp(color[c * 2] / 2.0f, 0.0f, 1.0f);
+    for(int c = 0; c < 2; c++) rgb[c * 2] = color[c * 2] / 2.0f;
 
   for(int c = 0; c < 4; c++)
     aux[c] = color[c];
@@ -464,7 +464,7 @@ markesteijn_red_and_blue(global float *rgb, const int width, const int height, c
                   fabs((buff)[1] - (buff + c)[1]) + fabs((buff)[1] - (buff - c)[1]) <
                   2.0f * (fabs((buff)[1] - (buff + h)[1]) + fabs((buff)[1] - (buff - h)[1])) ? c : h;
 
-  rgb[f] = clamp(((buff + off)[f] + (buff - off)[f] + 2.0f * buff[1] - (buff + off)[1] - (buff - off)[1]) / 2.0f, 0.0f, 1.0f);
+  rgb[f] = ((buff + off)[f] + (buff - off)[f] + 2.0f * buff[1] - (buff + off)[1] - (buff - off)[1]) / 2.0f;
 }
 
 
@@ -556,7 +556,7 @@ markesteijn_interpolate_twoxtwo(global float *rgb, const int width, const int he
   const float g = m[0] * buff[1] + m[1] * (buff + idx)[1] + m[2] * (buff + idx1)[1];
   
   for(int c = 0; c < 4; c += 2)
-    rgb[c] = clamp((g + m[3] * (buff + idx)[c] + (buff + idx1)[c]) * m[4], 0.0f, 1.0f);
+    rgb[c] = (g + m[3] * (buff + idx)[c] + (buff + idx1)[c]) * m[4];
 }
 
 
@@ -916,7 +916,7 @@ markesteijn_accu(read_only image2d_t in, write_only image2d_t out, global float 
 // process the final image
 kernel void
 markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                  const int border)
+                  const int border, const float4 processed_maximum)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -928,6 +928,8 @@ markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int wi
 
   pixel = (pixel.w > 0.0f) ? pixel/pixel.w : (float4)0.0f;
   pixel.w = 0.0f;
+  
+  pixel = clamp(pixel, (float4)0.0f, processed_maximum);
   
   write_imagef(out, (int2)(x, y), pixel); 
 }

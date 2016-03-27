@@ -131,7 +131,7 @@ int main(int argc, char *arg[])
       printf("this is darktable-generate-cache\ncopyright (c) 2014 johannes hanika; 2015 LebedevRI\n");
       exit(EXIT_FAILURE);
     }
-    else if(!strcmp(arg[k], "-m") || !strcmp(arg[k], "--max-mip"))
+    else if((!strcmp(arg[k], "-m") || !strcmp(arg[k], "--max-mip")) && argc > k + 1)
     {
       k++;
       max_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), 0), 7);
@@ -177,4 +177,4 @@ int main(int argc, char *arg[])
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

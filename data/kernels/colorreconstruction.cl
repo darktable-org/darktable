@@ -307,9 +307,10 @@ colorreconstruction_slice(
         vload4(gi+ox+oz, grid)    * (       fx) * (1.0f - fy) * (       fz) +
         vload4(gi+oy+oz, grid)    * (1.0f - fx) * (       fy) * (       fz) +
         vload4(gi+ox+oy+oz, grid) * (       fx) * (       fy) * (       fz);
-	
-  pixel.y = (opixel.w > 0.0f) ? pixel.y * (1.0f - blend) + opixel.y * pixel.x/opixel.x * blend : pixel.y;
-  pixel.z = (opixel.w > 0.0f) ? pixel.z * (1.0f - blend) + opixel.z * pixel.x/opixel.x * blend : pixel.z;  
+        
+  const float opixelx = fmax(opixel.x, 0.01f);
+  pixel.y = (opixel.w > 0.0f) ? pixel.y * (1.0f - blend) + opixel.y * pixel.x/opixelx * blend : pixel.y;
+  pixel.z = (opixel.w > 0.0f) ? pixel.z * (1.0f - blend) + opixel.z * pixel.x/opixelx * blend : pixel.z;  
 
   write_imagef (out, (int2)(x, y), pixel);
 }

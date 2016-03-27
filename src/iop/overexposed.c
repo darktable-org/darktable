@@ -286,7 +286,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_overexposed_t));
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  module->priority = 933; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 923; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_overexposed_t);
   module->gui_data = NULL;
 }
@@ -299,4 +299,4 @@ void cleanup(dt_iop_module_t *module)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

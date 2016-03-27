@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Inspiration for this module comes from the program ShiftN (http://www.shiftn.de) by
+// Inspiration to this module comes from the program ShiftN (http://www.shiftn.de) by
 // Marcus Hebel.
 
 // Thanks to Marcus for his support when implementing part of the ShiftN functionality
@@ -53,6 +53,8 @@
 #define ROTATION_RANGE_SOFT 20              // allowed min/max range for rotation parameter with manual adjustment
 #define LENSSHIFT_RANGE 0.5                 // allowed min/max default range for lensshift paramters
 #define LENSSHIFT_RANGE_SOFT 1              // allowed min/max range for lensshift paramters with manual adjustment
+#define SHEAR_RANGE 0.2                     // allowed min/max range for shear parameter
+#define SHEAR_RANGE_SOFT 0.5                // allowed min/max range for shear parameter with manual adjustment
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
@@ -67,7 +69,7 @@
 #define MINIMUM_FITLINES 4                  // minimum number of lines needed for automatic parameter fit
 #define NMS_EPSILON 1e-3                    // break criterion for Nelder-Mead simplex
 #define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
-#define NMS_ITERATIONS 200                  // number of iterations for Nelder-Mead simplex
+#define NMS_ITERATIONS 400                  // number of iterations for Nelder-Mead simplex
 #define NMS_CROP_EPSILON 100.0              // break criterion for Nelder-Mead simplex on crop fitting
 #define NMS_CROP_SCALE 0.5                  // scaling factor for Nelder-Mead simplex on crop fitting
 #define NMS_CROP_ITERATIONS 100             // number of iterations for Nelder-Mead simplex on crop fitting
@@ -94,7 +96,7 @@
 #include "ashift_nmsimplex.c"
 
 
-DT_MODULE_INTROSPECTION(3, dt_iop_ashift_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_ashift_params_t)
 
 const char *name()
 {
@@ -157,8 +159,9 @@ typedef enum dt_iop_ashift_fitaxis_t
   ASHIFT_FIT_ROTATION      = 1 << 0,  // flag indicates to fit rotation angle
   ASHIFT_FIT_LENS_VERT     = 1 << 1,  // flag indicates to fit vertical lens shift
   ASHIFT_FIT_LENS_HOR      = 1 << 2,  // flag indicates to fit horizontal lens shift
-  ASHIFT_FIT_LINES_VERT    = 1 << 3,  // use vertical lines for fitting
-  ASHIFT_FIT_LINES_HOR     = 1 << 4,  // use horizontal lines for fitting
+  ASHIFT_FIT_SHEAR         = 1 << 3,  // flag indicates to fit shear parameter
+  ASHIFT_FIT_LINES_VERT    = 1 << 4,  // use vertical lines for fitting
+  ASHIFT_FIT_LINES_HOR     = 1 << 5,  // use horizontal lines for fitting
   ASHIFT_FIT_LENS_BOTH = ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR,
   ASHIFT_FIT_LINES_BOTH = ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
   ASHIFT_FIT_VERTICALLY = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LINES_VERT,
@@ -169,6 +172,8 @@ typedef enum dt_iop_ashift_fitaxis_t
   ASHIFT_FIT_HORIZONTALLY_NO_ROTATION = ASHIFT_FIT_LENS_HOR | ASHIFT_FIT_LINES_HOR,
   ASHIFT_FIT_BOTH_NO_ROTATION = ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR |
                                 ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
+  ASHIFT_FIT_BOTH_SHEAR = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LENS_VERT | ASHIFT_FIT_LENS_HOR |
+                    ASHIFT_FIT_SHEAR | ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
   ASHIFT_FIT_ROTATION_VERTICAL_LINES = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LINES_VERT,
   ASHIFT_FIT_ROTATION_HORIZONTAL_LINES = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LINES_HOR,
   ASHIFT_FIT_ROTATION_BOTH_LINES = ASHIFT_FIT_ROTATION | ASHIFT_FIT_LINES_VERT | ASHIFT_FIT_LINES_HOR,
@@ -203,6 +208,13 @@ typedef enum dt_iop_ashift_crop_t
   ASHIFT_CROP_ASPECT = 2
 } dt_iop_ashift_crop_t;
 
+typedef enum dt_iop_ashift_bounding_t
+{
+  ASHIFT_BOUNDING_OFF = 0,
+  ASHIFT_BOUNDING_SELECT = 1,
+  ASHIFT_BOUNDING_DESELECT = 2
+} dt_iop_ashift_bounding_t;
+
 typedef struct dt_iop_ashift_params1_t
 {
   float rotation;
@@ -224,7 +236,7 @@ typedef struct dt_iop_ashift_params2_t
   int toggle;
 } dt_iop_ashift_params2_t;
 
-typedef struct dt_iop_ashift_params_t
+typedef struct dt_iop_ashift_params3_t
 {
   float rotation;
   float lensshift_v;
@@ -240,8 +252,26 @@ typedef struct dt_iop_ashift_params_t
   float cr;
   float ct;
   float cb;
-} dt_iop_ashift_params_t;
+} dt_iop_ashift_params3_t;
 
+typedef struct dt_iop_ashift_params_t
+{
+  float rotation;
+  float lensshift_v;
+  float lensshift_h;
+  float shear;
+  float f_length;
+  float crop_factor;
+  float orthocorr;
+  float aspect;
+  dt_iop_ashift_mode_t mode;
+  int toggle;
+  dt_iop_ashift_crop_t cropmode;
+  float cl;
+  float cr;
+  float ct;
+  float cb;
+} dt_iop_ashift_params_t;
 
 typedef struct dt_iop_ashift_line_t
 {
@@ -260,6 +290,8 @@ typedef struct dt_iop_ashift_points_idx_t
   size_t offset;
   int length;
   int near;
+  int bounded;
+  dt_iop_ashift_linetype_t type;
   dt_iop_ashift_linecolor_t color;
   // bounding box:
   float bbx, bby, bbX, bbY;
@@ -281,9 +313,11 @@ typedef struct dt_iop_ashift_fit_params_t
   float rotation;
   float lensshift_v;
   float lensshift_h;
+  float shear;
   float rotation_range;
   float lensshift_v_range;
   float lensshift_h_range;
+  float shear_range;
 } dt_iop_ashift_fit_params_t;
 
 typedef struct dt_iop_ashift_cropfit_params_t
@@ -302,6 +336,7 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *rotation;
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
+  GtkWidget *shear;
   GtkWidget *guide_lines;
   GtkWidget *cropmode;
   GtkWidget *mode;
@@ -321,10 +356,12 @@ typedef struct dt_iop_ashift_gui_data_t
   int show_guides;
   int isselecting;
   int isdeselecting;
+  dt_iop_ashift_bounding_t isbounding;
   int selecting_lines_version;
   float rotation_range;
   float lensshift_v_range;
   float lensshift_h_range;
+  float shear_range;
   dt_iop_ashift_line_t *lines;
   int lines_in_width;
   int lines_in_height;
@@ -351,6 +388,8 @@ typedef struct dt_iop_ashift_gui_data_t
   uint64_t buf_hash;
   dt_iop_ashift_fitaxis_t lastfit;
   dt_pthread_mutex_t lock;
+  float lastx;
+  float lasty;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -358,6 +397,7 @@ typedef struct dt_iop_ashift_data_t
   float rotation;
   float lensshift_v;
   float lensshift_h;
+  float shear;
   float f_length_kb;
   float orthocorr;
   float aspect;
@@ -378,13 +418,14 @@ typedef struct dt_iop_ashift_global_data_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     const dt_iop_ashift_params1_t *old = old_params;
     dt_iop_ashift_params_t *new = new_params;
     new->rotation = old->rotation;
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
+    new->shear = 0.0f;
     new->toggle = old->toggle;
     new->f_length = DEFAULT_F_LENGTH;
     new->crop_factor = 1.0f;
@@ -398,13 +439,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->cb = 1.0f;
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
     const dt_iop_ashift_params2_t *old = old_params;
     dt_iop_ashift_params_t *new = new_params;
     new->rotation = old->rotation;
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
+    new->shear = 0.0f;
     new->toggle = old->toggle;
     new->f_length = old->f_length;
     new->crop_factor = old->crop_factor;
@@ -418,6 +460,28 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->cb = 1.0f;
     return 0;
   }
+  if(old_version == 3 && new_version == 4)
+  {
+    const dt_iop_ashift_params3_t *old = old_params;
+    dt_iop_ashift_params_t *new = new_params;
+    new->rotation = old->rotation;
+    new->lensshift_v = old->lensshift_v;
+    new->lensshift_h = old->lensshift_h;
+    new->shear = 0.0f;
+    new->toggle = old->toggle;
+    new->f_length = old->f_length;
+    new->crop_factor = old->crop_factor;
+    new->orthocorr = old->orthocorr;
+    new->aspect = old->aspect;
+    new->mode = old->mode;
+    new->cropmode = old->cropmode;
+    new->cl = old->cl;
+    new->cr = old->cr;
+    new->ct = old->ct;
+    new->cb = old->cb;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -426,6 +490,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (v)"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (h)"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shear"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -435,6 +500,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotation));
   dt_accel_connect_slider_iop(self, "lens shift (v)", GTK_WIDGET(g->lensshift_v));
   dt_accel_connect_slider_iop(self, "lens shift (h)", GTK_WIDGET(g->lensshift_h));
+  dt_accel_connect_slider_iop(self, "shear", GTK_WIDGET(g->shear));
 }
 
 // multiply 3x3 matrix with 3x1 vector
@@ -535,7 +601,7 @@ static void print_roi(const dt_iop_roi_t *roi, const char *label)
 #define MAT3SWAP(a, b) { float (*tmp)[3] = (a); (a) = (b); (b) = tmp; }
 
 static void homography(float *homograph, const float angle, const float shift_v, const float shift_h,
-                       const float f_length_kb, const float orthocorr, const float aspect,
+                       const float shear, const float f_length_kb, const float orthocorr, const float aspect,
                        const int width, const int height, dt_iop_ashift_homodir_t dir)
 {
   // calculate homograph that combines all translations, rotations
@@ -601,7 +667,21 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 3: apply vertical lens shift effect
+  // Step 3: apply shearing
+  memset(mwork, 0, 9 * sizeof(float));
+  mwork[0][0] = 1.0f;
+  mwork[0][1] = shear;
+  mwork[1][1] = 1.0f;
+  mwork[1][0] = shear;
+  mwork[2][2] = 1.0f;
+
+  // moutput (of last calculation) -> minput
+  MAT3SWAP(minput, moutput);
+  // multiply mwork * minput -> moutput
+  mat3mul((float *)moutput, (float *)mwork, (float *)minput);
+
+
+  // Step 4: apply vertical lens shift effect
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = exppa_v;
   mwork[1][0] = 0.5f * ((exppa_v - 1.0f) * u) / v;
@@ -616,7 +696,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 4: horizontal compression
+  // Step 5: horizontal compression
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = 1.0f;
   mwork[1][1] = r_v;
@@ -629,7 +709,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 5: flip x and y back again
+  // Step 6: flip x and y back again
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][1] = 1.0f;
   mwork[1][0] = 1.0f;
@@ -643,7 +723,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
   // from here output vectors would be in (x : y : 1) format
 
-  // Step 6: now we can apply horizontal lens shift with the same matrix format as above
+  // Step 7: now we can apply horizontal lens shift with the same matrix format as above
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = exppa_h;
   mwork[1][0] = 0.5f * ((exppa_h - 1.0f) * v) / u;
@@ -658,7 +738,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 7: vertical compression
+  // Step 8: vertical compression
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = 1.0f;
   mwork[1][1] = r_h;
@@ -671,7 +751,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 8: apply aspect ratio scaling
+  // Step 9: apply aspect ratio scaling
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = 1.0f * ascale;
   mwork[1][1] = 1.0f / ascale;
@@ -683,7 +763,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   mat3mul((float *)moutput, (float *)mwork, (float *)minput);
 
 
-  // Step 9: find x/y offsets and apply according correction so that
+  // Step 10: find x/y offsets and apply according correction so that
   // no negative coordinates occur in output vector
   float umin = FLT_MAX, vmin = FLT_MAX;
   // visit all four corners
@@ -694,11 +774,12 @@ static void homography(float *homograph, const float angle, const float shift_v,
       pi[0] = x;
       pi[1] = y;
       pi[2] = 1.0f;
-      // m2 expects input in (x:y:1) format and gives output as (x:y:1)
-      mat3mulv(po, (float *)minput, pi);
+      // moutput expects input in (x:y:1) format and gives output as (x:y:1)
+      mat3mulv(po, (float *)moutput, pi);
       umin = fmin(umin, po[0] / po[2]);
       vmin = fmin(vmin, po[1] / po[2]);
     }
+
   memset(mwork, 0, 9 * sizeof(float));
   mwork[0][0] = 1.0f;
   mwork[1][1] = 1.0f;
@@ -740,7 +821,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   // clipping offset
@@ -771,7 +852,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   // clipping offset
@@ -802,7 +883,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   *roi_out = *roi_in;
 
   float homograph[3][3];
-  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
@@ -821,7 +902,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       pin[1] /= roi_in->scale;
       pin[2] = 1.0f;
 
-      // apply hompgraph
+      // apply homograph
       mat3mulv(pout, (float *)homograph, pin);
 
       // convert to output image coordinates
@@ -858,7 +939,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   *roi_in = *roi_out;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   const float orig_w = roi_in->scale * piece->buf_in.width;
@@ -1113,7 +1194,7 @@ static int line_detect(const float *in, const int width, const int height, const
       ashift_lines[lct].p1[2] = 1.0f;
       ashift_lines[lct].p2[0] = px2;
       ashift_lines[lct].p2[1] = py2;
-      ashift_lines[lct].p2[2] = 1.0f;;
+      ashift_lines[lct].p2[2] = 1.0f;
 
       // calculate homogeneous coordinates of connecting line (defined by the two points)
       vec3prodn(ashift_lines[lct].L, ashift_lines[lct].p1, ashift_lines[lct].p2);
@@ -1316,7 +1397,7 @@ static int fact(const int n)
 // combined with the highest total weight wins.
 // Disadvantage: compared to the original RANSAC we don't get any model parameters that
 // we could use for the following NMS fit.
-// Self optimization: we optimize "epsilon", the hurdle line to reject a line as an outlier,
+// Self optimization: we optimize "epsilon", the hurdle rate to reject a line as an outlier,
 // by a number of dry runs first. The target average percentage value of lines to eliminate as
 // outliers (without judging on the quality of the model) is given by RANSAC_ELIMINATION_RATIO,
 // note: the actual percentage of outliers removed in the final run will be lower because we
@@ -1485,7 +1566,7 @@ static int remove_outliers(dt_iop_module_t *module)
   // holds the result of ransac
   int inout_set[g->lines_count];
 
-  // some counter variables
+  // some accounting variables
   int vnb = 0, vcount = 0;
   int hnb = 0, hcount = 0;
 
@@ -1588,8 +1669,8 @@ static inline double ilogit(double L, double min, double max)
 //    * generate homography matrix out of fixed parameters and fitting parameters
 //    * apply homography to all end points of affected lines
 //    * generate new line out of transformed end points
-//    * calculate scalar product v of line with perpendicular axis
-//    * sum over weighted v^2 values
+//    * calculate scalar product s of line with perpendicular axis
+//    * sum over weighted s^2 values
 static double model_fitness(double *params, void *data)
 {
   dt_iop_ashift_fit_params_t *fit = (dt_iop_ashift_fit_params_t *)data;
@@ -1606,9 +1687,11 @@ static double model_fitness(double *params, void *data)
   float rotation = fit->rotation;
   float lensshift_v = fit->lensshift_v;
   float lensshift_h = fit->lensshift_h;
+  float shear = fit->shear;
   float rotation_range = fit->rotation_range;
   float lensshift_v_range = fit->lensshift_v_range;
   float lensshift_h_range = fit->lensshift_h_range;
+  float shear_range = fit->shear_range;
 
   int pcount = 0;
 
@@ -1631,6 +1714,12 @@ static double model_fitness(double *params, void *data)
     pcount++;
   }
 
+  if(isnan(shear))
+  {
+    shear = ilogit(params[pcount], -shear_range, shear_range);
+    pcount++;
+  }
+
   assert(pcount == fit->params_count);
 
   // the possible reference axes
@@ -1639,7 +1728,7 @@ static double model_fitness(double *params, void *data)
 
   // generate homograph out of the parameters
   float homograph[3][3];
-  homography((float *)homograph, rotation, lensshift_v, lensshift_h, f_length_kb,
+  homography((float *)homograph, rotation, lensshift_v, lensshift_h, shear, f_length_kb,
              orthocorr, aspect, width, height, ASHIFT_HOMOGRAPH_FORWARD);
 
   // accounting variables
@@ -1685,7 +1774,7 @@ static double model_fitness(double *params, void *data)
     weight_v  += isvertical ? lines[n].weight : 0.0;
     count_v += isvertical ? 1 : 0;
     sumsq_h += !isvertical ? s * s * lines[n].weight : 0.0;
-    weight_h  += !isvertical ? lines[n].weight : 0.0;;
+    weight_h  += !isvertical ? lines[n].weight : 0.0;
     count_h += !isvertical ? 1 : 0;
     count++;
   }
@@ -1697,8 +1786,8 @@ static double model_fitness(double *params, void *data)
   //double sum = sqrt(v + h) * 1.0e6;
 
 #ifdef ASHIFT_DEBUG
-  printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f -> lines %d, quality %10f\n",
-         rotation, lensshift_v, lensshift_h, count, sum);
+  printf("fitness with rotation %f, lensshift_v %f, lensshift_h %f, shear %f -> lines %d, quality %10f\n",
+         rotation, lensshift_v, lensshift_h, shear, count, sum);
 #endif
 
   return sum;
@@ -1712,7 +1801,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   if(!g->lines) return NMS_NOT_ENOUGH_LINES;
   if(dir == ASHIFT_FIT_NONE) return NMS_SUCCESS;
 
-  double params[3];
+  double params[4];
   int pcount = 0;
   int enough_lines = TRUE;
 
@@ -1728,9 +1817,11 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   fit.rotation = p->rotation;
   fit.lensshift_v = p->lensshift_v;
   fit.lensshift_h = p->lensshift_h;
+  fit.shear = p->shear;
   fit.rotation_range = g->rotation_range;
   fit.lensshift_v_range = g->lensshift_v_range;
   fit.lensshift_h_range = g->lensshift_h_range;
+  fit.shear_range = g->shear_range;
   fit.linetype = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
   fit.linemask = ASHIFT_LINE_MASK;
   fit.params_count = 0;
@@ -1781,6 +1872,15 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
     fit.lensshift_h = NAN;
   }
 
+  if(mdir & ASHIFT_FIT_SHEAR)
+  {
+    // we fit the shear parameter
+    fit.params_count++;
+    params[pcount] = logit(fit.shear, -fit.shear_range, fit.shear_range);
+    pcount++;
+    fit.shear = NAN;
+  }
+
   if(mdir & ASHIFT_FIT_LINES_VERT)
   {
     // we use vertical lines for fitting
@@ -1822,10 +1922,10 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   p->rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range) : fit.rotation;
   p->lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range) : fit.lensshift_v;
   p->lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
-
+  p->shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
 #ifdef ASHIFT_DEBUG
-  printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f\n",
-         iter, p->rotation, p->lensshift_v, p->lensshift_h);
+  printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f, shear %f\n",
+         iter, p->rotation, p->lensshift_v, p->lensshift_h, p->shear);
 #endif
 
   return NMS_SUCCESS;
@@ -1841,7 +1941,7 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
   if(!g->lines) return;
   if(dir == ASHIFT_FIT_NONE) return;
 
-  double params[3];
+  double params[4];
   int enough_lines = TRUE;
 
   // initialize fit parameters
@@ -1856,6 +1956,7 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
   fit.rotation = p->rotation;
   fit.lensshift_v = p->lensshift_v;
   fit.lensshift_h = p->lensshift_h;
+  fit.shear = p->shear;
   fit.linetype = ASHIFT_LINE_RELEVANT | ASHIFT_LINE_SELECTED;
   fit.linemask = ASHIFT_LINE_MASK;
   fit.params_count = 0;
@@ -1900,8 +2001,8 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
 
   double quality = model_fitness(params, (void *)&fit);
 
-  printf("model fitness: %.8f (rotation %f, lensshift_v %f, lensshift_h %f)\n",
-         quality, p->rotation, p->lensshift_v, p->lensshift_h);
+  printf("model fitness: %.8f (rotation %f, lensshift_v %f, lensshift_h %f, shear %f)\n",
+         quality, p->rotation, p->lensshift_v, p->lensshift_h, p->shear);
 }
 #endif
 
@@ -2031,12 +2132,13 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   const float rotation = p->rotation;
   const float lensshift_v = p->lensshift_v;
   const float lensshift_h = p->lensshift_h;
+  const float shear = p->shear;
 
   // prepare structure of constant parameters
   dt_iop_ashift_cropfit_params_t cropfit;
   cropfit.width = g->buf_width;
   cropfit.height = g->buf_height;
-  homography((float *)cropfit.homograph, rotation, lensshift_v, lensshift_h, f_length_kb,
+  homography((float *)cropfit.homograph, rotation, lensshift_v, lensshift_h, shear, f_length_kb,
              orthocorr, aspect, cropfit.width, cropfit.height, ASHIFT_HOMOGRAPH_FORWARD);
 
   const float wd = cropfit.width;
@@ -2099,7 +2201,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   int iter = simplex(crop_fitness, params, pcount, NMS_CROP_EPSILON, NMS_CROP_SCALE, NMS_CROP_ITERATIONS,
                      crop_constraint, (void*)&cropfit);
 
-  // in case the fit did not converge ...
+  // in case the fit did not converge -> failed
   if(iter >= NMS_CROP_ITERATIONS) goto failed;
 
   // the fit did converge -> get clipping margins out of params:
@@ -2144,6 +2246,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   return;
 
 failed:
+  // in case of failure: reset clipping margins, set "automatic cropping" parameter
+  // to "off" state, and display warning message
   p->cl = 0.0f;
   p->cr = 1.0f;
   p->ct = 0.0f;
@@ -2279,7 +2383,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->f_length_kb,
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   // clipping offset
@@ -2394,7 +2498,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   float ihomograph[3][3];
-  homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h, d->f_length_kb,
+  homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h, d->shear, d->f_length_kb,
              d->orthocorr, d->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
   // clipping offset
@@ -2555,6 +2659,10 @@ static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx
   {
     points_idx[n].near = 0;
 
+    // skip irrelevant lines
+    if(points_idx[n].type == ASHIFT_LINE_IRRELEVANT)
+      continue;
+
     // first check if the mouse pointer is outside the bounding box of the line -> skip this line
     if(pzx < points_idx[n].bbx - delta &&
        pzx > points_idx[n].bbX + delta &&
@@ -2584,6 +2692,53 @@ static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx
   }
 }
 
+// mark lines which are inside a rectangular area in isbounding mode
+static void get_bounded_inside(const float *points, dt_iop_ashift_points_idx_t *points_idx,
+                               const int points_lines_count, float pzx, float pzy, float pzx2, float pzy2,
+                               dt_iop_ashift_bounding_t mode)
+{
+  // get bounding box coordinates
+  float ax = pzx;
+  float ay = pzy;
+  float bx = pzx2;
+  float by = pzy2;
+  if(pzx > pzx2)
+  {
+    ax = pzx2;
+    bx = pzx;
+  }
+  if(pzy > pzy2)
+  {
+    ay = pzy2;
+    by = pzy;
+  }
+
+  // we either look for the selected or the deselected lines
+  dt_iop_ashift_linetype_t mask = ASHIFT_LINE_SELECTED;
+  dt_iop_ashift_linetype_t state = (mode == ASHIFT_BOUNDING_DESELECT) ? ASHIFT_LINE_SELECTED : 0;
+
+  for(int n = 0; n < points_lines_count; n++)
+  {
+    // mark line as "not near" and "not bounded"
+    points_idx[n].near = 0;
+    points_idx[n].bounded = 0;
+
+    // skip irrelevant lines
+    if(points_idx[n].type == ASHIFT_LINE_IRRELEVANT)
+      continue;
+
+    // is the line inside the box ?
+    if(points_idx[n].bbx >= ax && points_idx[n].bbx <= bx && points_idx[n].bbX >= ax
+       && points_idx[n].bbX <= bx && points_idx[n].bby >= ay && points_idx[n].bby <= by
+       && points_idx[n].bbY >= ay && points_idx[n].bbY <= by)
+    {
+      points_idx[n].bounded = 1;
+      // only mark "near"-ness of those lines we are interested in
+      points_idx[n].near = ((points_idx[n].type & mask) != state) ? 0 : 1;
+    }
+  }
+}
+
 // generate hash value for lines taking into account only the end point coordinates
 static uint64_t get_lines_hash(const dt_iop_ashift_line_t *lines, const int lines_count)
 {
@@ -2600,21 +2755,18 @@ static uint64_t get_lines_hash(const dt_iop_ashift_line_t *lines, const int line
 
 // update color information in points_idx if lines have changed in terms of type (but not in terms
 // of number or position)
-static int update_colors(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *lines, const int lines_count,
-                         dt_iop_ashift_points_idx_t *points_idx, int points_lines_count)
+static int update_colors(struct dt_iop_module_t *self, dt_iop_ashift_points_idx_t *points_idx,
+                         int points_lines_count)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   // is the display flipped relative to the original image?
   const int isflipped = g->isflipped;
 
-  // sanity check
-  if(points_lines_count != lines_count) return FALSE;
-
   // go through all lines
   for(int n = 0; n < points_lines_count; n++)
   {
-    const dt_iop_ashift_linetype_t type = lines[n].type;
+    const dt_iop_ashift_linetype_t type = points_idx[n].type;
 
     // set line color according to line type/orientation
     // note: if the screen display is flipped versus the original image we need
@@ -2664,8 +2816,10 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
 
     my_points_idx[n].length = length;
     my_points_idx[n].near = 0;
+    my_points_idx[n].bounded = 0;
 
     const dt_iop_ashift_linetype_t type = lines[n].type;
+    my_points_idx[n].type = type;
 
     // set line color according to line type/orientation
     // note: if the screen display is flipped versus the original image we need
@@ -2776,7 +2930,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only availabe
   // after g->buf has been processed
-  if(g->buf  && (p->cropmode != ASHIFT_CROP_OFF))
+  if(g->buf  && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
   {
     // roi data of the preview pipe input buffer
     float iwd = g->buf_width;
@@ -2903,8 +3057,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
   else if(g->lines_hash == lines_hash)
   {
+    // update line type information in points_idx
+    for(int n = 0; n < g->points_lines_count; n++)
+      g->points_idx[n].type = g->lines[n].type;
+
     // coordinates of lines are unchanged -> we only need to update colors
-    if(!update_colors(self, g->lines, g->lines_count, g->points_idx, g->points_lines_count))
+    if(!update_colors(self, g->points_idx, g->points_lines_count))
       return;
 
     g->points_version = g->lines_version;
@@ -2963,7 +3121,50 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_stroke(cr);
   }
 
+  // and we draw the selection box if any
+  if(g->isbounding != ASHIFT_BOUNDING_OFF)
+  {
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    double dashed[] = { 4.0, 4.0 };
+    dashed[0] /= zoom_scale;
+    dashed[1] /= zoom_scale;
+    int len = sizeof(dashed) / sizeof(dashed[0]);
+
+    cairo_rectangle(cr, g->lastx * wd, g->lasty * ht, (pzx - g->lastx) * wd, (pzy - g->lasty) * ht);
+
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    cairo_set_line_width(cr, 1.0 / zoom_scale);
+    cairo_set_dash(cr, dashed, len, 0);
+    cairo_stroke_preserve(cr);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_set_dash(cr, dashed, len, 4);
+    cairo_stroke(cr);
+  }
+
   cairo_restore(cr);
+}
+
+// update the number of selected vertical and horizontal lines
+void update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
+                        int *vertical_count, int *horizontal_count)
+{
+  int vlines = 0;
+  int hlines = 0;
+
+  for(int n = 0; n < lines_count; n++)
+  {
+    if((lines[n].type & ASHIFT_LINE_MASK) == ASHIFT_LINE_VERTICAL_SELECTED)
+      vlines++;
+    else if((lines[n].type & ASHIFT_LINE_MASK) == ASHIFT_LINE_HORIZONTAL_SELECTED)
+      hlines++;
+  }
+
+  *vertical_count = vlines;
+  *horizontal_count = hlines;
 }
 
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
@@ -2979,6 +3180,30 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
+
+  // if in rectangle selecting mode adjust "near"-ness of lines according to
+  // the rectangular selection
+  if(g->isbounding != ASHIFT_BOUNDING_OFF)
+  {
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    float wd = self->dev->preview_pipe->backbuf_width;
+    float ht = self->dev->preview_pipe->backbuf_height;
+
+    if(wd >= 1.0 && ht >= 1.0)
+    {
+      // mark lines inside the rectangle
+      get_bounded_inside(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->lastx * wd,
+                         g->lasty * ht, g->isbounding);
+    }
+
+    dt_control_queue_redraw_center();
+    return FALSE;
+  }
 
   // gather information about "near"-ness in g->points_idx
   get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, POINTS_NEAR_DELTA);
@@ -3002,6 +3227,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
   if(handled)
   {
+    update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
     g->lines_version++;
     g->selecting_lines_version++;
   }
@@ -3022,6 +3248,28 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   if(g->lines_suppressed || g->lines == NULL)
     return FALSE;
 
+  // remember lines version at this stage so we can continuously monitor if the
+  // lines have changed in-between
+  g->selecting_lines_version = g->lines_version;
+
+  // if shift button is pressed go into bounding mode (selecting or deselecting
+  // in a rectangle area)
+  if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  {
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    g->lastx = pzx;
+    g->lasty = pzy;
+
+    g->isbounding = (which == 3) ? ASHIFT_BOUNDING_DESELECT : ASHIFT_BOUNDING_SELECT;
+    dt_control_change_cursor(GDK_CROSS);
+
+    return TRUE;
+  }
+
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
   const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
@@ -3029,10 +3277,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   // if we are zoomed out (no panning possible) and we have lines to display we take control
   int take_control = (cur_scale == min_scale) && (g->points_lines_count > 0);
-
-  // remember lines version at this stage so we can continuously monitor if the
-  // lines have changed in-between
-  g->selecting_lines_version = g->lines_version;
 
   // iterate over all lines close to the pointer and change "selected" state.
   // left-click selects and right-click deselects the line
@@ -3065,6 +3309,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   if(handled)
   {
+    update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
     g->lines_version++;
     g->selecting_lines_version++;
   }
@@ -3076,9 +3321,57 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  // end of sweeping mode
+  // finalize the isbounding mode
+  // if user has released the shift button in-between -> do nothing
+  if(g->isbounding != ASHIFT_BOUNDING_OFF && (state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  {
+    int handled = 0;
+
+    // we compute the rectangle selection
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    float wd = self->dev->preview_pipe->backbuf_width;
+    float ht = self->dev->preview_pipe->backbuf_height;
+
+    if(wd >= 1.0 && ht >= 1.0)
+    {
+      // mark lines inside the rectangle
+      get_bounded_inside(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->lastx * wd,
+                         g->lasty * ht, g->isbounding);
+
+      // select or deselect lines within the rectangle according to isbounding state
+      for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
+      {
+        if(g->points_idx[n].bounded == 0) continue;
+
+        if(g->isbounding == ASHIFT_BOUNDING_DESELECT)
+          g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+        else
+          g->lines[n].type |= ASHIFT_LINE_SELECTED;
+
+        handled = 1;
+      }
+
+      if(handled)
+      {
+        update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
+        g->lines_version++;
+        g->selecting_lines_version++;
+      }
+
+    dt_control_queue_redraw_center();
+    }
+  }
+
+  // end of sweeping/isbounding mode
   dt_control_change_cursor(GDK_LEFT_PTR);
   g->isselecting = g->isdeselecting = 0;
+  g->isbounding = ASHIFT_BOUNDING_OFF;
+  g->lastx = g->lasty = -1;
 
   return 0;
 }
@@ -3117,6 +3410,20 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->lensshift_h = dt_bauhaus_slider_get(slider);
+#ifdef ASHIFT_DEBUG
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  model_probe(self, p, g->lastfit);
+#endif
+  do_crop(self, p);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void shear_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  p->shear = dt_bauhaus_slider_get(slider);
 #ifdef ASHIFT_DEBUG
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
@@ -3244,6 +3551,7 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+      dt_bauhaus_slider_set_soft(g->shear, p->shear);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -3288,6 +3596,7 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+      dt_bauhaus_slider_set_soft(g->shear, p->shear);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -3317,12 +3626,14 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
-    if(control)
+    if(control && shift)
+      fitaxis = ASHIFT_FIT_BOTH;
+    else if(control)
       fitaxis = ASHIFT_FIT_ROTATION_BOTH_LINES;
     else if(shift)
       fitaxis = ASHIFT_FIT_BOTH_NO_ROTATION;
     else
-      fitaxis = ASHIFT_FIT_BOTH;
+      fitaxis = ASHIFT_FIT_BOTH_SHEAR;
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
@@ -3332,6 +3643,7 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
       dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
       dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
       dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+      dt_bauhaus_slider_set_soft(g->shear, p->shear);
       darktable.gui->reset = 0;
     }
     g->lastfit = fitaxis;
@@ -3408,12 +3720,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->rotation = p->rotation;
   d->lensshift_v = p->lensshift_v;
   d->lensshift_h = p->lensshift_h;
+  d->shear = p->shear;
   d->f_length_kb = (p->mode == ASHIFT_MODE_GENERIC) ? DEFAULT_F_LENGTH : p->f_length * p->crop_factor;
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
 
   if(gui_has_focus(self))
   {
+    // if gui has focus we want to see the full uncropped image
     d->cl = 0.0f;
     d->cr = 1.0f;
     d->ct = 0.0f;
@@ -3449,8 +3763,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
   dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-  dt_bauhaus_slider_set(g->f_length, p->f_length);
-  dt_bauhaus_slider_set(g->crop_factor, p->crop_factor);
+  dt_bauhaus_slider_set_soft(g->shear, p->shear);
+  dt_bauhaus_slider_set_soft(g->f_length, p->f_length);
+  dt_bauhaus_slider_set_soft(g->crop_factor, p->crop_factor);
   dt_bauhaus_slider_set(g->orthocorr, p->orthocorr);
   dt_bauhaus_slider_set(g->aspect, p->aspect);
   dt_bauhaus_combobox_set(g->mode, p->mode);
@@ -3481,10 +3796,10 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_ashift_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_ashift_params_t));
   module->default_enabled = 0;
-  module->priority = 252; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 215; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
                                                          ASHIFT_CROP_OFF, 0.0f, 1.0f, 0.0f, 1.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
@@ -3518,7 +3833,7 @@ void reload_defaults(dt_iop_module_t *module)
   }
 
   // init defaults:
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, f_length, crop_factor, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, f_length, crop_factor, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
                                                          ASHIFT_CROP_OFF, 0.0f, 1.0f, 0.0f, 1.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
@@ -3564,11 +3879,13 @@ void reload_defaults(dt_iop_module_t *module)
     g->rotation_range = ROTATION_RANGE_SOFT;
     g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
     g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
+    g->shear_range = SHEAR_RANGE_SOFT;
     g->lines_suppressed = 0;
     g->lines_version = 0;
     g->show_guides = 0;
     g->isselecting = 0;
     g->isdeselecting = 0;
+    g->isbounding = ASHIFT_BOUNDING_OFF;
     g->selecting_lines_version = 0;
 
     free(g->points);
@@ -3713,9 +4030,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->rotation_range = ROTATION_RANGE_SOFT;
   g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
   g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
+  g->shear_range = SHEAR_RANGE_SOFT;
   g->show_guides = 0;
   g->isselecting = 0;
   g->isdeselecting = 0;
+  g->isbounding = ASHIFT_BOUNDING_OFF;
   g->selecting_lines_version = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -3735,6 +4054,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
   dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_h, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
+
+  g->shear = dt_bauhaus_slider_new_with_range(self, -SHEAR_RANGE, SHEAR_RANGE, 0.01*SHEAR_RANGE, p->shear, 3);
+  dt_bauhaus_widget_set_label(g->shear, NULL, _("shear"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->shear, -SHEAR_RANGE_SOFT, SHEAR_RANGE_SOFT);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->shear, TRUE, TRUE, 0);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
@@ -3857,6 +4181,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->rotation, _("rotate image"));
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->lensshift_h, _("apply lens shift correction in one direction"));
+  gtk_widget_set_tooltip_text(g->shear, _("shear the image along one diagonal"));
   gtk_widget_set_tooltip_text(g->guide_lines, _("display guide lines overlay"));
   gtk_widget_set_tooltip_text(g->cropmode, _("automatically crop to avoid black edges"));
   gtk_widget_set_tooltip_text(g->mode, _("lens model of the perspective correction: "
@@ -3866,8 +4191,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->crop_factor, _("crop factor of the camera sensor, "
                                                 "default value set from exif data if available, "
                                                 "manual setting is often required"));
-  gtk_widget_set_tooltip_text(g->orthocorr, _("the level of lens dependent correction, 100% for full dependency, "
-                                              "0% for the generic case"));
+  gtk_widget_set_tooltip_text(g->orthocorr, _("the level of lens dependent correction, set to maximum for full lens dependency, "
+                                              "set to zero for the generic case"));
   gtk_widget_set_tooltip_text(g->aspect, _("adjust aspect ratio of image by horizontal and vertical scaling"));
   gtk_widget_set_tooltip_text(g->fit_v, _("automatically correct for vertical perspective distortion\n"
                                           "ctrl-click to only fit rotation\n"
@@ -3876,9 +4201,11 @@ void gui_init(struct dt_iop_module_t *self)
                                           "ctrl-click to only fit rotation\n"
                                           "shift-click to only fit lens shift"));
   gtk_widget_set_tooltip_text(g->fit_both, _("automatically correct for vertical and "
-                                             "horizontal perspective distortions\n"
+                                             "horizontal perspective distortions; fitting rotation,"
+                                             "lens shift in both directions, and shear\n"
                                              "ctrl-click to only fit rotation\n"
-                                             "shift-click to only fit lens shift"));
+                                             "shift-click to only fit lens shift\n"
+                                             "ctrl-shift-click to only fit rotation and lens shift"));
   gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
                                               "ctrl-click for an additional edge enhancement"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
@@ -3887,6 +4214,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
   g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
+  g_signal_connect(G_OBJECT(g->shear), "value-changed", G_CALLBACK(shear_callback), self);
   g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guide_lines_callback), self);
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
@@ -3917,4 +4245,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

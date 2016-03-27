@@ -53,6 +53,7 @@ typedef enum dt_control_gui_mode_t
 #ifdef HAVE_PRINT
   DT_PRINT,
 #endif
+  DT_KNIGHT,
   DT_MODE_NONE
 } dt_control_gui_mode_t;
 
@@ -274,4 +275,4 @@ static inline int32_t dt_ctl_get_num_procs()
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

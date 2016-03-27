@@ -70,6 +70,9 @@ int groups();
 /** get the iop module flags. */
 int flags();
 
+/** get a descriptive text used for example in a tooltip in more modules */
+const char *description();
+
 int operation_tags();
 int operation_tags_filter();
 
@@ -154,7 +157,7 @@ void process_tiling(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
                     void *const o, const struct dt_iop_roi_t *const roi_in,
                     const struct dt_iop_roi_t *const roi_out, const int bpp);
 
-#if defined(__SSE2__)
+#if defined(__SSE__)
 /** a variant process(), that can contain SSE2 intrinsics. */
 /** can be provided by each IOP. */
 void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
@@ -201,4 +204,4 @@ dt_introspection_field_t *get_f(const char *name);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

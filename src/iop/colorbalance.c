@@ -85,6 +85,11 @@ const char *name()
   return _("color balance");
 }
 
+const char *description()
+{
+  return _("lift/gamma/gain controls as seen in video editors");
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
@@ -232,7 +237,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
   module->default_enabled = 0;
-  module->priority = 400; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 430; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorbalance_params_t);
   module->gui_data = NULL;
   dt_iop_colorbalance_params_t tmp = (dt_iop_colorbalance_params_t){ { 1.0f, 1.0f, 1.0f, 1.0f },
@@ -662,4 +667,4 @@ void gui_cleanup(dt_iop_module_t *self)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

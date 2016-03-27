@@ -535,8 +535,6 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
       SUM_PIXEL_EPILOGUE
     }
   }
-
-  _mm_sfence();
 }
 
 #undef SUM_PIXEL_CONTRIBUTION_COMMON
@@ -545,7 +543,7 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 #undef SUM_PIXEL_PROLOGUE
 #undef SUM_PIXEL_EPILOGUE
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 static void eaw_decompose_sse(float *const out, const float *const in, float *const detail, const int scale,
                               const float inv_sigma2, const int32_t width, const int32_t height)
 {
@@ -687,7 +685,7 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
   }
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 static void eaw_synthesize_sse2(float *const out, const float *const in, const float *const detail,
                                 const float *thrsf, const float *boostf, const int32_t width,
                                 const int32_t height)
@@ -1026,7 +1024,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                                 const dt_iop_roi_t *const roi_out)
@@ -1774,7 +1772,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out, eaw_decompose, eaw_synthesize);
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -1852,7 +1850,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
-  module->priority = 150; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 138; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
   module->gui_data = NULL;
   module->data = NULL;
@@ -2085,4 +2083,4 @@ void gui_cleanup(dt_iop_module_t *self)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

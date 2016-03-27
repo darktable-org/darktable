@@ -32,3 +32,6 @@ typedef struct dt_geo_map_display_point_t
 } dt_geo_map_display_point_t;
 
 #endif // __GEO_H__
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

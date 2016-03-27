@@ -20,7 +20,7 @@
 
 #include "develop/imageop_math.h"
 #include <assert.h> // for assert
-#ifdef __SSE2__
+#ifdef __SSE__
 #include <emmintrin.h> // for _mm_set_epi32, _mm_add_epi32
 #endif
 #include <glib.h> // for MIN, MAX, CLAMP, inline
@@ -233,7 +233,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_plain(float *const out
   }
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_sse2(float *out, const uint16_t *const in,
                                                                const dt_iop_roi_t *const roi_out,
                                                                const dt_iop_roi_t *const roi_in,
@@ -309,7 +309,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint
   if(darktable.codepath.OPENMP_SIMD)
     return dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_plain(out, in, roi_out, roi_in, out_stride,
                                                                       in_stride);
-#if defined(__SSE__)
+#if defined(__SSE2__)
   else if(darktable.codepath.SSE2)
     return dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_sse2(out, in, roi_out, roi_in, out_stride,
                                                                      in_stride);
@@ -432,7 +432,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_plain(float *out, const uint16_t *c
 #endif
 }
 
-#if defined(__SSE__)
+#if defined(__SSE2__)
 void dt_iop_clip_and_zoom_demosaic_half_size_sse2(float *out, const uint16_t *const in,
                                                   const dt_iop_roi_t *const roi_out,
                                                   const dt_iop_roi_t *const roi_in, const int32_t out_stride,
@@ -549,7 +549,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
   if(darktable.codepath.OPENMP_SIMD)
     return dt_iop_clip_and_zoom_demosaic_half_size_plain(out, in, roi_out, roi_in, out_stride, in_stride,
                                                          filters);
-#if defined(__SSE__)
+#if defined(__SSE2__)
   else if(darktable.codepath.SSE2)
     return dt_iop_clip_and_zoom_demosaic_half_size_sse2(out, in, roi_out, roi_in, out_stride, in_stride,
                                                         filters);
@@ -1581,4 +1581,4 @@ void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

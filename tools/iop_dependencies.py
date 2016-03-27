@@ -33,6 +33,7 @@ from pygraph.readwrite.dot import read
 import fileinput
 import sys
 import os.path
+import glob
 import re
 
 def replace_all(file,searchExp,replaceExp):
@@ -420,6 +421,36 @@ def add_edges(gr):
   gr.add_edge(('clipping', 'colorbalance'))
   gr.add_edge(('colorbalance', 'colorin'))
 
+  # colorchecker should happen early in Lab mode, after
+  # highlight colour reconstruction, but with the ability to mess with everything
+  # after transforming the colour space
+  gr.add_edge(('colorout', 'colorchecker'))
+  gr.add_edge(('bloom', 'colorchecker'))
+  gr.add_edge(('nlmeans', 'colorchecker'))
+  gr.add_edge(('colorbalance', 'colorchecker'))
+  gr.add_edge(('colortransfer', 'colorchecker'))
+  gr.add_edge(('colormapping', 'colorchecker'))
+  gr.add_edge(('atrous', 'colorchecker'))
+  gr.add_edge(('bilat', 'colorchecker'))
+  gr.add_edge(('colorzones', 'colorchecker'))
+  gr.add_edge(('lowlight', 'colorchecker'))
+  gr.add_edge(('monochrome', 'colorchecker'))
+  gr.add_edge(('zonesystem', 'colorchecker'))
+  gr.add_edge(('tonecurve', 'colorchecker'))
+  gr.add_edge(('levels', 'colorchecker'))
+  gr.add_edge(('relight', 'colorchecker'))
+  gr.add_edge(('colorcorrection', 'colorchecker'))
+  gr.add_edge(('sharpen', 'colorchecker'))
+  gr.add_edge(('grain', 'colorchecker'))
+  gr.add_edge(('lowpass', 'colorchecker'))
+  gr.add_edge(('shadhi', 'colorchecker'))
+  gr.add_edge(('highpass', 'colorchecker'))
+  gr.add_edge(('colorcontrast', 'colorchecker'))
+  gr.add_edge(('colorize', 'colorchecker'))
+  gr.add_edge(('colisa', 'colorchecker'))
+  gr.add_edge(('defringe', 'colorchecker'))
+  gr.add_edge(('colorchecker', 'colorreconstruction'))
+
 gr = digraph()
 gr.add_nodes([
 'atrous',
@@ -435,6 +466,7 @@ gr.add_nodes([
 'clipping',
 'colisa',
 'colorbalance',
+'colorchecker',
 'colorcorrection',
 'colorin',
 'colorize',
@@ -497,6 +529,11 @@ if cycle_list:
   print(cycle_list)
   exit(1)
 
+# replace all the priorities with garbage. to make sure all the iops are in this file.
+for filename in glob.glob(os.path.join(os.path.dirname(__file__), '../src/iop/*.c')) + glob.glob(os.path.join(os.path.dirname(__file__), '../src/iop/*.cc')):
+  if apply_changes:
+    replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %s; // module order created by iop_dependencies.py, do not edit!\n"%"NAN")
+
 # get us some sort order!
 sorted_nodes = topological_sorting(gr)
 length=len(sorted_nodes)
@@ -519,4 +556,4 @@ for n in sorted_nodes:
 dot = write(gr)
 gvv = gv.AGraph(dot)
 gvv.layout(prog='dot')
-gvv.draw('iop_deps.pdf')
+gvv.draw(os.path.join(os.path.dirname(__file__), 'iop_deps.pdf'))

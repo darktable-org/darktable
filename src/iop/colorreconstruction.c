@@ -576,8 +576,9 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
                          + b->buf[gi + oy + oz].weight * (1.0f - xf) * (yf) * (zf)
                          + b->buf[gi + ox + oy + oz].weight * (xf) * (yf) * (zf);
 
-      out[index + 1] = (weight > 0.0f) ? ain * (1.0f - blend) + aout * Lin/Lout * blend : ain;
-      out[index + 2] = (weight > 0.0f) ? bin * (1.0f - blend) + bout * Lin/Lout * blend : bin;
+      const float lout = fmax(Lout, 0.01f);
+      out[index + 1] = (weight > 0.0f) ? ain * (1.0f - blend) + aout * Lin/lout * blend : ain;
+      out[index + 2] = (weight > 0.0f) ? bin * (1.0f - blend) + bout * Lin/lout * blend : bin;
     }
   }
 }
@@ -1313,7 +1314,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
   module->default_enabled = 0;
-  module->priority = 360; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 369; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorreconstruct_params_t);
   module->gui_data = NULL;
   dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 400.0f, 10.0f, 0.66f, COLORRECONSTRUCT_PRECEDENCE_NONE };
@@ -1429,4 +1430,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
