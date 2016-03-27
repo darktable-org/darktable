@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-21 10:32+0100\n"
-"PO-Revision-Date: 2016-03-21 10:37+0100\n"
+"POT-Creation-Date: 2016-03-27 19:25+0200\n"
+"PO-Revision-Date: 2016-03-27 19:29+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -9313,6 +9313,10 @@ msgstr ""
 msgid "darktable"
 msgstr "darktable"
 
+#: ../src/libs/tools/darktable.c:288
+msgid "copyright (c) the authors 2009-2016"
+msgstr "Copyright © die Urheber 2009–2016"
+
 #: ../src/libs/tools/darktable.c:290
 msgid "organize and develop images from digital cameras"
 msgstr "Organisiere und entwickle Bilder von Digitalkameras"
@@ -9954,17 +9958,17 @@ msgstr "neue Sitzung ‚%s‘ gestartet"
 msgid "no camera with tethering support available for use..."
 msgstr "keine Kamera mit Tethering-Unterstützung verfügbar ..."
 
-#: ../src/views/view.c:314
+#: ../src/views/view.c:322
 msgid "you are making a mistake!"
 msgstr "Sie machen einen Fehler!"
 
-#: ../src/views/view.c:315
+#: ../src/views/view.c:323
 msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
 msgstr ""
 "_Ja, ich habe verstanden. Bitte lass mich leiden, indem ich darktable in 32 "
 "Bit benutze."
 
-#: ../src/views/view.c:319
+#: ../src/views/view.c:327
 msgid ""
 "warning!\n"
 "you are using a 32-bit build of darktable.\n"
