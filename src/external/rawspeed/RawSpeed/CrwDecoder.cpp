@@ -99,91 +99,64 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   string mode = "";
 
   // Fetch the white balance
-  if(mRootIFD->hasEntryRecursive((CiffTag)0x0032)) {
-    CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x0032);
-    if (entry->type == CIFF_BYTE && entry->count == 768) {
-      // We're in a D30 file, values are RGGB
-      // This will probably not get used anyway as a 0x102c tag should exist
-      const ushort16 *values = (ushort16*) (entry->getData()+72);
-      mRaw->metadata.wbCoeffs[0] = (float) (1024.0 / values[0]);
-      mRaw->metadata.wbCoeffs[1] = (float) ((1024.0/values[1])+(1024.0/values[2]))/2.0f;
-      mRaw->metadata.wbCoeffs[2] = (float) (1024.0 / values[3]);
-    } else if (entry->type == CIFF_BYTE && entry->count > 768) { // Other G series and S series cameras
-      const uchar8 *data = entry->getData();
-      // correct offset for most cameras
-      int offset = 120;
-      // check for the hint that we need to use other offset
-      if (hints.find("wb_offset") != hints.end()) {
-        stringstream wb_offset(hints.find("wb_offset")->second);
-        wb_offset >> offset;
-      }
-
-      ushort16 key[] = { 0x410, 0x45f3 };
-      if (hints.find("wb_mangle") == hints.end())
-        key[0] = key[1] = 0;
-
-      const ushort16 *values = (ushort16*) (data+offset);
-      if ((values[0]^key[0]) == (values[3]^key[1])) { // Both greens should be equal
-        mRaw->metadata.wbCoeffs[0] = (float) (values[1] ^ key[1]);
-        mRaw->metadata.wbCoeffs[1] = (float) (values[0] ^ key[0]);
-        mRaw->metadata.wbCoeffs[2] = (float) (values[2] ^ key[0]);
-      } else
-        writeLog(DEBUG_PRIO_INFO, "CRW Decoder: WB greens in 0x0032 tag should be equal");
-    }
-  }
-  if(mRootIFD->hasEntryRecursive((CiffTag)0x102c)) {
-    CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x102c);
-    if (entry->type == CIFF_SHORT && entry->getShort() > 512) {
-      // G1/Pro90 CYGM pattern
-      mRaw->metadata.wbCoeffs[0] = (float) entry->getShort(62);
-      mRaw->metadata.wbCoeffs[1] = (float) entry->getShort(63);
-      mRaw->metadata.wbCoeffs[2] = (float) entry->getShort(60);
-      mRaw->metadata.wbCoeffs[3] = (float) entry->getShort(61);
-    } else if (entry->type == CIFF_SHORT) {
-      /* G2, S30, S40 */
-
-      // RGBG !
-      float cam_mul[4];
-      for(int c = 0; c < 4; c++)
-      {
-        cam_mul[c ^ (c >> 1) ^ 1] = (float) entry->getShort(50 + c);
-      }
-
-      const float green = (cam_mul[1] + cam_mul[3]) / 2.0f;
-      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
-      mRaw->metadata.wbCoeffs[1] = 1.0f;
-      mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
-    }
-  }
-  if (mRootIFD->hasEntryRecursive(CIFF_SHOTINFO) && mRootIFD->hasEntryRecursive(CIFF_WHITEBALANCE)) {
-    CiffEntry *shot_info = mRootIFD->getEntryRecursive(CIFF_SHOTINFO);
-
-    if (shot_info->type == CIFF_SHORT) {
-      ushort16 wb_index = shot_info->getShort(7);
-
-      CiffEntry *wb_data = mRootIFD->getEntryRecursive(CIFF_WHITEBALANCE);
-      if (wb_data->type == CIFF_SHORT) {
-        /* CANON EOS D60, CANON EOS 10D, CANON EOS 300D */
-        int wb_offset = (wb_index < 18) ? "0134567028"[wb_index]-'0' : 0;
-        wb_offset = 1+wb_offset*4;
-
-        // RGGB !
-        float cam_mul[4];
-        for(int c = 0; c < 4; c++) {
-          cam_mul[c] = (float) wb_data->getShort(wb_offset + c);
+  try{
+    if(mRootIFD->hasEntryRecursive((CiffTag)0x0032)) {
+      CiffEntry *wb = mRootIFD->getEntryRecursive((CiffTag)0x0032);
+      if (wb->type == CIFF_BYTE && wb->count == 768) {
+        // We're in a D30 file, values are RGGB
+        // This will probably not get used anyway as a 0x102c tag should exist
+        mRaw->metadata.wbCoeffs[0] = (float) (1024.0 /wb->getByte(72));
+        mRaw->metadata.wbCoeffs[1] = (float) ((1024.0/wb->getByte(73))+(1024.0/wb->getByte(74)))/2.0f;
+        mRaw->metadata.wbCoeffs[2] = (float) (1024.0 /wb->getByte(75));
+      } else if (wb->type == CIFF_BYTE && wb->count > 768) { // Other G series and S series cameras
+        // correct offset for most cameras
+        int offset = 120;
+        // check for the hint that we need to use other offset
+        if (hints.find("wb_offset") != hints.end()) {
+          stringstream wb_offset(hints.find("wb_offset")->second);
+          wb_offset >> offset;
         }
 
-        // NOTE: dcraw just uses first green level, so the values are different.
-        const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
-        mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
-        mRaw->metadata.wbCoeffs[1] = 1.0f;
-        mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
-      } else {
-        writeLog(DEBUG_PRIO_INFO, "CRW Decoder: CIFF_WHITEBALANCE has to be 4096 (short), %i found.", wb_data->type);
+        ushort16 key[] = { 0x410, 0x45f3 };
+        if (hints.find("wb_mangle") == hints.end())
+          key[0] = key[1] = 0;
+
+        offset /= 2;
+        mRaw->metadata.wbCoeffs[0] = (float) (wb->getShort(offset+1) ^ key[1]);
+        mRaw->metadata.wbCoeffs[1] = (float) (wb->getShort(offset+0) ^ key[0]);
+        mRaw->metadata.wbCoeffs[2] = (float) (wb->getShort(offset+2) ^ key[0]);
       }
-    } else {
-      writeLog(DEBUG_PRIO_INFO, "CRW Decoder: CIFF_SHOTINFO is %d, not shorts (4096)", shot_info->type);
     }
+    if(mRootIFD->hasEntryRecursive((CiffTag)0x102c)) {
+      CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x102c);
+      if (entry->type == CIFF_SHORT && entry->getShort() > 512) {
+        // G1/Pro90 CYGM pattern
+        mRaw->metadata.wbCoeffs[0] = (float) entry->getShort(62);
+        mRaw->metadata.wbCoeffs[1] = (float) entry->getShort(63);
+        mRaw->metadata.wbCoeffs[2] = (float) entry->getShort(60);
+        mRaw->metadata.wbCoeffs[3] = (float) entry->getShort(61);
+      } else if (entry->type == CIFF_SHORT) {
+        /* G2, S30, S40 */
+        mRaw->metadata.wbCoeffs[0] = (float) entry->getShort(51);
+        mRaw->metadata.wbCoeffs[1] = ((float) entry->getShort(50) + (float) entry->getShort(53))/ 2.0f;
+        mRaw->metadata.wbCoeffs[2] = (float) entry->getShort(52);
+      }
+    }
+    if (mRootIFD->hasEntryRecursive(CIFF_SHOTINFO) && mRootIFD->hasEntryRecursive(CIFF_WHITEBALANCE)) {
+      CiffEntry *shot_info = mRootIFD->getEntryRecursive(CIFF_SHOTINFO);
+      ushort16 wb_index = shot_info->getShort(7);
+      CiffEntry *wb_data = mRootIFD->getEntryRecursive(CIFF_WHITEBALANCE);
+      /* CANON EOS D60, CANON EOS 10D, CANON EOS 300D */
+      int wb_offset = (wb_index < 18) ? "0134567028"[wb_index]-'0' : 0;
+      wb_offset = 1+wb_offset*4;
+      mRaw->metadata.wbCoeffs[0] = wb_data->getShort(wb_offset + 0);
+      mRaw->metadata.wbCoeffs[1] = wb_data->getShort(wb_offset + 1);
+      mRaw->metadata.wbCoeffs[2] = wb_data->getShort(wb_offset + 3);
+    }
+  } catch (const std::exception& e) {
+    fprintf(stderr, "Got exception: %s\n", e.what());
+    mRaw->setError(e.what());
+    // We caught an exception reading WB, just ignore it
   }
 
   setMetaData(meta, make, model, mode, iso);

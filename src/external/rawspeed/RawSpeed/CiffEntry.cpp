@@ -103,7 +103,7 @@ uint32 CiffEntry::getInt(uint32 num) {
 }
 
 ushort16 CiffEntry::getShort(uint32 num) {
-  if (type != CIFF_SHORT)
+  if (type != CIFF_SHORT && type != CIFF_BYTE)
     ThrowCPE("CIFF, getShort: Wrong type 0x%x encountered. Expected Short at 0x%x", type, tag);
 
   if (num*2+1 >= bytesize)
