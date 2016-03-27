@@ -1500,7 +1500,7 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 760D", Shade               , 0, { 2.528320, 1, 1.466797, 0 } },
   { "Canon", "EOS 760D", Cloudy              , 0, { 2.342773, 1, 1.578125, 0 } },
   { "Canon", "EOS 760D", Tungsten            , 0, { 1.510742, 1, 2.479492, 0 } },
-  { "Canon", "EOS 760D", Fluorescent         , 0, { 1.825195, 1, 2.311523, 0 } },
+  { "Canon", "EOS 760D", CoolWhiteFluorescent, 0, { 1.825195, 1, 2.311523, 0 } },
   { "Canon", "EOS 760D", Flash               , 0, { 2.420898, 1, 1.556641, 0 } },
 
   { "Canon", "EOS 1000D", Daylight, 0,		{ 2.183594, 1, 1.526367, 0 } },
