@@ -124,16 +124,16 @@ ARGV.each do |filename|
     end
   end
 
-  found_presets += listed_presets.map do |preset, red, green, blue|
-    preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
-    [maker, model, preset, red, green, blue]
-  end
-
   # Adjust the maker/model we found with the map we generated before
   if exif_name_map[[maker,model]]
     maker, model = exif_name_map[[maker,model]]
   else
     $stderr.puts "WARNING: Couldn't find model in cameras.xml ('#{maker}', '#{model}')"
+  end
+
+  found_presets += listed_presets.map do |preset, red, green, blue|
+    preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
+    [maker, model, preset, red, green, blue]
   end
 
   # Print out the WB value that was used in the file
