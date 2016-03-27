@@ -322,7 +322,9 @@ void RawImageData::startWorker(RawImageWorker::RawImageWorkerTask task, bool cro
 void RawImageData::fixBadPixelsThread( int start_y, int end_y )
 {
   int gw = (uncropped_dim.x + 15) / 32;
+#ifdef __AFL_COMPILER
   int bad_count = 0;
+#endif
   for (int y = start_y; y < end_y; y++) {
     uint32* bad_map = (uint32*)&mBadPixelMap[y*mBadPixelMapPitch];
     for (int x = 0 ; x < gw; x++) {
@@ -333,8 +335,10 @@ void RawImageData::fixBadPixelsThread( int start_y, int end_y )
         for (int i = 0; i < 4; i++) {
           for (int j = 0; j < 8; j++) {
             if (1 == ((bad[i]>>j) & 1)) {
-              if (bad_count++ > 500)
+#ifdef __AFL_COMPILER
+              if (bad_count++ > 100)
                 ThrowRDE("The bad pixels are too damn high!");
+#endif
               fixBadPixel(x*32+i*8+j, y, 0);
             }
           }
