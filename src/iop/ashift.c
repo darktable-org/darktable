@@ -23,6 +23,7 @@
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/interpolation.h"
+#include "common/bilateral.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -189,10 +190,11 @@ typedef enum dt_iop_ashift_nmsresult_t
 
 typedef enum dt_iop_ashift_enhance_t
 {
-  ASHIFT_ENHANCE_NONE = 0,
-  ASHIFT_ENHANCE_HORIZONTAL = 1,
-  ASHIFT_ENHANCE_VERTICAL = 2,
-  ASHIFT_ENHANCE_EDGES = 3
+  ASHIFT_ENHANCE_NONE       = 0,
+  ASHIFT_ENHANCE_EDGES      = 1 << 0,
+  ASHIFT_ENHANCE_DETAIL     = 1 << 1,
+  ASHIFT_ENHANCE_HORIZONTAL = 0x100,
+  ASHIFT_ENHANCE_VERTICAL   = 0x200
 } dt_iop_ashift_enhance_t;
 
 typedef enum dt_iop_ashift_mode_t
@@ -1116,9 +1118,85 @@ error:
   return FALSE;
 }
 
+// XYZ -> sRGB matrix
+static void XYZ_to_sRGB(const float *XYZ, float *sRGB)
+{
+  sRGB[0] =  3.1338561f * XYZ[0] - 1.6168667f * XYZ[1] - 0.4906146f * XYZ[2];
+  sRGB[1] = -0.9787684f * XYZ[0] + 1.9161415f * XYZ[1] + 0.0334540f * XYZ[2];
+  sRGB[2] =  0.0719453f * XYZ[0] - 0.2289914f * XYZ[1] + 1.4052427f * XYZ[2];
+}
+
+// sRGB -> XYZ matrix
+static void sRGB_to_XYZ(const float *sRGB, float *XYZ)
+{
+  XYZ[0] = 0.4360747f * sRGB[0] + 0.3850649f * sRGB[1] + 0.1430804f * sRGB[2];
+  XYZ[1] = 0.2225045f * sRGB[0] + 0.7168786f * sRGB[1] + 0.0606169f * sRGB[2];
+  XYZ[2] = 0.0139322f * sRGB[0] + 0.0971045f * sRGB[1] + 0.7141733f * sRGB[2];
+}
+
+// detail enhancement via bilateral grid (function arguments in and out may represent identical buffers)
+static int detail_enhance(const float *in, float *out, const int width, const int height)
+{
+  const float sigma_r = 5.0f;
+  const float sigma_s = fminf(width, height) * 0.02f;
+  const float detail = 10.0f;
+
+  int success = TRUE;
+
+  // input data are expected in linear RGB,
+  // as colors don't matter we are safe to assume data to be sRGB
+
+  // convert RGB input to Lab, use output buffer for intermediate storage
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    const float *inp = in + (size_t)4 * j * width;
+    float *outp = out + (size_t)4 * j * width;
+    for(int i = 0; i < width; i++, inp += 4, outp += 4)
+    {
+      float XYZ[3];
+      sRGB_to_XYZ(inp, XYZ);
+      dt_XYZ_to_Lab(XYZ, outp);
+    }
+  }
+
+  // bilateral grid detail enhancement
+  dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
+
+  if(b != NULL)
+  {
+    dt_bilateral_splat(b, out);
+    dt_bilateral_blur(b);
+    dt_bilateral_slice_to_output(b, out, out, detail);
+    dt_bilateral_free(b);
+  }
+  else
+    success = FALSE;
+
+  // convert resulting Lab to RGB output
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(out)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    float *outp = out + (size_t)4 * j * width;
+    for(int i = 0; i < width; i++, outp += 4)
+    {
+      float XYZ[3];
+      dt_Lab_to_XYZ(outp, XYZ);
+      XYZ_to_sRGB(XYZ, outp);
+    }
+  }
+
+  return success;
+}
+
+
 // do actual line_detection based on LSD algorithm and return results according to this module's
 // conventions
-static int line_detect(const float *in, const int width, const int height, const int x_off, const int y_off,
+static int line_detect(float *in, const int width, const int height, const int x_off, const int y_off,
                        const float scale, dt_iop_ashift_line_t **alines, int *lcount, int *vcount, int *hcount,
                        float *vweight, float *hweight, dt_iop_ashift_enhance_t enhance)
 {
@@ -1131,18 +1209,23 @@ static int line_detect(const float *in, const int width, const int height, const
   float vertical_weight = 0.0f;
   float horizontal_weight = 0.0f;
 
+  // if requested perform an additional detail enhancement step
+  if(enhance & ASHIFT_ENHANCE_DETAIL)
+  {
+    (void)detail_enhance(in, in, width, height);
+  }
+
   // allocate intermediate buffers
   greyscale = malloc((size_t)width * height * sizeof(double));
   if(greyscale == NULL) goto error;
 
-  // generate greyscale image
+  // convert to greyscale image
   rgb2grey256(in, greyscale, width, height);
 
-  if(enhance == ASHIFT_ENHANCE_EDGES)
+  // if requested perform an additional edge enhancement step
+  if(enhance & ASHIFT_ENHANCE_EDGES)
   {
-    // if requested perform an additional edge enhancement step
-    if(!edge_enhance(greyscale, greyscale, width, height))
-      goto error;
+    (void)edge_enhance(greyscale, greyscale, width, height);
   }
 
   // call the line segment detector LSD;
@@ -3669,13 +3752,20 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
     const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
+    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
-    if(control)
+
+    if(control && shift)
+      (void)do_get_structure(self, p, ASHIFT_ENHANCE_EDGES | ASHIFT_ENHANCE_DETAIL);
+    else if(shift)
+      (void)do_get_structure(self, p, ASHIFT_ENHANCE_DETAIL);
+    else if(control)
       (void)do_get_structure(self, p, ASHIFT_ENHANCE_EDGES);
     else
       (void)do_get_structure(self, p, ASHIFT_ENHANCE_NONE);
+
     // hack to guarantee that module gets enabled on button click
     if(!self->enabled) p->toggle ^= 1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -4208,7 +4298,9 @@ void gui_init(struct dt_iop_module_t *self)
                                              "shift-click to only fit lens shift\n"
                                              "ctrl-shift-click to only fit rotation and lens shift"));
   gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
-                                              "ctrl-click for an additional edge enhancement"));
+                                              "ctrl-click for an additional edge enhancement\n"
+                                              "shift-click for an additional detail enhancement\n"
+                                              "ctrl-shift-click for a combination of both methods"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
