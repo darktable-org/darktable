@@ -143,6 +143,9 @@ ARGV.each do |filename|
   end
 end
 
+# Get rid of duplicate presets
+found_presets = Hash[found_presets.sort.zip].keys
+
 def convert_preset_to_sort(preset)
   if IGNORED_PRESETS.include? preset
     return 0
@@ -165,7 +168,7 @@ found_presets.each do |maker, model, preset, red, green, blue, acc|
   min_padding = preset.size if preset.size > min_padding
 end
 
-# Print out the presets if they exit
+# Print out the presets if they exist
 found_presets.each do |maker, model, preset, red, green, blue|
   if IGNORED_PRESETS.include? preset
     $stderr.puts "Ignoring preset '#{preset}'"
