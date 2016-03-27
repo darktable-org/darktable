@@ -1495,6 +1495,14 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 750D", CoolWhiteFluorescent, 0, { 1.784180, 1, 2.300781, 0 } },
   { "Canon", "EOS 750D", Flash               , 0, { 2.359375, 1, 1.548828, 0 } },
 
+  // Firmware version 1.0.0
+  { "Canon", "EOS 760D", Daylight            , 0, { 2.169922, 1, 1.709961, 0 } },
+  { "Canon", "EOS 760D", Shade               , 0, { 2.528320, 1, 1.466797, 0 } },
+  { "Canon", "EOS 760D", Cloudy              , 0, { 2.342773, 1, 1.578125, 0 } },
+  { "Canon", "EOS 760D", Tungsten            , 0, { 1.510742, 1, 2.479492, 0 } },
+  { "Canon", "EOS 760D", CoolWhiteFluorescent, 0, { 1.825195, 1, 2.311523, 0 } },
+  { "Canon", "EOS 760D", Flash               , 0, { 2.420898, 1, 1.556641, 0 } },
+
   { "Canon", "EOS 1000D", Daylight, 0,		{ 2.183594, 1, 1.526367, 0 } },
   { "Canon", "EOS 1000D", Shade, 0,		{ 2.553711, 1, 1.262695, 0 } },
   { "Canon", "EOS 1000D", Cloudy, 0,		{ 2.365234, 1, 1.375977, 0 } },
