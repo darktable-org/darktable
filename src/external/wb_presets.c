@@ -4476,6 +4476,14 @@ const wb_data wb_preset[] =
   { "Olympus", "E-PM2", "3300K", 0,		{ 1.429688, 1, 2.640625, 0 } },
   { "Olympus", "E-PM2", "5000K", 0,		{ 1.882813, 1, 1.984375, 0 } },
 
+  { "Olympus", "PEN-F", Daylight            , 0, { 1.820312, 1, 1.804688, 0 } },
+  { "Olympus", "PEN-F", Shade               , 0, { 2.132812, 1, 1.414062, 0 } },
+  { "Olympus", "PEN-F", Cloudy              , 0, { 1.960938, 1, 1.617188, 0 } },
+  { "Olympus", "PEN-F", Tungsten            , 0, { 1.156250, 1, 3.265625, 0 } },
+  { "Olympus", "PEN-F", CoolWhiteFluorescent, 0, { 1.765625, 1, 2.578125, 0 } },
+  { "Olympus", "PEN-F", Underwater          , 0, { 1.789062, 1, 1.890625, 0 } },
+  { "Olympus", "PEN-F", Flash               , 0, { 2.070312, 1, 1.539062, 0 } },
+
   { "Olympus", "SP500UZ", Daylight, -7,		{ 1.136719, 1, 2.359375, 0 } },
   { "Olympus", "SP500UZ", Daylight, 0,		{ 1.960937, 1, 1.585937, 0 } },
   { "Olympus", "SP500UZ", Daylight, 7,		{ 3.927660, 1.089362, 1, 0 } },
