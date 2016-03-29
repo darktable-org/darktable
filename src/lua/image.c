@@ -336,7 +336,7 @@ static int rights_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.title", NULL);
+    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.rights", NULL);
     if(res)
       lua_pushstring(L, (char *)res->data);
     else
@@ -348,7 +348,7 @@ static int rights_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.title", luaL_checkstring(L, 3));
+    dt_metadata_set(my_image->id, "Xmp.dc.rights", luaL_checkstring(L, 3));
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
