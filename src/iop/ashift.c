@@ -61,7 +61,7 @@
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
 #define LSD_SCALE 1.0                       // scaling factor for LSD line detection
 #define RANSAC_RUNS 200                     // how many interations to run in ransac
-#define RANSAC_EPSILON 4                    // starting value for ransac epsilon (in -log10 units)
+#define RANSAC_EPSILON 2                    // starting value for ransac epsilon (in -log10 units)
 #define RANSAC_EPSILON_STEP 1               // step size of epsilon optimization (log10 units)
 #define RANSAC_ELIMINATION_RATIO 60         // percentage of lines we try to eliminate as outliers
 #define RANSAC_OPTIMIZATION_STEPS 4         // home many steps to optimize epsilon
@@ -1282,6 +1282,10 @@ static int line_detect(float *in, const int width, const int height, const int x
       // calculate homogeneous coordinates of connecting line (defined by the two points)
       vec3prodn(ashift_lines[lct].L, ashift_lines[lct].p1, ashift_lines[lct].p2);
 
+      // normalaze line coordinates so that x^2 + y^2 = 1
+      // (this will always succeed as L is a real line connecting two real points)
+      vec3lnorm(ashift_lines[lct].L, ashift_lines[lct].L);
+
       // length and width of rectangle (see LSD)
       ashift_lines[lct].length = sqrt((px2 - px1) * (px2 - px1) + (py2 - py1) * (py2 - py1));
       ashift_lines[lct].width = lsd_lines[n * 7 + 4] / scale;
@@ -1476,16 +1480,16 @@ static int fact(const int n)
 // take advantage of the fact that lines interesting for our model are vantage lines
 // that meet in one vantage point for each subset of lines (vertical/horizontal).
 // Stragegy: we construct a model by (random) sampling within the subset of lines and
-// calculate the vantage point. Then we check the distance in homogeneous coordinates
-// of all other lines to the vantage point. The model that gives highest number of lines
-// combined with the highest total weight wins.
+// calculate the vantage point. Then we check the "distance" of all other lines to the
+// vantage point. The model that gives highest number of lines combined with the highest
+// total weight and lowest overall "distance" wins.
 // Disadvantage: compared to the original RANSAC we don't get any model parameters that
 // we could use for the following NMS fit.
 // Self optimization: we optimize "epsilon", the hurdle rate to reject a line as an outlier,
 // by a number of dry runs first. The target average percentage value of lines to eliminate as
 // outliers (without judging on the quality of the model) is given by RANSAC_ELIMINATION_RATIO,
 // note: the actual percentage of outliers removed in the final run will be lower because we
-// will look for the best quality model with the optimized epsilon and quality also
+// will look for the best quality model with the optimized epsilon and that quality value also
 // encloses the number of good lines
 static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout_set,
                   const int set_count, const float total_weight, const int xmin, const int xmax,
@@ -1550,7 +1554,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
          V[1]/V[2] <= ymax)
       continue;
 
-    // normalize V
+    // normalize V so that x^2 + y^2 + z^2 = 1
     vec3norm(V, V);
 
     // the two lines constituting the model are part of the set
@@ -1562,7 +1566,13 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
     // summarize a quality parameter for all lines within the model
     for(int n = 2; n < set_count; n++)
     {
+      // L is normalized so that x^2 + y^2 = 1
       const float *L3 = lines[index_set[n]].L;
+
+      // we take the absolute value of the dot product of V and L as a measure
+      // of the "distance" between point and line. Note that this is not the real euclidian
+      // distance but - with the given normalization - just a pragmatically selected number
+      // that goes to zero if V lies on L and increases the more V and L are apart
       const float d = fabs(vec3scalar(V, L3));
 
       // depending on d we either include or exclude the point from the set
