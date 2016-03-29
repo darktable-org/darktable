@@ -145,7 +145,7 @@ GtkAlignment
   box-shadow: inset 0 0 2px #171717;
   margin: 0px;
   padding: 1px 4px 1px 4px;
-  background-color: @plugin_bg_color;
+  background-color: @selected_bg_color;
 }
 #iop-plugin-ui:selected,
 #lib-plugin-ui:selected
