@@ -23,6 +23,7 @@
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/interpolation.h"
+#include "common/bilateral.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -60,7 +61,7 @@
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
 #define LSD_SCALE 1.0                       // scaling factor for LSD line detection
 #define RANSAC_RUNS 200                     // how many interations to run in ransac
-#define RANSAC_EPSILON 4                    // starting value for ransac epsilon (in -log10 units)
+#define RANSAC_EPSILON 2                    // starting value for ransac epsilon (in -log10 units)
 #define RANSAC_EPSILON_STEP 1               // step size of epsilon optimization (log10 units)
 #define RANSAC_ELIMINATION_RATIO 60         // percentage of lines we try to eliminate as outliers
 #define RANSAC_OPTIMIZATION_STEPS 4         // home many steps to optimize epsilon
@@ -189,10 +190,11 @@ typedef enum dt_iop_ashift_nmsresult_t
 
 typedef enum dt_iop_ashift_enhance_t
 {
-  ASHIFT_ENHANCE_NONE = 0,
-  ASHIFT_ENHANCE_HORIZONTAL = 1,
-  ASHIFT_ENHANCE_VERTICAL = 2,
-  ASHIFT_ENHANCE_EDGES = 3
+  ASHIFT_ENHANCE_NONE       = 0,
+  ASHIFT_ENHANCE_EDGES      = 1 << 0,
+  ASHIFT_ENHANCE_DETAIL     = 1 << 1,
+  ASHIFT_ENHANCE_HORIZONTAL = 0x100,
+  ASHIFT_ENHANCE_VERTICAL   = 0x200
 } dt_iop_ashift_enhance_t;
 
 typedef enum dt_iop_ashift_mode_t
@@ -1116,9 +1118,85 @@ error:
   return FALSE;
 }
 
+// XYZ -> sRGB matrix
+static void XYZ_to_sRGB(const float *XYZ, float *sRGB)
+{
+  sRGB[0] =  3.1338561f * XYZ[0] - 1.6168667f * XYZ[1] - 0.4906146f * XYZ[2];
+  sRGB[1] = -0.9787684f * XYZ[0] + 1.9161415f * XYZ[1] + 0.0334540f * XYZ[2];
+  sRGB[2] =  0.0719453f * XYZ[0] - 0.2289914f * XYZ[1] + 1.4052427f * XYZ[2];
+}
+
+// sRGB -> XYZ matrix
+static void sRGB_to_XYZ(const float *sRGB, float *XYZ)
+{
+  XYZ[0] = 0.4360747f * sRGB[0] + 0.3850649f * sRGB[1] + 0.1430804f * sRGB[2];
+  XYZ[1] = 0.2225045f * sRGB[0] + 0.7168786f * sRGB[1] + 0.0606169f * sRGB[2];
+  XYZ[2] = 0.0139322f * sRGB[0] + 0.0971045f * sRGB[1] + 0.7141733f * sRGB[2];
+}
+
+// detail enhancement via bilateral grid (function arguments in and out may represent identical buffers)
+static int detail_enhance(const float *in, float *out, const int width, const int height)
+{
+  const float sigma_r = 5.0f;
+  const float sigma_s = fminf(width, height) * 0.02f;
+  const float detail = 10.0f;
+
+  int success = TRUE;
+
+  // input data are expected in linear RGB,
+  // as colors don't matter we are safe to assume data to be sRGB
+
+  // convert RGB input to Lab, use output buffer for intermediate storage
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    const float *inp = in + (size_t)4 * j * width;
+    float *outp = out + (size_t)4 * j * width;
+    for(int i = 0; i < width; i++, inp += 4, outp += 4)
+    {
+      float XYZ[3];
+      sRGB_to_XYZ(inp, XYZ);
+      dt_XYZ_to_Lab(XYZ, outp);
+    }
+  }
+
+  // bilateral grid detail enhancement
+  dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
+
+  if(b != NULL)
+  {
+    dt_bilateral_splat(b, out);
+    dt_bilateral_blur(b);
+    dt_bilateral_slice_to_output(b, out, out, detail);
+    dt_bilateral_free(b);
+  }
+  else
+    success = FALSE;
+
+  // convert resulting Lab to RGB output
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(out)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    float *outp = out + (size_t)4 * j * width;
+    for(int i = 0; i < width; i++, outp += 4)
+    {
+      float XYZ[3];
+      dt_Lab_to_XYZ(outp, XYZ);
+      XYZ_to_sRGB(XYZ, outp);
+    }
+  }
+
+  return success;
+}
+
+
 // do actual line_detection based on LSD algorithm and return results according to this module's
 // conventions
-static int line_detect(const float *in, const int width, const int height, const int x_off, const int y_off,
+static int line_detect(float *in, const int width, const int height, const int x_off, const int y_off,
                        const float scale, dt_iop_ashift_line_t **alines, int *lcount, int *vcount, int *hcount,
                        float *vweight, float *hweight, dt_iop_ashift_enhance_t enhance)
 {
@@ -1131,18 +1209,23 @@ static int line_detect(const float *in, const int width, const int height, const
   float vertical_weight = 0.0f;
   float horizontal_weight = 0.0f;
 
+  // if requested perform an additional detail enhancement step
+  if(enhance & ASHIFT_ENHANCE_DETAIL)
+  {
+    (void)detail_enhance(in, in, width, height);
+  }
+
   // allocate intermediate buffers
   greyscale = malloc((size_t)width * height * sizeof(double));
   if(greyscale == NULL) goto error;
 
-  // generate greyscale image
+  // convert to greyscale image
   rgb2grey256(in, greyscale, width, height);
 
-  if(enhance == ASHIFT_ENHANCE_EDGES)
+  // if requested perform an additional edge enhancement step
+  if(enhance & ASHIFT_ENHANCE_EDGES)
   {
-    // if requested perform an additional edge enhancement step
-    if(!edge_enhance(greyscale, greyscale, width, height))
-      goto error;
+    (void)edge_enhance(greyscale, greyscale, width, height);
   }
 
   // call the line segment detector LSD;
@@ -1199,11 +1282,16 @@ static int line_detect(const float *in, const int width, const int height, const
       // calculate homogeneous coordinates of connecting line (defined by the two points)
       vec3prodn(ashift_lines[lct].L, ashift_lines[lct].p1, ashift_lines[lct].p2);
 
-      // length and width of rectangle (see LSD) and weight (= length * width)
+      // normalaze line coordinates so that x^2 + y^2 = 1
+      // (this will always succeed as L is a real line connecting two real points)
+      vec3lnorm(ashift_lines[lct].L, ashift_lines[lct].L);
+
+      // length and width of rectangle (see LSD)
       ashift_lines[lct].length = sqrt((px2 - px1) * (px2 - px1) + (py2 - py1) * (py2 - py1));
       ashift_lines[lct].width = lsd_lines[n * 7 + 4] / scale;
 
-      const float weight = ashift_lines[lct].length * ashift_lines[lct].width;
+      // ...  and weight (= length * width * angle precision)
+      const float weight = ashift_lines[lct].length * ashift_lines[lct].width * lsd_lines[n * 7 + 5];
       ashift_lines[lct].weight = weight;
 
 
@@ -1392,16 +1480,16 @@ static int fact(const int n)
 // take advantage of the fact that lines interesting for our model are vantage lines
 // that meet in one vantage point for each subset of lines (vertical/horizontal).
 // Stragegy: we construct a model by (random) sampling within the subset of lines and
-// calculate the vantage point. Then we check the distance in homogeneous coordinates
-// of all other lines to the vantage point. The model that gives highest number of lines
-// combined with the highest total weight wins.
+// calculate the vantage point. Then we check the "distance" of all other lines to the
+// vantage point. The model that gives highest number of lines combined with the highest
+// total weight and lowest overall "distance" wins.
 // Disadvantage: compared to the original RANSAC we don't get any model parameters that
 // we could use for the following NMS fit.
 // Self optimization: we optimize "epsilon", the hurdle rate to reject a line as an outlier,
 // by a number of dry runs first. The target average percentage value of lines to eliminate as
 // outliers (without judging on the quality of the model) is given by RANSAC_ELIMINATION_RATIO,
 // note: the actual percentage of outliers removed in the final run will be lower because we
-// will look for the best quality model with the optimized epsilon and quality also
+// will look for the best quality model with the optimized epsilon and that quality value also
 // encloses the number of good lines
 static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout_set,
                   const int set_count, const float total_weight, const int xmin, const int xmax,
@@ -1466,7 +1554,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
          V[1]/V[2] <= ymax)
       continue;
 
-    // normalize V
+    // normalize V so that x^2 + y^2 + z^2 = 1
     vec3norm(V, V);
 
     // the two lines constituting the model are part of the set
@@ -1478,7 +1566,13 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
     // summarize a quality parameter for all lines within the model
     for(int n = 2; n < set_count; n++)
     {
+      // L is normalized so that x^2 + y^2 = 1
       const float *L3 = lines[index_set[n]].L;
+
+      // we take the absolute value of the dot product of V and L as a measure
+      // of the "distance" between point and line. Note that this is not the real euclidian
+      // distance but - with the given normalization - just a pragmatically selected number
+      // that goes to zero if V lies on L and increases the more V and L are apart
       const float d = fabs(vec3scalar(V, L3));
 
       // depending on d we either include or exclude the point from the set
@@ -3668,13 +3762,20 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
     const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
+    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
-    if(control)
+
+    if(control && shift)
+      (void)do_get_structure(self, p, ASHIFT_ENHANCE_EDGES | ASHIFT_ENHANCE_DETAIL);
+    else if(shift)
+      (void)do_get_structure(self, p, ASHIFT_ENHANCE_DETAIL);
+    else if(control)
       (void)do_get_structure(self, p, ASHIFT_ENHANCE_EDGES);
     else
       (void)do_get_structure(self, p, ASHIFT_ENHANCE_NONE);
+
     // hack to guarantee that module gets enabled on button click
     if(!self->enabled) p->toggle ^= 1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -4207,7 +4308,9 @@ void gui_init(struct dt_iop_module_t *self)
                                              "shift-click to only fit lens shift\n"
                                              "ctrl-shift-click to only fit rotation and lens shift"));
   gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
-                                              "ctrl-click for an additional edge enhancement"));
+                                              "ctrl-click for an additional edge enhancement\n"
+                                              "shift-click for an additional detail enhancement\n"
+                                              "ctrl-shift-click for a combination of both methods"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
