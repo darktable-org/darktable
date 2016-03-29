@@ -707,6 +707,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // that might have scroll bars
   g_setenv("GTK_OVERLAY_SCROLLING", "0", 0);
 
+  // same for ubuntus overlay-scrollbar-gtk3
+  g_setenv("LIBOVERLAY_SCROLLBAR", "0", 0);
+
   // unset gtk rc from kde:
   char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
