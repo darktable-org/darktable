@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-20 07:31+0100\n"
-"PO-Revision-Date: 2016-02-20 07:32+0100\n"
+"POT-Creation-Date: 2016-03-30 21:43+0200\n"
+"PO-Revision-Date: 2016-03-30 21:45+0200\n"
 "Last-Translator: Dušan Kazik <prescott66@gmail.com>\n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -847,20 +847,25 @@ msgstr ""
 "TODO: Ľutujeme, ale kôli API obmedzeniam, \n"
 "nemôžme momentálne nastaviť BPP"
 
-#: ../src/cli/main.c:184
+#: ../src/cli/main.c:183
+#, c-format
+msgid "error: output file is a directory. please specify file name"
+msgstr "Chyba: výstupný súbor je adresárom. Prosím, špecifikujte názov súboru."
+
+#: ../src/cli/main.c:191
 msgid "output file already exists, it will get renamed"
 msgstr "výstupný súbor už existuje. bude premenovaný"
 
-#: ../src/cli/main.c:199
+#: ../src/cli/main.c:206
 #, c-format
 msgid "error: can't open file %s"
 msgstr "chyba: nemôžem otvoriť súbor %s"
 
-#: ../src/cli/main.c:221
+#: ../src/cli/main.c:228
 msgid "empty history stack"
 msgstr "prázdny zoznam histórie"
 
-#: ../src/cli/main.c:244
+#: ../src/cli/main.c:251
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -868,16 +873,16 @@ msgstr ""
 "nemožno nájsť modul pre export na disk. prosím overte vašu inštaláciu, niečo "
 "vyzerá poškodené."
 
-#: ../src/cli/main.c:251
+#: ../src/cli/main.c:258
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr "nemožno získať parametre z modulu ukladania. export bol prerušený..."
 
-#: ../src/cli/main.c:263
+#: ../src/cli/main.c:270
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "neznáma prípona '.%s'"
 
-#: ../src/cli/main.c:271
+#: ../src/cli/main.c:278
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "nemožno získať parametre z modulu na formátovanie. export bol prerušený..."
@@ -938,72 +943,72 @@ msgstr[1] "sú vybrané %d obrázky z %d v aktuálnej zbierke"
 msgstr[2] "je vybraných %d obrázkov z %d v aktuálnej zbierke"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1119 ../src/iop/colorin.c:1223
+#: ../src/common/colorspaces.c:1116 ../src/iop/colorin.c:1223
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1120 ../src/common/colorspaces.c:1262
-#: ../src/iop/colorin.c:1224 ../src/libs/print_settings.c:869
+#: ../src/common/colorspaces.c:1117 ../src/common/colorspaces.c:1259
+#: ../src/iop/colorin.c:1224 ../src/libs/print_settings.c:870
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibilné)"
 
-#: ../src/common/colorspaces.c:1121 ../src/common/colorspaces.c:1267
+#: ../src/common/colorspaces.c:1118 ../src/common/colorspaces.c:1264
 #: ../src/iop/colorin.c:1225
 msgid "linear Rec709 RGB"
 msgstr "lineárny Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1122 ../src/common/colorspaces.c:1272
+#: ../src/common/colorspaces.c:1119 ../src/common/colorspaces.c:1269
 #: ../src/iop/colorin.c:1226
 msgid "linear Rec2020 RGB"
 msgstr "lineárny Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1123 ../src/common/colorspaces.c:1277
+#: ../src/common/colorspaces.c:1120 ../src/common/colorspaces.c:1274
 msgid "linear XYZ"
 msgstr "lineárny XYZ"
 
-#: ../src/common/colorspaces.c:1124 ../src/common/colorspaces.c:1282
+#: ../src/common/colorspaces.c:1121 ../src/common/colorspaces.c:1279
 #: ../src/libs/colorpicker.c:540 ../src/libs/colorpicker.c:578
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1125 ../src/common/colorspaces.c:1287
+#: ../src/common/colorspaces.c:1122 ../src/common/colorspaces.c:1284
 msgid "linear infrared BGR"
 msgstr "lineárny infračervený BGR"
 
-#: ../src/common/colorspaces.c:1126 ../src/common/colorspaces.c:1246
+#: ../src/common/colorspaces.c:1123 ../src/common/colorspaces.c:1243
 msgid "system display profile"
 msgstr "systémový profil displeja"
 
-#: ../src/common/colorspaces.c:1127
+#: ../src/common/colorspaces.c:1124
 msgid "embedded ICC profile"
 msgstr "integrovaný ICC profil"
 
-#: ../src/common/colorspaces.c:1128
+#: ../src/common/colorspaces.c:1125
 msgid "embedded matrix"
 msgstr "integrovaná mriežka"
 
-#: ../src/common/colorspaces.c:1129
+#: ../src/common/colorspaces.c:1126
 msgid "standard color matrix"
 msgstr "štandardná farebná mriežka"
 
-#: ../src/common/colorspaces.c:1130
+#: ../src/common/colorspaces.c:1127
 msgid "enhanced color matrix"
 msgstr "vylepšená farebná mriežka"
 
-#: ../src/common/colorspaces.c:1131
+#: ../src/common/colorspaces.c:1128
 msgid "vendor color matrix"
 msgstr "farebná mriežka stanovená výrobcom"
 
-#: ../src/common/colorspaces.c:1132
+#: ../src/common/colorspaces.c:1129
 msgid "alternate color matrix"
 msgstr "alternatívna farebná mriežka"
 
-#: ../src/common/colorspaces.c:1252
+#: ../src/common/colorspaces.c:1249
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (napr. JPG)"
 
-#: ../src/common/colorspaces.c:1257 ../src/libs/print_settings.c:862
+#: ../src/common/colorspaces.c:1254 ../src/libs/print_settings.c:863
 msgid "sRGB (web-safe)"
 msgstr "sRGB (pre web)"
 
@@ -1076,7 +1081,7 @@ msgstr "zapnuté"
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1314
 #: ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
-#: ../src/iop/colorin.c:1222 ../src/iop/demosaic.c:2222
+#: ../src/iop/colorin.c:1222 ../src/iop/demosaic.c:2237
 #: ../src/iop/vignette.c:1141 ../src/libs/history.c:153
 #: ../src/libs/live_view.c:440
 msgid "off"
@@ -1172,15 +1177,15 @@ msgid "noiseprofile file `%s' is not valid"
 msgstr "súbor profilu šumu „%s“ nie je platný"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.c:1713
-#: ../src/libs/print_settings.c:1096
+#: ../src/libs/print_settings.c:1097
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1097
+#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1098
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1098
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1099
 msgid "inch"
 msgstr "palec"
 
@@ -1270,10 +1275,10 @@ msgstr "štýl %s bol úspešne importovaný"
 #: ../src/common/variables.c:304 ../src/iop/clipping.c:1563
 #: ../src/iop/clipping.c:1853 ../src/iop/clipping.c:1873
 #: ../src/iop/clipping.c:2018 ../src/iop/clipping.c:2046
-#: ../src/iop/colorreconstruction.c:1374 ../src/iop/lens.c:2049
+#: ../src/iop/colorreconstruction.c:1375 ../src/iop/lens.c:2049
 #: ../src/libs/export.c:485 ../src/libs/live_view.c:351
 #: ../src/libs/live_view.c:377 ../src/libs/live_view.c:386
-#: ../src/libs/print_settings.c:1007 ../src/libs/print_settings.c:1276
+#: ../src/libs/print_settings.c:1008 ../src/libs/print_settings.c:1277
 msgid "none"
 msgstr "žiadne"
 
@@ -1845,28 +1850,28 @@ msgstr "zobraziť a upraviť prvky masky"
 msgid "toggle polarity of drawn mask"
 msgstr "zameň polaritu nakreslenej masky"
 
-#: ../src/develop/blend_gui.c:1288 ../src/libs/masks.c:1009
-#: ../src/libs/masks.c:1048 ../src/libs/masks.c:1649
+#: ../src/develop/blend_gui.c:1288 ../src/libs/masks.c:1006
+#: ../src/libs/masks.c:1045 ../src/libs/masks.c:1646
 msgid "add gradient"
 msgstr "pridať prelínanie"
 
 #: ../src/develop/blend_gui.c:1297 ../src/iop/spots.c:650
-#: ../src/libs/masks.c:1005 ../src/libs/masks.c:1044 ../src/libs/masks.c:1656
+#: ../src/libs/masks.c:1002 ../src/libs/masks.c:1041 ../src/libs/masks.c:1653
 msgid "add path"
 msgstr "pridať cestu"
 
 #: ../src/develop/blend_gui.c:1306 ../src/iop/spots.c:658
-#: ../src/libs/masks.c:1001 ../src/libs/masks.c:1040 ../src/libs/masks.c:1664
+#: ../src/libs/masks.c:998 ../src/libs/masks.c:1037 ../src/libs/masks.c:1661
 msgid "add ellipse"
 msgstr "pridať elipsu"
 
 #: ../src/develop/blend_gui.c:1315 ../src/iop/spots.c:666
-#: ../src/libs/masks.c:997 ../src/libs/masks.c:1036 ../src/libs/masks.c:1672
+#: ../src/libs/masks.c:994 ../src/libs/masks.c:1033 ../src/libs/masks.c:1669
 msgid "add circle"
 msgstr "pridať kruh"
 
-#: ../src/develop/blend_gui.c:1324 ../src/libs/masks.c:1032
-#: ../src/libs/masks.c:1679
+#: ../src/develop/blend_gui.c:1324 ../src/libs/masks.c:1029
+#: ../src/libs/masks.c:1676
 msgid "add brush"
 msgstr "pridať štetec"
 
@@ -2119,11 +2124,11 @@ msgstr "nová inštancia"
 msgid "duplicate instance"
 msgstr "duplikovať inštanciu"
 
-#: ../src/develop/imageop.c:850 ../src/libs/masks.c:1169
+#: ../src/develop/imageop.c:850 ../src/libs/masks.c:1166
 msgid "move up"
 msgstr "presunúť hore"
 
-#: ../src/develop/imageop.c:856 ../src/libs/masks.c:1172
+#: ../src/develop/imageop.c:856 ../src/libs/masks.c:1169
 msgid "move down"
 msgstr "presunúť dole"
 
@@ -2307,7 +2312,7 @@ msgstr "kópia %s"
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: verzia masky sa nezhoduje: %d != %d"
 
-#: ../src/develop/masks/masks.c:1641 ../src/libs/masks.c:1052
+#: ../src/develop/masks/masks.c:1641 ../src/libs/masks.c:1049
 msgid "add existing shape"
 msgstr "pridať existujúci tvar"
 
@@ -2315,7 +2320,11 @@ msgstr "pridať existujúci tvar"
 msgid "use same shapes as"
 msgstr "použiť rovnaký tvar ako"
 
-#: ../src/develop/pixelpipe_hb.c:2415
+#: ../src/develop/masks/masks.c:1969
+msgid "masks can not contain themselves"
+msgstr "masky nemôžu obsahovať samé seba"
+
+#: ../src/develop/pixelpipe_hb.c:2417
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2635,67 +2644,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "použiť YYYY-MM-DD formát na preťaženie dátumu"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:843
+#: ../src/gui/gtk.c:846
 msgctxt "accel"
 msgid "tethering view"
 msgstr "pohľad vzdialené snímanie"
 
-#: ../src/gui/gtk.c:844
+#: ../src/gui/gtk.c:847
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "zobrazenie presvetľovacieho pultu"
 
-#: ../src/gui/gtk.c:845
+#: ../src/gui/gtk.c:848
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "zobrazenie fotokomory"
 
-#: ../src/gui/gtk.c:846
+#: ../src/gui/gtk.c:849
 msgctxt "accel"
 msgid "map view"
 msgstr "zobrazenie mapy"
 
-#: ../src/gui/gtk.c:847
+#: ../src/gui/gtk.c:850
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "zobrazenie prezentácie"
 
-#: ../src/gui/gtk.c:848
+#: ../src/gui/gtk.c:851
 msgctxt "accel"
 msgid "print view"
 msgstr "zobraziť tlač"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:871
+#: ../src/gui/gtk.c:874
 msgctxt "accel"
 msgid "quit"
 msgstr "ukončiť"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:876
+#: ../src/gui/gtk.c:879
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "prepnutie režimu na celú obrazovku"
 
-#: ../src/gui/gtk.c:877
+#: ../src/gui/gtk.c:880
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "opustenie režimu na celú obrazovku"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:885
+#: ../src/gui/gtk.c:888
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "prepnúť bočné okraje"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:888
+#: ../src/gui/gtk.c:891
 msgctxt "accel"
 msgid "toggle header"
 msgstr "prepnúť záhlavie"
 
 #. View-switch
-#: ../src/gui/gtk.c:891
+#: ../src/gui/gtk.c:894
 msgctxt "accel"
 msgid "switch view"
 msgstr "prepnúť zobrazenie"
@@ -3371,7 +3380,7 @@ msgid "enter the title of the pdf"
 msgstr "vložiť nadpis pdf"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:601 ../src/libs/print_settings.c:1081
+#: ../src/imageio/format/pdf.c:601 ../src/libs/print_settings.c:1082
 msgid "paper size"
 msgstr "veľkosť papiera"
 
@@ -3390,12 +3399,12 @@ msgid "page orientation"
 msgstr "otočenie stránky"
 
 #: ../src/imageio/format/pdf.c:615 ../src/iop/borders.c:995
-#: ../src/libs/print_settings.c:1090
+#: ../src/libs/print_settings.c:1091
 msgid "portrait"
 msgstr "na výšku"
 
 #: ../src/imageio/format/pdf.c:616 ../src/iop/borders.c:996
-#: ../src/libs/print_settings.c:1091
+#: ../src/libs/print_settings.c:1092
 msgid "landscape"
 msgstr "na šírku"
 
@@ -4284,7 +4293,7 @@ msgstr "veľkosť"
 msgid "the size of bloom"
 msgstr "veľkosť presvetlenia"
 
-#: ../src/iop/bloom.c:532 ../src/iop/colorreconstruction.c:1368
+#: ../src/iop/bloom.c:532 ../src/iop/colorreconstruction.c:1369
 #: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:437
 #: ../src/iop/sharpen.c:591
 msgid "threshold"
@@ -4422,7 +4431,7 @@ msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr "vybrať pomer strán, alebo kliknite pravým a zadajte váš vlastný (š:v)"
 
 #: ../src/iop/borders.c:993 ../src/iop/flip.c:73
-#: ../src/libs/print_settings.c:1089
+#: ../src/libs/print_settings.c:1090
 msgid "orientation"
 msgstr "otočenie"
 
@@ -4529,7 +4538,7 @@ msgstr "výstup"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/iop/channelmixer.c:458 ../src/iop/colorize.c:442
-#: ../src/iop/colorreconstruction.c:1371 ../src/iop/colorreconstruction.c:1376
+#: ../src/iop/colorreconstruction.c:1372 ../src/iop/colorreconstruction.c:1377
 #: ../src/iop/colorzones.c:1081 ../src/iop/colorzones.c:1113
 #: ../src/iop/graduatednd.c:1059 ../src/iop/splittoning.c:502
 msgid "hue"
@@ -4990,8 +4999,8 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "nepodporovaný vstupný profil bol zmenený za lineárny RGB Rec709 !"
 
 #: ../src/iop/colorin.c:1205 ../src/iop/denoiseprofile.c:1657
-#: ../src/libs/export.c:598 ../src/libs/print_settings.c:996
-#: ../src/libs/print_settings.c:1212
+#: ../src/libs/export.c:598 ../src/libs/print_settings.c:997
+#: ../src/libs/print_settings.c:1213
 msgid "profile"
 msgstr "profil"
 
@@ -5132,26 +5141,26 @@ msgid "output intent"
 msgstr "výstupná predstava"
 
 #: ../src/iop/colorout.c:657 ../src/libs/export.c:618
-#: ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261
+#: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
 #: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2448
 msgid "perceptual"
 msgstr "percepčne"
 
 #: ../src/iop/colorout.c:658 ../src/libs/export.c:619
-#: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
+#: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
 #: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2449
 msgid "relative colorimetric"
 msgstr "relatívna kolorimetria"
 
 #: ../src/iop/colorout.c:659 ../src/libs/export.c:620
-#: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
+#: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
 #: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2450
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "sýtosť"
 
 #: ../src/iop/colorout.c:660 ../src/libs/export.c:621
-#: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
+#: ../src/libs/print_settings.c:1054 ../src/libs/print_settings.c:1265
 #: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2451
 msgid "absolute colorimetric"
 msgstr "absolútna kolorimetria"
@@ -5191,45 +5200,45 @@ msgctxt "accel"
 msgid "hue"
 msgstr "odtieň"
 
-#: ../src/iop/colorreconstruction.c:649
+#: ../src/iop/colorreconstruction.c:650
 msgid "[color reconstruction] module failed."
 msgstr "Modul [rekonštrukcia farieb] zlyhal."
 
-#: ../src/iop/colorreconstruction.c:1369 ../src/iop/shadhi.c:849
+#: ../src/iop/colorreconstruction.c:1370 ../src/iop/shadhi.c:849
 #: ../src/iop/tonemap.cc:299
 msgid "spatial extent"
 msgstr "farebný priestorový rozsah"
 
-#: ../src/iop/colorreconstruction.c:1370
+#: ../src/iop/colorreconstruction.c:1371
 msgid "range extent"
 msgstr "svetelný rozsah"
 
-#: ../src/iop/colorreconstruction.c:1373
+#: ../src/iop/colorreconstruction.c:1374
 msgid "precedence"
 msgstr "priorita"
 
-#: ../src/iop/colorreconstruction.c:1375
+#: ../src/iop/colorreconstruction.c:1376
 msgid "saturated colors"
 msgstr "sýte farby"
 
-#: ../src/iop/colorreconstruction.c:1405
+#: ../src/iop/colorreconstruction.c:1406
 msgid "pixels with lightness values above this threshold are corrected"
 msgstr "prah hodnoty jasu nad ktorým sú upravené"
 
-#: ../src/iop/colorreconstruction.c:1406
+#: ../src/iop/colorreconstruction.c:1407
 msgid "how far to look for replacement colors in spatial dimensions"
 msgstr "vzdialenosť v ktorej sa má hľadať náhrada farby vo farebnom priestore"
 
-#: ../src/iop/colorreconstruction.c:1407
+#: ../src/iop/colorreconstruction.c:1408
 msgid "how far to look for replacement colors in the luminance dimension"
 msgstr ""
 "vzdialenosť v ktorej sa má hľadať náhrada farby v jasovom priestore (krivka)"
 
-#: ../src/iop/colorreconstruction.c:1408
+#: ../src/iop/colorreconstruction.c:1409
 msgid "if and how to give precedence to specific replacement colors"
 msgstr "treba dať prioritu inej náhradnej farby? Ak áno, podľa akej funkcie?"
 
-#: ../src/iop/colorreconstruction.c:1409
+#: ../src/iop/colorreconstruction.c:1410
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "tónový odtieň ktorej sa dá priorita voči inému farebnému odtieňu"
 
@@ -5376,44 +5385,44 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "prah hrán "
 
-#: ../src/iop/demosaic.c:2194 ../src/iop/demosaic.c:2204
+#: ../src/iop/demosaic.c:2209 ../src/iop/demosaic.c:2219
 #: ../src/iop/dither.c:556 ../src/iop/highlights.c:733
 msgid "method"
 msgstr "spôsob"
 
-#: ../src/iop/demosaic.c:2196
+#: ../src/iop/demosaic.c:2211
 msgid "PPG (fast)"
 msgstr "PPG (fast)"
 
-#: ../src/iop/demosaic.c:2197
+#: ../src/iop/demosaic.c:2212
 msgid "AMaZE (slow)"
 msgstr "AMaZE (pomalé)"
 
-#: ../src/iop/demosaic.c:2198
+#: ../src/iop/demosaic.c:2213
 msgid "VNG4 (slow)"
 msgstr "VNG4 (pomalé)"
 
-#: ../src/iop/demosaic.c:2199
+#: ../src/iop/demosaic.c:2214
 msgid "passthrough (monochrome) (experimental)"
 msgstr "priechodzí (monochromatický) (experimentálny)"
 
-#: ../src/iop/demosaic.c:2200 ../src/iop/demosaic.c:2209
+#: ../src/iop/demosaic.c:2215 ../src/iop/demosaic.c:2224
 msgid "demosaicing raw data method"
 msgstr "metóda interpolácie dát z bayerovej masky"
 
-#: ../src/iop/demosaic.c:2206
+#: ../src/iop/demosaic.c:2221
 msgid "VNG (slow)"
 msgstr "VNG (pomalé)"
 
-#: ../src/iop/demosaic.c:2207
+#: ../src/iop/demosaic.c:2222
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-spracovanie"
 
-#: ../src/iop/demosaic.c:2208
+#: ../src/iop/demosaic.c:2223
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-spracovania (pomalé)"
 
-#: ../src/iop/demosaic.c:2214
+#: ../src/iop/demosaic.c:2229
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5423,63 +5432,63 @@ msgstr ""
 "nastaviť na 0.0 na vypnutie.\n"
 "nastaviť na 1.0 na ignorovanie hrán."
 
-#: ../src/iop/demosaic.c:2216
+#: ../src/iop/demosaic.c:2231
 msgid "edge threshold"
 msgstr "prah hrán "
 
-#: ../src/iop/demosaic.c:2220
+#: ../src/iop/demosaic.c:2235
 msgid "color smoothing"
 msgstr "vyhladzovanie farieb"
 
-#: ../src/iop/demosaic.c:2223
+#: ../src/iop/demosaic.c:2238
 msgid "one time"
 msgstr "jedenkrát"
 
-#: ../src/iop/demosaic.c:2224
+#: ../src/iop/demosaic.c:2239
 msgid "two times"
 msgstr "dvakrát"
 
-#: ../src/iop/demosaic.c:2225
+#: ../src/iop/demosaic.c:2240
 msgid "three times"
 msgstr "trikrát"
 
-#: ../src/iop/demosaic.c:2226
+#: ../src/iop/demosaic.c:2241
 msgid "four times"
 msgstr "štyrikrát"
 
-#: ../src/iop/demosaic.c:2227
+#: ../src/iop/demosaic.c:2242
 msgid "five times"
 msgstr "päťkrát"
 
-#: ../src/iop/demosaic.c:2229
+#: ../src/iop/demosaic.c:2244
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "koľko procesov na vyhladenie po bayerovej interpolácii"
 
-#: ../src/iop/demosaic.c:2233
+#: ../src/iop/demosaic.c:2248
 msgid "match greens"
 msgstr "korekcia zelenej"
 
-#: ../src/iop/demosaic.c:2234
+#: ../src/iop/demosaic.c:2249
 msgid "disabled"
 msgstr "zakázané"
 
-#: ../src/iop/demosaic.c:2235
+#: ../src/iop/demosaic.c:2250
 msgid "local average"
 msgstr "lokálny priemer"
 
-#: ../src/iop/demosaic.c:2236
+#: ../src/iop/demosaic.c:2251
 msgid "full average"
 msgstr "celkový priemer"
 
-#: ../src/iop/demosaic.c:2237
+#: ../src/iop/demosaic.c:2252
 msgid "full and local average"
 msgstr "celkový a lokálny priemer"
 
-#: ../src/iop/demosaic.c:2238
+#: ../src/iop/demosaic.c:2253
 msgid "green channels matching method"
 msgstr "metóda počítania zeleného kanála"
 
-#: ../src/iop/demosaic.c:2250
+#: ../src/iop/demosaic.c:2265
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -5504,7 +5513,7 @@ msgstr "interpolovaný z ISO %d a %d"
 #: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:799
 #: ../src/iop/lens.c:2199 ../src/iop/levels.c:548
 #: ../src/libs/copy_history.c:278 ../src/libs/export.c:636
-#: ../src/libs/print_settings.c:1317
+#: ../src/libs/print_settings.c:1318
 msgid "mode"
 msgstr "režim"
 
@@ -6602,7 +6611,7 @@ msgid "the fill-light in EV"
 msgstr "doplnkové svetlo v EV"
 
 #: ../src/iop/relight.c:376 ../src/libs/metadata_view.c:110
-#: ../src/libs/print_settings.c:1114
+#: ../src/libs/print_settings.c:1115
 msgid "width"
 msgstr "šírka"
 
@@ -7281,7 +7290,7 @@ msgid "position"
 msgstr "pozícia"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1328 ../src/libs/print_settings.c:1199
+#: ../src/iop/watermark.c:1328 ../src/libs/print_settings.c:1200
 msgid "alignment"
 msgstr "zarovnanie"
 
@@ -7833,21 +7842,21 @@ msgid "allow upscaling"
 msgstr "povoliť škálovanie zväčšenia"
 
 #: ../src/libs/export.c:600 ../src/libs/export.c:617
-#: ../src/libs/print_settings.c:1215 ../src/libs/print_settings.c:1260
+#: ../src/libs/print_settings.c:1216 ../src/libs/print_settings.c:1261
 msgid "image settings"
 msgstr "nastavenia obrázku"
 
-#: ../src/libs/export.c:609 ../src/libs/print_settings.c:1251
+#: ../src/libs/export.c:609 ../src/libs/print_settings.c:1252
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "výstupné ICC profily v %s/color/out alebo %s/color/out"
 
-#: ../src/libs/export.c:616 ../src/libs/print_settings.c:1049
-#: ../src/libs/print_settings.c:1258
+#: ../src/libs/export.c:616 ../src/libs/print_settings.c:1050
+#: ../src/libs/print_settings.c:1259
 msgid "intent"
 msgstr "predstava"
 
-#: ../src/libs/export.c:627 ../src/libs/print_settings.c:1274
+#: ../src/libs/export.c:627 ../src/libs/print_settings.c:1275
 msgid "style"
 msgstr "štýl"
 
@@ -7855,15 +7864,15 @@ msgstr "štýl"
 msgid "temporary style to use while exporting"
 msgstr "dočasný štýl použitý počas exportovania"
 
-#: ../src/libs/export.c:640 ../src/libs/print_settings.c:1319
+#: ../src/libs/export.c:640 ../src/libs/print_settings.c:1320
 msgid "replace history"
 msgstr "nahradiť históriu"
 
-#: ../src/libs/export.c:641 ../src/libs/print_settings.c:1320
+#: ../src/libs/export.c:641 ../src/libs/print_settings.c:1321
 msgid "append history"
 msgstr "pridať k histórii"
 
-#: ../src/libs/export.c:646 ../src/libs/print_settings.c:1326
+#: ../src/libs/export.c:646 ../src/libs/print_settings.c:1327
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "určuje, či sú položky štýlu pridané k histórii, alebo či ju nahradia"
@@ -8493,52 +8502,52 @@ msgstr "vybrať zdroj mapy. niektoré nemusia fungovať"
 msgid "mask manager"
 msgstr "správca masiek"
 
-#: ../src/libs/masks.c:252
+#: ../src/libs/masks.c:249
 #, c-format
 msgid "group #%d"
 msgstr "skupina #%d"
 
-#: ../src/libs/masks.c:1122
+#: ../src/libs/masks.c:1119
 msgid "duplicate this shape"
 msgstr "duplikovať tento tvar"
 
-#: ../src/libs/masks.c:1126
+#: ../src/libs/masks.c:1123
 msgid "delete this shape"
 msgstr "odstrániť tento tvar"
 
-#: ../src/libs/masks.c:1132
+#: ../src/libs/masks.c:1129
 msgid "remove from group"
 msgstr "odstrániť zo skupiny"
 
-#: ../src/libs/masks.c:1140
+#: ../src/libs/masks.c:1137
 msgid "group the forms"
 msgstr "zoskupiť tvary"
 
-#: ../src/libs/masks.c:1149
+#: ../src/libs/masks.c:1146
 msgid "use inversed shape"
 msgstr "použiť invertované tvary"
 
-#: ../src/libs/masks.c:1155
+#: ../src/libs/masks.c:1152
 msgid "mode : union"
 msgstr "režim: zjednotenie"
 
-#: ../src/libs/masks.c:1158
+#: ../src/libs/masks.c:1155
 msgid "mode : intersection"
 msgstr "režim: prienik"
 
-#: ../src/libs/masks.c:1161
+#: ../src/libs/masks.c:1158
 msgid "mode : difference"
 msgstr "režim: rozdiel"
 
-#: ../src/libs/masks.c:1164
+#: ../src/libs/masks.c:1161
 msgid "mode : exclusion"
 msgstr "režim: symetrická diferncia"
 
-#: ../src/libs/masks.c:1178
+#: ../src/libs/masks.c:1175
 msgid "cleanup unused shapes"
 msgstr "vyčistiť nepoužité tvary"
 
-#: ../src/libs/masks.c:1643
+#: ../src/libs/masks.c:1640
 msgid "created shapes"
 msgstr "vytvorené tvary"
 
@@ -8681,7 +8690,7 @@ msgstr "ohnisková vzdialenosť"
 msgid "datetime"
 msgstr "dátum a čas"
 
-#: ../src/libs/metadata_view.c:111 ../src/libs/print_settings.c:1118
+#: ../src/libs/metadata_view.c:111 ../src/libs/print_settings.c:1119
 msgid "height"
 msgstr "výška"
 
@@ -8825,72 +8834,72 @@ msgid "200%"
 msgstr "200%"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1206
+#: ../src/libs/print_settings.c:44 ../src/libs/print_settings.c:1207
 msgid "print settings"
 msgstr "nastavenia tlače"
 
-#: ../src/libs/print_settings.c:175
+#: ../src/libs/print_settings.c:176
 msgid "cannot print until a picture is selected"
 msgstr "nedá sa uskutočniť tlač, pokiaľ nebude vybratý obrázok"
 
-#: ../src/libs/print_settings.c:180
+#: ../src/libs/print_settings.c:181
 msgid "cannot print until a printer is selected"
 msgstr "nedá sa uskutočniť tlač, pokiaľ nebude vybratá tlačiareň"
 
-#: ../src/libs/print_settings.c:185
+#: ../src/libs/print_settings.c:186
 msgid "cannot print until a paper is selected"
 msgstr "nedá sa uskutočniť tlač, pokiaľ nebude vybratý papier"
 
-#: ../src/libs/print_settings.c:189
+#: ../src/libs/print_settings.c:190
 #, c-format
 msgid "prepare printing image %d on `%s'"
 msgstr "pripravuje sa tlač obrázku %d na tlačiarni „%s“"
 
-#: ../src/libs/print_settings.c:284
+#: ../src/libs/print_settings.c:285
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "nedá sa použiť profil tlačiarne „%s“"
 
-#: ../src/libs/print_settings.c:525
+#: ../src/libs/print_settings.c:526
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:985
+#: ../src/libs/print_settings.c:986
 msgid "printer"
 msgstr "tlačiareň"
 
-#: ../src/libs/print_settings.c:1042
+#: ../src/libs/print_settings.c:1043
 #, c-format
 msgid "printer ICC profiles in %s/color/out or %s/color/out"
 msgstr "profil ICC tlačiarne v %s/color/out alebo %s/color/out"
 
-#: ../src/libs/print_settings.c:1061
+#: ../src/libs/print_settings.c:1062
 msgid "black point compensation"
 msgstr "kompenzácia čierneho bodu"
 
-#: ../src/libs/print_settings.c:1069
+#: ../src/libs/print_settings.c:1070
 msgid "activate black point compensation when applying the printer profile"
 msgstr "aktivuje kompenzáciu čierneho bodu počas aplikácie profilu tlače"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:1076
+#: ../src/libs/print_settings.c:1077
 msgid "page"
 msgstr "stránka"
 
-#: ../src/libs/print_settings.c:1112
+#: ../src/libs/print_settings.c:1113
 msgid "image width/height"
 msgstr "šírka/výška obrázka"
 
-#: ../src/libs/print_settings.c:1116
+#: ../src/libs/print_settings.c:1117
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:1124
+#: ../src/libs/print_settings.c:1125
 msgid "scale factor"
 msgstr "faktor mierky"
 
-#: ../src/libs/print_settings.c:1129
+#: ../src/libs/print_settings.c:1130
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -8903,45 +8912,50 @@ msgstr ""
 "Príliš veľká hodnota môže spôsobiť zlú kvalitu tlače"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1143
+#: ../src/libs/print_settings.c:1144
 msgid "top margin"
 msgstr "horný okraj"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1147
+#: ../src/libs/print_settings.c:1148
 msgid "left margin"
 msgstr "ľavý okraj"
 
-#: ../src/libs/print_settings.c:1150
+#: ../src/libs/print_settings.c:1151
 msgid "lock"
 msgstr "zamknúť"
 
-#: ../src/libs/print_settings.c:1151
+#: ../src/libs/print_settings.c:1152
 msgid "change all margins uniformly"
 msgstr "zmeniť všetky okraje rovnomerne"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1155
+#: ../src/libs/print_settings.c:1156
 msgid "right margin"
 msgstr "pravý okraj"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1159
+#: ../src/libs/print_settings.c:1160
 msgid "bottom margin"
 msgstr "dolný okraj"
 
-#: ../src/libs/print_settings.c:1298
+#: ../src/libs/print_settings.c:1299
 msgid "temporary style to use while printing"
 msgstr "dočasný štýl použitý počas tlače"
 
 #. Print button
-#: ../src/libs/print_settings.c:1335
+#: ../src/libs/print_settings.c:1336
 msgid "print"
 msgstr "tlačiť"
 
-#: ../src/libs/print_settings.c:1337
+#: ../src/libs/print_settings.c:1338
 msgid "print with current settings (ctrl-p)"
 msgstr "tlačiť s aktuálnymi nastaveniami (ctrl-p)"
+
+#: ../src/libs/print_settings.c:1797
+msgctxt "accel"
+msgid "print"
+msgstr "tlačiť"
 
 #: ../src/libs/recentcollect.c:50
 msgid "recently used collections"
@@ -9273,6 +9287,10 @@ msgstr "vymazať všetky značky vybratých obrázkov"
 #: ../src/libs/tools/darktable.c:56
 msgid "darktable"
 msgstr "darktable"
+
+#: ../src/libs/tools/darktable.c:288
+msgid "copyright (c) the authors 2009-2016"
+msgstr "autorské práva (c) autori 2009-2016"
 
 #: ../src/libs/tools/darktable.c:290
 msgid "organize and develop images from digital cameras"
@@ -9915,17 +9933,17 @@ msgstr ""
 "nie je dostupný žiaden podporovaný fotoaparát pre použitie so vzdialeným "
 "snímaním"
 
-#: ../src/views/view.c:314
+#: ../src/views/view.c:322
 msgid "you are making a mistake!"
 msgstr "Robíte chybu!"
 
-#: ../src/views/view.c:315
+#: ../src/views/view.c:323
 msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
 msgstr ""
 "-Áno, rozumiem. Prosím, nechajte ma trpieť používaním 32-bitovej zostavy "
 "programu Darktable."
 
-#: ../src/views/view.c:319
+#: ../src/views/view.c:327
 msgid ""
 "warning!\n"
 "you are using a 32-bit build of darktable.\n"
