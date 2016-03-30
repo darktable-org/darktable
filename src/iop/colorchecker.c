@@ -476,18 +476,27 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     }
   }
 
-  // highlight patch that is closest to picked colour:
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  // highlight patch that is closest to picked colour,
+  // or the one selected in the combobox.
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
   {
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-    cairo_rectangle(cr,
-        width * besti / (float)cells_x + DT_PIXEL_APPLY_DPI(5),
-        height * bestj / (float)cells_y + DT_PIXEL_APPLY_DPI(5),
-        width / (float)cells_x - DT_PIXEL_APPLY_DPI(11),
-        height / (float)cells_y - DT_PIXEL_APPLY_DPI(11));
-    cairo_stroke(cr);
+    int i = dt_bauhaus_combobox_get(g->combobox_patch);
+    besti = i % cells_x;
+    bestj = i / cells_x;
   }
+  else
+  {
+    // freshly picked, also select it in gui:
+    dt_bauhaus_combobox_set(g->combobox_patch, cells_x * bestj + besti);
+  }
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+  cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+  cairo_rectangle(cr,
+      width * besti / (float)cells_x + DT_PIXEL_APPLY_DPI(5),
+      height * bestj / (float)cells_y + DT_PIXEL_APPLY_DPI(5),
+      width / (float)cells_x - DT_PIXEL_APPLY_DPI(11),
+      height / (float)cells_y - DT_PIXEL_APPLY_DPI(11));
+  cairo_stroke(cr);
 
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
