@@ -436,7 +436,7 @@ static void process_lch_bayer(
       if(i == 0 || i == width - 1 || j == 0 || j == height - 1)
       {
         // fast path for border
-        out[0] = in[0];
+        out[0] = MIN(clip, in[0]);
       }
       else
       {
