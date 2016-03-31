@@ -57,7 +57,7 @@ parse_args()
 			INSTALL_PREFIX="$2"
 			shift
 			;;
-		--build-type)
+		--build-type|--buildtype)
 			BUILD_TYPE="$2"
 			shift
 			;;
