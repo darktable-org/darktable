@@ -59,7 +59,14 @@
 #define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
-#define LSD_SCALE 1.0                       // scaling factor for LSD line detection
+#define LSD_SCALE 0.99                      // LSD: scaling factor for line detection
+#define LSD_SIGMA_SCALE 0.6                 // LSD: sigma for Gaussian filter is computed as sigma = sigma_scale/scale
+#define LSD_QUANT 2.0                       // LSD: bound to the quantization error on the gradient norm
+#define LSD_ANG_TH 22.5                     // LSD: gradient angle tolerance in degrees
+#define LSD_LOG_EPS 0.0                     // LSD: detection threshold: -log10(NFA) > log_eps
+#define LSD_DENSITY_TH 0.7                  // LSD: minimal density of region points in rectangle
+#define LSD_N_BINS 1024                     // LSD: number of bins in pseudo-ordering of gradient modulus
+#define LSD_GAMMA 0.45                      // gamma correction to apply on raw images prior to line detection
 #define RANSAC_RUNS 200                     // how many interations to run in ransac
 #define RANSAC_EPSILON 2                    // starting value for ransac epsilon (in -log10 units)
 #define RANSAC_EPSILON_STEP 1               // step size of epsilon optimization (log10 units)
@@ -1143,7 +1150,7 @@ static int detail_enhance(const float *in, float *out, const int width, const in
 
   int success = TRUE;
 
-  // input data are expected in linear RGB,
+  // we need to convert from RGB to Lab first;
   // as colors don't matter we are safe to assume data to be sRGB
 
   // convert RGB input to Lab, use output buffer for intermediate storage
@@ -1193,12 +1200,29 @@ static int detail_enhance(const float *in, float *out, const int width, const in
   return success;
 }
 
+// apply gamma correction to RGB buffer (function arguments in and out may represent identical buffers)
+static void gamma_correct(const float *in, float *out, const int width, const int height)
+{
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    const float *inp = in + (size_t)4 * j * width;
+    float *outp = out + (size_t)4 * j * width;
+    for(int i = 0; i < width; i++, inp += 4, outp += 4)
+    {
+      for(int c = 0; c < 3; c++)
+        outp[c] = pow(inp[c], LSD_GAMMA);
+    }
+  }
+}
 
-// do actual line_detection based on LSD algorithm and return results according to this module's
-// conventions
+// do actual line_detection based on LSD algorithm and return results according
+// to this module's conventions
 static int line_detect(float *in, const int width, const int height, const int x_off, const int y_off,
                        const float scale, dt_iop_ashift_line_t **alines, int *lcount, int *vcount, int *hcount,
-                       float *vweight, float *hweight, dt_iop_ashift_enhance_t enhance)
+                       float *vweight, float *hweight, dt_iop_ashift_enhance_t enhance, const int is_raw)
 {
   double *greyscale = NULL;
   double *lsd_lines = NULL;
@@ -1208,6 +1232,12 @@ static int line_detect(float *in, const int width, const int height, const int x
   int horizontal_count = 0;
   float vertical_weight = 0.0f;
   float horizontal_weight = 0.0f;
+
+  // apply gamma correction if image is raw
+  if(is_raw)
+  {
+    gamma_correct(in, in, width, height);
+  }
 
   // if requested perform an additional detail enhancement step
   if(enhance & ASHIFT_ENHANCE_DETAIL)
@@ -1232,7 +1262,10 @@ static int line_detect(float *in, const int width, const int height, const int x
   // LSD stores the number of found lines in lines_count.
   // it returns structural details as vector 'double lines[7 * lines_count]'
   int lines_count;
-  lsd_lines = lsd_scale(&lines_count, greyscale, width, height, LSD_SCALE);
+  lsd_lines = LineSegmentDetection(&lines_count, greyscale, width, height,
+                                   LSD_SCALE, LSD_SIGMA_SCALE, LSD_QUANT,
+                                   LSD_ANG_TH, LSD_LOG_EPS, LSD_DENSITY_TH,
+                                   LSD_N_BINS, NULL, NULL, NULL);
 
   // we count the lines that we really want to use
   int lct = 0;
@@ -1408,7 +1441,7 @@ static int get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhanc
   // get new structural data
   if(!line_detect(buffer, width, height, x_off, y_off, scale, &lines, &lines_count,
                   &vertical_count, &horizontal_count, &vertical_weight, &horizontal_weight,
-                  enhance))
+                  enhance, dt_image_is_raw(&module->dev->image_storage)))
     goto error;
 
   // save new structural data

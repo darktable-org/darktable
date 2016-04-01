@@ -21,7 +21,7 @@
  * Changes versus the original code:
  *      do not include "lsd.h" (not needed)
  *      make all interface functions static
- *      comment out unsused function lsd()
+ *      comment out unsused interface functions
  *      catch (unlikely) division by zero near line 2035
  *
  */
@@ -2252,7 +2252,7 @@ double * LineSegmentDetection( int * n_out,
 
   return return_value;
 }
-
+#if 0
 /*----------------------------------------------------------------------------*/
 /** LSD Simple Interface with Scale and Region output.
  */
@@ -2285,7 +2285,7 @@ double * lsd_scale(int * n_out, double * img, int X, int Y, double scale)
 {
   return lsd_scale_region(n_out,img,X,Y,scale,NULL,NULL,NULL);
 }
-#if 0
+
 /*----------------------------------------------------------------------------*/
 /** LSD Simple Interface.
  */
