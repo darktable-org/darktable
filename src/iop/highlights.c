@@ -436,7 +436,7 @@ static void process_lch_bayer(
     float *in = (float *)ivoid + (size_t)width * j;
     for(int i = 0; i < width; i++)
     {
-      if(i == 0 || i == width - 1 || j == 0 || j == height - 1)
+      if(i == roi_out->width - 1 || j == roi_out->height - 1)
       {
         // fast path for border
         out[0] = MIN(clip, in[0]);
