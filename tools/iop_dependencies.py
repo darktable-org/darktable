@@ -1,4 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
+
+import sys
+if sys.version_info[0] >= 3:
+    raise "Must be using Python 2. Something is broken in Python 3."
 
 def usage():
   sys.stderr.write("Usage: iop_dependencies.py [--apply]\n")
