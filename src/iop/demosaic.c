@@ -1239,7 +1239,7 @@ static void vng_interpolate(float *out, const float *const in,
 }
 
 /** monochrome "demosaic" where input is RGB buffer and output is R=G=B=average(R,G,G,B) */
-static void rgb_monochrome(float *out, float *in, const dt_iop_roi_t *const roi_out,
+static void rgb_monochrome(float *out, const float *in, const dt_iop_roi_t *const roi_out,
                            const dt_iop_roi_t *const roi_in)
 {
   // If we're not doing 1:1 first scale roi_in into roi_out
