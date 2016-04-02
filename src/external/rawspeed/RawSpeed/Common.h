@@ -145,12 +145,25 @@ inline int lmax(int p0, int p1) {
 
 inline uint32 getThreadCount()
 {
-#ifdef WIN32
+#ifdef NO_PTHREAD
+  return 1;
+#elif WIN32
   return pthread_num_processors_np();
 #else
   return rawspeed_get_number_of_processor_cores();
 #endif
 }
+
+#ifdef NO_PTHREAD
+typedef void* pthread_mutex_t;
+#define pthread_mutex_init(A, B)
+#define pthread_mutex_destroy(A)
+#define pthread_mutex_lock(A)
+#define pthread_mutex_unlock(A)
+#endif
+
+typedef int __attribute__((aligned(1))) align1_int;
+typedef unsigned int __attribute__((aligned(1))) align1_uint;
 
 inline Endianness getHostEndianness() {
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__

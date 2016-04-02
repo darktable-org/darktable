@@ -112,7 +112,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset, uint32 _depth) {
         mEntry[t->tag] = t;
     }
   }
-  nextIFD = *(int*)f->getData(offset + 2 + entries * 12, 4);
+  nextIFD = *(align1_int*)f->getData(offset + 2 + entries * 12, 4);
 }
 
 TiffIFD* TiffIFD::parseDngPrivateData(TiffEntry *t) {

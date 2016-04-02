@@ -39,12 +39,16 @@ public:
   } RawImageWorkerTask;
   RawImageWorker(RawImageData *img, RawImageWorkerTask task, int start_y, int end_y);
   ~RawImageWorker();
+#ifndef NO_PTHREAD
   void startThread();
   void waitForThread();
+#endif
   void performTask();
 protected:
+#ifndef NO_PTHREAD
   pthread_t threadid;
   pthread_attr_t attr;
+#endif
   RawImageData* data;
   RawImageWorkerTask task;
   int start_y;

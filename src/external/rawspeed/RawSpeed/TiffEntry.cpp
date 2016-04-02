@@ -39,7 +39,7 @@ TiffEntry::TiffEntry(FileMap* f, uint32 offset, uint32 up_offset) {
   file = f;
   type = TIFF_UNDEFINED;  // We set type to undefined to avoid debug assertion errors.
 
-  const uchar8 *temp_data = f->getData(offset, 8);
+  const uchar8 *temp_data = (const uchar8 *)f->getData(offset, 8);
   tag = (TiffTag) get2LE(temp_data, 0);
   type = (TiffDataType) get2LE(temp_data, 2);
   count = get4LE(temp_data,4);
