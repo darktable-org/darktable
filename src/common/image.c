@@ -1219,6 +1219,8 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
 
       if(newid != -1)
       {
+        // also copy over on-disk thumbnails, if any
+        dt_mipmap_cache_copy_thumbnails(darktable.mipmap_cache, newid, imgid);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "insert into color_labels (imgid, color) select ?1, color from "
                                     "color_labels where imgid = ?2",

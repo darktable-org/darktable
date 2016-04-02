@@ -1296,6 +1296,29 @@ dt_colorspaces_color_profile_type_t dt_mipmap_cache_get_colorspace()
   return DT_COLORSPACE_DISPLAY;
 }
 
+void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint32_t dst_imgid, const uint32_t src_imgid)
+{
+  if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
+  {
+    for(dt_mipmap_size_t mip = DT_MIPMAP_0; mip < DT_MIPMAP_F; mip++)
+    {
+      // try and load from disk, if successful set flag
+      char srcpath[PATH_MAX] = {0};
+      char dstpath[PATH_MAX] = {0};
+      snprintf(srcpath, sizeof(srcpath), "%s.d/%d/%d.jpg", cache->cachedir, mip, src_imgid);
+      snprintf(dstpath, sizeof(dstpath), "%s.d/%d/%d.jpg", cache->cachedir, mip, dst_imgid);
+      GFile *src = g_file_new_for_path(srcpath);
+      GFile *dst = g_file_new_for_path(dstpath);
+      GError *gerror = NULL;
+      g_file_copy(src, dst, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+      // ignore errors, we tried what we could.
+      g_object_unref(dst);
+      g_object_unref(src);
+      g_clear_error(&gerror);
+    }
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
