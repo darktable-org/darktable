@@ -1766,6 +1766,20 @@
 		<Crop x="2" y="0" width="-50" height="0"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5">
+		<ID make="Nikon" model="D5">Nikon D5</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="400" white="15520"/>
+		<Hints>
+			<Hint name="nikon_override_auto_black" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON Df">
 		<ID make="Nikon" model="Df">Nikon Df</ID>
 		<CFA width="2" height="2">
