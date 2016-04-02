@@ -67,11 +67,11 @@
 #define LSD_DENSITY_TH 0.7                  // LSD: minimal density of region points in rectangle
 #define LSD_N_BINS 1024                     // LSD: number of bins in pseudo-ordering of gradient modulus
 #define LSD_GAMMA 0.45                      // gamma correction to apply on raw images prior to line detection
-#define RANSAC_RUNS 200                     // how many interations to run in ransac
+#define RANSAC_RUNS 400                     // how many interations to run in ransac
 #define RANSAC_EPSILON 2                    // starting value for ransac epsilon (in -log10 units)
 #define RANSAC_EPSILON_STEP 1               // step size of epsilon optimization (log10 units)
 #define RANSAC_ELIMINATION_RATIO 60         // percentage of lines we try to eliminate as outliers
-#define RANSAC_OPTIMIZATION_STEPS 4         // home many steps to optimize epsilon
+#define RANSAC_OPTIMIZATION_STEPS 5         // home many steps to optimize epsilon
 #define RANSAC_OPTIMIZATION_DRY_RUNS 50     // how man runs per optimization steps
 #define RANSAC_HURDLE 5                     // hurdle rate: the number of lines below which we do a complete permutation instead of random sampling
 #define MINIMUM_FITLINES 4                  // minimum number of lines needed for automatic parameter fit
@@ -1213,7 +1213,7 @@ static void gamma_correct(const float *in, float *out, const int width, const in
     for(int i = 0; i < width; i++, inp += 4, outp += 4)
     {
       for(int c = 0; c < 3; c++)
-        outp[c] = pow(inp[c], LSD_GAMMA);
+        outp[c] = powf(inp[c], LSD_GAMMA);
     }
   }
 }
@@ -1518,11 +1518,11 @@ static int fact(const int n)
 // total weight and lowest overall "distance" wins.
 // Disadvantage: compared to the original RANSAC we don't get any model parameters that
 // we could use for the following NMS fit.
-// Self optimization: we optimize "epsilon", the hurdle rate to reject a line as an outlier,
+// Self-tuning: we optimize "epsilon", the hurdle rate to reject a line as an outlier,
 // by a number of dry runs first. The target average percentage value of lines to eliminate as
 // outliers (without judging on the quality of the model) is given by RANSAC_ELIMINATION_RATIO,
 // note: the actual percentage of outliers removed in the final run will be lower because we
-// will look for the best quality model with the optimized epsilon and that quality value also
+// will finally look for the best quality model with the optimized epsilon and that quality value also
 // encloses the number of good lines
 static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout_set,
                   const int set_count, const float total_weight, const int xmin, const int xmax,
@@ -1536,11 +1536,13 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   memset(best_inout, 0, sizeof(best_inout));
   float best_quality = 0.0f;
 
-  // hurdle value epsilon for rejecting a line as an outlier will be self-optimized
+  // hurdle value epsilon for rejecting a line as an outlier will be self-tuning
   // in a number of dry runs
   float epsilon = pow(10.0f, -RANSAC_EPSILON);
   float epsilon_step = RANSAC_EPSILON_STEP;
+  // some accounting variables for self-tuning
   int lines_eliminated = 0;
+  int valid_runs = 0;
 
   // number of runs to optimize epsilon
   const int optiruns = RANSAC_OPTIMIZATION_STEPS * RANSAC_OPTIMIZATION_DRY_RUNS;
@@ -1574,78 +1576,90 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
     float V[3];
     vec3prodn(V, L1, L2);
 
-    // seldom case: L1 and L2 are identical -> no valid vantage point
-    if(vec3isnull(V))
-      continue;
-
-    // no chance for this module to correct for a vantage point which lies inside the image frame.
-    // check that and skip if needed
-    if(fabs(V[2]) > 0.0f &&
-         V[0]/V[2] >= xmin &&
-         V[1]/V[2] >= ymin &&
-         V[0]/V[2] <= xmax &&
-         V[1]/V[2] <= ymax)
-      continue;
-
-    // normalize V so that x^2 + y^2 + z^2 = 1
-    vec3norm(V, V);
-
-    // the two lines constituting the model are part of the set
-    inout[0] = 1;
-    inout[1] = 1;
-
-    // go through all remaining lines, check if they are within the model, and
-    // mark that fact in inout[].
-    // summarize a quality parameter for all lines within the model
-    for(int n = 2; n < set_count; n++)
+    // catch special cases:
+    // a) L1 and L2 are identical -> V is NULL -> no valid vantage point
+    // b) vantage point lies inside image frame (no chance to correct for this case)
+    if(vec3isnull(V) ||
+       (fabs(V[2]) > 0.0f &&
+        V[0]/V[2] >= xmin &&
+        V[1]/V[2] >= ymin &&
+        V[0]/V[2] <= xmax &&
+        V[1]/V[2] <= ymax))
     {
-      // L is normalized so that x^2 + y^2 = 1
-      const float *L3 = lines[index_set[n]].L;
+      // no valid model
+      quality = 0.0f;
+    }
+    else
+    {
+      // valid model
 
-      // we take the absolute value of the dot product of V and L as a measure
-      // of the "distance" between point and line. Note that this is not the real euclidian
-      // distance but - with the given normalization - just a pragmatically selected number
-      // that goes to zero if V lies on L and increases the more V and L are apart
-      const float d = fabs(vec3scalar(V, L3));
+      // normalize V so that x^2 + y^2 + z^2 = 1
+      vec3norm(V, V);
 
-      // depending on d we either include or exclude the point from the set
-      inout[n] = (d < epsilon) ? 1 : 0;
+      // the two lines constituting the model are part of the set
+      inout[0] = 1;
+      inout[1] = 1;
 
-      float q;
-
-      if(inout[n] == 1)
+      // go through all remaining lines, check if they are within the model, and
+      // mark that fact in inout[].
+      // summarize a quality parameter for all lines within the model
+      for(int n = 2; n < set_count; n++)
       {
-        // a quality parameter that depends 1/3 on the number of lines within the model,
-        // 1/3 on their weight, and 1/3 on their weighted distance d to the vantage point
-        q = 0.33f / (float)set_count
-            + 0.33f * lines[index_set[n]].weight / total_weight
-            + 0.33f * (1.0f - d / epsilon) * (float)set_count * lines[index_set[n]].weight / total_weight;
-      }
-      else
-      {
-        q = 0.0f;
-        lines_eliminated++;
-      }
+        // L is normalized so that x^2 + y^2 = 1
+        const float *L3 = lines[index_set[n]].L;
 
-      quality += q;
+        // we take the absolute value of the dot product of V and L as a measure
+        // of the "distance" between point and line. Note that this is not the real euclidian
+        // distance but - with the given normalization - just a pragmatically selected number
+        // that goes to zero if V lies on L and increases the more V and L are apart
+        const float d = fabs(vec3scalar(V, L3));
+
+        // depending on d we either include or exclude the point from the set
+        inout[n] = (d < epsilon) ? 1 : 0;
+
+        float q;
+
+        if(inout[n] == 1)
+        {
+          // a quality parameter that depends 1/3 on the number of lines within the model,
+          // 1/3 on their weight, and 1/3 on their weighted distance d to the vantage point
+          q = 0.33f / (float)set_count
+              + 0.33f * lines[index_set[n]].weight / total_weight
+              + 0.33f * (1.0f - d / epsilon) * (float)set_count * lines[index_set[n]].weight / total_weight;
+        }
+        else
+        {
+          q = 0.0f;
+          lines_eliminated++;
+        }
+
+        quality += q;
+      }
+      valid_runs++;
     }
 
     if(r < optiruns)
     {
-      // on last run of each optimization steps
-      if((r % RANSAC_OPTIMIZATION_DRY_RUNS) == (RANSAC_OPTIMIZATION_DRY_RUNS - 1))
+      // on last run of each self-tuning step
+      if((r % RANSAC_OPTIMIZATION_DRY_RUNS) == (RANSAC_OPTIMIZATION_DRY_RUNS - 1) && (valid_runs > 0))
       {
+#ifdef ASHIFT_DEBUG
+        printf("ransac self-tuning (run %d): epsilon %f", r, epsilon);
+#endif
         // average ratio of lines that we eliminated with the given epsilon
-        float ratio = 100.0f * (float)lines_eliminated / ((float)set_count * RANSAC_OPTIMIZATION_DRY_RUNS);
+        float ratio = 100.0f * (float)lines_eliminated / ((float)set_count * valid_runs);
         // adjust epsilon accordingly
         if(ratio < RANSAC_ELIMINATION_RATIO)
           epsilon = pow(10.0f, log10(epsilon) - epsilon_step);
         else if(ratio > RANSAC_ELIMINATION_RATIO)
           epsilon = pow(10.0f, log10(epsilon) + epsilon_step);
-
+#ifdef ASHIFT_DEBUG
+        printf(" (elimination ratio %f) -> %f\n", ratio, epsilon);
+#endif
         // reduce step-size for next optimization round
         epsilon_step /= 2.0f;
         lines_eliminated = 0;
+        valid_runs = 0;
       }
     }
     else
@@ -1664,7 +1678,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
     int count = 0, lastcount = 0;
     for(int n = 0; n < set_count; n++) count += best_inout[n];
     for(int n = 0; n < set_count; n++) lastcount += inout[n];
-    printf("run %d: best qual %.6f, eps %.6f, line count %d of %d (this run: qual %.5f, count %d (%2f%%))\n", r,
+    printf("ransac run %d: best qual %.6f, eps %.6f, line count %d of %d (this run: qual %.5f, count %d (%2f%%))\n", r,
            best_quality, epsilon, count, set_count, quality, lastcount, 100.0f * lastcount / (float)set_count);
 #endif
   }
