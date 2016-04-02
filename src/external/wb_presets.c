@@ -5103,6 +5103,16 @@ const wb_data wb_preset[] =
   { "Pentax", "K-x", Tungsten, 0,		{ 1.0463, 1, 3.4015, 0 } },
   { "Pentax", "K-x", Flash, 0,			{ 2.1120, 1, 1.2741, 0 } },
 
+  { "Pentax", "K-S1", Daylight                     , 0, { 2.277344, 1, 1.656250, 0 } },
+  { "Pentax", "K-S1", Shade                        , 0, { 2.847656, 1, 1.230469, 0 } },
+  { "Pentax", "K-S1", Cloudy                       , 0, { 2.546875, 1, 1.429688, 0 } },
+  { "Pentax", "K-S1", Tungsten                     , 0, { 1.343750, 1, 3.089844, 0 } },
+  { "Pentax", "K-S1", WarmWhiteFluorescent         , 0, { 1.777344, 1, 2.781250, 0 } },
+  { "Pentax", "K-S1", DayWhiteFluorescent          , 0, { 2.367188, 1, 1.824219, 0 } },
+  { "Pentax", "K-S1", DaylightFluorescent          , 0, { 2.761719, 1, 1.617188, 0 } },
+  { "Pentax", "K-S1", WhiteFluorescent             , 0, { 2.125000, 1, 2.210938, 0 } },
+  { "Pentax", "K-S1", Flash                        , 0, { 2.613281, 1, 1.351562, 0 } },
+
   { "Pentax", "K-S2", Daylight                     , 0, { 2.257812, 1, 1.683594, 0 } },
   { "Pentax", "K-S2", Shade                        , 0, { 2.882812, 1, 1.218750, 0 } },
   { "Pentax", "K-S2", Cloudy                       , 0, { 2.574219, 1, 1.414062, 0 } },
