@@ -71,7 +71,7 @@ RawImage RafDecoder::decodeRawInternal() {
   TiffEntry *offsets = raw->getEntry(FUJI_STRIPOFFSETS);
   TiffEntry *counts = raw->getEntry(FUJI_STRIPBYTECOUNTS);
 
-  if (offsets->count != 1 && counts->count != 1)
+  if (offsets->count != 1 || counts->count != 1)
     ThrowRDE("RAF Decoder: Multiple Strips found: %u %u", offsets->count, counts->count);
 
   int off = offsets->getInt();
