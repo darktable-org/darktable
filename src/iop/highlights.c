@@ -531,55 +531,78 @@ static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   }
 }
 
-static void process_lch_xtrans(
-    const void *const ivoid,
-    void *const ovoid,
-    const int width,
-    const int height,
-    const float clip,
-    const dt_iop_roi_t *const roi_in,
-    const uint8_t (*const xtrans)[6])
+static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
+                               void *const ovoid, const dt_iop_roi_t *const roi_in,
+                               const dt_iop_roi_t *const roi_out, const float clip)
 {
+  const uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int j = 0; j < roi_out->height; j++)
   {
-    float *out = (float *)ovoid + (size_t)width * j;
-    float *in = (float *)ivoid + (size_t)width * j;
-    for(int i = 0; i < width; i++)
+    float *out = (float *)ovoid + (size_t)roi_out->width * j;
+    float *in = (float *)ivoid + (size_t)roi_in->width * j;
+
+    for(int i = 0; i < roi_out->width; i++)
     {
-      if(i < 3 || i > width - 3 || j < 3 || j > height - 3)
+      // FIXME: make a smaller fast path if can do 2x2
+      if(i == 0 || i == roi_out->width - 1 || j == 0 || j == roi_out->height - 1)
       {
         // fast path for border
         out[0] = MIN(clip, in[0]);
       }
       else
       {
-        const float near_clip = 0.96f * clip;
-        const float post_clip = 1.10f * clip;
-        float blend[3] = {0.0f};
-        float mean[3] = {0.0f};
-        int cnt[3] = {0};
+        int clipped = 0;
+
+        float RGBmin[3] = {FLT_MAX,FLT_MAX,FLT_MAX};
+        float RGBmax[3] = {-FLT_MAX,-FLT_MAX,-FLT_MAX};
         for(int jj = -1; jj <= 1; jj++)
         {
           for(int ii = -1; ii <= 1; ii++)
           {
-            const float val = in[(size_t)jj * width + ii];
+            const float val = in[(size_t)jj * roi_in->width + ii];
+            clipped = (clipped || (val > clip));
             const int c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
-            mean[c] += val;
-            cnt[c]++;
-            blend[c] = fmaxf(blend[c], (fminf(post_clip, val) - near_clip) / (post_clip - near_clip));
+            RGBmin[c] = MIN(RGBmin[c], val);
+            RGBmax[c] = MAX(RGBmax[c], val);
           }
         }
-        if(blend[0] + blend[1] + blend[2] > 0)
-        { // recover:
-          // options: use max colour and mean blend weight.
-          // const float m = fmaxf(mean[0]/cnt[0], fmaxf(mean[1]/cnt[1], mean[2]/cnt[2]));
-          // const float b = (blend[0] + blend[1] + blend[2])/3.0f;
-          const float m = (mean[0]/cnt[0] + mean[1]/cnt[1] + mean[2]/cnt[2])/3.0f;
-          const float b = fmaxf(fmaxf(blend[0], blend[1]), blend[2]);
-          out[0] = b * m + (1.0f-b) * in[0];
+
+        if(clipped)
+        {
+          for (int c=0; c<3; c++)
+            RGBmin[c] = MIN(RGBmin[c], clip);
+
+          const float L = (RGBmax[0] + RGBmax[1] + RGBmax[2]) / 3.0f;
+
+          float C = SQRT3 * (RGBmax[0] - RGBmax[1]);
+          float H = 2.0f * RGBmax[2] - RGBmax[1] - RGBmax[0];
+
+          const float Co = SQRT3 * (RGBmin[0] - RGBmin[1]);
+          const float Ho = 2.0f * RGBmin[2] - RGBmin[1] - RGBmin[0];
+
+          if(RGBmax[0] != RGBmax[1] && RGBmax[1] != RGBmax[2])
+          {
+            const float ratio = sqrtf((Co * Co + Ho * Ho) / (C * C + H * H));
+            C *= ratio;
+            H *= ratio;
+          }
+
+          switch(FCxtrans(j, i, roi_out, xtrans))
+          {
+            case 0:
+              out[0] = L - H / 6.0f + C / SQRT12;
+              break;
+            case 1:
+              out[0] = L - H / 6.0f - C / SQRT12;
+              break;
+            case 2:
+              out[0] = L + H / 3.0f;
+              break;
+          }
         }
         else
           out[0] = in[0];
@@ -751,8 +774,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     case DT_IOP_HIGHLIGHTS_LCH:
       if(filters == 9u)
-        process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip, roi_in,
-                           (const uint8_t(*const)[6])self->dev->image_storage.xtrans);
+        process_lch_xtrans(self, ivoid, ovoid, roi_in, roi_out, clip);
       else
         process_lch_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
