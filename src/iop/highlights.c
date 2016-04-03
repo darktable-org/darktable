@@ -547,8 +547,7 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
 
     for(int i = 0; i < roi_out->width; i++)
     {
-      // FIXME: make a smaller fast path if can do 2x2
-      if(i == 0 || i == roi_out->width - 1 || j == 0 || j == roi_out->height - 1)
+      if(i == 0 || i == roi_out->width - 1 || j == roi_out->height - 1)
       {
         // fast path for border
         out[0] = MIN(clip, in[0]);
@@ -557,34 +556,58 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
       {
         int clipped = 0;
 
-        float RGBmin[3] = {FLT_MAX,FLT_MAX,FLT_MAX};
-        float RGBmax[3] = {-FLT_MAX,-FLT_MAX,-FLT_MAX};
-        for(int jj = -1; jj <= 1; jj++)
+        // if at top left of a 2x2 green square, offset so still
+        // sample red and blue
+        int offs = 0;
+        if(FCxtrans(j, i, roi_in, xtrans) == 1 &&
+           FCxtrans(j + 1, i, roi_in, xtrans) == 1 &&
+           FCxtrans(j, i + 1, roi_in, xtrans) == 1)
         {
-          for(int ii = -1; ii <= 1; ii++)
+          offs = -1;
+        }
+
+        // sample 2x2 block such that will always have 2 green values
+        // and one each of red and blue
+        float R = 0.0f, Gmin = FLT_MAX, Gmax = -FLT_MAX, B = 0.0f;
+
+        for(int jj = 0; jj <= 1; jj++)
+        {
+          for(int ii = offs; ii <= 1 + offs; ii++)
           {
             const float val = in[(size_t)jj * roi_in->width + ii];
             clipped = (clipped || (val > clip));
             const int c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
-            RGBmin[c] = MIN(RGBmin[c], val);
-            RGBmax[c] = MAX(RGBmax[c], val);
+            switch(c)
+            {
+              case 0:
+                R = val;
+                break;
+              case 1:
+                Gmin = MIN(Gmin, val);
+                Gmax = MAX(Gmax, val);
+                break;
+              case 2:
+                B = val;
+                break;
+            }
           }
         }
 
         if(clipped)
         {
-          for (int c=0; c<3; c++)
-            RGBmin[c] = MIN(RGBmin[c], clip);
+          const float Ro = MIN(R, clip);
+          const float Go = MIN(Gmin, clip);
+          const float Bo = MIN(B, clip);
 
-          const float L = (RGBmax[0] + RGBmax[1] + RGBmax[2]) / 3.0f;
+          const float L = (R + Gmax + B) / 3.0f;
 
-          float C = SQRT3 * (RGBmax[0] - RGBmax[1]);
-          float H = 2.0f * RGBmax[2] - RGBmax[1] - RGBmax[0];
+          float C = SQRT3 * (R - Gmax);
+          float H = 2.0f * B - Gmax - R;
 
-          const float Co = SQRT3 * (RGBmin[0] - RGBmin[1]);
-          const float Ho = 2.0f * RGBmin[2] - RGBmin[1] - RGBmin[0];
+          const float Co = SQRT3 * (Ro - Go);
+          const float Ho = 2.0f * Bo - Go - Ro;
 
-          if(RGBmax[0] != RGBmax[1] && RGBmax[1] != RGBmax[2])
+          if(R != Gmax && Gmax != B)
           {
             const float ratio = sqrtf((Co * Co + Ho * Ho) / (C * C + H * H));
             C *= ratio;
