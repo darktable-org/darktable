@@ -12,8 +12,8 @@ Categories=Graphics;Photography;GTK;
 # TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 _Keywords=graphics;photography;raw;
 
-Exec=darktable %U
-TryExec=darktable
+Exec=${CMAKE_INSTALL_PREFIX}/bin/darktable %U
+TryExec=${CMAKE_INSTALL_PREFIX}/bin/darktable
 Terminal=false
 StartupNotify=true
 
