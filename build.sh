@@ -143,7 +143,7 @@ Actual actions:
                               (default: disabled)
 
 Features:
-By default cmake will enabel the features it autodetects on the build machine.
+By default cmake will enable the features it autodetects on the build machine.
 Specifying the option on the command line forces the feature on or off.
 All these options have a --disable-* equivalent.
 $(for i in $FEATURES_ ; do printf "    --enable-$i\n"; done)
@@ -178,7 +178,7 @@ num_cpu()
 		fi
 		;;
 	*)
-		printf "warning: unable to determine number of CPU on $platform\n"
+		printf "warning: unable to determine number of CPUs on $platform\n"
 		ncpu=-1
 		;;
 	esac
@@ -302,8 +302,8 @@ cd "$OLDPWD"
 
 if [ $DO_BUILD -eq 0 ] ; then
 	cat <<EOF
-Darktable configuration is finished, to actually build and install darktable
-you need to type:
+The darktable configuration is finished.
+To build and install darktable you need to type:
 \$ $(printf "$cmd_build")
 \$ $(printf "$cmd_install")
 EOF
@@ -315,7 +315,8 @@ eval "$cmd_build"
 
 if [ $DO_INSTALL -eq 0 ] ; then
 	cat <<EOF
-Darktable finished building, to actually install darktable you need to type:
+darktable finished building.
+To actually install darktable you need to type:
 \$ $(printf "$cmd_install")
 EOF
 	exit 0
