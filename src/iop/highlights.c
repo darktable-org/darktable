@@ -420,21 +420,33 @@ static inline void interpolate_color(const void *const ivoid, void *const ovoid,
   }
 }
 
-static void process_lch_bayer(
-    const void *const ivoid,
-    void *const ovoid,
-    const int width,
-    const int height,
-    const float clip)
+/*
+ * these 2 constants were computed using following Sage code:
+ *
+ * sqrt3 = sqrt(3)
+ * sqrt12 = sqrt(12) # 2*sqrt(3)
+ *
+ * print 'sqrt3 = ', sqrt3, ' ~= ', RealField(128)(sqrt3)
+ * print 'sqrt12 = ', sqrt12, ' ~= ', RealField(128)(sqrt12)
+ */
+#define SQRT3 1.7320508075688772935274463415058723669L
+#define SQRT12 3.4641016151377545870548926830117447339L // 2*SQRT3
+
+static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                              void *const ovoid, const dt_iop_roi_t *const roi_in,
+                              const dt_iop_roi_t *const roi_out, const float clip)
 {
+  const int filters = dt_image_filter(&piece->pipe->image);
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int j = 0; j < roi_out->height; j++)
   {
-    float *out = (float *)ovoid + (size_t)width * j;
-    float *in = (float *)ivoid + (size_t)width * j;
-    for(int i = 0; i < width; i++)
+    float *out = (float *)ovoid + (size_t)roi_out->width * j;
+    float *in = (float *)ivoid + (size_t)roi_out->width * j;
+
+    for(int i = 0; i < roi_out->width; i++, in++, out++)
     {
       if(i == roi_out->width - 1 || j == roi_out->height - 1)
       {
@@ -443,31 +455,78 @@ static void process_lch_bayer(
       }
       else
       {
-        // analyse one bayer block to get same number of rggb pixels each time
-        const float near_clip = 0.96f * clip;
-        const float post_clip = 1.10f * clip;
-        float blend = 0.0f;
-        float mean = 0.0f;
+        int clipped = 0;
+
+        // sample 1 bayer block. thus we will have 2 green values.
+        float R = 0.0f, Gmin = FLT_MAX, Gmax = -FLT_MAX, B = 0.0f;
         for(int jj = 0; jj <= 1; jj++)
         {
           for(int ii = 0; ii <= 1; ii++)
           {
-            const float val = in[(size_t)jj * width + ii];
-            mean += val * 0.25f;
-            blend += (fminf(post_clip, val) - near_clip) / (post_clip - near_clip);
+            const float val = in[(size_t)jj * roi_out->width + ii];
+
+            clipped = (clipped || (val > clip));
+
+            const int c = FC(j + jj + roi_out->y, i + ii + roi_out->x, filters);
+            switch(c)
+            {
+              case 0:
+                R = val;
+                break;
+              case 1:
+                Gmin = MIN(Gmin, val);
+                Gmax = MAX(Gmax, val);
+                break;
+              case 2:
+                B = val;
+                break;
+            }
           }
         }
-        blend = CLAMP(blend, 0.0f, 1.0f);
-        if(blend > 0)
+
+        if(clipped)
         {
-          // recover:
-          out[0] = blend * mean + (1.f - blend) * in[0];
+          const float Ro = MIN(R, clip);
+          const float Go = MIN(Gmin, clip);
+          const float Bo = MIN(B, clip);
+
+          const float L = (R + Gmax + B) / 3.0f;
+
+          float C = SQRT3 * (R - Gmax);
+          float H = 2.0f * B - Gmax - R;
+
+          const float Co = SQRT3 * (Ro - Go);
+          const float Ho = 2.0f * Bo - Go - Ro;
+
+          if(R != Gmax && Gmax != B)
+          {
+            const float ratio = sqrtf((Co * Co + Ho * Ho) / (C * C + H * H));
+            C *= ratio;
+            H *= ratio;
+          }
+
+          float RGB[3] = { 0.0f, 0.0f, 0.0f };
+
+          /*
+           * backtransform proof, sage:
+           *
+           * R,G,B,L,C,H = var('R,G,B,L,C,H')
+           * solve([L==(R+G+B)/3, C==sqrt(3)*(R-G), H==2*B-G-R], R, G, B)
+           *
+           * result:
+           * [[R == 1/6*sqrt(3)*C - 1/6*H + L, G == -1/6*sqrt(3)*C - 1/6*H + L, B == 1/3*H + L]]
+           */
+          RGB[0] = L - H / 6.0f + C / SQRT12;
+          RGB[1] = L - H / 6.0f - C / SQRT12;
+          RGB[2] = L + H / 3.0f;
+
+          out[0] = RGB[FC(j + roi_out->y, i + roi_out->x, filters)];
         }
         else
+        {
           out[0] = in[0];
+        }
       }
-      out++;
-      in++;
     }
   }
 }
@@ -530,6 +589,9 @@ static void process_lch_xtrans(
     }
   }
 }
+
+#undef SQRT3
+#undef SQRT12
 
 static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
@@ -692,7 +754,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip, roi_in,
                            (const uint8_t(*const)[6])self->dev->image_storage.xtrans);
       else
-        process_lch_bayer(ivoid, ovoid, roi_out->width, roi_out->height, clip);
+        process_lch_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
     default:
     case DT_IOP_HIGHLIGHTS_CLIP:
@@ -740,6 +802,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
   if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT) piece->process_cl_ready = 0;
+
+  // no OpenCL for DT_IOP_HIGHLIGHTS_LCH yet.
+  if(d->mode == DT_IOP_HIGHLIGHTS_LCH) piece->process_cl_ready = 0;
 }
 
 void init_global(dt_iop_module_so_t *module)
