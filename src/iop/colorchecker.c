@@ -105,7 +105,7 @@ typedef struct dt_iop_colorchecker_params_t
 typedef struct dt_iop_colorchecker_gui_data_t
 {
   GtkWidget *area, *combobox_patch, *scale_L, *scale_a, *scale_b, *scale_C;
-  int patch;
+  int patch, drawn_patch;
   cmsHTRANSFORM xform;
 } dt_iop_colorchecker_gui_data_t;
 
@@ -310,10 +310,7 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
   if(darktable.gui->reset) return;
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-  }
   else
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
@@ -401,6 +398,9 @@ static void patch_callback(GtkWidget *combo, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   g->patch = dt_bauhaus_combobox_get(combo);
+  // switch off colour picker, it'll interfere with other changes of the patch:
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  if(g->patch != g->drawn_patch) gtk_widget_queue_draw(g->area);
   self->gui_update(self);
 }
 
@@ -452,9 +452,9 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
           width / (float)cells_x - DT_PIXEL_APPLY_DPI(1),
           height / (float)cells_y - DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
-      if(p->target_L[patch] != colorchecker_Lab[3*patch+0] ||
-         p->target_a[patch] != colorchecker_Lab[3*patch+1] ||
-         p->target_b[patch] != colorchecker_Lab[3*patch+2])
+      if(fabsf(p->target_L[patch] - colorchecker_Lab[3*patch+0]) > 1e-6f ||
+         fabsf(p->target_a[patch] - colorchecker_Lab[3*patch+1]) > 1e-6f ||
+         fabsf(p->target_b[patch] - colorchecker_Lab[3*patch+2]) > 1e-6f)
       {
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
         cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
@@ -483,11 +483,15 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     int i = dt_bauhaus_combobox_get(g->combobox_patch);
     besti = i % cells_x;
     bestj = i / cells_x;
+    g->drawn_patch = cells_x * bestj + besti;
   }
   else
   {
     // freshly picked, also select it in gui:
+    int pick = self->request_color_pick;
+    g->drawn_patch = cells_x * bestj + besti;
     dt_bauhaus_combobox_set(g->combobox_patch, cells_x * bestj + besti);
+    self->request_color_pick = pick; // restore, the combobox will kill it
   }
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
@@ -577,6 +581,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(checker_motion_notify), self);
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(checker_leave_notify), self);
 
+  g->patch = 0;
+  g->drawn_patch = -1;
   g->combobox_patch = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->combobox_patch, NULL, _("patch"));
   gtk_widget_set_tooltip_text(g->combobox_patch, _("color checker patch"));
