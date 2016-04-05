@@ -49,7 +49,7 @@
               <emphasis>SIGNATURE</emphasis>
             </entry>
             <entry>
-              is a hash signature (SHA-1) of the full pathname
+              is a hash signature (MD5) of the full pathname
             </entry>
           </row>
           <row>
