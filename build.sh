@@ -240,7 +240,10 @@ if [ $PRINT_HELP -ne 0 ] ; then
 	exit 1
 fi
 
-MAKE_TASKS=$(num_cpu)
+if [ $MAKE_TASKS -lt 1 ] ; then
+	MAKE_TASKS=$(num_cpu)
+fi
+
 MAKE=$(make_name)
 
 CMAKE_MORE_OPTIONS=""
