@@ -70,7 +70,7 @@ parse_args()
 			shift
 			;;
 		-j|--jobs)
-			MAKE_TASKS="$2"
+			MAKE_TASKS=$(printf "%d" "$2" >/dev/null 2>&1 && printf "$2" || printf "$MAKE_TASKS")
 			shift
 			;;
 		--enable-*)
@@ -232,6 +232,9 @@ cmake_boolean_option()
 # Let's process the user's wishes
 # ---------------------------------------------------------------------------
 
+MAKE_TASKS=$(num_cpu)
+MAKE=$(make_name)
+
 features_set_to_autodetect
 parse_args "$@"
 
@@ -239,12 +242,6 @@ if [ $PRINT_HELP -ne 0 ] ; then
 	print_help
 	exit 1
 fi
-
-if [ $MAKE_TASKS -lt 1 ] ; then
-	MAKE_TASKS=$(num_cpu)
-fi
-
-MAKE=$(make_name)
 
 CMAKE_MORE_OPTIONS=""
 for i in $FEATURES; do
