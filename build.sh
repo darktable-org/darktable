@@ -1,191 +1,215 @@
 #!/bin/sh
 
-DT_SRC_DIR=`dirname "$0"`
-DT_SRC_DIR=`cd "$DT_SRC_DIR"; pwd`
+set -e
 
-cd $DT_SRC_DIR;
+DT_SRC_DIR=$(dirname "$0")
+DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 
 # ---------------------------------------------------------------------------
 # Set default values to option vars
 # ---------------------------------------------------------------------------
 
-INSTALL_PREFIX=""
-BUILD_TYPE=""
+INSTALL_PREFIX_DEFAULT="/opt/darktable"
+INSTALL_PREFIX="$INSTALL_PREFIX_DEFAULT"
+BUILD_TYPE_DEFAULT="RelWithDebInfo"
+BUILD_TYPE="$BUILD_TYPE_DEFAULT"
+BUILD_DIR_DEFAULT="$DT_SRC_DIR/build"
+BUILD_DIR="$BUILD_DIR_DEFAULT"
+BUILD_GENERATOR_DFEAULT="Unix Makefiles"
+BUILD_GENERATOR="$BUILD_GENERATOR_DFEAULT"
 MAKE_TASKS=-1
-BUILD_DIR="./build"
+ADDRESS_SANITIZER=0
+DO_CONFIG=1
+DO_BUILD=1
+DO_INSTALL=0
+SUDO=""
 
 PRINT_HELP=0
 
-OPT_FLICKR=-1
-OPT_KWALLET=-1
-OPT_OPENMP=-1
-OPT_OPENCL=-1
-OPT_UNITY=-1
-OPT_TETHERING=-1
-OPT_GEO=-1
-OPT_LUA=-1
-OPT_OPENEXR=-1
-OPT_WEBP=-1
+FEATURES="FLICKR LIBSECRET KWALLET OPENMP OPENCL UNITY TETHERING GEO LUA OPENEXR WEBP"
+
+# prepare a lowercase version with a space before and after
+# it's very important for parse_feature, has no impact in for loop expansions
+FEATURES_=$(for i in $FEATURES ; do printf " $(printf $i|tr A-Z a-z) "; done)
 
 # ---------------------------------------------------------------------------
-# Parse options
+# Parsing functions
 # ---------------------------------------------------------------------------
 
 parse_feature()
 {
-	feature=$1
-	value=$2
+	local feature="$1"
+	local value="$2"
 
-	case $feature in
-	flickr)
-		OPT_FLICKR=$value
-		;;
-	libsecret)
-		OPT_LIBSECRET=$value
-		;;
-	kwallet)
-		OPT_KWALLET=$value
-		;;
-	openmp)
-		OPT_OPENMP=$value
-		;;
-	opencl)
-		OPT_OPENCL=$value
-		;;
-	unity)
-		OPT_UNITY=$value
-		;;
-	tethering)
-		OPT_TETHERING=$value
-		;;
-	lua)
-		OPT_LUA=$value
-		;;
-	geo)
-		OPT_GEO=$value
-		;;
-	openexr)
-		OPT_OPENEXR=$value
-		;;
-	webp)
-		OPT_WEBP=$value
-		;;
-	*)
-		echo "warning: unknown feature '$feature'"
-		;;
-	esac
+	if printf "$FEATURES_" | grep -q " $feature " ; then
+		eval "FEAT_$(printf $feature|tr a-z A-Z)"=$value
+	else
+		printf "warning: unknown feature '$feature'\n"
+	fi
 }
 
-while [ $# -ge 1 ] ; do
-	option="$1"
-	case $option in
-	--prefix)
-		INSTALL_PREFIX="$2"
+parse_args()
+{
+	while [ "$#" -ge 1 ] ; do
+		option="$1"
+		case $option in
+		--prefix)
+			INSTALL_PREFIX="$2"
+			shift
+			;;
+		--build-type|--buildtype)
+			BUILD_TYPE="$2"
+			shift
+			;;
+		--build-dir)
+			BUILD_DIR="$2"
+			shift
+			;;
+		--build-generator)
+			BUILD_GENERATOR="$2"
+			shift
+			;;
+		-j|--jobs)
+			MAKE_TASKS="$2"
+			shift
+			;;
+		--enable-*)
+			feature=${option#--enable-}
+			parse_feature "$feature" 1
+			;;
+		--disable-*)
+			feature=${option#--disable-}
+			parse_feature "$feature" 0
+			;;
+		--asan)
+			ADDRESS_SANITIZER=1
+			;;
+		--skip-config)
+			DO_CONFIG=0
+			;;
+		--skip-build)
+			DO_BUILD=0
+			;;
+		--install)
+			DO_INSTALL=1
+			;;
+		--sudo)
+			SUDO="sudo "
+			;;
+		-h|--help)
+			PRINT_HELP=1
+			;;
+		*)
+			echo "warning: ignoring unknown option $option"
+			;;
+		esac
 		shift
-		;;
-	--buildtype)
-		BUILD_TYPE="$2"
-		shift
-		;;
-	--builddir)
-		BUILD_DIR="$2"
-		shift
-		;;
-	-j|--jobs)
-		MAKE_TASKS="$2"
-		shift
-		;;
-	--enable-*)
-		feature=${option#--enable-}
-		parse_feature "$feature" 1
-		;;
-	--disable-*)
-		feature=${option#--disable-}
-		parse_feature "$feature" 0
-		;;
-	-h|--help)
-		PRINT_HELP=1
-		;;
-	*)
-		echo "warning: ignoring unknown option $option"
-		;;
-	esac
-	shift
-done
+	done
+}
 
 # ---------------------------------------------------------------------------
-# Process user wishes
+# Help
 # ---------------------------------------------------------------------------
 
-if [ $PRINT_HELP -ne 0 ] ; then
-		cat <<EOF
-build.sh [OPTIONS]
+print_help()
+{
+	cat <<EOF
+$(basename $0) [OPTIONS]
 
 Options:
 Installation:
-   --prefix <string>     Install directory prefix (default: /opt/darktable)
+   --prefix         <string>  Install directory prefix
+                              (default: $INSTALL_PREFIX_DEFAULT)
+   --sudo                     Use sudo when doing the install
 
 Build:
-   --builddir <string>   Building directory (default: $DT_SRC_DIR/build)
-   --buildtype <string>  Build type (Release, Debug, default: Release)
--j --jobs <integer>      Number of tasks (default: number of CPUs)
+   --build-dir      <string>  Building directory
+                              (default: $BUILD_DIR_DEFAULT)
+   --build-type     <string>  Build type (Release, Debug, RelWithDebInfo)
+                              (default: $BUILD_TYPE_DEFAULT)
+   --build-generator <string> Build tool
+                              (default: Unix Makefiles)
+
+-j --jobs <integer>           Number of tasks
+                              (default: number of CPUs)
+
+   --asan                     Enable address sanitizer options
+                              (default: disabled)
+
+Actual actions:
+   --skip-build               Configure but exit before building the binaries
+                              (default: disabled)
+   --install                  After building the binaries, install them
+                              (default: disabled)
 
 Features:
-All these options have a --disable-* equivalent. By default they are set
-so that the cmake script autodetects features.
-   --enable-flickr
-   --enable-kwallet
-   --enable-openmp
-   --enable-opencl
-   --enable-unity
-   --enable-tethering
-   --enable-geo
-   --enable-lua
-   --enable-openexr
-   --enable-webp
+By default cmake will enable the features it autodetects on the build machine.
+Specifying the option on the command line forces the feature on or off.
+All these options have a --disable-* equivalent.
+$(for i in $FEATURES_ ; do printf "    --enable-$i\n"; done)
 
 Extra:
 -h --help                Print help message
 EOF
-	exit 1
-fi
 
-if [ "$INSTALL_PREFIX" =  "" ]; then
-	INSTALL_PREFIX=/opt/darktable/
-fi
+}
 
-if [ "$BUILD_TYPE" =  "" ]; then
-	BUILD_TYPE=Release
-fi
+# ---------------------------------------------------------------------------
+# utility functions
+# ---------------------------------------------------------------------------
 
-KERNELNAME=`uname -s`
-# If no Make tasks given, try to be smart
-if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
-	if [ "$KERNELNAME" = "SunOS" ]; then
-		MAKE_TASKS=$( /usr/sbin/psrinfo |wc -l )
-	else
+num_cpu()
+{
+	local ncpu
+	local platform=$(uname -s)
+
+	case "$platform" in
+	SunOS)
+		ncpu=$(/usr/sbin/psrinfo |wc -l)
+		;;
+	Linux)
 		if [ -r /proc/cpuinfo ]; then
-			MAKE_TASKS=$(grep -c "^processor" /proc/cpuinfo)
+			ncpu=$(grep -c "^processor" /proc/cpuinfo)
 		elif [ -x /sbin/sysctl ]; then
-			TMP_CORES=$(/sbin/sysctl -n hw.ncpu 2>/dev/null)
-			if [ "$?" = "0" ]; then
-				MAKE_TASKS=$TMP_CORES
+			ncpu=$(/sbin/sysctl -n hw.ncpu 2>/dev/null)
+			if [ $? -neq 0 ]; then
+				ncpu=-1
 			fi
 		fi
+		;;
+	*)
+		printf "warning: unable to determine number of CPUs on $platform\n"
+		ncpu=-1
+		;;
+	esac
+
+	if [ $ncpu -lt 1 ] ; then
+		ncpu=1
 	fi
-fi
+	printf "$ncpu"
+}
 
-if [ "$KERNELNAME" = "SunOS" ]; then
-	MAKE=gmake
-	PATH=/usr/gnu/bin:$PATH ; export PATH
-else
-	MAKE=make
-fi
+make_name()
+{
+	local make="make"
+	local platform=$(uname -s)
 
-# Being smart may fail :D
-if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
-	MAKE_TASKS=1
-fi
+	case "$platform" in
+	SunOS)
+		PATH="/usr/gnu/bin:$PATH"
+		export PATH
+		make="gmake"
+		;;
+	esac
+	printf "$make"
+}
+
+features_set_to_autodetect()
+{
+	for i in $FEATURES; do
+		eval FEAT_$i=-1
+	done
+}
 
 cmake_boolean_option()
 {
@@ -204,18 +228,25 @@ cmake_boolean_option()
 	esac
 }
 
+# ---------------------------------------------------------------------------
+# Let's process the user's wishes
+# ---------------------------------------------------------------------------
+
+features_set_to_autodetect
+parse_args "$@"
+
+if [ $PRINT_HELP -ne 0 ] ; then
+	print_help
+	exit 1
+fi
+
+MAKE_TASKS=$(num_cpu)
+MAKE=$(make_name)
+
 CMAKE_MORE_OPTIONS=""
-cmake_boolean_option USE_FLICKR $OPT_FLICKR
-cmake_boolean_option USE_LIBSECRET $OPT_LIBSECRET
-cmake_boolean_option USE_KWALLET $OPT_KWALLET
-cmake_boolean_option USE_OPENMP $OPT_OPENMP
-cmake_boolean_option USE_OPENCL $OPT_OPENCL
-cmake_boolean_option USE_UNITY $OPT_UNITY
-cmake_boolean_option USE_CAMERA_SUPPORT $OPT_TETHERING
-cmake_boolean_option USE_GEO $OPT_GEO
-cmake_boolean_option USE_LUA $OPT_LUA
-cmake_boolean_option USE_OPENEXR $OPT_OPENEXR
-cmake_boolean_option USE_WEBP $OPT_WEBP
+for i in $FEATURES; do
+	eval cmake_boolean_option USE_$i \$FEAT_$i
+done
 
 # Some people might need this, but ignore if unset in environment
 CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:-}
@@ -225,36 +256,72 @@ CMAKE_MORE_OPTIONS="${CMAKE_MORE_OPTIONS} ${CMAKE_PREFIX_PATH}"
 # Let's go
 # ---------------------------------------------------------------------------
 
+mkdir -p "$BUILD_DIR"
+
 cat <<EOF
 Darktable build script
 
 Building directory:  $BUILD_DIR
 Installation prefix: $INSTALL_PREFIX
 Build type:          $BUILD_TYPE
-Make program:        $MAKE
-Make tasks:          $MAKE_TASKS
+Build generator:     $BUILD_GENERATOR
+Build tasks:         $MAKE_TASKS
 
 
 EOF
 
-if [ ! -d "$BUILD_DIR" ]; then
-	mkdir "$BUILD_DIR"
+if [ $ADDRESS_SANITIZER -ne 0 ] ; then
+	ASAN_FLAGS="CFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
+	ASAN_FLAGS="$ASAN_FLAGS CXXFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
+	ASAN_FLAGS="$ASAN_FLAGS LDFLAGS=\"-fsanitize=address\" "
 fi
 
-cd "$BUILD_DIR"
 
-cmake \
-	-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-	-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-	${CMAKE_MORE_OPTIONS} \
-	"$DT_SRC_DIR" \
-&& $MAKE -j $MAKE_TASKS
+cmd_config="${ASAN_FLAGS}cmake -G \"$BUILD_GENERATOR\" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_MORE_OPTIONS} \"$DT_SRC_DIR\""
+cmd_build="cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS"
+cmd_install="${SUDO}cmake --build \"$BUILD_DIR\" --target install -- -j$MAKE_TASKS"
 
-if [ $? = 0 ]; then
+
+OLDPWD="$(pwd)"
+
+if [ $DO_CONFIG -eq 0 ] ; then
 	cat <<EOF
-Darktable finished building, to actually install darktable you need to type:
-# cd "$BUILD_DIR"; sudo make install
+The script would have configured, built, and installed with these commands:
+\$ $(printf "$cmd_config")
+\$ $(printf "$cmd_build")
+\$ $(printf "$cmd_install")
 EOF
-else
-   exit 1
+	exit 0
 fi
+
+# configure the build
+cd "$BUILD_DIR"
+eval "$cmd_config"
+cd "$OLDPWD"
+
+
+if [ $DO_BUILD -eq 0 ] ; then
+	cat <<EOF
+The darktable configuration is finished.
+To build and install darktable you need to type:
+\$ $(printf "$cmd_build")
+\$ $(printf "$cmd_install")
+EOF
+	exit 0
+fi
+
+# build the binaries
+eval "$cmd_build"
+
+if [ $DO_INSTALL -eq 0 ] ; then
+	cat <<EOF
+darktable finished building.
+To actually install darktable you need to type:
+\$ $(printf "$cmd_install")
+EOF
+	exit 0
+fi
+
+# install the binaries
+eval "$cmd_install"
+
