@@ -1266,12 +1266,12 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_XYZ,
                                                                dt_colorspaces_create_xyz_profile(),
                                                                _("linear XYZ"),
-                                                               ++in_pos, -1, -1));
+                                                               ++in_pos, ++out_pos, -1));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_LAB,
                                                                dt_colorspaces_create_lab_profile(),
                                                                _("Lab"),
-                                                               ++in_pos, -1, -1));
+                                                               ++in_pos, ++out_pos, -1));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_INFRARED,
                                                                dt_colorspaces_create_linear_infrared_profile(),
