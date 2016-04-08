@@ -825,9 +825,30 @@ static void homography(float *homograph, const float angle, const float shift_v,
 }
 #undef MAT3SWAP
 
+
+// check if module parameters are set to all neutral values in which case the module's
+// output is identical to its input
+// TODO: we can ignore the clipping parameters here as long as only automatic clipping is
+//       offered (clipping will have no effect if warping parameters are all zero).
+//       This needs to be adapted once manual clipping options are added to this module.
+static inline int isneutral(dt_iop_ashift_data_t *data)
+{
+  // values lower than this have no visible effect
+  const float eps = 1.0e-4f;
+
+  return(fabs(data->rotation) < eps &&
+         fabs(data->lensshift_v) < eps &&
+         fabs(data->lensshift_h) < eps &&
+         fabs(data->shear) < eps);
+}
+
+
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+
+  // nothing to be done if parameters are set to neutral values
+  if(isneutral(data)) return 1;
 
   float homograph[3][3];
   homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
@@ -860,6 +881,9 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
+  // nothing to be done if parameters are set to neutral values
+  if(isneutral(data)) return 1;
+
   float ihomograph[3][3];
   homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
@@ -890,6 +914,9 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   *roi_out = *roi_in;
+
+  // nothing more to be done if parameters are set to neutral values
+  if(isneutral(data)) return;
 
   float homograph[3][3];
   homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
@@ -946,6 +973,9 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   *roi_in = *roi_out;
+
+  // nothing more to be done if parameters are set to neutral values
+  if(isneutral(data)) return;
 
   float ihomograph[3][3];
   homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
@@ -2521,54 +2551,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
 
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-
-  float ihomograph[3][3];
-  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
-             data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
-
-  // clipping offset
-  const float fullwidth = (float)piece->buf_out.width / (data->cr - data->cl);
-  const float fullheight = (float)piece->buf_out.height / (data->cb - data->ct);
-  const float cx = roi_out->scale * fullwidth * data->cl;
-  const float cy = roi_out->scale * fullheight * data->ct;
-
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ihomograph, interpolation)
-#endif
-  // go over all pixels of output image
-  for(int j = 0; j < roi_out->height; j++)
-  {
-    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
-    for(int i = 0; i < roi_out->width; i++, out += ch)
-    {
-      float pin[3], pout[3];
-
-      // convert output pixel coordinates to original image coordinates
-      pout[0] = roi_out->x + i + cx;
-      pout[1] = roi_out->y + j + cy;
-      pout[0] /= roi_out->scale;
-      pout[1] /= roi_out->scale;
-      pout[2] = 1.0f;
-
-      // apply homograph
-      mat3mulv(pin, (float *)ihomograph, pout);
-
-      // convert to input pixel coordinates
-      pin[0] /= pin[2];
-      pin[1] /= pin[2];
-      pin[0] *= roi_in->scale;
-      pin[1] *= roi_in->scale;
-      pin[0] -= roi_in->x;
-      pin[1] -= roi_in->y;
-
-      // get output values by interpolation from input image
-      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, pin[0], pin[1], roi_in->width,
-                                       roi_in->height, ch_width);
-    }
-  }
-
+  // only for preview pipe: collect input buffer data and do some other evaluations
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
     // we want to find out if the final output image is flipped in relation to this iop
@@ -2616,7 +2599,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
-      memcpy(g->buf, ivoid, (size_t)width * height * 4 * sizeof(float));
+      memcpy(g->buf, ivoid, (size_t)width * height * ch * sizeof(float));
 
       g->buf_width = width;
       g->buf_height = height;
@@ -2628,6 +2611,61 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     dt_pthread_mutex_unlock(&g->lock);
   }
+
+  // if module is set to neutral parameters we just copy input->output and are done
+  if(isneutral(data))
+  {
+    memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * ch * sizeof(float));
+    return;
+  }
+
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  float ihomograph[3][3];
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
+             data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+
+  // clipping offset
+  const float fullwidth = (float)piece->buf_out.width / (data->cr - data->cl);
+  const float fullheight = (float)piece->buf_out.height / (data->cb - data->ct);
+  const float cx = roi_out->scale * fullwidth * data->cl;
+  const float cy = roi_out->scale * fullheight * data->ct;
+
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(ihomograph, interpolation)
+#endif
+  // go over all pixels of output image
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+    for(int i = 0; i < roi_out->width; i++, out += ch)
+    {
+      float pin[3], pout[3];
+
+      // convert output pixel coordinates to original image coordinates
+      pout[0] = roi_out->x + i + cx;
+      pout[1] = roi_out->y + j + cy;
+      pout[0] /= roi_out->scale;
+      pout[1] /= roi_out->scale;
+      pout[2] = 1.0f;
+
+      // apply homograph
+      mat3mulv(pin, (float *)ihomograph, pout);
+
+      // convert to input pixel coordinates
+      pin[0] /= pin[2];
+      pin[1] /= pin[2];
+      pin[0] *= roi_in->scale;
+      pin[1] *= roi_in->scale;
+      pin[0] -= roi_in->x;
+      pin[1] -= roi_in->y;
+
+      // get output values by interpolation from input image
+      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, pin[0], pin[1], roi_in->width,
+                                       roi_in->height, ch_width);
+    }
+  }
 }
 
 #ifdef HAVE_OPENCL
@@ -2638,75 +2676,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)self->data;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  float ihomograph[3][3];
-  homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h, d->shear, d->f_length_kb,
-             d->orthocorr, d->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
-
-  // clipping offset
-  const float fullwidth = (float)piece->buf_out.width / (d->cr - d->cl);
-  const float fullheight = (float)piece->buf_out.height / (d->cb - d->ct);
-  const float cx = roi_out->scale * fullwidth * d->cl;
-  const float cy = roi_out->scale * fullheight * d->ct;
-
-  cl_int err = -999;
-  cl_mem dev_homo = NULL;
-
   const int devid = piece->pipe->devid;
   const int iwidth = roi_in->width;
   const int iheight = roi_in->height;
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  dev_homo = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, ihomograph);
-  if(dev_homo == NULL) goto error;
+  cl_int err = -999;
+  cl_mem dev_homo = NULL;
 
-  const int iroi[2] = { roi_in->x, roi_in->y };
-  const int oroi[2] = { roi_out->x, roi_out->y };
-  const float in_scale = roi_in->scale;
-  const float out_scale = roi_out->scale;
-  const float clip[2] = { cx, cy };
-
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-
-  int ldkernel = -1;
-
-  switch(interpolation->id)
-  {
-    case DT_INTERPOLATION_BILINEAR:
-      ldkernel = gd->kernel_ashift_bilinear;
-      break;
-    case DT_INTERPOLATION_BICUBIC:
-      ldkernel = gd->kernel_ashift_bicubic;
-      break;
-    case DT_INTERPOLATION_LANCZOS2:
-      ldkernel = gd->kernel_ashift_lanczos2;
-      break;
-    case DT_INTERPOLATION_LANCZOS3:
-      ldkernel = gd->kernel_ashift_lanczos3;
-      break;
-    default:
-      goto error;
-  }
-
-  dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 4, sizeof(int), (void *)&iwidth);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 5, sizeof(int), (void *)&iheight);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 6, 2 * sizeof(int), (void *)iroi);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 7, 2 * sizeof(int), (void *)oroi);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(float), (void *)&in_scale);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(float), (void *)&out_scale);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 10, 2 * sizeof(float), (void *)clip);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 11, sizeof(cl_mem), (void *)&dev_homo);
-  err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_homo);
-
+  // only for preview pipe: collect input buffer data and do some other evaluations
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
     // we want to find out if the final output image is flipped in relation to this iop
@@ -2767,6 +2746,75 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto error;
   }
 
+  // if module is set to neutral parameters we just copy input->output and are done
+  if(isneutral(d))
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    if(err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
+
+  float ihomograph[3][3];
+  homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h, d->shear, d->f_length_kb,
+             d->orthocorr, d->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+
+  // clipping offset
+  const float fullwidth = (float)piece->buf_out.width / (d->cr - d->cl);
+  const float fullheight = (float)piece->buf_out.height / (d->cb - d->ct);
+  const float cx = roi_out->scale * fullwidth * d->cl;
+  const float cy = roi_out->scale * fullheight * d->ct;
+
+  dev_homo = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, ihomograph);
+  if(dev_homo == NULL) goto error;
+
+  const int iroi[2] = { roi_in->x, roi_in->y };
+  const int oroi[2] = { roi_out->x, roi_out->y };
+  const float in_scale = roi_in->scale;
+  const float out_scale = roi_out->scale;
+  const float clip[2] = { cx, cy };
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  int ldkernel = -1;
+
+  switch(interpolation->id)
+  {
+    case DT_INTERPOLATION_BILINEAR:
+      ldkernel = gd->kernel_ashift_bilinear;
+      break;
+    case DT_INTERPOLATION_BICUBIC:
+      ldkernel = gd->kernel_ashift_bicubic;
+      break;
+    case DT_INTERPOLATION_LANCZOS2:
+      ldkernel = gd->kernel_ashift_lanczos2;
+      break;
+    case DT_INTERPOLATION_LANCZOS3:
+      ldkernel = gd->kernel_ashift_lanczos3;
+      break;
+    default:
+      goto error;
+  }
+
+  dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 4, sizeof(int), (void *)&iwidth);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 5, sizeof(int), (void *)&iheight);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 6, 2 * sizeof(int), (void *)iroi);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 7, 2 * sizeof(int), (void *)oroi);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(float), (void *)&in_scale);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(float), (void *)&out_scale);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 10, 2 * sizeof(float), (void *)clip);
+  dt_opencl_set_kernel_arg(devid, ldkernel, 11, sizeof(cl_mem), (void *)&dev_homo);
+  err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_homo);
   return TRUE;
 
 error:
