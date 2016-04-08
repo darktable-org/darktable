@@ -70,7 +70,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
         union { float f; guint32 i; } v;
         v.f = buf[3 * (i - 1) + c];
         if(swap_byte_order) v.i = GUINT32_SWAP_LE_BE(v.i);
-        buf[4 * (i - 1) + c] = fmaxf(0.0f, fminf(FLT_MAX, v.f));
+        buf[4 * (i - 1) + c] = v.f;
       }
   }
   else
