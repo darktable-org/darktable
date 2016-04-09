@@ -368,6 +368,18 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  {
+    float old_a = p->a, old_b = p->b, old_size = p->size;
+    p->a = self->picked_color[1];
+    p->b = self->picked_color[2];
+    float da = self->picked_color_max[1] - self->picked_color_min[1];
+    float db = self->picked_color_max[2] - self->picked_color_min[2];
+    p->size = CLAMP((da + db)/128.0, .5, 3.0);
+    if(old_a != p->a || old_b != p->b || old_size != p->size)
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
+
   const int inset = DT_COLORCORRECTION_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -456,6 +468,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset
@@ -489,6 +502,7 @@ static gboolean dt_iop_monochrome_button_release(GtkWidget *widget, GdkEventButt
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     g->dragging = 0;
     g_object_set(G_OBJECT(widget), "has-tooltip", TRUE, (char *)NULL);
     return TRUE;
@@ -509,6 +523,7 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   if(event->direction == GDK_SCROLL_UP && p->size > .5) p->size -= 0.1;
   if(event->direction == GDK_SCROLL_DOWN && p->size < 3.0) p->size += 0.1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -520,8 +535,29 @@ static void highlights_callback(GtkWidget *w, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   p->highlights = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void picker_callback(GtkWidget *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+  else
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+
+  dt_iop_request_focus(self);
+
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+    dt_dev_reprocess_all(self->dev);
+  else
+    dt_control_queue_redraw();
+
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -549,10 +585,13 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
 
   g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  dt_bauhaus_widget_set_quad_paint(g->highlights, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
   gtk_widget_set_tooltip_text(g->highlights, _("how much to keep highlights"));
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
+  g_signal_connect(G_OBJECT(g->highlights), "quad-pressed", G_CALLBACK(picker_callback), self);
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
