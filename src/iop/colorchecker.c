@@ -291,7 +291,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     const float eps = 0.001f;
     double w[N+4], v[(N+4)*(N+4)], tmp[N+4];
     memset(tmp, 0, sizeof(tmp));
-    dsvd(A, N+4, N+4, w, v);
+    dsvd(A, N+4, N+4, N+4, w, v);
 
     for(int j=0;j<wd;j++)
       for(int i=0;i<wd;i++)
