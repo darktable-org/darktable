@@ -588,7 +588,7 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   const float my = mouse_y * 4.0f / (float)height;
   int patch = CLAMP((int)mx + 6*(int)my, 0, p->num_patches-1);
   char tooltip[1024];
-  snprintf(tooltip, sizeof(tooltip), _("select patch `%2.2f %2.2f %2.2f' (altered patches are marked with an outline)"), p->source_L[patch], p->source_a[patch], p->source_b[patch]);
+  snprintf(tooltip, sizeof(tooltip), _("(%2.2f %2.2f %2.2f)\naltered patches are marked with an outline\nclick to select\ndouble click to reset"), p->source_L[patch], p->source_a[patch], p->source_b[patch]);
   gtk_widget_set_tooltip_text(g->area, tooltip);
   return TRUE;
 }
