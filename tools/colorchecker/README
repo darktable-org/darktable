@@ -1,0 +1,16 @@
+this little utility creates darktable presets for
+picture styles for the colorchecker lut module and the tonecurve.
+
+you can match colors give raw and jpg pairs or an absolute
+it8 chart reference.
+
+input is a .csv file with the following format:
+[string] [float] [float] [float] [float] [float] [float]
+<patch name> <source L> <source a> <source b> <target L> <target a> <target b>
+
+the last N patches will be assumed to represent the gray ramp (6 for the color
+checker and 24 for the it8 chart)
+
+internally, orthogonal matching pursuit is used to find a sparse set of
+these source/target pairs to best match the overall output. these will be
+presented in the gui.
