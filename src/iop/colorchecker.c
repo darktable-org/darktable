@@ -37,69 +37,47 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE_INTROSPECTION(1, dt_iop_colorchecker_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_colorchecker_params_t)
 
 static const int colorchecker_patches = 24;
-static const char* colorchecker_name[] =
-{
-  N_("dark skin :A0"),
-  N_("light skin :A1"),
-  N_("blue sky :A2"),
-  N_("foliage :A3"),
-  N_("blue flower :A4"),
-  N_("bluish green :A5"),
-  N_("orange :B0"),
-  N_("purple red :B1"),
-  N_("moderate red :B2"),
-  N_("purple :B3"),
-  N_("yellow green :B4"),
-  N_("orange yellow :B5"),
-  N_("blue :C0"),
-  N_("green :C1"),
-  N_("red :C2"),
-  N_("yellow :C3"),
-  N_("magenta :C4"),
-  N_("cyan :C5"),
-  N_("white :D0"),
-  N_("neutral 8 :D1"),
-  N_("neutral 65 :D2"),
-  N_("neutral 5 :D3"),
-  N_("neutral 35 :D4"),
-  N_("black :D5"),
-};
 static const float colorchecker_Lab[] =
-{
-39.19, 13.76,  14.29, // dark skin
-65.18, 19.00,  17.32, // light skin
-49.46, -4.23, -22.95, // blue sky
-42.85,-13.33,  22.12, // foliage
-55.18,  9.44, -24.94, // blue flower
-70.36,-32.77,  -0.04, // bluish green  
-62.92, 35.49,  57.10, // orange
-40.75, 11.41, -46.03, // purple red
-52.10, 48.11,  16.89, // moderate red  
-30.67, 21.19, -20.81, // purple
-73.08,-23.55,  56.97, // yellow green  
-72.43, 17.48,  68.20, // orange yellow 
-30.97, 12.67, -46.30, // blue
-56.43,-40.66,  31.94, // green
-43.40, 50.68,  28.84, // red
-82.45,  2.41,  80.25, // yellow
-51.98, 50.68, -14.84, // magenta
-51.02,-27.63, -28.03, // cyan
-95.97, -0.40,   1.24, // white
-81.10, -0.83,  -0.43, // neutral 8
-66.81, -1.08,  -0.70, // neutral 65
-50.98, -0.19,  -0.30, // neutral 5
-35.72, -0.69,  -1.11, // neutral 35
-21.46,  0.06,  -0.95, // black
+{ // from argyll ColorChecker.cie
+ 37.99,   13.56,  14.06, // dark skin
+ 65.71,   18.13,  17.81, // light skin
+ 49.93,   -4.88, -21.93, // blue sky
+ 43.14,  -13.10,  21.91, // foliage
+ 55.11,    8.84, -25.40, // blue flower
+ 70.72,  -33.40, -0.20 , // bluish green  
+ 62.66,   36.07,  57.10, // orange
+ 40.02,   10.41, -45.96, // purple red
+ 51.12,   48.24,  16.25, // moderate red  
+ 30.33,   22.98, -21.59, // purple
+ 72.53,  -23.71,  57.26, // yellow green  
+ 71.94,  19.36 ,  67.86, // orange yellow 
+ 28.78,  14.18 , -50.30, // blue
+ 55.26,  -38.34,  31.37, // green
+ 42.10,  53.38 ,  28.19, // red
+ 81.73,  4.04  ,  79.82, // yellow
+ 51.94,  49.99 , -14.57, // magenta
+ 51.04,  -28.63, -28.64, // cyan
+ 96.54,  -0.43 ,  1.19 , // white
+ 81.26,  -0.64 , -0.34 , // neutral 8
+ 66.77,  -0.73 , -0.50 , // neutral 65
+ 50.87,  -0.15 , -0.27 , // neutral 5
+ 35.66,  -0.42 , -1.23 , // neutral 35
+ 20.46,  -0.08 , -0.97   // black
 };
 
+#define MAX_PATCHES 50
 typedef struct dt_iop_colorchecker_params_t
 {
-  float target_L[24];
-  float target_a[24];
-  float target_b[24];
+  float source_L[MAX_PATCHES];
+  float source_a[MAX_PATCHES];
+  float source_b[MAX_PATCHES];
+  float target_L[MAX_PATCHES];
+  float target_a[MAX_PATCHES];
+  float target_b[MAX_PATCHES];
+  int32_t num_patches;
 } dt_iop_colorchecker_params_t;
 
 typedef struct dt_iop_colorchecker_gui_data_t
@@ -111,9 +89,11 @@ typedef struct dt_iop_colorchecker_gui_data_t
 
 typedef struct dt_iop_colorchecker_data_t
 {
-  float coeff_L[28];
-  float coeff_a[28];
-  float coeff_b[28];
+  int32_t num_patches;
+  float source_Lab[3*MAX_PATCHES];
+  float coeff_L[MAX_PATCHES+4];
+  float coeff_a[MAX_PATCHES+4];
+  float coeff_b[MAX_PATCHES+4];
 } dt_iop_colorchecker_data_t;
 
 const char *name()
@@ -129,6 +109,68 @@ int groups()
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+}
+
+int legacy_params(
+    dt_iop_module_t  *self,
+    const void *const old_params,
+    const int         old_version,
+    void             *new_params,
+    const int         new_version)
+{
+  static const float colorchecker_Lab[] =
+  {
+    39.19, 13.76,  14.29, // dark skin
+    65.18, 19.00,  17.32, // light skin
+    49.46, -4.23, -22.95, // blue sky
+    42.85,-13.33,  22.12, // foliage
+    55.18,  9.44, -24.94, // blue flower
+    70.36,-32.77,  -0.04, // bluish green  
+    62.92, 35.49,  57.10, // orange
+    40.75, 11.41, -46.03, // purple red
+    52.10, 48.11,  16.89, // moderate red  
+    30.67, 21.19, -20.81, // purple
+    73.08,-23.55,  56.97, // yellow green  
+    72.43, 17.48,  68.20, // orange yellow 
+    30.97, 12.67, -46.30, // blue
+    56.43,-40.66,  31.94, // green
+    43.40, 50.68,  28.84, // red
+    82.45,  2.41,  80.25, // yellow
+    51.98, 50.68, -14.84, // magenta
+    51.02,-27.63, -28.03, // cyan
+    95.97, -0.40,   1.24, // white
+    81.10, -0.83,  -0.43, // neutral 8
+    66.81, -1.08,  -0.70, // neutral 65
+    50.98, -0.19,  -0.30, // neutral 5
+    35.72, -0.69,  -1.11, // neutral 35
+    21.46,  0.06,  -0.95, // black
+  };
+
+  typedef struct dt_iop_colorchecker_params1_t
+  {
+    float target_L[24];
+    float target_a[24];
+    float target_b[24];
+  } dt_iop_colorchecker_params1_t;
+
+  if(old_version == 1 && new_version == 2)
+  {
+    dt_iop_colorchecker_params1_t *p1 = (dt_iop_colorchecker_params1_t *)old_params;
+    dt_iop_colorchecker_params_t  *p2 = (dt_iop_colorchecker_params_t  *)new_params;
+
+    p2->num_patches = 24;
+    for(int k=0;k<24;k++)
+    {
+      p2->target_L[k] = p1->target_L[k];
+      p2->target_a[k] = p1->target_a[k];
+      p2->target_b[k] = p1->target_b[k];
+      p2->source_L[k] = colorchecker_Lab[3*k+0];
+      p2->source_a[k] = colorchecker_Lab[3*k+1];
+      p2->source_b[k] = colorchecker_Lab[3*k+2];
+    }
+    return 0;
+  }
+  return 1;
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -163,16 +205,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       const float *in = ((float *)ivoid) + (size_t)ch * (j * roi_in->width + i);
       float *out = ((float *)ovoid) + (size_t)ch * (j * roi_in->width + i);
-      out[0] = data->coeff_L[24];
-      out[1] = data->coeff_a[24];
-      out[2] = data->coeff_b[24];
+      out[0] = data->coeff_L[data->num_patches];
+      out[1] = data->coeff_a[data->num_patches];
+      out[2] = data->coeff_b[data->num_patches];
       // polynomial part:
-      out[0] += data->coeff_L[25] * in[0] + data->coeff_L[26] * in[1] + data->coeff_L[27] * in[2];
-      out[1] += data->coeff_a[25] * in[0] + data->coeff_a[26] * in[1] + data->coeff_a[27] * in[2];
-      out[2] += data->coeff_b[25] * in[0] + data->coeff_b[26] * in[1] + data->coeff_b[27] * in[2];
-      for(int k=0;k<24;k++)
+      out[0] += data->coeff_L[data->num_patches+1] * in[0] +
+                data->coeff_L[data->num_patches+2] * in[1] +
+                data->coeff_L[data->num_patches+3] * in[2];
+      out[1] += data->coeff_a[data->num_patches+1] * in[0] +
+                data->coeff_a[data->num_patches+2] * in[1] +
+                data->coeff_a[data->num_patches+3] * in[2];
+      out[2] += data->coeff_b[data->num_patches+1] * in[0] +
+                data->coeff_b[data->num_patches+2] * in[1] +
+                data->coeff_b[data->num_patches+3] * in[2];
+      for(int k=0;k<data->num_patches;k++)
       { // rbf from thin plate spline
-        const float phi = kernel(distance(in, colorchecker_Lab + 3*k));
+        const float phi = kernel(distance(in, data->source_Lab + 3*k));
         out[0] += data->coeff_L[k] * phi;
         out[1] += data->coeff_a[k] * phi;
         out[2] += data->coeff_b[k] * phi;
@@ -188,10 +236,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)p1;
   dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
 
-#define N 24 // number of patches
+  d->num_patches = p->num_patches;
+  for(int k=0;k<p->num_patches;k++)
+  {
+    d->source_Lab[3*k+0] = p->source_L[k];
+    d->source_Lab[3*k+1] = p->source_a[k];
+    d->source_Lab[3*k+2] = p->source_b[k];
+  }
+
+#define N (d->num_patches) // number of patches
   // solve equation system to fit thin plate splines to our data
   double A[(N+4)*(N+4)];
-  double target[N+4] = {0.0};
+  double target[N+4];
+  memset(target, 0, sizeof(target));
 
   // find coeffs for three channels separately:
   for(int ch=0;ch<3;ch++)
@@ -213,25 +270,27 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // radial basis function part R
     for(int j=0;j<N;j++)
       for(int i=j;i<N;i++)
-        A[j*wd+i] = A[i*wd+j] = kernel(distance(colorchecker_Lab+3*i,colorchecker_Lab+3*j));
+        A[j*wd+i] = A[i*wd+j] = kernel(distance(d->source_Lab+3*i, d->source_Lab+3*j));
 
     // polynomial part P: constant + 3x linear
     for(int i=0;i<N;i++) A[i*wd+N+0] = A[(N+0)*wd+i] = 1.0f;
-    for(int i=0;i<N;i++) A[i*wd+N+1] = A[(N+1)*wd+i] = colorchecker_Lab[3*i+0];
-    for(int i=0;i<N;i++) A[i*wd+N+2] = A[(N+2)*wd+i] = colorchecker_Lab[3*i+1];
-    for(int i=0;i<N;i++) A[i*wd+N+3] = A[(N+3)*wd+i] = colorchecker_Lab[3*i+2];
+    for(int i=0;i<N;i++) A[i*wd+N+1] = A[(N+1)*wd+i] = d->source_Lab[3*i+0];
+    for(int i=0;i<N;i++) A[i*wd+N+2] = A[(N+2)*wd+i] = d->source_Lab[3*i+1];
+    for(int i=0;i<N;i++) A[i*wd+N+3] = A[(N+3)*wd+i] = d->source_Lab[3*i+2];
 
     for(int j=N;j<wd;j++) for(int i=N;i<wd;i++) A[j*wd+i] = 0.0f;
 
     // coefficient vector:
-    double c[N+4] = {0.0f};
+    double c[N+4];
+    memset(c, 0, sizeof(c));
 
     // svd to solve for c:
     // A * c = offsets
     // A = u w v => A-1 = v^t 1/w u^t
     // regularisation epsilon:
     const float eps = 0.001f;
-    double w[N+4], v[(N+4)*(N+4)], tmp[N+4] = {0.0f};
+    double w[N+4], v[(N+4)*(N+4)], tmp[N+4];
+    memset(tmp, 0, sizeof(tmp));
     dsvd(A, N+4, N+4, w, v);
 
     for(int j=0;j<wd;j++)
@@ -269,13 +328,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)module->params;
-  if(g->patch >= 24 || g->patch < 0) return;
-  dt_bauhaus_slider_set(g->scale_L, p->target_L[g->patch] - colorchecker_Lab[3*g->patch+0]);
-  dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - colorchecker_Lab[3*g->patch+1]);
-  dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - colorchecker_Lab[3*g->patch+2]);
+  if(g->patch >= p->num_patches || g->patch < 0) return;
+  dt_bauhaus_slider_set(g->scale_L, p->target_L[g->patch] - p->source_L[g->patch]);
+  dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - p->source_a[g->patch]);
+  dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - p->source_b[g->patch]);
   const float Cin = sqrtf(
-      colorchecker_Lab[3*g->patch+1]*colorchecker_Lab[3*g->patch+1]+
-      colorchecker_Lab[3*g->patch+2]*colorchecker_Lab[3*g->patch+2]);
+      p->source_a[g->patch]*p->source_a[g->patch] +
+      p->source_b[g->patch]*p->source_b[g->patch]);
   const float Cout = sqrtf(
       p->target_a[g->patch]*p->target_a[g->patch]+
       p->target_b[g->patch]*p->target_b[g->patch]);
@@ -291,9 +350,13 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_colorchecker_params_t);
   module->gui_data = NULL;
   dt_iop_colorchecker_params_t tmp;
-  for(int k=0;k<24;k++) tmp.target_L[k] = colorchecker_Lab[3*k+0];
-  for(int k=0;k<24;k++) tmp.target_a[k] = colorchecker_Lab[3*k+1];
-  for(int k=0;k<24;k++) tmp.target_b[k] = colorchecker_Lab[3*k+2];
+  tmp.num_patches = 24;
+  for(int k=0;k<tmp.num_patches;k++) tmp.source_L[k] = colorchecker_Lab[3*k+0];
+  for(int k=0;k<tmp.num_patches;k++) tmp.source_a[k] = colorchecker_Lab[3*k+1];
+  for(int k=0;k<tmp.num_patches;k++) tmp.source_b[k] = colorchecker_Lab[3*k+2];
+  for(int k=0;k<tmp.num_patches;k++) tmp.target_L[k] = colorchecker_Lab[3*k+0];
+  for(int k=0;k<tmp.num_patches;k++) tmp.target_a[k] = colorchecker_Lab[3*k+1];
+  for(int k=0;k<tmp.num_patches;k++) tmp.target_b[k] = colorchecker_Lab[3*k+2];
   memcpy(module->params, &tmp, sizeof(dt_iop_colorchecker_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorchecker_params_t));
 }
@@ -329,7 +392,7 @@ static void target_L_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  p->target_L[g->patch] = CLAMP(colorchecker_Lab[3*g->patch + 0] + dt_bauhaus_slider_get(slider), 0.0, 100.0);
+  p->target_L[g->patch] = CLAMP(p->source_L[g->patch] + dt_bauhaus_slider_get(slider), 0.0, 100.0);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -338,10 +401,10 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  p->target_a[g->patch] = CLAMP(colorchecker_Lab[3*g->patch + 1] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
+  p->target_a[g->patch] = CLAMP(p->source_a[g->patch] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
   const float Cin = sqrtf(
-      colorchecker_Lab[3*g->patch+1]*colorchecker_Lab[3*g->patch+1]+
-      colorchecker_Lab[3*g->patch+2]*colorchecker_Lab[3*g->patch+2]);
+      p->source_a[g->patch]*p->source_a[g->patch] +
+      p->source_b[g->patch]*p->source_b[g->patch]);
   const float Cout = sqrtf(
       p->target_a[g->patch]*p->target_a[g->patch]+
       p->target_b[g->patch]*p->target_b[g->patch]);
@@ -357,10 +420,10 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  p->target_b[g->patch] = CLAMP(colorchecker_Lab[3*g->patch + 2] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
+  p->target_b[g->patch] = CLAMP(p->source_b[g->patch] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
   const float Cin = sqrtf(
-      colorchecker_Lab[3*g->patch+1]*colorchecker_Lab[3*g->patch+1]+
-      colorchecker_Lab[3*g->patch+2]*colorchecker_Lab[3*g->patch+2]);
+      p->source_a[g->patch]*p->source_a[g->patch] +
+      p->source_b[g->patch]*p->source_b[g->patch]);
   const float Cout = sqrtf(
       p->target_a[g->patch]*p->target_a[g->patch]+
       p->target_b[g->patch]*p->target_b[g->patch]);
@@ -377,8 +440,8 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   const float Cin = sqrtf(
-      colorchecker_Lab[3*g->patch+1]*colorchecker_Lab[3*g->patch+1]+
-      colorchecker_Lab[3*g->patch+2]*colorchecker_Lab[3*g->patch+2]);
+      p->source_a[g->patch]*p->source_a[g->patch] +
+      p->source_b[g->patch]*p->source_b[g->patch]);
   const float Cout = sqrtf(
       p->target_a[g->patch]*p->target_a[g->patch]+
       p->target_b[g->patch]*p->target_b[g->patch]);
@@ -387,8 +450,8 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
   p->target_b[g->patch] = CLAMP(p->target_b[g->patch]*Cnew/Cout, -128.0, 128.0);
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1; // avoid history item
-  dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - colorchecker_Lab[3*g->patch+1]);
-  dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - colorchecker_Lab[3*g->patch+2]);
+  dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - p->source_a[g->patch]);
+  dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - p->source_b[g->patch]);
   darktable.gui->reset = reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -430,18 +493,18 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
       double rgb[3] = { 0.5, 0.5, 0.5 }; // Lab: rgb grey converted to Lab
       cmsCIELab Lab;
       const int patch = i + j*cells_x;
-      Lab.L = colorchecker_Lab[3*patch];
-      Lab.a = colorchecker_Lab[3*patch+1];
-      Lab.b = colorchecker_Lab[3*patch+2];
+      Lab.L = p->source_L[patch];
+      Lab.a = p->source_a[patch];
+      Lab.b = p->source_b[patch];
       if((picked_mean[0] - Lab.L)*(picked_mean[0] - Lab.L) +
          (picked_mean[1] - Lab.a)*(picked_mean[1] - Lab.a) +
          (picked_mean[2] - Lab.b)*(picked_mean[2] - Lab.b) <
-         (picked_mean[0] - colorchecker_Lab[3*(6*bestj+besti)+0])*
-         (picked_mean[0] - colorchecker_Lab[3*(6*bestj+besti)+0])+
-         (picked_mean[1] - colorchecker_Lab[3*(6*bestj+besti)+1])*
-         (picked_mean[1] - colorchecker_Lab[3*(6*bestj+besti)+1])+
-         (picked_mean[2] - colorchecker_Lab[3*(6*bestj+besti)+2])*
-         (picked_mean[2] - colorchecker_Lab[3*(6*bestj+besti)+2]))
+         (picked_mean[0] - p->source_L[6*bestj+besti])*
+         (picked_mean[0] - p->source_L[6*bestj+besti])+
+         (picked_mean[1] - p->source_a[6*bestj+besti])*
+         (picked_mean[1] - p->source_a[6*bestj+besti])+
+         (picked_mean[2] - p->source_b[6*bestj+besti])*
+         (picked_mean[2] - p->source_b[6*bestj+besti]))
       {
         besti = i;
         bestj = j;
@@ -452,9 +515,9 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
           width / (float)cells_x - DT_PIXEL_APPLY_DPI(1),
           height / (float)cells_y - DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
-      if(fabsf(p->target_L[patch] - colorchecker_Lab[3*patch+0]) > 1e-6f ||
-         fabsf(p->target_a[patch] - colorchecker_Lab[3*patch+1]) > 1e-6f ||
-         fabsf(p->target_b[patch] - colorchecker_Lab[3*patch+2]) > 1e-6f)
+      if(fabsf(p->target_L[patch] - p->source_L[patch]) > 1e-6f ||
+         fabsf(p->target_a[patch] - p->source_a[patch]) > 1e-6f ||
+         fabsf(p->target_b[patch] - p->source_b[patch]) > 1e-6f)
       {
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
         cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
@@ -515,7 +578,7 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   // highlight?
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  // dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
@@ -523,9 +586,9 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   const float mouse_y = CLAMP(event->y, 0, height);
   const float mx = mouse_x * 6.0f / (float)width;
   const float my = mouse_y * 4.0f / (float)height;
-  int patch = CLAMP((int)mx + 6*(int)my, 0, 23);
+  int patch = CLAMP((int)mx + 6*(int)my, 0, p->num_patches-1);
   char tooltip[1024];
-  snprintf(tooltip, sizeof(tooltip), _("select patch `%s' (altered patches are marked with an outline)"), _(colorchecker_name[patch]));
+  snprintf(tooltip, sizeof(tooltip), _("select patch `%2.2f %2.2f %2.2f' (altered patches are marked with an outline)"), p->source_L[patch], p->source_a[patch], p->source_b[patch]);
   gtk_widget_set_tooltip_text(g->area, tooltip);
   return TRUE;
 }
@@ -543,13 +606,13 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
   const float mouse_y = CLAMP(event->y, 0, height);
   const float mx = mouse_x * 6.0f / (float)width;
   const float my = mouse_y * 4.0f / (float)height;
-  int patch = CLAMP((int)mx + 6*(int)my, 0, 23);
+  int patch = CLAMP((int)mx + 6*(int)my, 0, p->num_patches);
   dt_bauhaus_combobox_set(g->combobox_patch, patch);
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   { // reset on double click
-    p->target_L[patch] = colorchecker_Lab[3*patch+0];
-    p->target_a[patch] = colorchecker_Lab[3*patch+1];
-    p->target_b[patch] = colorchecker_Lab[3*patch+2];
+    p->target_L[patch] = p->source_L[patch];
+    p->target_a[patch] = p->source_a[patch];
+    p->target_b[patch] = p->source_b[patch];
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     self->gui_update(self);
   }
@@ -566,6 +629,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colorchecker_gui_data_t));
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -586,8 +650,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->combobox_patch = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->combobox_patch, NULL, _("patch"));
   gtk_widget_set_tooltip_text(g->combobox_patch, _("color checker patch"));
-  for(int k=0;k<24;k++)
-    dt_bauhaus_combobox_add(g->combobox_patch, _(colorchecker_name[k]));
+  char cboxentry[1024];
+  for(int k=0;k<p->num_patches;k++)
+  {
+    snprintf(cboxentry, sizeof(cboxentry), _("patch #%d"), k);
+    dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
+  }
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   dt_bauhaus_widget_set_quad_paint(g->combobox_patch, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
 
@@ -639,6 +707,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
+#undef MAX_PATCHES
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
