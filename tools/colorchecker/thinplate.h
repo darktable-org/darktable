@@ -20,7 +20,7 @@ static inline double thinplate_kernel(const double *x, const double *y)
 
 static inline double compute_error(
     const tonecurve_t *c,
-    const double *point,
+    const double **target,
     const double *residual_L,
     const double *residual_a,
     const double *residual_b,
@@ -32,8 +32,9 @@ static inline double compute_error(
   {
     // err = MAX(err, residual_L[i]*residual_L[i] +
     //     residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i]);
-    const double L = tonecurve_apply(c, point[3*i] + residual_L[i]);
-    const double dL = L - tonecurve_apply(c, point[3*i]);
+    const double Lt = target[0][i];
+    const double L = tonecurve_apply(c, Lt + residual_L[i]);
+    const double dL = L - tonecurve_apply(c, Lt);
     err = MAX(err, dL*dL +
         residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i]);
   }
@@ -172,7 +173,7 @@ static inline int thinplate_match(
         }
 
         // compute error:
-        const double err = compute_error(curve, point,
+        const double err = compute_error(curve, target,
             r[0], r[1], r[2], wd);
         dot = 1./err; // searching for smallest error or largest dot
 #else // use dot product
@@ -232,7 +233,7 @@ static inline int thinplate_match(
         }
 
         // compute error:
-        const double err = compute_error(curve, point,
+        const double err = compute_error(curve, target,
             r[0], r[1], r[2], wd);
 #else
         double dot = 0.0;
@@ -292,7 +293,7 @@ static inline int thinplate_match(
       }
     }
 
-    const double err = compute_error(curve, point,
+    const double err = compute_error(curve, target,
         r[0], r[1], r[2], wd);
 #endif
     // residual is max CIE76 delta E now
