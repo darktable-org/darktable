@@ -150,33 +150,8 @@ static inline int thinplate_match(
       for(int j=0;j<wd;j++)
         As[j*S + s] = A[j*wd+maxcol];
 
-#if 0
-      // A'[wd][s+1] = u[wd][s+1] diag(w[s+1]) v[s+1][s+1]^t
-      //
-      // svd to solve for c:
-      // A * c = b
-      // A = u w v^t => A-1 = v 1/w u^t
-      dsvd(As, wd, s+1, S, w, v); // As is wd x s+1 but row stride S.
-      if(w[s] < 1e-3) // if the smallest singular value becomes too small, we're done
-        return s;
-      for(int i=0;i<=s;i++) // compute tmp = u^t * b
-      {
-        tmp[i] = 0.0;
-        for(int j=0;j<wd;j++)
-          tmp[i] += As[j*S+i] * b[ch][j];
-      }
-      for(int i=0;i<=s;i++) // apply singular values:
-        tmp[i] /= w[i];
-      for(int j=0;j<=s;j++)
-      { // compute first s output coefficients coeff[ch][j]
-        coeff[ch][j] = 0.0;
-        for(int i=0;i<=s;i++)
-          coeff[ch][j] += v[j*(s+1)+i] * tmp[i];
-      }
-#else
       if(solve(As, w, v, b[ch], coeff[ch], wd, s, S))
         return s;
-#endif
 
       // compute new residual:
       // r = b - As c
