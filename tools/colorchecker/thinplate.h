@@ -2,6 +2,11 @@
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
 #define MIN(a,b) ((a) > (b) ? (b) : (a))
 #include "../../src/iop/svd.h"
+#include "tonecurve.h"
+#include <float.h>
+
+#define REPLACEMENT // either broken code or doesn't help at all
+#define EXACT       // use full solve instead of dot in inner loop
 
 // thinplate spline kernel \phi(r)
 static inline double thinplate_kernel(const double *x, const double *y)
@@ -11,6 +16,28 @@ static inline double thinplate_kernel(const double *x, const double *y)
       (x[1]-y[1])*(x[1]-y[1])+
       (x[2]-y[2])*(x[2]-y[2]));
   return r*r*log(MAX(1e-10, r));
+}
+
+static inline double compute_error(
+    const tonecurve_t *c,
+    const double *point,
+    const double *residual_L,
+    const double *residual_a,
+    const double *residual_b,
+    const int wd)
+{
+  // compute error:
+  double err = 0.0;
+  for(int i=0;i<wd;i++)
+  {
+    // err = MAX(err, residual_L[i]*residual_L[i] +
+    //     residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i]);
+    const double L = tonecurve_apply(c, point[3*i] + residual_L[i]);
+    const double dL = L - tonecurve_apply(c, point[3*i]);
+    err = MAX(err, dL*dL +
+        residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i]);
+  }
+  return sqrt(err); // max deltaE
 }
 
 static inline int solve(
@@ -51,13 +78,14 @@ static inline int solve(
 
 // returns sparsity <= S
 static inline int thinplate_match(
-    int dim,                // dimensionality of points
-    int N,                  // number of points
-    const double *point,    // dim-strided points
-    const double **target,  // target values, one pointer per dimension
-    int S,                  // desired sparsity level, actual result will be returned
-    int *permutation,       // pointing to original order of points, to identify correct output coeff
-    double **coeff)         // output coefficient arrays for each dimension, ordered according to permutation[dim]
+    const tonecurve_t *curve, // tonecurve to apply after this (needed for error estimation)
+    int dim,                  // dimensionality of points
+    int N,                    // number of points
+    const double *point,      // dim-strided points
+    const double **target,    // target values, one pointer per dimension
+    int S,                    // desired sparsity level, actual result will be returned
+    int *permutation,         // pointing to original order of points, to identify correct output coeff
+    double **coeff)           // output coefficient arrays for each dimension, ordered according to permutation[dim]
 {
   const int wd = N+4;
   double A[wd*wd];
@@ -103,78 +131,178 @@ static inline int thinplate_match(
   memset(As, 0, sizeof(As));
   // for rank from 0 to sparsity level
   int s = 0;
+  double olderr = FLT_MAX;
+  // in case of replacement, iterate all the way to wd
+#ifdef REPLACEMENT
+  for(;s<wd;s++)
+#else
   for(;s<S;s++)
+#endif
   {
-    // find column a_m by m = argmax_i{ a_i^t r . norm_i}
+    const int sparsity = MIN(s, S-1);
+    // find column a_m by m = argmax_t{ a_t^t r . norm_t}
     // by searching over all three residuals
     double maxdot = 0.0;
     int maxcol = 0;
-    for(int i=0;i<wd;i++)
+    for(int t=0;t<wd;t++)
     {
       double dot = 0.0;
-      if(norm[i] > 0.0)
+      if(norm[t] > 0.0)
       {
-        // TODO: try to use a full solve here instead
-        // TODO: also try to correct for tonecurve here!
+#ifdef EXACT // use full solve
+        permutation[sparsity] = t;
+        for(int ch=0;ch<dim;ch++)
+        {
+          // re-init columns in As
+          // svd will destroy its contents:
+          for(int i=0;i<=sparsity;i++) for(int j=0;j<wd;j++)
+            As[j*S + i] = A[j*wd+permutation[i]];
+
+          if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity, S))
+            return sparsity;
+
+          // compute tentative residual:
+          // r = b - As c
+          for(int j=0;j<wd;j++)
+          {
+            r[ch][j] = b[ch][j];
+            for(int i=0;i<=sparsity;i++)
+              r[ch][j] -= A[j*wd + permutation[i]] * coeff[ch][i];
+          }
+        }
+
+        // compute error:
+        const double err = compute_error(curve, point,
+            r[0], r[1], r[2], wd);
+        dot = 1./err; // searching for smallest error or largest dot
+#else // use dot product
         for(int ch=0;ch<dim;ch++)
         {
           double chdot = 0.0;
           for(int j=0;j<wd;j++) 
-            chdot += A[j*wd+i] * r[ch][j];
+            chdot += A[j*wd+t] * r[ch][j];
           dot += fabs(chdot);
         }
-        dot *= norm[i];
+        dot *= norm[t];
+#endif
       }
       // fprintf(stderr, "dot %d = %g\n", i, dot);
       if(dot > maxdot)
       {
-        maxcol = i;
+        maxcol = t;
         maxdot = dot;
       }
     }
 
-    // remember which column that was, we'll need it to evaluate later:
-    permutation[s] = maxcol;
-    // make sure we won't choose it again:
-    norm[maxcol] = 0.0;
+    if(s < S)
+    {
+      // remember which column that was, we'll need it to evaluate later:
+      permutation[s] = maxcol;
+      // make sure we won't choose it again:
+      norm[maxcol] = 0.0;
+    }
+    else
+    { // already have S columns, now do the replacement:
+      int mincol = 0;
+      double minerr = FLT_MAX;
+      for(int t=0;t<S;t++)
+      {
+        // find already chosen column t with min error reduction when replacing
+        // permutation[t] = maxcol
+        int oldperm = permutation[t];
+        permutation[t] = maxcol;
+#ifdef EXACT
+        for(int ch=0;ch<dim;ch++)
+        {
+          // re-init all columns in As
+          for(int i=0;i<=sparsity;i++) for(int j=0;j<wd;j++)
+            As[j*S + i] = A[j*wd+permutation[i]];
 
+          if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity, S))
+            return s;
+
+          // compute tentative residual:
+          // r = b - As c
+          for(int j=0;j<wd;j++)
+          {
+            r[ch][j] = b[ch][j];
+            for(int i=0;i<=sparsity;i++)
+              r[ch][j] -= A[j*wd + permutation[i]] * coeff[ch][i];
+          }
+        }
+
+        // compute error:
+        const double err = compute_error(curve, point,
+            r[0], r[1], r[2], wd);
+#else
+        double dot = 0.0;
+        for(int ch=0;ch<dim;ch++)
+        {
+          double chdot = 0.0;
+          for(int j=0;j<wd;j++) 
+            chdot += A[j*wd+t] * r[ch][j];
+          dot += fabs(chdot);
+        }
+        dot *= norm[t];
+        double err = 1./dot;
+#endif
+
+        if(err < minerr)
+        {
+          mincol = t;
+          minerr = err;
+        }
+        permutation[t] = oldperm;
+      }
+      if(minerr >= 1./maxdot) return sparsity+1;
+      // replace column
+      permutation[mincol] = maxcol;
+      // reset norm[] of discarded column to something > 0
+#ifdef EXACT
+      norm[mincol] = 1.0;
+#else
+      norm[mincol] = 0.0;
+      for(int j=0;j<wd;j++) norm[mincol] += A[j*wd+mincol]*A[j*wd+mincol];
+      norm[mincol] = 1.0/sqrt(norm[mincol]);
+#endif
+      norm[maxcol] = 0.0;
+    }
+
+#ifdef EXACT
+    double err = 1./maxdot;
+#else
     // solve linear least squares for sparse c for every output channel:
     for(int ch=0;ch<dim;ch++)
     {
-      // need to re-init all of the previous columns in As since
+      // re-init all of the previous columns in As since
       // svd will destroy its contents:
-      for(int i=0;i<s;i++) for(int j=0;j<wd;j++)
+      for(int i=0;i<=sparsity;i++) for(int j=0;j<wd;j++)
         As[j*S + i] = A[j*wd+permutation[i]];
 
-      // append this max column of A to the sparse matrix A':
-      for(int j=0;j<wd;j++)
-        As[j*S + s] = A[j*wd+maxcol];
-
-      if(solve(As, w, v, b[ch], coeff[ch], wd, s, S))
-        return s;
+      if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity, S))
+        return sparsity;
 
       // compute new residual:
       // r = b - As c
       for(int j=0;j<wd;j++)
       {
         r[ch][j] = b[ch][j];
-        for(int i=0;i<=s;i++)
+        for(int i=0;i<=sparsity;i++)
           r[ch][j] -= A[j*wd + permutation[i]] * coeff[ch][i];
       }
     }
 
-    // TODO: compute post-tonecurve error here!
-    // TODO: choose residual component based on post-tonecurve error, too!
-    double err = 0.0;
-    for(int i=0;i<wd;i++)
-      err = MAX(err, r[0][i]*r[0][i] + r[1][i]*r[1][i] + r[2][i]*r[2][i]);
-    err = sqrt(err);
+    const double err = compute_error(curve, point,
+        r[0], r[1], r[2], wd);
+#endif
     // residual is max CIE76 delta E now
     // everything < 2 is usually considired a very good approximation:
-    fprintf(stderr, "rank %d error DE %g\n", s+1, err);
-    if(err < 2.0) break;
+    fprintf(stderr, "rank %d error DE %g\n", sparsity+1, err);
+    if(s>=S && err >= olderr) return sparsity+1;
+    if(err < 2.0) return sparsity+1;
+    olderr = err;
   }
-  return s+1;
+  return -1;
 }
 
 static inline void thinplate_dump_preset(
