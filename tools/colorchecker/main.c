@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
   double coeff_L[N+4], coeff_a[N+4], coeff_b[N+4];
   double *coeff[] = {coeff_L, coeff_a, coeff_b};
   int perm[N+4];
-  thinplate_match(3, N, colorchecker_Lab, target, sparsity, perm, coeff);
+  thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
 
   int sp = 0;
   int cperm[100];

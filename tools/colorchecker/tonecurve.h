@@ -35,6 +35,7 @@ static inline double _tonecurve_apply(
     const int32_t num,
     const double L)
 {
+  if(L <= 0.0 || L >= 100.0) return L;
   uint32_t min = 0, max = num;
   uint32_t t = max/2;
   while (t != min)
