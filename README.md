@@ -23,13 +23,13 @@ Building
 ### Release build
 
 ```bash
-./build.sh --prefix /opt/darktable --buildtype Release
+./build.sh --prefix /opt/darktable --build-type Release
 ```
 
 ### Debug build
 
 ```bash
-./build.sh --prefix /opt/darktable --buildtype Debug
+./build.sh --prefix /opt/darktable --build-type Debug
 ```
 
 

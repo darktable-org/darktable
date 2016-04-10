@@ -32,7 +32,6 @@ void *DecodeThread(void *_this) {
   } catch (...) {
     parent->mRaw->setError("DNGDEcodeThread: Caught exception.");
   }
-  pthread_exit(NULL);
   return NULL;
 }
 
@@ -51,6 +50,15 @@ void DngDecoderSlices::addSlice(DngSliceElement slice) {
 }
 
 void DngDecoderSlices::startDecoding() {
+#ifdef NO_PTHREAD
+  DngDecoderThread t;
+  while (!slices.empty()) {
+    t.slices.push(slices.front());
+    slices.pop();
+  }
+  t.parent = this;
+  DecodeThread(&t);
+#else
   // Create threads
 
   nThreads = getThreadCount();
@@ -80,7 +88,7 @@ void DngDecoderSlices::startDecoding() {
     pthread_join(threads[i]->threadid, &status);
     delete(threads[i]);
   }
-
+#endif
 }
 
 #if JPEG_LIB_VERSION < 80

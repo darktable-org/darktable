@@ -47,7 +47,9 @@ class DngDecoderThread
 public:
   DngDecoderThread(void) {}
   ~DngDecoderThread(void) {}
+#ifndef NO_PTHREAD
   pthread_t threadid;
+#endif
   queue<DngSliceElement> slices;
   DngDecoderSlices* parent;
 };

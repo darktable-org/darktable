@@ -11,3 +11,4 @@ The release team should empty this file after each release.
 ==========================================================================================
 opencl implementation of vng/vng4 demosaicing methods
 opencl implementation of Markesteijn demosaicing method for x-trans sensors
+a new module for automatic perspective correction

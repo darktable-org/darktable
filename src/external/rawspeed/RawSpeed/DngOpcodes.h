@@ -52,10 +52,15 @@ public:
   
 protected:
   Endianness host;
-  int getLong(const uchar8 *ptr) {
+  int32 getLong(const uchar8 *ptr) {
     if (host == big)
-      return *(int*)ptr;
-    return (int)ptr[0] << 24 | (int)ptr[1] << 16 | (int)ptr[2] << 8 | (int)ptr[3];
+      return *(int32*)ptr;
+    return (int32)ptr[0] << 24 | (int32)ptr[1] << 16 | (int32)ptr[2] << 8 | (int32)ptr[3];
+  }
+  uint32 getULong(const uchar8 *ptr) {
+    if (host == big)
+      return *(uint32*)ptr;
+    return (uint32)ptr[0] << 24 | (uint32)ptr[1] << 16 | (uint32)ptr[2] << 8 | (uint32)ptr[3];
   }
   double getDouble(const uchar8 *ptr) {
     if (host == big)
@@ -93,10 +98,10 @@ public:
 private:
   vector<DngOpcode*> mOpcodes;
   Endianness host;
-  int getULong(const uchar8 *ptr) {
+  uint32 getULong(const uchar8 *ptr) {
     if (host == big)
-      return *(unsigned int*)ptr;
-    return (unsigned int)ptr[0] << 24 | (unsigned int)ptr[1] << 16 | (unsigned int)ptr[2] << 8 | (unsigned int)ptr[3];
+      return *(uint32*)ptr;
+    return (uint32)ptr[0] << 24 | (uint32)ptr[1] << 16 | (uint32)ptr[2] << 8 | (uint32)ptr[3];
   }
 };
 

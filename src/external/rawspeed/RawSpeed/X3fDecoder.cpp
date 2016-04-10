@@ -62,7 +62,7 @@ string X3fDecoder::getIdAsString(ByteStream *bytes) {
 RawImage X3fDecoder::decodeRawInternal()
 {
   vector<X3fImage>::iterator img = mImages.begin();
-  for (; img !=  mImages.end(); img++) {
+  for (; img !=  mImages.end(); ++img) {
     X3fImage cimg = *img;
     if (cimg.type == 1 || cimg.type == 3) {
       decompressSigma(cimg);
@@ -104,7 +104,7 @@ boolean X3fDecoder::readName() {
   // See if we can find EXIF info and grab the name from there.
   // This is needed for Sigma DP2 Quattro and possibly later cameras.
   vector<X3fImage>::iterator img = mImages.begin();
-  for (; img !=  mImages.end(); img++) {
+  for (; img !=  mImages.end(); ++img) {
     X3fImage cimg = *img;
     if (cimg.type == 2 && cimg.format == 0x12 && cimg.dataSize > 100) {
       if (!mFile->isValid(cimg.dataOffset, cimg.dataSize )) {
@@ -148,7 +148,7 @@ void X3fDecoder::checkSupportInternal( CameraMetaData *meta )
   // If we somehow got to here without a camera, see if we have an image
   // with proper format identifiers.
   vector<X3fImage>::iterator img = mImages.begin();
-  for (; img !=  mImages.end(); img++) {
+  for (; img !=  mImages.end(); ++img) {
     X3fImage cimg = *img;
     if (cimg.type == 1 || cimg.type == 3) {
       if (cimg.format == 30 || cimg.format == 35)
@@ -461,7 +461,7 @@ int X3fDecoder::SigmaDecode(BitPumpMSB *bits) {
 FileMap* X3fDecoder::getCompressedData()
 {
   vector<X3fImage>::iterator img = mImages.begin();
-  for (; img !=  mImages.end(); img++) {
+  for (; img !=  mImages.end(); ++img) {
     X3fImage cimg = *img;
     if (cimg.type == 1 || cimg.type == 3) {
       return new FileMap(mFile, cimg.dataOffset, cimg.dataSize);

@@ -461,7 +461,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // we want at least 100MB, and consider 8G just still reasonable.
   int64_t cache_memory = dt_conf_get_int64("cache_memory");
   int worker_threads = dt_conf_get_int("worker_threads");
-  size_t max_mem = CLAMPS(cache_memory, 100u << 20, ((uint64_t)8) << 30);
+  size_t max_mem = CLAMPS(cache_memory, 100u << 20, ((size_t)8) << 30);
   const uint32_t parallel = CLAMP(worker_threads, 1, 8);
 
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
@@ -1294,6 +1294,29 @@ dt_colorspaces_color_profile_type_t dt_mipmap_cache_get_colorspace()
   if(dt_conf_get_bool("cache_color_managed"))
     return DT_COLORSPACE_ADOBERGB;
   return DT_COLORSPACE_DISPLAY;
+}
+
+void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint32_t dst_imgid, const uint32_t src_imgid)
+{
+  if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
+  {
+    for(dt_mipmap_size_t mip = DT_MIPMAP_0; mip < DT_MIPMAP_F; mip++)
+    {
+      // try and load from disk, if successful set flag
+      char srcpath[PATH_MAX] = {0};
+      char dstpath[PATH_MAX] = {0};
+      snprintf(srcpath, sizeof(srcpath), "%s.d/%d/%d.jpg", cache->cachedir, mip, src_imgid);
+      snprintf(dstpath, sizeof(dstpath), "%s.d/%d/%d.jpg", cache->cachedir, mip, dst_imgid);
+      GFile *src = g_file_new_for_path(srcpath);
+      GFile *dst = g_file_new_for_path(dstpath);
+      GError *gerror = NULL;
+      g_file_copy(src, dst, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+      // ignore errors, we tried what we could.
+      g_object_unref(dst);
+      g_object_unref(src);
+      g_clear_error(&gerror);
+    }
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

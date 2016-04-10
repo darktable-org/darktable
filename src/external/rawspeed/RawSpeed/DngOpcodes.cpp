@@ -29,10 +29,16 @@ DngOpcodes::DngOpcodes(TiffEntry *entry)
   host = getHostEndianness();
   const uchar8* data = entry->getData();
   uint32 entry_size = entry->count;
-  uint32 opcode_count = getULong(&data[0]);
 
+  if (entry_size < 20)
+    ThrowRDE("DngOpcodes: Not enough bytes to read a single opcode");
+
+  uint32 opcode_count = getULong(&data[0]);
   int bytes_used = 4;
   for (uint32 i = 0; i < opcode_count; i++) {
+    if ((int)entry_size - bytes_used < 16)
+      ThrowRDE("DngOpcodes: Not enough bytes to read a new opcode");
+
     uint32 code = getULong(&data[bytes_used]);
     //uint32 version = getULong(&data[bytes_used+4]);
     uint32 flags = getULong(&data[bytes_used+8]);
@@ -76,8 +82,6 @@ DngOpcodes::DngOpcodes(TiffEntry *entry)
     if (opcode_used != expected_size)
       ThrowRDE("DngOpcodes: Inconsistent length of opcode");
     bytes_used += opcode_used;
-    if (bytes_used > (int)entry_size)
-      ThrowRDE("DngOpcodes: More codes than entry size (should be caught earlier)");
   }
 }
 
@@ -161,9 +165,10 @@ OpcodeFixBadPixelsList::OpcodeFixBadPixelsList( const uchar8* parameters, uint32
   if (param_max_bytes < 12)
     ThrowRDE("OpcodeFixBadPixelsList: Not enough data to read parameters, only %u bytes left.", param_max_bytes);
   // Skip phase - we don't care
-  uint64 BadPointCount = getLong(&parameters[4]);
-  uint64 BadRectCount = getLong(&parameters[8]);
+  uint64 BadPointCount = getULong(&parameters[4]);
+  uint64 BadRectCount = getULong(&parameters[8]);
   bytes_used[0] = 12;
+
   if (12 + BadPointCount * 8 + BadRectCount * 16 > (uint64) param_max_bytes)
     ThrowRDE("OpcodeFixBadPixelsList: Ran out parameter space, only %u bytes left.", param_max_bytes);
 
@@ -196,7 +201,7 @@ void OpcodeFixBadPixelsList::apply( RawImage &in, RawImage &out, uint32 startY, 
 {
   iPoint2D crop = in->getCropOffset();
   uint32 offset = crop.x | (crop.y << 16);
-  for (vector<uint32>::iterator i=bad_pos.begin(); i != bad_pos.end(); i++) {
+  for (vector<uint32>::iterator i=bad_pos.begin(); i != bad_pos.end(); ++i) {
     uint32 pos = offset + (*i);
     out->mBadPixelPositions.push_back(pos);
   }

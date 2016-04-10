@@ -36,7 +36,7 @@ int startTime;
 
 void compareIFD(TiffIFD *i1, TiffIFD *i2) {
   map<TiffTag, TiffEntry*>::iterator i =  i1->mEntry.begin();
-  for ( ; i != i1->mEntry.end(); i++) {
+  for ( ; i != i1->mEntry.end(); ++i) {
     TiffEntry *e1 = (*i).second;
     TiffEntry *e2 = i2->mEntry[(*i).first];
     const uchar8 *d1 = e1->getData();

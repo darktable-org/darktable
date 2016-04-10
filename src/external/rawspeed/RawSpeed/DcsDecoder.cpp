@@ -67,14 +67,17 @@ RawImage DcsDecoder::decodeRawInternal() {
   if (!linearization || linearization->count != 256 || linearization->type != TIFF_SHORT)
     ThrowRDE("DCS Decoder: Couldn't find the linearization table");
 
+  ushort16 *table = new ushort16[256];
+  linearization->getShortArray(table, 256);
+
   if (!uncorrectedRawValues)
-    mRaw->setTable(linearization->getShortArray(), 256, true);
+    mRaw->setTable(table, 256, true);
 
   Decode8BitRaw(input, width, height);
 
   // Set the table, if it should be needed later.
   if (uncorrectedRawValues) {
-    mRaw->setTable(linearization->getShortArray(), 256, false);
+    mRaw->setTable(table, 256, false);
   } else {
     mRaw->setTable(NULL);
   }

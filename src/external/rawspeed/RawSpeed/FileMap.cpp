@@ -93,7 +93,7 @@ const uchar8* FileMap::getData( uint32 offset, uint32 count )
 
   // Give out data up to FILEMAP_MARGIN more bytes than are really in the
   // file as that is useful for some of the BitPump code
-  if (!isValid(offset) || totaloffset > totalsize)
+  if (!isValid(offset) || totaloffset >= totalsize)
     throw IOException("FileMap: Attempting to read file out of bounds.");
   return &data[offset];
 }

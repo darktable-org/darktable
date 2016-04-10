@@ -73,8 +73,11 @@ RawImage DcrDecoder::decodeRawInternal() {
       ThrowRDE("DCR Decoder: Couldn't find the linearization table");
     }
 
+    ushort16 *linearization_table = new ushort16[1024];
+    linearization->getShortArray(linearization_table, 1024);
+
     if (!uncorrectedRawValues)
-      mRaw->setTable(linearization->getShortArray(), 1024, true);
+      mRaw->setTable(linearization_table, 1024, true);
 
     // FIXME: dcraw does all sorts of crazy things besides this to fetch
     //        WB from what appear to be presets and calculate it in weird ways
@@ -82,10 +85,9 @@ RawImage DcrDecoder::decodeRawInternal() {
     //        in dcraw.c parse_kodak_ifd() for all that weirdness
     TiffEntry *blob = kodakifd->getEntryRecursive((TiffTag) 0x03fd);
     if (blob && blob->count == 72) {
-      ushort16 *data = (ushort16 *) blob->getShortArray();
-      mRaw->metadata.wbCoeffs[0] = (float) 2048.0f / data[20];
-      mRaw->metadata.wbCoeffs[1] = (float) 2048.0f / data[21];
-      mRaw->metadata.wbCoeffs[2] = (float) 2048.0f / data[22];
+      mRaw->metadata.wbCoeffs[0] = (float) 2048.0f / blob->getShort(20);
+      mRaw->metadata.wbCoeffs[1] = (float) 2048.0f / blob->getShort(21);
+      mRaw->metadata.wbCoeffs[2] = (float) 2048.0f / blob->getShort(22);
     }
 
     try {
@@ -96,7 +98,7 @@ RawImage DcrDecoder::decodeRawInternal() {
 
     // Set the table, if it should be needed later.
     if (uncorrectedRawValues) {
-      mRaw->setTable(linearization->getShortArray(), 1024, false);
+      mRaw->setTable(linearization_table, 1024, false);
     } else {
       mRaw->setTable(NULL);
     }

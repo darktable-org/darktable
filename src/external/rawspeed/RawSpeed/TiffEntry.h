@@ -29,8 +29,8 @@
 
 namespace RawSpeed {
 
-const uint32 datasizes[] = {0,1,1,2,4,8,1,1,2,4, 8, 4, 8, 4};
-                      // 0-1-2-3-4-5-6-7-8-9-10-11-12-13
+const uint32 datasizes[] =  {0,1,1,2,4,8,1,1,2,4, 8, 4, 8, 4};
+                          // 0-1-2-3-4-5-6-7-8-9-10-11-12-13
 const uint32 datashifts[] = {0,0,0,1,2,3,0,0,1,2, 3, 2, 3, 2};
 
 // 0-1-2-3-4-5-6-7-8-9-10-11-12-13
@@ -64,14 +64,16 @@ public:
   TiffEntry(TiffTag tag, TiffDataType type, uint32 count, const uchar8* data = NULL);
   TiffEntry(FileMap* f, uint32 offset, uint32 up_offset);
   virtual ~TiffEntry(void);
-  virtual uint32 getInt();
-  float getFloat();
-  virtual ushort16 getShort();
-  virtual const uint32* getIntArray();
-  virtual const ushort16* getShortArray();
-  virtual const short16* getSignedShortArray();
+  uchar8 getByte(uint32 num=0);
+  virtual uint32 getInt(uint32 num=0);
+  virtual int32 getSInt(uint32 num=0);
+  virtual ushort16 getShort(uint32 num=0);
+  virtual short16 getSShort(uint32 num=0);
+  virtual float getFloat(uint32 num=0);
   string getString();
-  uchar8 getByte();
+  void getShortArray(ushort16 *array, uint32 num);
+  void getIntArray(uint32 *array, uint32 num);
+  void getFloatArray(float *array, uint32 num);
   const uchar8* getData() {return data;};
   uchar8* getDataWrt();;
   virtual void setData(const void *data, uint32 byte_count );
@@ -94,6 +96,7 @@ protected:
   uchar8* own_data;
   const uchar8* data;
   uint32 data_offset;
+  uint64 bytesize;
   FileMap *file;
 #ifdef _DEBUG
   int debug_intVal;

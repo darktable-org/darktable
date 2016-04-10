@@ -47,7 +47,9 @@ class RawDecoderThread
     uint32 start_y;
     uint32 end_y;
     const char* error;
+#ifndef NO_PTHREAD
     pthread_t threadid;
+#endif
     RawDecoder* parent;
     uint32 taskNo;
 };

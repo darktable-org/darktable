@@ -54,9 +54,8 @@ RawImage RafDecoder::decodeRawInternal() {
     TiffEntry *e = raw->getEntry(IMAGEWIDTH);
     if (e->count < 2)
       ThrowRDE("Fuji decoder: Size array too small");
-    const ushort16 *size = e->getShortArray();
-    height = size[0];
-    width = size[1];
+    height = e->getShort(0);
+    width = e->getShort(1);
   } 
   if (raw->hasEntry(FUJI_LAYOUT)) {
     TiffEntry *e = raw->getEntry(FUJI_LAYOUT);
@@ -72,7 +71,7 @@ RawImage RafDecoder::decodeRawInternal() {
   TiffEntry *offsets = raw->getEntry(FUJI_STRIPOFFSETS);
   TiffEntry *counts = raw->getEntry(FUJI_STRIPBYTECOUNTS);
 
-  if (offsets->count != 1 && counts->count != 1)
+  if (offsets->count != 1 || counts->count != 1)
     ThrowRDE("RAF Decoder: Multiple Strips found: %u %u", offsets->count, counts->count);
 
   int off = offsets->getInt();
@@ -229,18 +228,16 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(FUJI_WB_GRBLEVELS)) {
     TiffEntry *wb = mRootIFD->getEntryRecursive(FUJI_WB_GRBLEVELS);
     if (wb->count == 3) {
-      const uint32 *tmp = wb->getIntArray();
-      mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
-      mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
-      mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
+      mRaw->metadata.wbCoeffs[0] = wb->getFloat(1);
+      mRaw->metadata.wbCoeffs[1] = wb->getFloat(0);
+      mRaw->metadata.wbCoeffs[2] = wb->getFloat(2);
     }
   } else if (mRootIFD->hasEntryRecursive(FUJIOLDWB)) {
     TiffEntry *wb = mRootIFD->getEntryRecursive(FUJIOLDWB);
     if (wb->count == 8) {
-      const ushort16 *tmp = wb->getShortArray();
-      mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
-      mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
-      mRaw->metadata.wbCoeffs[2] = (float)tmp[3];
+      mRaw->metadata.wbCoeffs[0] = wb->getFloat(1);
+      mRaw->metadata.wbCoeffs[1] = wb->getFloat(0);
+      mRaw->metadata.wbCoeffs[2] = wb->getFloat(3);
     }
   }
 }

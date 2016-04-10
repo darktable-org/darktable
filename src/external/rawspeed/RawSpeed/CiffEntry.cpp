@@ -28,20 +28,23 @@ namespace RawSpeed {
 
 CiffEntry::CiffEntry(FileMap* f, uint32 value_data, uint32 offset) {
   own_data = NULL;
-  unsigned short p = *(unsigned short*)f->getData(offset, 2);
+  ushort16 p = get2LE(f->getData(offset, 2), 0);
   tag = (CiffTag) (p & 0x3fff);
   ushort16 datalocation = (p & 0xc000);
   type = (CiffDataType) (p & 0x3800);
   if (datalocation == 0x0000) { // Data is offset in value_data
-    count = *(int*)f->getData(offset + 2, 4);
-    data_offset = *(uint32*)f->getData(offset + 6, 4) + value_data;
-    data = f->getDataWrt(data_offset, count);
+    bytesize = get4LE(f->getData(offset + 2, 4), 0);
+    data_offset = get4LE(f->getData(offset + 6, 4),0) + value_data;
+    data = f->getDataWrt(data_offset, bytesize);
   } else if (datalocation == 0x4000) { // Data is stored directly in entry
     data_offset = offset + 2;
-    count = 8; // Maximum of 8 bytes of data (the size and offset fields)
-    data = f->getDataWrt(data_offset, count);
+    bytesize = 8; // Maximum of 8 bytes of data (the size and offset fields)
+    data = f->getDataWrt(data_offset, bytesize);
   } else
     ThrowCPE("Don't understand data location 0x%x\n", datalocation);
+
+  // Set the number of items using the shift
+  count = bytesize >> getElementShift();
 }
 
 CiffEntry::~CiffEntry(void) {
@@ -49,42 +52,74 @@ CiffEntry::~CiffEntry(void) {
     delete[] own_data;
 }
 
+uint32 CiffEntry::getElementShift() {
+  switch (type) {
+    case CIFF_BYTE:
+    case CIFF_ASCII:
+      return 0;
+    case CIFF_SHORT:
+      return 1;
+    case CIFF_LONG:
+    case CIFF_MIX:
+    case CIFF_SUB1:
+    case CIFF_SUB2:
+      return 2;
+  }
+  return 0;
+}
+
+uint32 CiffEntry::getElementSize() {
+  switch (type) {
+    case CIFF_BYTE:
+    case CIFF_ASCII:
+      return 1;
+    case CIFF_SHORT:
+      return 2;
+    case CIFF_LONG:
+    case CIFF_MIX:
+    case CIFF_SUB1:
+    case CIFF_SUB2:
+      return 4;
+  }
+  return 0;
+}
+
 bool CiffEntry::isInt() {
   return (type == CIFF_LONG || type == CIFF_SHORT || type ==  CIFF_BYTE);
 }
 
-unsigned int CiffEntry::getInt() {
-  if (!(type == CIFF_LONG || type == CIFF_SHORT || type == CIFF_BYTE))
-    ThrowCPE("CIFF, getInt: Wrong type 0x%x encountered. Expected Long, Short or Byte", type);
+uint32 CiffEntry::getInt(uint32 num) {
+  if (!isInt())
+    ThrowCPE("CIFF, getInt: Wrong type 0x%x encountered. Expected Long, Short or Byte at 0x%x", type, tag);
   if (type == CIFF_BYTE)
-    return getByte();
+    return getByte(num);
   if (type == CIFF_SHORT)
-    return getShort();
-  return (uint32)data[3] << 24 | (uint32)data[2] << 16 | (uint32)data[1] << 8 | (uint32)data[0];
+    return getShort(num);
+
+  if (num*4+3 >= bytesize)
+    ThrowCPE("CIFF, getInt: Trying to read out of bounds");
+
+  return get4LE(data, num*4);
 }
 
-unsigned short CiffEntry::getShort() {
-  if (type != CIFF_SHORT)
-    ThrowCPE("CIFF, getShort: Wrong type 0x%x encountered. Expected Short", type);
-  return ((ushort16)data[1] << 8) | (ushort16)data[0];
+ushort16 CiffEntry::getShort(uint32 num) {
+  if (type != CIFF_SHORT && type != CIFF_BYTE)
+    ThrowCPE("CIFF, getShort: Wrong type 0x%x encountered. Expected Short at 0x%x", type, tag);
+
+  if (num*2+1 >= bytesize)
+    ThrowCPE("CIFF, getShort: Trying to read out of bounds");
+
+  return get2LE(data, num*2);
 }
 
-const uint32* CiffEntry::getIntArray() {
-  if (type != CIFF_LONG)
-    ThrowCPE("CIFF, getIntArray: Wrong type 0x%x encountered. Expected Long", type);
-  return (uint32*)&data[0];
-}
-
-const ushort16* CiffEntry::getShortArray() {
-  if (type != CIFF_SHORT)
-    ThrowCPE("CIFF, getShortArray: Wrong type 0x%x encountered. Expected Short", type);
-  return (ushort16*)&data[0];
-}
-
-uchar8 CiffEntry::getByte() {
+uchar8 CiffEntry::getByte(uint32 num) {
   if (type != CIFF_BYTE)
-    ThrowCPE("CIFF, getByte: Wrong type 0x%x encountered. Expected Byte", type);
-  return data[0];
+    ThrowCPE("CIFF, getByte: Wrong type 0x%x encountered. Expected Byte at 0x%x", type, tag);
+
+  if (num >= bytesize)
+    ThrowCPE("CIFF, getByte: Trying to read out of bounds");
+
+  return data[num];
 }
 
 string CiffEntry::getString() {
@@ -121,17 +156,8 @@ bool CiffEntry::isString() {
   return (type == CIFF_ASCII);
 }
 
-int CiffEntry::getElementSize() {
-  return ciff_datasizes[type];
-}
-
-int CiffEntry::getElementShift() {
-  return ciff_datashifts[type];
-}
-
 void CiffEntry::setData( const void *in_data, uint32 byte_count )
 {
-  uint32 bytesize = count << ciff_datashifts[type];
   if (byte_count > bytesize)
     ThrowCPE("CIFF, data set larger than entry size given");
 
@@ -145,7 +171,6 @@ void CiffEntry::setData( const void *in_data, uint32 byte_count )
 uchar8* CiffEntry::getDataWrt()
 {
   if (!own_data) {
-    uint32 bytesize = count << ciff_datashifts[type];
     own_data = new uchar8[bytesize];
     memcpy(own_data, data, bytesize);
   }
@@ -174,7 +199,7 @@ std::string CiffEntry::getValueAsString()
         break;
       default:
         sprintf(temp_string, "Type: %x: ", type);
-        for (uint32 i = 0; i < ciff_datasizes[type]; i++) {
+        for (uint32 i = 0; i < getElementSize(); i++) {
           sprintf(&temp_string[strlen(temp_string-1)], "%x", data[i]);
         }
     }

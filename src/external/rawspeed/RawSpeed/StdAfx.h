@@ -72,7 +72,9 @@
 #include <assert.h>
 #endif // __unix__
 #include <math.h>
+#ifndef NO_PTHREAD
 #include "pthread.h"
+#endif
 
 #ifdef FAR  // libjpeg also defines FAR
 #ifdef WIN32_LEAN_AND_MEAN

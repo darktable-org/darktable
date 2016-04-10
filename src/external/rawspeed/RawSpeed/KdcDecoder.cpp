@@ -55,8 +55,7 @@ RawImage KdcDecoder::decodeRawInternal() {
   TiffEntry *offset = mRootIFD->getEntryRecursive(KODAK_KDC_OFFSET);
   if (!offset || offset->count < 13)
     ThrowRDE("KDC Decoder: Couldn't find the KDC offset");
-  const uint32 *offsetarray = offset->getIntArray();
-  uint32 off = offsetarray[4] + offsetarray[12];
+  uint32 off = offset->getInt(4) + offset->getInt(12);
 
   // Offset hardcoding gotten from dcraw
   if (hints.find("easyshare_offset_hack") != hints.end())
@@ -108,10 +107,9 @@ void KdcDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
      if (kodakifd && kodakifd->hasEntryRecursive(KODAK_KDC_WB)) {
         TiffEntry *wb = kodakifd->getEntryRecursive(KODAK_KDC_WB);
         if (wb->count == 3) {
-          const uint32 *tmp = wb->getIntArray();
-          mRaw->metadata.wbCoeffs[0] = (float)tmp[0];
-          mRaw->metadata.wbCoeffs[1] = (float)tmp[1];
-          mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
+          mRaw->metadata.wbCoeffs[0] = wb->getFloat(0);
+          mRaw->metadata.wbCoeffs[1] = wb->getFloat(1);
+          mRaw->metadata.wbCoeffs[2] = wb->getFloat(2);
         }
       }
     } catch(TiffParserException e) {

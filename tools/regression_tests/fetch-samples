@@ -3,8 +3,8 @@
 MAKES=["aptus","canon","epson","fuji","hasselblad","kodak","leica","mamiya",
        "minolta","nikon","olympus","panasonic","pentax","polaroid","ricoh",
        "samsung","sigma","sony", "changelog"]
-BASEURL="http://rawsamples.ch/index.php/en/"
-RAWURL="http://rawsamples.ch/"
+BASEURL="https://rawsamples.ch/index.php/en/"
+RAWURL="https://rawsamples.ch/"
 
 require 'nokogiri'
 require 'open-uri'

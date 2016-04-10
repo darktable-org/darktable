@@ -102,16 +102,19 @@ RawImage Cr2Decoder::decodeRawInternal() {
     if (mRootIFD->getEntryRecursive((TiffTag)0x123)) {
       TiffEntry *curve = mRootIFD->getEntryRecursive((TiffTag)0x123);
       if (curve->type == TIFF_SHORT && curve->count == 4096) {
-        const ushort16 *linearization = mRootIFD->getEntryRecursive((TiffTag)0x123)->getShortArray();
+        TiffEntry *linearization = mRootIFD->getEntryRecursive((TiffTag)0x123);
+        uint32 len = linearization->count;
+        ushort16 *table = new ushort16[len];
+        linearization->getShortArray(table, len);
         if (!uncorrectedRawValues) {
-          mRaw->setTable(linearization, 4096, true);
+          mRaw->setTable(table, 4096, true);
           // Apply table
           mRaw->sixteenBitLookup();
           // Delete table
           mRaw->setTable(NULL);
         } else {
           // We want uncorrected, but we store the table.
-          mRaw->setTable(linearization, 4096, false);
+          mRaw->setTable(table, 4096, false);
         }
       }
     }
@@ -193,11 +196,11 @@ RawImage Cr2Decoder::decodeRawInternal() {
 
   vector<int> s_width;
   if (raw->hasEntry(CANONCR2SLICE)) {
-    const ushort16 *ss = raw->getEntry(CANONCR2SLICE)->getShortArray();
-    for (int i = 0; i < ss[0]; i++) {
-      s_width.push_back(ss[1]);
+    TiffEntry *ss = raw->getEntry(CANONCR2SLICE);
+    for (int i = 0; i < ss->getShort(0); i++) {
+      s_width.push_back(ss->getShort(1));
     }
-    s_width.push_back(ss[2]);
+    s_width.push_back(ss->getShort(2));
   } else {
     s_width.push_back(slices[0].w);
   }
@@ -279,97 +282,53 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
   // Fetch the white balance
-  if (mRootIFD->hasEntryRecursive(CANONCOLORDATA)) {
-    TiffEntry *color_data = mRootIFD->getEntryRecursive(CANONCOLORDATA);
+  try{
+    if (mRootIFD->hasEntryRecursive(CANONCOLORDATA)) {
+      TiffEntry *wb = mRootIFD->getEntryRecursive(CANONCOLORDATA);
+      // this entry is a big table, and different cameras store used WB in
+      // different parts, so find the offset, starting with the most common one
+      int offset = 126;
 
-    // this entry is a big table, and different cameras store used WB in
-    // different parts, so find the offset
-
-    // correct offset for most cameras
-    int offset = 126;
-
-    // check for the hint that we need to use other offset
-    if (hints.find("wb_offset") != hints.end()) {
-      stringstream wb_offset(hints.find("wb_offset")->second);
-      wb_offset >> offset;
-    }
-
-    /*
-     * Canon PowerShot cameras (color_data->count == 5120) identify this tag
-     * as TIFF_UNDEFINED, while they still write normal TIFF_SHORT data there
-     */
-    if ((color_data->type == TIFF_SHORT || color_data->count == 5120) && color_data->count >= (uint32)(offset/2) + 3) {
-      const ushort16* data = color_data->getShortArray();
-
-      // RGGB !
-      float cam_mul[4];
-      for(int c = 0; c < 4; c++)
-      {
-        cam_mul[c] = (float) data[offset/2 + c];
+      // replace it with a hint if it exists
+      if (hints.find("wb_offset") != hints.end()) {
+        stringstream wb_offset(hints.find("wb_offset")->second);
+        wb_offset >> offset;
       }
-      if (cam_mul[1] + cam_mul[2] > 0) {
-        const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
-        mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
-        mRaw->metadata.wbCoeffs[1] = 1.0f;
-        mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
-      } else {
-        writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: Invalid WB; Green was 0.");
-      }
+
+      offset /= 2;
+      mRaw->metadata.wbCoeffs[0] = (float) wb->getShort(offset + 0);
+      mRaw->metadata.wbCoeffs[1] = (float) wb->getShort(offset + 1);
+      mRaw->metadata.wbCoeffs[2] = (float) wb->getShort(offset + 3);
     } else {
-      writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CanonColorData has to be SHORT, %d found.\n", color_data->type);
-    }
-  } else {
-    vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
+      vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
-    if(make.compare("Canon") == 0 && model.compare("Canon PowerShot G9") == 0 &&
-        mRootIFD->hasEntryRecursive(CANONSHOTINFO) &&
-        mRootIFD->hasEntryRecursive(CANONPOWERSHOTG9WB))
-    {
-
-      TiffEntry *shot_info = mRootIFD->getEntryRecursive(CANONSHOTINFO);
-      if (shot_info->type == TIFF_SHORT && shot_info->count >= 7) {
-        ushort16 wb_index = shot_info->getShortArray()[14/2];
-
-        /* Canon PowerShot G9 */
+      if (mRootIFD->hasEntryRecursive(CANONSHOTINFO) &&
+          mRootIFD->hasEntryRecursive(CANONPOWERSHOTG9WB)) {
+        TiffEntry *shot_info = mRootIFD->getEntryRecursive(CANONSHOTINFO);
         TiffEntry *g9_wb = mRootIFD->getEntryRecursive(CANONPOWERSHOTG9WB);
-        if (g9_wb->type == TIFF_BYTE) {
-          int wb_offset = (wb_index < 18) ? "012347800000005896"[wb_index]-'0' : 0;
-          wb_offset = wb_offset*32 + 8;
 
-          if (g9_wb->count >= (uint32)wb_offset + 4*3) {
-            // GRBG !
-            float cam_mul[4];
-            for(int c = 0; c < 4; c++) {
-              cam_mul[c] = (float) get4LE(g9_wb->getData(), wb_offset + 4*c);
-            }
+        ushort16 wb_index = shot_info->getShort(7);
+        int wb_offset = (wb_index < 18) ? "012347800000005896"[wb_index]-'0' : 0;
+        wb_offset = wb_offset*8 + 2;
 
-            const float green = (cam_mul[0] + cam_mul[3]) / 2.0f;
-            mRaw->metadata.wbCoeffs[0] = cam_mul[1] / green;
-            mRaw->metadata.wbCoeffs[1] = 1.0f;
-            mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
-          } else {
-            writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CANONPOWERSHOTG9WB is too small. Count is %d, but should be at least %d", g9_wb->count, wb_offset + 4*3);
-          }
-        } else {
-          writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CANONPOWERSHOTG9WB has to be BYTE, %d found.", g9_wb->type);
+        mRaw->metadata.wbCoeffs[0] = (float) g9_wb->getInt(wb_offset+1);
+        mRaw->metadata.wbCoeffs[1] = ((float) g9_wb->getInt(wb_offset+0) + (float) g9_wb->getInt(wb_offset+3)) / 2.0f;
+        mRaw->metadata.wbCoeffs[2] = (float) g9_wb->getInt(wb_offset+2);
+      } else if (mRootIFD->hasEntryRecursive((TiffTag) 0xa4)) {
+        // WB for the old 1D and 1DS
+        TiffEntry *wb = mRootIFD->getEntryRecursive((TiffTag) 0xa4);
+        if (wb->count >= 3) {
+          mRaw->metadata.wbCoeffs[0] = wb->getFloat(0);
+          mRaw->metadata.wbCoeffs[1] = wb->getFloat(1);
+          mRaw->metadata.wbCoeffs[2] = wb->getFloat(2);
         }
-      } else {
-        writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CANONSHOTINFO has to be SHORT, %d found.", shot_info->type);
-      }
-    } else if (mRootIFD->hasEntryRecursive((TiffTag) 0xa4)) {
-      // WB for the old 1D and 1DS
-      TiffEntry *wb = mRootIFD->getEntryRecursive((TiffTag) 0xa4);
-      if (wb->count >= 3) {
-        const ushort16 *tmp = wb->getShortArray();
-        mRaw->metadata.wbCoeffs[0] = (float)tmp[0];
-        mRaw->metadata.wbCoeffs[1] = (float)tmp[1];
-        mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
       }
     }
+  } catch (const std::exception& e) {
+    mRaw->setError(e.what());
+    // We caught an exception reading WB, just ignore it
   }
-
   setMetaData(meta, make, model, mode, iso);
-
 }
 
 int Cr2Decoder::getHue() {
@@ -393,14 +352,13 @@ void Cr2Decoder::sRawInterpolate() {
   if (data.empty())
     ThrowRDE("CR2 sRaw: Unable to locate WB info.");
 
-  const ushort16 *wb_data = data[0]->getEntry(CANONCOLORDATA)->getShortArray();
-
+  TiffEntry *wb = data[0]->getEntry(CANONCOLORDATA);
   // Offset to sRaw coefficients used to reconstruct uncorrected RGB data.
-  wb_data = &wb_data[4+(126+22)/2];
+  uint32 offset = 78;
 
-  sraw_coeffs[0] = wb_data[0];
-  sraw_coeffs[1] = (wb_data[1] + wb_data[2] + 1) >> 1;
-  sraw_coeffs[2] = wb_data[3];
+  sraw_coeffs[0] = wb->getShort(offset+0);
+  sraw_coeffs[1] = (wb->getShort(offset+1) + wb->getShort(offset+2) + 1) >> 1;
+  sraw_coeffs[2] = wb->getShort(offset+3);
 
   if (hints.find("invert_sraw_wb") != hints.end()) {
     sraw_coeffs[0] = (int)(1024.0f/((float)sraw_coeffs[0]/1024.0f));

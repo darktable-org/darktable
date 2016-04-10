@@ -730,6 +730,20 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 5D Mark III", Flash, 8,	{ 2.509766, 1, 1.297852, 0 } },
   { "Canon", "EOS 5D Mark III", Flash, 9,	{ 2.541016, 1, 1.278320, 0 } },
 
+  { "Canon", "EOS 5DS", Daylight            , 0, { 2.255859, 1, 1.717773, 0 } },
+  { "Canon", "EOS 5DS", Shade               , 0, { 2.605469, 1, 1.484375, 0 } },
+  { "Canon", "EOS 5DS", Cloudy              , 0, { 2.438477, 1, 1.589844, 0 } },
+  { "Canon", "EOS 5DS", Tungsten            , 0, { 1.605469, 1, 2.467773, 0 } },
+  { "Canon", "EOS 5DS", CoolWhiteFluorescent, 0, { 1.931641, 1, 2.354492, 0 } },
+  { "Canon", "EOS 5DS", Flash               , 0, { 2.528320, 1, 1.583008, 0 } },
+
+  { "Canon", "EOS 5DS R", Daylight            , 0, { 2.192383, 1, 1.738281, 0 } },
+  { "Canon", "EOS 5DS R", Shade               , 0, { 2.541016, 1, 1.497070, 0 } },
+  { "Canon", "EOS 5DS R", Cloudy              , 0, { 2.370117, 1, 1.607422, 0 } },
+  { "Canon", "EOS 5DS R", Tungsten            , 0, { 1.546875, 1, 2.503906, 0 } },
+  { "Canon", "EOS 5DS R", CoolWhiteFluorescent, 0, { 1.865234, 1, 2.386719, 0 } },
+  { "Canon", "EOS 5DS R", Flash               , 0, { 2.461914, 1, 1.599609, 0 } },
+
   /* Canon EOS 6D Firmware Version 1.0.9 */
   { "Canon", "EOS 6D", Daylight, 0,		{ 1.976562, 1, 1.635742, 0 } },
   { "Canon", "EOS 6D", Shade, 0,		{ 2.265625, 1, 1.371094, 0 } },
@@ -1474,6 +1488,21 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 700D", Flash, 0,		{ 2.2607, 1, 1.5166, 0 } },
   { "Canon", "EOS 700D", Flash, 3,		{ 2.3701, 1, 1.4502, 0 } },
 
+  { "Canon", "EOS 750D", Daylight            , 0, { 2.115234, 1, 1.701172, 0 } },
+  { "Canon", "EOS 750D", Shade               , 0, { 2.461914, 1, 1.458984, 0 } },
+  { "Canon", "EOS 750D", Cloudy              , 0, { 2.286133, 1, 1.570312, 0 } },
+  { "Canon", "EOS 750D", Tungsten            , 0, { 1.473633, 1, 2.467773, 0 } },
+  { "Canon", "EOS 750D", CoolWhiteFluorescent, 0, { 1.784180, 1, 2.300781, 0 } },
+  { "Canon", "EOS 750D", Flash               , 0, { 2.359375, 1, 1.548828, 0 } },
+
+  // Firmware version 1.0.0
+  { "Canon", "EOS 760D", Daylight            , 0, { 2.169922, 1, 1.709961, 0 } },
+  { "Canon", "EOS 760D", Shade               , 0, { 2.528320, 1, 1.466797, 0 } },
+  { "Canon", "EOS 760D", Cloudy              , 0, { 2.342773, 1, 1.578125, 0 } },
+  { "Canon", "EOS 760D", Tungsten            , 0, { 1.510742, 1, 2.479492, 0 } },
+  { "Canon", "EOS 760D", CoolWhiteFluorescent, 0, { 1.825195, 1, 2.311523, 0 } },
+  { "Canon", "EOS 760D", Flash               , 0, { 2.420898, 1, 1.556641, 0 } },
+
   { "Canon", "EOS 1000D", Daylight, 0,		{ 2.183594, 1, 1.526367, 0 } },
   { "Canon", "EOS 1000D", Shade, 0,		{ 2.553711, 1, 1.262695, 0 } },
   { "Canon", "EOS 1000D", Cloudy, 0,		{ 2.365234, 1, 1.375977, 0 } },
@@ -1487,6 +1516,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 1100D", Tungsten, 0,		{ 1.5654, 1, 2.2402, 0 } },
   { "Canon", "EOS 1100D", WhiteFluorescent, 0,	{ 1.9541, 1, 2.0732, 0 } },
   { "Canon", "EOS 1100D", Flash, 0,		{ 2.5283, 1, 1.3584, 0 } },
+
+  { "Canon", "EOS 1200D", Daylight            , 0, { 2.007812, 1, 1.599609, 0 } },
+  { "Canon", "EOS 1200D", Shade               , 0, { 2.322266, 1, 1.361328, 0 } },
+  { "Canon", "EOS 1200D", Cloudy              , 0, { 2.160156, 1, 1.471680, 0 } },
+  { "Canon", "EOS 1200D", Tungsten            , 0, { 1.444336, 1, 2.392578, 0 } },
+  { "Canon", "EOS 1200D", CoolWhiteFluorescent, 0, { 1.759766, 1, 2.275391, 0 } },
+  { "Canon", "EOS 1200D", Flash               , 0, { 2.246094, 1, 1.452148, 0 } },
 
   { "Canon", "EOS-1Ds", Daylight, 0,		{ 1.6133, 1, 1.2500, 0 } }, /* 5302K */
   { "Canon", "EOS-1Ds", Shade, 0,		{ 1.8477, 1, 1.0684, 0 } }, /* 6685K */
@@ -1726,6 +1762,22 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X100T", WhiteFluorescent   , 0, { 2.013245, 1, 1.970199, 0 } },
   { "Fujifilm", "X100T", Underwater         , 0, { 1.927152, 1, 1.549669, 0 } },
 
+  { "Fujifilm", "X20", Daylight           , 0, { 1.688742, 1, 1.850993, 0 } },
+  { "Fujifilm", "X20", Cloudy             , 0, { 1.827815, 1, 1.622517, 0 } },
+  { "Fujifilm", "X20", Incandescent       , 0, { 1.066225, 1, 2.605960, 0 } },
+  { "Fujifilm", "X20", DayWhiteFluorescent, 0, { 1.754967, 1, 1.864238, 0 } },
+  { "Fujifilm", "X20", DaylightFluorescent, 0, { 2.052980, 1, 1.625828, 0 } },
+  { "Fujifilm", "X20", WhiteFluorescent   , 0, { 1.754967, 1, 2.341060, 0 } },
+  { "Fujifilm", "X20", Underwater         , 0, { 1.688742, 1, 1.850993, 0 } },
+
+  { "Fujifilm", "X70", Daylight           , 0, { 2.009934, 1, 1.513245, 0 } },
+  { "Fujifilm", "X70", Cloudy             , 0, { 2.211921, 1, 1.311258, 0 } },
+  { "Fujifilm", "X70", Incandescent       , 0, { 1.314570, 1, 2.251656, 0 } },
+  { "Fujifilm", "X70", DayWhiteFluorescent, 0, { 2.188742, 1, 1.566225, 0 } },
+  { "Fujifilm", "X70", DaylightFluorescent, 0, { 2.619205, 1, 1.311258, 0 } },
+  { "Fujifilm", "X70", WhiteFluorescent   , 0, { 2.056291, 1, 2.013245, 0 } },
+  { "Fujifilm", "X70", Underwater         , 0, { 2.006623, 1, 1.533113, 0 } },
+
   { "Fujifilm", "X-M1", Daylight, 0,                  { 1.943709, 1, 1.824503, 0 } },
   { "Fujifilm", "X-M1", Cloudy, 0,                    { 2.139073, 1, 1.599338, 0 } },
   { "Fujifilm", "X-M1", DaylightFluorescent, 0,      { 2.440397, 1, 1.592715, 0 } },
@@ -1782,6 +1834,14 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-Pro1", Incandescent, 0,	{ 1.225166, 1, 2.708609, 0 } },
   { "Fujifilm", "X-Pro1", Underwater, 0,	{ 1.860927, 1, 1.708609, 0 } },
   { "Fujifilm", "X-Pro1", "5000K", 0,		{ 1.857616, 1, 1.701987, 0 } },
+
+  { "Fujifilm", "X-Pro2", Daylight           , 0, { 1.947020, 1, 1.831126, 0 } },
+  { "Fujifilm", "X-Pro2", Cloudy             , 0, { 2.145695, 1, 1.582781, 0 } },
+  { "Fujifilm", "X-Pro2", Incandescent       , 0, { 1.264901, 1, 2.754967, 0 } },
+  { "Fujifilm", "X-Pro2", DayWhiteFluorescent, 0, { 2.069536, 1, 1.950331, 0 } },
+  { "Fujifilm", "X-Pro2", DaylightFluorescent, 0, { 2.463576, 1, 1.602649, 0 } },
+  { "Fujifilm", "X-Pro2", WhiteFluorescent   , 0, { 1.973510, 1, 2.513245, 0 } },
+  { "Fujifilm", "X-Pro2", Underwater         , 0, { 1.943709, 1, 1.827815, 0 } },
 
   { "Kodak", "DCS Pro 14N", Daylight, 0,	{ 1, 1.055126, 1.353602, 0 } },
   { "Kodak", "DCS Pro 14N", Tungsten, 0,	{ 1, 1.337688, 2.218852, 0 } },
@@ -4440,6 +4500,14 @@ const wb_data wb_preset[] =
   { "Olympus", "E-PM2", "3300K", 0,		{ 1.429688, 1, 2.640625, 0 } },
   { "Olympus", "E-PM2", "5000K", 0,		{ 1.882813, 1, 1.984375, 0 } },
 
+  { "Olympus", "PEN-F", Daylight            , 0, { 1.820312, 1, 1.804688, 0 } },
+  { "Olympus", "PEN-F", Shade               , 0, { 2.132812, 1, 1.414062, 0 } },
+  { "Olympus", "PEN-F", Cloudy              , 0, { 1.960938, 1, 1.617188, 0 } },
+  { "Olympus", "PEN-F", Tungsten            , 0, { 1.156250, 1, 3.265625, 0 } },
+  { "Olympus", "PEN-F", CoolWhiteFluorescent, 0, { 1.765625, 1, 2.578125, 0 } },
+  { "Olympus", "PEN-F", Underwater          , 0, { 1.789062, 1, 1.890625, 0 } },
+  { "Olympus", "PEN-F", Flash               , 0, { 2.070312, 1, 1.539062, 0 } },
+
   { "Olympus", "SP500UZ", Daylight, -7,		{ 1.136719, 1, 2.359375, 0 } },
   { "Olympus", "SP500UZ", Daylight, 0,		{ 1.960937, 1, 1.585937, 0 } },
   { "Olympus", "SP500UZ", Daylight, 7,		{ 3.927660, 1.089362, 1, 0 } },
@@ -5034,6 +5102,16 @@ const wb_data wb_preset[] =
   { "Pentax", "K-x", WarmWhiteFluorescent, 0,	{ 1.5019, 1, 2.2973, 0 } },
   { "Pentax", "K-x", Tungsten, 0,		{ 1.0463, 1, 3.4015, 0 } },
   { "Pentax", "K-x", Flash, 0,			{ 2.1120, 1, 1.2741, 0 } },
+
+  { "Pentax", "K-S1", Daylight                     , 0, { 2.277344, 1, 1.656250, 0 } },
+  { "Pentax", "K-S1", Shade                        , 0, { 2.847656, 1, 1.230469, 0 } },
+  { "Pentax", "K-S1", Cloudy                       , 0, { 2.546875, 1, 1.429688, 0 } },
+  { "Pentax", "K-S1", Tungsten                     , 0, { 1.343750, 1, 3.089844, 0 } },
+  { "Pentax", "K-S1", WarmWhiteFluorescent         , 0, { 1.777344, 1, 2.781250, 0 } },
+  { "Pentax", "K-S1", DayWhiteFluorescent          , 0, { 2.367188, 1, 1.824219, 0 } },
+  { "Pentax", "K-S1", DaylightFluorescent          , 0, { 2.761719, 1, 1.617188, 0 } },
+  { "Pentax", "K-S1", WhiteFluorescent             , 0, { 2.125000, 1, 2.210938, 0 } },
+  { "Pentax", "K-S1", Flash                        , 0, { 2.613281, 1, 1.351562, 0 } },
 
   { "Pentax", "K-S2", Daylight                     , 0, { 2.257812, 1, 1.683594, 0 } },
   { "Pentax", "K-S2", Shade                        , 0, { 2.882812, 1, 1.218750, 0 } },
@@ -6568,6 +6646,21 @@ const wb_data wb_preset[] =
   { "Sony", "ILCA-77M2", DayWhiteFluorescent, 0,{ 2.68359375, 1, 1.78125, 0 } },
   { "Sony", "ILCA-77M2", DaylightFluorescent, 0,{ 3.00390625, 1, 1.609375, 0 } },
   { "Sony", "ILCA-77M2", Flash, 0,   { 3.203125, 1, 1.43359375, 0 } },
+
+  { "Sony", "ILCA-68", Daylight            , 0, { 2.503906, 1, 1.597656, 0 } },
+  { "Sony", "ILCA-68", Shade               , 0, { 2.992188, 1, 1.316406, 0 } },
+  { "Sony", "ILCA-68", Cloudy              , 0, { 2.710938, 1, 1.464844, 0 } },
+  { "Sony", "ILCA-68", Tungsten            , 0, { 1.535156, 1, 2.890625, 0 } },
+  { "Sony", "ILCA-68", WarmWhiteFluorescent, 0, { 1.761719, 1, 2.843750, 0 } },
+  { "Sony", "ILCA-68", CoolWhiteFluorescent, 0, { 2.234375, 1, 2.300781, 0 } },
+  { "Sony", "ILCA-68", DayWhiteFluorescent , 0, { 2.386719, 1, 1.687500, 0 } },
+  { "Sony", "ILCA-68", DaylightFluorescent , 0, { 2.660156, 1, 1.542969, 0 } },
+  { "Sony", "ILCA-68", Flash               , 0, { 2.875000, 1, 1.386719, 0 } },
+  { "Sony", "ILCA-68", "2500K"             , 0, { 1.335938, 1, 3.492188, 0 } },
+  { "Sony", "ILCA-68", "3200K"             , 0, { 1.718750, 1, 2.500000, 0 } },
+  { "Sony", "ILCA-68", "4500K"             , 0, { 2.257812, 1, 1.800781, 0 } },
+  { "Sony", "ILCA-68", "6000K"             , 0, { 2.687500, 1, 1.476562, 0 } },
+  { "Sony", "ILCA-68", "8500K"             , 0, { 3.148438, 1, 1.246094, 0 } },
 
   // firmware ILCE-7 (A7) Ver 1.0.1
   { "Sony", "ILCE-7", Daylight, 0,		{ 2.39843750, 1, 1.46484375, 0 } },

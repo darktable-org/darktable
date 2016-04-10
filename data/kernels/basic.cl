@@ -134,8 +134,8 @@ exposure (read_only image2d_t in, write_only image2d_t out, const int width, con
 
 /* kernel for the highlights plugin. */
 kernel void
-highlights_4f (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-               const int mode, const float clip)
+highlights_4f_clip (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                    const int mode, const float clip)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -153,43 +153,51 @@ highlights_4f (read_only image2d_t in, write_only image2d_t out, const int width
 }
 
 kernel void
-highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-               const int mode, const float clip, const int rx, const int ry, const int filters)
+highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                    const float clip, const int rx, const int ry, const int filters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  // just carry over other 3 channels:
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  pixel.x = fmin(clip, pixel.x);
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+kernel void
+highlights_1f_lch (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                   const float clip, const int rx, const int ry, const int filters)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float near_clip = 0.96f*clip;
   const float post_clip = 1.10f*clip;
   float mean = 0.0f;
   float blend = 0.0f;
-  switch(mode)
+
+  // go through a bayer block of 2x2
+  for(int jj=0;jj<=1;jj++)
   {
-    case 1: // DT_IOP_HIGHLIGHTS_LCH
+    for(int ii=0;ii<=1;ii++)
     {
-      // go through a bayer block of 2x2
-      for(int jj=0;jj<=1;jj++)
-      {
-        for(int ii=0;ii<=1;ii++)
-        {
-          float px = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
-          mean += px*.25f;
-          blend += (fmin(post_clip, px) - near_clip)/(post_clip-near_clip);
-        }
-      }
-      blend = clamp(blend, 0.0f, 1.0f);
-      if(blend > 0.0f)
-        pixel.x = blend*mean + (1.0f-blend)*pixel.x;
-      break;
+      float px = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
+      mean += px*.25f;
+      blend += (fmin(post_clip, px) - near_clip)/(post_clip-near_clip);
     }
-    default: // 0, DT_IOP_HIGHLIGHTS_CLIP
-      pixel.x = fmin(clip, pixel.x);
-      break;
   }
+
+  blend = clamp(blend, 0.0f, 1.0f);
+  if(blend > 0.0f)
+    pixel.x = blend*mean + (1.0f-blend)*pixel.x;
+
   write_imagef (out, (int2)(x, y), pixel);
 }
 
