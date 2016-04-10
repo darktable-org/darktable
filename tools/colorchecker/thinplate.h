@@ -13,6 +13,42 @@ static inline double thinplate_kernel(const double *x, const double *y)
   return r*r*log(MAX(1e-10, r));
 }
 
+static inline int solve(
+    double *As,
+    double *w,
+    double *v,
+    const double *b,
+    double *coeff,
+    int wd,
+    int s,
+    int S)
+{
+  // A'[wd][s+1] = u[wd][s+1] diag(w[s+1]) v[s+1][s+1]^t
+  //
+  // svd to solve for c:
+  // A * c = b
+  // A = u w v^t => A-1 = v 1/w u^t
+  dsvd(As, wd, s+1, S, w, v); // As is wd x s+1 but row stride S.
+  if(w[s] < 1e-3) // if the smallest singular value becomes too small, we're done
+    return 1;
+  double tmp[S];
+  for(int i=0;i<=s;i++) // compute tmp = u^t * b
+  {
+    tmp[i] = 0.0;
+    for(int j=0;j<wd;j++)
+      tmp[i] += As[j*S+i] * b[j];
+  }
+  for(int i=0;i<=s;i++) // apply singular values:
+    tmp[i] /= w[i];
+  for(int j=0;j<=s;j++)
+  { // compute first s output coefficients coeff[j]
+    coeff[j] = 0.0;
+    for(int i=0;i<=s;i++)
+      coeff[j] += v[j*(s+1)+i] * tmp[i];
+  }
+  return 0;
+}
+
 // returns sparsity <= S
 static inline int thinplate_match(
     int dim,                // dimensionality of points
@@ -63,7 +99,7 @@ static inline int thinplate_match(
   for(int k=0;k<dim;k++) b[k] = target[k];
   for(int k=0;k<dim;k++) memcpy(r[k], b[k], sizeof(r[0]));
 
-  double w[S], v[S*S], tmp[S], As[wd*S];
+  double w[S], v[S*S], As[wd*S];
   memset(As, 0, sizeof(As));
   // for rank from 0 to sparsity level
   int s = 0;
@@ -80,11 +116,14 @@ static inline int thinplate_match(
       {
         // TODO: try to use a full solve here instead
         // TODO: also try to correct for tonecurve here!
-        for(int j=0;j<wd;j++) 
-          for(int ch=0;ch<dim;ch++)
-            dot += A[j*wd+i] * r[ch][j];
+        for(int ch=0;ch<dim;ch++)
+        {
+          double chdot = 0.0;
+          for(int j=0;j<wd;j++) 
+            chdot += A[j*wd+i] * r[ch][j];
+          dot += fabs(chdot);
+        }
         dot *= norm[i];
-        dot = fabs(dot);
       }
       // fprintf(stderr, "dot %d = %g\n", i, dot);
       if(dot > maxdot)
@@ -110,6 +149,8 @@ static inline int thinplate_match(
       // append this max column of A to the sparse matrix A':
       for(int j=0;j<wd;j++)
         As[j*S + s] = A[j*wd+maxcol];
+
+#if 0
       // A'[wd][s+1] = u[wd][s+1] diag(w[s+1]) v[s+1][s+1]^t
       //
       // svd to solve for c:
@@ -132,6 +173,10 @@ static inline int thinplate_match(
         for(int i=0;i<=s;i++)
           coeff[ch][j] += v[j*(s+1)+i] * tmp[i];
       }
+#else
+      if(solve(As, w, v, b[ch], coeff[ch], wd, s, S))
+        return s;
+#endif
 
       // compute new residual:
       // r = b - As c
