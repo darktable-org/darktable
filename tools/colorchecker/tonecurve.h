@@ -130,7 +130,8 @@ static inline void tonecurve_dump_preset(
   fprintf(f, "#!/bin/sh\n");
   fprintf(f, "# to test your new tonecurve, copy/paste the following line into your shell.\n");
   fprintf(f, "# note that it is a smart idea to backup your database before messing with it on this level.\n\n");
-  for(int rev=0;rev<2;rev++)
+  // for(int rev=0;rev<2;rev++)
+  for(int rev=0;rev<1;rev++) // don't print reverse curve
   {
     for(int k=0;k<20;k++)
     {
@@ -142,7 +143,7 @@ static inline void tonecurve_dump_preset(
     }
 
     if(rev) snprintf(filename, sizeof(filename), "%s reverse", name);
-    else    snprintf(filename, sizeof(filename), "%s apply", name);
+    else    snprintf(filename, sizeof(filename), "%s", name);
     uint8_t encoded[2048];
     hexify(encoded, (uint8_t*)&params, sizeof(params));
     fprintf(f, "echo \"INSERT OR REPLACE INTO presets (name,description,operation,op_version,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name,model,maker,lens,iso_min,iso_max,exposure_min,exposure_max,aperture_min,aperture_max,focal_length_min,focal_length_max,writeprotect,autoapply,filter,def,format) VALUES('%s','','tonecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n",

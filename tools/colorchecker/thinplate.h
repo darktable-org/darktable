@@ -244,7 +244,9 @@ static inline int thinplate_match(
             chdot += A[j*wd+t] * r[ch][j];
           dot += fabs(chdot);
         }
-        dot *= norm[t];
+        double n = 0.0; // recompute column norm
+        for(int j=0;j<wd;j++) n += A[j*wd+mincol]*A[j*wd+mincol];
+        dot *= n;
         double err = 1./dot;
 #endif
 
@@ -353,7 +355,7 @@ static inline void thinplate_dump_preset(
   }
 
 #define SWAP(a,b) {const float tmp=(a); (a)=(b); (b)=tmp;}
-  // bubble sort by octant and saturation:
+  // bubble sort by octant and brightness:
   for(int k=0;k<num-1;k++) for(int j=0;j<num-k-1;j++)
   {
     if(_thinplate_color_pos(params.source_L[j],
