@@ -306,6 +306,16 @@ static inline int thinplate_match(
   return -1;
 }
 
+static inline float _thinplate_color_pos(
+    float L, float a, float b)
+{
+  const float pi = 3.14153f; // clearly true.
+  const float h = atan2f(b, a) + pi;
+  // const float C = sqrtf(a*a + b*b);
+  const int sector = 4.0f * h / (2.0f * pi);
+  return 256.0*sector + L;//C;
+}
+
 static inline void thinplate_dump_preset(
     const char *name,
     int num,                // number of points
@@ -343,10 +353,13 @@ static inline void thinplate_dump_preset(
   }
 
 #define SWAP(a,b) {const float tmp=(a); (a)=(b); (b)=tmp;}
-  // bubble sort by brightness
+  // bubble sort by octant and saturation:
   for(int k=0;k<num-1;k++) for(int j=0;j<num-k-1;j++)
   {
-    if(params.source_L[j] > params.source_L[j+1])
+    if(_thinplate_color_pos(params.source_L[j],
+          params.source_a[j], params.source_b[j]) <
+        _thinplate_color_pos(params.source_L[j+1],
+          params.source_a[j+1], params.source_b[j+1]))
     {
       SWAP(params.source_L[j], params.source_L[j+1]);
       SWAP(params.source_a[j], params.source_a[j+1]);
@@ -356,20 +369,7 @@ static inline void thinplate_dump_preset(
       SWAP(params.target_b[j], params.target_b[j+1]);
     }
   }
-  // bubble sort by saturation
-  for(int k=0;k<num-1;k++) for(int j=0;j<num-k-1;j++)
-  {
-    if(params.source_a[j]*params.source_a[j]+params.source_b[j]*params.source_b[j] <
-       params.source_a[j+1]*params.source_a[j+1]+params.source_b[j+1]*params.source_b[j+1])
-    {
-      SWAP(params.source_L[j], params.source_L[j+1]);
-      SWAP(params.source_a[j], params.source_a[j+1]);
-      SWAP(params.source_b[j], params.source_b[j+1]);
-      SWAP(params.target_L[j], params.target_L[j+1]);
-      SWAP(params.target_a[j], params.target_a[j+1]);
-      SWAP(params.target_b[j], params.target_b[j+1]);
-    }
-  }
+#undef SWAP
 
   char filename[1024];
   snprintf(filename, sizeof(filename), "colorchecker-%s.sh", name);
