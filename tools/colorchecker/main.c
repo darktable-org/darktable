@@ -27,11 +27,27 @@ static inline int read_spec(
   *target_b_ptr = target_b;
   *reference_Lab_ptr = reference_Lab;
 
+  double thrs = 20.0;
   for(int i=0;i<N;i++)
   {
-    r += fscanf(f, "%*s %lg %lg %lg %lg %lg %lg\n",
+    char patchname[512];
+    r += fscanf(f, "%s %lg %lg %lg %lg %lg %lg\n", patchname,
         reference_Lab+3*i, reference_Lab+3*i+1, reference_Lab+3*i+2,
         target_L+i, target_a+i, target_b+i);
+    double d[3] = {
+      reference_Lab[3*i+0] - target_L[i],
+      reference_Lab[3*i+1] - target_a[i],
+      reference_Lab[3*i+2] - target_b[i]};
+    if(sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2]) > thrs)
+    {
+      fprintf(stderr, "warning: ignoring patch %s with large difference deltaE %g!\n",
+          patchname, sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2]));
+      fprintf(stderr, "      %g %g %g -- %g %g %g\n",
+      reference_Lab[3*i+0], reference_Lab[3*i+1], reference_Lab[3*i+2],
+      target_L[i], target_a[i], target_b[i]);
+      N--; // ignore this patch.
+      i--;
+    }
   }
 
   if(r == 0) fprintf(stderr, "just keeping compiler happy\n");
@@ -70,7 +86,8 @@ int main(int argc, char *argv[])
   fprintf(stderr, "read %d patches\n", N);
 
   // extract tonecurve first:
-  int num_tonecurve = (N==24?6 : (N==288?24 : 0)) + 2; // 24+2 for it8, 6+2 for colorchecker
+  int num_tonecurve = (N==24?6 : 24) + 2; // 24+2 for it8, 6+2 for colorchecker
+  assert(N > num_tonecurve);
   tonecurve_t tonecurve;
   double cx[num_tonecurve], cy[num_tonecurve];
   cx[0] = cy[0] = 0.0;                               // fix black
