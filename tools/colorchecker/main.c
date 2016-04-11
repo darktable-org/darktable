@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
   thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
 
   int sp = 0;
-  int cperm[100];
+  int cperm[300];
   for(int k=0;k<sparsity;k++)
     if(perm[k] < N) // skip polynomial parts
       cperm[sp++] = perm[k];
