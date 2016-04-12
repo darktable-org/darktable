@@ -455,6 +455,31 @@ void dt_Lab_to_XYZ(const float *Lab, float *XYZ)
   XYZ[2] = d50[2] * lab_f_inv(fz);
 }
 
+void dt_XYZ_to_sRGB(const float * const XYZ, float *sRGB)
+{
+  const float xyz_to_srgb_matrix[3][3] =
+  {
+    {3.1338561, -1.6168667, -0.4906146},
+    {-0.9787684, 1.9161415, 0.0334540},
+    {0.0719453, -0.2289914, 1.4052427}
+  };
+
+  // XYZ -> sRGB
+  float rgb[3] = {0, 0, 0};
+  for(int r = 0; r < 3; r++)
+    for(int c = 0; c < 3; c++)
+      rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
+  // linear sRGB -> gamma corrected sRGB
+  for(int c = 0; c < 3; c++)
+    rgb[c] = rgb[c] <= 0.0031308 ? 12.92 * rgb[c] : (1.0 + 0.055) * powf(rgb[c], 1.0 / 2.4) - 0.055;
+
+#define CLIP(a) ((a) < 0 ? 0 : (a) > 1 ? 1 : (a))
+
+  for(int i = 0; i < 3; i++)
+    sRGB[i] = CLIP(rgb[i]);
+
+#undef CLIP
+}
 
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
 {
