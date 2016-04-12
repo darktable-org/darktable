@@ -1041,8 +1041,8 @@ static void init_image(dt_lut_t *self, image_t *image, GCallback motion_cb)
   gtk_widget_add_events(image->drawing_area,
                         GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   g_signal_connect(image->drawing_area, "size-allocate", G_CALLBACK(size_allocate_callback), image);
-  g_signal_connect(image->drawing_area, "draw", draw_image_callback, image);
-  g_signal_connect(image->drawing_area, "motion-notify-event", motion_cb, self);
+  g_signal_connect(image->drawing_area, "draw", G_CALLBACK(draw_image_callback), image);
+  g_signal_connect(image->drawing_area, "motion-notify-event", G_CALLBACK(motion_cb), self);
 }
 
 static void free_image(image_t *image)
