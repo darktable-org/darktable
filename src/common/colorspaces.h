@@ -139,6 +139,9 @@ void dt_XYZ_to_Lab(const float *XYZ, float *Lab);
 /** uses D50 white point. */
 void dt_Lab_to_XYZ(const float *Lab, float *XYZ);
 
+/** uses D50 white point and clips the output to [0..1]. */
+void dt_XYZ_to_sRGB(const float * const XYZ, float *sRGB);
+
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */
 int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
