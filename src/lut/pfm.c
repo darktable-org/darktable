@@ -1,9 +1,27 @@
+/*
+ *    This file is part of darktable,
+ *    copyright (c) 2016 tobias ellinghaus.
+ *
+ *    darktable is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    darktable is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "common/darktable.h"
+#include <glib.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <glib.h>
-#include "common/darktable.h"
 
 float *read_pfm(const char *filename, int *wd, int *ht)
 {
@@ -91,7 +109,8 @@ float *read_pfm(const char *filename, int *wd, int *ht)
           return NULL;
         }
         if(swap_byte_order) v.i = GUINT32_SWAP_LE_BE(v.i);
-        image[3 * (width * j + i) + 2] = image[3 * (width * j + i) + 1] = image[3 * (width * j + i) + 0] = v.f;
+        image[3 * (width * j + i) + 2] = image[3 * (width * j + i) + 1] = image[3 * (width * j + i) + 0]
+            = v.f;
       }
   float *line = (float *)calloc(3 * width, sizeof(float));
   for(size_t j = 0; j < height / 2; j++)
@@ -135,29 +154,7 @@ void write_pfm(const char *filename, int width, int height, float *data)
   }
 }
 
-// int main(int argc, char *argv[])
-// {
-//   if(argc != 3)
-//   {
-//     fprintf(stderr, "usage: %s <input PFM> <output PFM>\n", argv[0]);
-//     exit(1);
-//   }
-//
-//   int width, height;
-//   float *image = read_pfm(argv[1], &width, &height);
-//   if(!image) exit(1);
-//
-//   // do something with your image. as a (stupid) example set green (or a) and blue (or b) channel to 0:
-//   float *iter = image;
-//   for(int i = 0; i < width * height; i++)
-//   {
-//     iter[1] = iter[2] = 0.0;
-//     iter += 3;
-//   }
-//
-//   write_pfm(argv[2], width, height, image);
-//
-//   free(image);
-//
-//   return 0;
-// }
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces
+// modified;

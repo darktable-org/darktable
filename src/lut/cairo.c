@@ -1,5 +1,23 @@
-#include "lut/common.h"
+/*
+ *    This file is part of darktable,
+ *    copyright (c) 2016 tobias ellinghaus.
+ *
+ *    darktable is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    darktable is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "lut/cairo.h"
+#include "lut/common.h"
 
 void draw_no_image(cairo_t *cr, GtkWidget *widget)
 {
@@ -68,8 +86,7 @@ void draw_image(cairo_t *cr, image_t *image)
 
 void draw_boundingbox(cairo_t *cr, point_t *bb)
 {
-  for(int i = 0; i < 4; i++)
-    draw_line(cr, bb[i], bb[(i + 1) % 4]);
+  for(int i = 0; i < 4; i++) draw_line(cr, bb[i], bb[(i + 1) % 4]);
 }
 
 void draw_f_boxes(cairo_t *cr, point_t *bb, chart_t *chart)
@@ -115,8 +132,7 @@ void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float lin
   GHashTableIter table_iter;
   gpointer key, value;
 
-  float x_shrink = chart->box_shrink / chart->bb_w,
-        y_shrink = chart->box_shrink / chart->bb_h;
+  float x_shrink = chart->box_shrink / chart->bb_w, y_shrink = chart->box_shrink / chart->bb_h;
 
   cairo_set_line_width(cr, line_width);
   cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
@@ -132,8 +148,7 @@ void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float lin
     inner_box.h -= 2.0 * y_shrink;
     draw_box(cr, inner_box, bb);
 
-    if(colored)
-      cairo_set_source_rgb(cr, box->rgb[0], box->rgb[1], box->rgb[2]);
+    if(colored) cairo_set_source_rgb(cr, box->rgb[0], box->rgb[1], box->rgb[2]);
 
     cairo_stroke(cr);
   }
@@ -167,12 +182,13 @@ void set_offset_and_scale(image_t *image, float width, float height)
 
 static cairo_user_data_key_t source_data_buffer_key;
 
-cairo_surface_t *cairo_surface_create_from_xyz_data(const float * const image, const int width, const int height)
+cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, const int width,
+                                                    const int height)
 {
   unsigned char *rgbbuf = (unsigned char *)malloc(sizeof(unsigned char) * height * width * 4);
 
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(rgbbuf)
+#pragma omp parallel for schedule(static) default(none) shared(rgbbuf)
 #endif
   for(int y = 0; y < height; y++)
   {
@@ -182,8 +198,7 @@ cairo_surface_t *cairo_surface_create_from_xyz_data(const float * const image, c
       float sRGB[3];
       int32_t pixel = 0;
       dt_XYZ_to_sRGB(iter, sRGB);
-      for(int c = 0; c < 3; c++)
-        pixel |= ((int)(sRGB[c] * 255) & 0xff) << (16 - c * 8);
+      for(int c = 0; c < 3; c++) pixel |= ((int)(sRGB[c] * 255) & 0xff) << (16 - c * 8);
       *((int *)(&rgbbuf[(x + (size_t)y * width) * 4])) = pixel;
     }
   }
@@ -195,3 +210,8 @@ cairo_surface_t *cairo_surface_create_from_xyz_data(const float * const image, c
 
   return surface;
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces
+// modified;

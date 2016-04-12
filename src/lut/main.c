@@ -44,8 +44,8 @@ enum
 typedef struct dt_lut_t
 {
   // gtk gui
-  GtkWidget *image_button, *cht_button, *it8_button, *reference_image_button, *reference_it8_box, *reference_image_box,
-      *process_button, *export_button, *export_raw_button, *reference_mode, *gray_ramp;
+  GtkWidget *window, *image_button, *cht_button, *it8_button, *reference_image_button, *reference_it8_box,
+      *reference_image_box, *process_button, *export_button, *export_raw_button, *reference_mode, *gray_ramp;
   GtkWidget *treeview;
   GtkTreeModel *model;
 
@@ -76,8 +76,8 @@ static box_t *find_patch(GHashTable *table, gpointer key);
 static void get_boundingbox(const image_t *const image, point_t *bb);
 static box_t get_sample_box(chart_t *chart, box_t *outer_box);
 static void get_corners(point_t *bb, box_t *box, point_t *corners);
-static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start, int *y_start,
-                             int *x_end, int *y_end);
+static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start,
+                             int *y_start, int *x_end, int *y_end);
 static void reset_bb(image_t *image);
 static void free_image(image_t *image);
 static gboolean handle_motion(GtkWidget *widget, GdkEventMotion *event, dt_lut_t *self, image_t *image);
@@ -425,7 +425,24 @@ static gboolean open_it8(dt_lut_t *self, const char *filename)
   return res;
 }
 
-static void print_patches(dt_lut_t *self, GList *patch_names)
+static char *get_export_filename(dt_lut_t *self)
+{
+  GtkWidget *dialog
+      = gtk_file_chooser_dialog_new("save csv file", GTK_WINDOW(self->window), GTK_FILE_CHOOSER_ACTION_SAVE,
+                                    _("_cancel"), GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT, NULL);
+
+  gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+
+  char *filename = NULL;
+  int res = gtk_dialog_run(GTK_DIALOG(dialog));
+  if(res == GTK_RESPONSE_ACCEPT) filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+
+  gtk_widget_destroy(dialog);
+
+  return filename;
+}
+
+static void print_patches(dt_lut_t *self, FILE *fd, GList *patch_names)
 {
   for(GList *iter = patch_names; iter; iter = g_list_next(iter))
   {
@@ -443,37 +460,50 @@ static void print_patches(dt_lut_t *self, GList *patch_names)
     get_Lab_from_box(source_patch, source_Lab);
     get_Lab_from_box(reference_patch, reference_Lab);
 
-    printf("%s", key);
-    for(int i = 0; i < 3; i++) printf(";%s", g_ascii_dtostr(s, sizeof(s), source_Lab[i]));
-    for(int i = 0; i < 3; i++) printf(";%s", g_ascii_dtostr(s, sizeof(s), reference_Lab[i]));
-    printf("\n");
+    fprintf(fd, "%s", key);
+    for(int i = 0; i < 3; i++) fprintf(fd, ";%s", g_ascii_dtostr(s, sizeof(s), source_Lab[i]));
+    for(int i = 0; i < 3; i++) fprintf(fd, ";%s", g_ascii_dtostr(s, sizeof(s), reference_Lab[i]));
+    fprintf(fd, "\n");
   }
 }
 
-// TODO: filepicker, then write to file directly
-static void export_raw_button_clicked_callback(GtkButton *button, gpointer user_data)
+static void export_raw(dt_lut_t *self, char *filename)
 {
   GHashTableIter table_iter;
   gpointer key, value;
 
-  dt_lut_t *self = (dt_lut_t *)user_data;
-  if(!self->chart) return;
+  FILE *fd = fopen(filename, "w");
+  if(!fd) return;
 
   char *gray_ramp_key = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(self->gray_ramp));
 
-  printf("patch;L_source;a_source;b_source;L_reference;a_reference;b_reference\n");
+  fprintf(fd, "patch;L_source;a_source;b_source;L_reference;a_reference;b_reference\n");
   // iterate over all known patches in the chart, gray ramp last
   g_hash_table_iter_init(&table_iter, self->chart->patch_sets);
   while(g_hash_table_iter_next(&table_iter, &key, &value))
   {
     if(!g_strcmp0(gray_ramp_key, (char *)key)) continue;
     GList *patch_names = (GList *)value;
-    print_patches(self, patch_names);
+    print_patches(self, fd, patch_names);
   }
 
-  GList *patch_names = g_hash_table_lookup(self->chart->patch_sets, gray_ramp_key);
-  if(patch_names)
-    print_patches(self, patch_names);
+  if(gray_ramp_key)
+  {
+    GList *patch_names = g_hash_table_lookup(self->chart->patch_sets, gray_ramp_key);
+    if(patch_names) print_patches(self, fd, patch_names);
+  }
+
+  fclose(fd);
+}
+
+static void export_raw_button_clicked_callback(GtkButton *button, gpointer user_data)
+{
+  dt_lut_t *self = (dt_lut_t *)user_data;
+  if(!self->chart) return;
+
+  char *filename = get_export_filename(self);
+  export_raw(self, filename);
+  g_free(filename);
 }
 
 static void cht_state_callback(GtkWidget *widget, GtkStateFlags flags, gpointer user_data)
@@ -508,11 +538,12 @@ static GtkWidget *create_notebook_page_source(dt_lut_t *self)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
   gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, TRUE, 0);
 
-  GtkWidget *image_button = gtk_file_chooser_button_new("image of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
+  GtkWidget *image_button
+      = gtk_file_chooser_button_new("image of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
   g_signal_connect(image_button, "file-set", G_CALLBACK(source_image_changed_callback), self);
 
   GtkWidget *cht_button
-  = gtk_file_chooser_button_new("description of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
+      = gtk_file_chooser_button_new("description of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
   g_signal_connect(cht_button, "file-set", G_CALLBACK(cht_changed_callback), self);
 
   gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("image:"), FALSE, TRUE, 0);
@@ -546,11 +577,11 @@ static GtkWidget *create_notebook_page_reference(dt_lut_t *self)
   g_signal_connect(reference_mode, "changed", G_CALLBACK(reference_mode_changed_callback), self);
 
   GtkWidget *it8_button
-  = gtk_file_chooser_button_new("reference data of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
+      = gtk_file_chooser_button_new("reference data of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
   g_signal_connect(it8_button, "file-set", G_CALLBACK(it8_changed_callback), self);
 
   GtkWidget *reference_image_button
-  = gtk_file_chooser_button_new("image of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
+      = gtk_file_chooser_button_new("image of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
   g_signal_connect(reference_image_button, "file-set", G_CALLBACK(ref_image_changed_callback), self);
 
   gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("mode:"), FALSE, TRUE, 0);
@@ -631,13 +662,16 @@ static GtkWidget *create_notebook(dt_lut_t *self)
   GtkWidget *notebook = gtk_notebook_new();
 
   // first tab: input image + cht file
-  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), create_notebook_page_source(self), gtk_label_new("source image"));
+  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), create_notebook_page_source(self),
+                           gtk_label_new("source image"));
 
   // second tab: mode + either reference image or cie file
-  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), create_notebook_page_reference(self), gtk_label_new("reference values"));
+  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), create_notebook_page_reference(self),
+                           gtk_label_new("reference values"));
 
   // third tab: analyze data and process it
-  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), create_notebook_page_process(self), gtk_label_new("process"));
+  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), create_notebook_page_process(self),
+                           gtk_label_new("process"));
 
   return notebook;
 }
@@ -646,9 +680,10 @@ static GtkWidget *create_table(dt_lut_t *self)
 {
   GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_widget_set_size_request(scrolled_window, -1, 15);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC,
+                                 GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled_window), GTK_SHADOW_ETCHED_IN);
-//   gtk_paned_pack2(GTK_PANED(vpaned), scrolled_window, TRUE, FALSE);
+  //   gtk_paned_pack2(GTK_PANED(vpaned), scrolled_window, TRUE, FALSE);
 
   self->model = GTK_TREE_MODEL(gtk_list_store_new(NUM_COLUMNS,
                                                   G_TYPE_STRING, // COLUMN_NAME
@@ -659,7 +694,7 @@ static GtkWidget *create_table(dt_lut_t *self)
                                                   G_TYPE_FLOAT,  // COLUMN_DE_1976_FLOAT
                                                   G_TYPE_STRING, // COLUMN_DE_2000
                                                   G_TYPE_FLOAT   // COLUMN_DE_2000_FLOAT
-  ));
+                                                  ));
   self->treeview = gtk_tree_view_new_with_model(self->model);
   gtk_tree_view_set_search_column(GTK_TREE_VIEW(self->treeview), COLUMN_NAME);
   gtk_container_add(GTK_CONTAINER(scrolled_window), self->treeview);
@@ -709,6 +744,7 @@ int main(int argc, char *argv[])
 
   // build the GUI
   GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  self->window = window;
   gtk_window_set_title(GTK_WINDOW(window), "darktable LUT tool");
   gtk_container_set_border_width(GTK_CONTAINER(window), 3);
   gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
@@ -882,7 +918,7 @@ static void collect_source_patches_foreach(gpointer key, gpointer value, gpointe
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
   box_t *box = (box_t *)value;
-  float xyz[3]/*, lab[3], srgb[3]*/;
+  float xyz[3] /*, lab[3], srgb[3]*/;
 
   box_t *patch = find_patch(self->picked_source_patches, key);
 
@@ -942,9 +978,9 @@ static void get_xyz_sample_from_image(const image_t *const image, box_t *box, fl
   double sample_x = 0.0, sample_y = 0.0, sample_z = 0.0;
   size_t n_samples = 0;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)                                                           \
-    shared(corners, x_start, y_start, x_end, y_end, delta_x_top, delta_y_top, delta_x_bottom, delta_y_bottom,     \
-           delta_x_left, delta_y_left, delta_x_right,                                                             \
+#pragma omp parallel for schedule(static) default(none)                                                      \
+    shared(corners, x_start, y_start, x_end, y_end, delta_x_top, delta_y_top, delta_x_bottom,                \
+           delta_y_bottom, delta_x_left, delta_y_left, delta_x_right,                                        \
            delta_y_right) reduction(+ : n_samples, sample_x, sample_y, sample_z)
 #endif
   for(int y = y_start; y < y_end; y++)
@@ -999,8 +1035,8 @@ static void get_corners(point_t *bb, box_t *box, point_t *corners)
   for(int i = 0; i < 4; i++) corners[i] = transform_coords(corners[i], bb);
 }
 
-static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start, int *y_start,
-                             int *x_end, int *y_end)
+static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start,
+                             int *y_start, int *x_end, int *y_end)
 {
   *x_start = CLAMP((int)(MIN(corners[TOP_LEFT].x,
                              MIN(corners[TOP_RIGHT].x, MIN(corners[BOTTOM_RIGHT].x, corners[BOTTOM_LEFT].x)))
@@ -1071,4 +1107,5 @@ static void image_lab_to_xyz(float *image, const int width, const int height)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces
+// modified;
