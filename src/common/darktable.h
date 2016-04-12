@@ -471,6 +471,8 @@ static inline size_t dt_get_total_memory()
     || defined(__OpenBSD__)
 #if defined(__APPLE__)
   int mib[2] = { CTL_HW, HW_MEMSIZE };
+#elif defined(HW_PHYSMEM64)
+  int mib[2] = { CTL_HW, HW_PHYSMEM64 };
 #else
   int mib[2] = { CTL_HW, HW_PHYSMEM };
 #endif
