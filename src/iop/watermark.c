@@ -1190,6 +1190,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->rotate, p->rotate);
   dt_bauhaus_slider_set(g->x_offset, p->xoffset);
   dt_bauhaus_slider_set(g->y_offset, p->yoffset);
+  for(int i = 0; i < 9; i++)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
+  }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
   _combo_box_set_active_text(g->watermarks, p->filename);
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
