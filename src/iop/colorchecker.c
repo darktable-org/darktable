@@ -176,10 +176,20 @@ int legacy_params(
 void init_presets(dt_iop_module_so_t *self)
 { }
 
+static inline float
+fasterlog(float x)
+{
+  union { float f; uint32_t i; } vx = { x };
+  float y = vx.i;
+  y *= 8.2629582881927490e-8f;
+  return y - 87.989971088f;
+}
+
 // thinplate spline kernel \phi(r)
 static inline float kernel(const float r)
 {
-  return r*r*logf(MAX(1e-8f,r));
+  // return r*r*logf(MAX(1e-8f,r));
+  return r*r*fasterlog(MAX(1e-8f,r));
 }
 
 static inline float distance(const float *x, const float *y)
