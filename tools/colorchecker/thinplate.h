@@ -11,8 +11,8 @@
 #include "tonecurve.h"
 #include <float.h>
 
-#define REPLACEMENT // either broken code or doesn't help at all
-#define EXACT       // use full solve instead of dot in inner loop
+// #define REPLACEMENT // either broken code or doesn't help at all
+// #define EXACT       // use full solve instead of dot in inner loop
 
 // thinplate spline kernel \phi(r)
 static inline double thinplate_kernel(const double *x, const double *y)
@@ -36,6 +36,19 @@ static inline double compute_error(
   double err = 0.0;
   for(int i=0;i<wd;i++)
   {
+#ifdef EXACT
+    const double Lt = target[0][i];
+    const double L0 = tonecurve_apply(c, Lt);
+    const double L1 = tonecurve_apply(c, Lt + residual_L[i]);
+    float Lab0[3] = {L0, target[1][i], target[2][i]};
+    float Lab1[3] = {L1, target[1][i], target[2][i]};
+    err += dt_colorspaces_deltaE_2000(Lab0, Lab1);
+#else
+    err += (residual_L[i]*residual_L[i] +
+        residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i])/wd;
+#endif
+
+#if 0
 #if 0 // max rmse
     // err = MAX(err, residual_L[i]*residual_L[i] +
     //     residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i]);
@@ -55,6 +68,7 @@ static inline double compute_error(
     const double dL = L - tonecurve_apply(c, Lt);
     err = MAX(err, dL*dL +
         residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i]);
+#endif
 #endif
   }
   return sqrt(err);
@@ -155,10 +169,10 @@ static inline int thinplate_match(
   // in case of replacement, iterate all the way to wd
   for(;s<wd;s++)
   {
+    const int sparsity = MIN(s, S-1);
 #ifndef REPLACEMENT
     if(patches >= S-4) return sparsity;
 #endif
-    const int sparsity = MIN(s, S-1);
     // find column a_m by m = argmax_t{ a_t^t r . norm_t}
     // by searching over all three residuals
     double maxdot = 0.0;
@@ -321,7 +335,7 @@ static inline int thinplate_match(
     // everything < 2 is usually considired a very good approximation:
     fprintf(stderr, "rank %d/%d error DE %g\n", sparsity+1, patches, err);
     if(s>=S && err >= olderr) return sparsity+1;
-    if(err < 2.0) return sparsity+1;
+    // if(err < 2.0) return sparsity+1;
     olderr = err;
   }
   return -1;
