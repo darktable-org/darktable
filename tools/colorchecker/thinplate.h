@@ -1,6 +1,11 @@
 #pragma once
+
+#ifndef MAX
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
+#endif
+#ifndef MIN
 #define MIN(a,b) ((a) > (b) ? (b) : (a))
+#endif
 #include "../../src/iop/svd.h"
 #include "../../src/lut/deltaE.h"
 #include "tonecurve.h"
@@ -194,7 +199,7 @@ static inline int thinplate_match(
         for(int ch=0;ch<dim;ch++)
         {
           double chdot = 0.0;
-          for(int j=0;j<wd;j++) 
+          for(int j=0;j<wd;j++)
             chdot += A[j*wd+t] * r[ch][j];
           dot += fabs(chdot);
         }
@@ -254,7 +259,7 @@ static inline int thinplate_match(
         for(int ch=0;ch<dim;ch++)
         {
           double chdot = 0.0;
-          for(int j=0;j<wd;j++) 
+          for(int j=0;j<wd;j++)
             chdot += A[j*wd+t] * r[ch][j];
           dot += fabs(chdot);
         }
