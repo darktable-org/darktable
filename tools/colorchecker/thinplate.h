@@ -57,7 +57,7 @@ static inline double compute_error(
         residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i]);
 #endif
   }
-  return sqrt(err); // max deltaE
+  return sqrt(err);
 }
 
 static inline int solve(
@@ -150,15 +150,14 @@ static inline int thinplate_match(
   double w[S], v[S*S], As[wd*S];
   memset(As, 0, sizeof(As));
   // for rank from 0 to sparsity level
-  int s = 0;
+  int s = 0, patches = 0;
   double olderr = FLT_MAX;
   // in case of replacement, iterate all the way to wd
-#ifdef REPLACEMENT
   for(;s<wd;s++)
-#else
-  for(;s<S;s++)
-#endif
   {
+#ifndef REPLACEMENT
+    if(patches >= S-4) return sparsity;
+#endif
     const int sparsity = MIN(s, S-1);
     // find column a_m by m = argmax_t{ a_t^t r . norm_t}
     // by searching over all three residuals
@@ -214,10 +213,11 @@ static inline int thinplate_match(
       }
     }
 
-    if(s < S)
+    if(patches < S-4)
     {
       // remember which column that was, we'll need it to evaluate later:
       permutation[s] = maxcol;
+      if(maxcol < N) patches++;
       // make sure we won't choose it again:
       norm[maxcol] = 0.0;
     }
@@ -319,7 +319,7 @@ static inline int thinplate_match(
 #endif
     // residual is max CIE76 delta E now
     // everything < 2 is usually considired a very good approximation:
-    fprintf(stderr, "rank %d error DE %g\n", sparsity+1, err);
+    fprintf(stderr, "rank %d/%d error DE %g\n", sparsity+1, patches, err);
     if(s>=S && err >= olderr) return sparsity+1;
     if(err < 2.0) return sparsity+1;
     olderr = err;
