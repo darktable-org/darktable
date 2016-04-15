@@ -2,6 +2,7 @@
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
 #define MIN(a,b) ((a) > (b) ? (b) : (a))
 #include "../../src/iop/svd.h"
+#include "../../src/lut/deltaE.h"
 #include "tonecurve.h"
 #include <float.h>
 
@@ -30,13 +31,26 @@ static inline double compute_error(
   double err = 0.0;
   for(int i=0;i<wd;i++)
   {
+#if 0 // max rmse
     // err = MAX(err, residual_L[i]*residual_L[i] +
     //     residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i]);
+#elif 0 // total rmse
+    err += (residual_L[i]*residual_L[i] +
+        residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i])/wd;
+#elif 1 // delta e 2000
+    const double Lt = target[0][i];
+    const double L0 = tonecurve_apply(c, Lt);
+    const double L1 = tonecurve_apply(c, Lt + residual_L[i]);
+    float Lab0[3] = {L0, target[1][i], target[2][i]};
+    float Lab1[3] = {L1, target[1][i], target[2][i]};
+    err += dt_colorspaces_deltaE_2000(Lab0, Lab1);
+#else
     const double Lt = target[0][i];
     const double L = tonecurve_apply(c, Lt + residual_L[i]);
     const double dL = L - tonecurve_apply(c, Lt);
     err = MAX(err, dL*dL +
         residual_a[i]*residual_a[i] + residual_b[i]*residual_b[i]);
+#endif
   }
   return sqrt(err); // max deltaE
 }

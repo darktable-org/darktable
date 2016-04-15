@@ -27,7 +27,7 @@ static inline int read_spec(
   *target_b_ptr = target_b;
   *reference_Lab_ptr = reference_Lab;
 
-  double thrs = 20.0;
+  double thrs = 200.0;
   for(int i=0;i<N;i++)
   {
     char patchname[512];
