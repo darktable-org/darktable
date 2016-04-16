@@ -60,6 +60,7 @@ void dt_exif_cleanup();
 
 /** encode / decode op params */
 char *dt_exif_xmp_encode(const unsigned char *input, const int len, int *output_len);
+char *dt_exif_xmp_encode_internal(const unsigned char *input, const int len, int *output_len, gboolean do_compress);
 unsigned char *dt_exif_xmp_decode(const char *input, const int len, int *output_len);
 
 /** look for color space hints in data and tell the caller if it's sRGB, AdobeRGB or something else. used for mipmaps */

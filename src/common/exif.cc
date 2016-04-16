@@ -1395,7 +1395,6 @@ char *dt_exif_xmp_encode(const unsigned char *input, const int len, int *output_
 {
 #define COMPRESS_THRESHOLD 100
 
-  char *output = NULL;
   gboolean do_compress = FALSE;
 
   // if input data field exceeds a certain size we compress it and convert to base64;
@@ -1412,6 +1411,15 @@ char *dt_exif_xmp_encode(const unsigned char *input, const int len, int *output_
       do_compress = FALSE;
     g_free(config);
   }
+
+  return dt_exif_xmp_encode_internal(input, len, output_len, do_compress);
+
+#undef COMPRESS_THRESHOLD
+}
+
+char *dt_exif_xmp_encode_internal(const unsigned char *input, const int len, int *output_len, gboolean do_compress)
+{
+  char *output = NULL;
 
   if(do_compress)
   {
@@ -1471,8 +1479,6 @@ char *dt_exif_xmp_encode(const unsigned char *input, const int len, int *output_
   }
 
   return output;
-
-#undef COMPRESS_THRESHOLD
 }
 
 // and back to binary
@@ -1516,6 +1522,7 @@ unsigned char *dt_exif_xmp_decode(const char *input, const int len, int *output_
       bufLen *= 2;
 
     } while(result == Z_BUF_ERROR);
+
 
     free(buffer);
 
