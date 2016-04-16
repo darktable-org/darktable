@@ -625,8 +625,9 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
     p->target_b[patch] = p->source_b[patch];
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     self->gui_update(self);
+    return TRUE;
   }
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean checker_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
