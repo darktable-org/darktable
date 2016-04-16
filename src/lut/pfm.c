@@ -109,8 +109,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
           return NULL;
         }
         if(swap_byte_order) v.i = GUINT32_SWAP_LE_BE(v.i);
-        image[3 * (width * j + i) + 2] = image[3 * (width * j + i) + 1] = image[3 * (width * j + i) + 0]
-            = v.f;
+        image[3 * (width * j + i) + 2] = image[3 * (width * j + i) + 1] = image[3 * (width * j + i) + 0] = v.f;
       }
   float *line = (float *)calloc(3 * width, sizeof(float));
   for(size_t j = 0; j < height / 2; j++)
