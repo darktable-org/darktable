@@ -458,6 +458,17 @@ static char *get_export_filename(dt_lut_t *self, char **name, char **description
 
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
+  char *reference_filename = g_strdup(self->reference_filename);
+  char *last_dot = g_strrstr(reference_filename, ".");
+  if(last_dot)
+  {
+    *last_dot = '\0';
+    char *new_filename = g_strconcat(reference_filename, ".dtstyle", NULL);
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), new_filename);
+    g_free(reference_filename);
+    g_free(new_filename);
+  }
+
   if(name && description)
   {
     GtkWidget *grid = gtk_grid_new();
@@ -846,13 +857,13 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   // unapply from target data, we will apply it later in the pipe and want to match the colours only:
   for(int k = 0; k < N; k++) target_L[k] = tonecurve_unapply(&tonecurve, target_L[k]);
 
-  const int sparsity = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(self->number_patches)) + 4; // 28;
+  int sparsity = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(self->number_patches)) + 4;
   printf("%d\n", sparsity);
   const double *target[3] = { target_L, target_a, target_b };
   double coeff_L[N + 4], coeff_a[N + 4], coeff_b[N + 4];
   double *coeff[] = { coeff_L, coeff_a, coeff_b };
   int perm[N + 4];
-  thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
+  sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
 
   int sp = 0;
   int cperm[300];
@@ -1159,8 +1170,11 @@ int main(int argc, char *argv[])
 
   gtk_main();
 
+  free(self->tonecurve_encoded);
+  free(self->colorchecker_encoded);
   g_object_unref(self->model);
   free_image(&self->source);
+  free_image(&self->reference);
   free_chart(self->chart);
   g_hash_table_unref(self->picked_source_patches);
   free(self);
@@ -1454,6 +1468,7 @@ static void init_image(dt_lut_t *self, image_t *image, GCallback motion_cb)
 
 static void free_image(image_t *image)
 {
+  if(!image) return;
   reset_bb(image);
   if(image->image) cairo_pattern_destroy(image->image);
   if(image->surface) cairo_surface_destroy(image->surface);
