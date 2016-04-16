@@ -126,10 +126,10 @@ static void free_labels_list(gpointer data)
   g_list_free_full((GList *)data, g_free);
 }
 
-#define ERROR                                                                                                \
-  {                                                                                                          \
-    lineno = __LINE__;                                                                                       \
-    goto error;                                                                                              \
+#define ERROR                                                                                                     \
+  {                                                                                                               \
+    lineno = __LINE__;                                                                                            \
+    goto error;                                                                                                   \
   }
 // according to cht_format.html from argyll:
 // "The keywords and associated data must be used in the following order: BOXES, BOX_SHRINK, REF_ROTATION,
@@ -346,8 +346,7 @@ chart_t *parse_cht(const char *filename)
           }
           y_max = MAX(y_max, y + h);
           if(kl == 'X' || kl == 'Y')
-            g_hash_table_insert(result->patch_sets, g_strdup_printf("%s .. %s", first_label, last_label),
-                                labels);
+            g_hash_table_insert(result->patch_sets, g_strdup_printf("%s .. %s", first_label, last_label), labels);
         }
         else
           ERROR;
@@ -576,8 +575,8 @@ int parse_it8(const char *filename, chart_t *chart)
       goto error;
     }
 
-    set_color(box, color_space, cmsIT8GetDataDbl(hIT8, key, columns[0]),
-              cmsIT8GetDataDbl(hIT8, key, columns[1]), cmsIT8GetDataDbl(hIT8, key, columns[2]));
+    set_color(box, color_space, cmsIT8GetDataDbl(hIT8, key, columns[0]), cmsIT8GetDataDbl(hIT8, key, columns[1]),
+              cmsIT8GetDataDbl(hIT8, key, columns[2]));
   }
 
   fprintf(stderr, "it8 `%s' done\n", filename);

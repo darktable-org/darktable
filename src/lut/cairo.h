@@ -40,8 +40,7 @@ void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float lin
 void stroke_boxes(cairo_t *cr, float line_width);
 
 void set_offset_and_scale(image_t *image, float width, float height);
-cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, const int width,
-                                                    const int height);
+cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, const int width, const int height);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

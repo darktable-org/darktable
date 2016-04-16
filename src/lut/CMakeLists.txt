@@ -1,5 +1,5 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
-add_executable(darktable-lut main.c colorchart.c deltaE.c pfm.c cairo.c common.c)
+add_executable(darktable-lut main.c colorchart.c deltaE.c pfm.c cairo.c common.c thinplate.c tonecurve.c)
 
 target_link_libraries(darktable-lut ${LCMS2_LIBRARIES})
 add_definitions(${LCMS2_DEFINITIONS})
