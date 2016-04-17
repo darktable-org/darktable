@@ -276,7 +276,11 @@ static double raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level
 {
   const uint32_t raw_max = white_level - black_level;
 
-  const double raw_ev = -log2(raw_max) + log2(MAX(raw - black_level, 1));
+  // we are working on data without black clipping,
+  // so we can get values which are lower than the black level !!!
+  const int64_t raw_val = MAX((int64_t)raw - (int64_t)black_level, 1);
+
+  const double raw_ev = -log2(raw_max) + log2(raw_val);
 
   return raw_ev;
 }
