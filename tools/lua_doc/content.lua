@@ -402,6 +402,7 @@ darktable.gui.views.lighttable:set_text([[The lighttable view]])
 darktable.gui.views.tethering:set_text([[The tethering view]])
 darktable.gui.views.slideshow:set_text([[The slideshow view]])
 darktable.gui.views.print:set_text([[The print view]])
+darktable.gui.views.knight:set_skiped()
 
 --[[
 for k, v in darktable.gui.libs:unskiped_children() do
