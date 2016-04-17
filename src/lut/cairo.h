@@ -36,7 +36,8 @@ void draw_boundingbox(cairo_t *cr, point_t *bb);
 void draw_f_boxes(cairo_t *cr, point_t *bb, chart_t *chart);
 void draw_d_boxes(cairo_t *cr, point_t *bb, chart_t *chart);
 void draw_color_boxes_outline(cairo_t *cr, point_t *bb, chart_t *chart);
-void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float line_width, gboolean colored);
+void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float shrink, float line_width,
+                             gboolean colored);
 void stroke_boxes(cairo_t *cr, float line_width);
 
 void set_offset_and_scale(image_t *image, float width, float height);

@@ -38,6 +38,7 @@ typedef struct image_t
   float *xyz;
   float scale;
   int offset_x, offset_y;
+  float shrink;
 
   point_t bb[4];
 
