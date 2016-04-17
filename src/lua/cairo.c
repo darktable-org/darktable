@@ -176,62 +176,62 @@ int dt_lua_init_cairo(lua_State *L)
   int cairo_type = dt_lua_init_gpointer_type(L, dt_lua_cairo_t);
 
   lua_pushcfunction(L, _draw_line);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "draw_line");
 
   lua_pushcfunction(L, _save);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "save");
 
   lua_pushcfunction(L, _restore);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "restore");
 
   lua_pushcfunction(L, _new_sub_path);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "new_sub_path");
 
   lua_pushcfunction(L, _scale);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "scale");
 
   lua_pushcfunction(L, _translate);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "translate");
 
   lua_pushcfunction(L, _rotate);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "rotate");
 
   lua_pushcfunction(L, _move_to);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "move_to");
 
   lua_pushcfunction(L, _line_to);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "line_to");
 
   lua_pushcfunction(L, _arc);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "arc");
 
   lua_pushcfunction(L, _arc_negative);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "arc_negative");
 
   lua_pushcfunction(L, _rectangle);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, cairo_type, "rectangle");
 

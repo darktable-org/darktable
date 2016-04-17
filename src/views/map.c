@@ -436,13 +436,13 @@ void init(dt_view_t *self)
   lua_State *L = darktable.lua_state.state;
   luaA_Type my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
   lua_pushcfunction(L, latitude_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register_type(L, my_type, "latitude");
   lua_pushcfunction(L, longitude_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register_type(L, my_type, "longitude");
   lua_pushcfunction(L, zoom_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register_type(L, my_type, "zoom");
 
 #endif // USE_LUA

@@ -3213,6 +3213,76 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 </variablelist>
 </section>
 
+<section status="final" id="darktable_control_sleep">
+<title>darktable.control.sleep</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>sleep</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_control_sleep_delay">delay</link></emphasis> : int
+)</synopsis>
+<para>Suspends execution while not blocking darktable</para>
+
+<variablelist>
+<varlistentry id="darktable_control_sleep_delay"><term>delay</term><listitem>
+<synopsis>int</synopsis>
+<para>The delay in miliseconds to sleep</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_control_execute">
+<title>darktable.control.execute</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>execute</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_control_execute_command">command</link></emphasis> : string
+) : int</synopsis>
+<para>Run a command in a shell while not blocking darktable</para>
+
+<variablelist>
+<varlistentry id="darktable_control_execute_command"><term>command</term><listitem>
+<synopsis>string</synopsis>
+<para>The command to run, as in 'sh -c'</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>int</synopsis>
+<para>The result of the system call</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_control_read">
+<title>darktable.control.read</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>read</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_control_read_file">file</link></emphasis> : file
+)</synopsis>
+<para>Block until a file is readable while not blocking darktable</para>
+
+<variablelist>
+<varlistentry id="darktable_control_read_file"><term>file</term><listitem>
+<synopsis>file</synopsis>
+<para>The file object to wait for</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gettext">
@@ -6495,33 +6565,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_yield_type">
-<title>types.yield_type</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>yield_type</secondary>
-</indexterm>
-<synopsis>enum</synopsis>
-<para>What type of event to wait for</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis>values : </emphasis></para>
-<para><itemizedlist>
-<listitem><para>WAIT_MS</para></listitem>
-<listitem><para>FILE_READABLE</para></listitem>
-<listitem><para>RUN_COMMAND</para></listitem>
-</itemizedlist>
-</para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
 <section status="final" id="types_comp_type_t">
 <title>types.comp_type_t</title>
 <indexterm>
@@ -9075,67 +9118,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>parent</secondary>
 </indexterm>
 <para>This object inherits some methods from another object. You can call the methods from the parent on the child object</para>
-
-</section>
-
-</section>
-
-<section status="final" id="system">
-<title>system</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>system</secondary>
-</indexterm>
-<para>This section documents changes to system functions.</para>
-
-<section status="final" id="system_coroutine">
-<title>system.coroutine</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>coroutine</secondary>
-</indexterm>
-<para></para>
-
-<section status="final" id="system_coroutine_yield">
-<title>system.coroutine.yield</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>yield</secondary>
-</indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="system_coroutine_yield_type">type</link></emphasis> : <link linkend="types_yield_type">types.yield_type</link>, 
-	<emphasis><link linkend="system_coroutine_yield_extra">extra</link></emphasis> : variable
-) : variable</synopsis>
-<para>Lua functions can yield at any point. The parameters and return types depend on why we want to yield.</para>
-<para>A callback that is yielding allows other Lua code to run.<itemizedlist>
-<listitem><para>WAIT_MS: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;</para></listitem>
-<listitem><para>FILE_READABLE: an opened file from a call to the OS library; will return when the file is readable; returns nothing;</para></listitem>
-<listitem><para>RUN_COMMAND: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.</para></listitem>
-</itemizedlist>
-</para>
-
-<variablelist>
-<varlistentry id="system_coroutine_yield_type"><term>type</term><listitem>
-<synopsis><link linkend="types_yield_type">types.yield_type</link></synopsis>
-<para>The type of yield.</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="system_coroutine_yield_extra"><term>extra</term><listitem>
-<synopsis>variable</synopsis>
-<para>An extra parameter: integer for "WAIT_MS", open file for "FILE_READABLE", string for "RUN_COMMAND".</para>
-
-</listitem></varlistentry>
-
-<varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis>variable</synopsis>
-<para>Nothing for "WAIT_MS" and "FILE_READABLE"; the returned code of the command for "RUN_COMMAND".</para>
-
-</listitem></varlistentry>
-
-
-</variablelist>
-</section>
 
 </section>
 

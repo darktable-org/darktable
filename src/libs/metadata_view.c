@@ -556,7 +556,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     dt_image_cache_read_release(darktable.image_cache, img);
 
 #ifdef USE_LUA
-    dt_lua_do_chunk_async(lua_update_metadata,
+    dt_lua_async_call_alien(lua_update_metadata,
+        0,NULL,NULL,
         LUA_ASYNC_TYPENAME,"void*",self,
         LUA_ASYNC_TYPENAME,"int32_t",mouse_over_id,LUA_ASYNC_DONE);
 #endif
@@ -568,7 +569,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 fill_minuses:
   for(int k = 0; k < md_size; k++) _metadata_update_value(d->metadata[k], NODATA_STRING);
 #ifdef USE_LUA
-    dt_lua_do_chunk_async(lua_update_metadata,
+  dt_lua_async_call_alien(lua_update_metadata,
+      0,NULL,NULL,
         LUA_ASYNC_TYPENAME,"void*",self,
         LUA_ASYNC_TYPENAME,"int32_t",-1,LUA_ASYNC_DONE);
 #endif
@@ -713,16 +715,16 @@ static int lua_update_metadata(lua_State*L)
   {
     lua_pushvalue(L,-1);
     luaA_push(L,dt_lua_image_t,&imgid);
-    dt_lua_do_chunk_raise(L,1,1);
+    lua_call(L,1,1);
     lua_pushvalue(L,7);
     lua_pushvalue(L,9);
     lua_settable(L,6);
     lua_pop(L, 2);
   }
   lua_pushcfunction(L,lua_update_widgets);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   lua_pushlightuserdata(L,self);
-  dt_lua_do_chunk_raise(L,1,0);
+  lua_call(L,1,0);
   return 0;
 }
 
@@ -777,7 +779,7 @@ void init(struct dt_lib_module_t *self)
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, lua_register_info,1);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "register_info");
 

@@ -138,7 +138,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   lua_pushboolean(L, high_quality);
   push_lua_data(L,d);
   dt_lua_goto_subtable(L,"extra");
-  dt_lua_do_chunk_silent(L, 8, 0);
+  dt_lua_treated_pcall(L,8,0);
   lua_pop(L, 2);
   dt_lua_unlock();
   g_free(filename);
@@ -181,7 +181,7 @@ static int initialize_store_wrapper(struct dt_imageio_module_storage_t *self, dt
   push_lua_data(L,d);
   dt_lua_goto_subtable(L,"extra");
 
-  dt_lua_do_chunk_silent(L, 5, 1);
+  dt_lua_treated_pcall(L,5,1);
   if(!lua_isnoneornil(L, -1))
   {
     g_list_free(*images);
@@ -232,7 +232,7 @@ static void finalize_store_wrapper(struct dt_imageio_module_storage_t *self, dt_
   push_lua_data(L,d);
   dt_lua_goto_subtable(L,"extra");
 
-  dt_lua_do_chunk_silent(L, 3, 0);
+  dt_lua_treated_pcall(L,3,0);
   lua_pop(L, 2);
   dt_lua_unlock();
 }
@@ -322,7 +322,8 @@ static void gui_init_wrapper(struct dt_imageio_module_storage_t *self)
 static void gui_reset_wrapper(struct dt_imageio_module_storage_t *self)
 {
   lua_storage_gui_t *gui_data =self->gui_data;
-  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+  dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"lua_widget",gui_data->widget,
       LUA_ASYNC_TYPENAME,"const char*","reset",
       LUA_ASYNC_DONE);
@@ -460,7 +461,7 @@ static int register_storage(lua_State *L)
       luaA_push_type(L, format->parameter_lua_type, fdata);
       format->free_params(format, fdata);
       storage->free_params(storage, sdata);
-      dt_lua_do_chunk_silent(L, 2, 1);
+      dt_lua_treated_pcall(L,2,1);
       int result = lua_toboolean(L, -1);
       lua_pop(L, 1);
       if(result)
