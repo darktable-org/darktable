@@ -17,6 +17,7 @@
  */
 #include <glib.h>
 #include "lua/preferences.h"
+#include "lua/call.h"
 #include <stdlib.h>
 #include <string.h>
 #include "control/conf.h"
@@ -257,7 +258,7 @@ static int register_pref(lua_State *L)
   lua_pushcfunction(L, register_pref_sub);
   lua_insert(L, 1);
   lua_pushlightuserdata(L, &built_elt);
-  int result = lua_pcall(L, lua_gettop(L) - 1, 0, 0);
+  int result = dt_lua_treated_pcall(L,lua_gettop(L)-1,0);
   if(result == LUA_OK)
   {
     built_elt->next = pref_list;

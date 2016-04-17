@@ -241,7 +241,8 @@ static int collection_numindex(lua_State *L)
 
 static void on_film_imported(gpointer instance, uint32_t id, gpointer user_data)
 {
-  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"const char*","post-import-film",
       LUA_ASYNC_TYPENAME,"dt_lua_film_t",GINT_TO_POINTER(id),
       LUA_ASYNC_DONE);
@@ -249,7 +250,8 @@ static void on_film_imported(gpointer instance, uint32_t id, gpointer user_data)
 
 static void on_image_imported(gpointer instance, uint32_t id, gpointer user_data)
 {
-  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"const char*","post-import-image",
       LUA_ASYNC_TYPENAME,"dt_lua_image_t",GINT_TO_POINTER(id),
       LUA_ASYNC_DONE);

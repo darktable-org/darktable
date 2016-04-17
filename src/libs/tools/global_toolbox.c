@@ -130,7 +130,8 @@ static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user
   dt_collection_update_query(darktable.collection);
 
 #ifdef USE_LUA
-  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"const char*","global_toolbox-grouping_toggle",
       LUA_ASYNC_TYPENAME,"bool",darktable.gui->grouping,
       LUA_ASYNC_DONE);
@@ -148,7 +149,8 @@ static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 
 #ifdef USE_LUA
-  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"const char*","global_toolbox-overlay_toggle",
       LUA_ASYNC_TYPENAME,"bool",darktable.gui->show_overlays,
       LUA_ASYNC_DONE);
@@ -219,10 +221,10 @@ void init(struct dt_lib_module_t *self)
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
 
   lua_pushcfunction(L, grouping_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register_type(L, my_type, "grouping");
   lua_pushcfunction(L, show_overlays_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register_type(L, my_type, "show_overlays");
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);

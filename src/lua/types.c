@@ -236,7 +236,9 @@ static int autotype_next(lua_State *L)
         lua_pushvalue(L, -4);
         lua_pushvalue(L, -2);
         // hacky way to avoid a subfunction just to do a pcall around getting a value in a table
-        int result = dt_lua_dostring(L, "args ={...}; return args[1][args[2]]", 2, 1);
+        luaL_loadstring(L,"args ={...}; return args[1][args[2]]");
+        lua_insert(L,-3);
+        int result = dt_lua_treated_pcall(L,2,1);
         if(result == LUA_OK)
         {
           return 2;

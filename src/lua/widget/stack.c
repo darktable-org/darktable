@@ -69,7 +69,7 @@ int dt_lua_init_widget_stack(lua_State* L)
   dt_lua_init_widget_type(L,&stack_type,lua_stack,GTK_TYPE_STACK);
 
   lua_pushcfunction(L,active_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_stack, "active");
   return 0;
 }

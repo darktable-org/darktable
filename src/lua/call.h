@@ -18,34 +18,37 @@
 #ifndef DT_LUA_CALL_H
 #define DT_LUA_CALL_H
 
-/* naming conventions
- * doxxx : runs the xxx with pcall conventions (pops args from stack,put result on stack, returns an error
- * code)
-     * file : takes a file name and runs it
-     * chunk : function is on the stack below the args
-     * string : runs a string as a command
- * doxxx_silent : same but errors go to dt_console_log and nil is put as a result on the stack returns the number of results
- * doxxx_raise : same but a lua error is raised returns the number of results
- * doxxx_later : call will be dispatched to a secondary job, returns immediately, can't return values, will treat errors in secondary thread as "silent"
- * doxxx_async : similar to doxxx_later, but has a different API allowing it to be called without the lua lock
-   function : the lua function to call
-   extra :  extra parameter to pusher
-   ... : extra parameters for the final call, each param becomes three param in ...
-         * the type of the type descriptor as a dt_lua_async_call_arg_type
-         * the type descriptor itself (int or string, depending on the previous param
-         * a gpointer with the value (GINT_TO_POINTER is fine)
-       list must finish with LUA_ASYNC_DONE
- */
-int dt_lua_do_chunk(lua_State *L, int nargs, int nresults);
-int dt_lua_do_chunk_silent(lua_State *L, int nargs, int nresults);
-int dt_lua_do_chunk_raise(lua_State *L, int nargs, int nresults);
-void dt_lua_do_chunk_later_internal(const char * function, int line,lua_State *L, int nargs);
-#define dt_lua_do_chunk_later(L,nargs) dt_lua_do_chunk_later_internal(__FUNCTION__,__LINE__,L,nargs)
 
-int dt_lua_dostring(lua_State *L, const char *command, int nargs, int nresults);
-int dt_lua_dostring_silent(lua_State *L, const char *command, int nargs, int nresults);
+/*
+   pop a function from the top of the stack, push a new version on the stack
+   that will be called from the GTK main thread
+   */
+#define dt_lua_gtk_wrap(L) dt_lua_gtk_wrap_internal(L,__FUNCTION__,__LINE__)
+void dt_lua_gtk_wrap_internal(lua_State*L,const char* function, int line);
 
-int dt_lua_dofile_silent(lua_State *L, const char *filename, int nargs, int nresults);
+/*
+   similar to pcall, but in case of error, it will call dt_lua_check_print_error with a proper stack
+   */
+int dt_lua_treated_pcall(lua_State*L, int nargs, int nresults);
+/* 
+   deal wil lua_pcall calling convention
+   * print the string on the top of L if result != LUA_OK
+   * pop the error string
+   * return result 
+   */
+int dt_lua_check_print_error(lua_State* L, int result); 
+
+
+/*
+   call a function asynchronously
+   a callback+data can be provided, the callback will be called when the job is finished
+   if no callback is provided, a message will be printed in case of error
+   */
+
+typedef void (*dt_lua_finish_callback)(lua_State* L,int result,void* data);
+
+void dt_lua_async_call_internal(const char * function, int line,lua_State *L, int nargs,int nresults,dt_lua_finish_callback cb, void*data);
+#define dt_lua_async_call(L,nargs,nresults,cb,data) dt_lua_async_call_internal(__FUNCTION__,__LINE__,L,nargs,nresults,cb,data)
 
 
 /*
@@ -68,17 +71,14 @@ typedef enum {
   LUA_ASYNC_TYPENAME_WITH_FREE,
   LUA_ASYNC_DONE
 } dt_lua_async_call_arg_type;
-void dt_lua_do_chunk_async_internal(const char * call_function, int line, lua_CFunction function,dt_lua_async_call_arg_type arg_type,...);
-#define dt_lua_do_chunk_async(L,arg,...) dt_lua_do_chunk_async_internal(__FUNCTION__,__LINE__,L,arg,__VA_ARGS__)
-
-/*
-   call a lua function that is its upvalue, with an unchanged stack
-   the function is called within the gtk thread so it
-   IS NOT ALLOWED TO CALL USER CODE AND SHOULD BE FAST
+void dt_lua_async_call_alien_internal(const char * call_function, int line,lua_CFunction function,int nresults,dt_lua_finish_callback cb, void*data, dt_lua_async_call_arg_type arg_type,...);
+#define dt_lua_async_call_alien(fn,nresults,cb,data,arg,...) dt_lua_async_call_alien_internal(__FUNCTION__,__LINE__,fn,nresults,cb,data,arg,__VA_ARGS__)
 
 
-   */
-int dt_lua_gtk_wrap(lua_State*L);
+
+void dt_lua_async_call_string_internal(const char* function, int line,const char* lua_string,int nresults,dt_lua_finish_callback cb, void*cb_data);
+#define dt_lua_async_call_string(lua_string,nresults,cb,data) dt_lua_async_call_string_internal(__FUNCTION__,__LINE__,lua_string,nresults,cb,data)
+
 
 
 

@@ -32,9 +32,9 @@
 // 1.6.1 was 2.0.2
 // 2.0.0 was 3.0.0
 /* incompatible API change */
-#define LUA_API_VERSION_MAJOR 3
+#define LUA_API_VERSION_MAJOR 4
 /* backward compatible API change */
-#define LUA_API_VERSION_MINOR 1
+#define LUA_API_VERSION_MINOR 0
 /* bugfixes that should not change anything to the API */
 #define LUA_API_VERSION_PATCH 0
 /* suffix for unstable version */
