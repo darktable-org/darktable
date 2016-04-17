@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+const double thrs = 200.0;
+
 enum
 {
   COLUMN_NAME,
@@ -449,7 +451,7 @@ static gboolean open_it8(dt_lut_t *self, const char *filename)
   return res;
 }
 
-static char *get_export_filename(dt_lut_t *self, char **name, char **description)
+static char *get_export_filename(dt_lut_t *self, const char *extension, char **name, char **description)
 {
   GtkWidget *name_entry = NULL, *description_entry = NULL;
   GtkWidget *dialog
@@ -463,48 +465,47 @@ static char *get_export_filename(dt_lut_t *self, char **name, char **description
   if(last_dot)
   {
     *last_dot = '\0';
-    char *new_filename = g_strconcat(reference_filename, ".dtstyle", NULL);
+    char *new_filename = g_strconcat(reference_filename, extension, NULL);
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), new_filename);
     g_free(reference_filename);
     g_free(new_filename);
   }
 
-  if(name && description)
-  {
-    GtkWidget *grid = gtk_grid_new();
-    gtk_grid_set_row_spacing(GTK_GRID(grid), 10);
-    gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), 10);
+  gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
 
-    name_entry = gtk_entry_new();
-    description_entry = gtk_entry_new();
+  *name = g_strdup(self->reference_filename);
+  *description = g_strdup_printf("fitted LUT style from %s", self->reference_filename);
+  char *name_dot = g_strrstr(*name, ".");
+  if(name_dot) *name_dot = '\0';
 
-    if(*name) gtk_entry_set_text(GTK_ENTRY(name_entry), *name);
-    if(*description) gtk_entry_set_text(GTK_ENTRY(description_entry), *description);
-    g_free(*name);
-    g_free(*description);
-    *name = NULL;
-    *description = NULL;
+  name_entry = gtk_entry_new();
+  description_entry = gtk_entry_new();
 
-    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("style name"), 0, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), name_entry, 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("style description"), 0, 1, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), description_entry, 1, 1, 1, 1);
+  gtk_entry_set_text(GTK_ENTRY(name_entry), *name);
+  gtk_entry_set_text(GTK_ENTRY(description_entry), *description);
+  g_free(*name);
+  g_free(*description);
+  *name = NULL;
+  *description = NULL;
 
-    gtk_widget_show_all(grid);
+  gtk_grid_attach(GTK_GRID(grid), gtk_label_new("style name"), 0, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), name_entry, 1, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), gtk_label_new("style description"), 0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), description_entry, 1, 1, 1, 1);
 
-    gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(dialog), grid);
-  }
+  gtk_widget_show_all(grid);
+
+  gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(dialog), grid);
 
   char *filename = NULL;
   int res = gtk_dialog_run(GTK_DIALOG(dialog));
   if(res == GTK_RESPONSE_ACCEPT)
   {
     filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-    if(name && description)
-    {
-      *name = g_strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
-      *description = g_strdup(gtk_entry_get_text(GTK_ENTRY(description_entry)));
-    }
+    *name = g_strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
+    *description = g_strdup(gtk_entry_get_text(GTK_ENTRY(description_entry)));
   }
   gtk_widget_destroy(dialog);
 
@@ -583,7 +584,7 @@ static void export_style(dt_lut_t *self, const char *filename, const char *name,
   fclose(fd);
 }
 
-static void export_raw(dt_lut_t *self, char *filename)
+static void export_raw(dt_lut_t *self, char *filename, char *name, char *description)
 {
   GHashTableIter table_iter;
   gpointer key, value;
@@ -591,10 +592,20 @@ static void export_raw(dt_lut_t *self, char *filename)
   FILE *fd = fopen(filename, "w");
   if(!fd) return;
 
+  GList *patch_names = NULL;
   char *gray_ramp_key = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(self->gray_ramp));
+
+  if(gray_ramp_key)
+    patch_names = g_hash_table_lookup(self->chart->patch_sets, gray_ramp_key);
+
+  const int num_gray = g_list_length(patch_names);
 
   // TODO: if no gray ramp was selected (for example with ColorChecker where the gray patches are not in their
   // own patch set) we should go over all patches and find those that look neutral and are in a row/column
+
+  fprintf(fd, "name;%s\n", name);
+  fprintf(fd, "description;%s\n", description);
+  fprintf(fd, "num_gray;%d\n", num_gray);
 
   fprintf(fd, "patch;L_source;a_source;b_source;L_reference;a_reference;b_reference\n");
   // iterate over all known patches in the chart, gray ramp last
@@ -621,9 +632,11 @@ static void export_raw_button_clicked_callback(GtkButton *button, gpointer user_
   dt_lut_t *self = (dt_lut_t *)user_data;
   if(!self->chart) return;
 
-  // TODO: propose a filename
-  char *filename = get_export_filename(self, NULL, NULL);
-  if(filename) export_raw(self, filename);
+  char *name = NULL, *description = NULL;
+  char *filename = get_export_filename(self, ".csv", &name, &description);
+  if(filename) export_raw(self, filename, name, description);
+  g_free(name);
+  g_free(description);
   g_free(filename);
 }
 
@@ -632,15 +645,8 @@ static void export_button_clicked_callback(GtkButton *button, gpointer user_data
   dt_lut_t *self = (dt_lut_t *)user_data;
   if(!self->tonecurve_encoded || !self->colorchecker_encoded) return;
 
-  // TODO: propose a filename
-  char *name = g_strdup(self->reference_filename),
-       *description = g_strdup_printf("fitted LUT style from %s", self->reference_filename);
-
-  char *name_dot = g_strrstr(name, ".");
-  if(name_dot) *name_dot = '\0';
-
-  char *filename = get_export_filename(self, &name, &description);
-
+  char *name = NULL, *description = NULL;
+  char *filename = get_export_filename(self, ".dtstyle", &name, &description);
   if(filename) export_style(self, filename, name, description);
   g_free(name);
   g_free(description);
@@ -671,7 +677,6 @@ static void add_patches_to_array(dt_lut_t *self, GList *patch_names, int *N, int
     target_a[*i] = reference_Lab[1];
     target_b[*i] = reference_Lab[2];
 
-    const double thrs = 200.0;
     const double deltaE = dt_colorspaces_deltaE_1976(source_Lab, reference_Lab);
     if(deltaE > thrs)
     {
@@ -790,6 +795,46 @@ static char *encode_colorchecker(int num, const double *point, const double **ta
   return dt_exif_xmp_encode_internal((uint8_t *)&params, sizeof(params), NULL, FALSE);
 }
 
+static void process_data(dt_lut_t *self, double *target_L, double *target_a, double *target_b,
+                         double *colorchecker_Lab, int N, int num_tonecurve, int sparsity)
+{
+  tonecurve_t tonecurve;
+  double cx[num_tonecurve], cy[num_tonecurve];
+  cx[0] = cy[0] = 0.0;                                   // fix black
+  cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
+  for(int k = 1; k < num_tonecurve - 1; k++)
+    cx[num_tonecurve - 1 - k] = colorchecker_Lab[3 * (N - num_tonecurve + 2 + k - 1)];
+  for(int k = 1; k < num_tonecurve - 1; k++) cy[num_tonecurve - 1 - k] = target_L[N - num_tonecurve + 2 + k - 1];
+  tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
+
+  for(int k = 0; k < num_tonecurve; k++)
+    fprintf(stderr, "L[%g] = %g\n", 100.0 * k / (num_tonecurve - 1.0f),
+            tonecurve_apply(&tonecurve, 100.0f * k / (num_tonecurve - 1.0f)));
+
+  // unapply from target data, we will apply it later in the pipe and want to match the colours only:
+  for(int k = 0; k < N; k++) target_L[k] = tonecurve_unapply(&tonecurve, target_L[k]);
+
+  const double *target[3] = { target_L, target_a, target_b };
+  double coeff_L[N + 4], coeff_a[N + 4], coeff_b[N + 4];
+  double *coeff[] = { coeff_L, coeff_a, coeff_b };
+  int perm[N + 4];
+  sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
+
+  int sp = 0;
+  int cperm[300];
+  for(int k = 0; k < sparsity; k++)
+    if(perm[k] < N) // skip polynomial parts
+      cperm[sp++] = perm[k];
+
+  fprintf(stderr, "found %d basis functions:\n", sp);
+  for(int k = 0; k < sp; k++)
+    fprintf(stderr, "perm[%d] = %d source %g %g %g\n", k, cperm[k], colorchecker_Lab[3 * cperm[k]],
+            colorchecker_Lab[3 * cperm[k] + 1], colorchecker_Lab[3 * cperm[k] + 2]);
+
+  self->tonecurve_encoded = encode_tonecurve(&tonecurve);
+  self->colorchecker_encoded = encode_colorchecker(sp, colorchecker_Lab, target, cperm);
+}
+
 static void process_button_clicked_callback(GtkButton *button, gpointer user_data)
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
@@ -841,43 +886,10 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
       add_patches_to_array(self, patch_names, &N, &i, target_L, target_a, target_b, colorchecker_Lab);
   }
 
-  tonecurve_t tonecurve;
-  double cx[num_tonecurve], cy[num_tonecurve];
-  cx[0] = cy[0] = 0.0;                                   // fix black
-  cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
-  for(int k = 1; k < num_tonecurve - 1; k++)
-    cx[num_tonecurve - 1 - k] = colorchecker_Lab[3 * (N - num_tonecurve + 2 + k - 1)];
-  for(int k = 1; k < num_tonecurve - 1; k++) cy[num_tonecurve - 1 - k] = target_L[N - num_tonecurve + 2 + k - 1];
-  tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
-
-  for(int k = 0; k < num_tonecurve; k++)
-    fprintf(stderr, "L[%g] = %g\n", 100.0 * k / (num_tonecurve - 1.0f),
-            tonecurve_apply(&tonecurve, 100.0f * k / (num_tonecurve - 1.0f)));
-
-  // unapply from target data, we will apply it later in the pipe and want to match the colours only:
-  for(int k = 0; k < N; k++) target_L[k] = tonecurve_unapply(&tonecurve, target_L[k]);
-
   int sparsity = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(self->number_patches)) + 4;
-  printf("%d\n", sparsity);
-  const double *target[3] = { target_L, target_a, target_b };
-  double coeff_L[N + 4], coeff_a[N + 4], coeff_b[N + 4];
-  double *coeff[] = { coeff_L, coeff_a, coeff_b };
-  int perm[N + 4];
-  sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
 
-  int sp = 0;
-  int cperm[300];
-  for(int k = 0; k < sparsity; k++)
-    if(perm[k] < N) // skip polynomial parts
-      cperm[sp++] = perm[k];
+  process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, num_tonecurve, sparsity);
 
-  fprintf(stderr, "found %d basis functions:\n", sp);
-  for(int k = 0; k < sp; k++)
-    fprintf(stderr, "perm[%d] = %d source %g %g %g\n", k, cperm[k], colorchecker_Lab[3 * cperm[k]],
-            colorchecker_Lab[3 * cperm[k] + 1], colorchecker_Lab[3 * cperm[k] + 2]);
-
-  self->tonecurve_encoded = encode_tonecurve(&tonecurve);
-  self->colorchecker_encoded = encode_colorchecker(sp, colorchecker_Lab, target, cperm);
   gtk_widget_set_sensitive(self->export_button, TRUE);
 
   free(target_L);
@@ -1089,97 +1101,6 @@ static GtkWidget *create_table(dt_lut_t *self)
   add_column(GTK_TREE_VIEW(self->treeview), "deltaE (2000)", COLUMN_DE_2000, COLUMN_DE_2000_FLOAT);
 
   return scrolled_window;
-}
-
-int main(int argc, char *argv[])
-{
-#ifdef _OPENMP
-  omp_set_num_threads(omp_get_num_procs());
-#endif
-
-  gtk_init(&argc, &argv);
-
-  if(argc > 4 || (argc == 2 && !strcmp(argv[1], "--help")))
-  {
-    fprintf(stderr, "Usage: %s [<input Lab pfm file>] [<cht file>] [<reference cgats/it8 or Lab pfm file>]\n",
-            argv[0]);
-    exit(1);
-  }
-
-  dt_lut_t *self = (dt_lut_t *)calloc(1, sizeof(dt_lut_t));
-
-  self->picked_source_patches = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
-
-  char *source_filename = argc >= 2 ? argv[1] : NULL;
-  char *cht_filename = argc >= 3 ? argv[2] : NULL;
-  char *it8_filename = NULL;
-  char *reference_filename = NULL;
-  if(argc >= 4)
-  {
-    char *upper_string = g_ascii_strup(argv[3], -1);
-    if(g_str_has_suffix(upper_string, ".PFM"))
-      reference_filename = argv[3];
-    else
-      it8_filename = argv[3];
-    g_free(upper_string);
-  }
-
-  // build the GUI
-  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  self->window = window;
-  gtk_window_set_title(GTK_WINDOW(window), "darktable LUT tool");
-  gtk_container_set_border_width(GTK_CONTAINER(window), 3);
-  gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
-  g_signal_connect(GTK_WINDOW(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
-  // resizeable container
-  GtkWidget *vpaned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
-  gtk_container_add(GTK_CONTAINER(window), vpaned);
-
-  // upper half
-  gtk_paned_pack1(GTK_PANED(vpaned), create_notebook(self), TRUE, FALSE);
-
-  // lower half
-  gtk_paned_pack2(GTK_PANED(vpaned), create_table(self), TRUE, FALSE);
-
-  gtk_widget_set_sensitive(self->cht_button, FALSE);
-  gtk_widget_set_sensitive(self->it8_button, FALSE);
-  gtk_widget_set_sensitive(self->reference_image_button, FALSE);
-  gtk_widget_set_sensitive(self->process_button, FALSE);
-  gtk_widget_set_sensitive(self->export_button, FALSE);
-  gtk_widget_set_sensitive(self->export_raw_button, FALSE);
-
-  gtk_widget_show_all(window);
-
-  // only load data now so it can fill widgets
-  if(source_filename && open_source_image(self, source_filename))
-  {
-    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(self->image_button), source_filename);
-    if(cht_filename && open_cht(self, cht_filename))
-    {
-      gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(self->cht_button), cht_filename);
-      if(it8_filename && open_it8(self, it8_filename))
-        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(self->it8_button), it8_filename);
-      if(reference_filename && open_reference_image(self, reference_filename))
-      {
-        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(self->reference_image_button), reference_filename);
-        gtk_combo_box_set_active(GTK_COMBO_BOX(self->reference_mode), 1);
-      }
-    }
-  }
-
-  gtk_main();
-
-  free(self->tonecurve_encoded);
-  free(self->colorchecker_encoded);
-  g_object_unref(self->model);
-  free_image(&self->source);
-  free_image(&self->reference);
-  free_chart(self->chart);
-  g_hash_table_unref(self->picked_source_patches);
-  free(self);
-
-  return 0;
 }
 
 static void add_column(GtkTreeView *treeview, const char *title, int column_id, int sort_column)
@@ -1489,6 +1410,229 @@ static void image_lab_to_xyz(float *image, const int width, const int height)
       float *pixel = &image[(x + y * width) * 3];
       dt_Lab_to_XYZ(pixel, pixel);
     }
+}
+
+static int main_gui(dt_lut_t *self, int argc, char *argv[])
+{
+  gtk_init(&argc, &argv);
+
+  char *source_filename = argc >= 2 ? argv[1] : NULL;
+  char *cht_filename = argc >= 3 ? argv[2] : NULL;
+  char *it8_filename = NULL;
+  char *reference_filename = NULL;
+  if(argc >= 4)
+  {
+    char *upper_string = g_ascii_strup(argv[3], -1);
+    if(g_str_has_suffix(upper_string, ".PFM"))
+      reference_filename = argv[3];
+    else
+      it8_filename = argv[3];
+    g_free(upper_string);
+  }
+
+  // build the GUI
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  self->window = window;
+  gtk_window_set_title(GTK_WINDOW(window), "darktable LUT tool");
+  gtk_container_set_border_width(GTK_CONTAINER(window), 3);
+  gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
+  g_signal_connect(GTK_WINDOW(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  // resizeable container
+  GtkWidget *vpaned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+  gtk_container_add(GTK_CONTAINER(window), vpaned);
+
+  // upper half
+  gtk_paned_pack1(GTK_PANED(vpaned), create_notebook(self), TRUE, FALSE);
+
+  // lower half
+  gtk_paned_pack2(GTK_PANED(vpaned), create_table(self), TRUE, FALSE);
+
+  gtk_widget_set_sensitive(self->cht_button, FALSE);
+  gtk_widget_set_sensitive(self->it8_button, FALSE);
+  gtk_widget_set_sensitive(self->reference_image_button, FALSE);
+  gtk_widget_set_sensitive(self->process_button, FALSE);
+  gtk_widget_set_sensitive(self->export_button, FALSE);
+  gtk_widget_set_sensitive(self->export_raw_button, FALSE);
+
+  gtk_widget_show_all(window);
+
+  // only load data now so it can fill widgets
+  if(source_filename && open_source_image(self, source_filename))
+  {
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(self->image_button), source_filename);
+    if(cht_filename && open_cht(self, cht_filename))
+    {
+      gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(self->cht_button), cht_filename);
+      if(it8_filename && open_it8(self, it8_filename))
+        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(self->it8_button), it8_filename);
+      if(reference_filename && open_reference_image(self, reference_filename))
+      {
+        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(self->reference_image_button), reference_filename);
+        gtk_combo_box_set_active(GTK_COMBO_BOX(self->reference_mode), 1);
+      }
+    }
+  }
+
+  gtk_main();
+
+  return 0;
+}
+
+static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr, double **target_a_ptr,
+                     double **target_b_ptr, double **source_Lab_ptr, int *num_gray, char **name, char **description)
+{
+  FILE *f = fopen(filename, "rb");
+  if(!f) return 0;
+  int N = 0;
+  int r = 0;
+  while(fscanf(f, "%*[^\n]\n") != EOF) N++;
+  fseek(f, 0, SEEK_SET);
+
+  if(N <= 1) return 0;
+
+  // header lines
+  char key[16], value[256];
+  fscanf(f, "%15[^;];%255[^\n]\n", key, value);
+  if(g_strcmp0(key, "name"))
+  {
+    fprintf(stderr, "error: expected `name' in the first line\n");
+    fclose(f);
+    return 0;
+  }
+  *name = g_strdup(value);
+  N--;
+
+  fscanf(f, "%15[^;];%255[^\n]\n", key, value);
+  if(g_strcmp0(key, "description"))
+  {
+    fprintf(stderr, "error: expected `description' in the second line\n");
+    fclose(f);
+    return 0;
+  }
+  *description = g_strdup(value);
+  N--;
+
+  fscanf(f, "%15[^;];%d\n", key, num_gray);
+  if(g_strcmp0(key, "num_gray"))
+  {
+    fprintf(stderr, "error: missing num_gray in csv\n");
+    fclose(f);
+    return 0;
+  }
+  N--;
+
+  // skip the column title line
+  fscanf(f, "%*[^\n]\n");
+  N--;
+
+  double *target_L = (double *)calloc(sizeof(double), (N + 4));
+  double *target_a = (double *)calloc(sizeof(double), (N + 4));
+  double *target_b = (double *)calloc(sizeof(double), (N + 4));
+  double *source_Lab = (double *)calloc(3 * sizeof(double), N);
+  *target_L_ptr = target_L;
+  *target_a_ptr = target_a;
+  *target_b_ptr = target_b;
+  *source_Lab_ptr = source_Lab;
+
+  for(int i = 0; i < N; i++)
+  {
+    char patchname[512];
+    r += fscanf(f, "%[^;];%lg;%lg;%lg;%lg;%lg;%lg\n", patchname, source_Lab + 3 * i, source_Lab + 3 * i + 1,
+                source_Lab + 3 * i + 2, target_L + i, target_a + i, target_b + i);
+    double d[3] = { target_L[i], target_a[i], target_b[i] };
+    if(sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]) > thrs)
+    {
+      fprintf(stderr, "warning: ignoring patch %s with large difference deltaE %g!\n", patchname,
+              sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
+      fprintf(stderr, "      %g %g %g -- %g %g %g\n", source_Lab[3 * i + 0], source_Lab[3 * i + 1],
+              source_Lab[3 * i + 2], target_L[i], target_a[i], target_b[i]);
+      N--; // ignore this patch.
+      i--;
+    }
+  }
+
+  if(r == 0) fprintf(stderr, "just keeping compiler happy\n");
+  fclose(f);
+  return N;
+}
+
+static int main_csv(dt_lut_t *self, int argc, char *argv[])
+{
+  const char *filename_csv = argv[2];
+  const int num_patches = atoi(argv[3]);
+  const char *filename_style = argv[4];
+
+  int sparsity = num_patches + 4;
+
+  // parse the csv
+  double *target_L, *target_a, *target_b, *colorchecker_Lab;
+  int num_tonecurve;
+  char *name, *description;
+  int N = parse_csv(self, filename_csv, &target_L, &target_a, &target_b, &colorchecker_Lab, &num_tonecurve, &name,
+                    &description);
+
+  if(N == 0)
+  {
+    fprintf(stderr, "error parsing `%s', giving up\n", filename_csv);
+    return 1;
+  }
+
+  process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, num_tonecurve, sparsity);
+
+  export_style(self, filename_style, name, description);
+
+  free(target_L);
+  free(target_a);
+  free(target_b);
+  free(colorchecker_Lab);
+  free(name);
+  free(description);
+
+  return 0;
+}
+
+static void show_usage(const char *exe)
+{
+  fprintf(stderr, "Usage: %1$s [<input Lab pfm file>] [<cht file>] [<reference cgats/it8 or Lab pfm file>]\n"
+                  "       %1$s --csv <csv file> <number patches> <output dtstyle file>\n",
+          exe);
+}
+
+int main(int argc, char *argv[])
+{
+#ifdef _OPENMP
+  omp_set_num_threads(omp_get_num_procs());
+#endif
+
+  int res = 1;
+  dt_lut_t *self = (dt_lut_t *)calloc(1, sizeof(dt_lut_t));
+  self->picked_source_patches = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
+
+  if(argc >= 2 && !strcmp(argv[1], "--help"))
+    show_usage(argv[0]);
+  else if(argc >= 2 && !g_strcmp0(argv[1], "--csv"))
+  {
+    if(argc != 5)
+      show_usage(argv[0]);
+    else
+      res = main_csv(self, argc, argv);
+  }
+  else if(argc <= 4)
+    res = main_gui(self, argc, argv);
+  else
+    show_usage(argv[0]);
+
+  if(self->model) g_object_unref(self->model);
+  if(self->picked_source_patches) g_hash_table_unref(self->picked_source_patches);
+  free_image(&self->source);
+  free_image(&self->reference);
+  free_chart(self->chart);
+  free(self->tonecurve_encoded);
+  free(self->colorchecker_encoded);
+  free(self);
+
+  return res;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
