@@ -127,12 +127,12 @@ void draw_color_boxes_outline(cairo_t *cr, point_t *bb, chart_t *chart)
   _draw_boxes(cr, bb, chart->box_table);
 }
 
-void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float line_width, gboolean colored)
+void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float shrink, float line_width, gboolean colored)
 {
   GHashTableIter table_iter;
   gpointer key, value;
 
-  float x_shrink = chart->box_shrink / chart->bb_w, y_shrink = chart->box_shrink / chart->bb_h;
+  float x_shrink = shrink * chart->box_shrink / chart->bb_w, y_shrink = shrink * chart->box_shrink / chart->bb_h;
 
   cairo_set_line_width(cr, line_width);
   cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);

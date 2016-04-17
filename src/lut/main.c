@@ -52,7 +52,7 @@ typedef struct dt_lut_t
   // gtk gui
   GtkWidget *window, *image_button, *cht_button, *it8_button, *reference_image_button, *reference_it8_box,
       *reference_image_box, *process_button, *export_button, *export_raw_button, *reference_mode, *gray_ramp,
-      *number_patches;
+      *number_patches, *source_shrink, *reference_shrink;
   GtkWidget *treeview;
   GtkTreeModel *model;
 
@@ -72,7 +72,7 @@ static void init_image(dt_lut_t *self, image_t *image, GCallback motion_cb);
 static void image_lab_to_xyz(float *image, const int width, const int height);
 static void map_boundingbox_to_view(image_t *image, point_t *bb);
 static point_t map_point_to_view(image_t *image, point_t p);
-static void get_xyz_sample_from_image(const image_t *const image, box_t *box, float *xyz);
+static void get_xyz_sample_from_image(const image_t *const image, float shrink, box_t *box, float *xyz);
 static void add_column(GtkTreeView *treeview, const char *title, int column_id, int sort_column);
 static void update_table(dt_lut_t *self);
 static void init_table(dt_lut_t *self);
@@ -83,7 +83,7 @@ static void collect_reference_patches(dt_lut_t *self);
 static void collect_reference_patches_foreach(gpointer key, gpointer value, gpointer user_data);
 static box_t *find_patch(GHashTable *table, gpointer key);
 static void get_boundingbox(const image_t *const image, point_t *bb);
-static box_t get_sample_box(chart_t *chart, box_t *outer_box);
+static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink);
 static void get_corners(point_t *bb, box_t *box, point_t *corners);
 static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start, int *y_start,
                              int *x_end, int *y_end);
@@ -137,7 +137,7 @@ static gboolean draw_image_callback(GtkWidget *widget, cairo_t *cr, gpointer use
 
   stroke_boxes(cr, 1.0);
 
-  draw_color_boxes_inside(cr, bb, chart, 2.0, image->draw_colored);
+  draw_color_boxes_inside(cr, bb, chart, image->shrink, 2.0, image->draw_colored);
 
   return FALSE;
 }
@@ -382,6 +382,10 @@ static gboolean open_cht(dt_lut_t *self, const char *filename)
     for(GList *iter = patch_sets; iter; iter = g_list_next(iter))
       gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(self->gray_ramp), NULL, (char *)iter->data);
     g_list_free(patch_sets);
+    self->source.shrink = self->chart->box_shrink;
+    self->reference.shrink = self->chart->box_shrink;
+    gtk_range_set_value(GTK_RANGE(self->source_shrink), 1.0);
+    gtk_range_set_value(GTK_RANGE(self->reference_shrink), 1.0);
   }
 
   gtk_widget_set_sensitive(self->it8_button, res);
@@ -925,6 +929,14 @@ static void gray_ramp_changed_callback(GtkComboBox *widget, gpointer user_data)
   }
 }
 
+static void shrink_changed_callback(GtkRange *range, gpointer user_data)
+{
+  image_t *image = (image_t *)user_data;
+  image->shrink = gtk_range_get_value(range);
+
+  gtk_widget_queue_draw(image->drawing_area);
+}
+
 static GtkWidget *create_notebook_page_source(dt_lut_t *self)
 {
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -939,10 +951,16 @@ static GtkWidget *create_notebook_page_source(dt_lut_t *self)
       = gtk_file_chooser_button_new("description of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
   g_signal_connect(cht_button, "file-set", G_CALLBACK(cht_changed_callback), self);
 
+  GtkWidget *source_shrink = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.5, 2.0, 0.01);
+  gtk_scale_set_value_pos(GTK_SCALE(source_shrink), GTK_POS_RIGHT);
+  g_signal_connect(source_shrink, "value-changed", G_CALLBACK(shrink_changed_callback), &self->source);
+
   gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("image:"), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), image_button, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("chart:"), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), cht_button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("size:"), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), source_shrink, TRUE, TRUE, 0);
 
   init_image(self, &self->source, G_CALLBACK(motion_notify_callback_source));
   self->source.draw_colored = TRUE;
@@ -952,6 +970,7 @@ static GtkWidget *create_notebook_page_source(dt_lut_t *self)
 
   self->image_button = image_button;
   self->cht_button = cht_button;
+  self->source_shrink = source_shrink;
 
   return page;
 }
@@ -977,6 +996,10 @@ static GtkWidget *create_notebook_page_reference(dt_lut_t *self)
       = gtk_file_chooser_button_new("image of a color chart", GTK_FILE_CHOOSER_ACTION_OPEN);
   g_signal_connect(reference_image_button, "file-set", G_CALLBACK(ref_image_changed_callback), self);
 
+  GtkWidget *reference_shrink = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.5, 2.0, 0.01);
+  gtk_scale_set_value_pos(GTK_SCALE(reference_shrink), GTK_POS_RIGHT);
+  g_signal_connect(reference_shrink, "value-changed", G_CALLBACK(shrink_changed_callback), &self->reference);
+
   gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("mode:"), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), reference_mode, TRUE, TRUE, 0);
 
@@ -988,6 +1011,8 @@ static GtkWidget *create_notebook_page_reference(dt_lut_t *self)
   GtkWidget *reference_image_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
   gtk_box_pack_start(GTK_BOX(reference_image_box), gtk_label_new("reference image:"), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(reference_image_box), reference_image_button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(reference_image_box), gtk_label_new("size:"), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(reference_image_box), reference_shrink, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), reference_image_box, TRUE, TRUE, 0);
 
   init_image(self, &self->reference, G_CALLBACK(motion_notify_callback_reference));
@@ -1008,6 +1033,7 @@ static GtkWidget *create_notebook_page_reference(dt_lut_t *self)
   self->reference_image_button = reference_image_button;
   self->reference_it8_box = reference_it8_box;
   self->reference_image_box = reference_image_box;
+  self->reference_shrink = reference_shrink;
 
   return page;
 }
@@ -1228,7 +1254,7 @@ static void collect_source_patches_foreach(gpointer key, gpointer value, gpointe
 
   box_t *patch = find_patch(self->picked_source_patches, key);
 
-  get_xyz_sample_from_image(&self->source, box, xyz);
+  get_xyz_sample_from_image(&self->source, self->source.shrink, box, xyz);
 
   set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
 }
@@ -1239,7 +1265,7 @@ static void collect_reference_patches_foreach(gpointer key, gpointer value, gpoi
   box_t *patch = (box_t *)value;
   float xyz[3];
 
-  get_xyz_sample_from_image(&self->reference, patch, xyz);
+  get_xyz_sample_from_image(&self->reference, self->reference.shrink, patch, xyz);
 
   set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
 }
@@ -1256,7 +1282,7 @@ static box_t *find_patch(GHashTable *table, gpointer key)
   return patch;
 }
 
-static void get_xyz_sample_from_image(const image_t *const image, box_t *box, float *xyz)
+static void get_xyz_sample_from_image(const image_t *const image, float shrink, box_t *box, float *xyz)
 {
   point_t bb[4];
   point_t corners[4];
@@ -1268,7 +1294,7 @@ static void get_xyz_sample_from_image(const image_t *const image, box_t *box, fl
   if(!box) return;
 
   get_boundingbox(image, bb);
-  inner_box = get_sample_box(*(image->chart), box);
+  inner_box = get_sample_box(*(image->chart), box, shrink);
   get_corners(bb, &inner_box, corners);
   get_pixel_region(image, corners, &x_start, &y_start, &x_end, &y_end);
 
@@ -1319,10 +1345,10 @@ static void get_boundingbox(const image_t *const image, point_t *bb)
   }
 }
 
-static box_t get_sample_box(chart_t *chart, box_t *outer_box)
+static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink)
 {
   box_t inner_box = *outer_box;
-  float x_shrink = chart->box_shrink / chart->bb_w, y_shrink = chart->box_shrink / chart->bb_h;
+  float x_shrink = shrink * chart->box_shrink / chart->bb_w, y_shrink = shrink * chart->box_shrink / chart->bb_h;
   inner_box.p.x += x_shrink;
   inner_box.p.y += y_shrink;
   inner_box.w -= 2.0 * x_shrink;
