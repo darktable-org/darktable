@@ -145,20 +145,22 @@ GtkTable {
   padding:0;
 }
 
-#header_label,#darktable_label,#view_label {
+#header_label,#darktable_label,#view_label,#view_dropdown *
+{
   color: shade(@fg_color, 0.7);
   background-color: @bg_color;
-  font-size: 1.7em;
+  font-size: 10pt;
   margin:0;
   border:0;
   padding:0;
 }
 
+#view_dropdown *:hover
 #view_label:hover {
   color: shade(@fg_color, 0.8);
 }
 
-#view_dropdown:selected *,
+#view_dropdown *:selected,
 #view_label:selected {
   color: shade(@fg_color, 0.9);
 }
@@ -168,12 +170,6 @@ GtkTable {
   color: shade(@fg_color, 0.7);
   margin: 0;
   padding: 0;
-  font-size: 1.1em;
-}
-
-#view_dropdown .button *
-{
-  font-size: 1.25em;
 }
 
 #view_dropdown *:disabled
@@ -314,9 +310,6 @@ entry:selected {
 scale,
 scrollbar
 {
-  -GtkRange-slider-width: 11;
-  -GtkRange-trough-border: -3;
-  -GtkScale-slider-length: 11;
   margin:0px;
 }
 
@@ -513,10 +506,10 @@ GtkNotebook GtkMenuItem:hover
 }
 
 /* empty space at top/bottom of sidepanels when scrolled */
-.undershoot.top,
-.undershoot.bottom,
-.undershoot.left,
-.undershoot.right
+undershoot.top,
+undershoot.bottom,
+undershoot.left,
+undershoot.right
 {
   background: none;
 }
