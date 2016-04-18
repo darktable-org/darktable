@@ -547,67 +547,76 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
 
     for(int i = 0; i < roi_out->width; i++)
     {
-      if(i == 0 || i == roi_out->width - 1 || j == roi_out->height - 1)
+      if(i < 2 || i > roi_out->width - 3 || j < 2 || j > roi_out->height - 3)
       {
         // fast path for border
         out[0] = MIN(clip, in[0]);
       }
       else
       {
-        int clipped = 0;
-
-        // if at top left of a 2x2 green square, offset so still
-        // sample red and blue
-        int offs = 0;
-        if(FCxtrans(j, i, roi_in, xtrans) == 1 &&
-           FCxtrans(j + 1, i, roi_in, xtrans) == 1 &&
-           FCxtrans(j, i + 1, roi_in, xtrans) == 1)
+        // If there is a 3x3 block touching the current pixel which
+        // has no clipping, then there is no need to reconstruct the
+        // current pixel. This check avoids zippering in edge
+        // transitions from clipped to unclipped areas. The X-Trans
+        // sensor seems prone to this, unlike Bayer, due to its
+        // irregular pattern.
+        int clipped = 1;
+        if (in[0] <= clip)
         {
-          offs = -1;
-        }
-
-        // sample 2x2 block such that will always have 2 green values
-        // and one each of red and blue
-        float R = 0.0f, Gmin = FLT_MAX, Gmax = -FLT_MAX, B = 0.0f;
-
-        for(int jj = 0; jj <= 1; jj++)
-        {
-          for(int ii = offs; ii <= 1 + offs; ii++)
+          for(int offset_j = -2; offset_j <= 0; offset_j++)
           {
-            const float val = in[(size_t)jj * roi_in->width + ii];
-            clipped = (clipped || (val > clip));
-            const int c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
-            switch(c)
+            for(int offset_i = -2; offset_i <= 0; offset_i++)
             {
-              case 0:
-                R = val;
-                break;
-              case 1:
-                Gmin = MIN(Gmin, val);
-                Gmax = MAX(Gmax, val);
-                break;
-              case 2:
-                B = val;
-                break;
+              if (clipped) {
+                clipped = 0;
+                for(int jj = offset_j; jj <= offset_j + 2; jj++)
+                {
+                  for(int ii = offset_i; ii <= offset_i + 2; ii++)
+                  {
+                    const float val = in[(size_t)jj * roi_in->width + ii];
+                    clipped = (clipped || (val > clip));
+                  }
+                }
+              }
             }
           }
         }
 
         if(clipped)
         {
-          const float Ro = MIN(R, clip);
-          const float Go = MIN(Gmin, clip);
-          const float Bo = MIN(B, clip);
+          float mean[3] = { 0.0f, 0.0f, 0.0f };
+          int cnt[3] = { 0, 0, 0 };
+          float RGBmax[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
-          const float L = (R + Gmax + B) / 3.0f;
+          for(int jj = -1; jj <= 1; jj++)
+          {
+            for(int ii = -1; ii <= 1; ii++)
+            {
+              const float val = in[(size_t)jj * roi_in->width + ii];
+              const int c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
+              mean[c] += val;
+              cnt[c]++;
+              RGBmax[c] = MAX(RGBmax[c], val);
+            }
+          }
 
-          float C = SQRT3 * (R - Gmax);
-          float H = 2.0f * B - Gmax - R;
+          const float Ro = MIN(mean[0]/cnt[0], clip);
+          const float Go = MIN(mean[1]/cnt[1], clip);
+          const float Bo = MIN(mean[2]/cnt[2], clip);
+
+          const float R = RGBmax[0];
+          const float G = RGBmax[1];
+          const float B = RGBmax[2];
+
+          const float L = (R + G + B) / 3.0f;
+
+          float C = SQRT3 * (R - G);
+          float H = 2.0f * B - G - R;
 
           const float Co = SQRT3 * (Ro - Go);
           const float Ho = 2.0f * Bo - Go - Ro;
 
-          if(R != Gmax && Gmax != B)
+          if(R != G && G != B)
           {
             const float ratio = sqrtf((Co * Co + Ho * Ho) / (C * C + H * H));
             C *= ratio;
