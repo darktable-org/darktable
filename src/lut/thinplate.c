@@ -41,11 +41,18 @@ static inline double thinplate_kernel(const double *x, const double *y)
   return r * r * log(MAX(1e-10, r));
 }
 
-static inline double compute_error(const tonecurve_t *c, const double **target, const double *residual_L,
-                                   const double *residual_a, const double *residual_b, const int wd)
+static inline double compute_error(
+    const tonecurve_t *c,
+    const double **target,
+    const double *residual_L,
+    const double *residual_a,
+    const double *residual_b,
+    const int wd,
+    double *maxerr)
 {
   // compute error:
   double err = 0.0;
+  double merr = 0.0;
   for(int i = 0; i < wd; i++)
   {
 #ifdef EXACT
@@ -54,10 +61,13 @@ static inline double compute_error(const tonecurve_t *c, const double **target, 
     const double L1 = tonecurve_apply(c, Lt + residual_L[i]);
     float Lab0[3] = { L0, target[1][i], target[2][i] };
     float Lab1[3] = { L1, target[1][i], target[2][i] };
-    err += dt_colorspaces_deltaE_2000(Lab0, Lab1);
+    const double localerr = dt_colorspaces_deltaE_2000(Lab0, Lab1);
+    err += localerr;
 #else
-    err += (residual_L[i] * residual_L[i] + residual_a[i] * residual_a[i] + residual_b[i] * residual_b[i]) / wd;
+    const double localerr = sqrt(residual_L[i] * residual_L[i] + residual_a[i] * residual_a[i] + residual_b[i] * residual_b[i]);
+    err += localerr/wd;
 #endif
+    merr = MAX(merr, localerr);
 
 #if 0
 #if 0   // max rmse
@@ -82,7 +92,8 @@ static inline double compute_error(const tonecurve_t *c, const double **target, 
 #endif
 #endif
   }
-  return sqrt(err);
+  if(maxerr) *maxerr = merr;
+  return err;
 }
 
 static inline int solve(double *As, double *w, double *v, const double *b, double *coeff, int wd, int s, int S)
@@ -204,7 +215,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
         }
 
         // compute error:
-        const double err = compute_error(curve, target, r[0], r[1], r[2], wd);
+        const double err = compute_error(curve, target, r[0], r[1], r[2], wd, 0);
         dot = 1. / err; // searching for smallest error or largest dot
 #else                   // use dot product
         for(int ch = 0; ch < dim; ch++)
@@ -233,13 +244,13 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
       norm[maxcol] = 0.0;
     }
     else
-    { // already have S columns, now do the replacement:
+    { // already have chosen S-4 patches as columns, now do the replacement:
       int mincol = 0;
       double minerr = FLT_MAX;
-      for(int t = 0; t < S; t++)
+      for(int t = 0; t <= sparsity; t++)
       {
         // find already chosen column t with min error reduction when replacing
-        // permutation[t] = maxcol
+        // XXX do we set perm[t] above, ever? for t=S-1?
         int oldperm = permutation[t];
         permutation[t] = maxcol;
 #ifdef EXACT
@@ -261,7 +272,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
         }
 
         // compute error:
-        const double err = compute_error(curve, target, r[0], r[1], r[2], wd);
+        const double err = compute_error(curve, target, r[0], r[1], r[2], wd, 0);
 #else
         double dot = 0.0;
         for(int ch = 0; ch < dim; ch++)
@@ -282,19 +293,24 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
           minerr = err;
         }
         permutation[t] = oldperm;
+        // fprintf(stderr, "perm %d %d\n", t, oldperm);
       }
-      if(minerr >= 1. / maxdot) return sparsity + 1;
-      // replace column
-      permutation[mincol] = maxcol;
-// reset norm[] of discarded column to something > 0
+      // if(minerr >= 1. / maxdot) return sparsity + 1;
+      if(minerr < 1. / maxdot)
+      {
+        fprintf(stderr, "replacing %d <- %d\n", mincol, maxcol);
+        // replace column
+        permutation[mincol] = maxcol;
+        // reset norm[] of discarded column to something > 0
 #ifdef EXACT
-      norm[mincol] = 1.0;
+        norm[mincol] = 1.0;
 #else
-      norm[mincol] = 0.0;
-      for(int j = 0; j < wd; j++) norm[mincol] += A[j * wd + mincol] * A[j * wd + mincol];
-      norm[mincol] = 1.0 / sqrt(norm[mincol]);
+        norm[mincol] = 0.0;
+        for(int j = 0; j < wd; j++) norm[mincol] += A[j * wd + mincol] * A[j * wd + mincol];
+        norm[mincol] = 1.0 / sqrt(norm[mincol]);
 #endif
-      norm[maxcol] = 0.0;
+        norm[maxcol] = 0.0;
+      }
     }
 
 #ifdef EXACT
@@ -319,12 +335,15 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
       }
     }
 
-    const double err = compute_error(curve, target, r[0], r[1], r[2], wd);
+    double maxerr = 0.0;
+    const double err = compute_error(curve, target, r[0], r[1], r[2], wd, &maxerr);
 #endif
     // residual is max CIE76 delta E now
     // everything < 2 is usually considired a very good approximation:
-    fprintf(stderr, "rank %d/%d error DE %g\n", sparsity + 1, patches, err);
-    if(s >= S && err >= olderr) return sparsity + 1;
+    fprintf(stderr, "rank %d/%d avg DE %g max DE %g\n", sparsity + 1, patches, err, maxerr);
+    if(s >= S && err >= olderr)
+      fprintf(stderr, "error increased!\n");
+      // return sparsity + 1;
     // if(err < 2.0) return sparsity+1;
     olderr = err;
   }
