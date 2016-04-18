@@ -108,8 +108,13 @@ button
 #iop-plugin-ui * button:hover,
 button:hover
 {
-  border-style:none;
   background-color: shade(@selected_bg_color, 1.7);
+}
+#lib-plugin-ui * button:${GTK_CSS_CLASS},
+#iop-plugin-ui * button:${GTK_CSS_CLASS},
+button:${GTK_CSS_CLASS}
+{
+  background-color: shade(@selected_bg_color, 1.4);
 }
 
 /* frame around plugin boxes */
