@@ -476,7 +476,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
 static void window_show(GtkWidget *w, gpointer user_data)
 {
   gdk_seat_grab(gdk_display_get_default_seat(gtk_widget_get_display(w)), gtk_widget_get_window(w),
-                GDK_SEAT_CAPABILITY_ALL, FALSE, 0, 0, 0, 0);
+                GDK_SEAT_CAPABILITY_ALL, TRUE, 0, 0, 0, 0);
 }
 
 static void dt_bh_init(DtBauhausWidget *class)
