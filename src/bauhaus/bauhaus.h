@@ -117,6 +117,7 @@ typedef void (*dt_bauhaus_quad_paint_f)(cairo_t *cr, gint x, gint y, gint w, gin
 // our new widget and its private members, inheriting from drawing area:
 typedef struct dt_bauhaus_widget_t
 {
+  // gtk base widget
   GtkDrawingArea parent;
   // which type of control
   dt_bauhaus_type_t type;
