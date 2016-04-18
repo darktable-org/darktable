@@ -1693,6 +1693,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   if(w->module) dt_iop_request_focus(w->module);
 
   int offset = 0;
+  GtkAllocation tmp;
+  gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
 
   gtk_widget_realize(darktable.bauhaus->popup_window);
   switch(darktable.bauhaus->current->type)
@@ -1701,11 +1703,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
     {
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       d->oldpos = d->pos;
-
-      GtkAllocation tmp;
-      gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
-      gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, tmp.width);
-      gtk_widget_set_size_request(darktable.bauhaus->popup_window, tmp.width, tmp.width);
+      tmp.height = tmp.width;
       _start_cursor(6);
       break;
     }
@@ -1715,13 +1713,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       if(w->combo_populate) w->combo_populate(&w->module);
       // comboboxes change immediately
       darktable.bauhaus->change_active = 1;
-      GtkAllocation tmp;
-      gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-      gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width,
-                                  (tmp.height + get_line_space()) * d->num_labels);
-      gtk_widget_set_size_request(darktable.bauhaus->popup_window, tmp.width,
-                                  (tmp.height + get_line_space()) * d->num_labels);
+      tmp.height = (tmp.height + get_line_space()) * d->num_labels;
       GtkAllocation allocation_w;
       gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
       const int ht = allocation_w.height;
@@ -1748,6 +1741,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   GdkWindow *window = gtk_widget_get_window(darktable.bauhaus->popup_window);
   if(window) gdk_window_move(window, wx, wy);
   gtk_window_move(GTK_WINDOW(darktable.bauhaus->popup_window), wx, wy);
+  gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, tmp.height);
+  gtk_widget_set_size_request(darktable.bauhaus->popup_window, tmp.width, tmp.height);
   gtk_widget_show_all(darktable.bauhaus->popup_window);
   gtk_widget_grab_focus(darktable.bauhaus->popup_area);
 }
