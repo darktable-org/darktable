@@ -1694,6 +1694,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
 
   int offset = 0;
 
+  gtk_widget_realize(darktable.bauhaus->popup_window);
   switch(darktable.bauhaus->current->type)
   {
     case DT_BAUHAUS_SLIDER:
@@ -1704,6 +1705,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       GtkAllocation tmp;
       gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
       gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, tmp.width);
+      gtk_widget_set_size_request(darktable.bauhaus->popup_window, tmp.width, tmp.width);
       _start_cursor(6);
       break;
     }
@@ -1717,6 +1719,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width,
+                                  (tmp.height + get_line_space()) * d->num_labels);
+      gtk_widget_set_size_request(darktable.bauhaus->popup_window, tmp.width,
                                   (tmp.height + get_line_space()) * d->num_labels);
       GtkAllocation allocation_w;
       gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
