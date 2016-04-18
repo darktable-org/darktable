@@ -256,11 +256,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 #define N (d->num_patches) // number of patches
   // solve equation system to fit thin plate splines to our data
+#ifdef _OPENMP
+#pragma omp parallel default(shared)
+#endif
+  {
   double A[(N+4)*(N+4)];
   double target[N+4];
   memset(target, 0, sizeof(target));
 
   // find coeffs for three channels separately:
+#ifdef _OPENMP
+#pragma omp for
+#endif
   for(int ch=0;ch<3;ch++)
   {
     if(ch==0) for(int k=0;k<N;k++) target[k] = p->target_L[k];
@@ -319,6 +326,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff a[%d] = %f\n", i, d->coeff_a[i]);
   // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff b[%d] = %f\n", i, d->coeff_b[i]);
 #undef N
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -349,6 +357,7 @@ void gui_update(struct dt_iop_module_t *self)
       p->target_a[g->patch]*p->target_a[g->patch]+
       p->target_b[g->patch]*p->target_b[g->patch]);
   dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
+  gtk_widget_queue_draw(g->area);
 }
 
 void init(dt_iop_module_t *module)
