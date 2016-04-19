@@ -236,8 +236,8 @@ frame > eventbox * {
  * so we give the name of the parent widget: */
 #iop-plugin-ui notebook,
 #lib-plugin-ui notebook,
-#iop-plugin-ui notebook tab,
-#lib-plugin-ui notebook tab {
+#iop-plugin-ui notebook tab *,
+#lib-plugin-ui notebook tab * {
   border:0;
   border-radius:0;
   border-style:none;
@@ -248,8 +248,8 @@ frame > eventbox * {
   border-image:none;
   background-color: transparent;
 }
-#iop-plugin-ui notebook tab:active,
-#lib-plugin-ui notebook tab:active {
+#iop-plugin-ui notebook tab:checked *,
+#lib-plugin-ui notebook tab:checked * {
   background-color: @bg_color;
 }
 
@@ -297,8 +297,8 @@ entry:selected {
  * so we give the name of the parent widget: */
 #iop-plugin-ui notebook,
 #lib-plugin-ui notebook,
-#iop-plugin-ui notebook tab,
-#lib-plugin-ui notebook tab {
+#iop-plugin-ui notebook tab *,
+#lib-plugin-ui notebook tab * {
   border:0;
   border-radius:0;
   border-style:none;
@@ -309,8 +309,8 @@ entry:selected {
   border-image:none;
   background-color: transparent;
 }
-#iop-plugin-ui notebook tab:active,
-#lib-plugin-ui notebook tab:active {
+#iop-plugin-ui notebook tab:checked *,
+#lib-plugin-ui notebook tab:checked * {
   background-color: @bg_color;
 }
 
@@ -481,7 +481,7 @@ colorswatch
 
 /* preferences notebook */
 
-#preferences_notebook GtkGrid *
+#preferences_notebook stack *
 {
   padding:0;
 }
@@ -492,12 +492,12 @@ notebook tab *
 }
 
 GtkNotebook GtkLabel:hover,
-notebook tab:hover
+notebook tab *:hover
 {
   background-color:  shade(@selected_bg_color, 1.7);
 }
 
-notebook tab:active
+notebook tab:checked *
 {
   background-color: shade(@selected_bg_color, 1.3);
 }
