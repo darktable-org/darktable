@@ -68,7 +68,11 @@ static const float colorchecker_Lab[] =
  20.46,  -0.08 , -0.97   // black
 };
 
-#define MAX_PATCHES 50
+// we came to the conclusion that more than 7x7 patches will not be
+// managable in the gui. the fitting experiments show however that you
+// can do significantly better with 49 than you can with 24 patches,
+// especially when considering max delta E.
+#define MAX_PATCHES 49
 typedef struct dt_iop_colorchecker_params_t
 {
   float source_L[MAX_PATCHES];
