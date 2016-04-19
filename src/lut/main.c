@@ -744,7 +744,7 @@ static char *encode_tonecurve(const tonecurve_t *c)
 static char *encode_colorchecker(int num, const double *point, const double **target, int *permutation)
 {
 // hardcoded v2 of the module
-#define MAX_PATCHES 50
+#define MAX_PATCHES 49
   typedef struct dt_iop_colorchecker_params_t
   {
     float source_L[MAX_PATCHES];
@@ -758,8 +758,8 @@ static char *encode_colorchecker(int num, const double *point, const double **ta
 
   dt_iop_colorchecker_params_t params;
   memset(&params, 0, sizeof(params));
-  num = MIN(24, num); // XXX currently the gui doesn't fare well with other numbers
-                      //   assert(num <= MAX_PATCHES);
+  num = MIN(MAX_PATCHES, num); // XXX currently the gui doesn't fare well with other numbers
+  //   assert(num <= MAX_PATCHES);
   params.num_patches = num;
 
   for(int k = 0; k < num; k++)
