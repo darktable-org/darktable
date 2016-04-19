@@ -192,8 +192,11 @@ fasterlog(float x)
 // thinplate spline kernel \phi(r)
 static inline float kernel(const float r)
 {
-  // return r*r*logf(MAX(1e-8f,r));
-  return r*r*fasterlog(MAX(1e-8f,r));
+  // well damnit, this speedup thing unfortunately shows severe artifacts
+  // (well, at least if we don't do it consistently during fitting, too). needs
+  // investigation. for now we use the real log instead.
+  return r*r*logf(MAX(1e-8f,r));
+  // return r*r*fasterlog(MAX(1e-8f,r));
 }
 
 static inline float distance(const float *x, const float *y)
