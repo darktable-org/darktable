@@ -89,6 +89,8 @@ GtkMessageDialog * button,
 #lib-plugin-ui * button,
 button
 {
+  min-width:8px;
+  min-height:8px;
   border-radius: 0;
   border-style: none;
   box-shadow:none;
