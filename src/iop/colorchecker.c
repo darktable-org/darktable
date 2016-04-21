@@ -354,6 +354,16 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)module->params;
   if(g->patch >= p->num_patches || g->patch < 0) return;
+  if(dt_bauhaus_combobox_length(g->combobox_patch) < p->num_patches)
+  {
+    dt_bauhaus_combobox_clear(g->combobox_patch);
+    char cboxentry[1024];
+    for(int k=0;k<p->num_patches;k++)
+    {
+      snprintf(cboxentry, sizeof(cboxentry), _("patch #%d"), k);
+      dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
+    }
+  }
   dt_bauhaus_slider_set(g->scale_L, p->target_L[g->patch] - p->source_L[g->patch]);
   dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - p->source_a[g->patch]);
   dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - p->source_b[g->patch]);
@@ -364,7 +374,7 @@ void gui_update(struct dt_iop_module_t *self)
       p->target_a[g->patch]*p->target_a[g->patch]+
       p->target_b[g->patch]*p->target_b[g->patch]);
   dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
-  gtk_widget_queue_draw(g->area);
+  if(g->patch != g->drawn_patch) gtk_widget_queue_draw(g->area);
 }
 
 void init(dt_iop_module_t *module)
@@ -489,7 +499,6 @@ static void patch_callback(GtkWidget *combo, gpointer user_data)
   g->patch = dt_bauhaus_combobox_get(combo);
   // switch off colour picker, it'll interfere with other changes of the patch:
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  if(g->patch != g->drawn_patch) gtk_widget_queue_draw(g->area);
   self->gui_update(self);
 }
 
@@ -511,7 +520,12 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
   const float *picked_mean = self->picked_color;
   int besti = 0, bestj = 0;
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
-  const int cells_x = 6, cells_y = 4;
+  int cells_x = 6, cells_y = 4;
+  if(p->num_patches > 24)
+  {
+    cells_x = 7;
+    cells_y = 7;
+  }
   for(int j = 0; j < cells_y; j++)
   {
     for(int i = 0; i < cells_x; i++)
@@ -525,12 +539,12 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
       if((picked_mean[0] - Lab.L)*(picked_mean[0] - Lab.L) +
          (picked_mean[1] - Lab.a)*(picked_mean[1] - Lab.a) +
          (picked_mean[2] - Lab.b)*(picked_mean[2] - Lab.b) <
-         (picked_mean[0] - p->source_L[6*bestj+besti])*
-         (picked_mean[0] - p->source_L[6*bestj+besti])+
-         (picked_mean[1] - p->source_a[6*bestj+besti])*
-         (picked_mean[1] - p->source_a[6*bestj+besti])+
-         (picked_mean[2] - p->source_b[6*bestj+besti])*
-         (picked_mean[2] - p->source_b[6*bestj+besti]))
+         (picked_mean[0] - p->source_L[cells_x*bestj+besti])*
+         (picked_mean[0] - p->source_L[cells_x*bestj+besti])+
+         (picked_mean[1] - p->source_a[cells_x*bestj+besti])*
+         (picked_mean[1] - p->source_a[cells_x*bestj+besti])+
+         (picked_mean[2] - p->source_b[cells_x*bestj+besti])*
+         (picked_mean[2] - p->source_b[cells_x*bestj+besti]))
       {
         besti = i;
         bestj = j;
@@ -579,7 +593,11 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     // freshly picked, also select it in gui:
     int pick = self->request_color_pick;
     g->drawn_patch = cells_x * bestj + besti;
-    dt_bauhaus_combobox_set(g->combobox_patch, cells_x * bestj + besti);
+    darktable.gui->reset = 1;
+    dt_bauhaus_combobox_set(g->combobox_patch, g->drawn_patch);
+    g->patch = g->drawn_patch;
+    self->gui_update(self);
+    darktable.gui->reset = 0;
     self->request_color_pick = pick; // restore, the combobox will kill it
   }
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
@@ -610,9 +628,15 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   int width = allocation.width, height = allocation.height;
   const float mouse_x = CLAMP(event->x, 0, width);
   const float mouse_y = CLAMP(event->y, 0, height);
-  const float mx = mouse_x * 6.0f / (float)width;
-  const float my = mouse_y * 4.0f / (float)height;
-  int patch = CLAMP((int)mx + 6*(int)my, 0, p->num_patches-1);
+  int cells_x = 6, cells_y = 4;
+  if(p->num_patches > 24)
+  {
+    cells_x = 7;
+    cells_y = 7;
+  }
+  const float mx = mouse_x * cells_x / (float)width;
+  const float my = mouse_y * cells_y / (float)height;
+  int patch = CLAMP((int)mx + cells_x*(int)my, 0, p->num_patches-1);
   char tooltip[1024];
   snprintf(tooltip, sizeof(tooltip), _("(%2.2f %2.2f %2.2f)\naltered patches are marked with an outline\nclick to select\ndouble click to reset"), p->source_L[patch], p->source_a[patch], p->source_b[patch]);
   gtk_widget_set_tooltip_text(g->area, tooltip);
@@ -630,9 +654,15 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
   int width = allocation.width, height = allocation.height;
   const float mouse_x = CLAMP(event->x, 0, width);
   const float mouse_y = CLAMP(event->y, 0, height);
-  const float mx = mouse_x * 6.0f / (float)width;
-  const float my = mouse_y * 4.0f / (float)height;
-  int patch = CLAMP((int)mx + 6*(int)my, 0, p->num_patches);
+  int cells_x = 6, cells_y = 4;
+  if(p->num_patches > 24)
+  {
+    cells_x = 7;
+    cells_y = 7;
+  }
+  const float mx = mouse_x * cells_x / (float)width;
+  const float my = mouse_y * cells_y / (float)height;
+  int patch = CLAMP((int)mx + cells_x*(int)my, 0, p->num_patches);
   dt_bauhaus_combobox_set(g->combobox_patch, patch);
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   { // reset on double click

@@ -33,12 +33,25 @@
 // #define REPLACEMENT // either broken code or doesn't help at all
 // #define EXACT       // use full solve instead of dot in inner loop
 
+// very fast, very approximate
+static inline float
+fasterlog(float x)
+{
+  union { float f; uint32_t i; } vx = { x };
+  float y = vx.i;
+  y *= 8.2629582881927490e-8f;
+  return y - 87.989971088f;
+}
+
 // thinplate spline kernel \phi(r)
 static inline double thinplate_kernel(const double *x, const double *y)
 {
   const double r
       = sqrt((x[0] - y[0]) * (x[0] - y[0]) + (x[1] - y[1]) * (x[1] - y[1]) + (x[2] - y[2]) * (x[2] - y[2]));
-  return r * r * log(MAX(1e-10, r));
+  return r * r * logf(MAX(1e-8f, r));
+  // even when using both here and in the iop the approximate version,
+  // it still doesn't work so well. need to be a bit more precise it seems.
+  // return r * r * fasterlog(MAX(1e-8f, r));
 }
 
 static inline double compute_error(
