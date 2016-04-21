@@ -54,7 +54,6 @@ alignment
   border:0;
   padding:0;
 }
-#lib-plugin-ui treeview,
 #lib-plugin-ui combobox-text *,
 #lib-plugin-ui combobox *,
 #lib-plugin-ui combobox togglebutton *
@@ -459,9 +458,25 @@ dialog eventbox *
    background-color: transparent;
 }
 
-dialog treeview *:selected
+#iop-plugin-ui treeview.view *,
+#lib-plugin-ui treeview.view *,
+treeview.view *
+{
+   background-color:shade(@selected_bg_color, 0.8);
+}
+
+#iop-plugin-ui treeview.view *:hover,
+#lib-plugin-ui treeview.view *:hover,
+treeview.view *:hover
 {
    background-color: shade(@selected_bg_color, 1.7);
+}
+
+#iop-plugin-ui treeview.view *:selected,
+#lib-plugin-ui treeview.view *:selected,
+treeview.view *:selected
+{
+   background-color: shade(@selected_bg_color, 1.2);
 }
 
 dialog scrolledwindow 
