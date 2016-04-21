@@ -114,7 +114,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
   Imf::Header header(exr->width, exr->height, 1, Imath::V2f(0, 0), 1, Imf::INCREASING_Y,
                      (Imf::Compression)exr->compression);
 
-  header.insert("comment", Imf::StringAttribute("Developed using Darktable " PACKAGE_VERSION));
+  header.insert("comment", Imf::StringAttribute("Developed using darktable " PACKAGE_VERSION));
 
   header.insert("exif", Imf::BlobAttribute(exif_blob));
 
