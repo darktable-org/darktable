@@ -268,9 +268,9 @@ entry {
   text-shadow:none;
   background-color:shade(@selected_bg_color, 0.8);
 }
-#iop-plugin-ui entry:selected,
-#lib-plugin-ui entry:selected,
-entry:selected {
+#iop-plugin-ui entry selection,
+#lib-plugin-ui entry selection,
+entry selection {
   background-color:shade(@selected_bg_color, 1.7);
 }
 /* weird fix for black event boxes in light table lib modules: */
