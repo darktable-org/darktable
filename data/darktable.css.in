@@ -259,7 +259,7 @@ frame > eventbox * {
 entry {
   border-radius: 0;
   border:0;
-  padding-left: 2pt; /* align with bauhaus widgets */
+  padding-left: 2px; /* align with bauhaus widgets */
   border-style: none;
   border-color: alpha(@fg_color, 0.5);
   border-image:none;
