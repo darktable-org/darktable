@@ -546,7 +546,7 @@ static void target_L_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  p->target_L[g->patch] = CLAMP(p->source_L[g->patch] + dt_bauhaus_slider_get(slider), 0.0, 100.0);
+  p->target_L[g->patch] = p->source_L[g->patch] + dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -596,7 +596,7 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
   const float Cin = sqrtf(
       p->source_a[g->patch]*p->source_a[g->patch] +
       p->source_b[g->patch]*p->source_b[g->patch]);
-  const float Cout = sqrtf(
+  const float Cout = 1e-4f + sqrtf(
       p->target_a[g->patch]*p->target_a[g->patch]+
       p->target_b[g->patch]*p->target_b[g->patch]);
   const float Cnew = CLAMP(Cin + dt_bauhaus_slider_get(slider), 0.01, 128.0);
