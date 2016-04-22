@@ -2275,6 +2275,67 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   g_list_free_full(hierarchical, g_free);
 }
 
+char *dt_exif_xmp_read_string(const int imgid)
+{
+  try
+  {
+    char input_filename[PATH_MAX] = { 0 };
+    gboolean from_cache = FALSE;
+    dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
+
+    // first take over the data from the source image
+    Exiv2::XmpData xmpData;
+    if(g_file_test(input_filename, G_FILE_TEST_EXISTS))
+    {
+      std::string xmpPacket;
+
+      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
+      xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+      Exiv2::XmpParser::decode(xmpData, xmpPacket);
+      // because XmpSeq or XmpBag are added to the list, we first have
+      // to remove these so that we don't end up with a string of duplicates
+      dt_remove_known_keys(xmpData);
+    }
+
+    // now add whatever we have in the sidecar XMP. this overwrites stuff from the source image
+    dt_image_path_append_version(imgid, input_filename, sizeof(input_filename));
+    g_strlcat(input_filename, ".xmp", sizeof(input_filename));
+    if(g_file_test(input_filename, G_FILE_TEST_EXISTS))
+    {
+      Exiv2::XmpData sidecarXmpData;
+      std::string xmpPacket;
+
+      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
+      xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+      Exiv2::XmpParser::decode(sidecarXmpData, xmpPacket);
+
+      for(Exiv2::XmpData::const_iterator it = sidecarXmpData.begin(); it != sidecarXmpData.end(); ++it)
+        xmpData.add(*it);
+    }
+
+    dt_remove_known_keys(xmpData); // is this needed?
+
+    // last but not least attach what we have in DB to the XMP. in theory that should be
+    // the same as what we just copied over from the sidecar file, but you never know ...
+    dt_exif_xmp_read_data(xmpData, imgid);
+
+    // serialize the xmp data and output the xmp packet
+    std::string xmpPacket;
+    if(Exiv2::XmpParser::encode(xmpPacket, xmpData,
+      Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper) != 0)
+    {
+      throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
+    }
+    std::cout << xmpPacket << std::endl;
+    return g_strdup(xmpPacket.c_str());
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::cerr << "[xmp_read_blob] caught exiv2 exception '" << e << "'\n";
+    return NULL;
+  }
+}
+
 int dt_exif_xmp_attach(const int imgid, const char *filename)
 {
   try

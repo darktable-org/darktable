@@ -118,6 +118,12 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
   header.insert("exif", Imf::BlobAttribute(exif_blob));
 
+  char *xmp_string = dt_exif_xmp_read_string(imgid);
+  if(xmp_string)
+  {
+    header.insert("xmp", Imf::StringAttribute(xmp_string));
+    g_free(xmp_string);
+  }
 
   // try to add the chromaticities
   if(imgid > 0)
