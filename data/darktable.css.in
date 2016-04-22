@@ -239,7 +239,7 @@ frame > eventbox * {
 #lib-plugin-ui notebook,
 #iop-plugin-ui notebook tab *,
 #lib-plugin-ui notebook tab * {
-  border:0;
+  border:0pt;
   border-radius:0;
   border-style:none;
   box-shadow:none;
@@ -249,9 +249,19 @@ frame > eventbox * {
   border-image:none;
   background-color: transparent;
 }
+#iop-plugin-ui notebook tab *,
+#lib-plugin-ui notebook tab * {
+  padding:5pt;
+}
+#iop-plugin-ui notebook tab *:hover,
+#lib-plugin-ui notebook tab *:hover
+{
+  background-color:  shade(@selected_bg_color, 1.7);
+}
+
 #iop-plugin-ui notebook tab:checked *,
 #lib-plugin-ui notebook tab:checked * {
-  background-color: @bg_color;
+  background-color: shade(@selected_bg_color, 1.3);
 }
 
 #iop-plugin-ui entry,
