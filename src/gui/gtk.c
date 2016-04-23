@@ -678,9 +678,14 @@ static gboolean mouse_moved(GtkWidget *w, GdkEventMotion *event, gpointer user_d
   }
   dt_control_mouse_moved(event->x, event->y, pressure, event->state & 0xf);
   gint x, y;
-  gdk_window_get_device_position(
-      event->window, gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(w))), &x, &y,
-      NULL);
+  gdk_window_get_device_position(event->window,
+#if GTK_CHECK_VERSION(3, 20, 0)
+                                 gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(w))),
+#else
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+#endif
+                                 &x, &y, NULL);
   return FALSE;
 }
 
@@ -908,8 +913,13 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
           "GDK_AXIS_XTILT",  "GDK_AXIS_YTILT", "GDK_AXIS_WHEEL", "GDK_AXIS_LAST" };
   dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
 
+#if GTK_CHECK_VERSION(3, 20, 0)
   GList *input_devices
       = gdk_seat_get_slaves(gdk_display_get_default_seat(gdk_display_get_default()), GDK_SEAT_CAPABILITY_ALL);
+#else
+  GList *input_devices = gdk_device_manager_list_devices(
+      gdk_display_get_device_manager(gdk_display_get_default()), GDK_DEVICE_TYPE_MASTER);
+#endif
   for(GList *l = input_devices; l != NULL; l = g_list_next(l))
   {
     GdkDevice *device = (GdkDevice *)l->data;

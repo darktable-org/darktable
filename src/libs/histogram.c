@@ -521,9 +521,16 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     gtk_widget_queue_draw(widget);
   }
   gint x, y; // notify gtk for motion_hint.
+#if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(
       gtk_widget_get_window(widget),
       gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(event->window))), &x, &y, 0);
+#else
+  gdk_window_get_device_position(event->window,
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+                                 &x, &y, NULL);
+#endif
 
   return TRUE;
 }

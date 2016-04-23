@@ -436,7 +436,12 @@ static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButto
     gdk_window_get_origin(gtk_widget_get_window(darktable.bauhaus->popup_window), &wx, &wy);
 
     gdk_device_get_position(
+#if GTK_CHECK_VERSION(3, 20, 0)
         gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))), 0, &x, &y);
+#else
+        gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default())),
+        NULL, &x, &y);
+#endif
     darktable.bauhaus->end_mouse_x = x - wx;
     darktable.bauhaus->end_mouse_y = y - wy;
     dt_bauhaus_widget_accept(darktable.bauhaus->current);
@@ -475,8 +480,26 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
 
 static void window_show(GtkWidget *w, gpointer user_data)
 {
+#if GTK_CHECK_VERSION(3, 20, 0)
   gdk_seat_grab(gdk_display_get_default_seat(gtk_widget_get_display(w)), gtk_widget_get_window(w),
                 GDK_SEAT_CAPABILITY_ALL, TRUE, 0, 0, 0, 0);
+#else
+  GdkDisplay *display = gtk_widget_get_display(w);
+  GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
+  GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
+  GList *tmp = devices;
+  while(tmp)
+  {
+    GdkDevice *dev = tmp->data;
+    if(gdk_device_get_source(dev) == GDK_SOURCE_KEYBOARD)
+    {
+      gdk_device_grab(dev, gtk_widget_get_window(w), GDK_OWNERSHIP_NONE, FALSE,
+                      GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
+    }
+    tmp = tmp->next;
+  }
+  g_list_free(devices);
+#endif
 }
 
 static void dt_bh_init(DtBauhausWidget *class)
@@ -1671,8 +1694,25 @@ void dt_bauhaus_hide_popup()
 {
   if(darktable.bauhaus->current)
   {
+#if GTK_CHECK_VERSION(3, 20, 0)
     gdk_seat_ungrab(
         gdk_display_get_default_seat(gtk_widget_get_display(GTK_WIDGET(darktable.bauhaus->current))));
+#else
+    GdkDisplay *display = gdk_display_get_default();
+    GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
+    GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
+    GList *tmp = devices;
+    while(tmp)
+    {
+      GdkDevice *dev = tmp->data;
+      if(gdk_device_get_source(dev) == GDK_SOURCE_KEYBOARD)
+      {
+        gdk_device_ungrab(dev, GDK_CURRENT_TIME);
+      }
+      tmp = tmp->next;
+    }
+    g_list_free(devices);
+#endif
     gtk_widget_hide(darktable.bauhaus->popup_window);
     darktable.bauhaus->current = NULL;
     // TODO: give focus to center view? do in accept() as well?
