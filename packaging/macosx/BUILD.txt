@@ -6,7 +6,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      macosx_deployment_target 10.6
      cxx_stdlib libstdc++
     (practice showed that support for versions older than 10.6 isn't viable)
-    and this line to /opt/local/etc/macports/variant.conf:
+    and this line to /opt/local/etc/macports/variants.conf:
      +llvm34 +ld64_236 +no_gnome +no_x11 +quartz -x11 -gnome
     Install required dependencies:
      $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg15 lua webp libsecret pugixml osm-gps-map adwaita-icon-theme
