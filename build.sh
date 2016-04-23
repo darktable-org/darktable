@@ -177,6 +177,9 @@ num_cpu()
 			fi
 		fi
 		;;
+	Darwin)
+		ncpu=$(/usr/sbin/sysctl -n machdep.cpu.core_count 2>/dev/null)
+		;;
 	*)
 		printf "warning: unable to determine number of CPUs on $platform\n"
 		ncpu=-1
