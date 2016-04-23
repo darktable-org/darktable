@@ -724,15 +724,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           cam = NULL;
         }
 
-        // not sure whether lcms2 really depends on this:
-        // float *rgbptr = (float *)rgb;
-        // for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
-        // {
-        //   for(int c = 0; c < 3; c++)
-        //   {
-        //     rgbptr[c] = CLAMP(rgbptr[c], 0.0f, 1.0f);
-        //   }
-        // }
+        float *rgbptr = (float *)rgb;
+        for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
+        {
+          for(int c = 0; c < 3; c++)
+          {
+            rgbptr[c] = CLAMP(rgbptr[c], 0.0f, 1.0f);
+          }
+        }
 
         cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
         dt_free_align(rgb);
@@ -905,17 +904,16 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           cam = NULL;
         }
 
-        // not sure whether lcms2 really depends on this:
-        // float *rgbptr = (float *)rgb;
-        // for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
-        // {
-        //   const __m128 min = _mm_setzero_ps();
-        //   const __m128 max = _mm_set1_ps(1.0f);
-        //   const __m128 input = _mm_load_ps(rgbptr);
-        //   const __m128 result = _mm_max_ps(_mm_min_ps(input, max), min);
-        //   _mm_store_ps(rgbptr, result);
-        // }
-        // _mm_sfence();
+        float *rgbptr = (float *)rgb;
+        for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
+        {
+          const __m128 min = _mm_setzero_ps();
+          const __m128 max = _mm_set1_ps(1.0f);
+          const __m128 input = _mm_load_ps(rgbptr);
+          const __m128 result = _mm_max_ps(_mm_min_ps(input, max), min);
+          _mm_store_ps(rgbptr, result);
+        }
+        _mm_sfence();
 
         cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
         dt_free_align(rgb);
