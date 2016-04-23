@@ -34,8 +34,7 @@
 // #define EXACT       // use full solve instead of dot in inner loop
 
 // very fast, very approximate
-static inline float
-fasterlog(float x)
+static inline float __attribute__((__unused__)) fasterlog(float x)
 {
   union { float f; uint32_t i; } vx = { x };
   float y = vx.i;
