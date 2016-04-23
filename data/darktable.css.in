@@ -111,9 +111,9 @@ button:hover
 {
   background-color: shade(@selected_bg_color, 1.7);
 }
-#lib-plugin-ui * button:${GTK_CSS_CLASS},
-#iop-plugin-ui * button:${GTK_CSS_CLASS},
-button:${GTK_CSS_CLASS}
+#lib-plugin-ui * button:checked,
+#iop-plugin-ui * button:checked,
+button:checked
 {
   background-color: shade(@selected_bg_color, 1.4);
 }
