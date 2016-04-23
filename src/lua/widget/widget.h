@@ -55,7 +55,7 @@ void dt_lua_widget_get_callback(lua_State *L,int index,const char* name);
   * other params : passed to the callback
   returns nothing, might raise exceptions
 
-  this function is meant to be called via dt_lua_do_chunk_async if needed
+  this function is meant to be called via dt_lua_async_call if needed
 
  */
 int dt_lua_widget_trigger_callback(lua_State *L);

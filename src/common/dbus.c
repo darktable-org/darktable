@@ -58,14 +58,9 @@ static const gchar introspection_xml[] = "<node>"
 
 
 #ifdef USE_LUA
-static int32_t dbus_callback_job(dt_job_t *job)
+static void dbus_lua_call_finished(lua_State* L,int result,void* data)
 {
-  GDBusMethodInvocation *invocation = dt_control_job_get_params(job);
-  lua_State *L = darktable.lua_state.state;
-  GVariant *parameters = g_dbus_method_invocation_get_parameters(invocation);
-  const gchar *command;
-  g_variant_get(parameters, "(&s)", &command);
-  int result = dt_lua_dostring(L, command, 0, 1);
+  GDBusMethodInvocation *invocation = (GDBusMethodInvocation*)data;
   if(result == LUA_OK)
   {
     if(lua_isnil(L, -1))
@@ -82,8 +77,8 @@ static int32_t dbus_callback_job(dt_job_t *job)
   {
     const char *msg = luaL_checkstring(L, -1);
     g_dbus_method_invocation_return_dbus_error(invocation, "org.darktable.Error.LuaError", msg);
+    dt_lua_check_print_error(L,result);
   }
-  return 0;
 }
 #endif
 
@@ -106,13 +101,10 @@ static void _handle_method_call(GDBusConnection *connection, const gchar *sender
 #ifdef USE_LUA
   else if(!g_strcmp0(method_name, "Lua"))
   {
-    dt_job_t *job = dt_control_job_create(&dbus_callback_job, "lua: on dbus");
-    if(job)
-    {
-      dt_control_job_set_params(job, invocation, NULL);
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, job);
-      // we don't finish the invocation, the async task will do this for us
-    }
+    const gchar *command;
+    g_variant_get(parameters, "(&s)", &command);
+    dt_lua_async_call_string(command, 0,dbus_lua_call_finished,invocation);
+    // we don't finish the invocation, the async task will do this for us
   }
 #endif
 }

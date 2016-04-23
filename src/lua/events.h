@@ -52,7 +52,7 @@ void dt_lua_event_add(lua_State *L, const char *evt_name);
 void dt_lua_event_trigger(lua_State *L, const char *event, int nargs);
 
 /**
-  wrapper for the previous function to use with dt_lua_do_chunk_async
+  wrapper for the previous function to use with dt_lua_async_call
   first parameter is the event name
   other parameters will be passed to the event handler
   */

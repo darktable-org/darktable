@@ -153,7 +153,8 @@ static int selected_member(lua_State*L)
 
 static void changed_callback(GtkButton *widget, gpointer user_data)
 {
-  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+  dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"lua_widget",user_data,
       LUA_ASYNC_TYPENAME,"const char*","value-changed",
       LUA_ASYNC_DONE);
@@ -175,26 +176,26 @@ int dt_lua_init_widget_combobox(lua_State* L)
   dt_lua_init_widget_type(L,&combobox_type,lua_combobox,DT_BAUHAUS_WIDGET_TYPE);
 
   lua_pushcfunction(L, tostring_member);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L, lua_combobox, "__tostring");
   lua_pushcfunction(L,combobox_len);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   lua_pushcfunction(L,combobox_numindex);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register_number(L,lua_combobox);
   lua_pushcfunction(L,value_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_combobox, "value");
   lua_pushcfunction(L,selected_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_combobox, "selected");
   dt_lua_widget_register_gtk_callback(L,lua_combobox,"value-changed","changed_callback",G_CALLBACK(changed_callback));
   lua_pushcfunction(L,label_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_combobox, "label");
 
   lua_pushcfunction(L,editable_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_combobox, "editable");
 
   return 0;

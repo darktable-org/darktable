@@ -276,7 +276,11 @@ static double raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level
 {
   const uint32_t raw_max = white_level - black_level;
 
-  const double raw_ev = -log2(raw_max) + log2(MAX(raw - black_level, 1));
+  // we are working on data without black clipping,
+  // so we can get values which are lower than the black level !!!
+  const int64_t raw_val = MAX((int64_t)raw - (int64_t)black_level, 1);
+
+  const double raw_ev = -log2(raw_max) + log2(raw_val);
 
   return raw_ev;
 }
@@ -309,9 +313,17 @@ static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, const
     }
   }
 
+  float black = 0.0f;
+  for(uint8_t i = 0; i < 4; i++)
+  {
+    // FIXME: get those from rawprepare IOP somehow !!!
+    black += (float)self->dev->image_storage.raw_black_level_separate[i];
+  }
+  black /= 4.0f;
+
   // FIXME: get those from rawprepare IOP somehow !!!
-  const double ev
-      = raw_to_ev(raw, self->dev->image_storage.raw_black_level, self->dev->image_storage.raw_white_point);
+  const double ev = raw_to_ev(raw, (uint32_t)black, self->dev->image_storage.raw_white_point);
+
   *correction = p->deflicker_target_level - ev;
 }
 

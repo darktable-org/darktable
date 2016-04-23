@@ -113,23 +113,23 @@ int dt_lua_init_widget_entry(lua_State* L)
   dt_lua_init_widget_type(L,&entry_type,lua_entry,GTK_TYPE_ENTRY);
 
   lua_pushcfunction(L, tostring_member);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L, lua_entry, "__tostring");
 
   lua_pushcfunction(L,text_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_entry, "text");
 
   lua_pushcfunction(L,is_password_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_entry, "is_password");
 
   lua_pushcfunction(L,placeholder_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_entry, "placeholder");
 
   lua_pushcfunction(L,editable_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_entry, "editable");
 
   return 0;

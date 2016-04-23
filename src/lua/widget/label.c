@@ -100,19 +100,19 @@ int dt_lua_init_widget_label(lua_State* L)
   dt_lua_init_widget_type(L,&label_type,lua_label,GTK_TYPE_LABEL);
 
   lua_pushcfunction(L, tostring_member);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L, lua_label, "__tostring");
   lua_pushcfunction(L,label_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_label, "label");
   lua_pushcfunction(L,selectable_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_label, "selectable");
   lua_pushcfunction(L, halign_member);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_label, "halign");
   lua_pushcfunction(L,ellipsize_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_label, "ellipsize");
   return 0;
 }

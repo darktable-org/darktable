@@ -126,14 +126,15 @@ static int job_canceled(lua_State *L)
   lua_getuservalue(L, 1);
   lua_getfield(L, -1, "cancel_callback");
   lua_pushvalue(L, -3);
-  dt_lua_do_chunk(L, 1, 0);
+  lua_call(L,1,0);
   lua_pop(L, 2);
   return 0;
 }
 
 static void lua_job_cancelled(dt_progress_t *progress, gpointer user_data)
 {
-  dt_lua_do_chunk_async(job_canceled,
+  dt_lua_async_call_alien(job_canceled,
+      0, NULL,NULL,
       LUA_ASYNC_TYPENAME,"dt_lua_backgroundjob_t",progress,
       LUA_ASYNC_DONE);
 }
@@ -220,12 +221,14 @@ static void on_mouse_over_image_changed(gpointer instance, gpointer user_data)
 {
   int imgid = dt_control_get_mouse_over_id();
   if(imgid != -1) {
-  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL,NULL,
       LUA_ASYNC_TYPENAME,"char*","mouse-over-image-changed",
       LUA_ASYNC_TYPENAME,"dt_lua_image_t",imgid,
       LUA_ASYNC_DONE);
   } else {
-  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL,NULL,
       LUA_ASYNC_TYPENAME,"char*","mouse-over-image-changed",
       LUA_ASYNC_DONE);
   }
@@ -244,7 +247,7 @@ int dt_lua_init_gui(lua_State *L)
     lua_pop(L, 1);
 
     lua_pushcfunction(L, selection_cb);
-    lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+    dt_lua_gtk_wrap(L);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "selection");
     lua_pushcfunction(L, hovered_cb);

@@ -69,6 +69,12 @@ typedef struct
   dt_pthread_mutex_t mutex;
   int pending_threads ;
   bool ending;
+  GMainLoop *loop;
+  GMainContext *context;
+  GThreadPool *pool;
+  GAsyncQueue * stacked_job_queue;
+  GAsyncQueue * alien_job_queue;
+  GAsyncQueue * string_job_queue;
 
 } dt_lua_state_t;
 

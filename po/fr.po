@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-03-29 21:30+0200\n"
-"PO-Revision-Date: 2016-03-29 21:31+0200\n"
+"PO-Revision-Date: 2016-04-14 20:11+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4130,7 +4130,7 @@ msgstr "correction d'objectif (h)"
 #: ../src/iop/ashift.c:495
 msgctxt "accel"
 msgid "shear"
-msgstr "incline"
+msgstr "cisaillement"
 
 #: ../src/iop/ashift.c:2352
 msgid "automatic cropping failed"
@@ -4189,7 +4189,7 @@ msgstr "correction d'objectif (horizontale)"
 
 #: ../src/iop/ashift.c:4160
 msgid "shear"
-msgstr "incline"
+msgstr "cisaillement"
 
 #: ../src/iop/ashift.c:4165 ../src/iop/clipping.c:2007
 #: ../src/libs/live_view.c:341
@@ -4250,7 +4250,7 @@ msgstr "applique la correction d'objectif dans une direction"
 
 #: ../src/iop/ashift.c:4285
 msgid "shear the image along one diagonal"
-msgstr "incline l'image sur une diagonale"
+msgstr "cisaillement de l'image selon une diagonale"
 
 #: ../src/iop/ashift.c:4286
 msgid "display guide lines overlay"
@@ -8490,7 +8490,7 @@ msgstr "afficher l'histogramme en mode linéaire"
 
 #: ../src/libs/histogram.c:491
 msgid "set histogram mode to waveform"
-msgstr "afficher l'histogramme en mode vague"
+msgstr "afficher l'histogramme en mode forme d'onde"
 
 #: ../src/libs/histogram.c:494
 msgid "set histogram mode to logarithmic"

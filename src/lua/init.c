@@ -80,6 +80,9 @@ void dt_lua_init_early(lua_State *L)
   }
   darktable.lua_state.state = L;
   darktable.lua_state.ending = false;
+  darktable.lua_state.loop = NULL;;
+  darktable.lua_state.context = NULL;;
+  darktable.lua_state.stacked_job_queue = NULL;;
   darktable.lua_state.pending_threads = 0;
   dt_lua_init_lock(); // lock is initialized in the locked state
   luaL_openlibs(darktable.lua_state.state);
@@ -109,17 +112,17 @@ static int run_early_script(lua_State* L)
   // run global init script
   dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
   g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-  dt_lua_dofile_silent(L, tmp_path, 0, 0);
+  dt_lua_check_print_error(L,luaL_dofile(L,tmp_path));
   if(darktable.gui != NULL)
   {
     // run user init script
     dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
     g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-    dt_lua_dofile_silent(L, tmp_path, 0, 0);
+    dt_lua_check_print_error(L,luaL_dofile(L,tmp_path));
   }
   if(!lua_isnil(L,1)){
     const char *lua_command = lua_tostring(L, 1);
-    dt_lua_dostring_silent(L, lua_command, 0, 0);
+    dt_lua_check_print_error(L,luaL_dostring(L,lua_command));
   }
   dt_lua_redraw_screen();
   return 0;
@@ -176,14 +179,7 @@ void dt_lua_init(lua_State *L, const char *lua_command)
   lua_pushcfunction(L,run_early_script);
   lua_pushstring(L,lua_command);
 
-  if(darktable.gui)
-  {
-    dt_lua_do_chunk_later(L,1);
-  }
-  else
-  {
-    dt_lua_do_chunk_silent(L,1,0);
-  }
+  dt_lua_async_call(L,1,0,NULL,NULL);
   // allow other threads to wake up and do their job
   dt_lua_unlock();
 }
@@ -247,6 +243,7 @@ void dt_lua_finalize_early()
   dt_lua_event_trigger(darktable.lua_state.state,"exit",0);
   dt_lua_unlock();
   int i = 10;
+  g_main_context_wakeup(darktable.lua_state.context);
   while(i && darktable.lua_state.pending_threads){
     dt_print(DT_DEBUG_LUA, "LUA : waiting for %d threads to finish...\n", darktable.lua_state.pending_threads);
     sleep(1);// give them a little time to finish
