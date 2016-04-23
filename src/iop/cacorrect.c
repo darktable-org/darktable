@@ -375,7 +375,9 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
   const float eps = 1e-5f, eps2 = 1e-10f; // tolerance to avoid dividing by zero
 
+#ifdef _OPENMP
 #pragma omp parallel
+#endif
   {
     //     int progresscounter = 0;
 
@@ -430,7 +432,9 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     if(autoCA)
     {
 // Main algorithm: Tile loop calculating correction parameters per tile
+#ifdef _OPENMP
 #pragma omp for collapse(2) schedule(dynamic) nowait
+#endif
       for(int top = -border; top < height; top += ts - border2)
         for(int left = -border; left < width; left += ts - border2)
         {
@@ -869,7 +873,9 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
         }
 
 // end of diagnostic pass
+#ifdef _OPENMP
 #pragma omp critical(cadetectpass2)
+#endif
       {
         for(int dir = 0; dir < 2; dir++)
           for(int c = 0; c < 2; c++)
@@ -879,9 +885,13 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             blockave[dir][c] += blockavethr[dir][c];
           }
       }
+#ifdef _OPENMP
 #pragma omp barrier
+#endif
 
+#ifdef _OPENMP
 #pragma omp single
+#endif
       {
         for(int dir = 0; dir < 2; dir++)
           for(int c = 0; c < 2; c++)
@@ -1070,7 +1080,9 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     // Main algorithm: Tile loop
     if(processpasstwo)
     {
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic) collapse(2) nowait
+#endif
 
       for(int top = -border; top < height; top += ts - border2)
         for(int left = -border; left < width; left += ts - border2)
@@ -1435,9 +1447,13 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           //           }
         }
 
+#ifdef _OPENMP
 #pragma omp barrier
+#endif
 // copy temporary image matrix back to image matrix
+#ifdef _OPENMP
 #pragma omp for
+#endif
 
       for(int row = 0; row < height; row++)
         for(int col = 0 + (FC(row, 0, filters) & 1), indx = (row * width + col) >> 1; col < width;
