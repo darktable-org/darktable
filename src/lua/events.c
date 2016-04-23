@@ -50,7 +50,7 @@ void dt_lua_event_trigger(lua_State *L, const char *event, int nargs)
   lua_getfield(L, -3, "data");
   lua_pushstring(L, event);
   for(int i = 1; i <= nargs; i++) lua_pushvalue(L, -6 -nargs);
-  dt_lua_do_chunk(L, nargs + 2, 0);
+  dt_lua_treated_pcall(L,nargs+2,0);
   lua_pop(L, nargs + 3);
   dt_lua_redraw_screen();
 }
@@ -149,7 +149,7 @@ int dt_lua_event_keyed_trigger(lua_State *L)
   {
     lua_pushvalue(L, i);
   }
-  dt_lua_do_chunk_silent(L, callback_marker - 2, 0);
+  dt_lua_treated_pcall(L,callback_marker-2,0);
   return 0;
 }
 
@@ -190,7 +190,7 @@ int dt_lua_event_multiinstance_trigger(lua_State *L)
     {
       lua_pushvalue(L, i);
     }
-    dt_lua_do_chunk_silent(L, arg_top - 1, 0);
+    dt_lua_treated_pcall(L,arg_top-1,0);
   }
   return 0;
 }
@@ -214,7 +214,7 @@ static int lua_register_event(lua_State *L)
   lua_getfield(L, -1, "on_register");
   lua_getfield(L, -2, "data");
   for(int i = 1; i <= nparams; i++) lua_pushvalue(L, i);
-  dt_lua_do_chunk_raise(L, nparams + 1, 0);
+  lua_call(L, nparams + 1, 0);
   lua_pushboolean(L, true);
   lua_setfield(L, -2, "in_use");
   lua_pop(L, 2);
@@ -247,7 +247,8 @@ int dt_lua_init_early_events(lua_State *L)
 static gboolean shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                   GdkModifierType modifier, gpointer p)
 {
-  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
       LUA_ASYNC_TYPENAME,"const char*","shortcut",
       LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(p),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
       LUA_ASYNC_DONE);
@@ -299,7 +300,8 @@ static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename
     memcpy(format_copy,fdata,format->params_size(format));
     dt_imageio_module_data_t *storage_copy = storage->get_params(storage);
     memcpy(storage_copy,sdata,storage->params_size(storage));
-    dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
         LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
         LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
         LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,g_cclosure_new(G_CALLBACK(&format_destructor),format,NULL),
@@ -308,7 +310,8 @@ static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename
   }else{
     dt_imageio_module_data_t *format_copy = format->get_params(format);
     memcpy(format_copy,fdata,format->params_size(format));
-    dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
         LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
         LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
         LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,g_cclosure_new(G_CALLBACK(&format_destructor),format,NULL),

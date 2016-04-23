@@ -396,7 +396,8 @@ static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadat
 #ifdef USE_LUA
 static void reset_child(GtkWidget* child, gpointer user_data)
 {
-  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+  dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"lua_widget",child, // the GtkWidget is an alias for the lua_widget
       LUA_ASYNC_TYPENAME,"const char*","reset",
       LUA_ASYNC_DONE);
@@ -965,7 +966,7 @@ void init(dt_lib_module_t *self)
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
   lua_pushlightuserdata(L,self);
   lua_pushcclosure(L, lua_register_widget,1);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "register_widget");
 }

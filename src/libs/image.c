@@ -343,13 +343,14 @@ static int lua_button_clicked_cb(lua_State* L)
     image = g_list_delete_link(image, image);
   }
 
-  dt_lua_do_chunk_raise(L,2,0);
+  lua_call(L,2,0);
   return 0;
 }
 
 static void lua_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_lua_do_chunk_async(lua_button_clicked_cb,
+  dt_lua_async_call_alien(lua_button_clicked_cb,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"void*", user_data,
       LUA_ASYNC_DONE);
 }
@@ -391,7 +392,7 @@ void init(struct dt_lib_module_t *self)
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, lua_register_action,1);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "register_action");
 

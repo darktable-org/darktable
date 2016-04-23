@@ -397,7 +397,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
     // assign working space
     const int buffersize = 3 * sizeof(float) * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
-    char *buffer = (char *)calloc(buffersize, 1);
+    char *buffer = (char *)malloc(buffersize);
     char *data = (char *)(((uintptr_t)buffer + (uintptr_t)63) / 64 * 64);
 
     // shift the beginning of all arrays but the first by 64 bytes to avoid cache miss conflicts on CPUs which
@@ -434,6 +434,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       for(int top = -border; top < height; top += ts - border2)
         for(int left = -border; left < width; left += ts - border2)
         {
+          memset(buffer, 0, buffersize);
           const int vblock = ((top + border) / (ts - border2)) + 1;
           const int hblock = ((left + border) / (ts - border2)) + 1;
           const int bottom = MIN(top + ts, height + border);
@@ -1074,6 +1075,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
       for(int top = -border; top < height; top += ts - border2)
         for(int left = -border; left < width; left += ts - border2)
         {
+          memset(buffer, 0, buffersize);
           float lblockshifts[2][2];
           const int vblock = ((top + border) / (ts - border2)) + 1;
           const int hblock = ((left + border) / (ts - border2)) + 1;

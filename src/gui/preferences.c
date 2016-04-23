@@ -281,6 +281,11 @@ void dt_gui_preferences_show()
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
 }
 
+static void cairo_destroy_from_pixbuf(guchar *pixels, gpointer data)
+{
+  cairo_destroy((cairo_t *)data);
+}
+
 static void tree_insert_presets(GtkTreeStore *tree_model)
 {
   GtkTreeIter iter, parent;
@@ -289,25 +294,32 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
 
   // Create a GdkPixbuf with a cairo drawing.
   // lock
-  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                         DT_PIXEL_APPLY_DPI(ICON_SIZE));
   cairo_t *lock_cr = cairo_create(lock_cst);
   cairo_set_source_rgb(lock_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_lock(lock_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
-  cairo_destroy(lock_cr);
+  dtgtk_cairo_paint_lock(lock_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0);
+  cairo_surface_flush(lock_cst);
   guchar *data = cairo_image_surface_get_data(lock_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
-  GdkPixbuf *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE, ICON_SIZE,
-                                                    cairo_image_surface_get_stride(lock_cst), NULL, NULL);
+  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  GdkPixbuf *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
+                                                    DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                    cairo_image_surface_get_stride(lock_cst),
+                                                    cairo_destroy_from_pixbuf, lock_cr);
+
   // check mark
-  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                          DT_PIXEL_APPLY_DPI(ICON_SIZE));
   cairo_t *check_cr = cairo_create(check_cst);
   cairo_set_source_rgb(check_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
-  cairo_destroy(check_cr);
+  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0);
+  cairo_surface_flush(check_cst);
   data = cairo_image_surface_get_data(check_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
-  GdkPixbuf *check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE, ICON_SIZE,
-                                                     cairo_image_surface_get_stride(check_cst), NULL, NULL);
+  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  GdkPixbuf *check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
+                                                     DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                     cairo_image_surface_get_stride(check_cst),
+                                                     cairo_destroy_from_pixbuf, check_cr);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select rowid, name, operation, autoapply, model, maker, lens, iso_min, "

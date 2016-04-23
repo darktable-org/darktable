@@ -176,6 +176,7 @@ local function depth(node)
 end
 
 parse_doc_node = function(node,parent,prev_name)
+  if node:get_attribute("skiped") == true then return "" end
   local node_name
   local parent_name = doc.get_name(parent)
   local result = ""

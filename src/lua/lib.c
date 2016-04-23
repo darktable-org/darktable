@@ -174,7 +174,7 @@ int dt_lua_init_early_lib(lua_State *L)
   lua_pushcfunction(L, expandable_member);
   dt_lua_type_register_const(L, dt_lua_lib_t, "expandable");
   lua_pushcfunction(L, expanded_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, dt_lua_lib_t, "expanded");
   lua_pushcfunction(L,position_member);
   dt_lua_type_register_const(L,dt_lua_lib_t,"position");
@@ -183,7 +183,7 @@ int dt_lua_init_early_lib(lua_State *L)
   lua_pushcfunction(L,views_member);
   dt_lua_type_register_const(L,dt_lua_lib_t,"views");
   lua_pushcfunction(L, visible_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, dt_lua_lib_t, "visible");
   lua_pushcfunction(L, on_screen_member);
   dt_lua_type_register_const(L, dt_lua_lib_t, "on_screen");

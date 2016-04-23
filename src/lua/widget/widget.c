@@ -64,6 +64,12 @@ static void on_destroy(GtkWidget *widget, gpointer user_data)
   dt_lua_unlock();
 }
 
+static gboolean on_destroy_wrapper(gpointer user_data)
+{
+  gtk_widget_destroy((GtkWidget*) user_data);
+  return false;
+}
+
 static int widget_gc(lua_State *L)
 {
   lua_widget lwidget;
@@ -72,7 +78,7 @@ static int widget_gc(lua_State *L)
   if(gtk_widget_get_parent(lwidget->widget)) {
     luaL_error(L,"Destroying a widget which is still parented, this should never happen\n");
   }
-  gtk_widget_destroy(lwidget->widget);
+  g_idle_add(on_destroy_wrapper,lwidget->widget);
   return 0;
 }
 
@@ -117,7 +123,7 @@ luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widge
   // add to the table
   lua_pushlightuserdata(L, widget_type);
   lua_pushcclosure(L, get_widget_params, 1);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_module_entry_new(L, -1, "widget", widget_type->name);
   lua_pop(L, 1);
   return type_id;
@@ -165,7 +171,7 @@ int dt_lua_widget_trigger_callback(lua_State *L)
     for(int i = 0 ; i < nargs ; i++) {
       lua_pushvalue(L,i+3);
     }
-    dt_lua_do_chunk_silent(L,nargs+1,0);
+    dt_lua_treated_pcall(L,nargs+1,0);
     dt_lua_redraw_screen();
   }
   return 0;
@@ -298,20 +304,20 @@ int dt_lua_init_widget(lua_State* L)
 
   widget_type.associated_type = dt_lua_init_gpointer_type(L,lua_widget);
   lua_pushcfunction(L,tooltip_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_widget, "tooltip");
   lua_pushcfunction(L,widget_gc);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L,lua_widget,"__gc");
   lua_pushcfunction(L,reset_member);
   dt_lua_type_register(L, lua_widget, "reset_callback");
   lua_pushcfunction(L,widget_call);
   dt_lua_type_setmetafield(L,lua_widget,"__call");
   lua_pushcfunction(L,sensitive_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_widget, "sensitive");
   lua_pushcfunction(L, dt_lua_widget_tostring_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L,lua_widget,"__tostring");
 
   dt_lua_init_widget_container(L);

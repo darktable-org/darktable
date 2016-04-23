@@ -402,6 +402,7 @@ darktable.gui.views.lighttable:set_text([[The lighttable view]])
 darktable.gui.views.tethering:set_text([[The tethering view]])
 darktable.gui.views.slideshow:set_text([[The slideshow view]])
 darktable.gui.views.print:set_text([[The print view]])
+darktable.gui.views.knight:set_skiped()
 
 --[[
 for k, v in darktable.gui.libs:unskiped_children() do
@@ -514,6 +515,14 @@ darktable.control.ending:set_text([[TRUE when darktable is terminating]]..para()
 darktable.control.dispatch:set_text([[Runs a function in the background. This function will be run at a later point, after luarc has finished running. If you do a loop in such a function, please check ]]..my_tostring(darktable.control.ending)..[[ in your loop to finish the function when DT exits]])
 darktable.control.dispatch:add_parameter("function","function",[[The call to dispatch]])
 darktable.control.dispatch:add_parameter("...","anything",[[extra parameters to pass to the function]])
+darktable.control.sleep:set_text("Suspends execution while not blocking darktable")
+darktable.control.sleep:add_parameter("delay","int","The delay in miliseconds to sleep")
+darktable.control.execute:set_text("Run a command in a shell while not blocking darktable")
+darktable.control.execute:add_parameter("command","string","The command to run, as in 'sh -c'")
+darktable.control.execute:add_return("int","The result of the system call")
+darktable.control.read:set_text("Block until a file is readable while not blocking darktable")
+darktable.control.read:add_parameter("file","file","The file object to wait for")
+
 
 darktable.gettext:set_text([[This table contains functions related to translating lua scripts]])
 darktable.gettext.gettext:set_text([[Translate a string using the darktable textdomain]])
@@ -777,7 +786,6 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.snapshot_direction_t:set_text([[Which part of the main window is occupied by a snapshot]])
 	types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
 	types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
-	types.yield_type:set_text([[What type of event to wait for]])
 	types.comp_type_t:set_text([[Type of compression for webp]])
 	types.lua_pref_type:set_text([[The type of value to save in a preference]])
 
@@ -1077,24 +1085,5 @@ local widget = dt.new_widget("button"){
 	--attributes.container:set_skiped();
 	attributes.values:set_skiped();
 
-	----------------------
-	--  SYSTEM          --
-	----------------------
-	doc.toplevel.system = doc.create_documentation_node(nil,doc.toplevel,"system")
-	local system = doc.toplevel.system
-	system:set_text([[This section documents changes to system functions.]])
-
-	doc.toplevel.system.coroutine = doc.create_documentation_node(nil,doc.toplevel.system,"coroutine")
-	system.coroutine:set_text("")
-	system.coroutine.yield = doc.document_function(nil,system.coroutine,"yield");
-	system.coroutine.yield:set_text([[Lua functions can yield at any point. The parameters and return types depend on why we want to yield.]]..para()..
-	[[A callback that is yielding allows other Lua code to run.]]..startlist()..
-	listel("WAIT_MS: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;")..
-	listel("FILE_READABLE: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
-	listel([[RUN_COMMAND: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
-endlist())
-system.coroutine.yield:add_parameter("type",types.yield_type,[[The type of yield.]])
-system.coroutine.yield:add_parameter("extra","variable",[[An extra parameter: integer for "WAIT_MS", open file for "FILE_READABLE", string for "RUN_COMMAND".]])
-system.coroutine.yield:add_return("variable",[[Nothing for "WAIT_MS" and "FILE_READABLE"; the returned code of the command for "RUN_COMMAND".]])
 --
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua

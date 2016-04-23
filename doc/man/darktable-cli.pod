@@ -101,7 +101,7 @@ The (hopefully) complete list of contributors to the project is:
 
 DREGGNAUTHORS -- don't translate this line!
 
-This man page was written by Richard Levitte E<lt>richard@levittr.orgE<gt>.
+This man page was written by Richard Levitte E<lt>richard@levitte.orgE<gt>.
 Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>.
 
 =head1 COPYRIGHT AND LICENSE

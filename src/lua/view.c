@@ -55,7 +55,8 @@ void dt_lua_register_view(lua_State *L, dt_view_t *module)
 
 static void on_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *new_view, gpointer user_data)
 {
-  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"const char*","view-changed",
       LUA_ASYNC_TYPENAME,"unknown",old_view,
       LUA_ASYNC_TYPENAME,"unknown",new_view,
