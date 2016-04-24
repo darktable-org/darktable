@@ -1518,9 +1518,9 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   if(N <= 1) return 0;
 
   // header lines
-  char key[16], value[256];
-  fscanf(f, "%15[^;];%255[^\n]\n", key, value);
-  if(g_strcmp0(key, "name"))
+  char key[16] = {0}, value[256] = {0};
+  int unused = fscanf(f, "%15[^;];%255[^\n]\n", key, value);
+  if(g_strcmp0(key, "name") || unused == EOF)
   {
     fprintf(stderr, "error: expected `name' in the first line\n");
     fclose(f);
@@ -1529,8 +1529,8 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   *name = g_strdup(value);
   N--;
 
-  fscanf(f, "%15[^;];%255[^\n]\n", key, value);
-  if(g_strcmp0(key, "description"))
+  unused = fscanf(f, "%15[^;];%255[^\n]\n", key, value);
+  if(g_strcmp0(key, "description") || unused == EOF)
   {
     fprintf(stderr, "error: expected `description' in the second line\n");
     fclose(f);
@@ -1539,8 +1539,8 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   *description = g_strdup(value);
   N--;
 
-  fscanf(f, "%15[^;];%d\n", key, num_gray);
-  if(g_strcmp0(key, "num_gray"))
+  unused = fscanf(f, "%15[^;];%d\n", key, num_gray);
+  if(g_strcmp0(key, "num_gray") || unused == EOF)
   {
     fprintf(stderr, "error: missing num_gray in csv\n");
     fclose(f);
@@ -1549,7 +1549,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   N--;
 
   // skip the column title line
-  fscanf(f, "%*[^\n]\n");
+  unused = fscanf(f, "%*[^\n]\n");
   N--;
 
   double *target_L = (double *)calloc(sizeof(double), (N + 4));
@@ -1578,7 +1578,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
     }
   }
 
-  if(r == 0) fprintf(stderr, "just keeping compiler happy\n");
+  if(r == 0 || unused == EOF) fprintf(stderr, "just keeping compiler happy\n");
   fclose(f);
   return N;
 }
