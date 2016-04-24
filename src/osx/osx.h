@@ -22,6 +22,7 @@ extern "C" {
 
 void dt_osx_autoset_dpi(GtkWidget *widget);
 void dt_osx_allow_fullscreen(GtkWidget *widget);
+gboolean dt_osx_file_trash(const char *filename, GError **error);
 
 #ifdef __cplusplus
 }

@@ -43,6 +43,9 @@
 #ifndef __WIN32__
 #include <glob.h>
 #endif
+#ifdef __APPLE__
+#include "osx/osx.h"
+#endif
 
 typedef struct dt_control_time_offset_t
 {
@@ -768,7 +771,11 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
     GError *gerror = NULL;
     if (send_to_trash)
     {
+      #ifdef __APPLE__
+      delete_success = dt_osx_file_trash(filename, &gerror);
+      #else
       delete_success = g_file_trash(gfile, NULL /*cancellable*/, &gerror);
+      #endif
     }
     else
     {
@@ -819,6 +826,8 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
         delete_status = _DT_DELETE_STATUS_STOP_PROCESSING;
       }
     }
+    if (gerror != NULL)
+      g_error_free(gerror);
   }
 
   if (gfile != NULL)
