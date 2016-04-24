@@ -492,7 +492,7 @@ treeview.view *:selected
    background-color: shade(@selected_bg_color, 1.2);
 }
 
-dialog scrolledwindow 
+dialog scrolledwindow
 {
   background-color: transparent;
 }
@@ -588,6 +588,15 @@ filechooserdialog sidebar-row
 filechooserdialog sidebar-row:hover
 {
   background-color: shade(@selected_bg_color, 1.7);
+}
+
+progressbar
+{
+  background-color: @text_color;
+}
+progressbar progress
+{
+  background-color: @fg_color;
 }
 
 cell:selected
