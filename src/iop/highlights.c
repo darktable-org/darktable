@@ -538,7 +538,7 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
   const uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for schedule(dynamic) default(none)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -567,7 +567,8 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
           {
             for(int offset_i = -2; offset_i <= 0; offset_i++)
             {
-              if (clipped) {
+              if (clipped)
+              {
                 clipped = 0;
                 for(int jj = offset_j; jj <= offset_j + 2; jj++)
                 {
@@ -623,18 +624,13 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
             H *= ratio;
           }
 
-          switch(FCxtrans(j, i, roi_out, xtrans))
-          {
-            case 0:
-              out[0] = L - H / 6.0f + C / SQRT12;
-              break;
-            case 1:
-              out[0] = L - H / 6.0f - C / SQRT12;
-              break;
-            case 2:
-              out[0] = L + H / 3.0f;
-              break;
-          }
+          float RGB[3] = { 0.0f, 0.0f, 0.0f };
+
+          RGB[0] = L - H / 6.0f + C / SQRT12;
+          RGB[1] = L - H / 6.0f - C / SQRT12;
+          RGB[2] = L + H / 3.0f;
+
+          out[0] = RGB[FCxtrans(j, i, roi_out, xtrans)];
         }
         else
           out[0] = in[0];
