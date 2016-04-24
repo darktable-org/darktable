@@ -433,7 +433,7 @@ separator, separator:hover
 }
 
 /* dialogs */
-dialog *
+dialog
 {
   border-radius: 0;
   border-style: none;
@@ -448,14 +448,19 @@ dialog *
   border-color:  shade(@selected_bg_color, 1.2);
 }
 
-dialog button
+dialog box *
+{
+   margin: 1px;
+}
+
+dialog button *
 {
   padding: 5pt;
   background-color: shade(@bg_color, 1.7);
   border-color:  shade(@bg_color, 1.7);
 }
 
-dialog button:hover
+dialog button:hover *
 {
   background-color: shade(@selected_bg_color, 1.7);
   border-color:  shade(@selected_bg_color, 1.7);
