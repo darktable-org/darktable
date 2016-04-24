@@ -573,7 +573,7 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
                 {
                   for(int ii = offset_i; ii <= offset_i + 2; ii++)
                   {
-                    const float val = in[(size_t)jj * roi_in->width + ii];
+                    const float val = in[(ssize_t)jj * roi_in->width + ii];
                     clipped = (clipped || (val > clip));
                   }
                 }
@@ -592,7 +592,7 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
           {
             for(int ii = -1; ii <= 1; ii++)
             {
-              const float val = in[(size_t)jj * roi_in->width + ii];
+              const float val = in[(ssize_t)jj * roi_in->width + ii];
               const int c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
               mean[c] += val;
               cnt[c]++;
