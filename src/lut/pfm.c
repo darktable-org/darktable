@@ -35,12 +35,12 @@ float *read_pfm(const char *filename, int *wd, int *ht)
 
   char magic[2];
   char scale_factor_string[64] = { 0 };
-  int width, height, cols;
+  int width, height, cols, unused = 0;
   // using fscanf to read floats only really works with LANG=C :(
-  fscanf(f, "%c%c %d %d ", &magic[0], &magic[1], &width, &height);
-  fscanf(f, " %63s ", scale_factor_string);
+  unused  = fscanf(f, "%c%c %d %d ", &magic[0], &magic[1], &width, &height);
+  unused += fscanf(f, " %63s ", scale_factor_string);
   float scale_factor = g_ascii_strtod(scale_factor_string, NULL);
-  if(magic[0] != 'P')
+  if(magic[0] != 'P' || unused == -1)
   {
     fprintf(stderr, "wrong input file format\n");
     fclose(f);
