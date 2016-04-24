@@ -276,11 +276,15 @@ entry {
   outline-style:none;
   text-shadow:none;
   background-color:shade(@selected_bg_color, 0.8);
+  min-height: 0;
+  min-width: 0;
 }
 #iop-plugin-ui entry selection,
 #lib-plugin-ui entry selection,
 entry selection {
   background-color:shade(@selected_bg_color, 1.7);
+  min-height: 0;
+  min-width: 0;
 }
 /* weird fix for black event boxes in light table lib modules: */
 #lib-plugin-ui eventbox
