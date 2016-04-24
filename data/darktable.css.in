@@ -101,6 +101,7 @@ button
   min-height: 5pt;
   min-width: 5pt;
 }
+
 #iop-plugin-ui * button
 {
   background-color: transparent;
@@ -157,16 +158,6 @@ table
   padding:0;
 }
 
-#view_dropdown *:hover
-#view_label:hover {
-  color: shade(@fg_color, 0.8);
-}
-
-#view_dropdown *:selected,
-#view_label:selected {
-  color: shade(@fg_color, 0.9);
-}
-
 #view_dropdown *
 {
   color: shade(@fg_color, 0.7);
@@ -177,6 +168,16 @@ table
 #view_dropdown *:disabled
 {
   color: shade(@fg_color, 0.5);
+}
+
+#view_dropdown *:selected,
+#view_label:selected {
+  color: shade(@fg_color, 0.9);
+}
+
+#view_dropdown menuitem:hover *
+{
+  color: @fg_color;
 }
 
 #panel_label
@@ -370,17 +371,23 @@ context-menu menuitem *:disabled
   background-color: transparent;
 }
 
+#lib-plugin-ui menuitem *,
+#iop-plugin-ui menuitem *,
 menuitem *
 {
   background-color: transparent;
 }
 
+#lib-plugin-ui menuitem,
+#iop-plugin-ui menuitem,
 menuitem
 {
   padding: 2pt;
   background-color:@really_dark_bg_color;
 }
 
+#lib-plugin-ui menuitem:hover,
+#iop-plugin-ui menuitem:hover,
 menuitem:hover
 {
   background-color: shade(@selected_bg_color, 1.7);
