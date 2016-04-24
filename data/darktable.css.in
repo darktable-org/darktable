@@ -345,6 +345,14 @@ scrollbar.contents.trough.highlight
   background-color: transparent;
 }
 
+#lib-plugin-ui scrollbar slider,
+#iop-plugin-ui scrollbar slider,
+scrollbar slider
+{
+    border-color: transparent;
+    background-color: @selected_bg_color;
+}
+
 context-menu
 {
   background-color: @really_dark_bg_color;
