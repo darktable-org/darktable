@@ -813,7 +813,7 @@ msgstr "Organizar y revelar imágenes de cámaras digitales"
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../data/darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
-msgstr "gráficos;fotografía,raw;"
+msgstr "gráficos;fotografía;raw;"
 
 #: ../src/cli/main.c:102
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
