@@ -46,6 +46,7 @@ endif(USE_LUA)
 #
 # Install (and generate when necessary) other system shares
 #
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in)
 file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
 add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
@@ -54,8 +55,14 @@ add_custom_command(
 		MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in
 		DEPENDS ${PO_FILES}
 )
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in)
-add_custom_target(darktable.desktop_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop)
+add_custom_target(
+  validate_darktable_desktop ALL
+  COMMAND ${desktop_file_validate_BIN} --warn-kde ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+  COMMENT "Checking validity of darktable.desktop"
+  )
+add_custom_target(darktable.desktop_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop validate_darktable_desktop)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ./share/applications)
 
 add_custom_command(
