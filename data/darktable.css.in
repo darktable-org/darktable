@@ -54,16 +54,17 @@ alignment
   border:0;
   padding:0;
 }
+combobox *,
 #lib-plugin-ui treeview,
 #lib-plugin-ui combobox *,
 #lib-plugin-ui combobox togglebutton *
 {
-  background-color: shade(@selected_bg_color, 0.8); /* 'transparent' doesn't work for those it seems */
+  background-color: transparent;
 }
+combobox *:hover,
 #lib-plugin-ui combobox *:hover
 {
-  background-color: shade(@selected_bg_color, 1.2); /* 'transparent' doesn't work for those it seems */
-  padding:1pt;
+  background-color: transparent;
 }
 
 /* bright background */
