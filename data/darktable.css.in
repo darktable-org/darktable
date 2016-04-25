@@ -63,6 +63,7 @@ alignment
 #lib-plugin-ui combobox *:hover
 {
   background-color: shade(@selected_bg_color, 1.2); /* 'transparent' doesn't work for those it seems */
+  padding:1pt;
 }
 
 /* bright background */
@@ -93,7 +94,7 @@ button
   box-shadow:none;
   outline-width:0;
   border-image:none;
-  padding:0;
+  padding:1pt;
   margin:0;
   border:0;
   background-color: shade(@selected_bg_color, 1.2);
@@ -104,6 +105,7 @@ button
 
 #iop-plugin-ui * button
 {
+  padding:1pt;
   background-color: transparent;
 }
 #lib-plugin-ui * button:hover,
@@ -476,7 +478,7 @@ dialog box *
 
 dialog button *
 {
-  padding: 5pt;
+  padding: 2pt;
   background-color: shade(@bg_color, 1.7);
   border-color:  shade(@bg_color, 1.7);
 }
