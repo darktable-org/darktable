@@ -2333,7 +2333,6 @@ char *dt_exif_xmp_read_string(const int imgid)
     {
       throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
     }
-    std::cout << xmpPacket << std::endl;
     return g_strdup(xmpPacket.c_str());
   }
   catch(Exiv2::AnyError &e)
