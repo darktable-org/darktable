@@ -545,8 +545,20 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
     float *out = (float *)ovoid + (size_t)roi_out->width * j;
     float *in = (float *)ivoid + (size_t)roi_in->width * j;
 
+    // bit vector used as ring buffer to remember clipping of current
+    // and last two columns, checking current pixel and its vertical
+    // neighbors
+    int cl = 0;
+
     for(int i = 0; i < roi_out->width; i++)
     {
+      // update clipping ring buffer
+      cl = (cl << 1) & 6;
+      if(j >= 2 && j <= roi_out->height - 3)
+      {
+        cl |= (in[-roi_in->width] > clip) | (in[0] > clip) | (in[roi_in->width] > clip);
+      }
+
       if(i < 2 || i > roi_out->width - 3 || j < 2 || j > roi_out->height - 3)
       {
         // fast path for border
@@ -554,28 +566,35 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
       }
       else
       {
-        // If there is a 3x3 block touching the current pixel which
-        // has no clipping, then there is no need to reconstruct the
-        // current pixel. This check avoids zippering in edge
-        // transitions from clipped to unclipped areas. The X-Trans
-        // sensor seems prone to this, unlike Bayer, due to its
-        // irregular pattern.
-        int clipped = 1;
-        if (in[0] <= clip)
+        // if current pixel is clipped, always reconstruct
+        int clipped = (in[0] > clip);
+        if(!clipped)
         {
-          for(int offset_j = -2; offset_j <= 0; offset_j++)
+          clipped = cl;
+          if(clipped)
           {
-            for(int offset_i = -2; offset_i <= 0; offset_i++)
+            // If the ring buffer can't show we are in an obviously
+            // unclipped region, this is the slow case: check if there
+            // is any 3x3 block touching the current pixel which has
+            // no clipping, as then don't need to reconstruct the
+            // current pixel. This avoids zippering in edge
+            // transitions from clipped to unclipped areas. The
+            // X-Trans sensor seems prone to this, unlike Bayer, due
+            // to its irregular pattern.
+            for(int offset_j = -2; offset_j <= 0; offset_j++)
             {
-              if (clipped)
+              for(int offset_i = -2; offset_i <= 0; offset_i++)
               {
-                clipped = 0;
-                for(int jj = offset_j; jj <= offset_j + 2; jj++)
+                if(clipped)
                 {
-                  for(int ii = offset_i; ii <= offset_i + 2; ii++)
+                  clipped = 0;
+                  for(int jj = offset_j; jj <= offset_j + 2; jj++)
                   {
-                    const float val = in[(ssize_t)jj * roi_in->width + ii];
-                    clipped = (clipped || (val > clip));
+                    for(int ii = offset_i; ii <= offset_i + 2; ii++)
+                    {
+                      const float val = in[(ssize_t)jj * roi_in->width + ii];
+                      clipped = (clipped || (val > clip));
+                    }
                   }
                 }
               }
