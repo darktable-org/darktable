@@ -233,6 +233,12 @@ frame * {
 
 /* due to css rubbish, we need to be more specific than anything else,
  * so we give the name of the parent widget: */
+#iop-plugin-ui notebook tab,
+#lib-plugin-ui notebook tab {
+  min-height: 1pt;
+  min-width: 1pt;
+}
+
 #iop-plugin-ui notebook,
 #lib-plugin-ui notebook,
 #iop-plugin-ui notebook tab *,
@@ -249,7 +255,7 @@ frame * {
 }
 #iop-plugin-ui notebook tab *,
 #lib-plugin-ui notebook tab * {
-  padding:5pt;
+  padding:3pt;
 }
 #iop-plugin-ui notebook tab *:hover,
 #lib-plugin-ui notebook tab *:hover
