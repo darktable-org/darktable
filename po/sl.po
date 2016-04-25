@@ -5,7 +5,6 @@
 # opombe:
 #  prvi osnutek slovenskega prevoda
 #  nisem prepričan o najboljših terminih za naslednje  angleške pojme
-#  prevodi s takimi besedami so označeni z xxx
 #
 # Seznam besed:
 # artifacts = artefakti
@@ -32,24 +31,20 @@
 # tethering = upravljanje s kamero
 # tiling = prekrivanje
 #
-# preveriti vse edninske, dvojinske in množinske oblike z delujočim programom
-#
-#
-#
 # Matjaž Jeran <matjaz.jeran@amis.net>, 2015, 2016.
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 2.03\n"
+"Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-20 19:32+0200\n"
-"PO-Revision-Date: 2016-04-19 19:57+0200\n"
+"PO-Revision-Date: 2016-04-24 14:02+0100\n"
 "Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.7.1\n"
+"X-Generator: Lokalize 2.0\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
 
@@ -201,8 +196,8 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"kadar imate surove in JPEG slike skupaj v eni mapi, nima smisla uvažati "
-"obeh. s tem stikalom preskočite uvoz slik v JPEG."
+"kadar imate surove in JPEG slike skupaj v eni mapi, nima smisla uvažati obeh. "
+"s tem stikalom preskočite uvoz slik v JPEG."
 
 #: ../build/src/preferences_gen.h:1648
 msgid "recursive directory traversal when importing filmrolls"
@@ -294,8 +289,8 @@ msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower)."
 msgstr ""
-"če je velikost predogledne sličice večja od te vrednosti, bi sličica "
-"izdelana mape, kjer so iz najkakovostnejši originali (bolje a počasnejše)."
+"če je velikost predogledne sličice večja od te vrednosti, bi sličica izdelana "
+"mape, kjer so iz najkakovostnejši originali (bolje a počasnejše)."
 
 #: ../build/src/preferences_gen.h:1877
 msgid "pen pressure control for brush masks"
@@ -334,13 +329,13 @@ msgstr "velikost čopiča (relativna)"
 #: ../build/src/preferences_gen.h:1931
 msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
-"reading controls specified attribute, absolute/relative - pressure reading "
-"is taken directly as attribute value or multiplied with pre-defined setting."
+"reading controls specified attribute, absolute/relative - pressure reading is "
+"taken directly as attribute value or multiplied with pre-defined setting."
 msgstr ""
-"izključena - merjenje pritiska izpuščeno, trdota/prosojnost/velikost čopiča "
-"- branje pritiska določene lastnosti, absolutne/relativne - detekcija "
-"pritiska prebrana direktno kot vrednost atributa ali pomnoženo s prej "
-"določeno vrednostjo."
+"izključena - merjenje pritiska izpuščeno, trdota/prosojnost/velikost čopiča - "
+"branje pritiska določene lastnosti, absolutne/relativne - detekcija pritiska "
+"prebrana direktno kot vrednost atributa ali pomnoženo s prej določeno "
+"vrednostjo."
 
 #: ../build/src/preferences_gen.h:1938
 msgid "smoothing of brush strokes"
@@ -420,8 +415,8 @@ msgid ""
 "import time or the crawler has to be enabled"
 msgstr ""
 "kadar je besedilna datoteka ob sliki, je lahko prikazana kot plast nad "
-"pomanjšanimi slikami na osvetljeni podlagi. besedilna datoteka je bila tam "
-"ob uvozu ali pa je potrebno aktivirati robotka"
+"pomanjšanimi slikami na osvetljeni podlagi. besedilna datoteka je bila tam ob "
+"uvozu ali pa je potrebno aktivirati robotka"
 
 #: ../build/src/preferences_gen.h:2085
 msgid "expand a single lighttable module at a time"
@@ -464,8 +459,8 @@ msgstr "rob okrog slike v načinu temnice"
 
 #: ../build/src/preferences_gen.h:2180
 msgid ""
-"process the image in darkroom mode with a small border. set to 0 if you "
-"don't want any border."
+"process the image in darkroom mode with a small border. set to 0 if you don't "
+"want any border."
 msgstr ""
 "obdelaj sliko v načinu temnice s tankim robom. Postavite na 0, če roba ne "
 "želite."
@@ -530,8 +525,8 @@ msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
 "for 20k images) and will never delete cached thumbnails again. it's safe "
-"though to delete these manually, if you want. light table performance will "
-"be increased greatly when browsing a lot. to generate all thumbnails of your "
+"though to delete these manually, if you want. light table performance will be "
+"increased greatly when browsing a lot. to generate all thumbnails of your "
 "entire collection offline, run 'darktable-generate-cache'."
 msgstr ""
 "če je to omogočeno, bo program pisal predogledne sličice na disk (.cache/"
@@ -539,8 +534,8 @@ msgstr ""
 "lahko zahteva veliko pomnilnika (nekaj GB za 20 tisoč slik) in ne bo nikoli "
 "več zbrisalo shranjene predogledne sličice. Lahko jih sicer čisto varno "
 "zbrišete ročno, če želite. Zmogljivost osvetljene mize s tem zelo povečamo, "
-"če veliko brskamo po slikah. če želite generirati vse predogledne sličice "
-"off line, poženemo 'darktable-generate-cache'."
+"če veliko brskamo po slikah. če želite generirati vse predogledne sličice off "
+"line, poženemo 'darktable-generate-cache'."
 
 #: ../build/src/preferences_gen.h:2327
 msgid "color manage cached thumbnails"
@@ -552,9 +547,9 @@ msgid ""
 "filmstrip can show correct colors. otherwise the results may look wrong once "
 "the display profile gets changed."
 msgstr ""
-"če je omogočeno bodo predogledne sličice imele upravljanje barv, tako da "
-"bodo na osvetljeni podlagi in kot kos filma kazale pravilne barve, če ne, so "
-"lahko rezultati napačnih barv, kadar se spremeni profil zaslona."
+"če je omogočeno bodo predogledne sličice imele upravljanje barv, tako da bodo "
+"na osvetljeni podlagi in kot kos filma kazale pravilne barve, če ne, so lahko "
+"rezultati napačnih barv, kadar se spremeni profil zaslona."
 
 #: ../build/src/preferences_gen.h:2346
 msgid "number of background threads"
@@ -593,9 +588,9 @@ msgstr "najmanjša količina pomnilnika (v MB) za en vmesnik za prekrivanje"
 
 #: ../build/src/preferences_gen.h:2419
 msgid ""
-"if set to a positive, non-zero value this variable defines the minimum "
-"amount of memory (in MB) that tiling should take for a single image buffer. "
-"has precedence over heuristics based on host_memory_limit (needs a restart)."
+"if set to a positive, non-zero value this variable defines the minimum amount "
+"of memory (in MB) that tiling should take for a single image buffer. has "
+"precedence over heuristics based on host_memory_limit (needs a restart)."
 msgstr ""
 "če je postavljena na pozitivno vrednost, le-ta določa najmanjšo količino "
 "pomnilnika (v MB) kolikor ga sestavljanje slik potrebuje za medpomnilnik za "
@@ -611,8 +606,8 @@ msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
 msgstr ""
-"te redundantne datoteke lahko kasneje ponovno uvozimo v druga bazo slik, "
-"tako da ohranimo vaše spremembe slik."
+"te redundantne datoteke lahko kasneje ponovno uvozimo v druga bazo slik, tako "
+"da ohranimo vaše spremembe slik."
 
 #: ../build/src/preferences_gen.h:2445
 msgid "store xmp tags in compressed format"
@@ -626,12 +621,12 @@ msgstr "samo veliki vnosi"
 #: ../build/src/preferences_gen.h:2484
 msgid ""
 "entries in xmp tags can get rather large and may exceed the available space "
-"to store the history stack in output files. this option allows xmp tags to "
-"be compressed and save space."
+"to store the history stack in output files. this option allows xmp tags to be "
+"compressed and save space."
 msgstr ""
-"vnosi značk xmp lahko zavzamejo kar veliko pomnilnika in lahko narastejo "
-"prek prostega prostora za sklad zgodovine na izhodni datoteki. Ta možnost "
-"omogoča stiskanje značk xmp in varčevanje s prostorom."
+"vnosi značk xmp lahko zavzamejo kar veliko pomnilnika in lahko narastejo prek "
+"prostega prostora za sklad zgodovine na izhodni datoteki. Ta možnost omogoča "
+"stiskanje značk xmp in varčevanje s prostorom."
 
 #: ../build/src/preferences_gen.h:2491
 msgid "activate OpenCL support"
@@ -667,8 +662,8 @@ msgid ""
 "very end. this can result in better quality sometimes, but will always be "
 "slower."
 msgstr ""
-"ta slika bo najprej obdelana v polni ločljivosti in nato zmanjšana. Včasih "
-"to pomaga k boljši kakovosti, ampak bo vedno počasnejša."
+"ta slika bo najprej obdelana v polni ločljivosti in nato zmanjšana. Včasih to "
+"pomaga k boljši kakovosti, ampak bo vedno počasnejša."
 
 #: ../build/src/preferences_gen.h:2552
 msgid "demosaicing for zoomed out darkroom mode"
@@ -691,8 +686,8 @@ msgstr "polna (možno da počasno)"
 
 #: ../build/src/preferences_gen.h:2591
 msgid ""
-"interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
-"but not as sharp. middle ground is using PPG + interpolation modes specified "
+"interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but "
+"not as sharp. middle ground is using PPG + interpolation modes specified "
 "below, full will use exactly the settings for full-size export. X-Trans "
 "sensors use VNG rather than PPG as middle ground."
 msgstr ""
@@ -759,17 +754,17 @@ msgid "kwallet"
 msgstr "kwallet"
 
 #: ../build/src/preferences_gen.h:2682
-#, fuzzy
 msgctxt "preferences"
 msgid "gnome keyring"
-msgstr "merjenje"
+msgstr "gnomova zbirka ključev"
 
 #: ../build/src/preferences_gen.h:2701
-#, fuzzy
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet, "
 "gnome keyring"
-msgstr "način shranjevanja gesla: avtomatsko, nič, libsecret, kwallet"
+msgstr ""
+"način shranjevanja gesla: avtomatsko, nič, libsecret, kwallet, gnomova zbirka "
+"ključev"
 
 #: ../build/src/preferences_gen.h:2708
 msgid "look for updated xmp files on startup"
@@ -777,8 +772,8 @@ msgstr "preglej osvežene datoteke xmp ob zagonu"
 
 #: ../build/src/preferences_gen.h:2720
 msgid ""
-"check file modification times of all xmp files on startup to check if any "
-"got updated in the meantime"
+"check file modification times of all xmp files on startup to check if any got "
+"updated in the meantime"
 msgstr ""
 "preveri spremenjene čase vseh datotek xmp ob zagonu, da bi ugotovili ali se "
 "je katera od njih medtem spremenila"
@@ -789,8 +784,8 @@ msgstr "program za predvajanje avdio datotek"
 
 #: ../build/src/preferences_gen.h:2743
 msgid ""
-"this external program is used to play audio files some cameras record to "
-"keep notes for images"
+"this external program is used to play audio files some cameras record to keep "
+"notes for images"
 msgstr ""
 "ta zunanji program uporabim za predvajanje avdio datotek, kjer nekatere "
 "kamere shranjujejo opombe k slikam"
@@ -847,8 +842,7 @@ msgstr "grafika;fotografije;surove;"
 #: ../src/cli/main.c:102
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
-"ŠE NAREDITI: se opravičujemo, zaradi omejitev vmesnika na moremo nastaviti "
-"BPP"
+"ŠE NAREDITI: se opravičujemo, zaradi omejitev vmesnika na moremo nastaviti BPP"
 
 #: ../src/cli/main.c:114
 msgid "unknown option for --hq"
@@ -1082,8 +1076,8 @@ msgstr ""
 #: ../src/common/history.c:247
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
-"najprej morate prekopirati zgodovino slike in šele potem jo lahko nalepite "
-"na drugo"
+"najprej morate prekopirati zgodovino slike in šele potem jo lahko nalepite na "
+"drugo"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428
 #: ../src/common/history.c:444 ../src/common/styles.c:716
@@ -1154,8 +1148,8 @@ msgstr "slike '%s' ni na voljo!"
 #: ../src/common/imageio.c:576
 #, c-format
 msgid ""
-"failed to allocate memory for %s, please lower the threads used for export "
-"or buy more memory."
+"failed to allocate memory for %s, please lower the threads used for export or "
+"buy more memory."
 msgstr ""
 "nisem mogel dobiti pomnilnika za %s, prosím, znižajte število niti za izvoz "
 "ali pa kupite še nekaj pomnilnika."
@@ -2123,8 +2117,7 @@ msgstr "inkluzivno in inverzno"
 
 #: ../src/develop/blend_gui.c:1813
 msgid ""
-"how to combine individual drawn mask and different channels of parametric "
-"mask"
+"how to combine individual drawn mask and different channels of parametric mask"
 msgstr ""
 "kako sestaviti posamično narisano masko in različne kanale parametrske maske"
 
@@ -2174,8 +2167,8 @@ msgid "move down"
 msgstr "pomakni navzdol"
 
 #. delete
-#: ../src/develop/imageop.c:862 ../src/libs/image.c:140
-#: ../src/libs/styles.c:361 ../src/libs/tagging.c:468
+#: ../src/develop/imageop.c:862 ../src/libs/image.c:140 ../src/libs/styles.c:361
+#: ../src/libs/tagging.c:468
 msgid "delete"
 msgstr "briši"
 
@@ -2645,8 +2638,8 @@ msgstr "preskoči slike v JPEG"
 
 #: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:446
 msgid ""
-"do not load files with an extension of .jpg or .jpeg. this can be useful "
-"when there are raw+JPEG in a directory."
+"do not load files with an extension of .jpg or .jpeg. this can be useful when "
+"there are raw+JPEG in a directory."
 msgstr ""
 "ne nalagaj datotek s podaljškom .jpg ali .jpeg. uporabno, kadar so v mapi "
 "tako surove slike kot slike v formatu JPEG."
@@ -2679,8 +2672,8 @@ msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
 msgstr ""
-"izberite slike iz spodnjega seznama, ki jih želite uvoziti v naslednji "
-"zvitek filma"
+"izberite slike iz spodnjega seznama, ki jih želite uvoziti v naslednji zvitek "
+"filma"
 
 #: ../src/gui/camera_import_dialog.c:544
 msgid "please use YYYY-MM-DD format for date override"
@@ -3033,8 +3026,7 @@ msgstr "zaslonka"
 msgid "focal length"
 msgstr "goriščna razdalja"
 
-#: ../src/gui/preferences.c:480 ../src/iop/borders.c:994
-#: ../src/iop/levels.c:581
+#: ../src/gui/preferences.c:480 ../src/iop/borders.c:994 ../src/iop/levels.c:581
 msgid "auto"
 msgstr "avto"
 
@@ -3739,9 +3731,9 @@ msgstr "[facebook] nepričakovan format spletnega naslova\n"
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/facebook.c:614
 msgid ""
-"step 1: a new window or tab of your browser should have been loaded. you "
-"have to login into your facebook account there and authorize darktable to "
-"upload photos before continuing."
+"step 1: a new window or tab of your browser should have been loaded. you have "
+"to login into your facebook account there and authorize darktable to upload "
+"photos before continuing."
 msgstr ""
 "korak 1: novo okno ali nov zavihek vašega brskalnika mora biti naložen. "
 "prijavljeni ste na vaš račun v facebooku in pred nadaljevanjem ste dovolili "
@@ -3812,8 +3804,7 @@ msgstr "odjava"
 
 #. Set default permission to private
 #: ../src/imageio/storage/facebook.c:959 ../src/imageio/storage/facebook.c:979
-#: ../src/imageio/storage/facebook.c:1026
-#: ../src/imageio/storage/facebook.c:1052
+#: ../src/imageio/storage/facebook.c:1026 ../src/imageio/storage/facebook.c:1052
 #: ../src/imageio/storage/facebook.c:1171 ../src/imageio/storage/flickr.c:474
 #: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1259
 #: ../src/imageio/storage/picasa.c:1272 ../src/imageio/storage/picasa.c:1343
@@ -3878,9 +3869,9 @@ msgstr "overovitev flickr: %s"
 
 #: ../src/imageio/storage/flickr.c:192
 msgid ""
-"step 1: a new window or tab of your browser should have been loaded. you "
-"have to login into your flickr account there and authorize darktable to "
-"upload photos before continuing."
+"step 1: a new window or tab of your browser should have been loaded. you have "
+"to login into your flickr account there and authorize darktable to upload "
+"photos before continuing."
 msgstr ""
 "korak1: novo okno ali nov zavihek vašega brskalnika mora biti naložen. "
 "prijavljeni ste na vaš račun v flickrju in pred nadaljevanjem ste dovolili "
@@ -3999,9 +3990,9 @@ msgstr "vnesite naslov knjige"
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/picasa.c:828
 msgid ""
-"step 1: a new window or tab of your browser should have been loaded. you "
-"have to login into your google+ account there and authorize darktable to "
-"upload photos before continuing."
+"step 1: a new window or tab of your browser should have been loaded. you have "
+"to login into your google+ account there and authorize darktable to upload "
+"photos before continuing."
 msgstr ""
 "korak 1: novo okno ali nov zavihek vašega brskalnika mora biti naložen. "
 "prijavljeni ste na vaš račun v google+ in pred nadaljevanjem ste dovolili "
@@ -4009,8 +4000,8 @@ msgstr ""
 
 #: ../src/imageio/storage/picasa.c:831
 msgid ""
-"step 2: paste the verification code shown to you in the browser and click "
-"the OK button once you are done."
+"step 2: paste the verification code shown to you in the browser and click the "
+"OK button once you are done."
 msgstr ""
 "korak 2: prilepite vaš verifikacijsko kodo iz brskalnika v darktable in "
 "kliknite gumb <OK>, ko ste opravili."
@@ -4141,8 +4132,7 @@ msgstr ""
 "spremeni robne sije pri vsaki velikosti efekta\n"
 "edine spremembe so posledica zavihkov luma in barvitosti"
 
-#: ../src/iop/atrous.c:1428 ../src/iop/colorzones.c:1103
-#: ../src/iop/soften.c:579
+#: ../src/iop/atrous.c:1428 ../src/iop/colorzones.c:1103 ../src/iop/soften.c:579
 msgid "mix"
 msgstr "mešano"
 
@@ -4343,8 +4333,7 @@ msgid "the size of bloom"
 msgstr "velikost doosvetlitve"
 
 #: ../src/iop/bloom.c:532 ../src/iop/colorreconstruction.c:1369
-#: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:437
-#: ../src/iop/sharpen.c:591
+#: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:437 ../src/iop/sharpen.c:591
 msgid "threshold"
 msgstr "prag"
 
@@ -4909,9 +4898,8 @@ msgid "lift"
 msgstr "dvigni"
 
 #: ../src/iop/colorbalance.c:574
-#, fuzzy
 msgid "factor of lift"
-msgstr "faktor"
+msgstr "faktor poudarjanja"
 
 #: ../src/iop/colorbalance.c:575 ../src/iop/colorbalance.c:614
 #: ../src/iop/colorbalance.c:653
@@ -4919,18 +4907,16 @@ msgid "factor"
 msgstr "faktor"
 
 #: ../src/iop/colorbalance.c:583
-#, fuzzy
 msgid "factor of red for lift"
-msgstr "faktor"
+msgstr "faktor poudarjanja rdeče"
 
 #: ../src/iop/colorbalance.c:592
 msgid "factor of green for lift"
-msgstr ""
+msgstr "faktor poudarjanja zelene"
 
 #: ../src/iop/colorbalance.c:601
-#, fuzzy
 msgid "factor of blue for lift"
-msgstr "faktor"
+msgstr "faktor poudarjanja modre"
 
 #. gamma
 #: ../src/iop/colorbalance.c:607 ../src/iop/colorbalance.c:614
@@ -4940,22 +4926,20 @@ msgid "gamma"
 msgstr "gama"
 
 #: ../src/iop/colorbalance.c:613
-#, fuzzy
 msgid "factor of gamma"
-msgstr "faktor"
+msgstr "faktor game"
 
 #: ../src/iop/colorbalance.c:622
-#, fuzzy
 msgid "factor of red for gamma"
-msgstr "faktor"
+msgstr "faktor rdeče v gami"
 
 #: ../src/iop/colorbalance.c:631
 msgid "factor of green for gamma"
-msgstr ""
+msgstr "faktor zelene v gami"
 
 #: ../src/iop/colorbalance.c:640
 msgid "factor of blue for gamma"
-msgstr ""
+msgstr "faktor modre v gami"
 
 #. gain
 #: ../src/iop/colorbalance.c:646 ../src/iop/colorbalance.c:653
@@ -4965,23 +4949,20 @@ msgid "gain"
 msgstr "prirastek"
 
 #: ../src/iop/colorbalance.c:652
-#, fuzzy
 msgid "factor of gain"
-msgstr "faktor"
+msgstr "faktor ojačanja"
 
 #: ../src/iop/colorbalance.c:661
-#, fuzzy
 msgid "factor of red for gain"
-msgstr "faktor"
+msgstr "faktor ojačanja rdeče"
 
 #: ../src/iop/colorbalance.c:670
 msgid "factor of green for gain"
-msgstr ""
+msgstr "faktor ojačanja zelene"
 
 #: ../src/iop/colorbalance.c:679
-#, fuzzy
 msgid "factor of blue for gain"
-msgstr "faktor"
+msgstr "faktor ojačanja modre"
 
 #: ../src/iop/colorcontrast.c:84
 msgid "color contrast"
@@ -5255,9 +5236,8 @@ msgid "hue"
 msgstr "odtenek"
 
 #: ../src/iop/colorreconstruction.c:650
-#, fuzzy
 msgid "[color reconstruction] module failed."
-msgstr "modul 'obnova barv' je izpadel"
+msgstr "modul 'obnova barv' je izpadel."
 
 #: ../src/iop/colorreconstruction.c:1370 ../src/iop/shadhi.c:849
 #: ../src/iop/tonemap.cc:299
@@ -5400,17 +5380,17 @@ msgid ""
 " - global average: fast, might show slightly wrong previews in high "
 "magnification; might sometimes protect saturation too much or too low in "
 "comparison to local average\n"
-" - local average: slower, might protect saturation better than global "
-"average by using near pixels as color reference, so it can still allow for "
-"more desaturation where required\n"
+" - local average: slower, might protect saturation better than global average "
+"by using near pixels as color reference, so it can still allow for more "
+"desaturation where required\n"
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
 "metoda za zavarovanja barv:\n"
 "- globalno povprečje: hitro, lahko prikaže rahlo napačne predoglede pri "
 "velikih povečavah;lahko včasih preveč zavaruje nasičenost preveč ali premalo "
 "glede na globalno povprečje\n"
-"- lokalno povprečje: počasnejše, lahko zavaruje nasičenost bolje kot "
-"globalno povprečje,\n"
+"- lokalno povprečje: počasnejše, lahko zavaruje nasičenost bolje kot globalno "
+"povprečje,\n"
 "ker uporablja bližnje piksle kot reference za barve in tako dovoljuje še "
 "zmanjšanje\n"
 "nasičenosti, kjer je potrebno\n"
@@ -5439,8 +5419,8 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "prag roba"
 
-#: ../src/iop/demosaic.c:2209 ../src/iop/demosaic.c:2219
-#: ../src/iop/dither.c:556 ../src/iop/highlights.c:733
+#: ../src/iop/demosaic.c:2209 ../src/iop/demosaic.c:2219 ../src/iop/dither.c:556
+#: ../src/iop/highlights.c:733
 msgid "method"
 msgstr "metoda"
 
@@ -5453,9 +5433,8 @@ msgid "AMaZE (slow)"
 msgstr "AMaZE (počasi)"
 
 #: ../src/iop/demosaic.c:2213
-#, fuzzy
 msgid "VNG4 (slow)"
-msgstr "AMaZE (počasi)"
+msgstr "VNG4 (počasi)"
 
 #: ../src/iop/demosaic.c:2214
 msgid "passthrough (monochrome) (experimental)"
@@ -5466,9 +5445,8 @@ msgid "demosaicing raw data method"
 msgstr "metoda za odstranjevanje mozaičnosti iz surovih slik"
 
 #: ../src/iop/demosaic.c:2221
-#, fuzzy
 msgid "VNG (slow)"
-msgstr "AMaZE (počasi)"
+msgstr "VNG (počasi)"
 
 #: ../src/iop/demosaic.c:2222
 msgid "Markesteijn 1-pass"
@@ -5567,9 +5545,8 @@ msgid "interpolated from ISO %d and %d"
 msgstr "interpolirano med ISO %d in %d"
 
 #: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:811
-#: ../src/iop/lens.c:2199 ../src/iop/levels.c:548
-#: ../src/libs/copy_history.c:278 ../src/libs/export.c:636
-#: ../src/libs/print_settings.c:1318
+#: ../src/iop/lens.c:2199 ../src/iop/levels.c:548 ../src/libs/copy_history.c:278
+#: ../src/libs/export.c:636 ../src/libs/print_settings.c:1318
 msgid "mode"
 msgstr "način"
 
@@ -5591,8 +5568,8 @@ msgstr "profil uporabljen za stabilizacijo variance"
 
 #: ../src/iop/denoiseprofile.c:1667
 msgid ""
-"method used in the denoising core. non-local means works best for "
-"`lightness' blending, wavelets work best for `color' blending"
+"method used in the denoising core. non-local means works best for `lightness' "
+"blending, wavelets work best for `color' blending"
 msgstr ""
 "metoda uporabljena v jedru odstranjevanja šuma, ne-lokalna povprečja je "
 "najbolje uporabiti za mešanje svetlobe, valovčki delujejo najbolje pri "
@@ -6345,7 +6322,6 @@ msgid "levels"
 msgstr "ravni"
 
 #: ../src/iop/levels.c:569
-#, fuzzy
 msgid ""
 "drag handles to set black, gray, and white points.  operates on L channel."
 msgstr ""
@@ -7051,15 +7027,13 @@ msgid "manual"
 msgstr "ročno"
 
 #: ../src/iop/tonecurve.c:787
-#, fuzzy
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data."
 msgstr ""
 "če je nastavljeno na avto potem krivulji a in b nimata pomena in nista "
-"prikazani. vrednosti barvitosti (a in b) za vsak piksel sta potem "
-"prilagojeni glede podatkov krivulje L. pri avto XYZ je podobno, a se nanaša "
-"na spremembe v prostoru XYZ."
+"prikazani. vrednosti barvitosti (a in b) za vsak piksel sta potem prilagojeni "
+"glede podatkov krivulje L."
 
 #: ../src/iop/tonemap.cc:74
 msgid "tone mapping"
@@ -7282,23 +7256,20 @@ msgstr ""
 "$(WATERMARK_TEXT)"
 
 #: ../src/iop/watermark.c:1278
-#, fuzzy
 msgid "text color"
-msgstr "barva"
+msgstr "barva besedila"
 
 #: ../src/iop/watermark.c:1280
-#, fuzzy
 msgid ""
 "text color, tag:\n"
 "$(WATERMARK_COLOR)"
 msgstr ""
-"barva vodnega znaka, značke:\n"
+"barva besedila, značka:\n"
 "$(WATERMARK_COLOR)"
 
 #: ../src/iop/watermark.c:1283
-#, fuzzy
 msgid "select text color"
-msgstr "izberi barvni ton"
+msgstr "izberi barvo besedila"
 
 #. Text font
 #: ../src/iop/watermark.c:1289
@@ -7477,8 +7448,8 @@ msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
 msgstr ""
-"število intervalnih omejitev na vsaki strani osredotočenega posnetka, "
-"število slik = (št_omejitev*2)+1"
+"število intervalnih omejitev na vsaki strani osredotočenega posnetka, število "
+"slik = (št_omejitev*2)+1"
 
 #: ../src/libs/camera.c:482
 msgid ""
@@ -7486,8 +7457,8 @@ msgid ""
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
-"število korakov na intervalno omejitev, št. korakov se da nastaviti na "
-"kameri in je navadno 3 korake na eno vrednost zaslonke\n"
+"število korakov na intervalno omejitev, št. korakov se da nastaviti na kameri "
+"in je navadno 3 korake na eno vrednost zaslonke\n"
 "drugače povedano, 3 koraki so 1EV ekspozicije med omejitvami."
 
 #. user specified properties
@@ -7728,26 +7699,24 @@ msgid "error loading file '%s'"
 msgstr "napaka pri nalaganju datoteke '%s'"
 
 #: ../src/libs/copy_history.c:244
-#, fuzzy
 msgid ""
 "copy part history stack of\n"
 "first selected image (ctrl-shift-c)"
 msgstr ""
 "kopirajte del sklada zgodovine\n"
-"prve izbrane slike"
+"prve izbrane slike (ctrl-shift-c)"
 
 #: ../src/libs/copy_history.c:247
 msgid "copy all"
 msgstr "kopiraj vse"
 
 #: ../src/libs/copy_history.c:250
-#, fuzzy
 msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
 msgstr ""
 "kopirajte sklad zgodovine\n"
-"prve izbrane slike"
+"prve izbrane slike (ctrl-c)"
 
 #: ../src/libs/copy_history.c:254
 msgid "discard"
@@ -7766,26 +7735,24 @@ msgid "paste"
 msgstr "prilepi"
 
 #: ../src/libs/copy_history.c:265
-#, fuzzy
 msgid ""
 "paste part history stack to\n"
 "all selected images (ctrl-shift-v)"
 msgstr ""
 "prilepite del sklada zgodovine\n"
-"v vse izbrane slike"
+"v vse izbrane slike (ctrl-shift-v)"
 
 #: ../src/libs/copy_history.c:270
 msgid "paste all"
 msgstr "prilepi vse"
 
 #: ../src/libs/copy_history.c:272
-#, fuzzy
 msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
 msgstr ""
 "prilepite sklad zgodovine\n"
-"v vse izbrane slike"
+"v vse izbrane slike (ctrl-v)"
 
 #: ../src/libs/copy_history.c:279
 msgid "append"
@@ -7939,9 +7906,8 @@ msgid ""
 msgstr "ali so elementi sloga dodani k zgodovini ali jo zamenjujejo"
 
 #: ../src/libs/export.c:664
-#, fuzzy
 msgid "export with current settings (ctrl-e)"
-msgstr "izvozi s trenutnimi nastavitvami"
+msgstr "izvozi s trenutnimi nastavitvami (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1184 ../src/libs/styles.c:66
@@ -7976,8 +7942,8 @@ msgstr "časovna cona kamere"
 
 #: ../src/libs/geotagging.c:479
 msgid ""
-"most cameras don't store the time zone in EXIF. give the correct time zone "
-"so the GPX data can be correctly matched"
+"most cameras don't store the time zone in EXIF. give the correct time zone so "
+"the GPX data can be correctly matched"
 msgstr ""
 "večina kamer v EXIFu ne shranjuje časovnih pasov. Podajte časovni pas, da se "
 "lahko podatki iz datoteke GPX ustrezno uskladijo s slikami"
@@ -8076,7 +8042,7 @@ msgstr "ustvari slog iz zgodovine"
 #: ../src/libs/history.c:74
 msgctxt "accel"
 msgid "apply style from popup menu"
-msgstr ""
+msgstr "uporabi slog iz roletnega menuja"
 
 #: ../src/libs/history.c:75
 msgctxt "accel"
@@ -8989,9 +8955,8 @@ msgid "print"
 msgstr "tiskaj"
 
 #: ../src/libs/print_settings.c:1338
-#, fuzzy
 msgid "print with current settings (ctrl-p)"
-msgstr "tiskaj s trenutnimi nastavitvami"
+msgstr "tiskaj s trenutnimi nastavitvami (ctrl-p)"
 
 #: ../src/libs/print_settings.c:1797
 msgctxt "accel"
@@ -9021,29 +8986,28 @@ msgid " but not "
 msgstr " razen "
 
 #: ../src/libs/select.c:102
-#, fuzzy
 msgid "select all images in current collection (ctrl-a)"
-msgstr "izberi vse slike iz trenutne zbirke"
+msgstr "izberi vse slike iz trenutne zbirke (ctrl-a)"
 
 #: ../src/libs/select.c:107
 msgid "select none"
 msgstr "ne izberi nič"
 
 #: ../src/libs/select.c:110
-#, fuzzy
 msgid "clear selection (ctrl-shift-a)"
-msgstr "izprazni izbiro"
+msgstr "izprazni izbiro (ctrl-shift-a)"
 
 #: ../src/libs/select.c:115
 msgid "invert selection"
 msgstr "inverzna izbira"
 
 #: ../src/libs/select.c:118
-#, fuzzy
 msgid ""
 "select unselected images\n"
 "in current collection (ctrl-!)"
-msgstr "izberi še neizbrane slike\\ v trenutni zbirki"
+msgstr ""
+"izberi še neizbrane slike\n"
+"v trenutni zbirki (ctrl-!)"
 
 #: ../src/libs/select.c:123
 msgid "select film roll"
@@ -9283,49 +9247,44 @@ msgstr "barvne oznake"
 
 #. setup list of tooltips
 #: ../src/libs/tools/colorlabels.c:67
-#, fuzzy
 msgid ""
 "toggle red label\n"
 "of selected images (f1)"
 msgstr ""
 "preklapljaj rdečo značko\n"
-"izbranih slik"
+"izbranih slik (f1)"
 
 #: ../src/libs/tools/colorlabels.c:68
-#, fuzzy
 msgid ""
 "toggle yellow label\n"
 "of selected images (f2)"
 msgstr ""
 "preklapljaj rumeno značko\n"
-"izbranih slik"
+"izbranih slik (f2)"
 
 #: ../src/libs/tools/colorlabels.c:69
-#, fuzzy
 msgid ""
 "toggle green label\n"
 "of selected images (f3)"
 msgstr ""
 "preklapljaj zeleno značko\n"
-"izbranih slik"
+"izbranih slik (f3)"
 
 #: ../src/libs/tools/colorlabels.c:70
-#, fuzzy
 msgid ""
 "toggle blue label\n"
 "of selected images (f4)"
 msgstr ""
 "preklapljaj modro značko\n"
-"izbranih slik"
+"izbranih slik (f4)"
 
 #: ../src/libs/tools/colorlabels.c:71
-#, fuzzy
 msgid ""
 "toggle purple label\n"
 "of selected images (f5)"
 msgstr ""
 "preklapljaj vijolično značko\n"
-"izbranih slik"
+"izbranih slik (f5)"
 
 #: ../src/libs/tools/colorlabels.c:72
 msgid "clear all labels of selected images"
@@ -9951,8 +9910,7 @@ msgstr "tiskaj"
 #: ../src/views/slideshow.c:165
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
-"konec slik. pritisnite katerokoli tipko za povratek v način osvetljene "
-"podlage"
+"konec slik. pritisnite katerokoli tipko za povratek v način osvetljene podlage"
 
 #: ../src/views/slideshow.c:300
 msgid "slideshow"
@@ -10168,8 +10126,8 @@ msgstr ""
 #~ "shift-klik za samo pomik lečja"
 
 #~ msgid ""
-#~ "automatically correct for vertical and horizontal perspective "
-#~ "distortions; fitting rotation,lens shift in both directions, and shear\n"
+#~ "automatically correct for vertical and horizontal perspective distortions; "
+#~ "fitting rotation,lens shift in both directions, and shear\n"
 #~ "ctrl-click to only fit rotation\n"
 #~ "shift-click to only fit lens shift\n"
 #~ "ctrl-shift-click to only fit rotation and lens shift"
@@ -10423,8 +10381,7 @@ msgstr ""
 #~ msgstr "izberite barvo vodnega znaka"
 
 #~ msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
-#~ msgstr ""
-#~ "vnesite poizvedbo, uporabite <, <=, >, >=, <>, =, [;] kot operatorje"
+#~ msgstr "vnesite poizvedbo, uporabite <, <=, >, >=, <>, =, [;] kot operatorje"
 
 #~ msgid ""
 #~ "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
