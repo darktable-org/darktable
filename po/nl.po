@@ -667,7 +667,7 @@ msgstr "organiseer en ontwikkel afbeeldingen van digitale camera's"
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../data/darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
-msgstr "grafische vormgeving, fotografie, raw;"
+msgstr "grafische vormgeving;fotografie;raw;"
 
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
