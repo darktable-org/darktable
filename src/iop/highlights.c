@@ -535,7 +535,7 @@ static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
                                void *const ovoid, const dt_iop_roi_t *const roi_in,
                                const dt_iop_roi_t *const roi_out, const float clip)
 {
-  const uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])self->dev->image_storage.xtrans;
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none)
