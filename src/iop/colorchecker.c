@@ -472,7 +472,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)module->params;
   if(g->patch >= p->num_patches || g->patch < 0) return;
-  if(dt_bauhaus_combobox_length(g->combobox_patch) < p->num_patches)
+  if(dt_bauhaus_combobox_length(g->combobox_patch) != p->num_patches)
   {
     dt_bauhaus_combobox_clear(g->combobox_patch);
     char cboxentry[1024];
@@ -481,6 +481,10 @@ void gui_update(struct dt_iop_module_t *self)
       snprintf(cboxentry, sizeof(cboxentry), _("patch #%d"), k);
       dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
     }
+    if(p->num_patches <= 24)
+      dtgtk_drawing_area_set_aspect_ratio(g->area, 2.0/3.0);
+    else
+      dtgtk_drawing_area_set_aspect_ratio(g->area, 1.0);
   }
   dt_bauhaus_slider_set(g->scale_L, p->target_L[g->patch] - p->source_L[g->patch]);
   dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - p->source_a[g->patch]);

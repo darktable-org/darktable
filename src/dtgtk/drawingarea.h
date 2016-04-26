@@ -57,6 +57,7 @@ typedef struct _GtkDarktableDrawingAreaClass
 GType dtgtk_drawing_area_get_type(void);
 
 GtkWidget *dtgtk_drawing_area_new_with_aspect_ratio(double aspect);
+void dtgtk_drawing_area_set_aspect_ratio(GtkWidget *w, double aspect);
 
 G_END_DECLS
 
