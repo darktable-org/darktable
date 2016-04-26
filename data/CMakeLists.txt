@@ -55,14 +55,17 @@ add_custom_command(
 		MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in
 		DEPENDS ${PO_FILES}
 )
-add_custom_target(
-  validate_darktable_desktop ALL
-  COMMAND ${desktop_file_validate_BIN} --warn-kde ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-  COMMENT "Checking validity of darktable.desktop"
-  )
-add_custom_target(darktable.desktop_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop validate_darktable_desktop)
+add_custom_target(darktable.desktop_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop)
+if(${VALIDATE_DESKTOP_FILE})
+  add_custom_target(
+    validate_darktable_desktop ALL
+    COMMAND ${desktop_file_validate_BIN} --warn-kde ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+    COMMENT "Checking validity of darktable.desktop"
+    )
+  add_dependencies(darktable.desktop_file validate_darktable_desktop)
+endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ./share/applications)
 
 add_custom_command(
