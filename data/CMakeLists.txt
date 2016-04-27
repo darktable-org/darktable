@@ -9,12 +9,16 @@ endif(USE_OPENCL)
 #
 # Generate and instal darktable.css
 #
-if ("${PC_GTK3_VERSION}" VERSION_GREATER "3.13.6")
-  set(GTK_CSS_CLASS "checked")
+if ("${PC_GTK3_VERSION}" VERSION_GREATER "3.19.0")
+  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
 else ()
-  set(GTK_CSS_CLASS "active")
-endif ()
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
+  if ("${PC_GTK3_VERSION}" VERSION_GREATER "3.13.6")
+    set(GTK_CSS_CLASS "checked")
+  else ()
+    set(GTK_CSS_CLASS "active")
+  endif ()
+  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable-3.18.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
+endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${SHARE_INSTALL}/darktable)
 
 #
@@ -42,6 +46,7 @@ endif(USE_LUA)
 #
 # Install (and generate when necessary) other system shares
 #
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in)
 file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
 add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
@@ -50,8 +55,17 @@ add_custom_command(
 		MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in
 		DEPENDS ${PO_FILES}
 )
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in)
 add_custom_target(darktable.desktop_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop)
+if(${VALIDATE_DESKTOP_FILE})
+  add_custom_target(
+    validate_darktable_desktop ALL
+    COMMAND ${desktop_file_validate_BIN} --warn-kde ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+    COMMENT "Checking validity of darktable.desktop"
+    )
+  add_dependencies(darktable.desktop_file validate_darktable_desktop)
+endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ./share/applications)
 
 add_custom_command(

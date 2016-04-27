@@ -265,6 +265,16 @@ else(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
   message(STATUS "Found intltool-merge")
 endif(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
 
+# we need desktop-file-validate to check darktable.desktop
+find_program(desktop_file_validate_BIN desktop-file-validate)
+if(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
+  message(STATUS "Missing desktop-file-validate, problems in darktable.desktop might go unnoticed")
+  set(VALIDATE_DESKTOP_FILE 0)
+else(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
+  message(STATUS "Found desktop-file-validate")
+  set(VALIDATE_DESKTOP_FILE 1)
+endif(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
+
 # we need an xslt interpreter to generate preferences_gen.h and darktablerc
 find_program(Xsltproc_BIN xsltproc)
 if(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")

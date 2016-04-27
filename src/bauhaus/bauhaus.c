@@ -415,9 +415,14 @@ static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButto
     // event might be in wrong system, transform ourselves:
     gint wx, wy, x, y;
     gdk_window_get_origin(gtk_widget_get_window(darktable.bauhaus->popup_window), &wx, &wy);
+
     gdk_device_get_position(
-        gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default())),
-        NULL, &x, &y);
+#if GTK_CHECK_VERSION(3, 20, 0)
+        gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))), 0, &x, &y);
+#else
+        gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default())), NULL, &x,
+        &y);
+#endif
     darktable.bauhaus->end_mouse_x = x - wx;
     darktable.bauhaus->end_mouse_y = y - wy;
     dt_bauhaus_widget_accept(darktable.bauhaus->current);
@@ -456,6 +461,12 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
 
 static void window_show(GtkWidget *w, gpointer user_data)
 {
+#if GTK_CHECK_VERSION(3, 20, 0)
+  gdk_seat_grab (
+      gdk_display_get_default_seat(gtk_widget_get_display(w)),
+      gtk_widget_get_window(w),
+      GDK_SEAT_CAPABILITY_ALL, TRUE, 0,0,0,0);
+#else
   GdkDisplay *display = gtk_widget_get_display(w);
   GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
   GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
@@ -471,6 +482,7 @@ static void window_show(GtkWidget *w, gpointer user_data)
     tmp = tmp->next;
   }
   g_list_free(devices);
+#endif
 }
 
 static void dt_bh_init(DtBauhausWidget *class)
@@ -1688,6 +1700,10 @@ void dt_bauhaus_hide_popup()
 {
   if(darktable.bauhaus->current)
   {
+#if GTK_CHECK_VERSION(3, 20, 0)
+    gdk_seat_ungrab(
+      gdk_display_get_default_seat(gtk_widget_get_display(GTK_WIDGET(darktable.bauhaus->current))));
+#else
     GdkDisplay *display = gdk_display_get_default();
     GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
     GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
@@ -1702,6 +1718,7 @@ void dt_bauhaus_hide_popup()
       tmp = tmp->next;
     }
     g_list_free(devices);
+#endif
     gtk_widget_hide(darktable.bauhaus->popup_window);
     darktable.bauhaus->current = NULL;
     // TODO: give focus to center view? do in accept() as well?
@@ -1722,17 +1739,17 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   if(w->module) dt_iop_request_focus(w->module);
 
   int offset = 0;
+  GtkAllocation tmp;
+  gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
 
+  gtk_widget_realize(darktable.bauhaus->popup_window);
   switch(darktable.bauhaus->current->type)
   {
     case DT_BAUHAUS_SLIDER:
     {
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       d->oldpos = d->pos;
-
-      GtkAllocation tmp;
-      gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
-      gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, tmp.width);
+      tmp.height = tmp.width;
       _start_cursor(6);
       break;
     }
@@ -1742,11 +1759,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       if(w->combo_populate) w->combo_populate(&w->module);
       // comboboxes change immediately
       darktable.bauhaus->change_active = 1;
-      GtkAllocation tmp;
-      gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-      gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width,
-                                  (tmp.height + get_line_space()) * d->num_labels);
+      tmp.height = (tmp.height + get_line_space()) * d->num_labels;
       GtkAllocation allocation_w;
       gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
       const int ht = allocation_w.height;
@@ -1773,6 +1787,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   GdkWindow *window = gtk_widget_get_window(darktable.bauhaus->popup_window);
   if(window) gdk_window_move(window, wx, wy);
   gtk_window_move(GTK_WINDOW(darktable.bauhaus->popup_window), wx, wy);
+  gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, tmp.height);
+  gtk_widget_set_size_request(darktable.bauhaus->popup_window, tmp.width, tmp.height);
   gtk_widget_show_all(darktable.bauhaus->popup_window);
   gtk_widget_grab_focus(darktable.bauhaus->popup_area);
 }

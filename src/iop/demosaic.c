@@ -942,7 +942,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             }
           for(int c = 0; c < 3; c++)
             out[4 * (width * (row + top) + col + left) + c] =
-              CLAMPS(avg[c] / avg[3], 0.f, processed_maximum[c]);
+              avg[c]/avg[3];
         }
     }
   }
@@ -1217,7 +1217,7 @@ static void vng_interpolate(float *out, const float *const in,
       {
         float tot = pix[color];
         if(c != color) tot += (sum[c] - sum[color]) / num;
-        brow[2][col][c] = CLAMPS(tot, 0.f, processed_maximum[c]);
+        brow[2][col][c] = tot;
       }
     }
     if(row > 3) /* Write buffer to image */

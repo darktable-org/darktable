@@ -61,7 +61,8 @@ static void gui_init_wrapper(struct dt_lib_module_t *self)
 static void gui_reset_wrapper(struct dt_lib_module_t *self)
 {
   lua_lib_data_t *gui_data =self->data;
-  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+  dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
+      0, NULL,NULL,
       LUA_ASYNC_TYPENAME,"lua_widget",gui_data->widget,
       LUA_ASYNC_TYPENAME,"const char*","reset",
       LUA_ASYNC_DONE);
@@ -116,17 +117,20 @@ static int async_lib_call(lua_State * L)
   lua_getuservalue(L,-1);
   lua_getfield(L,-1,event);
   if(lua_isnoneornil(L,-1)) {
+    lua_pop(L,7);
     return 0;
   }
   lua_pushvalue(L,2);
   lua_pushvalue(L,3);
   lua_pushvalue(L,4);
-  dt_lua_do_chunk_raise(L,3,0);
+  lua_call(L,3,0);
+  lua_pop(L,6);
   return 0;
 }
 static void view_enter_wrapper(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
 {
-  dt_lua_do_chunk_async(async_lib_call,
+  dt_lua_async_call_alien(async_lib_call,
+      0, NULL,NULL,
       LUA_ASYNC_TYPENAME,"const char*","view_enter",
       LUA_ASYNC_TYPENAME,"dt_lua_lib_t",self,
       LUA_ASYNC_TYPENAME,"dt_lua_view_t",old_view,
@@ -136,7 +140,8 @@ static void view_enter_wrapper(struct dt_lib_module_t *self,struct dt_view_t *ol
 
 static void view_leave_wrapper(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
 {
-  dt_lua_do_chunk_async(async_lib_call,
+  dt_lua_async_call_alien(async_lib_call,
+      0, NULL,NULL,
       LUA_ASYNC_TYPENAME,"const char*","view_leave",
       LUA_ASYNC_TYPENAME,"dt_lua_lib_t",self,
       LUA_ASYNC_TYPENAME,"dt_lua_view_t",old_view,
@@ -294,7 +299,7 @@ int dt_lua_init_lualib(lua_State *L)
   dt_lua_push_darktable_lib(L);
   lua_pushstring(L, "register_lib");
   lua_pushcfunction(L, &register_lib);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   lua_settable(L, -3);
   lua_pop(L, 1);
 

@@ -47,7 +47,7 @@ static void _guides_draw_callback(cairo_t *cr, const float x, const float y,
   lua_pushnumber(L, zoom_scale);
 
   // this will be called directly from the gui thread so we can just execute it, without caring about the gtk lock
-  dt_lua_do_chunk_silent(L, 6, 0);
+  dt_lua_treated_pcall(L,6,0);
 
   dt_lua_type_gpointer_drop(L,cr);
 
@@ -60,7 +60,7 @@ static GtkWidget *_guides_gui_callback(dt_iop_module_t *self, void *user_data)
   dt_lua_lock_silent(); // this code is called from the C side so we have to lock
   lua_State *L = darktable.lua_state.state;
   lua_rawgeti(L, LUA_REGISTRYINDEX, d->gui_callback_id);
-  dt_lua_do_chunk_silent(L, 0, 1);
+  dt_lua_treated_pcall(L,0,1);
 
 //   dt_lua_debug_stack(L);
   lua_widget widget;

@@ -2419,7 +2419,14 @@
     <name>codepaths/openmp_simd</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>enable usage of OpenMP SIMD codepaths. If enabled, and such codepath exists, it will have the highest priority</shortdescription>
+    <shortdescription>enable usage of OpenMP SIMD codepaths. if enabled, and such codepath exists, it will have the highest priority</shortdescription>
     <longdescription></longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>allow_lab_output</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>allow XYZ and Lab color spaces as output</shortdescription>
+    <longdescription>this is mainly useful for debugging and to create colorchecker lut styles externally.</longdescription>
   </dtconfig>
 </dtconfiglist>

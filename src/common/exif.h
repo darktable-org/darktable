@@ -48,6 +48,9 @@ int dt_exif_xmp_write(const int imgid, const char *filename);
 /** write xmp packet inside an image. */
 int dt_exif_xmp_attach(const int imgid, const char *filename);
 
+/** get the xmp blob for imgid. */
+char *dt_exif_xmp_read_string(const int imgid);
+
 /** read xmp sidecar file. */
 int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only);
 
@@ -60,6 +63,7 @@ void dt_exif_cleanup();
 
 /** encode / decode op params */
 char *dt_exif_xmp_encode(const unsigned char *input, const int len, int *output_len);
+char *dt_exif_xmp_encode_internal(const unsigned char *input, const int len, int *output_len, gboolean do_compress);
 unsigned char *dt_exif_xmp_decode(const char *input, const int len, int *output_len);
 
 /** look for color space hints in data and tell the caller if it's sRGB, AdobeRGB or something else. used for mipmaps */

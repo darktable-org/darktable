@@ -106,7 +106,7 @@ void dt_lua_init_lock()
 {
   pthread_mutexattr_t a;
   pthread_mutexattr_init(&a);
-  pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
+  //pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
   dt_pthread_mutex_init(&darktable.lua_state.mutex, &a);
   pthread_mutexattr_destroy(&a);
   // we want our lock initialized locked
@@ -121,15 +121,18 @@ void dt_lua_lock_internal(const char *function, const char *file, int line, gboo
     //g_assert(false);
   }
 
+#ifdef _DEBUG
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p waiting from %s:%d\n", g_thread_self(), function, line);
+#endif
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
 #ifdef _DEBUG
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s:%d (%s)\n", __FUNCTION__, file, line, function);
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p taken from %s:%d\n",  g_thread_self(), function, line);
 #endif
 }
 void dt_lua_unlock_internal(const char *function, int line)
 {
 #ifdef _DEBUG
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,function,line);
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p released from %s:%d\n",g_thread_self(), function,line);
 #endif
   dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
 }
@@ -147,7 +150,6 @@ void dt_lua_redraw_screen()
     g_idle_add(async_redraw,NULL);
   }
 }
-
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

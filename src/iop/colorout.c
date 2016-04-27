@@ -47,6 +47,7 @@ DT_MODULE_INTROSPECTION(4, dt_iop_colorout_params_t)
 
 typedef struct dt_iop_colorout_data_t
 {
+  dt_colorspaces_color_profile_type_t type;
   dt_colorspaces_color_mode_t mode;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
@@ -220,6 +221,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
+
+  if(d->type == DT_COLORSPACE_LAB)
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { roi_in->width, roi_in->height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    if(err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -400,7 +410,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
 
-  if(!isnan(d->cmatrix[0]))
+  if(d->type == DT_COLORSPACE_LAB)
+  {
+    memcpy(ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
+  }
+  else if(!isnan(d->cmatrix[0]))
   {
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
@@ -466,7 +480,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int ch = piece->colors;
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
 
-  if(!isnan(d->cmatrix[0]))
+  if(d->type == DT_COLORSPACE_LAB)
+  {
+    memcpy(ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
+  }
+  else if(!isnan(d->cmatrix[0]))
   {
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
@@ -540,6 +558,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
 
+  d->type = p->type;
   const dt_colorspaces_color_profile_type_t over_type = dt_conf_get_int("plugins/lighttable/export/icctype");
   gchar *over_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   const dt_iop_color_intent_t over_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");

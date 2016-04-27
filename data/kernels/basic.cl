@@ -44,7 +44,7 @@ rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
   const float pixel = read_imageui(in, sampleri, (int2)(x, y)).x;
 
   const int id = BL(ry+cy+y, rx+cx+x);
-  const float pixel_scaled = max(0.0f, (pixel - sub[id])) / div[id];
+  const float pixel_scaled = (pixel - sub[id]) / div[id];
 
   write_imagef(out, (int2)(x-cx, y-cy), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
 }
@@ -63,7 +63,6 @@ rawprepare_4f(read_only image2d_t in, write_only image2d_t out,
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   pixel.xyz = (pixel.xyz - black[0]) / div[0];
-  pixel.xyz = max(0.0f, pixel.xyz);
 
   write_imagef(out, (int2)(x-cx, y-cy), pixel);
 }

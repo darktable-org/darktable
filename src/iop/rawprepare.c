@@ -245,7 +245,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         const size_t pout = (size_t)j * roi_out->width + i;
 
         const int id = BL(roi_out, d, j, i);
-        out[pout] = MAX(0.0f, (in[pin] - d->sub[id]) / d->div[id]);
+        out[pout] = (in[pin] - d->sub[id]) / d->div[id];
       }
     }
   }
@@ -274,7 +274,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           const size_t pin = (size_t)ch * (roi_in->width * (j + csy) + csx + i) + c;
           const size_t pout = (size_t)ch * (j * roi_out->width + i) + c;
 
-          out[pout] = MAX(0.0f, (in[pin] - sub) / div);
+          out[pout] = (in[pin] - sub) / div;
         }
       }
     }
@@ -308,7 +308,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
       while((!dt_is_aligned(in, 16) || !dt_is_aligned(out, 16)) && (i < roi_out->width))
       {
         const int id = BL(roi_out, d, j, i);
-        *out = MAX(0.0f, ((float)(*in)) - d->sub[id]) / d->div[id];
+        *out = (((float)(*in)) - d->sub[id]) / d->div[id];
         i++;
         in++;
         out++;
@@ -331,8 +331,8 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
         __m128 flo = _mm_cvtepi32_ps(ilo);
         __m128 fhi = _mm_cvtepi32_ps(ihi);
 
-        flo = _mm_div_ps(_mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(flo, sub)), div);
-        fhi = _mm_div_ps(_mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(fhi, sub)), div);
+        flo = _mm_div_ps(_mm_sub_ps(flo, sub), div);
+        fhi = _mm_div_ps(_mm_sub_ps(fhi, sub), div);
 
         _mm_stream_ps(out, flo);
         out += 4;
@@ -371,7 +371,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
 
         const __m128 scaled = _mm_div_ps(_mm_sub_ps(input, sub), div);
 
-        _mm_stream_ps(out, _mm_max_ps(_mm_setzero_ps(), scaled));
+        _mm_stream_ps(out, scaled);
       }
     }
   }

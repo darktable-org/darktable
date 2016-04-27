@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-24 17:19+0100\n"
-"PO-Revision-Date: 2016-03-24 17:21+0100\n"
+"POT-Creation-Date: 2016-04-13 09:02+0200\n"
+"PO-Revision-Date: 2016-04-13 09:03+0200\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -667,7 +667,7 @@ msgstr "organiseer en ontwikkel afbeeldingen van digitale camera's"
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../data/darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
-msgstr "grafische vormgeving, fotografie, raw;"
+msgstr "grafische vormgeving;fotografie;raw;"
 
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
@@ -894,13 +894,13 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr "kopieer eerst de afbeeldingsgeschiedenis voordat je het op een andere toepast"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428 ../src/common/history.c:444 ../src/common/styles.c:716 ../src/common/styles.c:720
-#: ../src/develop/blend_gui.c:1818 ../src/develop/develop.c:1313 ../src/iop/ashift.c:4066 ../src/libs/live_view.c:435
+#: ../src/develop/blend_gui.c:1818 ../src/develop/develop.c:1313 ../src/iop/ashift.c:4262 ../src/libs/live_view.c:435
 msgid "on"
 msgstr "aan"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428 ../src/common/history.c:444 ../src/common/styles.c:716 ../src/common/styles.c:720
 #: ../src/develop/blend_gui.c:1600 ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1313 ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
-#: ../src/iop/ashift.c:4065 ../src/iop/ashift.c:4071 ../src/iop/colorin.c:1485 ../src/iop/demosaic.c:3854 ../src/iop/vignette.c:1139 ../src/libs/history.c:149
+#: ../src/iop/ashift.c:4261 ../src/iop/ashift.c:4267 ../src/iop/colorin.c:1485 ../src/iop/demosaic.c:3854 ../src/iop/vignette.c:1139 ../src/libs/history.c:149
 #: ../src/libs/live_view.c:434
 msgid "off"
 msgstr "uit"
@@ -922,19 +922,19 @@ msgstr "<h1>bedankt,</h1><p>alles heeft gewerkt, je kunt nu  de webbrowser <b>sl
 msgid "orphaned image"
 msgstr "verweesde afbeelding"
 
-#: ../src/common/image.c:1343
+#: ../src/common/image.c:1345
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "aanmaak lokale kopie lukt alleen als het origineel toegankelijk is "
 
-#: ../src/common/image.c:1357
+#: ../src/common/image.c:1359
 msgid "cannot create local copy."
 msgstr "aanmaak lokale kopie mislukt"
 
-#: ../src/common/image.c:1415 ../src/control/jobs/control_jobs.c:626
+#: ../src/common/image.c:1417 ../src/control/jobs/control_jobs.c:626
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "verwijderen van lokale kopie is niet mogelijk wanneer het origineel niet toegankelijk is"
 
-#: ../src/common/image.c:1567
+#: ../src/common/image.c:1569
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -2347,67 +2347,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "gebruik YYYY-MM-DD voor datum overschrijving"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:839
+#: ../src/gui/gtk.c:842
 msgctxt "accel"
 msgid "tethering view"
 msgstr "tethering weergave"
 
-#: ../src/gui/gtk.c:840
+#: ../src/gui/gtk.c:843
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "weergave bibliotheek"
 
-#: ../src/gui/gtk.c:841
+#: ../src/gui/gtk.c:844
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "weergave ontwikkelen"
 
-#: ../src/gui/gtk.c:842
+#: ../src/gui/gtk.c:845
 msgctxt "accel"
 msgid "map view"
 msgstr "bekijk kaart"
 
-#: ../src/gui/gtk.c:843
+#: ../src/gui/gtk.c:846
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "presentatieweergave"
 
-#: ../src/gui/gtk.c:844
+#: ../src/gui/gtk.c:847
 msgctxt "accel"
 msgid "print view"
 msgstr "printer weergave"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:867
+#: ../src/gui/gtk.c:870
 msgctxt "accel"
 msgid "quit"
 msgstr "verlaat"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:872
+#: ../src/gui/gtk.c:875
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "volledig scherm aan/uit"
 
-#: ../src/gui/gtk.c:873
+#: ../src/gui/gtk.c:876
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "verlaat volledig scherm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:881
+#: ../src/gui/gtk.c:884
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "zijpanelen aan/uit"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:884
+#: ../src/gui/gtk.c:887
 msgctxt "accel"
 msgid "toggle header"
 msgstr "header aan/uit"
 
 #. View-switch
-#: ../src/gui/gtk.c:887
+#: ../src/gui/gtk.c:890
 msgctxt "accel"
 msgid "switch view"
 msgstr "wissel weergave"
@@ -2675,7 +2675,7 @@ msgid "aperture"
 msgstr "diafragma"
 
 #. focal length
-#: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1319 ../src/gui/presets.c:489 ../src/iop/ashift.c:4083 ../src/libs/camera.c:575 ../src/libs/collect.h:34
+#: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1319 ../src/gui/presets.c:489 ../src/iop/ashift.c:4279 ../src/libs/camera.c:575 ../src/libs/collect.h:34
 #: ../src/libs/metadata_view.c:107
 msgid "focal length"
 msgstr "brandpuntsafstand"
@@ -3725,175 +3725,175 @@ msgstr "mix"
 msgid "make effect stronger or weaker"
 msgstr "effect versterken/afzwakken"
 
-#: ../src/iop/ashift.c:103
+#: ../src/iop/ashift.c:111
 msgid "perspective correction"
 msgstr "perspectiefcorrectie"
 
-#: ../src/iop/ashift.c:490 ../src/iop/watermark.c:254
+#: ../src/iop/ashift.c:499 ../src/iop/watermark.c:254
 msgctxt "accel"
 msgid "rotation"
 msgstr "draaiing"
 
-#: ../src/iop/ashift.c:491
+#: ../src/iop/ashift.c:500
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "lensverschuiving (v)"
 
-#: ../src/iop/ashift.c:492
+#: ../src/iop/ashift.c:501
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "lensverschuiving (h)"
 
-#: ../src/iop/ashift.c:493
+#: ../src/iop/ashift.c:502
 msgctxt "accel"
 msgid "shear"
 msgstr "plotten"
 
-#: ../src/iop/ashift.c:2258
+#: ../src/iop/ashift.c:2429
 msgid "automatic cropping failed"
 msgstr "automatisch uitsnijden mislukt"
 
-#: ../src/iop/ashift.c:2278
+#: ../src/iop/ashift.c:2449
 msgid "data pending - please repeat"
 msgstr "wacht op gegevens - herhaal aub"
 
-#: ../src/iop/ashift.c:2284
+#: ../src/iop/ashift.c:2455
 msgid "could not detect structural data in image"
 msgstr "in afbeelding zijn geen structuurgegevens gevonden"
 
-#: ../src/iop/ashift.c:2295
+#: ../src/iop/ashift.c:2466
 msgid "could not run outlier removal"
 msgstr "verwijderen uitschieters kon niet worden uitgevoerd"
 
-#: ../src/iop/ashift.c:2349
+#: ../src/iop/ashift.c:2520
 msgid "not enough structure for automatic correction"
 msgstr "voor automatische correctie is onvoldoende structuur zichtbaar"
 
-#: ../src/iop/ashift.c:2353
+#: ../src/iop/ashift.c:2524
 msgid "automatic correction failed, please correct manually"
 msgstr "automatische correctie is mislukt, corrigeer handmatig"
 
-#: ../src/iop/ashift.c:3849 ../src/iop/ashift.c:3850 ../src/iop/ashift.c:3946 ../src/iop/ashift.c:3947
+#: ../src/iop/ashift.c:4045 ../src/iop/ashift.c:4046 ../src/iop/ashift.c:4142 ../src/iop/ashift.c:4143
 #, c-format
 msgid "lens shift (%s)"
 msgstr "lensverschuiving (%s)"
 
-#: ../src/iop/ashift.c:3849 ../src/iop/ashift.c:3850 ../src/iop/ashift.c:3946 ../src/iop/ashift.c:3947 ../src/iop/clipping.c:1566 ../src/iop/clipping.c:1855
+#: ../src/iop/ashift.c:4045 ../src/iop/ashift.c:4046 ../src/iop/ashift.c:4142 ../src/iop/ashift.c:4143 ../src/iop/clipping.c:1566 ../src/iop/clipping.c:1855
 #: ../src/iop/clipping.c:1874
 msgid "horizontal"
 msgstr "horizontaal "
 
-#: ../src/iop/ashift.c:3849 ../src/iop/ashift.c:3850 ../src/iop/ashift.c:3946 ../src/iop/ashift.c:3947 ../src/iop/clipping.c:1565 ../src/iop/clipping.c:1856
+#: ../src/iop/ashift.c:4045 ../src/iop/ashift.c:4046 ../src/iop/ashift.c:4142 ../src/iop/ashift.c:4143 ../src/iop/clipping.c:1565 ../src/iop/clipping.c:1856
 #: ../src/iop/clipping.c:1873
 msgid "vertical"
 msgstr "verticaal"
 
-#: ../src/iop/ashift.c:4043 ../src/iop/graduatednd.c:1154 ../src/iop/watermark.c:1297
+#: ../src/iop/ashift.c:4239 ../src/iop/graduatednd.c:1154 ../src/iop/watermark.c:1297
 msgid "rotation"
 msgstr "draaiing"
 
-#: ../src/iop/ashift.c:4049
+#: ../src/iop/ashift.c:4245
 msgid "lens shift (vertical)"
 msgstr "lensverschuiving (verticaal)"
 
-#: ../src/iop/ashift.c:4054
+#: ../src/iop/ashift.c:4250
 msgid "lens shift (horizontal)"
 msgstr "lensverschuiving (horizontaal)"
 
-#: ../src/iop/ashift.c:4059
+#: ../src/iop/ashift.c:4255
 msgid "shear"
 msgstr "plotten"
 
-#: ../src/iop/ashift.c:4064 ../src/iop/clipping.c:2007 ../src/libs/live_view.c:341
+#: ../src/iop/ashift.c:4260 ../src/iop/clipping.c:2007 ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "hulplijnen"
 
-#: ../src/iop/ashift.c:4070 ../src/iop/clipping.c:1881
+#: ../src/iop/ashift.c:4266 ../src/iop/clipping.c:1881
 msgid "automatic cropping"
 msgstr "automatisch uitsnijden"
 
-#: ../src/iop/ashift.c:4072
+#: ../src/iop/ashift.c:4268
 msgid "largest area"
 msgstr "grootste gebied"
 
-#: ../src/iop/ashift.c:4073
+#: ../src/iop/ashift.c:4269
 msgid "original format"
 msgstr "origineel formaat"
 
 # Sommigen zullen liever 'model objectief' lezen (eeuwige discussie...)
-#: ../src/iop/ashift.c:4077
+#: ../src/iop/ashift.c:4273
 msgid "lens model"
 msgstr "lens type"
 
-#: ../src/iop/ashift.c:4078
+#: ../src/iop/ashift.c:4274
 msgid "generic"
 msgstr "algemeen"
 
-#: ../src/iop/ashift.c:4079
+#: ../src/iop/ashift.c:4275
 msgid "specific"
 msgstr "specifiek"
 
-#: ../src/iop/ashift.c:4092
+#: ../src/iop/ashift.c:4288
 msgid "crop factor"
 msgstr "cropfactor"
 
-#: ../src/iop/ashift.c:4097
+#: ../src/iop/ashift.c:4293
 msgid "lens dependence"
 msgstr "lens afhankelijkheid"
 
-#: ../src/iop/ashift.c:4107
+#: ../src/iop/ashift.c:4303
 msgid "aspect adjust"
 msgstr "verhouding aanpassen"
 
-#: ../src/iop/ashift.c:4117
+#: ../src/iop/ashift.c:4313
 msgid "automatic fit"
 msgstr "automatisch passen"
 
-#: ../src/iop/ashift.c:4136
+#: ../src/iop/ashift.c:4332
 msgid "get structure"
 msgstr "ontvang struktuur"
 
-#: ../src/iop/ashift.c:4181
+#: ../src/iop/ashift.c:4377
 msgid "rotate image"
 msgstr "draai afbeelding"
 
-#: ../src/iop/ashift.c:4182 ../src/iop/ashift.c:4183
+#: ../src/iop/ashift.c:4378 ../src/iop/ashift.c:4379
 msgid "apply lens shift correction in one direction"
 msgstr "correctie lensverschuiving in één richting toepassen"
 
-#: ../src/iop/ashift.c:4184
+#: ../src/iop/ashift.c:4380
 msgid "shear the image along one diagonal"
 msgstr "plot de afbeelding langs een diagonaal"
 
-#: ../src/iop/ashift.c:4185
+#: ../src/iop/ashift.c:4381
 msgid "display guide lines overlay"
 msgstr "weergeven rasterlijnen"
 
-#: ../src/iop/ashift.c:4186 ../src/iop/clipping.c:1884
+#: ../src/iop/ashift.c:4382 ../src/iop/clipping.c:1884
 msgid "automatically crop to avoid black edges"
 msgstr "automatisch uitsnijden om zwarte randen te voorkomen"
 
-#: ../src/iop/ashift.c:4187
+#: ../src/iop/ashift.c:4383
 msgid "lens model of the perspective correction: generic or according to the focal length"
 msgstr "perspectiefcorrectie voor type lens: algemeen of overeenkomstig brandpuntsafstand"
 
-#: ../src/iop/ashift.c:4189
+#: ../src/iop/ashift.c:4385
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr "brandpuntsafstand van de lens; indien aanwezig de standaard waarde van exif-data"
 
-#: ../src/iop/ashift.c:4191
+#: ../src/iop/ashift.c:4387
 msgid "crop factor of the camera sensor, default value set from exif data if available, manual setting is often required"
 msgstr "cropfactor van de camera sensor, indien aanwezig de standaard waarde genomen van exif-data, vaak is een handmatige invoer vereist"
 
-#: ../src/iop/ashift.c:4194
+#: ../src/iop/ashift.c:4390
 msgid "the level of lens dependent correction, set to maximum for full lens dependency, set to zero for the generic case"
 msgstr "het niveau van de lens afhankelijke correctie, geef maximaal voor volledige afhankelijkheid, kies nul voor algemene gevallen"
 
-#: ../src/iop/ashift.c:4196
+#: ../src/iop/ashift.c:4392
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr "aanpassen beeldverhouding door horizontaal en verticaal schalen"
 
-#: ../src/iop/ashift.c:4197
+#: ../src/iop/ashift.c:4393
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -3903,7 +3903,7 @@ msgstr ""
 "ctrl-klik is draaiing passend maken\n"
 "shift-klik is lensverschuiving passend maken"
 
-#: ../src/iop/ashift.c:4200
+#: ../src/iop/ashift.c:4396
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -3913,7 +3913,7 @@ msgstr ""
 "ctrl-klik is draaiing passend maken\n"
 "shift-klik is lensverschuiving passend maken"
 
-#: ../src/iop/ashift.c:4203
+#: ../src/iop/ashift.c:4399
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; fitting rotation,lens shift in both directions, and shear\n"
 "ctrl-click to only fit rotation\n"
@@ -3925,19 +3925,23 @@ msgstr ""
 "shift-klik lensverschuiving passend maken\n"
 "ctrl-shift-klik draaiing en lensverschuiving passend maken"
 
-#: ../src/iop/ashift.c:4209
+#: ../src/iop/ashift.c:4405
 msgid ""
 "analyse line structure in image\n"
-"ctrl-click for an additional edge enhancement"
+"ctrl-click for an additional edge enhancement\n"
+"shift-click for an additional detail enhancement\n"
+"ctrl-shift-click for a combination of both methods"
 msgstr ""
 "analyseer lijnstructuur in afbeelding\n"
-"ctrl-klik voor een aanvullende rand verbetering"
+"ctrl-klik voor een aanvullende rand verbetering\n"
+"shift-klik voor een aanvullende detail verbetering\n"
+"ctrl-shift-klik voor een combinatie van beide methoden"
 
-#: ../src/iop/ashift.c:4211
+#: ../src/iop/ashift.c:4409
 msgid "remove line structure information"
 msgstr "verwijder lijnstructuur gegevens"
 
-#: ../src/iop/ashift.c:4212
+#: ../src/iop/ashift.c:4410
 msgid "toggle visibility of structure lines"
 msgstr "zichtbaarheid structuurlijnen omkeren"
 
@@ -4361,13 +4365,13 @@ msgid "hue"
 msgstr "tint "
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:446 ../src/iop/colisa.c:366 ../src/iop/colorcorrection.c:282 ../src/iop/colorchecker.c:599 ../src/iop/colorize.c:441
+#: ../src/iop/channelmixer.c:446 ../src/iop/colisa.c:366 ../src/iop/colorcorrection.c:282 ../src/iop/colorchecker.c:614 ../src/iop/colorize.c:441
 #: ../src/iop/colorzones.c:1072 ../src/iop/colorzones.c:1106 ../src/iop/graduatednd.c:1182 ../src/iop/lowpass.c:663 ../src/iop/soften.c:707
 #: ../src/iop/splittoning.c:500 ../src/iop/vignette.c:1148
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/channelmixer.c:447 ../src/iop/colorchecker.c:581 ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1069 ../src/iop/colorzones.c:1107
+#: ../src/iop/channelmixer.c:447 ../src/iop/colorchecker.c:596 ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1069 ../src/iop/colorzones.c:1107
 msgid "lightness"
 msgstr "helderheid"
 
@@ -4820,40 +4824,40 @@ msgstr "zwart :D5"
 msgid "color checker lut"
 msgstr "color checker lut"
 
-#: ../src/iop/colorchecker.c:515
+#: ../src/iop/colorchecker.c:528
 #, c-format
 msgid "select patch `%s' (altered patches are marked with an outline)"
 msgstr "selecteer patch `%s' (gewijzigde patches worden gemarkeerd met een contour)"
 
-#: ../src/iop/colorchecker.c:572
+#: ../src/iop/colorchecker.c:587
 msgid "patch"
 msgstr "patch"
 
-#: ../src/iop/colorchecker.c:573
+#: ../src/iop/colorchecker.c:588
 msgid "color checker patch"
 msgstr "color checker patch"
 
-#: ../src/iop/colorchecker.c:580
+#: ../src/iop/colorchecker.c:595
 msgid "lightness offset"
 msgstr "compenseer helderheid"
 
-#: ../src/iop/colorchecker.c:584
+#: ../src/iop/colorchecker.c:599
 msgid "chroma offset green/red"
 msgstr "compenseer kleurwaarde groen/rood"
 
-#: ../src/iop/colorchecker.c:585
+#: ../src/iop/colorchecker.c:600
 msgid "green/red"
 msgstr "groen/rood"
 
-#: ../src/iop/colorchecker.c:591
+#: ../src/iop/colorchecker.c:606
 msgid "chroma offset blue/yellow"
 msgstr "compenseer kleurwaarde blauw/geel"
 
-#: ../src/iop/colorchecker.c:592
+#: ../src/iop/colorchecker.c:607
 msgid "blue/yellow"
 msgstr "blauw/geel"
 
-#: ../src/iop/colorchecker.c:598
+#: ../src/iop/colorchecker.c:613
 msgid "saturation offset"
 msgstr "compenseer verzadiging"
 
@@ -5238,7 +5242,7 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
-#: ../src/iop/demosaic.c:3829 ../src/iop/demosaic.c:3838 ../src/iop/dither.c:791 ../src/iop/highlights.c:829
+#: ../src/iop/demosaic.c:3829 ../src/iop/demosaic.c:3838 ../src/iop/dither.c:791 ../src/iop/highlights.c:899
 msgid "method"
 msgstr "methode"
 
@@ -5543,7 +5547,7 @@ msgstr "aanpassen belichtingscorrectie (EV)"
 msgid "percentage of bright values clipped out, toggle color picker to activate"
 msgstr "percentage van heldere waarden; uitgeclipt, activeer door kleurkiezer te schakelen"
 
-#: ../src/iop/exposure.c:860 ../src/iop/highlights.c:838
+#: ../src/iop/exposure.c:860 ../src/iop/highlights.c:908
 msgid "clipping threshold"
 msgstr "drempel clipping"
 
@@ -5773,27 +5777,27 @@ msgstr "korrelgrootte  (~ISO van de film)"
 msgid "the strength of applied grain"
 msgstr "mate waarmee de korrel wordt toegepast"
 
-#: ../src/iop/highlights.c:74
+#: ../src/iop/highlights.c:75
 msgid "highlight reconstruction"
 msgstr "hooglichten herstellen"
 
-#: ../src/iop/highlights.c:830
+#: ../src/iop/highlights.c:900
 msgid "clip highlights"
 msgstr "comprimeer hooglichten"
 
-#: ../src/iop/highlights.c:831
+#: ../src/iop/highlights.c:901
 msgid "reconstruct in LCh"
 msgstr "reconstrueer in LCh"
 
-#: ../src/iop/highlights.c:832
+#: ../src/iop/highlights.c:902
 msgid "reconstruct color"
 msgstr "reconstrueer kleur"
 
-#: ../src/iop/highlights.c:833
+#: ../src/iop/highlights.c:903
 msgid "highlight reconstruction method"
 msgstr "reconstrueer hooglichten"
 
-#: ../src/iop/highlights.c:836
+#: ../src/iop/highlights.c:906
 msgid "manually adjust the clipping threshold against magenta highlights (you shouldn't ever need to touch this)"
 msgstr "drempel voor clipping handmatig bijstellen t.o.v. magenta hooglichten (eigenlijk zou dit niet nodig moeten zijn)"
 
@@ -6415,15 +6419,15 @@ msgstr "monochroom"
 msgid "red filter"
 msgstr "rood filter"
 
-#: ../src/iop/monochrome.c:537
+#: ../src/iop/monochrome.c:573
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr "sleep en scrol met het muiswiel om het virtuele kleurenfilter aan te passen"
 
-#: ../src/iop/monochrome.c:552
+#: ../src/iop/monochrome.c:590
 msgid "how much to keep highlights"
 msgstr "hoeveelheid te behouden hooglichten"
 
-#: ../src/iop/monochrome.c:553 ../src/iop/shadhi.c:819 ../src/iop/splittoning.c:537
+#: ../src/iop/monochrome.c:591 ../src/iop/shadhi.c:819 ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "hooglichten"
 

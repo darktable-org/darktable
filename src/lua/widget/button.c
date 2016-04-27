@@ -28,7 +28,8 @@ static dt_lua_widget_type_t button_type = {
 
 static void clicked_callback(GtkButton *widget, gpointer user_data)
 {
-  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+  dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
+      0,NULL,NULL,
       LUA_ASYNC_TYPENAME,"lua_widget",user_data,
       LUA_ASYNC_TYPENAME,"const char*","clicked",
       LUA_ASYNC_DONE);
@@ -66,10 +67,10 @@ int dt_lua_init_widget_button(lua_State* L)
   dt_lua_init_widget_type(L,&button_type,lua_button,GTK_TYPE_BUTTON);
 
   lua_pushcfunction(L, tostring_member);
-  lua_pushcclosure(L, dt_lua_gtk_wrap, 1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L, lua_button, "__tostring");
   lua_pushcfunction(L,label_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "label");
   dt_lua_widget_register_gtk_callback(L,lua_button,"clicked","clicked_callback",G_CALLBACK(clicked_callback));
 

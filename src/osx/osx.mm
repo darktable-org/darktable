@@ -22,6 +22,7 @@
 #include <AppKit/AppKit.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkquartz.h>
+#include <glib.h>
 #include "osx.h"
 
 void dt_osx_autoset_dpi(GtkWidget *widget)
@@ -52,4 +53,27 @@ void dt_osx_allow_fullscreen(GtkWidget *widget)
     [native setCollectionBehavior: [native collectionBehavior] | NSWindowCollectionBehaviorFullScreenPrimary];
   }
 #endif
+}
+
+gboolean dt_osx_file_trash(const char *filename, GError **error)
+{
+  @autoreleasepool {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *err;
+
+    NSURL *url = [NSURL fileURLWithPath:@(filename)];
+
+    if ([fm respondsToSelector:@selector(trashItemAtURL:resultingItemURL:error:)]) {
+      if (![fm trashItemAtURL:url resultingItemURL:nil error:&err]) {
+        if (error != NULL)
+          *error = g_error_new_literal(G_IO_ERROR, err.code == NSFileNoSuchFileError ? G_IO_ERROR_NOT_FOUND : G_IO_ERROR_FAILED, err.localizedDescription.UTF8String);
+        return FALSE;
+      }
+    } else {
+      if (error != NULL)
+        *error = g_error_new_literal(G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, "trash not supported on OS X versions < 10.8");
+      return FALSE;
+    }
+  }
+  return TRUE;
 }

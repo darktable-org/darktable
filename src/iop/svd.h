@@ -41,10 +41,12 @@ static inline double PYTHAG(double a, double b)
 // m |  a   |  = m |  u  | diag(w) | v^t | n
 //   |      |      |     |         |     |
 //
+// where the data layout of a (in) and u (out) is strided by str for every row
 static inline int dsvd(
-    double *a,    // input matrix a[j*n + i] is j-th row and i-th column. will be overwritten by u
+    double *a,    // input matrix a[j*str + i] is j-th row and i-th column. will be overwritten by u
     int m,        // number of rows of a and u
     int n,        // number of cols of a and u
+    int str,      // row stride of a and u
     double *w,    // output singular values w[n]
     double *v)    // output v matrix v[n*n]
 {
@@ -70,31 +72,31 @@ static inline int dsvd(
     if (i < m) 
     {
       for (k = i; k < m; k++) 
-        scale += fabs(a[k*n+i]);
+        scale += fabs(a[k*str+i]);
       if (scale) 
       {
         for (k = i; k < m; k++) 
         {
-          a[k*n+i] = a[k*n+i]/scale;
-          s += a[k*n+i] * a[k*n+i];
+          a[k*str+i] = a[k*str+i]/scale;
+          s += a[k*str+i] * a[k*str+i];
         }
-        f = a[i*n+i];
+        f = a[i*str+i];
         g = -SIGN(sqrt(s), f);
         h = f * g - s;
-        a[i*n+i] = f - g;
+        a[i*str+i] = f - g;
         if (i != n - 1) 
         {
           for (j = l; j < n; j++) 
           {
             for (s = 0.0, k = i; k < m; k++) 
-              s += a[k*n+i] * a[k*n+j];
+              s += a[k*str+i] * a[k*str+j];
             f = s / h;
             for (k = i; k < m; k++) 
-              a[k*n+j] += f * a[k*n+i];
+              a[k*str+j] += f * a[k*str+i];
           }
         }
         for (k = i; k < m; k++) 
-          a[k*n+i] = a[k*n+i]*scale;
+          a[k*str+i] = a[k*str+i]*scale;
       }
     }
     w[i] = scale * g;
@@ -104,32 +106,32 @@ static inline int dsvd(
     if (i < m && i != n - 1) 
     {
       for (k = l; k < n; k++) 
-        scale += fabs(a[i*n+k]);
+        scale += fabs(a[i*str+k]);
       if (scale) 
       {
         for (k = l; k < n; k++) 
         {
-          a[i*n+k] = a[i*n+k]/scale;
-          s += a[i*n+k] * a[i*n+k];
+          a[i*str+k] = a[i*str+k]/scale;
+          s += a[i*str+k] * a[i*str+k];
         }
-        f = a[i*n+l];
+        f = a[i*str+l];
         g = -SIGN(sqrt(s), f);
         h = f * g - s;
-        a[i*n+l] = f - g;
+        a[i*str+l] = f - g;
         for (k = l; k < n; k++) 
-          rv1[k] = a[i*n+k] / h;
+          rv1[k] = a[i*str+k] / h;
         if (i != m - 1) 
         {
           for (j = l; j < m; j++) 
           {
             for (s = 0.0, k = l; k < n; k++) 
-              s += a[j*n+k] * a[i*n+k];
+              s += a[j*str+k] * a[i*str+k];
             for (k = l; k < n; k++) 
-              a[j*n+k] += s * rv1[k];
+              a[j*str+k] += s * rv1[k];
           }
         }
         for (k = l; k < n; k++) 
-          a[i*n+k] = a[i*n+k]*scale;
+          a[i*str+k] = a[i*str+k]*scale;
       }
     }
     anorm = MAX(anorm, (fabs(w[i]) + fabs(rv1[i])));
@@ -143,12 +145,12 @@ static inline int dsvd(
       if (g) 
       {
         for (j = l; j < n; j++)
-          v[j*n+i] = a[i*n+j] / a[i*n+l] / g;
+          v[j*n+i] = a[i*str+j] / a[i*str+l] / g;
         /* double division to avoid underflow */
         for (j = l; j < n; j++) 
         {
           for (s = 0.0, k = l; k < n; k++) 
-            s += a[i*n+k] * v[k*n+j];
+            s += a[i*str+k] * v[k*n+j];
           for (k = l; k < n; k++) 
             v[k*n+j] += s * v[k*n+i];
         }
@@ -168,7 +170,7 @@ static inline int dsvd(
     g = w[i];
     if (i < n - 1) 
       for (j = l; j < n; j++) 
-        a[i*n+j] = 0.0;
+        a[i*str+j] = 0.0;
     if (g) 
     {
       g = 1.0 / g;
@@ -177,21 +179,21 @@ static inline int dsvd(
         for (j = l; j < n; j++) 
         {
           for (s = 0.0, k = l; k < m; k++) 
-            s += a[k*n+i] * a[k*n+j];
-          f = (s / a[i*n+i]) * g;
+            s += a[k*str+i] * a[k*str+j];
+          f = (s / a[i*str+i]) * g;
           for (k = i; k < m; k++) 
-            a[k*n+j] += f * a[k*n+i];
+            a[k*str+j] += f * a[k*str+i];
         }
       }
       for (j = i; j < m; j++) 
-        a[j*n+i] = a[j*n+i]*g;
+        a[j*str+i] = a[j*str+i]*g;
     }
     else 
     {
       for (j = i; j < m; j++) 
-        a[j*n+i] = 0.0;
+        a[j*str+i] = 0.0;
     }
-    ++a[i*n+i];
+    ++a[i*str+i];
   }
 
   /* diagonalize the bidiagonal form */
@@ -228,10 +230,10 @@ static inline int dsvd(
             s = (- f * h);
             for (j = 0; j < m; j++) 
             {
-              y = a[j*n+nm];
-              z = a[j*n+i];
-              a[j*n+nm] = y * c + z * s;
-              a[j*n+i]  = z * c - y * s;
+              y = a[j*str+nm];
+              z = a[j*str+i];
+              a[j*str+nm] = y * c + z * s;
+              a[j*str+i]  = z * c - y * s;
             }
           }
         }
@@ -298,10 +300,10 @@ static inline int dsvd(
         x = (c * y) - (s * g);
         for (jj = 0; jj < m; jj++) 
         {
-          y = a[jj*n+j];
-          z = a[jj*n+i];
-          a[jj*n+j] = y * c + z * s;
-          a[jj*n+i] = z * c - y * s;
+          y = a[jj*str+j];
+          z = a[jj*str+i];
+          a[jj*str+j] = y * c + z * s;
+          a[jj*str+i] = z * c - y * s;
         }
       }
       rv1[l] = 0.0;
@@ -312,6 +314,3 @@ static inline int dsvd(
   return 1;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
-// vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

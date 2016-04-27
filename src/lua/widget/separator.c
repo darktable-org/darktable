@@ -49,7 +49,7 @@ int dt_lua_init_widget_separator(lua_State* L)
   dt_lua_init_widget_type(L,&separator_type,lua_separator,GTK_TYPE_SEPARATOR);
 
   lua_pushcfunction(L,orientation_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_separator, "orientation");
   return 0;
 }

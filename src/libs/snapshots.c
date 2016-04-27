@@ -117,15 +117,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     d->vp_width = width;
     d->vp_height = height;
 
-    /* check if mouse pointer is on draggable area */
-    double xp = pointerx / d->vp_width;
-    double yp = pointery / d->vp_height;
-    double xpt = xp * 0.01;
-    double ypt = yp * 0.01;
-    gboolean mouse_over_control
-        = d->vertical ? ((xp > d->vp_xpointer - xpt && xp < d->vp_xpointer + xpt) ? TRUE : FALSE)
-                      : ((yp > d->vp_ypointer - ypt && yp < d->vp_ypointer + ypt) ? TRUE : FALSE);
-
     /* set x,y,w,h of surface depending on split align and invert */
     double x = d->vertical ? (d->inverted ? width * d->vp_xpointer : 0) : 0;
     double y = d->vertical ? 0 : (d->inverted ? height * d->vp_ypointer : 0);
@@ -141,7 +132,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
     /* draw the split line */
     cairo_set_source_rgb(cri, .7, .7, .7);
-    cairo_set_line_width(cri, (mouse_over_control ? 2.0 : 0.5));
+    cairo_set_line_width(cri, 1.);
 
     if(d->vertical)
     {
@@ -156,7 +147,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_stroke(cri);
 
     /* if mouse over control lets draw center rotate control, hide if split is dragged */
-    if(!d->dragging && mouse_over_control)
+    if(!d->dragging)
     {
       cairo_set_line_width(cri, 0.5);
       double s = width * HANDLE_SIZE;
@@ -188,8 +179,6 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
   {
     double xp = x / d->vp_width;
     double yp = y / d->vp_height;
-    double xpt = xp * 0.01;
-    double ypt = yp * 0.01;
 
     /* do the split rotating */
     double hhs = HANDLE_SIZE * 0.5;
@@ -209,8 +198,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       dt_control_queue_redraw_center();
     }
     /* do the dragging !? */
-    else if(which == 1 && ((d->vertical && xp > d->vp_xpointer - xpt && xp < d->vp_xpointer + xpt)
-                           || (yp > d->vp_ypointer - ypt && yp < d->vp_ypointer + ypt)))
+    else if(which == 1)
     {
       d->dragging = TRUE;
       d->vp_ypointer = yp;
@@ -230,7 +218,6 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int 
   {
     double xp = x / d->vp_width;
     double yp = y / d->vp_height;
-    // double xpt = xp*0.01;
 
     /* update x pointer */
     if(d->dragging)
@@ -238,11 +225,7 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int 
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
     }
-
-    /* is mouse over control or in draggin state?, lets redraw */
-    //    if(d->dragging || (xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt))
     dt_control_queue_redraw_center();
-
     return 1;
   }
 
@@ -653,14 +636,14 @@ void init(struct dt_lib_module_t *self)
   dt_lua_type_register_const_type(L, my_type, "max_snapshot");
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, lua_take_snapshot, 1);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "take_snapshot");
   lua_pushcfunction(L, snapshots_length);
   lua_pushcfunction(L, number_member);
   dt_lua_type_register_number_const_type(L, my_type);
   lua_pushcfunction(L, selected_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register_const_type(L, my_type, "selected");
 
   dt_lua_init_int_type(L, dt_lua_snapshot_t);
@@ -669,17 +652,17 @@ void init(struct dt_lib_module_t *self)
   dt_lua_type_register_const(L, dt_lua_snapshot_t, "filename");
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, name_member, 1);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_register_const(L, dt_lua_snapshot_t, "name");
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, lua_select, 1);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_snapshot_t, "select");
 
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, name_member, 1);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L,dt_lua_snapshot_t,"__tostring");
 
 
