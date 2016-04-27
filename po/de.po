@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-27 19:25+0200\n"
-"PO-Revision-Date: 2016-03-27 19:29+0200\n"
+"POT-Creation-Date: 2016-04-28 00:23+0200\n"
+"PO-Revision-Date: 2016-04-28 00:23+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -931,74 +931,78 @@ msgstr[0] "%d Bild von %d ist in der aktuellen Sammlung ausgewählt"
 msgstr[1] "%d Bilder von %d sind in der aktuellen Sammlung ausgewählt"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1116 ../src/iop/colorin.c:1223
+#: ../src/common/colorspaces.c:1076 ../src/iop/colorin.c:1223
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1117 ../src/common/colorspaces.c:1259
+#: ../src/common/colorspaces.c:1077 ../src/common/colorspaces.c:1219
 #: ../src/iop/colorin.c:1224 ../src/libs/print_settings.c:870
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
-#: ../src/common/colorspaces.c:1118 ../src/common/colorspaces.c:1264
+#: ../src/common/colorspaces.c:1078 ../src/common/colorspaces.c:1224
 #: ../src/iop/colorin.c:1225
 msgid "linear Rec709 RGB"
 msgstr "lineares Rec709-RGB"
 
-#: ../src/common/colorspaces.c:1119 ../src/common/colorspaces.c:1269
+#: ../src/common/colorspaces.c:1079 ../src/common/colorspaces.c:1229
 #: ../src/iop/colorin.c:1226
 msgid "linear Rec2020 RGB"
 msgstr "lineares Rec2020-RGB"
 
-#: ../src/common/colorspaces.c:1120 ../src/common/colorspaces.c:1274
+#: ../src/common/colorspaces.c:1080 ../src/common/colorspaces.c:1234
 msgid "linear XYZ"
 msgstr "lineares XYZ"
 
-#: ../src/common/colorspaces.c:1121 ../src/common/colorspaces.c:1279
+#: ../src/common/colorspaces.c:1081 ../src/common/colorspaces.c:1239
 #: ../src/libs/colorpicker.c:540 ../src/libs/colorpicker.c:578
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1122 ../src/common/colorspaces.c:1284
+#: ../src/common/colorspaces.c:1082 ../src/common/colorspaces.c:1244
 msgid "linear infrared BGR"
 msgstr "linears Infrarot-BGR"
 
-#: ../src/common/colorspaces.c:1123 ../src/common/colorspaces.c:1243
+#: ../src/common/colorspaces.c:1083 ../src/common/colorspaces.c:1203
 msgid "system display profile"
 msgstr "System-Bildschirmprofil"
 
-#: ../src/common/colorspaces.c:1124
+#: ../src/common/colorspaces.c:1084
 msgid "embedded ICC profile"
 msgstr "eingebettetes ICC-Profil"
 
-#: ../src/common/colorspaces.c:1125
+#: ../src/common/colorspaces.c:1085
 msgid "embedded matrix"
 msgstr "eingebettete Matrix"
 
-#: ../src/common/colorspaces.c:1126
+#: ../src/common/colorspaces.c:1086
 msgid "standard color matrix"
 msgstr "Standard-Farb-Matrix"
 
-#: ../src/common/colorspaces.c:1127
+#: ../src/common/colorspaces.c:1087
 msgid "enhanced color matrix"
 msgstr "Erweiterte Farb-Matrix"
 
-#: ../src/common/colorspaces.c:1128
+#: ../src/common/colorspaces.c:1088
 msgid "vendor color matrix"
 msgstr "Hersteller-Farb-Matrix"
 
-#: ../src/common/colorspaces.c:1129
+#: ../src/common/colorspaces.c:1089
 msgid "alternate color matrix"
 msgstr "Alternative Farb-Matrix"
 
-#: ../src/common/colorspaces.c:1249
+#: ../src/common/colorspaces.c:1209
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (z.B. JPEG)"
 
-#: ../src/common/colorspaces.c:1254 ../src/libs/print_settings.c:863
+#: ../src/common/colorspaces.c:1214 ../src/libs/print_settings.c:863
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sicher)"
+
+#: ../src/common/colorspaces.c:1249
+msgid "BRG (for testing)"
+msgstr "BRG (zum Testen)"
 
 #: ../src/common/cups_print.c:324
 #, c-format
@@ -1111,7 +1115,7 @@ msgstr ""
 msgid "cannot create local copy."
 msgstr "lokale Kopie kann nicht erzeugt werden."
 
-#: ../src/common/image.c:1413 ../src/control/jobs/control_jobs.c:626
+#: ../src/common/image.c:1413 ../src/control/jobs/control_jobs.c:629
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht entfernt werden, wenn die Originaldatei nicht "
@@ -1293,7 +1297,7 @@ msgstr "unter Null"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:351 ../src/control/control.c:354
+#: ../src/control/control.c:358 ../src/control/control.c:361
 msgid "working.."
 msgstr "Arbeite …"
 
@@ -1362,167 +1366,167 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "%d Bild von Kamera importieren"
 msgstr[1] "%d Bilder von Kamera importieren"
 
-#: ../src/control/jobs/control_jobs.c:134
+#: ../src/control/jobs/control_jobs.c:137
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "Fehler beim Erstellen einer Filmrolle für das Zielverzeichnis, Verschieben "
 "abgebrochen ..."
 
-#: ../src/control/jobs/control_jobs.c:313
+#: ../src/control/jobs/control_jobs.c:316
 msgid "exposure bracketing only works on Bayer raw images."
 msgstr "Belichtungsreihen funktionieren nur mit Bayer-Raw-Bildern."
 
-#: ../src/control/jobs/control_jobs.c:320
+#: ../src/control/jobs/control_jobs.c:323
 msgid "images have to be of same size and orientation!"
 msgstr "Bilder müssen gleiche Größe und Ausrichtung haben!"
 
-#: ../src/control/jobs/control_jobs.c:412
+#: ../src/control/jobs/control_jobs.c:415
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "%d Bild zusammenfassen"
 msgstr[1] "%d Bilder zusammenfassen"
 
-#: ../src/control/jobs/control_jobs.c:473
+#: ../src/control/jobs/control_jobs.c:476
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "Zusammengefasstes HDR ‚%s‘ geschrieben"
 
-#: ../src/control/jobs/control_jobs.c:500
+#: ../src/control/jobs/control_jobs.c:503
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "Dupliziere %d Bild"
 msgstr[1] "Dupliziere %d Bilder"
 
-#: ../src/control/jobs/control_jobs.c:527
+#: ../src/control/jobs/control_jobs.c:530
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "%d Bild spiegeln"
 msgstr[1] "%d Bilder spiegeln"
 
-#: ../src/control/jobs/control_jobs.c:602
+#: ../src/control/jobs/control_jobs.c:605
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "%d Bild entfernen"
 msgstr[1] "%d Bilder entfernen"
 
-#: ../src/control/jobs/control_jobs.c:705
+#: ../src/control/jobs/control_jobs.c:708
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "Konnte %s nicht in den Papierkorb verschieben%s%s"
 
-#: ../src/control/jobs/control_jobs.c:706
+#: ../src/control/jobs/control_jobs.c:709
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "Konnte %s nicht physikalisch von der Festplatte löschen%s%s"
 
-#: ../src/control/jobs/control_jobs.c:712
+#: ../src/control/jobs/control_jobs.c:715
 msgid "physically delete"
 msgstr "physikalisch von der Festplatte löschen"
 
-#: ../src/control/jobs/control_jobs.c:713
+#: ../src/control/jobs/control_jobs.c:716
 msgid "only remove from the collection"
 msgstr "nur aus der Sammlung entfernen"
 
-#: ../src/control/jobs/control_jobs.c:714
+#: ../src/control/jobs/control_jobs.c:717
 msgid "skip to next file"
 msgstr "zur nächsten Datei gehen"
 
-#: ../src/control/jobs/control_jobs.c:715
+#: ../src/control/jobs/control_jobs.c:718
 msgid "stop process"
 msgstr "Prozess abbrechen"
 
-#: ../src/control/jobs/control_jobs.c:720
+#: ../src/control/jobs/control_jobs.c:723
 msgid "trashing error"
 msgstr "Fehler beim Verschieben in den Papierkorb"
 
-#: ../src/control/jobs/control_jobs.c:721
+#: ../src/control/jobs/control_jobs.c:724
 msgid "deletion error"
 msgstr "Fehler beim Löschen"
 
-#: ../src/control/jobs/control_jobs.c:842
+#: ../src/control/jobs/control_jobs.c:851
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "%d Bild in den Papierkorb verschieben"
 msgstr[1] "%d Bilder in den Papierkorb verschieben"
 
-#: ../src/control/jobs/control_jobs.c:844
+#: ../src/control/jobs/control_jobs.c:853
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "%d Bild löschen"
 msgstr[1] "%d Bilder löschen"
 
-#: ../src/control/jobs/control_jobs.c:1006
+#: ../src/control/jobs/control_jobs.c:1015
 msgid "failed to parse GPX file"
 msgstr "Fehler beim lesen der GPX-Datei"
 
-#: ../src/control/jobs/control_jobs.c:1066
+#: ../src/control/jobs/control_jobs.c:1075
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "passende GPX-Position auf %d Bild angewandt"
 msgstr[1] "passende GPX-Position auf %d Bilder angewandt"
 
-#: ../src/control/jobs/control_jobs.c:1081
+#: ../src/control/jobs/control_jobs.c:1090
 #, c-format
 msgid "moving %d image"
 msgstr "%d Bild verschieben"
 
-#: ../src/control/jobs/control_jobs.c:1082
+#: ../src/control/jobs/control_jobs.c:1091
 #, c-format
 msgid "moving %d images"
 msgstr "%d Bilder verschieben"
 
-#: ../src/control/jobs/control_jobs.c:1087
+#: ../src/control/jobs/control_jobs.c:1096
 #, c-format
 msgid "copying %d image"
 msgstr "%d Bild kopieren"
 
-#: ../src/control/jobs/control_jobs.c:1088
+#: ../src/control/jobs/control_jobs.c:1097
 #, c-format
 msgid "copying %d images"
 msgstr "%d Bilder kopieren"
 
-#: ../src/control/jobs/control_jobs.c:1104
+#: ../src/control/jobs/control_jobs.c:1113
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "lokale Kopie von %d Bild anlegen"
 msgstr[1] "lokale Kopien von %d Bildern anlegen"
 
-#: ../src/control/jobs/control_jobs.c:1107
+#: ../src/control/jobs/control_jobs.c:1116
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "lokale Kopie von %d Bild entfernen"
 msgstr[1] "lokale Kopien von %d Bildern entfernen"
 
-#: ../src/control/jobs/control_jobs.c:1187
+#: ../src/control/jobs/control_jobs.c:1196
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "Exportiere %d Bild …"
 msgstr[1] "Exportiere %d Bilder …"
 
-#: ../src/control/jobs/control_jobs.c:1189
+#: ../src/control/jobs/control_jobs.c:1198
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "%d Bild nach %s exportieren"
 msgstr[1] "%d Bilder nach %s exportieren"
 
-#: ../src/control/jobs/control_jobs.c:1236 ../src/views/darkroom.c:464
+#: ../src/control/jobs/control_jobs.c:1245 ../src/views/darkroom.c:464
 #: ../src/views/print.c:283
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
 
-#: ../src/control/jobs/control_jobs.c:1369
+#: ../src/control/jobs/control_jobs.c:1378
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1532,11 +1536,11 @@ msgstr[0] ""
 msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder aus der Sammlung entfernt werden?"
 
-#: ../src/control/jobs/control_jobs.c:1373
+#: ../src/control/jobs/control_jobs.c:1382
 msgid "remove images?"
 msgstr "Bilder entfernen?"
 
-#: ../src/control/jobs/control_jobs.c:1412
+#: ../src/control/jobs/control_jobs.c:1421
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -1545,7 +1549,7 @@ msgstr[0] ""
 msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder in den Papierkorb verschoben werden?"
 
-#: ../src/control/jobs/control_jobs.c:1414
+#: ../src/control/jobs/control_jobs.c:1423
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1557,16 +1561,16 @@ msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder physikalisch von der Festplatte "
 "gelöscht werden?"
 
-#: ../src/control/jobs/control_jobs.c:1418
+#: ../src/control/jobs/control_jobs.c:1427
 msgid "trash images?"
 msgstr "Bilder in den Papierkorb verschieben?"
 
-#: ../src/control/jobs/control_jobs.c:1418
+#: ../src/control/jobs/control_jobs.c:1427
 msgid "delete images?"
 msgstr "Bilder löschen?"
 
-#: ../src/control/jobs/control_jobs.c:1443
-#: ../src/control/jobs/control_jobs.c:1497 ../src/imageio/storage/disk.c:92
+#: ../src/control/jobs/control_jobs.c:1452
+#: ../src/control/jobs/control_jobs.c:1506 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104
 #: ../src/imageio/storage/latex.c:165 ../src/libs/styles.c:208
@@ -1574,8 +1578,8 @@ msgstr "Bilder löschen?"
 msgid "select directory"
 msgstr "Verzeichnis wählen"
 
-#: ../src/control/jobs/control_jobs.c:1443
-#: ../src/control/jobs/control_jobs.c:1497 ../src/gui/hist_dialog.c:137
+#: ../src/control/jobs/control_jobs.c:1452
+#: ../src/control/jobs/control_jobs.c:1506 ../src/gui/hist_dialog.c:137
 #: ../src/gui/preferences.c:1032 ../src/gui/preferences.c:1055
 #: ../src/gui/presets.c:381 ../src/gui/styles_dialog.c:284
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
@@ -1586,12 +1590,12 @@ msgstr "Verzeichnis wählen"
 msgid "_cancel"
 msgstr "_Abbrechen"
 
-#: ../src/control/jobs/control_jobs.c:1444
-#: ../src/control/jobs/control_jobs.c:1498
+#: ../src/control/jobs/control_jobs.c:1453
+#: ../src/control/jobs/control_jobs.c:1507
 msgid "_select as destination"
 msgstr "als Ziel _wählen"
 
-#: ../src/control/jobs/control_jobs.c:1462
+#: ../src/control/jobs/control_jobs.c:1471
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1608,13 +1612,13 @@ msgstr[1] ""
 "werden?\n"
 "(alle nicht ausgewählten Duplikate werden auch verschoben)"
 
-#: ../src/control/jobs/control_jobs.c:1468
+#: ../src/control/jobs/control_jobs.c:1477
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "Bild verschieben?"
 msgstr[1] "Bilder verschieben?"
 
-#: ../src/control/jobs/control_jobs.c:1516
+#: ../src/control/jobs/control_jobs.c:1525
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1624,27 +1628,27 @@ msgstr[1] ""
 "Sollen die %d ausgewählten Bilder wirklich physikalisch nach %s kopiert "
 "werden?"
 
-#: ../src/control/jobs/control_jobs.c:1519
+#: ../src/control/jobs/control_jobs.c:1528
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "Bild kopieren?"
 msgstr[1] "Bilder kopieren?"
 
-#: ../src/control/jobs/control_jobs.c:1605
+#: ../src/control/jobs/control_jobs.c:1614
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "Konnte keine Einstellungen vom Speicher-Modul ‚%s‘ bekommen, breche Export "
 "ab …"
 
-#: ../src/control/jobs/control_jobs.c:1643
+#: ../src/control/jobs/control_jobs.c:1652
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "füge Zeitversatz zu %d Bild hinzu"
 msgstr[1] "füge Zeitversatz zu %d Bildern hinzu"
 
-#: ../src/control/jobs/control_jobs.c:1662
+#: ../src/control/jobs/control_jobs.c:1671
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
@@ -2033,7 +2037,7 @@ msgstr "Überblendmodus"
 msgid "choose blending mode"
 msgstr "Modus des Überblendens wählen"
 
-#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1304
+#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1308
 msgid "opacity"
 msgstr "Deckkraft"
 
@@ -2629,67 +2633,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "Zum Überschreiben des Datums bitte als Format YYYY-MM-DD benutzen"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:843
+#: ../src/gui/gtk.c:850
 msgctxt "accel"
 msgid "tethering view"
 msgstr "Tethering-Ansicht"
 
-#: ../src/gui/gtk.c:844
+#: ../src/gui/gtk.c:851
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "Leuchttisch-Ansicht"
 
-#: ../src/gui/gtk.c:845
+#: ../src/gui/gtk.c:852
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "Dunkelkammer-Ansicht"
 
-#: ../src/gui/gtk.c:846
+#: ../src/gui/gtk.c:853
 msgctxt "accel"
 msgid "map view"
 msgstr "Karten-Ansicht"
 
-#: ../src/gui/gtk.c:847
+#: ../src/gui/gtk.c:854
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "Diashow-Ansicht"
 
-#: ../src/gui/gtk.c:848
+#: ../src/gui/gtk.c:855
 msgctxt "accel"
 msgid "print view"
 msgstr "Druck-Ansicht"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:871
+#: ../src/gui/gtk.c:878
 msgctxt "accel"
 msgid "quit"
 msgstr "Verlassen"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:876
+#: ../src/gui/gtk.c:883
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "Vollbild umschalten"
 
-#: ../src/gui/gtk.c:877
+#: ../src/gui/gtk.c:884
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "Vollbild verlassen"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:885
+#: ../src/gui/gtk.c:892
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "Seitenränder umschalten"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:888
+#: ../src/gui/gtk.c:895
 msgctxt "accel"
 msgid "toggle header"
 msgstr "Kopfbereich umschalten"
 
 #. View-switch
-#: ../src/gui/gtk.c:891
+#: ../src/gui/gtk.c:898
 msgctxt "accel"
 msgid "switch view"
 msgstr "Ansicht wechseln"
@@ -2957,7 +2961,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1294
-#: ../src/gui/presets.c:463 ../src/iop/exposure.c:98 ../src/iop/exposure.c:828
+#: ../src/gui/presets.c:463 ../src/iop/exposure.c:98 ../src/iop/exposure.c:840
 #: ../src/iop/relight.c:370 ../src/libs/metadata_view.c:105
 msgid "exposure"
 msgstr "Belichtung"
@@ -4059,28 +4063,28 @@ msgstr "kräftig"
 msgid "dull"
 msgstr "matt"
 
-#: ../src/iop/atrous.c:1387 ../src/iop/equalizer.c:401 ../src/iop/nlmeans.c:709
+#: ../src/iop/atrous.c:1393 ../src/iop/equalizer.c:401 ../src/iop/nlmeans.c:709
 msgid "luma"
 msgstr "Luminanz"
 
 # uh, häßlich
-#: ../src/iop/atrous.c:1390
+#: ../src/iop/atrous.c:1396
 msgid "change lightness at each feature size"
 msgstr "Helligkeit je nach Strukturgröße ändern"
 
-#: ../src/iop/atrous.c:1393 ../src/iop/equalizer.c:402 ../src/iop/nlmeans.c:711
+#: ../src/iop/atrous.c:1399 ../src/iop/equalizer.c:402 ../src/iop/nlmeans.c:711
 msgid "chroma"
 msgstr "Chrominanz"
 
-#: ../src/iop/atrous.c:1396
+#: ../src/iop/atrous.c:1402
 msgid "change color saturation at each feature size"
 msgstr "Farbsättigung je nach Strukturgröße ändern"
 
-#: ../src/iop/atrous.c:1398
+#: ../src/iop/atrous.c:1404
 msgid "edges"
 msgstr "Kanten"
 
-#: ../src/iop/atrous.c:1402
+#: ../src/iop/atrous.c:1408
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -4089,12 +4093,12 @@ msgstr ""
 "dies ändert nur die Ergebnisse der Luminanz-\n"
 "und Chrominanz-Tabs"
 
-#: ../src/iop/atrous.c:1428 ../src/iop/colorzones.c:1103
+#: ../src/iop/atrous.c:1434 ../src/iop/colorzones.c:1103
 #: ../src/iop/soften.c:579
 msgid "mix"
 msgstr "einblenden"
 
-#: ../src/iop/atrous.c:1429 ../src/iop/colorzones.c:1105
+#: ../src/iop/atrous.c:1435 ../src/iop/colorzones.c:1105
 msgid "make effect stronger or weaker"
 msgstr "mache den Effekt stärker oder schwächer"
 
@@ -4180,7 +4184,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-Wert: Eingabe, y-Wert: Ausgabe. Arbeitet auf den RGB-Kanälen."
 
 #: ../src/iop/basecurve.c:862 ../src/iop/lens.c:2191 ../src/iop/vignette.c:1147
-#: ../src/iop/watermark.c:1308
+#: ../src/iop/watermark.c:1312
 msgid "scale"
 msgstr "Skalierung"
 
@@ -5513,7 +5517,7 @@ msgstr "Treffer für ISO %d gefunden"
 msgid "interpolated from ISO %d and %d"
 msgstr "aus ISO %d und %d interpoliert"
 
-#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:799
+#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:811
 #: ../src/iop/lens.c:2199 ../src/iop/levels.c:548
 #: ../src/libs/copy_history.c:278 ../src/libs/export.c:636
 #: ../src/libs/print_settings.c:1318
@@ -5677,66 +5681,66 @@ msgstr "Magic Lantern-Standard"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "Fehler beim Laden der Raw-Daten für Bild ‚%s‘"
 
-#: ../src/iop/exposure.c:801 ../src/iop/levels.c:550
+#: ../src/iop/exposure.c:813 ../src/iop/levels.c:550
 msgctxt "mode"
 msgid "manual"
 msgstr "manuell"
 
-#: ../src/iop/exposure.c:804 ../src/iop/levels.c:553 ../src/iop/tonecurve.c:783
+#: ../src/iop/exposure.c:816 ../src/iop/levels.c:553 ../src/iop/tonecurve.c:783
 #: ../src/iop/vignette.c:1138
 msgid "automatic"
 msgstr "automatisch"
 
-#: ../src/iop/exposure.c:813
+#: ../src/iop/exposure.c:825
 msgid "adjust the black level"
 msgstr "Schwarzwert anpassen"
 
-#: ../src/iop/exposure.c:815 ../src/iop/levels.c:616
+#: ../src/iop/exposure.c:827 ../src/iop/levels.c:616
 msgid "black"
 msgstr "Schwarz"
 
-#: ../src/iop/exposure.c:826
+#: ../src/iop/exposure.c:838
 msgid "adjust the exposure correction"
 msgstr "Belichtungskorrektur anpassen"
 
-#: ../src/iop/exposure.c:833
+#: ../src/iop/exposure.c:845
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
 "Prozentsatz der hellen Werte, die abgeschnitten werden. Zum aktivieren die "
 "Pipette auswählen"
 
-#: ../src/iop/exposure.c:835 ../src/iop/highlights.c:744
+#: ../src/iop/exposure.c:847 ../src/iop/highlights.c:744
 msgid "clipping threshold"
 msgstr "Abschneide-Schwellwert"
 
 # das muss weg
-#: ../src/iop/exposure.c:845
+#: ../src/iop/exposure.c:857
 msgid "percentile"
 msgstr "Perzentil"
 
-#: ../src/iop/exposure.c:849
+#: ../src/iop/exposure.c:861
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
 "Wo im Histogramm soll zum Entflackern gemessen werden. Z.B. 50% ist der "
 "Median"
 
-#: ../src/iop/exposure.c:854
+#: ../src/iop/exposure.c:866
 msgid "target level"
 msgstr "Ziel-Wert"
 
-#: ../src/iop/exposure.c:857
+#: ../src/iop/exposure.c:869
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "Gewünschte Belichtung des Bildes, in EV unterhalb einer Überbelichtung."
 
-#: ../src/iop/exposure.c:862
+#: ../src/iop/exposure.c:874
 msgid "computed EC: "
 msgstr "berechneter EC: "
 
-#: ../src/iop/exposure.c:867
+#: ../src/iop/exposure.c:879
 msgid "what exposure correction has actually been used"
 msgstr "welche Belichtungskorrektur wurde tatsächlich benutzt"
 
@@ -5918,7 +5922,7 @@ msgstr ""
 "Kompression des Verlaufs:\n"
 "0% = weich, 100% = hart"
 
-#: ../src/iop/graduatednd.c:1045 ../src/iop/watermark.c:1311
+#: ../src/iop/graduatednd.c:1045 ../src/iop/watermark.c:1315
 msgid "rotation"
 msgstr "Drehung"
 
@@ -6402,11 +6406,11 @@ msgstr "Tagessicht"
 msgid "night vision"
 msgstr "Nachtsicht"
 
-#: ../src/iop/lowlight.c:831
+#: ../src/iop/lowlight.c:837
 msgid "blue shift"
 msgstr "Blauverschiebung"
 
-#: ../src/iop/lowlight.c:833
+#: ../src/iop/lowlight.c:839
 msgid "blueness in shadows"
 msgstr "Blautönung in den Schatten"
 
@@ -6484,16 +6488,16 @@ msgstr "Monochrom"
 msgid "red filter"
 msgstr "Rotfilter"
 
-#: ../src/iop/monochrome.c:537
+#: ../src/iop/monochrome.c:543
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
 "ziehen und mit Mausrad scrollen, um den virtuellen Farbfilter einzustellen"
 
-#: ../src/iop/monochrome.c:552
+#: ../src/iop/monochrome.c:558
 msgid "how much to keep highlights"
 msgstr "wie sehr sollen Spitzlichter ausgenommen werden"
 
-#: ../src/iop/monochrome.c:553 ../src/iop/shadhi.c:823
+#: ../src/iop/monochrome.c:559 ../src/iop/shadhi.c:823
 #: ../src/iop/splittoning.c:551
 msgid "highlights"
 msgstr "Spitzlichter"
@@ -7218,26 +7222,26 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "Y-Versatz"
 
-#: ../src/iop/watermark.c:1235
+#: ../src/iop/watermark.c:1239
 msgid "content"
 msgstr "Inhalt"
 
 # nicht so wirklich schön
-#: ../src/iop/watermark.c:1242
+#: ../src/iop/watermark.c:1246
 msgid "marker"
 msgstr "Zeichen"
 
-#: ../src/iop/watermark.c:1245
+#: ../src/iop/watermark.c:1249
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "SVG-Wasserzeichen in %s/watermarks oder %s/watermarks"
 
 #. Simple text
-#: ../src/iop/watermark.c:1255
+#: ../src/iop/watermark.c:1259
 msgid "text"
 msgstr "Text"
 
-#: ../src/iop/watermark.c:1259
+#: ../src/iop/watermark.c:1263
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -7245,11 +7249,11 @@ msgstr ""
 "Text, Platzhalter:\n"
 "$(WATERMARK_TEXT)"
 
-#: ../src/iop/watermark.c:1274
+#: ../src/iop/watermark.c:1278
 msgid "text color"
 msgstr "Textfarbe"
 
-#: ../src/iop/watermark.c:1276
+#: ../src/iop/watermark.c:1280
 msgid ""
 "text color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -7257,16 +7261,16 @@ msgstr ""
 "Textfarbe, Platzhalter:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1279
+#: ../src/iop/watermark.c:1283
 msgid "select text color"
 msgstr "Textfarbe wählen"
 
 #. Text font
-#: ../src/iop/watermark.c:1285
+#: ../src/iop/watermark.c:1289
 msgid "font"
 msgstr "Schriftart"
 
-#: ../src/iop/watermark.c:1292
+#: ../src/iop/watermark.c:1296
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -7279,58 +7283,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1299 ../src/libs/camera.c:497
+#: ../src/iop/watermark.c:1303 ../src/libs/camera.c:497
 msgid "properties"
 msgstr "Eigenschaften"
 
-#: ../src/iop/watermark.c:1317
+#: ../src/iop/watermark.c:1321
 msgctxt "size"
 msgid "image"
 msgstr "Bild"
 
-#: ../src/iop/watermark.c:1318
+#: ../src/iop/watermark.c:1322
 msgid "larger border"
 msgstr "langer Seite"
 
-#: ../src/iop/watermark.c:1319
+#: ../src/iop/watermark.c:1323
 msgid "smaller border"
 msgstr "kurzer Seite"
 
-#: ../src/iop/watermark.c:1321
+#: ../src/iop/watermark.c:1325
 msgid "scale on"
 msgstr "Skalierung nach"
 
-#: ../src/iop/watermark.c:1322
+#: ../src/iop/watermark.c:1326
 msgid "size is relative to"
 msgstr "Größe ist relativ zu"
 
-#: ../src/iop/watermark.c:1325
+#: ../src/iop/watermark.c:1329
 msgid "position"
 msgstr "Position"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1328 ../src/libs/print_settings.c:1200
+#: ../src/iop/watermark.c:1332 ../src/libs/print_settings.c:1200
 msgid "alignment"
 msgstr "Position"
 
-#: ../src/iop/watermark.c:1345
+#: ../src/iop/watermark.c:1349
 msgid "x offset"
 msgstr "X-Versatz"
 
-#: ../src/iop/watermark.c:1348
+#: ../src/iop/watermark.c:1352
 msgid "y offset"
 msgstr "Y-Versatz"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1353
+#: ../src/iop/watermark.c:1357
 msgid "the opacity of the watermark"
 msgstr "Deckkraft des Wasserzeichens"
 
-#: ../src/iop/watermark.c:1354
+#: ../src/iop/watermark.c:1358
 msgid "the scale of the watermark"
 msgstr "Größe des Wasserzeichens"
 
-#: ../src/iop/watermark.c:1355
+#: ../src/iop/watermark.c:1359
 msgid "the rotation of the watermark"
 msgstr "Drehung des Wasserzeichens"
 
@@ -8840,19 +8844,19 @@ msgstr "weitere Module"
 msgid "navigation"
 msgstr "Navigation"
 
-#: ../src/libs/navigation.c:466
+#: ../src/libs/navigation.c:472
 msgid "small"
 msgstr "klein"
 
-#: ../src/libs/navigation.c:470
+#: ../src/libs/navigation.c:476
 msgid "fit to screen"
 msgstr "einpassen"
 
-#: ../src/libs/navigation.c:474
+#: ../src/libs/navigation.c:480
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:478
+#: ../src/libs/navigation.c:484
 msgid "200%"
 msgstr "200%"
 
