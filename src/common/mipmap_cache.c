@@ -974,42 +974,6 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
 {
   const uint32_t wd = *width, ht = *height;
 
-  static int demosaic_monochrome_enum = -1;
-  if(demosaic_monochrome_enum == -1)
-  {
-    for(GList *modules = g_list_first(darktable.iop); modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
-      if(!strcmp(module->op, "demosaic"))
-      {
-        if(module->get_f)
-        {
-          dt_introspection_field_t *f = module->get_f("demosaicing_method");
-          if(f && f->header.type == DT_INTROSPECTION_TYPE_ENUM)
-          {
-            for(dt_introspection_type_enum_tuple_t *value = f->Enum.values; value->name; value++)
-            {
-              if(!strcmp(value->name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME"))
-              {
-                demosaic_monochrome_enum = value->value;
-                break;
-              }
-            }
-          }
-        }
-
-        if(demosaic_monochrome_enum == -1)
-        {
-          // oh, missing introspection for demosaic,
-          // let's hope that DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME is still 3
-          demosaic_monochrome_enum = 3;
-        }
-
-        break;
-      }
-    }
-  }
-
   /* do not even try to process file if it isn't available */
   char filename[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
@@ -1056,50 +1020,28 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
     // demosaic during downsample
     if(image->filters != 9u)
     {
-      const char *method_name = NULL;
-      const int method = dt_image_get_demosaic_method(imgid, &(method_name));
-      mipmap_buf->pre_monochrome_demosaiced
-          = (method == demosaic_monochrome_enum
-             && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")));
-
       // Bayer
       if(image->bpp == sizeof(float))
       {
-        if(mipmap_buf->pre_monochrome_demosaiced)
-        {
-          dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(out, (const float *)buf.buf, &roi_out,
-                                                                 &roi_in, roi_out.width, roi_in.width);
-        }
-        else
-        {
-          dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(
-              out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width, roi_in.width, image, 1.0f);
-        }
+        dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(
+            out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width, roi_in.width, image, 1.0f);
       }
       else
       {
-        if(mipmap_buf->pre_monochrome_demosaiced)
-        {
-          dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(out, (const uint16_t *)buf.buf, &roi_out,
-                                                               &roi_in, roi_out.width, roi_in.width);
-        }
-        else
-        {
-          dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(out, (const uint16_t *)buf.buf, &roi_out,
-                                                              &roi_in, roi_out.width, roi_in.width, image);
+        dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(out, (const uint16_t *)buf.buf, &roi_out,
+                                                            &roi_in, roi_out.width, roi_in.width, image);
 
-          // For four bayer images we'll need to convert to XYZ here as the pipe only carries 3 channels
-          if(image->flags & DT_IMAGE_4BAYER)
+        // For four bayer images we'll need to convert to XYZ here as the pipe only carries 3 channels
+        if(image->flags & DT_IMAGE_4BAYER)
+        {
+          double CAM_to_RGB[3][4];
+          const char *camera = image->camera_makermodel;
+          if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, CAM_to_RGB, NULL))
           {
-            double CAM_to_RGB[3][4];
-            const char *camera = image->camera_makermodel;
-            if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, CAM_to_RGB, NULL))
-            {
-              fprintf(stderr, "[init_f] `%s' color matrix not found for 4bayer image!\n", camera);
-              dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
-            }
-            dt_colorspaces_cygm_to_rgb(out, roi_out.width*roi_out.height, CAM_to_RGB);
+            fprintf(stderr, "[init_f] `%s' color matrix not found for 4bayer image!\n", camera);
+            dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
           }
+          dt_colorspaces_cygm_to_rgb(out, roi_out.width*roi_out.height, CAM_to_RGB);
         }
       }
     }

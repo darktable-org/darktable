@@ -1238,6 +1238,38 @@ static void vng_interpolate(float *out, const float *const in,
     for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
 }
 
+/** monochrome "demosaic" where input is RGB buffer and output is R=G=B=average(R,G,G,B) */
+static void rgb_monochrome(float *out, const float *in, const dt_iop_roi_t *const roi_out,
+                           const dt_iop_roi_t *const roi_in)
+{
+  // If we're not doing 1:1 first scale roi_in into roi_out
+  if (roi_in->width != roi_out->width || roi_in->height != roi_out->height)
+  {
+    dt_iop_clip_and_zoom_roi(out, in, roi_in, roi_out, roi_in->width, roi_out->width);
+    in = out;
+  }
+
+  int width = roi_out->width;
+  int height = roi_out->height;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out, in, height, width) schedule(static) collapse(2)
+#endif
+  for(int row = 0; row < height; row++)
+  {
+    for(int col = 0; col < width; col++)
+    {
+      int pos = 4*(row*width+col);
+
+      // Average four pixels giving green twice the weight because of RGGB
+      float avg = (in[pos] + (in[pos+1] * 2.0f) + in[pos+2]) / 4.0f;
+
+      // Set RGB all to the average
+      out[pos] = out[pos+1] = out[pos+2] = avg;
+    }
+  }
+}
+
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in)
@@ -1500,7 +1532,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
                    const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  // this op is disabled for preview pipe/filters == 0
+  // this op is usually disabled for preview pipe/filters == 0
+  // it is enabled for monochrome preview though
 
   *roi_in = *roi_out;
   // need 1:1, demosaic and then sub-sample. or directly sample half-size
@@ -1509,25 +1542,29 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->width /= roi_out->scale;
   roi_in->height /= roi_out->scale;
   roi_in->scale = 1.0f;
-  // clamp to even x/y, to make demosaic pattern still hold..
-  if(data->filters != 9u)
-  {
-    roi_in->x = MAX(0, roi_in->x & ~1);
-    roi_in->y = MAX(0, roi_in->y & ~1);
-  }
-  else
-  {
-    // Markesteijn needs factors of 3
-    roi_in->x = MAX(0, roi_in->x - (roi_in->x % 3));
-    roi_in->y = MAX(0, roi_in->y - (roi_in->y % 3));
-  }
 
-  // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
-  if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f / roi_out->scale), 10))
-    roi_in->width = piece->pipe->image.width;
+  if (!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    // clamp to even x/y, to make demosaic pattern still hold..
+    if(data->filters != 9u)
+    {
+      roi_in->x = MAX(0, roi_in->x & ~1);
+      roi_in->y = MAX(0, roi_in->y & ~1);
+    }
+    else
+    {
+      // Markesteijn needs factors of 3
+      roi_in->x = MAX(0, roi_in->x - (roi_in->x % 3));
+      roi_in->y = MAX(0, roi_in->y - (roi_in->y % 3));
+    }
 
-  if(abs(piece->pipe->image.height - roi_in->height) < MAX(ceilf(1.0f / roi_out->scale), 10))
-    roi_in->height = piece->pipe->image.height;
+    // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
+    if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f / roi_out->scale), 10))
+      roi_in->width = piece->pipe->image.width;
+
+    if(abs(piece->pipe->image.height - roi_in->height) < MAX(ceilf(1.0f / roi_out->scale), 10))
+      roi_in->height = piece->pipe->image.height;
+  }
 }
 
 static int get_quality()
@@ -1580,6 +1617,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int qual = get_quality();
   int demosaicing_method = data->demosaicing_method;
+
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    rgb_monochrome(o, i, roi_out, roi_in);
+    return;
+  }
+
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2 && roi_out->scale <= .99999f
      && // only overwrite setting if quality << requested and in dr mode
      ((img->filters != 9u) && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)))
@@ -1631,7 +1675,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       tmp = (float *)dt_alloc_align(16, (size_t)roo.width * roo.height * 4 * sizeof(float));
     }
 
-    if(img->filters == 9u)
+    if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+      passthrough_monochrome(tmp, pixels, &roo, &roi);
+    else if(img->filters == 9u)
     {
       if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && xtrans_full_markesteijn_demosaicing)
         xtrans_markesteijn_interpolate(tmp, pixels,
@@ -1668,9 +1714,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
       }
 
-      if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-        passthrough_monochrome(tmp, in, &roo, &roi);
-      else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
+      if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
       {
         vng_interpolate(tmp, in, piece->pipe->processed_maximum,
                         &roo, &roi, data->filters, img->xtrans, only_vng_linear);
@@ -1701,15 +1745,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // sample half-size raw (Bayer) or 1/3-size raw (X-Trans)
     const float clip = fminf(piece->pipe->processed_maximum[0],
                              fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-    if(img->filters == 9u)
-      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi,
-                                                        roo.width, roi.width,
-                                                        img->xtrans);
+
+    if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+      dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, pixels, &roo, &roi, roo.width, roi.width);
     else
     {
-      if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-        dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, pixels, &roo, &roi, roo.width,
-                                                               roi.width);
+      if(img->filters == 9u)
+        dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi,
+                                                          roo.width, roi.width,
+                                                          img->xtrans);
       else
         dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                   data->filters, clip);
@@ -3579,6 +3623,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     d->green_eq = DT_IOP_GREEN_EQ_NO;
     d->color_smoothing = 0;
     d->median_thrs = 0.0f;
+
+    if((pipe->image.flags & DT_IMAGE_RAW) && dt_dev_pixelpipe_uses_downsampled_input(pipe))
+    {
+      // Always enable demosaic for monochrome so we can convert MIPF
+      piece->enabled = 1;
+      // Don't enable opencl as it's not implemented
+      piece->process_cl_ready = 0;
+    }
   }
 
   if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
@@ -3809,9 +3861,14 @@ static void demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *se
 static void demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->demosaicing_method = dt_bauhaus_combobox_get(combo) | DEMOSAIC_XTRANS;
-  if((p->demosaicing_method > DT_IOP_DEMOSAIC_MARKESTEIJN_3) || (p->demosaicing_method < DT_IOP_DEMOSAIC_VNG))
-    p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  if(dt_bauhaus_combobox_get(combo) == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+    p->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+  else
+  {
+    p->demosaicing_method = dt_bauhaus_combobox_get(combo) | DEMOSAIC_XTRANS;
+    if((p->demosaicing_method > DT_IOP_DEMOSAIC_MARKESTEIJN_3) || (p->demosaicing_method < DT_IOP_DEMOSAIC_VNG))
+      p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3840,6 +3897,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("passthrough (monochrome) (experimental)"));
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
 
   g->median_thrs = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
