@@ -239,7 +239,11 @@ static cmsHPROFILE _colorspaces_create_srgb_profile(int v4)
 
   hsRGB = cmsCreateRGBProfile(&d65, &rec709_primaries_pre_quantized, srgb_parametric);
 
-  if(!v4) cmsSetProfileVersion(hsRGB, 2.1);
+  if(!v4)
+  {
+    cmsSetProfileVersion(hsRGB, 2.1);
+    cmsWriteTag(hsRGB, cmsSigChromaticAdaptationTag, NULL);
+  }
 
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
@@ -350,6 +354,7 @@ static cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
   hAdobeRGB = cmsCreateRGBProfile(&d65, &adobe_primaries_prequantized, Gamma);
 
   cmsSetProfileVersion(hAdobeRGB, 2.1);
+  cmsWriteTag(hAdobeRGB, cmsSigChromaticAdaptationTag, NULL);
 
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
@@ -735,6 +740,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
   hRec709RGB = cmsCreateRGBProfile(&d65, &rec709_primaries_pre_quantized, Gamma);
 
   cmsSetProfileVersion(hRec709RGB, 2.1);
+  cmsWriteTag(hRec709RGB, cmsSigChromaticAdaptationTag, NULL);
 
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
@@ -783,6 +789,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
   hRec2020RGB = cmsCreateRGBProfile(&d65, &rec2020_primaries_prequantized, Gamma);
 
   cmsSetProfileVersion(hRec2020RGB, 2.1);
+  cmsWriteTag(hRec2020RGB, cmsSigChromaticAdaptationTag, NULL);
 
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
@@ -828,7 +835,6 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
   cmsFreeToneCurve(Gamma[0]);
   if(hsRGB == NULL) return NULL;
 
-  cmsSetProfileVersion(hsRGB, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
