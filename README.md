@@ -20,17 +20,25 @@ Contributing
 Building
 --------
 
-### Release build
+### Easy way
 
 ```bash
 ./build.sh --prefix /opt/darktable --build-type Release
 ```
 
-### Debug build
+### Manual way
 
 ```bash
-./build.sh --prefix /opt/darktable --build-type Debug
+mkdir build/
+cd build/
+cmake -DCMAKE_INSTALL_PREFIX=/opt/darktable/ ..
+make
+sudo make install
 ```
+
+### Further reading
+
+There is a [comprehensive list](http://redmine.darktable.org/projects/darktable/wiki/Building_darktable_20) of build instructions for all the widely used Linux distributions.
 
 
 **Tip:** Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2 homepage") installed in order to support the newest cameras.
