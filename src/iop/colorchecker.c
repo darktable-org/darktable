@@ -258,21 +258,17 @@ fastlog (float x)
 // }
 
 // thinplate spline kernel \phi(r)
-static inline float kernel(const float r)
+static inline float kernel(const float *x, const float *y)
 {
   // return r*r*logf(MAX(1e-8f,r));
   // well damnit, this speedup thing unfortunately shows severe artifacts.
   // return r*r*fasterlog(MAX(1e-8f,r));
   // this one seems to be a lot better, let's see how it goes:
-  return r*r*fastlog(MAX(1e-8f,r));
-}
-
-static inline float distance(const float *x, const float *y)
-{
-  return sqrtf(
+  const float r2 = 
       (x[0]-y[0])*(x[0]-y[0])+
       (x[1]-y[1])*(x[1]-y[1])+
-      (x[2]-y[2])*(x[2]-y[2]));
+      (x[2]-y[2])*(x[2]-y[2]);
+  return .5f * r2*fastlog(MAX(1e-8f,r2));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -304,7 +300,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                 data->coeff_b[data->num_patches+3] * in[2];
       for(int k=0;k<data->num_patches;k++)
       { // rbf from thin plate spline
-        const float phi = kernel(distance(in, data->source_Lab + 3*k));
+        const float phi = kernel(in, data->source_Lab + 3*k);
         out[0] += data->coeff_L[k] * phi;
         out[1] += data->coeff_a[k] * phi;
         out[2] += data->coeff_b[k] * phi;
@@ -412,7 +408,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // radial basis function part R
     for(int j=0;j<N;j++)
       for(int i=j;i<N;i++)
-        A[j*wd+i] = A[i*wd+j] = kernel(distance(d->source_Lab+3*i, d->source_Lab+3*j));
+        A[j*wd+i] = A[i*wd+j] = kernel(d->source_Lab+3*i, d->source_Lab+3*j);
 
     // polynomial part P: constant + 3x linear
     for(int i=0;i<N;i++) A[i*wd+N+0] = A[(N+0)*wd+i] = 1.0f;
