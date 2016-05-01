@@ -192,10 +192,14 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t 
 // i.e. four floats per pixel already demosaiced/downsampled
 static inline int dt_dev_pixelpipe_uses_downsampled_input(dt_dev_pixelpipe_t *pipe)
 {
+#if 1
+  return 0;
+#else
   if(!dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
     return pipe->type == DT_DEV_PIXELPIPE_PREVIEW;
   else
     return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+#endif
 }
 
 #endif
