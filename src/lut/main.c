@@ -576,7 +576,10 @@ static void export_style(dt_lut_t *self, const char *filename, const char *name,
   print_xml_plugin(fd, num++, 2, "basecurve",
                    "gz09eJxjYIAAM6vnNnqyn22E9n235b6aa3cy6rVdRaK9/Y970fYf95bbMzA0QPEoGEqADYnNhMQGAO0WEJo=", FALSE);
   // 1: set colorin to standard matrix
-  print_xml_plugin(fd, num++, 4, "colorin", "gz10eJzjZqA/AAAFcAAM", TRUE);
+  // print_xml_plugin(fd, num++, 4, "colorin", "gz10eJzjZqA/AAAFcAAM", TRUE); // no gamut clipping
+  // and enable gamut clipping. the it8 knows nothing about colours outside
+  // rec2020 (only reflectances, no neon lights for instance)
+  print_xml_plugin(fd, num++, 4, "colorin", "gz09eJzjZqAfYIHSAAWQABA=", TRUE); // gamut clipping to rec2020
   // 2: add tonecurve
   print_xml_plugin(fd, num++, 4, "tonecurve", self->tonecurve_encoded, TRUE);
   // 3: add lut
