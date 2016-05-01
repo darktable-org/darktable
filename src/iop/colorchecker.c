@@ -258,6 +258,9 @@ fastlog (float x)
 // }
 
 // thinplate spline kernel \phi(r)
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline float kernel(const float *x, const float *y)
 {
   // return r*r*logf(MAX(1e-8f,r));
@@ -298,6 +301,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       out[2] += data->coeff_b[data->num_patches+1] * in[0] +
                 data->coeff_b[data->num_patches+2] * in[1] +
                 data->coeff_b[data->num_patches+3] * in[2];
+#ifdef _OPENMP // <== nice try, i don't think this does anything here
+#pragma omp simd
+#endif
       for(int k=0;k<data->num_patches;k++)
       { // rbf from thin plate spline
         const float phi = kernel(in, data->source_Lab + 3*k);
