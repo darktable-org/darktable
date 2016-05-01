@@ -130,6 +130,10 @@ int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
 /** return the output profile, taking export override into account */
 const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid);
 
+/** return an rgb lcms2 profile from data. if data points to a grayscale profile a new rgb profile is created
+ * that has the same TRC, black and white point and rec709 primaries. */
+cmsHPROFILE dt_colorspaces_get_rgb_profile_from_mem(uint8_t *data, uint32_t size);
+
 /** free the resources of a profile created with the functions above. */
 void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
 

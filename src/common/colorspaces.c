@@ -991,6 +991,50 @@ cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float mat[3][3])
   return dt_colorspaces_create_xyzmatrix_profile(imat);
 }
 
+static cmsHPROFILE _ensure_rgb_profile(cmsHPROFILE profile)
+{
+  if(profile && cmsGetColorSpace(profile) == cmsSigGrayData)
+  {
+    cmsToneCurve *trc = cmsReadTag(profile, cmsSigGrayTRCTag);
+    cmsCIEXYZ *wtpt = cmsReadTag(profile, cmsSigMediaWhitePointTag);
+    cmsCIEXYZ *bkpt = cmsReadTag(profile, cmsSigMediaBlackPointTag);
+
+    cmsMLU *cprt = cmsReadTag(profile, cmsSigCopyrightTag);
+    cmsMLU *desc = cmsReadTag(profile, cmsSigProfileDescriptionTag);
+    cmsMLU *dmnd = cmsReadTag(profile, cmsSigDeviceMfgDescTag);
+    cmsMLU *dmdd = cmsReadTag(profile, cmsSigDeviceModelDescTag);
+
+    cmsToneCurve *Gamma[3] = {trc, trc, trc};
+    cmsCIExyY wtpt_xyY;
+    cmsXYZ2xyY(&wtpt_xyY, wtpt);
+
+    cmsHPROFILE rgb_profile = cmsCreateRGBProfile(&wtpt_xyY, &rec709_primaries_pre_quantized, Gamma);
+    if(rgb_profile)
+    {
+      cmsWriteTag(rgb_profile, cmsSigCopyrightTag, cprt);
+      cmsWriteTag(rgb_profile, cmsSigProfileDescriptionTag, desc);
+      cmsWriteTag(rgb_profile, cmsSigDeviceMfgDescTag, dmnd);
+      cmsWriteTag(rgb_profile, cmsSigDeviceModelDescTag, dmdd);
+
+      cmsWriteTag(rgb_profile, cmsSigMediaBlackPointTag, bkpt);
+      cmsSetColorSpace(rgb_profile, cmsSigRgbData);
+      cmsSetPCS(rgb_profile, cmsSigXYZData);
+    }
+
+    cmsCloseProfile(profile);
+    profile = rgb_profile;
+  }
+
+  return profile;
+}
+
+cmsHPROFILE dt_colorspaces_get_rgb_profile_from_mem(uint8_t *data, uint32_t size)
+{
+  cmsHPROFILE profile = _ensure_rgb_profile(cmsOpenProfileFromMem(data, size));
+
+  return profile;
+}
+
 void dt_colorspaces_cleanup_profile(cmsHPROFILE p)
 {
   if(!p) return;
@@ -1296,7 +1340,7 @@ dt_colorspaces_t *dt_colorspaces_init()
       for(; *cc != '.' && cc > filename; cc--)
         ;
       if(g_ascii_strcasecmp(cc, ".icc") && g_ascii_strcasecmp(cc, ".icm")) continue;
-      tmpprof = cmsOpenProfileFromFile(filename, "r");
+      tmpprof = _ensure_rgb_profile(cmsOpenProfileFromFile(filename, "r"));
       if(tmpprof)
       {
         dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
@@ -1327,7 +1371,8 @@ dt_colorspaces_t *dt_colorspaces_init()
       for(; *cc != '.' && cc > filename; cc--)
         ;
       if(g_ascii_strcasecmp(cc, ".icc") && g_ascii_strcasecmp(cc, ".icm")) continue;
-      tmpprof = cmsOpenProfileFromFile(filename, "r");
+      // TODO: add support for grayscale output, then remove _ensure_rgb_profile() from here
+      tmpprof = _ensure_rgb_profile(cmsOpenProfileFromFile(filename, "r"));
       if(tmpprof)
       {
         dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
