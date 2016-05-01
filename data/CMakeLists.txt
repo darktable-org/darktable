@@ -9,10 +9,10 @@ endif(USE_OPENCL)
 #
 # Generate and instal darktable.css
 #
-if ("${PC_GTK3_VERSION}" VERSION_GREATER "3.19.0")
+if ("${GTK3_VERSION}" VERSION_GREATER "3.19.0")
   configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
 else ()
-  if ("${PC_GTK3_VERSION}" VERSION_GREATER "3.13.6")
+  if ("${GTK3_VERSION}" VERSION_GREATER "3.13.6")
     set(GTK_CSS_CLASS "checked")
   else ()
     set(GTK_CSS_CLASS "active")
