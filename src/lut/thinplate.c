@@ -356,7 +356,8 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 #endif
     // residual is max CIE76 delta E now
     // everything < 2 is usually considired a very good approximation:
-    fprintf(stderr, "rank %d/%d avg DE %g max DE %g\n", sp + 1, patches, err, maxerr);
+    if(patches == S-4)
+      fprintf(stderr, "rank %d/%d avg DE %g max DE %g\n", sp + 1, patches, err, maxerr);
     if(s >= S && err >= olderr)
       fprintf(stderr, "error increased!\n");
       // return sparsity + 1;
