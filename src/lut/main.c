@@ -814,9 +814,11 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   for(int k = 1; k < num_tonecurve - 1; k++) cy[num_tonecurve - 1 - k] = target_L[N - num_tonecurve + 2 + k - 1];
   tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
 
+#if 0 // quiet.
   for(int k = 0; k < num_tonecurve; k++)
     fprintf(stderr, "L[%g] = %g\n", 100.0 * k / (num_tonecurve - 1.0f),
             tonecurve_apply(&tonecurve, 100.0f * k / (num_tonecurve - 1.0f)));
+#endif
 
   // unapply from target data, we will apply it later in the pipe and want to match the colours only:
   for(int k = 0; k < N; k++) target_L[k] = tonecurve_unapply(&tonecurve, target_L[k]);
@@ -833,10 +835,12 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
     if(perm[k] < N) // skip polynomial parts
       cperm[sp++] = perm[k];
 
+#if 0 // quiet.
   fprintf(stderr, "found %d basis functions:\n", sp);
   for(int k = 0; k < sp; k++)
     fprintf(stderr, "perm[%d] = %d source %g %g %g\n", k, cperm[k], colorchecker_Lab[3 * cperm[k]],
             colorchecker_Lab[3 * cperm[k] + 1], colorchecker_Lab[3 * cperm[k] + 2]);
+#endif
 
   self->tonecurve_encoded = encode_tonecurve(&tonecurve);
   self->colorchecker_encoded = encode_colorchecker(sp, colorchecker_Lab, target, cperm);
