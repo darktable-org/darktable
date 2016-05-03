@@ -29,6 +29,7 @@
 
 #include <float.h>
 #include <string.h>
+#include <assert.h>
 
 // #define REPLACEMENT // either broken code or doesn't help at all
 // #define EXACT       // use full solve instead of dot in inner loop
@@ -193,11 +194,12 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
   // in case of replacement, iterate all the way to wd
   for(; s < wd; s++)
   {
-    const int sparsity = MIN(s, S - 1);
+    const int sparsity = MIN(s, S);
 #ifndef REPLACEMENT
     if(patches >= S - 4) return sparsity;
+    assert(sparsity < S + 4);
 #endif
-    // find column a_m by m = argmax_t{ a_t^t r . norm_t}
+    // find (sparsity+1)-th column a_m by m = argmax_t{ a_t^t r . norm_t}
     // by searching over all three residuals
     double maxdot = 0.0;
     int maxcol = 0;
@@ -259,7 +261,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
     { // already have chosen S-4 patches as columns, now do the replacement:
       int mincol = 0;
       double minerr = FLT_MAX;
-      for(int t = 0; t <= sparsity; t++)
+      for(int t = 0; t < sparsity; t++)
       {
         // find already chosen column t with min error reduction when replacing
         // XXX do we set perm[t] above, ever? for t=S-1?
@@ -269,17 +271,17 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
         for(int ch = 0; ch < dim; ch++)
         {
           // re-init all columns in As
-          for(int i = 0; i <= sparsity; i++)
+          for(int i = 0; i < sparsity; i++)
             for(int j = 0; j < wd; j++) As[j * S + i] = A[j * wd + permutation[i]];
 
-          if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity, S)) return s;
+          if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity-1, S)) return s;
 
           // compute tentative residual:
           // r = b - As c
           for(int j = 0; j < wd; j++)
           {
             r[ch][j] = b[ch][j];
-            for(int i = 0; i <= sparsity; i++) r[ch][j] -= A[j * wd + permutation[i]] * coeff[ch][i];
+            for(int i = 0; i < sparsity; i++) r[ch][j] -= A[j * wd + permutation[i]] * coeff[ch][i];
           }
         }
 
@@ -328,22 +330,24 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 #ifdef EXACT
     double err = 1. / maxdot;
 #else
+    const int sp = MIN(sparsity, S-1); // need to fix up for replacement
     // solve linear least squares for sparse c for every output channel:
     for(int ch = 0; ch < dim; ch++)
     {
       // re-init all of the previous columns in As since
       // svd will destroy its contents:
-      for(int i = 0; i <= sparsity; i++)
+      for(int i = 0; i <= sp; i++)
         for(int j = 0; j < wd; j++) As[j * S + i] = A[j * wd + permutation[i]];
 
-      if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity, S)) return sparsity;
+      // on error, return last valid configuration
+      if(solve(As, w, v, b[ch], coeff[ch], wd, sp, S)) return sparsity;
 
       // compute new residual:
       // r = b - As c
       for(int j = 0; j < wd; j++)
       {
         r[ch][j] = b[ch][j];
-        for(int i = 0; i <= sparsity; i++) r[ch][j] -= A[j * wd + permutation[i]] * coeff[ch][i];
+        for(int i = 0; i <= sp; i++) r[ch][j] -= A[j * wd + permutation[i]] * coeff[ch][i];
       }
     }
 
@@ -352,7 +356,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 #endif
     // residual is max CIE76 delta E now
     // everything < 2 is usually considired a very good approximation:
-    fprintf(stderr, "rank %d/%d avg DE %g max DE %g\n", sparsity + 1, patches, err, maxerr);
+    fprintf(stderr, "rank %d/%d avg DE %g max DE %g\n", sp + 1, patches, err, maxerr);
     if(s >= S && err >= olderr)
       fprintf(stderr, "error increased!\n");
       // return sparsity + 1;

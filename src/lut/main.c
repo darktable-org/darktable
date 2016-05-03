@@ -761,7 +761,7 @@ static char *encode_colorchecker(int num, const double *point, const double **ta
 
   dt_iop_colorchecker_params_t params;
   memset(&params, 0, sizeof(params));
-  num = MIN(MAX_PATCHES, num); // XXX currently the gui doesn't fare well with other numbers
+  num = MIN(MAX_PATCHES, num);
   //   assert(num <= MAX_PATCHES);
   params.num_patches = num;
 
