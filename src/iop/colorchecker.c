@@ -872,9 +872,9 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
   const float mx = mouse_x * cells_x / (float)width;
   const float my = mouse_y * cells_y / (float)height;
   int patch = (int)mx + cells_x*(int)my;
-  if(patch < 0 || patch >= p->num_patches) return FALSE;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   { // reset on double click
+    if(patch < 0 || patch >= p->num_patches) return FALSE;
     p->target_L[patch] = p->source_L[patch];
     p->target_a[patch] = p->source_a[patch];
     p->target_b[patch] = p->source_b[patch];
@@ -885,6 +885,7 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
   else if(event->button == 3 && (patch < p->num_patches))
   {
     // right click: delete patch, move others up
+    if(patch < 0 || patch >= p->num_patches) return FALSE;
     memmove(p->target_L+patch, p->target_L+patch+1, sizeof(float)*(p->num_patches-1-patch));
     memmove(p->target_a+patch, p->target_a+patch+1, sizeof(float)*(p->num_patches-1-patch));
     memmove(p->target_b+patch, p->target_b+patch+1, sizeof(float)*(p->num_patches-1-patch));
@@ -901,6 +902,9 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
           (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
   {
     // shift-left while colour picking: replace source colour
+    // if clicked outside the valid patches: add new one
+    if(p->num_patches < 24 && (patch < 0 || patch >= p->num_patches))
+      patch = p->num_patches++;
     p->target_L[patch] = p->source_L[patch] = self->picked_color[0];
     p->target_a[patch] = p->source_a[patch] = self->picked_color[1];
     p->target_b[patch] = p->source_b[patch] = self->picked_color[2];
