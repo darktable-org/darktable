@@ -1,6 +1,8 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 LebedevRI. (based on code by johannes hanika)
+    copyright (c) 2014-2016 Roman Lebedev.
+
+    (based on code by johannes hanika)
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -178,17 +180,9 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
 
   int32_t x = d->x + d->width, y = d->y + d->height;
 
-  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
-  {
-    const float scale = roi_in->scale / piece->iscale;
-    roi_out->width -= roundf((float)x * scale);
-    roi_out->height -= roundf((float)y * scale);
-  }
-  else
-  {
-    roi_out->width -= x;
-    roi_out->height -= y;
-  }
+  const float scale = roi_in->scale / piece->iscale;
+  roi_out->width -= (int)roundf((float)x * scale);
+  roi_out->height -= (int)roundf((float)y * scale);
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -199,17 +193,9 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
   int32_t x = d->x + d->width, y = d->y + d->height;
 
-  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
-  {
-    const float scale = roi_in->scale / piece->iscale;
-    roi_in->width += roundf((float)x * scale);
-    roi_in->height += roundf((float)y * scale);
-  }
-  else
-  {
-    roi_in->width += x;
-    roi_in->height += y;
-  }
+  const float scale = roi_in->scale / piece->iscale;
+  roi_in->width += (int)roundf((float)x * scale);
+  roi_in->height += (int)roundf((float)y * scale);
 }
 
 static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
@@ -226,13 +212,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 
+  const float scale = roi_in->scale / piece->iscale;
+  const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
+
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   { // raw mosaic
 
     const uint16_t *const in = (const uint16_t *const)ivoid;
     float *const out = (float *const)ovoid;
-
-    const int cx = d->x, cy = d->y;
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
@@ -241,7 +228,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       for(int i = 0; i < roi_out->width; i++)
       {
-        const size_t pin = (size_t)(roi_in->width * (j + cy) + cx) + i;
+        const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
         const size_t pout = (size_t)j * roi_out->width + i;
 
         const int id = BL(roi_out, d, j, i);
@@ -254,9 +241,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     const float *const in = (const float *const)ivoid;
     float *const out = (float *const)ovoid;
-
-    const float scale = roi_in->scale / piece->iscale;
-    const int csx = d->x * scale, csy = d->y * scale;
 
     const float sub = d->sub[0], div = d->div[0];
 
@@ -290,16 +274,17 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 
+  const float scale = roi_in->scale / piece->iscale;
+  const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
+
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   { // raw mosaic
-    const int cx = d->x, cy = d->y;
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t *)ivoid) + ((size_t)roi_in->width * (j + cy) + cx);
+      const uint16_t *in = ((uint16_t *)ivoid) + ((size_t)roi_in->width * (j + csy) + csx);
       float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
 
       int i = 0;
@@ -351,9 +336,6 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   else
   { // pre-downsampled buffer that needs black/white scaling
 
-    const float scale = roi_in->scale / piece->iscale;
-    const int csx = d->x * scale, csy = d->y * scale;
-
     const __m128 sub = _mm_load_ps(d->sub), div = _mm_load_ps(d->div);
 
 #ifdef _OPENMP
@@ -392,22 +374,18 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_int err = -999;
 
   int kernel = -1;
-  int cx = -1;
-  int cy = -1;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   {
     kernel = gd->kernel_rawprepare_1f;
-    cx = d->x;
-    cy = d->y;
   }
   else
   {
     kernel = gd->kernel_rawprepare_4f;
-    const float scale = roi_in->scale / piece->iscale;
-    cx = d->x * scale;
-    cy = d->y * scale;
   }
+
+  const float scale = roi_in->scale / piece->iscale;
+  const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
   dev_sub = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->sub);
   if(dev_sub == NULL) goto error;
@@ -423,8 +401,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(width));
   dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(height));
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&cx);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&cy);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&csx);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&csy);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_sub);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_div);
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(uint32_t), (void *)&roi_out->x);
