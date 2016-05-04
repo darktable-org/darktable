@@ -1029,6 +1029,23 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   // writing during raw loading, to write to width/height.
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
+  unsigned int pattern_size;
+  switch(image->buf_dsc.filters)
+  {
+    case 0u:
+      // non-mosaiced image - not bayer/x-trans
+      pattern_size = 1;
+      break;
+    case 9u:
+      // x-trans
+      pattern_size = 6;
+      break;
+    default:
+      // bayer
+      pattern_size = 2;
+      break;
+  }
+
   dt_iop_roi_t roi_in, roi_out;
   roi_in.x = roi_in.y = 0;
   roi_in.width = image->width;
@@ -1036,7 +1053,28 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   roi_in.scale = 1.0f;
 
   roi_out.x = roi_out.y = 0;
-  roi_out.scale = fminf(wd / (float)image->width, ht / (float)image->height);
+
+  // how much pixel blocks to bin into one
+  unsigned int bin_blocks = 0;
+
+  // now let's figure out the scaling...
+  if(pattern_size != 1)
+  {
+    // ideal [inverse] scale, will result in same aspect ratio and
+    // same or smaller area than requested.
+    const float inv_scale = fmaxf((float)image->width / (float)wd, (float)image->height / (float)ht);
+
+    // this is how much blocks will be binned into 1
+    // !!! we want to always round up, to never overflow out buffer !!!
+    bin_blocks = (int)ceilf(inv_scale);
+
+    roi_out.scale = 1.0f / (float)bin_blocks;
+  }
+  else
+  {
+    roi_out.scale = fminf(wd / (float)image->width, ht / (float)image->height);
+  }
+
   roi_out.width = roi_out.scale * roi_in.width;
   roi_out.height = roi_out.scale * roi_in.height;
 
@@ -1055,6 +1093,16 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
 
   if(image->buf_dsc.filters)
   {
+#if 1
+    if(image->buf_dsc.datatype == TYPE_FLOAT)
+    {
+    }
+    else
+    {
+      dt_iop_clip_and_zoom_pixel_binning((uint16_t * const)out, (const uint16_t *const)buf.buf, &roi_out, &roi_in,
+                                         roi_out.width, roi_in.width, pattern_size, bin_blocks);
+    }
+#else
     // demosaic during downsample
     if(image->buf_dsc.filters != 9u)
     {
@@ -1120,6 +1168,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
                                                         image->raw_white_point);
       }
     }
+#endif
   }
   else
   {
