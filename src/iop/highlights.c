@@ -531,11 +531,11 @@ static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   }
 }
 
-static void process_lch_xtrans(dt_iop_module_t *self, const void *const ivoid,
+static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                                void *const ovoid, const dt_iop_roi_t *const roi_in,
                                const dt_iop_roi_t *const roi_out, const float clip)
 {
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])self->dev->image_storage.xtrans;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none)
@@ -778,7 +778,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       if(filters == 9u)
       {
-        const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])self->dev->image_storage.xtrans;
+        const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none)
 #endif
@@ -821,7 +821,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     case DT_IOP_HIGHLIGHTS_LCH:
       if(filters == 9u)
-        process_lch_xtrans(self, ivoid, ovoid, roi_in, roi_out, clip);
+        process_lch_xtrans(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       else
         process_lch_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;

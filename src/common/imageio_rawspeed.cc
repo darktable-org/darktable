@@ -298,15 +298,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         // sensors. For these, the CFA in cameras.xml is pre-offset
         // depending on the distance modulo 2 between raw and usable
         // image data. For X-Trans, the CFA in cameras.xml is
-        // (currently) aligned with the top left of the raw data, and
-        // hence it is shifted here to align with the top left of the
-        // cropped image.
-        iPoint2D tl_margin = r->getCropOffset();
+        // (currently) aligned with the top left of the raw data.
         for(int i = 0; i < 6; ++i)
           for(int j = 0; j < 6; ++j)
           {
-            img->xtrans_uncropped[j][i] = r->cfa.getColorAt(i % 6, j % 6);
-            img->xtrans[j][i] = r->cfa.getColorAt((i + tl_margin.x) % 6, (j + tl_margin.y) % 6);
+            img->xtrans[j][i] = r->cfa.getColorAt(i % 6, j % 6);
           }
       }
     }

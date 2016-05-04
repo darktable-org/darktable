@@ -92,6 +92,8 @@ typedef struct dt_dev_pixelpipe_t
 
   // sensor pattern aka filters, propagated through the operations:
   uint32_t filters; // Bayer demosaic pattern
+  /* filter for Fuji X-Trans images, only used if filters == 9u */
+  uint8_t xtrans[6][6];
 
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;

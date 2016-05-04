@@ -199,6 +199,27 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->height += (int)roundf((float)y * scale);
 }
 
+static void adjust_xtrans_filters(uint8_t (*xtrans)[6], uint32_t crop_x, uint32_t crop_y)
+{
+  uint8_t tmp[6][6];
+
+  for(int i = 0; i < 6; ++i)
+  {
+    for(int j = 0; j < 6; ++j)
+    {
+      tmp[j][i] = xtrans[(j + crop_y) % 6][(i + crop_x) % 6];
+    }
+  }
+
+  for(int i = 0; i < 6; ++i)
+  {
+    for(int j = 0; j < 6; ++j)
+    {
+      xtrans[j][i] = tmp[j % 6][i % 6];
+    }
+  }
+}
+
 static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
               const int col)
 {
@@ -238,6 +259,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->filters, csx, csy);
+    adjust_xtrans_filters(piece->pipe->xtrans, csx, csy);
   }
   else
   { // pre-downsampled buffer that needs black/white scaling
@@ -337,6 +359,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
     }
 
     piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->filters, csx, csy);
+    adjust_xtrans_filters(piece->pipe->xtrans, csx, csy);
   }
   else
   { // pre-downsampled buffer that needs black/white scaling
@@ -419,7 +442,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_opencl_release_mem_object(dev_div);
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
+  {
     piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->filters, csx, csy);
+    adjust_xtrans_filters(piece->pipe->xtrans, csx, csy);
+  }
 
   return TRUE;
 
