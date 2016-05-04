@@ -392,7 +392,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const uint32_t filters = piece->pipe->filters;
-  const uint8_t (*const xtrans)[6] = (const uint8_t (*const)[6]) self->dev->image_storage.xtrans;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
   const dt_iop_temperature_data_t *const d = (dt_iop_temperature_data_t *)piece->data;
 
   const float *const in = (const float *const)ivoid;
@@ -467,7 +467,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 {
   const dt_image_t *img = &self->dev->image_storage;
   const uint32_t filters = piece->pipe->filters;
-  const uint8_t (*const xtrans)[6] = (const uint8_t (*const)[6]) self->dev->image_storage.xtrans;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u)
   { // xtrans float mosaiced

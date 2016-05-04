@@ -157,6 +157,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->image = dev->image_storage;
 
   pipe->filters = pipe->image.filters;
+  memcpy(pipe->xtrans, pipe->image.xtrans, sizeof(pipe->xtrans));
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
