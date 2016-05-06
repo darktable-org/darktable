@@ -221,6 +221,52 @@ void dt_iop_clip_and_zoom_pixel_binning(uint16_t *const ovoid, const uint16_t *c
   }
 }
 
+void dt_iop_clip_and_zoom_pixel_binning_f(float *const ovoid, const float *const ivoid,
+                                          const struct dt_iop_roi_t *const roi_out,
+                                          const struct dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                          const int32_t in_stride, const unsigned int pattern_size,
+                                          const unsigned int bin_blocks)
+{
+  const unsigned int pixel_stride = pattern_size * bin_blocks;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *in = (float *)ivoid;
+    float *out = (float *)ovoid + (size_t)out_stride * y;
+
+    const int py = pixel_stride * (y / pattern_size) + (y % pattern_size);
+
+    // needs to be bin_pixels or less.
+    const int maxj = MIN(roi_in->height, py + pixel_stride);
+
+    for(int x = 0; x < roi_out->width; x++, out++)
+    {
+      const int px = pixel_stride * (x / pattern_size) + (x % pattern_size);
+
+      // needs to be bin_pixels or less.
+      const int maxi = MIN(roi_in->width, px + pixel_stride);
+
+      float sum = 0;
+      size_t num = 0;
+      for(int j = py; j < maxj; j += pattern_size)
+      {
+        for(int i = px; i < maxi; i += pattern_size)
+        {
+          const float val = in[(size_t)in_stride * j + (size_t)i];
+
+          sum += val;
+          num++;
+        }
+      }
+
+      *out = (sum / (float)num);
+    }
+  }
+}
+
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_plain(float *const out, const uint16_t *const in,
                                                                 const dt_iop_roi_t *const roi_out,
                                                                 const dt_iop_roi_t *const roi_in,
