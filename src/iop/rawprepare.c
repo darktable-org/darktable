@@ -21,6 +21,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "common/opencl.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
@@ -215,7 +216,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
   { // raw mosaic
 
     const uint16_t *const in = (const uint16_t *const)ivoid;
@@ -235,6 +236,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         out[pout] = (in[pin] - d->sub[id]) / d->div[id];
       }
     }
+
+    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->filters, csx, csy);
   }
   else
   { // pre-downsampled buffer that needs black/white scaling
@@ -277,7 +280,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
   { // raw mosaic
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -332,6 +335,8 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
         *out = MAX(0.0f, ((float)(*in)) - d->sub[id]) / d->div[id];
       }
     }
+
+    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->filters, csx, csy);
   }
   else
   { // pre-downsampled buffer that needs black/white scaling
@@ -375,7 +380,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   int kernel = -1;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
   {
     kernel = gd->kernel_rawprepare_1f;
   }
@@ -413,6 +418,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
 
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
+    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(piece->pipe->filters, csx, csy);
+
   return TRUE;
 
 error:
@@ -434,7 +442,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->width = p->width;
   d->height = p->height;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
   {
     const float white = (float)p->raw_white_point;
 

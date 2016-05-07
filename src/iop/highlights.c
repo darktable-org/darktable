@@ -114,7 +114,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float clip = d->clip
                      * fminf(piece->pipe->processed_maximum[0],
                              fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-  const int filters = dt_image_filter(&piece->pipe->image);
+  const uint32_t filters = piece->pipe->filters;
   if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f_clip, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -436,7 +436,7 @@ static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                               void *const ovoid, const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out, const float clip)
 {
-  const int filters = dt_image_filter(&piece->pipe->image);
+  const uint32_t filters = piece->pipe->filters;
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none)
@@ -670,7 +670,7 @@ static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
   { // raw mosaic
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static)
@@ -699,7 +699,7 @@ static void process_clip_sse2(dt_dev_pixelpipe_iop_t *piece, const void *const i
                               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                               const float clip)
 {
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
   { // raw mosaic
     const __m128 clipm = _mm_set1_ps(clip);
     const size_t n = (size_t)roi_out->height * roi_out->width;
@@ -752,7 +752,7 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const int filters = dt_image_filter(&piece->pipe->image);
+  const uint32_t filters = piece->pipe->filters;
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
 
   const float clip

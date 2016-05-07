@@ -30,7 +30,6 @@
 #endif
 #include "common/darktable.h"        // for darktable, darktable_t, dt_code...
 #include "common/imageio.h"          // for FILTERS_ARE_4BAYER
-#include "common/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "common/interpolation.h"    // for dt_interpolation_new, dt_interp...
 #include "develop/imageop.h"         // for dt_iop_roi_t
 
@@ -321,7 +320,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint
 void dt_iop_clip_and_zoom_demosaic_half_size_plain(float *out, const uint16_t *const in,
                                                    const dt_iop_roi_t *const roi_out,
                                                    const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                   const int32_t in_stride, const unsigned int filters)
+                                                   const int32_t in_stride, const uint32_t filters)
 {
 #if 0
   printf("scale: %f\n",roi_out->scale);
@@ -436,7 +435,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_plain(float *out, const uint16_t *c
 void dt_iop_clip_and_zoom_demosaic_half_size_sse2(float *out, const uint16_t *const in,
                                                   const dt_iop_roi_t *const roi_out,
                                                   const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                  const int32_t in_stride, const unsigned int filters)
+                                                  const int32_t in_stride, const uint32_t filters)
 {
 #if 0
   printf("scale: %f\n",roi_out->scale);
@@ -542,9 +541,9 @@ void dt_iop_clip_and_zoom_demosaic_half_size_sse2(float *out, const uint16_t *co
  * resamping is done via bilateral filtering and respecting the input mosaic pattern.
  */
 void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
-                                             const dt_iop_roi_t *const roi_out,
-                                             const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                             const int32_t in_stride, const unsigned int filters)
+                                             const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
+                                             const int32_t out_stride, const int32_t in_stride,
+                                             const uint32_t filters)
 {
   if(darktable.codepath.OPENMP_SIMD)
     return dt_iop_clip_and_zoom_demosaic_half_size_plain(out, in, roi_out, roi_in, out_stride, in_stride,
@@ -556,22 +555,6 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
 #endif
   else
     dt_unreachable_codepath();
-}
-
-void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint16_t *const in,
-                                                         dt_iop_roi_t *const roi_out,
-                                                         const dt_iop_roi_t *const roi_in,
-                                                         const int32_t out_stride, const int32_t in_stride,
-                                                         const dt_image_t *img)
-{
-  /*
-   * rawprepare iop will do the actual cropping
-   * here we just need to adjust filters to the crop!
-   */
-
-  const uint32_t filters = dt_rawspeed_crop_dcraw_filters(img->filters, img->crop_x, img->crop_y);
-
-  dt_iop_clip_and_zoom_demosaic_half_size(out, in, roi_out, roi_in, roi_out->width, in_stride, filters);
 }
 
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f_plain(float *out, const float *const in,
@@ -885,7 +868,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
   const dt_iop_roi_t *const roi_in,
   const int32_t out_stride,
   const int32_t in_stride,
-  const unsigned int filters,
+  const uint32_t filters,
   const float clip)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
@@ -965,9 +948,9 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
 
 void dt_iop_clip_and_zoom_demosaic_half_size_f_plain(float *out, const float *const in,
                                                      const dt_iop_roi_t *const roi_out,
-                                                     const dt_iop_roi_t *const roi_in,
-                                                     const int32_t out_stride, const int32_t in_stride,
-                                                     const unsigned int filters, const float clip)
+                                                     const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                     const int32_t in_stride, const uint32_t filters,
+                                                     const float clip)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -1143,9 +1126,9 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f_plain(float *out, const float *co
 #if defined(__SSE__)
 void dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(float *out, const float *const in,
                                                     const dt_iop_roi_t *const roi_out,
-                                                    const dt_iop_roi_t *const roi_in,
-                                                    const int32_t out_stride, const int32_t in_stride,
-                                                    const unsigned int filters, const float clip)
+                                                    const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                    const int32_t in_stride, const uint32_t filters,
+                                                    const float clip)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -1321,10 +1304,9 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(float *out, const float *con
 #endif
 
 void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
-                                               const dt_iop_roi_t *const roi_out,
-                                               const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                               const int32_t in_stride, const unsigned int filters,
-                                               const float clip)
+                                               const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
+                                               const int32_t out_stride, const int32_t in_stride,
+                                               const uint32_t filters, const float clip)
 {
   if(darktable.codepath.OPENMP_SIMD)
     return dt_iop_clip_and_zoom_demosaic_half_size_f_plain(out, in, roi_out, roi_in, out_stride, in_stride,
@@ -1336,22 +1318,6 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
 #endif
   else
     dt_unreachable_codepath();
-}
-
-void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(float *out, const float *const in,
-                                                           const struct dt_iop_roi_t *const roi_out,
-                                                           const struct dt_iop_roi_t *const roi_in,
-                                                           const int32_t out_stride, const int32_t in_stride,
-                                                           const dt_image_t *img, const float clip)
-{
-  /*
-   * rawprepare iop will do the actual cropping
-   * here we just need to adjust filters to the crop!
-   */
-
-  const uint32_t filters = dt_rawspeed_crop_dcraw_filters(img->filters, img->crop_x, img->crop_y);
-
-  dt_iop_clip_and_zoom_demosaic_half_size_f(out, in, roi_out, roi_in, out_stride, in_stride, filters, clip);
 }
 
 /**

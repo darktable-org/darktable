@@ -310,7 +310,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const uint32_t filters = dt_image_filter(&piece->pipe->image);
+  const uint32_t filters = piece->pipe->filters;
   memcpy(out, in2, width * height * sizeof(float));
   const float *const in = out;
   const double cared = 0, cablue = 0;
