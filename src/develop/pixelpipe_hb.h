@@ -89,6 +89,10 @@ typedef struct dt_dev_pixelpipe_t
   int processed_width, processed_height;
   // sensor saturation, propagated through the operations:
   float processed_maximum[4];
+
+  // sensor pattern aka filters, propagated through the operations:
+  uint32_t filters; // Bayer demosaic pattern
+
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
   // event flag

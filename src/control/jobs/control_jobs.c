@@ -303,7 +303,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   if(!d->pixels)
   {
     d->first_imgid = imgid;
-    d->first_filter = dt_image_filter(&image);
+    d->first_filter = image.filters;
     d->pixels = calloc(datai->width * datai->height, sizeof(float));
     d->weight = calloc(datai->width * datai->height, sizeof(float));
     d->wd = datai->width;
@@ -317,7 +317,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->abort = TRUE;
     return 1;
   }
-  else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != dt_image_filter(&image)
+  else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != image.filters
           || d->orientation != image.orientation)
   {
     dt_control_log(_("images have to be of same size and orientation!"));
