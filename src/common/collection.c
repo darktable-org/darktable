@@ -490,6 +490,28 @@ GList *dt_collection_get_all(const dt_collection_t *collection, int limit)
   return list;
 }
 
+int dt_collection_get_nth(const dt_collection_t *collection, int nth)
+{
+  if(nth < 0 || nth >= dt_collection_get_count(collection))
+    return -1;
+  const gchar *query = dt_collection_get_query(collection);
+  sqlite3_stmt *stmt = NULL;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, nth);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
+
+  int result = -1;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    result  = sqlite3_column_int(stmt, 0);
+  }
+
+  sqlite3_finalize(stmt);
+
+  return result;
+
+}
+
 GList *dt_collection_get_selected(const dt_collection_t *collection, int limit)
 {
   GList *list = NULL;
