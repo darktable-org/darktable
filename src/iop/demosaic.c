@@ -607,10 +607,6 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           {
             const int f = FCxtrans(row, col, roi_in, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
-            // There will be no negative values as rawprepare iop
-            // clamps at zero. Sanity check this and that values are
-            // within processed_maximum.
-            assert(pix[f] >= 0.f && pix[f] <= processed_maximum[f]);
           }
           else
           {
