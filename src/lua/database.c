@@ -197,44 +197,12 @@ static int collection_numindex(lua_State *L)
   {
     return luaL_error(L, "incorrect index in database");
   }
-
-  gchar *query = NULL;
-  gchar *sq = NULL;
-
-  /* get collection order */
-  if((darktable.collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    sq = dt_collection_get_sort_query(darktable.collection);
-
-
-  sqlite3_stmt *stmt = NULL;
-
-  /* build the query string */
-  query = dt_util_dstrcat(query, "select distinct id from images ");
-
-  if(darktable.collection->params.sort == DT_COLLECTION_SORT_COLOR
-     && (darktable.collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(query, "as a left outer join color_labels as b on a.id = b.imgid ");
-
-  query = dt_util_dstrcat(query, "%s limit -1 offset ?1", sq);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, index -1);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  int imgid = dt_collection_get_nth(darktable.collection,index-1);
+  if (imgid <1)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
-    luaA_push(L, dt_lua_image_t, &imgid);
-    sqlite3_finalize(stmt);
-  }
-  else
-  {
-    g_free(sq);
-    g_free(query);
-    sqlite3_finalize(stmt);
     return luaL_error(L, "incorrect index in database");
   }
-  g_free(sq);
-  g_free(query);
+  luaA_push(L, dt_lua_image_t, &imgid);
   return 1;
 
 }
