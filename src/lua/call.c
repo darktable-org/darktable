@@ -604,7 +604,6 @@ static int sleep_cb(lua_State*L)
 
 static int read_cb(lua_State*L)
 {
-  dt_lua_debug_stack(L);
   luaL_checkudata(L,1,LUA_FILEHANDLE);
   luaL_Stream *stream = lua_touserdata(L, 1);
   int myfileno = fileno(stream->f);
