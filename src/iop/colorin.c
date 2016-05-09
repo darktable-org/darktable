@@ -1032,7 +1032,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       type = DT_COLORSPACE_EMBEDDED_MATRIX;
     else
     {
-      d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_size);
+      d->input = dt_colorspaces_get_rgb_profile_from_mem(cimg->profile, cimg->profile_size);
       d->clear_input = 1;
     }
     dt_image_cache_read_release(darktable.image_cache, cimg);

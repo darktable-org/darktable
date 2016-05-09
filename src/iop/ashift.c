@@ -224,6 +224,13 @@ typedef enum dt_iop_ashift_bounding_t
   ASHIFT_BOUNDING_DESELECT = 2
 } dt_iop_ashift_bounding_t;
 
+typedef enum dt_iop_ashift_jobcode_t
+{
+  ASHIFT_JOBCODE_NONE = 0,
+  ASHIFT_JOBCODE_GET_STRUCTURE = 1,
+  ASHIFT_JOBCODE_FIT = 2
+} dt_iop_ashift_jobcode_t;
+
 typedef struct dt_iop_ashift_params1_t
 {
   float rotation;
@@ -396,9 +403,11 @@ typedef struct dt_iop_ashift_gui_data_t
   uint64_t grid_hash;
   uint64_t buf_hash;
   dt_iop_ashift_fitaxis_t lastfit;
-  dt_pthread_mutex_t lock;
   float lastx;
   float lasty;
+  dt_iop_ashift_jobcode_t jobcode;
+  int jobparams;
+  dt_pthread_mutex_t lock;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -3726,30 +3735,38 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
     if(control)
-      fitaxis = ASHIFT_FIT_ROTATION_VERTICAL_LINES;
+      g->lastfit = fitaxis = ASHIFT_FIT_ROTATION_VERTICAL_LINES;
     else if(shift)
-      fitaxis = ASHIFT_FIT_VERTICALLY_NO_ROTATION;
+      g->lastfit = fitaxis = ASHIFT_FIT_VERTICALLY_NO_ROTATION;
     else
-      fitaxis = ASHIFT_FIT_VERTICALLY;
+      g->lastfit = fitaxis = ASHIFT_FIT_VERTICALLY;
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
-    if(do_fit(self, p, fitaxis))
-    {
-      darktable.gui->reset = 1;
-      dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-      dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-      dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-      dt_bauhaus_slider_set_soft(g->shear, p->shear);
-      darktable.gui->reset = 0;
-    }
-    g->lastfit = fitaxis;
 
-    // hack to guarantee that module gets enabled on button click
-    if(!self->enabled) p->toggle ^= 1;
+    if(self->enabled)
+    {
+      // module is enable -> we process directly
+      if(do_fit(self, p, fitaxis))
+      {
+        darktable.gui->reset = 1;
+        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
+        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+        dt_bauhaus_slider_set_soft(g->shear, p->shear);
+        darktable.gui->reset = 0;
+      }
+    }
+    else
+    {
+      // module is not enabled -> invoke it and queue the job to be processed once
+      // the preview image is ready
+      g->jobcode = ASHIFT_JOBCODE_FIT;
+      g->jobparams = g->lastfit = fitaxis;
+      p->toggle ^= 1;
+    }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-
     return TRUE;
   }
   return FALSE;
@@ -3771,30 +3788,38 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
     if(control)
-      fitaxis = ASHIFT_FIT_ROTATION_HORIZONTAL_LINES;
+      g->lastfit = fitaxis = ASHIFT_FIT_ROTATION_HORIZONTAL_LINES;
     else if(shift)
-      fitaxis = ASHIFT_FIT_HORIZONTALLY_NO_ROTATION;
+      g->lastfit = fitaxis = ASHIFT_FIT_HORIZONTALLY_NO_ROTATION;
     else
-      fitaxis = ASHIFT_FIT_HORIZONTALLY;
+      g->lastfit = fitaxis = ASHIFT_FIT_HORIZONTALLY;
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
-    if(do_fit(self, p, fitaxis))
-    {
-      darktable.gui->reset = 1;
-      dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-      dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-      dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-      dt_bauhaus_slider_set_soft(g->shear, p->shear);
-      darktable.gui->reset = 0;
-    }
-    g->lastfit = fitaxis;
 
-    // hack to guarantee that module gets enabled on button click
-    if(!self->enabled) p->toggle ^= 1;
+    if(self->enabled)
+    {
+      // module is enable -> we process directly
+      if(do_fit(self, p, fitaxis))
+      {
+        darktable.gui->reset = 1;
+        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
+        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+        dt_bauhaus_slider_set_soft(g->shear, p->shear);
+        darktable.gui->reset = 0;
+      }
+    }
+    else
+    {
+      // module is not enabled -> invoke it and queue the job to be processed once
+      // the preview image is ready
+      g->jobcode = ASHIFT_JOBCODE_FIT;
+      g->jobparams = g->lastfit = fitaxis;
+      p->toggle ^= 1;
+    }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-
     return TRUE;
   }
   return FALSE;
@@ -3826,22 +3851,30 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
-    if(do_fit(self, p, fitaxis))
-    {
-      darktable.gui->reset = 1;
-      dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-      dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-      dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-      dt_bauhaus_slider_set_soft(g->shear, p->shear);
-      darktable.gui->reset = 0;
-    }
-    g->lastfit = fitaxis;
 
-    // hack to guarantee that module gets enabled on button click
-    if(!self->enabled) p->toggle ^= 1;
+    if(self->enabled)
+    {
+      // module is enable -> we process directly
+      if(do_fit(self, p, fitaxis))
+      {
+        darktable.gui->reset = 1;
+        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
+        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+        dt_bauhaus_slider_set_soft(g->shear, p->shear);
+        darktable.gui->reset = 0;
+      }
+    }
+    else
+    {
+      // module is not enabled -> invoke it and queue the job to be processed once
+      // the preview image is ready
+      g->jobcode = ASHIFT_JOBCODE_FIT;
+      g->jobparams = g->lastfit = fitaxis;
+      p->toggle ^= 1;
+    }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-
     return TRUE;
   }
   return FALSE;
@@ -3855,24 +3888,39 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
   if(event->button == 1)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
     const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
     const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
 
+    dt_iop_ashift_enhance_t enhance;
+
+    if(control && shift)
+      enhance = ASHIFT_ENHANCE_EDGES | ASHIFT_ENHANCE_DETAIL;
+    else if(shift)
+      enhance = ASHIFT_ENHANCE_DETAIL;
+    else if(control)
+      enhance = ASHIFT_ENHANCE_EDGES;
+    else
+      enhance = ASHIFT_ENHANCE_NONE;
+
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
 
-    if(control && shift)
-      (void)do_get_structure(self, p, ASHIFT_ENHANCE_EDGES | ASHIFT_ENHANCE_DETAIL);
-    else if(shift)
-      (void)do_get_structure(self, p, ASHIFT_ENHANCE_DETAIL);
-    else if(control)
-      (void)do_get_structure(self, p, ASHIFT_ENHANCE_EDGES);
+    if(self->enabled)
+    {
+      // module is enabled -> process directly
+      (void)do_get_structure(self, p, enhance);
+    }
     else
-      (void)do_get_structure(self, p, ASHIFT_ENHANCE_NONE);
+    {
+      // module is not enabled -> invoke it and queue the job to be processed once
+      // the preview image is ready
+      g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE;
+      g->jobparams = enhance;
+      p->toggle ^= 1;
+    }
 
-    // hack to guarantee that module gets enabled on button click
-    if(!self->enabled) p->toggle ^= 1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
@@ -3886,7 +3934,7 @@ static void clean_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   (void)do_clean_structure(self, p);
   dt_iop_request_focus(self);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_redraw_center();
 }
 
 static void eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
@@ -3904,7 +3952,52 @@ static void eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data
     g->lines_suppressed = gtk_toggle_button_get_active(togglebutton);
   }
   dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
+  dt_control_queue_redraw_center();
+}
+
+// routine that is called after preview image has been processed. we use it
+// to perform structure collection or fitting in case those have been triggered while
+// the module had not yet been enabled
+void process_after_preview_callback(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  dt_iop_ashift_jobcode_t jobcode = g->jobcode;
+  int jobparams = g->jobparams;
+
+  // purge
+  g->jobcode = ASHIFT_JOBCODE_NONE;
+  g->jobparams = 0;
+
+  if(darktable.gui->reset) return;
+
+  switch(jobcode)
+  {
+    case ASHIFT_JOBCODE_GET_STRUCTURE:
+      (void)do_get_structure(self, p, (dt_iop_ashift_enhance_t)jobparams);
+      break;
+
+    case ASHIFT_JOBCODE_FIT:
+      if(do_fit(self, p, (dt_iop_ashift_fitaxis_t)jobparams))
+      {
+        darktable.gui->reset = 1;
+        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
+        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+        dt_bauhaus_slider_set_soft(g->shear, p->shear);
+        darktable.gui->reset = 0;
+      }
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      break;
+      
+    case ASHIFT_JOBCODE_NONE:
+    default:
+      break;
+  }
+
+  dt_control_queue_redraw_center();
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -4090,6 +4183,9 @@ void reload_defaults(dt_iop_module_t *module)
     g->points_idx = NULL;
     g->points_lines_count = 0;
     g->points_version = 0;
+
+    g->jobcode = ASHIFT_JOBCODE_NONE;
+    g->jobparams = 0;
   }
 }
 
@@ -4232,6 +4328,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->isdeselecting = 0;
   g->isbounding = ASHIFT_BOUNDING_OFF;
   g->selecting_lines_version = 0;
+
+  g->jobcode = ASHIFT_JOBCODE_NONE;
+  g->jobparams = 0;
+
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -4427,10 +4527,17 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(clean_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(eye_button_toggled), (gpointer)self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
+
+  /* add signal handler for preview pipe finish to redraw the overlay */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            G_CALLBACK(process_after_preview_callback), self);
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(process_after_preview_callback), self);
+
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
   free(g->lines);

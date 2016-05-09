@@ -178,7 +178,84 @@ int legacy_params(
 }
 
 void init_presets(dt_iop_module_so_t *self)
-{ }
+{
+  dt_iop_colorchecker_params_t p;
+  memset(&p, 0, sizeof(p));
+  p.num_patches = 24;
+  p.target_L[ 0] = p.source_L[ 0] = 17.460945129394531;
+  p.target_L[ 1] = p.source_L[ 1] = 26.878498077392578;
+  p.target_L[ 2] = p.source_L[ 2] = 34.900054931640625;
+  p.target_L[ 3] = p.source_L[ 3] = 21.692604064941406;
+  p.target_L[ 4] = p.source_L[ 4] = 32.18853759765625;
+  p.target_L[ 5] = p.source_L[ 5] = 62.531227111816406;
+  p.target_L[ 6] = p.source_L[ 6] = 18.933284759521484;
+  p.target_L[ 7] = p.source_L[ 7] = 53.936111450195312;
+  p.target_L[ 8] = p.source_L[ 8] = 69.154266357421875;
+  p.target_L[ 9] = p.source_L[ 9] = 43.381229400634766;
+  p.target_L[10] = p.source_L[10] = 57.797889709472656;
+  p.target_L[11] = p.source_L[11] = 73.27630615234375;
+  p.target_L[12] = p.source_L[12] = 53.175498962402344;
+  p.target_L[13] = p.source_L[13] = 49.111373901367188;
+  p.target_L[14] = p.source_L[14] = 63.169830322265625;
+  p.target_L[15] = p.source_L[15] = 61.896102905273438;
+  p.target_L[16] = p.source_L[16] = 67.852409362792969;
+  p.target_L[17] = p.source_L[17] = 72.489517211914062;
+  p.target_L[18] = p.source_L[18] = 70.935714721679688;
+  p.target_L[19] = p.source_L[19] = 70.173004150390625;
+  p.target_L[20] = p.source_L[20] = 77.78826904296875;
+  p.target_L[21] = p.source_L[21] = 76.070747375488281;
+  p.target_L[22] = p.source_L[22] = 68.645004272460938;
+  p.target_L[23] = p.source_L[23] = 74.502906799316406;
+  p.target_a[ 0] = p.source_a[ 0] = 8.4928874969482422;
+  p.target_a[ 1] = p.source_a[ 1] = 27.94782829284668;
+  p.target_a[ 2] = p.source_a[ 2] = 43.8824462890625;
+  p.target_a[ 3] = p.source_a[ 3] = 16.723676681518555;
+  p.target_a[ 4] = p.source_a[ 4] = 39.174972534179688;
+  p.target_a[ 5] = p.source_a[ 5] = 24.966419219970703;
+  p.target_a[ 6] = p.source_a[ 6] = 8.8226642608642578;
+  p.target_a[ 7] = p.source_a[ 7] = 34.451812744140625;
+  p.target_a[ 8] = p.source_a[ 8] = 18.39008903503418;
+  p.target_a[ 9] = p.source_a[ 9] = 28.272598266601562;
+  p.target_a[10] = p.source_a[10] = 10.193824768066406;
+  p.target_a[11] = p.source_a[11] = 13.241470336914062;
+  p.target_a[12] = p.source_a[12] = 43.655307769775391;
+  p.target_a[13] = p.source_a[13] = 23.247600555419922;
+  p.target_a[14] = p.source_a[14] = 23.308664321899414;
+  p.target_a[15] = p.source_a[15] = 11.138319969177246;
+  p.target_a[16] = p.source_a[16] = 18.200069427490234;
+  p.target_a[17] = p.source_a[17] = 15.363990783691406;
+  p.target_a[18] = p.source_a[18] = 11.173545837402344;
+  p.target_a[19] = p.source_a[19] = 11.313735961914062;
+  p.target_a[20] = p.source_a[20] = 15.059500694274902;
+  p.target_a[21] = p.source_a[21] = 4.7686996459960938;
+  p.target_a[22] = p.source_a[22] = 3.0603706836700439;
+  p.target_a[23] = p.source_a[23] = -3.687053918838501;
+  p.target_b[ 0] = p.source_b[ 0] = -0.023579597473144531;
+  p.target_b[ 1] = p.source_b[ 1] = 14.991056442260742;
+  p.target_b[ 2] = p.source_b[ 2] = 26.443553924560547;
+  p.target_b[ 3] = p.source_b[ 3] = 7.3905587196350098;
+  p.target_b[ 4] = p.source_b[ 4] = 23.309671401977539;
+  p.target_b[ 5] = p.source_b[ 5] = 19.262432098388672;
+  p.target_b[ 6] = p.source_b[ 6] = 3.136211633682251;
+  p.target_b[ 7] = p.source_b[ 7] = 31.949621200561523;
+  p.target_b[ 8] = p.source_b[ 8] = 16.144514083862305;
+  p.target_b[ 9] = p.source_b[ 9] = 25.893926620483398;
+  p.target_b[10] = p.source_b[10] = 12.271202087402344;
+  p.target_b[11] = p.source_b[11] = 16.763805389404297;
+  p.target_b[12] = p.source_b[12] = 53.904998779296875;
+  p.target_b[13] = p.source_b[13] = 36.537342071533203;
+  p.target_b[14] = p.source_b[14] = 32.930683135986328;
+  p.target_b[15] = p.source_b[15] = 19.008804321289062;
+  p.target_b[16] = p.source_b[16] = 32.259223937988281;
+  p.target_b[17] = p.source_b[17] = 25.815582275390625;
+  p.target_b[18] = p.source_b[18] = 26.509498596191406;
+  p.target_b[19] = p.source_b[19] = 40.572704315185547;
+  p.target_b[20] = p.source_b[20] = 88.354469299316406;
+  p.target_b[21] = p.source_b[21] = 33.434604644775391;
+  p.target_b[22] = p.source_b[22] = 9.5750093460083008;
+  p.target_b[23] = p.source_b[23] = 41.285167694091797;
+  dt_gui_presets_add_generic(_("it8 skin tones"), self->op, self->version(), &p, sizeof(p), 1);
+}
 
 // fast logarithms stolen from paul mineiro http://fastapprox.googlecode.com/svn/trunk/fastapprox/src/fastonebigheader.h
 #if 0//def __SSE2__
@@ -258,21 +335,20 @@ fastlog (float x)
 // }
 
 // thinplate spline kernel \phi(r)
-static inline float kernel(const float r)
+#if defined(_OPENMP) && defined(OPENMP_SIMD_)
+#pragma omp declare SIMD()
+#endif
+static inline float kernel(const float *x, const float *y)
 {
   // return r*r*logf(MAX(1e-8f,r));
   // well damnit, this speedup thing unfortunately shows severe artifacts.
   // return r*r*fasterlog(MAX(1e-8f,r));
   // this one seems to be a lot better, let's see how it goes:
-  return r*r*fastlog(MAX(1e-8f,r));
-}
-
-static inline float distance(const float *x, const float *y)
-{
-  return sqrtf(
+  const float r2 = 
       (x[0]-y[0])*(x[0]-y[0])+
       (x[1]-y[1])*(x[1]-y[1])+
-      (x[2]-y[2])*(x[2]-y[2]));
+      (x[2]-y[2])*(x[2]-y[2]);
+  return .5f * r2*fastlog(MAX(1e-8f,r2));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -302,9 +378,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       out[2] += data->coeff_b[data->num_patches+1] * in[0] +
                 data->coeff_b[data->num_patches+2] * in[1] +
                 data->coeff_b[data->num_patches+3] * in[2];
+#if defined(_OPENMP) && defined(OPENMP_SIMD_) // <== nice try, i don't think this does anything here
+#pragma omp SIMD()
+#endif
       for(int k=0;k<data->num_patches;k++)
       { // rbf from thin plate spline
-        const float phi = kernel(distance(in, data->source_Lab + 3*k));
+        const float phi = kernel(in, data->source_Lab + 3*k);
         out[0] += data->coeff_L[k] * phi;
         out[1] += data->coeff_a[k] * phi;
         out[2] += data->coeff_b[k] * phi;
@@ -412,7 +491,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // radial basis function part R
     for(int j=0;j<N;j++)
       for(int i=j;i<N;i++)
-        A[j*wd+i] = A[i*wd+j] = kernel(distance(d->source_Lab+3*i, d->source_Lab+3*j));
+        A[j*wd+i] = A[i*wd+j] = kernel(d->source_Lab+3*i, d->source_Lab+3*j);
 
     // polynomial part P: constant + 3x linear
     for(int i=0;i<N;i++) A[i*wd+N+0] = A[(N+0)*wd+i] = 1.0f;
@@ -600,9 +679,9 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
   const float Cin = sqrtf(
       p->source_a[g->patch]*p->source_a[g->patch] +
       p->source_b[g->patch]*p->source_b[g->patch]);
-  const float Cout = 1e-4f + sqrtf(
+  const float Cout = MAX(1e-4f, sqrtf(
       p->target_a[g->patch]*p->target_a[g->patch]+
-      p->target_b[g->patch]*p->target_b[g->patch]);
+      p->target_b[g->patch]*p->target_b[g->patch]));
   const float Cnew = CLAMP(Cin + dt_bauhaus_slider_get(slider), 0.01, 128.0);
   p->target_a[g->patch] = CLAMP(p->target_a[g->patch]*Cnew/Cout, -128.0, 128.0);
   p->target_b[g->patch] = CLAMP(p->target_b[g->patch]*Cnew/Cout, -128.0, 128.0);
@@ -655,6 +734,7 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
       double rgb[3] = { 0.5, 0.5, 0.5 }; // Lab: rgb grey converted to Lab
       cmsCIELab Lab;
       const int patch = i + j*cells_x;
+      if(patch >= p->num_patches) continue;
       Lab.L = p->source_L[patch];
       Lab.a = p->source_a[patch];
       Lab.b = p->source_b[patch];
@@ -677,9 +757,9 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
           width / (float)cells_x - DT_PIXEL_APPLY_DPI(1),
           height / (float)cells_y - DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
-      if(fabsf(p->target_L[patch] - p->source_L[patch]) > 1e-6f ||
-         fabsf(p->target_a[patch] - p->source_a[patch]) > 1e-6f ||
-         fabsf(p->target_b[patch] - p->source_b[patch]) > 1e-6f)
+      if(fabsf(p->target_L[patch] - p->source_L[patch]) > 1e-5f ||
+         fabsf(p->target_a[patch] - p->source_a[patch]) > 1e-5f ||
+         fabsf(p->target_b[patch] - p->source_b[patch]) > 1e-5f)
       {
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
         cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
@@ -760,7 +840,14 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   const float my = mouse_y * cells_y / (float)height;
   int patch = CLAMP((int)mx + cells_x*(int)my, 0, p->num_patches-1);
   char tooltip[1024];
-  snprintf(tooltip, sizeof(tooltip), _("(%2.2f %2.2f %2.2f)\naltered patches are marked with an outline\nclick to select\ndouble click to reset"), p->source_L[patch], p->source_a[patch], p->source_b[patch]);
+  snprintf(tooltip, sizeof(tooltip),
+      _("(%2.2f %2.2f %2.2f)\n"
+        "altered patches are marked with an outline\n"
+        "click to select\n"
+        "double click to reset\n"
+        "right click to delete patch\n"
+        "shift-click while color picking to replace patch"),
+      p->source_L[patch], p->source_a[patch], p->source_b[patch]);
   gtk_widget_set_tooltip_text(g->area, tooltip);
   return TRUE;
 }
@@ -784,10 +871,10 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
   }
   const float mx = mouse_x * cells_x / (float)width;
   const float my = mouse_y * cells_y / (float)height;
-  int patch = CLAMP((int)mx + cells_x*(int)my, 0, p->num_patches);
-  dt_bauhaus_combobox_set(g->combobox_patch, patch);
+  int patch = (int)mx + cells_x*(int)my;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   { // reset on double click
+    if(patch < 0 || patch >= p->num_patches) return FALSE;
     p->target_L[patch] = p->source_L[patch];
     p->target_a[patch] = p->source_a[patch];
     p->target_b[patch] = p->source_b[patch];
@@ -795,6 +882,38 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
     self->gui_update(self);
     return TRUE;
   }
+  else if(event->button == 3 && (patch < p->num_patches))
+  {
+    // right click: delete patch, move others up
+    if(patch < 0 || patch >= p->num_patches) return FALSE;
+    memmove(p->target_L+patch, p->target_L+patch+1, sizeof(float)*(p->num_patches-1-patch));
+    memmove(p->target_a+patch, p->target_a+patch+1, sizeof(float)*(p->num_patches-1-patch));
+    memmove(p->target_b+patch, p->target_b+patch+1, sizeof(float)*(p->num_patches-1-patch));
+    memmove(p->source_L+patch, p->source_L+patch+1, sizeof(float)*(p->num_patches-1-patch));
+    memmove(p->source_a+patch, p->source_a+patch+1, sizeof(float)*(p->num_patches-1-patch));
+    memmove(p->source_b+patch, p->source_b+patch+1, sizeof(float)*(p->num_patches-1-patch));
+    p->num_patches--;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    self->gui_update(self);
+    return TRUE;
+  }
+  else if((event->button == 1) &&
+          (event->state == GDK_SHIFT_MASK) &&
+          (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
+  {
+    // shift-left while colour picking: replace source colour
+    // if clicked outside the valid patches: add new one
+    if(p->num_patches < 24 && (patch < 0 || patch >= p->num_patches))
+      patch = p->num_patches++;
+    p->target_L[patch] = p->source_L[patch] = self->picked_color[0];
+    p->target_a[patch] = p->source_a[patch] = self->picked_color[1];
+    p->target_b[patch] = p->source_b[patch] = self->picked_color[2];
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    self->gui_update(self);
+    return TRUE;
+  }
+  if(patch >= p->num_patches) patch = p->num_patches-1;
+  dt_bauhaus_combobox_set(g->combobox_patch, patch);
   return FALSE;
 }
 
