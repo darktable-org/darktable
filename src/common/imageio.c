@@ -673,8 +673,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   }
 
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height,
-                             buf_is_downscaled ? dev.image_storage.width / (float)buf.width : 1.0f,
-                             buf.pre_monochrome_demosaiced);
+                             buf_is_downscaled ? dev.image_storage.width / (float)buf.width : 1.0f);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
 
