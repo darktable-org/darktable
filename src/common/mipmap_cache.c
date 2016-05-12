@@ -77,7 +77,6 @@ struct dt_mipmap_buffer_dsc
   uint32_t height;
   size_t size;
   dt_mipmap_buffer_dsc_flags flags;
-  uint32_t pre_monochrome_demosaiced;
   dt_colorspaces_color_profile_type_t color_space;
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
 } __attribute__((packed, aligned(16)));
@@ -628,7 +627,7 @@ void dt_mipmap_cache_get_with_caller(
       buf->color_space = dsc->color_space;
       buf->imgid = imgid;
       buf->size = mip;
-      buf->pre_monochrome_demosaiced = dsc->pre_monochrome_demosaiced;
+
       // skip to next 8-byte alignment, for sse buffers.
       buf->buf = (uint8_t *)(dsc + 1);
     }
@@ -672,8 +671,6 @@ void dt_mipmap_cache_get_with_caller(
     if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
     {
       mipmap_generated = 1;
-      // _init_f() will set it, if needed
-      buf->pre_monochrome_demosaiced = 0;
 
       __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_fetches), 1);
       // fprintf(stderr, "[mipmap cache get] now initializing buffer for img %u mip %d!\n", imgid, mip);
@@ -735,7 +732,6 @@ void dt_mipmap_cache_get_with_caller(
         // 8-bit thumbs
         _init_8((uint8_t *)(dsc + 1), &dsc->width, &dsc->height, &buf->color_space, imgid, mip);
       }
-      dsc->pre_monochrome_demosaiced = buf->pre_monochrome_demosaiced;
       dsc->color_space = buf->color_space;
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
     }
@@ -779,7 +775,6 @@ void dt_mipmap_cache_get_with_caller(
     buf->color_space = dsc->color_space;
     buf->imgid = imgid;
     buf->size = mip;
-    buf->pre_monochrome_demosaiced = dsc->pre_monochrome_demosaiced;
     buf->buf = (uint8_t *)(dsc + 1);
     if(dsc->width == 0 || dsc->height == 0)
     {
@@ -1091,7 +1086,6 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
 
   assert(!buffer_is_broken(&buf));
 
-  mipmap_buf->pre_monochrome_demosaiced = 0;
   mipmap_buf->color_space = DT_COLORSPACE_NONE; // TODO: do we need that information in this buffer?
 
   if(image->buf_dsc.filters)
