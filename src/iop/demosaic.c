@@ -1567,6 +1567,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
 
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
+
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
   const int qual = get_quality();
@@ -1622,12 +1624,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(img->filters == 9u)
     {
       if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && xtrans_full_markesteijn_demosaicing)
-        xtrans_markesteijn_interpolate(tmp, pixels, piece->pipe->processed_maximum, &roo, &roi, img,
-                                       piece->pipe->xtrans,
+        xtrans_markesteijn_interpolate(tmp, pixels, piece->pipe->processed_maximum, &roo, &roi, img, xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
       else
-        vng_interpolate(tmp, pixels, piece->pipe->processed_maximum, &roo, &roi, piece->pipe->filters,
-                        piece->pipe->xtrans, only_vng_linear);
+        vng_interpolate(tmp, pixels, piece->pipe->processed_maximum, &roo, &roi, piece->pipe->filters, xtrans,
+                        only_vng_linear);
     }
     else
     {
@@ -1659,8 +1660,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         passthrough_monochrome(tmp, in, &roo, &roi);
       else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
       {
-        vng_interpolate(tmp, in, piece->pipe->processed_maximum, &roo, &roi, piece->pipe->filters,
-                        piece->pipe->xtrans, only_vng_linear);
+        vng_interpolate(tmp, in, piece->pipe->processed_maximum, &roo, &roi, piece->pipe->filters, xtrans,
+                        only_vng_linear);
         if (img->flags & DT_IMAGE_4BAYER)
         {
           dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, data->CAM_to_RGB);
@@ -1690,7 +1691,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                              fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
     if(img->filters == 9u)
       dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
-                                                        piece->pipe->xtrans);
+                                                        xtrans);
     else
     {
       if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
@@ -2066,6 +2067,8 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   const dt_image_t *img = &self->dev->image_storage;
   const float threshold = 0.0001f * img->exif_iso;
 
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
+
   // separate out G1 and G2 in Bayer patterns
   uint32_t filters4;
   if(piece->pipe->filters == 9u)
@@ -2114,9 +2117,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
   if(piece->pipe->filters == 9u)
   {
-    uint8_t xtrans[6][6];
-    memcpy(xtrans, piece->pipe->xtrans, sizeof(xtrans));
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(xtrans), xtrans);
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->xtrans), piece->pipe->xtrans);
     if(dev_xtrans == NULL) goto error;
   }
 
@@ -2166,13 +2167,13 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       {
         int32_t *ip = lookup[row][col] + 1;
         int sum[4] = { 0 };
-        const int f = fcol(row + roi_in->y, col + roi_in->x, filters4, piece->pipe->xtrans);
+        const int f = fcol(row + roi_in->y, col + roi_in->x, filters4, xtrans);
         // make list of adjoining pixel offsets by weight & color
         for(int y = -1; y <= 1; y++)
           for(int x = -1; x <= 1; x++)
           {
             int weight = 1 << ((y == 0) + (x == 0));
-            const int color = fcol(row + y + roi_in->y, col + x + roi_in->x, filters4, piece->pipe->xtrans);
+            const int color = fcol(row + y + roi_in->y, col + x + roi_in->x, filters4, xtrans);
             if(color == f) continue;
             *ip++ = (y << 16) | (x & 0xffffu);
             *ip++ = weight;
@@ -2224,12 +2225,12 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
           int y2 = *cp++, x2 = *cp++;
           int weight = *cp++;
           int grads = *cp++;
-          int color = fcol(row + y1, col + x1, filters4, piece->pipe->xtrans);
-          if(fcol(row + y2, col + x2, filters4, piece->pipe->xtrans) != color) continue;
-          int diag = (fcol(row, col + 1, filters4, piece->pipe->xtrans) == color
-                      && fcol(row + 1, col, filters4, piece->pipe->xtrans) == color)
-                         ? 2
-                         : 1;
+          int color = fcol(row + y1, col + x1, filters4, xtrans);
+          if(fcol(row + y2, col + x2, filters4, xtrans) != color) continue;
+          int diag
+              = (fcol(row, col + 1, filters4, xtrans) == color && fcol(row + 1, col, filters4, xtrans) == color)
+                    ? 2
+                    : 1;
           if(abs(y1 - y2) == diag && abs(x1 - x2) == diag) continue;
           *ip++ = (y1 << 16) | (x1 & 0xffffu);
           *ip++ = (y2 << 16) | (x2 & 0xffffu);
@@ -2244,9 +2245,9 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
         {
           int y = *cp++, x = *cp++;
           *ip++ = (y << 16) | (x & 0xffffu);
-          int color = fcol(row, col, filters4, piece->pipe->xtrans);
-          if(fcol(row + y, col + x, filters4, piece->pipe->xtrans) != color
-             && fcol(row + y * 2, col + x * 2, filters4, piece->pipe->xtrans) == color)
+          int color = fcol(row, col, filters4, xtrans);
+          if(fcol(row + y, col + x, filters4, xtrans) != color
+             && fcol(row + y * 2, col + x * 2, filters4, xtrans) == color)
           {
             *ip++ = (2*y << 16) | (2*x & 0xffffu);
             *ip++ = color;
@@ -2495,6 +2496,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
   const int devid = piece->pipe->devid;
   const int qual = get_quality();
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
 
   const float processed_maximum[4] = { piece->pipe->processed_maximum[0],
                                        piece->pipe->processed_maximum[1],
@@ -2528,9 +2530,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
   cl_mem *dev_rgb = dev_rgbv;
 
-  uint8_t xtrans[6][6];
-  memcpy(xtrans, piece->pipe->xtrans, sizeof(xtrans));
-  dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(xtrans), xtrans);
+  dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->xtrans), piece->pipe->xtrans);
   if(dev_xtrans == NULL) goto error;
 
   if(full_scale_demosaicing)
@@ -2560,8 +2560,8 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       for(int col = 0; col < 3; col++)
         for(int ng = 0, d = 0; d < 10; d += 2)
         {
-          int g = FCxtrans(row, col, NULL, piece->pipe->xtrans) == 1;
-          if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, NULL, piece->pipe->xtrans) == 1)
+          int g = FCxtrans(row, col, NULL, xtrans) == 1;
+          if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, NULL, xtrans) == 1)
             ng = 0;
           else
             ng++;
