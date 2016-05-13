@@ -216,8 +216,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(img->filters == 9u)
   {
-    fixed = process_xtrans(i, o, roi_in, width, height, piece->pipe->xtrans, threshold, multiplier, markfixed,
-                           min_neighbours);
+    fixed = process_xtrans(i, o, roi_in, width, height, (const uint8_t(*const)[6])piece->pipe->xtrans, threshold,
+                           multiplier, markfixed, min_neighbours);
     goto processed;
   }
 
