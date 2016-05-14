@@ -27,6 +27,7 @@
 #include "common/film.h"
 #include "common/history.h"
 #include "common/imageio_module.h"
+#include "develop/imageop_math.h"
 #include "common/debug.h"
 #include "common/tags.h"
 #include "common/debug.h"
@@ -233,6 +234,7 @@ typedef struct dt_control_merge_hdr_t
 {
   uint32_t first_imgid;
   uint32_t first_filter;
+  uint8_t first_xtrans[6][6];
 
   float *pixels, *weight;
 
@@ -304,6 +306,16 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   {
     d->first_imgid = imgid;
     d->first_filter = image.filters;
+    // sensor layout is just passed on to be written to dng.
+    // we offset it to the crop of the image here, so we don't
+    // need to load in the FCxtrans dependency into the dng writer.
+    // for some stupid reason the dng needs this layout wrt cropped
+    // offsets, not globally.
+    dt_iop_roi_t roi = {0};
+    roi.x = image.crop_x;
+    roi.y = image.crop_y;
+    for(int j=0;j<6;j++)
+      for(int i=0;i<6;i++) d->first_xtrans[j][i] = FCxtrans(j, i, &roi, image.xtrans);
     d->pixels = calloc(datai->width * datai->height, sizeof(float));
     d->weight = calloc(datai->width * datai->height, sizeof(float));
     d->wd = datai->width;
@@ -311,9 +323,9 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->orientation = image.orientation;
   }
 
-  if(image.filters == 0u || image.filters == 9u || image.bpp != sizeof(uint16_t))
+  if(image.filters == 0u || image.bpp != sizeof(uint16_t))
   {
-    dt_control_log(_("exposure bracketing only works on Bayer raw images."));
+    dt_control_log(_("exposure bracketing only works on raw images."));
     d->abort = TRUE;
     return 1;
   }
@@ -336,9 +348,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   const float cal = 100.0f / (aperture * exp * iso);
   // about proportional to how many photons we can expect from this shot:
   const float photoncnt = 100.0f * aperture * exp / iso;
-  // once we get unscaled raw data in this uint16_t buffer, we need to rescale (and subtract black before
-  // using the values):
-  float saturation = 1.0f; // image.raw_white_point - image.raw_black_level;
+  float saturation = 1.0f;
   d->whitelevel = fmaxf(d->whitelevel, saturation * cal);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(d, saturation)
@@ -346,6 +356,8 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   for(int y = 0; y < d->ht; y++)
     for(int x = 0; x < d->wd; x++)
     {
+      // read unclamped raw value with subtracted black and rescaled to 1.0 saturation.
+      // this is the output of the rawprepare iop.
       const float in = ((float *)ivoid)[x + d->wd * y];
       // weights based on siggraph 12 poster
       // zijian zhu, zhengguo li, susanto rahardja, pasi fraenti
@@ -356,14 +368,14 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
       float offset = 3000.0f / (float)UINT16_MAX;
 
       // cannot do an envelope based on single pixel values here, need to get
-      // maximum value of all color channels. do find that, go through the bayer
-      // pattern block:
+      // maximum value of all color channels. to find that, go through the
+      // pattern block (we conservatively do a 3x3 for bayer or xtrans):
       int xx = x & ~1, yy = y & ~1;
       float M = 0.0f, m = FLT_MAX;
-      if(xx < d->wd - 1 && yy < d->ht - 1)
+      if(xx < d->wd - 2 && yy < d->ht - 2)
       {
-        for(int i = 0; i < 2; i++)
-          for(int j = 0; j < 2; j++)
+        for(int i = 0; i < 3; i++)
+          for(int j = 0; j < 3; j++)
           {
             M = MAX(M, ((float *)ivoid)[xx + i + d->wd * (yy + j)]);
             m = MIN(m, ((float *)ivoid)[xx + i + d->wd * (yy + j)]);
@@ -468,7 +480,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
-  dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, 1.0f);
+  dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, d.first_xtrans, 1.0f);
 
   dt_control_progress_set_progress(darktable.control, progress, 1.0);
 

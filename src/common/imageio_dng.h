@@ -45,8 +45,9 @@ static inline void dt_imageio_dng_write_buf(uint8_t *buf, int adr, int val)
   buf[adr] = val >> 24;
 }
 
-static inline uint8_t *dt_imageio_dng_make_tag(uint16_t tag, uint16_t type, uint32_t lng, uint32_t fld,
-                                               uint8_t *b, uint8_t *cnt)
+static inline uint8_t *dt_imageio_dng_make_tag(
+    uint16_t tag, uint16_t type, uint32_t lng, uint32_t fld,
+    uint8_t *b, uint8_t *cnt)
 {
   dt_imageio_dng_write_buf(b, 0, (tag << 16) | type);
   dt_imageio_dng_write_buf(b, 4, lng);
@@ -70,9 +71,11 @@ static inline void dt_imageio_dng_convert_rational(float f, int32_t *num, int32_
   *num *= sign;
 }
 
-static inline void dt_imageio_dng_write_tiff_header(FILE *fp, uint32_t xs, uint32_t ys, float Tv, float Av,
-                                                    float f, float iso, uint32_t filter,
-                                                    const float whitelevel)
+static inline void dt_imageio_dng_write_tiff_header(
+    FILE *fp, uint32_t xs, uint32_t ys, float Tv, float Av,
+    float f, float iso, uint32_t filter,
+    const uint8_t xtrans[6][6],
+    const float whitelevel)
 {
   const uint32_t channels = 1;
   uint8_t *b /*, *offs1, *offs2*/;
@@ -111,7 +114,10 @@ static inline void dt_imageio_dng_write_tiff_header(FILE *fp, uint32_t xs, uint3
   b = dt_imageio_dng_make_tag(339, SHORT, 1, (3 << 16), b,
                               &cnt); /* SampleFormat = 3 => ieee floating point */
 
-  b = dt_imageio_dng_make_tag(33421, SHORT, 2, (2 << 16) | 2, b, &cnt); /* CFAREPEATEDPATTERNDIM */
+  if(filter == 9u) // xtrans
+    b = dt_imageio_dng_make_tag(33421, SHORT, 2, (6 << 16) | 6, b, &cnt); /* CFAREPEATEDPATTERNDIM */
+  else
+    b = dt_imageio_dng_make_tag(33421, SHORT, 2, (2 << 16) | 2, b, &cnt); /* CFAREPEATEDPATTERNDIM */
 
   uint32_t cfapattern = 0;
   switch(filter)
@@ -129,7 +135,10 @@ static inline void dt_imageio_dng_write_tiff_header(FILE *fp, uint32_t xs, uint3
       cfapattern = (2 << 24) | (1 << 16) | (1 << 8) | 0; // bggr
       break;
   }
-  b = dt_imageio_dng_make_tag(33422, BYTE, 4, cfapattern, b, &cnt); /* CFAREPEATEDPATTERNDIM */
+  if(filter == 9u) // xtrans
+    b = dt_imageio_dng_make_tag(33422, BYTE, 36, 240, b, &cnt); /* CFAPATTERN */
+  else // bayer
+    b = dt_imageio_dng_make_tag(33422, BYTE, 4, cfapattern, b, &cnt); /* CFAPATTERN */
 
   // b = dt_imageio_dng_make_tag(  306, ASCII, 20, 428, b, &cnt ); // DateTime
   //   offs1 = b + 8;// + 3;
@@ -143,28 +152,15 @@ static inline void dt_imageio_dng_write_tiff_header(FILE *fp, uint32_t xs, uint3
   // b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, 512, b, &cnt); // AsShotNeutral
   // b = dt_imageio_dng_make_tag(50729, RATIONAL, 2, 512, b, &cnt); // AsShotWhiteXY
   b = dt_imageio_dng_make_tag(0, 0, 0, 0, b, &cnt); /* Next IFD.  */
-  buf[11] = cnt - 1;
-#if 0
+  buf[11] = cnt - 1; // write number of directory entries of this ifd
+
   // exif is written later, by exiv2:
-  // printf("offset: %d\n", b - buf);
-  // set exif IFD offset
-  exif_offs = b - buf;
-  dt_imageio_dng_write_buf(buf, offs1 - buf, b - buf);
+  // printf("offset: %d\n", b - buf); // find out where we're writing data
+  // apparently this doesn't need byteswap:
+  memcpy(buf+240, xtrans, sizeof(uint8_t)*36);
 
-  b += 2;
-  b = dt_imageio_dng_make_tag(33434, RATIONAL, 1, 400, b, &cnt); // exposure time
-  b = dt_imageio_dng_make_tag(33437, RATIONAL, 1, 408, b, &cnt); // FNumber
-  b = dt_imageio_dng_make_tag(34855, SHORT, 1, ((int)iso)<<16, b, &cnt); // iso speed rating
-  b = dt_imageio_dng_make_tag(37386, RATIONAL, 1, 416, b, &cnt); // focal length
-  b = dt_imageio_dng_make_tag( 0, 0, 0, 0, b, &cnt ); /* Next IFD.  */
-  // buf[253] = cnt-buf[11]-1;
-  buf[exif_offs + 1] = cnt-buf[11]-1;
-
-  // printf("offset: %d\n", b - buf);
-#endif
-
+#if 0
   // mostly garbage below, but i'm too lazy to clean it up:
-
   int32_t num, den;
   // ColorMatrix1
   float m[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
@@ -206,21 +202,24 @@ static inline void dt_imageio_dng_write_tiff_header(FILE *fp, uint32_t xs, uint3
   dt_imageio_dng_convert_rational(0.333, &num, &den);
   dt_imageio_dng_write_buf(buf, 520, num);
   dt_imageio_dng_write_buf(buf, 524, den);
+#endif
 
   // dt_imageio_dng_write_buf(buf, offs2-buf, 584);
-  int k = fwrite(buf, 1, 584, fp);
-  if(k != 584) fprintf(stderr, "[dng_write_header] failed to write image header!\n");
+  int written = fwrite(buf, 1, 584, fp);
+  if(written != 584) fprintf(stderr, "[dng_write_header] failed to write image header!\n");
 }
 
-static inline void dt_imageio_write_dng(const char *filename, const float *const pixel, const int wd,
-                                        const int ht, void *exif, const int exif_len, const uint32_t filter,
-                                        const float whitelevel)
+static inline void dt_imageio_write_dng(
+    const char *filename, const float *const pixel, const int wd,
+    const int ht, void *exif, const int exif_len, const uint32_t filter,
+    const uint8_t xtrans[6][6],
+    const float whitelevel)
 {
   FILE *f = fopen(filename, "wb");
   int k = 0;
   if(f)
   {
-    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, whitelevel);
+    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, xtrans, whitelevel);
     k = fwrite(pixel, sizeof(float), wd * ht, f);
     if(k != wd * ht) fprintf(stderr, "[dng_write] Error writing image data to %s\n", filename);
     fclose(f);
