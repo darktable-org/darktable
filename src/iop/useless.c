@@ -81,17 +81,6 @@ int groups()
   return IOP_GROUP_BASIC;
 }
 
-// implement this, if you have esoteric output bytes per pixel. default is 4*float
-/*
-int
-output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->buf_dsc.filters) return sizeof(float);
-  else return 4*sizeof(float);
-}
-*/
-
-
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);
