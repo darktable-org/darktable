@@ -188,20 +188,6 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 
-// signifies that this pipeline uses the MIP_F buffer instead of MIP_FULL
-// i.e. four floats per pixel already demosaiced/downsampled
-static inline int dt_dev_pixelpipe_uses_downsampled_input(dt_dev_pixelpipe_t *pipe)
-{
-#if 1
-  return 0;
-#else
-  if(!dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
-    return pipe->type == DT_DEV_PIXELPIPE_PREVIEW;
-  else
-    return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
-#endif
-}
-
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
