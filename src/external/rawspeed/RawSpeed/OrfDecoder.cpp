@@ -125,7 +125,7 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
     for (high = 0; high < 12; high++)
       if ((b>>(11-high))&1)
         break;
-      bittable[i] = min(12,high);
+    bittable[i] = min(12,high);
   }
   left0 = nw0 = left1 = nw1 = 0;
 
