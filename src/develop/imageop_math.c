@@ -321,7 +321,8 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint
 void dt_iop_clip_and_zoom_demosaic_half_size_plain(float *out, const uint16_t *const in,
                                                    const dt_iop_roi_t *const roi_out,
                                                    const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                   const int32_t in_stride, const uint32_t filters)
+                                                   const int32_t in_stride, const uint32_t filters,
+                                                   const uint16_t whitelevel)
 {
 #if 0
   printf("scale: %f\n",roi_out->scale);
@@ -387,7 +388,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_plain(float *out, const uint16_t *c
           const uint16_t p3 = in[i + in_stride * (j + 1)];
           const uint16_t p4 = in[i + 1 + in_stride * (j + 1)];
 
-          if(!((pc >= 60000) ^ (MAX(MAX(p1, p2), MAX(p3, p4)) >= 60000)))
+          if(!((pc >= whitelevel) ^ (MAX(MAX(p1, p2), MAX(p3, p4)) >= whitelevel)))
           {
             if(filters == 0xb4b4b4b4 || filters == 0x9c9c9c9c)
             { // CYGM or RGBE so lets keep all four values
@@ -436,7 +437,8 @@ void dt_iop_clip_and_zoom_demosaic_half_size_plain(float *out, const uint16_t *c
 void dt_iop_clip_and_zoom_demosaic_half_size_sse2(float *out, const uint16_t *const in,
                                                   const dt_iop_roi_t *const roi_out,
                                                   const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                  const int32_t in_stride, const uint32_t filters)
+                                                  const int32_t in_stride, const uint32_t filters,
+                                                  const uint16_t whitelevel)
 {
 #if 0
   printf("scale: %f\n",roi_out->scale);
@@ -503,7 +505,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_sse2(float *out, const uint16_t *co
           const uint16_t p3 = in[i + in_stride * (j + 1)];
           const uint16_t p4 = in[i + 1 + in_stride * (j + 1)];
 
-          if(!((pc >= 60000) ^ (MAX(MAX(p1, p2), MAX(p3, p4)) >= 60000)))
+          if(!((pc >= whitelevel) ^ (MAX(MAX(p1, p2), MAX(p3, p4)) >= whitelevel)))
           {
             if(FILTERS_ARE_4BAYER(filters)) // CYGM or RGBE so lets keep all four values
               sum = _mm_add_epi32(sum, _mm_set_epi32(p3, p4, p2, p1));
@@ -544,15 +546,15 @@ void dt_iop_clip_and_zoom_demosaic_half_size_sse2(float *out, const uint16_t *co
 void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
                                              const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
                                              const int32_t out_stride, const int32_t in_stride,
-                                             const uint32_t filters)
+                                             const uint32_t filters, const uint16_t whitelevel)
 {
   if(darktable.codepath.OPENMP_SIMD)
-    return dt_iop_clip_and_zoom_demosaic_half_size_plain(out, in, roi_out, roi_in, out_stride, in_stride,
-                                                         filters);
+    return dt_iop_clip_and_zoom_demosaic_half_size_plain(out, in, roi_out, roi_in, out_stride, in_stride, filters,
+                                                         whitelevel);
 #if defined(__SSE2__)
   else if(darktable.codepath.SSE2)
-    return dt_iop_clip_and_zoom_demosaic_half_size_sse2(out, in, roi_out, roi_in, out_stride, in_stride,
-                                                        filters);
+    return dt_iop_clip_and_zoom_demosaic_half_size_sse2(out, in, roi_out, roi_in, out_stride, in_stride, filters,
+                                                        whitelevel);
 #endif
   else
     dt_unreachable_codepath();
@@ -1323,9 +1325,9 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
  */
 void dt_iop_clip_and_zoom_demosaic_third_size_xtrans(float *out, const uint16_t *const in,
                                                      const dt_iop_roi_t *const roi_out,
-                                                     const dt_iop_roi_t *const roi_in,
-                                                     const int32_t out_stride, const int32_t in_stride,
-                                                     const uint8_t (*const xtrans)[6])
+                                                     const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                     const int32_t in_stride, const uint8_t (*const xtrans)[6],
+                                                     const uint16_t whitelevel)
 {
   const float px_footprint = 1.f / roi_out->scale;
   const int samples = round(px_footprint / 3);
@@ -1362,7 +1364,7 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans(float *out, const uint16_t 
           for(int ii = 0; ii < 3; ++ii)
             for(int jj = 0; jj < 3; ++jj) lcl_max = MAX(lcl_max, in[i + ii + in_stride * (j + jj)]);
 
-          if(!((pc >= 60000) ^ (lcl_max >= 60000)))
+          if(!((pc >= whitelevel) ^ (lcl_max >= whitelevel)))
           {
             for(int ii = 0; ii < 3; ++ii)
               for(int jj = 0; jj < 3; ++jj)

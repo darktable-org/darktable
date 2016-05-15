@@ -1088,7 +1088,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
         else
         {
           dt_iop_clip_and_zoom_demosaic_half_size(out, (const uint16_t *)buf.buf, &roi_out, &roi_in, roi_out.width,
-                                                  roi_in.width, image->buf_dsc.filters);
+                                                  roi_in.width, image->buf_dsc.filters, image->raw_white_point);
 
           // For four bayer images we'll need to convert to XYZ here as the pipe only carries 3 channels
           if(image->flags & DT_IMAGE_4BAYER)
@@ -1116,7 +1116,8 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
       else
       {
         dt_iop_clip_and_zoom_demosaic_third_size_xtrans(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
-                                                        roi_out.width, roi_in.width, image->buf_dsc.xtrans);
+                                                        roi_out.width, roi_in.width, image->buf_dsc.xtrans,
+                                                        image->raw_white_point);
       }
     }
   }
