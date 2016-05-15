@@ -1075,7 +1075,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
         else
         {
           dt_iop_clip_and_zoom_demosaic_half_size_f(out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width,
-                                                    roi_in.width, image->buf_dsc.filters, 1.0f);
+                                                    roi_in.width, image->buf_dsc.filters);
         }
       }
       else
