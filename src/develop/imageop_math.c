@@ -950,8 +950,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
 void dt_iop_clip_and_zoom_demosaic_half_size_f_plain(float *out, const float *const in,
                                                      const dt_iop_roi_t *const roi_out,
                                                      const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                     const int32_t in_stride, const uint32_t filters,
-                                                     const float clip)
+                                                     const int32_t in_stride, const uint32_t filters)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -1127,8 +1126,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f_plain(float *out, const float *co
 void dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(float *out, const float *const in,
                                                     const dt_iop_roi_t *const roi_out,
                                                     const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                    const int32_t in_stride, const uint32_t filters,
-                                                    const float clip)
+                                                    const int32_t in_stride, const uint32_t filters)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -1305,15 +1303,14 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(float *out, const float *con
 void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
                                                const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
                                                const int32_t out_stride, const int32_t in_stride,
-                                               const uint32_t filters, const float clip)
+                                               const uint32_t filters)
 {
   if(darktable.codepath.OPENMP_SIMD)
     return dt_iop_clip_and_zoom_demosaic_half_size_f_plain(out, in, roi_out, roi_in, out_stride, in_stride,
-                                                           filters, clip);
+                                                           filters);
 #if defined(__SSE__)
   else if(darktable.codepath.SSE2)
-    return dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(out, in, roi_out, roi_in, out_stride, in_stride,
-                                                          filters, clip);
+    return dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(out, in, roi_out, roi_in, out_stride, in_stride, filters);
 #endif
   else
     dt_unreachable_codepath();
