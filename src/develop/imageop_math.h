@@ -54,9 +54,9 @@ int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in,
 /** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
 void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
                                              const struct dt_iop_roi_t *const roi_out,
-                                             const struct dt_iop_roi_t *const roi_in,
-                                             const int32_t out_stride, const int32_t in_stride,
-                                             const uint32_t filters);
+                                             const struct dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                             const int32_t in_stride, const uint32_t filters,
+                                             const uint16_t whitelevel);
 
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint16_t *const in,
                                                           const struct dt_iop_roi_t *const roi_out,
@@ -80,7 +80,7 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans(float *out, const uint16_t 
                                                      const struct dt_iop_roi_t *const roi_out,
                                                      const struct dt_iop_roi_t *const roi_in,
                                                      const int32_t out_stride, const int32_t in_stride,
-                                                     const uint8_t (*const xtrans)[6]);
+                                                     const uint8_t (*const xtrans)[6], const uint16_t whitelevel);
 
 void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *const in,
                                                        const struct dt_iop_roi_t *const roi_out,
