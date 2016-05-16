@@ -215,6 +215,17 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
   const CameraSensorInfo *sensor = cam->getSensorInfo(iso);
   mRaw->blackLevel = sensor->mBlackLevel;
+
+  // at least the (bayer sensor) X100 comes with a tag like this:
+  if (mRootIFD->hasEntryRecursive(FUJI_RGGBLEVELSBLACK))
+  {
+    TiffEntry *sep_black = mRootIFD->getEntryRecursive(FUJI_RGGBLEVELSBLACK);
+    if (sep_black->count == 4)
+    {
+      for(int k=0;k<4;k++)
+        mRaw->blackLevelSeparate[k] = sep_black->getInt(k);
+    }
+  }
   mRaw->whitePoint = sensor->mWhiteLevel;
   mRaw->blackAreas = cam->blackAreas;
   mRaw->cfa = cam->cfa;
