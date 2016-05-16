@@ -16,7 +16,7 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "lut/tonecurve.h"
+#include "chart/tonecurve.h"
 
 #include <assert.h>
 #include <stdint.h>
