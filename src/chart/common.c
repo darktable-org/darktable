@@ -16,37 +16,23 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "chart/common.h"
 
-#include "lut/colorchart.h"
-
-enum
+point_t transform_coords(point_t p, point_t *bb)
 {
-  TOP_LEFT = 0,
-  TOP_RIGHT = 1,
-  BOTTOM_RIGHT = 2,
-  BOTTOM_LEFT = 3
-};
+  point_t result;
+  float e, f;
 
-typedef struct image_t
-{
-  GtkWidget *drawing_area;
+  e = (bb[BOTTOM_LEFT].x - bb[TOP_LEFT].x) * p.y + bb[TOP_LEFT].x;
+  f = (bb[BOTTOM_RIGHT].x - bb[TOP_RIGHT].x) * p.y + bb[TOP_RIGHT].x;
+  result.x = (f - e) * p.x + e;
 
-  cairo_surface_t *surface;
-  cairo_pattern_t *image;
-  int width, height;
-  float *xyz;
-  float scale;
-  int offset_x, offset_y;
-  float shrink;
+  e = (bb[TOP_RIGHT].y - bb[TOP_LEFT].y) * p.x + bb[TOP_LEFT].y;
+  f = (bb[BOTTOM_RIGHT].y - bb[BOTTOM_LEFT].y) * p.x + bb[BOTTOM_LEFT].y;
+  result.y = (f - e) * p.y + e;
 
-  point_t bb[4];
-
-  chart_t **chart;
-  gboolean draw_colored;
-} image_t;
-
-point_t transform_coords(point_t p, point_t *bb);
+  return result;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

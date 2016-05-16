@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "lut/colorchart.h"
-#include "lut/common.h"
+#include "chart/colorchart.h"
+#include "chart/common.h"
 
 #include <cairo.h>
 #include <gtk/gtk.h>

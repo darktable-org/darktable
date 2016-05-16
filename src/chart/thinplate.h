@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "lut/tonecurve.h"
+#include "chart/tonecurve.h"
 
 int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (needed for error estimation)
                     int dim,                  // dimensionality of points
