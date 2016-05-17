@@ -512,8 +512,12 @@ void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, i
     cairo_clip(cr);
     cairo_new_path(cr);
     cairo_save(cr);
-    float px = CLAMPS(pointerx, 0, v->width);
-    float py = CLAMPS(pointery, 0, v->height);
+    float px = pointerx, py = pointery;
+    if(pointery > v->height)
+    {
+      px = 10000.0;
+      py = -1.0;
+    }
     v->expose(v, cr, v->width, v->height, px, py);
 
     cairo_restore(cr);
