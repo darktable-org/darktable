@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/tags.h"
 #include "common/debug.h"
+#include "common/collection.h"
 #include "control/conf.h"
 #include "control/control.h"
 
@@ -192,6 +193,8 @@ void dt_tag_attach(guint tagid, gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+
+  dt_collection_update_query(darktable.collection);
 }
 
 void dt_tag_attach_list(GList *tags, gint imgid)
@@ -253,6 +256,8 @@ void dt_tag_detach(guint tagid, gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+
+  dt_collection_update_query(darktable.collection);
 }
 
 void dt_tag_detach_by_string(const char *name, gint imgid)
@@ -266,6 +271,8 @@ void dt_tag_detach_by_string(const char *name, gint imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  dt_collection_update_query(darktable.collection);
 }
 
 
