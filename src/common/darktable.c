@@ -609,6 +609,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #endif
         printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2015 johannes hanika\n" PACKAGE_BUGREPORT
                "\n\ncompile options:\n"
+               "  bit depth is %s\n"
 #ifdef _DEBUG
                "  debug build\n"
 #else
@@ -649,7 +650,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #else
                "  GraphicsMagick support disabled\n"
 #endif
-
+               , (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
 #if USE_LUA
                , lua_api_version
 #endif
