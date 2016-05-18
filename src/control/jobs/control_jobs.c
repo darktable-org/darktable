@@ -417,6 +417,62 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   return 0;
 }
 
+// helper for hdr merging with the external tool align_image_stack.
+// based on stripped-down version of dt-cli, exports an image to linear tiff.
+static inline int image_export_linear_blocking(const int32_t imgid, const char *filename)
+{
+  int status = 1;
+  // init the export data structures
+  dt_imageio_module_format_t *format = 0;
+  dt_imageio_module_storage_t *storage = 0;
+  dt_imageio_module_data_t *sdata = 0, *fdata = 0;
+
+  // this is stupid, but how it works apparently
+  int icctype = dt_conf_get_int("plugins/lighttable/export/icctype");
+  dt_conf_set_int("plugins/lighttable/export/icctype", DT_COLORSPACE_LIN_REC2020);
+
+  storage = dt_imageio_get_storage_by_name("disk");
+  if(!storage) goto error;
+
+  sdata = storage->get_params(storage);
+  if(!sdata) goto error;
+
+  // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night
+  // any longer ...
+  g_strlcpy((char *)sdata, filename, DT_MAX_PATH_FOR_PARAMS);
+  // all is good now, the last line didn't happen.
+
+  format = dt_imageio_get_format_by_name("tiff");
+  if(!format) goto error;
+
+  fdata = format->get_params(format);
+  if(!fdata) goto error;
+
+  fdata->max_width = 0;
+  fdata->max_height = 0;
+  fdata->style[0] = '\0';
+  fdata->style_append = 0;
+
+  if(storage->initialize_store)
+  {
+    GList *single_image = g_list_append(NULL, GINT_TO_POINTER(imgid));
+    // high quality export, no upscaling:
+    storage->initialize_store(storage, sdata, &format, &fdata, &single_image, 1, 0);
+    g_list_free(single_image);
+  }
+
+  if(dt_imageio_export(imgid, filename, format, fdata, 1, 0, TRUE, storage, sdata, 1, 1) != 0) goto error;
+
+  // cleanup time
+  status = 0;
+error:
+  if(storage->finalize_store) storage->finalize_store(storage, sdata);
+  storage->free_params(storage, sdata);
+  format->free_params(format, fdata);
+  dt_conf_set_int("plugins/lighttable/export/icctype", icctype);
+  return status;
+}
+
 static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
@@ -437,6 +493,79 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
                                                                 .write_image = dt_control_merge_hdr_process };
 
   dt_control_merge_hdr_format_t dat = (dt_control_merge_hdr_format_t){.parent = { 0 }, .d = &d };
+  char command[2048];
+  snprintf(command, sizeof(command), "which align_image_stack");
+  int no_align_image_stack = system(command);
+
+  if(!no_align_image_stack)
+  { // use align_image_stack
+    char template[] = "/dev/shm/tmpdir.XXXXXX";
+    char *tmp_dirname = mkdtemp (template);
+
+    if(!tmp_dirname) goto error;
+
+    int firstid = -1;
+    int num = 1;
+    char filename[512];
+    while(t)
+    {
+      if(d.abort) goto error;
+
+      const uint32_t imgid = GPOINTER_TO_INT(t->data);
+      if(firstid < 0) firstid = imgid;
+
+      snprintf(filename, sizeof(filename), "%s/exposure_%04d.tif", tmp_dirname, num);
+      image_export_linear_blocking(imgid, filename);
+
+      t = g_list_delete_link(t, t);
+
+      /* update the progress bar */
+      fraction += 1.0 / (total + 1);
+      dt_control_progress_set_progress(darktable.control, progress, fraction);
+      num++;
+    }
+    params->index = NULL;
+
+    if(d.abort) goto error;
+
+    // output hdr
+    char pathname[PATH_MAX] = { 0 };
+    gboolean from_cache = TRUE;
+    dt_image_full_path(firstid, pathname, sizeof(pathname), &from_cache);
+
+    char *c = pathname + strlen(pathname);
+    while(*c != '.' && c > pathname) c--;
+    g_strlcpy(c, "-hdr", sizeof(pathname) - (c - pathname));
+
+    snprintf(command, sizeof(command), "align_image_stack -l -o %s %s/exposure_????.tif", pathname, tmp_dirname);
+    system(command);
+
+    dt_control_progress_set_progress(darktable.control, progress, 1.0);
+
+    while(*c != '/' && c > pathname) c--;
+    dt_control_log(_("wrote merged HDR `%s'"), c + 1);
+    strncpy(pathname + strlen(pathname), ".hdr", 5);
+
+    // import new image
+    gchar *directory = g_path_get_dirname((const gchar *)pathname);
+    dt_film_t film;
+    const int filmid = dt_film_new(&film, directory);
+    const int importid = dt_image_import(filmid, pathname, TRUE);
+    g_free(directory);
+
+error:
+    dt_control_progress_destroy(darktable.control, progress);
+    dt_control_queue_redraw_center();
+
+    if(tmp_dirname)
+    {
+      snprintf(command, sizeof(command), "rm -rf %s", tmp_dirname);
+      system(command);
+    }
+    return 0;
+  }
+
+  // else: fallback to custom-merged, unaligned mosaic dng:
 
   int num = 1;
   while(t)
