@@ -215,7 +215,7 @@ static void adjust_xtrans_filters(uint8_t (*xtrans)[6], uint32_t crop_x, uint32_
   {
     for(int j = 0; j < 6; ++j)
     {
-      xtrans[j][i] = tmp[j % 6][i % 6];
+      xtrans[j][i] = tmp[j][i];
     }
   }
 }
