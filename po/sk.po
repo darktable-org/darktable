@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-30 21:43+0200\n"
-"PO-Revision-Date: 2016-03-30 21:45+0200\n"
+"POT-Creation-Date: 2016-05-21 21:23+0200\n"
+"PO-Revision-Date: 2016-05-21 21:23+0200\n"
 "Last-Translator: Dušan Kazik <prescott66@gmail.com>\n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.7.1\n"
 
 #: ../build/src/preferences_gen.h:1460
 msgid "GUI options"
@@ -887,7 +887,7 @@ msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "nemožno získať parametre z modulu na formátovanie. export bol prerušený..."
 
-#: ../src/common/collection.c:665 ../src/develop/lightroom.c:926
+#: ../src/common/collection.c:687 ../src/develop/lightroom.c:926
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:584
 #: ../src/iop/colorbalance.c:623 ../src/iop/colorbalance.c:662
@@ -896,12 +896,12 @@ msgstr ""
 msgid "red"
 msgstr "červená"
 
-#: ../src/common/collection.c:667 ../src/develop/lightroom.c:928
+#: ../src/common/collection.c:689 ../src/develop/lightroom.c:928
 #: ../src/libs/collect.c:985 ../src/libs/collect.c:986
 msgid "yellow"
 msgstr "žltá"
 
-#: ../src/common/collection.c:669 ../src/develop/lightroom.c:930
+#: ../src/common/collection.c:691 ../src/develop/lightroom.c:930
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:593
 #: ../src/iop/colorbalance.c:632 ../src/iop/colorbalance.c:671
@@ -910,7 +910,7 @@ msgstr "žltá"
 msgid "green"
 msgstr "zelená"
 
-#: ../src/common/collection.c:671 ../src/develop/lightroom.c:932
+#: ../src/common/collection.c:693 ../src/develop/lightroom.c:932
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:486 ../src/iop/colorbalance.c:602
 #: ../src/iop/colorbalance.c:641 ../src/iop/colorbalance.c:680
@@ -919,22 +919,22 @@ msgstr "zelená"
 msgid "blue"
 msgstr "modrá"
 
-#: ../src/common/collection.c:673 ../src/libs/collect.c:994
+#: ../src/common/collection.c:695 ../src/libs/collect.c:994
 #: ../src/libs/collect.c:995
 msgid "purple"
 msgstr "fialová"
 
-#: ../src/common/collection.c:682 ../src/libs/collect.c:962
+#: ../src/common/collection.c:704 ../src/libs/collect.c:962
 #: ../src/libs/collect.c:963
 msgid "altered"
 msgstr "zmenený"
 
-#: ../src/common/collection.c:688 ../src/libs/collect.c:972
+#: ../src/common/collection.c:710 ../src/libs/collect.c:972
 #: ../src/libs/collect.c:973
 msgid "tagged"
 msgstr "poznačený"
 
-#: ../src/common/collection.c:982
+#: ../src/common/collection.c:1004
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -943,74 +943,78 @@ msgstr[1] "sú vybrané %d obrázky z %d v aktuálnej zbierke"
 msgstr[2] "je vybraných %d obrázkov z %d v aktuálnej zbierke"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1116 ../src/iop/colorin.c:1223
+#: ../src/common/colorspaces.c:1009 ../src/iop/colorin.c:1223
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1117 ../src/common/colorspaces.c:1259
+#: ../src/common/colorspaces.c:1010 ../src/common/colorspaces.c:1152
 #: ../src/iop/colorin.c:1224 ../src/libs/print_settings.c:870
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibilné)"
 
-#: ../src/common/colorspaces.c:1118 ../src/common/colorspaces.c:1264
+#: ../src/common/colorspaces.c:1011 ../src/common/colorspaces.c:1157
 #: ../src/iop/colorin.c:1225
 msgid "linear Rec709 RGB"
 msgstr "lineárny Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1119 ../src/common/colorspaces.c:1269
+#: ../src/common/colorspaces.c:1012 ../src/common/colorspaces.c:1162
 #: ../src/iop/colorin.c:1226
 msgid "linear Rec2020 RGB"
 msgstr "lineárny Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1120 ../src/common/colorspaces.c:1274
+#: ../src/common/colorspaces.c:1013 ../src/common/colorspaces.c:1167
 msgid "linear XYZ"
 msgstr "lineárny XYZ"
 
-#: ../src/common/colorspaces.c:1121 ../src/common/colorspaces.c:1279
+#: ../src/common/colorspaces.c:1014 ../src/common/colorspaces.c:1172
 #: ../src/libs/colorpicker.c:540 ../src/libs/colorpicker.c:578
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1122 ../src/common/colorspaces.c:1284
+#: ../src/common/colorspaces.c:1015 ../src/common/colorspaces.c:1177
 msgid "linear infrared BGR"
 msgstr "lineárny infračervený BGR"
 
-#: ../src/common/colorspaces.c:1123 ../src/common/colorspaces.c:1243
+#: ../src/common/colorspaces.c:1016 ../src/common/colorspaces.c:1136
 msgid "system display profile"
 msgstr "systémový profil displeja"
 
-#: ../src/common/colorspaces.c:1124
+#: ../src/common/colorspaces.c:1017
 msgid "embedded ICC profile"
 msgstr "integrovaný ICC profil"
 
-#: ../src/common/colorspaces.c:1125
+#: ../src/common/colorspaces.c:1018
 msgid "embedded matrix"
 msgstr "integrovaná mriežka"
 
-#: ../src/common/colorspaces.c:1126
+#: ../src/common/colorspaces.c:1019
 msgid "standard color matrix"
 msgstr "štandardná farebná mriežka"
 
-#: ../src/common/colorspaces.c:1127
+#: ../src/common/colorspaces.c:1020
 msgid "enhanced color matrix"
 msgstr "vylepšená farebná mriežka"
 
-#: ../src/common/colorspaces.c:1128
+#: ../src/common/colorspaces.c:1021
 msgid "vendor color matrix"
 msgstr "farebná mriežka stanovená výrobcom"
 
-#: ../src/common/colorspaces.c:1129
+#: ../src/common/colorspaces.c:1022
 msgid "alternate color matrix"
 msgstr "alternatívna farebná mriežka"
 
-#: ../src/common/colorspaces.c:1249
+#: ../src/common/colorspaces.c:1142
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (napr. JPG)"
 
-#: ../src/common/colorspaces.c:1254 ../src/libs/print_settings.c:863
+#: ../src/common/colorspaces.c:1147 ../src/libs/print_settings.c:863
 msgid "sRGB (web-safe)"
 msgstr "sRGB (pre web)"
+
+#: ../src/common/colorspaces.c:1182
+msgid "BRG (for testing)"
+msgstr "BRG (pre testovanie)"
 
 #: ../src/common/cups_print.c:324
 #, c-format
@@ -1118,7 +1122,7 @@ msgstr "nemožno vytvoriť lokálnu kópiu ak originál nie je prístupný"
 msgid "cannot create local copy."
 msgstr "nemožno vytvoriť lokálnu kópiu"
 
-#: ../src/common/image.c:1413 ../src/control/jobs/control_jobs.c:626
+#: ../src/common/image.c:1413 ../src/control/jobs/control_jobs.c:629
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "nemožno zmazať lokálnu kópiu ak originál nie je prístupný"
 
@@ -1299,7 +1303,7 @@ msgstr "pod morskou hladinou"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:351 ../src/control/control.c:354
+#: ../src/control/control.c:358 ../src/control/control.c:361
 msgid "working.."
 msgstr "spracováva sa.."
 
@@ -1371,19 +1375,19 @@ msgstr[0] "importuje sa %d obrázok z fotoaparátu"
 msgstr[1] "importujú sa %d obrázky z fotoaparátu"
 msgstr[2] "importuje sa %d obrázkov z fotoaparátu"
 
-#: ../src/control/jobs/control_jobs.c:134
+#: ../src/control/jobs/control_jobs.c:137
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr "nemožno vytvoriť cieľový adresár, presun prerušený"
 
-#: ../src/control/jobs/control_jobs.c:313
+#: ../src/control/jobs/control_jobs.c:316
 msgid "exposure bracketing only works on Bayer raw images."
 msgstr "expozičný bracketing funguje iba na obrázkoch raw s bayerovou maskou"
 
-#: ../src/control/jobs/control_jobs.c:320
+#: ../src/control/jobs/control_jobs.c:323
 msgid "images have to be of same size and orientation!"
 msgstr "súbory musia mať rovnakú veľkosť aj orientáciu"
 
-#: ../src/control/jobs/control_jobs.c:412
+#: ../src/control/jobs/control_jobs.c:415
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
@@ -1391,12 +1395,12 @@ msgstr[0] "zlučuje sa %d obrázok"
 msgstr[1] "zlučujú sa %d obrázky"
 msgstr[2] "zlučuje sa %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:473
+#: ../src/control/jobs/control_jobs.c:476
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "zostavený HDR obrázok `%s' je zapísaný"
 
-#: ../src/control/jobs/control_jobs.c:500
+#: ../src/control/jobs/control_jobs.c:503
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
@@ -1404,7 +1408,7 @@ msgstr[0] "duplikuje sa %d obrázok"
 msgstr[1] "duplikujú sa %d obrázky"
 msgstr[2] "duplikuje sa %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:527
+#: ../src/control/jobs/control_jobs.c:530
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
@@ -1412,7 +1416,7 @@ msgstr[0] "preklápa sa %d obrázok"
 msgstr[1] "preklápajú sa %d obrázky"
 msgstr[2] "preklápa sa %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:602
+#: ../src/control/jobs/control_jobs.c:605
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
@@ -1420,41 +1424,41 @@ msgstr[0] "odstraňuje sa %d obrázok"
 msgstr[1] "odstraňujú sa %d obrázky"
 msgstr[2] "odstraňuje sa %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:705
+#: ../src/control/jobs/control_jobs.c:708
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "nemôžem presunúť  %s do koša%s%s"
 
-#: ../src/control/jobs/control_jobs.c:706
+#: ../src/control/jobs/control_jobs.c:709
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "nemožno fyziky zmazať %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:712
+#: ../src/control/jobs/control_jobs.c:715
 msgid "physically delete"
 msgstr "fyzicky odstrániť"
 
-#: ../src/control/jobs/control_jobs.c:713
+#: ../src/control/jobs/control_jobs.c:716
 msgid "only remove from the collection"
 msgstr "iba odstrániť zo zbierky"
 
-#: ../src/control/jobs/control_jobs.c:714
+#: ../src/control/jobs/control_jobs.c:717
 msgid "skip to next file"
 msgstr "Preskočiť na nasledujúci súbor"
 
-#: ../src/control/jobs/control_jobs.c:715
+#: ../src/control/jobs/control_jobs.c:718
 msgid "stop process"
 msgstr "zastaviť proces"
 
-#: ../src/control/jobs/control_jobs.c:720
+#: ../src/control/jobs/control_jobs.c:723
 msgid "trashing error"
 msgstr "chyba pri presúvaní do koša"
 
-#: ../src/control/jobs/control_jobs.c:721
+#: ../src/control/jobs/control_jobs.c:724
 msgid "deletion error"
 msgstr "chyba pri odstraňovaní"
 
-#: ../src/control/jobs/control_jobs.c:842
+#: ../src/control/jobs/control_jobs.c:851
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
@@ -1462,7 +1466,7 @@ msgstr[0] "presúva sa %d súbor do koša"
 msgstr[1] "presúvajú sa %d súbory do koša"
 msgstr[2] "presúva sa %d súborov do koša"
 
-#: ../src/control/jobs/control_jobs.c:844
+#: ../src/control/jobs/control_jobs.c:853
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
@@ -1470,11 +1474,11 @@ msgstr[0] "odstraňuje sa %d obrázok"
 msgstr[1] "odstraňujú sa %d obrázky"
 msgstr[2] "odstraňuje sa %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:1006
+#: ../src/control/jobs/control_jobs.c:1015
 msgid "failed to parse GPX file"
 msgstr "zlyhala analýza súboru GPX"
 
-#: ../src/control/jobs/control_jobs.c:1066
+#: ../src/control/jobs/control_jobs.c:1075
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
@@ -1482,27 +1486,27 @@ msgstr[0] "GPX lokalizácia aplikovaná na  %d obrázok"
 msgstr[1] "GPX lokalizácia aplikovaná na  %d obrázky"
 msgstr[2] "GPX lokalizácia aplikovaná na  %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:1081
+#: ../src/control/jobs/control_jobs.c:1090
 #, c-format
 msgid "moving %d image"
 msgstr "presúva sa %d obrázok"
 
-#: ../src/control/jobs/control_jobs.c:1082
+#: ../src/control/jobs/control_jobs.c:1091
 #, c-format
 msgid "moving %d images"
 msgstr "presúva sa %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:1087
+#: ../src/control/jobs/control_jobs.c:1096
 #, c-format
 msgid "copying %d image"
 msgstr "kopíruje sa %d obrázok"
 
-#: ../src/control/jobs/control_jobs.c:1088
+#: ../src/control/jobs/control_jobs.c:1097
 #, c-format
 msgid "copying %d images"
 msgstr "kopíruje sa %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:1104
+#: ../src/control/jobs/control_jobs.c:1113
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
@@ -1510,7 +1514,7 @@ msgstr[0] "vytvára sa miestna kópia %d obrázku"
 msgstr[1] "vytvárajú sa miestne kópie %d obrázkov"
 msgstr[2] "vytvárajú sa miestne kópie %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:1107
+#: ../src/control/jobs/control_jobs.c:1116
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
@@ -1518,7 +1522,7 @@ msgstr[0] "odstraňuje sa miestna kópia %d obrázku"
 msgstr[1] "odstraňujú sa miestne kópie %d obrázkov"
 msgstr[2] "odstraňujú sa miestne kópie %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:1187
+#: ../src/control/jobs/control_jobs.c:1196
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
@@ -1526,7 +1530,7 @@ msgstr[0] "exportuje sa %d obrázok.."
 msgstr[1] "exportujú sa %d obrázky.."
 msgstr[2] "exportuje sa %d obrázkov.."
 
-#: ../src/control/jobs/control_jobs.c:1189
+#: ../src/control/jobs/control_jobs.c:1198
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
@@ -1534,13 +1538,13 @@ msgstr[0] "exportuje sa %d obrázok do %s"
 msgstr[1] "exportujú sa %d obrázky do %s"
 msgstr[2] "exportuje sa %d obrázkov do %s"
 
-#: ../src/control/jobs/control_jobs.c:1236 ../src/views/darkroom.c:464
+#: ../src/control/jobs/control_jobs.c:1245 ../src/views/darkroom.c:464
 #: ../src/views/print.c:283
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "obrázok „%s“ je momentálne nedostupný"
 
-#: ../src/control/jobs/control_jobs.c:1369
+#: ../src/control/jobs/control_jobs.c:1378
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1549,11 +1553,11 @@ msgstr[0] "skutočne chcete odstrániť %d vybraný obrázok zo zbierky?"
 msgstr[1] "skutočne chcete odstrániť %d vybrané obrázky zo zbierky?"
 msgstr[2] "skutočne chcete odstrániť %d obrázkov zo zbierky?"
 
-#: ../src/control/jobs/control_jobs.c:1373
+#: ../src/control/jobs/control_jobs.c:1382
 msgid "remove images?"
 msgstr "odstrániť obrázky?"
 
-#: ../src/control/jobs/control_jobs.c:1412
+#: ../src/control/jobs/control_jobs.c:1421
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -1561,7 +1565,7 @@ msgstr[0] "naozaj chcete poslať %d zvolený obrázok do koša?"
 msgstr[1] "naozaj chcete poslať %d zvolené obrázky do koša?"
 msgstr[2] "naozaj chcete poslať %d zvolených obrázkov do koša?"
 
-#: ../src/control/jobs/control_jobs.c:1414
+#: ../src/control/jobs/control_jobs.c:1423
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1570,16 +1574,16 @@ msgstr[0] "naozaj chcete fyzicky zmazať %d zvolený obrázok z disku?"
 msgstr[1] "naozaj chcete fyzicky zmazať %d zvolené obrázky z disku?"
 msgstr[2] "naozaj chcete fyzicky zmazať %d zvolených obrázkov z disku?"
 
-#: ../src/control/jobs/control_jobs.c:1418
+#: ../src/control/jobs/control_jobs.c:1427
 msgid "trash images?"
 msgstr "zahodiť obrázky?"
 
-#: ../src/control/jobs/control_jobs.c:1418
+#: ../src/control/jobs/control_jobs.c:1427
 msgid "delete images?"
 msgstr "odstrániť obrázky?"
 
-#: ../src/control/jobs/control_jobs.c:1443
-#: ../src/control/jobs/control_jobs.c:1497 ../src/imageio/storage/disk.c:92
+#: ../src/control/jobs/control_jobs.c:1452
+#: ../src/control/jobs/control_jobs.c:1506 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104
 #: ../src/imageio/storage/latex.c:165 ../src/libs/styles.c:208
@@ -1587,8 +1591,8 @@ msgstr "odstrániť obrázky?"
 msgid "select directory"
 msgstr "vybrať adresár"
 
-#: ../src/control/jobs/control_jobs.c:1443
-#: ../src/control/jobs/control_jobs.c:1497 ../src/gui/hist_dialog.c:137
+#: ../src/control/jobs/control_jobs.c:1452
+#: ../src/control/jobs/control_jobs.c:1506 ../src/gui/hist_dialog.c:137
 #: ../src/gui/preferences.c:1032 ../src/gui/preferences.c:1055
 #: ../src/gui/presets.c:381 ../src/gui/styles_dialog.c:284
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
@@ -1599,12 +1603,12 @@ msgstr "vybrať adresár"
 msgid "_cancel"
 msgstr "_zrušiť"
 
-#: ../src/control/jobs/control_jobs.c:1444
-#: ../src/control/jobs/control_jobs.c:1498
+#: ../src/control/jobs/control_jobs.c:1453
+#: ../src/control/jobs/control_jobs.c:1507
 msgid "_select as destination"
 msgstr "vybrať a_ko cieľ"
 
-#: ../src/control/jobs/control_jobs.c:1462
+#: ../src/control/jobs/control_jobs.c:1471
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1622,14 +1626,14 @@ msgstr[2] ""
 "naozaj chcete fyzicky presunúť %d vybraných obrázkov do %s?\n"
 "(všetky nevybrané klony budú tiež presunuté)"
 
-#: ../src/control/jobs/control_jobs.c:1468
+#: ../src/control/jobs/control_jobs.c:1477
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "presunúť obrázok?"
 msgstr[1] "presunúť obrázky?"
 msgstr[2] "presunúť obrázky?"
 
-#: ../src/control/jobs/control_jobs.c:1516
+#: ../src/control/jobs/control_jobs.c:1525
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1637,20 +1641,20 @@ msgstr[0] "skutočne chcete fyzicky skopírovať %d vybraný obrázok do %s?"
 msgstr[1] "skutočne chcete fyzicky skopírovať %d vybrané obrázky do %s?"
 msgstr[2] "skutočne chcete fyzicky skopírovať %d vybraných obrázkov do %s?"
 
-#: ../src/control/jobs/control_jobs.c:1519
+#: ../src/control/jobs/control_jobs.c:1528
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "skopírovať obrázok?"
 msgstr[1] "skopírovať obrázky?"
 msgstr[2] "skopírovať obrázky?"
 
-#: ../src/control/jobs/control_jobs.c:1605
+#: ../src/control/jobs/control_jobs.c:1614
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "zlyhalo získanie parametrov z modulu úložiska „%s“, prerušuje sa export.."
 
-#: ../src/control/jobs/control_jobs.c:1643
+#: ../src/control/jobs/control_jobs.c:1652
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
@@ -1658,7 +1662,7 @@ msgstr[0] "pridáva sa posun času do %d obrázku"
 msgstr[1] "pridáva sa posun času do %d obrázkov"
 msgstr[2] "pridáva sa posun času do %d obrázkov"
 
-#: ../src/control/jobs/control_jobs.c:1662
+#: ../src/control/jobs/control_jobs.c:1671
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
@@ -2051,7 +2055,7 @@ msgstr "režim prelínania"
 msgid "choose blending mode"
 msgstr "vybrať režim prelínania"
 
-#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1304
+#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1308
 msgid "opacity"
 msgstr "krytie"
 
@@ -2644,67 +2648,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "použiť YYYY-MM-DD formát na preťaženie dátumu"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:846
+#: ../src/gui/gtk.c:850
 msgctxt "accel"
 msgid "tethering view"
 msgstr "pohľad vzdialené snímanie"
 
-#: ../src/gui/gtk.c:847
+#: ../src/gui/gtk.c:851
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "zobrazenie presvetľovacieho pultu"
 
-#: ../src/gui/gtk.c:848
+#: ../src/gui/gtk.c:852
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "zobrazenie fotokomory"
 
-#: ../src/gui/gtk.c:849
+#: ../src/gui/gtk.c:853
 msgctxt "accel"
 msgid "map view"
 msgstr "zobrazenie mapy"
 
-#: ../src/gui/gtk.c:850
+#: ../src/gui/gtk.c:854
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "zobrazenie prezentácie"
 
-#: ../src/gui/gtk.c:851
+#: ../src/gui/gtk.c:855
 msgctxt "accel"
 msgid "print view"
 msgstr "zobraziť tlač"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:874
+#: ../src/gui/gtk.c:878
 msgctxt "accel"
 msgid "quit"
 msgstr "ukončiť"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:879
+#: ../src/gui/gtk.c:883
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "prepnutie režimu na celú obrazovku"
 
-#: ../src/gui/gtk.c:880
+#: ../src/gui/gtk.c:884
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "opustenie režimu na celú obrazovku"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:888
+#: ../src/gui/gtk.c:892
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "prepnúť bočné okraje"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:891
+#: ../src/gui/gtk.c:895
 msgctxt "accel"
 msgid "toggle header"
 msgstr "prepnúť záhlavie"
 
 #. View-switch
-#: ../src/gui/gtk.c:894
+#: ../src/gui/gtk.c:898
 msgctxt "accel"
 msgid "switch view"
 msgstr "prepnúť zobrazenie"
@@ -2971,7 +2975,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1294
-#: ../src/gui/presets.c:463 ../src/iop/exposure.c:98 ../src/iop/exposure.c:828
+#: ../src/gui/presets.c:463 ../src/iop/exposure.c:98 ../src/iop/exposure.c:840
 #: ../src/iop/relight.c:370 ../src/libs/metadata_view.c:105
 msgid "exposure"
 msgstr "expozícia"
@@ -4064,27 +4068,27 @@ msgstr "tučné"
 msgid "dull"
 msgstr "matné"
 
-#: ../src/iop/atrous.c:1387 ../src/iop/equalizer.c:401 ../src/iop/nlmeans.c:709
+#: ../src/iop/atrous.c:1393 ../src/iop/equalizer.c:401 ../src/iop/nlmeans.c:709
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1390
+#: ../src/iop/atrous.c:1396
 msgid "change lightness at each feature size"
 msgstr "zmeniť svetosť pre každú veľkosť"
 
-#: ../src/iop/atrous.c:1393 ../src/iop/equalizer.c:402 ../src/iop/nlmeans.c:711
+#: ../src/iop/atrous.c:1399 ../src/iop/equalizer.c:402 ../src/iop/nlmeans.c:711
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/iop/atrous.c:1396
+#: ../src/iop/atrous.c:1402
 msgid "change color saturation at each feature size"
 msgstr "zmeniť sýtosť pre každú veľkosť"
 
-#: ../src/iop/atrous.c:1398
+#: ../src/iop/atrous.c:1404
 msgid "edges"
 msgstr "hrany"
 
-#: ../src/iop/atrous.c:1402
+#: ../src/iop/atrous.c:1408
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -4092,12 +4096,12 @@ msgstr ""
 "zmeniť závoj na obrysoch pre každú úroveň detailu\n"
 "zmeniť len výsledky len pre luma a chroma"
 
-#: ../src/iop/atrous.c:1428 ../src/iop/colorzones.c:1103
+#: ../src/iop/atrous.c:1434 ../src/iop/colorzones.c:1103
 #: ../src/iop/soften.c:579
 msgid "mix"
 msgstr "mix"
 
-#: ../src/iop/atrous.c:1429 ../src/iop/colorzones.c:1105
+#: ../src/iop/atrous.c:1435 ../src/iop/colorzones.c:1105
 msgid "make effect stronger or weaker"
 msgstr "zosilní alebo zoslabí efekt"
 
@@ -4183,7 +4187,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "úsečka: vstup, súradnica: výstup. pracuje na kanáloch RGB"
 
 #: ../src/iop/basecurve.c:862 ../src/iop/lens.c:2191 ../src/iop/vignette.c:1147
-#: ../src/iop/watermark.c:1308
+#: ../src/iop/watermark.c:1312
 msgid "scale"
 msgstr "mierka"
 
@@ -5510,7 +5514,7 @@ msgstr "profil pre ISO %d nájdený"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolovaný z ISO %d a %d"
 
-#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:799
+#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:811
 #: ../src/iop/lens.c:2199 ../src/iop/levels.c:548
 #: ../src/libs/copy_history.c:278 ../src/libs/export.c:636
 #: ../src/libs/print_settings.c:1318
@@ -5673,66 +5677,66 @@ msgstr "magic lantern extension firmware predvolené"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "nemožno získať vyrovnávaciu pamäť pre obrázok %s'"
 
-#: ../src/iop/exposure.c:801 ../src/iop/levels.c:550
+#: ../src/iop/exposure.c:813 ../src/iop/levels.c:550
 msgctxt "mode"
 msgid "manual"
 msgstr "manuálny"
 
-#: ../src/iop/exposure.c:804 ../src/iop/levels.c:553 ../src/iop/tonecurve.c:783
+#: ../src/iop/exposure.c:816 ../src/iop/levels.c:553 ../src/iop/tonecurve.c:783
 #: ../src/iop/vignette.c:1138
 msgid "automatic"
 msgstr "automaticky"
 
-#: ../src/iop/exposure.c:813
+#: ../src/iop/exposure.c:825
 msgid "adjust the black level"
 msgstr "nastaviť úroveň čiernej"
 
-#: ../src/iop/exposure.c:815 ../src/iop/levels.c:616
+#: ../src/iop/exposure.c:827 ../src/iop/levels.c:616
 msgid "black"
 msgstr "čierna"
 
-#: ../src/iop/exposure.c:826
+#: ../src/iop/exposure.c:838
 msgid "adjust the exposure correction"
 msgstr "nastaviť expozičnú korektúru"
 
-#: ../src/iop/exposure.c:833
+#: ../src/iop/exposure.c:845
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
 "percento orezaných svetlých hodnôt, aktivujete prepnutím nástroja na výber "
 "farby"
 
-#: ../src/iop/exposure.c:835 ../src/iop/highlights.c:744
+#: ../src/iop/exposure.c:847 ../src/iop/highlights.c:744
 msgid "clipping threshold"
 msgstr "prah orezania"
 
-#: ../src/iop/exposure.c:845
+#: ../src/iop/exposure.c:857
 msgid "percentile"
 msgstr "percentile"
 
-#: ../src/iop/exposure.c:849
+#: ../src/iop/exposure.c:861
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
 "Kde v histograme sa má merať odstránenie blikania. Napr. 50% je stredová "
 "hodnota."
 
-#: ../src/iop/exposure.c:854
+#: ../src/iop/exposure.c:866
 msgid "target level"
 msgstr "cieľová hodnota"
 
-#: ../src/iop/exposure.c:857
+#: ../src/iop/exposure.c:869
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "Kde sa má umiestniť úroveň expozície pre spracované obrázky, EV pod "
 "preexponovaním."
 
-#: ../src/iop/exposure.c:862
+#: ../src/iop/exposure.c:874
 msgid "computed EC: "
 msgstr "vypočítaná EC:"
 
-#: ../src/iop/exposure.c:867
+#: ../src/iop/exposure.c:879
 msgid "what exposure correction has actually been used"
 msgstr "aká expozícia bola práve použitá"
 
@@ -5909,7 +5913,7 @@ msgstr ""
 "komprimácia prechodu:\n"
 "0% = mäkký, 100% = tvrdý"
 
-#: ../src/iop/graduatednd.c:1045 ../src/iop/watermark.c:1311
+#: ../src/iop/graduatednd.c:1045 ../src/iop/watermark.c:1315
 msgid "rotation"
 msgstr "otočenie"
 
@@ -6392,11 +6396,11 @@ msgstr "denná viditeľnosť"
 msgid "night vision"
 msgstr "nočné svetlo"
 
-#: ../src/iop/lowlight.c:831
+#: ../src/iop/lowlight.c:837
 msgid "blue shift"
 msgstr "modrý nádych"
 
-#: ../src/iop/lowlight.c:833
+#: ../src/iop/lowlight.c:839
 msgid "blueness in shadows"
 msgstr "modrý nádych v tieňoch"
 
@@ -6473,17 +6477,17 @@ msgstr "monochromatický"
 msgid "red filter"
 msgstr "červený filter"
 
-#: ../src/iop/monochrome.c:537
+#: ../src/iop/monochrome.c:543
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
 "potiahnite a otáčajte koliečkom myši\n"
 "na nastavenie virtuálnych farieb filtra "
 
-#: ../src/iop/monochrome.c:552
+#: ../src/iop/monochrome.c:558
 msgid "how much to keep highlights"
 msgstr "ako veľmi ponechať svetlé body"
 
-#: ../src/iop/monochrome.c:553 ../src/iop/shadhi.c:823
+#: ../src/iop/monochrome.c:559 ../src/iop/shadhi.c:823
 #: ../src/iop/splittoning.c:551
 msgid "highlights"
 msgstr "svetlé body"
@@ -7200,25 +7204,25 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "y posun"
 
-#: ../src/iop/watermark.c:1235
+#: ../src/iop/watermark.c:1239
 msgid "content"
 msgstr "obsah"
 
-#: ../src/iop/watermark.c:1242
+#: ../src/iop/watermark.c:1246
 msgid "marker"
 msgstr "súbor"
 
-#: ../src/iop/watermark.c:1245
+#: ../src/iop/watermark.c:1249
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "SVG vodotlač v %s/watermarks alebo %s/watermarks"
 
 #. Simple text
-#: ../src/iop/watermark.c:1255
+#: ../src/iop/watermark.c:1259
 msgid "text"
 msgstr "text"
 
-#: ../src/iop/watermark.c:1259
+#: ../src/iop/watermark.c:1263
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -7226,11 +7230,11 @@ msgstr ""
 "reťazec textu, štítok:\n"
 "$(WATERMARK_TEXT)"
 
-#: ../src/iop/watermark.c:1274
+#: ../src/iop/watermark.c:1278
 msgid "text color"
 msgstr "farba písma"
 
-#: ../src/iop/watermark.c:1276
+#: ../src/iop/watermark.c:1280
 msgid ""
 "text color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -7238,16 +7242,16 @@ msgstr ""
 "farba textu, štítok:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1279
+#: ../src/iop/watermark.c:1283
 msgid "select text color"
 msgstr "vybrať farbu textu"
 
 #. Text font
-#: ../src/iop/watermark.c:1285
+#: ../src/iop/watermark.c:1289
 msgid "font"
 msgstr "typ písma"
 
-#: ../src/iop/watermark.c:1292
+#: ../src/iop/watermark.c:1296
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -7260,58 +7264,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1299 ../src/libs/camera.c:497
+#: ../src/iop/watermark.c:1303 ../src/libs/camera.c:497
 msgid "properties"
 msgstr "vlastnosti"
 
-#: ../src/iop/watermark.c:1317
+#: ../src/iop/watermark.c:1321
 msgctxt "size"
 msgid "image"
 msgstr "obrázok"
 
-#: ../src/iop/watermark.c:1318
+#: ../src/iop/watermark.c:1322
 msgid "larger border"
 msgstr "širší okraj"
 
-#: ../src/iop/watermark.c:1319
+#: ../src/iop/watermark.c:1323
 msgid "smaller border"
 msgstr "menší okraj"
 
-#: ../src/iop/watermark.c:1321
+#: ../src/iop/watermark.c:1325
 msgid "scale on"
 msgstr "mierka na"
 
-#: ../src/iop/watermark.c:1322
+#: ../src/iop/watermark.c:1326
 msgid "size is relative to"
 msgstr "relatívna veľkosť k"
 
-#: ../src/iop/watermark.c:1325
+#: ../src/iop/watermark.c:1329
 msgid "position"
 msgstr "pozícia"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1328 ../src/libs/print_settings.c:1200
+#: ../src/iop/watermark.c:1332 ../src/libs/print_settings.c:1200
 msgid "alignment"
 msgstr "zarovnanie"
 
-#: ../src/iop/watermark.c:1345
+#: ../src/iop/watermark.c:1349
 msgid "x offset"
 msgstr "x posun"
 
-#: ../src/iop/watermark.c:1348
+#: ../src/iop/watermark.c:1352
 msgid "y offset"
 msgstr "y posun"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1353
+#: ../src/iop/watermark.c:1357
 msgid "the opacity of the watermark"
 msgstr "krytie vodoznaku"
 
-#: ../src/iop/watermark.c:1354
+#: ../src/iop/watermark.c:1358
 msgid "the scale of the watermark"
 msgstr "mierka vodoznaku"
 
-#: ../src/iop/watermark.c:1355
+#: ../src/iop/watermark.c:1359
 msgid "the rotation of the watermark"
 msgstr "otočenie vodoznaku"
 
@@ -8817,19 +8821,19 @@ msgstr "viac modulov"
 msgid "navigation"
 msgstr "navigácia"
 
-#: ../src/libs/navigation.c:466
+#: ../src/libs/navigation.c:472
 msgid "small"
 msgstr "malý"
 
-#: ../src/libs/navigation.c:470
+#: ../src/libs/navigation.c:476
 msgid "fit to screen"
 msgstr "prispôsobiť obrazovke"
 
-#: ../src/libs/navigation.c:474
+#: ../src/libs/navigation.c:480
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:478
+#: ../src/libs/navigation.c:484
 msgid "200%"
 msgstr "200%"
 
