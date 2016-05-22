@@ -516,7 +516,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   lf_modifier_destroy(modifier);
 
-  if(self->dev->gui_attached && g)
+  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
     dt_pthread_mutex_lock(&g->lock);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
@@ -757,7 +757,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
   }
 
-  if(self->dev->gui_attached && g)
+  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
     dt_pthread_mutex_lock(&g->lock);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
@@ -1182,6 +1182,16 @@ void reload_defaults(dt_iop_module_t *module)
 
       lf_free(cam);
     }
+  }
+
+  // if we have a gui -> reset corrections_done message
+  if(module->gui_data)
+  {
+    dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)module->gui_data;
+    dt_pthread_mutex_lock(&g->lock);
+    g->corrections_done = -1;
+    dt_pthread_mutex_unlock(&g->lock);
+    gtk_label_set_text(g->message, "");
   }
 
 end:
@@ -1968,21 +1978,19 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
   dt_bauhaus_slider_set(g->scale, scale);
 }
 
-static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+static void corrections_done(gpointer instance, gpointer user_data)
 {
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  if(darktable.gui->reset) return FALSE;
+  if(darktable.gui->reset) return;
 
   dt_pthread_mutex_lock(&g->lock);
   const int corrections_done = g->corrections_done;
-  g->corrections_done = -1;
   dt_pthread_mutex_unlock(&g->lock);
-
-  if(corrections_done == -1) return FALSE;
 
   char *message = "";
   GList *modifiers = g->modifiers;
-  while(modifiers)
+  while(modifiers && self->enabled)
   {
     // could use g_list_nth. this seems safer?
     dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
@@ -1998,8 +2006,6 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   gtk_label_set_text(g->message, message);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->message), message);
   darktable.gui->reset = 0;
-
-  return FALSE;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -2075,8 +2081,6 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *button;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   // camera selector
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2205,6 +2209,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_label_set_ellipsize(GTK_LABEL(g->message), PANGO_ELLIPSIZE_MIDDLE);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->message), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
+
+  /* add signal handler for preview pipe finish to update message on corrections done */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            G_CALLBACK(corrections_done), self);
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -2232,11 +2240,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->camera_model), "");
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->lens_model), "");
-
-  dt_pthread_mutex_lock(&g->lock);
-  g->corrections_done = -1;
-  dt_pthread_mutex_unlock(&g->lock);
-  gtk_label_set_text(g->message, "");
 
   int modflag = p->modify_flags & LENSFUN_MODFLAG_MASK;
   GList *modifiers = g->modifiers;
@@ -2294,6 +2297,9 @@ void gui_update(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(corrections_done), self);
+
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->lens_model));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->camera_model));
   while(g->modifiers)
