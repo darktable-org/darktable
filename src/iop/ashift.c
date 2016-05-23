@@ -3347,7 +3347,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 }
 
 // update the number of selected vertical and horizontal lines
-void update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
+static void update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
                         int *vertical_count, int *horizontal_count)
 {
   int vlines = 0;
@@ -3958,7 +3958,7 @@ static void eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data
 // routine that is called after preview image has been processed. we use it
 // to perform structure collection or fitting in case those have been triggered while
 // the module had not yet been enabled
-void process_after_preview_callback(gpointer instance, gpointer user_data)
+static void process_after_preview_callback(gpointer instance, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
