@@ -740,6 +740,7 @@ static void clusters_changed(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
+  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
 
   int new = (int)dt_bauhaus_slider_get(slider);
   if(new != p->n)
@@ -755,6 +756,8 @@ static void clusters_changed(GtkWidget *slider, dt_iop_module_t *self)
     memset(p->target_weight, 0, sizeof(float) * MAXN);
     p->flag = NEUTRAL;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_control_queue_redraw_widget(g->source_area);
+    dt_control_queue_redraw_widget(g->target_area);
   }
 }
 
@@ -795,7 +798,6 @@ static void acquire_target_button_pressed(GtkButton *button, dt_iop_module_t *se
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -946,9 +948,9 @@ static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mod
 }
 
 
-void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, int32_t fheight,
-                     int32_t pointerx, int32_t pointery)
+static void process_clusters(gpointer instance, gpointer user_data)
 {
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
   int new_source_clusters = 0;
@@ -986,6 +988,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, 
 
     p->flag |= HAS_SOURCE;
     new_source_clusters = 1;
+
+    dt_control_queue_redraw_widget(g->source_area);
   }
   else if(p->flag & GET_TARGET)
   {
@@ -996,6 +1000,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, 
     kmeans(buffer, width, height, p->n, p->target_mean, p->target_var, p->target_weight);
 
     p->flag |= HAS_TARGET;
+
+    dt_control_queue_redraw_widget(g->target_area);
   }
 
   free(buffer);
@@ -1100,6 +1106,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->equalization), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->equalization), "value-changed", G_CALLBACK(equalization_changed), self);
 
+  /* add signal handler for preview pipe finished: process clusters if requested */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            G_CALLBACK(process_clusters), self);
+
 
   FILE *f = fopen("/tmp/dt_colormapping_loaded", "rb");
   if(f)
@@ -1112,6 +1122,9 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(process_clusters), self);
+
   cmsDeleteTransform(g->xform);
   dt_pthread_mutex_destroy(&g->lock);
   free(g->buffer);
