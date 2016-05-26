@@ -353,17 +353,17 @@
 		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 80D">
-        <ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
-        <CFA width="2" height="2">
-            <Color x="0" y="0">RED</Color>
-            <Color x="1" y="0">GREEN</Color>
-            <Color x="0" y="1">GREEN</Color>
-            <Color x="1" y="1">BLUE</Color>
-        </CFA>
-        <Crop x="0" y="0" width="0" height="0"/>
-        <Sensor black="511" white="11892"/>
+    <ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+      <Sensor black="511" white="11892"/>
     </Camera>
-    <Camera make="Canon" model="Canon EOS 700D">
+  <Camera make="Canon" model="Canon EOS 700D">
 		<ID make="Canon" model="EOS 700D">Canon EOS 700D</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
