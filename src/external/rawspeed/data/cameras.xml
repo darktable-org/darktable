@@ -363,8 +363,8 @@
     		<Crop x="264" y="34" width="0" height="0"/>
       		<Sensor black="511" white="11892"/>
 		<BlackAreas>
- 			<Vertical x="0" width="262"/>
- 			<Horizontal y="0" height="33"/>
+ 			<Vertical x="0" width="264"/>
+ 			<Horizontal y="0" height="34"/>
  		</BlackAreas>
     	</Camera>
   	<Camera make="Canon" model="Canon EOS 700D">
