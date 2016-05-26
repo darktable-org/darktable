@@ -362,6 +362,10 @@
     		</CFA>
     		<Crop x="263" y="34" width="0" height="0"/>
       		<Sensor black="511" white="11892"/>
+		<BlackAreas>
+ 			<Vertical x="0" width="263"/>
+ 			<Horizontal y="0" height="34"/>
+ 		</BlackAreas>
     	</Camera>
   	<Camera make="Canon" model="Canon EOS 700D">
 		<ID make="Canon" model="EOS 700D">Canon EOS 700D</ID>
