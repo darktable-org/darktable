@@ -360,7 +360,7 @@
       <Color x="0" y="1">GREEN</Color>
       <Color x="1" y="1">BLUE</Color>
     </CFA>
-    <Crop x="265" y="34" width="0" height="0"/>
+    <Crop x="264" y="35" width="0" height="0"/>
     <Sensor black="511" white="11892"/>
 		<BlackAreas>
  			<Vertical x="0" width="264"/>
