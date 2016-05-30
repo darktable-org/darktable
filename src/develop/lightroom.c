@@ -1291,7 +1291,9 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     refresh_needed = TRUE;
   }
 
-  if(curve_kind != linear || ptc_value[0] != 0 || ptc_value[1] != 0 || ptc_value[2] != 0 || ptc_value[3] != 0)
+  if(dev != NULL &&
+     (curve_kind != linear
+      || ptc_value[0] != 0 || ptc_value[1] != 0 || ptc_value[2] != 0 || ptc_value[3] != 0))
   {
     ptc.tonecurve_nodes[ch_L] = 6;
     ptc.tonecurve_nodes[ch_a] = 7;
