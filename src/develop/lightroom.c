@@ -1343,9 +1343,9 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       // set shadows/darks/lights/highlight adjustments
 
       ptc.tonecurve[ch_L][1].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[0] / 100.0);
-      ptc.tonecurve[ch_L][2].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[1] / 100.0);
-      ptc.tonecurve[ch_L][3].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[2] / 100.0);
-      ptc.tonecurve[ch_L][4].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[3] / 100.0);
+      ptc.tonecurve[ch_L][2].y += ptc.tonecurve[ch_L][2].y * ((float)ptc_value[1] / 100.0);
+      ptc.tonecurve[ch_L][3].y += ptc.tonecurve[ch_L][3].y * ((float)ptc_value[2] / 100.0);
+      ptc.tonecurve[ch_L][4].y += ptc.tonecurve[ch_L][4].y * ((float)ptc_value[3] / 100.0);
 
       if(ptc.tonecurve[ch_L][1].y > ptc.tonecurve[ch_L][2].y)
         ptc.tonecurve[ch_L][1].y = ptc.tonecurve[ch_L][2].y;
