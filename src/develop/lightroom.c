@@ -524,7 +524,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   {
     linear = 0,
     medium_contrast = 1,
-    string_contrast = 2,
+    strong_contrast = 2,
     custom = 3
   } lr_curve_kind_t;
 
@@ -698,7 +698,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       else if(!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
         curve_kind = medium_contrast;
       else if(!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
-        curve_kind = medium_contrast;
+        curve_kind = strong_contrast;
       else if(!xmlStrcmp(value, (const xmlChar *)"Custom"))
         curve_kind = custom;
     }
