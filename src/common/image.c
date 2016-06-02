@@ -522,6 +522,10 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    // make sure that the duplicate doesn't have some magic darktable| tags
+    dt_tag_detach_by_string("darktable|changed", newid);
+    dt_tag_detach_by_string("darktable|exported", newid);
+
     // set version of new entry and max_version of all involved duplicates (with same film_id and filename)
     int32_t version = (newversion != -1) ? newversion : max_version + 1;
     max_version = (newversion != -1) ? MAX(max_version, newversion) : max_version + 1;
