@@ -85,7 +85,7 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
   {
     const int32_t imgid = sqlite3_column_int(stmt, 0);
 
-    for(int k = max_mip; k >= min_mip; k--)
+    for(int k = max_mip; k >= min_mip && k >= 0; k--)
     {
       char filename[PATH_MAX] = { 0 };
       snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
