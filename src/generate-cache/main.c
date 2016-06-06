@@ -36,10 +36,10 @@
 #include "config.h"              // for GETTEXT_PACKAGE, etc
 #include "control/conf.h"        // for dt_conf_get_bool
 
-static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
+static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mipmap_size_t max_mip, const int32_t min_imgid, const int32_t max_imgid)
 {
   fprintf(stderr, _("creating cache directories\n"));
-  for(dt_mipmap_size_t k = DT_MIPMAP_0; k <= max_mip; k++)
+  for(dt_mipmap_size_t k = min_mip; k <= max_mip; k++)
   {
     char dirname[PATH_MAX] = { 0 };
     snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
@@ -55,7 +55,9 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
   // some progress counter
   sqlite3_stmt *stmt;
   size_t image_count = 0, counter = 0;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images where id >= ?1 and id <= ?2", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     image_count = sqlite3_column_int(stmt, 0);
@@ -66,13 +68,24 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
     return 1;
   }
 
+  if(!image_count)
+  {
+    fprintf(stderr, _("warning: no images are matching the requested image id range\n"));
+    if(min_imgid > max_imgid)
+    {
+      fprintf(stderr, _("warning: did you want to swap these boundaries?\n"));
+    }
+  }
+
   // go through all images:
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where id >= ?1 and id <= ?2", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const uint32_t imgid = sqlite3_column_int(stmt, 0);
+    const int32_t imgid = sqlite3_column_int(stmt, 0);
 
-    for(int k = max_mip; k >= DT_MIPMAP_0; k--)
+    for(int k = max_mip; k >= min_mip; k--)
     {
       char filename[PATH_MAX] = { 0 };
       snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
@@ -103,7 +116,16 @@ static void usage(const char *progname)
 {
   fprintf(
       stderr,
-      "usage: %s [-h, --help; --version] [-m, --max-mip <0-7> (default = 2)] [--core <darktable options>]\n",
+      "usage: %s [-h, --help; --version]\n"
+      "  [--min-mip <0-7> (default = 0)] [-m, --max-mip <0-7> (default = 2)]\n"
+      "  [--min-imgid <N>] [--max-imgid <N>]\n"
+      "  [--core <darktable options>]\n"
+      "\n"
+      "When multiple mipmap sizes are requested, the biggest one is computed\n"
+      "while the rest are quickly downsampled.\n"
+      "\n"
+      "The --min-imgid and --max-imgid specify the range of internal image ID\n"
+      "numbers to work on.\n",
       progname);
 }
 
@@ -116,7 +138,10 @@ int main(int argc, char *arg[])
   gtk_init_check(&argc, &arg);
 
   // parse command line arguments
+  dt_mipmap_size_t min_mip = DT_MIPMAP_0;
   dt_mipmap_size_t max_mip = DT_MIPMAP_2;
+  int32_t min_imgid = 0;
+  int32_t max_imgid = INT32_MAX;
 
   int k;
   for(k = 1; k < argc; k++)
@@ -135,6 +160,21 @@ int main(int argc, char *arg[])
     {
       k++;
       max_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), 0), 7);
+    }
+    else if(!strcmp(arg[k], "--min-mip") && argc > k + 1)
+    {
+      k++;
+      min_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), 0), 7);
+    }
+    else if(!strcmp(arg[k], "--min-imgid") && argc > k + 1)
+    {
+      k++;
+      min_imgid = (int32_t)MIN(MAX(atoi(arg[k]), 0), INT32_MAX);
+    }
+    else if(!strcmp(arg[k], "--max-imgid") && argc > k + 1)
+    {
+      k++;
+      max_imgid = (int32_t)MIN(MAX(atoi(arg[k]), 0), INT32_MAX);
     }
     else if(!strcmp(arg[k], "--core"))
     {
@@ -165,9 +205,15 @@ int main(int argc, char *arg[])
     exit(EXIT_FAILURE);
   }
 
+  if(min_mip > max_mip)
+  {
+    fprintf(stderr, _("error: ensure that min_mip <= max_mip\n"));
+    exit(EXIT_FAILURE);
+  }
+
   fprintf(stderr, _("creating complete lighttable thumbnail cache\n"));
 
-  if(generate_thumbnail_cache(max_mip))
+  if(generate_thumbnail_cache(min_mip, max_mip, min_imgid, max_imgid))
   {
     exit(EXIT_FAILURE);
   }
