@@ -507,9 +507,8 @@ static inline const short *const hexmap(const int row, const int col,
    Frank Markesteijn's algorithm for Fuji X-Trans sensors
  */
 static void xtrans_markesteijn_interpolate(float *out, const float *const in,
-                                           const float *const processed_maximum,
                                            const dt_iop_roi_t *const roi_out,
-                                           const dt_iop_roi_t *const roi_in, const dt_image_t *img,
+                                           const dt_iop_roi_t *const roi_in,
                                            const uint8_t (*const xtrans)[6], const int passes)
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
@@ -1062,7 +1061,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
    I've extended the basic idea to work with non-Bayer filter arrays.
    Gradients are numbered clockwise from NW=0 to W=7.
  */
-static void vng_interpolate(float *out, const float *const in, const float *const processed_maximum,
+static void vng_interpolate(float *out, const float *const in,
                             const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
                             const uint32_t filters, const uint8_t (*const xtrans)[6], const int only_vng_linear)
 {
@@ -1575,8 +1574,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   int demosaicing_method = data->demosaicing_method;
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2 && roi_out->scale <= .99999f
      && // only overwrite setting if quality << requested and in dr mode
-     ((img->filters != 9u) && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)))
-    demosaicing_method = (img->filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
+     ((piece->pipe->filters != 9u) && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)))
+    demosaicing_method = (piece->pipe->filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   // we check if we need ultra-high quality thumbnail for this size
   int uhq_thumb = 0;
@@ -1621,13 +1620,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       tmp = (float *)dt_alloc_align(16, (size_t)roo.width * roo.height * 4 * sizeof(float));
     }
 
-    if(img->filters == 9u)
+    if(piece->pipe->filters == 9u)
     {
       if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && xtrans_full_markesteijn_demosaicing)
-        xtrans_markesteijn_interpolate(tmp, pixels, piece->pipe->processed_maximum, &roo, &roi, img, xtrans,
+        xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
       else
-        vng_interpolate(tmp, pixels, piece->pipe->processed_maximum, &roo, &roi, piece->pipe->filters, xtrans,
+        vng_interpolate(tmp, pixels, &roo, &roi, piece->pipe->filters, xtrans,
                         only_vng_linear);
     }
     else
@@ -1660,7 +1659,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         passthrough_monochrome(tmp, in, &roo, &roi);
       else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
       {
-        vng_interpolate(tmp, in, piece->pipe->processed_maximum, &roo, &roi, piece->pipe->filters, xtrans,
+        vng_interpolate(tmp, in, &roo, &roi, piece->pipe->filters, xtrans,
                         only_vng_linear);
         if (img->flags & DT_IMAGE_4BAYER)
         {
@@ -1689,7 +1688,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // sample half-size raw (Bayer) or 1/3-size raw (X-Trans)
     const float clip = fminf(piece->pipe->processed_maximum[0],
                              fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-    if(img->filters == 9u)
+    if(piece->pipe->filters == 9u)
       dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                         xtrans);
     else
@@ -1877,7 +1876,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
       piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || (uhq_thumb) ||
-      roi_out->scale > (img->filters == 9u ? 0.333f : .5f))
+      roi_out->scale > (piece->pipe->filters == 9u ? 0.333f : .5f))
   {
     // Full demosaic and then scaling if needed
     const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
