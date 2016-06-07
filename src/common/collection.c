@@ -998,18 +998,21 @@ void dt_collection_update_query(const dt_collection_t *collection)
 gboolean dt_collection_hint_message_internal(void *message)
 {
   dt_control_hinter_message(darktable.control, message);
+  g_free(message);
   return FALSE;
 }
 
 void dt_collection_hint_message(const dt_collection_t *collection)
 {
   /* collection hinting */
-  gchar message[1024];
+  gchar *message;
+
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
-  g_snprintf(message, sizeof(message), ngettext("%d image of %d in current collection is selected",
-                                                "%d images of %d in current collection are selected", cs),
-             cs, c);
+
+  message = g_strdup_printf(ngettext("%d image of %d in current collection is selected",
+                                     "%d images of %d in current collection are selected", cs),
+                            cs, c);
 
   g_idle_add(dt_collection_hint_message_internal, message);
 }
