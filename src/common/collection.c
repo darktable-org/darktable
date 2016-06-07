@@ -1202,6 +1202,12 @@ void dt_collection_update_query(const dt_collection_t *collection)
   if(!collection->clone) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }
 
+gboolean dt_collection_hint_message_internal(void *message)
+{
+  dt_control_hinter_message(darktable.control, message);
+  return FALSE;
+}
+
 void dt_collection_hint_message(const dt_collection_t *collection)
 {
   /* collection hinting */
@@ -1211,7 +1217,8 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   g_snprintf(message, sizeof(message), ngettext("%d image of %d in current collection is selected",
                                                 "%d images of %d in current collection are selected", cs),
              cs, c);
-  dt_control_hinter_message(darktable.control, message);
+
+  g_idle_add(dt_collection_hint_message_internal, message);
 }
 
 int dt_collection_image_offset(int imgid)
