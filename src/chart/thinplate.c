@@ -23,9 +23,9 @@
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 #endif
 
-#include "lut/thinplate.h"
+#include "chart/thinplate.h"
 #include "iop/svd.h"
-#include "lut/deltaE.h"
+#include "chart/deltaE.h"
 
 #include <float.h>
 #include <string.h>

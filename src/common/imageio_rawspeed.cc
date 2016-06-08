@@ -103,14 +103,14 @@ void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
 
 uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint32_t crop_y)
 {
-    ColorFilterArray cfa(filters);
+  if(!filters || filters == 9u) return filters;
 
-    if (crop_x & 1)
-      cfa.shiftLeft();
-    if (crop_y & 1)
-      cfa.shiftDown();
+  ColorFilterArray cfa(filters);
 
-    return cfa.getDcrawFilter();
+  if(crop_x & 1) cfa.shiftLeft();
+  if(crop_y & 1) cfa.shiftDown();
+
+  return cfa.getDcrawFilter();
 }
 
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
@@ -278,7 +278,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->fuji_rotation_pos = r->metadata.fujiRotationPos;
     img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
 
-    img->filters = r->cfa.getDcrawFilter();
+    // as the X-Trans filters comments later on states, these are for
+    // cropped image, so we need to uncrop them.
+    img->filters = dt_rawspeed_crop_dcraw_filters(r->cfa.getDcrawFilter(), cropTL.x, cropTL.y);
+
     if(FILTERS_ARE_4BAYER(img->filters))
       img->flags |= DT_IMAGE_4BAYER;
 
@@ -295,15 +298,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         // sensors. For these, the CFA in cameras.xml is pre-offset
         // depending on the distance modulo 2 between raw and usable
         // image data. For X-Trans, the CFA in cameras.xml is
-        // (currently) aligned with the top left of the raw data, and
-        // hence it is shifted here to align with the top left of the
-        // cropped image.
-        iPoint2D tl_margin = r->getCropOffset();
+        // (currently) aligned with the top left of the raw data.
         for(int i = 0; i < 6; ++i)
           for(int j = 0; j < 6; ++j)
           {
-            img->xtrans_uncropped[j][i] = r->cfa.getColorAt(i % 6, j % 6);
-            img->xtrans[j][i] = r->cfa.getColorAt((i + tl_margin.x) % 6, (j + tl_margin.y) % 6);
+            img->xtrans[j][i] = r->cfa.getColorAt(i % 6, j % 6);
           }
       }
     }

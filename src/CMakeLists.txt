@@ -788,8 +788,8 @@ if(BUILD_CMSTEST)
   add_subdirectory(cmstest)
 endif(BUILD_CMSTEST)
 
-# have a gui tool to create CLUTs
-add_subdirectory(lut)
+# have a gui tool to create CLUTs from colour chart targets
+add_subdirectory(chart)
 
 # build opengl slideshow viewer?
 if(BUILD_SLIDESHOW)

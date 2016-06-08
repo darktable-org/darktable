@@ -174,8 +174,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // do nothing
   //   }
 
-  const int filters = dt_image_filter(&piece->pipe->image);
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])self->dev->image_storage.xtrans;
+  const uint32_t filters = piece->pipe->filters;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
@@ -249,8 +249,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   // do nothing
   //   }
 
-  const int filters = dt_image_filter(&piece->pipe->image);
-  const uint8_t (*const xtrans)[6] = (const uint8_t (*const)[6]) self->dev->image_storage.xtrans;
+  const uint32_t filters = piece->pipe->filters;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
   { // xtrans float mosaiced
@@ -344,7 +344,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)self->data;
 
   const int devid = piece->pipe->devid;
-  const int filters = dt_image_filter(&piece->pipe->image);
+  const uint32_t filters = piece->pipe->filters;
   cl_mem dev_color = NULL;
   cl_int err = -999;
   int kernel = -1;

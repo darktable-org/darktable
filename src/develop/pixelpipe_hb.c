@@ -155,6 +155,9 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->input = input;
   pipe->pre_monochrome_demosaiced = pre_monochrome_demosaiced;
   pipe->image = dev->image_storage;
+
+  pipe->filters = pipe->image.filters;
+  memcpy(pipe->xtrans, pipe->image.xtrans, sizeof(pipe->xtrans));
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
@@ -754,9 +757,21 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe ==
     // dev->preview_pipe ? "[preview]" : "", hash);
-    // copy over cached processed max for clipping:
+    // copy over cached info:
     if(piece)
+    {
+      pipe->filters = piece->filters;
+
+      for(int i = 0; i < 6; ++i)
+      {
+        for(int j = 0; j < 6; ++j)
+        {
+          pipe->xtrans[j][i] = piece->xtrans[j % 6][i % 6];
+        }
+      }
+
       for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = piece->processed_maximum[k];
+    }
     else
       for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = 1.0f;
     (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
@@ -1829,7 +1844,18 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "",
         _pipe_type_to_str(pipe->type));
     g_free(module_label);
-    // in case we get this buffer from the cache, also get the processed max:
+
+    // in case we get this buffer from the cache in the future, cache some stuff:
+    piece->filters = pipe->filters;
+
+    for(int i = 0; i < 6; ++i)
+    {
+      for(int j = 0; j < 6; ++j)
+      {
+        piece->xtrans[j][i] = pipe->xtrans[j % 6][i % 6];
+      }
+    }
+
     for(int k = 0; k < 4; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(module == darktable.develop->gui_module)

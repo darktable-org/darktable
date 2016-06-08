@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-03 21:43+0200\n"
-"PO-Revision-Date: 2016-05-03 21:52+0200\n"
+"POT-Creation-Date: 2016-05-24 18:34+0200\n"
+"PO-Revision-Date: 2016-05-24 18:35+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -891,7 +891,7 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:823 ../src/develop/lightroom.c:919
+#: ../src/common/collection.c:845 ../src/develop/lightroom.c:919
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:448
 #: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:1301
 #: ../src/libs/collect.c:955 ../src/libs/collect.c:956
@@ -899,13 +899,13 @@ msgstr ""
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:825 ../src/develop/lightroom.c:921
+#: ../src/common/collection.c:847 ../src/develop/lightroom.c:921
 #: ../src/iop/temperature.c:1292 ../src/libs/collect.c:959
 #: ../src/libs/collect.c:960 ../src/libs/collect.c:961
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:827 ../src/develop/lightroom.c:923
+#: ../src/common/collection.c:849 ../src/develop/lightroom.c:923
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:449
 #: ../src/iop/channelmixer.c:465 ../src/iop/temperature.c:1289
 #: ../src/iop/temperature.c:1302 ../src/libs/collect.c:963
@@ -913,7 +913,7 @@ msgstr "jaune"
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:829 ../src/develop/lightroom.c:925
+#: ../src/common/collection.c:851 ../src/develop/lightroom.c:925
 #: ../src/iop/bilateral.cc:352 ../src/iop/channelmixer.c:450
 #: ../src/iop/channelmixer.c:471 ../src/iop/temperature.c:1303
 #: ../src/libs/collect.c:967 ../src/libs/collect.c:968
@@ -921,22 +921,22 @@ msgstr "vert"
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:831 ../src/libs/collect.c:971
+#: ../src/common/collection.c:853 ../src/libs/collect.c:971
 #: ../src/libs/collect.c:972 ../src/libs/collect.c:973
 msgid "purple"
 msgstr "violet"
 
-#: ../src/common/collection.c:840 ../src/libs/collect.c:933
+#: ../src/common/collection.c:862 ../src/libs/collect.c:933
 #: ../src/libs/collect.c:934 ../src/libs/collect.c:935
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:846 ../src/libs/collect.c:944
+#: ../src/common/collection.c:868 ../src/libs/collect.c:944
 #: ../src/libs/collect.c:945 ../src/libs/collect.c:946
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1189
+#: ../src/common/collection.c:1211
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1079,7 +1079,7 @@ msgstr ""
 #: ../src/common/history.c:425 ../src/common/history.c:428
 #: ../src/common/history.c:444 ../src/common/styles.c:716
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1818
-#: ../src/develop/develop.c:1313 ../src/iop/ashift.c:4262
+#: ../src/develop/develop.c:1313 ../src/iop/ashift.c:4362
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activé(e)"
@@ -1089,8 +1089,8 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1600
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1313
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:671
-#: ../src/iop/ashift.c:4261 ../src/iop/ashift.c:4267 ../src/iop/colorin.c:1504
-#: ../src/iop/demosaic.c:3854 ../src/iop/vignette.c:1139
+#: ../src/iop/ashift.c:4361 ../src/iop/ashift.c:4367 ../src/iop/colorin.c:1504
+#: ../src/iop/demosaic.c:3832 ../src/iop/vignette.c:1139
 #: ../src/libs/history.c:149 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "désactivé(e)"
@@ -1126,7 +1126,7 @@ msgstr ""
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1417 ../src/control/jobs/control_jobs.c:629
+#: ../src/common/image.c:1417 ../src/control/jobs/control_jobs.c:641
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
@@ -1177,7 +1177,7 @@ msgstr ""
 "impossible d'affecter un nom unique pour la session. vérifier les réglages "
 "d'importation."
 
-#: ../src/common/mipmap_cache.c:1099 ../src/iop/demosaic.c:3630
+#: ../src/common/mipmap_cache.c:1099 ../src/iop/demosaic.c:3608
 #: ../src/iop/invert.c:466
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
@@ -1192,7 +1192,7 @@ msgstr "distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "le profil de gestion du bruit « %s » n'est pas valide"
 
-#: ../src/common/pdf.h:89 ../src/iop/lens.c:1692
+#: ../src/common/pdf.h:89 ../src/iop/lens.c:1702
 #: ../src/libs/print_settings.c:1097
 msgid "mm"
 msgstr "mm"
@@ -1289,7 +1289,7 @@ msgstr "le style « %s » a été importé"
 #: ../src/common/variables.c:304 ../src/iop/clipping.c:1564
 #: ../src/iop/clipping.c:1854 ../src/iop/clipping.c:1872
 #: ../src/iop/clipping.c:2014 ../src/iop/clipping.c:2041
-#: ../src/iop/colorreconstruction.c:1378 ../src/iop/lens.c:2028
+#: ../src/iop/colorreconstruction.c:1378 ../src/iop/lens.c:2034
 #: ../src/libs/export.c:486 ../src/libs/live_view.c:348
 #: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
 #: ../src/libs/print_settings.c:1008 ../src/libs/print_settings.c:1277
@@ -1309,7 +1309,8 @@ msgstr "au dessus du niveau de la mer"
 msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
-#: ../src/common/utility.c:423 ../src/libs/metadata_view.c:550
+#: ../src/common/utility.c:423 ../src/iop/watermark.c:735
+#: ../src/libs/metadata_view.c:550
 msgid "m"
 msgstr "m"
 
@@ -1382,166 +1383,166 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "importation de %d image depuis l'appareil photo"
 msgstr[1] "importation de %d images depuis l'appareil photo"
 
-#: ../src/control/jobs/control_jobs.c:137
+#: ../src/control/jobs/control_jobs.c:138
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "échec de la création du dossier de destination, abandon du déplacement..."
 
-#: ../src/control/jobs/control_jobs.c:316
-msgid "exposure bracketing only works on Bayer raw images."
-msgstr "bracketing d'exposition marche uniquement sur les raw de Bayer"
+#: ../src/control/jobs/control_jobs.c:328
+msgid "exposure bracketing only works on raw images."
+msgstr "bracketing d'exposition marche uniquement sur les images raw."
 
-#: ../src/control/jobs/control_jobs.c:323
+#: ../src/control/jobs/control_jobs.c:335
 msgid "images have to be of same size and orientation!"
 msgstr "les images doivent avoir les mêmes taille et orientation !"
 
-#: ../src/control/jobs/control_jobs.c:415
+#: ../src/control/jobs/control_jobs.c:427
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "fusion de %d image"
 msgstr[1] "fusion  de %d images"
 
-#: ../src/control/jobs/control_jobs.c:476
+#: ../src/control/jobs/control_jobs.c:488
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "image HDR « %s » écrite"
 
-#: ../src/control/jobs/control_jobs.c:503
+#: ../src/control/jobs/control_jobs.c:515
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplication de %d image"
 msgstr[1] "duplication de %d images"
 
-#: ../src/control/jobs/control_jobs.c:530
+#: ../src/control/jobs/control_jobs.c:542
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "rotation de %d image"
 msgstr[1] "rotation de %d images"
 
-#: ../src/control/jobs/control_jobs.c:605
+#: ../src/control/jobs/control_jobs.c:617
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "enlèvement de %d image"
 msgstr[1] "enlèvement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:708
+#: ../src/control/jobs/control_jobs.c:720
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "impossible de placer « %s » dans la poubelle%s%s"
 
-#: ../src/control/jobs/control_jobs.c:709
+#: ../src/control/jobs/control_jobs.c:721
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "impossible de supprimer du disque %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:715
+#: ../src/control/jobs/control_jobs.c:727
 msgid "physically delete"
 msgstr "supprime du disque définitivement"
 
-#: ../src/control/jobs/control_jobs.c:716
+#: ../src/control/jobs/control_jobs.c:728
 msgid "only remove from the collection"
 msgstr "enlève uniquement de la collection"
 
-#: ../src/control/jobs/control_jobs.c:717
+#: ../src/control/jobs/control_jobs.c:729
 msgid "skip to next file"
 msgstr "passe au fichier suivant"
 
-#: ../src/control/jobs/control_jobs.c:718
+#: ../src/control/jobs/control_jobs.c:730
 msgid "stop process"
 msgstr "arrête l'effacement"
 
-#: ../src/control/jobs/control_jobs.c:723
+#: ../src/control/jobs/control_jobs.c:735
 msgid "trashing error"
 msgstr "erreur de la poubelle"
 
-#: ../src/control/jobs/control_jobs.c:724
+#: ../src/control/jobs/control_jobs.c:736
 msgid "deletion error"
 msgstr "erreur de suppression"
 
-#: ../src/control/jobs/control_jobs.c:851
+#: ../src/control/jobs/control_jobs.c:863
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "mise à la poubelle de %d image"
 msgstr[1] "mise à la poubelle de %d images"
 
-#: ../src/control/jobs/control_jobs.c:853
+#: ../src/control/jobs/control_jobs.c:865
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "suppression de %d image"
 msgstr[1] "suppression de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1015
+#: ../src/control/jobs/control_jobs.c:1027
 msgid "failed to parse GPX file"
 msgstr "erreur de lecture du fichier GPX"
 
-#: ../src/control/jobs/control_jobs.c:1075
+#: ../src/control/jobs/control_jobs.c:1087
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "application des données GPX recalées à %d image"
 msgstr[1] "application des données GPX recalées à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1090
+#: ../src/control/jobs/control_jobs.c:1102
 #, c-format
 msgid "moving %d image"
 msgstr "déplacement de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1091
+#: ../src/control/jobs/control_jobs.c:1103
 #, c-format
 msgid "moving %d images"
 msgstr "déplacement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1096
+#: ../src/control/jobs/control_jobs.c:1108
 #, c-format
 msgid "copying %d image"
 msgstr "copie de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1097
+#: ../src/control/jobs/control_jobs.c:1109
 #, c-format
 msgid "copying %d images"
 msgstr "copie de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1113
+#: ../src/control/jobs/control_jobs.c:1125
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "création de copie locale de %d image"
 msgstr[1] "création des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1116
+#: ../src/control/jobs/control_jobs.c:1128
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "suppression de la copie locale de %d image"
 msgstr[1] "suppression des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1196
+#: ../src/control/jobs/control_jobs.c:1208
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportation de %d image..."
 msgstr[1] "exportation de %d images..."
 
-#: ../src/control/jobs/control_jobs.c:1198
+#: ../src/control/jobs/control_jobs.c:1210
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exportation de %d image vers %s"
 msgstr[1] "exportation de %d images vers %s"
 
-#: ../src/control/jobs/control_jobs.c:1245 ../src/views/darkroom.c:472
+#: ../src/control/jobs/control_jobs.c:1257 ../src/views/darkroom.c:472
 #: ../src/views/print.c:284
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "image « %s » non disponible actuellement"
 
-#: ../src/control/jobs/control_jobs.c:1378
+#: ../src/control/jobs/control_jobs.c:1390
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1552,11 +1553,11 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir enlever de la bibliothèque les %d images "
 "sélectionnées ?"
 
-#: ../src/control/jobs/control_jobs.c:1382
+#: ../src/control/jobs/control_jobs.c:1394
 msgid "remove images?"
 msgstr "enlever les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1421
+#: ../src/control/jobs/control_jobs.c:1433
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -1566,7 +1567,7 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers la "
 "poubelle  ?"
 
-#: ../src/control/jobs/control_jobs.c:1423
+#: ../src/control/jobs/control_jobs.c:1435
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1578,16 +1579,16 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir supprimer du disque définitivement les %d images "
 "sélectionnées  ?"
 
-#: ../src/control/jobs/control_jobs.c:1427
+#: ../src/control/jobs/control_jobs.c:1439
 msgid "trash images?"
 msgstr "mise à la poubelle?"
 
-#: ../src/control/jobs/control_jobs.c:1427
+#: ../src/control/jobs/control_jobs.c:1439
 msgid "delete images?"
 msgstr "supprimer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1452
-#: ../src/control/jobs/control_jobs.c:1506 ../src/imageio/storage/disk.c:92
+#: ../src/control/jobs/control_jobs.c:1464
+#: ../src/control/jobs/control_jobs.c:1518 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104
 #: ../src/imageio/storage/latex.c:165 ../src/libs/styles.c:209
@@ -1595,8 +1596,8 @@ msgstr "supprimer les images ?"
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
-#: ../src/control/jobs/control_jobs.c:1452
-#: ../src/control/jobs/control_jobs.c:1506 ../src/gui/hist_dialog.c:137
+#: ../src/control/jobs/control_jobs.c:1464
+#: ../src/control/jobs/control_jobs.c:1518 ../src/gui/hist_dialog.c:137
 #: ../src/gui/preferences.c:1043 ../src/gui/preferences.c:1066
 #: ../src/gui/presets.c:381 ../src/gui/styles_dialog.c:283
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
@@ -1607,12 +1608,12 @@ msgstr "sélectionner répertoire"
 msgid "_cancel"
 msgstr "annuler"
 
-#: ../src/control/jobs/control_jobs.c:1453
-#: ../src/control/jobs/control_jobs.c:1507
+#: ../src/control/jobs/control_jobs.c:1465
+#: ../src/control/jobs/control_jobs.c:1519
 msgid "_select as destination"
 msgstr "_sélectionner comme destination"
 
-#: ../src/control/jobs/control_jobs.c:1471
+#: ../src/control/jobs/control_jobs.c:1483
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1627,13 +1628,13 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers %s  ?\n"
 "(les clones non sélectionnés seront également déplacés)"
 
-#: ../src/control/jobs/control_jobs.c:1477
+#: ../src/control/jobs/control_jobs.c:1489
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "déplacer l' image ?"
 msgstr[1] "déplacer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1525
+#: ../src/control/jobs/control_jobs.c:1537
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1643,27 +1644,27 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir copier physiquement les %d images sélectionnées "
 "vers %s  ?"
 
-#: ../src/control/jobs/control_jobs.c:1528
+#: ../src/control/jobs/control_jobs.c:1540
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copier l'image ?"
 msgstr[1] "copier les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1614
+#: ../src/control/jobs/control_jobs.c:1626
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage « %s », "
 "exportation abandonnée."
 
-#: ../src/control/jobs/control_jobs.c:1652
+#: ../src/control/jobs/control_jobs.c:1664
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1671
+#: ../src/control/jobs/control_jobs.c:1683
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
@@ -2053,7 +2054,7 @@ msgstr "mode de fusion"
 msgid "choose blending mode"
 msgstr "choisir le mode de fusion"
 
-#: ../src/develop/blend_gui.c:1783 ../src/iop/watermark.c:1294
+#: ../src/develop/blend_gui.c:1783 ../src/iop/watermark.c:1346
 msgid "opacity"
 msgstr "opacité"
 
@@ -2330,7 +2331,7 @@ msgstr "utiliser les mêmes masques que"
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
-#: ../src/develop/pixelpipe_hb.c:2417
+#: ../src/develop/pixelpipe_hb.c:2443
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2856,7 +2857,7 @@ msgid "golden spiral"
 msgstr "spirale d'or"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:677
-#: ../src/iop/lens.c:2034 ../src/libs/tools/filter.c:122
+#: ../src/iop/lens.c:2040 ../src/libs/tools/filter.c:122
 msgid "all"
 msgstr "tout"
 
@@ -2995,7 +2996,7 @@ msgstr "ouverture"
 
 #. focal length
 #: ../src/gui/preferences.c:486 ../src/gui/preferences.c:1331
-#: ../src/gui/presets.c:489 ../src/iop/ashift.c:4279 ../src/libs/camera.c:575
+#: ../src/gui/presets.c:489 ../src/iop/ashift.c:4379 ../src/libs/camera.c:575
 #: ../src/libs/collect.h:34 ../src/libs/metadata_view.c:107
 msgid "focal length"
 msgstr "focale"
@@ -3555,7 +3556,7 @@ msgstr ""
 "épreuve -- les images sont remplacées par des boîtes\n"
 "débogage -- montre uniquement le contours des emplacements"
 
-#: ../src/imageio/format/pfm.c:109
+#: ../src/imageio/format/pfm.c:118
 msgid "PFM (float)"
 msgstr "PFM (flottant)"
 
@@ -4112,155 +4113,155 @@ msgstr "rend l'effet plus fort ou plus faible"
 msgid "perspective correction"
 msgstr "correction de perspective"
 
-#: ../src/iop/ashift.c:499 ../src/iop/watermark.c:254
+#: ../src/iop/ashift.c:508 ../src/iop/watermark.c:254
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:500
+#: ../src/iop/ashift.c:509
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "correction d'objectif (v)"
 
-#: ../src/iop/ashift.c:501
+#: ../src/iop/ashift.c:510
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "correction d'objectif (h)"
 
-#: ../src/iop/ashift.c:502
+#: ../src/iop/ashift.c:511
 msgctxt "accel"
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:2429
+#: ../src/iop/ashift.c:2438
 msgid "automatic cropping failed"
 msgstr "recadrage automatique impossible"
 
-#: ../src/iop/ashift.c:2449
+#: ../src/iop/ashift.c:2458
 msgid "data pending - please repeat"
 msgstr "données en attente, merci de recommencer"
 
-#: ../src/iop/ashift.c:2455
+#: ../src/iop/ashift.c:2464
 msgid "could not detect structural data in image"
 msgstr "impossible de détecter les structures dans l'image"
 
-#: ../src/iop/ashift.c:2466
+#: ../src/iop/ashift.c:2475
 msgid "could not run outlier removal"
 msgstr "impossible de supprimer les lignes de contrôle"
 
-#: ../src/iop/ashift.c:2520
+#: ../src/iop/ashift.c:2529
 msgid "not enough structure for automatic correction"
 msgstr "pas assez de structure pour corriger automatiquement"
 
-#: ../src/iop/ashift.c:2524
+#: ../src/iop/ashift.c:2533
 msgid "automatic correction failed, please correct manually"
 msgstr "correction automatique impossible, merci de corriger manuellement"
 
-#: ../src/iop/ashift.c:4045 ../src/iop/ashift.c:4046 ../src/iop/ashift.c:4142
-#: ../src/iop/ashift.c:4143
+#: ../src/iop/ashift.c:4138 ../src/iop/ashift.c:4139 ../src/iop/ashift.c:4238
+#: ../src/iop/ashift.c:4239
 #, c-format
 msgid "lens shift (%s)"
 msgstr "correction d'objectif (%s)"
 
-#: ../src/iop/ashift.c:4045 ../src/iop/ashift.c:4046 ../src/iop/ashift.c:4142
-#: ../src/iop/ashift.c:4143 ../src/iop/clipping.c:1566
+#: ../src/iop/ashift.c:4138 ../src/iop/ashift.c:4139 ../src/iop/ashift.c:4238
+#: ../src/iop/ashift.c:4239 ../src/iop/clipping.c:1566
 #: ../src/iop/clipping.c:1855 ../src/iop/clipping.c:1874
 msgid "horizontal"
 msgstr "horizontale"
 
-#: ../src/iop/ashift.c:4045 ../src/iop/ashift.c:4046 ../src/iop/ashift.c:4142
-#: ../src/iop/ashift.c:4143 ../src/iop/clipping.c:1565
+#: ../src/iop/ashift.c:4138 ../src/iop/ashift.c:4139 ../src/iop/ashift.c:4238
+#: ../src/iop/ashift.c:4239 ../src/iop/clipping.c:1565
 #: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1873
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/ashift.c:4239 ../src/iop/graduatednd.c:1154
-#: ../src/iop/watermark.c:1301
+#: ../src/iop/ashift.c:4339 ../src/iop/graduatednd.c:1154
+#: ../src/iop/watermark.c:1353
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:4245
+#: ../src/iop/ashift.c:4345
 msgid "lens shift (vertical)"
 msgstr "correction d'objectif (verticale)"
 
-#: ../src/iop/ashift.c:4250
+#: ../src/iop/ashift.c:4350
 msgid "lens shift (horizontal)"
 msgstr "correction d'objectif (horizontale)"
 
-#: ../src/iop/ashift.c:4255
+#: ../src/iop/ashift.c:4355
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:4260 ../src/iop/clipping.c:2007
+#: ../src/iop/ashift.c:4360 ../src/iop/clipping.c:2007
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/ashift.c:4266 ../src/iop/clipping.c:1881
+#: ../src/iop/ashift.c:4366 ../src/iop/clipping.c:1881
 msgid "automatic cropping"
 msgstr "recadrage"
 
-#: ../src/iop/ashift.c:4268
+#: ../src/iop/ashift.c:4368
 msgid "largest area"
 msgstr "plus grand coté"
 
-#: ../src/iop/ashift.c:4269
+#: ../src/iop/ashift.c:4369
 msgid "original format"
 msgstr "format d'origine"
 
-#: ../src/iop/ashift.c:4273
+#: ../src/iop/ashift.c:4373
 msgid "lens model"
 msgstr "modèle d'objectif"
 
-#: ../src/iop/ashift.c:4274
+#: ../src/iop/ashift.c:4374
 msgid "generic"
 msgstr "générique"
 
-#: ../src/iop/ashift.c:4275
+#: ../src/iop/ashift.c:4375
 msgid "specific"
 msgstr "spécifique"
 
-#: ../src/iop/ashift.c:4288
+#: ../src/iop/ashift.c:4388
 msgid "crop factor"
 msgstr "facteur de cadrage"
 
-#: ../src/iop/ashift.c:4293
+#: ../src/iop/ashift.c:4393
 msgid "lens dependence"
 msgstr "dépendance à l'objectif"
 
-#: ../src/iop/ashift.c:4303
+#: ../src/iop/ashift.c:4403
 msgid "aspect adjust"
 msgstr "ajustement aspect"
 
-#: ../src/iop/ashift.c:4313
+#: ../src/iop/ashift.c:4413
 msgid "automatic fit"
 msgstr "correction automatique"
 
-#: ../src/iop/ashift.c:4332
+#: ../src/iop/ashift.c:4432
 msgid "get structure"
 msgstr "récupère les structures"
 
-#: ../src/iop/ashift.c:4377
+#: ../src/iop/ashift.c:4477
 msgid "rotate image"
 msgstr "rotation de l'image"
 
-#: ../src/iop/ashift.c:4378 ../src/iop/ashift.c:4379
+#: ../src/iop/ashift.c:4478 ../src/iop/ashift.c:4479
 msgid "apply lens shift correction in one direction"
 msgstr "applique la correction d'objectif dans une direction"
 
-#: ../src/iop/ashift.c:4380
+#: ../src/iop/ashift.c:4480
 msgid "shear the image along one diagonal"
 msgstr "cisaillement de l'image selon une diagonale"
 
-#: ../src/iop/ashift.c:4381
+#: ../src/iop/ashift.c:4481
 msgid "display guide lines overlay"
 msgstr "superpose des lignes guides"
 
-#: ../src/iop/ashift.c:4382 ../src/iop/clipping.c:1884
+#: ../src/iop/ashift.c:4482 ../src/iop/clipping.c:1884
 msgid "automatically crop to avoid black edges"
 msgstr "recadre automatique pour éviter les bords noirs"
 
-#: ../src/iop/ashift.c:4383
+#: ../src/iop/ashift.c:4483
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -4268,13 +4269,13 @@ msgstr ""
 "modèle d'objectif pour la correction de perspective: générique ou fonction "
 "de la longueur focale"
 
-#: ../src/iop/ashift.c:4385
+#: ../src/iop/ashift.c:4485
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "longueur focale de l'objectif, valeur par défaut depuis les exif si "
 "disponible"
 
-#: ../src/iop/ashift.c:4387
+#: ../src/iop/ashift.c:4487
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -4282,7 +4283,7 @@ msgstr ""
 "facteur de cadrage du capteur de l'appareil, valeur par défaut depuis les "
 "exif si disponible, positionnement manuel souvent nécessaire"
 
-#: ../src/iop/ashift.c:4390
+#: ../src/iop/ashift.c:4490
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -4290,13 +4291,13 @@ msgstr ""
 "le niveau de correction dépendant de l'objectif, positionner au maximum pour "
 "une dépendance totale, positionner à zéro pour un modèle générique"
 
-#: ../src/iop/ashift.c:4392
+#: ../src/iop/ashift.c:4492
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "ajuste les dimensions de l'image en redimensionnant horizontalement ou "
 "verticalement"
 
-#: ../src/iop/ashift.c:4393
+#: ../src/iop/ashift.c:4493
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4306,7 +4307,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4396
+#: ../src/iop/ashift.c:4496
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4316,7 +4317,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4399
+#: ../src/iop/ashift.c:4499
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -4332,7 +4333,7 @@ msgstr ""
 "ctrl-shift-clic pour uniquement la correction de rotation et d'alignement "
 "d'objectif"
 
-#: ../src/iop/ashift.c:4405
+#: ../src/iop/ashift.c:4505
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement\n"
@@ -4344,11 +4345,11 @@ msgstr ""
 "shift-clic pour une amélioration des détails accrue\n"
 "ctrl-shift-clic pour une combinaison des deux méthodes"
 
-#: ../src/iop/ashift.c:4409
+#: ../src/iop/ashift.c:4509
 msgid "remove line structure information"
 msgstr "supprime la visualisation des lignes de structure"
 
-#: ../src/iop/ashift.c:4410
+#: ../src/iop/ashift.c:4510
 msgid "toggle visibility of structure lines"
 msgstr "active/désactive l'affichage des lignes de structure"
 
@@ -4433,8 +4434,8 @@ msgstr "courbe de base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
-#: ../src/iop/basecurve.c:864 ../src/iop/lens.c:2170 ../src/iop/vignette.c:1145
-#: ../src/iop/watermark.c:1298
+#: ../src/iop/basecurve.c:864 ../src/iop/lens.c:2174 ../src/iop/vignette.c:1145
+#: ../src/iop/watermark.c:1350
 msgid "scale"
 msgstr "échelle"
 
@@ -5634,53 +5635,53 @@ msgstr ""
 "seuil pour la détection de la frange, valeurs plus grandes pour moins de "
 "suppression de la frange"
 
-#: ../src/iop/demosaic.c:146
+#: ../src/iop/demosaic.c:144
 msgid "demosaic"
 msgstr "dématriçage"
 
-#: ../src/iop/demosaic.c:161
+#: ../src/iop/demosaic.c:159
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:3829 ../src/iop/demosaic.c:3838
+#: ../src/iop/demosaic.c:3807 ../src/iop/demosaic.c:3816
 #: ../src/iop/dither.c:791 ../src/iop/highlights.c:968
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:3831
+#: ../src/iop/demosaic.c:3809
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:3832
+#: ../src/iop/demosaic.c:3810
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:3833
+#: ../src/iop/demosaic.c:3811
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3834
+#: ../src/iop/demosaic.c:3812
 msgid "passthrough (monochrome) (experimental)"
 msgstr "monochrome (expérimental)"
 
-#: ../src/iop/demosaic.c:3835 ../src/iop/demosaic.c:3843
+#: ../src/iop/demosaic.c:3813 ../src/iop/demosaic.c:3821
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:3840
+#: ../src/iop/demosaic.c:3818
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3841
+#: ../src/iop/demosaic.c:3819
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-passe"
 
-#: ../src/iop/demosaic.c:3842
+#: ../src/iop/demosaic.c:3820
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-passes (lent)"
 
-#: ../src/iop/demosaic.c:3846
+#: ../src/iop/demosaic.c:3824
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5690,63 +5691,63 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:3848
+#: ../src/iop/demosaic.c:3826
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:3852
+#: ../src/iop/demosaic.c:3830
 msgid "color smoothing"
 msgstr "lissage des couleurs"
 
-#: ../src/iop/demosaic.c:3855
+#: ../src/iop/demosaic.c:3833
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:3856
+#: ../src/iop/demosaic.c:3834
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:3857
+#: ../src/iop/demosaic.c:3835
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:3858
+#: ../src/iop/demosaic.c:3836
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:3859
+#: ../src/iop/demosaic.c:3837
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:3860
+#: ../src/iop/demosaic.c:3838
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:3864
+#: ../src/iop/demosaic.c:3842
 msgid "match greens"
 msgstr "correction des verts"
 
-#: ../src/iop/demosaic.c:3865
+#: ../src/iop/demosaic.c:3843
 msgid "disabled"
 msgstr "désactivée"
 
-#: ../src/iop/demosaic.c:3866
+#: ../src/iop/demosaic.c:3844
 msgid "local average"
 msgstr "moyenne locale"
 
-#: ../src/iop/demosaic.c:3867
+#: ../src/iop/demosaic.c:3845
 msgid "full average"
 msgstr "moyenne globale"
 
-#: ../src/iop/demosaic.c:3868
+#: ../src/iop/demosaic.c:3846
 msgid "full and local average"
 msgstr "moyenne globale et locale"
 
-#: ../src/iop/demosaic.c:3869
+#: ../src/iop/demosaic.c:3847
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:3881
+#: ../src/iop/demosaic.c:3859
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -5769,7 +5770,7 @@ msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
 #: ../src/iop/denoiseprofile.c:2057 ../src/iop/exposure.c:836
-#: ../src/iop/lens.c:2178 ../src/iop/levels.c:550
+#: ../src/iop/lens.c:2182 ../src/iop/levels.c:550
 #: ../src/libs/copy_history.c:274 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1318
 msgid "mode"
@@ -6368,7 +6369,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "sélectionne les corrections"
 
-#: ../src/iop/lens.c:1371
+#: ../src/iop/lens.c:1381
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -6381,15 +6382,15 @@ msgstr ""
 "monture :\t\t%s\n"
 " facteur de recadrage :\t%.1f"
 
-#: ../src/iop/lens.c:1596
+#: ../src/iop/lens.c:1606
 msgid "camera/lens not found - please select manually"
 msgstr "boîtier/objectif introuvable  > sélection manuelle"
 
-#: ../src/iop/lens.c:1599
+#: ../src/iop/lens.c:1609
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "trouver votre boîtier/objectif dans les menus ci-dessus"
 
-#: ../src/iop/lens.c:1653
+#: ../src/iop/lens.c:1663
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -6408,143 +6409,143 @@ msgstr ""
 "type:\t\t\t%s\n"
 "montures:\t\t%s"
 
-#: ../src/iop/lens.c:1693
+#: ../src/iop/lens.c:1703
 msgid "focal length (mm)"
 msgstr "longeur focale (mm)"
 
-#: ../src/iop/lens.c:1717
+#: ../src/iop/lens.c:1727
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1718
+#: ../src/iop/lens.c:1728
 msgid "f-number (aperture)"
 msgstr "ouverture"
 
-#: ../src/iop/lens.c:1732
+#: ../src/iop/lens.c:1742
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1733
+#: ../src/iop/lens.c:1743
 msgid "distance to subject"
 msgstr "distance au sujet"
 
-#: ../src/iop/lens.c:2040
+#: ../src/iop/lens.c:2046
 msgid "distortion & TCA"
 msgstr "distorsion et chromatisme"
 
-#: ../src/iop/lens.c:2046
+#: ../src/iop/lens.c:2052
 msgid "distortion & vignetting"
 msgstr "distorsion et vignettage"
 
-#: ../src/iop/lens.c:2052
+#: ../src/iop/lens.c:2058
 msgid "TCA & vignetting"
 msgstr "chromatisme et vignettage"
 
-#: ../src/iop/lens.c:2058
+#: ../src/iop/lens.c:2064
 msgid "only distortion"
 msgstr "distorsion seulement"
 
-#: ../src/iop/lens.c:2064
+#: ../src/iop/lens.c:2070
 msgid "only TCA"
 msgstr "chromatisme seulement"
 
-#: ../src/iop/lens.c:2070
+#: ../src/iop/lens.c:2076
 msgid "only vignetting"
 msgstr "vignettage seulement"
 
-#: ../src/iop/lens.c:2091
+#: ../src/iop/lens.c:2095
 msgid "find camera"
 msgstr "boîtier"
 
-#: ../src/iop/lens.c:2105
+#: ../src/iop/lens.c:2109
 msgid "find lens"
 msgstr "objectif"
 
-#: ../src/iop/lens.c:2136
+#: ../src/iop/lens.c:2140
 msgid "corrections"
 msgstr "corrections"
 
-#: ../src/iop/lens.c:2138
+#: ../src/iop/lens.c:2142
 msgid "which corrections to apply"
 msgstr "sélectionne les types de correction à effectuer"
 
-#: ../src/iop/lens.c:2151
+#: ../src/iop/lens.c:2155
 msgid "geometry"
 msgstr "géométrie"
 
-#: ../src/iop/lens.c:2153
+#: ../src/iop/lens.c:2157
 msgid "target geometry"
 msgstr "géométrie des images (distorsion)"
 
-#: ../src/iop/lens.c:2154
+#: ../src/iop/lens.c:2158
 msgid "rectilinear"
 msgstr "rectilinéaire"
 
-#: ../src/iop/lens.c:2155
+#: ../src/iop/lens.c:2159
 msgid "fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.c:2156
+#: ../src/iop/lens.c:2160
 msgid "panoramic"
 msgstr "panoramique"
 
-#: ../src/iop/lens.c:2157
+#: ../src/iop/lens.c:2161
 msgid "equirectangular"
 msgstr "equi-rectangulaire"
 
-#: ../src/iop/lens.c:2159
+#: ../src/iop/lens.c:2163
 msgid "orthographic"
 msgstr "orthographique"
 
-#: ../src/iop/lens.c:2160
+#: ../src/iop/lens.c:2164
 msgid "stereographic"
 msgstr "stéréographique"
 
-#: ../src/iop/lens.c:2161
+#: ../src/iop/lens.c:2165
 msgid "equisolid angle"
 msgstr "angle solide constant"
 
-#: ../src/iop/lens.c:2162
+#: ../src/iop/lens.c:2166
 msgid "thoby fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.c:2169
+#: ../src/iop/lens.c:2173
 msgid "auto scale"
 msgstr "échelle auto"
 
-#: ../src/iop/lens.c:2180
+#: ../src/iop/lens.c:2184
 msgid "correct distortions or apply them"
 msgstr "corrige ou applique des distorsions"
 
-#: ../src/iop/lens.c:2181
+#: ../src/iop/lens.c:2185
 msgid "correct"
 msgstr "retouche"
 
-#: ../src/iop/lens.c:2182
+#: ../src/iop/lens.c:2186
 msgid "distort"
 msgstr "déforme"
 
-#: ../src/iop/lens.c:2187
+#: ../src/iop/lens.c:2191
 msgid "Transversal Chromatic Aberration red"
 msgstr "Aberrations Chromatiques Transversales rouge"
 
-#: ../src/iop/lens.c:2188
+#: ../src/iop/lens.c:2192
 msgid "TCA red"
 msgstr "AC rouge"
 
-#: ../src/iop/lens.c:2193
+#: ../src/iop/lens.c:2197
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Aberrations Chromatiques Transversales bleu"
 
-#: ../src/iop/lens.c:2194
+#: ../src/iop/lens.c:2198
 msgid "TCA blue"
 msgstr "bleu"
 
-#: ../src/iop/lens.c:2201
+#: ../src/iop/lens.c:2205
 msgid "corrections done: "
 msgstr "corrections effectuées :"
 
-#: ../src/iop/lens.c:2202
+#: ../src/iop/lens.c:2206
 msgid "which corrections have actually been done"
 msgstr "corrections réellement effectuées"
 
@@ -6941,27 +6942,27 @@ msgstr ""
 "réduction du bruit raw\n"
 "uniquement pour les images raw"
 
-#: ../src/iop/rawprepare.c:69
+#: ../src/iop/rawprepare.c:72
 msgctxt "modulename"
 msgid "raw black/white point"
 msgstr "point noir/blanc raw"
 
-#: ../src/iop/rawprepare.c:91 ../src/iop/rawprepare.c:105
-#: ../src/iop/rawprepare.c:619
+#: ../src/iop/rawprepare.c:94 ../src/iop/rawprepare.c:108
+#: ../src/iop/rawprepare.c:634
 #, c-format
 msgid "black level %i"
 msgstr "niveau de noir %i"
 
-#: ../src/iop/rawprepare.c:96
+#: ../src/iop/rawprepare.c:99
 msgctxt "accel"
 msgid "white point"
 msgstr "point blanc"
 
-#: ../src/iop/rawprepare.c:633 ../src/iop/rawprepare.c:634
+#: ../src/iop/rawprepare.c:648 ../src/iop/rawprepare.c:649
 msgid "white point"
 msgstr "point blanc"
 
-#: ../src/iop/rawprepare.c:642
+#: ../src/iop/rawprepare.c:657
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -7610,24 +7611,24 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "décalage y"
 
-#: ../src/iop/watermark.c:1226
+#: ../src/iop/watermark.c:1278
 msgid "content"
 msgstr "contenu"
 
-#: ../src/iop/watermark.c:1233
+#: ../src/iop/watermark.c:1285
 msgid "marker"
 msgstr "fichier"
 
-#: ../src/iop/watermark.c:1236
+#: ../src/iop/watermark.c:1288
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "filigranes SVG dans %s/watermarks ou %s/watermarks"
 
-#: ../src/iop/watermark.c:1251
+#: ../src/iop/watermark.c:1303
 msgid "color"
 msgstr "couleur"
 
-#: ../src/iop/watermark.c:1253
+#: ../src/iop/watermark.c:1305
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -7635,16 +7636,16 @@ msgstr ""
 "couleur du filigrane, tag:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1256
+#: ../src/iop/watermark.c:1308
 msgid "select watermark color"
 msgstr "sélectionne la couleur du filigrane"
 
 #. Simple text
-#: ../src/iop/watermark.c:1262
+#: ../src/iop/watermark.c:1314
 msgid "text"
 msgstr "texte"
 
-#: ../src/iop/watermark.c:1266
+#: ../src/iop/watermark.c:1318
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -7653,11 +7654,11 @@ msgstr ""
 "$(WATERMARK_TEXT)"
 
 #. Text font
-#: ../src/iop/watermark.c:1276
+#: ../src/iop/watermark.c:1328
 msgid "font"
 msgstr "police"
 
-#: ../src/iop/watermark.c:1282
+#: ../src/iop/watermark.c:1334
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -7670,58 +7671,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1289 ../src/libs/camera.c:505
+#: ../src/iop/watermark.c:1341 ../src/libs/camera.c:505
 msgid "properties"
 msgstr "paramètres"
 
-#: ../src/iop/watermark.c:1307
+#: ../src/iop/watermark.c:1359
 msgctxt "size"
 msgid "image"
 msgstr "image"
 
-#: ../src/iop/watermark.c:1308
+#: ../src/iop/watermark.c:1360
 msgid "larger border"
 msgstr "grand coté"
 
-#: ../src/iop/watermark.c:1309
+#: ../src/iop/watermark.c:1361
 msgid "smaller border"
 msgstr "petit coté"
 
-#: ../src/iop/watermark.c:1311
+#: ../src/iop/watermark.c:1363
 msgid "scale on"
 msgstr "échelle sur"
 
-#: ../src/iop/watermark.c:1312
+#: ../src/iop/watermark.c:1364
 msgid "size is relative to"
 msgstr "la taille est relative à"
 
-#: ../src/iop/watermark.c:1315
+#: ../src/iop/watermark.c:1367
 msgid "position"
 msgstr "position"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1318 ../src/libs/print_settings.c:1200
+#: ../src/iop/watermark.c:1370 ../src/libs/print_settings.c:1200
 msgid "alignment"
 msgstr "alignement"
 
-#: ../src/iop/watermark.c:1335
+#: ../src/iop/watermark.c:1387
 msgid "x offset"
 msgstr "décalage x"
 
-#: ../src/iop/watermark.c:1338
+#: ../src/iop/watermark.c:1390
 msgid "y offset"
 msgstr "décalage y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1343
+#: ../src/iop/watermark.c:1395
 msgid "the opacity of the watermark"
 msgstr "opacité du filigrane"
 
-#: ../src/iop/watermark.c:1344
+#: ../src/iop/watermark.c:1396
 msgid "the scale of the watermark"
 msgstr "taille du filigrane"
 
-#: ../src/iop/watermark.c:1345
+#: ../src/iop/watermark.c:1397
 msgid "the rotation of the watermark"
 msgstr "la rotation du filigrane"
 

@@ -1128,8 +1128,10 @@ void dt_collection_deserialize(char *buf)
   dt_collection_update_query(darktable.collection);
 }
 
-void dt_collection_update_query(const dt_collection_t *collection)
+gboolean dt_collection_update_query_internal(gpointer user_data)
 {
+  dt_collection_t *collection = (dt_collection_t *)user_data;
+
   char confname[200];
   gchar *complete_query = NULL;
 
@@ -1200,18 +1202,35 @@ void dt_collection_update_query(const dt_collection_t *collection)
 
   /* raise signal of collection change, only if this is an original */
   if(!collection->clone) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+
+  return FALSE;
+}
+
+void dt_collection_update_query(const dt_collection_t *collection)
+{
+  g_idle_add(dt_collection_update_query_internal, (gpointer)collection);
+}
+
+gboolean dt_collection_hint_message_internal(void *message)
+{
+  dt_control_hinter_message(darktable.control, message);
+  g_free(message);
+  return FALSE;
 }
 
 void dt_collection_hint_message(const dt_collection_t *collection)
 {
   /* collection hinting */
-  gchar message[1024];
+  gchar *message;
+
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
-  g_snprintf(message, sizeof(message), ngettext("%d image of %d in current collection is selected",
-                                                "%d images of %d in current collection are selected", cs),
-             cs, c);
-  dt_control_hinter_message(darktable.control, message);
+
+  message = g_strdup_printf(ngettext("%d image of %d in current collection is selected",
+                                     "%d images of %d in current collection are selected", cs),
+                            cs, c);
+
+  g_idle_add(dt_collection_hint_message_internal, message);
 }
 
 int dt_collection_image_offset(int imgid)

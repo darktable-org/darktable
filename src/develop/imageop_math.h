@@ -63,13 +63,6 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint
                                                           const struct dt_iop_roi_t *const roi_in,
                                                           const int32_t out_stride, const int32_t in_stride);
 
-/** clip and zoom mosaiced from half size, crop away black borders. */
-void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint16_t *const in,
-                                                         struct dt_iop_roi_t *const roi_out,
-                                                         const struct dt_iop_roi_t *const roi_in,
-                                                         const int32_t out_stride, const int32_t in_stride,
-                                                         const dt_image_t *img);
-
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
                                                             const struct dt_iop_roi_t *const roi_out,
                                                             const struct dt_iop_roi_t *const roi_in,
@@ -81,12 +74,6 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
                                                const struct dt_iop_roi_t *const roi_in,
                                                const int32_t out_stride, const int32_t in_stride,
                                                const uint32_t filters, const float clip);
-
-void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(float *out, const float *const in,
-                                                           const struct dt_iop_roi_t *const roi_out,
-                                                           const struct dt_iop_roi_t *const roi_in,
-                                                           const int32_t out_stride, const int32_t in_stride,
-                                                           const dt_image_t *img, const float clip);
 
 /** x-trans sensor downscaling */
 void dt_iop_clip_and_zoom_demosaic_third_size_xtrans(float *out, const uint16_t *const in,
@@ -181,7 +168,7 @@ static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int w
 }
 
 /** Calculate the bayer pattern color from the row and column **/
-static inline int FC(const size_t row, const size_t col, const unsigned int filters)
+static inline int FC(const size_t row, const size_t col, const uint32_t filters)
 {
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
@@ -207,8 +194,7 @@ static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *con
   return xtrans[irow % 6][icol % 6];
 }
 
-static inline int fcol(const int row, const int col, const unsigned int filters,
-                       const uint8_t (*const xtrans)[6])
+static inline int fcol(const int row, const int col, const uint32_t filters, const uint8_t (*const xtrans)[6])
 {
   if(filters == 9)
     return FCxtrans(row, col, NULL, xtrans);

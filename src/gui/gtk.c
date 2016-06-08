@@ -334,11 +334,11 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
       case 0:
       case 1: // left, right: vertical
         cairo_rectangle(cr, 0.0, view->vscroll_pos / view->vscroll_size * height, width,
-                        view->vscroll_viewport_size / view->vscroll_size * height);
+                        MAX(DT_PIXEL_APPLY_DPI(5), view->vscroll_viewport_size / view->vscroll_size * height));
         break;
       default: // bottom, top: horizontal
         cairo_rectangle(cr, view->hscroll_pos / view->hscroll_size * width, 0.0,
-                        view->hscroll_viewport_size / view->hscroll_size * width, height);
+                        MAX(DT_PIXEL_APPLY_DPI(5), view->hscroll_viewport_size / view->hscroll_size * width), height);
         break;
     }
     cairo_fill(cr);

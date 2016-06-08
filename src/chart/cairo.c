@@ -16,8 +16,8 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "lut/cairo.h"
-#include "lut/common.h"
+#include "chart/cairo.h"
+#include "chart/common.h"
 
 void draw_no_image(cairo_t *cr, GtkWidget *widget)
 {

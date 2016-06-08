@@ -17,13 +17,13 @@
 */
 
 #include "common/exif.h"
-#include "lut/cairo.h"
-#include "lut/colorchart.h"
-#include "lut/common.h"
-#include "lut/deltaE.h"
-#include "lut/pfm.h"
-#include "lut/thinplate.h"
-#include "lut/tonecurve.h"
+#include "chart/cairo.h"
+#include "chart/colorchart.h"
+#include "chart/common.h"
+#include "chart/deltaE.h"
+#include "chart/pfm.h"
+#include "chart/thinplate.h"
+#include "chart/tonecurve.h"
 #include "version.h"
 
 

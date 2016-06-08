@@ -198,7 +198,6 @@ static int process_xtrans(const void *const i, void *o, const dt_iop_roi_t *cons
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_image_t *img = &self->dev->image_storage;
   dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
   const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
   const float threshold = data->threshold;
@@ -214,10 +213,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   int fixed = 0;
 
-  if(img->filters == 9u)
+  if(piece->pipe->filters == 9u)
   {
-    fixed = process_xtrans(i, o, roi_in, width, height, img->xtrans, threshold, multiplier, markfixed,
-                           min_neighbours);
+    fixed = process_xtrans(i, o, roi_in, width, height, (const uint8_t(*const)[6])piece->pipe->xtrans, threshold,
+                           multiplier, markfixed, min_neighbours);
     goto processed;
   }
 
@@ -313,7 +312,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 {
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
   dt_iop_hotpixels_data_t *d = (dt_iop_hotpixels_data_t *)piece->data;
-  d->filters = dt_image_filter(&pipe->image);
+  d->filters = piece->pipe->filters;
   d->multiplier = p->strength / 2.0;
   d->threshold = p->threshold;
   d->permissive = p->permissive;

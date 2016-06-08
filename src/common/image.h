@@ -177,7 +177,6 @@ typedef struct dt_image_t
   float pixel_aspect_ratio;
 
   /* filter for Fuji X-Trans images, only used if filters == 9u */
-  uint8_t xtrans_uncropped[6][6];
   uint8_t xtrans[6][6];
 
   /* White balance coeffs from the raw */
@@ -241,38 +240,7 @@ static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {
   return img->orientation != ORIENTATION_NULL ? img->orientation : ORIENTATION_NONE;
 }
-/** returns the filter string for the demosaic pattern. */
-static inline uint32_t dt_image_filter(const dt_image_t *img)
-{
-  // from the dcraw source code documentation:
-  //
-  //   0x16161616:     0x61616161:     0x49494949:     0x94949494:
 
-  //   0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5
-  // 0 B G B G B G   0 G R G R G R   0 G B G B G B   0 R G R G R G
-  // 1 G R G R G R   1 B G B G B G   1 R G R G R G   1 G B G B G B
-  // 2 B G B G B G   2 G R G R G R   2 G B G B G B   2 R G R G R G
-  // 3 G R G R G R   3 B G B G B G   3 R G R G R G   3 G B G B G B
-  //
-  // orient:     0               5               6               3
-  // orient:     6               0               3               5
-  // orient:     5               3               0               6
-  // orient:     3               6               5               0
-  //
-  // orientation: &1 : flip y    &2 : flip x    &4 : swap x/y
-  //
-  // if image height is odd (and flip y), need to switch pattern by one row:
-  // 0x16161616 <-> 0x61616161
-  // 0x49494949 <-> 0x94949494
-  //
-  // if image width is odd (and flip x), need to switch pattern by one column:
-  // 0x16161616 <-> 0x49494949
-  // 0x61616161 <-> 0x94949494
-
-  // NOTE: we do not rotate data until flip IOP
-
-  return img->filters;
-}
 /** return the raw orientation, from jpg orientation. */
 static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int orient)
 {
