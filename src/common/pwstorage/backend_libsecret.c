@@ -30,7 +30,6 @@
 #include <json-glib/json-glib.h>
 
 #define DARKTABLE_KEYRING PACKAGE_NAME
-#define SECRET_COLLECTION_DEFAULT_NAME "Login"
 #define GFOREACH(item, list)                                                                                 \
   for(GList *__glist = list; __glist && (item = __glist->data, TRUE); __glist = __glist->next)
 
@@ -55,11 +54,11 @@ static const SecretSchema *secret_darktable_get_schema(void)
   return &darktable_schema;
 }
 
-void dt_pwstorage_libsecret_find_collection(gpointer item, gpointer user_data)
+void dt_pwstorage_libsecret_search_dt_collection(gpointer item, gpointer user_data)
 {
   SecretCollection *collection = (SecretCollection*)item;
   gchar *label = secret_collection_get_label(collection);
-  if(label && !g_strcmp0(label, SECRET_COLLECTION_DEFAULT_NAME))
+  if(label && !g_strcmp0(label, DARKTABLE_KEYRING))
   {
     backend_libsecret_context_t *context = (backend_libsecret_context_t*)user_data;
     context->secret_collection = collection;
@@ -82,6 +81,7 @@ const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
     dt_pwstorage_libsecret_destroy(context);
     return NULL;
   }
+  context->secret_collection = NULL;
 
   /* Ensure to load all collections */
   if(secret_service_load_collections_sync(context->secret_service, NULL, NULL) == FALSE)
@@ -94,16 +94,28 @@ const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
 
   gboolean collection_exists = FALSE;
 
-  g_list_foreach(collections, dt_pwstorage_libsecret_find_collection, context);
+  /* Search for darktable collection */
+  g_list_foreach(collections, dt_pwstorage_libsecret_search_dt_collection, context);
   if(context->secret_collection)
   {
     collection_exists = TRUE;
   }
 
+  /* No darktable collection found, check for default collection */
+  if(collection_exists == FALSE)
+  {
+    context->secret_collection = secret_collection_for_alias_sync(context->secret_service, SECRET_COLLECTION_DEFAULT, SECRET_COLLECTION_LOAD_ITEMS, NULL, NULL);
+    if(context->secret_collection)
+    {
+      collection_exists = TRUE;
+    }
+  }
+
+  /* No default collection found, create new darktable collection */
   if(collection_exists == FALSE)
   {
     context->secret_collection
-        = secret_collection_create_sync(context->secret_service, DARKTABLE_KEYRING, DARKTABLE_KEYRING,
+        = secret_collection_create_sync(context->secret_service, DARKTABLE_KEYRING, NULL,
                                         SECRET_COLLECTION_CREATE_NONE, NULL, NULL);
 
     if(context->secret_collection == NULL)
@@ -113,6 +125,8 @@ const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
       return NULL;
     }
   }
+  gchar *label = secret_collection_get_label(context->secret_collection);
+  g_free(label);
 
   g_list_free_full(collections, g_object_unref);
 
