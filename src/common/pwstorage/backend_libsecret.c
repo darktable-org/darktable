@@ -30,7 +30,7 @@
 #include <json-glib/json-glib.h>
 
 #define DARKTABLE_KEYRING PACKAGE_NAME
-
+#define SECRET_COLLECTION_DEFAULT_NAME "Login"
 #define GFOREACH(item, list)                                                                                 \
   for(GList *__glist = list; __glist && (item = __glist->data, TRUE); __glist = __glist->next)
 
@@ -53,6 +53,19 @@ static const SecretSchema *secret_darktable_get_schema(void)
   };
 
   return &darktable_schema;
+}
+
+void dt_pwstorage_libsecret_find_collection(gpointer item, gpointer user_data)
+{
+  SecretCollection *collection = (SecretCollection*)item;
+  gchar *label = secret_collection_get_label(collection);
+  if(label && !g_strcmp0(label, SECRET_COLLECTION_DEFAULT_NAME))
+  {
+    backend_libsecret_context_t *context = (backend_libsecret_context_t*)user_data;
+    context->secret_collection = collection;
+    g_object_ref(context->secret_collection);
+  }
+  g_free(label);
 }
 
 const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
@@ -78,22 +91,13 @@ const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
   }
 
   GList *collections = secret_service_get_collections(context->secret_service);
-  SecretCollection *item = NULL;
 
   gboolean collection_exists = FALSE;
-  GFOREACH(item, collections)
-  {
-    gchar *label = secret_collection_get_label(item);
-    if(g_strcmp0(label, DARKTABLE_KEYRING))
-    {
-      collection_exists = TRUE;
-      context->secret_collection = item;
-      g_object_ref(context->secret_collection);
 
-      g_free(label);
-      break;
-    }
-    g_free(label);
+  g_list_foreach(collections, dt_pwstorage_libsecret_find_collection, context);
+  if(context->secret_collection)
+  {
+    collection_exists = TRUE;
   }
 
   if(collection_exists == FALSE)
