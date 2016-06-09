@@ -29,10 +29,10 @@ if(OPENEXR_FOUND)
 	add_library(exr MODULE "exr.cc")
 endif(OPENEXR_FOUND)
 
-if(OPENJPEG_FOUND)
+if(OpenJPEG_FOUND)
 	list(APPEND MODULES "j2k")
 	add_library(j2k MODULE "j2k.c")
-endif(OPENJPEG_FOUND)
+endif(OpenJPEG_FOUND)
 
 foreach(module ${MODULES})
 	target_link_libraries(${module} ${LIBS})
