@@ -198,9 +198,6 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     color_sycc_to_rgb(image);
   }
 
-// FIXME: openjpeg didn't have support for icc profiles before version 1.5
-// this needs some #ifdef magic and proper implementation
-#ifdef HAVE_OPENJPEG_ICC
   if(image->icc_profile_buf)
   {
 #if defined(HAVE_LIBLCMS1) || defined(HAVE_LIBLCMS2)
@@ -211,7 +208,6 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     image->icc_profile_buf = NULL;
     image->icc_profile_len = 0;
   }
-#endif
 
   /* create output image */
   /* ------------------- */
@@ -299,7 +295,6 @@ end_of_the_world:
 
 int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
 {
-#ifdef HAVE_OPENJPEG_ICC
   opj_dparameters_t parameters; /* decompression parameters */
   opj_image_t *image = NULL;
   FILE *fsrc = NULL;
@@ -397,9 +392,6 @@ another_end_of_the_world:
   opj_image_destroy(image);
 
   return res ? length : 0;
-#else
-  return 0;
-#endif
 }
 
 
