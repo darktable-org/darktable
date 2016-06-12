@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 cmake_policy(SET CMP0011 NEW)
 
@@ -754,7 +754,7 @@ if(WIN32)
   # Windows needs its DLLs in the same directory as the executable to find them.
   install(TARGETS lib_darktable DESTINATION bin)
 else(WIN32)
-  install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
+  install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
 
 # make sure static libs is first
@@ -808,15 +808,11 @@ if(NOT WIN32)
   # Windows doesn't know the concept of RPATHs :(
   set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
   set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-  if(APPLE)
-    set_target_properties(darktable PROPERTIES INSTALL_RPATH @loader_path/../${LIB_INSTALL}/darktable)
-  else(APPLE)
-    set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
-  endif(APPLE)
+  set_target_properties(darktable PROPERTIES INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(NOT WIN32)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")
 endif(APPLE)
 target_link_libraries(darktable ${LIBS})
-install(TARGETS darktable DESTINATION bin)
+install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR})

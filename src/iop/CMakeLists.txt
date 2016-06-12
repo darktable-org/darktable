@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -24,7 +24,7 @@ macro (add_iop _lib _src)
   )
   add_library(${_lib} MODULE ${_output} ${ARGN})
   target_link_libraries(${_lib} ${LIBS})
-  install(TARGETS  ${_lib} DESTINATION ${LIB_INSTALL}/darktable/plugins)
+  install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
 endmacro (add_iop)
 
 # add_iop(useless "useless.c")

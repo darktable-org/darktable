@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 project(darktable CXX C)
 
@@ -23,6 +23,13 @@ if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
 else()
   set(SOURCE_PACKAGE 0)
 endif()
+
+# Include GNUInstallDirs, which sets sensible defaults for install directories.
+# See https://cmake.org/cmake/help/v3.0/module/GNUInstallDirs.html for further information.
+# These values can be easily overridden if required.
+# Some defaults are set for OpenBSD as well (info and man pages).
+
+include(GNUInstallDirs)
 
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
@@ -230,18 +237,16 @@ if(CMAKE_BUILD_TYPE MATCHES "^[Dd][Ee][Bb][Uu][Gg]$" AND SOURCE_PACKAGE)
   message(FATAL_ERROR "ERROR: Debug build type most likely isn't what you want, use RelWithDebInfo instead. If you're absolutely sure that this is what you want then just comment out this line.")
 endif()
 
-if(NOT SHARE_INSTALL)
-  set(SHARE_INSTALL "share" CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-endif(NOT SHARE_INSTALL)
-
-mark_as_advanced(SHARE_INSTALL)
-
-if(NOT LIB_INSTALL)
-  set( LIB_INSTALL lib${LIB_SUFFIX} CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-endif(NOT LIB_INSTALL)
-
-mark_as_advanced(LIB_INSTALL)
-
+# Setting the runtime path works differently on OSX than on Linux or BSD.
+# Hence use a variable that maps those in the correct way for each OS.
+if(APPLE)
+    # The string "@loader_path" should end up in the executable as-is.
+    set(RPATH_DT "@loader_path")
+else(APPLE)
+    # Note that $ORIGIN is not a variable but has a special meaning at runtime.
+    # The string "$ORIGIN" should end up in the executable as-is.
+    set(RPATH_DT "$ORIGIN")
+endif(APPLE)
 
 # we need some external programs for building darktable
 message(STATUS "Looking for external programs")
@@ -309,32 +314,19 @@ else(NOT EXTERNAL_PROGRAMS_FOUND)
   message(STATUS "All external programs found")
 endif(NOT EXTERNAL_PROGRAMS_FOUND)
 
-
-#need to put here do setting LOCALE_DIR variable
+# The path can be modified by setting CMAKE_INSTALL_LOCALEDIR
 if(USE_NLS)
-find_package(Gettext)
-if(Gettext_FOUND)
-	if(NOT LOCALE_DIR)
-    SET(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale")
-	endif(NOT LOCALE_DIR)
-
-	if(NOT LOCALE_DIR)
-		message(QUIET "Set LOCALE_DIR to path to get Gettext working")
-	else()
-		find_package(Msgfmt)
-		if(Msgfmt_FOUND)
-			message(STATUS "Found msgfmt to convert language file. Translation enabled")
-			add_subdirectory(po)
-		else()
-			message(STATUS "Cannot find msgfmt to convert language file. Translation won't be enabled")
-		endif()
-	endif(NOT LOCALE_DIR)
-endif(Gettext_FOUND)
+    find_package(Gettext)
+    if(Gettext_FOUND)
+        find_package(Msgfmt)
+        if(Msgfmt_FOUND)
+            message(STATUS "Found msgfmt to convert language file. Translation enabled")
+            add_subdirectory(po)
+        else()
+            message(STATUS "Cannot find msgfmt to convert language file. Translation won't be enabled")
+        endif()
+    endif(Gettext_FOUND)
 endif(USE_NLS)
-
-if(NOT DEFINED RUNTIME_LOCALE_DIR)
-  set(RUNTIME_LOCALE_DIR ${LOCALE_DIR})
-endif(NOT DEFINED RUNTIME_LOCALE_DIR)
 
 #find a temporary directory
 if(NOT TMP_DIR)
@@ -387,7 +379,7 @@ endif(USE_OPENCL)
 
 # setup some theme specific variables
 set(THEME hicolor)
-set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
+set(THEME_DIRECTORY "${CMAKE_INSTALL_DATAROOTDIR}/icons/${THEME}")
 
 # we need some specific functions:
 if(NOT WIN32)
