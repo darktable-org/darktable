@@ -241,11 +241,11 @@ endif()
 # Hence use a variable that maps those in the correct way for each OS.
 if(APPLE)
     # The string "@loader_path" should end up in the executable as-is.
-    set(ORIGIN_DT "@loader_path")
+    set(RPATH_DT "@loader_path")
 else(APPLE)
     # Note that $ORIGIN is not a variable but has a special meaning at runtime.
     # The string "$ORIGIN" should end up in the executable as-is.
-    set(ORIGIN_DT "$ORIGIN")
+    set(RPATH_DT "$ORIGIN")
 endif(APPLE)
 
 # we need some external programs for building darktable

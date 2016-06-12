@@ -14,6 +14,6 @@ target_link_libraries(darktable-chart lib_darktable)
 set_target_properties(darktable-chart PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(darktable-chart PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set_target_properties(darktable-chart PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set_target_properties(darktable-chart PROPERTIES INSTALL_RPATH ${ORIGIN_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+set_target_properties(darktable-chart PROPERTIES INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
 
 install(TARGETS darktable-chart DESTINATION ${CMAKE_INSTALL_BINDIR})
