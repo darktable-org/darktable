@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 ###################################
 # ADD NEW MANPAGES HERE
@@ -18,14 +18,6 @@ set(MANPAGES
 
 
 
-if(NOT MAN_INSTALL_DIR)
-  if(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
-    set(MAN_INSTALL_DIR "./man/man1")
-  else()
-    set(MAN_INSTALL_DIR "./share/man/man1")
-  endif()
-endif(NOT MAN_INSTALL_DIR)
-
 add_custom_target(manpages ALL)
 set(MANPAGE_SOURCES)
 
@@ -41,7 +33,7 @@ macro(add_manpage pod)
   )
   add_custom_target(manpage_${manpage} ALL DEPENDS ${target})
   add_dependencies(manpages manpage_${manpage})
-  install(FILES ${target} DESTINATION ${MAN_INSTALL_DIR})
+  install(FILES ${target} DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
 endmacro (add_manpage)
 
 foreach(manpage ${MANPAGES})
@@ -81,7 +73,7 @@ else()
       )
       add_custom_target(manpage-${language}-${manpage} ALL DEPENDS ${target})
       add_dependencies(manpage-${language} manpage-${language}-${manpage})
-      install(FILES ${target} DESTINATION ${MAN_INSTALL_DIR}/../${language}/man1)
+      install(FILES ${target} DESTINATION ${CMAKE_INSTALL_MANDIR}/${language}/man1)
     endforeach(pod)
   endforeach(language)
 endif()
