@@ -56,8 +56,8 @@
 #define LENSSHIFT_RANGE_SOFT 1              // allowed min/max range for lensshift paramters with manual adjustment
 #define SHEAR_RANGE 0.2                     // allowed min/max range for shear parameter
 #define SHEAR_RANGE_SOFT 0.5                // allowed min/max range for shear parameter with manual adjustment
-#define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
-#define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
+#define MIN_LINE_LENGTH 5                   // the minimum length of a line in pixels to be regarded as relevant
+#define MAX_TANGENTIAL_DEVIATION 30         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
 #define LSD_SCALE 0.99                      // LSD: scaling factor for line detection
 #define LSD_SIGMA_SCALE 0.6                 // LSD: sigma for Gaussian filter is computed as sigma = sigma_scale/scale
