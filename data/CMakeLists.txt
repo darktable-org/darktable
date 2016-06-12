@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 add_subdirectory(pixmaps)
 
@@ -19,29 +19,29 @@ else ()
   endif ()
   configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable-3.18.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
 endif()
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${SHARE_INSTALL}/darktable)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
 
 #
 # web gallery export support files:
 #
 FILE(GLOB WEB_FILES "style/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/style)
+install(FILES ${WEB_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/style)
 
 FILE(GLOB WEB_FILES "js/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/js)
+install(FILES ${WEB_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/js)
 
 #
 # latex book template support files:
 #
 FILE(GLOB WEB_FILES "latex/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/latex)
+install(FILES ${WEB_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/latex)
 
 if(USE_LUA)
 #
 # lua system scripts
 #
-install(DIRECTORY "lua" DESTINATION ${SHARE_INSTALL}/darktable)
-install(FILES luarc DESTINATION ${SHARE_INSTALL}/darktable)
+install(DIRECTORY "lua" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
+install(FILES luarc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
 endif(USE_LUA)
 #
 # Install (and generate when necessary) other system shares
@@ -66,7 +66,7 @@ if(${VALIDATE_DESKTOP_FILE})
     )
   add_dependencies(darktable.desktop_file validate_darktable_desktop)
 endif()
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ./share/applications)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
 
 add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
@@ -76,23 +76,23 @@ add_custom_command(
 		DEPENDS ${PO_FILES}
 )
 add_custom_target(darktable.appdata_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml DESTINATION ./share/appdata)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/appdata)
 
 #
 # Install watermarks
 #
 FILE(GLOB WATERMARKS "watermarks/*.svg")
-install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/darktable/watermarks)
+install(FILES ${WATERMARKS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/watermarks)
 
 #
 # Install gdb command file for backtrace generation
 #
-install(FILES gdb_commands DESTINATION ${SHARE_INSTALL}/darktable)
+install(FILES gdb_commands DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
 
 #
 # Install noiseprofiles
 #
-install(FILES noiseprofiles.json DESTINATION ${SHARE_INSTALL}/darktable)
+install(FILES noiseprofiles.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
 
 #
 # Transform darktableconfig.xml into darktablerc
@@ -151,5 +151,5 @@ endif(USE_XMLLINT)
 # first of all install darktablerc file into share as template
 # postinst script should copy this into users homedirectory
 # $HOME/.config/darktable/darktable.rc
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/darktable)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
 

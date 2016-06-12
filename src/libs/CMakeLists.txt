@@ -1,5 +1,4 @@
-
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -93,5 +92,5 @@ endforeach(module)
 # TODO: Modules are now not only lighttable related and should be placed
 #       in a better matching structure then just in lighttable directory.
 foreach(module ${MODULES})
-	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/lighttable)
+    install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable)
 endforeach(module)
