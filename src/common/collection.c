@@ -1128,10 +1128,8 @@ void dt_collection_deserialize(char *buf)
   dt_collection_update_query(darktable.collection);
 }
 
-gboolean dt_collection_update_query_internal(gpointer user_data)
+void dt_collection_update_query(const dt_collection_t *collection)
 {
-  dt_collection_t *collection = (dt_collection_t *)user_data;
-
   char confname[200];
   gchar *complete_query = NULL;
 
@@ -1202,13 +1200,6 @@ gboolean dt_collection_update_query_internal(gpointer user_data)
 
   /* raise signal of collection change, only if this is an original */
   if(!collection->clone) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
-
-  return FALSE;
-}
-
-void dt_collection_update_query(const dt_collection_t *collection)
-{
-  g_idle_add(dt_collection_update_query_internal, (gpointer)collection);
 }
 
 gboolean dt_collection_hint_message_internal(void *message)
