@@ -28,7 +28,7 @@
 
 typedef struct backend_libsecret_context_t
 {
-  int placeholder;
+  int placeholder; // we have to allocate one of these to signal that init didn't fail
 } backend_libsecret_context_t;
 
 /**
