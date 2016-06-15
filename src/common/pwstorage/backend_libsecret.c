@@ -1,6 +1,7 @@
 // This file is part of darktable
 //
 // Copyright (c) 2014 Moritz Lipp <mlq@pwmt.org>.
+// Copyright (c) 2016 tobias ellinghaus <me@houz.org>.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,17 +30,16 @@
 #include <glib.h>
 #include <json-glib/json-glib.h>
 
-#define DARKTABLE_KEYRING PACKAGE_NAME
-#define GFOREACH(item, list)                                                                                 \
-  for(GList *__glist = list; __glist && (item = __glist->data, TRUE); __glist = __glist->next)
+// chnage this to SECRET_COLLECTION_SESSION for non-permanent storage
+#define SECRET_COLLECTION_DARKTABLE SECRET_COLLECTION_DEFAULT
 
 #define EMPTY_STRING(string) !*(string)
 
 static const SecretSchema *secret_darktable_get_schema(void) G_GNUC_CONST;
 #define SECRET_SCHEMA_DARKTABLE secret_darktable_get_schema()
 
-static GHashTable *secret_to_attributes(SecretValue *value);
-static SecretValue *attributes_to_secret(GHashTable *attributes);
+static GHashTable *secret_to_attributes(gchar *value);
+static gchar *attributes_to_secret(GHashTable *attributes);
 
 static const SecretSchema *secret_darktable_get_schema(void)
 {
@@ -54,207 +54,119 @@ static const SecretSchema *secret_darktable_get_schema(void)
   return &darktable_schema;
 }
 
-void dt_pwstorage_libsecret_search_dt_collection(gpointer item, gpointer user_data)
-{
-  SecretCollection *collection = (SecretCollection*)item;
-  gchar *label = secret_collection_get_label(collection);
-  if(label && !g_strcmp0(label, DARKTABLE_KEYRING))
-  {
-    backend_libsecret_context_t *context = (backend_libsecret_context_t*)user_data;
-    context->secret_collection = collection;
-    g_object_ref(context->secret_collection);
-  }
-  g_free(label);
-}
-
 const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
 {
+  GError *error = NULL;
   backend_libsecret_context_t *context = calloc(1, sizeof(backend_libsecret_context_t));
   if(context == NULL)
   {
     return NULL;
   }
 
-  context->secret_service = secret_service_get_sync(SECRET_SERVICE_LOAD_COLLECTIONS, NULL, NULL);
-  if(context->secret_service == NULL)
+  SecretService *secret_service = secret_service_get_sync(SECRET_SERVICE_LOAD_COLLECTIONS, NULL, &error);
+  if(error)
   {
-    dt_pwstorage_libsecret_destroy(context);
-    return NULL;
-  }
-  context->secret_collection = NULL;
-
-  /* Ensure to load all collections */
-  if(secret_service_load_collections_sync(context->secret_service, NULL, NULL) == FALSE)
-  {
+    fprintf(stderr, "[pwstorage_libsecret] error connecting to Secret Service: %s\n", error->message);
+    g_error_free(error);
+    if(secret_service) g_object_unref(secret_service);
     dt_pwstorage_libsecret_destroy(context);
     return NULL;
   }
 
-  GList *collections = secret_service_get_collections(context->secret_service);
-
-  gboolean collection_exists = FALSE;
-
-  /* Search for darktable collection */
-  g_list_foreach(collections, dt_pwstorage_libsecret_search_dt_collection, context);
-  if(context->secret_collection)
-  {
-    collection_exists = TRUE;
-  }
-
-  /* No darktable collection found, check for default collection */
-  if(collection_exists == FALSE)
-  {
-    context->secret_collection = secret_collection_for_alias_sync(context->secret_service, SECRET_COLLECTION_DEFAULT, SECRET_COLLECTION_LOAD_ITEMS, NULL, NULL);
-    if(context->secret_collection)
-    {
-      collection_exists = TRUE;
-    }
-  }
-
-  /* No default collection found, create new darktable collection */
-  if(collection_exists == FALSE)
-  {
-    context->secret_collection
-        = secret_collection_create_sync(context->secret_service, DARKTABLE_KEYRING, NULL,
-                                        SECRET_COLLECTION_CREATE_NONE, NULL, NULL);
-
-    if(context->secret_collection == NULL)
-    {
-      g_list_free_full(collections, g_object_unref);
-      dt_pwstorage_libsecret_destroy(context);
-      return NULL;
-    }
-  }
-  gchar *label = secret_collection_get_label(context->secret_collection);
-  g_free(label);
-
-  g_list_free_full(collections, g_object_unref);
+  if(secret_service)
+    g_object_unref(secret_service);
 
   return context;
 }
 
 void dt_pwstorage_libsecret_destroy(const backend_libsecret_context_t *context)
 {
-  if(context == NULL)
-  {
-    return;
-  }
-
-  if(context->secret_service != NULL)
-  {
-    g_object_unref(context->secret_service);
-  }
-
-  if(context->secret_collection != NULL)
-  {
-    g_object_unref(context->secret_collection);
-  }
-
   free((backend_libsecret_context_t *)context);
 }
 
 gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t *context, const gchar *slot,
                                     GHashTable *attributes)
 {
+  GError *error = NULL;
   if(context == NULL || slot == NULL || EMPTY_STRING(slot) || attributes == NULL)
   {
     return FALSE;
   }
 
   /* Convert attributes to secret */
-  SecretValue *secret_value = attributes_to_secret(attributes);
-
+  char *secret_value = attributes_to_secret(attributes);
   if(secret_value == NULL)
   {
     return FALSE;
   }
 
-  /* Insert slot as a attribute */
-  GHashTable *secret_attributes
-      = secret_attributes_build(SECRET_SCHEMA_DARKTABLE, "slot", slot, "magic", PACKAGE_NAME, NULL);
-
-  /* Save the item */
   gchar *label = g_strdup_printf("darktable@%s", slot);
+  if(!label)
+  {
+    g_free(secret_value);
+    return FALSE;
+  }
 
-  SecretItem *item
-      = secret_item_create_sync(context->secret_collection, SECRET_SCHEMA_DARKTABLE, secret_attributes, label,
-                                secret_value, SECRET_ITEM_CREATE_REPLACE, NULL, NULL);
+  gboolean res = secret_password_store_sync(SECRET_SCHEMA_DARKTABLE,
+                                            SECRET_COLLECTION_DARKTABLE,
+                                            label,
+                                            secret_value,
+                                            NULL,
+                                            &error,
+                                            "slot", slot,
+                                            "magic", PACKAGE_NAME,
+                                            NULL);
+  if(!res)
+  {
+    fprintf(stderr, "[pwstorage_libsecret] error storing password: %s\n", error->message);
+    g_error_free(error);
+  }
 
+  g_free(secret_value);
   g_free(label);
-  g_hash_table_destroy(secret_attributes);
-  secret_value_unref(secret_value);
 
-  if(item == NULL) return FALSE;
-
-  g_object_unref(item);
-
-  return TRUE;
+  return res;
 }
 
 GHashTable *dt_pwstorage_libsecret_get(const backend_libsecret_context_t *context, const gchar *slot)
 {
+  GError *error = NULL;
+  GHashTable *attributes;
+  gchar *secret_value = NULL;
+
   if(context == NULL || slot == NULL || EMPTY_STRING(slot))
   {
-    goto error_out;
+    goto error;
   }
 
-  /* Setup search attributes */
-  GHashTable *secret_attributes
-      = secret_attributes_build(SECRET_SCHEMA_DARKTABLE, "slot", slot, "magic", PACKAGE_NAME, NULL);
-
-  /* Search for item */
-  GList *items = secret_collection_search_sync(context->secret_collection, SECRET_SCHEMA_DARKTABLE,
-                                               secret_attributes, SECRET_SEARCH_NONE, NULL, NULL);
-
-  g_hash_table_destroy(secret_attributes);
-
-  /* Since the search flag is set to SECRET_SEARCH_NONE only one
-   * matching item is returned. */
-  if(items == NULL || g_list_length(items) != 1)
+  secret_value = secret_password_lookup_sync(SECRET_SCHEMA_DARKTABLE,
+                                             NULL,
+                                             &error,
+                                             "slot", slot,
+                                             "magic", PACKAGE_NAME,
+                                             NULL);
+  if(error)
   {
-    goto error_free;
+    fprintf(stderr, "[pwstorage_libsecret] error retrieving password: %s\n", error->message);
+    g_error_free(error);
+    goto error;
   }
 
-  SecretItem *item = (SecretItem *)g_list_nth_data(items, 0);
-
-  if(item == NULL)
-  {
-    goto error_free;
-  }
-
-  /* Load secret */
-  if(secret_item_load_secret_sync(item, NULL, NULL) == FALSE)
-  {
-    goto error_free;
-  }
-
-  SecretValue *value = secret_item_get_secret(item);
-
-  if(value == NULL)
-  {
-    goto error_free;
-  }
-
-  GHashTable *attributes = secret_to_attributes(value);
+  attributes = secret_to_attributes(secret_value);
 
   if(attributes == NULL)
   {
-    secret_value_unref(value);
-    goto error_free;
+    goto error;
   }
 
-  g_list_free_full(items, g_object_unref);
-  secret_value_unref(value);
+  goto end;
 
+error:
+  attributes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+
+end:
+  g_free(secret_value);
   return attributes;
-
-error_free:
-
-  if(items != NULL) g_list_free_full(items, g_object_unref);
-
-error_out:
-
-  return g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 }
 
 static void append_pair_to_json(gpointer key, gpointer value, gpointer data)
@@ -265,7 +177,7 @@ static void append_pair_to_json(gpointer key, gpointer value, gpointer data)
   json_builder_add_string_value(json_builder, (char *)value);
 }
 
-static SecretValue *attributes_to_secret(GHashTable *attributes)
+static gchar *attributes_to_secret(GHashTable *attributes)
 {
   /* Build JSON */
   JsonBuilder *json_builder = json_builder_new();
@@ -278,19 +190,15 @@ static SecretValue *attributes_to_secret(GHashTable *attributes)
   json_generator_set_root(json_generator, json_builder_get_root(json_builder));
   gchar *json_data = json_generator_to_data(json_generator, 0);
 
-  /* Create secret */
-  SecretValue *secret = secret_value_new(json_data, -1, "text/plain");
-
-  g_free(json_data);
   g_object_unref(json_generator);
   g_object_unref(json_builder);
 
-  return secret;
+  return json_data;
 }
 
-static GHashTable *secret_to_attributes(SecretValue *secret)
+static GHashTable *secret_to_attributes(gchar *secret)
 {
-  if(secret == NULL)
+  if(secret == NULL || EMPTY_STRING(secret))
   {
     return NULL;
   }
@@ -298,7 +206,7 @@ static GHashTable *secret_to_attributes(SecretValue *secret)
   /* Parse JSON from data */
   JsonParser *json_parser = json_parser_new();
 
-  if(json_parser_load_from_data(json_parser, secret_value_get_text(secret), -1, NULL) == FALSE)
+  if(json_parser_load_from_data(json_parser, secret, -1, NULL) == FALSE)
   {
     g_object_unref(json_parser);
     return NULL;
