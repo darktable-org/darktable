@@ -30,7 +30,7 @@
 #include <glib.h>
 #include <json-glib/json-glib.h>
 
-// chnage this to SECRET_COLLECTION_SESSION for non-permanent storage
+// change this to SECRET_COLLECTION_SESSION for non-permanent storage
 #define SECRET_COLLECTION_DARKTABLE SECRET_COLLECTION_DEFAULT
 
 #define EMPTY_STRING(string) !*(string)
