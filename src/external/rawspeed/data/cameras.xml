@@ -5884,6 +5884,17 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3839"/>
 	</Camera>
+	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX K-1">
+		<ID make="Pentax" model="K-1">Pentax K-1</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="28" width="0" height="0"/>
+		<Sensor black="64" white="16316"/>
+	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX K-3">
 		<ID make="Pentax" model="K-3">Pentax K-3</ID>
 		<CFA width="2" height="2">
