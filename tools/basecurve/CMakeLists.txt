@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.5)
 include(CheckCCompilerFlag)
+include(GNUInstallDirs)
 
 set(CC_FLAGS "-g -Wall")
 set(CMAKE_C_FLAGS "${CC_FLAGS} -std=c99")
