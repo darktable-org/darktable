@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-24 11:35+0200\n"
-"PO-Revision-Date: 2016-05-24 11:43+0200\n"
+"POT-Creation-Date: 2016-06-22 18:46+0200\n"
+"PO-Revision-Date: 2016-06-22 18:50+0200\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -929,7 +929,7 @@ msgstr "aangepast"
 msgid "tagged"
 msgstr "gelabeld"
 
-#: ../src/common/collection.c:1211
+#: ../src/common/collection.c:1220
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1069,20 +1069,20 @@ msgstr ""
 "kopieer eerst de afbeeldingsgeschiedenis voordat je het op een andere toepast"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428
-#: ../src/common/history.c:444 ../src/common/styles.c:716
-#: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1818
+#: ../src/common/history.c:444 ../src/common/styles.c:717
+#: ../src/common/styles.c:721 ../src/develop/blend_gui.c:1818
 #: ../src/develop/develop.c:1313 ../src/iop/ashift.c:4362
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "aan"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428
-#: ../src/common/history.c:444 ../src/common/styles.c:716
-#: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1600
+#: ../src/common/history.c:444 ../src/common/styles.c:717
+#: ../src/common/styles.c:721 ../src/develop/blend_gui.c:1600
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1313
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:671
 #: ../src/iop/ashift.c:4361 ../src/iop/ashift.c:4367 ../src/iop/colorin.c:1504
-#: ../src/iop/demosaic.c:3832 ../src/iop/vignette.c:1139
+#: ../src/iop/demosaic.c:3831 ../src/iop/vignette.c:1139
 #: ../src/libs/history.c:149 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "uit"
@@ -1108,21 +1108,21 @@ msgstr ""
 msgid "orphaned image"
 msgstr "verweesde afbeelding"
 
-#: ../src/common/image.c:1345
+#: ../src/common/image.c:1349
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "aanmaak lokale kopie lukt alleen als het origineel toegankelijk is "
 
-#: ../src/common/image.c:1359
+#: ../src/common/image.c:1363
 msgid "cannot create local copy."
 msgstr "aanmaak lokale kopie mislukt"
 
-#: ../src/common/image.c:1417 ../src/control/jobs/control_jobs.c:641
+#: ../src/common/image.c:1421 ../src/control/jobs/control_jobs.c:641
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "verwijderen van lokale kopie is niet mogelijk wanneer het origineel niet "
 "toegankelijk is"
 
-#: ../src/common/image.c:1569
+#: ../src/common/image.c:1573
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1166,7 +1166,7 @@ msgstr ""
 "uitbreiding naar unieke bestandsnaam voor deze sessie is mislukt, controleer "
 "uw importeer-instellingen"
 
-#: ../src/common/mipmap_cache.c:1099 ../src/iop/demosaic.c:3608
+#: ../src/common/mipmap_cache.c:1099 ../src/iop/demosaic.c:3607
 #: ../src/iop/invert.c:466
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
@@ -1240,8 +1240,8 @@ msgstr "naam stijl '%s' bestaat al"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:305 ../src/common/styles.c:309
 #: ../src/common/styles.c:389 ../src/common/styles.c:458
-#: ../src/common/styles.c:625 ../src/common/styles.c:1147
-#: ../src/common/styles.c:1166
+#: ../src/common/styles.c:626 ../src/common/styles.c:1148
+#: ../src/common/styles.c:1167
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1258,17 +1258,17 @@ msgstr "aanmaak profielstijl '%s' is gelukt"
 msgid "no image selected!"
 msgstr "er is geen afbeelding geselecteerd"
 
-#: ../src/common/styles.c:803
+#: ../src/common/styles.c:804
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "overschrijven stijlbestand voor %s mislukt"
 
-#: ../src/common/styles.c:809
+#: ../src/common/styles.c:810
 #, c-format
 msgid "style file for %s exists"
 msgstr "stijl bestand '%s' bestaat al"
 
-#: ../src/common/styles.c:1038
+#: ../src/common/styles.c:1039
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "stijl '%s' is geïmporteerd"
@@ -2188,25 +2188,25 @@ msgstr "ligthroom xmp niet gevonden!"
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' is geen lightroom xmp!"
 
-#: ../src/develop/lightroom.c:1386 ../src/libs/import.c:574
+#: ../src/develop/lightroom.c:1388 ../src/libs/import.c:574
 msgid "tags"
 msgstr "labels"
 
-#: ../src/develop/lightroom.c:1395 ../src/libs/tools/filter.c:146
+#: ../src/develop/lightroom.c:1397 ../src/libs/tools/filter.c:146
 msgid "rating"
 msgstr "waardering"
 
-#: ../src/develop/lightroom.c:1404 ../src/libs/collect.h:36
+#: ../src/develop/lightroom.c:1406 ../src/libs/collect.h:36
 #: ../src/libs/geotagging.c:44
 msgid "geotagging"
 msgstr "geotagging"
 
-#: ../src/develop/lightroom.c:1413 ../src/libs/collect.h:32
+#: ../src/develop/lightroom.c:1415 ../src/libs/collect.h:32
 #: ../src/libs/tools/filter.c:148
 msgid "color label"
 msgstr "kleurlabel"
 
-#: ../src/develop/lightroom.c:1419
+#: ../src/develop/lightroom.c:1421
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -2459,7 +2459,19 @@ msgstr "aanmaak cache map '%s'\n"
 msgid "could not create directory '%s'!\n"
 msgstr "kan de map '%s' niet aanmaken!\n"
 
-#: ../src/generate-cache/main.c:161
+#: ../src/generate-cache/main.c:73
+#, c-format
+msgid "warning: no images are matching the requested image id range\n"
+msgstr ""
+"waarschuwing: geen enkele afbeelding komt overeen met vereist bereik "
+"afbeeldings id\n"
+
+#: ../src/generate-cache/main.c:76
+#, c-format
+msgid "warning: did you want to swap these boundaries?\n"
+msgstr "waarschuwing: verwisselde je de kaders?\n"
+
+#: ../src/generate-cache/main.c:201
 #, c-format
 msgid ""
 "warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\n"
@@ -2473,7 +2485,12 @@ msgstr ""
 "darktable\n"
 "dan moet de disk-backend voor miniaturen ingeschakeld worden."
 
-#: ../src/generate-cache/main.c:168
+#: ../src/generate-cache/main.c:210
+#, c-format
+msgid "error: ensure that min_mip <= max_mip\n"
+msgstr "fout: verzeker je ervan dan min_mip <= max_mip\n"
+
+#: ../src/generate-cache/main.c:214
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
 msgstr "aanmaak complete cache van miniaturenbibliotheek\n"
@@ -4516,7 +4533,7 @@ msgid "the size of bloom"
 msgstr "mate van glans"
 
 #: ../src/iop/bloom.c:519 ../src/iop/colorreconstruction.c:1372
-#: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:432
+#: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:431
 #: ../src/iop/sharpen.c:763
 msgid "threshold"
 msgstr "drempel"
@@ -4526,7 +4543,7 @@ msgid "the threshold of light"
 msgstr "drempel voor glans"
 
 #: ../src/iop/bloom.c:525 ../src/iop/denoiseprofile.c:2060
-#: ../src/iop/grain.c:528 ../src/iop/hotpixels.c:440 ../src/iop/nlmeans.c:855
+#: ../src/iop/grain.c:528 ../src/iop/hotpixels.c:439 ../src/iop/nlmeans.c:855
 #: ../src/iop/velvia.c:378
 msgid "strength"
 msgstr "kracht"
@@ -5295,45 +5312,45 @@ msgctxt "accel"
 msgid "acquire as target"
 msgstr "doel binnenhalen"
 
-#: ../src/iop/colormapping.c:1047
+#: ../src/iop/colormapping.c:1053
 msgid "source clusters:"
 msgstr "clusterbronnen"
 
-#: ../src/iop/colormapping.c:1056
+#: ../src/iop/colormapping.c:1062
 msgid "target clusters:"
 msgstr "clusterdoelen"
 
-#: ../src/iop/colormapping.c:1069
+#: ../src/iop/colormapping.c:1075
 msgid "acquire as source"
 msgstr "bron binnenhalen"
 
-#: ../src/iop/colormapping.c:1071
+#: ../src/iop/colormapping.c:1077
 msgid "analyze this image as a source image"
 msgstr "analyseer afbeelding als bronafbeelding"
 
-#: ../src/iop/colormapping.c:1075
+#: ../src/iop/colormapping.c:1081
 msgid "acquire as target"
 msgstr "doel binnenhalen"
 
-#: ../src/iop/colormapping.c:1077
+#: ../src/iop/colormapping.c:1083
 msgid "analyze this image as a target image"
 msgstr "analyseer afbeelding als doelafbeelding"
 
-#: ../src/iop/colormapping.c:1082
+#: ../src/iop/colormapping.c:1088
 msgid "number of clusters"
 msgstr "aantal clusters"
 
-#: ../src/iop/colormapping.c:1084
+#: ../src/iop/colormapping.c:1090
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "doorzoek de afbeelding op dit aantal clusters, bij een wijziging worden "
 "clusters gereset"
 
-#: ../src/iop/colormapping.c:1089
+#: ../src/iop/colormapping.c:1095
 msgid "color dominance"
 msgstr "kleurdominantie"
 
-#: ../src/iop/colormapping.c:1090
+#: ../src/iop/colormapping.c:1096
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -5341,11 +5358,11 @@ msgstr ""
 "bepaalt hoe clusters in kaart worden gebracht; lage waarden op "
 "kleurnabijheid, hoge waarden op kleurdominantie"
 
-#: ../src/iop/colormapping.c:1097
+#: ../src/iop/colormapping.c:1103
 msgid "histogram equalization"
 msgstr "histogram egaliseren"
 
-#: ../src/iop/colormapping.c:1098
+#: ../src/iop/colormapping.c:1104
 msgid "level of histogram equalization"
 msgstr "mate van histogramegalisatie"
 
@@ -5606,44 +5623,44 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
-#: ../src/iop/demosaic.c:3807 ../src/iop/demosaic.c:3816
+#: ../src/iop/demosaic.c:3806 ../src/iop/demosaic.c:3815
 #: ../src/iop/dither.c:791 ../src/iop/highlights.c:968
 msgid "method"
 msgstr "methode"
 
-#: ../src/iop/demosaic.c:3809
+#: ../src/iop/demosaic.c:3808
 msgid "PPG (fast)"
 msgstr "PPG (snel)"
 
-#: ../src/iop/demosaic.c:3810
+#: ../src/iop/demosaic.c:3809
 msgid "AMaZE (slow)"
 msgstr "AMaZE (langzaam)"
 
-#: ../src/iop/demosaic.c:3811
+#: ../src/iop/demosaic.c:3810
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3812
+#: ../src/iop/demosaic.c:3811
 msgid "passthrough (monochrome) (experimental)"
 msgstr "passthrough (monochroom) (experimenteel)"
 
-#: ../src/iop/demosaic.c:3813 ../src/iop/demosaic.c:3821
+#: ../src/iop/demosaic.c:3812 ../src/iop/demosaic.c:3820
 msgid "demosaicing raw data method"
 msgstr "demosaicing ruwe data-methode"
 
-#: ../src/iop/demosaic.c:3818
+#: ../src/iop/demosaic.c:3817
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3819
+#: ../src/iop/demosaic.c:3818
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-pass"
 
-#: ../src/iop/demosaic.c:3820
+#: ../src/iop/demosaic.c:3819
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-pass (langzaam)"
 
-#: ../src/iop/demosaic.c:3824
+#: ../src/iop/demosaic.c:3823
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5653,63 +5670,63 @@ msgstr ""
 "schakel uit met 0.0\n"
 "kies 1.0 om de randen te negeren"
 
-#: ../src/iop/demosaic.c:3826
+#: ../src/iop/demosaic.c:3825
 msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
-#: ../src/iop/demosaic.c:3830
+#: ../src/iop/demosaic.c:3829
 msgid "color smoothing"
 msgstr "kleuren vervagen"
 
-#: ../src/iop/demosaic.c:3833
+#: ../src/iop/demosaic.c:3832
 msgid "one time"
 msgstr "een keer"
 
-#: ../src/iop/demosaic.c:3834
+#: ../src/iop/demosaic.c:3833
 msgid "two times"
 msgstr "twee keer"
 
-#: ../src/iop/demosaic.c:3835
+#: ../src/iop/demosaic.c:3834
 msgid "three times"
 msgstr "drie keer"
 
-#: ../src/iop/demosaic.c:3836
+#: ../src/iop/demosaic.c:3835
 msgid "four times"
 msgstr "vier keer"
 
-#: ../src/iop/demosaic.c:3837
+#: ../src/iop/demosaic.c:3836
 msgid "five times"
 msgstr "vijf keer"
 
-#: ../src/iop/demosaic.c:3838
+#: ../src/iop/demosaic.c:3837
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "aantal stappen mediaan kleurvervaging na demosaicing"
 
-#: ../src/iop/demosaic.c:3842
+#: ../src/iop/demosaic.c:3841
 msgid "match greens"
 msgstr "groen matchen"
 
-#: ../src/iop/demosaic.c:3843
+#: ../src/iop/demosaic.c:3842
 msgid "disabled"
 msgstr "uitgeschakeld"
 
-#: ../src/iop/demosaic.c:3844
+#: ../src/iop/demosaic.c:3843
 msgid "local average"
 msgstr "lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:3845
+#: ../src/iop/demosaic.c:3844
 msgid "full average"
 msgstr "volledig gemiddelde"
 
-#: ../src/iop/demosaic.c:3846
+#: ../src/iop/demosaic.c:3845
 msgid "full and local average"
 msgstr "volledig en lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:3847
+#: ../src/iop/demosaic.c:3846
 msgid "green channels matching method"
 msgstr "methode voor matchen groene kanalen"
 
-#: ../src/iop/demosaic.c:3859
+#: ../src/iop/demosaic.c:3858
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -6223,31 +6240,31 @@ msgstr "contrast voor high-pass filter"
 msgid "hot pixels"
 msgstr "hot pixels"
 
-#: ../src/iop/hotpixels.c:405
+#: ../src/iop/hotpixels.c:404
 #, c-format
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
 msgstr[0] "%d pixel hersteld"
 msgstr[1] "%d pixels hersteld"
 
-#: ../src/iop/hotpixels.c:433
+#: ../src/iop/hotpixels.c:432
 msgid "lower threshold for hot pixel"
 msgstr "lagere drempel voor hot pixels"
 
-#: ../src/iop/hotpixels.c:441
+#: ../src/iop/hotpixels.c:440
 msgid "strength of hot pixel correction"
 msgstr "herstelkracht voor hot pixels"
 
 #. 3 neighbours
-#: ../src/iop/hotpixels.c:446
+#: ../src/iop/hotpixels.c:445
 msgid "detect by 3 neighbors"
 msgstr "detecteer met 3 naaste"
 
-#: ../src/iop/hotpixels.c:453
+#: ../src/iop/hotpixels.c:452
 msgid "mark fixed pixels"
 msgstr "markeer hersteld"
 
-#: ../src/iop/hotpixels.c:465
+#: ../src/iop/hotpixels.c:464
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
@@ -6903,7 +6920,7 @@ msgid "raw black/white point"
 msgstr "raw zwart/witpunt"
 
 #: ../src/iop/rawprepare.c:94 ../src/iop/rawprepare.c:108
-#: ../src/iop/rawprepare.c:634
+#: ../src/iop/rawprepare.c:622
 #, c-format
 msgid "black level %i"
 msgstr "zwart-niveau %i"
@@ -6913,12 +6930,12 @@ msgctxt "accel"
 msgid "white point"
 msgstr "witpunt"
 
-#: ../src/iop/rawprepare.c:648 ../src/iop/rawprepare.c:649
+#: ../src/iop/rawprepare.c:636 ../src/iop/rawprepare.c:637
 msgid "white point"
 msgstr "witpunt"
 
 # rotwoord zwartwitpuntcorrectie...
-#: ../src/iop/rawprepare.c:657
+#: ../src/iop/rawprepare.c:645
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
