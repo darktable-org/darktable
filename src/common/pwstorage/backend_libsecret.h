@@ -1,6 +1,7 @@
 // This file is part of darktable
 //
 // Copyright (c) 2014 Moritz Lipp <mlq@pwmt.org>.
+// Copyright (c) 2016 tobias ellinghaus <me@houz.org>.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +24,11 @@
 #ifndef __BACKEND_LIBSECRET_H__
 #define __BACKEND_LIBSECRET_H__
 
-#include <libsecret/secret.h>
 #include <glib.h>
 
 typedef struct backend_libsecret_context_t
 {
-  SecretService *secret_service;
-  SecretCollection *secret_collection;
+  int placeholder; // we have to allocate one of these to signal that init didn't fail
 } backend_libsecret_context_t;
 
 /**

@@ -73,7 +73,7 @@ src_prepare() {
 	use cpu_flags_x86_sse3 && append-flags -msse3
 
 	sed -e "s:\(/share/doc/\)darktable:\1${PF}:" \
-		-e "s:\(\${SHARE_INSTALL}/doc/\)darktable:\1${PF}:" \
+		-e "s:\(\${CMAKE_INSTALL_DATAROOTDIR}/doc/\)darktable:\1${PF}:" \
 		-e "s:LICENSE::" \
 		-i doc/CMakeLists.txt || die
 

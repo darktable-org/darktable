@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.8.5)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
 add_executable(darktable-cmstest main.c)
 
@@ -33,4 +35,4 @@ endif(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
 
 set_target_properties(darktable-cmstest PROPERTIES LINKER_LANGUAGE C)
 
-install(TARGETS darktable-cmstest DESTINATION bin)
+install(TARGETS darktable-cmstest DESTINATION ${CMAKE_INSTALL_BINDIR})

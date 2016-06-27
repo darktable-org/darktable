@@ -1,5 +1,5 @@
 # FIXME: Tell CMake to cache the pdf files so they are not regenerated each time.
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 FILE(GLOB_RECURSE IMAGE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.png")
 FILE(GLOB_RECURSE IMAGES_PATHS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images")
@@ -135,7 +135,7 @@ if(can_build_usermanual)
 	add_custom_target(darktable-usermanual DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf)
   add_dependencies(usermanual darktable-usermanual)
 	add_dependencies(darktable-usermanual target_media_images darktable_single_xml )
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
 
 	#
 	# draft chunked html usermanual for web
@@ -172,7 +172,7 @@ if(can_build_usermanual)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-usermanual-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html )
 	add_dependencies(darktable-usermanual-html target_media_images darktable_single_xml )
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
 
 	#
 	# draft chunked usermanual for wordpress
@@ -215,7 +215,7 @@ if(can_build_usermanual)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-usermanual-wordpress DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php )
 	add_dependencies(darktable-usermanual-wordpress target_media_images darktable_single_xml )
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
 
 #	#
 #	# final translated usermanual's
@@ -231,7 +231,7 @@ if(can_build_usermanual)
 #	add_custom_target(darktable-usermanual-final DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-en.pdf )
 #	add_dependencies(darktable-usermanual-final target_media_images darktable_single_final_xml )
 #	add_dependencies(usermanual darktable-usermanual-final)
-#	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-final.pdf DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+#	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-final.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
 #
 #	if(NOT ${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
 #		# localized final usermanuals
@@ -256,7 +256,7 @@ if(can_build_usermanual)
 #			add_custom_target(darktable-usermanual-${language} DEPENDS ${pdffile})
 #			add_dependencies(usermanual darktable-usermanual-${language})
 #			add_dependencies(darktable-usermanual-${language} target_media_images darktable_single_final_xml )
-#			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+#			install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
 #		endforeach(language)
 #	endif()
 
@@ -286,7 +286,7 @@ if(can_build_usermanual)
 			add_custom_target(darktable-usermanual-${language} DEPENDS ${pdffile})
 			add_dependencies(usermanual darktable-usermanual-${language})
 			add_dependencies(darktable-usermanual-${language} target_media_images darktable_profile_xml )
-			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
+            install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
 		endforeach(language)
 	endif()
 #
@@ -307,7 +307,7 @@ if(can_build_usermanual)
 	add_custom_target(darktable-lua-api DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf)
   add_dependencies(lua-api darktable-lua-api)
 	add_dependencies(darktable-lua-api target_media_images )
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf DESTINATION ./share/doc/darktable/lua-api OPTIONAL)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL)
 
 	#
 	# draft chunked html api for web
@@ -344,7 +344,7 @@ if(can_build_usermanual)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-lua-api-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/index.html )
 	add_dependencies(darktable-lua-api-html target_media_images)
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api DESTINATION ./share/doc/darktable/lua-api OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL)
 
 	#
 	# draft chunked usermanual for wordpress
@@ -387,7 +387,7 @@ if(can_build_usermanual)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-lua-api-wordpress DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api/index.html.php )
 	add_dependencies(darktable-lua-api-wordpress target_media_images)
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api DESTINATION ./share/doc/darktable/lua-api OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL)
 
 
 	#
@@ -416,7 +416,7 @@ if(can_build_usermanual)
 			add_custom_target(darktable-lua-api-${language} DEPENDS ${pdffile})
 			add_dependencies(lua-api darktable-lua-api-${language})
 			add_dependencies(darktable-lua-api-${language} target_media_images darktable_profile_xml )
-			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/lua-api OPTIONAL)
+            install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL)
 		endforeach(language)
 	endif()
 else(can_build_usermanual)

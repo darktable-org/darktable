@@ -22,6 +22,7 @@ export GTK_PATH="$bundle_res"
 
 export GTK_IM_MODULE_FILE="$bundle_etc"/gtk-3.0/gtk.immodules
 export GDK_PIXBUF_MODULE_FILE="$(echo "$bundle_lib"/gdk-pixbuf-2.0/*/loaders.cache)"
+export GSETTINGS_SCHEMA_DIR="$bundle_data"/glib-2.0/schemas
 
 export IOLIBS="$(echo "$bundle_lib"/libgphoto2_port/*/)"
 export CAMLIBS="$(echo "$bundle_lib"/libgphoto2/*/)"
