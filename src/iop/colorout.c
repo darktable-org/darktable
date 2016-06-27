@@ -552,6 +552,25 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 }
 #endif
 
+static cmsHPROFILE _make_clipping_profile(cmsHPROFILE profile)
+{
+  cmsUInt32Number size;
+  cmsHPROFILE old_profile = profile;
+  profile = NULL;
+
+  if(old_profile && cmsSaveProfileToMem(old_profile, NULL, &size))
+  {
+    char *data = malloc(size);
+
+    if(cmsSaveProfileToMem(old_profile, data, &size))
+      profile = cmsOpenProfileFromMem(data, size);
+
+    free(data);
+  }
+
+  return profile;
+}
+
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -649,16 +668,25 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       softproof = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
                                              DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
-      dt_control_log(_("missing output profile has been replaced by sRGB!"));
-      fprintf(stderr, "missing output profile `%s' has been replaced by sRGB!\n",
-              dt_colorspaces_get_name(out_type, out_filename));
+      dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
+      fprintf(stderr, "missing softproof profile `%s' has been replaced by sRGB!\n",
+              dt_colorspaces_get_name(darktable.color_profiles->softproof_type,
+                                      darktable.color_profiles->softproof_filename));
     }
 
-    /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
-    /* softproof flag and black point compensation */
-    transformFlags |= cmsFLAGS_SOFTPROOFING | cmsFLAGS_NOCACHE | cmsFLAGS_BLACKPOINTCOMPENSATION;
+    // some of our internal profiles are what lcms considers ideal profiles as they have a parametric TRC so
+    // taking a roundtrip through those profiles during softproofing has no effect. as a workaround we have to
+    // make lcms quantisize those gamma tables to get the desired effect.
+    // in case that fails we don't enable softproofing.
+    softproof = _make_clipping_profile(softproof);
+    if(softproof)
+    {
+      /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
+      /* softproof flag and black point compensation */
+      transformFlags |= cmsFLAGS_SOFTPROOFING | cmsFLAGS_NOCACHE | cmsFLAGS_BLACKPOINTCOMPENSATION;
 
-    if(d->mode == DT_PROFILE_GAMUTCHECK) transformFlags |= cmsFLAGS_GAMUTCHECK;
+      if(d->mode == DT_PROFILE_GAMUTCHECK) transformFlags |= cmsFLAGS_GAMUTCHECK;
+    }
   }
 
   /*
@@ -719,6 +747,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   g_free(over_filename);
+  // softproof is never the original but always a copy that went through _make_clipping_profile()
+  dt_colorspaces_cleanup_profile(softproof);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
