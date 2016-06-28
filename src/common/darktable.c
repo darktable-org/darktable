@@ -571,6 +571,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
 #ifdef HAVE_OPENCL
   gboolean exclude_opencl = FALSE;
+  gboolean print_statistics = strcmp(argv[0], "darktable-cltest");
 #endif
 
 #ifdef USE_LUA
@@ -960,7 +961,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
 #ifdef HAVE_OPENCL
-  dt_opencl_init(darktable.opencl, exclude_opencl);
+  dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 #endif
 
   darktable.blendop = (dt_blendop_t *)calloc(1, sizeof(dt_blendop_t));
