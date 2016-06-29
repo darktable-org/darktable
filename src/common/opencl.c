@@ -50,7 +50,7 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 /** parse a complete priority string */
 static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr);
 
-void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
+void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics)
 {
   char *str;
   dt_pthread_mutex_init(&cl->lock, NULL);
@@ -58,6 +58,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
   cl->enabled = 0;
   cl->stopped = 0;
   cl->error_count = 0;
+  cl->print_statistics = print_statistics;
 
   // work-around to fix a bug in some AMD OpenCL compilers, which would fail parsing certain numerical
   // constants if locale is different from "C".
@@ -628,7 +629,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         if(cl->dev[i].program_used[k]) (cl->dlocl->symbols->dt_clReleaseProgram)(cl->dev[i].program[k]);
       (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
       (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
-      if(cl->use_events)
+      if(cl->print_statistics && cl->use_events)
       {
         if(cl->dev[i].totalevents)
         {
@@ -641,6 +642,9 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
           dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s': NOT utilized\n",
                    cl->dev[i].name);
         }
+      }
+      if(cl->use_events)
+      {
         dt_opencl_events_reset(i);
 
         free(cl->dev[i].eventlist);
