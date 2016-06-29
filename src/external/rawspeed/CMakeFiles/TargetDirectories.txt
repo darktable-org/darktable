@@ -1,0 +1,7 @@
+/home/hans/repos/darktable/src/external/rawspeed/CMakeFiles/install.dir
+/home/hans/repos/darktable/src/external/rawspeed/CMakeFiles/list_install_components.dir
+/home/hans/repos/darktable/src/external/rawspeed/CMakeFiles/rebuild_cache.dir
+/home/hans/repos/darktable/src/external/rawspeed/CMakeFiles/rawspeed.dir
+/home/hans/repos/darktable/src/external/rawspeed/CMakeFiles/install/strip.dir
+/home/hans/repos/darktable/src/external/rawspeed/CMakeFiles/install/local.dir
+/home/hans/repos/darktable/src/external/rawspeed/CMakeFiles/edit_cache.dir
