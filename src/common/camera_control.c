@@ -26,10 +26,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#if defined(__SUNOS__)
 #include <fcntl.h>
-#endif
-#include <sys/fcntl.h>
 
 /***/
 typedef enum _camctl_camera_job_type_t
@@ -527,7 +524,9 @@ gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
   }
   cam->is_live_viewing = TRUE;
   dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 1);
-  pthread_create(&cam->live_view_thread, NULL, &dt_camctl_camera_get_live_view, (void *)camctl);
+
+  dt_pthread_create(&cam->live_view_thread, &dt_camctl_camera_get_live_view, (void *)camctl);
+
   return TRUE;
 }
 
@@ -1097,7 +1096,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam, gboolea
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] enabling tether mode\n");
       camctl->active_camera = camera;
       camera->is_tethering = TRUE;
-      pthread_create(&camctl->camera_event_thread, NULL, &_camera_event_thread, (void *)c);
+      dt_pthread_create(&camctl->camera_event_thread, &_camera_event_thread, (void *)c);
     }
     else
     {

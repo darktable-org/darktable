@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <glib.h>
 #include <glib/gstdio.h>
