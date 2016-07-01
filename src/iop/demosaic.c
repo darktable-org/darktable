@@ -2526,6 +2526,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
                                      || roi_out->scale > (piece->pipe->filters == 9u ? 0.333f : 0.5f);
 
   cl_mem dev_tmp = NULL;
+  cl_mem dev_tmptmp = NULL;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_green_eq = NULL;
   cl_mem dev_rgbv[8] = { NULL };
@@ -3007,6 +3008,13 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       if(err != CL_SUCCESS) goto error;
     }
 
+    // get rid of dev_drv buffers
+    for(int n = 0; n < 8; n++)
+    {
+      if(dev_drv[n] != NULL) dt_opencl_release_mem_object(dev_drv[n]);
+      dev_drv[n] = NULL;
+    }
+
     // build 5x5 sum of homogeneity maps for each pixel and direction
     factors.xoffset = 2*2;
     factors.xfactor = 1;
@@ -3091,6 +3099,12 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_zero, sizes);
     if(err != CL_SUCCESS) goto error;
 
+    // need to get another temp buffer for the output image (may use the space of dev_drv[] freed earlier)
+    dev_tmptmp = dt_opencl_alloc_device(devid, (size_t)width, height, 4 * sizeof(float));
+    if(dev_tmptmp == NULL) goto error;
+
+    cl_mem dev_t1 = dev_tmp;
+    cl_mem dev_t2 = dev_tmptmp;
 
     // accumulate all contributions
     for(int d = 0; d < ndir; d++)
@@ -3098,8 +3112,8 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       sizes[0] = ROUNDUPWD(width);
       sizes[1] = ROUNDUPHT(height);
       sizes[2] = 1;
-      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 0, sizeof(cl_mem), (void *)&dev_tmp);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 1, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 0, sizeof(cl_mem), (void *)&dev_t1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 1, sizeof(cl_mem), (void *)&dev_t2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 2, sizeof(cl_mem), (void *)&dev_rgbv[d]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 3, sizeof(cl_mem), (void *)&dev_homosum[d]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 4, sizeof(cl_mem), (void *)&dev_aux);
@@ -3108,13 +3122,28 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_accu, 7, sizeof(int), (void *)&pad_tile);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_accu, sizes);
       if(err != CL_SUCCESS) goto error;
+
+      // swap buffers
+      cl_mem dev_t = dev_t2;
+      dev_t2 = dev_t1;
+      dev_t1 = dev_t;
+    }
+
+    // copy output to dev_tmptmp (if not already there)
+    // note: we need to take swap of buffers into account, so current output lies in dev_t1
+    if(dev_t1 != dev_tmptmp)
+    {
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { width, height, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_t1, dev_tmptmp, origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
     }
 
     // process the final image
     sizes[0] = ROUNDUPWD(width);
     sizes[1] = ROUNDUPHT(height);
     sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 0, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 0, sizeof(cl_mem), (void *)&dev_tmptmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 3, sizeof(int), (void *)&height);
@@ -3128,12 +3157,6 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     {
       if(dev_rgbv[n] != NULL) dt_opencl_release_mem_object(dev_rgbv[n]);
       dev_rgbv[n] = NULL;
-    }
-
-    for(int n = 0; n < 8; n++)
-    {
-      if(dev_drv[n] != NULL) dt_opencl_release_mem_object(dev_drv[n]);
-      dev_drv[n] = NULL;
     }
 
     for(int n = 0; n < 8; n++)
@@ -3160,6 +3183,8 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
     dev_green_eq = NULL;
 
+    if(dev_tmptmp != NULL) dt_opencl_release_mem_object(dev_tmptmp);
+    dev_tmptmp = NULL;
 
     // take care of image borders. the algorihm above leaves an unprocessed border of pad_tile pixels.
     // strategy: take the four edges and process them each with process_vng_cl(). as VNG produces
@@ -3279,6 +3304,7 @@ error:
     if(dev_homosum[n] != NULL) dt_opencl_release_mem_object(dev_homosum[n]);
   if(dev_gminmax != NULL) dt_opencl_release_mem_object(dev_gminmax);
   if(dev_tmp != NULL && dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_tmptmp != NULL) dt_opencl_release_mem_object(dev_tmptmp);
   if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   if(dev_allhex != NULL) dt_opencl_release_mem_object(dev_allhex);
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
