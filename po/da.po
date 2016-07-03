@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-12 21:32+0100\n"
-"PO-Revision-Date: 2016-03-12 21:36+0100\n"
+"POT-Creation-Date: 2016-07-02 22:21+0200\n"
+"PO-Revision-Date: 2016-07-02 22:23+0100\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 1.5\n"
+"X-Generator: Lokalize 2.0\n"
 
 #: ../build/src/preferences_gen.h:1460
 msgid "GUI options"
@@ -827,20 +827,25 @@ msgstr "ukendt valgmulighed for --hq"
 msgid "unknown option for --upscale"
 msgstr "ukendt valgmulighed for --upscale"
 
-#: ../src/cli/main.c:184
+#: ../src/cli/main.c:183
+#, c-format
+msgid "error: output file is a directory. please specify file name"
+msgstr "fejl: output-fil er en mappe. angiv venligst et filnavn"
+
+#: ../src/cli/main.c:191
 msgid "output file already exists, it will get renamed"
 msgstr "output-fil eksisterer allerede; den vil blive omdøbt"
 
-#: ../src/cli/main.c:199
+#: ../src/cli/main.c:206
 #, c-format
 msgid "error: can't open file %s"
 msgstr "fejl: kan ikke åbne fil %s"
 
-#: ../src/cli/main.c:221
+#: ../src/cli/main.c:228
 msgid "empty history stack"
 msgstr "tom historikstak"
 
-#: ../src/cli/main.c:244
+#: ../src/cli/main.c:251
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -848,22 +853,22 @@ msgstr ""
 "kan ikke finde disk-opbevaringsmodul. tjek venligst din installation; noget "
 "ser ud til ikke at fungere."
 
-#: ../src/cli/main.c:251
+#: ../src/cli/main.c:258
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "hentning af parametre fra opbevaringsmodul mislykkedes, eksport afbrydes…"
 
-#: ../src/cli/main.c:263
+#: ../src/cli/main.c:270
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "ukendt endelse \".%s\""
 
-#: ../src/cli/main.c:271
+#: ../src/cli/main.c:278
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "hentning af parametre fra formateringsmodul mislykkedes, eksport afbrydes…"
 
-#: ../src/common/collection.c:665 ../src/develop/lightroom.c:926
+#: ../src/common/collection.c:687 ../src/develop/lightroom.c:926
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:584
 #: ../src/iop/colorbalance.c:623 ../src/iop/colorbalance.c:662
@@ -872,12 +877,12 @@ msgstr ""
 msgid "red"
 msgstr "rød"
 
-#: ../src/common/collection.c:667 ../src/develop/lightroom.c:928
+#: ../src/common/collection.c:689 ../src/develop/lightroom.c:928
 #: ../src/libs/collect.c:985 ../src/libs/collect.c:986
 msgid "yellow"
 msgstr "gul"
 
-#: ../src/common/collection.c:669 ../src/develop/lightroom.c:930
+#: ../src/common/collection.c:691 ../src/develop/lightroom.c:930
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:593
 #: ../src/iop/colorbalance.c:632 ../src/iop/colorbalance.c:671
@@ -886,7 +891,7 @@ msgstr "gul"
 msgid "green"
 msgstr "grøn"
 
-#: ../src/common/collection.c:671 ../src/develop/lightroom.c:932
+#: ../src/common/collection.c:693 ../src/develop/lightroom.c:932
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:486 ../src/iop/colorbalance.c:602
 #: ../src/iop/colorbalance.c:641 ../src/iop/colorbalance.c:680
@@ -895,22 +900,22 @@ msgstr "grøn"
 msgid "blue"
 msgstr "blå"
 
-#: ../src/common/collection.c:673 ../src/libs/collect.c:994
+#: ../src/common/collection.c:695 ../src/libs/collect.c:994
 #: ../src/libs/collect.c:995
 msgid "purple"
 msgstr "lilla"
 
-#: ../src/common/collection.c:682 ../src/libs/collect.c:962
+#: ../src/common/collection.c:704 ../src/libs/collect.c:962
 #: ../src/libs/collect.c:963
 msgid "altered"
 msgstr "ændret"
 
-#: ../src/common/collection.c:688 ../src/libs/collect.c:972
+#: ../src/common/collection.c:710 ../src/libs/collect.c:972
 #: ../src/libs/collect.c:973
 msgid "tagged"
 msgstr "mærket"
 
-#: ../src/common/collection.c:982
+#: ../src/common/collection.c:1013
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -918,74 +923,78 @@ msgstr[0] "%d billede af %d i aktuel samling er valgt"
 msgstr[1] "%d billeder af %d i aktiv samling er valgt"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1119 ../src/iop/colorin.c:1223
+#: ../src/common/colorspaces.c:1009 ../src/iop/colorin.c:1223
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1120 ../src/common/colorspaces.c:1262
-#: ../src/iop/colorin.c:1224 ../src/libs/print_settings.c:869
+#: ../src/common/colorspaces.c:1010 ../src/common/colorspaces.c:1152
+#: ../src/iop/colorin.c:1224 ../src/libs/print_settings.c:870
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
-#: ../src/common/colorspaces.c:1121 ../src/common/colorspaces.c:1267
+#: ../src/common/colorspaces.c:1011 ../src/common/colorspaces.c:1157
 #: ../src/iop/colorin.c:1225
 msgid "linear Rec709 RGB"
 msgstr "lineær Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1122 ../src/common/colorspaces.c:1272
+#: ../src/common/colorspaces.c:1012 ../src/common/colorspaces.c:1162
 #: ../src/iop/colorin.c:1226
 msgid "linear Rec2020 RGB"
 msgstr "lineær Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1123 ../src/common/colorspaces.c:1277
+#: ../src/common/colorspaces.c:1013 ../src/common/colorspaces.c:1167
 msgid "linear XYZ"
 msgstr "lineær XYZ"
 
-#: ../src/common/colorspaces.c:1124 ../src/common/colorspaces.c:1282
+#: ../src/common/colorspaces.c:1014 ../src/common/colorspaces.c:1172
 #: ../src/libs/colorpicker.c:540 ../src/libs/colorpicker.c:578
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1125 ../src/common/colorspaces.c:1287
+#: ../src/common/colorspaces.c:1015 ../src/common/colorspaces.c:1177
 msgid "linear infrared BGR"
 msgstr "lineær infrarød BGR"
 
-#: ../src/common/colorspaces.c:1126 ../src/common/colorspaces.c:1246
+#: ../src/common/colorspaces.c:1016 ../src/common/colorspaces.c:1136
 msgid "system display profile"
 msgstr "systemvisningsprofil"
 
-#: ../src/common/colorspaces.c:1127
+#: ../src/common/colorspaces.c:1017
 msgid "embedded ICC profile"
 msgstr "indbygget ICC-profil"
 
-#: ../src/common/colorspaces.c:1128
+#: ../src/common/colorspaces.c:1018
 msgid "embedded matrix"
 msgstr "indbygget matrice"
 
-#: ../src/common/colorspaces.c:1129
+#: ../src/common/colorspaces.c:1019
 msgid "standard color matrix"
 msgstr "standard farvematrice"
 
-#: ../src/common/colorspaces.c:1130
+#: ../src/common/colorspaces.c:1020
 msgid "enhanced color matrix"
 msgstr "forbedret farvematrice"
 
-#: ../src/common/colorspaces.c:1131
+#: ../src/common/colorspaces.c:1021
 msgid "vendor color matrix"
 msgstr "producent-farvematrice"
 
-#: ../src/common/colorspaces.c:1132
+#: ../src/common/colorspaces.c:1022
 msgid "alternate color matrix"
 msgstr "alternativ farvematrice"
 
-#: ../src/common/colorspaces.c:1252
+#: ../src/common/colorspaces.c:1142
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (fx JPG)"
 
-#: ../src/common/colorspaces.c:1257 ../src/libs/print_settings.c:862
+#: ../src/common/colorspaces.c:1147 ../src/libs/print_settings.c:863
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sikker)"
+
+#: ../src/common/colorspaces.c:1182
+msgid "BRG (for testing)"
+msgstr "BRG (til test)"
 
 #: ../src/common/cups_print.c:324
 #, c-format
@@ -1047,15 +1056,15 @@ msgstr ""
 "på et andet"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428
-#: ../src/common/history.c:444 ../src/common/styles.c:716
-#: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1825
+#: ../src/common/history.c:444 ../src/common/styles.c:717
+#: ../src/common/styles.c:721 ../src/develop/blend_gui.c:1825
 #: ../src/develop/develop.c:1314 ../src/libs/live_view.c:441
 msgid "on"
 msgstr "til"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428
-#: ../src/common/history.c:444 ../src/common/styles.c:716
-#: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1604
+#: ../src/common/history.c:444 ../src/common/styles.c:717
+#: ../src/common/styles.c:721 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1314
 #: ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
 #: ../src/iop/colorin.c:1222 ../src/iop/demosaic.c:2237
@@ -1085,21 +1094,21 @@ msgstr ""
 msgid "orphaned image"
 msgstr "forældreløs billede"
 
-#: ../src/common/image.c:1341
+#: ../src/common/image.c:1345
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "kan ikke oprette en lokal kopi, når den originale fil ikke er tilgængelig."
 
-#: ../src/common/image.c:1355
+#: ../src/common/image.c:1359
 msgid "cannot create local copy."
 msgstr "kan ikke oprette en lokal kopi."
 
-#: ../src/common/image.c:1413 ../src/control/jobs/control_jobs.c:626
+#: ../src/common/image.c:1417 ../src/control/jobs/control_jobs.c:629
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "kan ikke fjerne den lokale kopi, når den originale fil ikke er tilgængelig."
 
-#: ../src/common/image.c:1565
+#: ../src/common/image.c:1569
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1152,16 +1161,16 @@ msgstr "generisk poissonian"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "støjprofil-fil \"%s\" er ikke gyldig"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.c:1713
-#: ../src/libs/print_settings.c:1096
+#: ../src/common/pdf.h:88 ../src/iop/lens.c:1723
+#: ../src/libs/print_settings.c:1097
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1097
+#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1098
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1098
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1099
 msgid "inch"
 msgstr "tommer"
 
@@ -1211,8 +1220,8 @@ msgstr "stil ved navn \"%s\" eksisterer allerede"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:305 ../src/common/styles.c:309
 #: ../src/common/styles.c:389 ../src/common/styles.c:458
-#: ../src/common/styles.c:625 ../src/common/styles.c:1147
-#: ../src/common/styles.c:1166
+#: ../src/common/styles.c:626 ../src/common/styles.c:1148
+#: ../src/common/styles.c:1167
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1229,17 +1238,17 @@ msgstr "stil ved navn \"%s\" succesfuldt oprettet"
 msgid "no image selected!"
 msgstr "intet billede valgt!"
 
-#: ../src/common/styles.c:803
+#: ../src/common/styles.c:804
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "overskrivning af stilfil for %s mislykkedes"
 
-#: ../src/common/styles.c:809
+#: ../src/common/styles.c:810
 #, c-format
 msgid "style file for %s exists"
 msgstr "stilfil for %s eksisterer"
 
-#: ../src/common/styles.c:1038
+#: ../src/common/styles.c:1039
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "stil %s blev succesfuldt importeret"
@@ -1249,10 +1258,10 @@ msgstr "stil %s blev succesfuldt importeret"
 #: ../src/common/variables.c:304 ../src/iop/clipping.c:1563
 #: ../src/iop/clipping.c:1853 ../src/iop/clipping.c:1873
 #: ../src/iop/clipping.c:2018 ../src/iop/clipping.c:2046
-#: ../src/iop/colorreconstruction.c:1374 ../src/iop/lens.c:2049
+#: ../src/iop/colorreconstruction.c:1375 ../src/iop/lens.c:2055
 #: ../src/libs/export.c:485 ../src/libs/live_view.c:351
 #: ../src/libs/live_view.c:377 ../src/libs/live_view.c:386
-#: ../src/libs/print_settings.c:1007 ../src/libs/print_settings.c:1276
+#: ../src/libs/print_settings.c:1008 ../src/libs/print_settings.c:1277
 msgid "none"
 msgstr "intet"
 
@@ -1271,11 +1280,12 @@ msgstr "over havets overflade"
 msgid "below sea level"
 msgstr "under havets overflade"
 
-#: ../src/common/utility.c:423 ../src/libs/metadata_view.c:525
+#: ../src/common/utility.c:423 ../src/iop/watermark.c:733
+#: ../src/libs/metadata_view.c:525
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:351 ../src/control/control.c:354
+#: ../src/control/control.c:358 ../src/control/control.c:361
 msgid "working.."
 msgstr "arbejder …"
 
@@ -1344,166 +1354,166 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "importerer %d billede fra kamera"
 msgstr[1] "importerer %d billeder fra kamera"
 
-#: ../src/control/jobs/control_jobs.c:134
+#: ../src/control/jobs/control_jobs.c:137
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "oprettelse af filmrulle i destinationsmappe mislykkedes, flytning afbrudt …"
 
-#: ../src/control/jobs/control_jobs.c:313
+#: ../src/control/jobs/control_jobs.c:316
 msgid "exposure bracketing only works on Bayer raw images."
 msgstr "eksponerings-bracketing virker kun på Bayer-raw-billeder."
 
-#: ../src/control/jobs/control_jobs.c:320
+#: ../src/control/jobs/control_jobs.c:323
 msgid "images have to be of same size and orientation!"
 msgstr "billeder skal være af samme størrelse og orientering!"
 
-#: ../src/control/jobs/control_jobs.c:412
+#: ../src/control/jobs/control_jobs.c:415
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "kombinerer %d billede"
 msgstr[1] "kombinerer %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:473
+#: ../src/control/jobs/control_jobs.c:476
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "skrev kombineret HDR \"%s\""
 
-#: ../src/control/jobs/control_jobs.c:500
+#: ../src/control/jobs/control_jobs.c:503
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplikerer %d billede"
 msgstr[1] "duplikerer %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:527
+#: ../src/control/jobs/control_jobs.c:530
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "spejlvender %d billede"
 msgstr[1] "spejlvender %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:602
+#: ../src/control/jobs/control_jobs.c:605
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "fjerner %d billede"
 msgstr[1] "fjerner %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:705
+#: ../src/control/jobs/control_jobs.c:708
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "kunne ikke sende %s til papirkurven%s%s"
 
-#: ../src/control/jobs/control_jobs.c:706
+#: ../src/control/jobs/control_jobs.c:709
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "kunne ikke fysisk slette %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:712
+#: ../src/control/jobs/control_jobs.c:715
 msgid "physically delete"
 msgstr "slet fysisk"
 
-#: ../src/control/jobs/control_jobs.c:713
+#: ../src/control/jobs/control_jobs.c:716
 msgid "only remove from the collection"
 msgstr "fjern kun fra samlingen"
 
-#: ../src/control/jobs/control_jobs.c:714
+#: ../src/control/jobs/control_jobs.c:717
 msgid "skip to next file"
 msgstr "hop til næste fil"
 
-#: ../src/control/jobs/control_jobs.c:715
+#: ../src/control/jobs/control_jobs.c:718
 msgid "stop process"
 msgstr "stop bearbejdning"
 
-#: ../src/control/jobs/control_jobs.c:720
+#: ../src/control/jobs/control_jobs.c:723
 msgid "trashing error"
 msgstr "fejl ved papirkurv"
 
-#: ../src/control/jobs/control_jobs.c:721
+#: ../src/control/jobs/control_jobs.c:724
 msgid "deletion error"
 msgstr "fejl under sletning"
 
-#: ../src/control/jobs/control_jobs.c:842
+#: ../src/control/jobs/control_jobs.c:851
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "sender %d billede til papirkurven"
 msgstr[1] "sender %d billeder til papirkurven"
 
-#: ../src/control/jobs/control_jobs.c:844
+#: ../src/control/jobs/control_jobs.c:853
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "sletter %d billede"
 msgstr[1] "sletter %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:1006
+#: ../src/control/jobs/control_jobs.c:1015
 msgid "failed to parse GPX file"
 msgstr "tolkning af GPX-fil mislykkedes"
 
-#: ../src/control/jobs/control_jobs.c:1066
+#: ../src/control/jobs/control_jobs.c:1075
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "anvendte matchende GPX-position på %d billede"
 msgstr[1] "anvendte matchende GPX-position på %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:1081
+#: ../src/control/jobs/control_jobs.c:1090
 #, c-format
 msgid "moving %d image"
 msgstr "flytter %d billede"
 
-#: ../src/control/jobs/control_jobs.c:1082
+#: ../src/control/jobs/control_jobs.c:1091
 #, c-format
 msgid "moving %d images"
 msgstr "flytter %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:1087
+#: ../src/control/jobs/control_jobs.c:1096
 #, c-format
 msgid "copying %d image"
 msgstr "kopierer %d billede"
 
-#: ../src/control/jobs/control_jobs.c:1088
+#: ../src/control/jobs/control_jobs.c:1097
 #, c-format
 msgid "copying %d images"
 msgstr "kopierer %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:1104
+#: ../src/control/jobs/control_jobs.c:1113
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "opretter lokal kopi af %d billede"
 msgstr[1] "opretter lokale kopier af %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:1107
+#: ../src/control/jobs/control_jobs.c:1116
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "fjerner lokal kopi af %d billede"
 msgstr[1] "fjerner lokale kopier af %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:1187
+#: ../src/control/jobs/control_jobs.c:1196
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "eksporterer %d billede …"
 msgstr[1] "eksporterer %d billeder …"
 
-#: ../src/control/jobs/control_jobs.c:1189
+#: ../src/control/jobs/control_jobs.c:1198
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "eksporterer %d billede til %s"
 msgstr[1] "eksporterer %d billeder til %s"
 
-#: ../src/control/jobs/control_jobs.c:1236 ../src/views/darkroom.c:464
+#: ../src/control/jobs/control_jobs.c:1245 ../src/views/darkroom.c:464
 #: ../src/views/print.c:283
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "billede \"%s\" er i øjeblikket utilgængeligt"
 
-#: ../src/control/jobs/control_jobs.c:1369
+#: ../src/control/jobs/control_jobs.c:1378
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1511,18 +1521,18 @@ msgid_plural ""
 msgstr[0] "vil du virkelig fjerne %d valgt billede fra samlingen?"
 msgstr[1] "vil du virkelig fjerne %d valgte billeder fra samlingen?"
 
-#: ../src/control/jobs/control_jobs.c:1373
+#: ../src/control/jobs/control_jobs.c:1382
 msgid "remove images?"
 msgstr "fjern billeder?"
 
-#: ../src/control/jobs/control_jobs.c:1412
+#: ../src/control/jobs/control_jobs.c:1421
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
 msgstr[0] "vil du virkelig sende %d valgt billede til papirkurven?"
 msgstr[1] "vil du virkelig sende %d valgte billeder til papirkurven?"
 
-#: ../src/control/jobs/control_jobs.c:1414
+#: ../src/control/jobs/control_jobs.c:1423
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1530,16 +1540,16 @@ msgid_plural ""
 msgstr[0] "vil du virkelig fysisk slette %d valgt billede fra disken?"
 msgstr[1] "vil du virkelig fysisk slette %d valgte billeder fra disken?"
 
-#: ../src/control/jobs/control_jobs.c:1418
+#: ../src/control/jobs/control_jobs.c:1427
 msgid "trash images?"
 msgstr "send billeder til papirkurven?"
 
-#: ../src/control/jobs/control_jobs.c:1418
+#: ../src/control/jobs/control_jobs.c:1427
 msgid "delete images?"
 msgstr "slet billeder?"
 
-#: ../src/control/jobs/control_jobs.c:1443
-#: ../src/control/jobs/control_jobs.c:1497 ../src/imageio/storage/disk.c:92
+#: ../src/control/jobs/control_jobs.c:1452
+#: ../src/control/jobs/control_jobs.c:1506 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104
 #: ../src/imageio/storage/latex.c:165 ../src/libs/styles.c:208
@@ -1547,8 +1557,8 @@ msgstr "slet billeder?"
 msgid "select directory"
 msgstr "vælg mappe"
 
-#: ../src/control/jobs/control_jobs.c:1443
-#: ../src/control/jobs/control_jobs.c:1497 ../src/gui/hist_dialog.c:137
+#: ../src/control/jobs/control_jobs.c:1452
+#: ../src/control/jobs/control_jobs.c:1506 ../src/gui/hist_dialog.c:137
 #: ../src/gui/preferences.c:1032 ../src/gui/preferences.c:1055
 #: ../src/gui/presets.c:381 ../src/gui/styles_dialog.c:284
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
@@ -1559,12 +1569,12 @@ msgstr "vælg mappe"
 msgid "_cancel"
 msgstr "_annuller"
 
-#: ../src/control/jobs/control_jobs.c:1444
-#: ../src/control/jobs/control_jobs.c:1498
+#: ../src/control/jobs/control_jobs.c:1453
+#: ../src/control/jobs/control_jobs.c:1507
 msgid "_select as destination"
 msgstr "_vælg som destination"
 
-#: ../src/control/jobs/control_jobs.c:1462
+#: ../src/control/jobs/control_jobs.c:1471
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1579,40 +1589,40 @@ msgstr[1] ""
 "vil du virkelig fysisk flytte %d valgte billeder til %s?\n"
 "(alle ikke-valgte dubletter vil flytte med)"
 
-#: ../src/control/jobs/control_jobs.c:1468
+#: ../src/control/jobs/control_jobs.c:1477
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "flyt billede?"
 msgstr[1] "flyt billeder?"
 
-#: ../src/control/jobs/control_jobs.c:1516
+#: ../src/control/jobs/control_jobs.c:1525
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] "vil du virkelig fysisk kopiere %d valgt billede til %s?"
 msgstr[1] "vil du virkelig fysisk kopiere %d valgte billeder til %s?"
 
-#: ../src/control/jobs/control_jobs.c:1519
+#: ../src/control/jobs/control_jobs.c:1528
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopiér billede?"
 msgstr[1] "kopiér billeder?"
 
-#: ../src/control/jobs/control_jobs.c:1605
+#: ../src/control/jobs/control_jobs.c:1614
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "hentning af parametre fra opbevaringsmodul \"%s\" mislykkedes, eksport "
 "afbrydes …"
 
-#: ../src/control/jobs/control_jobs.c:1643
+#: ../src/control/jobs/control_jobs.c:1652
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "føjer tidsforskel til %d billede"
 msgstr[1] "føjer tidsforskel til %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:1662
+#: ../src/control/jobs/control_jobs.c:1671
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
@@ -2001,7 +2011,7 @@ msgstr "blend-metode"
 msgid "choose blending mode"
 msgstr "vælg blending-metode"
 
-#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1304
+#: ../src/develop/blend_gui.c:1789 ../src/iop/watermark.c:1360
 msgid "opacity"
 msgstr "uigennemsigtighed"
 
@@ -2102,8 +2112,8 @@ msgstr "%s er slået fra"
 #: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:191
 #: ../src/gui/presets.c:297 ../src/gui/presets.c:643
-#: ../src/iop/temperature.c:1238 ../src/libs/import.c:553
-#: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1152
+#: ../src/iop/temperature.c:1238 ../src/libs/import.c:553 ../src/libs/lib.c:309
+#: ../src/libs/lib.c:334 ../src/libs/lib.c:1152
 msgid "preset"
 msgstr "forudindstilling"
 
@@ -2156,25 +2166,25 @@ msgstr "kan ikke finde lightroom-XMP!"
 msgid "`%s' not a lightroom XMP!"
 msgstr "\"%s\" er ikke en lightroom-XMP!"
 
-#: ../src/develop/lightroom.c:1393 ../src/libs/import.c:573
+#: ../src/develop/lightroom.c:1395 ../src/libs/import.c:573
 msgid "tags"
 msgstr "mærker"
 
-#: ../src/develop/lightroom.c:1402 ../src/libs/tools/filter.c:141
+#: ../src/develop/lightroom.c:1404 ../src/libs/tools/filter.c:141
 msgid "rating"
 msgstr "bedømmelse"
 
-#: ../src/develop/lightroom.c:1411 ../src/libs/collect.h:33
+#: ../src/develop/lightroom.c:1413 ../src/libs/collect.h:33
 #: ../src/libs/geotagging.c:43
 msgid "geotagging"
 msgstr "geomærkning"
 
-#: ../src/develop/lightroom.c:1420 ../src/libs/collect.h:29
+#: ../src/develop/lightroom.c:1422 ../src/libs/collect.h:29
 #: ../src/libs/tools/filter.c:143
 msgid "color label"
 msgstr "farvemærkat"
 
-#: ../src/develop/lightroom.c:1426
+#: ../src/develop/lightroom.c:1428
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -2274,7 +2284,7 @@ msgstr "brug samme former som"
 msgid "masks can not contain themselves"
 msgstr "masker kan ikke indeholde sig selv"
 
-#: ../src/develop/pixelpipe_hb.c:2415
+#: ../src/develop/pixelpipe_hb.c:2417
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2594,67 +2604,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "brug venligst format ÅÅÅÅ-MM-DD for datooverskrivning"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:843
+#: ../src/gui/gtk.c:850
 msgctxt "accel"
 msgid "tethering view"
 msgstr "tether-visning"
 
-#: ../src/gui/gtk.c:844
+#: ../src/gui/gtk.c:851
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "lysbordvisning"
 
-#: ../src/gui/gtk.c:845
+#: ../src/gui/gtk.c:852
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "mørkekammervisning"
 
-#: ../src/gui/gtk.c:846
+#: ../src/gui/gtk.c:853
 msgctxt "accel"
 msgid "map view"
 msgstr "kortvisning"
 
-#: ../src/gui/gtk.c:847
+#: ../src/gui/gtk.c:854
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "diasshow-visning"
 
-#: ../src/gui/gtk.c:848
+#: ../src/gui/gtk.c:855
 msgctxt "accel"
 msgid "print view"
 msgstr "udskriftsvisning"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:871
+#: ../src/gui/gtk.c:878
 msgctxt "accel"
 msgid "quit"
 msgstr "afslut"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:876
+#: ../src/gui/gtk.c:883
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "slå fuldskærm til og fra"
 
-#: ../src/gui/gtk.c:877
+#: ../src/gui/gtk.c:884
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "forlad fuldskærm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:885
+#: ../src/gui/gtk.c:892
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "slå siderammer til og fra"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:888
+#: ../src/gui/gtk.c:895
 msgctxt "accel"
 msgid "toggle header"
 msgstr "slå topramme til og fra"
 
 #. View-switch
-#: ../src/gui/gtk.c:891
+#: ../src/gui/gtk.c:898
 msgctxt "accel"
 msgid "switch view"
 msgstr "skift visning"
@@ -2796,7 +2806,7 @@ msgid "golden spiral"
 msgstr "gylden spiral"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:674
-#: ../src/iop/lens.c:2055 ../src/libs/tools/filter.c:117
+#: ../src/iop/lens.c:2061 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "alle"
 
@@ -2921,7 +2931,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1294
-#: ../src/gui/presets.c:463 ../src/iop/exposure.c:98 ../src/iop/exposure.c:828
+#: ../src/gui/presets.c:463 ../src/iop/exposure.c:98 ../src/iop/exposure.c:840
 #: ../src/iop/relight.c:370 ../src/libs/metadata_view.c:105
 msgid "exposure"
 msgstr "eksponering"
@@ -3024,8 +3034,7 @@ msgstr ""
 msgid "edit `%s' for module `%s'"
 msgstr "redigér \"%s\" for modul \"%s\""
 
-#: ../src/gui/preferences.c:1232 ../src/gui/presets.c:403
-#: ../src/libs/lib.c:241
+#: ../src/gui/preferences.c:1232 ../src/gui/presets.c:403 ../src/libs/lib.c:241
 msgid "description or further information"
 msgstr "beskrivelse af yderligere information"
 
@@ -3331,7 +3340,7 @@ msgid "enter the title of the pdf"
 msgstr "skriv titlen på pdf'en"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:601 ../src/libs/print_settings.c:1081
+#: ../src/imageio/format/pdf.c:601 ../src/libs/print_settings.c:1082
 msgid "paper size"
 msgstr "papirstørrelse"
 
@@ -3350,12 +3359,12 @@ msgid "page orientation"
 msgstr "sideorientering"
 
 #: ../src/imageio/format/pdf.c:615 ../src/iop/borders.c:995
-#: ../src/libs/print_settings.c:1090
+#: ../src/libs/print_settings.c:1091
 msgid "portrait"
 msgstr "portræt"
 
 #: ../src/imageio/format/pdf.c:616 ../src/iop/borders.c:996
-#: ../src/libs/print_settings.c:1091
+#: ../src/libs/print_settings.c:1092
 msgid "landscape"
 msgstr "landskab"
 
@@ -3495,7 +3504,7 @@ msgstr ""
 "kladde – billeder erstattes af kasser\n"
 "fejlretning – vis kun konturer og bounding-boxes"
 
-#: ../src/imageio/format/pfm.c:109
+#: ../src/imageio/format/pfm.c:118
 msgid "PFM (float)"
 msgstr "PFM (flydende komma)"
 
@@ -4012,29 +4021,27 @@ msgstr "fed"
 msgid "dull"
 msgstr "dunkel"
 
-#: ../src/iop/atrous.c:1387 ../src/iop/equalizer.c:401
-#: ../src/iop/nlmeans.c:709
+#: ../src/iop/atrous.c:1393 ../src/iop/equalizer.c:401 ../src/iop/nlmeans.c:709
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1390
+#: ../src/iop/atrous.c:1396
 msgid "change lightness at each feature size"
 msgstr "ændr lysskarphed ved hver konturstørrelse"
 
-#: ../src/iop/atrous.c:1393 ../src/iop/equalizer.c:402
-#: ../src/iop/nlmeans.c:711
+#: ../src/iop/atrous.c:1399 ../src/iop/equalizer.c:402 ../src/iop/nlmeans.c:711
 msgid "chroma"
 msgstr "kroma"
 
-#: ../src/iop/atrous.c:1396
+#: ../src/iop/atrous.c:1402
 msgid "change color saturation at each feature size"
 msgstr "ændr farvemætning ved hver konturstørrelse"
 
-#: ../src/iop/atrous.c:1398
+#: ../src/iop/atrous.c:1404
 msgid "edges"
 msgstr "kanter"
 
-#: ../src/iop/atrous.c:1402
+#: ../src/iop/atrous.c:1408
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -4042,12 +4049,12 @@ msgstr ""
 "ændr kantglorie ved hver konturstørrelse\n"
 "ændrer kun resultaterne af luma- og kroma-tabs"
 
-#: ../src/iop/atrous.c:1428 ../src/iop/colorzones.c:1103
+#: ../src/iop/atrous.c:1434 ../src/iop/colorzones.c:1103
 #: ../src/iop/soften.c:579
 msgid "mix"
 msgstr "miks"
 
-#: ../src/iop/atrous.c:1429 ../src/iop/colorzones.c:1105
+#: ../src/iop/atrous.c:1435 ../src/iop/colorzones.c:1105
 msgid "make effect stronger or weaker"
 msgstr "gør effekt stærkere eller svagere"
 
@@ -4132,8 +4139,8 @@ msgstr "grundkurve"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse: input, ordinat: output. virker på RGB-kanaler"
 
-#: ../src/iop/basecurve.c:862 ../src/iop/lens.c:2191
-#: ../src/iop/vignette.c:1147 ../src/iop/watermark.c:1308
+#: ../src/iop/basecurve.c:862 ../src/iop/lens.c:2195 ../src/iop/vignette.c:1147
+#: ../src/iop/watermark.c:1364
 msgid "scale"
 msgstr "skalér"
 
@@ -4243,7 +4250,7 @@ msgstr "størrelse"
 msgid "the size of bloom"
 msgstr "størrelsen af bloom"
 
-#: ../src/iop/bloom.c:532 ../src/iop/colorreconstruction.c:1368
+#: ../src/iop/bloom.c:532 ../src/iop/colorreconstruction.c:1369
 #: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:437
 #: ../src/iop/sharpen.c:591
 msgid "threshold"
@@ -4382,7 +4389,7 @@ msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr "vælg størrelsesforhold eller højreklik og skriv dit eget (b:h)"
 
 #: ../src/iop/borders.c:993 ../src/iop/flip.c:73
-#: ../src/libs/print_settings.c:1089
+#: ../src/libs/print_settings.c:1090
 msgid "orientation"
 msgstr "orientering"
 
@@ -4489,7 +4496,7 @@ msgstr "destination"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/iop/channelmixer.c:458 ../src/iop/colorize.c:442
-#: ../src/iop/colorreconstruction.c:1371 ../src/iop/colorreconstruction.c:1376
+#: ../src/iop/colorreconstruction.c:1372 ../src/iop/colorreconstruction.c:1377
 #: ../src/iop/colorzones.c:1081 ../src/iop/colorzones.c:1113
 #: ../src/iop/graduatednd.c:1059 ../src/iop/splittoning.c:502
 msgid "hue"
@@ -4951,8 +4958,8 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "ikke understøttet inputprofil er erstattet af lineær Rec709 RGB!"
 
 #: ../src/iop/colorin.c:1205 ../src/iop/denoiseprofile.c:1657
-#: ../src/libs/export.c:598 ../src/libs/print_settings.c:996
-#: ../src/libs/print_settings.c:1212
+#: ../src/libs/export.c:598 ../src/libs/print_settings.c:997
+#: ../src/libs/print_settings.c:1213
 msgid "profile"
 msgstr "profil"
 
@@ -5021,45 +5028,45 @@ msgctxt "accel"
 msgid "acquire as target"
 msgstr "hent som destination"
 
-#: ../src/iop/colormapping.c:1046
+#: ../src/iop/colormapping.c:1052
 msgid "source clusters:"
 msgstr "kildeklynger:"
 
-#: ../src/iop/colormapping.c:1055
+#: ../src/iop/colormapping.c:1061
 msgid "target clusters:"
 msgstr "destinationsklynger:"
 
-#: ../src/iop/colormapping.c:1068
+#: ../src/iop/colormapping.c:1074
 msgid "acquire as source"
 msgstr "hent som kilde"
 
-#: ../src/iop/colormapping.c:1070
+#: ../src/iop/colormapping.c:1076
 msgid "analyze this image as a source image"
 msgstr "analysér dette billede som kildebillede"
 
-#: ../src/iop/colormapping.c:1074
+#: ../src/iop/colormapping.c:1080
 msgid "acquire as target"
 msgstr "hent som destination"
 
-#: ../src/iop/colormapping.c:1076
+#: ../src/iop/colormapping.c:1082
 msgid "analyze this image as a target image"
 msgstr "analysér dette billede som destinationsbillede"
 
-#: ../src/iop/colormapping.c:1081
+#: ../src/iop/colormapping.c:1087
 msgid "number of clusters"
 msgstr "antal klynger"
 
-#: ../src/iop/colormapping.c:1084
+#: ../src/iop/colormapping.c:1090
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "antal klynger, der skal findes i et billede. ændring i værdien nulstiller "
 "alle klynger"
 
-#: ../src/iop/colormapping.c:1089
+#: ../src/iop/colormapping.c:1095
 msgid "color dominance"
 msgstr "farvedominans"
 
-#: ../src/iop/colormapping.c:1090
+#: ../src/iop/colormapping.c:1096
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -5067,11 +5074,11 @@ msgstr ""
 "hvordan klynger mappes. lave værdier: baseret på farvenærhed, høje værdier: "
 "baseret på farvedominans"
 
-#: ../src/iop/colormapping.c:1098
+#: ../src/iop/colormapping.c:1104
 msgid "histogram equalization"
 msgstr "histogram equalisering"
 
-#: ../src/iop/colormapping.c:1099
+#: ../src/iop/colormapping.c:1105
 msgid "level of histogram equalization"
 msgstr "niveau for histogram equalisering"
 
@@ -5079,52 +5086,56 @@ msgstr "niveau for histogram equalisering"
 msgid "output color profile"
 msgstr "output-farveprofil"
 
-#: ../src/iop/colorout.c:468 ../src/iop/colorout.c:486
+#: ../src/iop/colorout.c:487
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "manglende outputprofil er erstattet af sRGB!"
 
-#: ../src/iop/colorout.c:520
+#: ../src/iop/colorout.c:505
+msgid "missing softproof profile has been replaced by sRGB!"
+msgstr "manglende softproof-profil er erstattet af sRGB!"
+
+#: ../src/iop/colorout.c:548
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "ikke understøttet outputprofil er erstattet af sRGB!"
 
-#: ../src/iop/colorout.c:656
+#: ../src/iop/colorout.c:686
 msgid "output intent"
 msgstr "output-hensigt"
 
-#: ../src/iop/colorout.c:657 ../src/libs/export.c:618
-#: ../src/libs/print_settings.c:1050 ../src/libs/print_settings.c:1261
+#: ../src/iop/colorout.c:687 ../src/libs/export.c:618
+#: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
 #: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2448
 msgid "perceptual"
 msgstr "opfattelsesmæssig"
 
-#: ../src/iop/colorout.c:658 ../src/libs/export.c:619
-#: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
+#: ../src/iop/colorout.c:688 ../src/libs/export.c:619
+#: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
 #: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2449
 msgid "relative colorimetric"
 msgstr "relativ kolorimetri"
 
-#: ../src/iop/colorout.c:659 ../src/libs/export.c:620
-#: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
+#: ../src/iop/colorout.c:689 ../src/libs/export.c:620
+#: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
 #: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2450
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mætning"
 
-#: ../src/iop/colorout.c:660 ../src/libs/export.c:621
-#: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
+#: ../src/iop/colorout.c:690 ../src/libs/export.c:621
+#: ../src/libs/print_settings.c:1054 ../src/libs/print_settings.c:1265
 #: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2451
 msgid "absolute colorimetric"
 msgstr "absolut kolorimetri"
 
-#: ../src/iop/colorout.c:669
+#: ../src/iop/colorout.c:699
 msgid "output profile"
 msgstr "outputprofil"
 
-#: ../src/iop/colorout.c:678
+#: ../src/iop/colorout.c:708
 msgid "rendering intent"
 msgstr "renderingshensigt"
 
-#: ../src/iop/colorout.c:679
+#: ../src/iop/colorout.c:709
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler i %s/color/out eller %s/color/out"
@@ -5148,47 +5159,47 @@ msgctxt "accel"
 msgid "hue"
 msgstr "farvetone"
 
-#: ../src/iop/colorreconstruction.c:649
+#: ../src/iop/colorreconstruction.c:650
 msgid "[color reconstruction] module failed."
 msgstr "[farverekonstruktion] modul mislykkedes."
 
-#: ../src/iop/colorreconstruction.c:1369 ../src/iop/shadhi.c:849
+#: ../src/iop/colorreconstruction.c:1370 ../src/iop/shadhi.c:849
 #: ../src/iop/tonemap.cc:299
 msgid "spatial extent"
 msgstr "rækkevidde"
 
-#: ../src/iop/colorreconstruction.c:1370
+#: ../src/iop/colorreconstruction.c:1371
 msgid "range extent"
 msgstr "rækkevidde"
 
-#: ../src/iop/colorreconstruction.c:1373
+#: ../src/iop/colorreconstruction.c:1374
 msgid "precedence"
 msgstr "præcedens"
 
-#: ../src/iop/colorreconstruction.c:1375
+#: ../src/iop/colorreconstruction.c:1376
 msgid "saturated colors"
 msgstr "mættede farver"
 
-#: ../src/iop/colorreconstruction.c:1405
+#: ../src/iop/colorreconstruction.c:1406
 msgid "pixels with lightness values above this threshold are corrected"
 msgstr "pixels med lysskarphedsværdier over denne grænseværdi rettes"
 
-#: ../src/iop/colorreconstruction.c:1406
+#: ../src/iop/colorreconstruction.c:1407
 msgid "how far to look for replacement colors in spatial dimensions"
 msgstr ""
 "hvor langt der skal kigges efter erstatningsfarver i de rumlige dimensioner"
 
-#: ../src/iop/colorreconstruction.c:1407
+#: ../src/iop/colorreconstruction.c:1408
 msgid "how far to look for replacement colors in the luminance dimension"
 msgstr ""
 "hvor langt der skal kigges efter erstatningsfarver i luminansdimensionen"
 
-#: ../src/iop/colorreconstruction.c:1408
+#: ../src/iop/colorreconstruction.c:1409
 msgid "if and how to give precedence to specific replacement colors"
 msgstr ""
 "om og hvordan der skal gives præcedens til specifikke erstatningsfarver"
 
-#: ../src/iop/colorreconstruction.c:1409
+#: ../src/iop/colorreconstruction.c:1410
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "farvetonen, som skal have højere prioritet end andre farvetoner"
 
@@ -5457,10 +5468,10 @@ msgstr "fandt match for ISO %d"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpoleret fra ISO %d and %d"
 
-#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:799
-#: ../src/iop/lens.c:2199 ../src/iop/levels.c:548
+#: ../src/iop/denoiseprofile.c:1658 ../src/iop/exposure.c:811
+#: ../src/iop/lens.c:2203 ../src/iop/levels.c:548
 #: ../src/libs/copy_history.c:278 ../src/libs/export.c:636
-#: ../src/libs/print_settings.c:1317
+#: ../src/libs/print_settings.c:1318
 msgid "mode"
 msgstr "tilstand"
 
@@ -5619,64 +5630,64 @@ msgstr "standard for magic lantern"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "indlæsning af raw-buffer fra billede \"%s\" mislykkedes"
 
-#: ../src/iop/exposure.c:801 ../src/iop/levels.c:550
+#: ../src/iop/exposure.c:813 ../src/iop/levels.c:550
 msgctxt "mode"
 msgid "manual"
 msgstr "manuel"
 
-#: ../src/iop/exposure.c:804 ../src/iop/levels.c:553
-#: ../src/iop/tonecurve.c:783 ../src/iop/vignette.c:1138
+#: ../src/iop/exposure.c:816 ../src/iop/levels.c:553 ../src/iop/tonecurve.c:783
+#: ../src/iop/vignette.c:1138
 msgid "automatic"
 msgstr "automatisk"
 
-#: ../src/iop/exposure.c:813
+#: ../src/iop/exposure.c:825
 msgid "adjust the black level"
 msgstr "justér sort-niveauet"
 
-#: ../src/iop/exposure.c:815 ../src/iop/levels.c:616
+#: ../src/iop/exposure.c:827 ../src/iop/levels.c:616
 msgid "black"
 msgstr "sort"
 
-#: ../src/iop/exposure.c:826
+#: ../src/iop/exposure.c:838
 msgid "adjust the exposure correction"
 msgstr "justér eksponeringskorrektionen"
 
-#: ../src/iop/exposure.c:833
+#: ../src/iop/exposure.c:845
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
 "procentdel af lyse værdier klippet fra; slå farvevælger til og fra for at "
 "aktivere"
 
-#: ../src/iop/exposure.c:835 ../src/iop/highlights.c:744
+#: ../src/iop/exposure.c:847 ../src/iop/highlights.c:744
 msgid "clipping threshold"
 msgstr "grænseværdi for klipning"
 
-#: ../src/iop/exposure.c:845
+#: ../src/iop/exposure.c:857
 msgid "percentile"
 msgstr "percentil"
 
-#: ../src/iop/exposure.c:849
+#: ../src/iop/exposure.c:861
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr "hvor i histogrammet, der skal måles for deflicking. Fx 50% er median"
 
-#: ../src/iop/exposure.c:854
+#: ../src/iop/exposure.c:866
 msgid "target level"
 msgstr "destinationsniveau"
 
-#: ../src/iop/exposure.c:857
+#: ../src/iop/exposure.c:869
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "hvor eksponeringsniveauet for bearbejdede billeder skal placeres, EV under "
 "overeksponering."
 
-#: ../src/iop/exposure.c:862
+#: ../src/iop/exposure.c:874
 msgid "computed EC: "
 msgstr "bearbejdet EC:"
 
-#: ../src/iop/exposure.c:867
+#: ../src/iop/exposure.c:879
 msgid "what exposure correction has actually been used"
 msgstr "hvilken eksponeringskorrektion, der rent faktisk er udført"
 
@@ -5855,7 +5866,7 @@ msgstr ""
 "komprimering af graduering:\n"
 "0% = blød, 100% = hård"
 
-#: ../src/iop/graduatednd.c:1045 ../src/iop/watermark.c:1311
+#: ../src/iop/graduatednd.c:1045 ../src/iop/watermark.c:1367
 msgid "rotation"
 msgstr "rotering"
 
@@ -6052,7 +6063,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "vælg korrektioner"
 
-#: ../src/iop/lens.c:1391
+#: ../src/iop/lens.c:1401
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -6065,15 +6076,15 @@ msgstr ""
 "fatning:\t\t%s\n"
 "beskæringsfaktor:\t%.1f"
 
-#: ../src/iop/lens.c:1616
+#: ../src/iop/lens.c:1626
 msgid "camera/lens not found - please select manually"
 msgstr "kamera/objektiv ikke fundet – vælg venligst manuelt"
 
-#: ../src/iop/lens.c:1619
+#: ../src/iop/lens.c:1629
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "prøv at finde dit kamera/objektiv i det to menuer herover"
 
-#: ../src/iop/lens.c:1674
+#: ../src/iop/lens.c:1684
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -6092,143 +6103,143 @@ msgstr ""
 "type:\t\t\t%s\n"
 "fatninger:\t\t%s"
 
-#: ../src/iop/lens.c:1714
+#: ../src/iop/lens.c:1724
 msgid "focal length (mm)"
 msgstr "brændvidde (mm)"
 
-#: ../src/iop/lens.c:1738
+#: ../src/iop/lens.c:1748
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1739
+#: ../src/iop/lens.c:1749
 msgid "f-number (aperture)"
 msgstr "f-tal (blænde)"
 
-#: ../src/iop/lens.c:1753
+#: ../src/iop/lens.c:1763
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1754
+#: ../src/iop/lens.c:1764
 msgid "distance to subject"
 msgstr "afstand til subjekt"
 
-#: ../src/iop/lens.c:2061
+#: ../src/iop/lens.c:2067
 msgid "distortion & TCA"
 msgstr "forvrængning & TCA"
 
-#: ../src/iop/lens.c:2067
+#: ../src/iop/lens.c:2073
 msgid "distortion & vignetting"
 msgstr "Forvrængning & vignettering"
 
-#: ../src/iop/lens.c:2073
+#: ../src/iop/lens.c:2079
 msgid "TCA & vignetting"
 msgstr "TCA & vignettering"
 
-#: ../src/iop/lens.c:2079
+#: ../src/iop/lens.c:2085
 msgid "only distortion"
 msgstr "kun forvrængning"
 
-#: ../src/iop/lens.c:2085
+#: ../src/iop/lens.c:2091
 msgid "only TCA"
 msgstr "kun TCA"
 
-#: ../src/iop/lens.c:2091
+#: ../src/iop/lens.c:2097
 msgid "only vignetting"
 msgstr "kun vignettering"
 
-#: ../src/iop/lens.c:2112
+#: ../src/iop/lens.c:2116
 msgid "find camera"
 msgstr "find kamera"
 
-#: ../src/iop/lens.c:2126
+#: ../src/iop/lens.c:2130
 msgid "find lens"
 msgstr "find objektiv"
 
-#: ../src/iop/lens.c:2157
+#: ../src/iop/lens.c:2161
 msgid "corrections"
 msgstr "korrektioner"
 
-#: ../src/iop/lens.c:2159
+#: ../src/iop/lens.c:2163
 msgid "which corrections to apply"
 msgstr "hvilke korrektioner skal udføres"
 
-#: ../src/iop/lens.c:2172
+#: ../src/iop/lens.c:2176
 msgid "geometry"
 msgstr "geometri"
 
-#: ../src/iop/lens.c:2174
+#: ../src/iop/lens.c:2178
 msgid "target geometry"
 msgstr "destinations geometri"
 
-#: ../src/iop/lens.c:2175
+#: ../src/iop/lens.c:2179
 msgid "rectilinear"
 msgstr "retlinjet"
 
-#: ../src/iop/lens.c:2176
+#: ../src/iop/lens.c:2180
 msgid "fish-eye"
 msgstr "fiskeøje"
 
-#: ../src/iop/lens.c:2177
+#: ../src/iop/lens.c:2181
 msgid "panoramic"
 msgstr "panoramisk"
 
-#: ../src/iop/lens.c:2178
+#: ../src/iop/lens.c:2182
 msgid "equirectangular"
 msgstr "ækvirektangulær"
 
-#: ../src/iop/lens.c:2180
+#: ../src/iop/lens.c:2184
 msgid "orthographic"
 msgstr "ortografisk"
 
-#: ../src/iop/lens.c:2181
+#: ../src/iop/lens.c:2185
 msgid "stereographic"
 msgstr "stereografisk"
 
-#: ../src/iop/lens.c:2182
+#: ../src/iop/lens.c:2186
 msgid "equisolid angle"
 msgstr "ækvisolid vinkel"
 
-#: ../src/iop/lens.c:2183
+#: ../src/iop/lens.c:2187
 msgid "thoby fish-eye"
 msgstr "thoby fiskeøje"
 
-#: ../src/iop/lens.c:2190
+#: ../src/iop/lens.c:2194
 msgid "auto scale"
 msgstr "autoskalér"
 
-#: ../src/iop/lens.c:2201
+#: ../src/iop/lens.c:2205
 msgid "correct distortions or apply them"
 msgstr "ret forvrængninger eller udfør dem"
 
-#: ../src/iop/lens.c:2202
+#: ../src/iop/lens.c:2206
 msgid "correct"
 msgstr "ret"
 
-#: ../src/iop/lens.c:2203
+#: ../src/iop/lens.c:2207
 msgid "distort"
 msgstr "forvræng"
 
-#: ../src/iop/lens.c:2208
+#: ../src/iop/lens.c:2212
 msgid "Transversal Chromatic Aberration red"
 msgstr "Transversal Chromatic Aberration rød"
 
-#: ../src/iop/lens.c:2209
+#: ../src/iop/lens.c:2213
 msgid "TCA red"
 msgstr "TCA rød"
 
-#: ../src/iop/lens.c:2214
+#: ../src/iop/lens.c:2218
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Transversal Chromatic Aberration blå"
 
-#: ../src/iop/lens.c:2215
+#: ../src/iop/lens.c:2219
 msgid "TCA blue"
 msgstr "TCA blå"
 
-#: ../src/iop/lens.c:2222
+#: ../src/iop/lens.c:2226
 msgid "corrections done: "
 msgstr "udførte korrektioner: "
 
-#: ../src/iop/lens.c:2223
+#: ../src/iop/lens.c:2227
 msgid "which corrections have actually been done"
 msgstr "hvilke korrektioner, der rent faktisk er udført"
 
@@ -6335,11 +6346,11 @@ msgstr "dagssyn"
 msgid "night vision"
 msgstr "nattesyn"
 
-#: ../src/iop/lowlight.c:831
+#: ../src/iop/lowlight.c:837
 msgid "blue shift"
 msgstr "blåforskydning"
 
-#: ../src/iop/lowlight.c:833
+#: ../src/iop/lowlight.c:839
 msgid "blueness in shadows"
 msgstr "blåskær i skygger"
 
@@ -6416,15 +6427,15 @@ msgstr "monokrom"
 msgid "red filter"
 msgstr "rødfilter"
 
-#: ../src/iop/monochrome.c:537
+#: ../src/iop/monochrome.c:543
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr "træk og drej på musehjulet for at justere det virtuelle farvefilter"
 
-#: ../src/iop/monochrome.c:552
+#: ../src/iop/monochrome.c:558
 msgid "how much to keep highlights"
 msgstr "i hvor høj grad højlys skal beholdes"
 
-#: ../src/iop/monochrome.c:553 ../src/iop/shadhi.c:823
+#: ../src/iop/monochrome.c:559 ../src/iop/shadhi.c:823
 #: ../src/iop/splittoning.c:551
 msgid "highlights"
 msgstr "højlys"
@@ -6552,7 +6563,7 @@ msgid "the fill-light in EV"
 msgstr "fyldlys i EV"
 
 #: ../src/iop/relight.c:376 ../src/libs/metadata_view.c:110
-#: ../src/libs/print_settings.c:1114
+#: ../src/libs/print_settings.c:1115
 msgid "width"
 msgstr "bredde"
 
@@ -7143,25 +7154,25 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "y-forskydning"
 
-#: ../src/iop/watermark.c:1235
+#: ../src/iop/watermark.c:1291
 msgid "content"
 msgstr "indhold"
 
-#: ../src/iop/watermark.c:1242
+#: ../src/iop/watermark.c:1298
 msgid "marker"
 msgstr "markør"
 
-#: ../src/iop/watermark.c:1245
+#: ../src/iop/watermark.c:1301
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "SVG-vandmærker i %s/watermarks eller %s/watermarks"
 
 #. Simple text
-#: ../src/iop/watermark.c:1255
+#: ../src/iop/watermark.c:1311
 msgid "text"
 msgstr "tekst"
 
-#: ../src/iop/watermark.c:1259
+#: ../src/iop/watermark.c:1315
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -7169,11 +7180,11 @@ msgstr ""
 "tekststreng, mærke:\n"
 "$(WATERMARK_TEXT)"
 
-#: ../src/iop/watermark.c:1274
+#: ../src/iop/watermark.c:1330
 msgid "text color"
 msgstr "tekstfarve"
 
-#: ../src/iop/watermark.c:1276
+#: ../src/iop/watermark.c:1332
 msgid ""
 "text color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -7181,16 +7192,16 @@ msgstr ""
 "tekstfarve, mærke:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1279
+#: ../src/iop/watermark.c:1335
 msgid "select text color"
 msgstr "vælg tekstfarve"
 
 #. Text font
-#: ../src/iop/watermark.c:1285
+#: ../src/iop/watermark.c:1341
 msgid "font"
 msgstr "skrifttype"
 
-#: ../src/iop/watermark.c:1292
+#: ../src/iop/watermark.c:1348
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -7203,58 +7214,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1299 ../src/libs/camera.c:497
+#: ../src/iop/watermark.c:1355 ../src/libs/camera.c:497
 msgid "properties"
 msgstr "egenskaber"
 
-#: ../src/iop/watermark.c:1317
+#: ../src/iop/watermark.c:1373
 msgctxt "size"
 msgid "image"
 msgstr "billede"
 
-#: ../src/iop/watermark.c:1318
+#: ../src/iop/watermark.c:1374
 msgid "larger border"
 msgstr "større kant"
 
-#: ../src/iop/watermark.c:1319
+#: ../src/iop/watermark.c:1375
 msgid "smaller border"
 msgstr "mindre kant"
 
-#: ../src/iop/watermark.c:1321
+#: ../src/iop/watermark.c:1377
 msgid "scale on"
 msgstr "skalér efter"
 
-#: ../src/iop/watermark.c:1322
+#: ../src/iop/watermark.c:1378
 msgid "size is relative to"
 msgstr "størrelse er relativ til"
 
-#: ../src/iop/watermark.c:1325
+#: ../src/iop/watermark.c:1381
 msgid "position"
 msgstr "position"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1328 ../src/libs/print_settings.c:1199
+#: ../src/iop/watermark.c:1384 ../src/libs/print_settings.c:1200
 msgid "alignment"
 msgstr "positionering"
 
-#: ../src/iop/watermark.c:1345
+#: ../src/iop/watermark.c:1401
 msgid "x offset"
 msgstr "x-forskydning"
 
-#: ../src/iop/watermark.c:1348
+#: ../src/iop/watermark.c:1404
 msgid "y offset"
 msgstr "y-forskydning"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1353
+#: ../src/iop/watermark.c:1409
 msgid "the opacity of the watermark"
 msgstr "iugennemsigtigheden af vandmærket"
 
-#: ../src/iop/watermark.c:1354
+#: ../src/iop/watermark.c:1410
 msgid "the scale of the watermark"
 msgstr "skalering af vandmærket"
 
-#: ../src/iop/watermark.c:1355
+#: ../src/iop/watermark.c:1411
 msgid "the rotation of the watermark"
 msgstr "roteringen af vandmærket"
 
@@ -7512,18 +7523,16 @@ msgstr "historik"
 msgid "description"
 msgstr "beskrivelse"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:558
-#: ../src/libs/metadata.c:335 ../src/libs/metadata_view.c:115
+#: ../src/libs/collect.h:30 ../src/libs/import.c:558 ../src/libs/metadata.c:335
+#: ../src/libs/metadata_view.c:115
 msgid "creator"
 msgstr "skaber"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:563
-#: ../src/libs/metadata.c:336
+#: ../src/libs/collect.h:30 ../src/libs/import.c:563 ../src/libs/metadata.c:336
 msgid "publisher"
 msgstr "udgiver"
 
-#: ../src/libs/collect.h:31 ../src/libs/import.c:568
-#: ../src/libs/metadata.c:337
+#: ../src/libs/collect.h:31 ../src/libs/import.c:568 ../src/libs/metadata.c:337
 msgid "rights"
 msgstr "rettigheder"
 
@@ -7784,21 +7793,21 @@ msgid "allow upscaling"
 msgstr "tillad opskalering"
 
 #: ../src/libs/export.c:600 ../src/libs/export.c:617
-#: ../src/libs/print_settings.c:1215 ../src/libs/print_settings.c:1260
+#: ../src/libs/print_settings.c:1216 ../src/libs/print_settings.c:1261
 msgid "image settings"
 msgstr "billedindstillinger"
 
-#: ../src/libs/export.c:609 ../src/libs/print_settings.c:1251
+#: ../src/libs/export.c:609 ../src/libs/print_settings.c:1252
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "output-ICC-profiler i %s/color/out eller %s/color/out"
 
-#: ../src/libs/export.c:616 ../src/libs/print_settings.c:1049
-#: ../src/libs/print_settings.c:1258
+#: ../src/libs/export.c:616 ../src/libs/print_settings.c:1050
+#: ../src/libs/print_settings.c:1259
 msgid "intent"
 msgstr "hensigt"
 
-#: ../src/libs/export.c:627 ../src/libs/print_settings.c:1274
+#: ../src/libs/export.c:627 ../src/libs/print_settings.c:1275
 msgid "style"
 msgstr "stil"
 
@@ -7806,15 +7815,15 @@ msgstr "stil"
 msgid "temporary style to use while exporting"
 msgstr "midlertidig stil, der bruges under eksport"
 
-#: ../src/libs/export.c:640 ../src/libs/print_settings.c:1319
+#: ../src/libs/export.c:640 ../src/libs/print_settings.c:1320
 msgid "replace history"
 msgstr "erstatningshistorik"
 
-#: ../src/libs/export.c:641 ../src/libs/print_settings.c:1320
+#: ../src/libs/export.c:641 ../src/libs/print_settings.c:1321
 msgid "append history"
 msgstr "føj til historik"
 
-#: ../src/libs/export.c:646 ../src/libs/print_settings.c:1326
+#: ../src/libs/export.c:646 ../src/libs/print_settings.c:1327
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
@@ -8607,7 +8616,7 @@ msgstr "fokusafstand"
 msgid "datetime"
 msgstr "datotid"
 
-#: ../src/libs/metadata_view.c:111 ../src/libs/print_settings.c:1118
+#: ../src/libs/metadata_view.c:111 ../src/libs/print_settings.c:1119
 msgid "height"
 msgstr "højde"
 
@@ -8733,90 +8742,90 @@ msgstr "flere moduler"
 msgid "navigation"
 msgstr "navigering"
 
-#: ../src/libs/navigation.c:466
+#: ../src/libs/navigation.c:472
 msgid "small"
 msgstr "lille"
 
-#: ../src/libs/navigation.c:470
+#: ../src/libs/navigation.c:476
 msgid "fit to screen"
 msgstr "tilpas til skærm"
 
-#: ../src/libs/navigation.c:474
+#: ../src/libs/navigation.c:480
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:478
+#: ../src/libs/navigation.c:484
 msgid "200%"
 msgstr "200%"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1206
+#: ../src/libs/print_settings.c:44 ../src/libs/print_settings.c:1207
 msgid "print settings"
 msgstr "udskriftsindstillinger"
 
-#: ../src/libs/print_settings.c:175
+#: ../src/libs/print_settings.c:176
 msgid "cannot print until a picture is selected"
 msgstr "kan ikke udskrive før et billede vælges"
 
-#: ../src/libs/print_settings.c:180
+#: ../src/libs/print_settings.c:181
 msgid "cannot print until a printer is selected"
 msgstr "kan ikke udskrive før en printer vælges"
 
-#: ../src/libs/print_settings.c:185
+#: ../src/libs/print_settings.c:186
 msgid "cannot print until a paper is selected"
 msgstr "kan ikke udskrive før et papir vælges"
 
-#: ../src/libs/print_settings.c:189
+#: ../src/libs/print_settings.c:190
 #, c-format
 msgid "prepare printing image %d on `%s'"
 msgstr "forbered udskrift af billede %d på \"%s\""
 
-#: ../src/libs/print_settings.c:284
+#: ../src/libs/print_settings.c:285
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "kan ikke anvende printerprofil \"%s\""
 
-#: ../src/libs/print_settings.c:525
+#: ../src/libs/print_settings.c:526
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:985
+#: ../src/libs/print_settings.c:986
 msgid "printer"
 msgstr "printer"
 
-#: ../src/libs/print_settings.c:1042
+#: ../src/libs/print_settings.c:1043
 #, c-format
 msgid "printer ICC profiles in %s/color/out or %s/color/out"
 msgstr "printer-ICC-profiler i %s/color/out eller %s/color/out"
 
-#: ../src/libs/print_settings.c:1061
+#: ../src/libs/print_settings.c:1062
 msgid "black point compensation"
 msgstr "kompensering for sort punkt"
 
-#: ../src/libs/print_settings.c:1069
+#: ../src/libs/print_settings.c:1070
 msgid "activate black point compensation when applying the printer profile"
 msgstr ""
 "aktivér kompensering for sort punkt under anvendelse af printerprofilen"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:1076
+#: ../src/libs/print_settings.c:1077
 msgid "page"
 msgstr "side"
 
-#: ../src/libs/print_settings.c:1112
+#: ../src/libs/print_settings.c:1113
 msgid "image width/height"
 msgstr "billedets bredde/højde"
 
-#: ../src/libs/print_settings.c:1116
+#: ../src/libs/print_settings.c:1117
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:1124
+#: ../src/libs/print_settings.c:1125
 msgid "scale factor"
 msgstr "skaleringsfaktor"
 
-#: ../src/libs/print_settings.c:1129
+#: ../src/libs/print_settings.c:1130
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -8829,45 +8838,50 @@ msgstr ""
 " en for stor værdi kan resultere i dårlig udskriftskvalitet"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1143
+#: ../src/libs/print_settings.c:1144
 msgid "top margin"
 msgstr "topmargen"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1147
+#: ../src/libs/print_settings.c:1148
 msgid "left margin"
 msgstr "venstremargen"
 
-#: ../src/libs/print_settings.c:1150
+#: ../src/libs/print_settings.c:1151
 msgid "lock"
 msgstr "lås"
 
-#: ../src/libs/print_settings.c:1151
+#: ../src/libs/print_settings.c:1152
 msgid "change all margins uniformly"
 msgstr "ændr alle margener ensartet"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1155
+#: ../src/libs/print_settings.c:1156
 msgid "right margin"
 msgstr "højremargen"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1159
+#: ../src/libs/print_settings.c:1160
 msgid "bottom margin"
 msgstr "bundmargen"
 
-#: ../src/libs/print_settings.c:1298
+#: ../src/libs/print_settings.c:1299
 msgid "temporary style to use while printing"
 msgstr "midlertidig stil, der bruges under udskrift"
 
 #. Print button
-#: ../src/libs/print_settings.c:1335
+#: ../src/libs/print_settings.c:1336
 msgid "print"
 msgstr "udskriv"
 
-#: ../src/libs/print_settings.c:1337
+#: ../src/libs/print_settings.c:1338
 msgid "print with current settings (ctrl-p)"
 msgstr "udskriv med aktuelle indstillinger (ctrl-p)"
+
+#: ../src/libs/print_settings.c:1797
+msgctxt "accel"
+msgid "print"
+msgstr "udskriv"
 
 #: ../src/libs/recentcollect.c:50
 msgid "recently used collections"
@@ -9195,6 +9209,10 @@ msgstr "fjern alle mærkater for valgte billeder"
 msgid "darktable"
 msgstr "darktable"
 
+#: ../src/libs/tools/darktable.c:288
+msgid "copyright (c) the authors 2009-2016"
+msgstr "copyright © forfatterne 2006-2016"
+
 #: ../src/libs/tools/darktable.c:290
 msgid "organize and develop images from digital cameras"
 msgstr "organisér og fremkald billeder fra digitale kameraer"
@@ -9368,23 +9386,19 @@ msgstr "sortér efter"
 msgid "preferences"
 msgstr "indstillinger"
 
-#: ../src/libs/tools/global_toolbox.c:81
-#: ../src/libs/tools/global_toolbox.c:124
+#: ../src/libs/tools/global_toolbox.c:81 ../src/libs/tools/global_toolbox.c:124
 msgid "expand grouped images"
 msgstr "udvid grupperede billeder"
 
-#: ../src/libs/tools/global_toolbox.c:83
-#: ../src/libs/tools/global_toolbox.c:126
+#: ../src/libs/tools/global_toolbox.c:83 ../src/libs/tools/global_toolbox.c:126
 msgid "collapse grouped images"
 msgstr "sammenklap grupperede billeder"
 
-#: ../src/libs/tools/global_toolbox.c:93
-#: ../src/libs/tools/global_toolbox.c:143
+#: ../src/libs/tools/global_toolbox.c:93 ../src/libs/tools/global_toolbox.c:143
 msgid "hide image overlays"
 msgstr "skjul billedoverlægninger"
 
-#: ../src/libs/tools/global_toolbox.c:95
-#: ../src/libs/tools/global_toolbox.c:145
+#: ../src/libs/tools/global_toolbox.c:95 ../src/libs/tools/global_toolbox.c:145
 msgid "show image overlays"
 msgstr "vis billedoverlægninger"
 
@@ -9592,8 +9606,8 @@ msgstr "softproof-ICC-profiler i %s/color/out eller %s/color/out"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2187 ../src/views/map.c:784
-#: ../src/views/print.c:352 ../src/views/tethering.c:391
+#: ../src/views/darkroom.c:2187 ../src/views/map.c:784 ../src/views/print.c:352
+#: ../src/views/tethering.c:391
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "slå filmstribe til og fra"
@@ -9840,17 +9854,17 @@ msgstr "ny session startet \"%s\""
 msgid "no camera with tethering support available for use..."
 msgstr "intet kamera med tethering-understøttelse er tilgængeligt for brug…"
 
-#: ../src/views/view.c:314
+#: ../src/views/view.c:322
 msgid "you are making a mistake!"
 msgstr "du begår en fejl!"
 
-#: ../src/views/view.c:315
+#: ../src/views/view.c:323
 msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
 msgstr ""
 "_ja, jeg forstår. lad mig venligst lide under fortsat brug af 32-bit "
 "darktable."
 
-#: ../src/views/view.c:319
+#: ../src/views/view.c:327
 msgid ""
 "warning!\n"
 "you are using a 32-bit build of darktable.\n"
@@ -9890,9 +9904,6 @@ msgstr ""
 #~ msgstr ""
 #~ "darktable understøtter de fleste moderne kameraers raw-formater og "
 #~ "udfører alle sine bearbejdninger med meget høj præcision."
-
-#~ msgid "BRG (for testing)"
-#~ msgstr "BRG (til test)"
 
 #~ msgid "`%s' color matrix not found for 4bayer image!"
 #~ msgstr "\"%s\" farvematriks ikke fundet for 4bayer-billede!"
@@ -10206,10 +10217,6 @@ msgstr ""
 
 #~ msgid "loader: %s"
 #~ msgstr "indlæser: %s"
-
-#~ msgctxt "accel"
-#~ msgid "print"
-#~ msgstr "udskriv"
 
 #~ msgid "clear selection"
 #~ msgstr "nulstil markering"
