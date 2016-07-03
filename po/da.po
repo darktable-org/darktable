@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-02 21:48+0200\n"
-"PO-Revision-Date: 2016-07-02 22:04+0100\n"
+"POT-Creation-Date: 2016-07-03 16:22+0200\n"
+"PO-Revision-Date: 2016-07-03 16:23+0100\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -4275,8 +4275,8 @@ msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
 msgstr ""
-"niveauet for objektivafhængig korrektion; sæt til maksimum for fuld"
-" objektivafhængighed, og sæt til nul for generisk"
+"niveauet for objektivafhængig korrektion; sæt til maksimum for fuld "
+"objektivafhængighed, og sæt til nul for generisk"
 
 #: ../src/iop/ashift.c:4492
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
@@ -5068,8 +5068,8 @@ msgstr "farvebalance"
 #: ../src/iop/colorbalance.c:90
 msgid "lift/gamma/gain controls as seen in video editors"
 msgstr ""
-"indstillinger for løft/gamma/forøgelse som de fremgår i"
-" videoredigeringsprogrammer"
+"indstillinger for løft/gamma/forøgelse som de fremgår i "
+"videoredigeringsprogrammer"
 
 #: ../src/iop/colorbalance.c:578 ../src/iop/colorbalance.c:585
 msgid "factor of "
@@ -5152,9 +5152,10 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "sæt global mætning"
 
+# lut = lookup table
 #: ../src/iop/colorchecker.c:105
 msgid "color checker lut"
-msgstr "farvevælger lut"
+msgstr "farvevælgertabel"
 
 #: ../src/iop/colorchecker.c:257
 msgid "it8 skin tones"
@@ -5188,7 +5189,7 @@ msgstr "lap"
 
 #: ../src/iop/colorchecker.c:950
 msgid "color checker patch"
-msgstr "farvevælger lap"
+msgstr "farvevælgerlap"
 
 #: ../src/iop/colorchecker.c:961
 msgid "lightness offset"
