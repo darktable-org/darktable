@@ -2748,8 +2748,10 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 {
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
   cl_int err = -999;
+  cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
   cl_mem dev_mask = NULL;
+  cl_mem dev_masktmp = NULL;
   float *mask = NULL;
 
   if(!d) return TRUE;
@@ -2820,11 +2822,10 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const int gaussian = d->radius > 0.0f ? 1 : 0;
   const float radius = fabs(d->radius);
   const unsigned int mask_combine = d->mask_combine;
+  const int mask_display = piece->pipe->mask_display; /* we will transfer alpha channel of input if mask_display was activated by any _earlier_ module */
   const int offs[2] = { xoffs, yoffs };
   const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
-  /* quick workaround for masks to be opencl compliant */
-  /* the first mask creation may need to be compute by opencl too */
   mask = dt_alloc_align(64, (size_t)roi_out->width * roi_out->height * sizeof(float));
   if(!mask)
   {
@@ -2838,6 +2839,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   dev_mask = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   if(dev_mask == NULL) goto error;
+
+  dev_masktmp = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  if(dev_masktmp == NULL) goto error;
 
   if(mask_mode == DEVELOP_MASK_ENABLED)
   {
@@ -2921,7 +2925,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(cl_mem), (void *)&dev_masktmp);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 4, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 5, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 6, sizeof(float), (void *)&opacity);
@@ -2933,26 +2937,26 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    if(maskblur)
+    if(maskblur && gaussian)
     {
-      if(gaussian)
-      {
-        const float sigma = radius * roi_out->scale / piece->iscale;
-        const float mmax[] = { 1.0f };
-        const float mmin[] = { 0.0f };
+      const float sigma = radius * roi_out->scale / piece->iscale;
+      const float mmax[] = { 1.0f };
+      const float mmin[] = { 0.0f };
 
-        dt_gaussian_cl_t *g
-            = dt_gaussian_init_cl(devid, roi_out->width, roi_out->height, 1, mmax, mmin, sigma, 0);
-        if(g)
-        {
-          dt_gaussian_blur_cl(g, dev_mask, dev_mask);
-          dt_gaussian_free_cl(g);
-        }
-      }
-      else
+      dt_gaussian_cl_t *g
+          = dt_gaussian_init_cl(devid, roi_out->width, roi_out->height, 1, mmax, mmin, sigma, 0);
+      if(g)
       {
-        // potential further blend algorithm (bilateral grid?)
+        dt_gaussian_blur_cl(g, dev_masktmp, dev_mask);
+        dt_gaussian_free_cl(g);
       }
+    }
+    else
+    {
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { width, height, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_masktmp, dev_mask, origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
     }
 
     /* check if mask should be suppressed temporarily */
@@ -2968,9 +2972,22 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     }
   }
 
+  /* get rid of dev_masktmp */
+  dt_opencl_release_mem_object(dev_masktmp);
+  dev_masktmp = NULL;
+
+  /* get temporary buffer for output image to overcome readonly/writeonly limitation */
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  if(dev_tmp == NULL) goto error;
+
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { width, height, 1 };
+  err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
+  if(err != CL_SUCCESS) goto error;
+
   /* now apply blending with per-pixel opacity value as defined in dev_mask */
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask);
   dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&width);
@@ -2978,28 +2995,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(unsigned), (void *)&blend_mode);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&blendflag);
   dt_opencl_set_kernel_arg(devid, kernel, 8, 2 * sizeof(int), (void *)&offs);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(int), (void *)&mask_display);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
-
-  /* we transfer alpha channel of input if mask_display was set by an _earlier_
-   * module */
-  if(piece->pipe->mask_display && cst != iop_cs_RAW)
-  {
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 0, sizeof(cl_mem),
-                             (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 1, sizeof(cl_mem),
-                             (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 2, sizeof(cl_mem),
-                             (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 3, sizeof(int),
-                             (void *)&width);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 4, sizeof(int),
-                             (void *)&height);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 5, 2 * sizeof(int),
-                             (void *)&offs);
-    err = dt_opencl_enqueue_kernel_2d(devid, darktable.blendop->kernel_blendop_copy_alpha, sizes);
-    if(err != CL_SUCCESS) goto error;
-  }
 
   /* check if _this_ module should expose mask. */
   if(self->request_mask_display && self->dev->gui_attached && self == self->dev->gui_module
@@ -3008,14 +3006,17 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     piece->pipe->mask_display = 1;
   }
 
-  if(mask != NULL) dt_free_align(mask);
-  if(dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  dt_free_align(mask);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_mask);
+  dt_opencl_release_mem_object(dev_m);
   return TRUE;
 
 error:
   if(mask != NULL) dt_free_align(mask);
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   if(dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
+  if(dev_masktmp != NULL) dt_opencl_release_mem_object(dev_masktmp);
   if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
   return FALSE;
@@ -3033,11 +3034,9 @@ void dt_develop_blend_init(dt_blendop_t *gd)
   gd->kernel_blendop_Lab = dt_opencl_create_kernel(program, "blendop_Lab");
   gd->kernel_blendop_RAW = dt_opencl_create_kernel(program, "blendop_RAW");
   gd->kernel_blendop_rgb = dt_opencl_create_kernel(program, "blendop_rgb");
-  gd->kernel_blendop_copy_alpha = dt_opencl_create_kernel(program, "blendop_copy_alpha");
   gd->kernel_blendop_set_mask = dt_opencl_create_kernel(program, "blendop_set_mask");
 #else
-  gd->kernel_blendop_Lab = gd->kernel_blendop_RAW = gd->kernel_blendop_rgb = gd->kernel_blendop_copy_alpha
-      = -1;
+  gd->kernel_blendop_Lab = gd->kernel_blendop_RAW = gd->kernel_blendop_rgb = -1;
   gd->kernel_blendop_mask_Lab = gd->kernel_blendop_mask_RAW = gd->kernel_blendop_mask_rgb
       = gd->kernel_blendop_set_mask = -1;
 #endif
@@ -3049,12 +3048,12 @@ int dt_develop_blend_version(void)
   return DEVELOP_BLEND_VERSION;
 }
 
-/** report back specific memory requirements for blend step */
+/** report back specific memory requirements for blend step (only relevant for OpenCL path) */
 void tiling_callback_blendop(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                              struct dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 2.5f; // in + out + two quarter buffers for mask creation and blur
+  tiling->factor = 3.25f; // in + out + tmp + one quarter buffer for the mask
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
