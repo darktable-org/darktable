@@ -34,10 +34,20 @@ size_t dt_bilateral_memory_use(const int width,      // width of input image
                                const float sigma_s,  // spatial sigma (blur pixel coords)
                                const float sigma_r); // range sigma (blur luma values)
 
+size_t dt_bilateral_memory_use2(const int width,      // width of input image
+                                const int height,     // height of input image
+                                const float sigma_s,  // spatial sigma (blur pixel coords)
+                                const float sigma_r); // range sigma (blur luma values)
+
 size_t dt_bilateral_singlebuffer_size(const int width,      // width of input image
                                       const int height,     // height of input image
                                       const float sigma_s,  // spatial sigma (blur pixel coords)
                                       const float sigma_r); // range sigma (blur luma values)
+
+size_t dt_bilateral_singlebuffer_size2(const int width,      // width of input image
+                                       const int height,     // height of input image
+                                       const float sigma_s,  // spatial sigma (blur pixel coords)
+                                       const float sigma_r); // range sigma (blur luma values)
 
 dt_bilateral_t *dt_bilateral_init(const int width,      // width of input image
                                   const int height,     // height of input image

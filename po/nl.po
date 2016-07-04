@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-22 18:46+0200\n"
-"PO-Revision-Date: 2016-06-22 18:50+0200\n"
+"POT-Creation-Date: 2016-07-03 15:51+0200\n"
+"PO-Revision-Date: 2016-07-03 15:52+0200\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1285,7 +1285,7 @@ msgstr "stijl '%s' is geïmporteerd"
 msgid "none"
 msgstr "geen"
 
-#: ../src/common/opencl.c:578
+#: ../src/common/opencl.c:579
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
@@ -5370,52 +5370,56 @@ msgstr "mate van histogramegalisatie"
 msgid "output color profile"
 msgstr "uitgaand kleurprofiel"
 
-#: ../src/iop/colorout.c:634 ../src/iop/colorout.c:652
+#: ../src/iop/colorout.c:653
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "ontbrekend uitgaand profiel is vervangen door sRGB!"
 
-#: ../src/iop/colorout.c:686
+#: ../src/iop/colorout.c:671
+msgid "missing softproof profile has been replaced by sRGB!"
+msgstr "ontbrekend softproof profiel is vervangen door sRGB!"
+
+#: ../src/iop/colorout.c:714
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "een niet ondersteund uitgaand profiel is vervangen door sRGB!"
 
-#: ../src/iop/colorout.c:822
+#: ../src/iop/colorout.c:852
 msgid "output intent"
 msgstr "voorgenomen output "
 
-#: ../src/iop/colorout.c:823 ../src/libs/export.c:617
+#: ../src/iop/colorout.c:853 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
 #: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2443
 msgid "perceptual"
 msgstr "perceptueel"
 
-#: ../src/iop/colorout.c:824 ../src/libs/export.c:618
+#: ../src/iop/colorout.c:854 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
 #: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2444
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
-#: ../src/iop/colorout.c:825 ../src/libs/export.c:619
+#: ../src/iop/colorout.c:855 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
 #: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2445
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/colorout.c:826 ../src/libs/export.c:620
+#: ../src/iop/colorout.c:856 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1054 ../src/libs/print_settings.c:1265
 #: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2446
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
-#: ../src/iop/colorout.c:835
+#: ../src/iop/colorout.c:865
 msgid "output profile"
 msgstr "uitgaand profiel"
 
-#: ../src/iop/colorout.c:844
+#: ../src/iop/colorout.c:874
 msgid "rendering intent"
 msgstr "rendering intent"
 
-#: ../src/iop/colorout.c:845
+#: ../src/iop/colorout.c:875
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC profielen in%s/kleur/uit van %s/kleur/uit"

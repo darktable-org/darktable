@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-10 19:37+0200\n"
-"PO-Revision-Date: 2016-06-10 19:40+0200\n"
+"POT-Creation-Date: 2016-07-03 17:34+0200\n"
+"PO-Revision-Date: 2016-07-03 17:35+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -936,7 +936,7 @@ msgstr "développées"
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1229
+#: ../src/common/collection.c:1220
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1296,7 +1296,7 @@ msgstr "le style « %s » a été importé"
 msgid "none"
 msgstr "sans"
 
-#: ../src/common/opencl.c:578
+#: ../src/common/opencl.c:579
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
@@ -5400,55 +5400,59 @@ msgstr "niveau d'égalisation de l'histogramme"
 msgid "output color profile"
 msgstr "profil de couleur de sortie "
 
-#: ../src/iop/colorout.c:634 ../src/iop/colorout.c:652
+#: ../src/iop/colorout.c:653
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "profil de sortie non trouvé, remplacé par sRGB !"
 
-#: ../src/iop/colorout.c:686
+#: ../src/iop/colorout.c:671
+msgid "missing softproof profile has been replaced by sRGB!"
+msgstr "profil d'épreuvage non trouvé, remplacé par sRGB !"
+
+#: ../src/iop/colorout.c:714
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "profil de sortie non supporté, remplacé par sRGB !"
 
-#: ../src/iop/colorout.c:822
+#: ../src/iop/colorout.c:852
 msgid "output intent"
 msgstr "rendu (sortie)"
 
-#: ../src/iop/colorout.c:823 ../src/libs/export.c:617
+#: ../src/iop/colorout.c:853 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
 #: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2443
 msgid "perceptual"
 msgstr "perceptif"
 
-#: ../src/iop/colorout.c:824 ../src/libs/export.c:618
+#: ../src/iop/colorout.c:854 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
 #: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2444
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
-#: ../src/iop/colorout.c:825 ../src/libs/export.c:619
+#: ../src/iop/colorout.c:855 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
 #: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2445
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/colorout.c:826 ../src/libs/export.c:620
+#: ../src/iop/colorout.c:856 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1054 ../src/libs/print_settings.c:1265
 #: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2446
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
-#: ../src/iop/colorout.c:835
+#: ../src/iop/colorout.c:865
 msgid "output profile"
 msgstr "profil (sortie)"
 
-#: ../src/iop/colorout.c:844
+#: ../src/iop/colorout.c:874
 msgid "rendering intent"
 msgstr ""
 "mode de rendu\n"
 "définit comment les couleurs hors gamut sont reproduites\n"
 "perceptif est adapté à la photographie"
 
-#: ../src/iop/colorout.c:845
+#: ../src/iop/colorout.c:875
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC dans %s/color/out ou %s/color/out"
