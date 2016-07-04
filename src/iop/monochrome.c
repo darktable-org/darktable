@@ -222,7 +222,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 1, sizeof(cl_mem), &dev_tmp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 1, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 2, sizeof(int), &width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 3, sizeof(int), &height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 4, sizeof(float), &d->a);
@@ -231,11 +231,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome_filter, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  err = dt_bilateral_splat_cl(b, dev_tmp);
+  err = dt_bilateral_splat_cl(b, dev_out);
   if(err != CL_SUCCESS) goto error;
   err = dt_bilateral_blur_cl(b);
   if(err != CL_SUCCESS) goto error;
-  err = dt_bilateral_slice_cl(b, dev_tmp, dev_tmp, detail);
+  err = dt_bilateral_slice_cl(b, dev_out, dev_tmp, detail);
   if(err != CL_SUCCESS) goto error;
   dt_bilateral_free_cl(b);
   b = NULL; // make sure we don't do double cleanup in case the next few lines err out

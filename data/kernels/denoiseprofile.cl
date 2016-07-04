@@ -326,7 +326,7 @@ denoiseprofile_decompose(read_only image2d_t in, write_only image2d_t coarse, wr
 
 
 kernel void
-denoiseprofile_synthesize(write_only image2d_t out, read_only image2d_t coarse, read_only image2d_t detail,
+denoiseprofile_synthesize(read_only image2d_t coarse, read_only image2d_t detail, write_only image2d_t out, 
      const int width, const int height,
      const float t0, const float t1, const float t2, const float t3,
      const float b0, const float b1, const float b2, const float b3)

@@ -234,6 +234,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_ccoeffs = NULL;
   cl_mem dev_lm = NULL;
   cl_mem dev_lcoeffs = NULL;
+  cl_mem dev_tmp = NULL;
 
   dt_gaussian_cl_t *g = NULL;
   dt_bilateral_cl_t *b = NULL;
@@ -274,20 +275,30 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     b = NULL; // make sure we don't clean it up twice
   }
 
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  if(dev_tmp == NULL) goto error;
+
   dev_cm = dt_opencl_copy_host_to_device(devid, d->ctable, 256, 256, sizeof(float));
   if(dev_cm == NULL) goto error;
+
   dev_ccoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->cunbounded_coeffs);
   if(dev_ccoeffs == NULL) goto error;
+
   dev_lm = dt_opencl_copy_host_to_device(devid, d->ltable, 256, 256, sizeof(float));
   if(dev_lm == NULL) goto error;
+
   dev_lcoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->lunbounded_coeffs);
   if(dev_lcoeffs == NULL) goto error;
 
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { width, height, 1 };
+  err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
+  if(err != CL_SUCCESS) goto error;
 
   sizes[0] = ROUNDUPWD(width);
   sizes[1] = ROUNDUPWD(height);
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 3, sizeof(int), (void *)&height);
@@ -301,10 +312,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lowpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  if(dev_lcoeffs != NULL) dt_opencl_release_mem_object(dev_lcoeffs);
-  if(dev_lm != NULL) dt_opencl_release_mem_object(dev_lm);
-  if(dev_ccoeffs != NULL) dt_opencl_release_mem_object(dev_ccoeffs);
-  if(dev_cm != NULL) dt_opencl_release_mem_object(dev_cm);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_lcoeffs);
+  dt_opencl_release_mem_object(dev_lm);
+  dt_opencl_release_mem_object(dev_ccoeffs);
+  dt_opencl_release_mem_object(dev_cm);
 
   return TRUE;
 
@@ -312,6 +324,7 @@ error:
   if(g) dt_gaussian_free_cl(g);
   if(b) dt_bilateral_free_cl(b);
 
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   if(dev_lcoeffs != NULL) dt_opencl_release_mem_object(dev_lcoeffs);
   if(dev_lm != NULL) dt_opencl_release_mem_object(dev_lm);
   if(dev_ccoeffs != NULL) dt_opencl_release_mem_object(dev_ccoeffs);
@@ -341,14 +354,14 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   if(d->lowpass_algo == LOWPASS_ALGO_BILATERAL)
   {
     // bilateral filter
-    tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
+    tiling->factor = 2.0f + fmax(1.0f, (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer);
     tiling->maxbuf
         = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
   }
   else
   {
     // gaussian blur
-    tiling->factor = 2.0f + (float)dt_gaussian_memory_use(width, height, channels) / basebuffer;
+    tiling->factor = 2.0f + fmax(1.0f, (float)dt_gaussian_memory_use(width, height, channels) / basebuffer);
     tiling->maxbuf = fmax(1.0f, (float)dt_gaussian_singlebuffer_size(width, height, channels) / basebuffer);
   }
   tiling->overhead = 0;
