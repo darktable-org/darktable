@@ -608,7 +608,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH);
 #endif
-        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2015 johannes hanika\n" PACKAGE_BUGREPORT
+        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2016 johannes hanika\n" PACKAGE_BUGREPORT
                "\n\ncompile options:\n"
                "  bit depth is %s\n"
 #ifdef _DEBUG
