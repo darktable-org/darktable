@@ -217,7 +217,9 @@ static inline void precondition(const float *const in, float *const buf, const i
                                 const float a[3], const float b[3])
 {
   const float sigma2[3]
-      = { (b[0] / a[0]) * (b[0] / a[0]), (b[1] / a[1]) * (b[1] / a[1]), (b[2] / a[1]) * (b[2] / a[1]) };
+      = { (b[0] / a[0]) * (b[0] / a[0]),
+          (b[1] / a[1]) * (b[1] / a[1]),
+          (b[2] / a[2]) * (b[2] / a[2]) };
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(a)
@@ -244,7 +246,9 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
                                  const float b[3])
 {
   const float sigma2[3]
-      = { (b[0] / a[0]) * (b[0] / a[0]), (b[1] / a[1]) * (b[1] / a[1]), (b[2] / a[1]) * (b[2] / a[1]) };
+      = { (b[0] / a[0]) * (b[0] / a[0]),
+          (b[1] / a[1]) * (b[1] / a[1]),
+          (b[2] / a[2]) * (b[2] / a[2]) };
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(a)
