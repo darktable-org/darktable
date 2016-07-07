@@ -30,6 +30,7 @@
 #include <float.h>
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
 
 // #define REPLACEMENT // either broken code or doesn't help at all
 // #define EXACT       // use full solve instead of dot in inner loop
@@ -147,7 +148,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
                                       // permutation[dim]
 {
   const int wd = N + 4;
-  double A[wd * wd];
+  double *A = malloc(wd * wd * sizeof(double));
   // construct system matrix A such that:
   // A c = f
   //
@@ -196,7 +197,11 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
   {
     const int sparsity = MIN(s, S);
 #ifndef REPLACEMENT
-    if(patches >= S - 4) return sparsity;
+    if(patches >= S - 4)
+    {
+      free(A);
+      return sparsity;
+    }
     assert(sparsity < S + 4);
 #endif
     // find (sparsity+1)-th column a_m by m = argmax_t{ a_t^t r . norm_t}
@@ -217,7 +222,11 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
           for(int i = 0; i <= sparsity; i++)
             for(int j = 0; j < wd; j++) As[j * S + i] = A[j * wd + permutation[i]];
 
-          if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity, S)) return sparsity;
+          if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity, S))
+          {
+             free(A);
+             return sparsity;
+          }
 
           // compute tentative residual:
           // r = b - As c
@@ -274,7 +283,11 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
           for(int i = 0; i < sparsity; i++)
             for(int j = 0; j < wd; j++) As[j * S + i] = A[j * wd + permutation[i]];
 
-          if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity-1, S)) return s;
+          if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity-1, S))
+          {
+             free(A);
+             return s;
+          }
 
           // compute tentative residual:
           // r = b - As c
@@ -340,7 +353,11 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
         for(int j = 0; j < wd; j++) As[j * S + i] = A[j * wd + permutation[i]];
 
       // on error, return last valid configuration
-      if(solve(As, w, v, b[ch], coeff[ch], wd, sp, S)) return sparsity;
+      if(solve(As, w, v, b[ch], coeff[ch], wd, sp, S))
+      {  
+         free(A);
+         return sparsity;
+      }
 
       // compute new residual:
       // r = b - As c
@@ -364,6 +381,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
     // if(err < 2.0) return sparsity+1;
     olderr = err;
   }
+  free(A);
   return -1;
 }
 
