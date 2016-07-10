@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2016-04-29 09:44-0430\n"
-"PO-Revision-Date: 2016-04-29 10:21-0430\n"
+"POT-Creation-Date: 2016-07-04 08:56-0400\n"
+"PO-Revision-Date: 2016-07-04 09:06-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -1060,7 +1060,7 @@ msgstr "Iniciar/detener la reproducción"
 
 #. type: =head1
 #: darktable.pod:492 darktable-cli.pod:93 darktable-viewer.pod:49
-#: darktable-generate-cache.pod:47 darktable-cltest.pod:18
+#: darktable-generate-cache.pod:57 darktable-cltest.pod:18
 #: darktable-cmstest.pod:17
 msgid "SEE ALSO"
 msgstr "VEA TAMBIÉN"
@@ -1137,14 +1137,14 @@ msgstr ""
 
 #. type: =head1
 #: darktable.pod:522 darktable-cli.pod:97 darktable-viewer.pod:53
-#: darktable-generate-cache.pod:51 darktable-cltest.pod:22
+#: darktable-generate-cache.pod:61 darktable-cltest.pod:22
 #: darktable-cmstest.pod:21
 msgid "AUTHORS"
 msgstr "AUTORES"
 
 #. type: textblock
 #: darktable.pod:524 darktable-cli.pod:99 darktable-viewer.pod:55
-#: darktable-generate-cache.pod:53 darktable-cltest.pod:24
+#: darktable-generate-cache.pod:63 darktable-cltest.pod:24
 #: darktable-cmstest.pod:23
 msgid ""
 "The principal developer of darktable is Johannes Hanika.  The (hopefully) "
@@ -1155,7 +1155,7 @@ msgstr ""
 
 #. type: textblock
 #: darktable.pod:527 darktable-cli.pod:102 darktable-viewer.pod:58
-#: darktable-generate-cache.pod:56 darktable-cltest.pod:27
+#: darktable-generate-cache.pod:66 darktable-cltest.pod:27
 #: darktable-cmstest.pod:26
 msgid "DREGGNAUTHORS -- don't translate this line!"
 msgstr "DREGGNAUTHORS -- don't translate this line!"
@@ -1189,21 +1189,21 @@ msgstr ""
 
 #. type: =head1
 #: darktable.pod:539 darktable-cli.pod:107 darktable-viewer.pod:64
-#: darktable-generate-cache.pod:62 darktable-cltest.pod:33
+#: darktable-generate-cache.pod:72 darktable-cltest.pod:33
 #: darktable-cmstest.pod:31
 msgid "COPYRIGHT AND LICENSE"
 msgstr "DERECHOS Y LICENCIA"
 
 #. type: textblock
 #: darktable.pod:541 darktable-cli.pod:109 darktable-viewer.pod:66
-#: darktable-generate-cache.pod:64 darktable-cltest.pod:35
+#: darktable-generate-cache.pod:74 darktable-cltest.pod:35
 #: darktable-cmstest.pod:33
 msgid "B<Copyright (C)> 2009-2015 by Authors."
 msgstr "B<Copyright (C)> 2009-2015 por Authors."
 
 #. type: textblock
 #: darktable.pod:543 darktable-cli.pod:111 darktable-viewer.pod:68
-#: darktable-generate-cache.pod:66 darktable-cltest.pod:37
+#: darktable-generate-cache.pod:76 darktable-cltest.pod:37
 #: darktable-cmstest.pod:35
 msgid ""
 "B<darktable> is free software; you can redistribute it and/or modify it "
@@ -1429,13 +1429,13 @@ msgstr "Activa la salida verbosa."
 
 #. type: =item
 #: darktable-cli.pod:85 darktable-viewer.pod:41
-#: darktable-generate-cache.pod:39
+#: darktable-generate-cache.pod:49
 msgid "B<< --core <darktable options> >>"
 msgstr "B<< --core <darktable options> >>"
 
 #. type: textblock
 #: darktable-cli.pod:87 darktable-viewer.pod:43
-#: darktable-generate-cache.pod:41
+#: darktable-generate-cache.pod:51
 msgid ""
 "All command line parameters following B<--core> are passed to the darktable "
 "core and handled as standard parameters.  See L<darktable(1)|darktable(1)> "
@@ -1448,7 +1448,7 @@ msgstr ""
 
 #. type: textblock
 #: darktable-cli.pod:95 darktable-viewer.pod:51
-#: darktable-generate-cache.pod:49 darktable-cltest.pod:20
+#: darktable-generate-cache.pod:59 darktable-cltest.pod:20
 #: darktable-cmstest.pod:19
 msgid "L<darktable(1)|darktable(1)>"
 msgstr "L<darktable(1)|darktable(1)>"
@@ -1547,7 +1547,7 @@ msgstr ""
 "mostrar la última imagen."
 
 #. type: textblock
-#: darktable-viewer.pod:60 darktable-generate-cache.pod:58
+#: darktable-viewer.pod:60 darktable-generate-cache.pod:68
 #: darktable-cltest.pod:29 darktable-cmstest.pod:28
 msgid ""
 "This man page was written by Ulrich Pegelow E<lt>ulrich.pegelow@tongareva."
@@ -1559,7 +1559,7 @@ msgstr ""
 "a un manual de referencias por Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
 
 #. type: =for
-#: darktable-viewer.pod:71 darktable-generate-cache.pod:69
+#: darktable-viewer.pod:71 darktable-generate-cache.pod:79
 #: darktable-cltest.pod:40 darktable-cmstest.pod:38
 msgid "comment $Date: 2015-11-17$ $Release: 2.0$"
 msgstr "comment $Date: 2015-11-17$ $Release: 2.0$"
@@ -1602,23 +1602,57 @@ msgstr ""
 
 #. type: =item
 #: darktable-generate-cache.pod:33
+#| msgid "B<< -m, --max-mip <0-7> >>"
+msgid "B<< --min-mip <0-7> >>"
+msgstr "B<< --min-mip <0-7> >>"
+
+#. type: =item
+#: darktable-generate-cache.pod:35
 msgid "B<< -m, --max-mip <0-7> >>"
 msgstr "B<< -m, --max-mip <0-7> >>"
 
 #. type: textblock
-#: darktable-generate-cache.pod:35
+#: darktable-generate-cache.pod:37
 msgid ""
 "B<darktable> can handle and store thumbnails with up to eight different "
-"resolution steps for each image.  This parameter defines which maximum "
-"resolution should be generated and defaults to B<2>.  There is normally no "
-"need to generate all possible resolutions here; missing ones will be "
-"automatically generated by darktable the moment they are needed."
+"resolution steps for each image.  These parameters define which maximum "
+"resolution should be generated and default to a range of B<0-2>.  There is "
+"normally no need to generate all possible resolutions here; missing ones "
+"will be automatically generated by darktable the moment they are needed.  "
+"When asked to generate multiple resolutions at once, the lower-resolution "
+"images are quickly downsampled from the highest-resolution image."
 msgstr ""
 "B<darktable> puede manejar y almacenar miniaturas hasta con ocho "
 "resoluciones diferentes por imagen.  Este parámetro define la resolución "
-"máxima que debe ser generada la cual es B<2> por defecto.  Usualmente no hay "
-"necesidad de generar todas las resoluciones posibles; las restantes serán "
-"generadas automáticamente por darktable en el momento en el que se necesiten."
+"máxima que debe ser generada la cual es B<0-2> por defecto.  Usualmente no "
+"hay necesidad de generar todas las resoluciones posibles; las restantes "
+"serán generadas automáticamente por darktable en el momento en el que se "
+"necesiten. Cuando se pide generar múltiples resoluciones a la vez, las "
+"imágenes de menor resolución serán re-escaladas mas rápidamente que aquellas "
+"imágenes con mayor resolución."
+
+#. type: =item
+#: darktable-generate-cache.pod:42
+#| msgid "B<< -m, --max-mip <0-7> >>"
+msgid "B<< --min-imgid <N> >>"
+msgstr "B<< --min-imgid <N> >>"
+
+#. type: =item
+#: darktable-generate-cache.pod:44
+#| msgid "B<< -m, --max-mip <0-7> >>"
+msgid "B<< --max-imgid <N> >>"
+msgstr "B<< --max-imgid <N> >>"
+
+#. type: textblock
+#: darktable-generate-cache.pod:46
+msgid ""
+"Specifies the range of internal image IDs from the database to work on.  If "
+"no range is given, B<darktable-generate-cache> will process all images from "
+"the entire collection."
+msgstr ""
+"Especifica el rango de los IDs de las imágenes internas de la base de datos "
+"con las cuales trabajará. Si no se provee ningún rango, B<darktable-generate-"
+"cache> procesará todas las imágenes de la colección."
 
 #. type: textblock
 #: darktable-cltest.pod:4

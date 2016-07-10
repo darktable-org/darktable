@@ -571,6 +571,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
 #ifdef HAVE_OPENCL
   gboolean exclude_opencl = FALSE;
+  gboolean print_statistics = strcmp(argv[0], "darktable-cltest");
 #endif
 
 #ifdef USE_LUA
@@ -607,7 +608,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH);
 #endif
-        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2015 johannes hanika\n" PACKAGE_BUGREPORT
+        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2016 johannes hanika\n" PACKAGE_BUGREPORT
                "\n\ncompile options:\n"
                "  bit depth is %s\n"
 #ifdef _DEBUG
@@ -960,7 +961,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
 #ifdef HAVE_OPENCL
-  dt_opencl_init(darktable.opencl, exclude_opencl);
+  dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 #endif
 
   darktable.blendop = (dt_blendop_t *)calloc(1, sizeof(dt_blendop_t));

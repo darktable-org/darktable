@@ -567,6 +567,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   float equalization = data->equalization / 100.0f;
 
   dt_bilateral_cl_t *b = NULL;
+  cl_mem dev_tmp = NULL;
   cl_mem dev_target_hist = NULL;
   cl_mem dev_source_ihist = NULL;
   cl_mem dev_target_mean = NULL;
@@ -612,19 +613,27 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
           = (data->target_var[i][1] > 0.0f) ? data->source_var[mapio[i]][1] / data->target_var[i][1] : 0.0f;
     }
 
+    dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+    if(dev_tmp == NULL) goto error;
+
     dev_target_hist = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * HISTN, data->target_hist);
     if(dev_target_hist == NULL) goto error;
+
     dev_source_ihist
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * HISTN, data->source_ihist);
     if(dev_source_ihist == NULL) goto error;
+
     dev_target_mean
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * MAXN * 2, data->target_mean);
     if(dev_target_mean == NULL) goto error;
+
     dev_source_mean
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * MAXN * 2, data->source_mean);
     if(dev_source_mean == NULL) goto error;
+
     dev_var_ratio = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * MAXN * 2, var_ratio);
     if(dev_var_ratio == NULL) goto error;
+
     dev_mapio = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * MAXN, mapio);
     if(dev_var_ratio == NULL) goto error;
 
@@ -648,14 +657,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(err != CL_SUCCESS) goto error;
       err = dt_bilateral_blur_cl(b);
       if(err != CL_SUCCESS) goto error;
-      err = dt_bilateral_slice_cl(b, dev_out, dev_out, -1.0f);
+      err = dt_bilateral_slice_cl(b, dev_out, dev_tmp, -1.0f);
       if(err != CL_SUCCESS) goto error;
       dt_bilateral_free_cl(b);
       b = NULL; // make sure we don't clean it up twice
     }
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 2, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 4, sizeof(int), (void *)&height);
@@ -667,6 +676,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_mapping, sizes);
     if(err != CL_SUCCESS) goto error;
 
+    dt_opencl_release_mem_object(dev_tmp);
     dt_opencl_release_mem_object(dev_target_hist);
     dt_opencl_release_mem_object(dev_source_ihist);
     dt_opencl_release_mem_object(dev_target_mean);
@@ -686,6 +696,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   if(b != NULL) dt_bilateral_free_cl(b);
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   if(dev_target_hist != NULL) dt_opencl_release_mem_object(dev_target_hist);
   if(dev_source_ihist != NULL) dt_opencl_release_mem_object(dev_source_ihist);
   if(dev_target_mean != NULL) dt_opencl_release_mem_object(dev_target_mean);
@@ -712,7 +723,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   const size_t basebuffer = width * height * channels * sizeof(float);
 
-  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
+  tiling->factor = 3.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
   tiling->maxbuf
       = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
   tiling->overhead = 0;

@@ -59,7 +59,7 @@ int main(int argc, char *arg[])
   bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
   textdomain(GETTEXT_PACKAGE);
 
-  gtk_init_check(&argc, &arg);
+  if(!gtk_parse_args(&argc, &arg)) exit(1);
 
   // parse command line arguments
   char *image_filename = NULL;
@@ -81,7 +81,7 @@ int main(int argc, char *arg[])
       }
       else if(!strcmp(arg[k], "--version"))
       {
-        printf("this is darktable-cli " PACKAGE_VERSION  "\ncopyright (c) 2012-2015 johannes hanika, tobias ellinghaus\n");
+        printf("this is darktable-cli " PACKAGE_VERSION  "\ncopyright (c) 2012-2016 johannes hanika, tobias ellinghaus\n");
         exit(1);
       }
       else if(!strcmp(arg[k], "--width") && argc > k + 1)

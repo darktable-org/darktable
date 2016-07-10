@@ -109,6 +109,7 @@ typedef struct dt_opencl_t
   int use_events;
   int async_pixelpipe;
   int number_event_handles;
+  int print_statistics;
   int synch_cache;
   int enable_markesteijn;
   int micro_nap;
@@ -135,7 +136,7 @@ typedef struct dt_opencl_t
 } dt_opencl_t;
 
 /** inits the opencl subsystem. */
-void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl);
+void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics);
 
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
@@ -317,7 +318,7 @@ typedef struct dt_opencl_t
   int stopped;
   int error_count;
 } dt_opencl_t;
-static inline void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
+static inline void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics)
 {
   cl->inited = 0;
   cl->enabled = 0;
