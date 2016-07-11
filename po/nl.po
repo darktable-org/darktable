@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-07-11 13:27+0200\n"
-"PO-Revision-Date: 2016-07-11 13:30+0200\n"
+"PO-Revision-Date: 2016-07-11 14:01+0200\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -157,7 +157,7 @@ msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr ""
-"het aantal te vertonen mappen bij de fotoreeksen, te beginnen vanafde "
+"het aantal te vertonen mappen bij de fotoreeksen, te beginnen vanaf de "
 "rechterkant"
 
 #: ../build/src/preferences_gen.h:1629
@@ -3609,7 +3609,7 @@ msgstr ""
 "beeldkenmerken hints voor de onderliggende encoder\n"
 "afbeelding: digtale afbeelding, zoals portrait, binnen opname\n"
 "foto: buiten opname, met natuurlijk licht\n"
-"plaatje: aparte afbeelding curve (grafiek, kaart-tegels etc)"
+"plaatje: aparte afbeeldingscurve (grafiek, kaart-tegels etc)"
 
 #: ../src/imageio/format/webp.c:324
 msgid "default"
@@ -5138,11 +5138,11 @@ msgstr "kleurcorrectie"
 
 #: ../src/iop/colorcorrection.c:90
 msgid "warm tone"
-msgstr "warm filter"
+msgstr "warme kleuren"
 
 #: ../src/iop/colorcorrection.c:97
 msgid "warming filter"
-msgstr "warm filter"
+msgstr "opwarmend filter"
 
 #: ../src/iop/colorcorrection.c:104
 msgid "cooling filter"
