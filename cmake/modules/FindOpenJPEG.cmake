@@ -13,21 +13,13 @@ libfind_pkg_check_modules(OpenJPEG_PKGCONF libopenjp2)
 # Include dir
 find_path(OpenJPEG_INCLUDE_DIR
   NAMES openjpeg.h
-  PATHS ${OpenJPEG_PKGCONF_INCLUDE_DIRS}
-  NO_DEFAULT_PATH
+  HINTS ${OpenJPEG_PKGCONF_INCLUDE_DIRS}
 )
-
-# at least in debian, libopenjpeg-dev 1:1.5.2-3.1 installs openjpeg.h
-# not just as /usr/include/openjpeg-1.5/openjpeg.h, but also as
-# /usr/include/openjpeg.h; without NO_DEFAULT_PATH, cmake does not find
-# the right openjpeg.h in /usr/include/openjpeg-2.1/openjpeg.h,
-# and does not set OpenJPEG_INCLUDE_DIR to /usr/include/openjpeg-2.1,
-# but to /usr/include...
 
 # Finally the library itself
 find_library(OpenJPEG_LIBRARY
   NAMES openjp2
-  PATHS ${OpenJPEG_PKGCONF_LIBRARY_DIRS}
+  HINTS ${OpenJPEG_PKGCONF_LIBRARY_DIRS}
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
