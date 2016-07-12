@@ -773,7 +773,7 @@ msgstr "linear Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1122 ../src/common/colorspaces.c:1272 ../src/iop/colorin.c:1226
 msgid "linear Rec2020 RGB"
-msgstr "linear Rec709 RGB"
+msgstr "linear Rec2020 RGB"
 
 #: ../src/common/colorspaces.c:1123 ../src/common/colorspaces.c:1277
 msgid "linear XYZ"
