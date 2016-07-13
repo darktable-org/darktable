@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-03 15:51+0200\n"
-"PO-Revision-Date: 2016-07-03 15:52+0200\n"
+"POT-Creation-Date: 2016-07-12 16:22+0200\n"
+"PO-Revision-Date: 2016-07-11 14:09+0200\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -157,7 +157,7 @@ msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr ""
-"het aantal te vertonen mappen bij de fotoreeksen, te beginnen vanafde "
+"het aantal te vertonen mappen bij de fotoreeksen, te beginnen vanaf de "
 "rechterkant"
 
 #: ../build/src/preferences_gen.h:1629
@@ -955,7 +955,7 @@ msgstr "linear Rec709 RGB"
 #: ../src/common/colorspaces.c:1038 ../src/common/colorspaces.c:1188
 #: ../src/iop/colorin.c:1508
 msgid "linear Rec2020 RGB"
-msgstr "linear Rec709 RGB"
+msgstr "linear Rec2020 RGB"
 
 #: ../src/common/colorspaces.c:1039 ../src/common/colorspaces.c:1193
 msgid "linear XYZ"
@@ -1082,7 +1082,7 @@ msgstr "aan"
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1313
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:671
 #: ../src/iop/ashift.c:4361 ../src/iop/ashift.c:4367 ../src/iop/colorin.c:1504
-#: ../src/iop/demosaic.c:3831 ../src/iop/vignette.c:1139
+#: ../src/iop/demosaic.c:3869 ../src/iop/vignette.c:1139
 #: ../src/libs/history.c:149 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "uit"
@@ -1166,7 +1166,7 @@ msgstr ""
 "uitbreiding naar unieke bestandsnaam voor deze sessie is mislukt, controleer "
 "uw importeer-instellingen"
 
-#: ../src/common/mipmap_cache.c:1099 ../src/iop/demosaic.c:3607
+#: ../src/common/mipmap_cache.c:1099 ../src/iop/demosaic.c:3645
 #: ../src/iop/invert.c:466
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
@@ -1661,12 +1661,12 @@ msgstr "importeren afbeelding %s"
 #. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs,
 #. roi_out->width, roi_out->height,
 #. roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:2462 ../src/develop/blend.c:2778
+#: ../src/develop/blend.c:2462 ../src/develop/blend.c:2780
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "mengen in module '%s' overgeslagen: roi's komen niet overeen"
 
-#: ../src/develop/blend.c:2574 ../src/develop/blend.c:2831
+#: ../src/develop/blend.c:2574 ../src/develop/blend.c:2832
 msgid "could not allocate buffer for blending"
 msgstr "toewijzen buffer t.g.v. mengen mislukt"
 
@@ -2305,7 +2305,7 @@ msgstr "gebruik dezelfde vorm als"
 msgid "masks can not contain themselves"
 msgstr "maskers mogen zichzelf niet insluiten"
 
-#: ../src/develop/pixelpipe_hb.c:2443
+#: ../src/develop/pixelpipe_hb.c:2446
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -3609,7 +3609,7 @@ msgstr ""
 "beeldkenmerken hints voor de onderliggende encoder\n"
 "afbeelding: digtale afbeelding, zoals portrait, binnen opname\n"
 "foto: buiten opname, met natuurlijk licht\n"
-"plaatje: aparte afbeelding curve (grafiek, kaart-tegels etc)"
+"plaatje: aparte afbeeldingscurve (grafiek, kaart-tegels etc)"
 
 #: ../src/imageio/format/webp.c:324
 msgid "default"
@@ -4451,7 +4451,7 @@ msgstr "lokaal contrast"
 msgid "coarseness"
 msgstr "ruwheid"
 
-#: ../src/iop/bilat.c:255 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:661
+#: ../src/iop/bilat.c:255 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:674
 msgid "contrast"
 msgstr "contrast"
 
@@ -4504,7 +4504,7 @@ msgid "how much to blur blue"
 msgstr "onscherpte voor blauw"
 
 #: ../src/iop/bilateral.cc:349 ../src/iop/clahe.c:312 ../src/iop/dither.c:796
-#: ../src/iop/lowpass.c:660 ../src/iop/shadhi.c:821 ../src/iop/sharpen.c:756
+#: ../src/iop/lowpass.c:673 ../src/iop/shadhi.c:832 ../src/iop/sharpen.c:756
 msgid "radius"
 msgstr "straal"
 
@@ -4542,7 +4542,7 @@ msgstr "drempel"
 msgid "the threshold of light"
 msgstr "drempel voor glans"
 
-#: ../src/iop/bloom.c:525 ../src/iop/denoiseprofile.c:2060
+#: ../src/iop/bloom.c:525 ../src/iop/denoiseprofile.c:2071
 #: ../src/iop/grain.c:528 ../src/iop/hotpixels.c:439 ../src/iop/nlmeans.c:855
 #: ../src/iop/velvia.c:378
 msgid "strength"
@@ -4789,15 +4789,15 @@ msgstr "tint "
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:446 ../src/iop/colisa.c:366
-#: ../src/iop/colorcorrection.c:282 ../src/iop/colorchecker.c:980
+#: ../src/iop/colorcorrection.c:282 ../src/iop/colorchecker.c:1063
 #: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1072
 #: ../src/iop/colorzones.c:1106 ../src/iop/graduatednd.c:1182
-#: ../src/iop/lowpass.c:663 ../src/iop/soften.c:707
+#: ../src/iop/lowpass.c:676 ../src/iop/soften.c:707
 #: ../src/iop/splittoning.c:500 ../src/iop/vignette.c:1148
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/channelmixer.c:447 ../src/iop/colorchecker.c:962
+#: ../src/iop/channelmixer.c:447 ../src/iop/colorchecker.c:1045
 #: ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1069
 #: ../src/iop/colorzones.c:1107
 msgid "lightness"
@@ -5138,7 +5138,7 @@ msgstr "kleurcorrectie"
 
 #: ../src/iop/colorcorrection.c:90
 msgid "warm tone"
-msgstr "warm filter"
+msgstr "warme tonen"
 
 #: ../src/iop/colorcorrection.c:97
 msgid "warming filter"
@@ -5161,20 +5161,20 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "kies globale verzadiging"
 
-#: ../src/iop/colorchecker.c:105
+#: ../src/iop/colorchecker.c:111
 msgid "color checker lut"
 msgstr "color checker lut"
 
-#: ../src/iop/colorchecker.c:257
+#: ../src/iop/colorchecker.c:263
 msgid "it8 skin tones"
 msgstr "it8 huidskleuren"
 
-#: ../src/iop/colorchecker.c:560 ../src/iop/colorchecker.c:954
+#: ../src/iop/colorchecker.c:625 ../src/iop/colorchecker.c:1037
 #, c-format
 msgid "patch #%d"
 msgstr "patch #%d"
 
-#: ../src/iop/colorchecker.c:844
+#: ../src/iop/colorchecker.c:927
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -5191,35 +5191,35 @@ msgstr ""
 "verwijder patch met rechtermuisknop\n"
 "vervang patch met shift-klik en kleuropname"
 
-#: ../src/iop/colorchecker.c:949
+#: ../src/iop/colorchecker.c:1032
 msgid "patch"
 msgstr "patch"
 
-#: ../src/iop/colorchecker.c:950
+#: ../src/iop/colorchecker.c:1033
 msgid "color checker patch"
 msgstr "color checker patch"
 
-#: ../src/iop/colorchecker.c:961
+#: ../src/iop/colorchecker.c:1044
 msgid "lightness offset"
 msgstr "compenseer helderheid"
 
-#: ../src/iop/colorchecker.c:965
+#: ../src/iop/colorchecker.c:1048
 msgid "chroma offset green/red"
 msgstr "compenseer kleurwaarde groen/rood"
 
-#: ../src/iop/colorchecker.c:966
+#: ../src/iop/colorchecker.c:1049
 msgid "green/red"
 msgstr "groen/rood"
 
-#: ../src/iop/colorchecker.c:972
+#: ../src/iop/colorchecker.c:1055
 msgid "chroma offset blue/yellow"
 msgstr "compenseer kleurwaarde blauw/geel"
 
-#: ../src/iop/colorchecker.c:973
+#: ../src/iop/colorchecker.c:1056
 msgid "blue/yellow"
 msgstr "blauw/geel"
 
-#: ../src/iop/colorchecker.c:979
+#: ../src/iop/colorchecker.c:1062
 msgid "saturation offset"
 msgstr "compenseer verzadiging"
 
@@ -5241,7 +5241,7 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "niet ondersteund ingegeven profiel is vervangen door lineair Rec709 RGB!"
 
-#: ../src/iop/colorin.c:1487 ../src/iop/denoiseprofile.c:2056
+#: ../src/iop/colorin.c:1487 ../src/iop/denoiseprofile.c:2067
 #: ../src/libs/export.c:597 ../src/libs/print_settings.c:997
 #: ../src/libs/print_settings.c:1213
 msgid "profile"
@@ -5312,45 +5312,45 @@ msgctxt "accel"
 msgid "acquire as target"
 msgstr "doel binnenhalen"
 
-#: ../src/iop/colormapping.c:1053
+#: ../src/iop/colormapping.c:1064
 msgid "source clusters:"
 msgstr "clusterbronnen"
 
-#: ../src/iop/colormapping.c:1062
+#: ../src/iop/colormapping.c:1073
 msgid "target clusters:"
 msgstr "clusterdoelen"
 
-#: ../src/iop/colormapping.c:1075
+#: ../src/iop/colormapping.c:1086
 msgid "acquire as source"
 msgstr "bron binnenhalen"
 
-#: ../src/iop/colormapping.c:1077
+#: ../src/iop/colormapping.c:1088
 msgid "analyze this image as a source image"
 msgstr "analyseer afbeelding als bronafbeelding"
 
-#: ../src/iop/colormapping.c:1081
+#: ../src/iop/colormapping.c:1092
 msgid "acquire as target"
 msgstr "doel binnenhalen"
 
-#: ../src/iop/colormapping.c:1083
+#: ../src/iop/colormapping.c:1094
 msgid "analyze this image as a target image"
 msgstr "analyseer afbeelding als doelafbeelding"
 
-#: ../src/iop/colormapping.c:1088
+#: ../src/iop/colormapping.c:1099
 msgid "number of clusters"
 msgstr "aantal clusters"
 
-#: ../src/iop/colormapping.c:1090
+#: ../src/iop/colormapping.c:1101
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "doorzoek de afbeelding op dit aantal clusters, bij een wijziging worden "
 "clusters gereset"
 
-#: ../src/iop/colormapping.c:1095
+#: ../src/iop/colormapping.c:1106
 msgid "color dominance"
 msgstr "kleurdominantie"
 
-#: ../src/iop/colormapping.c:1096
+#: ../src/iop/colormapping.c:1107
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -5358,11 +5358,11 @@ msgstr ""
 "bepaalt hoe clusters in kaart worden gebracht; lage waarden op "
 "kleurnabijheid, hoge waarden op kleurdominantie"
 
-#: ../src/iop/colormapping.c:1103
+#: ../src/iop/colormapping.c:1114
 msgid "histogram equalization"
 msgstr "histogram egaliseren"
 
-#: ../src/iop/colormapping.c:1104
+#: ../src/iop/colormapping.c:1115
 msgid "level of histogram equalization"
 msgstr "mate van histogramegalisatie"
 
@@ -5447,7 +5447,7 @@ msgstr "tint"
 msgid "module `color reconstruction' failed"
 msgstr "module 'kleur reconstructie'  mislukte"
 
-#: ../src/iop/colorreconstruction.c:1373 ../src/iop/shadhi.c:845
+#: ../src/iop/colorreconstruction.c:1373 ../src/iop/shadhi.c:856
 #: ../src/iop/tonemap.cc:298
 msgid "spatial extent"
 msgstr "omvang "
@@ -5627,44 +5627,44 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
-#: ../src/iop/demosaic.c:3806 ../src/iop/demosaic.c:3815
+#: ../src/iop/demosaic.c:3844 ../src/iop/demosaic.c:3853
 #: ../src/iop/dither.c:791 ../src/iop/highlights.c:968
 msgid "method"
 msgstr "methode"
 
-#: ../src/iop/demosaic.c:3808
+#: ../src/iop/demosaic.c:3846
 msgid "PPG (fast)"
 msgstr "PPG (snel)"
 
-#: ../src/iop/demosaic.c:3809
+#: ../src/iop/demosaic.c:3847
 msgid "AMaZE (slow)"
 msgstr "AMaZE (langzaam)"
 
-#: ../src/iop/demosaic.c:3810
+#: ../src/iop/demosaic.c:3848
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3811
+#: ../src/iop/demosaic.c:3849
 msgid "passthrough (monochrome) (experimental)"
 msgstr "passthrough (monochroom) (experimenteel)"
 
-#: ../src/iop/demosaic.c:3812 ../src/iop/demosaic.c:3820
+#: ../src/iop/demosaic.c:3850 ../src/iop/demosaic.c:3858
 msgid "demosaicing raw data method"
 msgstr "demosaicing ruwe data-methode"
 
-#: ../src/iop/demosaic.c:3817
+#: ../src/iop/demosaic.c:3855
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3818
+#: ../src/iop/demosaic.c:3856
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-pass"
 
-#: ../src/iop/demosaic.c:3819
+#: ../src/iop/demosaic.c:3857
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-pass (langzaam)"
 
-#: ../src/iop/demosaic.c:3823
+#: ../src/iop/demosaic.c:3861
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5674,63 +5674,63 @@ msgstr ""
 "schakel uit met 0.0\n"
 "kies 1.0 om de randen te negeren"
 
-#: ../src/iop/demosaic.c:3825
+#: ../src/iop/demosaic.c:3863
 msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
-#: ../src/iop/demosaic.c:3829
+#: ../src/iop/demosaic.c:3867
 msgid "color smoothing"
 msgstr "kleuren vervagen"
 
-#: ../src/iop/demosaic.c:3832
+#: ../src/iop/demosaic.c:3870
 msgid "one time"
 msgstr "een keer"
 
-#: ../src/iop/demosaic.c:3833
+#: ../src/iop/demosaic.c:3871
 msgid "two times"
 msgstr "twee keer"
 
-#: ../src/iop/demosaic.c:3834
+#: ../src/iop/demosaic.c:3872
 msgid "three times"
 msgstr "drie keer"
 
-#: ../src/iop/demosaic.c:3835
+#: ../src/iop/demosaic.c:3873
 msgid "four times"
 msgstr "vier keer"
 
-#: ../src/iop/demosaic.c:3836
+#: ../src/iop/demosaic.c:3874
 msgid "five times"
 msgstr "vijf keer"
 
-#: ../src/iop/demosaic.c:3837
+#: ../src/iop/demosaic.c:3875
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "aantal stappen mediaan kleurvervaging na demosaicing"
 
-#: ../src/iop/demosaic.c:3841
+#: ../src/iop/demosaic.c:3879
 msgid "match greens"
 msgstr "groen matchen"
 
-#: ../src/iop/demosaic.c:3842
+#: ../src/iop/demosaic.c:3880
 msgid "disabled"
 msgstr "uitgeschakeld"
 
-#: ../src/iop/demosaic.c:3843
+#: ../src/iop/demosaic.c:3881
 msgid "local average"
 msgstr "lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:3844
+#: ../src/iop/demosaic.c:3882
 msgid "full average"
 msgstr "volledig gemiddelde"
 
-#: ../src/iop/demosaic.c:3845
+#: ../src/iop/demosaic.c:3883
 msgid "full and local average"
 msgstr "volledig en lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:3846
+#: ../src/iop/demosaic.c:3884
 msgid "green channels matching method"
 msgstr "methode voor matchen groene kanalen"
 
-#: ../src/iop/demosaic.c:3858
+#: ../src/iop/demosaic.c:3896
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -5742,40 +5742,40 @@ msgstr ""
 msgid "denoise (profiled)"
 msgstr "ruisreductie (profiled)"
 
-#: ../src/iop/denoiseprofile.c:1815
+#: ../src/iop/denoiseprofile.c:1826
 #, c-format
 msgid "found match for ISO %d"
 msgstr "overeenkomst voor ISO %d gevonden"
 
-#: ../src/iop/denoiseprofile.c:1823
+#: ../src/iop/denoiseprofile.c:1834
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "geïnterpoleerd uit ISO %d en %d"
 
-#: ../src/iop/denoiseprofile.c:2057 ../src/iop/exposure.c:836
+#: ../src/iop/denoiseprofile.c:2068 ../src/iop/exposure.c:836
 #: ../src/iop/lens.c:2182 ../src/iop/levels.c:550
 #: ../src/libs/copy_history.c:274 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1318
 msgid "mode"
 msgstr "modus"
 
-#: ../src/iop/denoiseprofile.c:2058 ../src/iop/nlmeans.c:853
+#: ../src/iop/denoiseprofile.c:2069 ../src/iop/nlmeans.c:853
 msgid "patch size"
 msgstr "patch grootte "
 
-#: ../src/iop/denoiseprofile.c:2061
+#: ../src/iop/denoiseprofile.c:2072
 msgid "non-local means"
 msgstr "non-local means"
 
-#: ../src/iop/denoiseprofile.c:2062
+#: ../src/iop/denoiseprofile.c:2073
 msgid "wavelets"
 msgstr "wavelets"
 
-#: ../src/iop/denoiseprofile.c:2063
+#: ../src/iop/denoiseprofile.c:2074
 msgid "profile used for variance stabilization"
 msgstr "profiel gebruikt voor variatie-stabilisering"
 
-#: ../src/iop/denoiseprofile.c:2064
+#: ../src/iop/denoiseprofile.c:2075
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -5783,11 +5783,11 @@ msgstr ""
 "gebruikte ontruis-kernmethode, non-local werkt het best bij het mengen van "
 "helderheid en wavelets bij  het kleur mengen"
 
-#: ../src/iop/denoiseprofile.c:2067
+#: ../src/iop/denoiseprofile.c:2078
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "straal van de patches om aan te passen, verhoog voor meer scherpte"
 
-#: ../src/iop/denoiseprofile.c:2068
+#: ../src/iop/denoiseprofile.c:2079
 msgid "finetune denoising strength"
 msgstr "kracht ruisonderdrukking afstemmen"
 
@@ -6762,64 +6762,64 @@ msgstr "blauwheid in schaduwkleuren"
 msgid "lowpass"
 msgstr "lowpass"
 
-#: ../src/iop/lowpass.c:612
+#: ../src/iop/lowpass.c:625
 msgid "local contrast mask"
 msgstr "masker lokaal contrast "
 
-#: ../src/iop/lowpass.c:645
+#: ../src/iop/lowpass.c:658
 msgid "filter order"
 msgstr "filter opdracht"
 
-#: ../src/iop/lowpass.c:648
+#: ../src/iop/lowpass.c:661
 msgid "0th order"
 msgstr "basis opdracht"
 
-#: ../src/iop/lowpass.c:649
+#: ../src/iop/lowpass.c:662
 msgid "1st order"
 msgstr "1st opdracht"
 
-#: ../src/iop/lowpass.c:650
+#: ../src/iop/lowpass.c:663
 msgid "2nd order"
 msgstr "2de opdracht"
 
-#: ../src/iop/lowpass.c:651
+#: ../src/iop/lowpass.c:664
 msgid "filter order of gaussian blur"
 msgstr "filter opdracht voor gaussiaans onscherpte"
 
-#: ../src/iop/lowpass.c:662
+#: ../src/iop/lowpass.c:675
 msgctxt "lowpass"
 msgid "brightness"
 msgstr "helderheid"
 
-#: ../src/iop/lowpass.c:666 ../src/iop/shadhi.c:811
+#: ../src/iop/lowpass.c:679 ../src/iop/shadhi.c:822
 msgid "soften with"
 msgstr "verzachten met"
 
-#: ../src/iop/lowpass.c:667 ../src/iop/shadhi.c:812
+#: ../src/iop/lowpass.c:680 ../src/iop/shadhi.c:823
 msgid "gaussian"
 msgstr "gaussian"
 
-#: ../src/iop/lowpass.c:668 ../src/iop/shadhi.c:813
+#: ../src/iop/lowpass.c:681 ../src/iop/shadhi.c:824
 msgid "bilateral filter"
 msgstr "bilateral filter"
 
-#: ../src/iop/lowpass.c:675
+#: ../src/iop/lowpass.c:688
 msgid "radius of gaussian/bilateral blur"
 msgstr "straal voor gaussianse/bilateral onscherpte"
 
-#: ../src/iop/lowpass.c:676
+#: ../src/iop/lowpass.c:689
 msgid "contrast of lowpass filter"
 msgstr "contrast voor lowpass filter"
 
-#: ../src/iop/lowpass.c:677
+#: ../src/iop/lowpass.c:690
 msgid "brightness adjustment of lowpass filter"
 msgstr "aanpassen helderheid voor lowpass filter"
 
-#: ../src/iop/lowpass.c:678
+#: ../src/iop/lowpass.c:691
 msgid "color saturation of lowpass filter"
 msgstr "kleurverzadiging voor lowpass filter"
 
-#: ../src/iop/lowpass.c:679
+#: ../src/iop/lowpass.c:692
 msgid "which filter to use for blurring"
 msgstr "bepaal filter voor vervagen"
 
@@ -6840,7 +6840,7 @@ msgstr ""
 msgid "how much to keep highlights"
 msgstr "hoeveelheid te behouden hooglichten"
 
-#: ../src/iop/monochrome.c:597 ../src/iop/shadhi.c:819
+#: ../src/iop/monochrome.c:597 ../src/iop/shadhi.c:830
 #: ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "hooglichten"
@@ -7056,43 +7056,43 @@ msgctxt "accel"
 msgid "highlights color correction"
 msgstr "hooglichten kleurcorrectie"
 
-#: ../src/iop/shadhi.c:818 ../src/iop/splittoning.c:532
+#: ../src/iop/shadhi.c:829 ../src/iop/splittoning.c:532
 msgid "shadows"
 msgstr "schaduwen"
 
-#: ../src/iop/shadhi.c:820
+#: ../src/iop/shadhi.c:831
 msgid "white point adjustment"
 msgstr "witpuntaanpassing"
 
-#: ../src/iop/shadhi.c:822 ../src/iop/splittoning.c:551
+#: ../src/iop/shadhi.c:833 ../src/iop/splittoning.c:551
 msgid "compress"
 msgstr "comprimeer"
 
-#: ../src/iop/shadhi.c:823
+#: ../src/iop/shadhi.c:834
 msgid "shadows color adjustment"
 msgstr "aanpassen schaduwkleuren"
 
-#: ../src/iop/shadhi.c:824
+#: ../src/iop/shadhi.c:835
 msgid "highlights color adjustment"
 msgstr "aanpassen hooglichten "
 
-#: ../src/iop/shadhi.c:842
+#: ../src/iop/shadhi.c:853
 msgid "correct shadows"
 msgstr "verbeter schaduwen"
 
-#: ../src/iop/shadhi.c:843
+#: ../src/iop/shadhi.c:854
 msgid "correct highlights"
 msgstr "verbeter hooglichten "
 
-#: ../src/iop/shadhi.c:844
+#: ../src/iop/shadhi.c:855
 msgid "shift white point"
 msgstr "verschuif witpunt"
 
-#: ../src/iop/shadhi.c:846
+#: ../src/iop/shadhi.c:857
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr "te gebruiken filter voor softening, bilateral voorkomt halos"
 
-#: ../src/iop/shadhi.c:847
+#: ../src/iop/shadhi.c:858
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
@@ -7100,11 +7100,11 @@ msgstr ""
 "comprimeer effect op hooglichten/schaduwkleuren\n"
 "en behoud middenkleuren"
 
-#: ../src/iop/shadhi.c:848
+#: ../src/iop/shadhi.c:859
 msgid "adjust saturation of shadows"
 msgstr "aanpassen verzadiging schaduwkleuren"
 
-#: ../src/iop/shadhi.c:849
+#: ../src/iop/shadhi.c:860
 msgid "adjust saturation of highlights"
 msgstr "aanpassen verzadiging hooglichten "
 
