@@ -19,69 +19,50 @@
 #ifndef DT_COMMON_CACHE_H
 #define DT_COMMON_CACHE_H
 
-#include "common/dtpthread.h"
-#include <inttypes.h>
-#include <stddef.h>
-#include <glib.h>
+#include <stdbool.h> // for bool
+#include <stddef.h>  // for size_t
+#include <stdint.h>  // for uint32_t, int32_t
 
-typedef struct dt_cache_entry_t
-{
-  void *data;
-  size_t cost;
-  GList *link;
-  dt_pthread_rwlock_t lock;
-  int _lock_demoting;
-  uint32_t key;
-}
-dt_cache_entry_t;
+typedef struct dt_cache_entry_t dt_cache_entry_t;
+typedef struct dt_cache_t dt_cache_t;
 
-typedef struct dt_cache_t
-{
-  dt_pthread_mutex_t lock; // big fat lock. we're only expecting a couple hand full of cpu threads to use this concurrently.
+typedef void((*dt_cache_allocate_callback_t)(void *, dt_cache_entry_t *entry));
+typedef void((*dt_cache_cleanup_callback_t)(void *, dt_cache_entry_t *entry));
 
-  size_t entry_size; // cache line allocation
-  size_t cost;       // user supplied cost per cache line (bytes?)
-  size_t cost_quota; // quota to try and meet. but don't use as hard limit.
+void dt_cache_entry_set_data(dt_cache_entry_t *entry, void *data);
+void *dt_cache_entry_get_data(dt_cache_entry_t *entry);
 
-  GHashTable *hashtable; // stores (key, entry) pairs
-  GList *lru;            // last element is most recently used, first is about to be kicked from cache.
+void dt_cache_entry_set_cost(dt_cache_entry_t *entry, size_t cost);
+size_t dt_cache_entry_get_cost(dt_cache_entry_t *entry);
 
-  // callback functions for cache misses/garbage collection
-  void (*allocate)(void *userdata, dt_cache_entry_t *entry);
-  void (*cleanup)(void *userdata, dt_cache_entry_t *entry);
-  void *allocate_data;
-  void *cleanup_data;
-}
-dt_cache_t;
+uint32_t dt_cache_entry_get_key(dt_cache_entry_t *entry);
+
+bool dt_cache_entry_locked_writer(dt_cache_entry_t *entry);
 
 // entry size is only used if alloc callback is 0
-void dt_cache_init(dt_cache_t *cache, size_t entry_size, size_t cost_quota);
+dt_cache_t *dt_cache_init(size_t entry_size, size_t cost_quota);
 void dt_cache_cleanup(dt_cache_t *cache);
 
-static inline void dt_cache_set_allocate_callback(
-    dt_cache_t *cache,
-    void (*allocate)(void *, dt_cache_entry_t *entry),
-    void *allocate_data)
-{
-  cache->allocate = allocate;
-  cache->allocate_data = allocate_data;
-}
-static inline void dt_cache_set_cleanup_callback(
-    dt_cache_t *cache,
-    void (*cleanup)(void *, dt_cache_entry_t *entry),
-    void *cleanup_data)
-{
-  cache->cleanup = cleanup;
-  cache->cleanup_data = cleanup_data;
-}
+void dt_cache_set_allocate_callback(dt_cache_t *cache, dt_cache_allocate_callback_t allocate,
+                                    void *allocate_data);
+
+void dt_cache_set_cleanup_callback(dt_cache_t *cache, dt_cache_cleanup_callback_t cleanup, void *cleanup_data);
+
+dt_cache_cleanup_callback_t dt_cache_get_cleanup_callback(dt_cache_t *cache);
+
+float dt_cache_get_usage_percentage(dt_cache_t *cache);
+size_t dt_cache_get_cost(dt_cache_t *cache);
+size_t dt_cache_get_cost_quota(dt_cache_t *cache);
 
 // returns a slot in the cache for this key (newly allocated if need be), locked according to mode (r, w)
 #define dt_cache_get(A, B, C)  dt_cache_get_with_caller(A, B, C, __FILE__, __LINE__)
 dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key, char mode, const char *file, int line);
 // same but returns 0 if not allocated yet (both will block and wait for entry rw locks to be released)
 dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char mode);
-// release a lock on a cache entry. the cache knows which one you mean (r or w).
-void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry);
+// degrades the caller's write-side acquisition to a read-side acquisition
+void dt_cache_downgrade(dt_cache_t *cache, dt_cache_entry_t *entry);
+// release a lock on a cache entry.
+void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry, char mode);
 
 // 0: not contained
 int32_t dt_cache_contains(dt_cache_t *cache, const uint32_t key);
@@ -101,6 +82,7 @@ int dt_cache_for_all(dt_cache_t *cache,
     void *user_data);
 
 #endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

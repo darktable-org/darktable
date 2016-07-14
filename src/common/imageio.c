@@ -879,7 +879,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
 
   /* now write xmp into that container, if possible */
   if(copy_metadata && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
@@ -901,7 +901,7 @@ error:
   dt_dev_pixelpipe_cleanup(&pipe);
 error_early:
   dt_dev_cleanup(&dev);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
   return 1;
 }
 

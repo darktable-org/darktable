@@ -75,7 +75,7 @@ static void _set_orientation(dt_print_t *prt)
   else
     prt->pinfo->page.landscape = FALSE;
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
 }
 
 static void _film_strip_activated(const int imgid, void *data)

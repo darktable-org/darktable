@@ -75,7 +75,7 @@ typedef struct dt_mipmap_buffer_t
 typedef struct dt_mipmap_cache_one_t
 {
   // one cache per mipmap scale!
-  dt_cache_t cache;
+  dt_cache_t *cache;
 
   // a few stats on usage in this run.
   // long int to give 32-bits on old archs, so __sync* calls will work.
@@ -136,7 +136,7 @@ void dt_mipmap_cache_write_get_with_caller(
     int line);
 
 // drop a lock
-void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
+void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, char mode);
 
 // remove thumbnails, so they will be regenerated:
 void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);

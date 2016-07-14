@@ -23,7 +23,7 @@
 
 typedef struct dt_image_cache_t
 {
-  dt_cache_t cache;
+  dt_cache_t *cache;
 }
 dt_image_cache_t;
 

@@ -16,6 +16,7 @@ endif()
 
 include(CheckCCompilerFlag)
 include(TestBigEndian)
+include(CMakeDependentOption)
 
 # Check if this is source package build
 if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
@@ -56,6 +57,7 @@ option(BUILD_CMSTEST "Build a test program to check your system's color manageme
 option(USE_OPENEXR "Enable OpenEXR support" ON)
 option(BUILD_PRINT "Build the print module" ON)
 option(BUILD_RS_IDENTIFY "Build the darktable-rs-identify debug aid" OFF)
+CMAKE_DEPENDENT_OPTION(BUILD_TESTS "Build test suite" ON "NOT SOURCE_PACKAGE" OFF)
 
 if(NOT SOURCE_PACKAGE)
   OPTION(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
@@ -344,6 +346,12 @@ if(USE_OPENCL)
 else()
 	SET(HAVE_OPENCL 0)
 endif(USE_OPENCL)
+
+# build the test suite
+MESSAGE(STATUS "Build test suite: ${BUILD_TESTS}")
+IF(BUILD_TESTS)
+  enable_testing()
+ENDIF()
 
 #
 # Test SSE level

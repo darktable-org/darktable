@@ -1131,7 +1131,7 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
       if(scaled) g_object_unref(scaled);
     }
 
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf, 'r');
   }
 }
 
