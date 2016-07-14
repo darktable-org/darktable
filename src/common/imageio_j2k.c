@@ -103,7 +103,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* set decoding parameters to default values */
   opj_set_default_decoder_parameters(&parameters);
 
-  g_snprintf(parameters.infile, sizeof(parameters.infile), filename);
+  g_strlcpy(parameters.infile, filename, sizeof(parameters.infile));
 
   parameters.decod_format = get_file_format(filename);
   if(parameters.decod_format == -1) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -326,7 +326,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   /* set decoding parameters to default values */
   opj_set_default_decoder_parameters(&parameters);
 
-  g_snprintf(parameters.infile, sizeof(parameters.infile), filename);
+  g_strlcpy(parameters.infile, filename, sizeof(parameters.infile));
 
   parameters.decod_format = get_file_format(filename);
   if(parameters.decod_format == -1) return DT_IMAGEIO_FILE_CORRUPTED;

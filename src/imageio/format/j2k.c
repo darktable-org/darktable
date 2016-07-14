@@ -456,7 +456,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   opj_set_warning_handler(ccodec, warning_callback, stderr);
   opj_set_info_handler(ccodec, info_callback, stderr);
 
-  g_snprintf(parameters.outfile, sizeof(parameters.outfile), filename);
+  g_strlcpy(parameters.outfile, filename, sizeof(parameters.outfile));
 
   /* setup the encoder parameters using the current image and user parameters */
   opj_setup_encoder(ccodec, &parameters, image);
