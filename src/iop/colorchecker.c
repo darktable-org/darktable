@@ -16,9 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "bauhaus/bauhaus.h"
-#include "control/control.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"

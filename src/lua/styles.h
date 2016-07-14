@@ -17,8 +17,8 @@
  */
 #ifndef DT_LUA_STYLES_H
 #define DT_LUA_STYLES_H
-#include <lua/lua.h>
 #include "common/styles.h"
+#include <lua/lua.h>
 
 // initializes dt_style_t
 

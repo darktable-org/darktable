@@ -25,26 +25,26 @@
  *  - profit
  */
 
-#include "version.h"
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/collection.h"
-#include "common/points.h"
+#include "common/exif.h"
 #include "common/film.h"
+#include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
 #include "common/imageio_module.h"
-#include "common/exif.h"
-#include "common/history.h"
+#include "common/points.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
+#include "version.h"
 
-#include <sys/time.h>
-#include <unistd.h>
 #include <inttypes.h>
 #include <libintl.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 static void usage(const char *progname)
 {

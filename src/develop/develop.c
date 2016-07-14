@@ -16,27 +16,27 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <assert.h>
 #include <glib/gprintf.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <assert.h>
-#include <stdint.h>
+#include <unistd.h>
 
+#include "common/debug.h"
+#include "common/image_cache.h"
+#include "common/imageio.h"
+#include "common/mipmap_cache.h"
+#include "common/tags.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
+#include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "develop/blend.h"
 #include "develop/lightroom.h"
-#include "control/jobs.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "common/image_cache.h"
-#include "common/mipmap_cache.h"
-#include "common/imageio.h"
-#include "common/tags.h"
-#include "common/debug.h"
 #include "develop/masks.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"

@@ -16,30 +16,30 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
+#include "control/jobs/control_jobs.h"
 #include "common/collection.h"
-#include "common/image.h"
-#include "common/image_cache.h"
-#include "common/mipmap_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_dng.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/debug.h"
 #include "common/exif.h"
 #include "common/film.h"
-#include "common/history.h"
-#include "common/imageio_module.h"
-#include "develop/imageop_math.h"
-#include "common/debug.h"
-#include "common/tags.h"
-#include "common/debug.h"
 #include "common/gpx.h"
+#include "common/history.h"
+#include "common/image.h"
+#include "common/image_cache.h"
+#include "common/imageio.h"
+#include "common/imageio_dng.h"
+#include "common/imageio_module.h"
+#include "common/mipmap_cache.h"
+#include "common/tags.h"
 #include "control/conf.h"
-#include "control/jobs/control_jobs.h"
+#include "develop/imageop_math.h"
 
 #include "gui/gtk.h"
 
+#include <gio/gio.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <gio/gio.h>
 #ifndef __WIN32__
 #include <glob.h>
 #endif

@@ -19,9 +19,9 @@
 #ifndef DT_CAMERA_IMPORT_DIALOG_H
 #define DT_CAMERA_IMPORT_DIALOG_H
 
+#include "common/camera_control.h"
 #include <glib.h>
 #include <gtk/gtk.h>
-#include "common/camera_control.h"
 
 typedef struct dt_camera_import_dialog_param_t
 {

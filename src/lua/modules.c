@@ -16,10 +16,10 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/modules.h"
-#include "lua/types.h"
-#include "lua/image.h"
-#include "control/conf.h"
 #include "common/imageio.h"
+#include "control/conf.h"
+#include "lua/image.h"
+#include "lua/types.h"
 
 
 void dt_lua_module_new(lua_State *L, const char *module_type_name)

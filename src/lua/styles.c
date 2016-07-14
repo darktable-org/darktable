@@ -17,11 +17,11 @@
  */
 
 #include "lua/styles.h"
+#include "common/debug.h"
+#include "common/styles.h"
 #include "lua/glist.h"
 #include "lua/image.h"
 #include "lua/types.h"
-#include "common/styles.h"
-#include "common/debug.h"
 
 
 // can't use glist functions we need a list of int and glist can only produce a list of int*

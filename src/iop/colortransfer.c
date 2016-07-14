@@ -27,12 +27,12 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <strings.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 /**
  * color transfer somewhat based on the glorious paper `color transfer between images'

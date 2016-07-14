@@ -16,9 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "control/jobs/image_jobs.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
-#include "control/jobs/image_jobs.h"
 
 typedef struct dt_image_load_t
 {

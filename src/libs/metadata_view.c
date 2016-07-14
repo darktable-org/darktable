@@ -16,11 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/metadata.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/metadata.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -29,11 +29,11 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
-#include <sys/param.h>
 #include <gdk/gdkkeysyms.h>
+#include <sys/param.h>
 #ifdef USE_LUA
-#include "lua/image.h"
 #include "lua/call.h"
+#include "lua/image.h"
 #endif
 
 #define SHOW_FLAGS 1

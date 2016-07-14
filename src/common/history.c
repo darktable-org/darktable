@@ -17,17 +17,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/history.h"
 #include "common/darktable.h"
-#include "develop/develop.h"
-#include "control/control.h"
 #include "common/debug.h"
 #include "common/exif.h"
-#include "common/history.h"
-#include "common/imageio.h"
 #include "common/image_cache.h"
+#include "common/imageio.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/utility.h"
+#include "control/control.h"
+#include "develop/develop.h"
 
 void dt_history_item_free(gpointer data)
 {

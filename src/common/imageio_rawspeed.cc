@@ -26,12 +26,12 @@
 #define __STDC_LIMIT_MACROS
 
 extern "C" {
-#include "imageio.h"
-#include "common/imageio_rawspeed.h"
-#include "common/exif.h"
-#include "common/darktable.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/exif.h"
 #include "common/file_location.h"
+#include "common/imageio_rawspeed.h"
+#include "imageio.h"
 #include <stdint.h>
 }
 

@@ -16,17 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gui/camera_import_dialog.h"
+#include "common/camera_control.h"
 #include "common/darktable.h"
-#include "develop/develop.h"
+#include "common/exif.h"
+#include "common/utility.h"
+#include "common/variables.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
-#include "control/conf.h"
-#include "common/exif.h"
-#include "common/variables.h"
-#include "common/camera_control.h"
-#include "common/utility.h"
+#include "develop/develop.h"
 #include "dtgtk/button.h"
-#include "gui/camera_import_dialog.h"
 
 #include <time.h>
 

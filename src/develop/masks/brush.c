@@ -17,12 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "develop/masks.h"
 #include "common/debug.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
+#include "develop/masks.h"
 
 /** get squared distance of indexed point to line segment, taking weighted payload data into account */
 static float _brush_point_line_distance2(int index, int pointscount, const float *points, const float *payload)

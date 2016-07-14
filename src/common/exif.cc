@@ -28,40 +28,40 @@ extern "C" {
 #include "version.h"
 
 #include <glib.h>
-#include <zlib.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <sqlite3.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
+#include <zlib.h>
 }
 
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
 #include <cassert>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 #include <exiv2/easyaccess.hpp>
-#include <exiv2/xmp.hpp>
 #include <exiv2/error.hpp>
-#include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
+#include <exiv2/image.hpp>
 #include <exiv2/preview.hpp>
+#include <exiv2/xmp.hpp>
 
 using namespace std;
 
 extern "C" {
-#include "common/exif.h"
-#include "common/darktable.h"
 #include "common/colorlabels.h"
-#include "common/imageio_jpeg.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/exif.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/imageio_jpeg.h"
 #include "common/metadata.h"
 #include "common/tags.h"
-#include "common/debug.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 }

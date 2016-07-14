@@ -31,9 +31,9 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
+#include <math.h>
 #include <memory.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
 
 // we assume people have -msee support.

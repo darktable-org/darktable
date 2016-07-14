@@ -21,8 +21,8 @@
 #include "common/darktable.h"
 #include "common/dtpthread.h"
 
-#include <inttypes.h>
 #include <glib.h>
+#include <inttypes.h>
 
 // ugly, but the only way to avoid a circular include dependecy :-(
 struct _dt_job_t;

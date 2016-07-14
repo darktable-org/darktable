@@ -18,11 +18,11 @@
 #ifndef DT_IMAGE_IO_H
 #define DT_IMAGE_IO_H
 
-#include <glib.h>
-#include <stdio.h>
 #include "common/image.h"
 #include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
+#include <glib.h>
+#include <stdio.h>
 
 #include <inttypes.h>
 

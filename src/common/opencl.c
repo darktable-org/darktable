@@ -30,15 +30,15 @@
 #include "control/control.h"
 #include "develop/pixelpipe.h"
 
-#include <string.h>
-#include <stdio.h>
 #include <assert.h>
 #include <locale.h>
+#include <stdio.h>
+#include <string.h>
 
-#include <sys/stat.h>
+#include <ctype.h>
 #include <errno.h>
 #include <libgen.h>
-#include <ctype.h>
+#include <sys/stat.h>
 #include <zlib.h>
 
 static const char *dt_opencl_get_vendor_by_id(unsigned int id);

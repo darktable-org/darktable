@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/lua.h"
 #include "libintl.h"
+#include "lua/lua.h"
 // function used by the lua interpreter to load darktable
 
 static int lua_gettext(lua_State*L)

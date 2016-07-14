@@ -17,13 +17,13 @@
 */
 
 
-#include <math.h>
 #include <assert.h>
+#include <math.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
-#include "common/opencl.h"
 #include "common/gaussian.h"
+#include "common/opencl.h"
 
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 

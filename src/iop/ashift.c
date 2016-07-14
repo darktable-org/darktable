@@ -20,10 +20,10 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/bilateral.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/interpolation.h"
-#include "common/bilateral.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"

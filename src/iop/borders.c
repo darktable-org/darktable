@@ -34,12 +34,12 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <gdk/gdkkeysyms.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 DT_MODULE_INTROSPECTION(3, dt_iop_borders_params_t)
 

@@ -17,8 +17,8 @@
 */
 #ifndef DT_LUA_VIEW_H
 #define DT_LUA_VIEW_H
-#include <lua/lua.h>
 #include "views/view.h"
+#include <lua/lua.h>
 
 
 

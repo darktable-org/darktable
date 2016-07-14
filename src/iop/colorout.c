@@ -33,11 +33,11 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
-#include <string.h>
 #include <gdk/gdkkeysyms.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 // max iccprofile file name length
 #define DT_IOP_COLOR_ICC_LEN 100

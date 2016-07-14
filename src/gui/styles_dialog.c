@@ -18,14 +18,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/debug.h"
 #include "common/darktable.h"
-#include "common/styles.h"
+#include "common/debug.h"
 #include "common/history.h"
-#include "develop/imageop.h"
+#include "common/styles.h"
 #include "control/control.h"
-#include "gui/styles.h"
+#include "develop/imageop.h"
 #include "gui/gtk.h"
+#include "gui/styles.h"
 
 /* creates a styles dialog, if edit equals true id=styleid else id=imgid */
 static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid);

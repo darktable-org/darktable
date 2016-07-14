@@ -18,29 +18,29 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
+#include "views/view.h"
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
-#include "common/image_cache.h"
-#include "common/mipmap_cache.h"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/history.h"
-#include "libs/lib.h"
+#include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
-#include "views/view.h"
-#include "views/undo.h"
+#include "dtgtk/expander.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "dtgtk/expander.h"
-#include "bauhaus/bauhaus.h"
+#include "libs/lib.h"
+#include "views/undo.h"
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <glib.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <math.h>
 
 #define DECORATION_SIZE_LIMIT 40
 

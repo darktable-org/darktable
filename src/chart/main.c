@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/exif.h"
 #include "chart/cairo.h"
 #include "chart/colorchart.h"
 #include "chart/common.h"
@@ -24,6 +23,7 @@
 #include "chart/pfm.h"
 #include "chart/thinplate.h"
 #include "chart/tonecurve.h"
+#include "common/exif.h"
 #include "version.h"
 
 

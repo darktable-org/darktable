@@ -18,10 +18,10 @@
 #ifndef DT_CONTROL_JOBS_IMAGE_H
 #define DT_CONTROL_JOBS_IMAGE_H
 
-#include <inttypes.h>
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 #include "control/control.h"
+#include <inttypes.h>
 
 dt_job_t *dt_image_load_job_create(int32_t imgid, dt_mipmap_size_t mip);
 

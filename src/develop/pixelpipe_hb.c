@@ -16,7 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "develop/pixelpipe.h"
 #include "common/colorspaces.h"
 #include "common/histogram.h"
 #include "common/imageio.h"
@@ -25,18 +24,19 @@
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/imageop_math.h"
+#include "develop/pixelpipe.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
 
 #include <assert.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
-#include <math.h>
 #include <unistd.h>
-#include <stdint.h>
 
 typedef enum dt_pixelpipe_flow_t
 {

@@ -21,8 +21,8 @@
 
 #include "common/darktable.h"
 
-#include <gphoto2/gphoto2.h>
 #include <glib.h>
+#include <gphoto2/gphoto2.h>
 #include <gtk/gtk.h>
 
 

@@ -19,9 +19,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/darktable.h"
 #include "common/colorlabels.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
@@ -33,36 +33,36 @@
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
-#include "common/imageio_jpeg.h"
-#include "common/imageio_png.h"
-#include "common/imageio_tiff.h"
-#include "common/imageio_pfm.h"
-#include "common/imageio_rgbe.h"
-#include "common/imageio_gm.h"
-#include "common/imageio_rawspeed.h"
 #include "common/image_compression.h"
+#include "common/imageio_gm.h"
+#include "common/imageio_jpeg.h"
+#include "common/imageio_pfm.h"
+#include "common/imageio_png.h"
+#include "common/imageio_rawspeed.h"
+#include "common/imageio_rgbe.h"
+#include "common/imageio_tiff.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "develop/blend.h"
 
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #include <magick/blob.h>
 #endif
 
+#include <assert.h>
+#include <glib/gstdio.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <assert.h>
 #include <string.h>
 #include <strings.h>
-#include <glib/gstdio.h>
 
 // load a full-res thumbnail:
 int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,

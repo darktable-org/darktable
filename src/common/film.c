@@ -16,31 +16,31 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "control/jobs.h"
 #include "common/film.h"
-#include "common/dtpthread.h"
 #include "common/collection.h"
-#include "common/image_cache.h"
+#include "common/darktable.h"
 #include "common/debug.h"
+#include "common/dtpthread.h"
+#include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
 #include "views/view.h"
 
+#include <assert.h>
+#include <errno.h>
+#include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <unistd.h>
-#include <math.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <string.h>
 #include <strings.h>
-#include <errno.h>
-#include <assert.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #ifdef USE_LUA
-#include "lua/lua.h"
 #include "lua/glist.h"
+#include "lua/lua.h"
 #endif
 
 void dt_film_init(dt_film_t *film)

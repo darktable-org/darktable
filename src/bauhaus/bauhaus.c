@@ -18,9 +18,9 @@
 */
 
 #include "bauhaus/bauhaus.h"
-#include "control/conf.h"
 #include "common/calculator.h"
 #include "common/darktable.h"
+#include "control/conf.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
 

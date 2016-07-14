@@ -16,10 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gui/accelerators.h"
 #include "common/colorlabels.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"

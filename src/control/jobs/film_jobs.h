@@ -18,9 +18,9 @@
 #ifndef DT_CONTROL_JOBS_FILM_H
 #define DT_CONTROL_JOBS_FILM_H
 
-#include <inttypes.h>
-#include "control/control.h"
 #include "common/film.h"
+#include "control/control.h"
+#include <inttypes.h>
 
 dt_job_t *dt_film_import1_create(dt_film_t *film);
 

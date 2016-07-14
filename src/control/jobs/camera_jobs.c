@@ -15,17 +15,17 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
-#include "common/utility.h"
-#include "common/import_session.h"
-#include "views/view.h"
-#include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
+#include "common/darktable.h"
+#include "common/import_session.h"
+#include "common/utility.h"
+#include "control/conf.h"
 #include "control/jobs/image_jobs.h"
 #include "gui/gtk.h"
+#include "views/view.h"
 
-#include <stdio.h>
 #include <glib.h>
+#include <stdio.h>
 
 typedef struct dt_camera_shared_t
 {

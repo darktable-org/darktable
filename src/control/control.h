@@ -23,16 +23,16 @@
 #include "common/dtpthread.h"
 #include "control/settings.h"
 
-#include <inttypes.h>
 #include <gtk/gtk.h>
+#include <inttypes.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <gtk/gtk.h>
-#include "libs/lib.h"
 #include "control/jobs.h"
 #include "control/progress.h"
+#include "libs/lib.h"
+#include <gtk/gtk.h>
 
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)

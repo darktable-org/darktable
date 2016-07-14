@@ -19,11 +19,11 @@
    Copyright 2004-2008 by Shawn Freeman, Udi Fuchs
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <float.h>
 #include "curve_tools.h"
+#include <float.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define EPSILON 2 * FLT_MIN
 #define MAX_ITER 10

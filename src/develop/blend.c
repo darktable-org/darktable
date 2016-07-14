@@ -16,12 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "blend.h"
+#include "common/gaussian.h"
 #include "control/control.h"
 #include "develop/imageop.h"
-#include "develop/tiling.h"
 #include "develop/masks.h"
-#include "common/gaussian.h"
-#include "blend.h"
+#include "develop/tiling.h"
 
 #define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
 

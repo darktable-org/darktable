@@ -18,12 +18,12 @@
  */
 
 #include "lua/film.h"
-#include "lua/types.h"
-#include "lua/image.h"
-#include "lua/database.h"
-#include "common/film.h"
 #include "common/debug.h"
+#include "common/film.h"
 #include "common/grealpath.h"
+#include "lua/database.h"
+#include "lua/image.h"
+#include "lua/types.h"
 #include <errno.h>
 
 static int path_member(lua_State *L)

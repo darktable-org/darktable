@@ -24,8 +24,8 @@
 #include "control/control.h"
 #include <gphoto2/gphoto2-file.h>
 
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 #if defined(__SUNOS__)
 #include <fcntl.h>
 #endif

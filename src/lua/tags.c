@@ -16,11 +16,11 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/tags.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/tags.h"
 #include "lua/image.h"
 #include "lua/types.h"
-#include "common/darktable.h"
-#include "common/tags.h"
-#include "common/debug.h"
 
 
 static int tag_name(lua_State *L)
