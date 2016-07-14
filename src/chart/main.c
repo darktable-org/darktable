@@ -1522,7 +1522,11 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   while(fscanf(f, "%*[^\n]\n") != EOF) N++;
   fseek(f, 0, SEEK_SET);
 
-  if(N <= 1) return 0;
+  if(N <= 1)
+  {
+    fclose(f);
+    return 0;
+  }
 
   // header lines
   char key[16] = {0}, value[256] = {0};
@@ -1608,6 +1612,12 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
   if(N == 0)
   {
     fprintf(stderr, "error parsing `%s', giving up\n", filename_csv);
+
+    free(target_L);
+    free(target_a);
+    free(target_b);
+    free(colorchecker_Lab);
+
     return 1;
   }
 
