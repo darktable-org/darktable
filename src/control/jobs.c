@@ -143,6 +143,7 @@ void dt_control_job_dispose(_dt_job_t *job)
 {
   if(!job) return;
   if(job->progress) dt_control_progress_destroy(darktable.control, job->progress);
+  job->progress = NULL;
   dt_control_job_set_state(job, DT_JOB_STATE_DISPOSED);
   if(job->params_destroy) job->params_destroy(job->params);
   dt_pthread_mutex_destroy(&job->state_mutex);
