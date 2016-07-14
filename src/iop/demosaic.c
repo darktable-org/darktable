@@ -3214,11 +3214,11 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       size_t region[] = { edges[n][2], edges[n][3], 1 };
 
       // reserve input buffer for image edge
-      cl_mem dev_edge_in = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float));
+      dev_edge_in = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float));
       if(dev_edge_in == NULL) goto error;
 
       // reserve output buffer for VNG processing of edge
-      cl_mem dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], 4 * sizeof(float));
+      dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], 4 * sizeof(float));
       if(dev_edge_out == NULL) goto error;
 
       // copy edge to input buffer
