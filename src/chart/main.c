@@ -830,7 +830,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
 
   int sp = 0;
-  int cperm[300];
+  int cperm[300] = { 0 };
   for(int k = 0; k < sparsity; k++)
     if(perm[k] < N) // skip polynomial parts
       cperm[sp++] = perm[k];
