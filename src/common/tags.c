@@ -23,6 +23,7 @@
 #include "common/debug.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include <glib.h>
 
 gboolean dt_tag_new(const char *name, guint *tagid)
 {

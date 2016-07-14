@@ -18,8 +18,10 @@
 
 #ifndef DT_TAGS_H
 #define DT_TAGS_H
+
 #include <glib.h>
 #include <sqlite3.h>
+#include <stdint.h>
 
 typedef struct dt_tag_t
 {

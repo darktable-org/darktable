@@ -19,7 +19,9 @@
 #ifndef __PRINTPROF_H__
 #define __PRINTPROF_H__
 
+#include <glib.h>
 #include <inttypes.h>
+#include <lcms2.h>
 #include <stddef.h>
 
 int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t height, int bpp,

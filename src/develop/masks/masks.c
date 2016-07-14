@@ -24,13 +24,14 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 
-#include "develop/masks/brush.c"
+// clang-format off
 #include "develop/masks/circle.c"
-#include "develop/masks/ellipse.c"
-#include "develop/masks/gradient.c"
-#include "develop/masks/group.c"
 #include "develop/masks/path.c"
-
+#include "develop/masks/brush.c"
+#include "develop/masks/gradient.c"
+#include "develop/masks/ellipse.c"
+#include "develop/masks/group.c"
+// clang-format on
 
 static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formtype)
 {
