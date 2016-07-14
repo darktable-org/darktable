@@ -356,6 +356,46 @@ else()
 	SET(HAVE_OPENCL 0)
 endif(USE_OPENCL)
 
+if(NOT SOURCE_PACKAGE AND NOT (CMAKE_VERSION VERSION_LESS 3.3) AND DEFINED ENV{_DO_IWYU})
+  find_program(iwyu_path NAMES include-what-you-use iwyu)
+
+  if(iwyu_path)
+    set(DT_CMAKE_INCLUDE_WHAT_YOU_USE ${iwyu_path} -Xiwyu --mapping_file=${CMAKE_SOURCE_DIR}/iwyu.imp -Xiwyu --prefix_header_includes=add)
+  endif()
+
+  find_program(iwyu_tool_path NAMES iwyu_tool.py)
+  if (iwyu_tool_path)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    add_custom_command(
+      OUTPUT "${CMAKE_BINARY_DIR}/iwyu.log"
+      COMMAND "${iwyu_tool_path}" -v -p "${CMAKE_BINARY_DIR}"
+              -- --mapping_file=${CMAKE_SOURCE_DIR}/iwyu.imp
+              --prefix_header_includes=add 2>
+              "${CMAKE_BINARY_DIR}/iwyu.log"
+      WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+      COMMENT "Running include-what-you-use tool"
+      VERBATIM
+    )
+    add_custom_target(iwyu
+      DEPENDS "${CMAKE_BINARY_DIR}/iwyu.log"
+      VERBATIM
+    )
+  endif()
+
+  find_program(fix_includes_path NAMES fix_includes.py)
+  if (fix_includes_path)
+    add_custom_target(iwyu_fix
+      COMMAND "${fix_includes_path}" --noblank_lines --comments
+              --nosafe_headers < "${CMAKE_BINARY_DIR}/iwyu.log" || true
+      COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_BINARY_DIR}/iwyu.log"
+      DEPENDS "${CMAKE_BINARY_DIR}/iwyu.log"
+      WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+      COMMENT "Running include-what-you-use fix_includes tool"
+      VERBATIM
+    )
+  endif()
+endif()
+
 #
 # Test SSE level
 #
