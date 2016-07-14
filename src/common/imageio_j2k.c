@@ -374,8 +374,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   }
 
   /* setup the decoder decoding parameters using user parameters */
-  opj_setup_decoder(d_codec, &parameters);
-  if(!d_codec)
+  if(!opj_setup_decoder(d_codec, &parameters))
   {
     fprintf(stderr, "[j2k_read_profile] Error: failed to setup the decoder %s\n", parameters.infile);
     return DT_IMAGEIO_FILE_CORRUPTED;
