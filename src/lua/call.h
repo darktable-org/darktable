@@ -18,6 +18,7 @@
 #ifndef DT_LUA_CALL_H
 #define DT_LUA_CALL_H
 
+#include "lua/lua.h"
 
 /*
    pop a function from the top of the stack, push a new version on the stack

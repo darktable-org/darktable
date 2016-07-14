@@ -19,6 +19,8 @@
 #ifndef __DBUS_H__
 #define __DBUS_H__
 
+#include <glib.h>
+
 /** allocates and initializes dbus */
 struct dt_dbus_t *dt_dbus_init();
 

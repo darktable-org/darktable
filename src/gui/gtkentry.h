@@ -18,6 +18,7 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
 
