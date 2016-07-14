@@ -17,14 +17,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "gradientslider.h"
 #include "common/darktable.h"
 #include "develop/develop.h"
+#include "gradientslider.h"
 #include "gui/gtk.h"
 
 #define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))

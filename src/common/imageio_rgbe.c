@@ -19,11 +19,11 @@
 #include "config.h"
 #endif
 #include "common/imageio_rgbe.h"
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
 #include <ctype.h>
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 /* THIS CODE CARRIES NO GUARANTEE OF USABILITY OR FITNESS FOR ANY PURPOSE.

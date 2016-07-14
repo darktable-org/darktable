@@ -18,16 +18,16 @@
 
 #include "version.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <glib.h>
 #include <glib-object.h>
+#include <glib.h>
 #include <lcms2.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef HAVE_X11
-#include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 #ifdef HAVE_COLORD
 #include <colord.h>

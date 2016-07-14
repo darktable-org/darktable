@@ -16,17 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/exif.h"
 #include "common/film.h"
-#include "common/collection.h"
 #include "common/image_cache.h"
-#include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
-#include "common/exif.h"
-#include "control/control.h"
+#include "common/mipmap_cache.h"
 #include "control/conf.h"
+#include "control/control.h"
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
 #endif

@@ -21,9 +21,9 @@
 #ifndef DT_CONTROL_JOBS_H
 #define DT_CONTROL_JOBS_H
 
+#include <glib.h>
 #include <inttypes.h>
 #include <stddef.h>
-#include <glib.h>
 
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers

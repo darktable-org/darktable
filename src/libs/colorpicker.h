@@ -19,8 +19,8 @@
 #ifndef COLORPICKER_H
 #define COLORPICKER_H
 
-#include <inttypes.h>
 #include <gtk/gtk.h>
+#include <inttypes.h>
 
 #define DT_COLORPICKER_SIZE_POINT 0
 #define DT_COLORPICKER_SIZE_BOX 1

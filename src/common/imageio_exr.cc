@@ -22,28 +22,28 @@
 #include "config.h"
 #endif
 
+#include <assert.h>
+#include <inttypes.h>
 #include <memory>
 #include <stdio.h>
-#include <inttypes.h>
 #include <string.h>
-#include <assert.h>
 
-#include <OpenEXR/ImfFrameBuffer.h>
-#include <OpenEXR/ImfTestFile.h>
-#include <OpenEXR/ImfInputFile.h>
-#include <OpenEXR/ImfTiledInputFile.h>
 #include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfInputFile.h>
 #include <OpenEXR/ImfStandardAttributes.h>
+#include <OpenEXR/ImfTestFile.h>
 #include <OpenEXR/ImfThreading.h>
+#include <OpenEXR/ImfTiledInputFile.h>
 
 extern "C" {
-#include "common/imageio_exr.h"
-#include "common/imageio.h"
-#include "common/darktable.h"
-#include "develop/develop.h"
-#include "common/exif.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/exif.h"
+#include "common/imageio.h"
+#include "common/imageio_exr.h"
 #include "control/conf.h"
+#include "develop/develop.h"
 }
 #include "common/imageio_exr.hh"
 

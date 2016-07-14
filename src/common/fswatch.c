@@ -21,15 +21,15 @@
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
-#include "common/image.h"
 #include "common/fswatch.h"
+#include "common/image.h"
 #include "develop/develop.h"
 
-#include <stdio.h>
-#include <unistd.h>
 #include <errno.h>
 #include <glib.h>
+#include <stdio.h>
 #include <strings.h>
+#include <unistd.h>
 #if 0 // def  HAVE_INOTIFY
 #include <sys/inotify.h>
 #endif

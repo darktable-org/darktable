@@ -17,9 +17,9 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "control/control.h"
 #include "common/noiseprofiles.h"
 #include "common/file_location.h"
+#include "control/control.h"
 
 // bump this when the noiseprofiles are getting a differen layout or meaning (raw-raw data, ...)
 #define DT_NOISE_PROFILE_VERSION 0

@@ -21,8 +21,8 @@
 
 #define GRADIENT_SLIDER_MAX_POSITIONS 10
 
-#include <gtk/gtk.h>
 #include "paint.h"
+#include <gtk/gtk.h>
 G_BEGIN_DECLS
 #define DTGTK_GRADIENT_SLIDER(obj)                                                                           \
   G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSlider)

@@ -17,8 +17,8 @@
  */
 #ifndef LUA_WIDGET_H
 #define LUA_WIDGET_H
-#include "lua/lua.h"
 #include "lua/call.h"
+#include "lua/lua.h"
 #include <gtk/gtk.h>
 struct dt_lua_widget_type_t;
 typedef struct {

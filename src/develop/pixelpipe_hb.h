@@ -21,8 +21,8 @@
 #include "common/image.h"
 #include "common/imageio.h"
 #include "control/conf.h"
-#include "develop/imageop.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "develop/pixelpipe_cache.h"
 
 /**

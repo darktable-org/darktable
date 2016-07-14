@@ -15,10 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <string.h>
-#include <glib.h>
-#include "control/control.h"
 #include "control/signal.h"
+#include "control/control.h"
+#include <glib.h>
+#include <string.h>
 
 typedef struct dt_control_signal_t
 {

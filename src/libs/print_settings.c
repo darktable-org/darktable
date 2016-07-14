@@ -18,7 +18,6 @@
 
 #include <glib.h>
 
-#include "gui/accelerators.h"
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
@@ -31,6 +30,7 @@
 #include "common/tags.h"
 #include "common/variables.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"

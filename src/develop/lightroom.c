@@ -16,23 +16,23 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "common/colorspaces.h"
-#include "common/tags.h"
-#include "common/curve_tools.h"
-#include "common/ratings.h"
-#include "common/colorlabels.h"
-#include "common/debug.h"
 #include "develop/lightroom.h"
+#include "common/colorlabels.h"
+#include "common/colorspaces.h"
+#include "common/curve_tools.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/ratings.h"
+#include "common/tags.h"
 #include "control/control.h"
 
+#include <ctype.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 // copy here the iop params struct with the actual version. This is so to
 // be as independent as possible of any iop evolutions. Indeed, we create

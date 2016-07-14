@@ -18,11 +18,11 @@
 */
 #ifndef DT_LUA_TYPES_H
 #define DT_LUA_TYPES_H
-#include <lualib.h>
-#include <lua.h>
-#include <lauxlib.h>
-#include <lautoc.h>
 #include <gtk/gtk.h>
+#include <lautoc.h>
+#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
 
 /**
   these defines can be used with luaA_struct_member to have checks on read added

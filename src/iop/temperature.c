@@ -23,11 +23,11 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
-#include <string.h>
 #include <lcms2.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
@@ -43,8 +43,8 @@
 #include "iop/iop_api.h"
 
 // for Kelvin temperature and bogus WB
-#include "external/cie_colorimetric_tables.c"
 #include "common/colorspaces.h"
+#include "external/cie_colorimetric_tables.c"
 
 DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 

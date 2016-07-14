@@ -19,10 +19,10 @@
 #ifndef DT_DEVELOP_MASKS_H
 #define DT_DEVELOP_MASKS_H
 
+#include "common/opencl.h"
+#include "develop/pixelpipe.h"
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
-#include "develop/pixelpipe.h"
-#include "common/opencl.h"
 
 #include <assert.h>
 

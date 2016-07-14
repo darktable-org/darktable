@@ -29,12 +29,12 @@
 #include <tr1/memory>
 #endif
 
-#include <OpenEXR/ImfFrameBuffer.h>
-#include <OpenEXR/ImfTestFile.h>
-#include <OpenEXR/ImfInputFile.h>
-#include <OpenEXR/ImfTiledInputFile.h>
 #include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfInputFile.h>
 #include <OpenEXR/ImfStandardAttributes.h>
+#include <OpenEXR/ImfTestFile.h>
+#include <OpenEXR/ImfTiledInputFile.h>
 
 #ifdef OPENEXR_IMF_INTERNAL_NAMESPACE
 #define IMF_NS OPENEXR_IMF_INTERNAL_NAMESPACE

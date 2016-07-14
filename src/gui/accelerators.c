@@ -16,16 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
 #include "gui/accelerators.h"
-#include "control/control.h"
+#include "common/darktable.h"
 #include "common/debug.h"
+#include "control/control.h"
 #include "develop/blend.h"
 
 #include "bauhaus/bauhaus.h"
 
-#include <gtk/gtk.h>
 #include <assert.h>
+#include <gtk/gtk.h>
 
 void dt_accel_path_global(char *s, size_t n, const char *path)
 {

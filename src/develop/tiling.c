@@ -18,17 +18,17 @@
 
 
 #include "develop/tiling.h"
-#include "develop/pixelpipe.h"
-#include "develop/blend.h"
 #include "common/opencl.h"
 #include "control/control.h"
+#include "develop/blend.h"
+#include "develop/pixelpipe.h"
 
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
-#include <math.h>
 #include <unistd.h>
-#include <assert.h>
 
 #define CLAMPI(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 

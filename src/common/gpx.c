@@ -15,10 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <glib.h>
-#include <inttypes.h>
 #include "common/gpx.h"
 #include "common/darktable.h"
+#include <glib.h>
+#include <inttypes.h>
 
 typedef struct _gpx_track_point_t
 {

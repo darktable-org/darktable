@@ -17,16 +17,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "libs/lib.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
-#include "dtgtk/button.h"
-#include "dtgtk/icon.h"
-#include "dtgtk/expander.h"
+#include "common/debug.h"
 #include "control/conf.h"
 #include "control/control.h"
-#include "common/debug.h"
-#include <stdlib.h>
+#include "dtgtk/button.h"
+#include "dtgtk/expander.h"
+#include "dtgtk/icon.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
 #include <stdbool.h>
+#include <stdlib.h>
 
 typedef struct dt_lib_module_info_t
 {

@@ -16,11 +16,11 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/lualib.h"
-#include "lua/widget/widget.h"
-#include "libs/lib.h"
-#include "views/view.h"
-#include "gui/accelerators.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
+#include "libs/lib.h"
+#include "lua/widget/widget.h"
+#include "views/view.h"
 
 
 typedef struct

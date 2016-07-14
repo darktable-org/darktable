@@ -25,10 +25,10 @@
         Anders Kvist <akv@lnxbx.dk> and Klaus Post <klauspost@gmail.com>
  */
 
-#include <glib.h>
-#include "config.h"
-#include "common/darktable.h"
 #include "cpuid.h"
+#include "common/darktable.h"
+#include "config.h"
+#include <glib.h>
 
 #if defined(__i386__) || defined(__x86_64__)
 

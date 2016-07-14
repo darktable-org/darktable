@@ -18,15 +18,15 @@
 
 #ifdef HAVE_OPENCL
 
+#include "common/dlopencl.h"
 #include "common/darktable.h"
 #include "common/dynload.h"
-#include "common/dlopencl.h"
 
+#include <assert.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
-#include <signal.h>
 
 #if defined(WIN32)
 static const char *ocllib[] = { "OpenCL", NULL };

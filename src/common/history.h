@@ -18,9 +18,9 @@
 
 #ifndef DT_HISTORY_H
 #define DT_HISTORY_H
-#include <sqlite3.h>
 #include <glib.h>
 #include <inttypes.h>
+#include <sqlite3.h>
 
 /** helper function to free a GList of dt_history_item_t */
 void dt_history_item_free(gpointer data);

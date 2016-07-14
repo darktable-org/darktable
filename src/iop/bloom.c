@@ -29,11 +29,11 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <stdlib.h>
 #include <math.h>
-#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define BOX_ITERATIONS 8

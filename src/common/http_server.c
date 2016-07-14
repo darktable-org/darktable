@@ -16,9 +16,9 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <glib/gi18n.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "common/darktable.h"
 #include "common/http_server.h"

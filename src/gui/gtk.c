@@ -27,24 +27,24 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
-#include "gui/accelerators.h"
 #include "dtgtk/sidepanel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 
-#include "gui/presets.h"
+#include "common/styles.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
-#include "control/conf.h"
 #include "control/signal.h"
+#include "gui/presets.h"
 #include "views/view.h"
-#include "common/styles.h"
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <math.h>
-#include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #ifdef MAC_INTEGRATION
 #include <gtkosxapplication.h>
 #endif

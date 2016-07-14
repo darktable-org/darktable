@@ -19,8 +19,8 @@
 #ifndef __INTROSPECTION_H__
 #define __INTROSPECTION_H__
 
-#include <stdlib.h>
 #include <glib.h>
+#include <stdlib.h>
 
 // some typedefs for structs that hold the data in a machine readable form
 

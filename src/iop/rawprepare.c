@@ -30,8 +30,8 @@
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif

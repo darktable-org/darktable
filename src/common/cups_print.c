@@ -16,17 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glib.h>
-#include <stdio.h>
 #include <cups/cups.h>
 #include <cups/ppd.h>
+#include <glib.h>
+#include <stdio.h>
 
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/pdf.h"
-#include "cups_print.h"
 #include "control/jobs/control_jobs.h"
+#include "cups_print.h"
 
 typedef struct dt_prtctl_t
 {

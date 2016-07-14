@@ -15,16 +15,16 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
    */
-#include <glib.h>
+#include "lua/gui.h"
 #include "common/collection.h"
-#include "common/selection.h"
 #include "common/darktable.h"
+#include "common/selection.h"
 #include "control/control.h"
 #include "control/settings.h"
-#include "lua/gui.h"
+#include "lua/call.h"
 #include "lua/image.h"
 #include "lua/types.h"
-#include "lua/call.h"
+#include <glib.h>
 
 /***********************************************************************
   Creating the images global variable

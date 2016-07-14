@@ -17,8 +17,8 @@
 */
 #ifndef DT_LUA_LIB_H
 #define DT_LUA_LIB_H
-#include <lua/lua.h>
 #include "libs/lib.h"
+#include <lua/lua.h>
 
 
 struct dt_lib_module_t;

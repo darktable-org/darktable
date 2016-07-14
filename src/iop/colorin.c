@@ -19,14 +19,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/develop.h"
-#include "control/control.h"
-#include "gui/gtk.h"
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
 #include "common/colormatrices.c"
-#include "common/opencl.h"
+#include "common/colorspaces.h"
 #include "common/image_cache.h"
+#include "common/opencl.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "gui/gtk.h"
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
@@ -40,9 +40,9 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <lcms2.h>

@@ -18,8 +18,8 @@
 #ifndef DT_SELECTION_H
 #define DT_SELECTION_H
 
-#include <inttypes.h>
 #include <glib.h>
+#include <inttypes.h>
 
 struct dt_selection_t;
 

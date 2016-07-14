@@ -34,8 +34,8 @@
 #ifdef HAVE_OPENCL
 
 #include "common/darktable.h"
-#include "common/dtpthread.h"
 #include "common/dlopencl.h"
+#include "common/dtpthread.h"
 #include "control/conf.h"
 
 // #pragma GCC diagnostic push
@@ -309,8 +309,8 @@ cl_int dt_opencl_events_flush(const int devid, const int reset);
 void dt_opencl_events_profiling(const int devid, const int aggregated);
 
 #else
-#include <stdlib.h>
 #include "control/conf.h"
+#include <stdlib.h>
 typedef struct dt_opencl_t
 {
   int inited;

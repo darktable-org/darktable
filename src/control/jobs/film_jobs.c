@@ -15,9 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "control/jobs/film_jobs.h"
 #include "common/darktable.h"
 #include "common/film.h"
-#include "control/jobs/film_jobs.h"
 #include <stdlib.h>
 
 typedef struct dt_film_import1_t
