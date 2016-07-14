@@ -53,6 +53,8 @@ typedef struct _dt_job_t
 
   dt_job_state_change_callback state_changed_cb;
 
+  dt_progress_t *progress;
+
   char description[DT_CONTROL_DESCRIPTION_LEN];
 } _dt_job_t;
 
@@ -76,6 +78,11 @@ static void dt_control_job_set_state(_dt_job_t *job, dt_job_state_t state)
 {
   if(!job) return;
   dt_pthread_mutex_lock(&job->state_mutex);
+  if(state >= DT_JOB_STATE_FINISHED  && job->state != DT_JOB_STATE_RUNNING && job->progress)
+  {
+    dt_control_progress_destroy(darktable.control, job->progress);
+    job->progress = NULL;
+  }
   job->state = state;
   /* pass state change to callback */
   if(job->state_changed_cb) job->state_changed_cb(job, state);
@@ -135,6 +142,7 @@ dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg
 void dt_control_job_dispose(_dt_job_t *job)
 {
   if(!job) return;
+  if(job->progress) dt_control_progress_destroy(darktable.control, job->progress);
   dt_control_job_set_state(job, DT_JOB_STATE_DISPOSED);
   if(job->params_destroy) job->params_destroy(job->params);
   dt_pthread_mutex_destroy(&job->state_mutex);
@@ -235,6 +243,7 @@ static _dt_job_t *dt_control_schedule_job(dt_control_t *control)
   for(int i = 0; i < DT_JOB_QUEUE_MAX; i++)
   {
     if(control->queues[i] == NULL) continue;
+    if(control->export_scheduled && i == DT_JOB_QUEUE_USER_EXPORT) continue;
     _dt_job_t *_job = (_dt_job_t *)control->queues[i]->data;
     if(_job->priority > max_priority)
     {
@@ -258,6 +267,7 @@ static _dt_job_t *dt_control_schedule_job(dt_control_t *control)
   GList **queue = &control->queues[winner_queue];
   *queue = g_list_delete_link(*queue, *queue);
   control->queue_length[winner_queue]--;
+  if(winner_queue == DT_JOB_QUEUE_USER_EXPORT) control->export_scheduled = TRUE;
 
   // and place it in scheduled job array (for job deduping)
   control->job[dt_control_get_threadid()] = job;
@@ -307,6 +317,7 @@ static int32_t dt_control_run_job(dt_control_t *control)
   // remove the job from scheduled job array (for job deduping)
   dt_pthread_mutex_lock(&control->queue_mutex);
   control->job[dt_control_get_threadid()] = NULL;
+  if(job->queue == DT_JOB_QUEUE_USER_EXPORT) control->export_scheduled = FALSE;
   dt_pthread_mutex_unlock(&control->queue_mutex);
 
   // and free it
@@ -434,7 +445,9 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
   else
   {
     // the rest are FIFOs
-    if(queue_id == DT_JOB_QUEUE_USER_BG || queue_id == DT_JOB_QUEUE_SYSTEM_BG)
+    if(queue_id == DT_JOB_QUEUE_USER_BG ||
+       queue_id == DT_JOB_QUEUE_USER_EXPORT ||
+       queue_id == DT_JOB_QUEUE_SYSTEM_BG)
       job->priority = 0;
     else
       job->priority = DT_CONTROL_FG_PRIORITY;
@@ -533,6 +546,35 @@ static void *dt_control_work(void *ptr)
   }
   return NULL;
 }
+
+// convenience functions to have a progress bar for the job.
+// this allows to show the gui indicator of the job even before it got scheduled
+void dt_control_job_add_progress(dt_job_t *job, const char *message, gboolean cancellable)
+{
+  if(!job) return;
+  job->progress = dt_control_progress_create(darktable.control, TRUE, message);
+  if(cancellable)
+    dt_control_progress_attach_job(darktable.control, job->progress, job);
+}
+
+void dt_control_job_set_progress_message(dt_job_t *job, const char *message)
+{
+  if(!job || !job->progress) return;
+  dt_control_progress_set_message(darktable.control, job->progress, message);
+}
+
+void dt_control_job_set_progress(dt_job_t *job, double value)
+{
+  if(!job || !job->progress) return;
+  dt_control_progress_set_progress(darktable.control, job->progress, value);
+}
+
+double dt_control_job_get_progress(dt_job_t *job)
+{
+  if(!job || !job->progress) return -1.0;
+  return dt_control_progress_get_progress(job->progress);
+}
+
 
 // moved out of control.c to be able to make some helper functions static
 void dt_control_jobs_init(dt_control_t *control)
