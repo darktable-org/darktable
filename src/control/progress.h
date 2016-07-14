@@ -54,6 +54,8 @@ double dt_control_progress_get_progress(dt_progress_t *progress);
 
 /** get the message passed during construction. */
 const gchar *dt_control_progress_get_message(dt_progress_t *progress);
+/** update the message. */
+void dt_control_progress_set_message(struct dt_control_t *control, dt_progress_t *progress, const char *message);
 
 /** these functions are to be used by lib/backgroundjobs.c only. */
 void dt_control_progress_set_gui_data(dt_progress_t *progress, void *data);

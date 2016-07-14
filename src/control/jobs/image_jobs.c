@@ -19,7 +19,6 @@
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "control/jobs/image_jobs.h"
-#include "control/progress.h"
 
 typedef struct dt_image_load_t
 {
@@ -69,7 +68,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
   dt_image_import_t *params = dt_control_job_get_params(job);
 
   snprintf(message, sizeof(message), _("importing image %s"), params->filename);
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
+  dt_control_job_set_progress_message(job, message);
 
   id = dt_image_import(params->film_id, params->filename, TRUE);
   if(id)
@@ -78,8 +77,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
     dt_control_queue_redraw();
   }
 
-  dt_control_progress_set_progress(darktable.control, progress, 1.0);
-  dt_control_progress_destroy(darktable.control, progress);
+  dt_control_job_set_progress(job, 1.0);
   return 0;
 }
 
@@ -103,6 +101,7 @@ dt_job_t *dt_image_import_job_create(uint32_t filmid, const char *filename)
     dt_control_job_dispose(job);
     return NULL;
   }
+  dt_control_job_add_progress(job, _("import image"), FALSE);
   dt_control_job_set_params(job, params, dt_image_import_job_cleanup);
   params->filename = g_strdup(filename);
   params->film_id = filmid;
