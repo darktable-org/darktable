@@ -213,8 +213,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->distance = o->distance;
     n->target_geom = o->target_geom;
     n->tca_override = o->tca_override;
-    strncpy(n->camera, o->camera, sizeof(n->camera));
-    strncpy(n->lens, o->lens, sizeof(n->lens));
+    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
+    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
     n->modified = 1;
 
     // old versions had R and B swapped
