@@ -468,7 +468,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_list_free_full(res, &g_free);
     }
     else
-      snprintf(value, sizeof(value), NODATA_STRING);
+      g_strlcpy(value, NODATA_STRING, sizeof(value));
     _metadata_update_value(d->metadata[md_xmp_title], value);
 
     if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL)) != NULL)
@@ -478,7 +478,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_list_free_full(res, &g_free);
     }
     else
-      snprintf(value, sizeof(value), NODATA_STRING);
+      g_strlcpy(value, NODATA_STRING, sizeof(value));
     _metadata_update_value(d->metadata[md_xmp_creator], value);
 
     if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL)) != NULL)
@@ -488,7 +488,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_list_free_full(res, &g_free);
     }
     else
-      snprintf(value, sizeof(value), NODATA_STRING);
+      g_strlcpy(value, NODATA_STRING, sizeof(value));
     _metadata_update_value(d->metadata[md_xmp_rights], value);
 
     /* geotagging */

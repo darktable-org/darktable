@@ -647,7 +647,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       // auto complete:
       if(darktable.control->vimkey_cnt < 5)
       {
-        snprintf(darktable.control->vimkey, sizeof(darktable.control->vimkey), ":set ");
+        g_strlcpy(darktable.control->vimkey, ":set ", sizeof(darktable.control->vimkey));
         darktable.control->vimkey_cnt = 5;
       }
       else if(!autocomplete)
