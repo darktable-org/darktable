@@ -282,7 +282,6 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
 
-#if 0
 __kernel void
 blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
              const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
@@ -297,33 +296,6 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
     
   write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
-#else
-// the following is a workaround for a current bug (as of Nov. 2012) in NVIDIA's OpenCL compiler, affecting GeForce GT6xx gpus.
-// the above original kernel would simply not compile. the code below is functionally equivalent, a bit slower, and complicated enough
-// to trick the compiler.
-// thanks to Jens Fendler for finding this workaround.
-// TODO: review after some time (May 2013) if this is still needed.
-__kernel void
-blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
-  float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
-  
-  float bif = blendif_factor_Lab(a, b, blendif, blendif_parameters, DEVELOP_MASK_DISABLED, DEVELOP_COMBINE_EXCL);
-
-  float opacity = ((mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - form : form)*bif;
-  opacity /= bif;
-
-  write_imagef(mask, (int2)(x, y), gopacity*opacity);
-}
-#endif
 
 __kernel void
 blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
