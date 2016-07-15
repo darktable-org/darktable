@@ -593,7 +593,7 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
   const int ii = (int)po.x;
   const int jj = (int)po.y;
 
-  float4 o = (ii >=0 && jj >= 0 && ii <= in_width-1 && jj <= in_height-1) ? read_imagef(in, samplerf, po) : (float4)0.0f;
+  float4 o = (ii >=0 && jj >= 0 && ii < in_width && jj < in_height) ? read_imagef(in, samplerf, po) : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), o);
 }
@@ -655,7 +655,7 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
     weight += w;
   }
 
-  pixel = (tx >= -0.5f && ty >= -0.5f && tx <= in_width - 0.5f && ty <= in_height - 0.5f) ? pixel / weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -716,7 +716,7 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
     weight += w;
   }
 
-  pixel = (tx >= -0.5f && ty >= -0.5f && tx <= in_width - 0.5f && ty <= in_height - 0.5f) ? pixel / weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -778,7 +778,7 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
     weight += w;
   }
 
-  pixel = (tx >= -0.5f && ty >= -0.5f && tx <= in_width - 0.5f && ty <= in_height - 0.5f) ? pixel / weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
