@@ -19,11 +19,11 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
-#include <string.h>
+#include <math.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"

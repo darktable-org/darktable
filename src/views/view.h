@@ -28,17 +28,17 @@
 #include "common/geo.h"
 #include <osm-gps-map.h>
 #endif
-#include <inttypes.h>
-#include <gui/gtk.h>
-#include <gmodule.h>
 #include <cairo.h>
+#include <gmodule.h>
+#include <gui/gtk.h>
+#include <inttypes.h>
 #include <sqlite3.h>
 #ifdef USE_LUA
-#include "lua/types.h"
-#include "lua/modules.h"
-#include "lua/view.h"
-#include "lua/events.h"
 #include "lua/call.h"
+#include "lua/events.h"
+#include "lua/modules.h"
+#include "lua/types.h"
+#include "lua/view.h"
 #endif
 
 /** avilable views flags, a view should return it's type and

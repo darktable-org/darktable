@@ -20,9 +20,9 @@
 #define DT_COMMON_CACHE_H
 
 #include "common/dtpthread.h"
+#include <glib.h>
 #include <inttypes.h>
 #include <stddef.h>
-#include <glib.h>
 
 typedef struct dt_cache_entry_t
 {

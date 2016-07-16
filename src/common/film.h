@@ -21,8 +21,12 @@
 #include "common/darktable.h"
 #include "common/dtpthread.h"
 
-#include <inttypes.h>
 #include <glib.h>
+#include <inttypes.h>
+
+// ugly, but the only way to avoid a circular include dependecy :-(
+struct _dt_job_t;
+typedef struct _dt_job_t dt_job_t;
 
 /**
  * film roll.
@@ -52,7 +56,7 @@ int dt_film_open_recent(const int32_t num);
  * are respected). */
 int dt_film_import(const char *dirname);
 /** helper for import threads. */
-void dt_film_import1(dt_film_t *film);
+void dt_film_import1(dt_job_t *job, dt_film_t *film);
 /** constructs the lighttable/query setting for this film, respecting stars and filters. */
 void dt_film_set_query(const int32_t id);
 /** removes this film and all its images from db. */

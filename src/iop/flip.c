@@ -18,13 +18,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
+#include <assert.h>
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <gdk/gdkkeysyms.h>
-#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "common/debug.h"
 #include "common/imageio.h"

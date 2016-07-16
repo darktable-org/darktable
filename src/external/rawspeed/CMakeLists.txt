@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 if(USE_XMLLINT)
 	add_custom_target(
@@ -10,7 +10,7 @@ if(USE_XMLLINT)
 	)
 endif(USE_XMLLINT)
 
-install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${SHARE_INSTALL}/darktable/rawspeed)
+install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/rawspeed)
 
 FILE(GLOB RAWSPEED_SOURCES "RawSpeed/*.cpp")
 LIST(REMOVE_ITEM RAWSPEED_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/RawSpeed/RawSpeed.cpp")
@@ -45,18 +45,14 @@ target_link_libraries(rawspeed ${RAWSPEED_LIBS})
 
 # Adapted from src/cli/CMakeLists.txt
 if (BUILD_RS_IDENTIFY)
-  add_definitions(-DRS_CAMERAS_XML_PATH="@RUNTIME_INSTALL_PREFIX@/@SHARE_INSTALL@/darktable/rawspeed/cameras.xml")
+    add_definitions(-DRS_CAMERAS_XML_PATH="@CMAKE_INSTALL_DATAROOTDIR@/darktable/rawspeed/cameras.xml")
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../..)
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
   add_executable(darktable-rs-identify rawspeed-identify.cpp)
   set_target_properties(darktable-rs-identify PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
   set_target_properties(darktable-rs-identify PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-  if(APPLE)
-    set_target_properties(darktable-rs-identify PROPERTIES INSTALL_RPATH @loader_path/../${LIB_INSTALL}/darktable)
-  else(APPLE)
-    set_target_properties(darktable-rs-identify PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
-  endif(APPLE)
+  set_target_properties(darktable-rs-identify PROPERTIES INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
   set_target_properties(darktable-rs-identify PROPERTIES LINKER_LANGUAGE CXX)
   if(CMAKE_COMPILER_IS_GNUCC)
 	  if (GCC_VERSION VERSION_GREATER 4.3)
@@ -68,5 +64,5 @@ if (BUILD_RS_IDENTIFY)
   endif()
   add_dependencies(darktable-rs-identify rawspeed)
   target_link_libraries(darktable-rs-identify rawspeed_static pugixml -ljpeg)
-  install(TARGETS darktable-rs-identify DESTINATION bin)
+  install(TARGETS darktable-rs-identify DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

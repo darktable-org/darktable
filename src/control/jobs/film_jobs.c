@@ -15,9 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "control/jobs/film_jobs.h"
 #include "common/darktable.h"
 #include "common/film.h"
-#include "control/jobs/film_jobs.h"
 #include <stdlib.h>
 
 typedef struct dt_film_import1_t
@@ -28,7 +28,7 @@ typedef struct dt_film_import1_t
 static int32_t dt_film_import1_run(dt_job_t *job)
 {
   dt_film_import1_t *params = dt_control_job_get_params(job);
-  dt_film_import1(params->film);
+  dt_film_import1(job, params->film);
   dt_pthread_mutex_lock(&params->film->images_mutex);
   params->film->ref--;
   dt_pthread_mutex_unlock(&params->film->images_mutex);
@@ -62,6 +62,7 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
     dt_control_job_dispose(job);
     return NULL;
   }
+  dt_control_job_add_progress(job, _("import images"), FALSE);
   dt_control_job_set_params(job, params, dt_film_import1_cleanup);
   params->film = film;
   dt_pthread_mutex_lock(&film->images_mutex);

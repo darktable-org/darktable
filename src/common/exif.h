@@ -19,8 +19,8 @@
 #ifndef DT_EXIF_H
 #define DT_EXIF_H
 
-#include "common/image.h"
 #include "common/colorspaces.h"
+#include "common/image.h"
 
 /** wrapper around exiv2, C++ */
 #ifdef __cplusplus

@@ -25,26 +25,26 @@
  *  - profit
  */
 
-#include "version.h"
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/collection.h"
-#include "common/points.h"
+#include "common/exif.h"
 #include "common/film.h"
+#include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
 #include "common/imageio_module.h"
-#include "common/exif.h"
-#include "common/history.h"
+#include "common/points.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
+#include "version.h"
 
-#include <sys/time.h>
-#include <unistd.h>
 #include <inttypes.h>
 #include <libintl.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 static void usage(const char *progname)
 {
@@ -59,7 +59,7 @@ int main(int argc, char *arg[])
   bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
   textdomain(GETTEXT_PACKAGE);
 
-  gtk_init_check(&argc, &arg);
+  if(!gtk_parse_args(&argc, &arg)) exit(1);
 
   // parse command line arguments
   char *image_filename = NULL;
@@ -81,7 +81,7 @@ int main(int argc, char *arg[])
       }
       else if(!strcmp(arg[k], "--version"))
       {
-        printf("this is darktable-cli " PACKAGE_VERSION  "\ncopyright (c) 2012-2015 johannes hanika, tobias ellinghaus\n");
+        printf("this is darktable-cli " PACKAGE_VERSION  "\ncopyright (c) 2012-2016 johannes hanika, tobias ellinghaus\n");
         exit(1);
       }
       else if(!strcmp(arg[k], "--width") && argc > k + 1)

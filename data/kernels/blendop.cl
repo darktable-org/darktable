@@ -282,7 +282,6 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
 
-#if 0
 __kernel void
 blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
              const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
@@ -297,33 +296,6 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
     
   write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
-#else
-// the following is a workaround for a current bug (as of Nov. 2012) in NVIDIA's OpenCL compiler, affecting GeForce GT6xx gpus.
-// the above original kernel would simply not compile. the code below is functionally equivalent, a bit slower, and complicated enough
-// to trick the compiler.
-// thanks to Jens Fendler for finding this workaround.
-// TODO: review after some time (May 2013) if this is still needed.
-__kernel void
-blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
-  float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
-  
-  float bif = blendif_factor_Lab(a, b, blendif, blendif_parameters, DEVELOP_MASK_DISABLED, DEVELOP_COMBINE_EXCL);
-
-  float opacity = ((mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - form : form)*bif;
-  opacity /= bif;
-
-  write_imagef(mask, (int2)(x, y), gopacity*opacity);
-}
-#endif
 
 __kernel void
 blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
@@ -348,7 +320,7 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
 __kernel void
 blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag, const int2 offs)
+             const int blend_mode, const int blendflag, const int2 offs, const int mask_display)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -613,8 +585,8 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   /* scale L back to [0; 100] and a,b to [-128; 128] */
   o *= scale;
 
-  /* save opacity in alpha channel */
-  o.w = opacity;
+  /* we transfer alpha channel of input if mask_display is set, else we save opacity into alpha channel */
+  o.w = mask_display ? a.w : opacity;
 
   /* if module wants to blend only lightness, set a and b to values of input image (saved before scaling) */
   if (blendflag & BLEND_ONLY_LIGHTNESS)
@@ -630,7 +602,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag, const int2 offs)
+             const int blend_mode, const int blendflag, const int2 offs, const int mask_display)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -769,7 +741,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag, const int2 offs)
+             const int blend_mode, const int blendflag, const int2 offs, const int mask_display)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -951,27 +923,11 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
   }
 
-  /* save opacity in alpha channel */
-  o.w = opacity;
+  /* we transfer alpha channel of input if mask_display is set, else we save opacity into alpha channel */
+  o.w = mask_display ? a.w : opacity;
 
   write_imagef(out, (int2)(x, y), o);
 }
-
-
-__kernel void
-blendop_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height, const int2 offs)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 pixel = read_imagef(in_a, sampleri, (int2)(x, y));
-  pixel.w = read_imagef(in_b, sampleri, (int2)(x, y) + offs).w;
-
-  write_imagef(out, (int2)(x, y), pixel);
-}
-
 
 __kernel void
 blendop_set_mask (__write_only image2d_t mask, const int width, const int height, const float value)

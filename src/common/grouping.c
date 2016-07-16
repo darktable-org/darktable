@@ -16,9 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/grouping.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/grouping.h"
 #include "common/image_cache.h"
 
 /** add an image to a group */

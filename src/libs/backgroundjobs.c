@@ -34,7 +34,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_backgroundjob_element_t
 {
-  GtkWidget *widget, *progressbar, *hbox;
+  GtkWidget *widget, *label, *progressbar, *hbox;
 } dt_lib_backgroundjob_element_t;
 
 /* proxy functions */
@@ -44,6 +44,8 @@ static void _lib_backgroundjobs_cancellable(dt_lib_module_t *self, dt_lib_backgr
                                             dt_progress_t *progress);
 static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
                                         double value);
+static void _lib_backgroundjobs_message_updated(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
+                                                const gchar *message);
 
 
 const char *name(dt_lib_module_t *self)
@@ -86,6 +88,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.control->progress_system.proxy.destroyed = _lib_backgroundjobs_destroyed;
   darktable.control->progress_system.proxy.cancellable = _lib_backgroundjobs_cancellable;
   darktable.control->progress_system.proxy.updated = _lib_backgroundjobs_updated;
+  darktable.control->progress_system.proxy.message_updated = _lib_backgroundjobs_message_updated;
 
   // iterate over darktable.control->progress_system.list and add everything that is already there and update
   // its gui_data!
@@ -162,9 +165,9 @@ static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progr
   gtk_container_add(GTK_CONTAINER(instance->widget), GTK_WIDGET(vbox));
 
   /* add job label */
-  GtkWidget *label = gtk_label_new(message);
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(instance->hbox), GTK_WIDGET(label), TRUE, TRUE, 0);
+  instance->label = gtk_label_new(message);
+  gtk_widget_set_halign(instance->label, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(instance->hbox), GTK_WIDGET(instance->label), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(instance->hbox), TRUE, TRUE, 0);
 
   /* use progressbar ? */
@@ -288,6 +291,36 @@ static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_background
   params->instance = instance;
   params->value = value;
   g_main_context_invoke(NULL, _update_gui_thread, params);
+}
+
+typedef struct _update_label_gui_thread_t
+{
+  dt_lib_backgroundjob_element_t *instance;
+  char *message;
+} _update_label_gui_thread_t;
+
+static gboolean _update_message_gui_thread(gpointer user_data)
+{
+  _update_label_gui_thread_t *params = (_update_label_gui_thread_t *)user_data;
+
+  gtk_label_set_text(GTK_LABEL(params->instance->label), params->message);
+
+  g_free(params->message);
+  free(params);
+  return FALSE;
+}
+
+static void _lib_backgroundjobs_message_updated(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
+                                                const char *message)
+{
+  // update the progress bar
+  if(!darktable.control->running) return;
+
+  _update_label_gui_thread_t *params = (_update_label_gui_thread_t *)malloc(sizeof(_update_label_gui_thread_t));
+  if(!params) return;
+  params->instance = instance;
+  params->message = g_strdup(message);
+  g_main_context_invoke(NULL, _update_message_gui_thread, params);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

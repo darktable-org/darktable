@@ -30,15 +30,15 @@
 #include "develop/imageop_math.h"
 
 #include <assert.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/fcntl.h>
-#include <limits.h>
+#include <errno.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <errno.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif

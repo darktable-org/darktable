@@ -35,13 +35,13 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
+#include <assert.h>
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <gdk/gdkkeysyms.h>
-#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 

@@ -17,8 +17,8 @@
 */
 #ifndef DT_LUA_MODULES_H
 #define DT_LUA_MODULES_H
-#include <lua/lua.h>
 #include <common/imageio_module.h>
+#include <lua/lua.h>
 
 
 #define dt_lua_register_module_member(L, storage, struct_type, member, member_type)                          \

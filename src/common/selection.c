@@ -16,9 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/collection.h"
 #include "control/signal.h"
 
 typedef struct dt_selection_t

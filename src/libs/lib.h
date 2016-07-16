@@ -24,11 +24,11 @@
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #ifdef USE_LUA
-#include "lua/types.h"
-#include "lua/modules.h"
-#include "lua/lib.h"
-#include "lua/events.h"
 #include "lua/call.h"
+#include "lua/events.h"
+#include "lua/lib.h"
+#include "lua/modules.h"
+#include "lua/types.h"
 #endif
 
 struct dt_lib_module_t;

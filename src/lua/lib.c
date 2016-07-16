@@ -16,10 +16,10 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/lib.h"
+#include "gui/gtk.h"
+#include "lua/call.h"
 #include "lua/modules.h"
 #include "lua/types.h"
-#include "lua/call.h"
-#include "gui/gtk.h"
 
 static int expanded_member(lua_State *L)
 {

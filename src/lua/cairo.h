@@ -18,8 +18,8 @@
 #ifndef LUA_CAIRO_H
 #define LUA_CAIRO_H
 
-#include <lua/lua.h>
 #include <cairo.h>
+#include <lua/lua.h>
 
 typedef cairo_t *dt_lua_cairo_t;
 

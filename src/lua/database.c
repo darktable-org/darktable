@@ -16,17 +16,17 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/database.h"
-#include "lua/events.h"
-#include "lua/image.h"
-#include "lua/film.h"
-#include "lua/types.h"
-#include "common/debug.h"
+#include "common/collection.h"
 #include "common/darktable.h"
+#include "common/debug.h"
+#include "common/film.h"
 #include "common/grealpath.h"
 #include "common/image.h"
-#include "common/film.h"
-#include "common/collection.h"
 #include "control/control.h"
+#include "lua/events.h"
+#include "lua/film.h"
+#include "lua/image.h"
+#include "lua/types.h"
 #include <errno.h>
 
 /***********************************************************************

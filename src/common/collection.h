@@ -18,8 +18,8 @@
 #ifndef DT_COLLECTION_H
 #define DT_COLLECTION_H
 
-#include <inttypes.h>
 #include <glib.h>
+#include <inttypes.h>
 
 typedef enum dt_collection_query_t
 {

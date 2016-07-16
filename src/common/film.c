@@ -16,32 +16,31 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "control/jobs.h"
-#include "control/progress.h"
 #include "common/film.h"
-#include "common/dtpthread.h"
 #include "common/collection.h"
-#include "common/image_cache.h"
+#include "common/darktable.h"
 #include "common/debug.h"
+#include "common/dtpthread.h"
+#include "common/image_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
 #include "views/view.h"
 
+#include <assert.h>
+#include <errno.h>
+#include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <unistd.h>
-#include <math.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <string.h>
 #include <strings.h>
-#include <errno.h>
-#include <assert.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #ifdef USE_LUA
-#include "lua/lua.h"
 #include "lua/glist.h"
+#include "lua/lua.h"
 #endif
 
 void dt_film_init(dt_film_t *film)
@@ -341,7 +340,7 @@ int _film_filename_cmp(gchar *a, gchar *b)
   return ret;
 }
 
-void dt_film_import1(dt_film_t *film)
+void dt_film_import1(dt_job_t *job, dt_film_t *film)
 {
   gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
 
@@ -406,7 +405,7 @@ void dt_film_import1(dt_film_t *film)
   guint total = g_list_length(images);
   g_snprintf(message, sizeof(message) - 1, ngettext("importing %d image", "importing %d images", total),
              total);
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
+  dt_control_job_set_progress_message(job, message);
 
 
   /* loop thru the images and import to current film roll */
@@ -465,7 +464,7 @@ void dt_film_import1(dt_film_t *film)
     dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
 
     fraction += 1.0 / total;
-    dt_control_progress_set_progress(darktable.control, progress, fraction);
+    dt_control_job_set_progress(job, fraction);
 
 
   } while((image = g_list_next(image)) != NULL);
@@ -476,7 +475,6 @@ void dt_film_import1(dt_film_t *film)
   dt_control_queue_redraw_center();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
-  dt_control_progress_destroy(darktable.control, progress);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film->id);
 
   // FIXME: maybe refactor into function and call it?

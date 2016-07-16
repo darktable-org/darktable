@@ -17,8 +17,8 @@
 */
 // #include "common/darktable.h"
 // #include "control/control.h"
-#include "common/image_cache.h"
 #include "common/debug.h"
+#include "common/image_cache.h"
 #include "control/conf.h"
 // #include "gui/accelerators.h"
 // #include "gui/gtk.h"

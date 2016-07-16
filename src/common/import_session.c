@@ -18,11 +18,11 @@
 
 #include <stdio.h>
 
-#include "control/conf.h"
-#include "control/control.h"
 #include "common/film.h"
 #include "common/import_session.h"
 #include "common/variables.h"
+#include "control/conf.h"
+#include "control/control.h"
 
 /* TODO: Investigate if we can make one import session instance thread safe
          eg. having several background jobs working with same instance.

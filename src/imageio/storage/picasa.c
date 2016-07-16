@@ -496,7 +496,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
   headers = curl_slist_append(headers, "Content-Type: application/atom+xml");
   headers = curl_slist_append(headers, authHeader);
 
-  snprintf(uri, sizeof(uri), "https://picasaweb.google.com/data/feed/api/user/default");
+  g_strlcpy(uri, "https://picasaweb.google.com/data/feed/api/user/default", sizeof(uri));
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
 #ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);

@@ -15,9 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <string.h>
 #include "icon.h"
 #include "gui/gtk.h"
+#include <string.h>
 
 static void _icon_class_init(GtkDarktableIconClass *klass);
 static void _icon_init(GtkDarktableIcon *icon);

@@ -16,8 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "bauhaus/bauhaus.h"
-#include "control/control.h"
 #include "common/colorspaces.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -99,6 +100,11 @@ typedef struct dt_iop_colorchecker_data_t
   float coeff_a[MAX_PATCHES+4];
   float coeff_b[MAX_PATCHES+4];
 } dt_iop_colorchecker_data_t;
+
+typedef struct dt_iop_colorchecker_global_data_t
+{
+  int kernel_colorchecker;
+} dt_iop_colorchecker_global_data_t;
 
 const char *name()
 {
@@ -444,6 +450,65 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 }
 #endif
 
+#ifdef HAVE_OPENCL
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
+  dt_iop_colorchecker_global_data_t *gd = (dt_iop_colorchecker_global_data_t *)self->data;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const int num_patches = d->num_patches;
+
+  cl_int err = -999;
+  cl_mem dev_params = NULL;
+
+  float params[4 * (2 * num_patches + 4)];
+  float *idx = params;
+
+  // re-arrange data->source_Lab and data->coeff_{L,a,b} into float4
+  for(int n = 0; n < num_patches; n++, idx += 4)
+  {
+    idx[0] = d->source_Lab[3 * n];
+    idx[1] = d->source_Lab[3 * n + 1];
+    idx[2] = d->source_Lab[3 * n + 2];
+    idx[3] = 0.0f;
+  }
+
+  for(int n = 0; n < num_patches + 4; n++, idx += 4)
+  {
+    idx[0] = d->coeff_L[n];
+    idx[1] = d->coeff_a[n];
+    idx[2] = d->coeff_b[n];
+    idx[3] = 0.0f;
+  }
+
+  dev_params = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4 * (2 * num_patches + 4), params);
+  if(dev_params == NULL) goto error;
+
+  size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 4, sizeof(int), (void *)&num_patches);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 5, sizeof(cl_mem), (void *)&dev_params);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorchecker, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_params);
+  return TRUE;
+
+error:
+  if(dev_params != NULL) dt_opencl_release_mem_object(dev_params);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorchecker] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -602,6 +667,24 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+}
+
+void init_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorchecker_global_data_t *gd
+      = (dt_iop_colorchecker_global_data_t *)malloc(sizeof(dt_iop_colorchecker_global_data_t));
+  module->data = gd;
+
+  const int program = 8; // extended.cl, from programs.conf
+  gd->kernel_colorchecker = dt_opencl_create_kernel(program, "colorchecker");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorchecker_global_data_t *gd = (dt_iop_colorchecker_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_colorchecker);
+  free(module->data);
+  module->data = NULL;
 }
 
 static void picker_callback(GtkWidget *button, gpointer user_data)

@@ -18,16 +18,16 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "bauhaus/bauhaus.h"
 #include "control/control.h"
+#include "develop/imageop.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
 #include "gui/presets.h"
-#include "develop/imageop.h"
 #include "libs/lib.h"
 #include "preferences_gen.h"
 #ifdef USE_LUA

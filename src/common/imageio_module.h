@@ -18,17 +18,17 @@
 #ifndef DT_IMAGEIO_MODULE_H
 #define DT_IMAGEIO_MODULE_H
 
+#include <common/darktable.h>
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <common/darktable.h>
 #ifdef USE_LUA
-#include "lua/types.h"
-#include "lua/modules.h"
-#include "lua/format.h"
-#include "lua/storage.h"
-#include "lua/events.h"
 #include "lua/call.h"
+#include "lua/events.h"
+#include "lua/format.h"
+#include "lua/modules.h"
+#include "lua/storage.h"
+#include "lua/types.h"
 #endif
 
 

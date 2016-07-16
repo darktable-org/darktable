@@ -63,11 +63,6 @@
 
 #include <openjpeg.h>
 
-#define CINEMA_24_CS 1302083 /*Codestream length for 24fps*/
-#define CINEMA_48_CS 651041  /*Codestream length for 48fps*/
-#define COMP_24_CS 1041666   /*Maximum size per color component for 2K & 4K @ 24fps*/
-#define COMP_48_CS 520833    /*Maximum size per color component for 2K @ 48fps*/
-
 typedef enum
 {
   J2K_CFMT = 0,
@@ -168,14 +163,14 @@ static int initialise_4K_poc(opj_poc_t *POC, int numres)
   POC[0].layno1 = 1;
   POC[0].resno1 = numres - 1;
   POC[0].compno1 = 3;
-  POC[0].prg1 = CPRL;
+  POC[0].prg1 = OPJ_CPRL;
   POC[1].tile = 1;
   POC[1].resno0 = numres - 1;
   POC[1].compno0 = 0;
   POC[1].layno1 = 1;
   POC[1].resno1 = numres;
   POC[1].compno1 = 3;
-  POC[1].prg1 = CPRL;
+  POC[1].prg1 = OPJ_CPRL;
   return 2;
 }
 
@@ -201,7 +196,7 @@ static void cinema_parameters(opj_cparameters_t *parameters)
   parameters->csty |= 0x01;
 
   /*The progression order shall be CPRL*/
-  parameters->prog_order = CPRL;
+  parameters->prog_order = OPJ_CPRL;
 
   /* No ROI */
   parameters->roi_compno = -1;
@@ -220,9 +215,9 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
 
   switch(parameters->cp_cinema)
   {
-    case CINEMA2K_24:
-    case CINEMA2K_48:
-      parameters->cp_rsiz = CINEMA2K;
+    case OPJ_CINEMA2K_24:
+    case OPJ_CINEMA2K_48:
+      parameters->cp_rsiz = OPJ_CINEMA2K;
       if(parameters->numresolution > 6)
       {
         parameters->numresolution = 6;
@@ -233,12 +228,12 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
                 "Image coordinates %d x %d is not 2K compliant.\nJPEG Digital Cinema Profile-3 "
                 "(2K profile) compliance requires that at least one of coordinates match 2048 x 1080\n",
                 image->comps[0].w, image->comps[0].h);
-        parameters->cp_rsiz = STD_RSIZ;
+        parameters->cp_rsiz = OPJ_STD_RSIZ;
       }
       break;
 
-    case CINEMA4K_24:
-      parameters->cp_rsiz = CINEMA4K;
+    case OPJ_CINEMA4K_24:
+      parameters->cp_rsiz = OPJ_CINEMA4K;
       if(parameters->numresolution < 1)
       {
         parameters->numresolution = 1;
@@ -253,7 +248,7 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
                 "Image coordinates %d x %d is not 4K compliant.\nJPEG Digital Cinema Profile-4"
                 "(4K profile) compliance requires that at least one of coordinates match 4096 x 2160\n",
                 image->comps[0].w, image->comps[0].h);
-        parameters->cp_rsiz = STD_RSIZ;
+        parameters->cp_rsiz = OPJ_STD_RSIZ;
       }
       parameters->numpocs = initialise_4K_poc(parameters->POC, parameters->numresolution);
       break;
@@ -263,26 +258,26 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
 
   switch(parameters->cp_cinema)
   {
-    case CINEMA2K_24:
-    case CINEMA4K_24:
+    case OPJ_CINEMA2K_24:
+    case OPJ_CINEMA4K_24:
       for(i = 0; i < parameters->tcp_numlayers; i++)
       {
         if(rates[i] == 0)
         {
           parameters->tcp_rates[0]
               = ((float)(image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))
-                / (CINEMA_24_CS * 8 * image->comps[0].dx * image->comps[0].dy);
+                / (OPJ_CINEMA_24_CS * 8 * image->comps[0].dx * image->comps[0].dy);
         }
         else
         {
           temp_rate
               = ((float)(image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))
                 / (rates[i] * 8 * image->comps[0].dx * image->comps[0].dy);
-          if(temp_rate > CINEMA_24_CS)
+          if(temp_rate > OPJ_CINEMA_24_CS)
           {
             parameters->tcp_rates[i]
                 = ((float)(image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))
-                  / (CINEMA_24_CS * 8 * image->comps[0].dx * image->comps[0].dy);
+                  / (OPJ_CINEMA_24_CS * 8 * image->comps[0].dx * image->comps[0].dy);
           }
           else
           {
@@ -290,28 +285,28 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
           }
         }
       }
-      parameters->max_comp_size = COMP_24_CS;
+      parameters->max_comp_size = OPJ_CINEMA_24_COMP;
       break;
 
-    case CINEMA2K_48:
+    case OPJ_CINEMA2K_48:
       for(i = 0; i < parameters->tcp_numlayers; i++)
       {
         if(rates[i] == 0)
         {
           parameters->tcp_rates[0]
               = ((float)(image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))
-                / (CINEMA_48_CS * 8 * image->comps[0].dx * image->comps[0].dy);
+                / (OPJ_CINEMA_48_CS * 8 * image->comps[0].dx * image->comps[0].dy);
         }
         else
         {
           temp_rate
               = ((float)(image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))
                 / (rates[i] * 8 * image->comps[0].dx * image->comps[0].dy);
-          if(temp_rate > CINEMA_48_CS)
+          if(temp_rate > OPJ_CINEMA_48_CS)
           {
             parameters->tcp_rates[0]
                 = ((float)(image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))
-                  / (CINEMA_48_CS * 8 * image->comps[0].dx * image->comps[0].dy);
+                  / (OPJ_CINEMA_48_CS * 8 * image->comps[0].dx * image->comps[0].dy);
           }
           else
           {
@@ -319,7 +314,7 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
           }
         }
       }
-      parameters->max_comp_size = COMP_48_CS;
+      parameters->max_comp_size = OPJ_CINEMA_48_COMP;
       break;
     default:
       break;
@@ -334,18 +329,8 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   dt_imageio_j2k_t *j2k = (dt_imageio_j2k_t *)j2k_tmp;
   opj_cparameters_t parameters; /* compression parameters */
   float *rates = NULL;
-  opj_event_mgr_t event_mgr; /* event manager */
   opj_image_t *image = NULL;
   const int quality = CLAMP(j2k->quality, 1, 100);
-
-  /*
-  configure the event callbacks (not required)
-  setting of each callback is optional
-  */
-  memset(&event_mgr, 0, sizeof(opj_event_mgr_t));
-  event_mgr.error_handler = error_callback;
-  event_mgr.warning_handler = warning_callback;
-  event_mgr.info_handler = info_callback;
 
   /* set encoding parameters to default values */
   opj_set_default_encoder_parameters(&parameters);
@@ -357,7 +342,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 
   parameters.tcp_numlayers = 1; /* only one resolution */
   parameters.cp_disto_alloc = 1;
-  parameters.cp_rsiz = STD_RSIZ;
+  parameters.cp_rsiz = OPJ_STD_RSIZ;
 
   parameters.cod_format = j2k->format;
   parameters.cp_cinema = (OPJ_CINEMA_MODE)j2k->preset;
@@ -397,7 +382,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
       cmptparm[i].w = w;
       cmptparm[i].h = h;
     }
-    image = opj_image_create(numcomps, &cmptparm[0], CLRSPC_SRGB);
+    image = opj_image_create(numcomps, &cmptparm[0], OPJ_CLRSPC_SRGB);
     if(!image)
     {
       fprintf(stderr, "Error: opj_image_create() failed\n");
@@ -437,6 +422,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
         fprintf(stderr, "Error: this shouldn't happen, there is no bit depth of %d for jpeg 2000 images.\n",
                 prec);
         free(rates);
+        opj_image_destroy(image);
         return 1;
     }
   }
@@ -457,58 +443,66 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   int rc = 1;
   OPJ_CODEC_FORMAT codec;
   if(parameters.cod_format == J2K_CFMT) /* J2K format output */
-    codec = CODEC_J2K;
+    codec = OPJ_CODEC_J2K;
   else
-    codec = CODEC_JP2;
+    codec = OPJ_CODEC_JP2;
 
-  int codestream_length;
-  size_t res;
-  opj_cio_t *cio = NULL;
-  FILE *f = NULL;
+  opj_stream_t *cstream = NULL;
 
   /* get a J2K/JP2 compressor handle */
-  opj_cinfo_t *cinfo = opj_create_compress(codec);
+  opj_codec_t *ccodec = opj_create_compress(codec);
 
-  /* catch events using our callbacks and give a local context */
-  opj_set_event_mgr((opj_common_ptr)cinfo, &event_mgr, stderr);
+  opj_set_error_handler(ccodec, error_callback, stderr);
+  opj_set_warning_handler(ccodec, warning_callback, stderr);
+  opj_set_info_handler(ccodec, info_callback, stderr);
+
+  g_strlcpy(parameters.outfile, filename, sizeof(parameters.outfile));
 
   /* setup the encoder parameters using the current image and user parameters */
-  opj_setup_encoder(cinfo, &parameters, image);
+  opj_setup_encoder(ccodec, &parameters, image);
 
   /* open a byte stream for writing */
   /* allocate memory for all tiles */
-  cio = opj_cio_open((opj_common_ptr)cinfo, NULL, 0);
+  cstream = opj_stream_create_default_file_stream(parameters.outfile, OPJ_FALSE);
+  if(!cstream)
+  {
+    opj_destroy_codec(ccodec);
+    opj_image_destroy(image);
+    fprintf(stderr, "failed to create output stream\n");
+    return 1;
+  }
+
+  if(!opj_start_compress(ccodec, image, cstream))
+  {
+    opj_stream_destroy(cstream);
+    opj_destroy_codec(ccodec);
+    opj_image_destroy(image);
+    fprintf(stderr, "failed to encode image: opj_start_compress\n");
+    return 1;
+  }
 
   /* encode the image */
-  if(!opj_encode(cinfo, cio, image, NULL))
+  if(!opj_encode(ccodec, cstream))
   {
-    opj_cio_close(cio);
-    fprintf(stderr, "failed to encode image\n");
+    opj_stream_destroy(cstream);
+    opj_destroy_codec(ccodec);
+    opj_image_destroy(image);
+    fprintf(stderr, "failed to encode image: opj_encode\n");
     return 1;
   }
-  codestream_length = cio_tell(cio);
 
-  /* write the buffer to disk */
-  f = fopen(filename, "wb");
-  if(!f)
+  /* encode the image */
+  if(!opj_end_compress(ccodec, cstream))
   {
-    fprintf(stderr, "failed to open %s for writing\n", filename);
+    opj_stream_destroy(cstream);
+    opj_destroy_codec(ccodec);
+    opj_image_destroy(image);
+    fprintf(stderr, "failed to encode image: opj_end_compress\n");
     return 1;
   }
-  res = fwrite(cio->buffer, 1, codestream_length, f);
-  if(res < (size_t)codestream_length) /* FIXME */
-  {
-    fprintf(stderr, "failed to write %d (%s)\n", codestream_length, filename);
-    fclose(f);
-    return 1;
-  }
-  fclose(f);
 
-  /* close and free the byte stream */
-  opj_cio_close(cio);
-
-  /* free remaining compression structures */
-  opj_destroy_compress(cinfo);
+  opj_stream_destroy(cstream);
+  opj_destroy_codec(ccodec);
 
   /* add exif data blob. seems to not work for j2k files :( */
   if(exif && j2k->format == JP2_CFMT) rc = dt_exif_write_blob(exif, exif_len, filename, 1);

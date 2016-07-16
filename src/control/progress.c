@@ -197,6 +197,21 @@ const gchar *dt_control_progress_get_message(dt_progress_t *progress)
   return res;
 }
 
+void dt_control_progress_set_message(dt_control_t *control, dt_progress_t *progress, const char *message)
+{
+  dt_pthread_mutex_lock(&progress->mutex);
+  g_free(progress->message);
+  progress->message = g_strdup(message);
+  dt_pthread_mutex_unlock(&progress->mutex);
+
+  // tell the gui
+  dt_pthread_mutex_lock(&control->progress_system.mutex);
+  if(control->progress_system.proxy.module != NULL)
+    control->progress_system.proxy.message_updated(control->progress_system.proxy.module, progress->gui_data,
+                                                   message);
+  dt_pthread_mutex_unlock(&control->progress_system.mutex);
+}
+
 void dt_control_progress_set_gui_data(dt_progress_t *progress, void *data)
 {
   dt_pthread_mutex_lock(&progress->mutex);

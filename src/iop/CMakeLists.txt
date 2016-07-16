@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -24,7 +24,7 @@ macro (add_iop _lib _src)
   )
   add_library(${_lib} MODULE ${_output} ${ARGN})
   target_link_libraries(${_lib} ${LIBS})
-  install(TARGETS  ${_lib} DESTINATION ${LIB_INSTALL}/darktable/plugins)
+  install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
 endmacro (add_iop)
 
 # add_iop(useless "useless.c")
@@ -100,3 +100,8 @@ endif(RSVG2_FOUND)
 if(LENSFUN_FOUND)
   add_iop(lens "lens.c")
 endif(LENSFUN_FOUND)
+
+# fix for Mac when OpenMP is only available in C compiler
+if(APPLE)
+  set_target_properties(demosaic PROPERTIES LINKER_LANGUAGE C)
+endif(APPLE)

@@ -68,6 +68,16 @@ size_t dt_bilateral_memory_use(const int width,     // width of input image
   return size_x * size_y * size_z * sizeof(float) * 2;
 }
 
+// modules that want to use dt_bilateral_slice_to_output_cl() ought to take this one;
+// takes account of an additional temp buffer needed in the OpenCL code path
+size_t dt_bilateral_memory_use2(const int width,
+                                const int height,
+                                const float sigma_s,
+                                const float sigma_r)
+{
+  return dt_bilateral_memory_use(width, height, sigma_s, sigma_r) + (size_t)width * height * 4 * sizeof(float);
+}
+
 
 size_t dt_bilateral_singlebuffer_size(const int width,     // width of input image
                                       const int height,    // height of input image
@@ -82,6 +92,16 @@ size_t dt_bilateral_singlebuffer_size(const int width,     // width of input ima
   size_t size_z = CLAMPS((int)_z, 4, 50) + 1;
 
   return size_x * size_y * size_z * sizeof(float);
+}
+
+// modules that want to use dt_bilateral_slice_to_output_cl() ought to take this one;
+// takes account of an additional temp buffer needed in the OpenCL code path
+size_t dt_bilateral_singlebuffer_size2(const int width,
+                                       const int height,
+                                       const float sigma_s,
+                                       const float sigma_r)
+{
+  return MAX(dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r), (size_t)width * height * 4 * sizeof(float));
 }
 
 
@@ -279,9 +299,19 @@ cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
 cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem out, const float detail)
 {
   cl_int err = -666;
+  cl_mem tmp = NULL;
+
+  tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, 4 * sizeof(float));
+  if(tmp == NULL) goto error;
+
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { b->width, b->height, 1 };
+  err = dt_opencl_enqueue_copy_image(b->devid, out, tmp, origin, origin, region);
+  if(err != CL_SUCCESS) goto error;
+
   size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 0, sizeof(cl_mem), (void *)&in);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 1, sizeof(cl_mem), (void *)&out);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 1, sizeof(cl_mem), (void *)&tmp);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 2, sizeof(cl_mem), (void *)&out);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 3, sizeof(cl_mem), (void *)&b->dev_grid);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 4, sizeof(int), (void *)&b->width);
@@ -293,6 +323,12 @@ cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem o
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 10, sizeof(float), (void *)&b->sigma_r);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 11, sizeof(float), (void *)&detail);
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_slice2, sizes);
+
+  dt_opencl_release_mem_object(tmp);
+  return err;
+
+error:
+  if(tmp != NULL) dt_opencl_release_mem_object(tmp);
   return err;
 }
 

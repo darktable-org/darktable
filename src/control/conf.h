@@ -26,12 +26,12 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 
+#include <glib.h>
+#include <glib/gprintf.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
-#include <glib.h>
-#include <glib/gprintf.h>
 
 typedef struct dt_conf_t
 {

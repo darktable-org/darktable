@@ -19,9 +19,9 @@
 #ifndef DT_COMMON_GAUSSIAN_H
 #define DT_COMMON_GAUSSIAN_H
 
-#include <math.h>
-#include <assert.h>
 #include "common/opencl.h"
+#include <assert.h>
+#include <math.h>
 
 typedef enum dt_gaussian_order_t
 {

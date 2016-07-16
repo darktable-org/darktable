@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
 #include "gtkentry.h"
+#include "common/darktable.h"
 
 /**
  * Called when the user selects an entry from the autocomplete list.

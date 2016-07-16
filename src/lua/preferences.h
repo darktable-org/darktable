@@ -17,8 +17,8 @@
  */
 #ifndef DT_LUA_PREFS_H
 #define DT_LUA_PREFS_H
-#include <lua/lua.h>
 #include <gtk/gtk.h>
+#include <lua/lua.h>
 
 void init_tab_lua(GtkWidget *dialog, GtkWidget *tab);
 

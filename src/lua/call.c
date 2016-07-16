@@ -15,13 +15,13 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/lua.h"
 #include "lua/call.h"
 #include "control/control.h"
-#include <glib.h>
-#include <sys/select.h>
+#include "lua/lua.h"
 #include <glib-unix.h>
+#include <glib.h>
 #include <stdlib.h>
+#include <sys/select.h>
 
 int dt_lua_check_print_error(lua_State* L, int result) 
 {

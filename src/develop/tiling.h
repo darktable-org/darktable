@@ -19,8 +19,8 @@
 #ifndef DT_DEVELOP_TILING_H
 #define DT_DEVELOP_TILING_H
 
-#include "develop/imageop.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "develop/pixelpipe.h"
 
 typedef struct dt_develop_tiling_t

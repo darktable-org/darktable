@@ -18,33 +18,33 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/opencl.h"
-#include "common/dtpthread.h"
-#include "common/debug.h"
-#include "common/interpolation.h"
-#include "common/imageio_rawspeed.h"
-#include "bauhaus/bauhaus.h"
-#include "control/control.h"
 #include "develop/imageop.h"
-#include "develop/develop.h"
+#include "bauhaus/bauhaus.h"
+#include "common/debug.h"
+#include "common/dtpthread.h"
+#include "common/imageio_rawspeed.h"
+#include "common/interpolation.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/blend.h"
-#include "develop/tiling.h"
+#include "develop/develop.h"
 #include "develop/masks.h"
+#include "develop/tiling.h"
+#include "dtgtk/button.h"
+#include "dtgtk/expander.h"
+#include "dtgtk/gradientslider.h"
+#include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "dtgtk/button.h"
-#include "dtgtk/icon.h"
-#include "dtgtk/expander.h"
-#include "dtgtk/gradientslider.h"
 #include "libs/modulegroups.h"
 
-#include <strings.h>
 #include <assert.h>
+#include <gmodule.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gmodule.h>
+#include <strings.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif

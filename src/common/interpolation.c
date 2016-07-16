@@ -16,16 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 * ------------------------------------------------------------------------*/
 
-#include "common/darktable.h"
 #include "common/interpolation.h"
+#include "common/darktable.h"
 #include "control/conf.h"
 
+#include <assert.h>
+#include <glib.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <inttypes.h>
-#include <glib.h>
-#include <assert.h>
 
 /** Border extrapolation modes */
 enum border_mode

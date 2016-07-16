@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 #
 # Install Doc files
 #
 set(DOC_FILES README AUTHORS TRANSLATORS LICENSE)
-install(FILES ${DOC_FILES} DESTINATION ./share/doc/darktable)
+install(FILES ${DOC_FILES} DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
 # create config docs
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
@@ -30,7 +30,7 @@ if(USE_XMLLINT)
   add_dependencies(darktablerc.html_file validate_darktableconfig_xml)
 endif(USE_XMLLINT)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html DESTINATION ${SHARE_INSTALL}/doc/darktable)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
 # we remove the usermanual from the release tarball as it adds an extra 77 MB which people don't need in general
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/usermanual)

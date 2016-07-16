@@ -19,8 +19,8 @@
 #ifndef __FILE_LOCATION_H__
 #define __FILE_LOCATION_H__
 
-#include <string.h>
 #include <gtk/gtk.h>
+#include <string.h>
 
 /** returns the users home directory */
 gchar *dt_loc_get_home_dir(const gchar *user);
