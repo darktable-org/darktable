@@ -904,14 +904,13 @@ static void auto_apply_presets(dt_develop_t *dev)
     {
       // if there is anything..
       cnt = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
 
       // workaround a sqlite3 "feature". The above statement to insert items into memory.history is complex and in
       // this case sqlite does not give rowid a linear increment. But the following code really expect that the rowid in
       // this table starts from 0 and increment one by one. So in the following code we rewrite the num values.
 
       {
-        sqlite3_stmt *stmt;
-
         // get all rowids
         GList *rowids = NULL;
 
@@ -924,20 +923,31 @@ static void auto_apply_presets(dt_develop_t *dev)
         // update num accordingly
         int v = 0;
         GList *r = rowids;
-        char query[512];
 
-        while(r)
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "UPDATE memory.history SET num=?1 WHERE rowid=?2", -1, &stmt, NULL);
+
+        // let's wrap this into a transaction, it might make it a little faster.
+        sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+        do
         {
-          snprintf(query, sizeof(query), "UPDATE memory.history SET num=%d WHERE rowid=%d", v,
-                   GPOINTER_TO_INT(r->data));
-          DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+          DT_DEBUG_SQLITE3_CLEAR_BINDINGS(stmt);
+          DT_DEBUG_SQLITE3_RESET(stmt);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, v);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, GPOINTER_TO_INT(r->data));
+
+          sqlite3_step(stmt);
+
           v++;
           r = g_list_next(r);
-        }
+        } while((sqlite3_step(stmt) == SQLITE_DONE) && r);
+
+        sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+
         g_list_free(rowids);
+        sqlite3_finalize(stmt);
       }
 
-      sqlite3_finalize(stmt);
       // fprintf(stderr, "[auto_apply_presets] imageid %d found %d matching presets (legacy %d)\n", imgid,
       // cnt, legacy);
       // advance the current history by that amount:
