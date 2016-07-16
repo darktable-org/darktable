@@ -20,12 +20,12 @@
 
 // writes buffers as digital negative (dng) raw images
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
 #include "common/darktable.h"
 #include "common/exif.h"
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 #define II 1

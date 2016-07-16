@@ -19,8 +19,8 @@
 #ifndef __UTILITY_H__
 #define __UTILITY_H__
 
-#include <string.h>
 #include <gtk/gtk.h>
+#include <string.h>
 
 /** dynamically allocate and concatenate string */
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...) __attribute__((format(printf, 2, 3)));

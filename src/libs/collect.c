@@ -184,7 +184,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   }
 
   /* set number of rules */
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/num_rules");
+  g_strlcpy(confname, "plugins/lighttable/collect/num_rules", sizeof(confname));
   dt_conf_set_int(confname, p->rules);
 
   /* update internal params */
@@ -746,10 +746,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     /* query construction */
     char query[1024] = { 0 };
     if(folders)
-      snprintf(query, sizeof(query),
-               "SELECT distinct folder, id FROM film_rolls ORDER BY UPPER(folder) DESC");
+      g_strlcpy(query, "SELECT distinct folder, id FROM film_rolls ORDER BY UPPER(folder) DESC", sizeof(query));
     else if(tags)
-      snprintf(query, sizeof(query), "SELECT distinct name, id FROM tags ORDER BY UPPER(name) DESC");
+      g_strlcpy(query, "SELECT distinct name, id FROM tags ORDER BY UPPER(name) DESC", sizeof(query));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -1001,40 +1000,41 @@ static void list_view(dt_lib_collect_rule_t *dr)
                  DT_METADATA_XMP_DC_RIGHTS);
         break;
       case DT_COLLECTION_PROP_LENS: // lens
-        snprintf(query, sizeof(query), "select distinct lens, 1 from images order by lens");
+        g_strlcpy(query, "select distinct lens, 1 from images order by lens", sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
-        snprintf(query, sizeof(query), "select distinct cast(focal_length as integer) as focal_length, 1 "
-                                       "from images order by focal_length");
+        g_strlcpy(query, "select distinct cast(focal_length as integer) as focal_length, 1 "
+                         "from images order by focal_length",
+                  sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_ISO: // iso
-        snprintf(query, sizeof(query),
-                 "select distinct cast(iso as integer) as iso, 1 from images order by iso");
+        g_strlcpy(query, "select distinct cast(iso as integer) as iso, 1 from images order by iso", sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_APERTURE: // aperture
-        snprintf(query, sizeof(query),
-                 "select distinct round(aperture,1) as aperture, 1 from images order by aperture");
+        g_strlcpy(query, "select distinct round(aperture,1) as aperture, 1 from images order by aperture",
+                  sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_FILENAME: // filename
-        snprintf(query, sizeof(query), "select distinct filename, 1 from images order by filename");
+        g_strlcpy(query, "select distinct filename, 1 from images order by filename", sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_DAY:
-        snprintf(query, sizeof(query),
-                 "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images ORDER BY datetime_taken DESC");
+        g_strlcpy(query,
+                  "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images ORDER BY datetime_taken DESC",
+                  sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_TIME:
-        snprintf(query, sizeof(query),
-                 "SELECT DISTINCT datetime_taken, 1 FROM images ORDER BY datetime_taken DESC");
+        g_strlcpy(query, "SELECT DISTINCT datetime_taken, 1 FROM images ORDER BY datetime_taken DESC",
+                  sizeof(query));
         break;
 
       default: // filmroll
-        snprintf(query, sizeof(query), "select distinct folder, id from film_rolls order by folder desc");
+        g_strlcpy(query, "select distinct folder, id from film_rolls order by folder desc", sizeof(query));
         break;
     }
 

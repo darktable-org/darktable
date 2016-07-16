@@ -16,28 +16,28 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/image.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
-#include "common/image.h"
+#include "common/grouping.h"
+#include "common/history.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
-#include "common/grouping.h"
+#include "common/imageio_rawspeed.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
-#include "common/history.h"
-#include "common/imageio_rawspeed.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "control/jobs.h"
 #include "develop/lightroom.h"
+#include <assert.h>
 #include <math.h>
 #include <sqlite3.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
-#include <assert.h>
 #ifndef __WIN32__
 #include <glob.h>
 #endif
@@ -521,6 +521,10 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    // make sure that the duplicate doesn't have some magic darktable| tags
+    dt_tag_detach_by_string("darktable|changed", newid);
+    dt_tag_detach_by_string("darktable|exported", newid);
 
     // set version of new entry and max_version of all involved duplicates (with same film_id and filename)
     int32_t version = (newversion != -1) ? newversion : max_version + 1;

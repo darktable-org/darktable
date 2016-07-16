@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/exif.h"
 #include "chart/cairo.h"
 #include "chart/colorchart.h"
 #include "chart/common.h"
@@ -24,6 +23,7 @@
 #include "chart/pfm.h"
 #include "chart/thinplate.h"
 #include "chart/tonecurve.h"
+#include "common/exif.h"
 #include "version.h"
 
 
@@ -830,7 +830,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
 
   int sp = 0;
-  int cperm[300];
+  int cperm[300] = { 0 };
   for(int k = 0; k < sparsity; k++)
     if(perm[k] < N) // skip polynomial parts
       cperm[sp++] = perm[k];
@@ -1522,7 +1522,11 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   while(fscanf(f, "%*[^\n]\n") != EOF) N++;
   fseek(f, 0, SEEK_SET);
 
-  if(N <= 1) return 0;
+  if(N <= 1)
+  {
+    fclose(f);
+    return 0;
+  }
 
   // header lines
   char key[16] = {0}, value[256] = {0};
@@ -1608,6 +1612,12 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
   if(N == 0)
   {
     fprintf(stderr, "error parsing `%s', giving up\n", filename_csv);
+
+    free(target_L);
+    free(target_a);
+    free(target_b);
+    free(colorchecker_Lab);
+
     return 1;
   }
 

@@ -16,17 +16,17 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/luastorage.h"
-#include "lua/image.h"
-#include "lua/widget/widget.h"
-#include <stdio.h>
-#include <common/darktable.h>
-#include "common/imageio_module.h"
 #include "common/file_location.h"
 #include "common/image.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
+#include "control/jobs.h"
 #include "lua/call.h"
 #include "lua/glist.h"
-#include "control/jobs.h"
+#include "lua/image.h"
+#include "lua/widget/widget.h"
+#include <common/darktable.h>
+#include <stdio.h>
 
 typedef struct
 {

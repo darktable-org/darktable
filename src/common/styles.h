@@ -20,12 +20,12 @@
 #define DT_STYLES_H
 
 #include "common/darktable.h"
-#include "develop/imageop.h"
 #include "develop/blend.h"
+#include "develop/imageop.h"
 
-#include <sqlite3.h>
 #include <glib.h>
 #include <inttypes.h>
+#include <sqlite3.h>
 
 /** The definition of styles are copied historystack to
         reproduce an development style such as sepia, cross process

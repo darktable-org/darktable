@@ -17,8 +17,8 @@
  */
 #ifndef DT_LUA_GLIST_H
 #define DT_LUA_GLIST_H
-#include <lua/lua.h>
 #include <glib.h>
+#include <lua/lua.h>
 
 
 

@@ -18,8 +18,8 @@
 #ifndef DTGTK_BUTTON_H
 #define DTGTK_BUTTON_H
 
-#include <gtk/gtk.h>
 #include "paint.h"
+#include <gtk/gtk.h>
 G_BEGIN_DECLS
 #define DTGTK_BUTTON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_button_get_type(), GtkDarktableButton)
 #define DTGTK_BUTTON_CLASS(klass)                                                                            \

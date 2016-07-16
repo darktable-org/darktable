@@ -17,22 +17,22 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/database.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/database.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "gui/legacy_presets.h"
 
-#include <sqlite3.h>
-#include <glib.h>
 #include <gio/gio.h>
+#include <glib.h>
+#include <sqlite3.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_schema_step()!

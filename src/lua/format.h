@@ -17,8 +17,8 @@
 */
 #ifndef DT_LUA_FORMAT_H
 #define DT_LUA_FORMAT_H
-#include <lua/lua.h>
 #include <common/imageio_module.h>
+#include <lua/lua.h>
 
 // forward declaration
 struct dt_imageio_module_format_t;

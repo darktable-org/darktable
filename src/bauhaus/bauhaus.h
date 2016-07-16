@@ -20,20 +20,20 @@
 #ifndef DT_BAUHAUS_H
 #define DT_BAUHAUS_H
 
+#include "common/debug.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "common/debug.h"
-#include "gui/gtk.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
 
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
-#include <string.h>
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <gdk/gdkkeysyms.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define DT_BAUHAUS_WIDGET_TYPE (dt_bh_get_type())
 #define DT_BAUHAUS_WIDGET(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidget))

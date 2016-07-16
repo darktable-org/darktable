@@ -20,10 +20,10 @@
 #ifndef DT_DEVELOP_BLEND_H
 #define DT_DEVELOP_BLEND_H
 
+#include "common/opencl.h"
+#include "develop/pixelpipe.h"
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
-#include "develop/pixelpipe.h"
-#include "common/opencl.h"
 
 #define DEVELOP_BLEND_VERSION (7)
 
@@ -282,7 +282,6 @@ typedef struct dt_blendop_t
   int kernel_blendop_Lab;
   int kernel_blendop_RAW;
   int kernel_blendop_rgb;
-  int kernel_blendop_copy_alpha;
   int kernel_blendop_set_mask;
 } dt_blendop_t;
 

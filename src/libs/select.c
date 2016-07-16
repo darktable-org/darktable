@@ -16,20 +16,20 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
 #include "common/collection.h"
-#include "common/selection.h"
+#include "common/darktable.h"
 #include "common/debug.h"
-#include "control/control.h"
+#include "common/selection.h"
 #include "control/conf.h"
-#include "libs/lib.h"
+#include "control/control.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "libs/lib.h"
 #include <gdk/gdkkeysyms.h>
-#include "dtgtk/button.h"
 #ifdef USE_LUA
-#include "lua/image.h"
 #include "lua/call.h"
+#include "lua/image.h"
 #endif
 #include "libs/lib_api.h"
 

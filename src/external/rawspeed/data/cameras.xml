@@ -352,7 +352,47 @@
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS 700D">
+	<Camera make="Canon" model="Canon EOS 80D">
+			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
+			<CFA width="2" height="2">
+				<Color x="0" y="0">RED</Color>
+				<Color x="1" y="0">GREEN</Color>
+				<Color x="0" y="1">GREEN</Color>
+				<Color x="1" y="1">BLUE</Color>
+			</CFA>
+			<Crop x="264" y="34" width="0" height="0"/>
+			<Sensor black="512" white="11892" iso_list="100 125"/>
+			<Sensor black="512" white="10749" iso_list="160"/>
+			<Sensor black="511" white="14338" iso_list="200 250"/>
+			<Sensor black="2048" white="10749" iso_list="320 640 1250 2500 5000"/>
+			<Sensor black="2048" white="14338" iso_list="400 500 800 1000 1600 2000 3200 4000 6400 16000"/>
+			<Sensor black="2046" white="14338" iso_list="8000 25600"/>
+			<Sensor black="2045" white="14338" iso_list="10000"/>
+			<Sensor black="2049" white="14338" iso_list="12800"/>
+			<BlackAreas>
+				<Vertical x="0" width="263"/>
+				<Horizontal y="0" height="33"/>
+			</BlackAreas>
+		</Camera>
+		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw1" supported="no">
+			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
+			<Crop x="0" y="0" width="0" height="0"/>
+			<Sensor black="0" white="14338"/>
+			<Hints>
+				<Hint name="sraw_new" value=""/>
+				<Hint name="invert_sraw_wb" value=""/>
+			</Hints>
+		</Camera>
+		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw2" supported="no">
+			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
+			<Crop x="0" y="0" width="0" height="0"/>
+			<Sensor black="0" white="14338"/>
+			<Hints>
+				<Hint name="sraw_new" value=""/>
+				<Hint name="invert_sraw_wb" value=""/>
+			</Hints>
+		</Camera>
+  	<Camera make="Canon" model="Canon EOS 700D">
 		<ID make="Canon" model="EOS 700D">Canon EOS 700D</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>

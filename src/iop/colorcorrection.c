@@ -30,9 +30,9 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_colorcorrection_params_t)

@@ -19,13 +19,13 @@
 #include "config.h"
 #endif
 #include "common/darktable.h"
-#include "common/styles.h"
 #include "common/history.h"
-#include "develop/imageop.h"
+#include "common/styles.h"
 #include "control/control.h"
-#include "gui/styles.h"
+#include "develop/imageop.h"
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
+#include "gui/styles.h"
 
 typedef enum _style_items_columns_t
 {

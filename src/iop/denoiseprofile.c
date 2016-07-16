@@ -1600,6 +1600,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     // indirectly give gpu some air to breathe (and to do display related stuff)
     dt_iop_nap(darktable.opencl->micro_nap);
 
+    // swap buffers
     cl_mem dev_buf3 = dev_buf2;
     dev_buf2 = dev_buf1;
     dev_buf1 = dev_buf3;
@@ -1680,11 +1681,11 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 0, sizeof(cl_mem),
-                             (void *)&dev_buf2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 1, sizeof(cl_mem),
                              (void *)&dev_buf1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 2, sizeof(cl_mem),
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 1, sizeof(cl_mem),
                              (void *)&dev_detail[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 2, sizeof(cl_mem),
+                             (void *)&dev_buf2);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 4, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 5, sizeof(float), (void *)&thrs[0]);
@@ -1704,14 +1705,24 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     // indirectly give gpu some air to breathe (and to do display related stuff)
     dt_iop_nap(darktable.opencl->micro_nap);
 
+    // swap buffers
     cl_mem dev_buf3 = dev_buf2;
     dev_buf2 = dev_buf1;
     dev_buf1 = dev_buf3;
   }
 
+  // copy output of last run of synthesize kernel to dev_tmp (if not already there)
+  // note: we need to take swap of buffers into account, so current output lies in dev_buf1
+  if(dev_buf1 != dev_tmp)
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_buf1, dev_tmp, origin, origin, region);
+    if(err != CL_SUCCESS) goto error;
+  }
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 0, sizeof(cl_mem),
-                           (void *)&dev_out);
+                           (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 1, sizeof(cl_mem),
                            (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 2, sizeof(int), (void *)&width);

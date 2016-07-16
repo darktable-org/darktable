@@ -39,19 +39,19 @@
 #include "views/view.h"
 #include "views/view_api.h"
 
+#include <assert.h>
+#include <dirent.h>
+#include <errno.h>
+#include <gdk/gdkkeysyms.h>
+#include <math.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <math.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
 #include <string.h>
 #include <strings.h>
-#include <errno.h>
-#include <assert.h>
-#include <gdk/gdkkeysyms.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 DT_MODULE(1)
 

@@ -19,8 +19,8 @@
 #define DT_CTL_SETTINGS_H
 
 #include "common/darktable.h"
-#include "control/signal.h"
 #include "common/dtpthread.h"
+#include "control/signal.h"
 
 #include <inttypes.h>
 

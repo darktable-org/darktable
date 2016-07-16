@@ -15,14 +15,14 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "lua/types.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/control.h"
-#include "lua/types.h"
 #include "lua/call.h"
-#include <string.h>
-#include <stdarg.h>
 #include <math.h>
+#include <stdarg.h>
+#include <string.h>
 
 /*************/
 /*   TYPES   */

@@ -16,26 +16,26 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "develop/develop.h"
-#include "control/control.h"
-#include "common/history.h"
-#include "common/imageio.h"
-#include "common/image_cache.h"
-#include "common/file_location.h"
 #include "common/styles.h"
-#include "common/tags.h"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
+#include "common/file_location.h"
+#include "common/history.h"
+#include "common/image_cache.h"
+#include "common/imageio.h"
+#include "common/tags.h"
+#include "control/control.h"
+#include "develop/develop.h"
 
-#include <libxml/encoding.h>
-#include <libxml/xmlwriter.h>
 #include "gui/accelerators.h"
 #include "gui/styles.h"
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
 
-#include <string.h>
-#include <stdio.h>
 #include <glib.h>
+#include <stdio.h>
+#include <string.h>
 
 typedef struct
 {
@@ -579,6 +579,7 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
     gchar ntag[512] = { 0 };
     g_snprintf(ntag, sizeof(ntag), "darktable|style|%s", name);
     if(dt_tag_new(ntag, &tagid)) dt_tag_attach(tagid, newimgid);
+    if(dt_tag_new("darktable|changed", &tagid)) dt_tag_attach(tagid, newimgid);
 
     /* if current image in develop reload history */
     if(dt_dev_is_current_image(darktable.develop, newimgid))

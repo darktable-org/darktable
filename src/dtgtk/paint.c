@@ -16,9 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
 #include "paint.h"
 #include "gui/draw.h"
+#include <math.h>
 
 #ifndef M_PI
 #define M_PI 3.141592654

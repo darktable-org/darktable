@@ -20,27 +20,27 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/darktable.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "develop/develop.h"
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
-#include "common/debug.h"
-#include "bauhaus/bauhaus.h"
-#include "views/view.h"
-#include "gui/gtk.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
+#include "views/view.h"
 
-#include <stdlib.h>
-#include <strings.h>
 #include <assert.h>
-#include <math.h>
-#include <string.h>
-#include <glib/gstdio.h>
 #include <gdk/gdkkeysyms.h>
+#include <glib/gstdio.h>
 #include <lcms2.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 
 int dt_control_load_config(dt_control_t *c)
@@ -647,7 +647,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       // auto complete:
       if(darktable.control->vimkey_cnt < 5)
       {
-        snprintf(darktable.control->vimkey, sizeof(darktable.control->vimkey), ":set ");
+        g_strlcpy(darktable.control->vimkey, ":set ", sizeof(darktable.control->vimkey));
         darktable.control->vimkey_cnt = 5;
       }
       else if(!autocomplete)

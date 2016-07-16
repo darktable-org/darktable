@@ -16,11 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/image_cache.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image.h"
-#include "common/image_cache.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 

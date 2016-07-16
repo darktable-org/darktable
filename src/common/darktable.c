@@ -30,16 +30,17 @@
 #include <sys/malloc.h>
 #endif
 
-#include "common/darktable.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
-#include "common/selection.h"
+#include "common/darktable.h"
 #include "common/exif.h"
 #include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
+#include "common/selection.h"
 #ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/cpuid.h"
 #include "common/film.h"
 #include "common/grealpath.h"
@@ -50,30 +51,29 @@
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
 #include "common/points.h"
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "libs/lib.h"
-#include "views/view.h"
-#include "views/undo.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
-#include "control/conf.h"
-#include "gui/guides.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
 #include "gui/gtk.h"
+#include "gui/guides.h"
 #include "gui/presets.h"
+#include "libs/lib.h"
 #include "lua/init.h"
-#include "bauhaus/bauhaus.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "views/undo.h"
+#include "views/view.h"
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <string.h>
 #include <sys/param.h>
-#include <unistd.h>
 #include <sys/types.h>
+#include <unistd.h>
 #ifndef __WIN32__
 #include <sys/wait.h>
 #endif
@@ -571,6 +571,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
 #ifdef HAVE_OPENCL
   gboolean exclude_opencl = FALSE;
+  gboolean print_statistics = strcmp(argv[0], "darktable-cltest");
 #endif
 
 #ifdef USE_LUA
@@ -607,7 +608,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH);
 #endif
-        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2015 johannes hanika\n" PACKAGE_BUGREPORT
+        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2016 johannes hanika\n" PACKAGE_BUGREPORT
                "\n\ncompile options:\n"
                "  bit depth is %s\n"
 #ifdef _DEBUG
@@ -960,7 +961,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
 #ifdef HAVE_OPENCL
-  dt_opencl_init(darktable.opencl, exclude_opencl);
+  dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 #endif
 
   darktable.blendop = (dt_blendop_t *)calloc(1, sizeof(dt_blendop_t));

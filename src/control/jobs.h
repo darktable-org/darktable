@@ -21,6 +21,7 @@
 #ifndef DT_CONTROL_JOBS_H
 #define DT_CONTROL_JOBS_H
 
+#include <glib.h>
 #include <inttypes.h>
 #include <stddef.h>
 
@@ -43,11 +44,12 @@ typedef enum dt_job_state_t
 
 typedef enum dt_job_queue_t
 {
-  DT_JOB_QUEUE_USER_FG = 0,   // gui actions, ...
-  DT_JOB_QUEUE_SYSTEM_FG = 1, // thumbnail creation, ..., may be pushed out of the queue
-  DT_JOB_QUEUE_USER_BG = 2,   // exports, ...
-  DT_JOB_QUEUE_SYSTEM_BG = 3, // some lua stuff that may not be pushed out of the queue, ...
-  DT_JOB_QUEUE_MAX = 4
+  DT_JOB_QUEUE_USER_FG = 0,     // gui actions, ...
+  DT_JOB_QUEUE_SYSTEM_FG = 1,   // thumbnail creation, ..., may be pushed out of the queue
+  DT_JOB_QUEUE_USER_BG = 2,     // imports, ...
+  DT_JOB_QUEUE_USER_EXPORT = 3, // exports. only one of these jobs will ever be scheduled at a time
+  DT_JOB_QUEUE_SYSTEM_BG = 4,   // some lua stuff that may not be pushed out of the queue, ...
+  DT_JOB_QUEUE_MAX = 5
 } dt_job_queue_t;
 
 struct _dt_job_t;
@@ -76,6 +78,11 @@ void dt_control_job_set_params_with_size(dt_job_t *job, void *params, size_t par
                                          dt_job_destroy_callback callback);
 /** get job params. WARNING: you must not free them. dt_control_job_dispose() will take care of that */
 void *dt_control_job_get_params(const dt_job_t *job);
+
+void dt_control_job_add_progress(dt_job_t *job, const char *message, gboolean cancellable);
+void dt_control_job_set_progress_message(dt_job_t *job, const char *message);
+void dt_control_job_set_progress(dt_job_t *job, double value);
+double dt_control_job_get_progress(dt_job_t *job);
 
 struct dt_control_t;
 void dt_control_jobs_init(struct dt_control_t *control);

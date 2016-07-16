@@ -18,8 +18,8 @@
 #ifndef DTGTK_ICON_H
 #define DTGTK_ICON_H
 
-#include <gtk/gtk.h>
 #include "paint.h"
+#include <gtk/gtk.h>
 G_BEGIN_DECLS
 #define DTGTK_ICON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_icon_get_type(), GtkDarktableIcon)
 #define DTGTK_ICON_CLASS(klass) G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_icon_get_type(), GtkDarktableIconClass)

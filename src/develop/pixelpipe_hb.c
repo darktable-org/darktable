@@ -16,7 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "develop/pixelpipe.h"
 #include "common/colorspaces.h"
 #include "common/histogram.h"
 #include "common/imageio.h"
@@ -25,18 +24,19 @@
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/imageop_math.h"
+#include "develop/pixelpipe.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
 
 #include <assert.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
-#include <math.h>
 #include <unistd.h>
-#include <stdint.h>
 
 typedef enum dt_pixelpipe_flow_t
 {
@@ -955,19 +955,22 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     dt_pixelpipe_flow_t pixelpipe_flow = (PIXELPIPE_FLOW_NONE | PIXELPIPE_FLOW_HISTOGRAM_NONE);
 
-    dt_develop_tiling_t tiling = { 0 };
-    dt_develop_tiling_t tiling_blendop = { 0 };
-
     /* get tiling requirement of module */
+    dt_develop_tiling_t tiling = { 0 };
     module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
 
-    /* get specific requirement for blending */
-    tiling_callback_blendop(module, piece, &roi_in, roi_out, &tiling_blendop);
+    /* does this module involve blending? */
+    if(piece->blendop_data && (dt_develop_blend_params_t *)piece->blendop_data != DEVELOP_MASK_DISABLED)
+    {
+      /* get specific memory requirement for blending */
+      dt_develop_tiling_t tiling_blendop = { 0 };
+      tiling_callback_blendop(module, piece, &roi_in, roi_out, &tiling_blendop);
 
-    /* aggregate in structure tiling */
-    tiling.factor = fmax(tiling.factor, tiling_blendop.factor);
-    tiling.maxbuf = fmax(tiling.maxbuf, tiling_blendop.maxbuf);
-    tiling.overhead = fmax(tiling.overhead, tiling_blendop.overhead);
+      /* aggregate in structure tiling */
+      tiling.factor = fmax(tiling.factor, tiling_blendop.factor);
+      tiling.maxbuf = fmax(tiling.maxbuf, tiling_blendop.maxbuf);
+      tiling.overhead = fmax(tiling.overhead, tiling_blendop.overhead);
+    }
 
     /* remark: we do not do tiling for blendop step, neither in opencl nor on cpu. if overall tiling
        requirements (maximum of module and blendop) require tiling for opencl path, then following blend

@@ -19,16 +19,16 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "bauhaus/bauhaus.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "gui/accelerators.h"
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 
 
 static const int dt_gui_presets_exposure_value_cnt = 24;

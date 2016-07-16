@@ -42,10 +42,10 @@
 #include "views/view.h"
 #include "views/view_api.h"
 
+#include <gdk/gdkkeysyms.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 

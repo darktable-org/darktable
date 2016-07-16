@@ -16,23 +16,23 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "common/colorspaces.h"
-#include "common/tags.h"
-#include "common/curve_tools.h"
-#include "common/ratings.h"
-#include "common/colorlabels.h"
-#include "common/debug.h"
 #include "develop/lightroom.h"
+#include "common/colorlabels.h"
+#include "common/colorspaces.h"
+#include "common/curve_tools.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/ratings.h"
+#include "common/tags.h"
 #include "control/control.h"
 
+#include <ctype.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 // copy here the iop params struct with the actual version. This is so to
 // be as independent as possible of any iop evolutions. Indeed, we create
@@ -517,7 +517,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   {
     linear = 0,
     medium_contrast = 1,
-    string_contrast = 2,
+    strong_contrast = 2,
     custom = 3
   } lr_curve_kind_t;
 
@@ -691,7 +691,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       else if(!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
         curve_kind = medium_contrast;
       else if(!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
-        curve_kind = medium_contrast;
+        curve_kind = strong_contrast;
       else if(!xmlStrcmp(value, (const xmlChar *)"Custom"))
         curve_kind = custom;
     }
@@ -1284,7 +1284,9 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     refresh_needed = TRUE;
   }
 
-  if(curve_kind != linear || ptc_value[0] != 0 || ptc_value[1] != 0 || ptc_value[2] != 0 || ptc_value[3] != 0)
+  if(dev != NULL &&
+     (curve_kind != linear
+      || ptc_value[0] != 0 || ptc_value[1] != 0 || ptc_value[2] != 0 || ptc_value[3] != 0))
   {
     ptc.tonecurve_nodes[ch_L] = 6;
     ptc.tonecurve_nodes[ch_a] = 7;
@@ -1334,9 +1336,9 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       // set shadows/darks/lights/highlight adjustments
 
       ptc.tonecurve[ch_L][1].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[0] / 100.0);
-      ptc.tonecurve[ch_L][2].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[1] / 100.0);
-      ptc.tonecurve[ch_L][3].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[2] / 100.0);
-      ptc.tonecurve[ch_L][4].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[3] / 100.0);
+      ptc.tonecurve[ch_L][2].y += ptc.tonecurve[ch_L][2].y * ((float)ptc_value[1] / 100.0);
+      ptc.tonecurve[ch_L][3].y += ptc.tonecurve[ch_L][3].y * ((float)ptc_value[2] / 100.0);
+      ptc.tonecurve[ch_L][4].y += ptc.tonecurve[ch_L][4].y * ((float)ptc_value[3] / 100.0);
 
       if(ptc.tonecurve[ch_L][1].y > ptc.tonecurve[ch_L][2].y)
         ptc.tonecurve[ch_L][1].y = ptc.tonecurve[ch_L][2].y;

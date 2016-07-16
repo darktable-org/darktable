@@ -16,20 +16,20 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "control/conf.h"
-#include "control/control.h"
 #include "common/collection.h"
 #include "common/debug.h"
-#include "common/metadata.h"
-#include "common/utility.h"
 #include "common/image.h"
 #include "common/imageio_rawspeed.h"
+#include "common/metadata.h"
+#include "common/utility.h"
+#include "control/conf.h"
+#include "control/control.h"
 
-#include <stdio.h>
+#include <glib.h>
 #include <memory.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <glib.h>
 
 
 #define SELECT_QUERY "select distinct * from %s"
@@ -1202,16 +1202,26 @@ void dt_collection_update_query(const dt_collection_t *collection)
   if(!collection->clone) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }
 
+gboolean dt_collection_hint_message_internal(void *message)
+{
+  dt_control_hinter_message(darktable.control, message);
+  g_free(message);
+  return FALSE;
+}
+
 void dt_collection_hint_message(const dt_collection_t *collection)
 {
   /* collection hinting */
-  gchar message[1024];
+  gchar *message;
+
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
-  g_snprintf(message, sizeof(message), ngettext("%d image of %d in current collection is selected",
-                                                "%d images of %d in current collection are selected", cs),
-             cs, c);
-  dt_control_hinter_message(darktable.control, message);
+
+  message = g_strdup_printf(ngettext("%d image of %d in current collection is selected",
+                                     "%d images of %d in current collection are selected", cs),
+                            cs, c);
+
+  g_idle_add(dt_collection_hint_message_internal, message);
 }
 
 int dt_collection_image_offset(int imgid)

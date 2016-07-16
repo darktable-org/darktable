@@ -18,9 +18,9 @@
 
 #include <glib.h>
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "gui/guides.h"
-#include "bauhaus/bauhaus.h"
 
 typedef struct dt_QRect_t
 {

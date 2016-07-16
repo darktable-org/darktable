@@ -15,10 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <string.h>
 #include "button.h"
-#include "gui/gtk.h"
 #include "bauhaus/bauhaus.h"
+#include "gui/gtk.h"
+#include <string.h>
 
 static void _button_class_init(GtkDarktableButtonClass *klass);
 static void _button_init(GtkDarktableButton *button);

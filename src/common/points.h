@@ -576,8 +576,8 @@ inline static void gen_rand_array(struct sfmt_state_t *s, w128_t *array, int siz
  *
  * The new BSD License is applied to this software, see LICENSE.txt
  */
-#include <string.h>
 #include <assert.h>
+#include <string.h>
 //#include "SFMT.h"
 //#include "SFMT-params.h"
 

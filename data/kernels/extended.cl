@@ -601,3 +601,63 @@ colorbalance (read_only image2d_t in, write_only image2d_t out, const int width,
 
   write_imagef (out, (int2)(x, y), Lab);
 }
+
+/* helpers and kernel for the colorchecker module */
+float fastlog2(float x)
+{
+  union { float f; unsigned int i; } vx = { x };
+  union { unsigned int i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
+
+  float y = vx.i;
+
+  y *= 1.1920928955078125e-7f;
+
+  return y - 124.22551499f
+    - 1.498030302f * mx.f
+    - 1.72587999f / (0.3520887068f + mx.f);
+}
+
+float fastlog(float x)
+{
+  return 0.69314718f * fastlog2(x);
+}
+
+float thinplate(const float4 x, const float4 y)
+{
+  const float r2 =
+      (x.x - y.x) * (x.x - y.x) +
+      (x.y - y.y) * (x.y - y.y) +
+      (x.z - y.z) * (x.z - y.z);
+
+  return 0.5f * r2 * fastlog(max(1e-8f, r2));
+}
+
+kernel void
+colorchecker (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+              const int num_patches, global float4 *params)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  global float4 *source_Lab = params;
+  global float4 *coeff_Lab = params + num_patches;
+  global float4 *poly_Lab = params + 2 * num_patches;
+
+  float4 ipixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  const float w = ipixel.w;
+
+  float4 opixel = poly_Lab[0] + poly_Lab[1] * ipixel.x + poly_Lab[2] * ipixel.y + poly_Lab[3] * ipixel.z;
+
+  for(int k = 0; k < num_patches; k++)
+  {
+    const float phi = thinplate(ipixel, source_Lab[k]);
+    opixel += coeff_Lab[k] * phi;
+  }
+
+  opixel.w = w;
+
+  write_imagef (out, (int2)(x, y), opixel);
+}

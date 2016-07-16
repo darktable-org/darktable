@@ -34,8 +34,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/dtpthread.h"
 #include "common/database.h"
+#include "common/dtpthread.h"
 #include "common/utility.h"
 #include <time.h>
 #ifdef __WIN32__
@@ -43,17 +43,17 @@
 #else
 #include <sys/resource.h>
 #endif
-#include <sys/time.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <sqlite3.h>
-#include <glib/gi18n.h>
 #include <glib.h>
+#include <glib/gi18n.h>
+#include <inttypes.h>
 #include <json-glib/json-glib.h>
+#include <lua/lua.h>
 #include <math.h>
+#include <sqlite3.h>
+#include <stdio.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <lua/lua.h>
 
 #ifdef __APPLE__
 #include <mach/mach.h>
@@ -62,8 +62,8 @@
 
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 typedef unsigned int u_int;
-#include <sys/types.h>
 #include <sys/sysctl.h>
+#include <sys/types.h>
 #endif
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/param.h>

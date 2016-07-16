@@ -15,11 +15,11 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "lua/configuration.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "lua/lua.h"
 #include "version.h"
-#include "lua/configuration.h"
 
 static int check_version(lua_State *L)
 {

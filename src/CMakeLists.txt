@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.5)
 
 cmake_policy(SET CMP0011 NEW)
 
@@ -135,11 +135,19 @@ endif()
 #
 # Find all other required libraries for building
 #
+# GTK3 does pull glib, but this allows us to check for the version
+find_package(Glib 2.40 REQUIRED)
+add_definitions("-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_40")
+add_definitions("-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_MIN_REQUIRED")
+include_directories(SYSTEM ${Glib_INCLUDE_DIRS})
+list(APPEND LIBS ${Glib_LIBRARIES})
+
 # GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
-find_package(GTK3 3.10 REQUIRED) # actually it's 3.12, but Ubuntu 14.04 LTS only ships 3.10, so we #define the rest
-include_directories(${GTK3_INCLUDE_DIRS})
+find_package(GTK3 3.14 REQUIRED)
+add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_14")
+#add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
+include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
-add_definitions(${GTK3_DEFINITIONS})
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
@@ -228,18 +236,13 @@ endif(USE_FLICKR)
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
-  if(OPENJPEG_FOUND)
-    list(APPEND SOURCES "common/imageio_j2k.c")
-    include_directories(SYSTEM ${OPENJPEG_INCLUDE_DIRS})
-    list(APPEND LIBS ${OPENJPEG_LIBRARIES})
-    add_definitions(${OPENJPEG_DEFINITIONS})
+  if(OpenJPEG_FOUND)
     add_definitions("-DHAVE_OPENJPEG")
-    if(OPENJPEG_VERSION VERSION_LESS "1.5.0")
-      message(STATUS "OpenJPEG version ${OPENJPEG_VERSION} found. Only 1.5 and newer support reading of icc profiles.")
-    else()
-      add_definitions("-DHAVE_OPENJPEG_ICC")
-    endif()
-  endif(OPENJPEG_FOUND)
+    list(APPEND SOURCES "common/imageio_j2k.c")
+
+    include_directories(SYSTEM ${OpenJPEG_INCLUDE_DIRS})
+    list(APPEND LIBS ${OpenJPEG_LIBRARIES})
+  endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
 
 #
@@ -640,11 +643,17 @@ endif()
 #
 if(NOT SOURCE_PACKAGE AND NOT APPLE)
   # apple build fails on deprecated warnings..
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
 elseif(SOURCE_PACKAGE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=varargs")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=varargs")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 ###### GTK+3 port ######
@@ -754,7 +763,7 @@ if(WIN32)
   # Windows needs its DLLs in the same directory as the executable to find them.
   install(TARGETS lib_darktable DESTINATION bin)
 else(WIN32)
-  install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
+  install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
 
 # make sure static libs is first
@@ -808,15 +817,11 @@ if(NOT WIN32)
   # Windows doesn't know the concept of RPATHs :(
   set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
   set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-  if(APPLE)
-    set_target_properties(darktable PROPERTIES INSTALL_RPATH @loader_path/../${LIB_INSTALL}/darktable)
-  else(APPLE)
-    set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
-  endif(APPLE)
+  set_target_properties(darktable PROPERTIES INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(NOT WIN32)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")
 endif(APPLE)
 target_link_libraries(darktable ${LIBS})
-install(TARGETS darktable DESTINATION bin)
+install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR})

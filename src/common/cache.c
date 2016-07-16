@@ -18,13 +18,13 @@
 */
 
 #include "common/cache.h"
-#include "common/dtpthread.h"
 #include "common/darktable.h"
+#include "common/dtpthread.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
 #include <assert.h>
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 // this implements a concurrent LRU cache
 

@@ -15,13 +15,13 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <glib.h>
 #include "lua/preferences.h"
-#include "lua/call.h"
-#include <stdlib.h>
-#include <string.h>
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "lua/call.h"
+#include <glib.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef enum
 {

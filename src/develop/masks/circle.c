@@ -15,12 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "develop/masks.h"
 #include "common/debug.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
+#include "develop/masks.h"
 
 static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, int *inside,
                                    int *inside_border, int *near, int *inside_source)
