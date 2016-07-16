@@ -566,17 +566,6 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
 }
 
 /**
- * FCN() is a functional equivalent to FC() avoiding right-shift operations. FC() would trigger
- * a compiler error in kernel border_interpolate() for NVIDIA openCL drivers (as of version 270.41).
- * TODO: revise if still needed for newer versions of NVIDIA's driver.
- */
-int
-FCN(const int row, const int col, const unsigned int filters)
-{
-  return (filters >> (2*((2*row & 14) + (col & 1)) )) & 3;
-}
-
-/**
  * Demosaic image border
  */
 __kernel void
@@ -600,7 +589,7 @@ border_interpolate(__read_only image2d_t in, __write_only image2d_t out, const i
   {
     if (j>=0 && i>=0 && j<height && i<width)
     {
-      int f = FCN(j,i,filters);
+      int f = FC(j,i,filters);
       sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
       count[f]++;
     }
@@ -611,7 +600,7 @@ border_interpolate(__read_only image2d_t in, __write_only image2d_t out, const i
   o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
   o.z = count[2] > 0 ? sum[2]/count[2] : i;
 
-  int f = FCN(y,x,filters);
+  int f = FC(y,x,filters);
 
   if     (f == 0) o.x = i;
   else if(f == 1) o.y = i;
