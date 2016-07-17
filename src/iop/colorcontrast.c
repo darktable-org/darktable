@@ -176,8 +176,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
@@ -197,8 +197,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   for(int j = 0; j < roi_out->height; j++)
   {
 
-    float *in = ((float *)i) + (size_t)ch * roi_in->width * j;
-    float *out = ((float *)o) + (size_t)ch * roi_out->width * j;
+    float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
+    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
 
     const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
     const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);

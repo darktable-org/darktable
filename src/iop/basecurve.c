@@ -302,20 +302,18 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  float *in = (float *)i;
-  float *out = (float *)o;
   const int ch = piece->colors;
-  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
+  const dt_iop_basecurve_data_t *const d = (const dt_iop_basecurve_data_t *const)(piece->data);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, d, in) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    float *inp = in + ch * k;
-    float *outp = out + ch * k;
+    float *inp = (float *)ivoid + ch * k;
+    float *outp = (float *)ovoid + ch * k;
     for(int i = 0; i < 3; i++)
     {
       // use base curve for values < 1, else use extrapolation.
