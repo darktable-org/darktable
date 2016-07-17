@@ -101,8 +101,8 @@ int groups()
 }
 
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   const int ch = piece->colors;
@@ -145,8 +145,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *in = ((float *)i) + (size_t)ch * roi_in->width * j;
-    float *out = ((float *)o) + (size_t)ch * roi_out->width * j;
+    float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
+    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
     for(int i = 0; i < roi_out->width; i++)
     {
       // transform the pixel to sRGB:

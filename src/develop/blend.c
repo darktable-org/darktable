@@ -2427,7 +2427,7 @@ static void _blend_HSV_color(const _blend_buffer_desc_t *bd, const float *a, flo
 }
 
 void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                              const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                              const void *const ivoid, void *const ovoid, const struct dt_iop_roi_t *const roi_in,
                               const struct dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;           // the number of channels in the buffer
@@ -2657,8 +2657,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
       size_t oindex = (size_t)y * roi_out->width * ch;
       _blend_buffer_desc_t bd = { .cst = cst, .stride = (size_t)roi_out->width * ch, .ch = ch, .bch = bch };
-      float *in = (float *)i + iindex;
-      float *out = (float *)o + oindex;
+      float *in = (float *)ivoid + iindex;
+      float *out = (float *)ovoid + oindex;
       float *m = (float *)mask + y * roi_out->width;
       _blend_make_mask(&bd, d->blendif, d->blendif_parameters, d->mask_mode, d->mask_combine, opacity, in,
                        out, m);
@@ -2722,8 +2722,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
     size_t oindex = (size_t)y * roi_out->width * ch;
     _blend_buffer_desc_t bd = { .cst = cst, .stride = (size_t)roi_out->width * ch, .ch = ch, .bch = bch };
-    float *in = (float *)i + iindex;
-    float *out = (float *)o + oindex;
+    float *in = (float *)ivoid + iindex;
+    float *out = (float *)ovoid + oindex;
     float *m = (float *)mask + y * roi_out->width;
     blend(&bd, in, out, m, blendflag);
 
