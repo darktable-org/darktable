@@ -689,7 +689,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     /* Read lens name */
-    if((FIND_EXIF_TAG("Exif.CanonCs.LensType") && pos->print(&exifData) != "(0)")
+    if((FIND_EXIF_TAG("Exif.CanonCs.LensType") && pos->print(&exifData) != "(0)"
+        && pos->print(&exifData) != "(65535)")
        || FIND_EXIF_TAG("Exif.Canon.0x0095"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
