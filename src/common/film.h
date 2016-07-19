@@ -24,8 +24,6 @@
 #include <glib.h>
 #include <inttypes.h>
 
-struct _dt_job_t;
-
 /**
  * film roll.
  * this is one directory of images on disk.
@@ -53,8 +51,6 @@ int dt_film_open_recent(const int32_t num);
 /** import new film and all images in this directory as a background task(non-recursive, existing films/images
  * are respected). */
 int dt_film_import(const char *dirname);
-/** helper for import threads. */
-void dt_film_import1(struct _dt_job_t *job, dt_film_t *film);
 /** constructs the lighttable/query setting for this film, respecting stars and filters. */
 void dt_film_set_query(const int32_t id);
 /** removes this film and all its images from db. */
