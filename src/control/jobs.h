@@ -52,7 +52,6 @@ typedef enum dt_job_queue_t
   DT_JOB_QUEUE_MAX = 5
 } dt_job_queue_t;
 
-struct _dt_job_t;
 typedef struct _dt_job_t dt_job_t;
 
 typedef int32_t (*dt_job_execute_callback)(dt_job_t *);
