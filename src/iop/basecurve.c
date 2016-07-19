@@ -396,14 +396,14 @@ static inline void compute_features(
     const size_t x = 4*(wd*j+i);
     const float max = MAX(col[x], MAX(col[x+1], col[x+2]));
     const float min = MIN(col[x], MIN(col[x+1], col[x+2]));
-    const float sat = .1f + 5.0f*(max-min)/MAX(1e-4, max);
+    const float sat = .1f + .1f*(max-min)/MAX(1e-4, max);
     col[x+3] = sat;
 
     float v = fabsf(col[x]-0.5f);
     v = MAX(fabsf(col[x+1]-0.5f), v);
     v = MAX(fabsf(col[x+2]-0.5f), v);
-    const float var = 0.4;
-    const float exp = .1f + expf(-v*v/(var*var));
+    const float var = 0.5;
+    const float exp = .2f + expf(-v*v/(var*var));
     col[x+3] *= exp;
   }
 }
@@ -475,6 +475,9 @@ static inline void gauss_expand(
   gauss_blur(fine, fine, wd, ht);
 }
 
+// XXX FIXME: we'll need to pad up the image to get a good boundary condition!
+// XXX FIXME: downsampling will not result in an energy conserving pattern (every 4 pixels one sample)
+// XXX FIXME: neither will a mirror boundary condition (mirrors in subsampled values at random density)
 static inline void gauss_reduce(
     const float *const input, // fine input buffer
     float *const coarse,      // coarse scale, blurred input buf
@@ -483,12 +486,12 @@ static inline void gauss_reduce(
     const int ht)
 {
   // blur, store only coarse res
-  const int cw = (wd-1)/2+1;
+  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
   // TODO: pass in output buffer as tmp?
   float *blurred = dt_alloc_align(64, wd*ht*4*sizeof(float));
   gauss_blur(input, blurred, wd, ht);
-  for(int j=0;2*j<ht;j++) for(int i=0;2*i<wd;i++)
+  for(int j=0;j<ch;j++) for(int i=0;i<cw;i++)
     for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
   free(blurred);
 
@@ -569,7 +572,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) shared(col) schedule(static)
 #endif
       for(size_t k=0;k<4*wd*ht;k+=4)
-        col[0][k+3] *= .8f + out[k]*out[k] + out[k+1]*out[k+1] + out[k+2]*out[k+2];
+        col[0][k+3] *= 1.0f + sqrtf(out[k]*out[k] + out[k+1]*out[k+1] + out[k+2]*out[k+2]);
+
+// #define DEBUG_VIS2
+#ifdef DEBUG_VIS2 // transform weights in channels
+      for(size_t k=0;k<4*w*h;k+=4)
+        col[0][k+e] = col[0][k+3];
+#endif
 
 // #define DEBUG_VIS
 #ifdef DEBUG_VIS // DEBUG visualise weight buffer
@@ -600,8 +609,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           const size_t x = 4*(w*j+i);
           // blend images into output pyramid
           if(k == num_levels-1) // blend gaussian base
+#ifdef DEBUG_VIS2
+            ;
+#else
             for(int c=0;c<3;c++)
               comb[k][x+c] += col[k][x+3] * col[k][x+c];
+#endif
           else // laplacian
             for(int c=0;c<3;c++) comb[k][x+c] +=
               col[k][x+3] * (col[k][x+c] - out[x+c]);
