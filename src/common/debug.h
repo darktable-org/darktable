@@ -26,23 +26,25 @@
 #include <assert.h>
 #define __DT_DEBUG_ASSERT__(xin)                                                                                  \
   {                                                                                                               \
-    const int x = xin;                                                                                            \
+    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshadow\"") const int x = xin;              \
     if(x != SQLITE_OK)                                                                                            \
     {                                                                                                             \
       fprintf(stderr, "sqlite3 error: %s:%d, function %s(): %s\n", __FILE__, __LINE__, __FUNCTION__,              \
               sqlite3_errmsg(dt_database_get(darktable.db)));                                                     \
     }                                                                                                             \
     assert(x == SQLITE_OK);                                                                                       \
+    _Pragma("GCC diagnostic pop")                                                                                 \
   }
 #else
 #define __DT_DEBUG_ASSERT__(xin)                                                                                  \
   {                                                                                                               \
-    const int x = xin;                                                                                            \
+    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshadow\"") const int x = xin;              \
     if(x != SQLITE_OK)                                                                                            \
     {                                                                                                             \
       fprintf(stderr, "sqlite3 error: %s:%d, function %s(): %s\n", __FILE__, __LINE__, __FUNCTION__,              \
               sqlite3_errmsg(dt_database_get(darktable.db)));                                                     \
     }                                                                                                             \
+    _Pragma("GCC diagnostic pop")                                                                                 \
   }
 
 #endif

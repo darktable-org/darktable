@@ -658,12 +658,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   /* creating softproof profile if softproof is enabled */
   if(d->mode != DT_PROFILE_NORMAL && pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
-    const dt_colorspaces_color_profile_t *p = dt_colorspaces_get_profile(darktable.color_profiles->softproof_type,
-                                                                         darktable.color_profiles->softproof_filename,
-                                                                         DT_PROFILE_DIRECTION_OUT |
-                                                                         DT_PROFILE_DIRECTION_DISPLAY);
-    if(p)
-      softproof = p->profile;
+    const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile(
+        darktable.color_profiles->softproof_type, darktable.color_profiles->softproof_filename,
+        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
+    if(prof)
+      softproof = prof->profile;
     else
     {
       softproof = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",

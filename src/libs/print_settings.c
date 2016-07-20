@@ -878,7 +878,7 @@ static GList* _get_profiles ()
     dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
     if(p->type == DT_COLORSPACE_FILE)
     {
-      dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+      prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
       g_strlcpy(prof->name, p->name, sizeof(prof->name));
       g_strlcpy(prof->filename, p->filename, sizeof(prof->filename));
       prof->type = DT_COLORSPACE_FILE;

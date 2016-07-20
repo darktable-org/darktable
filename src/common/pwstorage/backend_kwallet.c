@@ -339,7 +339,7 @@ static int get_wallet_handle(const backend_kwallet_context_t *context)
       return invalid_kwallet_handle;
     }
 
-    GVariant *child = g_variant_get_child_value(ret, 0);
+    child = g_variant_get_child_value(ret, 0);
     success = g_variant_get_boolean(child);
     g_variant_unref(child);
     g_variant_unref(ret);

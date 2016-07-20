@@ -285,8 +285,8 @@ static void _lib_location_search_finish(gpointer user_data)
      set center location and zoom based on place type  */
   if(g_list_length(lib->places) == 1)
   {
-    _lib_location_result_t *item = (_lib_location_result_t *)lib->places->data;
-    _show_location(lib, item);
+    _lib_location_result_t *place = (_lib_location_result_t *)lib->places->data;
+    _show_location(lib, place);
   }
 }
 
@@ -402,7 +402,7 @@ void _lib_location_entry_activated(GtkButton *button, gpointer user_data)
 
 static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const char *element_name,
                                                const char **attribute_names, const gchar **attribute_values,
-                                               gpointer user_data, GError **error)
+                                               gpointer user_data, GError **e)
 {
   dt_lib_location_t *lib = (dt_lib_location_t *)user_data;
 

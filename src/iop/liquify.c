@@ -42,6 +42,8 @@
 // this is the version of the modules parameters, and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(1, dt_iop_liquify_params_t)
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 #define MAX_NODES 100 // max of nodes in one instance
 
 const int   LOOKUP_OVERSAMPLE = 10;

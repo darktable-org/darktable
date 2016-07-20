@@ -1847,6 +1847,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "",
         _pipe_type_to_str(pipe->type));
     g_free(module_label);
+    module_label = NULL;
 
     // in case we get this buffer from the cache in the future, cache some stuff:
     piece->filters = pipe->filters;
@@ -1905,7 +1906,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             }
           }
         }
-        gchar *module_label = dt_history_item_get_name(module);
+        module_label = dt_history_item_get_name(module);
         if(hasnan)
           fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module_label,
                   _pipe_type_to_str(pipe->type));
@@ -2131,7 +2132,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview_pipe
        && (strcmp(module->op, "gamma") == 0))
     {
-      uint8_t *pixel = (uint8_t *)*output;
       float box[4];
       // Constraining the area if the colorpicker is active in area mode
       if(dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
@@ -2165,16 +2165,20 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       }
       dev->histogram_max = 0;
       memset(dev->histogram, 0, sizeof(uint32_t) * 4 * 64);
-      for(int j = box[1]; j <= box[3]; j += 4)
-        for(int i = box[0]; i <= box[2]; i += 4)
-        {
-          uint8_t rgb[3];
-          for(int k = 0; k < 3; k++) rgb[k] = pixel[4 * j * roi_out->width + 4 * i + 2 - k] >> 2;
 
-          for(int k = 0; k < 3; k++) dev->histogram[4 * rgb[k] + k]++;
-          uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-          dev->histogram[4 * lum + 3]++;
-        }
+      {
+        uint8_t *pixel = (uint8_t *)*output;
+        for(int j = box[1]; j <= box[3]; j += 4)
+          for(int i = box[0]; i <= box[2]; i += 4)
+          {
+            uint8_t rgb[3];
+            for(int k = 0; k < 3; k++) rgb[k] = pixel[4 * j * roi_out->width + 4 * i + 2 - k] >> 2;
+
+            for(int k = 0; k < 3; k++) dev->histogram[4 * rgb[k] + k]++;
+            uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+            dev->histogram[4 * lum + 3]++;
+          }
+      }
 
       // don't count <= 0 pixels
       for(int k = 19; k < 4 * 64; k += 4)

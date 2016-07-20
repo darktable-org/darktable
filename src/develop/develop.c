@@ -582,7 +582,8 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       // if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1,
       // ((dt_dev_history_item_t *)history->data)->module->op);
       dev->history_end++;
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+
+      hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
       if(enable)
       {
         module->enabled = TRUE;
@@ -612,7 +613,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
     {
       // same operation, change params
       // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
+      hist = (dt_dev_history_item_t *)history->data;
       memcpy(hist->params, module->params, module->params_size);
 
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
@@ -1527,7 +1528,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
     snprintf(mname, sizeof(mname), "%d", pname);
     gboolean dup = FALSE;
 
-    GList *modules = g_list_first(base->dev->iop);
+    modules = g_list_first(base->dev->iop);
     while(modules)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
