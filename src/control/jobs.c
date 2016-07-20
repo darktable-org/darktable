@@ -493,11 +493,11 @@ static void *dt_control_work_res(void *ptr)
   dt_control_t *s = params->self;
   threadid = params->threadid;
   free(params);
-  int32_t threadid = dt_control_get_threadid_res();
+  int32_t threadid_res = dt_control_get_threadid_res();
   while(dt_control_running())
   {
-    // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid);
-    if(dt_control_run_job_res(s, threadid) < 0)
+    // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid_res);
+    if(dt_control_run_job_res(s, threadid_res) < 0)
     {
       // wait for a new job.
       int old;

@@ -101,15 +101,13 @@ int flags()
 
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  float *in = (float *)i;
-  float *out = (float *)o;
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(out, in, (size_t)chs * sizeof(float) * width * height);
+  memcpy(ovoid, ivoid, (size_t)chs * sizeof(float) * width * height);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");
@@ -136,13 +134,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     tmp[k] = (float *)malloc((size_t)sizeof(float) * wd * ht);
   }
 
-  for(int level = 1; level < numl_cap; level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
+  for(int level = 1; level < numl_cap; level++) dt_iop_equalizer_wtf(ovoid, tmp, level, width, height);
 
 #if 0
   // printf("transformed\n");
   // store luma wavelet histogram for later drawing
   if(self->dev->gui_attached && piece->iscale == 1.0 && self->dev->preview_pipe && c) // 1.0 => full pipe, only for gui applications.
   {
+    float *out = (float *)ovoid;
     // chose full pipe and current window.
     int cnt[DT_IOP_EQUALIZER_BANDS];
     for(int i=0; i<DT_IOP_EQUALIZER_BANDS; i++) cnt[i] = 0;
@@ -174,6 +173,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   for(int l = 1; l < numl_cap; l++)
   {
+    float *out = (float *)ovoid;
     const float lv = (lm - l1) * (l - 1) / (float)(numl_cap - 1) + l1; // appr level in real image.
     const float band = CLAMP((1.0 - lv / d->num_levels), 0, 1.0);
     for(int ch = 0; ch < 3; ch++)
@@ -204,7 +204,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
   // printf("applied\n");
-  for(int level = numl_cap - 1; level > 0; level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height);
+  for(int level = numl_cap - 1; level > 0; level--) dt_iop_equalizer_iwtf(ovoid, tmp, level, width, height);
 
   for(int k = 1; k < numl_cap; k++) free(tmp[k]);
   free(tmp);

@@ -354,11 +354,11 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     int i = 0;
     while(iter)
     {
-      dt_pdf_image_t *image = (dt_pdf_image_t *)iter->data;
-      image->outline_mode = outline_mode;
-      image->show_bb = show_bb;
-      image->rotate_to_fit = d->params.rotate;
-      pages[i] = dt_pdf_add_page(d->pdf, &image, 1);
+      dt_pdf_image_t *page = (dt_pdf_image_t *)iter->data;
+      page->outline_mode = outline_mode;
+      page->show_bb = show_bb;
+      page->rotate_to_fit = d->params.rotate;
+      pages[i] = dt_pdf_add_page(d->pdf, &page, 1);
       iter = g_list_next(iter);
       i++;
     }
@@ -370,8 +370,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
     // we allocated the images and pages. the main pdf object gets free'ed in dt_pdf_finish().
     g_list_free_full(d->images, free);
-    for(int i = 0; i < n_images; i++)
-      free(pages[i]);
+    for(i = 0; i < n_images; i++) free(pages[i]);
     g_free(d->actual_filename);
     g_list_free_full(d->icc_profiles, free);
 

@@ -23,6 +23,8 @@
 
 DT_MODULE(1)
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 // tunables for how the game looks and reacts
 #define ASPECT_RATIO 0.875 // the playground
 #define LOOP_SPEED 50      // ms between event loop calls

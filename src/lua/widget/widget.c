@@ -32,6 +32,8 @@ dt_ui_section_label : make new lua widget
 widget names : implement for CSS ?
   */
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 dt_lua_widget_type_t widget_type = {
   .name = "widget",
   .gui_init = NULL,

@@ -735,7 +735,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   const int max_max_scale = 5; // hard limit
   int max_scale = 0;
-  const float scale = roi_in->scale / piece->iscale;
+  const float in_scale = roi_in->scale / piece->iscale;
   // largest desired filter on input buffer (20% of input dim)
   const float supp0
       = MIN(2 * (2 << (max_max_scale - 1)) + 1,
@@ -746,7 +746,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     // actual filter support on scaled buffer
     const float supp = 2 * (2 << max_scale) + 1;
     // approximates this filter size on unscaled input image:
-    const float supp_in = supp * (1.0f / scale);
+    const float supp_in = supp * (1.0f / in_scale);
     const float i_in = dt_log2f((supp_in - 1) * .5f) - 1.0f;
     // i_in = max_scale .. .. .. 0
     const float t = 1.0f - (i_in + .5f) / i0;
@@ -772,9 +772,9 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   tmp = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
 
   const float wb[3] = { // twice as many samples in green channel:
-                        2.0f * piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-                        2.0f * piece->pipe->processed_maximum[2] * d->strength * (scale * scale)
+                        2.0f * piece->pipe->processed_maximum[0] * d->strength * (in_scale * in_scale),
+                        piece->pipe->processed_maximum[1] * d->strength * (in_scale * in_scale),
+                        2.0f * piece->pipe->processed_maximum[2] * d->strength * (in_scale * in_scale)
   };
   // only use green channel + wb for now:
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
@@ -981,7 +981,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
         {
           // sliding window in j direction:
           int i = MAX(0, -ki);
-          float *s = S + i;
+          s = S + i;
           const float *inp = in + 4 * i + 4l * (size_t)roi_in->width * (j + P + 1);
           const float *inps = in + 4 * i + 4l * ((size_t)roi_in->width * (j + P + 1 + kj) + ki);
           const float *inm = in + 4 * i + 4l * (size_t)roi_in->width * (j - P);
@@ -1128,7 +1128,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
         {
           // sliding window in j direction:
           int i = MAX(0, -ki);
-          float *s = S + i;
+          s = S + i;
           const float *inp = in + 4 * i + 4l * (size_t)roi_in->width * (j + P + 1);
           const float *inps = in + 4 * i + 4l * ((size_t)roi_in->width * (j + P + 1 + kj) + ki);
           const float *inm = in + 4 * i + 4l * (size_t)roi_in->width * (j - P);

@@ -340,9 +340,9 @@ static gboolean open_image(image_t *image, const char *filename)
   // at init time this can fail once
   if(GTK_IS_WIDGET(image->drawing_area))
   {
-    guint width = gtk_widget_get_allocated_width(image->drawing_area);
-    guint height = gtk_widget_get_allocated_height(image->drawing_area);
-    set_offset_and_scale(image, width, height);
+    guint widget_width = gtk_widget_get_allocated_width(image->drawing_area);
+    guint widget_height = gtk_widget_get_allocated_height(image->drawing_area);
+    set_offset_and_scale(image, widget_width, widget_height);
   }
 
   return TRUE;
@@ -620,13 +620,13 @@ static void export_raw(dt_lut_t *self, char *filename, char *name, char *descrip
   while(g_hash_table_iter_next(&table_iter, &key, &value))
   {
     if(!g_strcmp0(gray_ramp_key, (char *)key)) continue;
-    GList *patch_names = (GList *)value;
+    patch_names = (GList *)value;
     print_patches(self, fd, patch_names);
   }
 
   if(gray_ramp_key)
   {
-    GList *patch_names = g_hash_table_lookup(self->chart->patch_sets, gray_ramp_key);
+    patch_names = g_hash_table_lookup(self->chart->patch_sets, gray_ramp_key);
     if(patch_names) print_patches(self, fd, patch_names);
   }
 

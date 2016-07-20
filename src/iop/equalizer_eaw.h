@@ -81,7 +81,7 @@ static void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, cons
         gbuf(buf, i, j) -= (tmp[j - st] * gbuf(buf, i, j - st) + tmp[j] * gbuf(buf, i, j + st))
                            / (tmp[j - st] + tmp[j]);
     if(j < height)
-      for(int ch = 0; ch < 3; ch++) gbuf(buf, i, j) -= gbuf(buf, i, j - st);
+      for(ch = 0; ch < 3; ch++) gbuf(buf, i, j) -= gbuf(buf, i, j - st);
     // update
     for(ch = 0; ch < 3; ch++) gbuf(buf, i, 0) += gbuf(buf, i, st) * 0.5;
     for(j = step; j < height - st; j += step)
@@ -89,7 +89,7 @@ static void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, cons
         gbuf(buf, i, j) += (tmp[j - st] * gbuf(buf, i, j - st) + tmp[j] * gbuf(buf, i, j + st))
                            / (2.0 * (tmp[j - st] + tmp[j]));
     if(j < height)
-      for(int ch = 0; ch < 3; ch++) gbuf(buf, i, j) += gbuf(buf, i, j - st) * .5f;
+      for(ch = 0; ch < 3; ch++) gbuf(buf, i, j) += gbuf(buf, i, j - st) * .5f;
   }
 }
 
@@ -131,10 +131,10 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
   {
     // rows
     float tmp[width];
-    int i;
     for(int i = 0; i < width - st; i += st) tmp[i] = gweight(i, j, i + st, j);
     // update
     for(int ch = 0; ch < 3; ch++) gbuf(buf, 0, j) -= gbuf(buf, st, j) * 0.5f;
+    int i;
     for(i = step; i < width - st; i += step)
       for(int ch = 0; ch < 3; ch++)
         gbuf(buf, i, j) -= (tmp[i - st] * gbuf(buf, i - st, j) + tmp[i] * gbuf(buf, i + st, j))

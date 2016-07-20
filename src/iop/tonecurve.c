@@ -1281,7 +1281,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
         if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
         {
           // create a new node
-          int selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], mx, y);
+          selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], mx, y);
 
           // maybe set the new one as being selected
           float min = .04f;

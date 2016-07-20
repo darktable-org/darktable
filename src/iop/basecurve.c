@@ -302,20 +302,18 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  float *in = (float *)i;
-  float *out = (float *)o;
   const int ch = piece->colors;
-  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
+  const dt_iop_basecurve_data_t *const d = (const dt_iop_basecurve_data_t *const)(piece->data);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, d, in) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    float *inp = in + ch * k;
-    float *outp = out + ch * k;
+    float *inp = (float *)ivoid + ch * k;
+    float *outp = (float *)ovoid + ch * k;
     for(int i = 0; i < 3; i++)
     {
       // use base curve for values < 1, else use extrapolation.
@@ -496,14 +494,16 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_draw_curve_t *minmax_curve = c->minmax_curve;
   dt_draw_curve_calc_values(minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
 
-  const float xm = basecurve[nodes - 1].x;
-  const float x[4] = { 0.7f * xm, 0.8f * xm, 0.9f * xm, 1.0f * xm };
-  const float y[4] = { c->draw_ys[CLAMP((int)(x[0] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
-                       c->draw_ys[CLAMP((int)(x[1] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
-                       c->draw_ys[CLAMP((int)(x[2] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
-                       c->draw_ys[CLAMP((int)(x[3] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)] };
   float unbounded_coeffs[3];
-  dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
+  const float xm = basecurve[nodes - 1].x;
+  {
+    const float x[4] = { 0.7f * xm, 0.8f * xm, 0.9f * xm, 1.0f * xm };
+    const float y[4] = { c->draw_ys[CLAMP((int)(x[0] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
+                         c->draw_ys[CLAMP((int)(x[1] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
+                         c->draw_ys[CLAMP((int)(x[2] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
+                         c->draw_ys[CLAMP((int)(x[3] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)] };
+    dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
+  }
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -759,7 +759,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
         if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
         {
           // create a new node
-          int selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, y);
+          selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, y);
 
           // maybe set the new one as being selected
           float min = .04f;

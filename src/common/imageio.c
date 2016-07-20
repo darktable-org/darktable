@@ -722,13 +722,16 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
          && (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height))
             ? FALSE
             : high_quality;
-  const int width = high_quality_processing ? 0 : format_params->max_width;
-  const int height = high_quality_processing ? 0 : format_params->max_height;
+
+  const int width = format_params->max_width;
+  const int height = format_params->max_height;
   const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, max_scale) : 1.0;
   const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : 1.0;
   const double scale = fminf(scalex, scaley);
-  int processed_width = scale * pipe.processed_width + .5f;
-  int processed_height = scale * pipe.processed_height + .5f;
+
+  const int processed_width = scale * pipe.processed_width + .5f;
+  const int processed_height = scale * pipe.processed_height + .5f;
+
   const int bpp = format->bpp(format_params);
 
   dt_get_times(&start);
@@ -738,16 +741,6 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
      * if high quality processing was requested, downsampling will be done
      * at the very end of the pipe (just before border and watermark)
      */
-    const double scalex = format_params->max_width > 0
-                              ? fminf(format_params->max_width / (double)pipe.processed_width, max_scale)
-                              : 1.0;
-    const double scaley = format_params->max_height > 0
-                              ? fminf(format_params->max_height / (double)pipe.processed_height, max_scale)
-                              : 1.0;
-    const double scale = fminf(scalex, scaley);
-    processed_width = scale * pipe.processed_width + .5f;
-    processed_height = scale * pipe.processed_height + .5f;
-
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   }
   else
@@ -830,7 +823,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       { // !display_byteorder, need to swap:
         uint8_t *const buf8 = pipe.backbuf;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(processed_width, processed_height) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
         // just flip byte order
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)

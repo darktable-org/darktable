@@ -602,7 +602,6 @@ static GList *_get_full_pathname(char *imgs)
 
 static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   char *imgs = _get_image_list(t);
@@ -650,7 +649,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   while(t)
   {
-    imgid = GPOINTER_TO_INT(t->data);
+    int imgid = GPOINTER_TO_INT(t->data);
     dt_image_remove(imgid);
     t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
