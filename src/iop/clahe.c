@@ -181,25 +181,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
         int d = (ce / (float)(bins + 1));
         int m = ce % (bins + 1);
-        for(int h = 0; h <= bins; h++) clippedhist[h] += d;
+        for(int b = 0; b <= bins; b++) clippedhist[b] += d;
 
         if(m != 0)
         {
           int s = bins / (float)m;
-          for(int h = 0; h <= bins; h += s) ++clippedhist[h];
+          for(int b = 0; b <= bins; b += s) ++clippedhist[b];
         }
       } while(ce != ceb);
 
       /* build cdf of clipped histogram */
       int hMin = bins;
-      for(int h = 0; h < hMin; h++)
-        if(clippedhist[h] != 0) hMin = h;
+      for(int b = 0; b < hMin; b++)
+        if(clippedhist[b] != 0) hMin = b;
 
       int cdf = 0;
-      for(int h = hMin; h <= v; h++) cdf += clippedhist[h];
+      for(int b = hMin; b <= v; b++) cdf += clippedhist[b];
 
       int cdfMax = cdf;
-      for(int h = v + 1; h <= bins; h++) cdfMax += clippedhist[h];
+      for(int b = v + 1; b <= bins; b++) cdfMax += clippedhist[b];
 
       int cdfMin = clippedhist[hMin];
 

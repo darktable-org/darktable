@@ -267,13 +267,10 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     goto end_of_the_world;
   }
 
-  int i = image->numcomps;
-  if(i > 4) i = 4;
+  image->numcomps = MIN(image->numcomps, 4);
 
-  while(i)
+  for(int i = 0; i < image->numcomps; i++)
   {
-    i--;
-
     if(image->comps[i].sgnd) signed_offsets[i] = 1 << (image->comps[i].prec - 1);
 
     float_divs[i] = (1 << image->comps[i].prec) - 1;

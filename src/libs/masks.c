@@ -33,6 +33,8 @@
 
 DT_MODULE(1)
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 static void _lib_masks_recreate_list(dt_lib_module_t *self);
 static void _lib_masks_update_list(dt_lib_module_t *self);
 

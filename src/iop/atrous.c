@@ -1177,9 +1177,9 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
-  int ch = (int)c->channel;
-  int ch2 = (int)c->channel2;
-  for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+
+  for(int k = 0; k < BANDS; k++)
+    dt_draw_curve_set_point(c->minmax_curve, k, p.x[(int)c->channel2][k], p.y[(int)c->channel2][k]);
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1225,6 +1225,8 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   if(c->mouse_y > 0 || c->dragging)
   {
+    int ch2 = (int)c->channel2;
+
     // draw min/max curves:
     get_params(&p, ch2, c->mouse_x, 1., c->mouse_radius);
     for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
@@ -1338,6 +1340,9 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   if(c->mouse_y > 0 || c->dragging)
   {
+    int ch = (int)c->channel;
+    int ch2 = (int)c->channel2;
+
     // draw dots on knots
     cairo_save(cr);
     if(ch != ch2)
@@ -1385,7 +1390,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
   for(int k = 1; k < BANDS - 1; k++)
   {
-    cairo_move_to(cr, width * p.x[ch][k], inset - DT_PIXEL_APPLY_DPI(1));
+    cairo_move_to(cr, width * p.x[(int)c->channel][k], inset - DT_PIXEL_APPLY_DPI(1));
     cairo_rel_line_to(cr, -arrw * .5f, 0);
     cairo_rel_line_to(cr, arrw * .5f, -arrw);
     cairo_rel_line_to(cr, arrw * .5f, arrw);

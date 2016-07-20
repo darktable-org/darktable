@@ -23,11 +23,16 @@
 
 #define MAX_NAME 128
 
-typedef enum dt_alignment_t
-{
-  top_left, top, top_right,
-  left, center, right,
-  bottom_left, bottom, bottom_right
+typedef enum dt_alignment_t {
+  ALIGNMENT_TOP_LEFT,
+  ALIGNMENT_TOP,
+  ALIGNMENT_TOP_RIGHT,
+  ALIGNMENT_LEFT,
+  ALIGNMENT_CENTER,
+  ALIGNMENT_RIGHT,
+  ALIGNMENT_BOTTOM_LEFT,
+  ALIGNMENT_BOTTOM,
+  ALIGNMENT_BOTTOM_RIGHT
 } dt_alignment_t;
 
 typedef struct dt_paper_info_t

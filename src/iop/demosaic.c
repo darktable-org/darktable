@@ -344,9 +344,11 @@ static void color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const
   {
     for(int c = 0; c < 3; c += 2)
     {
-      float *outp = out;
-      for(int j = 0; j < roi_out->height; j++)
-        for(int i = 0; i < roi_out->width; i++, outp += 4) outp[3] = outp[c];
+      {
+        float *outp = out;
+        for(int j = 0; j < roi_out->height; j++)
+          for(int i = 0; i < roi_out->width; i++, outp += 4) outp[3] = outp[c];
+      }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(out, c)
 #endif

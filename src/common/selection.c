@@ -290,7 +290,7 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
     list = g_list_next(list);
     while(list && count < 400)
     {
-      int imgid = GPOINTER_TO_INT(list->data);
+      imgid = GPOINTER_TO_INT(list->data);
       count++;
       selection->last_single_id = imgid;
       query = dt_util_dstrcat(query, ",(%d)", imgid);

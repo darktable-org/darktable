@@ -2143,7 +2143,7 @@ void gui_init(struct dt_iop_module_t *self)
   GList *l = g->modifiers;
   while(l)
   {
-    dt_iop_lensfun_modifier_t *modifier = (dt_iop_lensfun_modifier_t *)l->data;
+    modifier = (dt_iop_lensfun_modifier_t *)l->data;
     dt_bauhaus_combobox_add(g->modflags, modifier->name);
     l = g_list_next(l);
   }

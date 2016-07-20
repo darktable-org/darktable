@@ -619,7 +619,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
     // ON CANVAS CONTROLS
     if(use_splitline)
     {
-      float scale = fminf(1.0, fminf(w / pw, h / ph));
+      scale = fminf(1.0, fminf(w / pw, h / ph));
 
       // image coordinates
       lib->overlay_x0 = 0.5 * (width - pw * scale);

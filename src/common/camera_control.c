@@ -770,7 +770,6 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
       if(gp_list_find_by_name(available_cameras, &index, cam->model) != GP_OK)
       {
         /* remove camera from cached list.. */
-        dt_camctl_t *camctl = (dt_camctl_t *)c;
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
         camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
         dt_camctl_camera_destroy(oldcam);
@@ -1128,15 +1127,15 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c, const dt_camera_t *
 void _camera_build_property_menu(CameraWidget *widget, GtkMenu *menu, GCallback item_activate,
                                  gpointer user_data)
 {
-  int childs = 0;
+  int num_childs = 0;
   const char *sk;
   CameraWidgetType type;
 
   /* if widget has children lets add menutitem and recurse into container */
-  if((childs = gp_widget_count_children(widget)) > 0)
+  if((num_childs = gp_widget_count_children(widget)) > 0)
   {
     CameraWidget *child = NULL;
-    for(int i = 0; i < childs; i++)
+    for(int i = 0; i < num_childs; i++)
     {
       gp_widget_get_child(widget, i, &child);
       gp_widget_get_name(child, &sk);

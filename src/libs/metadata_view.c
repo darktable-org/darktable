@@ -266,7 +266,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       #define FALSE_FIELD '.'
       #define TRUE_FIELD '!'
 
-      char *tooltip = NULL;
+      char *flags_tooltip = NULL;
       char *flag_descriptions[] = { N_("unused"),
                                     N_("unused/deprecated"),
                                     N_("ldr"),
@@ -393,14 +393,14 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       value[13] = '\0';
 
-      tooltip = g_strjoinv("\n", tooltip_parts);
+      flags_tooltip = g_strjoinv("\n", tooltip_parts);
       g_free(loader_tooltip);
 
       _metadata_update_value(d->metadata[md_internal_flags], value);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_flags]), tooltip);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_flags]), flags_tooltip);
 
       g_free(star_string);
-      g_free(tooltip);
+      g_free(flags_tooltip);
 
       #undef EMPTY_FIELD
       #undef FALSE_FIELD

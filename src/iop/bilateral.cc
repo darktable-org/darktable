@@ -100,8 +100,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
 
   const int ch = piece->colors;
   float sigma[5];
@@ -112,7 +110,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   sigma[4] = data->sigma[4];
   if(fmaxf(sigma[0], sigma[1]) < .1)
   {
-    memcpy(out, in, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
     return;
   }
 
@@ -121,10 +119,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
-    memcpy(out, in, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
   }
   else if(rad <= 6)
   {
+    float *in = (float *)ivoid;
+    float *out = (float *)ovoid;
+
     float mat[2 * (6 + 1) * 2 * (6 + 1)];
     const int wd = 2 * rad + 1;
     float *m = mat + rad * wd + rad;
@@ -166,8 +167,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           for(int k = -rad; k <= rad; k++)
           {
             float *inp = in + ch * ((size_t)l * roi_in->width + k);
-            float weight = w[(size_t)l * wd + k];
-            for(int c = 0; c < 3; c++) out[c] += inp[c] * weight;
+            float pix_weight = w[(size_t)l * wd + k];
+            for(int c = 0; c < 3; c++) out[c] += inp[c] * pix_weight;
           }
         out += ch;
         in += ch;
