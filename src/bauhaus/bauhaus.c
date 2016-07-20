@@ -246,7 +246,7 @@ static gboolean dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion 
   {
     const float tol = 50;
     gint wx, wy;
-    GtkWidget *widget = darktable.bauhaus->popup_window;
+    widget = darktable.bauhaus->popup_window;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
     gdk_window_get_origin(gtk_widget_get_window(widget), &wx, &wy);
@@ -262,13 +262,13 @@ static gboolean dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion 
   return FALSE;
 }
 
-static gboolean dt_bauhaus_root_button_press(GtkWidget *wd, GdkEventButton *event, gpointer user_data)
+static gboolean dt_bauhaus_root_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   if(darktable.bauhaus->current)
   {
     const float tol = 0;
     gint wx, wy;
-    GtkWidget *widget = darktable.bauhaus->popup_window;
+    widget = darktable.bauhaus->popup_window;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
     gdk_window_get_origin(gtk_widget_get_window(widget), &wx, &wy);

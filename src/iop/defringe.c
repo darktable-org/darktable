@@ -176,9 +176,6 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   dt_gaussian_blur(gauss, in, out);
   dt_gaussian_free(gauss);
 
-  // Pre-Compute Fibonacci Lattices
-  int *tmp;
-
   int samples_wish = radius * radius;
   int sampleidx_avg;
   // select samples by fibonacci number
@@ -214,10 +211,12 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   const int samples_small = fib[sampleidx_small];
   const int samples_avg = fib[sampleidx_avg];
 
+  // Pre-Compute Fibonacci Lattices
+
   // precompute all required fibonacci lattices:
   if((xy_avg = malloc((size_t)2 * sizeof(int) * samples_avg)))
   {
-    tmp = xy_avg;
+    int *tmp = xy_avg;
     for(int u = 0; u < samples_avg; u++)
     {
       int dx, dy;
@@ -234,7 +233,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
   if((xy_small = malloc((size_t)2 * sizeof(int) * samples_small)))
   {
-    tmp = xy_small;
+    int *tmp = xy_small;
     for(int u = 0; u < samples_small; u++)
     {
       int dx, dy;

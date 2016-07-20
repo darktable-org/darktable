@@ -69,8 +69,8 @@ static void dbus_lua_call_finished(lua_State* L,int result,void* data)
     }
     else
     {
-      const char *result = luaL_checkstring(L, -1);
-      g_dbus_method_invocation_return_value(invocation, g_variant_new("(s)", result));
+      const char *checkres = luaL_checkstring(L, -1);
+      g_dbus_method_invocation_return_value(invocation, g_variant_new("(s)", checkres));
     }
   }
   else

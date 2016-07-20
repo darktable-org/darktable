@@ -849,12 +849,12 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   dt_exif_init();
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(datadir, sizeof(datadir));
-  char filename[PATH_MAX] = { 0 };
-  snprintf(filename, sizeof(filename), "%s/darktablerc", datadir);
+  char darktablerc[PATH_MAX] = { 0 };
+  snprintf(darktablerc, sizeof(darktablerc), "%s/darktablerc", datadir);
 
   // initialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)calloc(1, sizeof(dt_conf_t));
-  dt_conf_init(darktable.conf, filename, config_override);
+  dt_conf_init(darktable.conf, darktablerc, config_override);
   g_slist_free_full(config_override, g_free);
 
   // set the interface language

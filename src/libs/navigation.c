@@ -297,8 +297,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_translate(cr, 0, height);
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 
-      static int height = -1;
-      if(height == -1)
+      static int font_height = -1;
+      if(font_height == -1)
       {
         PangoLayout *layout;
         PangoRectangle ink;
@@ -309,12 +309,12 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
         pango_layout_set_font_description(layout, desc);
         pango_layout_set_text(layout, "100%", -1); // dummy text, just to get the height
         pango_layout_get_pixel_extents(layout, &ink, NULL);
-        height = ink.height;
+        font_height = ink.height;
         pango_font_description_free(desc);
         g_object_unref(layout);
       }
 
-      h = d->zoom_h = height;
+      h = d->zoom_h = font_height;
       w = h * 1.5;
       float sp = h * 0.6;
       d->zoom_w = w + sp;

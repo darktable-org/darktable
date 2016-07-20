@@ -188,7 +188,6 @@ int dt_film_new(dt_film_t *film, const char *directory)
   if(film->id <= 0)
   {
     // create a new filmroll
-    sqlite3_stmt *stmt;
     char datetime[20];
     dt_gettime(datetime, sizeof(datetime));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

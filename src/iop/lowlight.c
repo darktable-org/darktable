@@ -754,7 +754,6 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
   }
   else if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
     c->drag_params = *(dt_iop_lowlight_params_t *)self->params;
     const int inset = DT_IOP_LOWLIGHT_INSET;

@@ -167,8 +167,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           for(int k = -rad; k <= rad; k++)
           {
             float *inp = in + ch * ((size_t)l * roi_in->width + k);
-            float weight = w[(size_t)l * wd + k];
-            for(int c = 0; c < 3; c++) out[c] += inp[c] * weight;
+            float pix_weight = w[(size_t)l * wd + k];
+            for(int c = 0; c < 3; c++) out[c] += inp[c] * pix_weight;
           }
         out += ch;
         in += ch;

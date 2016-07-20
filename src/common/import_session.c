@@ -248,6 +248,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   gchar *result_fname = dt_variables_get_result(self->vp);
   previous_fname = fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
   g_free(result_fname);
+  result_fname = NULL;
   if(g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE)
   {
     fprintf(stderr, "[import_session] File %s exists.\n", fname);
@@ -256,9 +257,10 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
       /* file exists, yield a new filename */
       dt_variables_expand(self->vp, pattern, TRUE);
 
-      gchar *result_fname = dt_variables_get_result(self->vp);
+      result_fname = dt_variables_get_result(self->vp);
       fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
       g_free(result_fname);
+      result_fname = NULL;
 
       fprintf(stderr, "[import_session] Testing %s.\n", fname);
       /* check if same filename was yielded as before */

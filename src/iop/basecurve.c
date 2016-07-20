@@ -494,14 +494,16 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_draw_curve_t *minmax_curve = c->minmax_curve;
   dt_draw_curve_calc_values(minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
 
-  const float xm = basecurve[nodes - 1].x;
-  const float x[4] = { 0.7f * xm, 0.8f * xm, 0.9f * xm, 1.0f * xm };
-  const float y[4] = { c->draw_ys[CLAMP((int)(x[0] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
-                       c->draw_ys[CLAMP((int)(x[1] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
-                       c->draw_ys[CLAMP((int)(x[2] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
-                       c->draw_ys[CLAMP((int)(x[3] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)] };
   float unbounded_coeffs[3];
-  dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
+  const float xm = basecurve[nodes - 1].x;
+  {
+    const float x[4] = { 0.7f * xm, 0.8f * xm, 0.9f * xm, 1.0f * xm };
+    const float y[4] = { c->draw_ys[CLAMP((int)(x[0] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
+                         c->draw_ys[CLAMP((int)(x[1] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
+                         c->draw_ys[CLAMP((int)(x[2] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)],
+                         c->draw_ys[CLAMP((int)(x[3] * DT_IOP_TONECURVE_RES), 0, DT_IOP_TONECURVE_RES - 1)] };
+    dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
+  }
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -757,7 +759,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
         if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
         {
           // create a new node
-          int selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, y);
+          selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, y);
 
           // maybe set the new one as being selected
           float min = .04f;

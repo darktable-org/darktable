@@ -780,7 +780,6 @@ void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path)
 
 void dt_accel_deregister_lib(dt_lib_module_t *module, const gchar *path)
 {
-  dt_accel_t *accel;
   GSList *l;
   char build_path[1024];
   dt_accel_path_lib(build_path, sizeof(build_path), module->plugin_name, path);
@@ -802,7 +801,7 @@ void dt_accel_deregister_lib(dt_lib_module_t *module, const gchar *path)
   l = darktable.control->accelerator_list;
   while(l)
   {
-    accel = (dt_accel_t *)l->data;
+    dt_accel_t *accel = (dt_accel_t *)l->data;
     if(accel && !strncmp(accel->path, build_path, 1024))
     {
       darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);

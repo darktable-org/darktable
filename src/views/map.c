@@ -662,7 +662,7 @@ static int _view_map_get_img_at_pos(dt_view_t *self, double x, double y)
   return 0;
 }
 
-static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self)
+static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMotion *e, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 

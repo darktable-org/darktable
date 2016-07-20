@@ -294,7 +294,7 @@ int main(int argc, char *arg[])
       if(size == 0 && monitor->x_atom_length == 0) any_unprofiled_monitor = TRUE;
       message = profiles_equal ? "the X atom and colord returned the same profile"
                                : "the X atom and colord returned different profiles";
-      char *tmp = get_profile_description(tmp_data, size);
+      tmp = get_profile_description(tmp_data, size);
       colord_description = tmp ? tmp : g_strdup("(none)");
       g_free(tmp_data);
     }

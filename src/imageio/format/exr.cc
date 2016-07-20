@@ -247,14 +247,14 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       NUM_PIXELTYPES // number of different pixel types
     };               // copy of Imf::PixelType
 
-    typedef struct dt_imageio_exr_v2_t
+    struct dt_imageio_exr_v2_t
     {
       int max_width, max_height;
       int width, height;
       char style[128];
       dt_imageio_exr_compression_t compression;
       dt_imageio_exr_pixeltype_t pixel_type;
-    } dt_imageio_exr_v2_t;
+    };
 
     const dt_imageio_exr_v2_t *o = (dt_imageio_exr_v2_t *)old_params;
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
@@ -269,13 +269,13 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
   }
   if(old_version == 3 && new_version == 4)
   {
-    typedef struct dt_imageio_exr_v3_t
+    struct dt_imageio_exr_v3_t
     {
       int max_width, max_height;
       int width, height;
       char style[128];
       dt_imageio_exr_compression_t compression;
-    } dt_imageio_exr_v3_t;
+    };
 
     const dt_imageio_exr_v3_t *o = (dt_imageio_exr_v3_t *)old_params;
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));

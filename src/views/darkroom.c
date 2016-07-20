@@ -148,10 +148,10 @@ void expose(
     dt_dev_process_preview(dev);
 
   dt_pthread_mutex_t *mutex = NULL;
-  int wd, ht, stride;
+  int stride;
   const float zoom_y = dt_control_get_dev_zoom_y();
   const float zoom_x = dt_control_get_dev_zoom_x();
-  const int32_t zoom = dt_control_get_dev_zoom();
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
@@ -186,8 +186,8 @@ void expose(
     roi_hash_old = roi_hash;
     mutex = &dev->pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
-    wd = dev->pipe->backbuf_width;
-    ht = dev->pipe->backbuf_height;
+    float wd = dev->pipe->backbuf_width;
+    float ht = dev->pipe->backbuf_height;
     stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
     surface = dt_cairo_image_surface_create_for_data(dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     wd /= darktable.gui->ppd;
@@ -221,8 +221,8 @@ void expose(
     mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
 
-    wd = dev->preview_pipe->backbuf_width;
-    ht = dev->preview_pipe->backbuf_height;
+    const float wd = dev->preview_pipe->backbuf_width;
+    const float ht = dev->preview_pipe->backbuf_height;
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
     cairo_set_source_rgb(cr, .2, .2, .2);
     cairo_paint(cr);
@@ -280,10 +280,6 @@ void expose(
 
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
-    const float zoom_y = dt_control_get_dev_zoom_y();
-    const float zoom_x = dt_control_get_dev_zoom_x();
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
     cairo_translate(cri, width / 2.0, height / 2.0f);
@@ -345,10 +341,6 @@ void expose(
   {
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
-    const float zoom_y = dt_control_get_dev_zoom_y();
-    const float zoom_x = dt_control_get_dev_zoom_x();
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
     cairo_translate(cri, width / 2.0, height / 2.0f);
@@ -1693,7 +1685,7 @@ void enter(dt_view_t *self)
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   if(active_plugin)
   {
-    GList *modules = dev->iop;
+    modules = dev->iop;
     while(modules)
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
