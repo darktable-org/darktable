@@ -41,12 +41,6 @@ typedef struct dt_iop_bw_params_t
   _iop_operator_t operator;
 } dt_iop_bw_params_t;
 
-//-> Why do other modules, e.g., global tonemap use
-//->    dt_iop_global_tonemap_data_t
-//-> when it holds the same data as
-//->    dt_iop_global_tonemap_params_t
-//-> already does? Does any change to params_t trigger a write to database?
-
 typedef struct dt_iop_bw_gui_data_t
 {
   GtkWidget *operator;
@@ -75,13 +69,13 @@ static inline void process_lightness(dt_dev_pixelpipe_iop_t *piece, const void *
                                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
-
   for(int j = 0; j < roi_out->height; ++j)
   {
     float *in = ((float *)i) + (size_t)ch * roi_in->width * j;
     float *out = ((float *)o) + (size_t)ch * roi_out->width * j;
     for(int i = 0; i < roi_out->width; ++i)
     {
+      out[0] = in[0];
       out[1] = 0;
       out[2] = 0;
 
@@ -94,7 +88,23 @@ static inline void process_lightness(dt_dev_pixelpipe_iop_t *piece, const void *
 static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
                                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  #define PI atan2f(0, -1)
+
   const int ch = piece->colors;
+
+  const float d50[3] = { 0.9642f, 1.0f, 0.8249f }; // D50 white point
+  // u' and v' of the white point, Luv color space.
+  const float uv_prime_c[2] = { (4.0f * d50[0]) / (d50[0] + 15.0f * d50[1] + 3.0f * d50[2]),
+                                (9.0f * d50[1]) / (d50[0] + 15.0f * d50[1] + 3.0f * d50[2]) };
+  // dependency of the adapting-luminance onto the Helmholtz-Kohlrausch effect
+  const float k_br = 0.2717f * (6.469f + 6.362f * powf(20.0f, 0.4495f)) / (6.469f + powf(20.0f, 0.4495f));
+
+  float XYZ[3];
+  float uv_prime[2]; // as u', v', but for the actual color of the image.
+
+  float theta; // hue angle
+  float s_uv; // chromaticity
+  float q; // model of the Helmholtz-Kohlrausch effect
 
   for(int j = 0; j < roi_out->height; ++j)
   {
@@ -102,9 +112,30 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
     float *out = ((float *)o) + (size_t)ch * roi_out->width * j;
     for(int i = 0; i < roi_out->width; ++i)
     {
-      // Just a dummy implementation in order to see s.th. while testing the operator combobox
-      out[1] = in[2];
-      out[2] =in[1];
+      // Lab -> XYZ
+      dt_Lab_to_XYZ(in, XYZ);
+
+      // XYZ -> Luv
+      uv_prime[0] = (4.0f * XYZ[0]) / (XYZ[0] + 15.0f * XYZ[1] + 3.0f * XYZ[2]);
+      uv_prime[1] = (9.0f * XYZ[1]) / (XYZ[0] + 15.0f * XYZ[1] + 3.0f * XYZ[2]);
+
+      // Calculate monochrome value.
+      s_uv = 13.0f * sqrtf(powf(uv_prime[0] - uv_prime_c[0], 2) +
+                           powf(uv_prime[1] - uv_prime_c[1], 2));
+      theta = atan2f(uv_prime[1] - uv_prime_c[1], uv_prime[0] - uv_prime_c[0]); // FIXME Check for domain error, atan2f(0, 0)
+      theta = theta > 0 ? theta : 2 * PI + theta;
+
+      q = -0.01585f
+          -0.03017f * cosf(theta) - 0.04556f * cosf(2.0f * theta)
+          - 0.02667f * cosf(3.0f * theta) - 0.00295 * cosf(4.0f * theta)
+          +0.14592f * sinf(theta) + 0.05084f * sinf(2.0f * theta)
+          - 0.019f * sinf(3.0f * theta) - 0.00764f * sinf(4.0f * theta);
+
+      // L channel is the same in Luv and Lab. Thus, L is calculated in Luv and can be used
+      // w.o. further conversion.
+      out[0] = (1.0f + (0.0872f * k_br - 0.134f * q) * s_uv) * in[0];
+      out[1] = 0;
+      out[2] = 0;
 
       in += ch;
       out += ch;
@@ -129,13 +160,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-/** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip
- * mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
-  // change default_enabled depending on type of image, or set new default_params even.
-
-  // if this callback exists, it has to write default_params and default_enabled.
 }
 
 void init(dt_iop_module_t *module)
