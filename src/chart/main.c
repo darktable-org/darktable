@@ -697,6 +697,70 @@ static void add_patches_to_array(dt_lut_t *self, GList *patch_names, int *N, int
   }
 }
 
+static void add_hdr_patches(int *N, double **target_L, double **target_a, double **target_b,
+                            double **colorchecker_Lab)
+{
+  gboolean need_hdr00 = TRUE, need_hdr01 = TRUE;
+  int n_extra_patches = 0;
+  double extra_target_L[2], extra_target_a[2], extra_target_b[2], extra_colorchecker_Lab[2 * 3];
+
+  for(int j = 0; j < *N; j++)
+  {
+    if((*target_L)[j] == 100.0 && (*target_a)[j] == 0.0 && (*target_b)[j] == 0.0 && (*colorchecker_Lab)[j * 3] == 100.0
+      && (*colorchecker_Lab)[j * 3 + 1] == 0.0 && (*colorchecker_Lab)[j * 3 + 2] == 0.0)
+    {
+      need_hdr00 = FALSE;
+    }
+    else if((*target_L)[j] == 200.0 && (*target_a)[j] == 0.0 && (*target_b)[j] == 0.0 && (*colorchecker_Lab)[j * 3] == 200.0
+      && (*colorchecker_Lab)[j * 3 + 1] == 0.0 && (*colorchecker_Lab)[j * 3 + 2] == 0.0)
+    {
+      need_hdr01 = FALSE;
+    }
+  }
+
+  if(need_hdr00)
+  {
+    extra_target_L[n_extra_patches] = 100.0;
+    extra_target_a[n_extra_patches] = 0.0;
+    extra_target_b[n_extra_patches] = 0.0;
+    extra_colorchecker_Lab[n_extra_patches * 3] = 100.0;
+    extra_colorchecker_Lab[n_extra_patches * 3 + 1] = 0.0;
+    extra_colorchecker_Lab[n_extra_patches * 3 + 2] = 0.0;
+    n_extra_patches++;
+  }
+
+  if(need_hdr01)
+  {
+    extra_target_L[n_extra_patches] = 200.0;
+    extra_target_a[n_extra_patches] = 0.0;
+    extra_target_b[n_extra_patches] = 0.0;
+    extra_colorchecker_Lab[n_extra_patches * 3] = 200.0;
+    extra_colorchecker_Lab[n_extra_patches * 3 + 1] = 0.0;
+    extra_colorchecker_Lab[n_extra_patches * 3 + 2] = 0.0;
+    n_extra_patches++;
+  }
+
+  if(n_extra_patches > 0)
+  {
+    *target_L = realloc(*target_L, (*N + n_extra_patches + 4) * sizeof(double));
+    *target_a = realloc(*target_a, (*N + n_extra_patches + 4) * sizeof(double));
+    *target_b = realloc(*target_b, (*N + n_extra_patches + 4) * sizeof(double));
+    *colorchecker_Lab = realloc(*colorchecker_Lab, 3 * (*N + n_extra_patches) * sizeof(double));
+
+    memmove(&(*target_L)[n_extra_patches], *target_L, *N * sizeof(double));
+    memmove(&(*target_a)[n_extra_patches], *target_a, *N * sizeof(double));
+    memmove(&(*target_b)[n_extra_patches], *target_b, *N * sizeof(double));
+    memmove(&(*colorchecker_Lab)[3 * n_extra_patches], *colorchecker_Lab, 3 * *N * sizeof(double));
+
+    memcpy(*target_L, extra_target_L, n_extra_patches * sizeof(double));
+    memcpy(*target_a, extra_target_a, n_extra_patches * sizeof(double));
+    memcpy(*target_b, extra_target_b, n_extra_patches * sizeof(double));
+    memcpy(*colorchecker_Lab, extra_colorchecker_Lab, 3 * n_extra_patches * sizeof(double));
+
+    *N += n_extra_patches;
+  }
+}
+
 static char *encode_tonecurve(const tonecurve_t *c)
 {
   // hardcoded params v4 from tonecurve:
@@ -896,6 +960,8 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
     if(patch_names)
       add_patches_to_array(self, patch_names, &N, &i, target_L, target_a, target_b, colorchecker_Lab);
   }
+
+  add_hdr_patches(&N, &target_L, &target_a, &target_b, &colorchecker_Lab);
 
   int sparsity = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(self->number_patches)) + 4;
 
@@ -1515,6 +1581,13 @@ static int main_gui(dt_lut_t *self, int argc, char *argv[])
 static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr, double **target_a_ptr,
                      double **target_b_ptr, double **source_Lab_ptr, int *num_gray, char **name, char **description)
 {
+  *target_L_ptr = NULL;
+  *target_a_ptr = NULL;
+  *target_b_ptr = NULL;
+  *source_Lab_ptr = NULL;
+  *name = NULL;
+  *description = NULL;
+
   FILE *f = fopen(filename, "rb");
   if(!f) return 0;
   int N = 0;
@@ -1620,6 +1693,8 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
 
     return 1;
   }
+
+  add_hdr_patches(&N, &target_L, &target_a, &target_b, &colorchecker_Lab);
 
   process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, num_tonecurve, sparsity);
 
