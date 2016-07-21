@@ -643,8 +643,13 @@ endif()
 #
 if(NOT SOURCE_PACKAGE AND NOT APPLE)
   # apple build fails on deprecated warnings..
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits -Werror=format-security -Werror=shadow")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits -Werror=format-security -Werror=shadow")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
+
+  if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND GCC_VERSION VERSION_LESS 5.0))
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=shadow")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=shadow")
+  endif()
 elseif(SOURCE_PACKAGE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
