@@ -183,10 +183,21 @@ static int process_xtrans(const void *const i, void *const o, const dt_iop_roi_t
           fixed++;
           if(markfixed)
           {
-            // cheat and mark all colors of pixels
-            // FIXME: use offsets
-            for(int i = -2; i >= -10 && i >= -col; --i) out[i] = *in;
-            for(int i = 2; i <= 10 && i < width - col; ++i) out[i] = *in;
+            const uint8_t c = FCxtrans(row, col, roi_out, xtrans);
+            for(int i = -2; i >= -10 && i >= -col; --i)
+            {
+              if(c == FCxtrans(row, col+i, roi_out, xtrans))
+              {
+                out[i] = *in;
+              }
+            }
+            for(int i = 2; i <= 10 && i < width - col; ++i)
+            {
+              if(c == FCxtrans(row, col+i, roi_out, xtrans))
+              {
+                out[i] = *in;
+              }
+            }
           }
         }
       }
