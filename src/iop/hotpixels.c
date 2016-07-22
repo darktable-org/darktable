@@ -107,6 +107,7 @@ static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_i
   // for each cell of sensor array, a list of the x/y offsets of the
   // four radially nearest pixels of the same color
   int offsets[6][6][4][2];
+  // increasing offsets from pixel to find nearest like-colored pixels
   const int search[20][2] = { { -1, 0 },
                               { 1, 0 },
                               { 0, -1 },
@@ -128,6 +129,7 @@ static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_i
                               { -1, 2 },
                               { 1, 2 } };
   for(int j = 0; j < 6; ++j)
+  {
     for(int i = 0; i < 6; ++i)
     {
       const uint8_t c = FCxtrans(j, i, roi_in, xtrans);
@@ -141,16 +143,17 @@ static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_i
         }
       }
     }
+  }
 
   int fixed = 0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(offsets) reduction(+ : fixed) schedule(static)
 #endif
-  for(int row = 1; row < height - 1; row++)
+  for(int row = 2; row < height - 2; row++)
   {
     const float *in = (float *)ivoid + (size_t)width * row + 2;
     float *out = (float *)ovoid + (size_t)width * row + 2;
-    for(int col = 1; col < width - 1; col++, in++, out++)
+    for(int col = 2; col < width - 2; col++, in++, out++)
     {
       float mid = *in * multiplier;
       if(*in > threshold)
@@ -161,7 +164,6 @@ static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_i
         {
           int xx = offsets[col % 6][row % 6][n][0];
           int yy = offsets[col % 6][row % 6][n][1];
-          if((xx < -col) || (xx >= (width - col)) || (yy < -row) || (yy >= (height - row))) break;
           float other = *(in + xx + yy * width);
           if(mid > other)
           {
