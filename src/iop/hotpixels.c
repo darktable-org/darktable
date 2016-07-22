@@ -99,8 +99,8 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   return sizeof(float);
 }
 
-static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                          const int width, const int height, const uint8_t (*const xtrans)[6],
+static int process_xtrans(const void *const ivoid, void *const ovoid,
+                          const dt_iop_roi_t *const roi_out, const uint8_t (*const xtrans)[6],
                           const float threshold, const float multiplier, const gboolean markfixed,
                           const int min_neighbours)
 {
@@ -132,24 +132,25 @@ static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_i
   {
     for(int i = 0; i < 6; ++i)
     {
-      const uint8_t c = FCxtrans(j, i, roi_in, xtrans);
+      const uint8_t c = FCxtrans(j, i, roi_out, xtrans);
       for(int s = 0, found = 0; s < 20 && found < 4; ++s)
       {
-        if(c == FCxtrans(j + search[s][1], i + search[s][0], roi_in, xtrans))
+        if(c == FCxtrans(j + search[s][1], i + search[s][0], roi_out, xtrans))
         {
-          offsets[i][j][found][0] = search[s][0];
-          offsets[i][j][found][1] = search[s][1];
+          offsets[j][i][found][0] = search[s][0];
+          offsets[j][i][found][1] = search[s][1];
           ++found;
         }
       }
     }
   }
 
+  const int width = roi_out->width;
   int fixed = 0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(offsets) reduction(+ : fixed) schedule(static)
 #endif
-  for(int row = 2; row < height - 2; row++)
+  for(int row = 2; row < roi_out->height - 2; row++)
   {
     const float *in = (float *)ivoid + (size_t)width * row + 2;
     float *out = (float *)ovoid + (size_t)width * row + 2;
@@ -162,9 +163,9 @@ static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_i
         float maxin = 0.0;
         for(int n = 0; n < 4; ++n)
         {
-          int xx = offsets[col % 6][row % 6][n][0];
-          int yy = offsets[col % 6][row % 6][n][1];
-          float other = *(in + xx + yy * width);
+          int xx = offsets[row % 6][col % 6][n][0];
+          int yy = offsets[row % 6][col % 6][n][1];
+          float other = *(in + xx + yy * (size_t)width);
           if(mid > other)
           {
             count++;
@@ -212,13 +213,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int min_neighbours = data->permissive ? 3 : 4;
 
   // The loop should output only a few pixels, so just copy everything first
-  memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
+  memcpy(ovoid, ivoid, (size_t)width * height * sizeof(float));
 
   int fixed = 0;
 
   if(piece->pipe->filters == 9u)
   {
-    fixed = process_xtrans(ivoid, ovoid, roi_in, width, height, (const uint8_t(*const)[6])piece->pipe->xtrans,
+    fixed = process_xtrans(ivoid, ovoid, roi_out, (const uint8_t(*const)[6])piece->pipe->xtrans,
                            threshold, multiplier, markfixed, min_neighbours);
     goto processed;
   }
