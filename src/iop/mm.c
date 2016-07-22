@@ -69,18 +69,17 @@ static inline void process_lightness(dt_dev_pixelpipe_iop_t *piece, const void *
                                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
+  float *in;
+  float *out;
   for(int j = 0; j < roi_out->height; ++j)
   {
-    float *in = ((float *)i) + (size_t)ch * roi_in->width * j;
-    float *out = ((float *)o) + (size_t)ch * roi_out->width * j;
-    for(int i = 0; i < roi_out->width; ++i)
+    in = ((float *)i) + (size_t)ch * roi_in->width * j;
+    out = ((float *)o) + (size_t)ch * roi_out->width * j;
+    for(int i = 0; i < roi_out->width; ++i, in += ch, out += ch)
     {
       out[0] = in[0];
-      out[1] = 0;
-      out[2] = 0;
-
-      in += ch;
-      out += ch;
+      out[1] = 0.0f;
+      out[2] = 0.0f;
     }
   }
 }
@@ -106,11 +105,13 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
   float s_uv; // chromaticity
   float q; // model of the Helmholtz-Kohlrausch effect
 
+  float *in;
+  float *out;
   for(int j = 0; j < roi_out->height; ++j)
   {
-    float *in = ((float *)i) + (size_t)ch * roi_in->width * j;
-    float *out = ((float *)o) + (size_t)ch * roi_out->width * j;
-    for(int i = 0; i < roi_out->width; ++i)
+    in = ((float *)i) + (size_t)ch * roi_in->width * j;
+    out = ((float *)o) + (size_t)ch * roi_out->width * j;
+    for(int i = 0; i < roi_out->width; ++i, in += ch, out += ch)
     {
       // Lab -> XYZ
       dt_Lab_to_XYZ(in, XYZ);
@@ -136,9 +137,6 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
       out[0] = (1.0f + (0.0872f * k_br - 0.134f * q) * s_uv) * in[0];
       out[1] = 0;
       out[2] = 0;
-
-      in += ch;
-      out += ch;
     }
   }
 }
@@ -162,6 +160,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void reload_defaults(dt_iop_module_t *module)
 {
+  module->default_enabled = 0;
+
+  dt_iop_bw_params_t tmp = (dt_iop_bw_params_t){ OPERETOR_APPARENT_GRAYSCALE };
+  memcpy(module->params, &tmp, sizeof(dt_iop_bw_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_bw_params_t));
 }
 
 void init(dt_iop_module_t *module)
@@ -170,17 +173,9 @@ void init(dt_iop_module_t *module)
   module->data = NULL; // malloc(sizeof(dt_iop_bw_global_data_t));
   module->params = calloc(1, sizeof(dt_iop_bw_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_bw_params_t));
-  module->default_enabled = 0;
   module->priority = 630; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bw_params_t);
   module->gui_data = NULL;
-  //-> Why do we set module-data and module-gui_data to NULL when we then initialize them in
-  //-> init_global() and init_gui()?
-  // init defaults:
-  dt_iop_bw_params_t tmp = (dt_iop_bw_params_t){ OPERATOR_LIGHTNESS };
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_bw_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_bw_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -207,7 +202,7 @@ static void operator_callback(GtkWidget *combobox, gpointer user_data)
   if(self->dt->gui->reset) return;
 
   dt_iop_bw_params_t *p = (dt_iop_bw_params_t *)self->params;
-  p->operator= dt_bauhaus_combobox_get(combobox);
+  p->operator = dt_bauhaus_combobox_get(combobox);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -230,8 +225,8 @@ void gui_init(dt_iop_module_t *self)
   g->operator= dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->operator, NULL, _("operator"));
 
-  dt_bauhaus_combobox_add(g->operator, "lightness");
-  dt_bauhaus_combobox_add(g->operator, "apparent grayscale");
+  dt_bauhaus_combobox_add(g->operator, _("lightness"));
+  dt_bauhaus_combobox_add(g->operator, _("apparent grayscale"));
 
   gtk_widget_set_tooltip_text(g->operator, _("method for conversion to grayscale"));
   g_signal_connect(G_OBJECT(g->operator), "value-changed", G_CALLBACK(operator_callback), self);
