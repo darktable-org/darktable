@@ -30,11 +30,7 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_bw_params_t)
 
-typedef enum _iop_operator_t
-{
-  OPERATOR_LIGHTNESS,
-  OPERETOR_APPARENT_GRAYSCALE
-} _iop_operator_t;
+typedef enum _iop_operator_t { OPERATOR_LIGHTNESS, OPERETOR_APPARENT_GRAYSCALE } _iop_operator_t;
 
 typedef struct dt_iop_bw_params_t
 {
@@ -85,9 +81,9 @@ static inline void process_lightness(dt_dev_pixelpipe_iop_t *piece, const void *
 }
 
 static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-                                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+                                              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  #define PI atan2f(0, -1)
+#define PI atan2f(0, -1)
 
   const int ch = piece->colors;
 
@@ -102,8 +98,8 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
   float uv_prime[2]; // as u', v', but for the actual color of the image.
 
   float theta; // hue angle
-  float s_uv; // chromaticity
-  float q; // model of the Helmholtz-Kohlrausch effect
+  float s_uv;  // chromaticity
+  float q;     // model of the Helmholtz-Kohlrausch effect
 
   float *in;
   float *out;
@@ -121,15 +117,13 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
       uv_prime[1] = (9.0f * XYZ[1]) / (XYZ[0] + 15.0f * XYZ[1] + 3.0f * XYZ[2]);
 
       // Calculate monochrome value.
-      s_uv = 13.0f * sqrtf(powf(uv_prime[0] - uv_prime_c[0], 2) +
-                           powf(uv_prime[1] - uv_prime_c[1], 2));
-      theta = atan2f(uv_prime[1] - uv_prime_c[1], uv_prime[0] - uv_prime_c[0]); // FIXME Check for domain error, atan2f(0, 0)
+      s_uv = 13.0f * sqrtf(powf(uv_prime[0] - uv_prime_c[0], 2) + powf(uv_prime[1] - uv_prime_c[1], 2));
+      theta = atan2f(uv_prime[1] - uv_prime_c[1],
+                     uv_prime[0] - uv_prime_c[0]); // FIXME Check for domain error, atan2f(0, 0)
       theta = theta > 0 ? theta : 2 * PI + theta;
 
-      q = -0.01585f
-          -0.03017f * cosf(theta) - 0.04556f * cosf(2.0f * theta)
-          - 0.02667f * cosf(3.0f * theta) - 0.00295 * cosf(4.0f * theta)
-          +0.14592f * sinf(theta) + 0.05084f * sinf(2.0f * theta)
+      q = -0.01585f - 0.03017f * cosf(theta) - 0.04556f * cosf(2.0f * theta) - 0.02667f * cosf(3.0f * theta)
+          - 0.00295 * cosf(4.0f * theta) + 0.14592f * sinf(theta) + 0.05084f * sinf(2.0f * theta)
           - 0.019f * sinf(3.0f * theta) - 0.00764f * sinf(4.0f * theta);
 
       // L channel is the same in Luv and Lab. Thus, L is calculated in Luv and can be used
@@ -202,7 +196,7 @@ static void operator_callback(GtkWidget *combobox, gpointer user_data)
   if(self->dt->gui->reset) return;
 
   dt_iop_bw_params_t *p = (dt_iop_bw_params_t *)self->params;
-  p->operator = dt_bauhaus_combobox_get(combobox);
+  p->operator= dt_bauhaus_combobox_get(combobox);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
