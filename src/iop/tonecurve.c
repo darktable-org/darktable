@@ -720,6 +720,7 @@ static void pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
   dt_iop_request_focus(self);
 }
 
+#define TONECURVE_DEFAULT_STEP (0.001f)
 
 static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
@@ -737,9 +738,9 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   if(c->selected >= 0)
   {
     if(event->direction == GDK_SCROLL_UP)
-      tonecurve[c->selected].y = MAX(0.0f, tonecurve[c->selected].y + 0.001f);
+      tonecurve[c->selected].y = MAX(0.0f, tonecurve[c->selected].y + TONECURVE_DEFAULT_STEP);
     if(event->direction == GDK_SCROLL_DOWN)
-      tonecurve[c->selected].y = MIN(1.0f, tonecurve[c->selected].y - 0.001f);
+      tonecurve[c->selected].y = MIN(1.0f, tonecurve[c->selected].y - TONECURVE_DEFAULT_STEP);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(widget);
   }
@@ -762,35 +763,52 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
   if(c->selected >= 0)
   {
     int handled = 0;
+    float dx = 0.0f, dy = 0.0f;
     if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
     {
       handled = 1;
-      tonecurve[c->selected].y = MAX(0.0f, tonecurve[c->selected].y + 0.001f);
+      dy = TONECURVE_DEFAULT_STEP;
     }
     else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
     {
       handled = 1;
-      tonecurve[c->selected].y = MIN(1.0f, tonecurve[c->selected].y - 0.001f);
+      dy = -TONECURVE_DEFAULT_STEP;
     }
     else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
     {
       handled = 1;
-      tonecurve[c->selected].x = MAX(0.0f, tonecurve[c->selected].x + 0.001f);
+      dx = TONECURVE_DEFAULT_STEP;
     }
     else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
     {
       handled = 1;
-      tonecurve[c->selected].x = MIN(1.0f, tonecurve[c->selected].x - 0.001f);
+      dx = -TONECURVE_DEFAULT_STEP;
     }
 
     if(handled)
     {
+      if((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      {
+        dx *= dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+        dy *= dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+      }
+      else
+      {
+        dx *= dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+        dy *= dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+      }
+
+      tonecurve[c->selected].x = CLAMP(tonecurve[c->selected].x + dx, 0.0f, 1.0f);
+      tonecurve[c->selected].y = CLAMP(tonecurve[c->selected].y + dy, 0.0f, 1.0f);
+
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       gtk_widget_queue_draw(widget);
     }
   }
   return TRUE;
 }
+
+#undef TONECURVE_DEFAULT_STEP
 
 void gui_init(struct dt_iop_module_t *self)
 {

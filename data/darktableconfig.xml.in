@@ -1689,4 +1689,19 @@
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
+
+  <dtconfig>
+    <name>darkroom/ui/scale_step_multiplier</name>
+    <type>float</type>
+    <default>1.0</default>
+    <shortdescription>the multiplier that is applied to any slider value change</shortdescription>
+    <longdescription>any slider value change will be multiplied by this number, when changing slider while NOT holding SHIFT modifier</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/scale_rough_step_multiplier</name>
+    <type>float</type>
+    <default>10.0</default>
+    <shortdescription>the multiplier that is applied to any slider rough value change</shortdescription>
+    <longdescription>any slider value change will be multiplied by this number, when changing slider while holding SHIFT modifier</longdescription>
+  </dtconfig>
 </dtconfiglist>
