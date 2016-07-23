@@ -787,16 +787,24 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
 
     if(handled)
     {
-      if((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      float multiplier;
+
+      GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+      if((event->state & modifiers) == GDK_SHIFT_MASK)
       {
-        dx *= dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-        dy *= dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+        multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+      }
+      else if((event->state & modifiers) == GDK_CONTROL_MASK)
+      {
+        multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
       }
       else
       {
-        dx *= dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-        dy *= dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+        multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
       }
+
+      dx *= multiplier;
+      dy *= multiplier;
 
       tonecurve[c->selected].x = CLAMP(tonecurve[c->selected].x + dx, 0.0f, 1.0f);
       tonecurve[c->selected].y = CLAMP(tonecurve[c->selected].y + dy, 0.0f, 1.0f);
