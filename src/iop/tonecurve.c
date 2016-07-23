@@ -737,12 +737,44 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
 
   if(c->selected >= 0)
   {
+    int handled = 0;
+    float dy = 0.0f;
     if(event->direction == GDK_SCROLL_UP)
-      tonecurve[c->selected].y = MAX(0.0f, tonecurve[c->selected].y + TONECURVE_DEFAULT_STEP);
+    {
+      handled = 1;
+      dy = TONECURVE_DEFAULT_STEP;
+    }
     if(event->direction == GDK_SCROLL_DOWN)
-      tonecurve[c->selected].y = MIN(1.0f, tonecurve[c->selected].y - TONECURVE_DEFAULT_STEP);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(widget);
+    {
+      handled = 1;
+      dy = -TONECURVE_DEFAULT_STEP;
+    }
+
+    if(handled)
+    {
+      float multiplier;
+
+      GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+      if((event->state & modifiers) == GDK_SHIFT_MASK)
+      {
+        multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+      }
+      else if((event->state & modifiers) == GDK_CONTROL_MASK)
+      {
+        multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+      }
+      else
+      {
+        multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+      }
+
+      dy *= multiplier;
+
+      tonecurve[c->selected].y = CLAMP(tonecurve[c->selected].y + dy, 0.0f, 1.0f);
+
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      gtk_widget_queue_draw(widget);
+    }
   }
   return TRUE;
 }
