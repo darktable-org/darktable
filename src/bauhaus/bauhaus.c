@@ -1798,16 +1798,31 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
+  int handled = 0;
+  float delta = 0.0f;
   if(event->direction == GDK_SCROLL_UP)
   {
-    if(w->module) dt_iop_request_focus(w->module);
-    dt_bauhaus_slider_set_normalized(w, d->pos + d->scale / 5.0f);
-    return TRUE;
+    handled = 1;
+    delta = d->scale / 5.0f;
   }
   else if(event->direction == GDK_SCROLL_DOWN)
   {
+    handled = 1;
+    delta = -d->scale / 5.0f;
+  }
+  if(handled)
+  {
+    if((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    {
+      delta *= dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+    }
+    else
+    {
+      delta *= dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+    }
+
     if(w->module) dt_iop_request_focus(w->module);
-    dt_bauhaus_slider_set_normalized(w, d->pos - d->scale / 5.0f);
+    dt_bauhaus_slider_set_normalized(w, d->pos + delta);
     return TRUE;
   }
   return FALSE;
