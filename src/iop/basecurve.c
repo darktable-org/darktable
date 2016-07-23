@@ -701,6 +701,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     }
     c->selected = nearest;
   }
+  if(c->selected >= 0) gtk_widget_grab_focus(widget);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -828,6 +829,48 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   return TRUE;
 }
 
+static gboolean dt_iop_basecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+
+  int ch = 0;
+  dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
+
+  if(c->selected >= 0)
+  {
+    int handled = 0;
+    if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
+    {
+      handled = 1;
+      basecurve[c->selected].y = MAX(0.0f, basecurve[c->selected].y + 0.001f);
+    }
+    else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
+    {
+      handled = 1;
+      basecurve[c->selected].y = MIN(1.0f, basecurve[c->selected].y - 0.001f);
+    }
+    else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
+    {
+      handled = 1;
+      basecurve[c->selected].x = MAX(0.0f, basecurve[c->selected].x + 0.001f);
+    }
+    else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
+    {
+      handled = 1;
+      basecurve[c->selected].x = MIN(1.0f, basecurve[c->selected].x - 0.001f);
+    }
+
+    if(handled)
+    {
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      gtk_widget_queue_draw(widget);
+    }
+  }
+  return TRUE;
+}
+
 static void scale_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -870,8 +913,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                             | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK | GDK_KEY_PRESS_MASK);
+  gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(dt_iop_basecurve_motion_notify), self);
@@ -879,6 +923,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(dt_iop_basecurve_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(area_resized), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
+  g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_basecurve_key_press), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
