@@ -481,6 +481,8 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
   return TRUE;
 }
 
+#define COLORCORRECTION_DEFAULT_STEP (0.5f)
+
 static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -493,35 +495,46 @@ static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey 
   if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
   {
     handled = 1;
-    dy = 0.5f;
+    dy = COLORCORRECTION_DEFAULT_STEP;
   }
   else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
   {
     handled = 1;
-    dy = -0.5f;
+    dy = -COLORCORRECTION_DEFAULT_STEP;
   }
   else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
   {
     handled = 1;
-    dx = 0.5f;
+    dx = COLORCORRECTION_DEFAULT_STEP;
   }
   else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
   {
     handled = 1;
-    dx = -0.5f;
+    dx = -COLORCORRECTION_DEFAULT_STEP;
   }
 
   if(handled)
   {
+    if((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    {
+      dx *= dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+      dy *= dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+    }
+    else
+    {
+      dx *= dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+      dy *= dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+    }
+
     switch(g->selected)
     {
       case 1: // only set lo
-        p->loa += dx;
-        p->lob += dy;
+        p->loa = CLAMP(p->loa + dx, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+        p->lob = CLAMP(p->lob + dy, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
         break;
       case 2: // only set hi
-        p->hia += dx;
-        p->hib += dy;
+        p->hia = CLAMP(p->hia + dx, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+        p->hib = CLAMP(p->hib + dy, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
         break;
     }
 
