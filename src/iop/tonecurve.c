@@ -52,6 +52,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
+static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
 
 typedef enum tonecurve_channel_t
@@ -745,6 +746,51 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   return TRUE;
 }
 
+static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+
+  int ch = c->channel;
+  dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
+  int autoscale_ab = p->tonecurve_autoscale_ab;
+
+  // if autoscale_ab is on: do not modify a and b curves
+  if((autoscale_ab != s_scale_manual) && ch != ch_L) return TRUE;
+
+  if(c->selected >= 0)
+  {
+    int handled = 0;
+    if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
+    {
+      handled = 1;
+      tonecurve[c->selected].y = MAX(0.0f, tonecurve[c->selected].y + 0.001f);
+    }
+    else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
+    {
+      handled = 1;
+      tonecurve[c->selected].y = MIN(1.0f, tonecurve[c->selected].y - 0.001f);
+    }
+    else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
+    {
+      handled = 1;
+      tonecurve[c->selected].x = MAX(0.0f, tonecurve[c->selected].x + 0.001f);
+    }
+    else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
+    {
+      handled = 1;
+      tonecurve[c->selected].x = MIN(1.0f, tonecurve[c->selected].x - 0.001f);
+    }
+
+    if(handled)
+    {
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      gtk_widget_queue_draw(widget);
+    }
+  }
+  return TRUE;
+}
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -805,8 +851,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("double click to reset curve"));
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                             | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK | GDK_KEY_PRESS_MASK);
+  gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_tonecurve_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(dt_iop_tonecurve_motion_notify), self);
@@ -815,6 +862,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(area_resized), self);
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(pick_toggled), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
+  g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_tonecurve_key_press), self);
 
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("scale chroma"));
@@ -1223,6 +1271,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     c->selected = nearest;
   }
 finally:
+  if(c->selected >= 0) gtk_widget_grab_focus(widget);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
