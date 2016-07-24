@@ -513,42 +513,41 @@ static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey 
     dx = -COLORCORRECTION_DEFAULT_STEP;
   }
 
-  if(handled)
+  if(!handled) return TRUE;
+
+  float multiplier;
+
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((event->state & modifiers) == GDK_SHIFT_MASK)
   {
-    float multiplier;
-
-    GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-    if((event->state & modifiers) == GDK_SHIFT_MASK)
-    {
-      multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-    }
-    else if((event->state & modifiers) == GDK_CONTROL_MASK)
-    {
-      multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-    }
-    else
-    {
-      multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-    }
-
-    dx *= multiplier;
-    dy *= multiplier;
-
-    switch(g->selected)
-    {
-      case 1: // only set lo
-        p->loa = CLAMP(p->loa + dx, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
-        p->lob = CLAMP(p->lob + dy, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
-        break;
-      case 2: // only set hi
-        p->hia = CLAMP(p->hia + dx, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
-        p->hib = CLAMP(p->hib + dy, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
-        break;
-    }
-
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(widget);
+    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
   }
+  else if((event->state & modifiers) == GDK_CONTROL_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+  }
+  else
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+  }
+
+  dx *= multiplier;
+  dy *= multiplier;
+
+  switch(g->selected)
+  {
+    case 1: // only set lo
+      p->loa = CLAMP(p->loa + dx, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+      p->lob = CLAMP(p->lob + dy, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+      break;
+    case 2: // only set hi
+      p->hia = CLAMP(p->hia + dx, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+      p->hib = CLAMP(p->hib + dy, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+      break;
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gtk_widget_queue_draw(widget);
 
   return TRUE;
 }
