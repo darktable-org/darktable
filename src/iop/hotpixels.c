@@ -99,14 +99,15 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   return sizeof(float);
 }
 
-static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                          const int width, const int height, const uint8_t (*const xtrans)[6],
+static int process_xtrans(const void *const ivoid, void *const ovoid,
+                          const dt_iop_roi_t *const roi_out, const uint8_t (*const xtrans)[6],
                           const float threshold, const float multiplier, const gboolean markfixed,
                           const int min_neighbours)
 {
   // for each cell of sensor array, a list of the x/y offsets of the
   // four radially nearest pixels of the same color
   int offsets[6][6][4][2];
+  // increasing offsets from pixel to find nearest like-colored pixels
   const int search[20][2] = { { -1, 0 },
                               { 1, 0 },
                               { 0, -1 },
@@ -128,29 +129,32 @@ static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_i
                               { -1, 2 },
                               { 1, 2 } };
   for(int j = 0; j < 6; ++j)
+  {
     for(int i = 0; i < 6; ++i)
     {
-      const uint8_t c = FCxtrans(j, i, roi_in, xtrans);
+      const uint8_t c = FCxtrans(j, i, roi_out, xtrans);
       for(int s = 0, found = 0; s < 20 && found < 4; ++s)
       {
-        if(c == FCxtrans(j + search[s][1], i + search[s][0], roi_in, xtrans))
+        if(c == FCxtrans(j + search[s][1], i + search[s][0], roi_out, xtrans))
         {
-          offsets[i][j][found][0] = search[s][0];
-          offsets[i][j][found][1] = search[s][1];
+          offsets[j][i][found][0] = search[s][0];
+          offsets[j][i][found][1] = search[s][1];
           ++found;
         }
       }
     }
+  }
 
+  const int width = roi_out->width;
   int fixed = 0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(offsets) reduction(+ : fixed) schedule(static)
 #endif
-  for(int row = 1; row < height - 1; row++)
+  for(int row = 2; row < roi_out->height - 2; row++)
   {
     const float *in = (float *)ivoid + (size_t)width * row + 2;
     float *out = (float *)ovoid + (size_t)width * row + 2;
-    for(int col = 1; col < width - 1; col++, in++, out++)
+    for(int col = 2; col < width - 2; col++, in++, out++)
     {
       float mid = *in * multiplier;
       if(*in > threshold)
@@ -159,10 +163,9 @@ static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_i
         float maxin = 0.0;
         for(int n = 0; n < 4; ++n)
         {
-          int xx = offsets[col % 6][row % 6][n][0];
-          int yy = offsets[col % 6][row % 6][n][1];
-          if((xx < -col) || (xx >= (width - col)) || (yy < -row) || (yy >= (height - row))) break;
-          float other = *(in + xx + yy * width);
+          int xx = offsets[row % 6][col % 6][n][0];
+          int yy = offsets[row % 6][col % 6][n][1];
+          float other = *(in + xx + yy * (size_t)width);
           if(mid > other)
           {
             count++;
@@ -176,10 +179,21 @@ static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_i
           fixed++;
           if(markfixed)
           {
-            // cheat and mark all colors of pixels
-            // FIXME: use offsets
-            for(int i = -2; i >= -10 && i >= -col; --i) out[i] = *in;
-            for(int i = 2; i <= 10 && i < width - col; ++i) out[i] = *in;
+            const uint8_t c = FCxtrans(row, col, roi_out, xtrans);
+            for(int i = -2; i >= -10 && i >= -col; --i)
+            {
+              if(c == FCxtrans(row, col+i, roi_out, xtrans))
+              {
+                out[i] = *in;
+              }
+            }
+            for(int i = 2; i <= 10 && i < width - col; ++i)
+            {
+              if(c == FCxtrans(row, col+i, roi_out, xtrans))
+              {
+                out[i] = *in;
+              }
+            }
           }
         }
       }
@@ -210,13 +224,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int min_neighbours = data->permissive ? 3 : 4;
 
   // The loop should output only a few pixels, so just copy everything first
-  memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
+  memcpy(ovoid, ivoid, (size_t)width * height * sizeof(float));
 
   int fixed = 0;
 
   if(piece->pipe->filters == 9u)
   {
-    fixed = process_xtrans(ivoid, ovoid, roi_in, width, height, (const uint8_t(*const)[6])piece->pipe->xtrans,
+    fixed = process_xtrans(ivoid, ovoid, roi_out, (const uint8_t(*const)[6])piece->pipe->xtrans,
                            threshold, multiplier, markfixed, min_neighbours);
     goto processed;
   }
