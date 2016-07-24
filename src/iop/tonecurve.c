@@ -720,6 +720,42 @@ static void pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
   dt_iop_request_focus(self);
 }
 
+static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
+{
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+
+  int ch = c->channel;
+  dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
+
+  float multiplier;
+
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((state & modifiers) == GDK_SHIFT_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+  }
+  else if((state & modifiers) == GDK_CONTROL_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+  }
+  else
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+  }
+
+  dx *= multiplier;
+  dy *= multiplier;
+
+  tonecurve[c->selected].x = CLAMP(tonecurve[c->selected].x + dx, 0.0f, 1.0f);
+  tonecurve[c->selected].y = CLAMP(tonecurve[c->selected].y + dy, 0.0f, 1.0f);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gtk_widget_queue_draw(widget);
+
+  return TRUE;
+}
+
 #define TONECURVE_DEFAULT_STEP (0.001f)
 
 static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
@@ -729,54 +765,29 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
   int ch = c->channel;
-  dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
   // if autoscale_ab is on: do not modify a and b curves
   if((autoscale_ab != s_scale_manual) && ch != ch_L) return TRUE;
 
-  if(c->selected >= 0)
+  if(c->selected < 0) return TRUE;
+
+  int handled = 0;
+  float dy = 0.0f;
+  if(event->direction == GDK_SCROLL_UP)
   {
-    int handled = 0;
-    float dy = 0.0f;
-    if(event->direction == GDK_SCROLL_UP)
-    {
-      handled = 1;
-      dy = TONECURVE_DEFAULT_STEP;
-    }
-    if(event->direction == GDK_SCROLL_DOWN)
-    {
-      handled = 1;
-      dy = -TONECURVE_DEFAULT_STEP;
-    }
-
-    if(handled)
-    {
-      float multiplier;
-
-      GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-      if((event->state & modifiers) == GDK_SHIFT_MASK)
-      {
-        multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-      }
-      else if((event->state & modifiers) == GDK_CONTROL_MASK)
-      {
-        multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-      }
-      else
-      {
-        multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-      }
-
-      dy *= multiplier;
-
-      tonecurve[c->selected].y = CLAMP(tonecurve[c->selected].y + dy, 0.0f, 1.0f);
-
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(widget);
-    }
+    handled = 1;
+    dy = TONECURVE_DEFAULT_STEP;
   }
-  return TRUE;
+  if(event->direction == GDK_SCROLL_DOWN)
+  {
+    handled = 1;
+    dy = -TONECURVE_DEFAULT_STEP;
+  }
+
+  if(!handled) return TRUE;
+
+  return _move_point_internal(self, widget, 0.0, dy, event->state);
 }
 
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -786,66 +797,39 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
   int ch = c->channel;
-  dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
   // if autoscale_ab is on: do not modify a and b curves
   if((autoscale_ab != s_scale_manual) && ch != ch_L) return TRUE;
 
-  if(c->selected >= 0)
+  if(c->selected < 0) return TRUE;
+
+  int handled = 0;
+  float dx = 0.0f, dy = 0.0f;
+  if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
   {
-    int handled = 0;
-    float dx = 0.0f, dy = 0.0f;
-    if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
-    {
-      handled = 1;
-      dy = TONECURVE_DEFAULT_STEP;
-    }
-    else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
-    {
-      handled = 1;
-      dy = -TONECURVE_DEFAULT_STEP;
-    }
-    else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
-    {
-      handled = 1;
-      dx = TONECURVE_DEFAULT_STEP;
-    }
-    else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
-    {
-      handled = 1;
-      dx = -TONECURVE_DEFAULT_STEP;
-    }
-
-    if(handled)
-    {
-      float multiplier;
-
-      GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-      if((event->state & modifiers) == GDK_SHIFT_MASK)
-      {
-        multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-      }
-      else if((event->state & modifiers) == GDK_CONTROL_MASK)
-      {
-        multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-      }
-      else
-      {
-        multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-      }
-
-      dx *= multiplier;
-      dy *= multiplier;
-
-      tonecurve[c->selected].x = CLAMP(tonecurve[c->selected].x + dx, 0.0f, 1.0f);
-      tonecurve[c->selected].y = CLAMP(tonecurve[c->selected].y + dy, 0.0f, 1.0f);
-
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(widget);
-    }
+    handled = 1;
+    dy = TONECURVE_DEFAULT_STEP;
   }
-  return TRUE;
+  else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
+  {
+    handled = 1;
+    dy = -TONECURVE_DEFAULT_STEP;
+  }
+  else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
+  {
+    handled = 1;
+    dx = TONECURVE_DEFAULT_STEP;
+  }
+  else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
+  {
+    handled = 1;
+    dx = -TONECURVE_DEFAULT_STEP;
+  }
+
+  if(!handled) return TRUE;
+
+  return _move_point_internal(self, widget, dx, dy, event->state);
 }
 
 #undef TONECURVE_DEFAULT_STEP
