@@ -15,15 +15,15 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "lua/events.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
+#include "common/imageio_module.h"
 #include "control/control.h"
 #include "control/jobs/control_jobs.h"
-#include "lua/call.h"
-#include "lua/events.h"
-#include "lua/image.h"
 #include "gui/accelerators.h"
-#include "common/imageio_module.h"
+#include "lua/call.h"
+#include "lua/image.h"
 
 
 void dt_lua_event_trigger(lua_State *L, const char *event, int nargs)

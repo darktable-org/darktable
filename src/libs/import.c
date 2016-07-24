@@ -16,17 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/exif.h"
 #include "common/film.h"
-#include "common/collection.h"
 #include "common/image_cache.h"
-#include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
-#include "common/exif.h"
-#include "control/control.h"
+#include "common/mipmap_cache.h"
 #include "control/conf.h"
+#include "control/control.h"
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
 #endif
@@ -527,22 +527,23 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
 
     char *buf = (char *)op_params;
-    char *title = buf;
-    buf += strlen(title) + 1;
-    char *description = buf;
-    buf += strlen(description) + 1;
-    char *rights = buf;
-    buf += strlen(rights) + 1;
-    char *creator = buf;
-    buf += strlen(creator) + 1;
-    char *publisher = buf;
+    char *title_str = buf;
+    buf += strlen(title_str) + 1;
+    char *description_str = buf;
+    buf += strlen(description_str) + 1;
+    char *rights_str = buf;
+    buf += strlen(rights_str) + 1;
+    char *creator_str = buf;
+    buf += strlen(creator_str) + 1;
+    char *publisher_str = buf;
 
     if(op_params_size
-       == strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5)
+       == strlen(title_str) + strlen(description_str) + strlen(rights_str) + strlen(creator_str)
+              + strlen(publisher_str) + 5)
     {
       gtk_list_store_append(model, &iter);
       gtk_list_store_set(model, &iter, NAME_COLUMN, (char *)sqlite3_column_text(stmt, 0), CREATOR_COLUMN,
-                         creator, PUBLISHER_COLUMN, publisher, RIGHTS_COLUMN, rights, -1);
+                         creator_str, PUBLISHER_COLUMN, publisher_str, RIGHTS_COLUMN, rights_str, -1);
     }
   }
   sqlite3_finalize(stmt);
@@ -705,7 +706,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   if(no_preview_fallback || !have_preview)
   {
     /* load the dt logo as a brackground */
-    char filename[PATH_MAX] = { 0 };
+    char dtlogo[PATH_MAX] = { 0 };
     char datadir[PATH_MAX] = { 0 };
     char *logo;
     dt_logo_season_t season = get_logo_season();
@@ -715,9 +716,9 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       logo = g_strdup("%s/pixmaps/idbutton.svg");
 
     dt_loc_get_datadir(datadir, sizeof(datadir));
-    snprintf(filename, sizeof(filename), logo, datadir);
+    snprintf(dtlogo, sizeof(dtlogo), logo, datadir);
     g_free(logo);
-    RsvgHandle *svg = rsvg_handle_new_from_file(filename, NULL);
+    RsvgHandle *svg = rsvg_handle_new_from_file(dtlogo, NULL);
     if(svg)
     {
       cairo_surface_t *surface;

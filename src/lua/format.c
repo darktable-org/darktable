@@ -15,11 +15,11 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "common/imageio.h"
+#include "control/conf.h"
+#include "lua/image.h"
 #include "lua/modules.h"
 #include "lua/types.h"
-#include "lua/image.h"
-#include "control/conf.h"
-#include "common/imageio.h"
 
 static int plugin_name_member(lua_State *L)
 {

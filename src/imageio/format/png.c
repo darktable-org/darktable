@@ -22,10 +22,10 @@
 #include "config.h"
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <png.h>
 #include <inttypes.h>
+#include <png.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <zlib.h>
 
 #include "bauhaus/bauhaus.h"

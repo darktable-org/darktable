@@ -20,10 +20,10 @@
 #if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE        \
     || defined _SVID_SOURCE || defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__         \
     || defined __NetBSD__ || defined __OpenBSD__
+#include "darktable.h"
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "darktable.h"
 #endif
 
 #include <sys/stat.h>
@@ -32,8 +32,8 @@
 #include <config.h>
 #endif
 
-#include "utility.h"
 #include "file_location.h"
+#include "utility.h"
 
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
 {

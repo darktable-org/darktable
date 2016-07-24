@@ -31,6 +31,8 @@
 // and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(1, dt_iop_cacorrect_params_t)
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 typedef struct dt_iop_cacorrect_params_t
 {
   int keep;

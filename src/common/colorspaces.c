@@ -16,13 +16,13 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "control/conf.h"
-#include "control/control.h"
-#include "common/colormatrices.c"
 #include "common/colorspaces.h"
+#include "common/colormatrices.c"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/srgb_tone_curve_values.h"
+#include "control/conf.h"
+#include "control/control.h"
 #include "develop/imageop.h"
 #include "external/adobe_coeff.c"
 
@@ -31,8 +31,8 @@
 #endif
 
 #if 0
-#include <Carbon/Carbon.h>
 #include <ApplicationServices/ApplicationServices.h>
+#include <Carbon/Carbon.h>
 #include <CoreServices/CoreServices.h>
 #endif
 

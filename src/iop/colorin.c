@@ -19,14 +19,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "develop/develop.h"
-#include "control/control.h"
-#include "gui/gtk.h"
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
 #include "common/colormatrices.c"
-#include "common/opencl.h"
+#include "common/colorspaces.h"
 #include "common/image_cache.h"
+#include "common/opencl.h"
+#include "control/control.h"
+#include "develop/develop.h"
+#include "gui/gtk.h"
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
@@ -40,9 +40,9 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <lcms2.h>
@@ -585,10 +585,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         // memcpy(cam, buf_in, sizeof(float)*3);
         // avoid calling this for linear profiles (marked with negative entries), assures unbounded
         // color management without extrapolation.
-        for(int i = 0; i < 3; i++)
-          cam[i] = (d->lut[i][0] >= 0.0f) ? ((in[i] < 1.0f) ? lerp_lut(d->lut[i], in[i])
-                                                            : dt_iop_eval_exp(d->unbounded_coeffs[i], in[i]))
-                                          : in[i];
+        for(int c = 0; c < 3; c++)
+          cam[c] = (d->lut[c][0] >= 0.0f) ? ((in[c] < 1.0f) ? lerp_lut(d->lut[c], in[c])
+                                                            : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
+                                          : in[c];
 
         if(blue_mapping)
         {
@@ -620,9 +620,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           for(int c = 0; c < 3; c++)
           {
             _xyz[c] = 0.0f;
-            for(int i = 0; i < 3; i++)
+            for(int k = 0; k < 3; k++)
             {
-              _xyz[c] += d->cmatrix[3 * c + i] * cam[i];
+              _xyz[c] += d->cmatrix[3 * c + k] * cam[k];
             }
           }
 
@@ -634,9 +634,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           for(int c = 0; c < 3; c++)
           {
             nRGB[c] = 0.0f;
-            for(int i = 0; i < 3; i++)
+            for(int k = 0; k < 3; k++)
             {
-              nRGB[c] += d->nmatrix[3 * c + i] * cam[i];
+              nRGB[c] += d->nmatrix[3 * c + k] * cam[k];
             }
           }
 
@@ -650,9 +650,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           for(int c = 0; c < 3; c++)
           {
             XYZ[c] = 0.0f;
-            for(int i = 0; i < 3; i++)
+            for(int k = 0; k < 3; k++)
             {
-              XYZ[c] += d->lmatrix[3 * c + i] * cRGB[i];
+              XYZ[c] += d->lmatrix[3 * c + k] * cRGB[k];
             }
           }
 
@@ -790,11 +790,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         // memcpy(cam, buf_in, sizeof(float)*3);
         // avoid calling this for linear profiles (marked with negative entries), assures unbounded
         // color management without extrapolation.
-        for(int i = 0; i < 3; i++)
-          cam[i] = (d->lut[i][0] >= 0.0f)
-                       ? ((buf_in[i] < 1.0f) ? lerp_lut(d->lut[i], buf_in[i])
-                                             : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
-                       : buf_in[i];
+        for(int c = 0; c < 3; c++)
+          cam[c] = (d->lut[c][0] >= 0.0f)
+                       ? ((buf_in[c] < 1.0f) ? lerp_lut(d->lut[c], buf_in[c])
+                                             : dt_iop_eval_exp(d->unbounded_coeffs[c], buf_in[c]))
+                       : buf_in[c];
 
         if(blue_mapping)
         {
@@ -909,8 +909,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         {
           const __m128 min = _mm_setzero_ps();
           const __m128 max = _mm_set1_ps(1.0f);
-          const __m128 input = _mm_load_ps(rgbptr);
-          const __m128 result = _mm_max_ps(_mm_min_ps(input, max), min);
+          const __m128 val = _mm_load_ps(rgbptr);
+          const __m128 result = _mm_max_ps(_mm_min_ps(val, max), min);
           _mm_store_ps(rgbptr, result);
         }
         _mm_sfence();
@@ -1367,14 +1367,14 @@ static void update_profile_list(dt_iop_module_t *self)
   g->image_profiles = NULL;
   g->n_image_profiles = 0;
 
-  dt_colorspaces_color_profile_t *prof;
   int pos = -1;
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'r');
   if(cimg->profile)
   {
-    prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+    dt_colorspaces_color_profile_t *prof
+        = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_EMBEDDED_ICC, ""), sizeof(prof->name));
     prof->type = DT_COLORSPACE_EMBEDDED_ICC;
     g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1384,7 +1384,8 @@ static void update_profile_list(dt_iop_module_t *self)
   // use the matrix embedded in some DNGs and EXRs
   if(!isnan(self->dev->image_storage.d65_color_matrix[0]))
   {
-    prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+    dt_colorspaces_color_profile_t *prof
+        = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_EMBEDDED_MATRIX, ""), sizeof(prof->name));
     prof->type = DT_COLORSPACE_EMBEDDED_MATRIX;
     g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1402,7 +1403,8 @@ static void update_profile_list(dt_iop_module_t *self)
 
   if(!isnan(cam_xyz[0]) && !(self->dev->image_storage.flags & DT_IMAGE_4BAYER))
   {
-    prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+    dt_colorspaces_color_profile_t *prof
+        = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_STANDARD_MATRIX, ""), sizeof(prof->name));
     prof->type = DT_COLORSPACE_STANDARD_MATRIX;
     g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1414,7 +1416,8 @@ static void update_profile_list(dt_iop_module_t *self)
   {
     if(!strcasecmp(self->dev->image_storage.camera_makermodel, dt_profiled_colormatrices[k].makermodel))
     {
-      prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+      dt_colorspaces_color_profile_t *prof
+          = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
       g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_ENHANCED_MATRIX, ""), sizeof(prof->name));
       prof->type = DT_COLORSPACE_ENHANCED_MATRIX;
       g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1428,7 +1431,8 @@ static void update_profile_list(dt_iop_module_t *self)
   {
     if(!strcmp(self->dev->image_storage.camera_makermodel, dt_vendor_colormatrices[k].makermodel))
     {
-      prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+      dt_colorspaces_color_profile_t *prof
+          = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
       g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_VENDOR_MATRIX, ""), sizeof(prof->name));
       prof->type = DT_COLORSPACE_VENDOR_MATRIX;
       g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1442,7 +1446,8 @@ static void update_profile_list(dt_iop_module_t *self)
   {
     if(!strcmp(self->dev->image_storage.camera_makermodel, dt_alternate_colormatrices[k].makermodel))
     {
-      prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+      dt_colorspaces_color_profile_t *prof
+          = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
       g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_ALTERNATE_MATRIX, ""), sizeof(prof->name));
       prof->type = DT_COLORSPACE_ALTERNATE_MATRIX;
       g->image_profiles = g_list_append(g->image_profiles, prof);

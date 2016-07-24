@@ -20,27 +20,27 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/darktable.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "develop/develop.h"
+#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
-#include "common/debug.h"
-#include "bauhaus/bauhaus.h"
-#include "views/view.h"
-#include "gui/gtk.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/develop.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
+#include "views/view.h"
 
-#include <stdlib.h>
-#include <strings.h>
 #include <assert.h>
-#include <math.h>
-#include <string.h>
-#include <glib/gstdio.h>
 #include <gdk/gdkkeysyms.h>
+#include <glib/gstdio.h>
 #include <lcms2.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 
 int dt_control_load_config(dt_control_t *c)
@@ -647,7 +647,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       // auto complete:
       if(darktable.control->vimkey_cnt < 5)
       {
-        snprintf(darktable.control->vimkey, sizeof(darktable.control->vimkey), ":set ");
+        g_strlcpy(darktable.control->vimkey, ":set ", sizeof(darktable.control->vimkey));
         darktable.control->vimkey_cnt = 5;
       }
       else if(!autocomplete)
@@ -718,18 +718,18 @@ int dt_control_key_pressed_override(guint key, guint state)
   }
   else if(key == accels->global_header.accel_key && state == accels->global_header.accel_mods)
   {
-    char key[512];
+    char param[512];
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
 
     /* do nothing if in collapse panel state
        TODO: reconsider adding this check to ui api */
-    g_snprintf(key, sizeof(key), "%s/ui/panel_collaps_state", cv->module_name);
-    if(dt_conf_get_int(key)) return 0;
+    g_snprintf(param, sizeof(param), "%s/ui/panel_collaps_state", cv->module_name);
+    if(dt_conf_get_int(param)) return 0;
 
     /* toggle the header visibility state */
-    g_snprintf(key, sizeof(key), "%s/ui/show_header", cv->module_name);
-    gboolean header = !dt_conf_get_bool(key);
-    dt_conf_set_bool(key, header);
+    g_snprintf(param, sizeof(param), "%s/ui/show_header", cv->module_name);
+    gboolean header = !dt_conf_get_bool(param);
+    dt_conf_set_bool(param, header);
 
     /* show/hide the actual header panel */
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, header, TRUE);

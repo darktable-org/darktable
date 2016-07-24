@@ -18,9 +18,9 @@
  *   v = returns the right orthogonal transformation matrix
 */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #define SIGN(a, b) copysign(a, b)
 

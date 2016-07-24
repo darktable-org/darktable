@@ -16,26 +16,26 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "develop/develop.h"
-#include "control/control.h"
-#include "common/history.h"
-#include "common/imageio.h"
-#include "common/image_cache.h"
-#include "common/file_location.h"
 #include "common/styles.h"
-#include "common/tags.h"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
+#include "common/file_location.h"
+#include "common/history.h"
+#include "common/image_cache.h"
+#include "common/imageio.h"
+#include "common/tags.h"
+#include "control/control.h"
+#include "develop/develop.h"
 
-#include <libxml/encoding.h>
-#include <libxml/xmlwriter.h>
 #include "gui/accelerators.h"
 #include "gui/styles.h"
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
 
-#include <string.h>
-#include <stdio.h>
 #include <glib.h>
+#include <stdio.h>
+#include <string.h>
 
 typedef struct
 {
@@ -669,7 +669,8 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      char name[512] = { 0 };
+      // name of current item of style
+      char iname[512] = { 0 };
       dt_style_item_t *item = calloc(1, sizeof(dt_style_item_t));
 
       if(sqlite3_column_type(stmt, 0) == SQLITE_NULL)
@@ -689,9 +690,9 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
         const char *multi_name = (const char *)sqlite3_column_text(stmt, 6);
 
         if(!(multi_name && *multi_name))
-          g_snprintf(name, sizeof(name), "%s", sqlite3_column_text(stmt, 2));
+          g_snprintf(iname, sizeof(iname), "%s", sqlite3_column_text(stmt, 2));
         else
-          g_snprintf(name, sizeof(name), "%s %s", sqlite3_column_text(stmt, 2), multi_name);
+          g_snprintf(iname, sizeof(iname), "%s %s", sqlite3_column_text(stmt, 2), multi_name);
 
         const unsigned char *op_blob = sqlite3_column_blob(stmt, 4);
         const int32_t op_len = sqlite3_column_bytes(stmt, 4);
@@ -712,11 +713,11 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
         if(multi_name && *multi_name && strcmp(multi_name, "0") != 0) has_multi_name = TRUE;
 
         if(has_multi_name)
-          g_snprintf(name, sizeof(name), "%s %s (%s)",
+          g_snprintf(iname, sizeof(iname), "%s %s (%s)",
                      dt_iop_get_localized_name((gchar *)sqlite3_column_text(stmt, 2)), multi_name,
                      (sqlite3_column_int(stmt, 3) != 0) ? _("on") : _("off"));
         else
-          g_snprintf(name, sizeof(name), "%s (%s)",
+          g_snprintf(iname, sizeof(iname), "%s (%s)",
                      dt_iop_get_localized_name((gchar *)sqlite3_column_text(stmt, 2)),
                      (sqlite3_column_int(stmt, 3) != 0) ? _("on") : _("off"));
 
@@ -725,7 +726,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
         if(imgid != -1 && sqlite3_column_type(stmt, 4) != SQLITE_NULL)
           item->selimg_num = sqlite3_column_int(stmt, 4);
       }
-      item->name = g_strdup(name);
+      item->name = g_strdup(iname);
       result = g_list_append(result, item);
     }
     sqlite3_finalize(stmt);
@@ -1179,10 +1180,10 @@ dt_style_t *dt_styles_get_by_name(const char *name)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const char *name = (const char *)sqlite3_column_text(stmt, 0);
+    const char *style_name = (const char *)sqlite3_column_text(stmt, 0);
     const char *description = (const char *)sqlite3_column_text(stmt, 1);
     dt_style_t *s = g_malloc(sizeof(dt_style_t));
-    s->name = g_strdup(name);
+    s->name = g_strdup(style_name);
     s->description = g_strdup(description);
     sqlite3_finalize(stmt);
     return s;

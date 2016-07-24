@@ -35,13 +35,13 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
+#include <assert.h>
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <gdk/gdkkeysyms.h>
-#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 
@@ -1986,12 +1986,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set_editable(g->aspect_presets, 1);
   dt_bauhaus_widget_set_label(g->aspect_presets, NULL, _("aspect"));
 
-  GList *iter = g->aspect_list;
-  while(iter != NULL)
+  for(GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
   {
     const dt_iop_clipping_aspect_t *aspect = iter->data;
     dt_bauhaus_combobox_add(g->aspect_presets, aspect->name);
-    iter = g_list_next(iter);
   }
 
   dt_bauhaus_combobox_set(g->aspect_presets, 0);
@@ -2554,8 +2552,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     return 0;
   g->old_width = g->old_height = -1;
 
-  float wd = self->dev->preview_pipe->backbuf_width;
-  float ht = self->dev->preview_pipe->backbuf_height;
+  const float wd = self->dev->preview_pipe->backbuf_width;
+  const float ht = self->dev->preview_pipe->backbuf_height;
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
@@ -2760,8 +2758,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       }
       apply_box_aspect(self, grab);
       // we save crop params too
-      float wd = self->dev->preview_pipe->backbuf_width;
-      float ht = self->dev->preview_pipe->backbuf_height;
       float points[4]
           = { g->clip_x * wd, g->clip_y * ht, (g->clip_x + g->clip_w) * wd, (g->clip_y + g->clip_h) * ht };
       if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999,

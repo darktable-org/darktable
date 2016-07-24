@@ -99,9 +99,10 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   return sizeof(float);
 }
 
-static int process_xtrans(const void *const i, void *o, const dt_iop_roi_t *const roi_in, const int width,
-                          const int height, const uint8_t (*const xtrans)[6], const float threshold,
-                          const float multiplier, const gboolean markfixed, const int min_neighbours)
+static int process_xtrans(const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                          const int width, const int height, const uint8_t (*const xtrans)[6],
+                          const float threshold, const float multiplier, const gboolean markfixed,
+                          const int min_neighbours)
 {
   // for each cell of sensor array, a list of the x/y offsets of the
   // four radially nearest pixels of the same color
@@ -143,12 +144,12 @@ static int process_xtrans(const void *const i, void *o, const dt_iop_roi_t *cons
 
   int fixed = 0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(o, offsets) reduction(+ : fixed) schedule(static)
+#pragma omp parallel for default(none) shared(offsets) reduction(+ : fixed) schedule(static)
 #endif
   for(int row = 1; row < height - 1; row++)
   {
-    const float *in = (float *)i + (size_t)width * row + 2;
-    float *out = (float *)o + (size_t)width * row + 2;
+    const float *in = (float *)ivoid + (size_t)width * row + 2;
+    float *out = (float *)ovoid + (size_t)width * row + 2;
     for(int col = 1; col < width - 1; col++, in++, out++)
     {
       float mid = *in * multiplier;
@@ -195,8 +196,8 @@ static int process_xtrans(const void *const i, void *o, const dt_iop_roi_t *cons
  * correcting pairs of hot pixels in adjacent sites. Replacement using
  * the maximum produces fewer artifacts when inadvertently replacing
  * non-hot pixels. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
   const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
@@ -209,14 +210,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int min_neighbours = data->permissive ? 3 : 4;
 
   // The loop should output only a few pixels, so just copy everything first
-  memcpy(o, i, (size_t)roi_out->width * roi_out->height * sizeof(float));
+  memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
 
   int fixed = 0;
 
   if(piece->pipe->filters == 9u)
   {
-    fixed = process_xtrans(i, o, roi_in, width, height, (const uint8_t(*const)[6])piece->pipe->xtrans, threshold,
-                           multiplier, markfixed, min_neighbours);
+    fixed = process_xtrans(ivoid, ovoid, roi_in, width, height, (const uint8_t(*const)[6])piece->pipe->xtrans,
+                           threshold, multiplier, markfixed, min_neighbours);
     goto processed;
   }
 
@@ -226,8 +227,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
   for(int row = 2; row < roi_out->height - 2; row++)
   {
-    const float *in = (float *)i + (size_t)width * row + 2;
-    float *out = (float *)o + (size_t)width * row + 2;
+    const float *in = (float *)ivoid + (size_t)width * row + 2;
+    float *out = (float *)ovoid + (size_t)width * row + 2;
     for(int col = 2; col < width - 1; col++, in++, out++)
     {
       float mid = *in * multiplier;

@@ -17,17 +17,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/history.h"
 #include "common/darktable.h"
-#include "develop/develop.h"
-#include "control/control.h"
 #include "common/debug.h"
 #include "common/exif.h"
-#include "common/history.h"
-#include "common/imageio.h"
 #include "common/image_cache.h"
+#include "common/imageio.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/utility.h"
+#include "control/control.h"
+#include "develop/develop.h"
 
 void dt_history_item_free(gpointer data)
 {
@@ -121,7 +121,7 @@ static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
     _history_item_t *hi = (_history_item_t *)(items->data);
     if(strcmp(op, hi->op) != 0)
     {
-      strncpy(op, hi->op, sizeof(op));
+      g_strlcpy(op, hi->op, sizeof(op));
       c_mi = 0;
     }
     if(hi->mi != c_mi) nb_change++;

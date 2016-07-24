@@ -21,12 +21,12 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include "common/darktable.h"
-#include "develop/imageop.h"
 #include "common/histogram.h"
+#include "develop/imageop.h"
 
 #define S(V, params) ((params->mul) * ((float)V))
 #define P(V, params) (CLAMP((V), 0, (params->bins_count - 1)))

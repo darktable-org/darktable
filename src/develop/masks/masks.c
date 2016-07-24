@@ -15,22 +15,25 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "bauhaus/bauhaus.h"
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "develop/masks.h"
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/mipmap_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
+// clang-format off
 #include "develop/masks/circle.c"
 #include "develop/masks/path.c"
 #include "develop/masks/brush.c"
 #include "develop/masks/gradient.c"
 #include "develop/masks/ellipse.c"
 #include "develop/masks/group.c"
-
+// clang-format on
 
 static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formtype)
 {

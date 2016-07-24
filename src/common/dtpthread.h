@@ -20,14 +20,14 @@
 #ifndef DT_PTHREAD_H_
 #define DT_PTHREAD_H_
 
-#include <pthread.h>
-#include <float.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <glib.h>
 #include <assert.h>
+#include <errno.h>
+#include <float.h>
+#include <glib.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef _DEBUG
 

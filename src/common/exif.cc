@@ -28,40 +28,40 @@ extern "C" {
 #include "version.h"
 
 #include <glib.h>
-#include <zlib.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <sqlite3.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
+#include <zlib.h>
 }
 
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
 #include <cassert>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 #include <exiv2/easyaccess.hpp>
-#include <exiv2/xmp.hpp>
 #include <exiv2/error.hpp>
-#include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
+#include <exiv2/image.hpp>
 #include <exiv2/preview.hpp>
+#include <exiv2/xmp.hpp>
 
 using namespace std;
 
 extern "C" {
-#include "common/exif.h"
-#include "common/darktable.h"
 #include "common/colorlabels.h"
-#include "common/imageio_jpeg.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/exif.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/imageio_jpeg.h"
 #include "common/metadata.h"
 #include "common/tags.h"
-#include "common/debug.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 }
@@ -694,7 +694,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     /* Read lens name */
-    if((FIND_EXIF_TAG("Exif.CanonCs.LensType") && pos->print(&exifData) != "(0)")
+    if((FIND_EXIF_TAG("Exif.CanonCs.LensType") && pos->print(&exifData) != "(0)"
+        && pos->print(&exifData) != "(65535)")
        || FIND_EXIF_TAG("Exif.Canon.0x0095"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
@@ -1772,16 +1773,16 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
           const char *mask_c = mask_str.c_str();
           const size_t mask_c_len = strlen(mask_c);
           int mask_len = 0;
-          const unsigned char *mask_d = dt_exif_xmp_decode(mask_c, mask_c_len, &mask_len);
-          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, mask_d, mask_len, SQLITE_TRANSIENT);
+          const unsigned char *mask_blob = dt_exif_xmp_decode(mask_c, mask_c_len, &mask_len);
+          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, mask_blob, mask_len, SQLITE_TRANSIENT);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, mask_nb->toLong(i));
 
           std::string mask_src_str = mask_src->toString(i);
           const char *mask_src_c = mask_src_str.c_str();
           const size_t mask_src_c_len = strlen(mask_src_c);
           int mask_src_len = 0;
-          unsigned char *mask_src = dt_exif_xmp_decode(mask_src_c, mask_src_c_len, &mask_src_len);
-          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, mask_src, mask_src_len, SQLITE_TRANSIENT);
+          unsigned char *mask_src_blob = dt_exif_xmp_decode(mask_src_c, mask_src_c_len, &mask_src_len);
+          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, mask_src_blob, mask_src_len, SQLITE_TRANSIENT);
 
           sqlite3_step(stmt);
           sqlite3_finalize(stmt);

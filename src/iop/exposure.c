@@ -20,10 +20,10 @@
 #include "config.h"
 #endif
 
+#include <assert.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <math.h>
-#include <assert.h>
 #include <string.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>

@@ -30,15 +30,15 @@
 #include "develop/imageop_math.h"
 
 #include <assert.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/fcntl.h>
-#include <limits.h>
+#include <errno.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <errno.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
@@ -1186,7 +1186,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, dt_colorspa
     const dt_image_orientation_t orientation = dt_image_get_orientation(imgid);
 
     // try to load the embedded thumbnail in raw
-    gboolean from_cache = TRUE;
+    from_cache = TRUE;
     memset(filename, 0, sizeof(filename));
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 

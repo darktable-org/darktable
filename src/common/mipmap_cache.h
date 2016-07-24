@@ -19,8 +19,8 @@
 #define DT_MIPMAP_CACHE_H
 
 #include "common/cache.h"
-#include "common/image.h"
 #include "common/colorspaces.h"
+#include "common/image.h"
 
 // sizes stored in the mipmap cache, set to fixed values in mipmap_cache.c
 typedef enum dt_mipmap_size_t

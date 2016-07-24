@@ -16,8 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/common.h"
 #include "lua/types.h"
+#include "lua/widget/common.h"
 
 static dt_lua_widget_type_t label_type = {
   .name = "label",

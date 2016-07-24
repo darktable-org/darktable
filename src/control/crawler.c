@@ -16,18 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <string.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <sqlite3.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "crawler.h"
 #include "common/darktable.h"
 #include "common/database.h"
 #include "common/history.h"
 #include "common/image.h"
 #include "control/conf.h"
+#include "crawler.h"
 #include "gui/gtk.h"
 
 

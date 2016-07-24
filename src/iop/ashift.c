@@ -20,10 +20,10 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/bilateral.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/interpolation.h"
-#include "common/bilateral.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -2700,8 +2700,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
 
-    const int width = roi_in->width;
-    const int height = roi_in->height;
     const int x_off = roi_in->x;
     const int y_off = roi_in->y;
     const float scale = roi_in->scale;
@@ -2731,21 +2729,21 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     g->isflipped = isflipped;
 
     // save a copy of preview input buffer for parameter fitting
-    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
+    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)iwidth * iheight)
     {
       // if needed allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
-      g->buf = malloc((size_t)width * height * 4 * sizeof(float));
+      g->buf = malloc((size_t)iwidth * iheight * 4 * sizeof(float));
     }
 
     if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
-      err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in, width, height, 4 * sizeof(float));
+      err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in, iwidth, iheight, 4 * sizeof(float));
 
-      g->buf_width = width;
-      g->buf_height = height;
+      g->buf_width = iwidth;
+      g->buf_height = iheight;
       g->buf_x_off = x_off;
       g->buf_y_off = y_off;
       g->buf_scale = scale;
@@ -3039,8 +3037,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   if(my_points == NULL) goto error;
 
   // second step: generate points for each line
-  size_t offset = 0;
-  for(int n = 0; n < lines_count; n++)
+  for(int n = 0, offset = 0; n < lines_count; n++)
   {
     my_points_idx[n].offset = offset;
 
@@ -3383,15 +3380,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   // the rectangular selection
   if(g->isbounding != ASHIFT_BOUNDING_OFF)
   {
-    float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-
-    pzx += 0.5f;
-    pzy += 0.5f;
-
-    float wd = self->dev->preview_pipe->backbuf_width;
-    float ht = self->dev->preview_pipe->backbuf_height;
-
     if(wd >= 1.0 && ht >= 1.0)
     {
       // mark lines inside the rectangle

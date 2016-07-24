@@ -19,11 +19,11 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
-#include <string.h>
+#include <math.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
@@ -31,8 +31,8 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
-#include "dtgtk/paint.h"
 #include "dtgtk/drawingarea.h"
+#include "dtgtk/paint.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -1281,7 +1281,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
         if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
         {
           // create a new node
-          int selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], mx, y);
+          selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], mx, y);
 
           // maybe set the new one as being selected
           float min = .04f;

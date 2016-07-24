@@ -16,11 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glib.h>
-#include <unistd.h>
-#include "lcms2.h"
 #include "common/printprof.h"
 #include "common/colorspaces.h"
+#include "lcms2.h"
+#include <glib.h>
+#include <unistd.h>
 
 static cmsUInt32Number ComputeOutputFormatDescriptor (cmsUInt32Number dwInput, int OutColorSpace, int bps)
 {

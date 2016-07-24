@@ -167,6 +167,8 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+#define SQRT3 1.7320508075688772935274463415058723669f
+#define SQRT12 3.4641016151377545870548926830117447339f // 2*SQRT3
 kernel void
 highlights_1f_lch (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                    const float clip, const int rx, const int ry, const int filters)
@@ -176,29 +178,80 @@ highlights_1f_lch (read_only image2d_t in, write_only image2d_t out, const int w
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  const float near_clip = 0.96f*clip;
-  const float post_clip = 1.10f*clip;
-  float mean = 0.0f;
-  float blend = 0.0f;
+  float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
-  // go through a bayer block of 2x2
-  for(int jj=0;jj<=1;jj++)
+  int clipped = 0;
+  float R = 0.0f;
+  float Gmin = FLT_MAX;
+  float Gmax = -FLT_MAX;
+  float B = 0.0f;
+
+  // sample 1 bayer block. thus we will have 2 green values.
+  for(int jj = 0; jj <= 1; jj++)
   {
-    for(int ii=0;ii<=1;ii++)
+    for(int ii = 0; ii <= 1; ii++)
     {
-      float px = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
-      mean += px*.25f;
-      blend += (fmin(post_clip, px) - near_clip)/(post_clip-near_clip);
+      const float val = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
+
+      clipped = (clipped || (val > clip));
+
+      const int c = FC(y + jj + ry, x + ii + rx, filters);
+
+      switch(c)
+      {
+        case 0:
+          R = val;
+          break;
+        case 1:
+          Gmin = min(Gmin, val);
+          Gmax = max(Gmax, val);
+          break;
+        case 2:
+          B = val;
+          break;
+      }
     }
   }
 
-  blend = clamp(blend, 0.0f, 1.0f);
-  if(blend > 0.0f)
-    pixel.x = blend*mean + (1.0f-blend)*pixel.x;
+  if(clipped)
+  {
+    const float Ro = min(R, clip);
+    const float Go = min(Gmin, clip);
+    const float Bo = min(B, clip);
+
+    const float L = (R + Gmax + B) / 3.0f;
+
+    float C = SQRT3 * (R - Gmax);
+    float H = 2.0f * B - Gmax - R;
+
+    const float Co = SQRT3 * (Ro - Go);
+    const float Ho = 2.0f * Bo - Go - Ro;
+
+    const float ratio = (R != Gmax && Gmax != B) ? sqrt((Co * Co + Ho * Ho) / (C * C + H * H)) : 1.0f;
+
+    C *= ratio;
+    H *= ratio;
+
+    /*
+     * backtransform proof, sage:
+     *
+     * R,G,B,L,C,H = var('R,G,B,L,C,H')
+     * solve([L==(R+G+B)/3, C==sqrt(3)*(R-G), H==2*B-G-R], R, G, B)
+     *
+     * result:
+     * [[R == 1/6*sqrt(3)*C - 1/6*H + L, G == -1/6*sqrt(3)*C - 1/6*H + L, B == 1/3*H + L]]
+     */
+    const int c = FC(y + ry, x + rx, filters);
+    C = (c == 1) ? -C : C;
+
+    pixel = L;
+    pixel += (c == 2) ? H / 3.0f : -H / 6.0f + C / SQRT12;
+  }
 
   write_imagef (out, (int2)(x, y), pixel);
 }
+#undef SQRT3
+#undef SQRT12
 
 float
 lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
@@ -593,7 +646,7 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
   const int ii = (int)po.x;
   const int jj = (int)po.y;
 
-  float4 o = (ii >=0 && jj >= 0 && ii <= in_width-1 && jj <= in_height-1) ? read_imagef(in, samplerf, po) : (float4)0.0f;
+  float4 o = (ii >=0 && jj >= 0 && ii < in_width && jj < in_height) ? read_imagef(in, samplerf, po) : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), o);
 }
@@ -655,7 +708,7 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
     weight += w;
   }
 
-  pixel = (tx >= -0.5f && ty >= -0.5f && tx <= in_width - 0.5f && ty <= in_height - 0.5f) ? pixel / weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -716,7 +769,7 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
     weight += w;
   }
 
-  pixel = (tx >= -0.5f && ty >= -0.5f && tx <= in_width - 0.5f && ty <= in_height - 0.5f) ? pixel / weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -778,7 +831,7 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
     weight += w;
   }
 
-  pixel = (tx >= -0.5f && ty >= -0.5f && tx <= in_width - 0.5f && ty <= in_height - 0.5f) ? pixel / weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < in_width && ty < in_height) ? pixel / weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -1212,8 +1265,10 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   // get output values by interpolation from input image using fast hardware bilinear interpolation
   float rx = pin[0];
   float ry = pin[1];
+  int tx = rx;
+  int ty = ry;
 
-  float4 pixel = (rx >= 0 && ry >= 0 && rx <= iwidth - 1 && ry <= iheight - 1) ? read_imagef(in, samplerf, (float2)(rx, ry)) : (float4)0.0f;
+  float4 pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? read_imagef(in, samplerf, (float2)(rx, ry)) : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -1273,11 +1328,11 @@ ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int widt
     float wy = interpolation_func_bicubic((float)j - ry);
     float w = wx * wy;
 
-    pixel += read_imagef(in, samplerc, (int2)(i, j)) * w;
+    pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
     weight += w;
   }
   
-  pixel = weight > 0.0f ? pixel/weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -1338,11 +1393,11 @@ ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int widt
     float wy = interpolation_func_lanczos(2, (float)j - ry);
     float w = wx * wy;
 
-    pixel += read_imagef(in, samplerc, (int2)(i, j)) * w;
+    pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
     weight += w;
   }
   
-  pixel = weight > 0.0f ? pixel/weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }
@@ -1403,11 +1458,11 @@ ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int widt
     float wy = interpolation_func_lanczos(3, (float)j - ry);
     float w = wx * wy;
 
-    pixel += read_imagef(in, samplerc, (int2)(i, j)) * w;
+    pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
     weight += w;
   }
   
-  pixel = weight > 0.0f ? pixel/weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel); 
 }

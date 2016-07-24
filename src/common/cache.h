@@ -20,9 +20,9 @@
 #define DT_COMMON_CACHE_H
 
 #include "common/dtpthread.h"
+#include <glib.h>
 #include <inttypes.h>
 #include <stddef.h>
-#include <glib.h>
 
 typedef struct dt_cache_entry_t
 {
@@ -34,6 +34,9 @@ typedef struct dt_cache_entry_t
   uint32_t key;
 }
 dt_cache_entry_t;
+
+typedef void((*dt_cache_allocate_t)(void *userdata, dt_cache_entry_t *entry));
+typedef void((*dt_cache_cleanup_t)(void *userdata, dt_cache_entry_t *entry));
 
 typedef struct dt_cache_t
 {
@@ -47,8 +50,8 @@ typedef struct dt_cache_t
   GList *lru;            // last element is most recently used, first is about to be kicked from cache.
 
   // callback functions for cache misses/garbage collection
-  void (*allocate)(void *userdata, dt_cache_entry_t *entry);
-  void (*cleanup)(void *userdata, dt_cache_entry_t *entry);
+  dt_cache_allocate_t allocate;
+  dt_cache_allocate_t cleanup;
   void *allocate_data;
   void *cleanup_data;
 }
@@ -58,20 +61,16 @@ dt_cache_t;
 void dt_cache_init(dt_cache_t *cache, size_t entry_size, size_t cost_quota);
 void dt_cache_cleanup(dt_cache_t *cache);
 
-static inline void dt_cache_set_allocate_callback(
-    dt_cache_t *cache,
-    void (*allocate)(void *, dt_cache_entry_t *entry),
-    void *allocate_data)
+static inline void dt_cache_set_allocate_callback(dt_cache_t *cache, dt_cache_allocate_t allocate_cb,
+                                                  void *allocate_data)
 {
-  cache->allocate = allocate;
+  cache->allocate = allocate_cb;
   cache->allocate_data = allocate_data;
 }
-static inline void dt_cache_set_cleanup_callback(
-    dt_cache_t *cache,
-    void (*cleanup)(void *, dt_cache_entry_t *entry),
-    void *cleanup_data)
+static inline void dt_cache_set_cleanup_callback(dt_cache_t *cache, dt_cache_cleanup_t cleanup_cb,
+                                                 void *cleanup_data)
 {
-  cache->cleanup = cleanup;
+  cache->cleanup = cleanup_cb;
   cache->cleanup_data = cleanup_data;
 }
 

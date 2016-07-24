@@ -23,16 +23,16 @@
 #include "common/dtpthread.h"
 #include "control/settings.h"
 
-#include <inttypes.h>
 #include <gtk/gtk.h>
+#include <inttypes.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <gtk/gtk.h>
-#include "libs/lib.h"
 #include "control/jobs.h"
 #include "control/progress.h"
+#include "libs/lib.h"
+#include <gtk/gtk.h>
 
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
@@ -177,6 +177,7 @@ typedef struct dt_control_t
 
   // job management
   int32_t running;
+  gboolean export_scheduled;
   dt_pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
@@ -206,6 +207,8 @@ typedef struct dt_control_t
       void (*cancellable)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance,
                           dt_progress_t *progress);
       void (*updated)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance, double value);
+      void (*message_updated)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance,
+                              const char *message);
     } proxy;
 
   } progress_system;

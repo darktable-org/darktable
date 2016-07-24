@@ -123,10 +123,10 @@ void gui_init(dt_lib_module_t *self)
         /* create space if more views */
         if(k < darktable.view_manager->num_views - 1)
         {
-          GtkWidget *w = gtk_label_new("|");
-          gtk_widget_set_halign(w, GTK_ALIGN_START);
-          gtk_widget_set_name(w, "view_label");
-          gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, DT_PIXEL_APPLY_DPI(5));
+          GtkWidget *sep = gtk_label_new("|");
+          gtk_widget_set_halign(sep, GTK_ALIGN_START);
+          gtk_widget_set_name(sep, "view_label");
+          gtk_box_pack_start(GTK_BOX(self->widget), sep, FALSE, FALSE, DT_PIXEL_APPLY_DPI(5));
         }
       }
       else

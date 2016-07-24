@@ -30,16 +30,17 @@
 #include <sys/malloc.h>
 #endif
 
-#include "common/darktable.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
-#include "common/selection.h"
+#include "common/darktable.h"
 #include "common/exif.h"
 #include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
+#include "common/selection.h"
 #ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/cpuid.h"
 #include "common/film.h"
 #include "common/grealpath.h"
@@ -50,30 +51,29 @@
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
 #include "common/points.h"
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "libs/lib.h"
-#include "views/view.h"
-#include "views/undo.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
-#include "control/conf.h"
-#include "gui/guides.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
 #include "gui/gtk.h"
+#include "gui/guides.h"
 #include "gui/presets.h"
+#include "libs/lib.h"
 #include "lua/init.h"
-#include "bauhaus/bauhaus.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "views/undo.h"
+#include "views/view.h"
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <string.h>
 #include <sys/param.h>
-#include <unistd.h>
 #include <sys/types.h>
+#include <unistd.h>
 #ifndef __WIN32__
 #include <sys/wait.h>
 #endif
@@ -849,12 +849,12 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   dt_exif_init();
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(datadir, sizeof(datadir));
-  char filename[PATH_MAX] = { 0 };
-  snprintf(filename, sizeof(filename), "%s/darktablerc", datadir);
+  char darktablerc[PATH_MAX] = { 0 };
+  snprintf(darktablerc, sizeof(darktablerc), "%s/darktablerc", datadir);
 
   // initialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)calloc(1, sizeof(dt_conf_t));
-  dt_conf_init(darktable.conf, filename, config_override);
+  dt_conf_init(darktable.conf, darktablerc, config_override);
   g_slist_free_full(config_override, g_free);
 
   // set the interface language

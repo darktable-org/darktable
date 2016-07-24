@@ -19,9 +19,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/darktable.h"
 #include "common/colorlabels.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
@@ -33,36 +33,36 @@
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
-#include "common/imageio_jpeg.h"
-#include "common/imageio_png.h"
-#include "common/imageio_tiff.h"
-#include "common/imageio_pfm.h"
-#include "common/imageio_rgbe.h"
-#include "common/imageio_gm.h"
-#include "common/imageio_rawspeed.h"
 #include "common/image_compression.h"
+#include "common/imageio_gm.h"
+#include "common/imageio_jpeg.h"
+#include "common/imageio_pfm.h"
+#include "common/imageio_png.h"
+#include "common/imageio_rawspeed.h"
+#include "common/imageio_rgbe.h"
+#include "common/imageio_tiff.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "develop/blend.h"
 
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #include <magick/blob.h>
 #endif
 
+#include <assert.h>
+#include <glib/gstdio.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <assert.h>
 #include <string.h>
 #include <strings.h>
-#include <glib/gstdio.h>
 
 // load a full-res thumbnail:
 int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
@@ -722,13 +722,16 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
          && (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height))
             ? FALSE
             : high_quality;
-  const int width = high_quality_processing ? 0 : format_params->max_width;
-  const int height = high_quality_processing ? 0 : format_params->max_height;
+
+  const int width = format_params->max_width;
+  const int height = format_params->max_height;
   const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, max_scale) : 1.0;
   const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : 1.0;
   const double scale = fminf(scalex, scaley);
-  int processed_width = scale * pipe.processed_width + .5f;
-  int processed_height = scale * pipe.processed_height + .5f;
+
+  const int processed_width = scale * pipe.processed_width + .5f;
+  const int processed_height = scale * pipe.processed_height + .5f;
+
   const int bpp = format->bpp(format_params);
 
   dt_get_times(&start);
@@ -738,16 +741,6 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
      * if high quality processing was requested, downsampling will be done
      * at the very end of the pipe (just before border and watermark)
      */
-    const double scalex = format_params->max_width > 0
-                              ? fminf(format_params->max_width / (double)pipe.processed_width, max_scale)
-                              : 1.0;
-    const double scaley = format_params->max_height > 0
-                              ? fminf(format_params->max_height / (double)pipe.processed_height, max_scale)
-                              : 1.0;
-    const double scale = fminf(scalex, scaley);
-    processed_width = scale * pipe.processed_width + .5f;
-    processed_height = scale * pipe.processed_height + .5f;
-
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   }
   else
@@ -830,7 +823,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       { // !display_byteorder, need to swap:
         uint8_t *const buf8 = pipe.backbuf;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(processed_width, processed_height) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
         // just flip byte order
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)

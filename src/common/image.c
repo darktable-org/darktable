@@ -16,28 +16,28 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/image.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
-#include "common/image.h"
+#include "common/grouping.h"
+#include "common/history.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
-#include "common/grouping.h"
+#include "common/imageio_rawspeed.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
-#include "common/history.h"
-#include "common/imageio_rawspeed.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "control/jobs.h"
 #include "develop/lightroom.h"
+#include <assert.h>
 #include <math.h>
 #include <sqlite3.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
-#include <assert.h>
 #ifndef __WIN32__
 #include <glob.h>
 #endif

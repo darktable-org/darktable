@@ -39,19 +39,19 @@
 #include "views/view.h"
 #include "views/view_api.h"
 
+#include <assert.h>
+#include <dirent.h>
+#include <errno.h>
+#include <gdk/gdkkeysyms.h>
+#include <math.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <math.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
 #include <string.h>
 #include <strings.h>
-#include <errno.h>
-#include <assert.h>
-#include <gdk/gdkkeysyms.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 DT_MODULE(1)
 
@@ -148,20 +148,19 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_LIGHTTABLE;
 }
 
-typedef enum direction
-{
-  UP = 0,
-  DOWN = 1,
-  LEFT = 2,
-  RIGHT = 3,
-  ZOOM_IN = 4,
-  ZOOM_OUT = 5,
-  TOP = 6,
-  BOTTOM = 7,
-  PGUP = 8,
-  PGDOWN = 9,
-  CENTER = 10
-} direction;
+typedef enum dt_lighttable_direction_t {
+  DIRECTION_UP = 0,
+  DIRECTION_DOWN = 1,
+  DIRECTION_LEFT = 2,
+  DIRECTION_RIGHT = 3,
+  DIRECTION_ZOOM_IN = 4,
+  DIRECTION_ZOOM_OUT = 5,
+  DIRECTION_TOP = 6,
+  DIRECTION_BOTTOM = 7,
+  DIRECTION_PGUP = 8,
+  DIRECTION_PGDOWN = 9,
+  DIRECTION_CENTER = 10
+} dt_lighttable_direction_t;
 
 static void switch_layout_to(dt_library_t *lib, int new_layout)
 {
@@ -182,46 +181,46 @@ static void switch_layout_to(dt_library_t *lib, int new_layout)
   }
 }
 
-static void move_view(dt_library_t *lib, direction dir)
+static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
 {
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
 
   switch(dir)
   {
-    case UP:
+    case DIRECTION_UP:
     {
       if(lib->offset >= 1) lib->offset = lib->offset - iir;
     }
     break;
-    case DOWN:
+    case DIRECTION_DOWN:
     {
       lib->offset = lib->offset + iir;
       while(lib->offset >= lib->collection_count) lib->offset -= iir;
     }
     break;
-    case PGUP:
+    case DIRECTION_PGUP:
     {
       lib->offset -= (lib->max_rows - 1 ) * iir;
       while(lib->offset < 0) lib->offset += iir;
     }
     break;
-    case PGDOWN:
+    case DIRECTION_PGDOWN:
     {
       lib->offset += (lib->max_rows - 1 ) * iir;
       while(lib->offset >= lib->collection_count) lib->offset -= iir;
     }
     break;
-    case TOP:
+    case DIRECTION_TOP:
     {
       lib->offset = 0;
     }
     break;
-    case BOTTOM:
+    case DIRECTION_BOTTOM:
     {
       lib->offset = lib->collection_count - iir;
     }
     break;
-    case CENTER:
+    case DIRECTION_CENTER:
     {
       lib->offset -= lib->offset % iir;
     }
@@ -679,18 +678,18 @@ end_query_cache:
             // detect if the current movement need some extra movement (page adjust)
             if (current_row  == (int)(max_rows-1.5) && lib->key_jump_offset == iir)
               // going DOWN from last row
-              move_view(lib,DOWN);
+              move_view(lib, DIRECTION_DOWN);
             else if (current_row  == 0 && lib->key_jump_offset == iir*-1)
             {
               // going UP from first row
-              move_view(lib,UP);
+              move_view(lib, DIRECTION_UP);
             }
             else if (current_row == (int)(max_rows-1.5) && current_col ==  0 && lib->key_jump_offset == 1)
               // going RIGHT from last visible
-              move_view(lib,DOWN);
+              move_view(lib, DIRECTION_DOWN);
             else if (current_row == 0 && current_col ==  1 && lib->key_jump_offset == -1)
               // going LEFT from first visible
-              move_view(lib,UP);
+              move_view(lib, DIRECTION_UP);
             if (idx > -1 && idx < lib->collection_count && query_ids[idx])
             {
                 // offset is valid..we know where to jump
@@ -705,7 +704,7 @@ end_query_cache:
               if (lib->key_select) 
               {
                 // managing shift + movement
-                int direction = (lib->key_jump_offset > 0) ? RIGHT : LEFT ;
+                int direction = (lib->key_jump_offset > 0) ? DIRECTION_RIGHT : DIRECTION_LEFT;
                 if (lib->key_select_direction != direction ) 
                 {
                   lib->key_select_direction =  direction;
@@ -1438,7 +1437,7 @@ static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *ac
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(layout == 1)
-    move_view(lib, TOP);
+    move_view(lib, DIRECTION_TOP);
   else
     lib->offset = 0;
   dt_control_queue_redraw_center();
@@ -1453,7 +1452,7 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(layout == 1)
-    move_view(lib, BOTTOM);
+    move_view(lib, DIRECTION_BOTTOM);
   else
     lib->offset = 0x1fffffff;
   dt_control_queue_redraw_center();
@@ -1467,7 +1466,7 @@ static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   dt_library_t *lib = (dt_library_t *)self->data;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(layout == 1)
-    move_view(lib, PGUP);
+    move_view(lib, DIRECTION_PGUP);
   else
   {
     const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
@@ -1487,7 +1486,7 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(layout == 1)
   {
-    move_view(lib, PGDOWN);
+    move_view(lib, DIRECTION_PGDOWN);
   }
   else
   {
@@ -1506,7 +1505,7 @@ static gboolean realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == 1) move_view(lib, CENTER);
+  if(layout == 1) move_view(lib, DIRECTION_CENTER);
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1739,9 +1738,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   else if(layout == 1 && state == 0)
   {
     if(up)
-      move_view(lib, UP);
+      move_view(lib, DIRECTION_UP);
     else
-      move_view(lib, DOWN);
+      move_view(lib, DIRECTION_DOWN);
   }
   else
   {
@@ -2106,7 +2105,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     {
       if (zoom == 1)
       {
-        move_view(lib, UP);
+        move_view(lib, DIRECTION_UP);
         lib->using_arrows = 0;
       }
       else
@@ -2130,7 +2129,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     {
       if (zoom == 1)
       {
-        move_view(lib, DOWN);
+        move_view(lib, DIRECTION_DOWN);
         lib->using_arrows = 0;
       }
       else
@@ -2153,7 +2152,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     {
       if (zoom == 1)
       {
-        move_view(lib, UP);
+        move_view(lib, DIRECTION_UP);
         lib->using_arrows = 0;
       }
       else {
@@ -2174,7 +2173,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     {
       if (zoom == 1)
       {
-        move_view(lib, DOWN);
+        move_view(lib, DIRECTION_DOWN);
         lib->using_arrows = 0;
       }
       else

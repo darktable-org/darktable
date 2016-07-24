@@ -17,20 +17,20 @@
 */
 
 #ifdef HAVE_GRAPHICSMAGICK
-#include "common/darktable.h"
-#include "imageio.h"
 #include "imageio_gm.h"
-#include "develop/develop.h"
-#include "common/exif.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/exif.h"
 #include "control/conf.h"
+#include "develop/develop.h"
+#include "imageio.h"
 
+#include <assert.h>
+#include <inttypes.h>
+#include <magick/api.h>
 #include <memory.h>
 #include <stdio.h>
-#include <inttypes.h>
 #include <strings.h>
-#include <magick/api.h>
-#include <assert.h>
 
 
 // we only support images with certain filename extensions via GraphicsMagick;

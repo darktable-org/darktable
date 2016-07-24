@@ -16,9 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "bauhaus/bauhaus.h"
-#include "control/control.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -128,44 +128,43 @@ int legacy_params(
     void             *new_params,
     const int         new_version)
 {
-  static const float colorchecker_Lab[] =
-  {
-    39.19, 13.76,  14.29, // dark skin
-    65.18, 19.00,  17.32, // light skin
-    49.46, -4.23, -22.95, // blue sky
-    42.85,-13.33,  22.12, // foliage
-    55.18,  9.44, -24.94, // blue flower
-    70.36,-32.77,  -0.04, // bluish green  
-    62.92, 35.49,  57.10, // orange
-    40.75, 11.41, -46.03, // purple red
-    52.10, 48.11,  16.89, // moderate red  
-    30.67, 21.19, -20.81, // purple
-    73.08,-23.55,  56.97, // yellow green  
-    72.43, 17.48,  68.20, // orange yellow 
-    30.97, 12.67, -46.30, // blue
-    56.43,-40.66,  31.94, // green
-    43.40, 50.68,  28.84, // red
-    82.45,  2.41,  80.25, // yellow
-    51.98, 50.68, -14.84, // magenta
-    51.02,-27.63, -28.03, // cyan
-    95.97, -0.40,   1.24, // white
-    81.10, -0.83,  -0.43, // neutral 8
-    66.81, -1.08,  -0.70, // neutral 65
-    50.98, -0.19,  -0.30, // neutral 5
-    35.72, -0.69,  -1.11, // neutral 35
-    21.46,  0.06,  -0.95, // black
+  static const float colorchecker_Lab_v1[] = {
+    39.19, 13.76,  14.29,  // dark skin
+    65.18, 19.00,  17.32,  // light skin
+    49.46, -4.23,  -22.95, // blue sky
+    42.85, -13.33, 22.12,  // foliage
+    55.18, 9.44,   -24.94, // blue flower
+    70.36, -32.77, -0.04,  // bluish green
+    62.92, 35.49,  57.10,  // orange
+    40.75, 11.41,  -46.03, // purple red
+    52.10, 48.11,  16.89,  // moderate red
+    30.67, 21.19,  -20.81, // purple
+    73.08, -23.55, 56.97,  // yellow green
+    72.43, 17.48,  68.20,  // orange yellow
+    30.97, 12.67,  -46.30, // blue
+    56.43, -40.66, 31.94,  // green
+    43.40, 50.68,  28.84,  // red
+    82.45, 2.41,   80.25,  // yellow
+    51.98, 50.68,  -14.84, // magenta
+    51.02, -27.63, -28.03, // cyan
+    95.97, -0.40,  1.24,   // white
+    81.10, -0.83,  -0.43,  // neutral 8
+    66.81, -1.08,  -0.70,  // neutral 65
+    50.98, -0.19,  -0.30,  // neutral 5
+    35.72, -0.69,  -1.11,  // neutral 35
+    21.46, 0.06,   -0.95,  // black
   };
 
-  typedef struct dt_iop_colorchecker_params1_t
+  typedef struct dt_iop_colorchecker_params_v1_t
   {
     float target_L[24];
     float target_a[24];
     float target_b[24];
-  } dt_iop_colorchecker_params1_t;
+  } dt_iop_colorchecker_params_v1_t;
 
   if(old_version == 1 && new_version == 2)
   {
-    dt_iop_colorchecker_params1_t *p1 = (dt_iop_colorchecker_params1_t *)old_params;
+    dt_iop_colorchecker_params_v1_t *p1 = (dt_iop_colorchecker_params_v1_t *)old_params;
     dt_iop_colorchecker_params_t  *p2 = (dt_iop_colorchecker_params_t  *)new_params;
 
     p2->num_patches = 24;
@@ -174,9 +173,9 @@ int legacy_params(
       p2->target_L[k] = p1->target_L[k];
       p2->target_a[k] = p1->target_a[k];
       p2->target_b[k] = p1->target_b[k];
-      p2->source_L[k] = colorchecker_Lab[3*k+0];
-      p2->source_a[k] = colorchecker_Lab[3*k+1];
-      p2->source_b[k] = colorchecker_Lab[3*k+2];
+      p2->source_L[k] = colorchecker_Lab_v1[3 * k + 0];
+      p2->source_a[k] = colorchecker_Lab_v1[3 * k + 1];
+      p2->source_b[k] = colorchecker_Lab_v1[3 * k + 2];
     }
     return 0;
   }

@@ -32,10 +32,10 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 DT_MODULE_INTROSPECTION(3, dt_iop_colorzones_params_t)
 
@@ -784,7 +784,7 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   for(int i = 0; i < 3; i++)
   {
     // draw curves, selected last.
-    int ch = ((int)c->channel + i + 1) % 3;
+    ch = ((int)c->channel + i + 1) % 3;
     if(i == 2)
       cairo_set_source_rgba(cr, .7, .7, .7, 1.0);
     else
@@ -917,7 +917,6 @@ static gboolean colorzones_button_press(GtkWidget *widget, GdkEventButton *event
     // reset current curve
     dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
     dt_iop_colorzones_params_t *d = (dt_iop_colorzones_params_t *)self->default_params;
-    dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
     for(int k = 0; k < DT_IOP_COLORZONES_BANDS; k++)
     {
       p->equalizer_x[c->channel][k] = d->equalizer_x[c->channel][k];

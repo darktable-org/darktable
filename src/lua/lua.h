@@ -24,14 +24,14 @@
 /* these include are out of the ifdef to avoid compile errors when compiling with/without lua
    users that accidentally use it won't be affected by the ifdef USE_LUA
  */
-#include <glib.h>
 #include "common/dtpthread.h"
+#include <glib.h>
 
 #ifdef USE_LUA
+#include <lautoc.h>
+#include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
-#include <lauxlib.h>
-#include <lautoc.h>
 
 /**
   (0,+1)

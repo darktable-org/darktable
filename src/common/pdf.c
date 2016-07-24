@@ -28,14 +28,14 @@
 
 
 #define _XOPEN_SOURCE 700
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <strings.h>
-#include <zlib.h>
-#include <time.h>
 #include <errno.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <time.h>
+#include <zlib.h>
 
 #ifdef STANDALONE
 #define PACKAGE_STRING "darktable pdf library"

@@ -18,8 +18,8 @@
 #ifndef DTGTK_PAINT_H
 #define DTGTK_PAINT_H
 
-#include <gtk/gtk.h>
 #include <cairo.h>
+#include <gtk/gtk.h>
 
 #define CPF_USER_DATA 0x1000
 

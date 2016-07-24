@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 #include "colorchart.h"
 
 #define MAX_LINE_LENGTH 512

@@ -496,7 +496,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
   headers = curl_slist_append(headers, "Content-Type: application/atom+xml");
   headers = curl_slist_append(headers, authHeader);
 
-  snprintf(uri, sizeof(uri), "https://picasaweb.google.com/data/feed/api/user/default");
+  g_strlcpy(uri, "https://picasaweb.google.com/data/feed/api/user/default", sizeof(uri));
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
 #ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
@@ -690,7 +690,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       }
 
       // Let's update the photo
-      struct curl_slist *headers = NULL;
+      headers = NULL;
       headers = curl_slist_append(headers, "Content-Type: application/atom+xml");
       headers = curl_slist_append(headers, "If-Match: *");
       headers = curl_slist_append(headers, "Expect:");
@@ -1201,7 +1201,6 @@ static gboolean ui_authenticate(dt_storage_picasa_gui_data_t *ui)
 
       // add account to user list and select it
       GtkListStore *model = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_username));
-      GtkTreeIter iter;
       gboolean r;
       gchar *uid;
 

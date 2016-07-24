@@ -16,12 +16,12 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/common.h"
-#include "lua/widget/common.h"
-#include "lua/types.h"
-#include "lua/modules.h"
-#include "lua/call.h"
 #include "control/control.h"
+#include "lua/call.h"
+#include "lua/modules.h"
+#include "lua/types.h"
+#include "lua/widget/common.h"
+#include "lua/widget/common.h"
 #include "stdarg.h"
 /**
   TODO
@@ -31,6 +31,8 @@
 dt_ui_section_label : make new lua widget
 widget names : implement for CSS ?
   */
+
+#pragma GCC diagnostic ignored "-Wshadow"
 
 dt_lua_widget_type_t widget_type = {
   .name = "widget",

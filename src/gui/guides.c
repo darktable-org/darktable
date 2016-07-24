@@ -18,9 +18,9 @@
 
 #include <glib.h>
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "gui/guides.h"
-#include "bauhaus/bauhaus.h"
 
 typedef struct dt_QRect_t
 {
@@ -162,11 +162,11 @@ static void dt_guides_draw_metering(cairo_t *cr, const float x, const float y, c
 
   // small crosses
   const float length_cross = length_short * .5, cross_x_step = w / CROSSES, cross_y_step = h / CROSSES;
-  for(int x = 1; x < CROSSES; x++)
-    for(int y = 1; y < CROSSES; y++)
-      if(x != CROSSES / 2 && y != CROSSES / 2)
+  for(int cx = 1; cx < CROSSES; cx++)
+    for(int cy = 1; cy < CROSSES; cy++)
+      if(cx != CROSSES / 2 && cy != CROSSES / 2)
       {
-        float _x = x * cross_x_step, _y = y * cross_y_step;
+        float _x = cx * cross_x_step, _y = cy * cross_y_step;
         dt_draw_line(cr, _x - length_cross, _y, _x + length_cross, _y);
         dt_draw_line(cr, _x, _y - length_cross, _x, _y + length_cross);
       }

@@ -24,13 +24,13 @@
 #endif
 
 #include "chart/thinplate.h"
-#include "iop/svd.h"
 #include "chart/deltaE.h"
+#include "iop/svd.h"
 
-#include <float.h>
-#include <string.h>
 #include <assert.h>
+#include <float.h>
 #include <stdlib.h>
+#include <string.h>
 
 // #define REPLACEMENT // either broken code or doesn't help at all
 // #define EXACT       // use full solve instead of dot in inner loop

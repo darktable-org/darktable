@@ -17,9 +17,9 @@
 */
 #ifndef DT_LUA_EVENTS_H
 #define DT_LUA_EVENTS_H
-#include <lualib.h>
-#include <lua.h>
 #include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
 
 
 /**

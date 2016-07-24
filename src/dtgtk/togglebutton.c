@@ -15,11 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <string.h>
 #include "togglebutton.h"
+#include "bauhaus/bauhaus.h"
 #include "button.h"
 #include "gui/gtk.h"
-#include "bauhaus/bauhaus.h"
+#include <string.h>
 
 static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass);
 static void _togglebutton_init(GtkDarktableToggleButton *slider);

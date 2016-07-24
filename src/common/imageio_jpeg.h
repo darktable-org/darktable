@@ -18,9 +18,9 @@
 #ifndef DT_IMAGEIO_JPEG_H
 #define DT_IMAGEIO_JPEG_H
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
 // this fixes a rather annoying, long time bug in libjpeg :(
 #undef HAVE_STDLIB_H
 #undef HAVE_STDDEF_H
@@ -28,9 +28,9 @@
 #undef HAVE_STDLIB_H
 #undef HAVE_STDDEF_H
 
+#include "common/colorspaces.h"
 #include "common/image.h"
 #include "common/mipmap_cache.h"
-#include "common/colorspaces.h"
 
 typedef struct dt_imageio_jpeg_t
 {

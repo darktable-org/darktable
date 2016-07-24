@@ -23,12 +23,12 @@
 #include "config.h"
 #endif
 
-#include <stdlib.h>
-#include <math.h>
 #include "common/curve_tools.h"
 #include <cairo.h>
-#include <stdint.h>
 #include <glib.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 #ifndef M_PI
 #define M_PI 3.141592654

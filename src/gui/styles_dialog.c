@@ -18,14 +18,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/debug.h"
 #include "common/darktable.h"
-#include "common/styles.h"
+#include "common/debug.h"
 #include "common/history.h"
-#include "develop/imageop.h"
+#include "common/styles.h"
 #include "control/control.h"
-#include "gui/styles.h"
+#include "develop/imageop.h"
 #include "gui/gtk.h"
+#include "gui/styles.h"
 
 /* creates a styles dialog, if edit equals true id=styleid else id=imgid */
 static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid);
@@ -335,7 +335,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   if(edit)
   {
-    GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
+    renderer = gtk_cell_renderer_toggle_new();
     gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
     g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_ENABLED);
     g_signal_connect(renderer, "toggled", G_CALLBACK(_gui_styles_item_new_toggled), sd);
@@ -432,12 +432,12 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
           }
         }
 
-        gchar name[256] = { 0 };
-        g_snprintf(name, sizeof(name), "%s", item->name);
+        gchar iname[256] = { 0 };
+        g_snprintf(iname, sizeof(iname), "%s", item->name);
 
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter, DT_STYLE_ITEMS_COL_ENABLED, enabled,
-                           DT_STYLE_ITEMS_COL_NAME, name, DT_STYLE_ITEMS_COL_NUM, item->num, -1);
+                           DT_STYLE_ITEMS_COL_NAME, iname, DT_STYLE_ITEMS_COL_NUM, item->num, -1);
 
         has_item = TRUE;
 

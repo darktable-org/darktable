@@ -135,11 +135,19 @@ endif()
 #
 # Find all other required libraries for building
 #
+# GTK3 does pull glib, but this allows us to check for the version
+find_package(Glib 2.40 REQUIRED)
+add_definitions("-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_40")
+add_definitions("-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_MIN_REQUIRED")
+include_directories(SYSTEM ${Glib_INCLUDE_DIRS})
+list(APPEND LIBS ${Glib_LIBRARIES})
+
 # GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
-find_package(GTK3 3.10 REQUIRED) # actually it's 3.12, but Ubuntu 14.04 LTS only ships 3.10, so we #define the rest
-include_directories(${GTK3_INCLUDE_DIRS})
+find_package(GTK3 3.14 REQUIRED)
+add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_14")
+#add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
+include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
-add_definitions(${GTK3_DEFINITIONS})
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
@@ -228,18 +236,13 @@ endif(USE_FLICKR)
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
-  if(OPENJPEG_FOUND)
-    list(APPEND SOURCES "common/imageio_j2k.c")
-    include_directories(SYSTEM ${OPENJPEG_INCLUDE_DIRS})
-    list(APPEND LIBS ${OPENJPEG_LIBRARIES})
-    add_definitions(${OPENJPEG_DEFINITIONS})
+  if(OpenJPEG_FOUND)
     add_definitions("-DHAVE_OPENJPEG")
-    if(OPENJPEG_VERSION VERSION_LESS "1.5.0")
-      message(STATUS "OpenJPEG version ${OPENJPEG_VERSION} found. Only 1.5 and newer support reading of icc profiles.")
-    else()
-      add_definitions("-DHAVE_OPENJPEG_ICC")
-    endif()
-  endif(OPENJPEG_FOUND)
+    list(APPEND SOURCES "common/imageio_j2k.c")
+
+    include_directories(SYSTEM ${OpenJPEG_INCLUDE_DIRS})
+    list(APPEND LIBS ${OpenJPEG_LIBRARIES})
+  endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
 
 #
@@ -640,8 +643,13 @@ endif()
 #
 if(NOT SOURCE_PACKAGE AND NOT APPLE)
   # apple build fails on deprecated warnings..
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
+
+  if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND GCC_VERSION VERSION_LESS 5.0))
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=shadow")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=shadow")
+  endif()
 elseif(SOURCE_PACKAGE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")

@@ -15,9 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/common.h"
-#include "lua/types.h"
 #include "gui/gtk.h"
+#include "lua/types.h"
+#include "lua/widget/common.h"
 
 static void container_init(lua_State* L);
 dt_lua_widget_type_t container_type = {

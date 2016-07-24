@@ -19,8 +19,8 @@
 #ifndef INTERPOLATION_H
 #define INTERPOLATION_H
 
-#include "develop/pixelpipe_hb.h"
 #include "common/opencl.h"
+#include "develop/pixelpipe_hb.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>

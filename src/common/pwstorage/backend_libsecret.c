@@ -26,9 +26,9 @@
 
 #include "version.h"
 
-#include <libsecret/secret.h>
 #include <glib.h>
 #include <json-glib/json-glib.h>
+#include <libsecret/secret.h>
 
 // change this to SECRET_COLLECTION_SESSION for non-permanent storage
 #define SECRET_COLLECTION_DARKTABLE SECRET_COLLECTION_DEFAULT

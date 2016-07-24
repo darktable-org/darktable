@@ -18,9 +18,9 @@
 #ifndef DT_CONTROL_JOBS_CONTROL_H
 #define DT_CONTROL_JOBS_CONTROL_H
 
-#include <inttypes.h>
-#include "control/control.h"
 #include "common/imageio_module.h"
+#include "control/control.h"
+#include <inttypes.h>
 
 #ifdef HAVE_PRINT
 #include "common/cups_print.h"

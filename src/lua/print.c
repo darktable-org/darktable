@@ -16,9 +16,9 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/lua.h"
 #include "common/darktable.h"
 #include "control/control.h"
+#include "lua/lua.h"
 
 static int lua_print(lua_State *L)
 {

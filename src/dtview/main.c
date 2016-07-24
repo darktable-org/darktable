@@ -16,16 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/collection.h"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/collection.h"
-#include "common/points.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/points.h"
 #include "control/conf.h"
-#include "common/colorspaces.h"
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -33,9 +33,9 @@
 #include <stdlib.h>
 double drand48(void);
 void srand48(long int);
+#include <inttypes.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <inttypes.h>
 
 int running;
 int width, height;
@@ -346,14 +346,14 @@ int main(int argc, char *arg[])
       }
       break;
     }
-    for(int k = 0; k <= 18; k++)
+    for(int i = 0; i <= 18; i++)
     {
-      update(k);
+      update(i);
 
       struct timespec time = { 0, 10000000L };
       nanosleep(&time, NULL);
     }
-    for(int k = 0; k < 100; k++)
+    for(int i = 0; i < 100; i++)
     {
       pump_events();
       if(!running) break;

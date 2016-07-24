@@ -16,17 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glib.h>
-#include <stdio.h>
 #include <cups/cups.h>
 #include <cups/ppd.h>
+#include <glib.h>
+#include <stdio.h>
 
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/pdf.h"
-#include "cups_print.h"
 #include "control/jobs/control_jobs.h"
+#include "cups_print.h"
 
 typedef struct dt_prtctl_t
 {
@@ -558,42 +558,42 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
 
   switch (prt->page.alignment)
   {
-  case top_left:
-    *ix = bx;
-    *iy = by;
-    break;
-  case top:
-    *ix = bx + (*awidth - *iwidth) / 2;
-    *iy = by;
-    break;
-  case top_right:
-    *ix = br - *iwidth;
-    *iy = by;
-    break;
-  case left:
-    *ix = bx;
-    *iy = by + (*aheight - *iheight) / 2;
-    break;
-  case center:
-    *ix = bx + (*awidth - *iwidth) / 2;
-    *iy = by + (*aheight - *iheight) / 2;
-    break;
-  case right:
-    *ix = br - *iwidth;
-    *iy = by + (*aheight - *iheight) / 2;
-    break;
-  case bottom_left:
-    *ix = bx;
-    *iy = bb - *iheight;
-    break;
-  case bottom:
-    *ix = bx + (*awidth - *iwidth) / 2;
-    *iy = bb - *iheight;
-    break;
-  case bottom_right:
-    *ix = br - *iwidth;
-    *iy = bb - *iheight;
-    break;
+    case ALIGNMENT_TOP_LEFT:
+      *ix = bx;
+      *iy = by;
+      break;
+    case ALIGNMENT_TOP:
+      *ix = bx + (*awidth - *iwidth) / 2;
+      *iy = by;
+      break;
+    case ALIGNMENT_TOP_RIGHT:
+      *ix = br - *iwidth;
+      *iy = by;
+      break;
+    case ALIGNMENT_LEFT:
+      *ix = bx;
+      *iy = by + (*aheight - *iheight) / 2;
+      break;
+    case ALIGNMENT_CENTER:
+      *ix = bx + (*awidth - *iwidth) / 2;
+      *iy = by + (*aheight - *iheight) / 2;
+      break;
+    case ALIGNMENT_RIGHT:
+      *ix = br - *iwidth;
+      *iy = by + (*aheight - *iheight) / 2;
+      break;
+    case ALIGNMENT_BOTTOM_LEFT:
+      *ix = bx;
+      *iy = bb - *iheight;
+      break;
+    case ALIGNMENT_BOTTOM:
+      *ix = bx + (*awidth - *iwidth) / 2;
+      *iy = bb - *iheight;
+      break;
+    case ALIGNMENT_BOTTOM_RIGHT:
+      *ix = br - *iwidth;
+      *iy = bb - *iheight;
+      break;
   }
 }
 

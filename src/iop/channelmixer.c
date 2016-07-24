@@ -31,11 +31,11 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <stdlib.h>
 #include <math.h>
-#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 /** Crazy presets b&w ...
@@ -182,7 +182,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         hsl2rgb(out, h, s, l);
       }
       else // no HSL copt in[] to out[]
-        for(int i = 0; i < 3; i++) out[i] = in[i];
+        for(int c = 0; c < 3; c++) out[c] = in[c];
 
       // Calculate graymix and RGB mix
       graymix = CLIP((out[0] * data->red[CHANNEL_GRAY]) + (out[1] * data->green[CHANNEL_GRAY])

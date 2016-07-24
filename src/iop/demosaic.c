@@ -31,9 +31,9 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
+#include <math.h>
 #include <memory.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
 
 // we assume people have -msee support.
@@ -344,9 +344,11 @@ static void color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const
   {
     for(int c = 0; c < 3; c += 2)
     {
-      float *outp = out;
-      for(int j = 0; j < roi_out->height; j++)
-        for(int i = 0; i < roi_out->width; i++, outp += 4) outp[3] = outp[c];
+      {
+        float *outp = out;
+        for(int j = 0; j < roi_out->height; j++)
+          for(int i = 0; i < roi_out->width; i++, outp += 4) outp[3] = outp[c];
+      }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(out, c)
 #endif
@@ -3214,11 +3216,11 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       size_t region[] = { edges[n][2], edges[n][3], 1 };
 
       // reserve input buffer for image edge
-      cl_mem dev_edge_in = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float));
+      dev_edge_in = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float));
       if(dev_edge_in == NULL) goto error;
 
       // reserve output buffer for VNG processing of edge
-      cl_mem dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], 4 * sizeof(float));
+      dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], 4 * sizeof(float));
       if(dev_edge_out == NULL) goto error;
 
       // copy edge to input buffer

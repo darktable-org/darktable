@@ -22,8 +22,8 @@
 #include <gtk/gtk.h>
 
 #include "develop/imageop.h"
-#include "views/view.h"
 #include "libs/lib.h"
+#include "views/view.h"
 
 typedef struct dt_accel_t
 {
