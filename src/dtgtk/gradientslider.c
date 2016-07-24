@@ -46,6 +46,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
 static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButton *event);
 static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event);
 static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll *event);
+static gboolean _gradient_slider_key_press_event(GtkWidget *widget, GdkEventKey *event);
 
 enum
 {
@@ -259,6 +260,9 @@ static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion
 
     gtk_widget_queue_draw(widget);
   }
+
+  if(gslider->selected != -1) gtk_widget_grab_focus(widget);
+
   return TRUE;
 }
 
@@ -291,26 +295,91 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
   return TRUE;
 }
 
-static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll *event)
+static gboolean _gradient_slider_add_delta_internal(GtkWidget *widget, float delta, guint state)
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
-  if(gslider->selected != -1)
+
+  if(gslider->selected == -1) return TRUE;
+
+  float multiplier;
+
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((state & modifiers) == GDK_SHIFT_MASK)
   {
-    gdouble inc = gslider->increment;
-
-    gdouble newvalue
-        = gslider->position[gslider->selected]
-          + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT) ? inc : -inc);
-
-    gslider->position[gslider->selected]
-        = newvalue > gslider->max ? gslider->max : (newvalue < gslider->min ? gslider->min : newvalue);
-
-    gtk_widget_queue_draw(widget);
-    g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
+    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
   }
+  else if((state & modifiers) == GDK_CONTROL_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+  }
+  else
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+  }
+
+  delta *= multiplier;
+
+  gdouble newvalue = gslider->position[gslider->selected] + delta;
+
+  gslider->position[gslider->selected] = CLAMP(newvalue, gslider->min, gslider->max);
+
+  gtk_widget_queue_draw(widget);
+  g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
+
   return TRUE;
 }
 
+static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll *event)
+{
+  GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
+
+  if(gslider->selected == -1) return TRUE;
+
+  int handled = 0;
+  float delta = 0.0f;
+
+  if(event->direction == GDK_SCROLL_UP)
+  {
+    handled = 1;
+    delta = gslider->increment;
+  }
+  else if(event->direction == GDK_SCROLL_DOWN)
+  {
+    handled = 1;
+    delta = -gslider->increment;
+  }
+
+  if(!handled) return TRUE;
+
+  return _gradient_slider_add_delta_internal(widget, delta, event->state);
+}
+
+static gboolean _gradient_slider_key_press_event(GtkWidget *widget, GdkEventKey *event)
+{
+  GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
+
+  if(gslider->selected == -1) return TRUE;
+
+  int handled = 0;
+  float delta = 0.0f;
+
+  if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up || event->keyval == GDK_KEY_Right
+     || event->keyval == GDK_KEY_KP_Right)
+  {
+    handled = 1;
+    delta = gslider->increment;
+  }
+  else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down || event->keyval == GDK_KEY_Left
+          || event->keyval == GDK_KEY_KP_Left)
+  {
+    handled = 1;
+    delta = -gslider->increment;
+  }
+
+  if(!handled) return TRUE;
+
+  return _gradient_slider_add_delta_internal(widget, delta, event->state);
+}
 
 static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
 {
@@ -326,6 +395,7 @@ static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
   widget_class->button_release_event = _gradient_slider_button_release;
   widget_class->motion_notify_event = _gradient_slider_motion_notify;
   widget_class->scroll_event = _gradient_slider_scroll_event;
+  widget_class->key_press_event = _gradient_slider_key_press_event;
 
   _signals[VALUE_CHANGED] = g_signal_new("value-changed", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0,
                                          NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
@@ -361,6 +431,8 @@ static void _gradient_slider_realize(GtkWidget *widget)
                           | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                           | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK;
   attributes_mask = GDK_WA_X | GDK_WA_Y;
+
+  gtk_widget_set_can_focus(GTK_WIDGET(widget), TRUE);
 
   gtk_widget_set_window(widget,
                         gdk_window_new(gtk_widget_get_parent_window(widget), &attributes, attributes_mask));
