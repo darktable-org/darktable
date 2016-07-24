@@ -632,6 +632,35 @@ static inline int _add_node(dt_iop_basecurve_node_t *basecurve, int *nodes, floa
   return selected;
 }
 
+static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widget)
+{
+  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+
+  int ch = 0;
+  int nodes = p->basecurve_nodes[ch];
+  dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
+
+  if(nodes <= 2) return;
+
+  const float mx = basecurve[c->selected].x;
+
+  // delete vertex if order has changed
+  // for all points, x coordinate of point must be strictly larger than
+  // the x coordinate of the previous point
+  if((c->selected > 0 && (basecurve[c->selected - 1].x >= mx))
+     || (c->selected < nodes - 1 && (basecurve[c->selected + 1].x <= mx)))
+  {
+    for(int k = c->selected; k < nodes - 1; k++)
+    {
+      basecurve[k].x = basecurve[k + 1].x;
+      basecurve[k].y = basecurve[k + 1].y;
+    }
+    c->selected = -2; // avoid re-insertion of that point immediately after this
+    p->basecurve_nodes[ch]--;
+  }
+}
+
 static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -660,19 +689,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
       basecurve[c->selected].x = linx;
       basecurve[c->selected].y = liny;
 
-      // delete vertex if order has changed:
-      if(nodes > 2)
-        if((c->selected > 0 && basecurve[c->selected - 1].x >= linx)
-           || (c->selected < nodes - 1 && basecurve[c->selected + 1].x <= linx))
-        {
-          for(int k = c->selected; k < nodes - 1; k++)
-          {
-            basecurve[k].x = basecurve[k + 1].x;
-            basecurve[k].y = basecurve[k + 1].y;
-          }
-          c->selected = -2; // avoid re-insertion of that point immediately after this
-          p->basecurve_nodes[ch]--;
-        }
+      dt_iop_basecurve_sanity_check(self, widget);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
     else if(nodes < MAXNODES && c->selected >= -1)
@@ -837,6 +854,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
 
   basecurve[c->selected].x = CLAMP(basecurve[c->selected].x + dx, 0.0f, 1.0f);
   basecurve[c->selected].y = CLAMP(basecurve[c->selected].y + dy, 0.0f, 1.0f);
+
+  dt_iop_basecurve_sanity_check(self, widget);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(widget);
