@@ -720,6 +720,39 @@ static void pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
   dt_iop_request_focus(self);
 }
 
+static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widget)
+{
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+
+  int ch = c->channel;
+  int nodes = p->tonecurve_nodes[ch];
+  dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
+  int autoscale_ab = p->tonecurve_autoscale_ab;
+
+  // if autoscale_ab is on: do not modify a and b curves
+  if((autoscale_ab != s_scale_manual) && ch != ch_L) return;
+
+  if(nodes <= 2) return;
+
+  const float mx = tonecurve[c->selected].x;
+
+  // delete vertex if order has changed
+  // for all points, x coordinate of point must be strictly larger than
+  // the x coordinate of the previous point
+  if((c->selected > 0 && (tonecurve[c->selected - 1].x >= mx))
+     || (c->selected < nodes - 1 && (tonecurve[c->selected + 1].x <= mx)))
+  {
+    for(int k = c->selected; k < nodes - 1; k++)
+    {
+      tonecurve[k].x = tonecurve[k + 1].x;
+      tonecurve[k].y = tonecurve[k + 1].y;
+    }
+    c->selected = -2; // avoid re-insertion of that point immediately after this
+    p->tonecurve_nodes[ch]--;
+  }
+}
+
 static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
 {
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
@@ -749,6 +782,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
 
   tonecurve[c->selected].x = CLAMP(tonecurve[c->selected].x + dx, 0.0f, 1.0f);
   tonecurve[c->selected].y = CLAMP(tonecurve[c->selected].y + dy, 0.0f, 1.0f);
+
+  dt_iop_tonecurve_sanity_check(self, widget);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(widget);
@@ -1272,19 +1307,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
       tonecurve[c->selected].x = mx;
       tonecurve[c->selected].y = my;
 
-      // delete vertex if order has changed:
-      if(nodes > 2)
-        if((c->selected > 0 && tonecurve[c->selected - 1].x >= mx)
-           || (c->selected < nodes - 1 && tonecurve[c->selected + 1].x <= mx))
-        {
-          for(int k = c->selected; k < nodes - 1; k++)
-          {
-            tonecurve[k].x = tonecurve[k + 1].x;
-            tonecurve[k].y = tonecurve[k + 1].y;
-          }
-          c->selected = -2; // avoid re-insertion of that point immediately after this
-          p->tonecurve_nodes[ch]--;
-        }
+      dt_iop_tonecurve_sanity_check(self, widget);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
     else if(nodes < DT_IOP_TONECURVE_MAXNODES && c->selected >= -1)
