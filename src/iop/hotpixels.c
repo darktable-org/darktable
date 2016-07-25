@@ -248,7 +248,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   {
     const float *in = (float *)i + (size_t)width * row + 2;
     float *out = (float *)o + (size_t)width * row + 2;
-    for(int col = 2; col < width - 1; col++, in++, out++)
+    for(int col = 2; col < width - 2; col++, in++, out++)
     {
       float mid = *in * multiplier;
       if(*in > threshold)
