@@ -35,11 +35,19 @@ typedef enum _iop_operator_t { OPERATOR_LIGHTNESS, OPERETOR_APPARENT_GRAYSCALE }
 typedef struct dt_iop_bw_params_t
 {
   _iop_operator_t operator;
+  struct
+  {
+    int adapting_luminance;
+  } apparent;
 } dt_iop_bw_params_t;
 
 typedef struct dt_iop_bw_gui_data_t
 {
   GtkWidget *operator;
+  struct
+  {
+    GtkWidget *adapting_luminance;
+  } apparent;
 } dt_iop_bw_gui_data_t;
 
 typedef struct dt_iop_bw_global_data_t
@@ -86,13 +94,15 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
 #define PI atan2f(0, -1)
 
   const int ch = piece->colors;
+  dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
 
   const float d50[3] = { 0.9642f, 1.0f, 0.8249f }; // D50 white point
   // u' and v' of the white point, Luv color space.
   const float uv_prime_c[2] = { (4.0f * d50[0]) / (d50[0] + 15.0f * d50[1] + 3.0f * d50[2]),
                                 (9.0f * d50[1]) / (d50[0] + 15.0f * d50[1] + 3.0f * d50[2]) };
   // dependency of the adapting-luminance onto the Helmholtz-Kohlrausch effect
-  const float k_br = 0.2717f * (6.469f + 6.362f * powf(20.0f, 0.4495f)) / (6.469f + powf(20.0f, 0.4495f));
+  const float k_br = 0.2717f * (6.469f + 6.362f * powf(d->apparent.adapting_luminance, 0.4495f))
+                     / (6.469f + powf(d->apparent.adapting_luminance, 0.4495f));
 
   float XYZ[3];
   float uv_prime[2]; // as u', v', but for the actual color of the image.
@@ -156,7 +166,7 @@ void reload_defaults(dt_iop_module_t *module)
 {
   module->default_enabled = 0;
 
-  dt_iop_bw_params_t tmp = (dt_iop_bw_params_t){ OPERETOR_APPARENT_GRAYSCALE };
+  dt_iop_bw_params_t tmp = (dt_iop_bw_params_t){ OPERETOR_APPARENT_GRAYSCALE, { 20 } };
   memcpy(module->params, &tmp, sizeof(dt_iop_bw_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bw_params_t));
 }
@@ -195,8 +205,27 @@ static void operator_callback(GtkWidget *combobox, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
+  dt_iop_bw_gui_data_t *g = (dt_iop_bw_gui_data_t *)self->gui_data;
+
   dt_iop_bw_params_t *p = (dt_iop_bw_params_t *)self->params;
   p->operator= dt_bauhaus_combobox_get(combobox);
+
+  gtk_widget_set_visible(g->apparent.adapting_luminance, FALSE);
+  if(p->operator== OPERETOR_APPARENT_GRAYSCALE)
+  {
+    gtk_widget_set_visible(g->apparent.adapting_luminance, TRUE);
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void apparent_adapting_luminance(GtkWidget *luminance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+
+  dt_iop_bw_params_t *p = (dt_iop_bw_params_t *)self->params;
+  p->apparent.adapting_luminance = dt_bauhaus_slider_get(luminance);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -205,7 +234,15 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_bw_gui_data_t *g = (dt_iop_bw_gui_data_t *)self->gui_data;
   dt_iop_bw_params_t *p = (dt_iop_bw_params_t *)self->params;
+
   dt_bauhaus_combobox_set(g->operator, p->operator);
+  dt_bauhaus_slider_set(g->apparent.adapting_luminance, p->apparent.adapting_luminance);
+
+  gtk_widget_set_visible(g->apparent.adapting_luminance, FALSE);
+  if(p->operator== OPERETOR_APPARENT_GRAYSCALE)
+  {
+    gtk_widget_set_visible(g->apparent.adapting_luminance, TRUE);
+  }
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -215,16 +252,24 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  /* operator */
+  /* operator combobox */
   g->operator= dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->operator, NULL, _("operator"));
-
   dt_bauhaus_combobox_add(g->operator, _("lightness"));
   dt_bauhaus_combobox_add(g->operator, _("apparent grayscale"));
-
   gtk_widget_set_tooltip_text(g->operator, _("method for conversion to grayscale"));
   g_signal_connect(G_OBJECT(g->operator), "value-changed", G_CALLBACK(operator_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->operator), TRUE, TRUE, 0);
+
+  /* operator apparent grayscale */
+
+  g->apparent.adapting_luminance = dt_bauhaus_slider_new_with_range(self, 1, 1000, 1, 20, 0);
+  dt_bauhaus_widget_set_label(g->apparent.adapting_luminance, NULL, _("ambient luminance"));
+  gtk_widget_set_tooltip_text(g->apparent.adapting_luminance,
+                              _("Overall lightness. Darker image for small values, brighter for large vaules."));
+  g_signal_connect(G_OBJECT(g->apparent.adapting_luminance), "value-changed",
+                   G_CALLBACK(apparent_adapting_luminance), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->apparent.adapting_luminance, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
