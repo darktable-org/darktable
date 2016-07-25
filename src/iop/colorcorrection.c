@@ -249,6 +249,7 @@ static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventB
 static gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
                                                     gpointer user_data);
 static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
+static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -265,8 +266,9 @@ void gui_init(struct dt_iop_module_t *self)
                                                      "use mouse wheel to change saturation."));
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                             | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK | GDK_KEY_PRESS_MASK);
+  gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_colorcorrection_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_colorcorrection_button_press),
                    self);
@@ -275,6 +277,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_colorcorrection_leave_notify),
                    self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_colorcorrection_scrolled), self);
+  g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_colorcorrection_key_press), self);
 
   g->slider = dt_bauhaus_slider_new_with_range(self, -3.0f, 3.0f, 0.01f, 1.0f, 2);
   gtk_box_pack_start(GTK_BOX(self->widget), g->slider, TRUE, TRUE, 0);
@@ -422,6 +425,7 @@ static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEvent
     else if(disthi < thrs * thrs && disthi <= distlo)
       g->selected = 2;
   }
+  if(g->selected > 0) gtk_widget_grab_focus(widget);
   gtk_widget_queue_draw(self->widget);
   return TRUE;
 }
@@ -474,6 +478,77 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
   if(event->direction == GDK_SCROLL_DOWN && p->saturation < 3.0) p->saturation -= 0.1;
   dt_bauhaus_slider_set(g->slider, p->saturation);
   gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
+#define COLORCORRECTION_DEFAULT_STEP (0.5f)
+
+static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
+  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
+  if(g->selected < 1) return FALSE;
+
+  int handled = 0;
+  float dx = 0.0f, dy = 0.0f;
+  if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
+  {
+    handled = 1;
+    dy = COLORCORRECTION_DEFAULT_STEP;
+  }
+  else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
+  {
+    handled = 1;
+    dy = -COLORCORRECTION_DEFAULT_STEP;
+  }
+  else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
+  {
+    handled = 1;
+    dx = COLORCORRECTION_DEFAULT_STEP;
+  }
+  else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
+  {
+    handled = 1;
+    dx = -COLORCORRECTION_DEFAULT_STEP;
+  }
+
+  if(!handled) return TRUE;
+
+  float multiplier;
+
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((event->state & modifiers) == GDK_SHIFT_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+  }
+  else if((event->state & modifiers) == GDK_CONTROL_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+  }
+  else
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+  }
+
+  dx *= multiplier;
+  dy *= multiplier;
+
+  switch(g->selected)
+  {
+    case 1: // only set lo
+      p->loa = CLAMP(p->loa + dx, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+      p->lob = CLAMP(p->lob + dy, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+      break;
+    case 2: // only set hi
+      p->hia = CLAMP(p->hia + dx, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+      p->hib = CLAMP(p->hib + dy, -DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX);
+      break;
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gtk_widget_queue_draw(widget);
+
   return TRUE;
 }
 

@@ -649,6 +649,7 @@ void dt_bauhaus_cleanup()
 static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
+static gboolean dt_bauhaus_slider_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 
@@ -945,11 +946,15 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->timeout_handle = 0;
   d->callback = _default_linear_callback;
 
+  gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_PRESS_MASK);
+  gtk_widget_set_can_focus(GTK_WIDGET(w), TRUE);
+
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(dt_bauhaus_slider_button_press),
                    (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(dt_bauhaus_slider_button_release),
                    (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "scroll-event", G_CALLBACK(dt_bauhaus_slider_scroll), (gpointer)NULL);
+  g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(dt_bauhaus_slider_key_press), (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(dt_bauhaus_slider_motion_notify),
                    (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "leave-notify-event", G_CALLBACK(dt_bauhaus_slider_leave_notify),
@@ -1793,24 +1798,84 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   gtk_widget_grab_focus(darktable.bauhaus->popup_area);
 }
 
+static gboolean dt_bauhaus_slider_add_delta_internal(GtkWidget *widget, float delta, guint state)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  float multiplier;
+
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((state & modifiers) == GDK_SHIFT_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+  }
+  else if((state & modifiers) == GDK_CONTROL_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+  }
+  else
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+  }
+
+  delta *= multiplier;
+
+  if(w->module) dt_iop_request_focus(w->module);
+
+  dt_bauhaus_slider_set_normalized(w, d->pos + delta);
+
+  return TRUE;
+}
+
 static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  int handled = 0;
+  float delta = 0.0f;
   if(event->direction == GDK_SCROLL_UP)
   {
-    if(w->module) dt_iop_request_focus(w->module);
-    dt_bauhaus_slider_set_normalized(w, d->pos + d->scale / 5.0f);
-    return TRUE;
+    handled = 1;
+    delta = d->scale / 5.0f;
   }
   else if(event->direction == GDK_SCROLL_DOWN)
   {
-    if(w->module) dt_iop_request_focus(w->module);
-    dt_bauhaus_slider_set_normalized(w, d->pos - d->scale / 5.0f);
-    return TRUE;
+    handled = 1;
+    delta = -d->scale / 5.0f;
   }
-  return FALSE;
+
+  if(!handled) return FALSE;
+
+  return dt_bauhaus_slider_add_delta_internal(widget, delta, event->state);
+}
+
+static gboolean dt_bauhaus_slider_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  int handled = 0;
+  float delta = 0.0f;
+  if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up || event->keyval == GDK_KEY_Right
+     || event->keyval == GDK_KEY_KP_Right)
+  {
+    handled = 1;
+    delta = d->scale / 5.0f;
+  }
+  else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down || event->keyval == GDK_KEY_Left
+          || event->keyval == GDK_KEY_KP_Left)
+  {
+    handled = 1;
+    delta = -d->scale / 5.0f;
+  }
+
+  if(!handled) return FALSE;
+
+  return dt_bauhaus_slider_add_delta_internal(widget, delta, event->state);
 }
 
 
@@ -2225,6 +2290,7 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
     const float r = 1.0f - (tmp.height + 4.0f) / tmp.width;
     dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
   }
+  gtk_widget_grab_focus(widget);
   // not sure if needed:
   // gdk_event_request_motions(event);
   return TRUE;
