@@ -632,6 +632,35 @@ static inline int _add_node(dt_iop_basecurve_node_t *basecurve, int *nodes, floa
   return selected;
 }
 
+static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widget)
+{
+  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+
+  int ch = 0;
+  int nodes = p->basecurve_nodes[ch];
+  dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
+
+  if(nodes <= 2) return;
+
+  const float mx = basecurve[c->selected].x;
+
+  // delete vertex if order has changed
+  // for all points, x coordinate of point must be strictly larger than
+  // the x coordinate of the previous point
+  if((c->selected > 0 && (basecurve[c->selected - 1].x >= mx))
+     || (c->selected < nodes - 1 && (basecurve[c->selected + 1].x <= mx)))
+  {
+    for(int k = c->selected; k < nodes - 1; k++)
+    {
+      basecurve[k].x = basecurve[k + 1].x;
+      basecurve[k].y = basecurve[k + 1].y;
+    }
+    c->selected = -2; // avoid re-insertion of that point immediately after this
+    p->basecurve_nodes[ch]--;
+  }
+}
+
 static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -660,19 +689,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
       basecurve[c->selected].x = linx;
       basecurve[c->selected].y = liny;
 
-      // delete vertex if order has changed:
-      if(nodes > 2)
-        if((c->selected > 0 && basecurve[c->selected - 1].x >= linx)
-           || (c->selected < nodes - 1 && basecurve[c->selected + 1].x <= linx))
-        {
-          for(int k = c->selected; k < nodes - 1; k++)
-          {
-            basecurve[k].x = basecurve[k + 1].x;
-            basecurve[k].y = basecurve[k + 1].y;
-          }
-          c->selected = -2; // avoid re-insertion of that point immediately after this
-          p->basecurve_nodes[ch]--;
-        }
+      dt_iop_basecurve_sanity_check(self, widget);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
     else if(nodes < MAXNODES && c->selected >= -1)
@@ -701,6 +718,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     }
     c->selected = nearest;
   }
+  if(c->selected >= 0) gtk_widget_grab_focus(widget);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -807,26 +825,107 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
   return TRUE;
 }
 
-static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
   int ch = 0;
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
-  if(c->selected >= 0)
+  float multiplier;
+
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((state & modifiers) == GDK_SHIFT_MASK)
   {
-    if(event->direction == GDK_SCROLL_UP)
-      basecurve[c->selected].y = MAX(0.0f, basecurve[c->selected].y + 0.001f);
-    if(event->direction == GDK_SCROLL_DOWN)
-      basecurve[c->selected].y = MIN(1.0f, basecurve[c->selected].y - 0.001f);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(widget);
+    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
   }
+  else if((state & modifiers) == GDK_CONTROL_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+  }
+  else
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+  }
+
+  dx *= multiplier;
+  dy *= multiplier;
+
+  basecurve[c->selected].x = CLAMP(basecurve[c->selected].x + dx, 0.0f, 1.0f);
+  basecurve[c->selected].y = CLAMP(basecurve[c->selected].y + dy, 0.0f, 1.0f);
+
+  dt_iop_basecurve_sanity_check(self, widget);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gtk_widget_queue_draw(widget);
+
   return TRUE;
 }
+
+#define BASECURVE_DEFAULT_STEP (0.001f)
+
+static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+
+  if(c->selected < 0) return TRUE;
+
+  int handled = 0;
+  float dy = 0.0f;
+  if(event->direction == GDK_SCROLL_UP)
+  {
+    handled = 1;
+    dy = BASECURVE_DEFAULT_STEP;
+  }
+  if(event->direction == GDK_SCROLL_DOWN)
+  {
+    handled = 1;
+    dy = -BASECURVE_DEFAULT_STEP;
+  }
+
+  if(!handled) return TRUE;
+
+  return _move_point_internal(self, widget, 0.0, dy, event->state);
+}
+
+static gboolean dt_iop_basecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+
+  if(c->selected < 0) return TRUE;
+
+  int handled = 0;
+  float dx = 0.0f, dy = 0.0f;
+  if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up)
+  {
+    handled = 1;
+    dy = BASECURVE_DEFAULT_STEP;
+  }
+  else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down)
+  {
+    handled = 1;
+    dy = -BASECURVE_DEFAULT_STEP;
+  }
+  else if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_KP_Right)
+  {
+    handled = 1;
+    dx = BASECURVE_DEFAULT_STEP;
+  }
+  else if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_KP_Left)
+  {
+    handled = 1;
+    dx = -BASECURVE_DEFAULT_STEP;
+  }
+
+  if(!handled) return TRUE;
+
+  return _move_point_internal(self, widget, dx, dy, event->state);
+}
+
+#undef BASECURVE_DEFAULT_STEP
 
 static void scale_callback(GtkWidget *widget, gpointer user_data)
 {
@@ -870,8 +969,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                             | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK | GDK_KEY_PRESS_MASK);
+  gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(dt_iop_basecurve_motion_notify), self);
@@ -879,6 +979,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(dt_iop_basecurve_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(area_resized), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
+  g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_basecurve_key_press), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
