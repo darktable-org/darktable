@@ -107,11 +107,14 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
  * the maximum produces fewer artifacts when inadvertently replacing
  * non-hot pixels.
  * This is the Bayer sensor variant. */
-static int process_bayer(const void *const ivoid, void *const ovoid,
-                         const dt_iop_roi_t *const roi_out,
-                         const float threshold, const float multiplier, const gboolean markfixed,
-                         const int min_neighbours)
+static int process_bayer(const dt_iop_hotpixels_data_t *data,
+                         const void *const ivoid, void *const ovoid,
+                         const dt_iop_roi_t *const roi_out)
 {
+  const float threshold = data->threshold;
+  const float multiplier = data->multiplier;
+  const gboolean markfixed = data->markfixed;
+  const int min_neighbours = data->permissive ? 3 : 4;
   const int width = roi_out->width;
   const int widthx2 = width * 2;
   int fixed = 0;
@@ -161,13 +164,12 @@ static int process_bayer(const void *const ivoid, void *const ovoid,
 }
 
 /* X-Trans sensor equivalent of process_bayer(). */
-static int process_xtrans(const void *const ivoid, void *const ovoid,
-                          const dt_iop_roi_t *const roi_out, const uint8_t (*const xtrans)[6],
-                          const float threshold, const float multiplier, const gboolean markfixed,
-                          const int min_neighbours)
+static int process_xtrans(const dt_iop_hotpixels_data_t *data,
+                          const void *const ivoid, void *const ovoid,
+                          const dt_iop_roi_t *const roi_out, const uint8_t (*const xtrans)[6])
 {
-  // for each cell of sensor array, a list of the x/y offsets of the
-  // four radially nearest pixels of the same color
+  // for each cell of sensor array, pre-calculate, a list of the x/y
+  // offsets of the four radially nearest pixels of the same color
   int offsets[6][6][4][2];
   // increasing offsets from pixel to find nearest like-colored pixels
   const int search[20][2] = { { -1, 0 },
@@ -207,8 +209,13 @@ static int process_xtrans(const void *const ivoid, void *const ovoid,
     }
   }
 
+  const float threshold = data->threshold;
+  const float multiplier = data->multiplier;
+  const gboolean markfixed = data->markfixed;
+  const int min_neighbours = data->permissive ? 3 : 4;
   const int width = roi_out->width;
   int fixed = 0;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(offsets) reduction(+ : fixed) schedule(static)
 #endif
@@ -270,7 +277,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
   const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
-  const int min_neighbours = data->permissive ? 3 : 4;
 
   // The processing loop should output only a few pixels, so just copy everything first
   memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
@@ -278,13 +284,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   int fixed;
   if(piece->pipe->filters == 9u)
   {
-    fixed = process_xtrans(ivoid, ovoid, roi_out, (const uint8_t(*const)[6])piece->pipe->xtrans,
-                           data->threshold, data->multiplier, data->markfixed, min_neighbours);
+    fixed = process_xtrans(data, ivoid, ovoid, roi_out, (const uint8_t(*const)[6])piece->pipe->xtrans);
   }
   else
   {
-    fixed = process_bayer(ivoid, ovoid, roi_out,
-                          data->threshold, data->multiplier, data->markfixed, min_neighbours);
+    fixed = process_bayer(data, ivoid, ovoid, roi_out);
   }
 
   if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
