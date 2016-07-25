@@ -22,6 +22,12 @@
 <!ENTITY icon_module_plus "images/darkroom_module_icon_polarity_plus.png">
 <!ENTITY icon_module_minus "images/darkroom_module_icon_polarity_minus.png">
 <!ENTITY icon_module_invert "images/darkroom_module_icon_invert.png">
+<!ENTITY icon_ashift_vertical "images/darkroom_module_ashift_vertical.png">
+<!ENTITY icon_ashift_horizontal "images/darkroom_module_ashift_horizontal.png">
+<!ENTITY icon_ashift_both "images/darkroom_module_ashift_both.png">
+<!ENTITY icon_ashift_structure "images/darkroom_module_ashift_structure.png">
+<!ENTITY icon_ashift_clear "images/darkroom_module_ashift_clear.png">
+<!ENTITY icon_ashift_eye "images/darkroom_module_ashift_eye.png">
 <!ENTITY icon_preferences "images/darkroom_preferences.png">
 <!ENTITY icon_directory "images/lighttable_directory.png">
 <!ENTITY icon_styles "images/darkroom_styles.png">
