@@ -105,31 +105,16 @@ if(APPLE)
 endif(APPLE)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd COPYONLY )
 
-get_property(DT_PLUGIN_IOPS GLOBAL PROPERTY DT_PLUGIN_IOPS)
+# get_property(DT_PLUGIN_IOPS GLOBAL PROPERTY DT_PLUGIN_IOPS)
 get_property(DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT GLOBAL PROPERTY DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT)
 
 set(DARKTABLECONFIG_IOP_ENTRIES "")
-foreach(DT_PLUGIN_IOP IN LISTS DT_PLUGIN_IOPS)
-  list(FIND DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT "${DT_PLUGIN_IOP}" IOP_IS_VISIBLE)
-
-  if(IOP_IS_VISIBLE EQUAL -1)
-    set(IOP_IS_VISIBLE "false")
-  else()
-    set(IOP_IS_VISIBLE "true")
-  endif()
-
+foreach(DT_PLUGIN_IOP IN LISTS DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT)
   set(DARKTABLECONFIG_IOP_ENTRIES "${DARKTABLECONFIG_IOP_ENTRIES}
   <dtconfig>
     <name>plugins/darkroom/${DT_PLUGIN_IOP}/visible</name>
     <type>bool</type>
-    <default>${IOP_IS_VISIBLE}</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/${DT_PLUGIN_IOP}/expanded</name>
-    <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>")

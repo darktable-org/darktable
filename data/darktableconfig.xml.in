@@ -613,20 +613,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/camera/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/recentcollect/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/recentcollect/num_items</name>
     <type>int</type>
     <default>0</default>
@@ -704,60 +690,11 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/styles/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/select/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/metadata/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/export/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/copy_history/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/copy_history/pastemode</name>
     <type>int</type>
     <default>0</default>
     <shortdescription>append or replace history stack if pasted</shortdescription>
     <longdescription>0 -- append on top of stack, 1 -- replace it.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/image/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
@@ -973,13 +910,6 @@
     <name>plugins/lighttable/collect/mode9</name>
     <type>int</type>
     <default>0</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/tagging/expanded</name>
-    <type>bool</type>
-    <default>false</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
