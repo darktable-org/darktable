@@ -6651,16 +6651,16 @@ const wb_data wb_preset[] =
   { "Sony", "NEX-5T", "6000K", 0, { 2.625, 1, 1.43359375, 0 } },
   { "Sony", "NEX-5T", "8500K", 0, { 3.10546875, 1, 1.20703125, 0 } },
 
-  // copied from NEX-5R
-  { "Sony", "NEX-6", Daylight, 0,		{ 2.5000, 1, 1.5117, 0 } },
-  { "Sony", "NEX-6", Shade, 0,			{ 3.0156, 1, 1.2422, 0 } },
-  { "Sony", "NEX-6", Cloudy, 0,		        { 2.7188, 1, 1.3828, 0 } },
-  { "Sony", "NEX-6", Tungsten, 0,		{ 1.5039, 1, 2.7695, 0 } },
-  { "Sony", "NEX-6", WarmWhiteFluorescent, 0,	{ 1.8164, 1, 2.7305, 0 } },
-  { "Sony", "NEX-6", CoolWhiteFluorescent, 0,	{ 2.3086, 1, 2.1758, 0 } },
-  { "Sony", "NEX-6", DayWhiteFluorescent, 0,	{ 2.4844, 1, 1.5703, 0 } },
-  { "Sony", "NEX-6", DaylightFluorescent, 0,	{ 2.8555, 1, 1.4648, 0 } },
-  { "Sony", "NEX-6", Flash, 0,			{ 2.8828, 1, 1.3906, 0 } },
+  // firmware NEX-6 1.03
+  { "Sony", "NEX-6", Daylight, 0,		{ 2.6250, 1, 1.4765, 0 } },
+  { "Sony", "NEX-6", Shade, 0,			{ 3.1718, 1, 1.2109, 0 } },
+  { "Sony", "NEX-6", Cloudy, 0,			{ 2.8515, 1, 1.3515, 0 } },
+  { "Sony", "NEX-6", Incandescent, 0,		{ 1.5742, 1, 2.7148, 0 } },
+  { "Sony", "NEX-6", WarmWhiteFluorescent, 0,	{ 1.9023, 1, 2.6796, 0 } },
+  { "Sony", "NEX-6", CoolWhiteFluorescent, 0,	{ 2.4218, 1, 2.1289, 0 } },
+  { "Sony", "NEX-6", DayWhiteFluorescent, 0,	{ 2.6054, 1, 1.5312, 0 } },
+  { "Sony", "NEX-6", DaylightFluorescent, 0,	{ 3.0000, 1, 1.4296, 0 } },
+  { "Sony", "NEX-6", Flash, 0,			{ 3.0312, 1, 1.3554, 0 } },
 
   { "Sony", "NEX-7", Daylight, 0,		{ 2.5820, 1, 1.5273, 0 } },
   { "Sony", "NEX-7", Shade, 0,			{ 3.0781, 1, 1.2734, 0 } },
