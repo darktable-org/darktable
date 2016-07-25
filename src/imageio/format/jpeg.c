@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "control/conf.h"
@@ -379,9 +380,6 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     }
   }
 
-  if(exif && exif_len > 0 && exif_len < 65534)
-    jpeg_write_marker(&(jpg->cinfo), JPEG_APP0 + 1, exif, exif_len);
-
   uint8_t row[3 * jpg->width];
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
@@ -396,6 +394,10 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   jpeg_finish_compress(&(jpg->cinfo));
   jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
+
+  if(exif && exif_len > 0 && exif_len < 65534)
+    dt_exif_write_blob(exif, exif_len, filename, 1);
+
   return 0;
 }
 
