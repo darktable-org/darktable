@@ -346,7 +346,7 @@
   <dtconfig>
     <name>ui_last/maximized</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
