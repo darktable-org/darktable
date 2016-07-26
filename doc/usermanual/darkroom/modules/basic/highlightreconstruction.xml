@@ -56,19 +56,21 @@
     </para>
 
     <para>
-      <quote>Clip highlights</quote> analyses each pixel having at least one channel clipped.
-      Then it sets all channels to the minimum value found among the channels. Effectively this
-      converts all clipped highlights to neutral grey tones. This method is most useful in cases
-      where clipped highlights occur in non-colored areas like clouds in the sky.
+      <quote>Clip highlights</quote> just clamps all the pixels to the white level.
+      Effectively this converts all clipped highlights to neutral grey tones. This method is most
+      useful in cases where clipped highlights occur in non-colored areas like clouds in the sky.
     </para>
 
     <para>
       <quote>Reconstruct in LCh</quote> analyses each pixel having at least one channel clipped
-      and transforms the information in LCh color space to linearly mix the channels. This
-      method is not able to reconstruct any color information&nbsp;&ndash; the reconstructed
-      highlights will all be neutral grey. This works fairly well with a high-contrast base
-      curve (such as most manufacturers apply to their jpg), which renders highlights
-      desaturated. This method is a good option on naturally desaturated things such as clouds.
+      and transforms the information in LCh color space in attempt to correct the clipped pixel
+      using the values of the other (3 for Bayer or 8 for X-Trans) pixels in current sensor block.
+      This method does a better job than <quote>Clip highlights</quote>, some details in the
+      clipped areas are preserved. However it is incapable to reconstruct any color information
+      &nbsp;&ndash; the reconstructed highlights will all be white-ish, but brighter than with
+      <quote>Clip highlights</quote>. This works fairly well with a high-contrast base curve
+      (such as most manufacturers apply to their jpg), which renders highlights desaturated.
+      This method is a good option on naturally desaturated things such as clouds.
     </para>
 
     <para>

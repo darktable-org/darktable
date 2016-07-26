@@ -52,7 +52,7 @@
       You can activate multiple instances of this module each with different parameters acting
       on different parts of the image which you select by a drawn mask (see
       <xref linkend="multiple_instances"/> and <xref linkend="drawn_mask"/>). The histogram is
-      always linked to the lowest instance in pixelpipe.
+      always linked to the last instance in pixelpipe.
     </para>
 
   </sect4>

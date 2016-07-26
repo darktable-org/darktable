@@ -55,6 +55,12 @@
     <title>Usage</title>
 
     <para>
+      A color picker is activated by pressing
+      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+      and will automatically set the position and size of the filter.
+    </para>
+
+    <para>
       The default central location of the filter has a neutral effect but dragging it to an
       alternate position applies a filter analogously to taking a b&amp;w photograph through a
       conventional color filter.

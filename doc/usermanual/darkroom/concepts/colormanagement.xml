@@ -108,6 +108,11 @@
       higher accuracy in some cases.
     </para>
 
+    <para>
+      Note that if the given ICC is LUT-based, or has a LUT and matrix, the darktable will use
+      LittleCMS 2 to render the colors regardless of that configuration parameter's value.
+    </para>
+
   </sect3>
 
   <sect3 status="final" id="rendering_intent">

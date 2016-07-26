@@ -45,8 +45,8 @@
 
     <listitem><para>
       darktable makes heavy use of <emphasis>Streaming SIMD Extensions 2</emphasis> (SSE2)
-      instructions of the CPU to speed up processing. In fact, darktable will only run on a CPU
-      that supports SSE2.
+      instructions of the CPU to speed up processing. In fact, darktable requires either
+      SSE2-capable x86 processor, or and ARM64.
     </para></listitem>
 
     <listitem><para>
@@ -71,8 +71,8 @@
     </para></listitem>
 
     <listitem><para>
-      Import a variety of standard, raw and high dynamic range image formats (e.g. JPG, CR2,
-      OpenEXR, PFM, ...).
+      Import a variety of standard, raw and high dynamic range image formats (e.g. JPEG, CR2,
+      DNG, OpenEXR, PFM, ...).
     </para></listitem>
 
     <listitem><para>
@@ -97,7 +97,7 @@
     </para></listitem>
 
     <listitem><para>
-      darktable comes with more than 50 image operation modules which cover everything from
+      darktable comes with more than 60 image operation modules which cover everything from
       basic operations, tonal value changes, color manipulation, correction of common image
       defects to artistic effects.
     </para></listitem>
@@ -122,7 +122,7 @@
       darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser
       that always just works&trade;. It's designed as a module where the denoising performance
       only depends on camera and ISO setting. A database of profiles contains parameters for
-      well above 100 popular camera models.
+      well above 200 popular camera models.
     </para></listitem>
 
     <listitem><para>
@@ -400,6 +400,11 @@
       <para>
         This binary starts the command line interface variant of darktable which allows
         exporting images.
+      </para>
+
+      <para>
+        This variant does not open any display, so it will work in pure console,
+        without any X server / wayland / etc - useful for servers.
       </para>
 
       <para>
@@ -953,12 +958,6 @@
         Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>.
       </para>
 
-      <para>
-        darktable's contrast can be changed by using <emphasis>F7</emphasis> and
-        <emphasis>F8</emphasis> and darktable's lightness by using <emphasis>F9</emphasis> and
-        <emphasis>F10</emphasis>.
-      </para>
-
     </sect2>
 
     <sect2 status="final" id="filmstrip_overview">
@@ -1086,9 +1085,10 @@
         </para>
 
         <para>
-          All changes are stored automatically. You can safely leave darkroom mode or quit
-          darktable at any time and come back later to continue your work. That said darktable
-          does not need a <quote>save</quote> button and it does not have one.
+          All changes are stored automatically when you switch images or view. You can safely
+          leave darkroom mode or quit darktable at any time and come back later to continue
+          your work. That said darktable does not need a <quote>save</quote> button and
+          it does not have one.
           <indexterm>
             <primary>save button</primary>
           </indexterm>
@@ -1156,7 +1156,7 @@
           module offers an almost <quote>single-click</quote> solution to fight noise. From a
           user perspective the effect only depends on camera type and ISO value, both derived
           from EXIF data. All other settings are taken from a database of noise profiles that
-          the darktable team has collected&nbsp;&ndash; now covering well above 100 popular
+          the darktable team has collected&nbsp;&ndash; now covering well above 200 popular
           camera models. In addition you have several other options in darktable to reduce
           noise. There is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>,
           <link linkend="denoise_bilateral"><emphasis>denoising based on bilateral
