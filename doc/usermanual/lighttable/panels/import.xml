@@ -232,8 +232,8 @@
 
       <para>
         darktable natively reads <quote>ordinary</quote> images in JPEG, 8-bit/16-bit PNG and
-        8-bit/16-bit TIFF format. JPEG2000 is also supported if the required libraries are built
-        into darktable at compile time. Similarly, if darktable was compiled with GraphicsMagick
+        8-bit/16-bit TIFF format. JPEG2000 is also supported if the required libraries are present
+        at compile time. Similarly, if darktable was compiled with GraphicsMagick
         support, there are further import formats, like GIF, Dicom DCM, additional exotic TIFF
         formats, and some of Sun's <quote>portable xyz-map</quote> family.
       </para>
