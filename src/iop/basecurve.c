@@ -399,11 +399,11 @@ static inline void compute_features(
     const float sat = .1f + .1f*(max-min)/MAX(1e-4, max);
     col[x+3] = sat;
 
-    float v = fabsf(col[x]-0.5f);
-    v = MAX(fabsf(col[x+1]-0.5f), v);
-    v = MAX(fabsf(col[x+2]-0.5f), v);
+    float v = fabsf(col[x]-0.54f);
+    v = MAX(fabsf(col[x+1]-0.54f), v);
+    v = MAX(fabsf(col[x+2]-0.54f), v);
     const float var = 0.5;
-    const float exp = .2f + expf(-v*v/(var*var));
+    const float exp = .2f + dt_fast_expf(-v*v/(var*var));
     col[x+3] *= exp;
   }
 }
@@ -572,7 +572,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) shared(col) schedule(static)
 #endif
       for(size_t k=0;k<4*wd*ht;k+=4)
-        col[0][k+3] *= 1.0f + sqrtf(out[k]*out[k] + out[k+1]*out[k+1] + out[k+2]*out[k+2]);
+        col[0][k+3] *= .1f + sqrtf(out[k]*out[k] + out[k+1]*out[k+1] + out[k+2]*out[k+2]);
 
 // #define DEBUG_VIS2
 #ifdef DEBUG_VIS2 // transform weights in channels
