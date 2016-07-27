@@ -342,14 +342,6 @@ error:
 }
 #endif
 
-<<<<<<< 197101fb7e761de074d00a3e1cb30dd095c0c021
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const int ch = piece->colors;
-  const dt_iop_basecurve_data_t *const d = (const dt_iop_basecurve_data_t *const)(piece->data);
-#ifdef _OPENMP
-=======
 static inline void apply_ev_and_curve(
     const float *const in,
     float *const out,
@@ -520,11 +512,11 @@ static inline void gauss_reduce(
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+    void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const float *const in  = (float *)i;
-  float *const out = (float *)o;
+  const float *const in  = (float *)ivoid;
+  float *const out = (float *)ovoid;
   const int ch = piece->colors;
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
 
@@ -566,7 +558,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       compute_features(col[0], wd, ht);
 
       // create gaussian pyramid of colour buffer
-      int w = wd; h = ht;
+      w = wd; h = ht;
       gauss_reduce(col[0], col[1], out, w, h);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(col) schedule(static)
@@ -627,7 +619,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // normalise and reconstruct output pyramid buffer coarse to fine
     for(int k=num_levels-1;k>=0;k--)
     {
-      int w = wd, h = ht;
+      w = wd; h = ht;
       for(int i=0;i<k;i++) { w = (w-1)/2+1; h = (h-1)/2+1;}
 
       // normalise both gaussian base and laplacians:
