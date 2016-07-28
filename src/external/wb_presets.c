@@ -1929,6 +1929,16 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-T1", Underwater, 0,        { 1.89404, 1, 1.569536, 0 } },
   { "Fujifilm", "X-T1", "5000K", 0,             { 1.847682, 1, 1.546358, 0 } },
 
+  /* Fujifilm X-T10 Firmware Version 1.21 */
+  { "Fujifilm", "X-T10", Daylight, 0,		{ 1.884106, 1, 1.526490, 0 } },
+  // The manual calls it "Shade", but exiftool shows it as "Cloudy".
+  { "Fujifilm", "X-T10", Shade, 0,		{ 2.072848, 1, 1.324503, 0 } },
+  { "Fujifilm", "X-T10", DaylightFluorescent, 0, { 2.423841, 1, 1.334437, 0 } },
+  { "Fujifilm", "X-T10", WarmWhiteFluorescent, 0, { 2.026490, 1, 1.599338, 0 } },
+  { "Fujifilm", "X-T10", CoolWhiteFluorescent, 0, { 1.890728, 1, 2.046358, 0 } },
+  { "Fujifilm", "X-T10", Incandescent, 0,	{ 1.211921, 1, 2.321192, 0 } },
+  { "Fujifilm", "X-T10", Underwater, 0,		{ 1.990066, 1, 1.440397, 0 } },
+
   /* Fujifilm X-Pro1 Firmware Version v3.30 */
   // The manual calls it "Fine".
   { "Fujifilm", "X-Pro1", Daylight, 0,		{ 1.860927, 1, 1.708609, 0 } },
