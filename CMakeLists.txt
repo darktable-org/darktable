@@ -184,13 +184,18 @@ else(DEFINED PROJECT_VERSION)
       generate_version_gen_h(${PROJECT_VERSION})
     else(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
       # no need to create version_gen.h if it's already shipped. that is for example the case with our release tarballs
+      execute_process(
+        COMMAND ${CMAKE_SOURCE_DIR}/tools/parse_version_h.sh ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h OUTPUT_STRIP_TRAILING_WHITESPACE
+        OUTPUT_VARIABLE PROJECT_VERSION
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
       # but generate_version target expects it to be in build dir, so we need to copy it
       add_custom_target(
         create_version_gen ALL
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h ${CMAKE_CURRENT_BINARY_DIR}/src/version_gen.h
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Updating version string"
+        COMMENT "Updating version string (source package) - ${PROJECT_VERSION}"
       )
     endif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/version_gen.h)
   endif(NOT SOURCE_PACKAGE)
