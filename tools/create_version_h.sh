@@ -25,3 +25,5 @@ fi
 if [ $VERSION_H_NEEDS_UPDATE -eq 1 ]; then
   echo "#define PACKAGE_VERSION \"${NEW_VERSION}\"" > "$H_FILE"
 fi
+
+echo "Version string: ${NEW_VERSION}"
