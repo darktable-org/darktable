@@ -5005,6 +5005,28 @@
 		<Crop x="10" y="0" width="-30" height="-1"/>
 		<Sensor black="0" white="3986"/>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ18" mode="16:9">
+		<ID make="Panasonic" model="DMC-FZ18">Panasonic DMC-FZ18</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="9" y="0" width="-31" height="0"/>
+		<Sensor black="0" white="3986"/>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ18" mode="3:2">
+		<ID make="Panasonic" model="DMC-FZ18">Panasonic DMC-FZ18</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="9" y="0" width="-31" height="0"/>
+		<Sensor black="0" white="3986"/>
+	</Camera>
 	<Camera make="Panasonic" model="DMC-L1" decoder_version="2">
 		<ID make="Panasonic" model="DMC-L1">Panasonic DMC-L1</ID>
 		<CFA width="2" height="2">
