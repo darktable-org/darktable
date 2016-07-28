@@ -1630,6 +1630,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 1200D", CoolWhiteFluorescent, 0, { 1.759766, 1, 2.275391, 0 } },
   { "Canon", "EOS 1200D", Flash               , 0, { 2.246094, 1, 1.452148, 0 } },
 
+  { "Canon", "EOS 1300D", Daylight,		0, { 1.988281, 1, 1.530273, 0 } },
+  { "Canon", "EOS 1300D", Shade,		0, { 2.295898, 1, 1.300781, 0 } },
+  { "Canon", "EOS 1300D", Cloudy,		0, { 2.137695, 1, 1.406250, 0 } },
+  { "Canon", "EOS 1300D", Tungsten,		0, { 1.432617, 1, 2.300781, 0 } },
+  { "Canon", "EOS 1300D", CoolWhiteFluorescent,	0, { 1.747070, 1, 2.188477, 0 } },
+  { "Canon", "EOS 1300D", Flash,		0, { 2.221680, 1, 1.387695, 0 } },
+
   { "Canon", "EOS-1Ds", Daylight, 0,		{ 1.6133, 1, 1.2500, 0 } }, /* 5302K */
   { "Canon", "EOS-1Ds", Shade, 0,		{ 1.8477, 1, 1.0684, 0 } }, /* 6685K */
   { "Canon", "EOS-1Ds", Cloudy, 0,		{ 1.7285, 1, 1.1504, 0 } }, /* 5940K */
