@@ -257,7 +257,7 @@ typedef struct {
 
   gboolean mouse_pointer_in_widget;
   GtkLabel *label;
-  GtkToggleButton *btn_no_tool, *btn_point_tool, *btn_line_tool, *btn_curve_tool, *btn_node_tool;
+  GtkToggleButton *btn_point_tool, *btn_line_tool, *btn_curve_tool, *btn_node_tool;
 
 } dt_iop_liquify_gui_data_t;
 
@@ -3196,9 +3196,6 @@ done:
   return handled;
 }
 
-static void _liquify_cairo_paint_no_tool
-(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags);
-
 static void _liquify_cairo_paint_point_tool
 (cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags);
 
@@ -3239,7 +3236,6 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
     if (btn == g->btn_node_tool)
       dt_control_hinter_message (darktable.control, _("click to edit nodes"));
   }
-  gtk_toggle_button_set_active (g->btn_no_tool, 0);
   sync_pipe (module, FALSE);
 }
 
@@ -3312,14 +3308,6 @@ void gui_init (dt_iop_module_t *module)
   gtk_widget_set_size_request (GTK_WIDGET(g->btn_point_tool), bs, bs);
   gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_point_tool), FALSE, FALSE, 0);
 
-  g->btn_no_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_no_tool,
-                                                            CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  g_signal_connect (G_OBJECT (g->btn_no_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_no_tool), _("disable all tools"));
-  gtk_toggle_button_set_active (g->btn_no_tool, 0);
-  gtk_widget_set_size_request (GTK_WIDGET(g->btn_no_tool), bs, bs);
-  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(g->btn_no_tool), FALSE, FALSE, 0);
-
   gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
 
   dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click to add node\nright click to remove path");
@@ -3353,14 +3341,12 @@ void init_key_accels (dt_iop_module_so_t *module)
   dt_accel_register_iop (module, FALSE, NC_("accel", "line tool"),      0, 0);
   dt_accel_register_iop (module, FALSE, NC_("accel", "curve tool"),     0, 0);
   dt_accel_register_iop (module, FALSE, NC_("accel", "node tool"),      0, 0);
-  dt_accel_register_iop (module, FALSE, NC_("accel", "disable tools"),  0, 0);
 }
 
 void connect_key_accels (dt_iop_module_t *module)
 {
   const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
 
-  dt_accel_connect_button_iop (module, "disable tools", GTK_WIDGET (g->btn_no_tool));
   dt_accel_connect_button_iop (module, "point tool",    GTK_WIDGET (g->btn_point_tool));
   dt_accel_connect_button_iop (module, "line tool",     GTK_WIDGET (g->btn_line_tool));
   dt_accel_connect_button_iop (module, "curve tool",    GTK_WIDGET (g->btn_curve_tool));
@@ -3384,20 +3370,6 @@ void connect_key_accels (dt_iop_module_t *module)
   cairo_pop_group_to_source (cr);                               \
   cairo_paint_with_alpha (cr, flags & CPF_ACTIVE ? 1.0 : 0.5);  \
   cairo_restore (cr);
-
-static void _liquify_cairo_paint_no_tool (cairo_t *cr,
-                                          const gint x, const gint y, const gint w, const gint h, const gint flags)
-{
-  PREAMBLE;
-  cairo_set_line_width (cr, 0.1);
-  cairo_move_to (cr, 0.3, 0.7);
-  cairo_line_to (cr, 0.7, 0.3);
-
-  cairo_move_to (cr, 0.3, 0.3);
-  cairo_line_to (cr, 0.7, 0.7);
-  cairo_stroke (cr);
-  POSTAMBLE;
-}
 
 static void _liquify_cairo_paint_point_tool (cairo_t *cr,
                                              const gint x, const gint y, const gint w, const gint h, const gint flags)
