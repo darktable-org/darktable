@@ -9,7 +9,7 @@ set_target_properties(darktable-cli PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH
 set_target_properties(darktable-cli PROPERTIES INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
 set_target_properties(darktable-cli PROPERTIES LINKER_LANGUAGE C)
 if(CMAKE_COMPILER_IS_GNUCC)
-	if (GCC_VERSION VERSION_GREATER 4.3)
+	if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.3)
 		if (CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
 			message("-- Force link to libintl on *BSD with GCC 4.3+")
 			target_link_libraries(darktable-cli -lintl)
