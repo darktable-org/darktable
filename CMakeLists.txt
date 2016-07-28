@@ -123,9 +123,7 @@ if(APPLE)
 endif(APPLE)
 
 if(CMAKE_COMPILER_IS_GNUCC)
-  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
-      OUTPUT_VARIABLE GCC_VERSION)
-  if (GCC_VERSION VERSION_LESS 4.3)
+  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 4.3)
 		message("-- Disabling OpenMP because GCC is 4.2 or older!")
 		set(USE_OPENMP OFF)
   endif()
