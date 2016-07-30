@@ -333,14 +333,14 @@
       <title>updating folder path</title>
 
       <para>
-        While it is best to not touch imported files behind darktable's back, if you move imported
-        folders after import, this module can help you recover from that.
-        The module has not-so-well-known feature: it allows you to tell darktable about
-        the new location of imported folder, that was moved.
-        For that, set combobox to <emphasis>folders</emphasis>, then find the folder in the tree.
-        The folder name will be displayed striked-out, to emphasis that it is no longer there.
-        Then right-click on the folder, and select "search filmroll...".
-        And then select the new location of the folder.
+        While it is best to not touch imported files behind darktable's back, this module can help you recover from 
+        situations when you move imported folders after import.
+        The collect images module has a feature that allows you to tell darktable about
+        the new location of imported folders which have been moved.
+        You set the combobox to <emphasis>folders</emphasis> to find the original folder name in the tree.
+        The folder name will be displayed striked-out to emphasise that it is no longer there.
+        Then you right-click on the folder name, select <quote>search filmroll...</quote>,
+        and then select the new location of the folder.
       </para>
 
     </sect4>

@@ -109,7 +109,7 @@
     </para>
 
     <para>
-      Note that if the given ICC is LUT-based, or has a LUT and matrix, the darktable will use
+      Note that if the given ICC is LUT-based or contains both, a LUT and a matrix, darktable will use
       LittleCMS 2 to render the colors regardless of that configuration parameter's value.
     </para>
 
