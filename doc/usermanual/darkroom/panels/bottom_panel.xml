@@ -234,8 +234,97 @@
 
     <para>
       The filmstrip can be switched on and off using the shortcut <emphasis>ctrl-f</emphasis>.
-      You can scroll with your mouse to quickly navigate through the images and change the
-      height of the filmstrip panel by dragging its top.
+      You can change the height of the filmstrip panel by dragging its top.
+    </para>
+
+    <para>
+      You can scroll with your mouse to quickly navigate through the images. You can change the
+      photo being processed by double clicking on another picture. You can also use space bar to
+      process the next photo and use backspace key to process the previous photo.
+    </para>
+
+    <para>
+      The picture currently processed is selected and highlighted; with a single click
+      you can select any other picture from the filmstrip without changing the picture currently
+      processed. With the <emphasis>ctrl-a</emphasis> shortcut you select all the pictures of
+      the filmstrip. With the shortcut <emphasis>ctrl-shift-a</emphasis> you unselect all images,
+      and with <emphasis>ctrl-i</emphasis> you reverse the current selection.
+    </para>
+
+    <para>
+      The following shortcuts are available to act on the selected picture(s):
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="1*"/>
+          <colspec colwidth="3*"/>
+          <tbody>
+            <row>
+              <entry>
+                <emphasis>F1&nbsp;&ndash; F5</emphasis>
+              </entry>
+              <entry>
+                toggle color label (red, yellow, green, blue, purple)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>0&nbsp;&ndash; 5</emphasis>
+              </entry>
+              <entry>
+                set/change image rating
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>r</emphasis>
+              </entry>
+              <entry>
+                reject image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>ctrl-d</emphasis>
+              </entry>
+              <entry>
+                duplicate image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>ctrl-c</emphasis>
+              </entry>
+              <entry>
+                copy the full history stack
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>ctrl-v</emphasis>
+              </entry>
+              <entry>
+                paste all of the copied history stack
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>alt-ctrl-c</emphasis>
+              </entry>
+              <entry>
+                selectively copy the history stack
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>alt-ctrl-v</emphasis>
+              </entry>
+              <entry>
+                selectively paste from the copied history stack
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
     </para>
 
     <para>
