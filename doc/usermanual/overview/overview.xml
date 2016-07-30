@@ -46,7 +46,7 @@
     <listitem><para>
       darktable makes heavy use of <emphasis>Streaming SIMD Extensions 2</emphasis> (SSE2)
       instructions of the CPU to speed up processing. In fact, darktable requires either
-      SSE2-capable x86 processor, or and ARM64.
+      an SSE2-capable x86 processor or an ARM64 processor.
     </para></listitem>
 
     <listitem><para>
@@ -403,8 +403,9 @@
       </para>
 
       <para>
-        This variant does not open any display, so it will work in pure console,
-        without any X server / wayland / etc - useful for servers.
+        This variant does not open any display, so it will work in pure console mode
+        without using any X11, wayland, etc.&nbsp;&ndash; this mode is useful for servers running
+        background jobs.
       </para>
 
       <para>
@@ -1085,7 +1086,7 @@
         </para>
 
         <para>
-          All changes are stored automatically when you switch images or view. You can safely
+          All changes are stored automatically when you switch images or go from one darktable view to another. You can safely
           leave darkroom mode or quit darktable at any time and come back later to continue
           your work. That said darktable does not need a <quote>save</quote> button and
           it does not have one.
