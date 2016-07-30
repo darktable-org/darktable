@@ -80,6 +80,18 @@
     </para>
 
     <para>
+      Additionally, darktable supports a special demosaicing algorithm&nbsp;&ndash; passthrough
+      (monochrome). It is not a general-purpose algorithm that is useful for all the images.
+      It is only useful for the cameras with sensor with color filter array physically removed.
+      I.e. physically scraped off, or physically deleted in some other way. Normally, demosaic
+      reconstructs the missing color channels by interpolation with data of the neighboring
+      pixels. But since the color filter array is not present, there is nothing to interpolate,
+      so it simply sets all the pixel channels to the same value, which results in pixel being
+      gray, thus producing monochrome image. Such method guarantees that there is no interpolation
+      artifacts that would otherwise be present should the normal demosaicing algorithm be used.
+    </para>
+
+    <para>
       Some further parameters of this module can activate additional averaging and smoothing
       steps. They might help to reduce remaining artifacts in special cases.
     </para>
