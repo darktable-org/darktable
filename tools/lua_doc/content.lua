@@ -69,7 +69,7 @@ remove_all_children(types.dt_lua_lib_t.views)
 ----------------------
 local prefix
 if real_darktable.configuration.api_version_suffix == "" then
-  prefix = [[This documentation is for the *developement* version of darktable. for the stable version, please visit the user manual]]..para()
+  prefix = [[This documentation is for the *development* version of darktable. for the stable version, please visit the user manual]]..para()
 else
   prefix = ""
 end
@@ -106,7 +106,7 @@ tmp_node:add_parameter("filename","string",[[The name of a temporary file where 
 tmp_node:add_parameter("number","integer",[[The number of the image out of the export series.]])
 tmp_node:add_parameter("total","integer",[[The total number of images in the export series.]])
 tmp_node:add_parameter("high_quality","boolean",[[True if the export is high quality.]])
-tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra data. This table is common to the initialize, store and finalize calls in an export serie.]])
+tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra data. This table is common to the initialize, store and finalize calls in an export series.]])
 tmp_node = darktable.register_storage:add_parameter("finalize","function",[[This function is called once all images are processed and all store calls are finished.]])
 tmp_node:set_attribute("optional",true)
 tmp_node:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage object used for the export.]])
@@ -125,7 +125,7 @@ tmp_node:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage
 tmp_node:add_parameter("format",types.dt_imageio_module_format_t,[[The format object to report about.]])
 tmp_node:add_parameter("images","table of "..my_tostring(types.dt_lua_image_t),[[A table containing images to be exported.]])
 tmp_node:add_parameter("high_quality","boolean",[[True if the export is high quality.]])
-tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra data. This table is common to the initialize, store and finalize calls in an export serie.]])
+tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra data. This table is common to the initialize, store and finalize calls in an export series.]])
 tmp_node:add_return("table or nil",[[The modified table of images to export or nil]]..para()..
 [[If nil (or nothing) is returned, the original list of images will be exported]]..para()..
 [[If a table of images is returned, that table will be used instead. The table can be empty. The images parameter can be modified and returned]])
@@ -182,7 +182,7 @@ darktable.new_widget:add_return(types.lua_widget,"The newly created object. Exac
 --  DARKTABLE.GUI   --
 ----------------------
 darktable.gui:set_text([[This subtable contains function and data to manipulate the darktable user interface with Lua.]]..para()..
-[[Most of these function won't do anything if the GUI is not enabled (i.e you are using the command line version darktabl-cli instead of darktable).]])
+[[Most of these function won't do anything if the GUI is not enabled (i.e you are using the command line version darktable-cli instead of darktable).]])
 
 darktable.gui.action_images:set_text([[A table of ]]..my_tostring(types.dt_lua_image_t)..[[ on which the user expects UI actions to happen.]]..para()..
 [[It is based on both the hovered image and the selection and is consistent with the way darktable works.]]..para()..
@@ -204,7 +204,7 @@ darktable.gui.create_job:add_parameter("text","string",[[The text to display in 
 darktable.gui.create_job:add_parameter("percentage","boolean",[[Should a progress bar be displayed]]):set_attribute("optional",true)
 tmp = darktable.gui.create_job:add_parameter("cancel_callback","function",[[A function called when the cancel button for that job is pressed]]..para().."note that the job won't be destroyed automatically. You need to set "..my_tostring(types.dt_lua_backgroundjob_t.valid).." to false for that")
 tmp:set_attribute("optional",true)
-tmp:add_parameter("job",types.dt_lua_backgroundjob_t,[[The job who is being cancelded]])
+tmp:add_parameter("job",types.dt_lua_backgroundjob_t,[[The job who is being cancelled]])
 darktable.gui.create_job:add_return(types.dt_lua_backgroundjob_t,[[The newly created job object]])
 
 -------------------------
@@ -263,10 +263,10 @@ darktable.configuration.api_version_major:set_text([[The major version number of
 darktable.configuration.api_version_minor:set_text([[The minor version number of the lua API.]])
 darktable.configuration.api_version_patch:set_text([[The patch version number of the lua API.]])
 darktable.configuration.api_version_suffix:set_text([[The version suffix of the lua API.]])
-darktable.configuration.api_version_string:set_text([[The version description of the lua API. This is a string compatible with the semantic versionning convention]])
+darktable.configuration.api_version_string:set_text([[The version description of the lua API. This is a string compatible with the semantic versioning convention]])
 darktable.configuration.check_version:set_text([[Check that a module is compatible with the running version of darktable]]..para().."Add the following line at the top of your module : "..
 code("darktable.configuration.check(...,{M,m,p},{M2,m2,p2})").."To document that your module has been tested with API version M.m.p and M2.m2.p2."..para()..
-"This will raise an error if the user is running a released version of DT and a warning if he is running a developement version"..para().."(the ... here will automatically expand to your module name if used at the top of your script")
+"This will raise an error if the user is running a released version of DT and a warning if he is running a development version"..para().."(the ... here will automatically expand to your module name if used at the top of your script")
 darktable.configuration.check_version:add_parameter("module_name","string","The name of the module to report on error")
 darktable.configuration.check_version:add_parameter("...","table...","Tables of API versions that are known to work with the script")
 
@@ -352,7 +352,7 @@ darktable.styles.export:set_main_parent(darktable.styles)
 darktable.database:set_text([[Allows to access the database of images. Note that duplicate images (images with the same RAW but different XMP) will appear multiple times with different duplicate indexes. Also note that all images are here. This table is not influenced by any GUI filtering (collections, stars etc...).]])
 
 
-darktable.database["#"]:set_text([[Each image in the database appears with a numerical index; you can interate them using ipairs.]])
+darktable.database["#"]:set_text([[Each image in the database appears with a numerical index; you can iterate them using ipairs.]])
 darktable.database.duplicate:set_text([[Creates a duplicate of an image and returns it.]])
 darktable.database.duplicate:add_parameter("image",types.dt_lua_image_t,[[the image to duplicate]])
 darktable.database.duplicate:add_return(types.dt_lua_image_t,[[The new image object.]])
@@ -385,7 +385,7 @@ darktable.database.copy_image:set_main_parent(darktable.database)
 darktable.collection:set_text([[Allows to access the currently worked on images, i.e the ones selected by the collection lib. Filtering (rating etc) does not change that collection.]])
 
 
-darktable.collection["#"]:set_text([[Each image in the collection appears with a numerical index; you can interate them using ipairs.]])
+darktable.collection["#"]:set_text([[Each image in the collection appears with a numerical index; you can iterate them using ipairs.]])
 
 
 for k, v in darktable.gui.views:unskiped_children() do
@@ -516,7 +516,7 @@ darktable.control.dispatch:set_text([[Runs a function in the background. This fu
 darktable.control.dispatch:add_parameter("function","function",[[The call to dispatch]])
 darktable.control.dispatch:add_parameter("...","anything",[[extra parameters to pass to the function]])
 darktable.control.sleep:set_text("Suspends execution while not blocking darktable")
-darktable.control.sleep:add_parameter("delay","int","The delay in miliseconds to sleep")
+darktable.control.sleep:add_parameter("delay","int","The delay in millisecond to sleep")
 darktable.control.execute:set_text("Run a command in a shell while not blocking darktable")
 darktable.control.execute:add_parameter("command","string","The command to run, as in 'sh -c'")
 darktable.control.execute:add_return("int","The result of the system call")
@@ -535,13 +535,13 @@ darktable.gettext.dgettext:add_return("string","The translated string");
 darktable.gettext.ngettext:set_text([[Translate a string depending on the number of objects using the darktable textdomain]])
 darktable.gettext.ngettext:add_parameter("msgid","string","The string to translate");
 darktable.gettext.ngettext:add_parameter("msgid_plural","string","The string to translate in plural form");
-darktable.gettext.ngettext:add_parameter("n","int","The number of objetc");
+darktable.gettext.ngettext:add_parameter("n","int","The number of objects");
 darktable.gettext.ngettext:add_return("string","The translated string");
 darktable.gettext.dngettext:set_text([[Translate a string depending on the number of objects using the specified textdomain]])
 darktable.gettext.dngettext:add_parameter("domainname","string","The domain to use for that translation");
 darktable.gettext.dngettext:add_parameter("msgid","string","The string to translate");
 darktable.gettext.dngettext:add_parameter("msgid_plural","string","The string to translate in plural form");
-darktable.gettext.dngettext:add_parameter("n","int","The number of objetc");
+darktable.gettext.dngettext:add_parameter("n","int","The number of objects");
 darktable.gettext.dngettext:add_return("string","The translated string");
 darktable.gettext.bindtextdomain:set_text([[Tell gettext where to find the .mo file translating messages for a particular domain]])
 darktable.gettext.bindtextdomain:add_parameter("domainname","string","The domain to use for that translation");
@@ -570,7 +570,7 @@ darktable.debug.max_depth:set_text([[Initialized to 10; The maximum depth to rec
 remove_all_children(darktable.debug.known) -- debug values, not interesting
 darktable.debug.known:set_text([[A table containing the default value of ]]..my_tostring(tmp_node))
 darktable.debug.type:set_text([[Similar to the system function type() but it will return the real type instead of "userdata" for darktable specific objects.]])
-  darktable.debug.type:add_parameter("object","anything",[[The object whos type must be reported.]])
+  darktable.debug.type:add_parameter("object","anything",[[The object whose type must be reported.]])
 	darktable.debug.type:add_return("string",[[A string describing the type of the object.]])
 
 	----------------------
@@ -579,7 +579,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types:set_text([[This section documents types that are specific to darktable's Lua API.]])
 
 
-	types.dt_lua_image_t:set_text([[Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developements.
+	types.dt_lua_image_t:set_text([[Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developments.
 
 	Note that this is the real image object; changing the value of a field will immediately change it in darktable and will be reflected on any copy of that image object you may have kept.]])
 
@@ -626,7 +626,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.green)
 	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.yellow)
 	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.purple)
-	types.dt_lua_image_t.reset:set_text([[Removes all processing from the image, reseting it back to its original state]])
+	types.dt_lua_image_t.reset:set_text([[Removes all processing from the image, resetting it back to its original state]])
 	types.dt_lua_image_t.reset:add_parameter("self",types.dt_lua_image_t,[[The image whose history will be deleted]]):set_attribute("is_self",true)
 	types.dt_lua_image_t.delete:set_text([[Removes an image from the database]])
 	types.dt_lua_image_t.delete:add_parameter("self",types.dt_lua_image_t,[[The image to remove]]):set_attribute("is_self",true)
@@ -645,7 +645,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.drop_cache:set_text("drops the cached version of this image."..para()..
 	"This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail"..para()..
 	"darktable will regenerate the thumbnail by itself when it is needed")
-	types.dt_lua_image_t.drop_cache:add_parameter("self",types.dt_lua_image_t,[[The image whose cache must be droped.]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.drop_cache:add_parameter("self",types.dt_lua_image_t,[[The image whose cache must be dropped.]]):set_attribute("is_self",true)
 
 	types.dt_imageio_module_format_t:set_text([[A virtual type representing all format types.]])
 	types.dt_imageio_module_format_t.plugin_name:set_text([[A unique name for the plugin.]])
@@ -888,7 +888,7 @@ local widget = dt.new_widget("button"){
     label ="my label",
     clicked_callback = function() print "hello world" end
     }]]))
-  types.lua_widget.__call:add_parameter("attibutes","table","A table of attributes => value to set")
+  types.lua_widget.__call:add_parameter("attributes","table","A table of attributes => value to set")
   types.lua_widget.__call:add_return(types.lua_widget,"The object called itself, to allow chaining")
 
 
@@ -964,7 +964,7 @@ local widget = dt.new_widget("button"){
   types.lua_file_chooser_button.changed_callback:set_text("A function to call when the value field changes (character entered or value selected)")
   types.lua_file_chooser_button.changed_callback:set_reported_type("function")
   types.lua_file_chooser_button.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
-  types.lua_file_chooser_button.is_directory:set_text("True if the file chooser button only allows directories to be selecte")
+  types.lua_file_chooser_button.is_directory:set_text("True if the file chooser button only allows directories to be selected")
 
   types.lua_stack:set_text("A container that will only show one of its child at a time")
   types.lua_stack.active:set_text("The currently selected child, can be nil if the container has no child, can be set to one of the child widget or to an index in the child table")
@@ -1006,7 +1006,7 @@ local widget = dt.new_widget("button"){
 	events["post-import-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 
-	events["shortcut"]:set_text([[This event registers a new keyboad shortcut. The shortcut isn't bound to any key until the users does so in the preference panel.
+	events["shortcut"]:set_text([[This event registers a new keyboard shortcut. The shortcut isn't bound to any key until the users does so in the preference panel.
 
 	The event is triggered whenever the shortcut is triggered.
 
@@ -1042,7 +1042,7 @@ local widget = dt.new_widget("button"){
 	events["global_toolbox-overlay_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
   events["mouse-over-image-changed"]:set_text([[This event is triggered whenever the image under the mouse changes]])
-  events["mouse-over-image-changed"].callback:add_parameter("image",types.dt_lua_image_t,[[The new image under the mous, can be nil if there is no image under the mouse]])
+  events["mouse-over-image-changed"].callback:add_parameter("image",types.dt_lua_image_t,[[The new image under the mouse, can be nil if there is no image under the mouse]])
 	events["mouse-over-image-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
   events["exit"]:set_text([[This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs]])
 	events["exit"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
