@@ -338,7 +338,7 @@
         The collect images module has a feature that allows you to tell darktable about
         the new location of imported folders which have been moved.
         You set the combobox to <emphasis>folders</emphasis> to find the original folder name in the tree.
-        The folder name will be displayed striked-out to emphasise that it is no longer there.
+        The folder name will be displayed striked-out to emphasize that it is no longer there.
         Then you right-click on the folder name, select <quote>search filmroll...</quote>,
         and then select the new location of the folder.
       </para>
