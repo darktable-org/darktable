@@ -79,6 +79,13 @@
         In the double logarithmic view more space is given to the lower values allowing a more
         fine-grained adjustment of the shadows.
       </para>
+      <title>fusion</title>
+      <para>
+        This control triggers the <emphasis>exposure fusion</emphasis> feature. You can choose
+        to merge the image with a copy of itself after applying the current base curve, as well as
+        boosting the exposure by a couple of stops. Use this to compress dynamic range for extremely
+        underexposed images and true HDR input. For best results, use the exposure module (see <xref linkend="exposure"/>) to expose the image for the highlights before toggling this feature on.
+      </para>
     </sect5>
 
   </sect4>
