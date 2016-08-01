@@ -743,7 +743,7 @@ void init(dt_iop_module_t *module)
     },
     { 2, 0, 0 }, // number of nodes per curve
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-    {0, 3.0f},   // no exposure fusion, but if we would, add 3 stops
+    0, 3.0f,     // no exposure fusion, but if we would, add 3 stops
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
