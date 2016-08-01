@@ -34,8 +34,8 @@
     <para>
       To perform the conversion, just activate the <emphasis>monochrome</emphasis> module
       (<xref linkend="monochrome"/>). You can then simulate a color filter, by dragging the
-      circle above the colours you want to filter. Filter size can be modified thanks to wheel
-      scrolling.
+      circle above the colours you want to filter. Filter size can be modified via scrolling
+      the mouse wheel.
     </para>
 
   </sect3>
@@ -57,6 +57,29 @@
 
       <listitem><para>
         Use the bottom slider to set saturation to zero
+      </para></listitem>
+
+    </orderedlist>
+
+  </sect3>
+
+  <sect3 status="draft">
+
+    <title>The LAB way: color contrast module</title>
+
+    <para>
+      To perform such conversion we use the <emphasis>color contrast</emphasis> module
+      (<xref linkend="color_contrast"/>).
+    </para>
+
+    <orderedlist>
+
+      <listitem><para>
+        Activate the color contrast module
+      </para></listitem>
+
+      <listitem><para>
+        Set both steepness sliders to zero
       </para></listitem>
 
     </orderedlist>

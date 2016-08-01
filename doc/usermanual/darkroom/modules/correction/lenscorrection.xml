@@ -30,7 +30,7 @@
               This module is able to correct certain lens flaws, namely distortions, transversal
               chromatic aberrations (TCA) and vignetting. It relies on the external library
               lensfun, which comes with correction profiles for many (but not all) common
-              cameras end lenses.
+              cameras and lenses.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/lenscorrection.png" scalefit="1" width="80%" align="center" />
@@ -65,7 +65,7 @@
       <para>
         The lens make and model as determined by EXIF data. You can override this manually and
         select your lens from a hierarchical menu. This is mainly needed for pure mechanical
-        lenses.
+        lenses, but may also be needed for off-brand / third party lenses.
       </para>
     </sect5>
 
@@ -112,7 +112,9 @@
         In addition to the correction of lens flaws, this module can change the projection type
         of your image. Set this combobox to the aimed projection type, like
         <quote>rectilinear</quote>, <quote>fish-eye</quote>, <quote>panoramic</quote>,
-        <quote>equirectangular</quote>.
+        <quote>equirectangular</quote>, <quote>orthographic</quote>,
+        <quote>stereographic</quote>, <quote>equisolid angle</quote>,
+        <quote>thoby fish-eye</quote>.
       </para>
     </sect5>
 
@@ -128,7 +130,7 @@
     <sect5>
       <title>mode</title>
       <para>
-        The default behavior of this module is to correct lens flaws. Switch this togglebutton
+        The default behavior of this module is to correct lens flaws. Switch this combobox
         to <quote>distort</quote> in order to simulate the behavior of a specific lens (inverted
         effect).
       </para>
@@ -138,7 +140,7 @@
       <title>TCA red</title>
       <para>
         This slider allows to override the correction parameter for TCA. You can also use this
-        slider to manually set the parameter in case the lens profile does not support TCA
+        slider to manually set the parameter in case the lens profile does not contain TCA
         correction. Look out for colored seams at features with high contrast edges and adjust
         this parameter and the following one to minimize those seams.
       </para>
@@ -148,7 +150,7 @@
       <title>TCA blue</title>
       <para>
         This slider allows to override the correction parameter for TCA. You can also use this
-        slider to manually set the parameter in case the lens profile does not support TCA
+        slider to manually set the parameter in case the lens profile does not contain TCA
         correction.
       </para>
     </sect5>

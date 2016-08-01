@@ -21,7 +21,7 @@
   <para>
     In order to speed-up display of film rolls, darktable stores thumbnails in a cache file on
     disk (primary cache) and loads it into memory at startup. This value controls the cache size
-    in megabytes. It needs a restart if changed (default 512MB).
+    in megabytes. It needs a restart if changed (default 256MB).
   </para>
 
   <bridgehead renderas="sect4">enable disk backend for thumbnail cache</bridgehead>
@@ -106,6 +106,11 @@
     results in some cases (default off).
   </para>
 
+  <para>
+    Note that if the given ICC is LUT-based or contains both, a LUT and a matrix, darktable will
+    use LittleCMS 2 to render the colors regardless of this configuration parameter's value.
+  </para>
+
   <bridgehead renderas="sect4">do high quality resampling during export</bridgehead>
 
   <para>
@@ -133,8 +138,8 @@
   <bridgehead renderas="sect4">password storage backend to use</bridgehead>
 
   <para>
-    The storage backend for password storage. Options: <quote>none</quote>,
-    <quote>kwallet</quote>, <quote>gnome keyring</quote> (default none).
+    The storage backend for password storage. Options: <quote>auto</quote> (default),
+    <quote>none</quote>, <quote>libsecret</quote>, <quote>kwallet</quote>.
   </para>
 
   <bridgehead renderas="sect4">look for updated xmp files on startup</bridgehead>

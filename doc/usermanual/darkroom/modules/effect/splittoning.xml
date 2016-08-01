@@ -67,8 +67,9 @@
       <title>shadows and highlights color</title>
       <para>
         These controls are used to set the color of the splittoning effect, you select the
-        desired color and saturation for both shadows and highlights, you can also click the
-        color preview box to bring up a common color picker dialog.
+        desired color and saturation for both shadows and highlights.
+        Clicking on the colored squares will open a color selector dialog which offers you
+        a choice of commonly used colors, or allows to define a color in RGB color space.
       </para>
     </sect5>
 

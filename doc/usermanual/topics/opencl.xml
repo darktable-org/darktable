@@ -175,7 +175,7 @@
       <itemizedlist>
 
         <listitem><para>
-          darktable dynamically links <filename>libOpenCL.so</filename>, a system library which
+          darktable dynamically loads <filename>libOpenCL.so</filename>, a system library which
           must be accessible to the system's dynamic loader (<filename>ld.so</filename>).
         </para></listitem>
 
