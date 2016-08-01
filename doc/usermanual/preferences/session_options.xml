@@ -52,7 +52,7 @@
             $(DESKTOP)
           </entry>
           <entry>
-            the desktop folder as defined by the system (usally <quote>$HOME/Desktop</quote>)
+            the desktop folder as defined by the system (usually <quote>$HOME/Desktop</quote>)
           </entry>
         </row>
         <row>

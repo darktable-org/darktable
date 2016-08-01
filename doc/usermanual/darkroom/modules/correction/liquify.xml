@@ -207,7 +207,7 @@
             <tbody>
               <row>
                 <entry>
-                  A line is a set of point. The points are linked together, the effect is
+                  A line is a set of points. The points are linked together, the effect is
                   interpolated by a set of strength vectors.
                 </entry>
                 <entry>
@@ -247,7 +247,7 @@
             <tbody>
               <row>
                 <entry>
-                  A curve is a set of point. The points are linked together, the effect is
+                  A curve is a set of points. The points are linked together, the effect is
                   interpolated as a bezier curve by a set of strength vectors.
                 </entry>
                 <entry>

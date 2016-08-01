@@ -13,7 +13,7 @@
 
   <para>
     darktable's memory requirements are high. A simple calculation makes this clear. If you have
-    a 20MPx image, darktable for precision reasons will store this internally as a 4 x 32-bit
+    a 20MPix image, darktable for precision reasons will store this internally as a 4 x 32-bit
     floating point cell for each pixel. Each full image of this size will need about 300MB of
     memory. As we want to process the image, we will at least need two buffers for each module
     &nbsp;&ndash; one for input and one for output. If we have a more complex module, its
@@ -68,7 +68,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="draft">
 
     <title>Memory fragmentation</title>
 
@@ -80,9 +80,9 @@
       is often not the case. The system's memory allocator may no longer see this area as one
       contiguous 1.5GB block but as a row of 300MB areas. If there is no other free area of
       1.5GB available, the allocation would fail. During a program run this mechanism will take
-      away more and more of the larger memory blocks in favor of smaller ones. darktable 1.0
-      introduces a caching algorithm to address this problem. It pre-allocates blocks of memory
-      and makes them available on request.
+      away more and more of the larger memory blocks in favor of smaller ones. darktable 2.0
+      mip map cache allocates several small memory blocks per each thumbnail, so this problem
+      is even bigger. For this reason, as of darktable 2.0, 32-bit support is soft-deprecated.
     </para>
 
   </sect2>
@@ -121,8 +121,8 @@
     </indexterm>
 
     <para>
-      As we've seen 32-bit systems are difficult environments for darktable. Still many users
-      are successfully running darktable on them, if the basic requirements in terms of total
+      As we've seen 32-bit systems are difficult environments for darktable. Still some users
+      are running darktable on them, if the basic requirements in terms of total
       system memory and the topics mentioned in the paragraphs above are addressed properly.
     </para>
 
@@ -155,8 +155,7 @@
             This parameter defines the maximum number of threads that are allowed in parallel
             when importing film rolls or doing other background stuff. For obvious reasons on
             32-bit systems you can only have one thread eating resources at a time. So you need
-            set this parameter to 1; anything higher will kill you. For the same reason you also
-            must set the number of parallel export threads to 1.
+            set this parameter to 1; anything higher will kill you.
           </para></listitem>
 
         </varlistentry>
@@ -195,16 +194,10 @@
 
           <listitem><para>
             This controls how many thumbnails (or mip maps) can be stored in memory at a time.
-            As a starting point set this to something like 256MB. To avoid the problem of memory
-            fragmentation during longer runs of darktable, the new caching scheme frontloads the
-            memory costs and allocates this cache once at the beginning. Some Linux kernels use
-            over-committing memory allocation, which means you don't immediately pay for all of
-            the memory in terms of RSS (resident set size, the non-swapped physical memory), but
-            in any case you pay for the address space. As explained before, this poses a problem
-            for 32-bit systems and will, at first sight, appear as a regression over the
-            0.9.3-style cache. In the long run however, this is all the memory that's ever going
-            to be allocated for thumbnails. So if we can successfully grab this portion once, we
-            are relieving a lot of pressure on fragmentation for long sessions.
+            As a starting point set this to something like 256MB. Since darktable 2.0, the cache
+            does allocate a few small buffers per each thumbnail in cache, thus causing
+            significant memory fragmentation. As explained before, this poses a problem for
+            32-bit systems. For this reason, as of darktable 2.0, 32-bit support is soft-deprecated.
           </para></listitem>
 
         </varlistentry>
