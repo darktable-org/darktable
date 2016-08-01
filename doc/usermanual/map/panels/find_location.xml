@@ -23,7 +23,9 @@
               <para>
                 To use, type in a place or address, press enter and a list of results will be
                 shown. Click on one of the resulting items and the map will zoom to that
-                location. Now drag images from the film strip at the bottom of the screen to
+                location. Additionally, an outline covering that location, or a pin pointing
+                at the location will be displayed.
+                Now drag images from the film strip at the bottom of the screen to
                 their location on the map. The GPS location will be embedded in the image.
               </para>
             </entry>

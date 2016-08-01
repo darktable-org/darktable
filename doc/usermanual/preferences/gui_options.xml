@@ -27,7 +27,8 @@
 
   <para>
     Check this option to not use the embedded jpeg from the raw file but process the raw data.
-    This is slower but gives you color managed thumbnails (default off).
+    This is slower. (default off).
+    <!-- but prevents you from getting false impressions from camera-processed thumbnail -->
   </para>
 
   <bridgehead renderas="sect4">ask before removing images from database</bridgehead>
