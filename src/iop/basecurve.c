@@ -44,7 +44,7 @@
 #define MAXNODES 20
 
 
-DT_MODULE_INTROSPECTION(2, dt_iop_basecurve_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {
@@ -59,7 +59,18 @@ typedef struct dt_iop_basecurve_params_t
   dt_iop_basecurve_node_t basecurve[3][MAXNODES];
   int basecurve_nodes[3];
   int basecurve_type[3];
+  int exposure_fusion;    // number of exposure fusion steps
+  float exposure_stops;   // number of stops between fusion images
 } dt_iop_basecurve_params_t;
+
+typedef struct dt_iop_basecurve_params2_t
+{
+  // three curves (c, ., .) with max number of nodes
+  // the other two are reserved, maybe we'll have cam rgb at some point.
+  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+  int basecurve_nodes[3];
+  int basecurve_type[3];
+} dt_iop_basecurve_params2_t;
 
 typedef struct dt_iop_basecurve_params1_t
 {
@@ -70,7 +81,7 @@ typedef struct dt_iop_basecurve_params1_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
@@ -81,11 +92,20 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
                                         { { 0.0, 0.0 }, { 1.0, 1.0 } },
                                       },
                                       { 2, 3, 3 },
-                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE } };
+                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE } , 0, 0};
     for(int k = 0; k < 6; k++) n->basecurve[0][k].x = o->tonecurve_x[k];
     for(int k = 0; k < 6; k++) n->basecurve[0][k].y = o->tonecurve_y[k];
     n->basecurve_nodes[0] = 6;
     n->basecurve_type[0] = CUBIC_SPLINE;
+    return 0;
+  }
+  if(old_version == 2 && new_version == 3)
+  {
+    dt_iop_basecurve_params2_t *o = (dt_iop_basecurve_params2_t *)old_params;
+    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
+    memcpy(n, o, sizeof(dt_iop_basecurve_params2_t));
+    n->exposure_fusion = 0;
+    n->exposure_stops = 0;
     return 0;
   }
   return 1;
@@ -183,7 +203,7 @@ typedef struct dt_iop_basecurve_gui_data_t
   int minmax_curve_type, minmax_curve_nodes;
   GtkBox *hbox;
   GtkDrawingArea *area;
-  GtkWidget *scale;
+  GtkWidget *scale, *fusion;
   double mouse_x, mouse_y;
   int selected;
   double selected_offset, selected_y, selected_min, selected_max;
@@ -200,6 +220,8 @@ typedef struct dt_iop_basecurve_data_t
   int basecurve_nodes;
   float table[0x10000];      // precomputed look-up table for tone curve
   float unbounded_coeffs[3]; // approximation for extrapolation
+  int exposure_fusion;
+  float exposure_stops;
 } dt_iop_basecurve_data_t;
 
 typedef struct dt_iop_basecurve_global_data_t
@@ -302,18 +324,326 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void apply_ev_and_curve(
+    const float *const in,
+    float *const out,
+    const int width,
+    const int height,
+    const float mul,
+    const float *const table,
+    const float *const unbounded_coeffs)
 {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(size_t k = 0; k < (size_t)width * height; k++)
+  {
+    const float *inp = in + 4 * k;
+    float *outp = out + 4 * k;
+    for(int i = 0; i < 3; i++)
+    {
+      const float f = inp[i] * mul;
+      // use base curve for values < 1, else use extrapolation.
+      if(f < 1.0f)
+        outp[i] = table[CLAMP((int)(f * 0x10000ul), 0, 0xffff)];
+      else if(unbounded_coeffs)
+        outp[i] = dt_iop_eval_exp(unbounded_coeffs, f);
+      else outp[i] = 1.0f;
+    }
+  }
+}
+
+static inline void compute_features(
+    float *const col,
+    const int wd,
+    const int ht)
+{
+  // features are product of
+  // 1) well exposedness
+  // 2) saturation
+  // 3) local contrast (handled in laplacian form later)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) collapse(2)
+#endif
+  for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
+  {
+    const size_t x = 4ul*(wd*j+i);
+    const float max = MAX(col[x], MAX(col[x+1], col[x+2]));
+    const float min = MIN(col[x], MIN(col[x+1], col[x+2]));
+    const float sat = .1f + .1f*(max-min)/MAX(1e-4, max);
+    col[x+3] = sat;
+
+    const float c = 0.54f;
+    float v = fabsf(col[x]-c);
+    v = MAX(fabsf(col[x+1]-c), v);
+    v = MAX(fabsf(col[x+2]-c), v);
+    const float var = 0.5;
+    const float exp = .2f + dt_fast_expf(-v*v/(var*var));
+    col[x+3] *= exp;
+  }
+}
+
+static inline void gauss_blur(
+    const float *const input,
+    float *const output,
+    const size_t wd,
+    const size_t ht)
+{
+  const float w[5] = {1./16., 4./16., 6./16., 4./16., 1./16.};
+  float *tmp = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
+  memset(tmp, 0, 4*wd*ht*sizeof(float));
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(tmp)
+#endif
+  for(int j=0;j<ht;j++)
+  { // horizontal pass
+    // left borders
+    for(int i=0;i<2;i++) for(int c=0;c<4;c++)
+      for(int ii=-2;ii<=2;ii++)
+        tmp[4*(j*wd+i)+c] += input[4*(j*wd+MAX(-i-ii,i+ii))+c] * w[ii+2];
+    // most pixels
+    for(int i=2;i<wd-2;i++) for(int c=0;c<4;c++)
+      for(int ii=-2;ii<=2;ii++)
+        tmp[4*(j*wd+i)+c] += input[4*(j*wd+i+ii)+c] * w[ii+2];
+    // right borders
+    for(int i=wd-2;i<wd;i++) for(int c=0;c<4;c++)
+      for(int ii=-2;ii<=2;ii++)
+        tmp[4*(j*wd+i)+c] += input[4*(j*wd+MIN(i+ii, wd-(i+ii-wd+1) ))+c] * w[ii+2];
+  }
+  memset(output, 0, 4*wd*ht*sizeof(float));
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(tmp)
+#endif
+  for(int i=0;i<wd;i++)
+  { // vertical pass
+    for(int j=0;j<2;j++) for(int c=0;c<4;c++)
+      for(int jj=-2;jj<=2;jj++)
+        output[4*(j*wd+i)+c] += tmp[4*(MAX(-j-jj,j+jj)*wd+i)+c] * w[jj+2];
+    for(int j=2;j<ht-2;j++) for(int c=0;c<4;c++)
+      for(int jj=-2;jj<=2;jj++)
+        output[4*(j*wd+i)+c] += tmp[4*((j+jj)*wd+i)+c] * w[jj+2];
+    for(int j=ht-2;j<ht;j++) for(int c=0;c<4;c++)
+      for(int jj=-2;jj<=2;jj++)
+        output[4*(j*wd+i)+c] += tmp[4*(MIN(j+jj, ht-(j+jj-ht+1))*wd+i)+c] * w[jj+2];
+  }
+  free(tmp);
+}
+
+static inline void gauss_expand(
+    const float *const input, // coarse input
+    float *const fine,        // upsampled, blurry output
+    const size_t wd,          // fine res
+    const size_t ht)
+{
+  const size_t cw = (wd-1)/2+1;
+  // fill numbers in even pixels, zero odd ones
+  memset(fine, 0, 4*wd*ht*sizeof(float));
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) collapse(2)
+#endif
+  for(int j=0;j<ht;j+=2)
+    for(int i=0;i<wd;i+=2)
+      for(int c=0;c<4;c++)
+        fine[4*(j*wd+i)+c] = 4.0f * input[4*(j/2*cw + i/2)+c];
+
+  // convolve with same kernel weights mul by 4:
+  gauss_blur(fine, fine, wd, ht);
+}
+
+// XXX FIXME: we'll need to pad up the image to get a good boundary condition!
+// XXX FIXME: downsampling will not result in an energy conserving pattern (every 4 pixels one sample)
+// XXX FIXME: neither will a mirror boundary condition (mirrors in subsampled values at random density)
+// TODO: copy laplacian code from local laplacian filters, it's faster.
+static inline void gauss_reduce(
+    const float *const input, // fine input buffer
+    float *const coarse,      // coarse scale, blurred input buf
+    float *const detail,      // detail/laplacian, fine scale, or 0
+    const size_t wd,
+    const size_t ht)
+{
+  // blur, store only coarse res
+  const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
+
+  float *blurred = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
+  gauss_blur(input, blurred, wd, ht);
+  for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
+    for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
+  free(blurred);
+
+  if(detail)
+  {
+    // compute laplacian/details: expand coarse buffer into detail
+    // buffer subtract expanded buffer from input in place
+    gauss_expand(coarse, detail, wd, ht);
+    for(size_t k=0;k<wd*ht*4;k++)
+      detail[k] = input[k] - detail[k];
+  }
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+    void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const float *const in  = (float *)ivoid;
+  float *const out = (float *)ovoid;
   const int ch = piece->colors;
-  const dt_iop_basecurve_data_t *const d = (const dt_iop_basecurve_data_t *const)(piece->data);
+  dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
+
+  // are we doing exposure fusion?
+  if(d->exposure_fusion)
+  {
+    // allocate temporary buffer for wavelet transform + blending
+    const int wd = roi_in->width, ht = roi_in->height;
+    int num_levels = 8;
+    float **col  = malloc(num_levels * sizeof(float*));
+    float **comb = malloc(num_levels * sizeof(float*));
+    int w = wd, h = ht;
+    const int rad = MIN(wd, ceilf(256 * roi_in->scale / piece->iscale));
+    int step = 1;
+    for(int k=0;k<num_levels;k++)
+    {
+      // coarsest step is some % of image width.
+      col[k]  = dt_alloc_align(64, sizeof(float)*4ul*w*h);
+      comb[k] = dt_alloc_align(64, sizeof(float)*4ul*w*h);
+      memset(comb[k], 0, sizeof(float)*4*w*h);
+      w = (w-1)/2+1; h = (h-1)/2+1;
+      step *= 2;
+      if(step > rad || w < 4 || h < 4)
+      {
+        num_levels = k+1;
+        break;
+      }
+    }
+
+    for(int e=0;e<d->exposure_fusion+1;e++)
+    { // for every exposure fusion image:
+      // push by some ev, apply base curve:
+      apply_ev_and_curve(
+          in, col[0], wd, ht,
+          powf(2.0f, d->exposure_stops * e),
+          d->table, d->unbounded_coeffs);
+
+      // compute features
+      compute_features(col[0], wd, ht);
+
+      // create gaussian pyramid of colour buffer
+      w = wd; h = ht;
+      gauss_reduce(col[0], col[1], out, w, h);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(col) schedule(static)
+#endif
+      for(size_t k=0;k<4ul*wd*ht;k+=4)
+        col[0][k+3] *= .1f + sqrtf(out[k]*out[k] + out[k+1]*out[k+1] + out[k+2]*out[k+2]);
+
+// #define DEBUG_VIS2
+#ifdef DEBUG_VIS2 // transform weights in channels
+      for(size_t k=0;k<4ul*w*h;k+=4)
+        col[0][k+e] = col[0][k+3];
+#endif
+
+// #define DEBUG_VIS
+#ifdef DEBUG_VIS // DEBUG visualise weight buffer
+      for(size_t k=0;k<4ul*w*h;k+=4)
+        comb[0][k+e] = col[0][k+3];
+      continue;
+#endif
+
+      for(int k=1;k<num_levels;k++)
+      {
+        gauss_reduce(col[k-1], col[k], 0, w, h);
+        w = (w-1)/2+1; h = (h-1)/2+1;
+      }
+
+      // update pyramid coarse to fine
+      for(int k=num_levels-1;k>=0;k--)
+      {
+        w = wd; h = ht;
+        for(int i=0;i<k;i++) { w = (w-1)/2+1; h = (h-1)/2+1; }
+        // abuse output buffer as temporary memory:
+        if(k!=num_levels-1)
+          gauss_expand(col[k+1], out, w, h);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(col,comb,w,h,num_levels,k) schedule(static)
+#endif
+        for(int j=0;j<h;j++) for(int i=0;i<w;i++)
+        {
+          const size_t x = 4ul*(w*j+i);
+          // blend images into output pyramid
+          if(k == num_levels-1) // blend gaussian base
+#ifdef DEBUG_VIS2
+            ;
+#else
+            for(int c=0;c<3;c++)
+              comb[k][x+c] += col[k][x+3] * col[k][x+c];
+#endif
+          else // laplacian
+            for(int c=0;c<3;c++) comb[k][x+c] +=
+              col[k][x+3] * (col[k][x+c] - out[x+c]);
+          comb[k][x+3] += col[k][x+3];
+        }
+      }
+    }
+
+#ifndef DEBUG_VIS // DEBUG: switch off when visualising weight buf
+    // normalise and reconstruct output pyramid buffer coarse to fine
+    for(int k=num_levels-1;k>=0;k--)
+    {
+      w = wd; h = ht;
+      for(int i=0;i<k;i++) { w = (w-1)/2+1; h = (h-1)/2+1;}
+
+      // normalise both gaussian base and laplacians:
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(comb,w,h,k) schedule(static)
+#endif
+      for(size_t i=0;i<(size_t)4*w*h;i+=4)
+        if(comb[k][i+3] > 1e-8f)
+          for(int c=0;c<3;c++) comb[k][i+c] /= comb[k][i+3];
+
+      if(k < num_levels-1)
+      { // reconstruct output image
+        gauss_expand(comb[k+1], out, w, h);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(comb,w,h,k) schedule(static)
+#endif
+        for(int j=0;j<h;j++) for(int i=0;i<w;i++)
+        {
+          const size_t x = 4ul*(w*j+i);
+          for(int c=0;c<3;c++) comb[k][x+c] += out[x+c];
+        }
+      }
+    }
+#endif
+
+    // copy output buffer
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(comb) schedule(static)
+#endif
+    for(size_t k=0;k<4ul*wd*ht;k+=4)
+    {
+      out[k+0] = comb[0][k+0];
+      out[k+1] = comb[0][k+1];
+      out[k+2] = comb[0][k+2];
+      out[k+3] = in[k+3]; // pass on 4th channel
+    }
+
+    // free temp buffers
+    for(int k=0;k<num_levels;k++)
+    {
+      free(col[k]);
+      free(comb[k]);
+    }
+    free(col);
+    free(comb);
+    return;
+  }
+
+  // fast path for non-fusion
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    float *inp = (float *)ivoid + ch * k;
-    float *outp = (float *)ovoid + ch * k;
+    const float *inp = in + ch * k;
+    float *outp = out + ch * k;
     for(int i = 0; i < 3; i++)
     {
       // use base curve for values < 1, else use extrapolation.
@@ -332,6 +662,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;
+
+  // TODO: implement opencl version:
+  if(p->exposure_fusion) piece->process_cl_ready = 0;
+  d->exposure_fusion = p->exposure_fusion;
+  d->exposure_stops = p->exposure_stops;
 
   const int ch = 0;
   // take care of possible change of curve type or number of nodes (not yet implemented in UI)
@@ -384,7 +719,10 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  // nothing to do, gui curve is read directly from params during expose event.
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_bauhaus_combobox_set(g->fusion, p->exposure_fusion);
+  // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -405,6 +743,7 @@ void init(dt_iop_module_t *module)
     },
     { 2, 0, 0 }, // number of nodes per curve
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
+    0, 3.0f,     // no exposure fusion, but if we would, add 3 stops
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
@@ -927,6 +1266,16 @@ static gboolean dt_iop_basecurve_key_press(GtkWidget *widget, GdkEventKey *event
 
 #undef BASECURVE_DEFAULT_STEP
 
+static void fusion_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  int fuse = dt_bauhaus_combobox_get(widget);
+  p->exposure_fusion = fuse;
+  p->exposure_stops = 3;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void scale_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -967,6 +1316,15 @@ void gui_init(struct dt_iop_module_t *self)
                                           "more precise control near the blacks"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
+
+  c->fusion = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->fusion, NULL, _("fusion"));
+  dt_bauhaus_combobox_add(c->fusion, _("none"));
+  dt_bauhaus_combobox_add(c->fusion, _("0ev, +3ev"));
+  dt_bauhaus_combobox_add(c->fusion, _("0ev, +3ev, +6ev"));
+  gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up a couple of times with itself, to compress high dynamic range. expose for the highlights before use."));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
