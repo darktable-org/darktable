@@ -280,7 +280,7 @@
     </indexterm>
 
     <para>
-      Theoretically the individual components of color data are confined to certain mininum and
+      Theoretically the individual components of color data are confined to certain minimum and
       maximum levels. As an example the intensity of an individual red, green or blue color
       channel in RGB can be anything in the range between 0% and 100% (or between 0.0 and 1.0).
       Likewise the L channel in Lab can be anything between 0 (pure black) and 100 (pure white).
