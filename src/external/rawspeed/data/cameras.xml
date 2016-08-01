@@ -1326,6 +1326,24 @@
 			<Horizontal y="0" height="8"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G9 X">
+		<ID make="Canon" model="PowerShot G9 X">Canon PowerShot G9 X</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="96" y="18" width="0" height="0"/>
+		<Sensor black="2047" white="16000"/>
+		<BlackAreas>
+			<Vertical x="0" width="70"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G15">
 		<ID make="Canon" model="PowerShot G15">Canon PowerShot G15</ID>
 		<CFA width="2" height="2">
