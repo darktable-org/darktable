@@ -81,24 +81,6 @@ typedef struct dt_iop_basecurve_params1_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
-  {
-    dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
-    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-
-    // start with a fresh copy of default parameters
-    // unfortunately default_params aren't inited at this stage.
-    *n = (dt_iop_basecurve_params_t){ {
-                                        { { 0.0, 0.0 }, { 1.0, 1.0 } },
-                                      },
-                                      { 2, 3, 3 },
-                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE } };
-    for(int k = 0; k < 6; k++) n->basecurve[0][k].x = o->tonecurve_x[k];
-    for(int k = 0; k < 6; k++) n->basecurve[0][k].y = o->tonecurve_y[k];
-    n->basecurve_nodes[0] = 6;
-    n->basecurve_type[0] = CUBIC_SPLINE;
-    return 0;
-  }
   if(old_version == 1 && new_version == 3)
   {
     dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
@@ -761,6 +743,7 @@ void init(dt_iop_module_t *module)
     },
     { 2, 0, 0 }, // number of nodes per curve
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
+    {0, 3.0f},   // no exposure fusion, but if we would, add 3 stops
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
