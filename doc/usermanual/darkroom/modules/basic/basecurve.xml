@@ -79,6 +79,8 @@
         In the double logarithmic view more space is given to the lower values allowing a more
         fine-grained adjustment of the shadows.
       </para>
+    </sect5>
+    <sect5>
       <title>fusion</title>
       <para>
         This control triggers the <emphasis>exposure fusion</emphasis> feature. You can choose
