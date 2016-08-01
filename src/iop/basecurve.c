@@ -385,15 +385,16 @@ static inline void compute_features(
 #endif
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
-    const size_t x = 4*(wd*j+i);
+    const size_t x = 4ul*(wd*j+i);
     const float max = MAX(col[x], MAX(col[x+1], col[x+2]));
     const float min = MIN(col[x], MIN(col[x+1], col[x+2]));
     const float sat = .1f + .1f*(max-min)/MAX(1e-4, max);
     col[x+3] = sat;
 
-    float v = fabsf(col[x]-0.54f);
-    v = MAX(fabsf(col[x+1]-0.54f), v);
-    v = MAX(fabsf(col[x+2]-0.54f), v);
+    const float c = 0.54f;
+    float v = fabsf(col[x]-c);
+    v = MAX(fabsf(col[x+1]-c), v);
+    v = MAX(fabsf(col[x+2]-c), v);
     const float var = 0.5;
     const float exp = .2f + dt_fast_expf(-v*v/(var*var));
     col[x+3] *= exp;
@@ -403,8 +404,8 @@ static inline void compute_features(
 static inline void gauss_blur(
     const float *const input,
     float *const output,
-    const int wd,
-    const int ht)
+    const size_t wd,
+    const size_t ht)
 {
   const float w[5] = {1./16., 4./16., 6./16., 4./16., 1./16.};
   float *tmp = dt_alloc_align(64, wd*ht*4*sizeof(float));
@@ -449,10 +450,10 @@ static inline void gauss_blur(
 static inline void gauss_expand(
     const float *const input, // coarse input
     float *const fine,        // upsampled, blurry output
-    const int wd,             // fine res
-    const int ht)
+    const size_t wd,          // fine res
+    const size_t ht)
 {
-  const int cw = (wd-1)/2+1;
+  const size_t cw = (wd-1)/2+1;
   // fill numbers in even pixels, zero odd ones
   memset(fine, 0, 4*wd*ht*sizeof(float));
 #ifdef _OPENMP
@@ -470,44 +471,29 @@ static inline void gauss_expand(
 // XXX FIXME: we'll need to pad up the image to get a good boundary condition!
 // XXX FIXME: downsampling will not result in an energy conserving pattern (every 4 pixels one sample)
 // XXX FIXME: neither will a mirror boundary condition (mirrors in subsampled values at random density)
+// TODO: copy laplacian code from local laplacian filters, it's faster.
 static inline void gauss_reduce(
     const float *const input, // fine input buffer
     float *const coarse,      // coarse scale, blurred input buf
     float *const detail,      // detail/laplacian, fine scale, or 0
-    const int wd,
-    const int ht)
+    const size_t wd,
+    const size_t ht)
 {
   // blur, store only coarse res
-  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
+  const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-  // TODO: pass in output buffer as tmp?
   float *blurred = dt_alloc_align(64, wd*ht*4*sizeof(float));
   gauss_blur(input, blurred, wd, ht);
-  for(int j=0;j<ch;j++) for(int i=0;i<cw;i++)
+  for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
     for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
   free(blurred);
 
-#if 0
-  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
-  const float w[5] = {1./16., 4./16., 6./16., 4./16., 1./16.};
-  // TODO: border handling!
-  for(int j=1;2*j+2<ht;j++) for(int i=1;2*i+2<wd;i++)
-  { // keep even pixels only
-    const int ind = 4*(j*cw+i), indi = 4*(2*j*wd+2*i);
-    for(int c=0;c<4;c++) coarse[ind + c] = 0.0f;
-    for(int ii=-2;ii<=2;ii++)
-      for(int jj=-2;jj<=2;jj++)
-        for(int c=0;c<4;c++)
-          coarse[ind + c] +=
-            input[indi+4*(wd*jj+ii)+c]*w[jj+2]*w[ii+2];
-  }
-#endif
   if(detail)
   {
     // compute laplacian/details: expand coarse buffer into detail
     // buffer subtract expanded buffer from input in place
     gauss_expand(coarse, detail, wd, ht);
-    for(int64_t k=0;k<wd*ht*4;k++)
+    for(size_t k=0;k<wd*ht*4;k++)
       detail[k] = input[k] - detail[k];
   }
 }
@@ -563,18 +549,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(col) schedule(static)
 #endif
-      for(size_t k=0;k<4*wd*ht;k+=4)
+      for(size_t k=0;k<4ul*wd*ht;k+=4)
         col[0][k+3] *= .1f + sqrtf(out[k]*out[k] + out[k+1]*out[k+1] + out[k+2]*out[k+2]);
 
 // #define DEBUG_VIS2
 #ifdef DEBUG_VIS2 // transform weights in channels
-      for(size_t k=0;k<4*w*h;k+=4)
+      for(size_t k=0;k<4ul*w*h;k+=4)
         col[0][k+e] = col[0][k+3];
 #endif
 
 // #define DEBUG_VIS
 #ifdef DEBUG_VIS // DEBUG visualise weight buffer
-      for(size_t k=0;k<4*w*h;k+=4)
+      for(size_t k=0;k<4ul*w*h;k+=4)
         comb[0][k+e] = col[0][k+3];
       continue;
 #endif
@@ -598,7 +584,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
         for(int j=0;j<h;j++) for(int i=0;i<w;i++)
         {
-          const size_t x = 4*(w*j+i);
+          const size_t x = 4ul*(w*j+i);
           // blend images into output pyramid
           if(k == num_levels-1) // blend gaussian base
 #ifdef DEBUG_VIS2
@@ -638,7 +624,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
         for(int j=0;j<h;j++) for(int i=0;i<w;i++)
         {
-          const size_t x = 4*(w*j+i);
+          const size_t x = 4ul*(w*j+i);
           for(int c=0;c<3;c++) comb[k][x+c] += out[x+c];
         }
       }
@@ -649,7 +635,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(comb) schedule(static)
 #endif
-    for(int k=0;k<4*wd*ht;k+=4)
+    for(size_t k=0;k<4ul*wd*ht;k+=4)
     {
       out[k+0] = comb[0][k+0];
       out[k+1] = comb[0][k+1];
