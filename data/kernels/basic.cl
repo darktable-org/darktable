@@ -163,6 +163,25 @@ highlights_4f_clip (read_only image2d_t in, write_only image2d_t out, const int 
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+rawoverexposed_4f_mark (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                        const float threshold)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  // 4f/pixel means that this has been debayered already.
+  // (this code path is just used for preview and non-raw images)
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  pixel.x = (pixel.x >= threshold) ? 0.0 : pixel.x;
+  pixel.y = (pixel.y >= threshold) ? 0.0 : pixel.y;
+  pixel.z = (pixel.z >= threshold) ? 0.0 : pixel.x;
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
 kernel void
 highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                     const float clip, const int rx, const int ry, const int filters)
@@ -175,6 +194,22 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
   pixel = fmin(clip, pixel);
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+kernel void
+rawoverexposed_1f_mark (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                        const float threshold)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  pixel.x = (pixel.x >= threshold) ? 0.0 : pixel.x;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
