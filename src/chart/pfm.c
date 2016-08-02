@@ -37,10 +37,8 @@ float *read_pfm(const char *filename, int *wd, int *ht)
   char scale_factor_string[64] = { 0 };
   int width, height, cols, unused = 0;
   // using fscanf to read floats only really works with LANG=C :(
-  unused  = fscanf(f, "%c%c %d %d ", &magic[0], &magic[1], &width, &height);
-  unused += fscanf(f, " %63s ", scale_factor_string);
-  float scale_factor = g_ascii_strtod(scale_factor_string, NULL);
-  if(magic[0] != 'P' || unused == -1)
+  unused = fscanf(f, "%c%c %d %d %63s%*[^\n]", &magic[0], &magic[1], &width, &height, scale_factor_string);
+  if(magic[0] != 'P' || unused != 5 || fgetc(f) != '\n')
   {
     fprintf(stderr, "wrong input file format\n");
     fclose(f);
@@ -57,6 +55,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
     return NULL;
   }
 
+  float scale_factor = g_ascii_strtod(scale_factor_string, NULL);
   int swap_byte_order = (scale_factor >= 0.0) ^ (G_BYTE_ORDER == G_BIG_ENDIAN);
 
   float *image = (float *)dt_alloc_align(16, sizeof(float) * width * height * 3);
