@@ -93,19 +93,22 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
 {
 #define PI atan2f(0, -1)
 
+  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
   const int ch = piece->colors;
   dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
 
-  const float d50[3] = { 0.9642f, 1.0f, 0.8249f }; // D50 white point
   // u' and v' of the white point, Luv color space.
   const float uv_prime_c[2] = { (4.0f * d50[0]) / (d50[0] + 15.0f * d50[1] + 3.0f * d50[2]),
                                 (9.0f * d50[1]) / (d50[0] + 15.0f * d50[1] + 3.0f * d50[2]) };
-  // dependency of the adapting-luminance onto the Helmholtz-Kohlrausch effect
+  //-> The denominator is the same for u and v. Is it faster to calculate once, store, and read, or
+  //-> to calculate twice?
+
+  // dependency of the adapting luminance onto the Helmholtz-Kohlrausch effect
   const float k_br = 0.2717f * (6.469f + 6.362f * powf(d->apparent.adapting_luminance, 0.4495f))
                      / (6.469f + powf(d->apparent.adapting_luminance, 0.4495f));
 
   float XYZ[3];
-  float uv_prime[2]; // as u', v', but for the actual color of the image.
+  float uv_prime[2]; // as u', v', but for the actual color of the pixel.
 
   float theta; // hue angle
   float s_uv;  // chromaticity
@@ -130,14 +133,12 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
       s_uv = 13.0f * sqrtf(powf(uv_prime[0] - uv_prime_c[0], 2) + powf(uv_prime[1] - uv_prime_c[1], 2));
       theta = atan2f(uv_prime[1] - uv_prime_c[1],
                      uv_prime[0] - uv_prime_c[0]); // FIXME Check for domain error, atan2f(0, 0)
-      theta = theta > 0 ? theta : 2 * PI + theta;
 
-      q = -0.01585f - 0.03017f * cosf(theta) - 0.04556f * cosf(2.0f * theta) - 0.02667f * cosf(3.0f * theta)
+      q = -0.01585f - 0.03016f * cosf(theta) - 0.04556f * cosf(2.0f * theta) - 0.02667f * cosf(3.0f * theta)
           - 0.00295 * cosf(4.0f * theta) + 0.14592f * sinf(theta) + 0.05084f * sinf(2.0f * theta)
           - 0.019f * sinf(3.0f * theta) - 0.00764f * sinf(4.0f * theta);
 
-      // L channel is the same in Luv and Lab. Thus, L is calculated in Luv and can be used
-      // w.o. further conversion.
+      // L channel is the same in Luv and Lab. Thus, L as calculated in LUV can be used is Lab.
       out[0] = (1.0f + (0.0872f * k_br - 0.134f * q) * s_uv) * in[0];
       out[1] = 0;
       out[2] = 0;
@@ -173,7 +174,6 @@ void reload_defaults(dt_iop_module_t *module)
 
 void init(dt_iop_module_t *module)
 {
-  // we don't need global data:
   module->data = NULL; // malloc(sizeof(dt_iop_bw_global_data_t));
   module->params = calloc(1, sizeof(dt_iop_bw_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_bw_params_t));
@@ -210,7 +210,10 @@ static void operator_callback(GtkWidget *combobox, gpointer user_data)
   dt_iop_bw_params_t *p = (dt_iop_bw_params_t *)self->params;
   p->operator= dt_bauhaus_combobox_get(combobox);
 
+  // hide operator-specific widgets
   gtk_widget_set_visible(g->apparent.adapting_luminance, FALSE);
+
+  // enable widgets of the selected operator
   if(p->operator== OPERETOR_APPARENT_GRAYSCALE)
   {
     gtk_widget_set_visible(g->apparent.adapting_luminance, TRUE);
@@ -238,7 +241,10 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->operator, p->operator);
   dt_bauhaus_slider_set(g->apparent.adapting_luminance, p->apparent.adapting_luminance);
 
+  // hide operator-specific widgets
   gtk_widget_set_visible(g->apparent.adapting_luminance, FALSE);
+
+  // enable widgets of the selected operator
   if(p->operator== OPERETOR_APPARENT_GRAYSCALE)
   {
     gtk_widget_set_visible(g->apparent.adapting_luminance, TRUE);
@@ -255,18 +261,19 @@ void gui_init(dt_iop_module_t *self)
   /* operator combobox */
   g->operator= dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->operator, NULL, _("operator"));
+
   dt_bauhaus_combobox_add(g->operator, _("lightness"));
   dt_bauhaus_combobox_add(g->operator, _("apparent grayscale"));
-  gtk_widget_set_tooltip_text(g->operator, _("method for conversion to grayscale"));
+
+  gtk_widget_set_tooltip_text(g->operator, _("the conversion operator"));
   g_signal_connect(G_OBJECT(g->operator), "value-changed", G_CALLBACK(operator_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->operator), TRUE, TRUE, 0);
 
   /* operator apparent grayscale */
-
   g->apparent.adapting_luminance = dt_bauhaus_slider_new_with_range(self, 1, 1000, 1, 20, 0);
   dt_bauhaus_widget_set_label(g->apparent.adapting_luminance, NULL, _("ambient luminance"));
   gtk_widget_set_tooltip_text(g->apparent.adapting_luminance,
-                              _("Overall lightness. Darker image for small values, brighter for large vaules."));
+                              _("Overall lightness. Darker image for small values, brighter for large values."));
   g_signal_connect(G_OBJECT(g->apparent.adapting_luminance), "value-changed",
                    G_CALLBACK(apparent_adapting_luminance), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->apparent.adapting_luminance, TRUE, TRUE, 0);
