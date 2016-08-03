@@ -187,8 +187,6 @@ found_presets.each do |maker, model, preset, red, green, blue|
   else
     preset = '"'+preset+'"' if preset[-1] == "K"
     preset = preset + " "*(min_padding-preset.size)
-    red = sprintf('%0.6f',red)
-    blue = sprintf('%0.6f',blue)
     puts "  { \"#{maker}\", \"#{model}\", #{preset}, 0, { #{red}, #{green}, #{blue}, 0 } },"
   end
 end
