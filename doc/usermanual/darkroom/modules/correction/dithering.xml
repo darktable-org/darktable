@@ -73,13 +73,6 @@
     <title>Usage</title>
 
     <para>
-      If you export images with a reduced width/height and want best dithering results, please
-      make sure that you de-activate option <quote>do high quality resampling during
-      export</quote> in <emphasis>core options</emphasis> (see <xref linkend="core_options"/>),
-      else the final scaling step will counteract dithering.
-    </para>
-
-    <para>
       Viewing from some distance an image dithered into a very low bit depth (like
       <quote>floyd-steinberg 1-bit b&amp;w</quote>) will give the impression of a homogeneous
       grayscale image. We try to mimic this impression in darktable when you look at zoomed-out

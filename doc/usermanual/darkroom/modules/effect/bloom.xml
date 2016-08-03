@@ -27,7 +27,8 @@
         <tbody>
           <row>
             <entry>
-              This module boost highlights and creates a soft blooms them over the image, hence
+              This module takes highlights, blurs them and then blends (screen blend lightness)
+              with the original to create a soft blooms over the image, hence
               the name of the effect. There are numerous ways to use this module depending on
               the image's actual scenery lighting.
             </entry>

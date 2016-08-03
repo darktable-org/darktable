@@ -108,6 +108,11 @@
       higher accuracy in some cases.
     </para>
 
+    <para>
+      Note that if the given ICC is LUT-based or contains both, a LUT and a matrix, darktable will use
+      LittleCMS 2 to render the colors regardless of that configuration parameter's value.
+    </para>
+
   </sect3>
 
   <sect3 status="final" id="rendering_intent">
@@ -275,7 +280,7 @@
     </indexterm>
 
     <para>
-      Theoretically the individual components of color data are confined to certain mininum and
+      Theoretically the individual components of color data are confined to certain minimum and
       maximum levels. As an example the intensity of an individual red, green or blue color
       channel in RGB can be anything in the range between 0% and 100% (or between 0.0 and 1.0).
       Likewise the L channel in Lab can be anything between 0 (pure black) and 100 (pure white).

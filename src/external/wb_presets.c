@@ -1929,6 +1929,16 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-T1", Underwater, 0,        { 1.89404, 1, 1.569536, 0 } },
   { "Fujifilm", "X-T1", "5000K", 0,             { 1.847682, 1, 1.546358, 0 } },
 
+  /* Fujifilm X-T10 Firmware Version 1.21 */
+  { "Fujifilm", "X-T10", Daylight, 0,		{ 1.884106, 1, 1.526490, 0 } },
+  // The manual calls it "Shade", but exiftool shows it as "Cloudy".
+  { "Fujifilm", "X-T10", Shade, 0,		{ 2.072848, 1, 1.324503, 0 } },
+  { "Fujifilm", "X-T10", DaylightFluorescent, 0, { 2.423841, 1, 1.334437, 0 } },
+  { "Fujifilm", "X-T10", WarmWhiteFluorescent, 0, { 2.026490, 1, 1.599338, 0 } },
+  { "Fujifilm", "X-T10", CoolWhiteFluorescent, 0, { 1.890728, 1, 2.046358, 0 } },
+  { "Fujifilm", "X-T10", Incandescent, 0,	{ 1.211921, 1, 2.321192, 0 } },
+  { "Fujifilm", "X-T10", Underwater, 0,		{ 1.990066, 1, 1.440397, 0 } },
+
   /* Fujifilm X-Pro1 Firmware Version v3.30 */
   // The manual calls it "Fine".
   { "Fujifilm", "X-Pro1", Daylight, 0,		{ 1.860927, 1, 1.708609, 0 } },
@@ -6651,16 +6661,16 @@ const wb_data wb_preset[] =
   { "Sony", "NEX-5T", "6000K", 0, { 2.625, 1, 1.43359375, 0 } },
   { "Sony", "NEX-5T", "8500K", 0, { 3.10546875, 1, 1.20703125, 0 } },
 
-  // copied from NEX-5R
-  { "Sony", "NEX-6", Daylight, 0,		{ 2.5000, 1, 1.5117, 0 } },
-  { "Sony", "NEX-6", Shade, 0,			{ 3.0156, 1, 1.2422, 0 } },
-  { "Sony", "NEX-6", Cloudy, 0,		        { 2.7188, 1, 1.3828, 0 } },
-  { "Sony", "NEX-6", Tungsten, 0,		{ 1.5039, 1, 2.7695, 0 } },
-  { "Sony", "NEX-6", WarmWhiteFluorescent, 0,	{ 1.8164, 1, 2.7305, 0 } },
-  { "Sony", "NEX-6", CoolWhiteFluorescent, 0,	{ 2.3086, 1, 2.1758, 0 } },
-  { "Sony", "NEX-6", DayWhiteFluorescent, 0,	{ 2.4844, 1, 1.5703, 0 } },
-  { "Sony", "NEX-6", DaylightFluorescent, 0,	{ 2.8555, 1, 1.4648, 0 } },
-  { "Sony", "NEX-6", Flash, 0,			{ 2.8828, 1, 1.3906, 0 } },
+  // firmware NEX-6 1.03
+  { "Sony", "NEX-6", Daylight, 0,		{ 2.6250, 1, 1.4765, 0 } },
+  { "Sony", "NEX-6", Shade, 0,			{ 3.1718, 1, 1.2109, 0 } },
+  { "Sony", "NEX-6", Cloudy, 0,			{ 2.8515, 1, 1.3515, 0 } },
+  { "Sony", "NEX-6", Incandescent, 0,		{ 1.5742, 1, 2.7148, 0 } },
+  { "Sony", "NEX-6", WarmWhiteFluorescent, 0,	{ 1.9023, 1, 2.6796, 0 } },
+  { "Sony", "NEX-6", CoolWhiteFluorescent, 0,	{ 2.4218, 1, 2.1289, 0 } },
+  { "Sony", "NEX-6", DayWhiteFluorescent, 0,	{ 2.6054, 1, 1.5312, 0 } },
+  { "Sony", "NEX-6", DaylightFluorescent, 0,	{ 3.0000, 1, 1.4296, 0 } },
+  { "Sony", "NEX-6", Flash, 0,			{ 3.0312, 1, 1.3554, 0 } },
 
   { "Sony", "NEX-7", Daylight, 0,		{ 2.5820, 1, 1.5273, 0 } },
   { "Sony", "NEX-7", Shade, 0,			{ 3.0781, 1, 1.2734, 0 } },
@@ -6742,6 +6752,18 @@ const wb_data wb_preset[] =
   { "Sony", "ILCE-6000", "4500K", 0, { 2.54296875, 1, 1.875, 0 } },
   { "Sony", "ILCE-6000", "6000K", 0, { 2.98828125, 1, 1.546875, 0 } },
   { "Sony", "ILCE-6000", "8500K", 0, { 3.453125, 1, 1.30859375, 0 } },
+
+  { "Sony", "ILCE-6300", Daylight, 0, { 2.6015625, 1, 1.78515625, 0 } },
+  { "Sony", "ILCE-6300", Shade, 0, { 3.05859375, 1, 1.47265625, 0 } },
+  { "Sony", "ILCE-6300", Cloudy, 0, { 2.79296875, 1, 1.63671875, 0 } },
+  { "Sony", "ILCE-6300", Incandescent, 0, { 1.64453125, 1, 3.2265625, 0 } },
+  { "Sony", "ILCE-6300", WarmWhiteFluorescent, 0, { 1.91015625, 1, 3.1796875, 0 } },
+  { "Sony", "ILCE-6300", CoolWhiteFluorescent, 0, { 2.4296875, 1, 2.625, 0 } },
+  { "Sony", "ILCE-6300", DayWhiteFluorescent, 0, { 2.53125, 1, 1.88671875, 0 } },
+  { "Sony", "ILCE-6300", DaylightFluorescent, 0, { 2.8125, 1, 1.7109375, 0 } },
+  { "Sony", "ILCE-6300", Flash, 0, { 2.9140625, 1, 1.63671875, 0 } },
+  { "Sony", "ILCE-6300", Underwater, 0, { 2.8125, 1, 1.875, 0 } },
+  { "Sony", "ILCE-6300", "5500k", 0, { 2.65234375, 1, 1.74609375, 0 } },
 
   { "Sony", "ILCA-77M2", Daylight, 0,{ 2.78515625, 1, 1.6796875, 0 } },
   { "Sony", "ILCA-77M2", Shade, 0,    { 3.28515625, 1, 1.38671875, 0 } },

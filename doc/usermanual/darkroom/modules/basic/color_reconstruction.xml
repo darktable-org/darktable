@@ -124,7 +124,7 @@
         allows you to select a preferred hue of replacement colors. This only has an effect if
         the preferred hue is actually present within the selected spatial and range distance of
         the target pixels (see above). A typical use case is repairing highlights on human skin
-        in situations where diverging colores are in close proximity (e.g. textiles or hair with
+        in situations where diverging colors are in close proximity (e.g. textiles or hair with
         a luminance close to skin). Setting a hue preference on skin tones avoids these other
         colors from creeping in.
       </para>

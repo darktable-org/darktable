@@ -96,7 +96,7 @@
     <para>
       Using OpenCL in darktable requires that your PC is equipped with a suitable graphics card
       and that it has the required libraries in place. Namely modern graphics cards from NVIDIA
-      and ATI come with full OpenCL support. The OpenCL compiler is normally shipped as part of
+      and AMD come with full OpenCL support. The OpenCL compiler is normally shipped as part of
       the proprietary graphics driver; it is used as a dynamic library called
       <quote>libOpenCL.so</quote>. This library must be in a folder where it is found by your
       system's dynamic linker.
@@ -109,7 +109,7 @@
       GPU. If that is OK, darktable tries to setup its OpenCL environment: a processing context
       needs to be initialized, a calculation pipeline to be started, OpenCL source code files
       (extension is .cl) need to be read and compiled and the included routines (called OpenCL
-      kernels) need to be prepared for darktablele's modules. If all that is done, the
+      kernels) need to be prepared for darktable's modules. If all that is done, the
       preparation is finished.
     </para>
 
@@ -175,7 +175,7 @@
       <itemizedlist>
 
         <listitem><para>
-          darktable dynamically links <filename>libOpenCL.so</filename>, a system library which
+          darktable dynamically loads <filename>libOpenCL.so</filename>, a system library which
           must be accessible to the system's dynamic loader (<filename>ld.so</filename>).
         </para></listitem>
 

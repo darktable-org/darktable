@@ -131,6 +131,14 @@
             </row>
             <row>
               <entry>
+                $(IMAGE.BASENAME)
+              </entry>
+              <entry>
+                The image file basename
+              </entry>
+            </row>
+            <row>
+              <entry>
                 $(IMAGE.EXIF)
               </entry>
               <entry>
@@ -377,6 +385,38 @@
                 The rights assigned to the image
               </entry>
             </row>
+            <row>
+              <entry>
+                $(GPS.LATITUDE)
+              </entry>
+              <entry>
+                The image latitude coordinate (N/S 0&nbsp;..&nbsp;90)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(GPS.LONGITUDE)
+              </entry>
+              <entry>
+                The image longitude coordinate (E/W 0&nbsp;..&nbsp;180)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(GPS.ELEVATION)
+              </entry>
+              <entry>
+                The image elevation level (meters)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(GPS.LOCATION)
+              </entry>
+              <entry>
+                All three coordinates (latitude, longitude, elevation)
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
@@ -407,9 +447,9 @@
     <sect5>
       <title>text color</title>
       <para>
-        This field shows the text color. Clicking on the color swatch opens a dialog box which
-        offers you a choice of commonly used colors, or lets you add your own choice of colors
-        in a HSV color picker.
+        This field shows the text color. Clicking on the colored field will open a
+        color selector dialog which offers you a choice of commonly used colors,
+        or allows to define a color in RGB color space.
       </para>
     </sect5>
 
