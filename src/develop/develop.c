@@ -911,6 +911,7 @@ static void auto_apply_presets(dt_develop_t *dev)
       // this case sqlite does not give rowid a linear increment. But the following code really expect that the rowid in
       // this table starts from 0 and increment one by one. So in the following code we rewrite the num values.
 
+      if(cnt > 0)
       {
         // get all rowids
         GList *rowids = NULL;
