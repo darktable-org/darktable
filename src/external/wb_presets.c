@@ -2544,23 +2544,24 @@ const wb_data wb_preset[] =
   { "Nikon", "D100", Shade, 3,			{ 2.667969, 1, 1.546875, 0 } }, /*6700K*/
 
   /* D200 basic + fine tune WB presets */
+  { "Nikon", "D200", Incandescent, -3,		{ 1.234375, 1, 2.136719, 0 } },
   { "Nikon", "D200", Incandescent, -2,		{ 1.199219, 1, 2.238281, 0 } },
   { "Nikon", "D200", Incandescent, -1,		{ 1.183594, 1, 2.289063, 0 } },
-  { "Nikon", "D200", Incandescent, 0,		{ 1.148437, 1, 2.398438, 0 } },
+  { "Nikon", "D200", Incandescent, 0,		{ 1.148434, 1, 2.398438, 0 } },
   { "Nikon", "D200", Incandescent, 1,		{ 1.113281, 1, 2.519531, 0 } },
   { "Nikon", "D200", Incandescent, 2,		{ 1.074219, 1, 2.648438, 0 } },
   { "Nikon", "D200", Incandescent, 3,		{ 1.031250, 1, 2.804688, 0 } },
   { "Nikon", "D200", Fluorescent, -3,		{ 2.273438, 1, 1.410156, 0 } },
   { "Nikon", "D200", Fluorescent, -2,		{ 1.933594, 1, 1.152344, 0 } },
   { "Nikon", "D200", Fluorescent, -1,		{ 1.675781, 1, 1.453125, 0 } },
-  { "Nikon", "D200", Fluorescent, 0,		{ 1.664062, 1, 2.148437, 0 } },
-  { "Nikon", "D200", Fluorescent, 1,		{ 1.335937, 1, 2.453125, 0 } },
+  { "Nikon", "D200", Fluorescent, 0,		{ 1.664063, 1, 2.148438, 0 } },
+  { "Nikon", "D200", Fluorescent, 1,		{ 1.335938, 1, 2.453125, 0 } },
   { "Nikon", "D200", Fluorescent, 2,		{ 1.140625, 1, 2.214844, 0 } },
   { "Nikon", "D200", Fluorescent, 3,		{ 1.035156, 1, 2.410156, 0 } },
-  { "Nikon", "D200", DirectSunlight, -3,	{ 1.863281, 1, 1.320312, 0 } },
+  { "Nikon", "D200", DirectSunlight, -3,	{ 1.863281, 1, 1.320313, 0 } },
   { "Nikon", "D200", DirectSunlight, -2,	{ 1.835938, 1, 1.355469, 0 } },
   { "Nikon", "D200", DirectSunlight, -1,	{ 1.820313, 1, 1.375000, 0 } },
-  { "Nikon", "D200", DirectSunlight, 0,		{ 1.804688, 1, 1.398437, 0 } },
+  { "Nikon", "D200", DirectSunlight, 0,		{ 1.804688, 1, 1.398438, 0 } },
   { "Nikon", "D200", DirectSunlight, 1,		{ 1.746094, 1, 1.425781, 0 } },
   { "Nikon", "D200", DirectSunlight, 2,		{ 1.714844, 1, 1.437500, 0 } },
   { "Nikon", "D200", DirectSunlight, 3,		{ 1.687500, 1, 1.449219, 0 } },
@@ -2570,13 +2571,13 @@ const wb_data wb_preset[] =
   { "Nikon", "D200", Flash, 0,			{ 2.007813, 1, 1.171875, 0 } },
   { "Nikon", "D200", Flash, 1,			{ 1.984375, 1, 1.207031, 0 } },
   { "Nikon", "D200", Flash, 2,			{ 1.964844, 1, 1.214844, 0 } },
-  { "Nikon", "D200", Flash, 3,			{ 1.945312, 1, 1.222656, 0 } },
-  { "Nikon", "D200", Cloudy, -3,		{ 2.027344, 1, 1.210937, 0 } },
-  { "Nikon", "D200", Cloudy, -2,		{ 1.992187, 1, 1.226562, 0 } },
-  { "Nikon", "D200", Cloudy, -1,		{ 1.953125, 1, 1.242187, 0 } },
+  { "Nikon", "D200", Flash, 3,			{ 1.945313, 1, 1.222656, 0 } },
+  { "Nikon", "D200", Cloudy, -3,		{ 2.027344, 1, 1.210938, 0 } },
+  { "Nikon", "D200", Cloudy, -2,		{ 1.992188, 1, 1.226563, 0 } },
+  { "Nikon", "D200", Cloudy, -1,		{ 1.953125, 1, 1.242188, 0 } },
   { "Nikon", "D200", Cloudy, 0,			{ 1.917969, 1, 1.261719, 0 } },
   { "Nikon", "D200", Cloudy, 1,			{ 1.890625, 1, 1.285156, 0 } },
-  { "Nikon", "D200", Cloudy, 2,			{ 1.863281, 1, 1.320312, 0 } },
+  { "Nikon", "D200", Cloudy, 2,			{ 1.863281, 1, 1.320313, 0 } },
   { "Nikon", "D200", Cloudy, 3,			{ 1.835938, 1, 1.355469, 0 } },
   { "Nikon", "D200", Shade, -3,			{ 2.378906, 1, 1.066406, 0 } },
   { "Nikon", "D200", Shade, -2,			{ 2.332031, 1, 1.085938, 0 } },
@@ -7130,3 +7131,7 @@ const wb_data wb_preset[] =
 };
 
 const int wb_preset_count = sizeof(wb_preset) / sizeof(wb_data);
+
+// vim: tabstop=8 shiftwidth=8 softtabstop=8
+// kate: tab-width: 8; replace-tabs off; indent-width 8; tab-indents: on;
+// kate: indent-mode c; remove-trailing-spaces modified;
