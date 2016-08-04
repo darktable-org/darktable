@@ -144,6 +144,11 @@ ARGV.each do |filename|
   end
 
   found_presets += listed_presets.map do |preset, red, green, blue|
+    # ugly hack. Canon's Fluorescent is listed as WhiteFluorescent in usermanual
+    if maker && maker == "Canon" && preset == "Fluorescent"
+      preset = "WhiteFluorescent"
+    end
+
     preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
     [maker, model, preset, red, green, blue]
   end
@@ -190,3 +195,7 @@ found_presets.each do |maker, model, preset, red, green, blue|
     puts "  { \"#{maker}\", \"#{model}\", #{preset}, 0, { #{red}, #{green}, #{blue}, 0 } },"
   end
 end
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+# kate: tab-width: 2; replace-tabs on; indent-width 2; tab-indents: off;
+# kate: indent-mode ruby; remove-trailing-spaces modified;
