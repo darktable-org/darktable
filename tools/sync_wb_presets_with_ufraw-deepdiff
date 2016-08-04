@@ -1,0 +1,219 @@
+#!/usr/bin/env ruby
+
+require 'net/http'
+require 'nokogiri'
+require 'deep_merge'
+
+# fixme: this is duplicated with sync_wb_presets_with_ufraw
+
+def map_to_hash(hash, map)
+  cameraname = [map[0], map[1]]
+  hash = Hash.new if not hash
+  hash[cameraname] = Hash.new if not hash.key?(cameraname)
+  hash[cameraname][map[2]] = Hash.new if not hash[cameraname].key?(map[2])
+
+  hash[cameraname][map[2]][map[3].to_i] = [map[4], map[5], map[6]]
+end
+
+def parse_preset(hash, line, upcase)
+  if line[0..2] == "  {"
+    lineparts = line.split('"')
+    cameraname = ""
+    if(upcase)
+      cameraname = [lineparts[1].upcase, lineparts[3].upcase]
+    else
+      cameraname = [lineparts[1], lineparts[3]]
+    end
+    if cameraname.join.strip != ""
+
+      # thank you, jhass
+      p = line.delete('{}"').chomp(",").split(",").map(&:strip)
+
+      p[0] = cameraname[0]
+      p[1] = cameraname[1]
+
+      # really don't care about kelvin presets.
+      if p[2][-1].upcase == "K"
+        return
+      end
+
+      if p[3].to_i.abs > 9
+        puts ["tuning > 9 !", p]
+        exit
+      end
+
+      if p[-1].to_f.abs != 0.0
+        puts ["g2 != 0.0 !", p]
+        exit
+      end
+
+      g = p[5].to_f
+      r = p[4].to_f/g
+      b = p[6].to_f/g
+      g = 1
+
+      p[4] = r
+      p[5] = g
+      p[6] = b
+
+      map_to_hash(hash, p)
+    end
+  end
+end
+
+def output_presets(map)
+  map.each do |key0, value0|
+    value0.each do |key1, value1|
+      value1.each do |key2, value2|
+        puts "  { \"#{key0[0]}\", \"#{key0[1]}\", #{key1}, #{key2}, { #{value2[0]}, #{value2[1]}, #{value2[2]}, 0 } },"
+      end
+    end
+  end
+end
+
+DTPRESETS=File.expand_path("../src/external/wb_presets.c", File.dirname(__FILE__))
+UFRAWPRESETS=URI('http://ufraw.cvs.sourceforge.net/viewvc/ufraw/ufraw/wb_presets.c?content-type=text%2Fplain')
+#UFRAWPRESETS=File.expand_path("/tmp/wb_presets.c")
+CAMERAS=File.expand_path("../src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
+
+MANUAL_MUNGERS = {
+  ["EASTMAN KODAK COMPANY", "KODAK EASYSHARE Z1015 IS DIGITAL CAMERA"] => ["KODAK", "EASYSHARE Z1015 IS"],
+  ["KONICA MINOLTA", "ALPHA 5D"] => ["MINOLTA", "DYNAX 5D"],
+  ["KONICA MINOLTA", "MAXXUM 5D"] => ["MINOLTA", "DYNAX 5D"],
+  ["KONICA MINOLTA", "ALPHA 7D"] => ["MINOLTA", "DYNAX 7D"],
+  ["KONICA MINOLTA", "MAXXUM 7D"] => ["MINOLTA", "DYNAX 7D"],
+  ["Kodak", "DCS Pro SLR/n"] => ["KODAK", "DCS Pro SLR/n"],
+  ["Leica Camera AG", "M8 Digital Camera"] => ["LEICA", "M8"],
+}
+
+puts "Fetching ufraw presets from their CVS, may take a moment..."
+ufraw_presets = {}
+Net::HTTP.get(UFRAWPRESETS).each_line do |line|
+#File.open(UFRAWPRESETS).each do |line|
+  parse_preset(ufraw_presets, line, true)
+end
+
+dt_presets = {}
+File.open(DTPRESETS) do |f|
+  f.each do |line|
+    parse_preset(dt_presets, line, false)
+  end
+end
+
+def munge_make_model(make, model)
+  makemodel = if MANUAL_MUNGERS[[make,model]]
+    MANUAL_MUNGERS[[make,model]]
+  elsif make.split[0] == model.split[0]
+    [make.split[0], model[make.split[0].size..-1].strip]
+  elsif model[0..6] == "FinePix"
+    [make.split[0], model[7..-1].strip]
+  elsif make.split[0..1].join(" ").upcase == "KONICA MINOLTA"
+    [make.split[1], model.strip]
+  elsif make.split[0].upcase == "RICOH" && model.split[0].upcase == "PENTAX"
+    [model.split[0], model.split[1..-1].join.strip]
+  elsif make.upcase == "KODAK"
+    [make.upcase, model]
+  else
+    [make.split[0], model.strip]
+  end
+  return [makemodel[0].upcase, makemodel[1].upcase]
+end
+
+forward_hash = {} # From EXIF to clean name (1:1)
+backward_hash = {} # From clean name to EXIF (1:N)
+File.open(CAMERAS) do |f|
+  xml_doc  = Nokogiri::XML(f)
+  xml_doc.css("Camera").each do |c|
+    clean_maker = exif_maker = c.attribute("make").value
+    clean_model = exif_model = c.attribute("model").value
+    if c.css("ID")[0]
+      clean_maker = c.css("ID")[0].attribute("make").value
+      clean_model = c.css("ID")[0].attribute("model").value
+    end
+    clean_id = [clean_maker, clean_model]
+    exif_id = munge_make_model(exif_maker, exif_model)
+    forward_hash[exif_id] = clean_id
+    backward_hash[clean_id] ||= {}
+    backward_hash[clean_id][exif_id] = true
+    c.css("Alias").each do |a|
+      exif_model = a.content
+      exif_id = munge_make_model(exif_maker, exif_model)
+      forward_hash[exif_id] = clean_id
+      backward_hash[clean_id][exif_id] = true
+    end
+  end
+end
+
+ufraw_merged = {}
+backward_hash.each do |clean_name, exif_names|
+  exif_names.keys.each do |exif_name|
+    if ufraw_presets[exif_name]
+      if !ufraw_merged.key?(clean_name)
+        ufraw_merged[clean_name] = ufraw_presets[exif_name]
+      else
+        ufraw_merged[clean_name].deep_merge!(ufraw_presets[exif_name])
+      end
+    end
+  end
+end
+
+#output_presets(ufraw_merged)
+#exit
+
+grab_from_ufraw = {}
+forward_hash.each do |exif_name, clean_name|
+  if(ufraw_merged.key?(clean_name) && !dt_presets.key?(clean_name))
+    grab_from_ufraw[clean_name] = ufraw_merged[clean_name]
+  end
+  if(ufraw_merged.key?(clean_name) && dt_presets.key?(clean_name))
+    ufraw_merged[clean_name].each do |preset, hash|
+      # different names for some Fluorescent, Tungsten, and Shade presets...
+      # if(ufraw_merged[clean_name].key?(preset) && !dt_presets[clean_name].key?(preset))
+      #   grab_from_ufraw[clean_name] = Hash.new if not grab_from_ufraw.key?(clean_name)
+      #   grab_from_ufraw[clean_name][preset] = hash
+      # end
+
+      if((ufraw_merged[clean_name].length > dt_presets[clean_name].length) &&
+         (ufraw_merged[clean_name].key?(preset) && !dt_presets[clean_name].key?(preset)))
+        grab_from_ufraw[clean_name] = Hash.new if not grab_from_ufraw.key?(clean_name)
+        grab_from_ufraw[clean_name][preset] = hash
+      end
+
+      if(ufraw_merged[clean_name].key?(preset) && dt_presets[clean_name].key?(preset))
+        hash.each do |tune, values|
+          if(ufraw_merged[clean_name][preset].key?(tune) && !dt_presets[clean_name][preset].key?(tune))
+            grab_from_ufraw[clean_name] = Hash.new if not grab_from_ufraw.key?(clean_name)
+            grab_from_ufraw[clean_name][preset] = Hash.new if not grab_from_ufraw[clean_name].key?(preset)
+            grab_from_ufraw[clean_name][preset][tune] = values
+          end
+
+          if(ufraw_merged[clean_name][preset].key?(tune) && dt_presets[clean_name][preset].key?(tune) &&
+             (
+              (ufraw_merged[clean_name][preset][tune].join(',').length > dt_presets[clean_name][preset][tune].join(',').length) ||
+              (
+               ((ufraw_merged[clean_name][preset][tune][0] - dt_presets[clean_name][preset][tune][0]).abs > 1.0e-6) &&
+               ufraw_merged[clean_name][preset][tune][0].to_s.length >= dt_presets[clean_name][preset][tune][0].to_s.length
+              ) ||
+              (
+               ((ufraw_merged[clean_name][preset][tune][2] - dt_presets[clean_name][preset][tune][2]).abs > 1.0e-6) &&
+               ufraw_merged[clean_name][preset][tune][0].to_s.length >= dt_presets[clean_name][preset][tune][0].to_s.length
+              )
+             )
+            )
+
+            grab_from_ufraw[clean_name] = Hash.new if not grab_from_ufraw.key?(clean_name)
+            grab_from_ufraw[clean_name][preset] = Hash.new if not grab_from_ufraw[clean_name].key?(preset)
+            grab_from_ufraw[clean_name][preset][tune] = values
+          end
+        end
+      end
+    end
+  end
+end
+
+output_presets(grab_from_ufraw)
+exit
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+# kate: tab-width: 2; replace-tabs on; indent-width 2; tab-indents: off;
+# kate: indent-mode ruby; remove-trailing-spaces modified;
