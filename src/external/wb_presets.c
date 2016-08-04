@@ -1696,6 +1696,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS-1D X", Fluorescent, 0,      { 1.7265625, 1, 1.9501953125, 0 } },
   { "Canon", "EOS-1D X", Flash, 0,            { 2.173828125, 1, 1.2392578125, 0 } },
 
+  { "Canon", "EOS-1D X Mark II", Daylight, 0,		{ 1.822265625, 1, 1.5849609375, 0 } },
+  { "Canon", "EOS-1D X Mark II", Shade, 0,		{ 2.0810546875, 1, 1.3818359375, 0 } },
+  { "Canon", "EOS-1D X Mark II", Cloudy, 0,		{ 1.9541015625, 1, 1.4814453125, 0 } },
+  { "Canon", "EOS-1D X Mark II", Tungsten, 0,		{ 1.30078125, 1, 2.275390625, 0 } },
+  { "Canon", "EOS-1D X Mark II", WhiteFluorescent, 0,	{ 1.5400390625, 1, 2.169921875, 0 } },
+  { "Canon", "EOS-1D X Mark II", Flash, 0,		{ 2.01171875, 1, 1.4541015625, 0 } },
+
   // Canon EOS M Firmware 1.0.6
   { "Canon", "EOS M", Cloudy, 0,		{ 2.156250, 1, 1.448242, 0 } },
   { "Canon", "EOS M", Daylight, 0,		{ 2.007813, 1, 1.575195, 0 } },
