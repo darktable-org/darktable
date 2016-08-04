@@ -1108,6 +1108,45 @@
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS-1D X Mark II">
+		<ID make="Canon" model="EOS-1D X Mark II">Canon EOS-1D X Mark II</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="74" y="40" width="-2" height="0"/>
+		<Sensor black="2048" white="14888"/>
+		<Sensor black="512" white="13898" iso_list="50 100"/>
+		<Sensor black="512" white="14888" iso_list="125 160 200 250"/>
+		<Sensor black="2049" white="14888" iso_list="1600 2500 51200"/>
+		<Sensor black="2050" white="13533" iso_list="102400"/>
+		<Sensor black="2048" white="13533" iso_list="204800"/>
+		<Sensor black="2049" white="13533" iso_list="409600"/>
+		<BlackAreas>
+			<Vertical x="0" width="68"/>
+			<Horizontal y="0" height="36"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS-1D X Mark II" mode="sRaw1">
+		<ID make="Canon" model="EOS-1D X Mark II">Canon EOS-1D X Mark II</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="sraw_new" value=""/>
+			<Hint name="invert_sraw_wb" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS-1D X Mark II" mode="sRaw2">
+		<ID make="Canon" model="EOS-1D X Mark II">Canon EOS-1D X Mark II</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="sraw_new" value=""/>
+			<Hint name="invert_sraw_wb" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot Pro1">
 		<ID make="Canon" model="PowerShot Pro1">Canon PowerShot Pro1</ID>
 		<CFA width="2" height="2">
@@ -9075,3 +9114,8 @@
 		</Hints>
 	</Camera>
 </Cameras>
+<!--
+vim: tabstop=8 shiftwidth=8 softtabstop=8
+kate: tab-width: 8; replace-tabs off; indent-width 8; tab-indents: on;
+kate: indent-mode xml; remove-trailing-spaces modified;
+-->
