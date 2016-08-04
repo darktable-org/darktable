@@ -5750,7 +5750,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-14" height="-28"/>
+		<Crop x="0" y="28" width="0" height="0"/>
 		<Sensor black="64" white="16316"/>
 	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX K-3">
