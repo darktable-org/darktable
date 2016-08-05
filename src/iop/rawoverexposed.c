@@ -57,6 +57,7 @@ typedef struct dt_iop_rawoverexposed_data_t
 
 typedef struct dt_iop_rawoverexposed_global_data_t
 {
+  int kernel_rawoverexposed_mark_cfa;
   int kernel_rawoverexposed_mark_solid;
   int kernel_rawoverexposed_falsecolor;
 } dt_iop_rawoverexposed_global_data_t;
@@ -225,6 +226,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   float *coordbuf = NULL;
   cl_mem dev_coord = NULL;
   cl_mem dev_thresholds = NULL;
+  cl_mem dev_colors = NULL;
 
   cl_int err = -999;
 
@@ -294,9 +296,22 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   int kernel;
   switch(dev->rawoverexposed.mode)
   {
+    case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
+      kernel = gd->kernel_rawoverexposed_mark_cfa;
+
+      dev_colors = dt_opencl_alloc_device_buffer(devid, sizeof(dt_iop_rawoverexposed_colors));
+      if(dev_colors == NULL) goto error;
+
+      /* _blocking_ memory transfer: host coordbuf buffer -> opencl dev_colors */
+      err = dt_opencl_write_buffer_to_device(devid, (void *)dt_iop_rawoverexposed_colors, dev_colors, 0,
+                                             sizeof(dt_iop_rawoverexposed_colors), CL_TRUE);
+      if(err != CL_SUCCESS) goto error;
+
+      break;
     case DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID:
       kernel = gd->kernel_rawoverexposed_mark_solid;
       break;
+    case DT_DEV_RAWOVEREXPOSED_MODE_FALSECOLOR:
     default:
       kernel = gd->kernel_rawoverexposed_falsecolor;
       break;
@@ -317,7 +332,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(uint32_t), &filters);
   dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), &dev_thresholds);
 
-  if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID)
+  if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA)
+    dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), &dev_colors);
+  else if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID)
     dt_opencl_set_kernel_arg(devid, kernel, 10, 4 * sizeof(float), color);
 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
@@ -325,6 +342,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
+  if(dev_colors != NULL) dt_opencl_release_mem_object(dev_colors);
   if(dev_thresholds != NULL) dt_opencl_release_mem_object(dev_thresholds);
   if(dev_coord != NULL) dt_opencl_release_mem_object(dev_coord);
   if(coordbuf != NULL) dt_free_align(coordbuf);
@@ -349,8 +367,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   if(image->buf_dsc.datatype != TYPE_UINT16 || !image->buf_dsc.filters) piece->enabled = 0;
 
   if(image->buf_dsc.filters == 9u) piece->process_cl_ready = 0;
-
-  if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA) piece->process_cl_ready = 0;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -358,6 +374,7 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl from programs.conf
   module->data = malloc(sizeof(dt_iop_rawoverexposed_global_data_t));
   dt_iop_rawoverexposed_global_data_t *gd = module->data;
+  gd->kernel_rawoverexposed_mark_cfa = dt_opencl_create_kernel(program, "rawoverexposed_mark_cfa");
   gd->kernel_rawoverexposed_mark_solid = dt_opencl_create_kernel(program, "rawoverexposed_mark_solid");
   gd->kernel_rawoverexposed_falsecolor = dt_opencl_create_kernel(program, "rawoverexposed_falsecolor");
 }
@@ -368,6 +385,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_rawoverexposed_global_data_t *gd = (dt_iop_rawoverexposed_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_rawoverexposed_falsecolor);
   dt_opencl_free_kernel(gd->kernel_rawoverexposed_mark_solid);
+  dt_opencl_free_kernel(gd->kernel_rawoverexposed_mark_cfa);
   free(module->data);
   module->data = NULL;
 }
