@@ -538,7 +538,7 @@ list(APPEND LIB_DEPS rawspeed)
 list(APPEND STATIC_LIBS rawspeed_static)
 
 # osm gps map library
-if(USE_GEO)
+if(USE_MAP)
   find_package(OSMGpsMap)
   if(OSMGPSMAP_FOUND)
     message(STATUS "Map mode: enabled")
@@ -550,13 +550,13 @@ if(USE_GEO)
     list(APPEND LIBS ${OSMGPSMAP_LIBRARIES})
     add_definitions(${OSMGPSMAP_DEFINITIONS})
   else(OSMGPSMAP_FOUND)
-    set(USE_GEO OFF)
+    set(USE_MAP OFF)
     message(STATUS "Map mode: disabled, please install libosmgpsmap")
   endif(OSMGPSMAP_FOUND)
 
-else(USE_GEO)
+else(USE_MAP)
   message(STATUS "Map mode: disabled")
-endif(USE_GEO)
+endif(USE_MAP)
 
 # libcolord-gtk:
 if(USE_COLORD)
