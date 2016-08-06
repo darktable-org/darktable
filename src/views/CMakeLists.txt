@@ -15,10 +15,10 @@ add_library(lighttable MODULE "lighttable.c")
 add_library(slideshow MODULE "slideshow.c")
 add_library(knight MODULE "knight.c")
 
-if(USE_GEO)
+if(USE_MAP)
     add_library(map MODULE "map.c")
     set(MODULES ${MODULES} map)
-endif(USE_GEO)
+endif(USE_MAP)
 
 
 if(GPHOTO2_FOUND)

@@ -68,14 +68,15 @@ if(GPHOTO2_FOUND)
 endif(GPHOTO2_FOUND)
 
 # the modules specific to map mode
-if(USE_GEO)
+if(USE_MAP)
 	add_library(location MODULE "location.c")
 	add_library(map_settings MODULE "map_settings.c")
 	set(MODULES ${MODULES} location map_settings)
+endif(USE_MAP)
 
-	add_library(geotagging MODULE "geotagging.c")
-	set(MODULES ${MODULES} geotagging)
-endif(USE_GEO)
+# the modules specific to geotagging module
+add_library(geotagging MODULE "geotagging.c")
+set(MODULES ${MODULES} geotagging)
 
 # the module specific to print mode
 if(CUPS_FOUND)
