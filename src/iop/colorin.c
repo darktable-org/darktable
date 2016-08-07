@@ -656,12 +656,12 @@ static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   }
 }
 
-static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                          void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                             void *const ovoid, const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
 
   fprintf(stderr, "Using xform codepath\n");
 // use general lcms2 fallback
@@ -675,31 +675,24 @@ static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
     void *cam = NULL;
     const void *input = NULL;
-    if(blue_mapping)
+    input = cam = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
+    float *camptr = (float *)cam;
+    for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
     {
-      input = cam = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-      float *camptr = (float *)cam;
-      for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
-      {
-        camptr[0] = in[0];
-        camptr[1] = in[1];
-        camptr[2] = in[2];
+      camptr[0] = in[0];
+      camptr[1] = in[1];
+      camptr[2] = in[2];
 
-        const float YY = camptr[0] + camptr[1] + camptr[2];
-        const float zz = camptr[2] / YY;
-        const float bound_z = 0.5f, bound_Y = 0.5f;
-        const float amount = 0.11f;
-        if(zz > bound_z)
-        {
-          const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
-          camptr[1] += t * amount;
-          camptr[2] -= t * amount;
-        }
+      const float YY = camptr[0] + camptr[1] + camptr[2];
+      const float zz = camptr[2] / YY;
+      const float bound_z = 0.5f, bound_Y = 0.5f;
+      const float amount = 0.11f;
+      if(zz > bound_z)
+      {
+        const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
+        camptr[1] += t * amount;
+        camptr[2] -= t * amount;
       }
-    }
-    else
-    {
-      input = in;
     }
 
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
@@ -707,22 +700,16 @@ static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     {
       cmsDoTransform(d->xform_cam_Lab, input, out, roi_out->width);
 
-      if(blue_mapping)
-      {
-        dt_free_align(cam);
-        cam = NULL;
-      }
+      dt_free_align(cam);
+      cam = NULL;
     }
     else
     {
       void *rgb = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
       cmsDoTransform(d->xform_cam_nrgb, input, rgb, roi_out->width);
 
-      if(blue_mapping)
-      {
-        dt_free_align(cam);
-        cam = NULL;
-      }
+      dt_free_align(cam);
+      cam = NULL;
 
       float *rgbptr = (float *)rgb;
       for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
@@ -736,6 +723,65 @@ static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
       dt_free_align(rgb);
     }
+  }
+}
+
+static void process_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+
+  fprintf(stderr, "Using xform codepath\n");
+// use general lcms2 fallback
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
+  for(int k = 0; k < roi_out->height; k++)
+  {
+    const float *in = (const float *)ivoid + (size_t)ch * k * roi_out->width;
+    float *out = (float *)ovoid + (size_t)ch * k * roi_out->width;
+
+    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+    if(!d->nrgb)
+    {
+      cmsDoTransform(d->xform_cam_Lab, in, out, roi_out->width);
+    }
+    else
+    {
+      void *rgb = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
+      cmsDoTransform(d->xform_cam_nrgb, in, rgb, roi_out->width);
+
+      float *rgbptr = (float *)rgb;
+      for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          rgbptr[c] = CLAMP(rgbptr[c], 0.0f, 1.0f);
+        }
+      }
+
+      cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
+      dt_free_align(rgb);
+    }
+  }
+}
+
+static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                          void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+
+  // use general lcms2 fallback
+  if(blue_mapping)
+  {
+    process_lcms2_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+    process_lcms2_proper(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 }
 
