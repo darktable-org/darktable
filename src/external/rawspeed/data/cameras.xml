@@ -777,8 +777,28 @@
 			<Alias id="EOS Rebel T3">Canon EOS REBEL T3</Alias>
 		</Aliases>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS 1200D">
-		<ID make="Canon" model="EOS 1200D">Canon EOS 1200D</ID>
+        <Camera make="Canon" model="Canon EOS 1200D">
+                <ID make="Canon" model="EOS 1200D">Canon EOS 1200D</ID>
+                <CFA width="2" height="2">
+                        <Color x="0" y="0">GREEN</Color>
+                        <Color x="1" y="0">BLUE</Color>
+                        <Color x="0" y="1">RED</Color>
+                        <Color x="1" y="1">GREEN</Color>
+                </CFA>
+                <Crop x="146" y="54" width="0" height="0"/>
+                <Sensor black="2046" white="12279" iso_min="0" iso_max = "199"/>
+                <Sensor black="2046" white="15000"/>
+                <BlackAreas>
+                        <Vertical x="0" width="140"/>
+                        <Horizontal y="4" height="44"/>
+                </BlackAreas>
+                <Aliases>
+                        <Alias id="EOS Rebel T5">Canon EOS REBEL T5</Alias>
+                        <Alias id="EOS Kiss X70">Canon EOS Kiss X70</Alias>
+                </Aliases>
+        </Camera>
+	<Camera make="Canon" model="Canon EOS 1300D">
+		<ID make="Canon" model="EOS 1300D">Canon EOS 1300D</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
 			<Color x="1" y="0">BLUE</Color>
@@ -786,15 +806,17 @@
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="146" y="54" width="0" height="0"/>
-		<Sensor black="2046" white="12279" iso_min="0" iso_max = "199"/>
-		<Sensor black="2046" white="15000"/>
+		<Sensor black="2048" white="15000"/>
+		<Sensor black="2046" white="12279" iso_list="100"/>
+		<Sensor black="2046" white="15000" iso_list="200"/>
+		<Sensor black="2047" white="15000" iso_list="3200"/>
 		<BlackAreas>
 			<Vertical x="0" width="140"/>
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias id="EOS Rebel T5">Canon EOS REBEL T5</Alias>
-			<Alias id="EOS Kiss X70">Canon EOS Kiss X70</Alias>
+			<Alias id="EOS Rebel T6">Canon EOS REBEL T6</Alias>
+			<Alias id="EOS Kiss X80">Canon EOS Kiss X80</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 400D DIGITAL">
