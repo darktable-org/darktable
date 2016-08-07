@@ -1855,7 +1855,7 @@ static int data_member(lua_State *L)
     {
       return luaL_error(L, "string '%s' too long (max is %d)", data, PARAM_STRING_SIZE);
     }
-    memcpy(rule->string,data,strlen(data));
+    g_strlcpy(rule->string, data, sizeof(rule->string));
     return 0;
   }
   lua_pushstring(L,rule->string);
