@@ -1122,6 +1122,8 @@ static void _set_image_location(dt_view_t *self, int imgid, float longitude, flo
   img->longitude = longitude;
   img->latitude = latitude;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 }
 
 static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint y)
