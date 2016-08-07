@@ -555,13 +555,13 @@ static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
 }
 #endif
 
-static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                            void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                               const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                               const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
   const int clipping = (d->nrgb != NULL);
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
 
     // fprintf(stderr, "Using cmatrix codepath\n");
     // only color matrix. use our optimized fast path!
@@ -584,26 +584,23 @@ static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
                                                           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
                                         : in[c];
 
-      if(blue_mapping)
+      const float YY = cam[0] + cam[1] + cam[2];
+      if(YY > 0.0f)
       {
-        const float YY = cam[0] + cam[1] + cam[2];
-        if(YY > 0.0f)
+        // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
+        // deeply saturated blues turn into purple fringes, so dampen them before conversion.
+        // this is off for non-raw images, which don't seem to have this problem.
+        // might be caused by too loose clipping bounds during highlight clipping?
+        const float zz = cam[2] / YY;
+        // lower amount and higher bound_z make the effect smaller.
+        // the effect is weakened the darker input values are, saturating at bound_Y
+        const float bound_z = 0.5f, bound_Y = 0.8f;
+        const float amount = 0.11f;
+        if(zz > bound_z)
         {
-          // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
-          // deeply saturated blues turn into purple fringes, so dampen them before conversion.
-          // this is off for non-raw images, which don't seem to have this problem.
-          // might be caused by too loose clipping bounds during highlight clipping?
-          const float zz = cam[2] / YY;
-          // lower amount and higher bound_z make the effect smaller.
-          // the effect is weakened the darker input values are, saturating at bound_Y
-          const float bound_z = 0.5f, bound_Y = 0.8f;
-          const float amount = 0.11f;
-          if(zz > bound_z)
-          {
-            const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0f, YY / bound_Y);
-            cam[1] += t * amount;
-            cam[2] -= t * amount;
-          }
+          const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0f, YY / bound_Y);
+          cam[1] += t * amount;
+          cam[2] -= t * amount;
         }
       }
 
@@ -653,6 +650,102 @@ static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
         _dt_XYZ_to_Lab(XYZ, out);
       }
     }
+  }
+}
+
+
+static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                   const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                   const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+  const int clipping = (d->nrgb != NULL);
+
+// fprintf(stderr, "Using cmatrix codepath\n");
+// only color matrix. use our optimized fast path!
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    const float *in = (const float *)ivoid + (size_t)ch * j * roi_out->width;
+    float *out = (float *)ovoid + (size_t)ch * j * roi_out->width;
+    float cam[3];
+
+    for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+    {
+      // memcpy(cam, buf_in, sizeof(float)*3);
+      // avoid calling this for linear profiles (marked with negative entries), assures unbounded
+      // color management without extrapolation.
+      for(int c = 0; c < 3; c++)
+        cam[c] = (d->lut[c][0] >= 0.0f) ? ((in[c] < 1.0f) ? lerp_lut(d->lut[c], in[c])
+                                                          : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
+                                        : in[c];
+
+      if(!clipping)
+      {
+        float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        for(int c = 0; c < 3; c++)
+        {
+          _xyz[c] = 0.0f;
+          for(int k = 0; k < 3; k++)
+          {
+            _xyz[c] += d->cmatrix[3 * c + k] * cam[k];
+          }
+        }
+
+        _dt_XYZ_to_Lab(_xyz, out);
+      }
+      else
+      {
+        float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int c = 0; c < 3; c++)
+        {
+          nRGB[c] = 0.0f;
+          for(int k = 0; k < 3; k++)
+          {
+            nRGB[c] += d->nmatrix[3 * c + k] * cam[k];
+          }
+        }
+
+        float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int c = 0; c < 3; c++)
+        {
+          cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
+        }
+
+        float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int c = 0; c < 3; c++)
+        {
+          XYZ[c] = 0.0f;
+          for(int k = 0; k < 3; k++)
+          {
+            XYZ[c] += d->lmatrix[3 * c + k] * cRGB[k];
+          }
+        }
+
+        _dt_XYZ_to_Lab(XYZ, out);
+      }
+    }
+  }
+}
+
+static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                            void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+
+  // use general lcms2 fallback
+  if(blue_mapping)
+  {
+    process_cmatrix_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+    process_cmatrix_proper(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 }
 
