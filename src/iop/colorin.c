@@ -556,6 +556,28 @@ static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
 }
 #endif
 
+static inline void apply_blue_mapping(const float *const in, float *const out)
+{
+  out[0] = in[0];
+  out[1] = in[1];
+  out[2] = in[2];
+
+  const float YY = out[0] + out[1] + out[2];
+  if(YY > 0.0f)
+  {
+    const float zz = out[2] / YY;
+    const float bound_z = 0.5f, bound_Y = 0.5f;
+    const float amount = 0.11f;
+    if(zz > bound_z)
+    {
+      const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
+      out[1] += t * amount;
+      out[2] -= t * amount;
+    }
+  }
+}
+
+
 static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                                const dt_iop_roi_t *const roi_out)
@@ -585,25 +607,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
                                                           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
                                         : in[c];
 
-      const float YY = cam[0] + cam[1] + cam[2];
-      if(YY > 0.0f)
-      {
-        // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
-        // deeply saturated blues turn into purple fringes, so dampen them before conversion.
-        // this is off for non-raw images, which don't seem to have this problem.
-        // might be caused by too loose clipping bounds during highlight clipping?
-        const float zz = cam[2] / YY;
-        // lower amount and higher bound_z make the effect smaller.
-        // the effect is weakened the darker input values are, saturating at bound_Y
-        const float bound_z = 0.5f, bound_Y = 0.8f;
-        const float amount = 0.11f;
-        if(zz > bound_z)
-        {
-          const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0f, YY / bound_Y);
-          cam[1] += t * amount;
-          cam[2] -= t * amount;
-        }
-      }
+      apply_blue_mapping(cam, cam);
 
       if(!clipping)
       {
@@ -769,20 +773,7 @@ static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     float *camptr = (float *)out;
     for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
     {
-      camptr[0] = in[0];
-      camptr[1] = in[1];
-      camptr[2] = in[2];
-
-      const float YY = camptr[0] + camptr[1] + camptr[2];
-      const float zz = camptr[2] / YY;
-      const float bound_z = 0.5f, bound_Y = 0.5f;
-      const float amount = 0.11f;
-      if(zz > bound_z)
-      {
-        const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
-        camptr[1] += t * amount;
-        camptr[2] -= t * amount;
-      }
+      apply_blue_mapping(in, camptr);
     }
 
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
@@ -932,25 +923,7 @@ void process_sse2_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
                                                               : dt_iop_eval_exp(d->unbounded_coeffs[c], buf_in[c]))
                                         : buf_in[c];
 
-      const float YY = cam[0] + cam[1] + cam[2];
-      if(YY > 0.0f)
-      {
-        // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
-        // deeply saturated blues turn into purple fringes, so dampen them before conversion.
-        // this is off for non-raw images, which don't seem to have this problem.
-        // might be caused by too loose clipping bounds during highlight clipping?
-        const float zz = cam[2] / YY;
-        // lower amount and higher bound_z make the effect smaller.
-        // the effect is weakened the darker input values are, saturating at bound_Y
-        const float bound_z = 0.5f, bound_Y = 0.8f;
-        const float amount = 0.11f;
-        if(zz > bound_z)
-        {
-          const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0f, YY / bound_Y);
-          cam[1] += t * amount;
-          cam[2] -= t * amount;
-        }
-      }
+      apply_blue_mapping(cam, cam);
 
       if(!clipping)
       {
@@ -1081,20 +1054,7 @@ static void process_sse2_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe
     float *camptr = (float *)out;
     for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
     {
-      camptr[0] = in[0];
-      camptr[1] = in[1];
-      camptr[2] = in[2];
-
-      const float YY = camptr[0] + camptr[1] + camptr[2];
-      const float zz = camptr[2] / YY;
-      const float bound_z = 0.5f, bound_Y = 0.5f;
-      const float amount = 0.11f;
-      if(zz > bound_z)
-      {
-        const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
-        camptr[1] += t * amount;
-        camptr[2] -= t * amount;
-      }
+      apply_blue_mapping(in, camptr);
     }
 
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
