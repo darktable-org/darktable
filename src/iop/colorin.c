@@ -757,7 +757,6 @@ static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
-  fprintf(stderr, "Using xform codepath\n");
 // use general lcms2 fallback
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
@@ -767,10 +766,7 @@ static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     const float *in = (const float *)ivoid + (size_t)ch * k * roi_out->width;
     float *out = (float *)ovoid + (size_t)ch * k * roi_out->width;
 
-    void *cam = NULL;
-    const void *input = NULL;
-    input = cam = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-    float *camptr = (float *)cam;
+    float *camptr = (float *)out;
     for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
     {
       camptr[0] = in[0];
@@ -792,20 +788,13 @@ static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     if(!d->nrgb)
     {
-      cmsDoTransform(d->xform_cam_Lab, input, out, roi_out->width);
-
-      dt_free_align(cam);
-      cam = NULL;
+      cmsDoTransform(d->xform_cam_Lab, out, out, roi_out->width);
     }
     else
     {
-      void *rgb = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-      cmsDoTransform(d->xform_cam_nrgb, input, rgb, roi_out->width);
+      cmsDoTransform(d->xform_cam_nrgb, out, out, roi_out->width);
 
-      dt_free_align(cam);
-      cam = NULL;
-
-      float *rgbptr = (float *)rgb;
+      float *rgbptr = (float *)out;
       for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
       {
         for(int c = 0; c < 3; c++)
@@ -814,8 +803,7 @@ static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
         }
       }
 
-      cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
-      dt_free_align(rgb);
+      cmsDoTransform(d->xform_nrgb_Lab, out, out, roi_out->width);
     }
   }
 }
