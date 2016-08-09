@@ -101,6 +101,7 @@ typedef struct dt_iop_colorin_data_t
   float lmatrix[9];
   float unbounded_coeffs[3][3]; // approximation for extrapolation of shaper curves
   int blue_mapping;
+  int nonlinearlut;
   dt_colorspaces_color_profile_type_t type;
 } dt_iop_colorin_data_t;
 
@@ -1301,6 +1302,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
+  d->nonlinearlut = 0;
   piece->process_cl_ready = 1;
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
@@ -1478,6 +1480,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     }
   }
 
+  d->nonlinearlut = 0;
+
   // now try to initialize unbounded mode:
   // we do a extrapolation for input values above 1.0f.
   // unfortunately we can only do this if we got the computation
@@ -1487,6 +1491,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // omit luts marked as linear (negative as marker)
     if(d->lut[k][0] >= 0.0f)
     {
+      d->nonlinearlut++;
+
       const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
       const float y[4] = { lerp_lut(d->lut[k], x[0]), lerp_lut(d->lut[k], x[1]), lerp_lut(d->lut[k], x[2]),
                            lerp_lut(d->lut[k], x[3]) };
