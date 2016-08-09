@@ -101,6 +101,7 @@ typedef struct dt_iop_colorin_data_t
   float lmatrix[9];
   float unbounded_coeffs[3][3]; // approximation for extrapolation of shaper curves
   int blue_mapping;
+  int nonlinearlut;
   dt_colorspaces_color_profile_type_t type;
 } dt_iop_colorin_data_t;
 
@@ -555,370 +556,798 @@ static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void apply_blue_mapping(const float *const in, float *const out)
+{
+  out[0] = in[0];
+  out[1] = in[1];
+  out[2] = in[2];
+
+  const float YY = out[0] + out[1] + out[2];
+  if(YY > 0.0f)
+  {
+    const float zz = out[2] / YY;
+    const float bound_z = 0.5f, bound_Y = 0.5f;
+    const float amount = 0.11f;
+    if(zz > bound_z)
+    {
+      const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
+      out[1] += t * amount;
+      out[2] -= t * amount;
+    }
+  }
+}
+
+static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                               const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                               const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
   const int clipping = (d->nrgb != NULL);
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
 
-  if(d->type == DT_COLORSPACE_LAB)
-  {
-    memcpy(ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
-  }
-  else if(!isnan(d->cmatrix[0]))
-  {
     // fprintf(stderr, "Using cmatrix codepath\n");
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
-    for(int j = 0; j < roi_out->height; j++)
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    const float *in = (const float *)ivoid + (size_t)ch * j * roi_out->width;
+    float *out = (float *)ovoid + (size_t)ch * j * roi_out->width;
+    float cam[3];
+
+    for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
     {
-      const float *in = (const float *)ivoid + (size_t)ch * j * roi_out->width;
-      float *out = (float *)ovoid + (size_t)ch * j * roi_out->width;
-      float cam[3];
+      // memcpy(cam, buf_in, sizeof(float)*3);
+      // avoid calling this for linear profiles (marked with negative entries), assures unbounded
+      // color management without extrapolation.
+      for(int c = 0; c < 3; c++)
+        cam[c] = (d->lut[c][0] >= 0.0f) ? ((in[c] < 1.0f) ? lerp_lut(d->lut[c], in[c])
+                                                          : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
+                                        : in[c];
 
-      for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+      apply_blue_mapping(cam, cam);
+
+      if(!clipping)
       {
-        // memcpy(cam, buf_in, sizeof(float)*3);
-        // avoid calling this for linear profiles (marked with negative entries), assures unbounded
-        // color management without extrapolation.
+        float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
         for(int c = 0; c < 3; c++)
-          cam[c] = (d->lut[c][0] >= 0.0f) ? ((in[c] < 1.0f) ? lerp_lut(d->lut[c], in[c])
-                                                            : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
-                                          : in[c];
-
-        if(blue_mapping)
         {
-          const float YY = cam[0] + cam[1] + cam[2];
-          if(YY > 0.0f)
+          _xyz[c] = 0.0f;
+          for(int k = 0; k < 3; k++)
           {
-            // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
-            // deeply saturated blues turn into purple fringes, so dampen them before conversion.
-            // this is off for non-raw images, which don't seem to have this problem.
-            // might be caused by too loose clipping bounds during highlight clipping?
-            const float zz = cam[2] / YY;
-            // lower amount and higher bound_z make the effect smaller.
-            // the effect is weakened the darker input values are, saturating at bound_Y
-            const float bound_z = 0.5f, bound_Y = 0.8f;
-            const float amount = 0.11f;
-            if(zz > bound_z)
-            {
-              const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0f, YY / bound_Y);
-              cam[1] += t * amount;
-              cam[2] -= t * amount;
-            }
+            _xyz[c] += d->cmatrix[3 * c + k] * cam[k];
           }
         }
 
-        if(!clipping)
+        _dt_XYZ_to_Lab(_xyz, out);
+      }
+      else
+      {
+        float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int c = 0; c < 3; c++)
         {
-          float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-          for(int c = 0; c < 3; c++)
+          nRGB[c] = 0.0f;
+          for(int k = 0; k < 3; k++)
           {
-            _xyz[c] = 0.0f;
-            for(int k = 0; k < 3; k++)
-            {
-              _xyz[c] += d->cmatrix[3 * c + k] * cam[k];
-            }
+            nRGB[c] += d->nmatrix[3 * c + k] * cam[k];
           }
-
-          _dt_XYZ_to_Lab(_xyz, out);
         }
-        else
+
+        float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int c = 0; c < 3; c++)
         {
-          float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-          for(int c = 0; c < 3; c++)
-          {
-            nRGB[c] = 0.0f;
-            for(int k = 0; k < 3; k++)
-            {
-              nRGB[c] += d->nmatrix[3 * c + k] * cam[k];
-            }
-          }
-
-          float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-          for(int c = 0; c < 3; c++)
-          {
-            cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
-          }
-
-          float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-          for(int c = 0; c < 3; c++)
-          {
-            XYZ[c] = 0.0f;
-            for(int k = 0; k < 3; k++)
-            {
-              XYZ[c] += d->lmatrix[3 * c + k] * cRGB[k];
-            }
-          }
-
-          _dt_XYZ_to_Lab(XYZ, out);
+          cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
         }
+
+        float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int c = 0; c < 3; c++)
+        {
+          XYZ[c] = 0.0f;
+          for(int k = 0; k < 3; k++)
+          {
+            XYZ[c] += d->lmatrix[3 * c + k] * cRGB[k];
+          }
+        }
+
+        _dt_XYZ_to_Lab(XYZ, out);
       }
     }
   }
+}
+
+static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                            const void *const ivoid, void *const ovoid,
+                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+
+// fprintf(stderr, "Using cmatrix codepath\n");
+// only color matrix. use our optimized fast path!
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  {
+    float *in = (float *)ivoid + (size_t)ch * k;
+    float *out = (float *)ovoid + (size_t)ch * k;
+
+    float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    for(int c = 0; c < 3; c++)
+    {
+      _xyz[c] = 0.0f;
+      for(int i = 0; i < 3; i++)
+      {
+        _xyz[c] += d->cmatrix[3 * c + i] * in[i];
+      }
+    }
+
+    _dt_XYZ_to_Lab(_xyz, out);
+  }
+}
+
+static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                              const void *const ivoid, void *const ovoid,
+                                              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+
+// fprintf(stderr, "Using cmatrix codepath\n");
+// only color matrix. use our optimized fast path!
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  {
+    float *in = (float *)ivoid + (size_t)ch * k;
+    float *out = (float *)ovoid + (size_t)ch * k;
+
+    float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    for(int c = 0; c < 3; c++)
+    {
+      nRGB[c] = 0.0f;
+      for(int i = 0; i < 3; i++)
+      {
+        nRGB[c] += d->nmatrix[3 * c + i] * in[i];
+      }
+    }
+
+    float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    for(int c = 0; c < 3; c++)
+    {
+      cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
+    }
+
+    float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    for(int c = 0; c < 3; c++)
+    {
+      XYZ[c] = 0.0f;
+      for(int i = 0; i < 3; i++)
+      {
+        XYZ[c] += d->lmatrix[3 * c + i] * cRGB[i];
+      }
+    }
+
+    _dt_XYZ_to_Lab(XYZ, out);
+  }
+}
+
+void process_cmatrix_fastpath(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                              void *const ovoid, const dt_iop_roi_t *const roi_in,
+                              const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int clipping = (d->nrgb != NULL);
+
+  if(!clipping)
+  {
+    process_cmatrix_fastpath_simple(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
   else
   {
-    fprintf(stderr, "Using xform codepath\n");
+    process_cmatrix_fastpath_clipping(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+}
+
+static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                   const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                   const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+  const int clipping = (d->nrgb != NULL);
+
+// fprintf(stderr, "Using cmatrix codepath\n");
+// only color matrix. use our optimized fast path!
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    const float *in = (const float *)ivoid + (size_t)ch * j * roi_out->width;
+    float *out = (float *)ovoid + (size_t)ch * j * roi_out->width;
+    float cam[3];
+
+    for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+    {
+      // memcpy(cam, buf_in, sizeof(float)*3);
+      // avoid calling this for linear profiles (marked with negative entries), assures unbounded
+      // color management without extrapolation.
+      for(int c = 0; c < 3; c++)
+        cam[c] = (d->lut[c][0] >= 0.0f) ? ((in[c] < 1.0f) ? lerp_lut(d->lut[c], in[c])
+                                                          : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
+                                        : in[c];
+
+      if(!clipping)
+      {
+        float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        for(int c = 0; c < 3; c++)
+        {
+          _xyz[c] = 0.0f;
+          for(int k = 0; k < 3; k++)
+          {
+            _xyz[c] += d->cmatrix[3 * c + k] * cam[k];
+          }
+        }
+
+        _dt_XYZ_to_Lab(_xyz, out);
+      }
+      else
+      {
+        float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int c = 0; c < 3; c++)
+        {
+          nRGB[c] = 0.0f;
+          for(int k = 0; k < 3; k++)
+          {
+            nRGB[c] += d->nmatrix[3 * c + k] * cam[k];
+          }
+        }
+
+        float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int c = 0; c < 3; c++)
+        {
+          cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
+        }
+
+        float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int c = 0; c < 3; c++)
+        {
+          XYZ[c] = 0.0f;
+          for(int k = 0; k < 3; k++)
+          {
+            XYZ[c] += d->lmatrix[3 * c + k] * cRGB[k];
+          }
+        }
+
+        _dt_XYZ_to_Lab(XYZ, out);
+      }
+    }
+  }
+}
+
+static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                            void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+
+  if(!blue_mapping && d->nonlinearlut == 0)
+  {
+    process_cmatrix_fastpath(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else if(blue_mapping)
+  {
+    process_cmatrix_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+    process_cmatrix_proper(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+}
+
+static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                             void *const ovoid, const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+
 // use general lcms2 fallback
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
-    for(int k = 0; k < roi_out->height; k++)
+  for(int k = 0; k < roi_out->height; k++)
+  {
+    const float *in = (const float *)ivoid + (size_t)ch * k * roi_out->width;
+    float *out = (float *)ovoid + (size_t)ch * k * roi_out->width;
+
+    float *camptr = (float *)out;
+    for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
     {
-      const float *in = (const float *)ivoid + (size_t)ch * k * roi_out->width;
-      float *out = (float *)ovoid + (size_t)ch * k * roi_out->width;
-
-      void *cam = NULL;
-      const void *input = NULL;
-      if(blue_mapping)
-      {
-        input = cam = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-        float *camptr = (float *)cam;
-        for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
-        {
-          camptr[0] = in[0];
-          camptr[1] = in[1];
-          camptr[2] = in[2];
-
-          const float YY = camptr[0] + camptr[1] + camptr[2];
-          const float zz = camptr[2] / YY;
-          const float bound_z = 0.5f, bound_Y = 0.5f;
-          const float amount = 0.11f;
-          if(zz > bound_z)
-          {
-            const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
-            camptr[1] += t * amount;
-            camptr[2] -= t * amount;
-          }
-        }
-      }
-      else
-      {
-        input = in;
-      }
-
-      // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-      if(!d->nrgb)
-      {
-        cmsDoTransform(d->xform_cam_Lab, input, out, roi_out->width);
-
-        if(blue_mapping)
-        {
-          dt_free_align(cam);
-          cam = NULL;
-        }
-      }
-      else
-      {
-        void *rgb = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-        cmsDoTransform(d->xform_cam_nrgb, input, rgb, roi_out->width);
-
-        if(blue_mapping)
-        {
-          dt_free_align(cam);
-          cam = NULL;
-        }
-
-        float *rgbptr = (float *)rgb;
-        for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
-        {
-          for(int c = 0; c < 3; c++)
-          {
-            rgbptr[c] = CLAMP(rgbptr[c], 0.0f, 1.0f);
-          }
-        }
-
-        cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
-        dt_free_align(rgb);
-      }
+      apply_blue_mapping(in, camptr);
     }
+
+    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+    if(!d->nrgb)
+    {
+      cmsDoTransform(d->xform_cam_Lab, out, out, roi_out->width);
+    }
+    else
+    {
+      cmsDoTransform(d->xform_cam_nrgb, out, out, roi_out->width);
+
+      float *rgbptr = (float *)out;
+      for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          rgbptr[c] = CLAMP(rgbptr[c], 0.0f, 1.0f);
+        }
+      }
+
+      cmsDoTransform(d->xform_nrgb_Lab, out, out, roi_out->width);
+    }
+  }
+}
+
+static void process_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+
+// use general lcms2 fallback
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
+  for(int k = 0; k < roi_out->height; k++)
+  {
+    const float *in = (const float *)ivoid + (size_t)ch * k * roi_out->width;
+    float *out = (float *)ovoid + (size_t)ch * k * roi_out->width;
+
+    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+    if(!d->nrgb)
+    {
+      cmsDoTransform(d->xform_cam_Lab, in, out, roi_out->width);
+    }
+    else
+    {
+      cmsDoTransform(d->xform_cam_nrgb, in, out, roi_out->width);
+
+      float *rgbptr = (float *)out;
+      for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          rgbptr[c] = CLAMP(rgbptr[c], 0.0f, 1.0f);
+        }
+      }
+
+      cmsDoTransform(d->xform_nrgb_Lab, out, out, roi_out->width);
+    }
+  }
+}
+
+static void process_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                          void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+
+  // use general lcms2 fallback
+  if(blue_mapping)
+  {
+    process_lcms2_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+    process_lcms2_proper(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+
+  if(d->type == DT_COLORSPACE_LAB)
+  {
+    memcpy(ovoid, ivoid, sizeof(float) * 4 * roi_out->width * roi_out->height);
+  }
+  else if(!isnan(d->cmatrix[0]))
+  {
+    process_cmatrix(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+    process_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE2__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                             void *const ovoid, const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
   const int clipping = (d->nrgb != NULL);
-  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
 
-  if(d->type == DT_COLORSPACE_LAB)
-  {
-    memcpy(ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
-  }
-  else if(!isnan(d->cmatrix[0]))
-  {
-    // only color matrix. use our optimized fast path!
-    const float *const cmat = d->cmatrix;
-    const float *const nmat = d->nmatrix;
-    const float *const lmat = d->lmatrix;
-    float *in = (float *)ivoid;
-    float *out = (float *)ovoid;
+  // only color matrix. use our optimized fast path!
+  const float *const cmat = d->cmatrix;
+  const float *const nmat = d->nmatrix;
+  const float *const lmat = d->lmatrix;
+  float *in = (float *)ivoid;
+  float *out = (float *)ovoid;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(out, in) schedule(static)
 #endif
-    for(int j = 0; j < roi_out->height; j++)
+  for(int j = 0; j < roi_out->height; j++)
+  {
+
+    float *buf_in = in + (size_t)ch * roi_in->width * j;
+    float *buf_out = out + (size_t)ch * roi_out->width * j;
+    float cam[3];
+    const __m128 cm0 = _mm_set_ps(0.0f, cmat[6], cmat[3], cmat[0]);
+    const __m128 cm1 = _mm_set_ps(0.0f, cmat[7], cmat[4], cmat[1]);
+    const __m128 cm2 = _mm_set_ps(0.0f, cmat[8], cmat[5], cmat[2]);
+
+    const __m128 nm0 = _mm_set_ps(0.0f, nmat[6], nmat[3], nmat[0]);
+    const __m128 nm1 = _mm_set_ps(0.0f, nmat[7], nmat[4], nmat[1]);
+    const __m128 nm2 = _mm_set_ps(0.0f, nmat[8], nmat[5], nmat[2]);
+
+    const __m128 lm0 = _mm_set_ps(0.0f, lmat[6], lmat[3], lmat[0]);
+    const __m128 lm1 = _mm_set_ps(0.0f, lmat[7], lmat[4], lmat[1]);
+    const __m128 lm2 = _mm_set_ps(0.0f, lmat[8], lmat[5], lmat[2]);
+
+    for(int i = 0; i < roi_out->width; i++, buf_in += ch, buf_out += ch)
     {
 
-      float *buf_in = in + (size_t)ch * roi_in->width * j;
-      float *buf_out = out + (size_t)ch * roi_out->width * j;
-      float cam[3];
-      const __m128 cm0 = _mm_set_ps(0.0f, cmat[6], cmat[3], cmat[0]);
-      const __m128 cm1 = _mm_set_ps(0.0f, cmat[7], cmat[4], cmat[1]);
-      const __m128 cm2 = _mm_set_ps(0.0f, cmat[8], cmat[5], cmat[2]);
+      // memcpy(cam, buf_in, sizeof(float)*3);
+      // avoid calling this for linear profiles (marked with negative entries), assures unbounded
+      // color management without extrapolation.
+      for(int c = 0; c < 3; c++)
+        cam[c] = (d->lut[c][0] >= 0.0f) ? ((buf_in[c] < 1.0f) ? lerp_lut(d->lut[c], buf_in[c])
+                                                              : dt_iop_eval_exp(d->unbounded_coeffs[c], buf_in[c]))
+                                        : buf_in[c];
 
-      const __m128 nm0 = _mm_set_ps(0.0f, nmat[6], nmat[3], nmat[0]);
-      const __m128 nm1 = _mm_set_ps(0.0f, nmat[7], nmat[4], nmat[1]);
-      const __m128 nm2 = _mm_set_ps(0.0f, nmat[8], nmat[5], nmat[2]);
+      apply_blue_mapping(cam, cam);
 
-      const __m128 lm0 = _mm_set_ps(0.0f, lmat[6], lmat[3], lmat[0]);
-      const __m128 lm1 = _mm_set_ps(0.0f, lmat[7], lmat[4], lmat[1]);
-      const __m128 lm2 = _mm_set_ps(0.0f, lmat[8], lmat[5], lmat[2]);
-
-      for(int i = 0; i < roi_out->width; i++, buf_in += ch, buf_out += ch)
+      if(!clipping)
       {
-
-        // memcpy(cam, buf_in, sizeof(float)*3);
-        // avoid calling this for linear profiles (marked with negative entries), assures unbounded
-        // color management without extrapolation.
-        for(int c = 0; c < 3; c++)
-          cam[c] = (d->lut[c][0] >= 0.0f)
-                       ? ((buf_in[c] < 1.0f) ? lerp_lut(d->lut[c], buf_in[c])
-                                             : dt_iop_eval_exp(d->unbounded_coeffs[c], buf_in[c]))
-                       : buf_in[c];
-
-        if(blue_mapping)
-        {
-          const float YY = cam[0] + cam[1] + cam[2];
-          if(YY > 0.0f)
-          {
-            // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
-            // deeply saturated blues turn into purple fringes, so dampen them before conversion.
-            // this is off for non-raw images, which don't seem to have this problem.
-            // might be caused by too loose clipping bounds during highlight clipping?
-            const float zz = cam[2] / YY;
-            // lower amount and higher bound_z make the effect smaller.
-            // the effect is weakened the darker input values are, saturating at bound_Y
-            const float bound_z = 0.5f, bound_Y = 0.8f;
-            const float amount = 0.11f;
-            if(zz > bound_z)
-            {
-              const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0f, YY / bound_Y);
-              cam[1] += t * amount;
-              cam[2] -= t * amount;
-            }
-          }
-        }
-
-        if(!clipping)
-        {
-          __m128 xyz = _mm_add_ps(
-              _mm_add_ps(_mm_mul_ps(cm0, _mm_set1_ps(cam[0])), _mm_mul_ps(cm1, _mm_set1_ps(cam[1]))),
-              _mm_mul_ps(cm2, _mm_set1_ps(cam[2])));
-          _mm_stream_ps(buf_out, dt_XYZ_to_Lab_sse2(xyz));
-        }
-        else
-        {
-          __m128 nrgb = _mm_add_ps(
-              _mm_add_ps(_mm_mul_ps(nm0, _mm_set1_ps(cam[0])), _mm_mul_ps(nm1, _mm_set1_ps(cam[1]))),
-              _mm_mul_ps(nm2, _mm_set1_ps(cam[2])));
-          __m128 crgb = _mm_min_ps(_mm_max_ps(nrgb, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
-          __m128 xyz
-              = _mm_add_ps(_mm_add_ps(_mm_mul_ps(lm0, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0))),
-                                      _mm_mul_ps(lm1, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1)))),
-                           _mm_mul_ps(lm2, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
-          _mm_stream_ps(buf_out, dt_XYZ_to_Lab_sse2(xyz));
-        }
+        __m128 xyz
+            = _mm_add_ps(_mm_add_ps(_mm_mul_ps(cm0, _mm_set1_ps(cam[0])), _mm_mul_ps(cm1, _mm_set1_ps(cam[1]))),
+                         _mm_mul_ps(cm2, _mm_set1_ps(cam[2])));
+        _mm_stream_ps(buf_out, dt_XYZ_to_Lab_sse2(xyz));
+      }
+      else
+      {
+        __m128 nrgb
+            = _mm_add_ps(_mm_add_ps(_mm_mul_ps(nm0, _mm_set1_ps(cam[0])), _mm_mul_ps(nm1, _mm_set1_ps(cam[1]))),
+                         _mm_mul_ps(nm2, _mm_set1_ps(cam[2])));
+        __m128 crgb = _mm_min_ps(_mm_max_ps(nrgb, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
+        __m128 xyz = _mm_add_ps(_mm_add_ps(_mm_mul_ps(lm0, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0))),
+                                           _mm_mul_ps(lm1, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1)))),
+                                _mm_mul_ps(lm2, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
+        _mm_stream_ps(buf_out, dt_XYZ_to_Lab_sse2(xyz));
       }
     }
-    _mm_sfence();
+  }
+  _mm_sfence();
+}
+
+void process_sse2_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                          const void *const ivoid, void *const ovoid,
+                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+
+  // only color matrix. use our optimized fast path!
+  const float *const cmat = d->cmatrix;
+
+  const __m128 cm0 = _mm_set_ps(0.0f, cmat[6], cmat[3], cmat[0]);
+  const __m128 cm1 = _mm_set_ps(0.0f, cmat[7], cmat[4], cmat[1]);
+  const __m128 cm2 = _mm_set_ps(0.0f, cmat[8], cmat[5], cmat[2]);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  {
+    float *in = (float *)ivoid + (size_t)ch * k;
+    float *out = (float *)ovoid + (size_t)ch * k;
+
+    __m128 input = _mm_load_ps(in);
+
+    __m128 xyz = _mm_add_ps(_mm_add_ps(_mm_mul_ps(cm0, _mm_shuffle_ps(input, input, _MM_SHUFFLE(0, 0, 0, 0))),
+                                       _mm_mul_ps(cm1, _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 1, 1, 1)))),
+                            _mm_mul_ps(cm2, _mm_shuffle_ps(input, input, _MM_SHUFFLE(2, 2, 2, 2))));
+    _mm_stream_ps(out, dt_XYZ_to_Lab_sse2(xyz));
+  }
+  _mm_sfence();
+}
+
+void process_sse2_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                            const void *const ivoid, void *const ovoid,
+                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+
+  // only color matrix. use our optimized fast path!
+  const float *const nmat = d->nmatrix;
+  const float *const lmat = d->lmatrix;
+
+  const __m128 nm0 = _mm_set_ps(0.0f, nmat[6], nmat[3], nmat[0]);
+  const __m128 nm1 = _mm_set_ps(0.0f, nmat[7], nmat[4], nmat[1]);
+  const __m128 nm2 = _mm_set_ps(0.0f, nmat[8], nmat[5], nmat[2]);
+
+  const __m128 lm0 = _mm_set_ps(0.0f, lmat[6], lmat[3], lmat[0]);
+  const __m128 lm1 = _mm_set_ps(0.0f, lmat[7], lmat[4], lmat[1]);
+  const __m128 lm2 = _mm_set_ps(0.0f, lmat[8], lmat[5], lmat[2]);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  {
+    float *in = (float *)ivoid + (size_t)ch * k;
+    float *out = (float *)ovoid + (size_t)ch * k;
+
+    __m128 input = _mm_load_ps(in);
+
+    __m128 nrgb = _mm_add_ps(_mm_add_ps(_mm_mul_ps(nm0, _mm_shuffle_ps(input, input, _MM_SHUFFLE(0, 0, 0, 0))),
+                                        _mm_mul_ps(nm1, _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 1, 1, 1)))),
+                             _mm_mul_ps(nm2, _mm_shuffle_ps(input, input, _MM_SHUFFLE(2, 2, 2, 2))));
+    __m128 crgb = _mm_min_ps(_mm_max_ps(nrgb, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
+    __m128 xyz = _mm_add_ps(_mm_add_ps(_mm_mul_ps(lm0, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0))),
+                                       _mm_mul_ps(lm1, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1)))),
+                            _mm_mul_ps(lm2, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
+    _mm_stream_ps(out, dt_XYZ_to_Lab_sse2(xyz));
+  }
+  _mm_sfence();
+}
+
+void process_sse2_cmatrix_fastpath(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                   const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                   const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int clipping = (d->nrgb != NULL);
+
+  if(!clipping)
+  {
+    process_sse2_cmatrix_fastpath_simple(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
   else
   {
+    process_sse2_cmatrix_fastpath_clipping(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+}
+
+void process_sse2_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+  const int clipping = (d->nrgb != NULL);
+
+  // only color matrix. use our optimized fast path!
+  const float *const cmat = d->cmatrix;
+  const float *const nmat = d->nmatrix;
+  const float *const lmat = d->lmatrix;
+  float *in = (float *)ivoid;
+  float *out = (float *)ovoid;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(out, in) schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+
+    float *buf_in = in + (size_t)ch * roi_in->width * j;
+    float *buf_out = out + (size_t)ch * roi_out->width * j;
+    float cam[3];
+    const __m128 cm0 = _mm_set_ps(0.0f, cmat[6], cmat[3], cmat[0]);
+    const __m128 cm1 = _mm_set_ps(0.0f, cmat[7], cmat[4], cmat[1]);
+    const __m128 cm2 = _mm_set_ps(0.0f, cmat[8], cmat[5], cmat[2]);
+
+    const __m128 nm0 = _mm_set_ps(0.0f, nmat[6], nmat[3], nmat[0]);
+    const __m128 nm1 = _mm_set_ps(0.0f, nmat[7], nmat[4], nmat[1]);
+    const __m128 nm2 = _mm_set_ps(0.0f, nmat[8], nmat[5], nmat[2]);
+
+    const __m128 lm0 = _mm_set_ps(0.0f, lmat[6], lmat[3], lmat[0]);
+    const __m128 lm1 = _mm_set_ps(0.0f, lmat[7], lmat[4], lmat[1]);
+    const __m128 lm2 = _mm_set_ps(0.0f, lmat[8], lmat[5], lmat[2]);
+
+    for(int i = 0; i < roi_out->width; i++, buf_in += ch, buf_out += ch)
+    {
+
+      // memcpy(cam, buf_in, sizeof(float)*3);
+      // avoid calling this for linear profiles (marked with negative entries), assures unbounded
+      // color management without extrapolation.
+      for(int c = 0; c < 3; c++)
+        cam[c] = (d->lut[c][0] >= 0.0f) ? ((buf_in[c] < 1.0f) ? lerp_lut(d->lut[c], buf_in[c])
+                                                              : dt_iop_eval_exp(d->unbounded_coeffs[c], buf_in[c]))
+                                        : buf_in[c];
+
+      if(!clipping)
+      {
+        __m128 xyz
+            = _mm_add_ps(_mm_add_ps(_mm_mul_ps(cm0, _mm_set1_ps(cam[0])), _mm_mul_ps(cm1, _mm_set1_ps(cam[1]))),
+                         _mm_mul_ps(cm2, _mm_set1_ps(cam[2])));
+        _mm_stream_ps(buf_out, dt_XYZ_to_Lab_sse2(xyz));
+      }
+      else
+      {
+        __m128 nrgb
+            = _mm_add_ps(_mm_add_ps(_mm_mul_ps(nm0, _mm_set1_ps(cam[0])), _mm_mul_ps(nm1, _mm_set1_ps(cam[1]))),
+                         _mm_mul_ps(nm2, _mm_set1_ps(cam[2])));
+        __m128 crgb = _mm_min_ps(_mm_max_ps(nrgb, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
+        __m128 xyz = _mm_add_ps(_mm_add_ps(_mm_mul_ps(lm0, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0))),
+                                           _mm_mul_ps(lm1, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1)))),
+                                _mm_mul_ps(lm2, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
+        _mm_stream_ps(buf_out, dt_XYZ_to_Lab_sse2(xyz));
+      }
+    }
+  }
+  _mm_sfence();
+}
+
+static void process_sse2_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                 const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+
+  if(!blue_mapping && d->nonlinearlut == 0)
+  {
+    process_sse2_cmatrix_fastpath(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else if(blue_mapping)
+  {
+    process_sse2_cmatrix_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+    process_sse2_cmatrix_proper(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+}
+
+static void process_sse2_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                  const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+
 // use general lcms2 fallback
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
-    for(int k = 0; k < roi_out->height; k++)
+  for(int k = 0; k < roi_out->height; k++)
+  {
+    const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
+    float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+
+    float *camptr = (float *)out;
+    for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
     {
-      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-
-      void *cam = NULL;
-      const void *input = NULL;
-      if(blue_mapping)
-      {
-        input = cam = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-        float *camptr = (float *)cam;
-        for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
-        {
-          camptr[0] = in[0];
-          camptr[1] = in[1];
-          camptr[2] = in[2];
-
-          const float YY = camptr[0] + camptr[1] + camptr[2];
-          const float zz = camptr[2] / YY;
-          const float bound_z = 0.5f, bound_Y = 0.5f;
-          const float amount = 0.11f;
-          if(zz > bound_z)
-          {
-            const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
-            camptr[1] += t * amount;
-            camptr[2] -= t * amount;
-          }
-        }
-      }
-      else
-      {
-        input = in;
-      }
-
-      // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-      if(!d->nrgb)
-      {
-        cmsDoTransform(d->xform_cam_Lab, input, out, roi_out->width);
-
-        if(blue_mapping)
-        {
-          dt_free_align(cam);
-          cam = NULL;
-        }
-      }
-      else
-      {
-        void *rgb = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-        cmsDoTransform(d->xform_cam_nrgb, input, rgb, roi_out->width);
-
-        if(blue_mapping)
-        {
-          dt_free_align(cam);
-          cam = NULL;
-        }
-
-        float *rgbptr = (float *)rgb;
-        for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
-        {
-          const __m128 min = _mm_setzero_ps();
-          const __m128 max = _mm_set1_ps(1.0f);
-          const __m128 val = _mm_load_ps(rgbptr);
-          const __m128 result = _mm_max_ps(_mm_min_ps(val, max), min);
-          _mm_store_ps(rgbptr, result);
-        }
-        _mm_sfence();
-
-        cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
-        dt_free_align(rgb);
-      }
+      apply_blue_mapping(in, camptr);
     }
+
+    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+    if(!d->nrgb)
+    {
+      cmsDoTransform(d->xform_cam_Lab, out, out, roi_out->width);
+    }
+    else
+    {
+      cmsDoTransform(d->xform_cam_nrgb, out, out, roi_out->width);
+
+      float *rgbptr = (float *)out;
+      for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
+      {
+        const __m128 min = _mm_setzero_ps();
+        const __m128 max = _mm_set1_ps(1.0f);
+        const __m128 val = _mm_load_ps(rgbptr);
+        const __m128 result = _mm_max_ps(_mm_min_ps(val, max), min);
+        _mm_store_ps(rgbptr, result);
+      }
+      _mm_sfence();
+
+      cmsDoTransform(d->xform_nrgb_Lab, out, out, roi_out->width);
+    }
+  }
+}
+
+
+static void process_sse2_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                      const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                      const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+
+// use general lcms2 fallback
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
+  for(int k = 0; k < roi_out->height; k++)
+  {
+    const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
+    float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+
+    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+    if(!d->nrgb)
+    {
+      cmsDoTransform(d->xform_cam_Lab, in, out, roi_out->width);
+    }
+    else
+    {
+      cmsDoTransform(d->xform_cam_nrgb, in, out, roi_out->width);
+
+      float *rgbptr = (float *)out;
+      for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
+      {
+        const __m128 min = _mm_setzero_ps();
+        const __m128 max = _mm_set1_ps(1.0f);
+        const __m128 val = _mm_load_ps(rgbptr);
+        const __m128 result = _mm_max_ps(_mm_min_ps(val, max), min);
+        _mm_store_ps(rgbptr, result);
+      }
+      _mm_sfence();
+
+      cmsDoTransform(d->xform_nrgb_Lab, out, out, roi_out->width);
+    }
+  }
+}
+
+static void process_sse2_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                               const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
+
+  // use general lcms2 fallback
+  if(blue_mapping)
+  {
+    process_sse2_lcms2_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+    process_sse2_lcms2_proper(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+}
+
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+
+  if(d->type == DT_COLORSPACE_LAB)
+  {
+    memcpy(ovoid, ivoid, sizeof(float) * 4 * roi_out->width * roi_out->height);
+  }
+  else if(!isnan(d->cmatrix[0]))
+  {
+    process_sse2_cmatrix(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+    process_sse2_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -994,6 +1423,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
+  d->nonlinearlut = 0;
   piece->process_cl_ready = 1;
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
@@ -1171,6 +1601,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     }
   }
 
+  d->nonlinearlut = 0;
+
   // now try to initialize unbounded mode:
   // we do a extrapolation for input values above 1.0f.
   // unfortunately we can only do this if we got the computation
@@ -1180,6 +1612,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // omit luts marked as linear (negative as marker)
     if(d->lut[k][0] >= 0.0f)
     {
+      d->nonlinearlut++;
+
       const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
       const float y[4] = { lerp_lut(d->lut[k], x[0]), lerp_lut(d->lut[k], x[1]), lerp_lut(d->lut[k], x[2]),
                            lerp_lut(d->lut[k], x[3]) };
