@@ -827,7 +827,6 @@ static void process_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
 
-  fprintf(stderr, "Using xform codepath\n");
 // use general lcms2 fallback
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
@@ -844,10 +843,9 @@ static void process_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     }
     else
     {
-      void *rgb = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-      cmsDoTransform(d->xform_cam_nrgb, in, rgb, roi_out->width);
+      cmsDoTransform(d->xform_cam_nrgb, in, out, roi_out->width);
 
-      float *rgbptr = (float *)rgb;
+      float *rgbptr = (float *)out;
       for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
       {
         for(int c = 0; c < 3; c++)
@@ -856,8 +854,7 @@ static void process_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_
         }
       }
 
-      cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
-      dt_free_align(rgb);
+      cmsDoTransform(d->xform_nrgb_Lab, out, out, roi_out->width);
     }
   }
 }
