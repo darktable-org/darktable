@@ -657,6 +657,71 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   }
 }
 
+static void process_cmatrix_fastpath(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                     const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                                     const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+  const int clipping = (d->nrgb != NULL);
+
+// fprintf(stderr, "Using cmatrix codepath\n");
+// only color matrix. use our optimized fast path!
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  {
+    float *in = (float *)ivoid + (size_t)ch * k;
+    float *out = (float *)ovoid + (size_t)ch * k;
+
+    if(!clipping)
+    {
+      float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+      for(int c = 0; c < 3; c++)
+      {
+        _xyz[c] = 0.0f;
+        for(int i = 0; i < 3; i++)
+        {
+          _xyz[c] += d->cmatrix[3 * c + i] * in[i];
+        }
+      }
+
+      _dt_XYZ_to_Lab(_xyz, out);
+    }
+    else
+    {
+      float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      for(int c = 0; c < 3; c++)
+      {
+        nRGB[c] = 0.0f;
+        for(int i = 0; i < 3; i++)
+        {
+          nRGB[c] += d->nmatrix[3 * c + i] * in[i];
+        }
+      }
+
+      float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      for(int c = 0; c < 3; c++)
+      {
+        cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
+      }
+
+      float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      for(int c = 0; c < 3; c++)
+      {
+        XYZ[c] = 0.0f;
+        for(int i = 0; i < 3; i++)
+        {
+          XYZ[c] += d->lmatrix[3 * c + i] * cRGB[i];
+        }
+      }
+
+      _dt_XYZ_to_Lab(XYZ, out);
+    }
+  }
+}
 
 static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                    const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
@@ -742,8 +807,11 @@ static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int blue_mapping = d->blue_mapping && piece->pipe->image.flags & DT_IMAGE_RAW;
 
-  // use general lcms2 fallback
-  if(blue_mapping)
+  if(!blue_mapping && d->nonlinearlut == 0)
+  {
+    process_cmatrix_fastpath(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else if(blue_mapping)
   {
     process_cmatrix_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
