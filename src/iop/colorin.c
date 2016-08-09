@@ -1173,10 +1173,9 @@ static void process_sse2_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixel
     }
     else
     {
-      void *rgb = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
-      cmsDoTransform(d->xform_cam_nrgb, in, rgb, roi_out->width);
+      cmsDoTransform(d->xform_cam_nrgb, in, out, roi_out->width);
 
-      float *rgbptr = (float *)rgb;
+      float *rgbptr = (float *)out;
       for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
       {
         const __m128 min = _mm_setzero_ps();
@@ -1187,8 +1186,7 @@ static void process_sse2_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixel
       }
       _mm_sfence();
 
-      cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
-      dt_free_align(rgb);
+      cmsDoTransform(d->xform_nrgb_Lab, out, out, roi_out->width);
     }
   }
 }
