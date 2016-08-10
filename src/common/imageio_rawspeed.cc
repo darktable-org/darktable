@@ -352,7 +352,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
   if(r->getDataType() != TYPE_USHORT16) return DT_IMAGEIO_FILE_CORRUPTED;
 
-  if(img->cpp != 1 && img->cpp != 3) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(img->cpp != 1 && img->cpp != 3 && img->cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
 
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) return DT_IMAGEIO_CACHE_FULL;
@@ -381,7 +381,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       }
     }
   }
-  else if(img->cpp == 3)
+  else if(img->cpp == 3 || img->cpp == 4)
   {
 /*
  * standard 3-ch image
