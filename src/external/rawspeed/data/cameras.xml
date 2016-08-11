@@ -5114,8 +5114,30 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">RED</Color>
 		</CFA>
-		<Crop x="20" y="18" width="-14" height="-5"/>
-		<Sensor black="0" white="65535"/>
+		<Crop x="20" y="18" width="-16" height="-5"/>
+		<Sensor black="0" white="3986"/>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ50" mode="16:9" decoder_version="2">
+		<ID make="Panasonic" model="DMC-FZ50">Panasonic DMC-FZ50</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="3" y="0" width="-15" height="-5"/>
+		<Sensor black="0" white="3986"/>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ50" mode="3:2" decoder_version="2">
+		<ID make="Panasonic" model="DMC-FZ50">Panasonic DMC-FZ50</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="3" y="0" width="-17" height="-5"/>
+		<Sensor black="0" white="3986"/>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ8" decoder_version="2">
 		<ID make="Panasonic" model="DMC-FZ8">Panasonic DMC-FZ8</ID>
