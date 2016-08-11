@@ -1298,6 +1298,28 @@
 			<Hint name="wb_offset" value="142"/>
 		</Hints>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G7 X Mark II">
+		<ID make="Canon" model="PowerShot G7 X Mark II">Canon PowerShot G7 X Mark II</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="96" y="22" width="0" height="0"/>
+		<Sensor black="2047" white="16000"/>
+		<Sensor black="2046" white="16000" iso_list="1600 2000 2500"/>
+		<Sensor black="2048" white="16000" iso_list="3200 4000"/>
+		<Sensor black="2049" white="16000" iso_list="5000 6400 8000"/>
+		<Sensor black="2050" white="16000" iso_list="10000 12800"/>
+		<BlackAreas>
+			<Vertical x="0" width="76"/>
+			<Horizontal y="0" height="14"/>
+		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1 X">
 		<ID make="Canon" model="PowerShot G1 X">Canon PowerShot G1 X</ID>
 		<CFA width="2" height="2">
