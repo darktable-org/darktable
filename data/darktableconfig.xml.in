@@ -1617,6 +1617,13 @@
     <shortdescription>allow XYZ and Lab color spaces as output</shortdescription>
     <longdescription>this is mainly useful for debugging and to create colorchecker lut styles externally.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/rawprepare/allow_editing_crop</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>allow editing raw cropping boundaries</shortdescription>
+    <longdescription>this is mainly useful for debugging and to add new camera support.</longdescription>
+  </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
 
