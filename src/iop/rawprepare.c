@@ -38,9 +38,24 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rawprepare_params_t)
 
+static const struct
+{
+  const char *label;
+  const char *tooltip;
+} crop_labels[4] = { { N_("crop x"), N_("crop from left border") },
+                     { N_("crop y"), N_("crop from top") },
+                     { N_("crop width"), N_("crop from right border") },
+                     { N_("crop height"), N_("crop from bottom") } };
+
 typedef struct dt_iop_rawprepare_params_t
 {
-  int32_t x, y, width, height; // crop, now unused, for future expansion
+  union {
+    struct
+    {
+      int32_t x, y, width, height;
+    } named;
+    int32_t array[4];
+  } crop;
   uint16_t raw_black_level_separate[4];
   uint16_t raw_white_point;
 } dt_iop_rawprepare_params_t;
@@ -48,9 +63,9 @@ typedef struct dt_iop_rawprepare_params_t
 typedef struct dt_iop_rawprepare_gui_data_t
 {
   GtkWidget *box_raw;
-  // TODO: GUI for cropping.
   GtkWidget *black_level_separate[4];
   GtkWidget *white_point;
+  GtkWidget *crop[4];
   GtkWidget *label_non_raw;
 } dt_iop_rawprepare_gui_data_t;
 
@@ -96,6 +111,14 @@ void init_key_accels(dt_iop_module_so_t *self)
     g_free(label);
   }
 
+  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
+  {
+    for(int i = 0; i < 4; i++)
+    {
+      dt_accel_register_slider_iop(self, FALSE, NC_("accel", gettext(crop_labels[i].label)));
+    }
+  }
+
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white point"));
 }
 
@@ -110,7 +133,15 @@ void connect_key_accels(dt_iop_module_t *self)
     g_free(label);
   }
 
-  dt_accel_connect_slider_iop(self, "white point", GTK_WIDGET(g->white_point));
+  dt_accel_connect_slider_iop(self, _("white point"), GTK_WIDGET(g->white_point));
+
+  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
+  {
+    for(int i = 0; i < 4; i++)
+    {
+      dt_accel_connect_slider_iop(self, gettext(crop_labels[i].label), g->crop[i]);
+    }
+  }
 }
 
 void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in,
@@ -454,10 +485,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
-  d->x = p->x;
-  d->y = p->y;
-  d->width = p->width;
-  d->height = p->height;
+  d->x = p->crop.named.x;
+  d->y = p->crop.named.y;
+  d->width = p->crop.named.width;
+  d->height = p->crop.named.height;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
   {
@@ -510,10 +541,10 @@ void reload_defaults(dt_iop_module_t *self)
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rawprepare_params_t){.x = image->crop_x,
-                                     .y = image->crop_y,
-                                     .width = image->crop_width,
-                                     .height = image->crop_height,
+  tmp = (dt_iop_rawprepare_params_t){.crop.named.x = image->crop_x,
+                                     .crop.named.y = image->crop_y,
+                                     .crop.named.width = image->crop_width,
+                                     .crop.named.height = image->crop_height,
                                      .raw_black_level_separate[0] = image->raw_black_level_separate[0],
                                      .raw_black_level_separate[1] = image->raw_black_level_separate[1],
                                      .raw_black_level_separate[2] = image->raw_black_level_separate[2],
@@ -579,6 +610,15 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->white_point, p->raw_white_point);
   dt_bauhaus_slider_set_default(g->white_point, p->raw_white_point);
 
+  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
+  {
+    for(int i = 0; i < 4; i++)
+    {
+      dt_bauhaus_slider_set_soft(g->crop[i], p->crop.array[i]);
+      dt_bauhaus_slider_set_default(g->crop[i], p->crop.array[i]);
+    }
+  }
+
   if(self->default_enabled)
   {
     gtk_widget_show(g->box_raw);
@@ -602,6 +642,14 @@ static void callback(GtkWidget *widget, gpointer *user_data)
   for(int i = 0; i < 4; i++)
     p->raw_black_level_separate[i] = dt_bauhaus_slider_get(g->black_level_separate[i]);
   p->raw_white_point = dt_bauhaus_slider_get(g->white_point);
+
+  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
+  {
+    for(int i = 0; i < 4; i++)
+    {
+      p->crop.array[i] = dt_bauhaus_slider_get(g->crop[i]);
+    }
+  }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -638,6 +686,19 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->box_raw), g->white_point, FALSE, FALSE, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->white_point, 0, UINT16_MAX);
   g_signal_connect(G_OBJECT(g->white_point), "value-changed", G_CALLBACK(callback), self);
+
+  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
+  {
+    for(int i = 0; i < 4; i++)
+    {
+      g->crop[i] = dt_bauhaus_slider_new_with_range(self, 0, 256, 1, p->crop.array[i], 0);
+      dt_bauhaus_widget_set_label(g->crop[i], NULL, gettext(crop_labels[i].label));
+      gtk_widget_set_tooltip_text(g->crop[i], gettext(crop_labels[i].tooltip));
+      gtk_box_pack_start(GTK_BOX(g->box_raw), g->crop[i], FALSE, FALSE, 0);
+      dt_bauhaus_slider_enable_soft_boundaries(g->crop[i], 0, UINT16_MAX);
+      g_signal_connect(G_OBJECT(g->crop[i]), "value-changed", G_CALLBACK(callback), self);
+    }
+  }
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
 
