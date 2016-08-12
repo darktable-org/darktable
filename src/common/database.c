@@ -36,7 +36,7 @@
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 11
+#define CURRENT_DATABASE_VERSION 12
 
 typedef struct dt_database_t
 {
@@ -732,6 +732,48 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
     }
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 11;
+  }
+  else if(version == 11)
+  {
+    // 11 -> 12 tagxtag was removed in order to reduce database size
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    if(sqlite3_exec(db->handle, "DROP TRIGGER detach_tag", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't drop trigger `detach_tag' from database\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    if(sqlite3_exec(db->handle, "DROP TRIGGER attach_tag", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't drop trigger `attach_tag' from database\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    if(sqlite3_exec(db->handle, "DROP TRIGGER delete_tag", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't drop trigger `delete_tag' from database\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    if(sqlite3_exec(db->handle, "DROP TRIGGER insert_tag", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't drop trigger `insert_tag' from database\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    if(sqlite3_exec(db->handle, "DROP TABLE tagxtag", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't drop table `tagxtag' from database\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 12;
   } // maybe in the future, see commented out code elsewhere
     //   else if(version == XXX)
     //   {
@@ -835,42 +877,6 @@ static void _create_schema(dt_database_t *db)
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX tagged_images_tagid_index ON tagged_images (tagid)", NULL,
                         NULL, NULL);
-  ////////////////////////////// tagxtag
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE tagxtag (id1 INTEGER, id2 INTEGER, count INTEGER, "
-                                    "PRIMARY KEY (id1, id2))",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TRIGGER insert_tag AFTER INSERT ON tags"
-                                    " BEGIN"
-                                    "   INSERT INTO tagxtag SELECT id, new.id, 0 FROM TAGS;"
-                                    "   UPDATE tagxtag SET count = 1000000 WHERE id1=new.id AND id2=new.id;"
-                                    " END",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TRIGGER delete_tag BEFORE DELETE on tags"
-                                    " BEGIN"
-                                    "   DELETE FROM tagxtag WHERE id1=old.id OR id2=old.id;"
-                                    "   DELETE FROM tagged_images WHERE tagid=old.id;"
-                                    " END",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(
-      db->handle,
-      "CREATE TRIGGER attach_tag AFTER INSERT ON tagged_images"
-      " BEGIN"
-      "   UPDATE tagxtag"
-      "     SET count = count + 1"
-      "     WHERE (id1=new.tagid AND id2 IN (SELECT tagid FROM tagged_images WHERE imgid=new.imgid))"
-      "        OR (id2=new.tagid AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid=new.imgid));"
-      " END",
-      NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(
-      db->handle,
-      "CREATE TRIGGER detach_tag BEFORE DELETE ON tagged_images"
-      " BEGIN"
-      "   UPDATE tagxtag"
-      "     SET count = count - 1"
-      "     WHERE (id1=old.tagid AND id2 IN (SELECT tagid FROM tagged_images WHERE imgid=old.imgid))"
-      "        OR (id2=old.tagid AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid=old.imgid));"
-      " END",
-      NULL, NULL, NULL);
   ////////////////////////////// styles
   DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE styles (id INTEGER, name VARCHAR, description VARCHAR)",
                         NULL, NULL, NULL);
