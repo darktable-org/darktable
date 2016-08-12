@@ -534,7 +534,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_rawprepare_params_t tmp = { 0 };
+  dt_iop_rawprepare_params_t tmp = { { { 0 } } };
 
   // we might be called from presets update infrastructure => there is no image
   if(!self->dev) goto end;
