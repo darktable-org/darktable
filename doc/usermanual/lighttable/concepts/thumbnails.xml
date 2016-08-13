@@ -34,7 +34,7 @@
       where to take a thumbnail. darktable can either try to extract an embedded thumbnail out
       of the input image&nbsp;&ndash; most raw files contain these kind of thumbnails generated
       by the camera&nbsp;&ndash; or process the image by itself using default settings. You can
-      define how darktable gets its thumbnails in the gui preferences dialog (see
+      define how darktable gets its thumbnails in the GUI preferences dialog (see
       <xref linkend="gui_options"/>).
     </para>
 

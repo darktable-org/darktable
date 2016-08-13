@@ -61,7 +61,7 @@
       calibrated and profiled, and it needs the profile to be correctly installed on your
       system. darktable querys your X display server's <emphasis>xatom</emphasis> as well as the
       system service <emphasis>colord</emphasis> (if available) for the right profile. If needed
-      you can enforce a specific method in the gui preferences dialog (see
+      you can enforce a specific method in the GUI preferences dialog (see
       <xref linkend="gui_options"/>).
     </para>
 
