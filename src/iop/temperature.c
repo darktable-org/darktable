@@ -331,13 +331,11 @@ static void XYZ_to_temperature(cmsCIEXYZ XYZ, double *TempK, double *tint)
   if(*tint > DT_IOP_HIGHEST_TINT) *tint = DT_IOP_HIGHEST_TINT;
 }
 
-static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mul[4])
+static void xyz2mul(dt_iop_module_t *self, cmsCIEXYZ xyz, double mul[4])
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
-  cmsCIEXYZ _xyz = temperature_to_XYZ(TempK);
-
-  double XYZ[3] = { _xyz.X, _xyz.Y / tint, _xyz.Z };
+  double XYZ[3] = { xyz.X, xyz.Y, xyz.Z };
 
   double CAM[4];
   for(int k = 0; k < 4; k++)
@@ -352,7 +350,16 @@ static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mu
   for(int k = 0; k < 4; k++) mul[k] = 1.0 / CAM[k];
 }
 
-static void mul2temp(dt_iop_module_t *self, float coeffs[4], double *TempK, double *tint)
+static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mul[4])
+{
+  cmsCIEXYZ xyz = temperature_to_XYZ(TempK);
+
+  xyz.Y /= tint;
+
+  xyz2mul(self, xyz, mul);
+}
+
+static cmsCIEXYZ mul2xyz(dt_iop_module_t *self, const float coeffs[4])
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
@@ -369,7 +376,12 @@ static void mul2temp(dt_iop_module_t *self, float coeffs[4], double *TempK, doub
     }
   }
 
-  XYZ_to_temperature((cmsCIEXYZ){ XYZ[0], XYZ[1], XYZ[2] }, TempK, tint);
+  return (cmsCIEXYZ){ XYZ[0], XYZ[1], XYZ[2] };
+}
+
+static void mul2temp(dt_iop_module_t *self, float coeffs[4], double *TempK, double *tint)
+{
+  XYZ_to_temperature(mul2xyz(self, coeffs), TempK, tint);
 }
 
 /*
