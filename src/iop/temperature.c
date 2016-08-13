@@ -391,12 +391,10 @@ static void dt_wb_preset_interpolate(const wb_data *const p1, // the smaller tun
                                      const wb_data *const p2, // the larger tuning (can't be == p1)
                                      wb_data *out)            // has tuning initialized
 {
-  // stupid linear interpolation.
-  // to be confirmed.
   const double t = CLAMP((double)(out->tuning - p1->tuning) / (double)(p2->tuning - p1->tuning), 0.0, 1.0);
   for(int k = 0; k < 3; k++)
   {
-    out->channel[k] = (1.0 - t) * p1->channel[k] + t * p2->channel[k];
+    out->channel[k] = 1.0 / (((1.0 - t) / p1->channel[k]) + (t / p2->channel[k]));
   }
 }
 
