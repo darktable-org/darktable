@@ -240,7 +240,7 @@
       <para>
         The general principle is the same as for the circle shape. In addition you get four
         nodes on the ellipse line. Click on the nodes to adjust the ellipse's eccentricity.
-        <emphasis>ctrl+click</emphasis> on them to rotate the ellipse.
+        <emphasis>ctrl-click</emphasis> on them to rotate the ellipse.
       </para>
 
       <informaltable frame="none">
@@ -285,7 +285,7 @@
         Left-click into the canvas to define path nodes; terminate the path by
         <emphasis>right-clicking</emphasis> after having set the last point. Per default nodes
         are connected by smooth lines. If you want a node to define a sharp corner, you can do
-        so by creating it with <emphasis>ctrl+click</emphasis>.
+        so by creating it with <emphasis>ctrl-click</emphasis>.
       </para>
 
       <para>
