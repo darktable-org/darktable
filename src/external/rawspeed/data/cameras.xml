@@ -2399,7 +2399,7 @@
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="0" y="0" width="4310" height="2868"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3767"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5000" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D5000">Nikon D5000</ID>
@@ -2410,7 +2410,7 @@
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="0" y="0" width="4310" height="2868"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3767"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5200" mode="14bit-compressed">
 		<ID make="Nikon" model="D5200">Nikon D5200</ID>
