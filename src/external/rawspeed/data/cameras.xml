@@ -2350,6 +2350,17 @@
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D500" mode="14bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D500">Nikon D500</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="2" width="-2" height="-2"/>
+		<Sensor black="400" white="15520"/>
+		<Hints>
+			<Hint name="nikon_override_auto_black" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D500" mode="12bit-compressed">
 		<ID make="Nikon" model="D500">Nikon D500</ID>
@@ -2367,6 +2378,17 @@
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D500" mode="12bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D500">Nikon D500</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="2" width="-2" height="-2"/>
+		<Sensor black="100" white="3880"/>
+		<Hints>
+			<Hint name="nikon_override_auto_black" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5000" mode="12bit-compressed">
 		<ID make="Nikon" model="D5000">Nikon D5000</ID>
