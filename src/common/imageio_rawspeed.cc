@@ -163,7 +163,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     RawImage r = d->mRaw;
 
     for (uint32 i=0; i<r->errors.size(); i++)
-      fprintf(stderr, "[rawspeed] %s\n", r->errors[i]);
+      fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, r->errors[i]);
 
     g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
     g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
@@ -332,7 +332,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   }
   catch(const std::exception &exc)
   {
-    printf("[rawspeed] %s\n", exc.what());
+    printf("[rawspeed] (%s) %s\n", img->filename, exc.what());
 
     /* if an exception is raised lets not retry or handle the
      specific ones, consider the file as corrupted */
