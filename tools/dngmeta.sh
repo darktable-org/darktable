@@ -85,6 +85,10 @@ if [[ $MAKE == Panasonic ]]; then
   else
     MODE=" mode=\"1:1\""
   fi
+elif [[ $MAKE == "NIKON CORPORATION" ]]; then
+# i'm not sure it can be detected automatically
+# rawspeed code to detect it is big
+  MODE=" mode=\"<FIXME (14 or 12)>bit-<FIXME (compressed or uncompressed)>\""
 else
   MODE=""
 fi
@@ -142,6 +146,9 @@ echo ""
 
 if [[ $MAKE == Panasonic ]]; then
   echo "NOTE: Panasonic RW2s are different dependant on aspect ratio, please run this tool on RW2 for each of the camera's ratios (4:3,3:2,16:9,1:1)"
+  echo ""
+elif [[ $MAKE == "NIKON CORPORATION" ]]; then
+  echo "NOTE: NIKON NEFs are different dependant on mode, please run this tool on NEF for each of the camera's mode (14-bit, 12-bit; compressed, uncompressed)"
   echo ""
 fi
 echo "NOTE: The default crop exposes the full sensor including garbage pixels, which need to be visually inspected. (negative width/height values are right/bottom crops, which are preferred)"
