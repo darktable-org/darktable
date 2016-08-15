@@ -1973,7 +1973,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="6080" height="4044"/>
-		<Sensor black="0" white="16384"/>
+		<Sensor black="0" white="15892"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3X" mode="14bit-uncompressed">
 		<ID make="Nikon" model="D3X">Nikon D3X</ID>
@@ -1984,7 +1984,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="6080" height="4044"/>
-		<Sensor black="0" white="16384"/>
+		<Sensor black="0" white="15892"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D300" mode="14bit-compressed">
 		<ID make="Nikon" model="D300">Nikon D300</ID>
