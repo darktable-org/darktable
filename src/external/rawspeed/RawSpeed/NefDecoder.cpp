@@ -372,10 +372,7 @@ void NefDecoder::checkSupportInternal(CameraMetaData *meta) {
 
   if (meta->hasCamera(make, model, extended_mode))
     this->checkCameraSupported(meta, make, model, extended_mode);
-  else if (meta->hasCamera(make, model, mode))
-    this->checkCameraSupported(meta, make, model, mode);
-  else
-    this->checkCameraSupported(meta, make, model, "");
+  else this->checkCameraSupported(meta, make, model, mode);
 }
 
 string NefDecoder::getMode() {
