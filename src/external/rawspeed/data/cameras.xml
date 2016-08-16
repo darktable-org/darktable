@@ -1942,6 +1942,28 @@
 		<Crop x="2" y="0" width="4282" height="2844"/>
 		<Sensor black="0" white="15892"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D3">Nikon D3</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="0" width="4282" height="2844"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D3">Nikon D3</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="0" width="4282" height="2844"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-compressed">
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
 		<CFA width="2" height="2">
@@ -1964,6 +1986,28 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="16384"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D3S">Nikon D3S</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D3S">Nikon D3S</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3X" mode="14bit-compressed">
 		<ID make="Nikon" model="D3X">Nikon D3X</ID>
 		<CFA width="2" height="2">
@@ -1985,6 +2029,28 @@
 		</CFA>
 		<Crop x="0" y="0" width="6080" height="4044"/>
 		<Sensor black="0" white="15892"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3X" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D3X">Nikon D3X</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="6080" height="4044"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3X" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D3X">Nikon D3X</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="6080" height="4044"/>
+		<Sensor black="0" white="4096"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D300" mode="14bit-compressed">
 		<ID make="Nikon" model="D300">Nikon D300</ID>
@@ -2096,6 +2162,28 @@
 		<Crop x="0" y="0" width="3898" height="2610"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3000" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D3000">Nikon D3000</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="3898" height="2610"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3000" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D3000">Nikon D3000</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="3898" height="2610"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3200" mode="14bit-compressed">
 		<ID make="Nikon" model="D3200">Nikon D3200</ID>
 		<CFA width="2" height="2">
@@ -2117,6 +2205,28 @@
 		</CFA>
 		<Crop x="0" y="0" width="-48" height="0"/>
 		<Sensor black="0" white="16383"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3200" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D3200">Nikon D3200</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-48" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3200" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D3200">Nikon D3200</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-48" height="0"/>
+		<Sensor black="0" white="4096"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3300" mode="12bit-compressed">
 		<ID make="Nikon" model="D3300">Nikon D3300</ID>
@@ -2168,6 +2278,28 @@
 		<Crop x="2" y="0" width="-50" height="0"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D4">Nikon D4</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="0" width="-50" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D4">Nikon D4</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="0" width="-50" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="14bit-compressed">
 		<ID make="Nikon" model="D5">Nikon D5</ID>
 		<CFA width="2" height="2">
@@ -2192,6 +2324,34 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="400" white="15520"/>
+		<Hints>
+			<Hint name="nikon_override_auto_black" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D5">Nikon D5</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="400" white="4096"/>
+		<Hints>
+			<Hint name="nikon_override_auto_black" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D5">Nikon D5</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="400" white="4096"/>
 		<Hints>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
@@ -2224,6 +2384,34 @@
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="Df">Nikon Df</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="0" width="-50" height="0"/>
+		<Sensor black="0" white="4096"/>
+		<BlackAreas>
+			<Vertical x="4984" width="8"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="Df">Nikon Df</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="0" width="-50" height="0"/>
+		<Sensor black="0" white="4096"/>
+		<BlackAreas>
+			<Vertical x="4984" width="8"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5100" mode="14bit-compressed" decoder_version="2">
 		<ID make="Nikon" model="D5100">Nikon D5100</ID>
 		<CFA width="2" height="2">
@@ -2246,6 +2434,28 @@
 		<Crop x="0" y="0" width="-46" height="0"/>
 		<Sensor black="0" white="15892"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5100" mode="12bit-compressed" decoder_version="2" supported="no">
+		<ID make="Nikon" model="D5100">Nikon D5100</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-46" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5100" mode="12bit-uncompressed" decoder_version="2" supported="no">
+		<ID make="Nikon" model="D5100">Nikon D5100</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-46" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3100" mode="14bit-compressed" decoder_version="2">
 		<ID make="Nikon" model="D3100">Nikon D3100</ID>
 		<CFA width="2" height="2">
@@ -2267,6 +2477,28 @@
 		</CFA>
 		<Crop x="8" y="2" width="-24" height="-2"/>
 		<Sensor black="0" white="16383"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3100" mode="12bit-compressed" decoder_version="2" supported="no">
+		<ID make="Nikon" model="D3100">Nikon D3100</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="8" y="2" width="-24" height="-2"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3100" mode="12bit-uncompressed" decoder_version="2" supported="no">
+		<ID make="Nikon" model="D3100">Nikon D3100</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="8" y="2" width="-24" height="-2"/>
+		<Sensor black="0" white="4096"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D40" mode="12bit-compressed">
 		<ID make="Nikon" model="D40">Nikon D40</ID>
@@ -2612,6 +2844,28 @@
 		<Crop x="0" y="0" width="-50" height="0"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D600" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D600">Nikon D600</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-50" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D600" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D600">Nikon D600</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-50" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D610" mode="14bit-compressed">
 		<ID make="Nikon" model="D610">Nikon D610</ID>
 		<CFA width="2" height="2">
@@ -2633,6 +2887,28 @@
 		</CFA>
 		<Crop x="0" y="0" width="-50" height="0"/>
 		<Sensor black="0" white="16383"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D610" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D610">Nikon D610</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-50" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D610" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D610">Nikon D610</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-50" height="0"/>
+		<Sensor black="0" white="4096"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D70" mode="12bit-compressed">
 		<ID make="Nikon" model="D70">Nikon D70</ID>
@@ -2821,6 +3097,28 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="16383"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D7100" mode="12bit-compressed" supported="no">
+		<ID make="Nikon" model="D7100">Nikon D7100</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D7100" mode="12bit-uncompressed" supported="no">
+		<ID make="Nikon" model="D7100">Nikon D7100</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4096"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="14bit-compressed">
 		<ID make="Nikon" model="D7200">Nikon D7200</ID>
