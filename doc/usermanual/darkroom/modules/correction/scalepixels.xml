@@ -46,7 +46,7 @@
     <title>Usage</title>
 
     <para>
-      darktable detects images that need correction by their EXIF data and automatically
+      darktable detects images that need correction by their Exif data and automatically
       activates this module. For other images the module always remains disabled. The modules
       has no parameters.
     </para>

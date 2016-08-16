@@ -176,7 +176,7 @@
                 $(EXIF_YEAR)
               </entry>
               <entry>
-                exif year
+                Exif year
               </entry>
             </row>
             <row>
@@ -184,7 +184,7 @@
                 $(EXIF_MONTH)
               </entry>
               <entry>
-                exif month
+                Exif month
               </entry>
             </row>
             <row>
@@ -192,7 +192,7 @@
                 $(EXIF_DAY)
               </entry>
               <entry>
-                exif day
+                Exif day
               </entry>
             </row>
             <row>
@@ -200,7 +200,7 @@
                 $(EXIF_HOUR)
               </entry>
               <entry>
-                exif hour
+                Exif hour
               </entry>
             </row>
             <row>
@@ -208,7 +208,7 @@
                 $(EXIF_MINUTE)
               </entry>
               <entry>
-                exif minute
+                Exif minute
               </entry>
             </row>
             <row>
@@ -216,7 +216,7 @@
                 $(EXIF_SECOND)
               </entry>
               <entry>
-                exif second
+                Exif second
               </entry>
             </row>
             <row>
@@ -332,7 +332,7 @@
       </para>
 
       <para>
-<programlisting>exiftool -XMP:all=   image.jpg
+<programlisting>Exiftool -XMP:all=   image.jpg
 </programlisting>
       </para>
 

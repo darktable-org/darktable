@@ -91,7 +91,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the EXIF data entry describing the camera make and model
+                    the Exif data entry describing the camera make and model
                   </para>
                 </entry>
               </row>
@@ -209,7 +209,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the EXIF data entry describing the lens
+                    the Exif data entry describing the lens
                   </para>
                 </entry>
               </row>
@@ -219,7 +219,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the ISO value, as derived from EXIF data
+                    the ISO value, as derived from Exif data
                   </para>
                 </entry>
               </row>
@@ -229,7 +229,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the aperture value, as derived from EXIF data
+                    the aperture value, as derived from Exif data
                   </para>
                 </entry>
               </row>

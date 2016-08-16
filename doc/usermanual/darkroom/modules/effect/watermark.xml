@@ -142,7 +142,7 @@
                 $(IMAGE.EXIF)
               </entry>
               <entry>
-                The image exif string
+                The image Exif string
               </entry>
             </row>
             <row>
@@ -158,7 +158,7 @@
                 $(EXIF.DATE.SECOND)
               </entry>
               <entry>
-                Seconds from the image EXIF data
+                Seconds from the image Exif data
               </entry>
             </row>
             <row>
@@ -166,7 +166,7 @@
                 $(EXIF.DATE.MINUTE)
               </entry>
               <entry>
-                Minutes from the image EXIF data
+                Minutes from the image Exif data
               </entry>
             </row>
             <row>
@@ -174,7 +174,7 @@
                 $(EXIF.DATE.HOUR)
               </entry>
               <entry>
-                Hours from the image EXIF data (24h)
+                Hours from the image Exif data (24h)
               </entry>
             </row>
             <row>
@@ -182,7 +182,7 @@
                 $(EXIF.DATE.HOUR_AMPM)
               </entry>
               <entry>
-                Hours from the image EXIF data (12h, AM/PM)
+                Hours from the image Exif data (12h, AM/PM)
               </entry>
             </row>
             <row>
@@ -190,7 +190,7 @@
                 $(EXIF.DATE.DAY)
               </entry>
               <entry>
-                Day of month from the image EXIF data (01&nbsp;..&nbsp;31)
+                Day of month from the image Exif data (01&nbsp;..&nbsp;31)
               </entry>
             </row>
             <row>
@@ -198,7 +198,7 @@
                 $(EXIF.DATE.MONTH)
               </entry>
               <entry>
-                Month from the image EXIF data (01&nbsp;..&nbsp;12)
+                Month from the image Exif data (01&nbsp;..&nbsp;12)
               </entry>
             </row>
             <row>
@@ -206,7 +206,7 @@
                 $(EXIF.DATE.SHORT_MONTH)
               </entry>
               <entry>
-                Month from the image EXIF data localized (Jan, Feb,&nbsp;.. Dec)
+                Month from the image Exif data localized (Jan, Feb,&nbsp;.. Dec)
               </entry>
             </row>
             <row>
@@ -214,7 +214,7 @@
                 $(EXIF.DATE.LONG_MONTH)
               </entry>
               <entry>
-                Month from the image EXIF data localized (January, February,&nbsp;.. December)
+                Month from the image Exif data localized (January, February,&nbsp;.. December)
               </entry>
             </row>
             <row>
@@ -222,7 +222,7 @@
                 $(EXIF.DATE.SHORT_YEAR)
               </entry>
               <entry>
-                Abbreviated year from the image EXIF data (2013 is "13")
+                Abbreviated year from the image Exif data (2013 is "13")
               </entry>
             </row>
             <row>
@@ -230,7 +230,7 @@
                 $(EXIF.DATE.LONG_YEAR)
               </entry>
               <entry>
-                Full year from the image EXIF data
+                Full year from the image Exif data
               </entry>
             </row>
             <row>

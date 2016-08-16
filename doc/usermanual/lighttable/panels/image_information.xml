@@ -12,7 +12,7 @@
   </indexterm>
 
   <indexterm>
-    <primary>EXIF data</primary>
+    <primary>Exif data</primary>
   </indexterm>
 
   <informaltable frame="none">
@@ -22,7 +22,7 @@
       <tbody>
         <row>
           <entry>
-            This panel shows information embedded within an image's EXIF data. When hovering
+            This panel shows information embedded within an image's Exif data. When hovering
             with the mouse over thumbnails, darktable will update this view, displaying
             information of the image currently under the mouse cursor. This panel is also
             available in darkroom, tethering, map, and print view.

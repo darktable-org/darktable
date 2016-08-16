@@ -42,7 +42,7 @@
     <para>
       A GPS receiver calculates its current position based on the information it receives from
       satellites and records them in a GPX file&nbsp;&ndash; together with the current date and
-      time. The EXIF data of the images also contains a time stamp defined by the camera
+      time. The Exif data of the images also contains a time stamp defined by the camera
       settings. darktable takes the time stamp of the image, looks-up the position in the GPX
       file at that time, and stores the coordinates (latitude/longitude/elevation) in its
       database and the image's XMP sidecar file.
@@ -50,7 +50,7 @@
 
     <para>
       There may occur two problems. In contrast to GPS devices, most cameras don't record the
-      accurate time. Secondly, the time stored in the EXIF data doesn't contain a time zone.
+      accurate time. Secondly, the time stored in the Exif data doesn't contain a time zone.
       Most people set their camera to local time, while the GPS devices store the time in UTC
       (Universal Time, Coordinated), i.e. Greenwich (London) time zone. If the time zones of
       camera and GPX file differs, than the related location will be wrong.
@@ -94,7 +94,7 @@
                 When you have this image selected you can click on the (looking glass) button
                 and darktable will present you an entry box. Just enter the time that is shown
                 on the image. As a result you will get the difference between the time you
-                entered and the one associated with the image in its EXIF data.
+                entered and the one associated with the image in its Exif data.
               </para>
 
               <para>
