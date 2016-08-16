@@ -26,7 +26,7 @@
   <bridgehead renderas="sect4">don't use embedded preview JPEG but half-size raw</bridgehead>
 
   <para>
-    Check this option to not use the embedded jpeg from the raw file but process the raw data.
+    Check this option to not use the embedded JPEG from the raw file but process the raw data.
     This is slower. (default off).
     <!-- but prevents you from getting false impressions from camera-processed thumbnail -->
   </para>
@@ -72,7 +72,7 @@
 
   <para>
     When having RAW+JPEG images together in one directory it makes no sense to import both. With
-    this flag one can ignore all jpegs found (default off).
+    this flag one can ignore all JPEGs found (default off).
   </para>
 
   <bridgehead renderas="sect4">recursive directory traversal when importing film rolls</bridgehead>
