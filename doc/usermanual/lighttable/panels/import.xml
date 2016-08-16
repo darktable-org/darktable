@@ -85,7 +85,7 @@
     </para>
 
     <para>
-      Checking <quote>ignore jpeg files</quote> is a good choice if there are JPEG images in the
+      Checking <quote>ignore JPEG files</quote> is a good choice if there are JPEG images in the
       same folder that you do not want to process; eg. if the camera stores RAW+JPEG, you often
       only want to work on the raws, leaving the JPEG images alone.
     </para>

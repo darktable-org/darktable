@@ -31,7 +31,7 @@
               list of source and target points, the complete mapping will be interpolated using
               splines. The resulting luts are editable by hand and can be created using the
               <code>darktable-chart</code>
-              utility to match given input (such as hald-cluts and raw/jpg with in-camera
+              utility to match given input (such as hald-cluts and RAW/JPEG with in-camera
               processing pairs).
             </entry>
             <entry>
