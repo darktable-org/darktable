@@ -17,7 +17,7 @@
   <title>Overview</title>
 
   <para>
-    darktable is an open source photography workflow application and RAW developer, a virtual
+    darktable is an open source photography workflow application and raw developer, a virtual
     lighttable and darkroom for photographers.
   </para>
 
@@ -1212,7 +1212,7 @@
         <title>Bringing back detail</title>
 
         <para>
-          Digital RAW images often contain more information than you can see at first sight.
+          Digital raw images often contain more information than you can see at first sight.
           Especially in the shadows of an image, there are lots of hidden details. The
           <link linkend="shadows_and_highlights"><emphasis>shadows and
           highlights</emphasis></link> module helps bring these details back into visible tonal
@@ -1290,7 +1290,7 @@
         <title>Sharpening</title>
 
         <para>
-          If you start your workflow from a RAW image, you will need to have your final output
+          If you start your workflow from a raw image, you will need to have your final output
           sharpened. The <link linkend="sharpen"><emphasis>sharpen</emphasis></link> module can
           do this with the classical USM (unsharp mask) approach, available in most image
           processing software. Another very versatile way to enhance edges in an image is
@@ -1336,7 +1336,7 @@
       <para>
         Images are exported from the lighttable view, using the <emphasis>export
         selected</emphasis> dialog in the right panel (<xref linkend="export_selected"/>). In
-        general, export means: save my developed RAW image as a JPEG.
+        general, export means: save my developed raw image as a JPEG.
       </para>
 
       <para>

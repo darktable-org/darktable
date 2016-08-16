@@ -76,7 +76,7 @@
   <para>
     These redundant XMP files can later be re-imported into a different database, preserving
     your changes to the image. It's strongly recommended to have this option activated so you
-    don't lose data in case of a database corruption. Backing up your RAW file plus the
+    don't lose data in case of a database corruption. Backing up your raw file plus the
     accompanying XMP file will allow you to fully restore your work (default on).
   </para>
 
