@@ -321,7 +321,7 @@
         <emphasis>Caution: for various reasons embedding XMP tags into output files may fail
         without notice, eg. if certain size limits are exceeded. Users are therefore advised to
         not rely their backup strategy on this feature. To backup your data make sure to save
-        your input (RAW) file as well as all of darktable's XMP sidecar files.</emphasis>
+        your input (raw) file as well as all of darktable's XMP sidecar files.</emphasis>
       </para>
 
       <para>

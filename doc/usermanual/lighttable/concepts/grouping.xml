@@ -106,7 +106,7 @@
 
   <para>
     Please note that <quote>duplicating images</quote> here only generates a copy of your
-    history stack, stored in another small XMP file. There is still only one RAW file, so you
+    history stack, stored in another small XMP file. There is still only one raw file, so you
     don't waste a lot of disk space.
   </para>
 
