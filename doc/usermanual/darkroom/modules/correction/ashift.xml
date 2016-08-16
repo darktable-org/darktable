@@ -51,9 +51,9 @@
 
     <para>
       This module is able to correct converging lines by warping the image in such a way that
-      the lines in question get parallel to the image frame. Corrections can be applied in
+      the lines in question become parallel to the image frame. Corrections can be applied in
       vertical and horizontal direction, either separately or in combination. In order to
-      perform an automatic correction the module analyzes the image for suited structural
+      perform an automatic correction the module analyzes the image for suitable structural
       features consisting of line segments. Based on these line segments a fitting procedure is
       started that determines the best values of the module parameters.
     </para>
