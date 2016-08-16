@@ -13,10 +13,13 @@
 
 static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
 {
-  static const struct {
+  typedef struct
+  {
     const char *cameraid;
     short trans[12];
-  } table[] = {
+  } table_data;
+
+  static const table_data table[] = {
     { "AGFAPHOTO DC-833m", { 11438,-3762,-1115,-2409,9914,2497,-1227,2295,5300 } }, /* DJC */
     { "Apple QuickTake", { 21392,-5653,-3353,2406,8010,-415,7166,1427,2078 } },	/* DJC */
     { "Canon EOS D2000C", { 24542,-10860,-3401,-1490,11370,-297,2858,-605,3225 } },
@@ -578,7 +581,7 @@ static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
     { "Sony SLT-A99", { 6344,-1612,-462,-4863,12477,2681,-865,1786,6899 } },
   };
 
-  for (size_t i = 0; i < sizeof(table)/sizeof(table[1]); i++) {
+  for (size_t i = 0; i < sizeof(table)/sizeof(table_data); i++) {
     if (!strcmp(name, table[i].cameraid)) {
       for (int j=0; j < 12; j++)
         cam_xyz[0][j] = table[i].trans[j] / 10000.0;
