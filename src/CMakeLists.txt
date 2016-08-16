@@ -5,7 +5,7 @@ cmake_policy(SET CMP0011 NEW)
 include(CheckCCompilerFlag)
 include(CheckCSourceCompiles)
 
-#
+# toes 
 # Add files for libdarktable
 #
 FILE(GLOB SOURCE_FILES
