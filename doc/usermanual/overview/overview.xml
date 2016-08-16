@@ -1156,7 +1156,7 @@
           <link linkend="denoise_profiled"><emphasis>profiled denoise</emphasis></link>. This
           module offers an almost <quote>single-click</quote> solution to fight noise. From a
           user perspective the effect only depends on camera type and ISO value, both derived
-          from EXIF data. All other settings are taken from a database of noise profiles that
+          from Exif data. All other settings are taken from a database of noise profiles that
           the darktable team has collected&nbsp;&ndash; now covering well above 200 popular
           camera models. In addition you have several other options in darktable to reduce
           noise. There is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>,

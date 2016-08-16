@@ -156,7 +156,7 @@
             $(EXIF_YEAR)
           </entry>
           <entry>
-            year the photo was taken (from EXIF data)
+            year the photo was taken (from Exif data)
           </entry>
         </row>
         <row>
@@ -164,7 +164,7 @@
             $(EXIF_MONTH)
           </entry>
           <entry>
-            month the photo was taken (from EXIF data)
+            month the photo was taken (from Exif data)
           </entry>
         </row>
         <row>
@@ -172,7 +172,7 @@
             $(EXIF_DAY)
           </entry>
           <entry>
-            day the photo was taken (from EXIF data)
+            day the photo was taken (from Exif data)
           </entry>
         </row>
         <row>
@@ -180,7 +180,7 @@
             $(EXIF_HOUR)
           </entry>
           <entry>
-            hour the photo was taken (from EXIF data)
+            hour the photo was taken (from Exif data)
           </entry>
         </row>
         <row>
@@ -188,7 +188,7 @@
             $(EXIF_MINUTE)
           </entry>
           <entry>
-            minute the photo was taken (from EXIF data)
+            minute the photo was taken (from Exif data)
           </entry>
         </row>
         <row>
@@ -196,7 +196,7 @@
             $(EXIF_SECOND)
           </entry>
           <entry>
-            seconds the photo was taken (from EXIF data)
+            seconds the photo was taken (from Exif data)
           </entry>
         </row>
         <row>
@@ -204,7 +204,7 @@
             $(EXIF_ISO)
           </entry>
           <entry>
-            ISO value of the photo (from EXIF data)
+            ISO value of the photo (from Exif data)
           </entry>
         </row>
       </tbody>

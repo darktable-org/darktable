@@ -41,7 +41,7 @@
 
     <para>
       Even if your camera doesn't support this feature, there is an alternative method.
-      darktable can match the EXIF time and date data in your image(s) to a separate GPX data
+      darktable can match the Exif time and date data in your image(s) to a separate GPX data
       tracking file created by a GPS tracker recording your movements. These can be handheld
       devices or a GPS tracker app on your smartphone. This is all done in the lighttable view
       (see <xref linkend="geotagging"/>).

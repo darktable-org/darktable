@@ -45,7 +45,7 @@
 
   <para>
     activate this checkbutton to automatically apply the preset on newly imported images; a set
-    of fields is displayed where you can define patterns to be matched against EXIF data.
+    of fields is displayed where you can define patterns to be matched against Exif data.
   </para>
 
   <bridgehead renderas="sect4">only show this preset for matching images</bridgehead>
@@ -58,21 +58,21 @@
   <bridgehead renderas="sect4">model</bridgehead>
 
   <para>
-    a pattern to be matched against the EXIF field that describes your camera model; use "%" as
+    a pattern to be matched against the Exif field that describes your camera model; use "%" as
     wildcard.
   </para>
 
   <bridgehead renderas="sect4">maker</bridgehead>
 
   <para>
-    a pattern to be matched against the EXIF field that describes the maker of your camera; use
+    a pattern to be matched against the Exif field that describes the maker of your camera; use
     "%" as wildcard.
   </para>
 
   <bridgehead renderas="sect4">lens</bridgehead>
 
   <para>
-    a pattern to be matched against the EXIF field that describes your lens; use "%" as
+    a pattern to be matched against the Exif field that describes your lens; use "%" as
     wildcard.
   </para>
 
