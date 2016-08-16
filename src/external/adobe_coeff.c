@@ -9,6 +9,8 @@
     A helper script is available as tools/dngmeta.sh
 */
 
+#include <string.h>
+
 static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
 {
   static const struct {
@@ -576,7 +578,7 @@ static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
     { "Sony SLT-A99", { 6344,-1612,-462,-4863,12477,2681,-865,1786,6899 } },
   };
 
-  for (int i=0; i < sizeof(table)/sizeof(table[1]); i++) {
+  for (size_t i = 0; i < sizeof(table)/sizeof(table[1]); i++) {
     if (!strcmp(name, table[i].cameraid)) {
       for (int j=0; j < 12; j++)
         cam_xyz[0][j] = table[i].trans[j] / 10000.0;
