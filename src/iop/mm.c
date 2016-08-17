@@ -1,6 +1,7 @@
 /*
  *  This file is part of darktable,
- *  copyright (c) 2016 Wolfgang Mader.
+ *  copyright (c) 2016 Wolfgang Mader
+ *  copyright (c) 2016 Maixmilian Trescher
  *
  *  darktable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,13 +25,14 @@
 #include "develop/imageop.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/locallaplacian.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_bw_params_t)
 
-typedef enum _iop_operator_t { OPERATOR_LIGHTNESS, OPERETOR_APPARENT_GRAYSCALE } _iop_operator_t;
+typedef enum _iop_operator_t { OPERATOR_LIGHTNESS, OPERATOR_APPARENT_GRAYSCALE, OPERATOR_LAPLACIAN } _iop_operator_t;
 
 typedef struct dt_iop_bw_params_t
 {
@@ -73,6 +75,9 @@ static inline void process_lightness(dt_dev_pixelpipe_iop_t *piece, const void *
                                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
+  fprintf(stderr, "ch is %f", (float)ch);
+  fprintf(stderr, "first three values are %f %f %f",((float *)i)[0], ((float *)i)[1], ((float *)i)[2]);
+
   float *in;
   float *out;
   for(int j = 0; j < roi_out->height; ++j)
@@ -146,6 +151,20 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
   }
 }
 
+static inline void process_local_laplacian(dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+                                              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  //dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
+
+  //TODO: make some of these accessible as parameters in the gui
+  float sigma = 10.0f;
+  float shadows = 1.0f;
+  float highlights = 1.0f;
+  float clarity = 6.0f;
+  const int stride = piece->colors;
+  local_laplacian(i, (float *)o, roi_out->width, roi_out->height, stride, sigma, shadows, highlights, clarity);
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -157,8 +176,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       process_lightness(piece, i, o, roi_in, roi_out);
       break;
 
-    case OPERETOR_APPARENT_GRAYSCALE:
+    case OPERATOR_APPARENT_GRAYSCALE:
       process_apparent_grayscale(piece, i, o, roi_in, roi_out);
+      break;
+
+    case OPERATOR_LAPLACIAN:
+      process_local_laplacian(piece, i, o, roi_in, roi_out);
       break;
   }
 }
@@ -167,7 +190,7 @@ void reload_defaults(dt_iop_module_t *module)
 {
   module->default_enabled = 0;
 
-  dt_iop_bw_params_t tmp = (dt_iop_bw_params_t){ OPERETOR_APPARENT_GRAYSCALE, { 20 } };
+  dt_iop_bw_params_t tmp = (dt_iop_bw_params_t){ OPERATOR_APPARENT_GRAYSCALE, { 20 } };
   memcpy(module->params, &tmp, sizeof(dt_iop_bw_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bw_params_t));
 }
@@ -214,7 +237,7 @@ static void operator_callback(GtkWidget *combobox, gpointer user_data)
   gtk_widget_set_visible(g->apparent.adapting_luminance, FALSE);
 
   // enable widgets of the selected operator
-  if(p->operator== OPERETOR_APPARENT_GRAYSCALE)
+  if(p->operator== OPERATOR_APPARENT_GRAYSCALE)
   {
     gtk_widget_set_visible(g->apparent.adapting_luminance, TRUE);
   }
@@ -245,7 +268,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_visible(g->apparent.adapting_luminance, FALSE);
 
   // enable widgets of the selected operator
-  if(p->operator== OPERETOR_APPARENT_GRAYSCALE)
+  if(p->operator== OPERATOR_APPARENT_GRAYSCALE)
   {
     gtk_widget_set_visible(g->apparent.adapting_luminance, TRUE);
   }
@@ -264,6 +287,7 @@ void gui_init(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_add(g->operator, _("lightness"));
   dt_bauhaus_combobox_add(g->operator, _("apparent grayscale"));
+  dt_bauhaus_combobox_add(g->operator, _("local laplacian"));
 
   gtk_widget_set_tooltip_text(g->operator, _("the conversion operator"));
   g_signal_connect(G_OBJECT(g->operator), "value-changed", G_CALLBACK(operator_callback), self);
