@@ -2990,7 +2990,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D750" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D750" mode="12bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D750">Nikon D750</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3018,7 +3018,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D750" mode="14bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D750" mode="14bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D750">Nikon D750</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3134,7 +3134,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="14bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="14bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D7200">Nikon D7200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3162,7 +3162,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="12bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D7200">Nikon D7200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
