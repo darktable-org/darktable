@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8.5)
-
+####
 cmake_policy(SET CMP0011 NEW)
 
 include(CheckCCompilerFlag)
 include(CheckCSourceCompiles)
 
-#
+# toes oeuaoeeuaeou
 # Add files for libdarktable
 #
 FILE(GLOB SOURCE_FILES
