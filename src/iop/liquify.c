@@ -2236,6 +2236,9 @@ static float find_nearest_on_line_t (const float complex p0, const float complex
  *                2P_{1,i}             &=&  K_i +  C2_i     \eqno(9)
  * \f}
  *
+ * FIXME (hodapp): Above causes an error with doxygen:
+ * ! You can't use `\eqno' in math mode.
+ *
  * Some of these are the same and differ only in the way we calculate
  * c2. (You may open your eyes again.)
  */
