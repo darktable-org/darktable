@@ -1181,7 +1181,7 @@
           Sometimes you will need to remove spots caused by sensor dirt. The
           <link linkend="spot_removal"><emphasis>spot removal</emphasis></link> module is at
           hand and can also correct other disturbing elements like skin blemishes. If your
-          camera has stuck pixels or tends to produce hot pixels at high ISO values, or longer
+          camera has stuck pixels or tends to produce hot pixels at high ISO values or longer
           exposure times, have a look at the <link linkend="hotpixels"><emphasis>hot
           pixels</emphasis></link> module for automatic correction.
         </para>
@@ -1254,7 +1254,7 @@
           used, it can give your photograph the right pop. darktable offers several modules for
           this task. The <link linkend="local_contrast"><emphasis>local
           contrast</emphasis></link> module is easy to handle, with just a few parameters. A
-          much more versatile, but also more complex technique, is offered by the
+          much more versatile, but also more complex, technique is offered by the
           <link linkend="equalizer"><emphasis>equalizer</emphasis></link> module. Have a look at
           its presets, to get a feeling for how it works. Equalizer is darktable's "Swiss Army
           Knife" for many adjustments where spatial dimension plays a role.
@@ -1351,7 +1351,7 @@
         Select images on the lighttable, choose the target storage and format, and set the
         maximum width and height image restraints. This means that none of the images will be
         bigger than any of the width/height restraints and hit the export button. Leave the
-        width and height restraints at zero, if you want the original resolution.
+        width and height restraints at zero if you want the original resolution.
       </para>
 
     </sect2>

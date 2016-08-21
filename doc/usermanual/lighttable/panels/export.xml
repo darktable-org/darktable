@@ -320,7 +320,7 @@
       <para>
         <emphasis>Caution: for various reasons embedding XMP tags into output files may fail
         without notice, eg. if certain size limits are exceeded. Users are therefore advised to
-        not rely their backup strategy on this feature. To backup your data make sure to save
+        not rely their backup strategy on this feature. To back up your data make sure to save
         your input (raw) file as well as all of darktable's XMP sidecar files.</emphasis>
       </para>
 
@@ -405,7 +405,7 @@
         darktable combines with the existing history stack to generate the output image. These
         history items are only added temporarily; the original history stack is not overwritten.
         You can use this feature to add processing steps and parameters that you want to be
-        applied specifically to exported images, e.g. you may define a style that adds a
+        applied specifically to images before export, e.g. you may define a style that adds a
         stronger level of sharpening when you produce scaled-down JPEG files for the internet or
         add a certain level of exposure compensation to all of your output images. Learn more
         about styles in <xref linkend="styles"/>, and <xref linkend="history"/>.

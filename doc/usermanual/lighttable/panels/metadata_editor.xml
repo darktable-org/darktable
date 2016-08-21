@@ -21,7 +21,7 @@
             Edit metadata of an image, like <emphasis>title</emphasis>,
             <emphasis>description</emphasis>, <emphasis>creator</emphasis>,
             <emphasis>publisher</emphasis>, or <emphasis>rights</emphasis>. You can define your
-            own presets, if you want to apply specific settings frequently.
+            own presets if you want to apply specific settings frequently.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_metadata_editor.png" scalefit="1" width="80%" align="center" />
