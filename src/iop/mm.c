@@ -32,7 +32,12 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_bw_params_t)
 
-typedef enum _iop_operator_t { OPERATOR_LIGHTNESS, OPERATOR_APPARENT_GRAYSCALE, OPERATOR_LAPLACIAN } _iop_operator_t;
+typedef enum _iop_operator_t
+{
+  OPERATOR_LIGHTNESS,
+  OPERATOR_APPARENT_GRAYSCALE,
+  OPERATOR_LAPLACIAN
+} _iop_operator_t;
 
 typedef struct dt_iop_bw_params_t
 {
@@ -76,7 +81,7 @@ static inline void process_lightness(dt_dev_pixelpipe_iop_t *piece, const void *
 {
   const int ch = piece->colors;
   fprintf(stderr, "ch is %f", (float)ch);
-  fprintf(stderr, "first three values are %f %f %f",((float *)i)[0], ((float *)i)[1], ((float *)i)[2]);
+  fprintf(stderr, "first three values are %f %f %f", ((float *)i)[0], ((float *)i)[1], ((float *)i)[2]);
 
   float *in;
   float *out;
@@ -152,11 +157,11 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
 }
 
 static inline void process_local_laplacian(dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-                                              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  //dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
+  // dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
 
-  //TODO: make some of these accessible as parameters in the gui
+  // TODO: make some of these accessible as parameters in the gui
   float sigma = 10.0f;
   float shadows = 1.0f;
   float highlights = 1.0f;
