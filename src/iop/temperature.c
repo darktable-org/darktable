@@ -90,7 +90,7 @@ static int ignore_missing_wb(dt_image_t *img)
   if(g_str_has_suffix(img->filename,"-hdr.dng"))
     return TRUE;
 
-  static const char * const ignored_cameras[] = {
+  static const char *const ignored_cameras[] = {
     "Canon PowerShot A610",
     "Canon PowerShot S3 IS",
     "Canon PowerShot A620",
@@ -104,6 +104,7 @@ static int ignore_missing_wb(dt_image_t *img)
     "Kodak EOS DCS 1",
     "Kodak DCS560C",
     "Kodak DCS460D",
+    "GITUP GIT2",
   };
 
   for(int i=0; i < sizeof(ignored_cameras)/sizeof(ignored_cameras[1]); i++)
