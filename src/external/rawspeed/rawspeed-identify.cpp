@@ -110,6 +110,12 @@ int main(int argc, const char* argv[])
   {
     std::unique_ptr<CameraMetaData> meta(new CameraMetaData(camfile));
 
+    if(!meta.get())
+    {
+      fprintf(stderr, "ERROR: Couldn't get a CameraMetaData instance\n");
+      return 2;
+    }
+
 #ifdef __AFL_HAVE_MANUAL_CONTROL
     __AFL_INIT();
 #endif
