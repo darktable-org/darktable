@@ -55,7 +55,7 @@ option(USE_WEBP "Enable WebP export support" ON)
 option(BUILD_CMSTEST "Build a test program to check your system's color management setup" ON)
 option(USE_OPENEXR "Enable OpenEXR support" ON)
 option(BUILD_PRINT "Build the print module" ON)
-option(BUILD_RS_IDENTIFY "Build the darktable-rs-identify debug aid" OFF)
+option(BUILD_RS_IDENTIFY "Build the darktable-rs-identify debug aid" ON)
 
 if(NOT SOURCE_PACKAGE)
   OPTION(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
