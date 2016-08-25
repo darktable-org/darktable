@@ -2172,6 +2172,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
   if(g->clip_x > .0f || g->clip_y > .0f || g->clip_w < 1.0f || g->clip_h < 1.0f)
   {
+    cairo_set_line_width(cr, dashes / 2.0);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_stroke(cr);
