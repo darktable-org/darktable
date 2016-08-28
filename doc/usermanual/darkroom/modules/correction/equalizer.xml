@@ -61,9 +61,10 @@
     <title>Usage</title>
 
     <para>
-      Each frequence band can be tweaked independently. In particular, you can adjust contrast
-      boost and denoise threshold splines for both lightness and chromaticity, as well as the
-      acuteness (<quote>edge</quote>) of the wavelet basis on each frequency scale.
+      Each frequency band can be tweaked independently. In particular, you can adjust contrast
+      boost and denoise threshold splines for both lightness and chromaticity (<quote>luma</quote>
+      and <quote>chroma</quote>), as well as the acuteness (<quote>edges</quote>) of the wavelet basis
+      on each frequency scale.
     </para>
 
     <informaltable frame="none">
