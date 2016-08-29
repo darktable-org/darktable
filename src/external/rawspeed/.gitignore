@@ -1,8 +1,34 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+testimg
+Release-*
+Debug-*
+
+# darktable
 *.vcproj
 *.vcproj.*
 *.vcxproj
 *.vcxproj.*
-
 pugiconfig.hpp
 pugixml.*
 pugixml-readme.txt
+RawSpeed/RawSpeed.cpp
