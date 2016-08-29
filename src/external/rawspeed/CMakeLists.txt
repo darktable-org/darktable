@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.8.5)
-
 if(USE_XMLLINT)
 	add_custom_target(
 		validate_cameras_xml ALL
