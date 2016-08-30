@@ -255,7 +255,25 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       return ret;
     }
 
-    img->bpp = r->getBpp();
+    if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32)) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    const float cpp = r->getCpp();
+    if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    img->buf_dsc.channels = 1;
+
+    switch(r->getBpp())
+    {
+      case sizeof(uint16_t):
+        img->buf_dsc.datatype = TYPE_UINT16;
+        break;
+      case sizeof(float):
+        img->buf_dsc.datatype = TYPE_FLOAT;
+        break;
+      default:
+        return DT_IMAGEIO_FILE_CORRUPTED;
+        break;
+    }
 
     // dimensions of uncropped image
     iPoint2D dimUncropped = r->getUncroppedDim();
@@ -318,7 +336,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
      * (from Klaus: r->pitch may differ from DT pitch (line to line spacing))
      * else fallback to generic dt_imageio_flip_buffers()
      */
-    const size_t bufSize_mipmap = (size_t)img->width * img->height * img->bpp;
+    const size_t bufSize_mipmap = (size_t)img->width * img->height * r->getBpp();
     const size_t bufSize_rawspeed = (size_t)r->pitch * dimUncropped.y;
     if(bufSize_mipmap == bufSize_rawspeed)
     {
@@ -357,17 +375,18 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->height = r->dim.y;
 
   // actually we want to store full floats here:
-  img->bpp = 4 * sizeof(float);
-  img->cpp = r->getCpp();
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
 
   if(r->getDataType() != TYPE_USHORT16) return DT_IMAGEIO_FILE_CORRUPTED;
 
-  if(img->cpp != 1 && img->cpp != 3 && img->cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
+  const uint32_t cpp = r->getCpp();
+  if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
 
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
-  if(img->cpp == 1)
+  if(cpp == 1)
   {
 /*
  * monochrome image (e.g. Leica M9 monochrom),
@@ -382,7 +401,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       const uint16_t *in = (uint16_t *) r->getData(0, j);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
-      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
+      for(int i = 0; i < img->width; i++, in += cpp, out += 4)
       {
         for(int k = 0; k < 3; k++)
         {
@@ -391,7 +410,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       }
     }
   }
-  else if(img->cpp == 3 || img->cpp == 4)
+  else if(cpp == 3 || cpp == 4)
   {
 /*
  * standard 3-ch image
@@ -406,7 +425,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       const uint16_t *in = (uint16_t *) r->getData(0, j);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
-      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
+      for(int i = 0; i < img->width; i++, in += cpp, out += 4)
       {
         for(int k = 0; k < 3; k++)
         {

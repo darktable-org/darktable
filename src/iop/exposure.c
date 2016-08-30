@@ -237,7 +237,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
   dt_image_t image = *img;
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(image.bpp != sizeof(uint16_t)) return;
+  if(image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16) return;
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, self->dev->image_storage.id, DT_MIPMAP_FULL,
@@ -417,7 +417,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   float exposure = p->exposure;
 
   if(p->mode == EXPOSURE_MODE_DEFLICKER && dt_image_is_raw(&self->dev->image_storage)
-     && self->dev->image_storage.bpp == sizeof(uint16_t))
+     && self->dev->image_storage.buf_dsc.channels == 1 && self->dev->image_storage.buf_dsc.datatype == TYPE_UINT16)
   {
     // first, compute correction.
     if(g)
@@ -471,7 +471,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.bpp != sizeof(uint16_t))
+  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
+     || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
   {
     gtk_widget_hide(GTK_WIDGET(g->mode));
     p->mode = EXPOSURE_MODE_MANUAL;
@@ -589,7 +590,8 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
   {
     case EXPOSURE_MODE_DEFLICKER:
       autoexp_disable(self);
-      if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.bpp != sizeof(uint16_t))
+      if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
+         || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
       {
         dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL)));
         gtk_widget_hide(GTK_WIDGET(g->mode));
@@ -738,7 +740,9 @@ static void deflicker_params_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
-  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.bpp != sizeof(uint16_t)) return;
+  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
+     || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
+    return;
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;

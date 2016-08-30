@@ -23,6 +23,7 @@
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
+#include "develop/format.h"
 #include <glib.h>
 #include <inttypes.h>
 
@@ -153,8 +154,7 @@ typedef struct dt_image_t
   dt_image_loader_t loader;
 
   uint32_t filters;          // Bayer demosaic pattern
-  int32_t bpp;               // bytes per pixel
-  int32_t cpp;               // components per pixel
+  dt_iop_buffer_dsc_t buf_dsc;
   float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
   uint8_t *profile;          // embedded profile, for example from JPEGs
   uint32_t profile_size;

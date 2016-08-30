@@ -517,7 +517,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
     }
   }
 
-  if(!dt_image_is_raw(&piece->pipe->image) || piece->pipe->image.bpp == sizeof(float)) piece->enabled = 0;
+  if(!dt_image_is_raw(&piece->pipe->image)
+     || (piece->pipe->image.buf_dsc.channels == 1 && piece->pipe->image.buf_dsc.datatype == TYPE_FLOAT))
+    piece->enabled = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -551,7 +553,8 @@ void reload_defaults(dt_iop_module_t *self)
                                      .raw_black_level_separate[3] = image->raw_black_level_separate[3],
                                      .raw_white_point = image->raw_white_point };
 
-  self->default_enabled = dt_image_is_raw(image) && image->bpp != sizeof(float);
+  self->default_enabled
+      = dt_image_is_raw(image) && !(image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT);
 
 end:
   memcpy(self->params, &tmp, sizeof(dt_iop_rawprepare_params_t));
@@ -575,7 +578,8 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->hide_enable_button = 1;
-  self->default_enabled = dt_image_is_raw(image) && image->bpp != sizeof(float);
+  self->default_enabled
+      = dt_image_is_raw(image) && !(image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT);
   self->priority = 10; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_rawprepare_params_t);
   self->gui_data = NULL;

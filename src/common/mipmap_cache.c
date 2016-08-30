@@ -226,7 +226,9 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   const int wd = img->width;
   const int ht = img->height;
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
-  const size_t buffer_size = (size_t)wd*ht*img->bpp + sizeof(*dsc);
+
+  const size_t bpp = dt_iop_buffer_dsc_to_bpp(&img->buf_dsc);
+  const size_t buffer_size = (size_t)wd * ht * bpp + sizeof(*dsc);
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
@@ -1063,7 +1065,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
              && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")));
 
       // Bayer
-      if(image->bpp == sizeof(float))
+      if(image->buf_dsc.datatype == TYPE_FLOAT)
       {
         if(mipmap_buf->pre_monochrome_demosaiced)
         {
@@ -1106,7 +1108,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
     else
     {
       // X-Trans
-      if(image->bpp == sizeof(float))
+      if(image->buf_dsc.datatype == TYPE_FLOAT)
       {
         dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(out, (const float *)buf.buf, &roi_out, &roi_in,
                                                           roi_out.width, roi_in.width, image->xtrans);
