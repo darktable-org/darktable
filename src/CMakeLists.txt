@@ -76,6 +76,7 @@ FILE(GLOB SOURCE_FILES
   "develop/blend_gui.c"
   "develop/tiling.c"
   "develop/masks/masks.c"
+  "develop/format.c"
   "dtgtk/button.c"
   "dtgtk/drawingarea.c"
   "dtgtk/expander.c"
