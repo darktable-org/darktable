@@ -335,7 +335,7 @@ static int get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_
     if(dt_dev_pixelpipe_uses_downsampled_input(pipe) || !(pipe->image.flags & DT_IMAGE_RAW))
       return 4 * sizeof(float);
     else
-      return pipe->image.bpp;
+      return dt_iop_buffer_dsc_to_bpp(&pipe->image.buf_dsc);
   }
   return module->output_bpp(module, pipe, piece);
 }

@@ -336,7 +336,8 @@ size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
 {
   // needed to alloc correct buffer size:
-  img->bpp = 4 * sizeof(float);
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
   dt_imageio_retval_t ret;
   dt_image_loader_t loader;
 #ifdef HAVE_OPENEXR
