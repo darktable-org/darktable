@@ -12,7 +12,7 @@
 @define-color dark_bg_color #350000;
 
 * {
-  font: Sans 8;
+  font: 8pt Sans;
   color: @fg_color;
   background-color: @bg_color;
   border-color: #111111;
@@ -155,7 +155,7 @@ table
 {
   color: shade(@fg_color, 0.7);
   background-color: @bg_color;
-  font-size: 10pt;
+  font-size: 15pt;
   margin:0;
   border:0;
   padding:0;
