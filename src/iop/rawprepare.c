@@ -158,14 +158,6 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
   return;
 }
 
-int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW))
-    return sizeof(float);
-  else
-    return 4 * sizeof(float);
-}
-
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;

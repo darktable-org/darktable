@@ -587,8 +587,10 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 {
   void *input = NULL;
   void *output = NULL;
+  dt_iop_buffer_dsc_t dsc;
+  self->output_format(self, piece->pipe, piece, &dsc);
+  const int out_bpp = dt_iop_buffer_dsc_to_bpp(&dsc);
 
-  const int out_bpp = self->output_bpp(self, piece->pipe, piece);
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
@@ -835,7 +837,10 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   //_print_roi(roi_in, "module roi_in");
   //_print_roi(roi_out, "module roi_out");
 
-  const int out_bpp = self->output_bpp(self, piece->pipe, piece);
+  dt_iop_buffer_dsc_t dsc;
+  self->output_format(self, piece->pipe, piece, &dsc);
+  const int out_bpp = dt_iop_buffer_dsc_to_bpp(&dsc);
+
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
@@ -1187,8 +1192,11 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   void *input_buffer = NULL;
   void *output_buffer = NULL;
 
+  dt_iop_buffer_dsc_t dsc;
+  self->output_format(self, piece->pipe, piece, &dsc);
+  const int out_bpp = dt_iop_buffer_dsc_to_bpp(&dsc);
+
   const int devid = piece->pipe->devid;
-  const int out_bpp = self->output_bpp(self, piece->pipe, piece);
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
@@ -1539,8 +1547,11 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   //_print_roi(roi_in, "module roi_in");
   //_print_roi(roi_out, "module roi_out");
 
+  dt_iop_buffer_dsc_t dsc;
+  self->output_format(self, piece->pipe, piece, &dsc);
+  const int out_bpp = dt_iop_buffer_dsc_to_bpp(&dsc);
+
   const int devid = piece->pipe->devid;
-  const int out_bpp = self->output_bpp(self, piece->pipe, piece);
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);

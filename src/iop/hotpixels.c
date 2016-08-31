@@ -94,11 +94,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
 }
 
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return sizeof(float);
-}
-
 /* Detect hot sensor pixels based on the 4 surrounding sites. Pixels
  * having 3 or 4 (depending on permissive setting) surrounding pixels that
  * than value*multiplier are considered "hot", and are replaced by the maximum of

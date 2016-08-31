@@ -158,14 +158,6 @@ error:
 }
 #endif
 
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW))
-    return sizeof(float);
-  else
-    return 4 * sizeof(float);
-}
-
 /* interpolate value for a pixel, ideal via ratio to nearby pixel */
 static inline float interp_pix_xtrans(const int ratio_next,
                                       const ssize_t offset_next,
