@@ -12,7 +12,7 @@
 @define-color dark_bg_color #350000;
 
 * {
-  font: 8pt Sans;
+  font: ${GTK_CSS_FONT};
   color: @fg_color;
   background-color: @bg_color;
   border-color: #111111;
@@ -155,7 +155,7 @@ table
 {
   color: shade(@fg_color, 0.7);
   background-color: @bg_color;
-  font-size: 15pt;
+  font-size: ${GTK_CSS_FONT2_SIZE};
   margin:0;
   border:0;
   padding:0;
