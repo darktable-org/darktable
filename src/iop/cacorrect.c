@@ -67,12 +67,6 @@ int flags()
   return IOP_FLAGS_ONE_INSTANCE;
 }
 
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return sizeof(float);
-}
-
-
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);

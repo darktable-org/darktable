@@ -89,13 +89,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_button_iop(self, "pick color of film material from image", GTK_WIDGET(g->colorpicker));
 }
 
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW))
-    return sizeof(float);
-  return 4 * sizeof(float);
-}
-
 static void request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
