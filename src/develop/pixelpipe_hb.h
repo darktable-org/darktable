@@ -97,7 +97,10 @@ typedef struct dt_dev_pixelpipe_t
   // sensor saturation, propagated through the operations:
   float processed_maximum[4];
 
+  // this one actually contains the expected output format,
+  // and should be modified by process*(), if necessary.
   dt_iop_buffer_dsc_t dsc;
+
   // sensor pattern aka filters, propagated through the operations:
   uint32_t filters; // Bayer demosaic pattern
   /* filter for Fuji X-Trans images, only used if filters == 9u */
