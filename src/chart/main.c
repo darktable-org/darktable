@@ -24,8 +24,6 @@
 #include "chart/thinplate.h"
 #include "chart/tonecurve.h"
 #include "common/exif.h"
-#include "version.h"
-
 
 #include <gtk/gtk.h>
 #include <stdio.h>

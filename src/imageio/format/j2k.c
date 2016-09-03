@@ -57,7 +57,6 @@
 #include "common/imageio_module.h"
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
-#include "version.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -358,8 +357,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   }
 
   /* Create comment for codestream */
-  const char comment[] = "Created by " PACKAGE_STRING;
-  parameters.cp_comment = g_strdup(comment);
+  parameters.cp_comment = g_strdup_printf("Created by %s", darktable_package_string);
 
   /*Converting the image to a format suitable for encoding*/
   {

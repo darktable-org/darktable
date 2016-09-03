@@ -21,8 +21,6 @@
 #include "config.h"
 #endif
 
-#include "version.h"
-
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
 #endif
@@ -173,7 +171,7 @@ static void _dt_sigsegv_handler(int param)
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
 
-  dprintf(fout, "this is %s reporting a segfault:\n\n", PACKAGE_STRING);
+  dprintf(fout, "this is %s reporting a segfault:\n\n", darktable_package_string);
 
   if(fout != STDOUT_FILENO) close(fout);
 
@@ -569,8 +567,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH);
 #endif
-        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2016 johannes hanika\n" PACKAGE_BUGREPORT
-               "\n\ncompile options:\n"
+        printf("this is %s\ncopyright (c) 2009-2016 johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
                "  bit depth is %s\n"
 #ifdef _DEBUG
                "  debug build\n"
@@ -612,11 +609,14 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #else
                "  GraphicsMagick support disabled\n"
 #endif
-               , (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
+               ,
+               darktable_package_string,
+               (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
 #if USE_LUA
-               , lua_api_version
+                   ,
+               lua_api_version
 #endif
-        );
+               );
         return 1;
       }
       else if(!strcmp(argv[k], "--library") && argc > k + 1)
