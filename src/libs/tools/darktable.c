@@ -25,7 +25,6 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
-#include "version.h"
 
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?
@@ -261,7 +260,7 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   /* print version */
   pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
   pango_layout_set_font_description(layout, font_desc);
-  pango_layout_set_text(layout, PACKAGE_VERSION, -1);
+  pango_layout_set_text(layout, darktable_package_version, -1);
   cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(30.0));
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
   pango_cairo_show_layout(cr, layout);
@@ -285,7 +284,7 @@ static void _lib_darktable_show_about_dialog()
 {
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
-  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
+  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), darktable_package_version);
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), _("copyright (c) the authors 2009-2016"));
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog),
                                 _("organize and develop images from digital cameras"));

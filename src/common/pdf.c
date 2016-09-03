@@ -26,6 +26,9 @@
 // or use
 // gcc -W -Wall -std=c99 -lz -lm `pkg-config --cflags --libs glib-2.0` -g -O3 -fopenmp -DSTANDALONE -o darktable-pdf pdf.c
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #define _XOPEN_SOURCE 700
 #include <errno.h>
@@ -40,7 +43,7 @@
 #ifdef STANDALONE
 #define PACKAGE_STRING "darktable pdf library"
 #else
-#include "version.h"
+#define PACKAGE_STRING darktable_package_string
 #endif
 
 #include "pdf.h"
@@ -733,11 +736,10 @@ time_error:
       time_str
     );
   }
-  bytes_written += fprintf(pdf->fd,
-    "/Producer (" PACKAGE_STRING " http://www.darktable.org)\n"
-    ">>\n"
-    "endobj\n"
-  );
+  bytes_written += fprintf(pdf->fd, "/Producer (%s http://www.darktable.org)\n"
+                                    ">>\n"
+                                    "endobj\n",
+                           PACKAGE_STRING);
 
   pdf->bytes_written += bytes_written;
 

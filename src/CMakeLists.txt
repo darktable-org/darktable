@@ -444,10 +444,10 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 
 #
-# Generate config.h and version.h. they are split so that a change to version.h isn't recompiling half of dt
+# Generate config.h
 #
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/version.h" @ONLY)
+
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 #
@@ -750,7 +750,12 @@ add_custom_target(
 #
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
+add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_BINARY_DIR}/src/version_gen.c ${SOURCES})
+
+# cmake implicitly sets GENERATED on the source file in the directory of the custom command
+# since this isn't the same directory we do have to manually set it
+set_source_files_properties(${CMAKE_BINARY_DIR}/src/version_gen.c PROPERTIES GENERATED TRUE)
+
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
 add_dependencies(lib_darktable generate_metadata)

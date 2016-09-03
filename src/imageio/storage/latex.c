@@ -32,7 +32,6 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "imageio/storage/imageio_storage_api.h"
-#include "version.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -417,7 +416,8 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   }
 
   fprintf(f, "\\end{document}"
-             "%% created with darktable " PACKAGE_VERSION "\n");
+             "%% created with %s\n",
+          darktable_package_string);
   fclose(f);
 }
 
