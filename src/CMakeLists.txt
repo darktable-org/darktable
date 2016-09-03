@@ -650,8 +650,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=varargs")
 
   # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=address-of-packed-member")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=address-of-packed-member")
+  if(NOT CMAKE_C_COMPILER_VERSION LESS 4.0)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=address-of-packed-member")
+  endif()
+  if(NOT CMAKE_CXX_COMPILER_VERSION LESS 4.0)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=address-of-packed-member")
+  endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
