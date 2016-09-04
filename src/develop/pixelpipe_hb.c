@@ -158,8 +158,8 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->image = dev->image_storage;
   pipe->dsc = pipe->image.buf_dsc;
 
-  pipe->filters = pipe->image.buf_dsc.filters;
-  memcpy(pipe->xtrans, pipe->image.buf_dsc.xtrans, sizeof(pipe->xtrans));
+  pipe->dsc.filters = pipe->image.buf_dsc.filters;
+  memcpy(pipe->dsc.xtrans, pipe->image.buf_dsc.xtrans, sizeof(pipe->dsc.xtrans));
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
@@ -764,19 +764,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     // dev->preview_pipe ? "[preview]" : "", hash);
     // copy over cached info:
     if(piece)
-    {
-      pipe->filters = piece->filters;
-
-      for(int i = 0; i < 6; ++i)
-      {
-        for(int j = 0; j < 6; ++j)
-        {
-          pipe->xtrans[j][i] = piece->xtrans[j % 6][i % 6];
-        }
-      }
-
       for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = piece->processed_maximum[k];
-    }
     else
       for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = 1.0f;
 
@@ -1879,16 +1867,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     // in case we get this buffer from the cache in the future, cache some stuff:
     **out_format = piece->dsc_out = pipe->dsc;
-
-    piece->filters = pipe->filters;
-
-    for(int i = 0; i < 6; ++i)
-    {
-      for(int j = 0; j < 6; ++j)
-      {
-        piece->xtrans[j][i] = pipe->xtrans[j % 6][i % 6];
-      }
-    }
 
     for(int k = 0; k < 4; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
