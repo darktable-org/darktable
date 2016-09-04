@@ -1664,7 +1664,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         if (img->flags & DT_IMAGE_4BAYER)
         {
           dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, data->CAM_to_RGB);
-          dt_colorspaces_cygm_to_rgb(piece->pipe->processed_maximum, 1, data->CAM_to_RGB);
+          dt_colorspaces_cygm_to_rgb(piece->pipe->dsc.processed_maximum, 1, data->CAM_to_RGB);
         }
       }
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
@@ -1686,8 +1686,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
     // sample half-size raw (Bayer) or 1/3-size raw (X-Trans)
-    const float clip = fminf(piece->pipe->processed_maximum[0],
-                             fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+    const float clip = fminf(piece->pipe->dsc.processed_maximum[0],
+                             fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
     if(piece->pipe->dsc.filters == 9u)
       dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                         xtrans);
@@ -2092,10 +2092,9 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   const int devid = piece->pipe->devid;
   const int qual = get_quality();
 
-  const float processed_maximum[4] = { piece->pipe->processed_maximum[0],
-                                       piece->pipe->processed_maximum[1],
-                                       piece->pipe->processed_maximum[2],
-                                       1.0f };
+  const float processed_maximum[4]
+      = { piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1],
+          piece->pipe->dsc.processed_maximum[2], 1.0f };
 
   // we check if we need ultra-high quality thumbnail for this size
   int uhq_thumb = 0;
@@ -2512,10 +2511,9 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   const int qual = get_quality();
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
-  const float processed_maximum[4] = { piece->pipe->processed_maximum[0],
-                                       piece->pipe->processed_maximum[1],
-                                       piece->pipe->processed_maximum[2],
-                                       1.0f };
+  const float processed_maximum[4]
+      = { piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1],
+          piece->pipe->dsc.processed_maximum[2], 1.0f };
 
   // we check if we need ultra-high quality thumbnail for this size
   int uhq_thumb = 0;

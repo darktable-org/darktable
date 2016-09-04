@@ -776,9 +776,9 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   tmp = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
 
   const float wb[3] = { // twice as many samples in green channel:
-                        2.0f * piece->pipe->processed_maximum[0] * d->strength * (in_scale * in_scale),
-                        piece->pipe->processed_maximum[1] * d->strength * (in_scale * in_scale),
-                        2.0f * piece->pipe->processed_maximum[2] * d->strength * (in_scale * in_scale)
+                        2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (in_scale * in_scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (in_scale * in_scale),
+                        2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (in_scale * in_scale)
   };
   // only use green channel + wb for now:
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
@@ -902,9 +902,9 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
   float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
-  const float wb[3] = { piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[2] * d->strength * (scale * scale) };
+  const float wb[3] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale) };
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -1050,9 +1050,9 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
   float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
-  const float wb[3] = { piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[2] * d->strength * (scale * scale) };
+  const float wb[3] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale) };
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -1266,11 +1266,9 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const float norm = 0.015f / (2 * P + 1);
 
 
-  const float wb[4]
-      = { piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-          piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-          piece->pipe->processed_maximum[2] * d->strength * (scale * scale),
-          0.0f };
+  const float wb[4] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale), 0.0f };
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
@@ -1555,9 +1553,9 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     if(dev_detail[k] == NULL) goto error;
   }
 
-  const float wb[4] = { 2.0f * piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-                        2.0f * piece->pipe->processed_maximum[2] * d->strength * (scale * scale), 0.0f };
+  const float wb[4] = { 2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
+                        2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale), 0.0f };
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),

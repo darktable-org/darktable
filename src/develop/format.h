@@ -42,6 +42,8 @@ typedef struct dt_iop_buffer_dsc_t
   uint32_t filters;
   /** filter for Fuji X-Trans images, only used if filters == 9u */
   uint8_t xtrans[6][6];
+  /** sensor saturation, propagated through the operations */
+  float processed_maximum[4];
 } dt_iop_buffer_dsc_t;
 
 size_t dt_iop_buffer_dsc_to_bpp(const struct dt_iop_buffer_dsc_t *dsc);
