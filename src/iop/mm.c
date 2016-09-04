@@ -162,10 +162,10 @@ static inline void process_local_laplacian(dt_dev_pixelpipe_iop_t *piece, const 
   // dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
 
   // TODO: make some of these accessible as parameters in the gui
-  float sigma = 10.0f;
+  float sigma = 20.0f;
   float shadows = 1.0f;
   float highlights = 1.0f;
-  float clarity = 6.0f;
+  float clarity = 3.0f;
   const int stride = piece->colors;
   local_laplacian(i, (float *)o, roi_out->width, roi_out->height, stride, sigma, shadows, highlights, clarity);
 }
@@ -186,6 +186,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
 
     case OPERATOR_LAPLACIAN:
+      process_apparent_grayscale(piece, i, o, roi_in, roi_out);
       process_local_laplacian(piece, i, o, roi_in, roi_out);
       break;
   }

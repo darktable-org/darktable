@@ -142,9 +142,8 @@ static inline void yuv_to_rgb(const float *const yuv, float *const rgb)
 // allocate output buffer with monochrome brightness channel from input, padded
 // up by max_supp on all four sides, dimensions written to wd2 ht2
 static inline float *ll_pad_input(const float *const input, const int wd, const int ht, const int max_supp,
-                                  const int stride, int *wd2, int *ht2)
+                                  const int stride, int *wd2, int *ht2, int channel)
 {
-  fprintf(stderr, "first three values are %f, %f, %f", input[0], input[1], (input + 2)[0]);
   *wd2 = 2 * max_supp + wd;
   *ht2 = 2 * max_supp + ht;
   // float *out = (float *)dt_alloc_align(64, *wd2**ht2*sizeof(float));
@@ -154,13 +153,13 @@ static inline float *ll_pad_input(const float *const input, const int wd, const 
   {
     for(int i = 0; i < max_supp; i++)
       // out[(j+max_supp)**wd2+i] = powf(MAX(0.0f, input[stride*wd*j+0]), 1./2.2);
-      out[(j + max_supp) * *wd2 + i] = (input + stride * wd * j + 0)[0];
+      out[(j + max_supp) * *wd2 + i] = (input + stride * wd * j + 0)[channel];
     for(int i = 0; i < wd; i++)
       // out[(j+max_supp)**wd2+i+max_supp] = powf(MAX(0.0f, input[stride*(wd*j+i)+0]), 1./2.2);
-      out[(j + max_supp) * *wd2 + i + max_supp] = (input + stride * (wd * j + i))[0];
+      out[(j + max_supp) * *wd2 + i + max_supp] = (input + stride * (wd * j + i))[channel];
     for(int i = wd + max_supp; i < *wd2; i++)
       // out[(j+max_supp)**wd2+i] = powf(MAX(0.0f, input[stride*(j*wd+wd-1)+0]), 1./2.2);
-      out[(j + max_supp) * *wd2 + i] = (input + stride * (j * wd + wd - 1) + 0)[1];
+      out[(j + max_supp) * *wd2 + i] = (input + stride * (j * wd + wd - 1) + 0)[channel];
   }
   for(int j = 0; j < max_supp; j++) memcpy(out + *wd2 * j, out + max_supp * *wd2, sizeof(float) * *wd2);
   for(int j = max_supp + ht; j < *ht2; j++)
@@ -239,165 +238,92 @@ static inline void local_laplacian(const float *const input, // input buffer in 
                                    const float highlights,   // user param: compress highlights
                                    const float clarity)      // user param: increase clarity/local contrast
 {
-// XXX TODO: the paper says level 5 is good enough, too?
-#define num_levels 8
-#define num_gamma 5
+#define num_levels 5
   const int max_supp = 1 << (num_levels - 1);
   fprintf(stderr, "Do padding by %i pixesl", max_supp);
   int w, h;
-  float *padded[num_levels] = { 0 };
-  padded[0] = ll_pad_input(input, wd, ht, max_supp, stride, &w, &h);
+  float *padded[num_levels][3] = { 0 };
+  for(int channel = 0; channel < 3; channel++)
+  {
+    padded[0][channel] = ll_pad_input(input, wd, ht, max_supp, stride, &w, &h, channel);
+  }
 
   // allocate pyramid pointers for padded input
-  for(int l = 1; l < num_levels; l++) padded[l] = (float *)malloc(sizeof(float) * dl(w, l) * dl(h, l));
+  for(int l = 1; l < num_levels; l++)
+  {
+    for(int channel = 0; channel < 3; channel++)
+    {
+      padded[l][channel] = (float *)malloc(sizeof(float) * dl(w, l) * dl(h, l));
+    }
+  }
+  // create gauss pyramid of padded input
+  for(int l = 1; l < num_levels - 1; l++)
+  {
+    for(int channel = 0; channel < 3; channel++)
+    {
+      gauss_reduce(padded[l - 1][channel], padded[l][channel], dl(w, l - 1), dl(h, l - 1));
+    }
+  }
 
   // allocate pyramid pointers for output
   float *output[num_levels] = { 0 };
-  for(int l = 0; l < num_levels; l++) output[l] = (float *)malloc(sizeof(float) * dl(w, l) * dl(h, l));
+  // only use L channel (channel 0) from precomputed B&W image
+  output[0] = ll_pad_input(out, wd, ht, max_supp, stride, &w, &h, 0);
 
-  // create gauss pyramid of padded input, write coarse directly to output
-  for(int l = 1; l < num_levels - 1; l++) gauss_reduce(padded[l - 1], padded[l], dl(w, l - 1), dl(h, l - 1));
-  gauss_reduce(padded[num_levels - 2], output[num_levels - 1], dl(w, num_levels - 2), dl(h, num_levels - 2));
-
-  // XXX DEBUG show only detail coeffs
-  // memset(output[num_levels-1], 0, sizeof(float)*dl(w,num_levels-1)*dl(h,num_levels-1));
-
-  // evenly sample brightness [0,100] for working in LAB:
-  float gamma[num_gamma] = { 0.0f };
-  // for(int k=0;k<num_gamma;k++) gamma[k] = powf(k/(num_gamma-1.0f), 2.0); // XXX DEBUG
-  // for(int k=0;k<num_gamma;k++) gamma[k] = (k+.5f)/num_gamma;
-  for(int k = 0; k < num_gamma; k++) gamma[k] = 100 * k / (num_gamma - 1.0f);
-
-  // XXX FIXME: don't need to alloc all the memory at once!
-  // XXX FIXME: accumulate into output pyramid one by one?
-  // allocate memory for intermediate laplacian pyramids
-  float *buf[num_gamma][num_levels] = { 0 };
-  for(int k = 0; k < num_gamma; k++)
-    for(int l = 0; l < num_levels; l++) buf[k][l] = (float *)malloc(sizeof(float) * dl(w, l) * dl(h, l));
-
-  // XXX TODO: the paper says remapping only level 3 not 0 does the trick, too:
-  for(int k = 0; k < num_gamma; k++)
-  { // process images
-#pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w, h, k, buf, gamma, padded)
-    for(int j = 0; j < h; j++)
-      for(int i = 0; i < w; i++)
-        buf[k][0][w * j + i] = ll_curve(padded[0][w * j + i], gamma[k], sigma, shadows, highlights, clarity);
-
-    // create gaussian pyramids
-    for(int l = 1; l < num_levels; l++) gauss_reduce(buf[k][l - 1], buf[k][l], dl(w, l - 1), dl(h, l - 1));
-  }
-
-  // assemble output pyramid coarse to fine
-  for(int l = num_levels - 2; l >= 0; l--)
+  // allocate pyramid pointers for padded output
+  for(int l = 1; l < num_levels; l++)
   {
-    const int pw = dl(w, l), ph = dl(h, l);
-
-// XXX i don't think we should manipulate gaussians at all (=>halos) :(
-#if 0 // TODO: at a certain level, apply shadow/highlight compression!
-    if(l==3)
-    {
-      const int cw = dl(w,l+1), ch = dl(h,l+1);
-#pragma omp parallel for default(none) schedule(static) collapse(2) shared(w, h, output, l, gamma, padded)
-      for(int j=0;j<ch;j++) for(int i=0;i<cw;i++)
-      {
-        // FIXME: this remapping is rubbish
-        float x = output[l+1][j*cw+i];
-        // x = 0.5f + 0.2 * (x-0.5f);
-        // if(x < .5f) x = .5f * powf(MAX(2.0*x,0.0), 1./shadows);
-        // else x = .5f + .5f * powf(MAX(2.0*(x-.5f),0.0), highlights);
-        // if(x < .5f) x = .5f * (2.0f*x - powf(1.0-2.0f*x, 2*shadows+1));
-        if(x< .5f) x = (x - powf(1.-2.*x, 2*(int)shadows+1))/3.+1./3.;
-        // else x = .5f * (2.0f*x - powf(1.0-2.0f*x, 2*highlights+1));
-        output[l+1][j*cw+i] = x;
-      }
-    }
-#endif
-
-    gauss_expand(output[l + 1], output[l], pw, ph);
-// go through all coefficients in the upsampled gauss buffer:
-#pragma omp parallel for default(none) schedule(static) collapse(2) shared(w, h, buf, output, l, gamma, padded)
-    for(int j = 1; j < ph - 1; j++)
-      for(int i = 1; i < pw - 1; i++)
-      {
-        const float v = padded[l][j * pw + i];
-// const float v = output[l][j*pw+i];
-#if 1
-        int hi = 1;
-        for(; hi < num_gamma - 1 && gamma[hi] <= v; hi++)
-          ;
-        int lo = hi - 1;
-        const float a = MIN(MAX((v - gamma[lo]) / (gamma[hi] - gamma[lo]), 0.0f), 1.0f);
-// const float a = (v - gamma[lo])/(gamma[hi]-gamma[lo]);
-// printf("val %g %g %g a=%g\n", gamma[lo], v, gamma[hi], a);
-#else
-        int hi = 25, lo = 25;
-        float a = 0.0f;
-#endif
-        // printf("interpolating %d %d %g (%g)\n", lo, hi, a, v);
-        // ??? matlab has this: const float li = ll_laplacian(padded[l+1], padded[l], i, j, pw, ph);
-        const float l0 = ll_laplacian(buf[lo][l + 1], buf[lo][l], i, j, pw, ph);
-        const float l1 = ll_laplacian(buf[hi][l + 1], buf[hi][l], i, j, pw, ph);
-        assert(a == a);
-        assert(l0 == l0);
-        assert(l1 == l1);
-        // XXX is this actually trying to increase contrast of image vs. quantized gammas?
-        // float laplace = l1 * (1.0f-a) + l0 * a;
-        float laplace = l0 * (1.0f - a) + l1 * a;
-        // float laplace = l1;// * (1.0f-a) + l1 * a;
-        // looks weird: if(laplace < 0.0f) laplace *= 0.2f;
-        // output[l][j*pw+i] += l0 * (1.0f-a) + l1 * a; // ???
-        output[l][j * pw + i] += laplace;
-      }
-    ll_fill_boundary(output[l], pw, ph);
+    output[l] = (float *)malloc(sizeof(float) * dl(w, l) * dl(h, l));
   }
-  fprintf(stderr, "width of input picture %i", wd);
-  // DEBUG compare input and local_laplacian output on first pixel
-  int i = 0;
-  int j = 0;
-  fprintf(stderr, "input value was: %f", (input + stride * (j * wd + i))[0]);
-  fprintf(stderr, "output pyramid value is: %f", output[0][(j + max_supp) * w + max_supp + i]);
-#if 0 // shad/hi by subtracting ll result
-#pragma omp parallel for default(none) schedule(static) collapse(2) shared(w, h, output)
-  for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
+  // create gauss pyramid of output image
+  for(int l = 1; l < num_levels - 1; l++)
   {
-    const int shad = 1;
-    float x = output[0][(j+max_supp)*w+max_supp+i];
-    // else x = .5f * (2.0f*x - powf(1.0-2.0f*x, 2*highlights+1));
-    // output[0][j*wd+i] = x;
-    float yuv[3];
-    rgb_to_yuv(input+3*(j*wd+i), yuv);
-    const float ydetail = yuv[0] - x;
-    if(x < .5f) x = (x - powf(1.-2.*x, 2*(int)shad+1))/3.+1./3.;
-    yuv[0] = x + ydetail;//output[0][(j+max_supp)*w+max_supp+i];
-    yuv_to_rgb(yuv, out+3*(j*wd+i));
+    gauss_reduce(output[l - 1], output[l], dl(w, l - 1), dl(h, l - 1));
   }
-#else // output result of ll
-#pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w, output, buf)
+
+  //#pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w, h, padded, output)
   for(int j = 0; j < ht; j++)
     for(int i = 0; i < wd; i++)
     {
-      //(out+stride*(j*wd+i))[0] = (input+stride*(j*wd+i))[0];
+      // copy basic image
       (out + stride * (j * wd + i))[0] = output[0][(j + max_supp) * w + max_supp + i];
-      (out + stride * (j * wd + i))[1] = (input + stride * (j * wd + i))[1];
-      (out + stride * (j * wd + i))[2] = (input + stride * (j * wd + i))[2];
-      //    float yuv[3];
-      //    rgb_to_yuv(input+3*(j*wd+i), yuv);
-      //    yuv[0] = output[0][(j+max_supp)*w+max_supp+i];
-      //    yuv_to_rgb(yuv, out+3*(j*wd+i));
-      // out[3*(j*wd+i)+0] = output[0][(j+max_supp)*w+max_supp+i];
-      // out[3*(j*wd+i)+1] = buf[num_gamma/2][0][(j+max_supp)*w+max_supp+i]; // XXX DEBUG copy processed channel
-      // w/o pyramid
-      // out[3*(j*wd+i)+2] = input[3*(j*wd+i)+0]; // XXX DEBUG copy original channel
-      // out[3*(j*wd+i)+2] = input[3*(j*wd+i)+2];
+      // or start from black for debugging locla contrast additions etc
+      //(out + stride * (j * wd + i))[0] = 0;
+      // and increase color contrast
+      const float k[8] = { 0.7, 0.5, 0.4, 0.2, 0.1, 0.1, 0.1, 0.1 };
+      for(int l = 0; l < 4; l++)
+      {
+        // TODO: verify that these coordinates make sense
+        // we want the coordinates at level l in the pyramid corresponding to image coordinates i,j
+        int ii = (i + max_supp) / (1 << l);
+        int jj = (j + max_supp) / (1 << l);
+        const int pw = dl(w, l), ph = dl(h, l);
+        float lL = ll_laplacian(padded[l + 1][0], padded[l][0], ii, jj, pw, ph);
+        float la = ll_laplacian(padded[l + 1][1], padded[l][1], ii, jj, pw, ph);
+        float lb = ll_laplacian(padded[l + 1][2], padded[l][2], ii, jj, pw, ph);
+        float DeltaE = sqrtf(lL * lL + la * la + lb * lb);
+        float lG = ll_laplacian(output[l + 1], output[l], ii, jj, pw, ph);
+
+        const float p = 0.25;
+        float lambda = powf(DeltaE / lG, p);
+        // formula from K. Smith et al. / Apparent Lighntess Grayscale
+        // not convincing, maybe they 'mean' their formula differently?
+        (out + stride * (j * wd + i))[0] += k[l] * lambda * lG;
+      }
+      // other components are 0 -> monochrome!
+      (out + stride * (j * wd + i))[1] = 0; //(input + stride * (j * wd + i))[1];
+      (out + stride * (j * wd + i))[2] = 0; //(input + stride * (j * wd + i))[2];
     }
-#endif
   // free all buffers!
   for(int l = 0; l < num_levels; l++)
   {
-    free(padded[l]);
+    for(int channel = 0; channel < 3; channel++)
+    {
+      free(padded[l][channel]);
+    }
     free(output[l]);
-    for(int k = 0; k < num_gamma; k++) free(buf[k][l]);
   }
 #undef num_levels
-#undef num_gamma
 }
+
+// vim: shiftwidth=2:expandtab:tabstop=2:cindent
