@@ -20,37 +20,39 @@
 #include "config.h"
 #endif
 
-#include "bauhaus/bauhaus.h"      // for dt_bauhaus_slider_get, dt_bauhaus_...
-#include "common/darktable.h"     // for darktable_t, dt_print, DT_MODULE_I...
-#include "common/image.h"         // for ::DT_IMAGE_RAW, dt_image_t
-#include "common/opencl.h"        // for dt_opencl_set_kernel_arg, dt_openc...
-#include "develop/develop.h"      // for dt_dev_add_history_item
+#include "common/darktable.h"     // for darktable, darktable_t, dt_alloc_a...
+#include "common/image.h"         // for dt_image_t, ::DT_IMAGE_4BAYER
+#include "common/mipmap_cache.h"  // for dt_mipmap_buffer_t, dt_mipmap_cach...
+#include "control/control.h"      // for dt_control_log
+#include "develop/develop.h"      // for dt_develop_t, dt_develop_t::(anony...
 #include "develop/imageop.h"      // for dt_iop_module_t, dt_iop_roi_t, dt_...
-#include "develop/imageop_math.h" // for dt_iop_alpha_copy
+#include "develop/imageop_math.h" // for FC, FCxtrans
 #include "develop/pixelpipe.h"    // for dt_dev_pixelpipe_type_t::DT_DEV_PI...
-#include "gui/gtk.h"              // for dt_gui_gtk_t
 #include "iop/iop_api.h"          // for dt_iop_params_t
-#include <glib-object.h>          // for g_type_check_instance_cast, GCallback
-#include <glib.h>                 // for TRUE, FALSE
 #include <glib/gi18n.h>           // for _
-#include <gtk/gtk.h>              // for GtkWidget, gtk_box_get_type, gtk_b...
-#include <math.h>                 // for fminf
-#include <stdlib.h>               // for free, NULL, size_t, calloc, malloc
+#include <gtk/gtktypes.h>         // for GtkWidget
+#include <stdint.h>               // for uint16_t, uint8_t, uint32_t
+#include <stdlib.h>               // for size_t, free, NULL, calloc, malloc
 #include <string.h>               // for memcpy
 
-DT_MODULE_INTROSPECTION(1, dt_iop_rawoverexposed_params_t)
+DT_MODULE(1)
 
-typedef struct dt_iop_rawoverexposed_params_t
+typedef struct dt_iop_rawoverexposed_t
 {
-  float threshold;
-} dt_iop_rawoverexposed_params_t;
+  int dummy;
+} dt_iop_rawoverexposed_t;
 
-typedef struct dt_iop_rawoverexposed_gui_data_t
+static const float dt_iop_rawoverexposed_colors[][4] __attribute__((aligned(16))) = {
+  { 1.0f, 0.0f, 0.0f, 1.0f }, // red
+  { 0.0f, 1.0f, 0.0f, 1.0f }, // green
+  { 0.0f, 0.0f, 1.0f, 1.0f }, // blue
+  { 0.0f, 0.0f, 0.0f, 1.0f }  // black
+};
+
+typedef struct dt_iop_rawoverexposed_data_t
 {
-  GtkWidget *threshold;
-} dt_iop_rawoverexposed_gui_data_t;
-
-typedef dt_iop_rawoverexposed_params_t dt_iop_rawoverexposed_data_t;
+  unsigned int threshold[4];
+} dt_iop_rawoverexposed_data_t;
 
 typedef struct dt_iop_rawoverexposed_global_data_t
 {
@@ -70,80 +72,140 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
-#ifdef HAVE_OPENCL
-int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
+  dt_develop_t *dev = self->dev;
   dt_iop_rawoverexposed_data_t *d = piece->data;
-  dt_iop_rawoverexposed_global_data_t *gd = self->data;
 
-  cl_int err = -999;
-  const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  for(int k = 0; k < 4; k++)
+  {
+    // the clipping is detected as 1.0 in highlights iop
+    float threshold = dev->rawoverexposed.threshold;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-  const float threshold
-      = d->threshold * fminf(piece->pipe->dsc.processed_maximum[0],
-                             fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+    // but we check it on the raw input buffer, so we need backtransform thresholds
 
-  const int kernel = (!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
-                         ? gd->kernel_rawoverexposed_1f_mark
-                         : gd->kernel_rawoverexposed_4f_mark;
+    // "undo" temperature iop
+    if(piece->pipe->dsc.temperature.enabled) threshold /= piece->pipe->dsc.temperature.coeffs[k];
 
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), (void *)&threshold);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-  if(err != CL_SUCCESS) goto error;
+    // "undo" rawprepare iop
+    threshold *= piece->pipe->dsc.rawprepare.raw_white_point - piece->pipe->dsc.rawprepare.raw_black_level;
+    threshold += piece->pipe->dsc.rawprepare.raw_black_level;
 
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_rawoverexposed] couldn't enqueue kernel! %d\n", err);
-  return FALSE;
+    // and this is that 1.0 threshold, but in raw input buffer values
+    d->threshold[k] = (unsigned int)threshold;
+  }
 }
-#endif
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_rawoverexposed_data_t *data = piece->data;
+  const dt_iop_rawoverexposed_data_t *const d = piece->data;
 
-  const float threshold
-      = data->threshold * fminf(piece->pipe->dsc.processed_maximum[0],
-                                fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+  process_common_setup(self, piece);
 
-  const float *const in = (const float *const)ivoid;
+  dt_develop_t *dev = self->dev;
+  const dt_image_t *const image = &(dev->image_storage);
+
+  const int ch = piece->colors;
+  const int priority = self->priority;
+
+  const dt_dev_rawoverexposed_mode_t mode = dev->rawoverexposed.mode;
+  const int colorscheme = dev->rawoverexposed.colorscheme;
+  const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
+
+  memcpy(ovoid, ivoid, (size_t)ch * roi_out->width * roi_out->height * sizeof(float));
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  if(!buf.buf)
+  {
+    dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    return;
+  }
+
+#if 0
+  float pts[4] = {(float)(roi_out->x) / roi_in->scale, (float)(roi_out->y) / roi_in->scale, (float)(roi_out->x + roi_out->width) / roi_in->scale, (float)(roi_out->y + roi_out->height) / roi_in->scale};
+  printf("in  %f %f %f %f\n", pts[0], pts[1], pts[2], pts[3]);
+  dt_dev_distort_backtransform_plus(dev, dev->pipe, 0, priority, pts, 2);
+  printf("out %f %f %f %f\n\n", pts[0], pts[1], pts[2], pts[3]);
+#endif
+
+  const uint16_t *const raw = (const uint16_t *const)buf.buf;
   float *const out = (float *const)ovoid;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
-  { // raw mosaic
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
-#endif
-    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-    {
-      out[k] = (in[k] >= threshold) ? 0.0 : in[k];
-    }
-  }
-  else
-  {
-    const int ch = piece->colors;
+  // NOT FROM THE PIPE !!!
+  const uint32_t filters = image->buf_dsc.filters;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])image->buf_dsc.xtrans;
+
+  // acquire temp memory for distorted pixel coords
+  const size_t coordbufsize = (size_t)roi_out->width * 2;
+  void *coordbuf = dt_alloc_align(16, coordbufsize * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(self, coordbuf, buf) schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    float *bufptr = ((float *)coordbuf) + (size_t)coordbufsize * dt_get_thread_num();
+
+    // here are all the pixels of this row
+    for(int i = 0; i < roi_out->width; i++)
     {
-      out[k] = (in[k] >= threshold) ? 0.0 : in[k];
+      bufptr[2 * i] = (float)(roi_out->x + i) / roi_in->scale;
+      bufptr[2 * i + 1] = (float)(roi_out->y + j) / roi_in->scale;
+    }
+
+    // where did they come from?
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->pipe, 0, priority, bufptr, roi_out->width);
+
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      const size_t pout = (size_t)ch * (j * roi_out->width + i);
+
+      // not sure which float -> int to use here
+      const int i_raw = (int)bufptr[2 * i];
+      const int j_raw = (int)bufptr[2 * i + 1];
+
+      if(i_raw < 0 || j_raw < 0 || i_raw >= buf.width || j_raw >= buf.height) continue;
+
+      int c;
+      if(filters == 9u)
+      {
+        c = FCxtrans(j_raw, i_raw, NULL, xtrans);
+      }
+      else // if(filters)
+      {
+        c = FC(j_raw, i_raw, filters);
+      }
+
+      const size_t pin = (size_t)j_raw * buf.width + i_raw;
+      const float in = raw[pin];
+
+      // was the raw pixel clipped?
+      if(in < d->threshold[c]) continue;
+
+      switch(mode)
+      {
+        case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
+          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], 4 * sizeof(float));
+          break;
+        case DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID:
+          memcpy(out + pout, color, 4 * sizeof(float));
+          break;
+        case DT_DEV_RAWOVEREXPOSED_MODE_FALSECOLOR:
+          out[pout + c] = 0.0;
+          break;
+      }
     }
   }
+
+  dt_free_align(coordbuf);
+
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -151,31 +213,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_rawoverexposed_params_t *p = p1;
-  dt_iop_rawoverexposed_data_t *d = piece->data;
+  dt_develop_t *dev = self->dev;
 
-  *d = *p;
+  if(pipe->type != DT_DEV_PIXELPIPE_FULL || !dev->rawoverexposed.enabled || !dev->gui_attached) piece->enabled = 0;
 
-  if(pipe->type != DT_DEV_PIXELPIPE_FULL || /*!self->dev->overexposed.enabled ||*/ !self->dev->gui_attached)
-    piece->enabled = 0;
-}
+  const dt_image_t *const image = &(dev->image_storage);
 
-void init_global(dt_iop_module_so_t *module)
-{
-  const int program = 2; // basic.cl, from programs.conf
-  module->data = malloc(sizeof(dt_iop_rawoverexposed_global_data_t));
-  dt_iop_rawoverexposed_global_data_t *gd = module->data;
-  gd->kernel_rawoverexposed_1f_mark = dt_opencl_create_kernel(program, "rawoverexposed_1f_mark");
-  gd->kernel_rawoverexposed_4f_mark = dt_opencl_create_kernel(program, "rawoverexposed_4f_mark");
-}
+  if(image->flags & DT_IMAGE_4BAYER) piece->enabled = 0;
 
-void cleanup_global(dt_iop_module_so_t *module)
-{
-  dt_iop_rawoverexposed_global_data_t *gd = module->data;
-  dt_opencl_free_kernel(gd->kernel_rawoverexposed_4f_mark);
-  dt_opencl_free_kernel(gd->kernel_rawoverexposed_1f_mark);
-  free(module->data);
-  module->data = NULL;
+  if(image->buf_dsc.datatype != TYPE_UINT16 || !image->buf_dsc.filters) piece->enabled = 0;
+
+  piece->process_cl_ready = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -190,21 +238,14 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
-void reload_defaults(dt_iop_module_t *module)
-{
-  dt_iop_rawoverexposed_params_t tmp = (dt_iop_rawoverexposed_params_t){.threshold = 1.0 };
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_rawoverexposed_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_rawoverexposed_params_t));
-}
-
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_rawoverexposed_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_rawoverexposed_params_t));
-  module->priority = 60; // module order created by iop_dependencies.py, do not edit!
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_rawoverexposed_params_t);
+  module->params = calloc(1, sizeof(dt_iop_rawoverexposed_t));
+  module->default_params = calloc(1, sizeof(dt_iop_rawoverexposed_t));
+  module->hide_enable_button = 1;
+  module->default_enabled = 1;
+  module->priority = 924; // module order created by iop_dependencies.py, do not edit!
+  module->params_size = sizeof(dt_iop_rawoverexposed_t);
   module->gui_data = NULL;
 }
 
@@ -212,46 +253,6 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-}
-
-void gui_update(dt_iop_module_t *self)
-{
-  dt_iop_rawoverexposed_gui_data_t *g = self->gui_data;
-  dt_iop_rawoverexposed_params_t *p = self->params;
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
-}
-
-static void threshold_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-
-  dt_iop_rawoverexposed_params_t *p = self->params;
-  p->threshold = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-void gui_init(dt_iop_module_t *self)
-{
-  self->gui_data = malloc(sizeof(dt_iop_rawoverexposed_gui_data_t));
-
-  dt_iop_rawoverexposed_gui_data_t *g = self->gui_data;
-  dt_iop_rawoverexposed_params_t *p = self->params;
-
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->threshold, 3);
-  gtk_widget_set_tooltip_text(g->threshold, _("manually adjust the clipping threshold against "
-                                              "magenta highlights (you shouldn't ever need to touch this)"));
-  dt_bauhaus_widget_set_label(g->threshold, NULL, _("clipping threshold"));
-  g_signal_connect(g->threshold, "value-changed", G_CALLBACK(threshold_callback), self);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->threshold, TRUE, TRUE, 0);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
