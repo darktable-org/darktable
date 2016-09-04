@@ -436,10 +436,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                             roi_out->width * roi_out->height, d2->RGB_to_CAM, d2->CAM_to_RGB,
                                             d2->coeffs);
     float new_maximum[4] = {1.0f};
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->processed_maximum, 1, d2->RGB_to_CAM,
+    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->dsc.processed_maximum, 1, d2->RGB_to_CAM,
                                             d2->CAM_to_RGB, d2->coeffs);
-    for(int k = 0; k < 4; k++)
-      piece->pipe->processed_maximum[k] = new_maximum[k];
+    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = new_maximum[k];
   }
   else
   { // non-mosaiced
@@ -460,7 +459,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
   for(int k = 0; k < 4; k++)
-    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+    piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
 }
 
 #if defined(__SSE__)
@@ -528,10 +527,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                             roi_out->width*roi_out->height,
                                             d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
     float new_maximum[4] = {1.0f};
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->processed_maximum,
-                                            1, d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
-    for(int k = 0; k < 4; k++)
-      piece->pipe->processed_maximum[k] = new_maximum[k];
+    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->dsc.processed_maximum, 1, d->RGB_to_CAM,
+                                            d->CAM_to_RGB, d->coeffs);
+    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = new_maximum[k];
   }
   else
   { // non-mosaiced
@@ -558,7 +556,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
   for(int k = 0; k < 4; k++)
-    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+    piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
 }
 #endif
 
@@ -604,7 +602,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   dt_opencl_release_mem_object(dev_coeffs);
   for(int k = 0; k < 3; k++)
-    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+    piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
   return TRUE;
 
 error:

@@ -111,9 +111,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-  const float clip = d->clip
-                     * fminf(piece->pipe->processed_maximum[0],
-                             fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+  const float clip
+      = d->clip * fminf(piece->pipe->dsc.processed_maximum[0],
+                        fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   const uint32_t filters = piece->pipe->dsc.filters;
   if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
@@ -144,11 +144,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   // update processed maximum
-  const float m = fmaxf(fmaxf(
-        piece->pipe->processed_maximum[0],
-        piece->pipe->processed_maximum[1]),
-      piece->pipe->processed_maximum[2]);
-  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] = m;
+  const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
+                        piece->pipe->dsc.processed_maximum[2]);
+  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
 
   return TRUE;
 
@@ -748,15 +746,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
 
   const float clip
-      = data->clip * fminf(piece->pipe->processed_maximum[0],
-                           fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+      = data->clip * fminf(piece->pipe->dsc.processed_maximum[0],
+                           fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   // const int ch = piece->colors;
   if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
     process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
     for(int k=0;k<3;k++)
-      piece->pipe->processed_maximum[k] = fminf(piece->pipe->processed_maximum[0],
-          fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+      piece->pipe->dsc.processed_maximum[k]
+          = fminf(piece->pipe->dsc.processed_maximum[0],
+                  fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
     return;
   }
 
@@ -764,9 +763,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
     {
-      const float clips[4] = { 0.987 * data->clip * piece->pipe->processed_maximum[0],
-                               0.987 * data->clip * piece->pipe->processed_maximum[1],
-                               0.987 * data->clip * piece->pipe->processed_maximum[2], clip };
+      const float clips[4] = { 0.987 * data->clip * piece->pipe->dsc.processed_maximum[0],
+                               0.987 * data->clip * piece->pipe->dsc.processed_maximum[1],
+                               0.987 * data->clip * piece->pipe->dsc.processed_maximum[2], clip };
 
       if(filters == 9u)
       {
@@ -824,11 +823,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   // update processed maximum
-  const float m = fmaxf(fmaxf(
-        piece->pipe->processed_maximum[0],
-        piece->pipe->processed_maximum[1]),
-      piece->pipe->processed_maximum[2]);
-  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] = m;
+  const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
+                        piece->pipe->dsc.processed_maximum[2]);
+  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
