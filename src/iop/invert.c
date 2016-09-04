@@ -448,7 +448,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->color[3] = 0.0f;
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
+  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
 
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;

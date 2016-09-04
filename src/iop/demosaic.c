@@ -3666,7 +3666,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
-  if(self->dev->image_storage.filters != 9u)
+  if(self->dev->image_storage.buf_dsc.filters != 9u)
   {
     gtk_widget_show(g->demosaic_method_bayer);
     gtk_widget_hide(g->demosaic_method_xtrans);
@@ -3729,7 +3729,7 @@ void reload_defaults(dt_iop_module_t *module)
   else
     module->default_enabled = 0;
 
-  if(module->dev->image_storage.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  if(module->dev->image_storage.buf_dsc.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
 
 end:
   memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));

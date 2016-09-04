@@ -237,7 +237,7 @@ static void adjust_xtrans_filters(dt_dev_pixelpipe_t *pipe,
   {
     for(int j = 0; j < 6; ++j)
     {
-      pipe->xtrans[j][i] = pipe->image.xtrans[(j + crop_y) % 6][(i + crop_x) % 6];
+      pipe->xtrans[j][i] = pipe->image.buf_dsc.xtrans[(j + crop_y) % 6][(i + crop_x) % 6];
     }
   }
 }
@@ -280,7 +280,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.filters, csx, csy);
+    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
   }
   else
@@ -380,7 +380,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
       }
     }
 
-    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.filters, csx, csy);
+    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
   }
   else
@@ -465,7 +465,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
   {
-    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.filters, csx, csy);
+    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
   }
 

@@ -248,7 +248,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // Grab the WB
     for(int i = 0; i < 4; i++) img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
-    img->filters = 0u;
+    img->buf_dsc.filters = 0u;
     if(!r->isCFA)
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, mbuf);
@@ -298,18 +298,17 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     // as the X-Trans filters comments later on states, these are for
     // cropped image, so we need to uncrop them.
-    img->filters = dt_rawspeed_crop_dcraw_filters(r->cfa.getDcrawFilter(), cropTL.x, cropTL.y);
+    img->buf_dsc.filters = dt_rawspeed_crop_dcraw_filters(r->cfa.getDcrawFilter(), cropTL.x, cropTL.y);
 
-    if(FILTERS_ARE_4BAYER(img->filters))
-      img->flags |= DT_IMAGE_4BAYER;
+    if(FILTERS_ARE_4BAYER(img->buf_dsc.filters)) img->flags |= DT_IMAGE_4BAYER;
 
-    if(img->filters)
+    if(img->buf_dsc.filters)
     {
       img->flags &= ~DT_IMAGE_LDR;
       img->flags |= DT_IMAGE_RAW;
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
       // special handling for x-trans sensors
-      if(img->filters == 9u)
+      if(img->buf_dsc.filters == 9u)
       {
         // get 6x6 CFA offset from top left of cropped image
         // NOTE: This is different from how things are done with Bayer
@@ -320,7 +319,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         for(int i = 0; i < 6; ++i)
           for(int j = 0; j < 6; ++j)
           {
-            img->xtrans[j][i] = r->cfa.getColorAt(i % 6, j % 6);
+            img->buf_dsc.xtrans[j][i] = r->cfa.getColorAt(i % 6, j % 6);
           }
       }
     }
