@@ -651,7 +651,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
+  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
 
   if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
   {
@@ -1295,7 +1295,7 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   const dt_image_t *img = &self->dev->image_storage;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
-  if(FILTERS_ARE_CYGM(img->filters))
+  if(FILTERS_ARE_CYGM(img->buf_dsc.filters))
   {
     dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
     dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));

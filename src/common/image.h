@@ -153,8 +153,8 @@ typedef struct dt_image_t
   int32_t num, flags, film_id, id, group_id, version;
   dt_image_loader_t loader;
 
-  uint32_t filters;          // Bayer demosaic pattern
   dt_iop_buffer_dsc_t buf_dsc;
+
   float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
   uint8_t *profile;          // embedded profile, for example from JPEGs
   uint32_t profile_size;
@@ -175,9 +175,6 @@ typedef struct dt_image_t
   /* needed to fix some manufacturers madness */
   uint32_t fuji_rotation_pos;
   float pixel_aspect_ratio;
-
-  /* filter for Fuji X-Trans images, only used if filters == 9u */
-  uint8_t xtrans[6][6];
 
   /* White balance coeffs from the raw */
   float wb_coeffs[4];

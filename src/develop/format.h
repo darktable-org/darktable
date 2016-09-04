@@ -20,6 +20,7 @@
 #define DT_DEVELOP_FORMAT_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 struct dt_dev_pixelpipe_iop_t;
 struct dt_dev_pixelpipe_t;
@@ -37,6 +38,10 @@ typedef struct dt_iop_buffer_dsc_t
   unsigned int channels;
   /** what is the datatype? */
   dt_iop_buffer_type_t datatype;
+  /** Bayer demosaic pattern */
+  uint32_t filters;
+  /** filter for Fuji X-Trans images, only used if filters == 9u */
+  uint8_t xtrans[6][6];
 } dt_iop_buffer_dsc_t;
 
 size_t dt_iop_buffer_dsc_to_bpp(const struct dt_iop_buffer_dsc_t *dsc);
