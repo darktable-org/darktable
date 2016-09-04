@@ -20,9 +20,10 @@
 #include "config.h"
 #endif
 
-#include "common/darktable.h"     // for darktable, darktable_t, dt_alloc_a...
-#include "common/image.h"         // for dt_image_t, ::DT_IMAGE_4BAYER
-#include "common/mipmap_cache.h"  // for dt_mipmap_buffer_t, dt_mipmap_cach...
+#include "common/darktable.h"    // for darktable, darktable_t, dt_alloc_a...
+#include "common/image.h"        // for dt_image_t, ::DT_IMAGE_4BAYER
+#include "common/mipmap_cache.h" // for dt_mipmap_buffer_t, dt_mipmap_cach...
+#include "common/opencl.h"
 #include "control/control.h"      // for dt_control_log
 #include "develop/develop.h"      // for dt_develop_t, dt_develop_t::(anony...
 #include "develop/imageop.h"      // for dt_iop_module_t, dt_iop_roi_t, dt_...
@@ -56,8 +57,7 @@ typedef struct dt_iop_rawoverexposed_data_t
 
 typedef struct dt_iop_rawoverexposed_global_data_t
 {
-  int kernel_rawoverexposed_1f_mark;
-  int kernel_rawoverexposed_4f_mark;
+  int kernel_rawoverexposed_falsecolor;
 } dt_iop_rawoverexposed_global_data_t;
 
 const char *name()
@@ -210,6 +210,114 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
+#ifdef HAVE_OPENCL
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_rawoverexposed_data_t *const d = piece->data;
+  dt_develop_t *dev = self->dev;
+  dt_iop_rawoverexposed_global_data_t *gd = (dt_iop_rawoverexposed_global_data_t *)self->data;
+
+  dt_mipmap_buffer_t buf;
+
+  cl_mem dev_raw = NULL;
+  float *coordbuf = NULL;
+  cl_mem dev_coord = NULL;
+  cl_mem dev_thresholds = NULL;
+
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { width, height, 1 };
+
+  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+  if(err != CL_SUCCESS) goto error;
+
+  const dt_image_t *const image = &(dev->image_storage);
+
+  // NOT FROM THE PIPE !!!
+  const uint32_t filters = image->buf_dsc.filters;
+
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  if(!buf.buf)
+  {
+    dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    goto error;
+  }
+
+  const int raw_width = buf.width;
+  const int raw_height = buf.height;
+
+  dev_raw = dt_opencl_copy_host_to_device(devid, buf.buf, raw_width, raw_height, sizeof(uint16_t));
+  if(dev_raw == NULL) goto error;
+
+  const size_t coordbufsize = (size_t)height * width * 2 * sizeof(float);
+
+  coordbuf = dt_alloc_align(16, coordbufsize);
+  if(coordbuf == NULL) goto error;
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) shared(self, coordbuf, buf) schedule(static)
+#endif
+  for(int j = 0; j < height; j++)
+  {
+    float *bufptr = ((float *)coordbuf) + (size_t)2 * j * width;
+
+    // here are all the pixels of this row
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      bufptr[2 * i] = (float)(roi_out->x + i) / roi_in->scale;
+      bufptr[2 * i + 1] = (float)(roi_out->y + j) / roi_in->scale;
+    }
+
+    // where did they come from?
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->pipe, 0, self->priority, bufptr, roi_out->width);
+  }
+
+  dev_coord = dt_opencl_alloc_device_buffer(devid, coordbufsize);
+  if(dev_coord == NULL) goto error;
+
+  /* _blocking_ memory transfer: host coordbuf buffer -> opencl dev_coordbuf */
+  err = dt_opencl_write_buffer_to_device(devid, coordbuf, dev_coord, 0, coordbufsize, CL_TRUE);
+  if(err != CL_SUCCESS) goto error;
+
+  int kernel = gd->kernel_rawoverexposed_falsecolor;
+
+  dev_thresholds = dt_opencl_copy_host_to_device_constant(devid, sizeof(unsigned int) * 4, (void *)d->threshold);
+  if(dev_thresholds == NULL) goto error;
+
+  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &dev_in);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), &dev_coord);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), &dev_raw);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(int), &raw_width);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), &raw_height);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(uint32_t), &filters);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), &dev_thresholds);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  if(dev_thresholds != NULL) dt_opencl_release_mem_object(dev_thresholds);
+  if(dev_coord != NULL) dt_opencl_release_mem_object(dev_coord);
+  if(coordbuf != NULL) dt_free_align(coordbuf);
+  if(dev_raw != NULL) dt_opencl_release_mem_object(dev_raw);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_rawoverexposed] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -223,7 +331,26 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   if(image->buf_dsc.datatype != TYPE_UINT16 || !image->buf_dsc.filters) piece->enabled = 0;
 
-  piece->process_cl_ready = 0;
+  if(image->buf_dsc.filters == 9u) piece->process_cl_ready = 0;
+
+  if(dev->rawoverexposed.mode != DT_DEV_RAWOVEREXPOSED_MODE_FALSECOLOR) piece->process_cl_ready = 0;
+}
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl from programs.conf
+  module->data = malloc(sizeof(dt_iop_rawoverexposed_global_data_t));
+  dt_iop_rawoverexposed_global_data_t *gd = module->data;
+  gd->kernel_rawoverexposed_falsecolor = dt_opencl_create_kernel(program, "rawoverexposed_falsecolor");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_rawoverexposed_global_data_t *gd = (dt_iop_rawoverexposed_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_rawoverexposed_falsecolor);
+  free(module->data);
+  module->data = NULL;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
