@@ -373,8 +373,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    const uint32_t filters = piece->pipe->filters;
-    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
+    const uint32_t filters = piece->pipe->dsc.filters;
+    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
     if (filters != 9u)
       wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, filters);
     else
