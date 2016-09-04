@@ -74,6 +74,13 @@ typedef struct dt_iop_rawprepare_data_t
   int32_t x, y, width, height; // crop, now unused, for future expansion
   float sub[4];
   float div[4];
+
+  // cached for dt_iop_buffer_dsc_t::rawprepare
+  struct
+  {
+    uint16_t raw_black_level;
+    uint16_t raw_white_point;
+  } rawprepare;
 } dt_iop_rawprepare_data_t;
 
 typedef struct dt_iop_rawprepare_global_data_t
@@ -220,6 +227,17 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   const float scale = roi_in->scale / piece->iscale;
   roi_in->width += (int)roundf((float)x * scale);
   roi_in->height += (int)roundf((float)y * scale);
+}
+
+void output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
+                   dt_iop_buffer_dsc_t *dsc)
+{
+  default_output_format(self, pipe, piece, dsc);
+
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  dsc->rawprepare.raw_black_level = d->rawprepare.raw_black_level;
+  dsc->rawprepare.raw_white_point = d->rawprepare.raw_white_point;
 }
 
 static void adjust_xtrans_filters(dt_dev_pixelpipe_t *pipe,
@@ -508,6 +526,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
       d->div[i] = (white - black);
     }
   }
+
+  float black = 0.0f;
+  for(uint8_t i = 0; i < 4; i++)
+  {
+    black += (float)p->raw_black_level_separate[i];
+  }
+  d->rawprepare.raw_black_level = (uint16_t)(black / 4.0f);
+  d->rawprepare.raw_white_point = p->raw_white_point;
 
   if(!dt_image_is_raw(&piece->pipe->image)
      || (piece->pipe->image.buf_dsc.channels == 1 && piece->pipe->image.buf_dsc.datatype == TYPE_FLOAT))
