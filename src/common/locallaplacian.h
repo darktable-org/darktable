@@ -302,10 +302,10 @@ static inline void local_laplacian(const float *const input, // input buffer in 
         float la = ll_laplacian(padded[l + 1][1], padded[l][1], ii, jj, pw, ph);
         float lb = ll_laplacian(padded[l + 1][2], padded[l][2], ii, jj, pw, ph);
         float DeltaE = sqrtf(lL * lL + la * la + lb * lb);
-        float lG = fabs(ll_laplacian(output[l + 1], output[l], ii, jj, pw, ph));
+        float lG = (ll_laplacian(output[l + 1], output[l], ii, jj, pw, ph));
 
         const float p = 0.25;
-        float lambda = powf(DeltaE / lG, p);
+        float lambda = powf(DeltaE / fabs(lG), p);
         // formula from K. Smith et al. / Apparent Lighntess Grayscale
         // not convincing, maybe they 'mean' their formula differently?
         (out + stride * (j * wd + i))[0] += k[l] * lambda * lG;
