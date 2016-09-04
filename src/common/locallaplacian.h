@@ -291,7 +291,7 @@ static inline void local_laplacian(const float *const input, // input buffer in 
       //(out + stride * (j * wd + i))[0] = 0;
       // and increase color contrast
       const float k[8] = { 0.7, 0.5, 0.4, 0.2, 0.1, 0.1, 0.1, 0.1 };
-      for(int l = 0; l < 4; l++)
+      for(int l = 0; l < num_levels-1; l++)
       {
         // TODO: verify that these coordinates make sense
         // we want the coordinates at level l in the pyramid corresponding to image coordinates i,j
@@ -302,7 +302,7 @@ static inline void local_laplacian(const float *const input, // input buffer in 
         float la = ll_laplacian(padded[l + 1][1], padded[l][1], ii, jj, pw, ph);
         float lb = ll_laplacian(padded[l + 1][2], padded[l][2], ii, jj, pw, ph);
         float DeltaE = sqrtf(lL * lL + la * la + lb * lb);
-        float lG = ll_laplacian(output[l + 1], output[l], ii, jj, pw, ph);
+        float lG = fabs(ll_laplacian(output[l + 1], output[l], ii, jj, pw, ph));
 
         const float p = 0.25;
         float lambda = powf(DeltaE / lG, p);
@@ -327,3 +327,4 @@ static inline void local_laplacian(const float *const input, // input buffer in 
 }
 
 // vim: shiftwidth=2:expandtab:tabstop=2:cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
