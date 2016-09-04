@@ -92,6 +92,21 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     // "undo" temperature iop
     if(piece->pipe->dsc.temperature.enabled) threshold /= piece->pipe->dsc.temperature.coeffs[k];
 
+    /*
+     * yes, technically, sensor clipping needs to be detected not accounting
+     * for white balance.
+     *
+     * but we are not after technical sensor clipping.
+     *
+     * pick some image that is overexposed, disable highlight clipping, apply
+     * negative exposure compensation. you'll see magenta highlight.
+     * if comment-out that ^ wb division, the module would not mark that
+     * area with magenta highlights as clipped, because technically
+     * the channels are not clipped, even though the colour is wrong.
+     *
+     * but we do want to see those magenta highlights marked...
+     */
+
     // "undo" rawprepare iop
     threshold *= piece->pipe->dsc.rawprepare.raw_white_point - piece->pipe->dsc.rawprepare.raw_black_level;
     threshold += piece->pipe->dsc.rawprepare.raw_black_level;
