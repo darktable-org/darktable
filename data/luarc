@@ -4,4 +4,6 @@
 
 require = require "darktable/external/pygy_require/require".require
 
+require "script_manager"
+
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
