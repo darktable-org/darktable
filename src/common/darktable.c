@@ -21,8 +21,6 @@
 #include "config.h"
 #endif
 
-#include "version.h"
-
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
 #endif
@@ -173,7 +171,7 @@ static void _dt_sigsegv_handler(int param)
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
 
-  dprintf(fout, "this is %s reporting a segfault:\n\n", PACKAGE_STRING);
+  dprintf(fout, "this is %s reporting a segfault:\n\n", darktable_package_string);
 
   if(fout != STDOUT_FILENO) close(fout);
 
@@ -449,46 +447,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   _dt_sigsegv_old_handler = signal(SIGSEGV, &_dt_sigsegv_handler);
 #endif
 
-#if !defined(__BYTE_ORDER__) || __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
-#error "Unfortunately we only work on litte-endian systems."
-#endif
-
-#if(defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(__i386__)  \
-    || defined(__i386))
-#define DT_SUPPORTED_X86 1
-#else
-#define DT_SUPPORTED_X86 0
-#endif
-
-#if defined(__aarch64__) && defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A)
-#define DT_SUPPORTED_ARMv8A 1
-#else
-#define DT_SUPPORTED_ARMv8A 0
-#endif
-
-#if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A
-#error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit) and ARMv8-A (64-bit only)."
-#endif
-
-#if !DT_SUPPORTED_X86
-#if !defined(__SIZEOF_POINTER__) || __SIZEOF_POINTER__ < 8
-#error "On non-x86, we only support 64-bit."
-#else
-  if(sizeof(void *) < 8)
-  {
-    fprintf(stderr, "[dt_init] On non-x86, we only support 64-bit.\n");
-    return 1;
-  }
-#endif
-#endif
-
-#undef DT_SUPPORTED_ARMv8A
-#undef DT_SUPPORTED_X86
-
-#if !defined(__SSE2__) || !defined(__SSE__)
-#pragma message "Building without SSE2 is highly experimental."
-#pragma message "Expect a LOT of functionality to be broken. You have been warned."
-#endif
+#include "is_supported_platform.h"
 
   int sse2_supported = 0;
 
@@ -608,8 +567,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH);
 #endif
-        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2016 johannes hanika\n" PACKAGE_BUGREPORT
-               "\n\ncompile options:\n"
+        printf("this is %s\ncopyright (c) 2009-2016 johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
                "  bit depth is %s\n"
 #ifdef _DEBUG
                "  debug build\n"
@@ -651,11 +609,14 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #else
                "  GraphicsMagick support disabled\n"
 #endif
-               , (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
+               ,
+               darktable_package_string,
+               (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
 #if USE_LUA
-               , lua_api_version
+                   ,
+               lua_api_version
 #endif
-        );
+               );
         return 1;
       }
       else if(!strcmp(argv[k], "--library") && argc > k + 1)

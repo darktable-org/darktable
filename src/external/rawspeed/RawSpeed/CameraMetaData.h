@@ -43,7 +43,7 @@ public:
   void disableMake(string make);
   void disableCamera(string make, string model);
 protected:
-  void addCamera(Camera* cam);
+  bool addCamera(Camera* cam);
 };
 
 } // namespace RawSpeed

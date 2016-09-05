@@ -18,10 +18,10 @@
       <tbody>
         <row>
           <entry>
-            This panel is for managing tags on images. Tags are stored in both, sidecar files
-            (.xmp), and within the darktable database for a faster access. The panel is divided
+            This panel is for managing tags on images. Tags are stored in both sidecar files
+            (.xmp) and within the darktable database for a faster access. The panel is divided
             into two parts: the upper part contains the tag(s) currently attached to the image
-            under the cursor, or the selected image(s) if the mouse is outside the lighttable.
+            under the cursor or the selected image(s) if the mouse is outside the lighttable.
             The lower part contains a list of all available tags in the database, which can be
             filtered in the text box above.
           </entry>
@@ -97,7 +97,7 @@
 
       <para>
         Delete a tag from the list and from all images. A warning will be displayed on how many
-        images have this tag attached. Take this warning serious as there is no way to recover
+        images have this tag attached. Take this warning seriously as there is no way to recover
         or later find the affected images.
       </para>
 

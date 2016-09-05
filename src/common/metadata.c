@@ -19,8 +19,6 @@
 #include "common/metadata.h"
 #include "common/debug.h"
 
-#include "version.h"
-
 #include <stdlib.h>
 
 static void dt_metadata_set_xmp(int id, const char *key, const char *value)
@@ -384,7 +382,7 @@ static GList *dt_metadata_get_dt(int id, const char *key, uint32_t *count)
   }
   else if(strncmp(key, "darktable.Version", 17) == 0)
   {
-    result = g_list_append(result, g_strdup(PACKAGE_VERSION));
+    result = g_list_append(result, g_strdup(darktable_package_version));
     local_count = 1;
   }
   if(count != NULL) *count = local_count;

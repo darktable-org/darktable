@@ -69,7 +69,7 @@
       clipped areas are preserved. However it is incapable to reconstruct any color information
       &nbsp;&ndash; the reconstructed highlights will all be monochrome, but brighter and with more detail than with
       <quote>Clip highlights</quote>. This method works fairly well with a high-contrast base curve
-      (such as most manufacturers apply to their jpg), which renders highlights desaturated.
+      (such as most manufacturers apply to their JPEG), which renders highlights desaturated.
       This method is a good option on naturally desaturated objects such as clouds.
     </para>
 

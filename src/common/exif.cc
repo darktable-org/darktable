@@ -25,8 +25,6 @@ extern "C" {
 #include "config.h"
 #endif
 
-#include "version.h"
-
 #include <glib.h>
 #include <sqlite3.h>
 #include <sys/stat.h>
@@ -1265,7 +1263,7 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
       dt_remove_exif_keys(exifData, keys, n_keys);
     }
 
-    exifData["Exif.Image.Software"] = PACKAGE_STRING;
+    exifData["Exif.Image.Software"] = darktable_package_string;
 
     // TODO: find a nice place for the missing metadata (tags, publisher, colorlabels?). Additionally find out
     // how to embed XMP data.

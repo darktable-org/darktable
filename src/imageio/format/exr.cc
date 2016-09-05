@@ -16,7 +16,6 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "version.h"
 
 // needs to be defined before any system header includes for control/conf.h to work in C++ code
 #define __STDC_FORMAT_MACROS
@@ -114,7 +113,10 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
   Imf::Header header(exr->width, exr->height, 1, Imath::V2f(0, 0), 1, Imf::INCREASING_Y,
                      (Imf::Compression)exr->compression);
 
-  header.insert("comment", Imf::StringAttribute("Developed using darktable " PACKAGE_VERSION));
+  char comment[1024];
+  snprintf(comment, sizeof(comment), "Developed using %s", darktable_package_string);
+
+  header.insert("comment", Imf::StringAttribute(comment));
 
   header.insert("exif", Imf::BlobAttribute(exif_blob));
 

@@ -126,8 +126,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_avoid_atomics: %d\n",
            dt_conf_get_bool("opencl_avoid_atomics"));
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_omit_whitebalance: %d\n",
-           dt_conf_get_bool("opencl_omit_whitebalance"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_enable_markesteijn: %d\n",
            dt_conf_get_bool("opencl_enable_markesteijn"));
 
@@ -296,7 +294,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
                cl->dev[dev].nvidia_sm_20 ? "has" : "doesn't have");
     }
 
-    if((type == CL_DEVICE_TYPE_CPU) && !dt_conf_get_bool("opencl_use_cpu_devices"))
+    if(((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) && !dt_conf_get_bool("opencl_use_cpu_devices"))
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding CPU device %d `%s'.\n", k, infostr);
       continue;

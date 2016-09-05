@@ -16,7 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "version.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <glib-object.h>
 #include <glib.h>
@@ -104,7 +106,7 @@ error:
 
 int main(int argc, char *arg[])
 {
-  printf("darktable-cmstest version " PACKAGE_VERSION "\n");
+  printf("darktable-cmstest version %s\n", darktable_package_version);
 #ifndef HAVE_X11
   printf("this executable doesn't do anything for non-X11 systems currently\n");
   return EXIT_FAILURE;

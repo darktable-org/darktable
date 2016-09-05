@@ -48,7 +48,7 @@
     <sect5>
       <title>tint</title>
       <para>
-        Alter the colour tint of the image, from magenta (value &lt; 1) to green (value &gt; 1).
+        Alter the color tint of the image, from magenta (value &lt; 1) to green (value &gt; 1).
         The channel sliders will be updated when you adjust this parameter.
       </para>
     </sect5>
@@ -57,7 +57,7 @@
       <title>temperature</title>
       <para>
         Set the color temperature (in Kelvin). The channel sliders will be updated when you
-        adjust this parameter. darktable derives the color temperature from the EXIF data using
+        adjust this parameter. darktable derives the color temperature from the Exif data using
         some model assumptions. The value given is not meant to be authoritative. In the end
         only the updated channel values determine how the image is modified.
       </para>

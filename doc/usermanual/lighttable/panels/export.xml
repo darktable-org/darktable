@@ -176,7 +176,7 @@
                 $(EXIF_YEAR)
               </entry>
               <entry>
-                exif year
+                Exif year
               </entry>
             </row>
             <row>
@@ -184,7 +184,7 @@
                 $(EXIF_MONTH)
               </entry>
               <entry>
-                exif month
+                Exif month
               </entry>
             </row>
             <row>
@@ -192,7 +192,7 @@
                 $(EXIF_DAY)
               </entry>
               <entry>
-                exif day
+                Exif day
               </entry>
             </row>
             <row>
@@ -200,7 +200,7 @@
                 $(EXIF_HOUR)
               </entry>
               <entry>
-                exif hour
+                Exif hour
               </entry>
             </row>
             <row>
@@ -208,7 +208,7 @@
                 $(EXIF_MINUTE)
               </entry>
               <entry>
-                exif minute
+                Exif minute
               </entry>
             </row>
             <row>
@@ -216,7 +216,7 @@
                 $(EXIF_SECOND)
               </entry>
               <entry>
-                exif second
+                Exif second
               </entry>
             </row>
             <row>
@@ -320,8 +320,8 @@
       <para>
         <emphasis>Caution: for various reasons embedding XMP tags into output files may fail
         without notice, eg. if certain size limits are exceeded. Users are therefore advised to
-        not rely their backup strategy on this feature. To backup your data make sure to save
-        your input (RAW) file as well as all of darktable's XMP sidecar files.</emphasis>
+        not rely their backup strategy on this feature. To back up your data make sure to save
+        your input (raw) file as well as all of darktable's XMP sidecar files.</emphasis>
       </para>
 
       <para>
@@ -332,7 +332,7 @@
       </para>
 
       <para>
-<programlisting>exiftool -XMP:all=   image.jpg
+<programlisting>Exiftool -XMP:all=   image.jpg
 </programlisting>
       </para>
 
@@ -405,7 +405,7 @@
         darktable combines with the existing history stack to generate the output image. These
         history items are only added temporarily; the original history stack is not overwritten.
         You can use this feature to add processing steps and parameters that you want to be
-        applied specifically to exported images, e.g. you may define a style that adds a
+        applied specifically to images before export, e.g. you may define a style that adds a
         stronger level of sharpening when you produce scaled-down JPEG files for the internet or
         add a certain level of exposure compensation to all of your output images. Learn more
         about styles in <xref linkend="styles"/>, and <xref linkend="history"/>.

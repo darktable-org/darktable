@@ -70,6 +70,9 @@ static void gui_reset_wrapper(struct dt_lib_module_t *self)
 
 static void gui_cleanup_wrapper(struct dt_lib_module_t *self)
 {
+  lua_lib_data_t *gui_data =self->data;
+  free(gui_data->name);
+  free(self->data);
   self->widget = NULL;
 }
 

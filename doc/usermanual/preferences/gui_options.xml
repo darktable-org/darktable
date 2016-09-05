@@ -26,7 +26,7 @@
   <bridgehead renderas="sect4">don't use embedded preview JPEG but half-size raw</bridgehead>
 
   <para>
-    Check this option to not use the embedded jpeg from the raw file but process the raw data.
+    Check this option to not use the embedded JPEG from the raw file but process the raw data.
     This is slower. (default off).
     <!-- but prevents you from getting false impressions from camera-processed thumbnail -->
   </para>
@@ -72,7 +72,7 @@
 
   <para>
     When having RAW+JPEG images together in one directory it makes no sense to import both. With
-    this flag one can ignore all jpegs found (default off).
+    this flag one can ignore all JPEGs found (default off).
   </para>
 
   <bridgehead renderas="sect4">recursive directory traversal when importing film rolls</bridgehead>
@@ -214,9 +214,9 @@
   <para>
     Controls how lighttable panels are expanded. If this option is enabled, expanding a panel by
     <emphasis>clicking</emphasis> collapses any currently expanded panel. If you want to expand
-    a panel without collapsing the others you do so with <emphasis>shift+click</emphasis>.
+    a panel without collapsing the others you do so with <emphasis>shift-click</emphasis>.
     Disabling this option reverts the meaning of <emphasis>click</emphasis> and
-    <emphasis>shift+click</emphasis> (default off).
+    <emphasis>shift-click</emphasis> (default off).
   </para>
 
   <bridgehead renderas="sect4">expand a single darkroom module at a time</bridgehead>
@@ -224,9 +224,9 @@
   <para>
     Controls how darkroom modules are expanded. If this option is enabled, expanding a module by
     <emphasis>clicking</emphasis> collapses any currently expanded module. If you want to expand
-    a module without collapsing the others you do so with <emphasis>shift+click</emphasis>.
+    a module without collapsing the others you do so with <emphasis>shift-click</emphasis>.
     Disabling this option reverts the meaning of <emphasis>click</emphasis> and
-    <emphasis>shift+click</emphasis> (default on).
+    <emphasis>shift-click</emphasis> (default on).
   </para>
 
   <bridgehead renderas="sect4">scroll to lighttable modules when expanded/collapsed</bridgehead>

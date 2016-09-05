@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.8.5)
-
 cmake_policy(SET CMP0011 NEW)
 
 include(CheckCCompilerFlag)
@@ -207,8 +205,8 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo PThread Rsvg2 Lib
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-# Require exiv2 >= 0.23 to make sure everything we need is available
-find_package(Exiv2 0.23 REQUIRED)
+# Require exiv2 >= 0.24 to make sure everything we need is available
+find_package(Exiv2 0.24 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
@@ -446,10 +444,10 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 
 #
-# Generate config.h and version.h. they are split so that a change to version.h isn't recompiling half of dt
+# Generate config.h
 #
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/version.h" @ONLY)
+
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 #
@@ -636,6 +634,11 @@ endif()
 #
 # set development flags for our code
 #
+if(DT_CMAKE_INCLUDE_WHAT_YOU_USE)
+  set(CMAKE_C_INCLUDE_WHAT_YOU_USE ${DT_CMAKE_INCLUDE_WHAT_YOU_USE})
+  set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${DT_CMAKE_INCLUDE_WHAT_YOU_USE})
+endif()
+
 if(NOT SOURCE_PACKAGE AND NOT APPLE)
   # apple build fails on deprecated warnings..
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
@@ -655,6 +658,14 @@ endif()
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=varargs")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=varargs")
+
+  # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
+  if(NOT CMAKE_C_COMPILER_VERSION LESS 4.0)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=address-of-packed-member")
+  endif()
+  if(NOT CMAKE_CXX_COMPILER_VERSION LESS 4.0)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=address-of-packed-member")
+  endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
@@ -739,7 +750,12 @@ add_custom_target(
 #
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
+add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_BINARY_DIR}/src/version_gen.c ${SOURCES})
+
+# cmake implicitly sets GENERATED on the source file in the directory of the custom command
+# since this isn't the same directory we do have to manually set it
+set_source_files_properties(${CMAKE_BINARY_DIR}/src/version_gen.c PROPERTIES GENERATED TRUE)
+
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
 add_dependencies(lib_darktable generate_metadata)

@@ -134,7 +134,7 @@
         feature and its limitations). You can load an exported image as a sidecar file in the
         same way as you do with an XMP file. This feature allows you to recover all parameter
         settings in case you have accidentally lost or overwritten the XMP file. All you need is
-        the source image, typically a RAW, and the exported file.
+        the source image, typically a raw, and the exported file.
       </para>
 
     </sect4>

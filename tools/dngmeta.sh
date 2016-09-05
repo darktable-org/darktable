@@ -23,11 +23,17 @@
 
 AUTHOR="$(getent passwd $USER | awk -F ':' '{print $5}' | awk -F ',' '{print $1}') <$USER@$HOSTNAME>"
 
-DNG=$1
+DNG="$1"
 
-MAKE=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Make ' | sed 's#Exif.Image.Make *##g')
-MODEL=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Model ' | sed 's#Exif.Image.Model *##g')
-UNIQUE_CAMERA_MODEL=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.UniqueCameraModel ' | sed 's#Exif.Image.UniqueCameraModel *##g')
+if [ ! -f "$DNG" ];
+then
+  echo "Error: file does not exist"
+  exit
+fi
+
+MAKE=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.Make ' | sed 's#Exif.Image.Make *##g')
+MODEL=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.Model ' | sed 's#Exif.Image.Model *##g')
+UNIQUE_CAMERA_MODEL=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.UniqueCameraModel ' | sed 's#Exif.Image.UniqueCameraModel *##g')
 
 # This doesn't work with two name makes but there aren't any active ones
 ID_MAKE=${MAKE:0:1}$(echo ${MAKE:1} | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
@@ -41,31 +47,31 @@ fi
 
 MANGLED_MAKE_MODEL=$(echo $MAKE $MODEL | sed 's# CORPORATION##gi' | sed 's#Canon Canon#Canon#g' | sed 's#NIKON NIKON#NIKON#g' | sed 's#PENTAX PENTAX#PENTAX#g' | sed 's#OLYMPUS IMAGING CORP.#OLYMPUS#g' | sed 's#OLYMPUS OPTICAL CO.,LTD#OLYMPUS#g' | sed 's# EASTMAN KODAK COMPANY#KODAK#g')
 
-SOFTWARE=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Software ' | awk '{print $2 " " $3 " " $4 " " $5 " " $6}')
+SOFTWARE=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.Software ' | awk '{print $2 " " $3 " " $4 " " $5 " " $6}')
 
-ILLUMINANT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.CalibrationIlluminant2 ' | awk '{print $2}')
-MATRIX_XR=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $2}')
-MATRIX_XG=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $3}')
-MATRIX_XB=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $4}')
-MATRIX_YR=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $5}')
-MATRIX_YG=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $6}')
-MATRIX_YB=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $7}')
-MATRIX_ZR=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $8}')
-MATRIX_ZG=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $9}')
-MATRIX_ZB=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $10}')
+ILLUMINANT=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.CalibrationIlluminant2 ' | awk '{print $2}')
+MATRIX_XR=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $2}')
+MATRIX_XG=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $3}')
+MATRIX_XB=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $4}')
+MATRIX_YR=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $5}')
+MATRIX_YG=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $6}')
+MATRIX_YB=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $7}')
+MATRIX_ZR=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $8}')
+MATRIX_ZG=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $9}')
+MATRIX_ZB=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.ColorMatrix2 ' | sed 's#/10000##g' | awk '{print $10}')
 
-WHITE=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.WhiteLevel ' | awk '{print $2}' | bc)
-BLACK=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.BlackLevel ' | awk '{print $2}' | bc)
+WHITE=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.SubImage1.WhiteLevel ' | awk '{print $2}' | bc)
+BLACK=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.SubImage1.BlackLevel ' | awk '{print $2}' | bc)
 
 WHITE_HEX="0x$(echo "ibase=10;obase=16;$WHITE" | bc | tr 'A-Z' 'a-z')"
 
-CFA_PATTERN_WIDTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $2}')
-CFA_PATTERN_HEIGHT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $3}')
+CFA_PATTERN_WIDTH=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $2}')
+CFA_PATTERN_HEIGHT=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $3}')
 
-CFA_PATTERN=($(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern ' | awk '{$1=""; print $0}' | sed 's#0#RED#g; s#1#GREEN#g; s#2#BLUE#g'))
+CFA_PATTERN=($(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.SubImage1.CFAPattern ' | awk '{$1=""; print $0}' | sed 's#0#RED#g; s#1#GREEN#g; s#2#BLUE#g'))
 
-IMG_WIDTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageWidth ' | awk '{print $2}')
-IMG_LENGTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageLength ' | awk '{print $2}')
+IMG_WIDTH=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.SubImage1.ImageWidth ' | awk '{print $2}')
+IMG_LENGTH=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.SubImage1.ImageLength ' | awk '{print $2}')
 
 if [[ $IMG_WIDTH -gt $IMG_LENGTH ]]; then
   IMG_LONG=$IMG_WIDTH
@@ -85,6 +91,10 @@ if [[ $MAKE == Panasonic ]]; then
   else
     MODE=" mode=\"1:1\""
   fi
+elif [[ $MAKE == "NIKON CORPORATION" ]]; then
+# i'm not sure it can be detected automatically
+# rawspeed code to detect it is big
+  MODE=" mode=\"<FIXME (14 or 12)>bit-<FIXME (compressed or uncompressed)>\""
 else
   MODE=""
 fi
@@ -142,6 +152,9 @@ echo ""
 
 if [[ $MAKE == Panasonic ]]; then
   echo "NOTE: Panasonic RW2s are different dependant on aspect ratio, please run this tool on RW2 for each of the camera's ratios (4:3,3:2,16:9,1:1)"
+  echo ""
+elif [[ $MAKE == "NIKON CORPORATION" ]]; then
+  echo "NOTE: NIKON NEFs are different dependant on mode, please run this tool on NEF for each of the camera's mode (14-bit, 12-bit; compressed, uncompressed)"
   echo ""
 fi
 echo "NOTE: The default crop exposes the full sensor including garbage pixels, which need to be visually inspected. (negative width/height values are right/bottom crops, which are preferred)"

@@ -17,7 +17,7 @@ tar xf "$SRCDIR/darktable-$dt_decoration.tar"
 
 # create version header for non-git tarball:
 echo "* creating version header"
-echo "#define PACKAGE_VERSION \"$dt_decoration\"" > darktable-$dt_decoration/src/version_gen.h
+./tools/create_version_c.sh darktable-$dt_decoration/src/version_gen.c $dt_decoration
 
 # remove usermanual, that's > 80 MB and released separately
 echo "* removing usermanual"

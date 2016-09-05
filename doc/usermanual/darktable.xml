@@ -6,7 +6,7 @@
 		]>
 <book lang="en">
 
-  <title>darktable 2.0</title>
+  <title>darktable 2.2</title>
 
   <bookinfo>
 
@@ -76,12 +76,12 @@
     </copyright>
 
     <copyright>
-      <year>2012-2015</year>
+      <year>2012-2016</year>
       <holder>Ulrich Pegelow</holder>
     </copyright>
 
     <copyright>
-      <year>2013-2015</year>
+      <year>2013-2016</year>
       <holder>J&eacute;r&eacute;my Rosen</holder>
     </copyright>
 
@@ -89,14 +89,14 @@
 
   <preface id="overview">
 
-    <title>Preface to this manual</title>
+    <title>Preface</title>
 
     <indexterm>
       <primary>darktable</primary>
     </indexterm>
 
     <indexterm>
-      <primary>Preface</primary>
+      <primary>preface</primary>
     </indexterm>
 
     <para>
@@ -119,10 +119,10 @@
                 user manual
               </entry>
               <entry>
-                2.0.0
+                2.2.0
               </entry>
               <entry>
-                November 2015
+                August 2016
               </entry>
             </row>
             <row>
@@ -130,10 +130,10 @@
                 darktable
               </entry>
               <entry>
-                2.0
+                2.2
               </entry>
               <entry>
-                November 2015
+                August 2016
               </entry>
             </row>
           </tbody>

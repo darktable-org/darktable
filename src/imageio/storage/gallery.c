@@ -32,7 +32,6 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "imageio/storage/imageio_storage_api.h"
-#include "version.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -490,18 +489,17 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
     d->l = g_list_delete_link(d->l, d->l);
   }
 
-  fprintf(
-      f,
-      "        <p style=\"clear:both;\"></p>\n"
-      "    </div>\n"
-      "    <div class=\"footer\">\n"
-      "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
-      "      document.write(\"download all: <em>wget -r -np -nc -k \" + document.documentURI + \"</em>\")\n"
-      "      </script><br />\n"
-      "      created with darktable " PACKAGE_VERSION "\n"
-      "    </div>\n"
-      "  </body>\n"
-      "</html>\n");
+  fprintf(f, "        <p style=\"clear:both;\"></p>\n"
+             "    </div>\n"
+             "    <div class=\"footer\">\n"
+             "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
+             "      document.write(\"download all: <em>wget -r -np -nc -k \" + document.documentURI + \"</em>\")\n"
+             "      </script><br />\n"
+             "      created with %s\n"
+             "    </div>\n"
+             "  </body>\n"
+             "</html>\n",
+          darktable_package_string);
   fclose(f);
 }
 
