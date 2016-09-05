@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.8.5)
-
 if(USE_XMLLINT)
 	add_custom_target(
 		validate_cameras_xml ALL
@@ -12,8 +10,73 @@ endif(USE_XMLLINT)
 
 install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/rawspeed)
 
-FILE(GLOB RAWSPEED_SOURCES "RawSpeed/*.cpp")
-LIST(REMOVE_ITEM RAWSPEED_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/RawSpeed/RawSpeed.cpp")
+FILE(GLOB RAWSPEED_SOURCES
+        "RawSpeed/AriDecoder.cpp"
+        "RawSpeed/ArwDecoder.cpp"
+        "RawSpeed/BitPumpJPEG.cpp"
+        "RawSpeed/BitPumpMSB.cpp"
+        "RawSpeed/BitPumpMSB16.cpp"
+        "RawSpeed/BitPumpMSB32.cpp"
+        "RawSpeed/BitPumpPlain.cpp"
+        "RawSpeed/BlackArea.cpp"
+        "RawSpeed/ByteStream.cpp"
+        "RawSpeed/ByteStreamSwap.cpp"
+        "RawSpeed/Camera.cpp"
+        "RawSpeed/CameraMetaData.cpp"
+        "RawSpeed/CameraMetadataException.cpp"
+        "RawSpeed/CameraSensorInfo.cpp"
+        "RawSpeed/CiffEntry.cpp"
+        "RawSpeed/CiffIFD.cpp"
+        "RawSpeed/CiffParser.cpp"
+        "RawSpeed/CiffParserException.cpp"
+        "RawSpeed/ColorFilterArray.cpp"
+        "RawSpeed/Common.cpp"
+        "RawSpeed/Cr2Decoder.cpp"
+        "RawSpeed/CrwDecoder.cpp"
+        "RawSpeed/DcrDecoder.cpp"
+        "RawSpeed/DcsDecoder.cpp"
+        "RawSpeed/DngDecoder.cpp"
+        "RawSpeed/DngDecoderSlices.cpp"
+        "RawSpeed/DngOpcodes.cpp"
+        "RawSpeed/ErfDecoder.cpp"
+        "RawSpeed/FileIOException.cpp"
+        "RawSpeed/FileMap.cpp"
+        "RawSpeed/FileReader.cpp"
+        "RawSpeed/FileWriter.cpp"
+        "RawSpeed/HasselbladDecompressor.cpp"
+        "RawSpeed/IOException.cpp"
+        "RawSpeed/KdcDecoder.cpp"
+        "RawSpeed/LJpegDecompressor.cpp"
+        "RawSpeed/LJpegPlain.cpp"
+        "RawSpeed/MefDecoder.cpp"
+        "RawSpeed/MosDecoder.cpp"
+        "RawSpeed/MrwDecoder.cpp"
+        "RawSpeed/NakedDecoder.cpp"
+        "RawSpeed/NefDecoder.cpp"
+        "RawSpeed/NikonDecompressor.cpp"
+        "RawSpeed/OrfDecoder.cpp"
+        "RawSpeed/PefDecoder.cpp"
+        "RawSpeed/PentaxDecompressor.cpp"
+        "RawSpeed/RafDecoder.cpp"
+        "RawSpeed/RawDecoder.cpp"
+        "RawSpeed/RawDecoderException.cpp"
+        "RawSpeed/RawImage.cpp"
+        "RawSpeed/RawImageDataFloat.cpp"
+        "RawSpeed/RawImageDataU16.cpp"
+        "RawSpeed/RawParser.cpp"
+        "RawSpeed/Rw2Decoder.cpp"
+        "RawSpeed/SrwDecoder.cpp"
+        "RawSpeed/StdAfx.cpp"
+        "RawSpeed/ThreefrDecoder.cpp"
+        "RawSpeed/TiffEntry.cpp"
+        "RawSpeed/TiffEntryBE.cpp"
+        "RawSpeed/TiffIFD.cpp"
+        "RawSpeed/TiffIFDBE.cpp"
+        "RawSpeed/TiffParser.cpp"
+        "RawSpeed/TiffParserException.cpp"
+        "RawSpeed/X3fDecoder.cpp"
+        "RawSpeed/X3fParser.cpp"
+)
 
 #
 # build librawspeed
@@ -50,9 +113,9 @@ if (BUILD_RS_IDENTIFY)
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
   add_executable(darktable-rs-identify rawspeed-identify.cpp)
-  set_target_properties(darktable-rs-identify PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-  set_target_properties(darktable-rs-identify PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-  set_target_properties(darktable-rs-identify PROPERTIES INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+  # set_target_properties(darktable-rs-identify PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  # set_target_properties(darktable-rs-identify PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+  # set_target_properties(darktable-rs-identify PROPERTIES INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
   set_target_properties(darktable-rs-identify PROPERTIES LINKER_LANGUAGE CXX)
   if(CMAKE_COMPILER_IS_GNUCC)
 	  if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.3)

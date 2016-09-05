@@ -61,7 +61,7 @@
       images are present in the filmstrip. Visibility of the filmstrip&nbsp;&ndash; located in
       the bottom panel&nbsp;&ndash; is toggled by pressing <emphasis>ctrl-f</emphasis> (see
       <xref linkend="filmstrip_overview"/>). On the left side you also have an <emphasis>image
-      information</emphasis> panel which displays useful EXIF data of the image in the center
+      information</emphasis> panel which displays useful Exif data of the image in the center
       area, or the filmstrip image under the pointer, respectively (see
       <xref linkend="image_information"/>).
     </para>

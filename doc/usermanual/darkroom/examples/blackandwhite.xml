@@ -34,7 +34,7 @@
     <para>
       To perform the conversion, just activate the <emphasis>monochrome</emphasis> module
       (<xref linkend="monochrome"/>). You can then simulate a color filter, by dragging the
-      circle above the colours you want to filter. Filter size can be modified via scrolling
+      circle above the colors you want to filter. Filter size can be modified via scrolling
       the mouse wheel.
     </para>
 
@@ -98,7 +98,7 @@
     <orderedlist>
 
       <listitem><para>
-        Activate the colour zones module
+        Activate the color zones module
       </para></listitem>
 
       <listitem><para>

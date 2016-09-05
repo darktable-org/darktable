@@ -49,7 +49,8 @@ typedef enum dt_introspection_type_t
   DT_INTROSPECTION_TYPE_BOOL,
   DT_INTROSPECTION_TYPE_ARRAY,
   DT_INTROSPECTION_TYPE_ENUM,
-  DT_INTROSPECTION_TYPE_STRUCT
+  DT_INTROSPECTION_TYPE_STRUCT,
+  DT_INTROSPECTION_TYPE_UNION
 } dt_introspection_type_t;
 
 typedef struct dt_introspection_type_header_t
@@ -191,6 +192,13 @@ typedef struct dt_introspection_type_struct_t
   union dt_introspection_field_t    **fields;       // the fields of the struct. NULL terminated
 } dt_introspection_type_struct_t;
 
+typedef struct dt_introspection_type_union_t
+{
+  dt_introspection_type_header_t      header;
+  size_t                              entries;      // # entries in fields (without the closing NULL)
+  union dt_introspection_field_t    **fields;       // the fields of the union. NULL terminated
+} dt_introspection_type_union_t;
+
 // sorry for the camel case/Capitals, but we have to avoid reserved keywords
 typedef union dt_introspection_field_t
 {
@@ -211,6 +219,7 @@ typedef union dt_introspection_field_t
   dt_introspection_type_array_t         Array;         // an array
   dt_introspection_type_enum_t          Enum;          // an enum
   dt_introspection_type_struct_t        Struct;        // a struct
+  dt_introspection_type_union_t         Union;         // an union
 } dt_introspection_field_t;
 
 typedef struct dt_introspection_t

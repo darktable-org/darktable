@@ -160,9 +160,9 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
-  pixel.x = fmin(clip, pixel.x);
+  pixel = fmin(clip, pixel);
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -178,13 +178,12 @@ highlights_1f_lch (read_only image2d_t in, write_only image2d_t out, const int w
 
   if(x >= width || y >= height) return;
 
-  float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
-
   int clipped = 0;
   float R = 0.0f;
   float Gmin = FLT_MAX;
   float Gmax = -FLT_MAX;
   float B = 0.0f;
+  float pixel = 0.0f;
 
   // sample 1 bayer block. thus we will have 2 green values.
   for(int jj = 0; jj <= 1; jj++)
@@ -192,6 +191,8 @@ highlights_1f_lch (read_only image2d_t in, write_only image2d_t out, const int w
     for(int ii = 0; ii <= 1; ii++)
     {
       const float val = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
+
+      pixel = (ii == 0 && jj == 0) ? val : pixel;
 
       clipped = (clipped || (val > clip));
 

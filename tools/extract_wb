@@ -76,7 +76,7 @@ ARGV.each do |filename|
   red = green = blue = maker = model = preset = nil
   listed_presets = []
   fl_count = 0
-  IO.popen("exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model #{filename}") do |io|
+  IO.popen("exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model \"#{filename}\"") do |io|
     while !io.eof?
       lineparts = io.readline.split(":")
       tag = lineparts[0].strip

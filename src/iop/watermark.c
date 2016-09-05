@@ -25,7 +25,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "version.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -351,7 +350,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
       g_free(svgdata);
       svgdata = svgdoc;
     }
-    svgdoc = _string_substitute(svgdata, "$(DARKTABLE.VERSION)", PACKAGE_VERSION);
+    svgdoc = _string_substitute(svgdata, "$(DARKTABLE.VERSION)", darktable_package_version);
     if(svgdoc != svgdata)
     {
       g_free(svgdata);

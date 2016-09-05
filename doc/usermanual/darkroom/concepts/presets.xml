@@ -59,7 +59,7 @@
     </para>
 
     <para>
-      darktable finds this data in your image's EXIF information. If you want a preset to be
+      darktable finds this data in your image's Exif information. If you want a preset to be
       applied to all images from a specific camera leave all fields at default values except for
       the model field.
     </para>

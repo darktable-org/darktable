@@ -47,7 +47,7 @@
     <title>Usage</title>
 
     <para>
-      In order to perform lens corrections the module uses EXIF data of your image to identify
+      In order to perform lens corrections the module uses Exif data of your image to identify
       the specific camera/lens combination and collects the needed correction parameters from a
       profile in lensfun's database.
     </para>
@@ -55,7 +55,7 @@
     <sect5>
       <title>camera</title>
       <para>
-        The camera make and model as determined by EXIF data. You can override this manually and
+        The camera make and model as determined by Exif data. You can override this manually and
         select your camera from a hierarchical menu.
       </para>
     </sect5>
@@ -63,7 +63,7 @@
     <sect5>
       <title>lens</title>
       <para>
-        The lens make and model as determined by EXIF data. You can override this manually and
+        The lens make and model as determined by Exif data. You can override this manually and
         select your lens from a hierarchical menu. This is mainly needed for pure mechanical
         lenses, but may also be needed for off-brand / third party lenses.
       </para>
@@ -73,9 +73,9 @@
       <title>photometric parameters: focal length, aperture, focal distance</title>
       <para>
         Corrections additionally depend on certain photometric parameters that are read from
-        EXIF-data: focal length (needed for distortion, TCA, vignetting), aperture (needed for
+        Exif data: focal length (needed for distortion, TCA, vignetting), aperture (needed for
         TCA, vignetting) and focal distance (needed for vignetting). Many cameras do not record
-        focal distance in their EXIF data; most likely you need to set this manually.
+        focal distance in their Exif data; most likely you need to set this manually.
       </para>
       <para>
         You can manually override all automatically selected parameters. Either take one of the

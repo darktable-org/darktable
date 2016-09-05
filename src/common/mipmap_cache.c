@@ -1233,13 +1233,10 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, dt_colorspa
       if(tmp.buf == NULL)
         continue;
       dt_print(DT_DEBUG_CACHE, "[_init_8] generate mip %d for %s from level %d\n", size, filename, k);
-      //keep aspect ratio
-      float scale = MIN(wd/(float)tmp.width, ht/(float)tmp.height);
-      *width = tmp.width*scale;
-      *height = tmp.height*scale;
       *color_space = tmp.color_space;
       // downsample
-      dt_iop_clip_and_zoom_8(tmp.buf, 0, 0, tmp.width, tmp.height, tmp.width, tmp.height, buf, 0, 0, *width, *height, *width, *height);
+      dt_iop_flip_and_zoom_8(tmp.buf, tmp.width, tmp.height, buf, wd, ht, ORIENTATION_NONE, width, height);
+
       dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
       res = 0;
       break;

@@ -17,7 +17,7 @@
   <title>Overview</title>
 
   <para>
-    darktable is an open source photography workflow application and RAW developer, a virtual
+    darktable is an open source photography workflow application and raw developer, a virtual
     lighttable and darkroom for photographers.
   </para>
 
@@ -1156,7 +1156,7 @@
           <link linkend="denoise_profiled"><emphasis>profiled denoise</emphasis></link>. This
           module offers an almost <quote>single-click</quote> solution to fight noise. From a
           user perspective the effect only depends on camera type and ISO value, both derived
-          from EXIF data. All other settings are taken from a database of noise profiles that
+          from Exif data. All other settings are taken from a database of noise profiles that
           the darktable team has collected&nbsp;&ndash; now covering well above 200 popular
           camera models. In addition you have several other options in darktable to reduce
           noise. There is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>,
@@ -1181,7 +1181,7 @@
           Sometimes you will need to remove spots caused by sensor dirt. The
           <link linkend="spot_removal"><emphasis>spot removal</emphasis></link> module is at
           hand and can also correct other disturbing elements like skin blemishes. If your
-          camera has stuck pixels or tends to produce hot pixels at high ISO values, or longer
+          camera has stuck pixels or tends to produce hot pixels at high ISO values or longer
           exposure times, have a look at the <link linkend="hotpixels"><emphasis>hot
           pixels</emphasis></link> module for automatic correction.
         </para>
@@ -1212,7 +1212,7 @@
         <title>Bringing back detail</title>
 
         <para>
-          Digital RAW images often contain more information than you can see at first sight.
+          Digital raw images often contain more information than you can see at first sight.
           Especially in the shadows of an image, there are lots of hidden details. The
           <link linkend="shadows_and_highlights"><emphasis>shadows and
           highlights</emphasis></link> module helps bring these details back into visible tonal
@@ -1254,7 +1254,7 @@
           used, it can give your photograph the right pop. darktable offers several modules for
           this task. The <link linkend="local_contrast"><emphasis>local
           contrast</emphasis></link> module is easy to handle, with just a few parameters. A
-          much more versatile, but also more complex technique, is offered by the
+          much more versatile, but also more complex, technique is offered by the
           <link linkend="equalizer"><emphasis>equalizer</emphasis></link> module. Have a look at
           its presets, to get a feeling for how it works. Equalizer is darktable's "Swiss Army
           Knife" for many adjustments where spatial dimension plays a role.
@@ -1290,7 +1290,7 @@
         <title>Sharpening</title>
 
         <para>
-          If you start your workflow from a RAW image, you will need to have your final output
+          If you start your workflow from a raw image, you will need to have your final output
           sharpened. The <link linkend="sharpen"><emphasis>sharpen</emphasis></link> module can
           do this with the classical USM (unsharp mask) approach, available in most image
           processing software. Another very versatile way to enhance edges in an image is
@@ -1336,7 +1336,7 @@
       <para>
         Images are exported from the lighttable view, using the <emphasis>export
         selected</emphasis> dialog in the right panel (<xref linkend="export_selected"/>). In
-        general, export means: save my developed RAW image as a JPEG.
+        general, export means: save my developed raw image as a JPEG.
       </para>
 
       <para>
@@ -1351,7 +1351,7 @@
         Select images on the lighttable, choose the target storage and format, and set the
         maximum width and height image restraints. This means that none of the images will be
         bigger than any of the width/height restraints and hit the export button. Leave the
-        width and height restraints at zero, if you want the original resolution.
+        width and height restraints at zero if you want the original resolution.
       </para>
 
     </sect2>
