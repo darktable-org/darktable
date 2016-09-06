@@ -1125,6 +1125,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
 int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const int sRGB, const int out_width,
                       const int out_height, const int dng_mode)
 {
+  *buf = NULL;
   try
   {
 #ifdef __APPLE__
@@ -1386,6 +1387,8 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     // std::cerr.rdbuf(savecerr);
     std::string s(e.what());
     std::cerr << "[exiv2] " << path << ": " << s << std::endl;
+    free(*buf);
+    *buf = NULL;
     return 0;
   }
 }
