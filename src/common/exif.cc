@@ -1378,6 +1378,7 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
       memcpy(buf + 6, &(blob[0]), length);
       return length + 6;
     }
+    fprintf(stderr, "[exif] Warning: too much data to store (%d bytes), Exif data will be discarded\n", length);
     return 6;
   }
   catch(Exiv2::AnyError &e)
