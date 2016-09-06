@@ -856,14 +856,18 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   if(!ignore_exif)
   {
     int length;
-    uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
+    uint8_t *exif_profile; // Exif data should be 65536 bytes max, but if original size is close to that,
+                           // adding new tags could make it go over that... so let it be and see what
+                           // happens when we write the image
     char pathname[PATH_MAX] = { 0 };
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
     // last param is dng mode, it's false here
-    length = dt_exif_read_blob(exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
+    length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
 
     res = format->write_image(format_params, filename, outbuf, exif_profile, length, imgid, num, total);
+
+    free(exif_profile);
   }
   else
   {
