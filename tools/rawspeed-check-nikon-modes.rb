@@ -22,6 +22,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+IGNORE_ONLY_14BIT = []
+
+IGNORE_ONLY_MODE = {
+  ["NIKON CORPORATION", "NIKON D600"] => "compressed"
+}
+
 require 'nokogiri'
 
 CAMERAS=File.expand_path("../src/external/rawspeed/data/cameras.xml", File.dirname(__FILE__))
@@ -78,8 +84,8 @@ File.open(CAMERAS) do |f|
       puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has no white level?"
     end
 
-    if white >= 2**bitness_num
-      puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has too high white level: #{white} (bigger than 2^#{bitness_num}, which is #{2**(bitness_num)})"
+    if white >= ((2**bitness_num)-1)
+      puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has too high white level: #{white} (bigger than ((2^#{bitness_num})-1), which is #{((2**bitness_num)-1)})"
       #next
     end
 
@@ -97,16 +103,27 @@ File.open(CAMERAS) do |f|
 end
 
 cameras_hash.each do |cameraname, modes|
-  if modes.key?("14bit") and not modes.key?("12bit") and not
+  if modes.key?("14bit") and not modes.key?("12bit") and not IGNORE_ONLY_14BIT.include?(cameraname)
     puts "Camera #{cameraname} apparently has 14-bit sensor, but 12-bit mode is not defined."
   end
 
+  if modes.key?("12bit") and IGNORE_ONLY_14BIT.include?(cameraname)
+    puts "Camera #{cameraname} has no 12-bit modes, but 12-bit mode is defined."
+  end
+
   modes.each do |mode, compressions|
-    if compressions.length != 2
-      puts "Camera #{cameraname} #{mode} has only #{compressions.keys[0]} mode defined.", modes
+    thecompression = compressions.keys[0]
+    if compressions.length != 2 and not (IGNORE_ONLY_MODE.key?(cameraname) and IGNORE_ONLY_MODE[cameraname].include?(thecompression))
+      puts "Camera #{cameraname} #{mode} has only #{thecompression} mode defined.", modes
     else
       if compressions.length == 2 and (compressions.values[0] != compressions.values[1])
         puts "Camera #{cameraname} #{mode} has different white levels between compression modes."
+      end
+    end
+
+    compressions.each do |compression, whitelevel|
+      if IGNORE_ONLY_MODE.key?(cameraname) and IGNORE_ONLY_MODE[cameraname] != compression
+        puts "Camera #{cameraname} has no compression \"#{compression}\", but the mode is defined."
       end
     end
   end
