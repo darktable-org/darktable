@@ -468,17 +468,18 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   }
 
   // output hdr as digital negative with exif data.
-  uint8_t exif[65535];
+  uint8_t *exif = NULL;
   char pathname[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
   dt_image_full_path(d.first_imgid, pathname, sizeof(pathname), &from_cache);
 
   // last param is dng mode
-  const int exif_len = dt_exif_read_blob(exif, pathname, d.first_imgid, 0, d.wd, d.ht, 1);
+  const int exif_len = dt_exif_read_blob(&exif, pathname, d.first_imgid, 0, d.wd, d.ht, 1);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
   dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, (const uint8_t (*)[6])d.first_xtrans, 1.0f);
+  free(exif);
 
   dt_control_job_set_progress(job, 1.0);
 
