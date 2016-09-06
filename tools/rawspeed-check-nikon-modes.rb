@@ -27,7 +27,8 @@ IGNORE_ONLY_14BIT = []
 IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON 1 V1"] => "compressed",
   ["NIKON CORPORATION", "NIKON D600"] => "compressed",
-  ["NIKON CORPORATION", "NIKON D3200"] => "compressed"
+  ["NIKON CORPORATION", "NIKON D3200"] => "compressed",
+  ["NIKON CORPORATION", "NIKON D7000"] => "compressed"
 }
 
 require 'nokogiri'
