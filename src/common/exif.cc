@@ -1122,7 +1122,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
   return 1;
 }
 
-int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int sRGB, const int out_width,
+int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const int sRGB, const int out_width,
                       const int out_height, const int dng_mode)
 {
   try
@@ -1372,14 +1372,14 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
     const int length = blob.size();
-    memcpy(buf, "Exif\000\000", 6);
-    if(length > 0 && length < 65534)
+    *buf = (uint8_t *)malloc(length);
+    if (!*buf)
     {
-      memcpy(buf + 6, &(blob[0]), length);
-      return length + 6;
+      return 0;
     }
-    fprintf(stderr, "[exif] Warning: too much data to store (%d bytes), Exif data will be discarded\n", length);
-    return 6;
+    memcpy(*buf, "Exif\000\000", 6);
+    memcpy(*buf + 6, &(blob[0]), length);
+    return length + 6;
   }
   catch(Exiv2::AnyError &e)
   {
