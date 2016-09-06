@@ -3562,7 +3562,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 V1" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 V1" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 V1">Nikon 1 V1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3571,7 +3571,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="-2"/>
-		<Sensor black="0" white="0"/>
+		<Sensor black="0" white="3300"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 V2" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 V2">Nikon 1 V2</ID>

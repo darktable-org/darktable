@@ -25,6 +25,7 @@
 IGNORE_ONLY_14BIT = []
 
 IGNORE_ONLY_MODE = {
+  ["NIKON CORPORATION", "NIKON 1 V1"] => "compressed",
   ["NIKON CORPORATION", "NIKON D600"] => "compressed",
   ["NIKON CORPORATION", "NIKON D3200"] => "compressed"
 }
@@ -90,8 +91,9 @@ File.open(CAMERAS) do |f|
       #next
     end
 
-    if white <= 0.9 * 2**(bitness_num)
-      puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has too low white level: #{white} (smaller than 0.9 * 2^(bitness_num), which is #{0.9 * 2**(bitness_num)})"
+    whitemax = 0.8 * 2**(bitness_num)
+    if white <= whitemax
+      puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has too low white level: #{white} (smaller than #{whitemax})"
       #next
     end
 
