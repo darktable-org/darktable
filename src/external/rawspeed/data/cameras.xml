@@ -3008,9 +3008,9 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16383"/>
+		<Sensor black="0" white="15892"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D7100" mode="14bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D7100" mode="12bit-compressed">
 		<ID make="Nikon" model="D7100">Nikon D7100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3019,29 +3019,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16383"/>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D7100" mode="12bit-compressed" supported="no">
-		<ID make="Nikon" model="D7100">Nikon D7100</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4096"/>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D7100" mode="12bit-uncompressed" supported="no">
-		<ID make="Nikon" model="D7100">Nikon D7100</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3972"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="14bit-compressed">
 		<ID make="Nikon" model="D7200">Nikon D7200</ID>
