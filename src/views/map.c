@@ -112,9 +112,9 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
                                           GtkSelectionData *selection_data, guint target_type, guint time,
                                           gpointer data);
 
-static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude,
-                                gboolean record_undo);
-static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude);
+static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, float elevation,
+                                gboolean set_elevation, gboolean record_undo);
+static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude, float *elevation);
 
 static gboolean _view_map_prefs_changed(dt_map_t *lib);
 static void _view_map_build_main_query(dt_map_t *lib);
@@ -1080,47 +1080,51 @@ static void pop_undo(dt_view_t *self, dt_undo_type_t type, dt_undo_data_t *data)
   if(type == DT_UNDO_GEOTAG)
   {
     dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)data;
-    float longitude, latitude;
+    float longitude, latitude, elevation;
 
-    _get_image_location(self, geotag->imgid, &longitude, &latitude);
-    _set_image_location(self, geotag->imgid, geotag->longitude, geotag->latitude, FALSE);
+    _get_image_location(self, geotag->imgid, &longitude, &latitude, &elevation);
+    _set_image_location(self, geotag->imgid, geotag->longitude, geotag->latitude, geotag->elevation, TRUE, FALSE);
 
     // give back out previous location
     geotag->longitude = longitude;
     geotag->latitude = latitude;
+    geotag->elevation = elevation;
 
     g_signal_emit_by_name(lib->map, "changed");
   }
 }
 
-static void _push_position(dt_view_t *self, int imgid, float longitude, float latitude)
+static void _push_position(dt_view_t *self, int imgid, float longitude, float latitude, float elevation)
 {
   dt_undo_geotag_t *geotag = g_malloc(sizeof(dt_undo_geotag_t));
 
   geotag->imgid = imgid;
   geotag->longitude = longitude;
   geotag->latitude = latitude;
+  geotag->elevation = elevation;
 
   dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo);
 }
 
-static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude)
+static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude, float *elevation)
 {
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   *longitude = img->longitude;
   *latitude = img->latitude;
+  *elevation = img->elevation;
   dt_image_cache_read_release(darktable.image_cache, img);
 }
 
-static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude,
-                                gboolean record_undo)
+static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, float elevation,
+                                gboolean set_elevation, gboolean record_undo)
 {
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  if(record_undo) _push_position(self, imgid, img->longitude, img->latitude);
+  if(record_undo) _push_position(self, imgid, img->longitude, img->latitude, img->elevation);
 
   img->longitude = longitude;
   img->latitude = latitude;
+  if(set_elevation) img->elevation = elevation;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
@@ -1135,7 +1139,7 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
   osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
   osm_gps_map_point_free(pt);
 
-  _set_image_location(self, imgid, longitude, latitude, TRUE);
+  _set_image_location(self, imgid, longitude, latitude, 0.0, FALSE, TRUE);
 }
 
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
@@ -1218,7 +1222,7 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
     if(*imgid > 0)
     {
       //  the image was dropped into the filmstrip, let's remove it in this case
-      _set_image_location(self, *imgid, NAN, NAN, TRUE);
+      _set_image_location(self, *imgid, NAN, NAN, NAN, TRUE, TRUE);
       success = TRUE;
     }
   }
