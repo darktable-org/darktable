@@ -1711,6 +1711,8 @@ static GList *read_history_v1(const char *filename)
   }
 
   // get the old elements
+  // select_single_node() is deprecated and just kept for old versions shipped in some distributions
+#if defined(PUGIXML_VERSION) && PUGIXML_VERSION >= 150
   pugi::xpath_node modversion = doc.select_node("//darktable:history_modversion/rdf:Seq");
   pugi::xpath_node enabled = doc.select_node("//darktable:history_enabled/rdf:Seq");
   pugi::xpath_node operation = doc.select_node("//darktable:history_operation/rdf:Seq");
@@ -1719,6 +1721,16 @@ static GList *read_history_v1(const char *filename)
   pugi::xpath_node blendop_version = doc.select_node("//darktable:blendop_version/rdf:Seq");
   pugi::xpath_node multi_priority = doc.select_node("//darktable:multi_priority/rdf:Seq");
   pugi::xpath_node multi_name = doc.select_node("//darktable:multi_name/rdf:Seq");
+#else
+  pugi::xpath_node modversion = doc.select_single_node("//darktable:history_modversion/rdf:Seq");
+  pugi::xpath_node enabled = doc.select_single_node("//darktable:history_enabled/rdf:Seq");
+  pugi::xpath_node operation = doc.select_single_node("//darktable:history_operation/rdf:Seq");
+  pugi::xpath_node params = doc.select_single_node("//darktable:history_params/rdf:Seq");
+  pugi::xpath_node blendop_params = doc.select_single_node("//darktable:blendop_params/rdf:Seq");
+  pugi::xpath_node blendop_version = doc.select_single_node("//darktable:blendop_version/rdf:Seq");
+  pugi::xpath_node multi_priority = doc.select_single_node("//darktable:multi_priority/rdf:Seq");
+  pugi::xpath_node multi_name = doc.select_single_node("//darktable:multi_name/rdf:Seq");
+#endif
 
   // fill the list of history entries. we are iterating over history_operation as we know that it's there.
   // the other iters are taken care of manually.
