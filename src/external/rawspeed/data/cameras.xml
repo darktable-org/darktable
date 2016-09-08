@@ -113,10 +113,15 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="64" y="12" width="0" height="0"/>
-		<Sensor black="124" white="4000"/>
+		<Sensor black="126" white="4000"/>
+		<Sensor black="127" white="4000" iso_list="200"/>
+		<Sensor black="128" white="4000" iso_list="400"/>
+		<Sensor black="129" white="4000" iso_list="800"/>
+		<Sensor black="251" white="4000" iso_list="1600"/>
+		<Sensor black="250" white="4000" iso_list="3200"/>
 		<BlackAreas>
-			<Vertical x="0" width="60"/>
-			<Horizontal y="0" height="10"/>
+			<Vertical x="6" width="58"/>
+			<Horizontal y="4" height="8"/>
 		</BlackAreas>
 		<Aliases>
 			<Alias id="EOS Digital Rebel">Canon EOS DIGITAL REBEL</Alias>
