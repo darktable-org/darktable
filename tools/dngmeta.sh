@@ -156,6 +156,9 @@ if [[ $MAKE == Panasonic ]]; then
 elif [[ $MAKE == "NIKON CORPORATION" ]]; then
   echo "NOTE: NIKON NEFs are different dependant on mode, please run this tool on NEF for each of the camera's mode (14-bit, 12-bit; compressed, uncompressed)"
   echo ""
+elif [[ $MAKE == "Canon" ]]; then
+  echo "NOTE: CANON CR2 have different black/white levels per ISO, please run this tool on CR2 for each of the camera's ISO (including all the sub-iso 1/2 and 1/3)"
+  echo ""
 fi
 echo "NOTE: The default crop exposes the full sensor including garbage pixels, which need to be visually inspected. (negative width/height values are right/bottom crops, which are preferred)"
 echo ""
