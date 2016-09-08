@@ -701,6 +701,33 @@ static gboolean center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointe
   return TRUE;
 }
 
+static const char* get_source_name(int pos)
+{
+  static const gchar *SOURCE_NAMES[]
+    = { "GDK_SOURCE_MOUSE",    "GDK_SOURCE_PEN",         "GDK_SOURCE_ERASER",   "GDK_SOURCE_CURSOR",
+        "GDK_SOURCE_KEYBOARD", "GDK_SOURCE_TOUCHSCREEN", "GDK_SOURCE_TOUCHPAD", "GDK_SOURCE_TRACKPOINT",
+        "GDK_SOURCE_TABLET_PAD" };
+  if(pos >= G_N_ELEMENTS(SOURCE_NAMES)) return "<UNKNOWN>";
+  return SOURCE_NAMES[pos];
+}
+
+static const char* get_mode_name(int pos)
+{
+  static const gchar *MODE_NAMES[] = { "GDK_MODE_DISABLED", "GDK_MODE_SCREEN", "GDK_MODE_WINDOW" };
+  if(pos >= G_N_ELEMENTS(MODE_NAMES)) return "<UNKNOWN>";
+  return MODE_NAMES[pos];
+}
+
+static const char* get_axis_name(int pos)
+{
+  static const gchar *AXIS_NAMES[]
+    = { "GDK_AXIS_IGNORE",   "GDK_AXIS_X",      "GDK_AXIS_Y",     "GDK_AXIS_PRESSURE",
+        "GDK_AXIS_XTILT",    "GDK_AXIS_YTILT",  "GDK_AXIS_WHEEL", "GDK_AXIS_DISTANCE",
+        "GDK_AXIS_ROTATION", "GDK_AXIS_SLIDER", "GDK_AXIS_LAST" };
+  if(pos >= G_N_ELEMENTS(AXIS_NAMES)) return "<UNKNOWN>";
+  return AXIS_NAMES[pos];
+}
+
 int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
   /* lets zero mem */
@@ -899,13 +926,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   for(int i = 0; i < 3; i++) darktable.gui->bgcolor[i] = 0.1333;
 
   // let's try to support pressure sensitive input devices like tablets for mask drawing
-  static const gchar *SOURCE_NAMES[]
-      = { "GDK_SOURCE_MOUSE",    "GDK_SOURCE_PEN",         "GDK_SOURCE_ERASER",  "GDK_SOURCE_CURSOR",
-          "GDK_SOURCE_KEYBOARD", "GDK_SOURCE_TOUCHSCREEN", "GDK_SOURCE_TOUCHPAD" };
-  static const gchar *MODE_NAMES[] = { "GDK_MODE_DISABLED", "GDK_MODE_SCREEN", "GDK_MODE_WINDOW" };
-  static const gchar *AXIS_NAMES[]
-      = { "GDK_AXIS_IGNORE", "GDK_AXIS_X",     "GDK_AXIS_Y",     "GDK_AXIS_PRESSURE",
-          "GDK_AXIS_XTILT",  "GDK_AXIS_YTILT", "GDK_AXIS_WHEEL", "GDK_AXIS_LAST" };
   dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
@@ -923,12 +943,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
     dt_print(DT_DEBUG_INPUT, "%s (%s), source: %s, mode: %s, %d axes, %d keys\n", gdk_device_get_name(device),
              (source != GDK_SOURCE_KEYBOARD) && gdk_device_get_has_cursor(device) ? "with cursor" : "no cursor",
-             SOURCE_NAMES[source], MODE_NAMES[gdk_device_get_mode(device)], n_axes,
+             get_source_name(source), get_mode_name(gdk_device_get_mode(device)), n_axes,
              source != GDK_SOURCE_KEYBOARD ? gdk_device_get_n_keys(device) : 0);
 
     for(int i = 0; i < n_axes; i++)
     {
-      dt_print(DT_DEBUG_INPUT, "  %s\n", AXIS_NAMES[gdk_device_get_axis_use(device, i)]);
+      dt_print(DT_DEBUG_INPUT, "  %s\n", get_axis_name(gdk_device_get_axis_use(device, i)));
     }
     dt_print(DT_DEBUG_INPUT, "\n");
   }
