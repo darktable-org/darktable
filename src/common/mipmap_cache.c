@@ -1062,7 +1062,10 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   {
     // ideal [inverse] scale, will result in same aspect ratio and
     // same or smaller area than requested.
-    const float inv_scale = fmaxf((float)image->width / (float)wd, (float)image->height / (float)ht);
+    const float inv_scale
+        = fmaxf((float)image->width / ((float)2.0f * wd), (float)image->height / ((float)2.0f * ht));
+
+    // why "2*"? MIP_F is 4 channels, and we use only one channel => can increase area
 
     // this is how much blocks will be binned into 1
     // !!! we want to always round up, to never overflow out buffer !!!
