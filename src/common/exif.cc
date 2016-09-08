@@ -1107,6 +1107,19 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
       dt_remove_exif_keys(imgExifData, keys, n_keys);
     }
 
+    // remove the profile tables
+    {
+      static const char *keys[] = {
+        "Exif.Image.ProfileLookTableDims",
+        "Exif.Image.ProfileLookTableData",
+        "Exif.Image.ProfileHueSatMapDims",
+        "Exif.Image.ProfileHueSatMapData1",
+        "Exif.Image.ProfileHueSatMapData2"
+      };
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(imgExifData, keys, n_keys);
+    }
+
     imgExifData.sortByTag();
     image->writeMetadata();
   }
