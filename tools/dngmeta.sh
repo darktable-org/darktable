@@ -21,6 +21,11 @@
 # THE SOFTWARE.
 #
 
+TOOLS_DIR=$(dirname "$0")
+TOOLS_DIR=$(cd "$TOOLS_DIR" && pwd -P)
+
+. $TOOLS_DIR/noise/subr.sh
+
 AUTHOR="$(getent passwd $USER | awk -F ':' '{print $5}' | awk -F ',' '{print $1}') <$USER@$HOSTNAME>"
 
 DNG="$1"
@@ -34,6 +39,8 @@ fi
 MAKE=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.Make ' | sed 's#Exif.Image.Make *##g')
 MODEL=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.Model ' | sed 's#Exif.Image.Model *##g')
 UNIQUE_CAMERA_MODEL=$(exiv2 -Pkt "$DNG" 2>/dev/null | grep 'Exif.Image.UniqueCameraModel ' | sed 's#Exif.Image.UniqueCameraModel *##g')
+
+ISO=$(get_image_iso "$DNG")
 
 # This doesn't work with two name makes but there aren't any active ones
 ID_MAKE=${MAKE:0:1}$(echo ${MAKE:1} | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
@@ -81,6 +88,9 @@ else
   IMG_SHORT=$IMG_WIDTH
 fi
 
+MODE=""
+SENSOR_ISO=""
+
 if [[ $MAKE == Panasonic ]]; then
   if [[ $((100 * $IMG_LONG / $IMG_SHORT)) -gt 164 ]]; then
     MODE=" mode=\"16:9\""
@@ -95,8 +105,8 @@ elif [[ $MAKE == "NIKON CORPORATION" ]]; then
 # i'm not sure it can be detected automatically
 # rawspeed code to detect it is big
   MODE=" mode=\"<FIXME (14 or 12)>bit-<FIXME (compressed or uncompressed)>\""
-else
-  MODE=""
+elif [[ $MAKE == "Canon" ]]; then
+  SENSOR_ISO=" iso_list=\"$ISO\""
 fi
 
 echo "DNG created by : $SOFTWARE"
@@ -146,7 +156,7 @@ else
 fi
 
 echo -e "\t\t<Crop x=\"0\" y=\"0\" width=\"0\" height=\"0\"/>"
-echo -e "\t\t<Sensor black=\"$BLACK\" white=\"$WHITE\"/>"
+echo -e "\t\t<Sensor black=\"$BLACK\" white=\"$WHITE\"$SENSOR_ISO/>"
 echo -e "\t</Camera>"
 echo ""
 
