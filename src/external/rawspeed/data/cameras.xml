@@ -94,7 +94,12 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="72" y="52" width="0" height="0"/>
-		<Sensor black="0" white="16383"/>
+		<Sensor black="2048" white="15000"/>
+		<Sensor black="2047" white="12277" iso_list="100"/>
+		<Sensor black="2047" white="15000" iso_list="200 6400"/>
+		<Sensor black="2048" white="15000" iso_list="800 3200"/>
+		<Sensor black="2049" white="15000" iso_list="1600"/>
+		<Sensor black="2046" white="15000" iso_list="25600"/>
 		<BlackAreas>
 			<Vertical x="0" width="72"/>
 			<Horizontal y="8" height="44"/>
