@@ -491,7 +491,8 @@ static void *dt_control_work_res(void *ptr)
       dt_pthread_mutex_lock(&s->cond_mutex);
       dt_pthread_cond_wait(&s->cond, &s->cond_mutex);
       dt_pthread_mutex_unlock(&s->cond_mutex);
-      pthread_setcancelstate(old, NULL);
+      int tmp;
+      pthread_setcancelstate(old, &tmp);
     }
   }
   return NULL;
