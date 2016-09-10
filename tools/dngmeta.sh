@@ -168,6 +168,7 @@ elif [[ $MAKE == "NIKON CORPORATION" ]]; then
   echo ""
 elif [[ $MAKE == "Canon" ]]; then
   echo "NOTE: CANON CR2 have different black/white levels per ISO, please run this tool on CR2 for each of the camera's ISO (including all the sub-iso 1/2 and 1/3)"
+  echo "NOTE: please see dngmeta.rb"
   echo ""
 fi
 echo "NOTE: The default crop exposes the full sensor including garbage pixels, which need to be visually inspected. (negative width/height values are right/bottom crops, which are preferred)"
