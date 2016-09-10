@@ -58,16 +58,11 @@ typedef struct bool_data_t
 } bool_data_t;
 typedef struct int_data_t
 {
-  int min;
-  int max;
   int default_value;
 } int_data_t;
 
 typedef struct float_data_t
 {
-  float min;
-  float max;
-  float step;
   float default_value;
 } float_data_t;
 
@@ -87,12 +82,11 @@ typedef struct pref_element
   char *name;
   char *label;
   char *tooltip;
+  char *tooltip_reset;
   lua_pref_type type;
   struct pref_element *next;
   all_data_t type_data;
-  // ugly hack, written every time the dialog is displayed and unused when not displayed
-  // value is set when window is created, it is correct when window is destroyed, but is invalid out of that
-  // context
+  // The widget used for this preference
   GtkWidget *widget;
 
 } pref_element;
@@ -103,7 +97,8 @@ static void destroy_pref_element(pref_element *elt)
   free(elt->name);
   free(elt->label);
   free(elt->tooltip);
-  // don't free the widget field
+  free(elt->tooltip_reset);
+  if(elt->widget) g_object_unref(elt->widget);
   switch(elt->type)
   {
     case pref_enum:
@@ -132,146 +127,6 @@ static void get_pref_name(char *tgt, size_t size, const char *script, const char
 {
   snprintf(tgt, size, "lua/%s/%s", script, name);
 }
-
-static int register_pref_sub(lua_State *L)
-{
-  // to avoid leaks, we need to first get all params (which could raise errors) then alloc and fill the struct
-  // this is complicated, but needed
-  pref_element **tmp = lua_touserdata(L, -1);
-  lua_pop(L, 1);
-  *tmp = calloc(1, sizeof(pref_element));
-  pref_element *built_elt = *tmp;
-  int cur_param = 1;
-
-  built_elt->script = strdup(luaL_checkstring(L, cur_param));
-  cur_param++;
-
-  built_elt->name = strdup(luaL_checkstring(L, cur_param));
-  cur_param++;
-
-  luaA_to(L, lua_pref_type, &built_elt->type, cur_param);
-  cur_param++;
-
-  built_elt->label = strdup(luaL_checkstring(L, cur_param));
-  cur_param++;
-
-  built_elt->tooltip = strdup(luaL_checkstring(L, cur_param));
-  cur_param++;
-
-  char pref_name[1024];
-  get_pref_name(pref_name, sizeof(pref_name), built_elt->script, built_elt->name);
-  switch(built_elt->type)
-  {
-    case pref_enum:
-    {
-      luaA_Type enum_type = luaA_type_add(L, pref_name, sizeof(int));
-      luaA_enum_type(L, enum_type, sizeof(int));
-      built_elt->type_data.enum_data.enum_type = enum_type;
-
-      int value = 0;
-      built_elt->type_data.enum_data.default_value = strdup(luaL_checkstring(L, cur_param));
-      while(!lua_isnoneornil(L, cur_param))
-      {
-        luaA_enum_value_type(L, enum_type, &value, luaL_checkstring(L, cur_param));
-        cur_param++;
-        value++;
-      }
-
-      if(!dt_conf_key_exists(pref_name))
-        dt_conf_set_string(pref_name, built_elt->type_data.enum_data.default_value);
-      break;
-    }
-    case pref_dir:
-      built_elt->type_data.dir_data.default_value = strdup(luaL_checkstring(L, cur_param));
-      cur_param++;
-
-      if(!dt_conf_key_exists(pref_name))
-        dt_conf_set_string(pref_name, built_elt->type_data.dir_data.default_value);
-      break;
-    case pref_file:
-      built_elt->type_data.file_data.default_value = strdup(luaL_checkstring(L, cur_param));
-      cur_param++;
-
-      if(!dt_conf_key_exists(pref_name))
-        dt_conf_set_string(pref_name, built_elt->type_data.file_data.default_value);
-      break;
-    case pref_string:
-      built_elt->type_data.string_data.default_value = strdup(luaL_checkstring(L, cur_param));
-      cur_param++;
-
-      if(!dt_conf_key_exists(pref_name))
-        dt_conf_set_string(pref_name, built_elt->type_data.string_data.default_value);
-      break;
-    case pref_bool:
-      luaL_checktype(L, cur_param, LUA_TBOOLEAN);
-      built_elt->type_data.bool_data.default_value = lua_toboolean(L, cur_param);
-      cur_param++;
-
-      if(!dt_conf_key_exists(pref_name))
-        dt_conf_set_bool(pref_name, built_elt->type_data.bool_data.default_value);
-      break;
-    case pref_int:
-      luaL_checktype(L, cur_param, LUA_TNUMBER);
-      built_elt->type_data.int_data.default_value = lua_tointeger(L, cur_param);
-      cur_param++;
-
-      luaL_checktype(L, cur_param, LUA_TNUMBER);
-      built_elt->type_data.int_data.min = lua_tointeger(L, cur_param);
-      cur_param++;
-
-      luaL_checktype(L, cur_param, LUA_TNUMBER);
-      built_elt->type_data.int_data.max = lua_tointeger(L, cur_param);
-      cur_param++;
-
-      if(!dt_conf_key_exists(pref_name))
-        dt_conf_set_int(pref_name, built_elt->type_data.int_data.default_value);
-      break;
-    case pref_float:
-      luaL_checktype(L, cur_param, LUA_TNUMBER);
-      built_elt->type_data.float_data.default_value = lua_tonumber(L, cur_param);
-      cur_param++;
-
-      luaL_checktype(L, cur_param, LUA_TNUMBER);
-      built_elt->type_data.float_data.min = lua_tonumber(L, cur_param);
-      cur_param++;
-
-      luaL_checktype(L, cur_param, LUA_TNUMBER);
-      built_elt->type_data.float_data.max = lua_tonumber(L, cur_param);
-      cur_param++;
-
-      luaL_checktype(L, cur_param, LUA_TNUMBER);
-      built_elt->type_data.float_data.step = lua_tonumber(L, cur_param);
-      cur_param++;
-
-      if(!dt_conf_key_exists(pref_name))
-        dt_conf_set_float(pref_name, built_elt->type_data.float_data.default_value);
-      break;
-  }
-  return 0;
-}
-
-
-static int register_pref(lua_State *L)
-{
-  // wrapper to catch lua errors in a clean way
-  pref_element *built_elt = NULL;
-  lua_pushcfunction(L, register_pref_sub);
-  lua_insert(L, 1);
-  lua_pushlightuserdata(L, &built_elt);
-  int result = dt_lua_treated_pcall(L,lua_gettop(L)-1,0);
-  if(result == LUA_OK)
-  {
-    built_elt->next = pref_list;
-    pref_list = built_elt;
-    return 0;
-  }
-  else
-  {
-    destroy_pref_element(built_elt);
-    return lua_error(L);
-  }
-}
-
 
 static int read_pref(lua_State *L)
 {
@@ -337,7 +192,7 @@ static int write_pref(lua_State *L)
   switch(i)
   {
     case pref_enum:
-      luaA_to(L, pref_name, &tmp, 4);
+      luaA_to_type(L, luaA_type_find(L,pref_name), &tmp, 4);
       dt_conf_set_string(pref_name, lua_tostring(L, 4));
       break;
     case pref_dir:
@@ -364,52 +219,6 @@ static int write_pref(lua_State *L)
 }
 
 
-static void callback_enum(GtkWidget *widget, pref_element *cur_elt)
-{
-  char pref_name[1024];
-  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  char *text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget));
-  dt_conf_set_string(pref_name, text);
-  g_free(text);
-}
-static void callback_dir(GtkWidget *widget, pref_element *cur_elt)
-{
-  char pref_name[1024];
-  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(widget));
-  dt_conf_set_string(pref_name, folder);
-  g_free(folder);
-}
-static void callback_file(GtkWidget *widget, pref_element *cur_elt)
-{
-  char pref_name[1024];
-  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  dt_conf_set_string(pref_name, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget)));
-}
-static void callback_string(GtkWidget *widget, pref_element *cur_elt)
-{
-  char pref_name[1024];
-  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  dt_conf_set_string(pref_name, gtk_entry_get_text(GTK_ENTRY(widget)));
-}
-static void callback_bool(GtkWidget *widget, pref_element *cur_elt)
-{
-  char pref_name[1024];
-  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  dt_conf_set_bool(pref_name, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
-}
-static void callback_int(GtkWidget *widget, pref_element *cur_elt)
-{
-  char pref_name[1024];
-  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  dt_conf_set_int(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
-}
-static void callback_float(GtkWidget *widget, pref_element *cur_elt)
-{
-  char pref_name[1024];
-  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  dt_conf_set_float(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
-}
 
 static void response_callback_enum(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
@@ -428,7 +237,7 @@ static void response_callback_dir(GtkDialog *dialog, gint response_id, pref_elem
   {
     char pref_name[1024];
     get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(cur_elt->widget));
+    gchar *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(cur_elt->widget));
     dt_conf_set_string(pref_name, folder);
     g_free(folder);
   }
@@ -546,10 +355,283 @@ static gboolean reset_widget_float(GtkWidget *label, GdkEventButton *event, pref
   }
   return FALSE;
 }
-void init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
+
+
+
+
+
+void update_widget_enum(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
 {
-  if(!pref_list) return; // no option registered => don't create the tab
-  char tooltip[1024];
+  char pref_name[1024];
+  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_enum), cur_elt);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_enum), cur_elt);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), 0);
+  char*value= dt_conf_get_string(pref_name);
+  do {
+    char * active_entry = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cur_elt->widget));
+    if(!active_entry) {
+      gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), -1);
+      g_free(active_entry);
+      break;
+    }else if(!strcmp(active_entry,value )) {
+      g_free(active_entry);
+      break;
+    } else {
+      gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), gtk_combo_box_get_active(GTK_COMBO_BOX(cur_elt->widget))+1);
+      g_free(active_entry);
+    }
+  } while (true);
+  free(value);
+}
+
+void update_widget_dir(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
+{
+  char pref_name[1024];
+  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
+  gchar *str = dt_conf_get_string(pref_name);
+  gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
+  g_free(str);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_dir), cur_elt);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_dir), cur_elt);
+}
+
+void update_widget_file(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
+{
+  char pref_name[1024];
+  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
+  gchar *str = dt_conf_get_string(pref_name);
+  gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
+  g_free(str);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_file), cur_elt);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_file), cur_elt);
+}
+
+void update_widget_string(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
+{
+  char pref_name[1024];
+  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_string), cur_elt);
+  char* str = dt_conf_get_string(pref_name);
+  gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), str);
+  g_free(str);
+}
+
+void update_widget_bool(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
+{
+  char pref_name[1024];
+  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_bool), cur_elt);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
+}
+
+void update_widget_int(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
+{
+  char pref_name[1024];
+  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_int(pref_name));
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_int), cur_elt);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_int), cur_elt);
+}
+
+void update_widget_float(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)
+{
+  char pref_name[1024];
+  get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_float(pref_name));
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_float), cur_elt);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_float), cur_elt);
+}
+
+static int register_pref_sub(lua_State *L)
+{
+  // to avoid leaks, we need to first get all params (which could raise errors) then alloc and fill the struct
+  // this is complicated, but needed
+  pref_element **tmp = lua_touserdata(L, -1);
+  lua_pop(L, 1);
+  *tmp = calloc(1, sizeof(pref_element));
+  pref_element *built_elt = *tmp;
+  int cur_param = 1;
+
+  built_elt->script = strdup(luaL_checkstring(L, cur_param));
+  cur_param++;
+
+  built_elt->name = strdup(luaL_checkstring(L, cur_param));
+  cur_param++;
+
+  luaA_to(L, lua_pref_type, &built_elt->type, cur_param);
+  cur_param++;
+
+  built_elt->label = strdup(luaL_checkstring(L, cur_param));
+  cur_param++;
+
+  built_elt->tooltip = strdup(luaL_checkstring(L, cur_param));
+  cur_param++;
+
+  char pref_name[1024];
+  get_pref_name(pref_name, sizeof(pref_name), built_elt->script, built_elt->name);
+  switch(built_elt->type)
+  {
+    case pref_enum:
+    {
+      luaA_Type enum_type = luaA_type_add(L, pref_name, sizeof(int));
+      luaA_enum_type(L, enum_type, sizeof(int));
+      built_elt->type_data.enum_data.enum_type = enum_type;
+      built_elt->widget = gtk_combo_box_text_new();
+
+      int value = 0;
+      built_elt->type_data.enum_data.default_value = strdup(luaL_checkstring(L, cur_param));
+      while(!lua_isnoneornil(L, cur_param))
+      {
+        luaA_enum_value_type(L, enum_type, &value, luaL_checkstring(L, cur_param));
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(built_elt->widget), luaL_checkstring(L, cur_param));
+        cur_param++;
+        value++;
+      }
+
+      if(!dt_conf_key_exists(pref_name)) {
+        dt_conf_set_string(pref_name, built_elt->type_data.enum_data.default_value);
+      }
+
+
+      g_object_ref_sink(G_OBJECT(built_elt->widget));
+      built_elt->tooltip_reset = g_strdup_printf(  _("double click to reset to `%s'"),
+          built_elt->type_data.enum_data.default_value);
+      break;
+    }
+    case pref_dir:
+      built_elt->type_data.dir_data.default_value = strdup(luaL_checkstring(L, cur_param));
+      cur_param++;
+
+      if(!dt_conf_key_exists(pref_name)) {
+        dt_conf_set_string(pref_name, built_elt->type_data.dir_data.default_value);
+      }
+      built_elt->widget = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+      gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(built_elt->widget), 20);
+      g_object_ref_sink(G_OBJECT(built_elt->widget));
+      built_elt->tooltip_reset = g_strdup_printf( _("double click to reset to `%s'"), built_elt->type_data.dir_data.default_value);
+      break;
+    case pref_file:
+      built_elt->type_data.file_data.default_value = strdup(luaL_checkstring(L, cur_param));
+      cur_param++;
+
+      if(!dt_conf_key_exists(pref_name))
+        dt_conf_set_string(pref_name, built_elt->type_data.file_data.default_value);
+
+      built_elt->widget = gtk_file_chooser_button_new(_("select file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+      gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(built_elt->widget), 20);
+      built_elt->tooltip_reset= g_strdup_printf( _("double click to reset to `%s'"), built_elt->type_data.file_data.default_value);
+      g_object_ref_sink(G_OBJECT(built_elt->widget));
+      break;
+    case pref_string:
+      built_elt->type_data.string_data.default_value = strdup(luaL_checkstring(L, cur_param));
+      cur_param++;
+
+      if(!dt_conf_key_exists(pref_name))
+        dt_conf_set_string(pref_name, built_elt->type_data.string_data.default_value);
+
+      built_elt->widget = gtk_entry_new();
+      built_elt->tooltip_reset= g_strdup_printf( _("double click to reset to `%s'"),
+          built_elt->type_data.string_data.default_value);
+      g_object_ref_sink(G_OBJECT(built_elt->widget));
+      break;
+    case pref_bool:
+      luaL_checktype(L, cur_param, LUA_TBOOLEAN);
+      built_elt->type_data.bool_data.default_value = lua_toboolean(L, cur_param);
+      cur_param++;
+
+      if(!dt_conf_key_exists(pref_name))
+        dt_conf_set_bool(pref_name, built_elt->type_data.bool_data.default_value);
+
+      built_elt->widget = gtk_check_button_new();
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(built_elt->widget), dt_conf_get_bool(pref_name));
+      g_object_ref_sink(G_OBJECT(built_elt->widget));
+      built_elt->tooltip_reset = g_strdup_printf(  _("double click to reset to `%s'"),
+          built_elt->type_data.bool_data.default_value ? "true" : "false");
+      break;
+    case pref_int:
+      {
+        luaL_checktype(L, cur_param, LUA_TNUMBER);
+        built_elt->type_data.int_data.default_value = lua_tointeger(L, cur_param);
+        cur_param++;
+
+        luaL_checktype(L, cur_param, LUA_TNUMBER);
+        int min = lua_tointeger(L, cur_param);
+        cur_param++;
+
+        luaL_checktype(L, cur_param, LUA_TNUMBER);
+        int max = lua_tointeger(L, cur_param);
+        cur_param++;
+
+        if(!dt_conf_key_exists(pref_name))
+          dt_conf_set_int(pref_name, built_elt->type_data.int_data.default_value);
+        built_elt->widget = gtk_spin_button_new_with_range(min, max, 1);
+        gtk_spin_button_set_digits(GTK_SPIN_BUTTON(built_elt->widget), 0);
+        g_object_ref_sink(G_OBJECT(built_elt->widget));
+        built_elt->tooltip_reset = g_strdup_printf( _("double click to reset to `%d'"),
+            built_elt->type_data.int_data.default_value);
+        break;
+      }
+    case pref_float:
+      {
+        luaL_checktype(L, cur_param, LUA_TNUMBER);
+        built_elt->type_data.float_data.default_value = lua_tonumber(L, cur_param);
+        cur_param++;
+
+        luaL_checktype(L, cur_param, LUA_TNUMBER);
+        float min = lua_tonumber(L, cur_param);
+        cur_param++;
+
+        luaL_checktype(L, cur_param, LUA_TNUMBER);
+        float max = lua_tonumber(L, cur_param);
+        cur_param++;
+
+        luaL_checktype(L, cur_param, LUA_TNUMBER);
+        float step = lua_tonumber(L, cur_param);
+        cur_param++;
+
+        if(!dt_conf_key_exists(pref_name))
+          dt_conf_set_float(pref_name, built_elt->type_data.float_data.default_value);
+
+        built_elt->widget = gtk_spin_button_new_with_range(min, max, step);
+        built_elt->tooltip_reset = g_strdup_printf( _("double click to reset to `%f'"),
+            built_elt->type_data.float_data.default_value);
+        g_object_ref_sink(G_OBJECT(built_elt->widget));
+        break;
+      }
+  }
+  return 0;
+}
+
+
+static int register_pref(lua_State *L)
+{
+  // wrapper to catch lua errors in a clean way
+  pref_element *built_elt = NULL;
+  lua_pushcfunction(L, register_pref_sub);
+  dt_lua_gtk_wrap(L);
+  lua_insert(L, 1);
+  lua_pushlightuserdata(L, &built_elt);
+  int result = dt_lua_treated_pcall(L,lua_gettop(L)-1,0);
+  if(result == LUA_OK)
+  {
+    built_elt->next = pref_list;
+    pref_list = built_elt;
+    return 0;
+  }
+  else
+  {
+    destroy_pref_element(built_elt);
+    return lua_error(L);
+  }
+}
+
+
+GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
+{
+  if(!pref_list) return NULL; // no option registered => don't create the tab
   GtkWidget *label, *labelev, *viewport;
   GtkWidget *grid = gtk_grid_new();
   int line = 0;
@@ -582,112 +664,43 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
     switch(cur_elt->type)
     {
       case pref_enum:
-        cur_elt->widget = gtk_combo_box_text_new();
-        g_signal_connect(G_OBJECT(cur_elt->widget), "changed", G_CALLBACK(callback_enum), cur_elt);
-        {
-          gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cur_elt->widget),
-                                         cur_elt->type_data.enum_data.default_value);
-          const char *entry = luaA_enum_next_value_name_type(darktable.lua_state.state,
-                                                             cur_elt->type_data.enum_data.enum_type, NULL);
-          int entry_id = 0;
-          while(entry)
-          {
-            if(strcmp(entry, cur_elt->type_data.enum_data.default_value) != 0)
-            {
-              gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cur_elt->widget), entry);
-              entry_id++;
-              if(!strcmp(entry, dt_conf_get_string(pref_name)))
-              {
-                gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), entry_id);
-              }
-            }
-            entry = luaA_enum_next_value_name_type(darktable.lua_state.state,
-                                                   cur_elt->type_data.enum_data.enum_type, entry);
-          }
-        }
-        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"),
-                 cur_elt->type_data.enum_data.default_value);
-        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_enum), cur_elt);
-        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_enum), cur_elt);
+        update_widget_enum(cur_elt,dialog,labelev);
         break;
       case pref_dir:
-        cur_elt->widget
-            = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-        gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(cur_elt->widget), 20);
-        gchar *str = dt_conf_get_string(pref_name);
-        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(cur_elt->widget), str);
-        g_free(str);
-        g_signal_connect(G_OBJECT(cur_elt->widget), "file-set", G_CALLBACK(callback_dir), cur_elt);
-        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"),
-                 cur_elt->type_data.dir_data.default_value);
-        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_dir), cur_elt);
-        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_dir), cur_elt);
+        update_widget_dir(cur_elt,dialog,labelev);
         break;
       case pref_file:
-        cur_elt->widget = gtk_file_chooser_button_new(_("select file"), GTK_FILE_CHOOSER_ACTION_OPEN);
-        gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(cur_elt->widget), 20);
-        str = dt_conf_get_string(pref_name);
-        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
-        g_free(str);
-        g_signal_connect(G_OBJECT(cur_elt->widget), "file-set", G_CALLBACK(callback_file), cur_elt);
-        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"),
-                 cur_elt->type_data.file_data.default_value);
-        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_file), cur_elt);
-        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_file), cur_elt);
+        update_widget_file(cur_elt,dialog,labelev);
         break;
       case pref_string:
-        cur_elt->widget = gtk_entry_new();
-        str = dt_conf_get_string(pref_name);
-        gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), str);
-        g_free(str);
-        g_signal_connect(G_OBJECT(cur_elt->widget), "activate", G_CALLBACK(callback_string), cur_elt);
-        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"),
-                 cur_elt->type_data.string_data.default_value);
-        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
-        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_string), cur_elt);
+        update_widget_string(cur_elt,dialog,labelev);
         break;
       case pref_bool:
-        cur_elt->widget = gtk_check_button_new();
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
-        g_signal_connect(G_OBJECT(cur_elt->widget), "toggled", G_CALLBACK(callback_bool), cur_elt);
-        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"),
-                 cur_elt->type_data.bool_data.default_value ? "true" : "false");
-        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_bool), cur_elt);
-        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
+        update_widget_bool(cur_elt,dialog,labelev);
         break;
       case pref_int:
-        cur_elt->widget = gtk_spin_button_new_with_range(cur_elt->type_data.int_data.min,
-                                                         cur_elt->type_data.int_data.max, 1);
-        gtk_spin_button_set_digits(GTK_SPIN_BUTTON(cur_elt->widget), 0);
-        gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_int(pref_name));
-        g_signal_connect(G_OBJECT(cur_elt->widget), "value-changed", G_CALLBACK(callback_int), cur_elt);
-        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%d'"),
-                 cur_elt->type_data.int_data.default_value);
-        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_int), cur_elt);
-        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_int), cur_elt);
+        update_widget_int(cur_elt,dialog,labelev);
         break;
       case pref_float:
-        cur_elt->widget = gtk_spin_button_new_with_range(cur_elt->type_data.float_data.min,
-                                                         cur_elt->type_data.float_data.max,
-                                                         cur_elt->type_data.float_data.step);
-        // gtk_spin_button_set_digits(GTK_SPIN_BUTTON(cur_elt->widget), 0);
-        gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_float(pref_name));
-        g_signal_connect(G_OBJECT(cur_elt->widget), "value-changed", G_CALLBACK(callback_float), cur_elt);
-        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%f'"),
-                 cur_elt->type_data.float_data.default_value);
-        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_float), cur_elt);
-        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_float), cur_elt);
+        update_widget_float(cur_elt,dialog,labelev);
         break;
     }
-    gtk_widget_set_tooltip_text(labelev, tooltip);
+    gtk_widget_set_tooltip_text(labelev, cur_elt->tooltip_reset);
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
     gtk_widget_set_tooltip_text(cur_elt->widget, cur_elt->tooltip);
-    gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(grid), cur_elt->widget, labelev, GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), cur_elt->widget, 1, line, 1, 1);
     cur_elt = cur_elt->next;
+    line++;
   }
+  return GTK_GRID(grid);
 }
 
+void destroy_tab_lua(GtkGrid *grid)
+{
+  if(!grid) return;
+  gtk_grid_remove_column(grid,1); // detach all special widgets to avoid having them destroyed
+}
 int dt_lua_init_preferences(lua_State *L)
 {
   luaA_enum(L, lua_pref_type);
