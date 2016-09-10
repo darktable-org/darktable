@@ -1106,16 +1106,6 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
       dt_remove_exif_keys(imgExifData, keys, n_keys);
     }
 
-    // remove subimage* trees, related to thumbnails or HDR usually
-    for(Exiv2::ExifData::iterator i = imgExifData.begin(); i != imgExifData.end();)
-    {
-      std::string needle = "Exif.SubImage";
-      if(i->key().compare(0, needle.length(), needle) == 0)
-        i = imgExifData.erase(i);
-      else
-        ++i;
-    }
-
     // only compressed images may set PixelXDimension and PixelYDimension
     if(!compressed)
     {
@@ -1249,6 +1239,16 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
         };
         static const guint n_keys = G_N_ELEMENTS(keys);
         dt_remove_exif_keys(exifData, keys, n_keys);
+      }
+
+      // remove subimage* trees, related to thumbnails or HDR usually
+      for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
+      {
+        std::string needle = "Exif.SubImage";
+        if(i->key().compare(0, needle.length(), needle) == 0)
+          i = exifData.erase(i);
+        else
+          ++i;
       }
 
 #if EXIV2_MINOR_VERSION >= 23
