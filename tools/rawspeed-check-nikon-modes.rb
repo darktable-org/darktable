@@ -27,6 +27,7 @@ IGNORE_ONLY_14BIT = []
 IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON 1 J1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 J2"] => "compressed",
+  ["NIKON CORPORATION", "NIKON 1 S1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 V1"] => "compressed",
   ["NIKON CORPORATION", "NIKON D600"] => "compressed",
   ["NIKON CORPORATION", "NIKON D3200"] => "compressed",
