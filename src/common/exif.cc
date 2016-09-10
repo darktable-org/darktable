@@ -203,8 +203,10 @@ static void dt_remove_exif_keys(Exiv2::ExifData &exif, const char *keys[], unsig
     }
     catch(Exiv2::AnyError &e)
     {
-      std::string s(e.what());
-      std::cerr << "[exiv2] " << s << std::endl;
+      // the only exception we may get is "invalid" tag, which is not
+      // important enough to either stop the function, or even display
+      // a message (it's probably the tag is not implemented in the
+      // exiv2 version used)
     }
   }
 }
