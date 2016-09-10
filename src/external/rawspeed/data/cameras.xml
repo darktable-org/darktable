@@ -3700,7 +3700,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P330" decoder_version="5">
+	<Camera make="NIKON" model="COOLPIX P330" mode="12bit-compressed" decoder_version="5">
 		<ID make="Nikon" model="Coolpix P330">Nikon Coolpix P330</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3709,7 +3709,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="3200" white="65535"/>
+		<Sensor black="3200" white="65000"/>
 		<Hints>
 			<Hint name="force_uncompressed" value=""/>
 			<Hint name="real_bpp" value="16"/>
