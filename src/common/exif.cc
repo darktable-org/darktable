@@ -1186,11 +1186,13 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
 
       {
         static const char *keys[] = {
-          // Color profile info
+          // Embedded color profile info
+          "Exif.Image.BaselineExposureOffset",
           "Exif.Image.CalibrationIlluminant1",
           "Exif.Image.CalibrationIlluminant2",
           "Exif.Image.ColorMatrix1",
           "Exif.Image.ColorMatrix2",
+          "Exif.Image.DefaultBlackRender",
           "Exif.Image.ForwardMatrix1",
           "Exif.Image.ForwardMatrix2",
           "Exif.Image.ProfileCalibrationSignature",
@@ -1199,17 +1201,14 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
           "Exif.Image.ProfileHueSatMapData1",
           "Exif.Image.ProfileHueSatMapData2",
           "Exif.Image.ProfileHueSatMapDims",
+          "Exif.Image.ProfileHueSatMapEncoding",
           "Exif.Image.ProfileLookTableData",
           "Exif.Image.ProfileLookTableDims",
+          "Exif.Image.ProfileLookTableEncoding",
           "Exif.Image.ProfileName",
           "Exif.Image.ProfileToneCurve",
           "Exif.Image.ReductionMatrix1",
           "Exif.Image.ReductionMatrix2",
-          // Some DNG tags not yet registered in exiv2
-          //"Exif.Image.BaselineExposureOffset", // 0xc7a5
-          //"Exif.Image.DefaultBlackRender", // 0xc7a6
-          //"Exif.Image.ProfileHueSatMapEncoding", // 0xc7a3
-          //"Exif.Image.ProfileLookTableEncoding", // 0xc7a4
 
           // Canon color space info
           "Exif.Canon.ColorSpace",
