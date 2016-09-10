@@ -3394,7 +3394,7 @@
 		<Crop x="0" y="0" width="4310" height="2868"/>
 		<Sensor black="0" white="3767"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 J1" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 J1" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 J1">Nikon 1 J1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3403,7 +3403,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="-2"/>
-		<Sensor black="0" white="0"/>
+		<Sensor black="0" white="3300"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 J2" decoder_version="4">
 		<ID make="Nikon" model="1 J2">Nikon 1 J2</ID>
