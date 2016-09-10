@@ -1099,8 +1099,8 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
     // remove subimage* trees, related to thumbnails or HDR usually
     for(Exiv2::ExifData::iterator i = imgExifData.begin(); i != imgExifData.end();)
     {
-      const char *keystr = (i->key()).c_str();
-      if(strstr(keystr, "Exif.SubImage") == keystr)
+      std::string needle = "Exif.SubImage";
+      if(i->key().compare(0, needle.length(), needle) == 0)
         i = imgExifData.erase(i);
       else
         ++i;
