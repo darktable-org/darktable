@@ -26,12 +26,17 @@ IGNORE_ONLY_14BIT = []
 
 IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON 1 J1"] => "compressed",
+  ["NIKON CORPORATION", "NIKON 1 J2"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 V1"] => "compressed",
   ["NIKON CORPORATION", "NIKON D600"] => "compressed",
   ["NIKON CORPORATION", "NIKON D3200"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7000"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7100"] => "compressed"
 }
+
+IGNORE_HIGH_WHITELEVEL = [
+  ["NIKON CORPORATION", "NIKON 1 J2"]
+]
 
 require 'nokogiri'
 
@@ -89,7 +94,7 @@ File.open(CAMERAS) do |f|
       puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has no white level?"
     end
 
-    if white >= ((2**bitness_num)-1)
+    if white >= ((2**bitness_num)-1) and not IGNORE_HIGH_WHITELEVEL.include?(cameraname)
       puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has too high white level: #{white} (bigger than ((2^#{bitness_num})-1), which is #{((2**bitness_num)-1)})"
       #next
     end
