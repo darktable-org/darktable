@@ -55,7 +55,7 @@ end
 def get_exif(filename)
   exifhash = {}
 
-  IO.popen("exiv2 -q -Qm -Pkt \"#{filename}\"") do |io|
+  IO.popen("exiv2 -q -Qm -Pkt \"#{filename}\" 2> /dev/null") do |io|
     while !io.eof?
       lineparts = io.readline.split(" ", 2).map(&:strip)
 
@@ -78,9 +78,21 @@ def print_sensor(black, white, iso = false)
   return "\t\t<Sensor black=\"#{black}\" white=\"#{white}\"#{isolist}/>"
 end
 
+make = model = uniquecameramodel = nil
 sensors = []
 ARGV.each do |filename|
   exifhash = get_exif(filename)
+
+  if (make != exifhash["Exif.Image.Make"]) or
+      (model != exifhash["Exif.Image.Model"]) or
+      (uniquecameramodel != exifhash["Exif.Image.UniqueCameraModel"])
+    $stderr.puts "WARNING: #{filename} - " \
+                 "all files must be from the same camera maker and model!"
+  end
+
+  make = exifhash["Exif.Image.Make"]
+  model = exifhash["Exif.Image.Model"]
+  uniquecameramodel = exifhash["Exif.Image.UniqueCameraModel"]
 
   iso = get_iso(exifhash).to_i
   white = exifhash["Exif.SubImage1.WhiteLevel"].to_i
@@ -124,17 +136,25 @@ sensors.each do |iso, dsc|
   invsensors[dsc] << iso
 end
 
-# so, which [black, white] is the most often ?
+# so, which [black, white] is the most common ?
 mostfrequent = invsensors.sort{ |x,y| y[1].size <=> x[1].size }.first
 invsensors.delete(mostfrequent.first)
 
-puts "#{mostfrequent}"
-puts "#{invsensors}"
+if 0
+  puts "#{sensors}"
+  puts "#{mostfrequent}"
+  puts "#{invsensors}"
+end
+
+puts "\t<Camera make=\"#{make}\" model=\"#{model}\">"
+puts "\t\t<ID make=\"\" model=\"\">#{uniquecameramodel}</ID>"
 
 puts print_sensor(mostfrequent.first.first, mostfrequent.first.last)
 invsensors.each do |dsc, isos|
   puts print_sensor(dsc.first, dsc.last, isos)
 end
+
+puts "\t</Camera>"
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 # kate: tab-width: 2; replace-tabs on; indent-width 2; tab-indents: off;
