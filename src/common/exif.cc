@@ -205,8 +205,16 @@ static void dt_remove_exif_keys(Exiv2::ExifData &exif, const char *keys[], unsig
 {
   for(unsigned int i = 0; i < n_keys; i++)
   {
-    Exiv2::ExifData::iterator pos = exif.findKey(Exiv2::ExifKey(keys[i]));
-    if(pos != exif.end()) exif.erase(pos);
+    try
+    {
+      Exiv2::ExifData::iterator pos = exif.findKey(Exiv2::ExifKey(keys[i]));
+      if(pos != exif.end()) exif.erase(pos);
+    }
+    catch(Exiv2::AnyError &e)
+    {
+      std::string s(e.what());
+      std::cerr << "[exiv2] " << s << std::endl;
+    }
   }
 }
 
