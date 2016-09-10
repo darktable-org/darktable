@@ -33,12 +33,14 @@ IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON D3200"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7000"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7100"] => "compressed",
-  ["NIKON", "COOLPIX P330"] => "compressed"
+  ["NIKON", "COOLPIX P330"] => "compressed",
+  ["NIKON", "COOLPIX P7700"] => "compressed"
 }
 
 IGNORE_HIGH_WHITELEVEL = [
   ["NIKON CORPORATION", "NIKON 1 J2"],
-  ["NIKON", "COOLPIX P330"]
+  ["NIKON", "COOLPIX P330"],
+  ["NIKON", "COOLPIX P7700"]
 ]
 
 require 'nokogiri'
