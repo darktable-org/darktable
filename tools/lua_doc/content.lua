@@ -290,7 +290,7 @@ darktable.preferences.register:add_parameter("default","depends on type",[[Defau
 darktable.preferences.register:add_parameter("min","int or float",[[Minimum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("max","int or float",[[Maximum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("step","float",[[Step of the spinner (float preferences only).]]):set_attribute("optional",true)
-darktable.preferences.register:add_parameter("values","string...",[[Other allowed values (enum preferences only)]])
+darktable.preferences.register:add_parameter("values","string...",[[Other allowed values (enum preferences only)]]):set_attribute("optional",true)
 
 darktable.preferences.read:set_text([[Reads a value from a Lua preference.]])
 darktable.preferences.read:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
