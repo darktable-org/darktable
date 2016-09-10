@@ -1096,6 +1096,16 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
       dt_remove_exif_keys(imgExifData, keys, n_keys);
     }
 
+    // remove subimage* trees, related to thumbnails or HDR usually
+    for(Exiv2::ExifData::iterator i = imgExifData.begin(); i != imgExifData.end();)
+    {
+      const char *keystr = (i->key()).c_str();
+      if(strstr(keystr, "Exif.SubImage") == keystr)
+        i = imgExifData.erase(i);
+      else
+        ++i;
+    }
+
     // only compressed images may set PixelXDimension and PixelYDimension
     if(!compressed)
     {
@@ -1110,11 +1120,33 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
     // remove the profile tables
     {
       static const char *keys[] = {
-        "Exif.Image.ProfileLookTableDims",
-        "Exif.Image.ProfileLookTableData",
-        "Exif.Image.ProfileHueSatMapDims",
+        "Exif.Image.CalibrationIlluminant1",
+        "Exif.Image.CalibrationIlluminant2",
+        "Exif.Image.ColorMatrix1",
+        "Exif.Image.ColorMatrix2",
+        "Exif.Image.ForwardMatrix1",
+        "Exif.Image.ForwardMatrix2",
+        "Exif.Image.ProfileCalibrationSignature",
+        "Exif.Image.ProfileCopyright",
+        "Exif.Image.ProfileEmbedPolicy",
         "Exif.Image.ProfileHueSatMapData1",
-        "Exif.Image.ProfileHueSatMapData2"
+        "Exif.Image.ProfileHueSatMapData2",
+        "Exif.Image.ProfileHueSatMapDims",
+        "Exif.Image.ProfileLookTableData",
+        "Exif.Image.ProfileLookTableDims",
+        "Exif.Image.ProfileName",
+        "Exif.Image.ProfileToneCurve",
+        "Exif.Image.ReductionMatrix1",
+        "Exif.Image.ReductionMatrix2",
+        // Some DNG tags not yet registered in exiv2
+        //"Exif.Image.BaselineExposureOffset", // 0xc7a5
+        //"Exif.Image.DefaultBlackRender", // 0xc7a6
+        //"Exif.Image.ProfileHueSatMapEncoding", // 0xc7a3
+        //"Exif.Image.ProfileLookTableEncoding", // 0xc7a4
+
+        "Exif.Canon.ColorData",
+
+        "Exif.PentaxDng.ColorInfo"
       };
       static const guint n_keys = G_N_ELEMENTS(keys);
       dt_remove_exif_keys(imgExifData, keys, n_keys);
