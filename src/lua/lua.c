@@ -20,6 +20,7 @@
 #include "control/control.h"
 #include "lua/call.h"
 
+#define _DEBUG
 void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
 {
   printf("lua stack at %s:%d", function, line);
@@ -102,6 +103,20 @@ void dt_lua_goto_subtable(lua_State *L, const char *sub_name)
   lua_remove(L, -2);
 }
 
+/* LUA LOCKING
+   Lua can only be run from a single thread at a time (the base lua engine
+   is not protected against concurent access) so we need a mutex to cover us
+
+   However there are cases in lua/call.c where we need to lock the lua access
+   from a thread and unlock it from another thread. This is done to guarentee
+   that the lua code from the first thread is followed from the lua code in the
+   second thread with no other lua thread having a chance to run in the middle
+
+   pthread_mutex (and glib mutexes) have undefined behaviour if unlocked from 
+   a different thread. So we replace the simple mutex with a boolean protected
+   by a pthread_cond, protected by a pthread_mutex
+   */
+
 void dt_lua_init_lock()
 {
   pthread_mutexattr_t a;
@@ -109,8 +124,9 @@ void dt_lua_init_lock()
   //pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
   dt_pthread_mutex_init(&darktable.lua_state.mutex, &a);
   pthread_mutexattr_destroy(&a);
+  pthread_cond_init(&darktable.lua_state.cond,NULL);
   // we want our lock initialized locked
-  dt_pthread_mutex_lock(&darktable.lua_state.mutex);
+  darktable.lua_state.exec_lock = true;
 }
 
 void dt_lua_lock_internal(const char *function, const char *file, int line, gboolean silent)
@@ -125,6 +141,11 @@ void dt_lua_lock_internal(const char *function, const char *file, int line, gboo
   dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p waiting from %s:%d\n", g_thread_self(), function, line);
 #endif
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
+  while(darktable.lua_state.exec_lock == true) {
+    dt_pthread_cond_wait(&darktable.lua_state.cond,&darktable.lua_state.mutex);
+  }
+  darktable.lua_state.exec_lock = true;
+  dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
 #ifdef _DEBUG
   dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p taken from %s:%d\n",  g_thread_self(), function, line);
 #endif
@@ -134,6 +155,9 @@ void dt_lua_unlock_internal(const char *function, int line)
 #ifdef _DEBUG
   dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p released from %s:%d\n",g_thread_self(), function,line);
 #endif
+  dt_pthread_mutex_lock(&darktable.lua_state.mutex);
+  darktable.lua_state.exec_lock = false;
+  pthread_cond_signal(&darktable.lua_state.cond);
   dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
 }
 

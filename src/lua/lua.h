@@ -66,8 +66,13 @@ void dt_lua_debug_table_internal(lua_State *L, int t, const char *function, int 
 typedef struct
 {
   lua_State *state;                  // main lua context
-  dt_pthread_mutex_t mutex;          // mutex protecting the lua execution
+
+  dt_pthread_mutex_t mutex;          // mutex protecting the lua condition variabe
+  pthread_cond_t cond;               // condition variable to wait for the lua lock
+  bool exec_lock;                    // true if some lua code is running. this is logically a mutex
+
   bool ending;                       // true if we are in the process of terminating DT
+
   GMainLoop *loop;                   // loop running  the lua context
   GMainContext *context;             // the lua context responsible for dispatching tasks
   GThreadPool *pool;                 // pool of threads to run lua tasks on (should be one or two at most, unless lot of blocking lua threads
