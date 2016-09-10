@@ -20,7 +20,6 @@
 #include "control/control.h"
 #include "lua/call.h"
 
-#define _DEBUG
 void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
 {
   printf("lua stack at %s:%d", function, line);
