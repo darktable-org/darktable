@@ -49,11 +49,6 @@ int groups()
   return IOP_GROUP_BASIC;
 }
 
-int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return 4 * sizeof(float);
-}
-
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {

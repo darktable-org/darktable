@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2014-2015 LebedevRI.
+    copyright (c) 2014-2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,6 +88,8 @@ typedef struct dt_iop_exposure_gui_data_t
 
 typedef struct dt_iop_exposure_data_t
 {
+  dt_iop_exposure_params_t params;
+  int deflicker;
   float black;
   float scale;
 } dt_iop_exposure_data_t;
@@ -132,11 +134,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "auto-exposure", GTK_WIDGET(g->autoexpp));
   dt_accel_connect_slider_iop(self, "percentile", GTK_WIDGET(g->deflicker_percentile));
   dt_accel_connect_slider_iop(self, "target level", GTK_WIDGET(g->deflicker_target_level));
-}
-
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return 4 * sizeof(float);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -237,7 +234,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
   dt_image_t image = *img;
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(image.bpp != sizeof(uint16_t)) return;
+  if(image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16) return;
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, self->dev->image_storage.id, DT_MIPMAP_FULL,
@@ -285,7 +282,8 @@ static double raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level
   return raw_ev;
 }
 
-static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, const uint32_t *const histogram,
+static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                               const uint32_t *const histogram,
                                const dt_dev_histogram_stats_t *const histogram_stats, float *correction)
 {
   const dt_iop_exposure_params_t *const p = (const dt_iop_exposure_params_t *const)p1;
@@ -313,18 +311,48 @@ static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, const
     }
   }
 
-  float black = 0.0f;
-  for(uint8_t i = 0; i < 4; i++)
-  {
-    // FIXME: get those from rawprepare IOP somehow !!!
-    black += (float)self->dev->image_storage.raw_black_level_separate[i];
-  }
-  black /= 4.0f;
-
-  // FIXME: get those from rawprepare IOP somehow !!!
-  const double ev = raw_to_ev(raw, (uint32_t)black, self->dev->image_storage.raw_white_point);
+  const double ev
+      = raw_to_ev(raw, (uint32_t)pipe->dsc.rawprepare.raw_black_level, pipe->dsc.rawprepare.raw_white_point);
 
   *correction = p->deflicker_target_level - ev;
+}
+
+static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_exposure_gui_data_t *g = self->gui_data;
+  dt_iop_exposure_data_t *d = piece->data;
+
+  d->black = d->params.black;
+  float exposure = d->params.exposure;
+
+  if(d->deflicker)
+  {
+    if(g)
+    {
+      // histogram is precomputed and cached
+      compute_correction(self, &d->params, piece->pipe, g->deflicker_histogram, &g->deflicker_histogram_stats,
+                         &exposure);
+    }
+    else
+    {
+      uint32_t *histogram = NULL;
+      dt_dev_histogram_stats_t histogram_stats;
+      deflicker_prepare_histogram(self, &histogram, &histogram_stats);
+      compute_correction(self, &d->params, piece->pipe, histogram, &histogram_stats, &exposure);
+      free(histogram);
+    }
+
+    // second, show computed correction in UI.
+    if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    {
+      dt_pthread_mutex_lock(&g->lock);
+      g->deflicker_computed_exposure = exposure;
+      dt_pthread_mutex_unlock(&g->lock);
+    }
+  }
+
+  const float white = exposure2white(exposure);
+  d->scale = 1.0 / (white - d->black);
 }
 
 #ifdef HAVE_OPENCL
@@ -333,6 +361,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
+
+  process_common_setup(self, piece);
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
@@ -348,7 +378,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&(d->scale));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
   if(err != CL_SUCCESS) goto error;
-  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
+  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
 
   return TRUE;
 
@@ -363,6 +393,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
 
+  process_common_setup(self, piece);
+
   const int ch = piece->colors;
 
 #ifdef _OPENMP
@@ -375,7 +407,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
-  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
+  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
 }
 
 #if defined(__SSE__)
@@ -383,6 +415,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                   void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
+
+  process_common_setup(self, piece);
 
   const int ch = piece->colors;
   const __m128 blackv = _mm_set1_ps(d->black);
@@ -401,7 +435,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
-  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= d->scale;
+  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
 }
 #endif
 
@@ -410,41 +444,16 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)p1;
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  d->black = p->black;
+  d->params = *p;
 
-  float exposure = p->exposure;
+  d->deflicker = 0;
 
   if(p->mode == EXPOSURE_MODE_DEFLICKER && dt_image_is_raw(&self->dev->image_storage)
-     && self->dev->image_storage.bpp == sizeof(uint16_t))
+     && self->dev->image_storage.buf_dsc.channels == 1 && self->dev->image_storage.buf_dsc.datatype == TYPE_UINT16)
   {
-    // first, compute correction.
-    if(g)
-    {
-      // histogram is precomputed and cached
-      compute_correction(self, p1, g->deflicker_histogram, &g->deflicker_histogram_stats, &exposure);
-    }
-    else
-    {
-      uint32_t *histogram = NULL;
-      dt_dev_histogram_stats_t histogram_stats;
-      deflicker_prepare_histogram(self, &histogram, &histogram_stats);
-      compute_correction(self, p1, histogram, &histogram_stats, &exposure);
-      free(histogram);
-    }
-
-    // second, show computed correction in UI.
-    if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-    {
-      dt_pthread_mutex_lock(&g->lock);
-      g->deflicker_computed_exposure = exposure;
-      dt_pthread_mutex_unlock(&g->lock);
-    }
+    d->deflicker = 1;
   }
-
-  const float white = exposure2white(exposure);
-  d->scale = 1.0 / (white - d->black);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -471,7 +480,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.bpp != sizeof(uint16_t))
+  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
+     || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
   {
     gtk_widget_hide(GTK_WIDGET(g->mode));
     p->mode = EXPOSURE_MODE_MANUAL;
@@ -589,7 +599,8 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
   {
     case EXPOSURE_MODE_DEFLICKER:
       autoexp_disable(self);
-      if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.bpp != sizeof(uint16_t))
+      if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
+         || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
       {
         dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL)));
         gtk_widget_hide(GTK_WIDGET(g->mode));
@@ -738,7 +749,9 @@ static void deflicker_params_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
-  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.bpp != sizeof(uint16_t)) return;
+  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
+     || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
+    return;
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
