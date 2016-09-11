@@ -5948,6 +5948,34 @@
 		<Crop x="0" y="0" width="-64" height="0"/>
 		<Sensor black="143" white="4095"/>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-GX85">
+		<ID make="Panasonic" model="DMC-GX85">Panasonic DMC-GX85</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-206" height="0"/>
+		<Sensor black="143" white="4095"/>
+		<Aliases>
+			<Alias>DMC-GX80</Alias>
+		</Aliases>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-GX85" mode="4:3">
+		<ID make="Panasonic" model="DMC-GX85">Panasonic DMC-GX85</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-206" height="0"/>
+		<Sensor black="143" white="4095"/>
+		<Aliases>
+			<Alias>DMC-GX80</Alias>
+		</Aliases>
+	</Camera>
 	<!-- Default guess -->
 	<Camera make="Panasonic" model = "DMC-LF1">
 		<ID make="Panasonic" model="DMC-LF1">Panasonic DMC-LF1</ID>
