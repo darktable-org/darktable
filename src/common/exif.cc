@@ -198,8 +198,9 @@ static void dt_remove_exif_keys(Exiv2::ExifData &exif, const char *keys[], unsig
   {
     try
     {
-      Exiv2::ExifData::iterator pos = exif.findKey(Exiv2::ExifKey(keys[i]));
-      if(pos != exif.end()) exif.erase(pos);
+      Exiv2::ExifData::iterator pos;
+      while((pos = exif.findKey(Exiv2::ExifKey(keys[i]))) != exif.end())
+        exif.erase(pos);
     }
     catch(Exiv2::AnyError &e)
     {
@@ -1244,7 +1245,7 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
       // remove subimage* trees, related to thumbnails or HDR usually
       for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
       {
-        std::string needle = "Exif.SubImage";
+        static const std::string needle = "Exif.SubImage";
         if(i->key().compare(0, needle.length(), needle) == 0)
           i = exifData.erase(i);
         else
