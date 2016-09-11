@@ -184,15 +184,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "green2", GTK_WIDGET(g->scale_g2));
 }
 
-
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW))
-    return sizeof(float);
-  else
-    return 4 * sizeof(float);
-}
-
 /*
  * Spectral power distribution functions
  * https://en.wikipedia.org/wiki/Spectral_power_distribution
@@ -402,8 +393,8 @@ static void dt_wb_preset_interpolate(const wb_data *const p1, // the smaller tun
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const uint32_t filters = piece->pipe->filters;
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
+  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const dt_iop_temperature_data_t *const d = (dt_iop_temperature_data_t *)piece->data;
 
   const float *const in = (const float *const)ivoid;
@@ -445,10 +436,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                             roi_out->width * roi_out->height, d2->RGB_to_CAM, d2->CAM_to_RGB,
                                             d2->coeffs);
     float new_maximum[4] = {1.0f};
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->processed_maximum, 1, d2->RGB_to_CAM,
+    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->dsc.processed_maximum, 1, d2->RGB_to_CAM,
                                             d2->CAM_to_RGB, d2->coeffs);
-    for(int k = 0; k < 4; k++)
-      piece->pipe->processed_maximum[k] = new_maximum[k];
+    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = new_maximum[k];
   }
   else
   { // non-mosaiced
@@ -469,7 +459,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
   for(int k = 0; k < 4; k++)
-    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+    piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
 }
 
 #if defined(__SSE__)
@@ -477,8 +467,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_image_t *img = &self->dev->image_storage;
-  const uint32_t filters = piece->pipe->filters;
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
+  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u)
   { // xtrans float mosaiced
@@ -537,10 +527,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                             roi_out->width*roi_out->height,
                                             d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
     float new_maximum[4] = {1.0f};
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->processed_maximum,
-                                            1, d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
-    for(int k = 0; k < 4; k++)
-      piece->pipe->processed_maximum[k] = new_maximum[k];
+    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->dsc.processed_maximum, 1, d->RGB_to_CAM,
+                                            d->CAM_to_RGB, d->coeffs);
+    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = new_maximum[k];
   }
   else
   { // non-mosaiced
@@ -567,7 +556,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
   for(int k = 0; k < 4; k++)
-    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+    piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
 }
 #endif
 
@@ -579,7 +568,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
 
   const int devid = piece->pipe->devid;
-  const uint32_t filters = piece->pipe->filters;
+  const uint32_t filters = piece->pipe->dsc.filters;
   cl_mem dev_coeffs = NULL;
   cl_int err = -999;
   int kernel = -1;
@@ -613,7 +602,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   dt_opencl_release_mem_object(dev_coeffs);
   for(int k = 0; k < 3; k++)
-    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+    piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
   return TRUE;
 
 error:
@@ -643,7 +632,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k = 0; k < 4; k++) d->coeffs[k] = p->coeffs[k];
 
-  if(piece->pipe->filters && dt_dev_pixelpipe_uses_downsampled_input(piece->pipe)
+  if(piece->pipe->dsc.filters && dt_dev_pixelpipe_uses_downsampled_input(piece->pipe)
      && pipe->pre_monochrome_demosaiced)
   {
     // piece->process_cl_ready = 0;
@@ -651,7 +640,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
+  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
 
   if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
   {
@@ -1295,7 +1284,7 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   const dt_image_t *img = &self->dev->image_storage;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
-  if(FILTERS_ARE_CYGM(img->filters))
+  if(FILTERS_ARE_CYGM(img->buf_dsc.filters))
   {
     dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
     dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));

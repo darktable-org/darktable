@@ -19,17 +19,23 @@
 #define DT_PIXELPIPE_CACHE_H
 
 #include <inttypes.h>
+
+struct dt_dev_pixelpipe_t;
+struct dt_iop_buffer_dsc_t;
+struct dt_iop_roi_t;
+
 /**
  * implements a simple pixel cache suitable for caching float images
  * corresponding to history items and zoom/pan settings in the develop module.
  * it is optimized for very few entries (~5), so most operations are O(N).
  */
-struct dt_dev_pixelpipe_t;
+
 typedef struct dt_dev_pixelpipe_cache_t
 {
   int32_t entries;
   void **data;
   size_t *size;
+  struct dt_iop_buffer_dsc_t *dsc;
   uint64_t *hash;
   int32_t *used;
 #ifdef HAVE_OPENCL
@@ -46,7 +52,6 @@ typedef struct dt_dev_pixelpipe_cache_t
 int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size);
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache);
 
-struct dt_iop_roi_t;
 /** creates a hopefully unique hash from the complete module stack up to the module-th. */
 uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const struct dt_iop_roi_t *roi,
                                      struct dt_dev_pixelpipe_t *pipe, int module);
@@ -55,11 +60,11 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const struct dt_iop_roi_t *roi,
   * cache line, the least recently used cache line will be cleared and an empty buffer is returned
   * together with a non-zero return value. */
 int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size,
-                               void **data);
-int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash,
-                                         const size_t size, void **data);
-int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash,
-                                        const size_t size, void **data, int weight);
+                               void **data, struct dt_iop_buffer_dsc_t **dsc);
+int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size,
+                                         void **data, struct dt_iop_buffer_dsc_t **dsc);
+int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size,
+                                        void **data, struct dt_iop_buffer_dsc_t **dsc, int weight);
 
 /** test availability of a cache line without destroying another, if it is not found. */
 int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash);
@@ -77,6 +82,7 @@ void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *da
 void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache);
 
 #endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

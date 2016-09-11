@@ -258,7 +258,9 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
 
   img->width = image->x1;
   img->height = image->y1;
-  img->bpp = 4 * sizeof(float);
+
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
 
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)

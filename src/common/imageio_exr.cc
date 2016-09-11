@@ -130,7 +130,8 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   img->height = dw.max.y - dw.min.y + 1;
 
   // Try to allocate image data
-  img->bpp = 4 * sizeof(float);
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {

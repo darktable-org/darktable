@@ -38,6 +38,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
+#include "develop/format.h"
 
 #include <assert.h>
 #include <gmodule.h>
@@ -121,13 +122,6 @@ static int default_operation_tags()
 static int default_operation_tags_filter()
 {
   return 0;
-}
-
-/* default bytes per pixel: 4*sizeof(float). */
-static int default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                              struct dt_dev_pixelpipe_iop_t *piece)
-{
-  return 4 * sizeof(float);
 }
 
 static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
@@ -237,8 +231,10 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
     module->operation_tags = default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter", (gpointer) & (module->operation_tags_filter)))
     module->operation_tags_filter = default_operation_tags_filter;
-  if(!g_module_symbol(module->module, "output_bpp", (gpointer) & (module->output_bpp)))
-    module->output_bpp = default_output_bpp;
+  if(!g_module_symbol(module->module, "input_format", (gpointer) & (module->input_format)))
+    module->input_format = default_input_format;
+  if(!g_module_symbol(module->module, "output_format", (gpointer) & (module->output_format)))
+    module->output_format = default_output_format;
   if(!g_module_symbol(module->module, "tiling_callback", (gpointer) & (module->tiling_callback)))
     module->tiling_callback = default_tiling_callback;
   if(!g_module_symbol(module->module, "gui_reset", (gpointer) & (module->gui_reset)))
@@ -389,7 +385,8 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->description = so->description;
   module->operation_tags = so->operation_tags;
   module->operation_tags_filter = so->operation_tags_filter;
-  module->output_bpp = so->output_bpp;
+  module->input_format = so->input_format;
+  module->output_format = so->output_format;
   module->tiling_callback = so->tiling_callback;
   module->gui_update = so->gui_update;
   module->gui_reset = so->gui_reset;

@@ -336,7 +336,8 @@ size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
 {
   // needed to alloc correct buffer size:
-  img->bpp = 4 * sizeof(float);
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
   dt_imageio_retval_t ret;
   dt_image_loader_t loader;
 #ifdef HAVE_OPENEXR
@@ -353,7 +354,7 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, d
 return_label:
   if(ret == DT_IMAGEIO_OK)
   {
-    img->filters = 0u;
+    img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags |= DT_IMAGE_HDR;
@@ -462,7 +463,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_tiff(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0u;
+    img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -473,7 +474,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_png(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0u;
+    img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -485,7 +486,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_j2k(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0u;
+    img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -497,7 +498,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_jpeg(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0u;
+    img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -912,7 +913,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
   dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0u;
+    img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;

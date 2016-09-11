@@ -94,11 +94,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
 }
 
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return sizeof(float);
-}
-
 /* Detect hot sensor pixels based on the 4 surrounding sites. Pixels
  * having 3 or 4 (depending on permissive setting) surrounding pixels that
  * than value*multiplier are considered "hot", and are replaced by the maximum of
@@ -282,9 +277,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
 
   int fixed;
-  if(piece->pipe->filters == 9u)
+  if(piece->pipe->dsc.filters == 9u)
   {
-    fixed = process_xtrans(data, ivoid, ovoid, roi_out, (const uint8_t(*const)[6])piece->pipe->xtrans);
+    fixed = process_xtrans(data, ivoid, ovoid, roi_out, (const uint8_t(*const)[6])piece->pipe->dsc.xtrans);
   }
   else
   {
@@ -340,7 +335,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 {
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
   dt_iop_hotpixels_data_t *d = (dt_iop_hotpixels_data_t *)piece->data;
-  d->filters = piece->pipe->filters;
+  d->filters = piece->pipe->dsc.filters;
   d->multiplier = p->strength / 2.0;
   d->threshold = p->threshold;
   d->permissive = p->permissive;
