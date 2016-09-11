@@ -205,8 +205,19 @@ static void dt_remove_exif_keys(Exiv2::ExifData &exif, const char *keys[], unsig
 {
   for(unsigned int i = 0; i < n_keys; i++)
   {
-    Exiv2::ExifData::iterator pos = exif.findKey(Exiv2::ExifKey(keys[i]));
-    if(pos != exif.end()) exif.erase(pos);
+    try
+    {
+      Exiv2::ExifData::iterator pos;
+      while((pos = exif.findKey(Exiv2::ExifKey(keys[i]))) != exif.end())
+        exif.erase(pos);
+    }
+    catch(Exiv2::AnyError &e)
+    {
+      // the only exception we may get is "invalid" tag, which is not
+      // important enough to either stop the function, or even display
+      // a message (it's probably the tag is not implemented in the
+      // exiv2 version used)
+    }
   }
 }
 
@@ -1121,19 +1132,6 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
       dt_remove_exif_keys(imgExifData, keys, n_keys);
     }
 
-    // remove the profile tables
-    {
-      static const char *keys[] = {
-        "Exif.Image.ProfileLookTableDims",
-        "Exif.Image.ProfileLookTableData",
-        "Exif.Image.ProfileHueSatMapDims",
-        "Exif.Image.ProfileHueSatMapData1",
-        "Exif.Image.ProfileHueSatMapData2"
-      };
-      static const guint n_keys = G_N_ELEMENTS(keys);
-      dt_remove_exif_keys(imgExifData, keys, n_keys);
-    }
-
     imgExifData.sortByTag();
     image->writeMetadata();
   }
@@ -1196,8 +1194,33 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
 
       {
         static const char *keys[] = {
+          // Embedded color profile info
+          "Exif.Image.BaselineExposureOffset",
+          "Exif.Image.CalibrationIlluminant1",
+          "Exif.Image.CalibrationIlluminant2",
+          "Exif.Image.ColorMatrix1",
+          "Exif.Image.ColorMatrix2",
+          "Exif.Image.DefaultBlackRender",
+          "Exif.Image.ForwardMatrix1",
+          "Exif.Image.ForwardMatrix2",
+          "Exif.Image.ProfileCalibrationSignature",
+          "Exif.Image.ProfileCopyright",
+          "Exif.Image.ProfileEmbedPolicy",
+          "Exif.Image.ProfileHueSatMapData1",
+          "Exif.Image.ProfileHueSatMapData2",
+          "Exif.Image.ProfileHueSatMapDims",
+          "Exif.Image.ProfileHueSatMapEncoding",
+          "Exif.Image.ProfileLookTableData",
+          "Exif.Image.ProfileLookTableDims",
+          "Exif.Image.ProfileLookTableEncoding",
+          "Exif.Image.ProfileName",
+          "Exif.Image.ProfileToneCurve",
+          "Exif.Image.ReductionMatrix1",
+          "Exif.Image.ReductionMatrix2",
+
           // Canon color space info
           "Exif.Canon.ColorSpace",
+          "Exif.Canon.ColorData",
 
           // Nikon thumbnail data
           "Exif.Nikon3.Preview",
@@ -1213,6 +1236,8 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
           "Exif.PentaxDng.PreviewResolution",
           "Exif.PentaxDng.PreviewLength",
           "Exif.PentaxDng.PreviewOffset",
+          // Pentax color info
+          "Exif.PentaxDng.ColorInfo",
 
           // Minolta thumbnail data
           "Exif.Minolta.Thumbnail",
@@ -1230,6 +1255,16 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         };
         static const guint n_keys = G_N_ELEMENTS(keys);
         dt_remove_exif_keys(exifData, keys, n_keys);
+      }
+
+      // remove subimage* trees, related to thumbnails or HDR usually
+      for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
+      {
+        static const std::string needle = "Exif.SubImage";
+        if(i->key().compare(0, needle.length(), needle) == 0)
+          i = exifData.erase(i);
+        else
+          ++i;
       }
 
 #if EXIV2_MINOR_VERSION >= 23
