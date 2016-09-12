@@ -267,6 +267,402 @@ void dt_iop_clip_and_zoom_pixel_binning_f(float *const ovoid, const float *const
   }
 }
 
+void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint16_t *const in,
+                                                 const dt_iop_roi_t *const roi_out,
+                                                 const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                 const int32_t in_stride, const uint32_t filters)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = round(px_footprint / 2);
+
+  // move p to point to an rggb block:
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx + 1, filters) != 1) trggbx++;
+  if(FC(trggby, trggbx, filters) != 0)
+  {
+    trggbx = (trggbx + 1) & 1;
+    trggby++;
+  }
+  const int rggbx = trggbx, rggby = trggby;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    uint16_t *outc = out + out_stride * y;
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy & ~1;
+    const float dy = (fy - py) / 2;
+    py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
+
+    int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      float col[4] = { 0, 0, 0, 0 };
+
+      float fx = (x + roi_out->x) * px_footprint;
+      int px = (int)fx & ~1;
+      const float dx = (fx - px) / 2;
+      px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
+
+      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
+
+      float p[4];
+      float num = 0;
+
+      // upper left 2x2 block of sampling region
+      p[0] = in[px + in_stride * py];
+      p[1] = in[px + 1 + in_stride * py];
+      p[2] = in[px + in_stride * (py + 1)];
+      p[3] = in[px + 1 + in_stride * (py + 1)];
+      for(int c = 0; c < 4; c++) col[c] += ((1 - dx) * (1 - dy)) * p[c];
+
+      // left 2x2 block border of sampling region
+      for(int j = py + 2; j <= maxj; j += 2)
+      {
+        p[0] = in[px + in_stride * j];
+        p[1] = in[px + 1 + in_stride * j];
+        p[2] = in[px + in_stride * (j + 1)];
+        p[3] = in[px + 1 + in_stride * (j + 1)];
+        for(int c = 0; c < 4; c++) col[c] += (1 - dx) * p[c];
+      }
+
+      // upper 2x2 block border of sampling region
+      for(int i = px + 2; i <= maxi; i += 2)
+      {
+        p[0] = in[i + in_stride * py];
+        p[1] = in[i + 1 + in_stride * py];
+        p[2] = in[i + in_stride * (py + 1)];
+        p[3] = in[i + 1 + in_stride * (py + 1)];
+        for(int c = 0; c < 4; c++) col[c] += (1 - dy) * p[c];
+      }
+
+      // 2x2 blocks in the middle of sampling region
+      for(int j = py + 2; j <= maxj; j += 2)
+        for(int i = px + 2; i <= maxi; i += 2)
+        {
+          p[0] = in[i + in_stride * j];
+          p[1] = in[i + 1 + in_stride * j];
+          p[2] = in[i + in_stride * (j + 1)];
+          p[3] = in[i + 1 + in_stride * (j + 1)];
+          for(int c = 0; c < 4; c++) col[c] += p[c];
+        }
+
+      if(maxi == px + 2 * samples && maxj == py + 2 * samples)
+      {
+        // right border
+        for(int j = py + 2; j <= maxj; j += 2)
+        {
+          p[0] = in[maxi + 2 + in_stride * j];
+          p[1] = in[maxi + 3 + in_stride * j];
+          p[2] = in[maxi + 2 + in_stride * (j + 1)];
+          p[3] = in[maxi + 3 + in_stride * (j + 1)];
+          for(int c = 0; c < 4; c++) col[c] += dx * p[c];
+        }
+
+        // upper right
+        p[0] = in[maxi + 2 + in_stride * py];
+        p[1] = in[maxi + 3 + in_stride * py];
+        p[2] = in[maxi + 2 + in_stride * (py + 1)];
+        p[3] = in[maxi + 3 + in_stride * (py + 1)];
+        for(int c = 0; c < 4; c++) col[c] += (dx * (1 - dy)) * p[c];
+
+        // lower border
+        for(int i = px + 2; i <= maxi; i += 2)
+        {
+          p[0] = in[i + in_stride * (maxj + 2)];
+          p[1] = in[i + 1 + in_stride * (maxj + 2)];
+          p[2] = in[i + in_stride * (maxj + 3)];
+          p[3] = in[i + 1 + in_stride * (maxj + 3)];
+          for(int c = 0; c < 4; c++) col[c] += dy * p[c];
+        }
+
+        // lower left 2x2 block
+        p[0] = in[px + in_stride * (maxj + 2)];
+        p[1] = in[px + 1 + in_stride * (maxj + 2)];
+        p[2] = in[px + in_stride * (maxj + 3)];
+        p[3] = in[px + 1 + in_stride * (maxj + 3)];
+        for(int c = 0; c < 4; c++) col[c] += ((1 - dx) * dy) * p[c];
+
+        // lower right 2x2 block
+        p[0] = in[maxi + 2 + in_stride * (maxj + 2)];
+        p[1] = in[maxi + 3 + in_stride * (maxj + 2)];
+        p[2] = in[maxi + in_stride * (maxj + 3)];
+        p[3] = in[maxi + 3 + in_stride * (maxj + 3)];
+        for(int c = 0; c < 4; c++) col[c] += (dx * dy) * p[c];
+
+        num = (samples + 1) * (samples + 1);
+      }
+      else if(maxi == px + 2 * samples)
+      {
+        // right border
+        for(int j = py + 2; j <= maxj; j += 2)
+        {
+          p[0] = in[maxi + 2 + in_stride * j];
+          p[1] = in[maxi + 3 + in_stride * j];
+          p[2] = in[maxi + 2 + in_stride * (j + 1)];
+          p[3] = in[maxi + 3 + in_stride * (j + 1)];
+          for(int c = 0; c < 4; c++) col[c] += dx * p[c];
+        }
+
+        // upper right
+        p[0] = in[maxi + 2 + in_stride * py];
+        p[1] = in[maxi + 3 + in_stride * py];
+        p[2] = in[maxi + 2 + in_stride * (py + 1)];
+        p[3] = in[maxi + 3 + in_stride * (py + 1)];
+        for(int c = 0; c < 4; c++) col[c] += (dx * (1 - dy)) * p[c];
+
+        num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
+      }
+      else if(maxj == py + 2 * samples)
+      {
+        // lower border
+        for(int i = px + 2; i <= maxi; i += 2)
+        {
+          p[0] = in[i + in_stride * (maxj + 2)];
+          p[1] = in[i + 1 + in_stride * (maxj + 2)];
+          p[2] = in[i + in_stride * (maxj + 3)];
+          p[3] = in[i + 1 + in_stride * (maxj + 3)];
+          for(int c = 0; c < 4; c++) col[c] += dy * p[c];
+        }
+
+        // lower left 2x2 block
+        p[0] = in[px + in_stride * (maxj + 2)];
+        p[1] = in[px + 1 + in_stride * (maxj + 2)];
+        p[2] = in[px + in_stride * (maxj + 3)];
+        p[3] = in[px + 1 + in_stride * (maxj + 3)];
+        for(int c = 0; c < 4; c++) col[c] += ((1 - dx) * dy) * p[c];
+
+        num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
+      }
+      else
+      {
+        num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
+      }
+
+      const int c = (2 * (y % 2) + (x % 2));
+      *outc = (uint16_t)(col[c] / num);
+      outc++;
+    }
+  }
+}
+
+#if defined(__SSE__)
+void dt_iop_clip_and_zoom_mosaic_half_size_sse2(uint16_t *const out, const uint16_t *const in,
+                                                const dt_iop_roi_t *const roi_out,
+                                                const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                const int32_t in_stride, const uint32_t filters)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f / roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = round(px_footprint / 2);
+
+  // move p to point to an rggb block:
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx + 1, filters) != 1) trggbx++;
+  if(FC(trggby, trggbx, filters) != 0)
+  {
+    trggbx = (trggbx + 1) & 1;
+    trggby++;
+  }
+  const int rggbx = trggbx, rggby = trggby;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    uint16_t *outc = out + out_stride * y;
+
+    float fy = (y + roi_out->y) * px_footprint;
+    int py = (int)fy & ~1;
+    const float dy = (fy - py) / 2;
+    py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
+
+    int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
+
+    for(int x = 0; x < roi_out->width; x++)
+    {
+      __m128 col = _mm_setzero_ps();
+
+      float fx = (x + roi_out->x) * px_footprint;
+      int px = (int)fx & ~1;
+      const float dx = (fx - px) / 2;
+      px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
+
+      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
+
+      float p1, p2, p3, p4;
+      float num = 0;
+
+      // upper left 2x2 block of sampling region
+      p1 = in[px + in_stride * py];
+      p2 = in[px + 1 + in_stride * py];
+      p3 = in[px + in_stride * (py + 1)];
+      p4 = in[px + 1 + in_stride * (py + 1)];
+      col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1 - dx) * (1 - dy)), _mm_set_ps(p4, p3, p2, p1)));
+
+      // left 2x2 block border of sampling region
+      for(int j = py + 2; j <= maxj; j += 2)
+      {
+        p1 = in[px + in_stride * j];
+        p2 = in[px + 1 + in_stride * j];
+        p3 = in[px + in_stride * (j + 1)];
+        p4 = in[px + 1 + in_stride * (j + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1 - dx), _mm_set_ps(p4, p3, p2, p1)));
+      }
+
+      // upper 2x2 block border of sampling region
+      for(int i = px + 2; i <= maxi; i += 2)
+      {
+        p1 = in[i + in_stride * py];
+        p2 = in[i + 1 + in_stride * py];
+        p3 = in[i + in_stride * (py + 1)];
+        p4 = in[i + 1 + in_stride * (py + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1 - dy), _mm_set_ps(p4, p3, p2, p1)));
+      }
+
+      // 2x2 blocks in the middle of sampling region
+      for(int j = py + 2; j <= maxj; j += 2)
+        for(int i = px + 2; i <= maxi; i += 2)
+        {
+          p1 = in[i + in_stride * j];
+          p2 = in[i + 1 + in_stride * j];
+          p3 = in[i + in_stride * (j + 1)];
+          p4 = in[i + 1 + in_stride * (j + 1)];
+          col = _mm_add_ps(col, _mm_set_ps(p4, p3, p2, p1));
+        }
+
+      if(maxi == px + 2 * samples && maxj == py + 2 * samples)
+      {
+        // right border
+        for(int j = py + 2; j <= maxj; j += 2)
+        {
+          p1 = in[maxi + 2 + in_stride * j];
+          p2 = in[maxi + 3 + in_stride * j];
+          p3 = in[maxi + 2 + in_stride * (j + 1)];
+          p4 = in[maxi + 3 + in_stride * (j + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx), _mm_set_ps(p4, p3, p2, p1)));
+        }
+
+        // upper right
+        p1 = in[maxi + 2 + in_stride * py];
+        p2 = in[maxi + 3 + in_stride * py];
+        p3 = in[maxi + 2 + in_stride * (py + 1)];
+        p4 = in[maxi + 3 + in_stride * (py + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * (1 - dy)), _mm_set_ps(p4, p3, p2, p1)));
+
+        // lower border
+        for(int i = px + 2; i <= maxi; i += 2)
+        {
+          p1 = in[i + in_stride * (maxj + 2)];
+          p2 = in[i + 1 + in_stride * (maxj + 2)];
+          p3 = in[i + in_stride * (maxj + 3)];
+          p4 = in[i + 1 + in_stride * (maxj + 3)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy), _mm_set_ps(p4, p3, p2, p1)));
+        }
+
+        // lower left 2x2 block
+        p1 = in[px + in_stride * (maxj + 2)];
+        p2 = in[px + 1 + in_stride * (maxj + 2)];
+        p3 = in[px + in_stride * (maxj + 3)];
+        p4 = in[px + 1 + in_stride * (maxj + 3)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1 - dx) * dy), _mm_set_ps(p4, p3, p2, p1)));
+
+        // lower right 2x2 block
+        p1 = in[maxi + 2 + in_stride * (maxj + 2)];
+        p2 = in[maxi + 3 + in_stride * (maxj + 2)];
+        p3 = in[maxi + in_stride * (maxj + 3)];
+        p4 = in[maxi + 3 + in_stride * (maxj + 3)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * dy), _mm_set_ps(p4, p3, p2, p1)));
+
+        num = (samples + 1) * (samples + 1);
+      }
+      else if(maxi == px + 2 * samples)
+      {
+        // right border
+        for(int j = py + 2; j <= maxj; j += 2)
+        {
+          p1 = in[maxi + 2 + in_stride * j];
+          p2 = in[maxi + 3 + in_stride * j];
+          p3 = in[maxi + 2 + in_stride * (j + 1)];
+          p4 = in[maxi + 3 + in_stride * (j + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx), _mm_set_ps(p4, p3, p2, p1)));
+        }
+
+        // upper right
+        p1 = in[maxi + 2 + in_stride * py];
+        p2 = in[maxi + 3 + in_stride * py];
+        p3 = in[maxi + 2 + in_stride * (py + 1)];
+        p4 = in[maxi + 3 + in_stride * (py + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * (1 - dy)), _mm_set_ps(p4, p3, p2, p1)));
+
+        num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
+      }
+      else if(maxj == py + 2 * samples)
+      {
+        // lower border
+        for(int i = px + 2; i <= maxi; i += 2)
+        {
+          p1 = in[i + in_stride * (maxj + 2)];
+          p2 = in[i + 1 + in_stride * (maxj + 2)];
+          p3 = in[i + in_stride * (maxj + 3)];
+          p4 = in[i + 1 + in_stride * (maxj + 3)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy), _mm_set_ps(p4, p3, p2, p1)));
+        }
+
+        // lower left 2x2 block
+        p1 = in[px + in_stride * (maxj + 2)];
+        p2 = in[px + 1 + in_stride * (maxj + 2)];
+        p3 = in[px + in_stride * (maxj + 3)];
+        p4 = in[px + 1 + in_stride * (maxj + 3)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1 - dx) * dy), _mm_set_ps(p4, p3, p2, p1)));
+
+        num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
+      }
+      else
+      {
+        num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
+      }
+
+      num = 1.0f / num;
+      col = _mm_mul_ps(col, _mm_set1_ps(num));
+
+      float fcol[4] __attribute__((aligned(16)));
+      _mm_store_ps(fcol, col);
+
+      const int c = (2 * (y % 2) + (x % 2));
+      *outc = (uint16_t)(fcol[c]);
+      outc++;
+    }
+  }
+  _mm_sfence();
+}
+#endif
+
+void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out, const uint16_t *const in,
+                                           const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
+                                           const int32_t out_stride, const int32_t in_stride,
+                                           const uint32_t filters)
+{
+  if(darktable.codepath.OPENMP_SIMD)
+    return dt_iop_clip_and_zoom_mosaic_half_size_plain(out, in, roi_out, roi_in, out_stride, in_stride, filters);
+#if defined(__SSE__)
+  else if(darktable.codepath.SSE2)
+    return dt_iop_clip_and_zoom_mosaic_half_size_sse2(out, in, roi_out, roi_in, out_stride, in_stride, filters);
+#endif
+  else
+    dt_unreachable_codepath();
+}
+
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_plain(float *const out, const uint16_t *const in,
                                                                 const dt_iop_roi_t *const roi_out,
                                                                 const dt_iop_roi_t *const roi_in,
