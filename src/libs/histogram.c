@@ -406,7 +406,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 
   char exifline[50];
   cairo_move_to(cr, .02 * width, .98 * height);
-  dt_image_print_exif(&dev->image_storage, exifline, 50);
+  dt_image_print_exif(&dev->image_storage, exifline, sizeof(exifline));
   cairo_save(cr);
   //   cairo_show_text(cr, exifline);
   cairo_set_line_width(cr, 2.0);

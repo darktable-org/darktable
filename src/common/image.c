@@ -273,7 +273,7 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
 {
   if(img->exif_exposure >= 4.0f) // Use whole seconds (e.g., 5" for exposures >= 4s)
-    snprintf(line, line_len, "%.0f″ f/%.0f %dmm iso %d", img->exif_exposure, img->exif_aperture,
+    snprintf(line, line_len, "%.0f″ f/%.1f %dmm iso %d", img->exif_exposure, img->exif_aperture,
              (int)img->exif_focal_length, (int)img->exif_iso);
   else if(img->exif_exposure < 0.35f) // Use fractions (e.g., 1/200 all the way up to 1/3)
     snprintf(line, line_len, "1/%.0f f/%.1f %dmm iso %d", 1.0 / img->exif_exposure, img->exif_aperture,
