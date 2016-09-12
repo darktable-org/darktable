@@ -1053,7 +1053,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   unsigned int bin_blocks = 0;
 
   // now let's figure out the scaling...
-  if(pattern_size != 1)
+  if(image->buf_dsc.filters == 9u)
   {
     // ideal [inverse] scale, will result in same aspect ratio and
     // same or smaller area than requested.
@@ -1070,7 +1070,10 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   }
   else
   {
-    roi_out.scale = fminf(wd / (float)image->width, ht / (float)image->height);
+    // MIP_F is 4 channels, and we do not demosaic here
+    const float coeff = (image->buf_dsc.filters) ? 2.0f : 1.0f;
+
+    roi_out.scale = fminf((coeff * (float)wd) / (float)image->width, (coeff * (float)ht) / (float)image->height);
   }
 
   roi_out.width = roi_out.scale * roi_in.width;
