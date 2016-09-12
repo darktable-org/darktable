@@ -46,7 +46,7 @@
 #include "common/colorspaces.h"
 #include "external/cie_colorimetric_tables.c"
 
-DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_temperature_params_t)
 
 #define INITIALBLACKBODYTEMPERATURE 4000
 
@@ -63,6 +63,7 @@ static void gui_sliders_update(struct dt_iop_module_t *self);
 typedef struct dt_iop_temperature_params_t
 {
   float coeffs[4];
+  int normalize;
 } dt_iop_temperature_params_t;
 
 typedef struct dt_iop_temperature_gui_data_t
@@ -93,7 +94,7 @@ typedef struct dt_iop_temperature_global_data_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
     typedef struct dt_iop_temperature_params_v2_t
     {
@@ -108,6 +109,27 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->coeffs[1] = o->coeffs[1];
     n->coeffs[2] = o->coeffs[2];
     n->coeffs[3] = NAN;
+
+    n->normalize = 0;
+
+    return 0;
+  }
+  if(old_version == 3 && new_version == 4)
+  {
+    typedef struct dt_iop_temperature_params_v3_t
+    {
+      float coeffs[4];
+    } dt_iop_temperature_params_v3_t;
+
+    dt_iop_temperature_params_v3_t *o = (dt_iop_temperature_params_v3_t *)old_params;
+    dt_iop_temperature_params_t *n = (dt_iop_temperature_params_t *)new_params;
+
+    n->coeffs[0] = o->coeffs[0];
+    n->coeffs[1] = o->coeffs[1];
+    n->coeffs[2] = o->coeffs[2];
+    n->coeffs[3] = o->coeffs[3];
+
+    n->normalize = 0;
 
     return 0;
   }
@@ -630,7 +652,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  for(int k = 0; k < 4; k++) d->coeffs[k] = p->coeffs[k];
+
+  if(p->normalize)
+    for(int k = 0; k < 4; k++) d->coeffs[k] = p->coeffs[k] / p->coeffs[1];
+  else
+    for(int k = 0; k < 4; k++) d->coeffs[k] = p->coeffs[k];
 
   if(piece->pipe->dsc.filters && dt_dev_pixelpipe_uses_downsampled_input(piece->pipe)
      && pipe->pre_monochrome_demosaiced)
@@ -887,7 +913,7 @@ static void prepare_matrices(dt_iop_module_t *module)
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_temperature_params_t tmp
-      = (dt_iop_temperature_params_t){.coeffs = { 1.0, 1.0, 1.0, 1.0 } };
+      = (dt_iop_temperature_params_t){.coeffs = { 1.0, 1.0, 1.0, 1.0 }, .normalize = 1 };
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
