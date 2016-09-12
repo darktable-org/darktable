@@ -70,6 +70,8 @@ File.open(CAMERAS) do |f|
 
     mode = c.attribute("mode").value
 
+    display_cameraname = [exif_maker, exif_model, mode]
+
     # ???
     if mode == "sNEF-uncompressed"
       next
@@ -84,14 +86,19 @@ File.open(CAMERAS) do |f|
     compression = splitmode[1].strip
 
     if not bitness == "12bit" and not bitness == "14bit" and
-      puts "Camera \"#{exif_maker} #{exif_model}\" has strange bitness part of mode tag: #{bitness}"
+      puts "Camera #{display_cameraname} has strange bitness part of mode tag: #{bitness}"
       next
     end
 
     bitness_num = bitness.to_i
 
     if not compression == "compressed" and not compression == "uncompressed" and
-      puts "Camera \"#{exif_maker} #{exif_model}\" has strange compression part of mode tag: #{bitness}"
+      puts "Camera #{display_cameraname} has strange compression part of mode tag: #{bitness}"
+      next
+    end
+
+    if c.css("Sensor").size == 0
+      puts "Camera #{display_cameraname} has zero sensors"
       next
     end
 
@@ -100,17 +107,21 @@ File.open(CAMERAS) do |f|
     end
 
     if not white
-      puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has no white level?"
+      puts "Camera #{display_cameraname} has no white level?"
+    end
+
+    if bitness.to_i != Math.log2(white.to_f).ceil.to_i and not IGNORE_HIGH_WHITELEVEL.include?(cameraname)
+      puts "Camera #{display_cameraname} has wrong bitness tag: #{bitness} (#{bitness.to_i}, white is #{white})"
     end
 
     if white >= ((2**bitness_num)-1) and not IGNORE_HIGH_WHITELEVEL.include?(cameraname)
-      puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has too high white level: #{white} (bigger than ((2^#{bitness_num})-1), which is #{((2**bitness_num)-1)})"
+      puts "Camera #{display_cameraname} has too high white level: #{white} (>= ((2^#{bitness_num})-1), which is #{((2**bitness_num)-1)})"
       #next
     end
 
     whitemax = 0.8 * 2**(bitness_num)
     if white <= whitemax
-      puts "Camera \"#{exif_maker} #{exif_model}\" \"#{mode}\" has too low white level: #{white} (smaller than #{whitemax})"
+      puts "Camera #{display_cameraname} has too low white level: #{white} (smaller than #{whitemax})"
       #next
     end
 
@@ -121,6 +132,8 @@ File.open(CAMERAS) do |f|
     cameras_hash[cameraname][bitness][compression] = white
   end
 end
+
+puts
 
 cameras_hash.each do |cameraname, modes|
   if modes.key?("14bit") and not modes.key?("12bit") and not IGNORE_ONLY_14BIT.include?(cameraname)
