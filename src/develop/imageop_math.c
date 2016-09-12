@@ -393,7 +393,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
         // lower right 2x2 block
         p[0] = in[maxi + 2 + in_stride * (maxj + 2)];
         p[1] = in[maxi + 3 + in_stride * (maxj + 2)];
-        p[2] = in[maxi + in_stride * (maxj + 3)];
+        p[2] = in[maxi + 2 + in_stride * (maxj + 3)];
         p[3] = in[maxi + 3 + in_stride * (maxj + 3)];
         for(int c = 0; c < 4; c++) col[c] += (dx * dy) * p[c];
 
@@ -580,7 +580,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_sse2(uint16_t *const out, const uint1
         // lower right 2x2 block
         p1 = in[maxi + 2 + in_stride * (maxj + 2)];
         p2 = in[maxi + 3 + in_stride * (maxj + 2)];
-        p3 = in[maxi + in_stride * (maxj + 3)];
+        p3 = in[maxi + 2 + in_stride * (maxj + 3)];
         p4 = in[maxi + 3 + in_stride * (maxj + 3)];
         col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * dy), _mm_set_ps(p4, p3, p2, p1)));
 
@@ -789,7 +789,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f_plain(float *const out, const float
         // lower right 2x2 block
         p[0] = in[maxi + 2 + in_stride * (maxj + 2)];
         p[1] = in[maxi + 3 + in_stride * (maxj + 2)];
-        p[2] = in[maxi + in_stride * (maxj + 3)];
+        p[2] = in[maxi + 2 + in_stride * (maxj + 3)];
         p[3] = in[maxi + 3 + in_stride * (maxj + 3)];
         for(int c = 0; c < 4; c++) col[c] += (dx * dy) * p[c];
 
@@ -976,7 +976,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f_sse2(float *const out, const float 
         // lower right 2x2 block
         p1 = in[maxi + 2 + in_stride * (maxj + 2)];
         p2 = in[maxi + 3 + in_stride * (maxj + 2)];
-        p3 = in[maxi + in_stride * (maxj + 3)];
+        p3 = in[maxi + 2 + in_stride * (maxj + 3)];
         p4 = in[maxi + 3 + in_stride * (maxj + 3)];
         col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * dy), _mm_set_ps(p4, p3, p2, p1)));
 
@@ -1947,7 +1947,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f_plain(float *out, const float *co
 
         // lower right 2x2 block
         p[0] = in[maxi + 2 + in_stride * (maxj + 2)];
-        p[1] = in[maxi + 3 + in_stride * (maxj + 2)] + in[maxi + in_stride * (maxj + 3)];
+        p[1] = in[maxi + 3 + in_stride * (maxj + 2)] + in[maxi + 2 + in_stride * (maxj + 3)];
         p[2] = in[maxi + 3 + in_stride * (maxj + 3)];
         for(int c = 0; c < 3; c++) col[c] += (dx * dy) * p[c];
 
@@ -2123,7 +2123,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(float *out, const float *con
 
         // lower right 2x2 block
         p1 = in[maxi + 2 + in_stride * (maxj + 2)];
-        p2 = in[maxi + 3 + in_stride * (maxj + 2)] + in[maxi + in_stride * (maxj + 3)];
+        p2 = in[maxi + 3 + in_stride * (maxj + 2)] + in[maxi + 2 + in_stride * (maxj + 3)];
         p4 = in[maxi + 3 + in_stride * (maxj + 3)];
         col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx * dy), _mm_set_ps(0.0f, p4, p2, p1)));
 
