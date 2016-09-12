@@ -1747,7 +1747,7 @@
 			<Hint name="wb_offset" value="142"/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D100" mode="12bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D100" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D100">Nikon D100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -1758,7 +1758,7 @@
 		<Crop x="2" y="0" width="3030" height="2024"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D100" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D100" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D100">Nikon D100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -1769,7 +1769,7 @@
 		<Crop x="2" y="0" width="3030" height="2024"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D1" mode="12bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D1" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D1">Nikon D1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -1783,7 +1783,7 @@
 			<Hint name="nikon_wb_adjustment" value="true"/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D1" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D1" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D1">Nikon D1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -1797,7 +1797,7 @@
 			<Hint name="nikon_wb_adjustment" value="true"/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D1H" mode="12bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D1H" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D1H">Nikon D1H</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -1808,7 +1808,7 @@
 		<Crop x="0" y="0" width="2012" height="1324"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D1H" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D1H" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D1H">Nikon D1H</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -1819,7 +1819,7 @@
 		<Crop x="0" y="0" width="2012" height="1324"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D1X" mode="12bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D1X" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D1X">Nikon D1X</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -1833,7 +1833,7 @@
 			<Hint name="pixel_aspect_ratio" value="0.5"/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D1X" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D1X" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D1X">Nikon D1X</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -1979,7 +1979,7 @@
 		<Crop x="2" y="0" width="4282" height="2844"/>
 		<Sensor black="0" white="4096"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -1990,7 +1990,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="16384"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2205,7 +2205,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="14bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="14bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D4">Nikon D4</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2216,7 +2216,7 @@
 		<Crop x="2" y="0" width="-50" height="0"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="14bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="14bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D4">Nikon D4</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2305,7 +2305,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="14bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="14bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Df">Nikon Df</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2319,7 +2319,7 @@
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="14bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="14bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Df">Nikon Df</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2405,7 +2405,7 @@
 		<Crop x="0" y="0" width="-46" height="0"/>
 		<Sensor black="0" white="4096"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3100" mode="14bit-compressed" decoder_version="2">
+	<Camera make="NIKON CORPORATION" model="NIKON D3100" mode="14bit-compressed" decoder_version="2" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D3100">Nikon D3100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -2416,7 +2416,7 @@
 		<Crop x="8" y="2" width="-24" height="-2"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3100" mode="14bit-uncompressed" decoder_version="2">
+	<Camera make="NIKON CORPORATION" model="NIKON D3100" mode="14bit-uncompressed" decoder_version="2" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D3100">Nikon D3100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -2615,7 +2615,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="15892"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D5200" mode="12bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D5200" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D5200">Nikon D5200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2626,7 +2626,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4096"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D5200" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D5200" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D5200">Nikon D5200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2815,7 +2815,7 @@
 		<Crop x="0" y="0" width="-50" height="0"/>
 		<Sensor black="0" white="3880"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D70" mode="12bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D70" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D70">Nikon D70</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -2826,7 +2826,7 @@
 		<Crop x="0" y="0" width="3038" height="2014"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D70" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D70" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D70">Nikon D70</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -2859,7 +2859,7 @@
 		<Crop x="2" y="0" width="4282" height="2844"/>
 		<Sensor black="0" white="3972"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D700" mode="14bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D700" mode="14bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D700">Nikon D700</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2870,7 +2870,7 @@
 		<Crop x="2" y="0" width="4282" height="2844"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D700" mode="14bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D700" mode="14bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D700">Nikon D700</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3037,7 +3037,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D70s" mode="12bit-compressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D70s" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D70s">Nikon D70s</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -3048,7 +3048,7 @@
 		<Crop x="0" y="0" width="3040" height="2014"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D70s" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D70s" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="D70s">Nikon D70s</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -3361,7 +3361,7 @@
 		<Crop x="0" y="0" width="0" height="-2"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 J3" mode="12bit-compressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 J3" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 J3">Nikon 1 J3</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3372,7 +3372,7 @@
 		<Crop x="0" y="0" width="0" height="-2"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 J3" mode="12bit-uncompressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 J3" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 J3">Nikon 1 J3</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3383,7 +3383,7 @@
 		<Crop x="0" y="0" width="0" height="-2"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 J4" mode="12bit-compressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 J4" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 J4">Nikon 1 J4</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3397,7 +3397,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 J4" mode="12bit-uncompressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 J4" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 J4">Nikon 1 J4</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3450,7 +3450,7 @@
 		<Crop x="0" y="0" width="0" height="-2"/>
 		<Sensor black="0" white="3300"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 S2" mode="12bit-compressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 S2" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 S2">Nikon 1 S2</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3464,7 +3464,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 S2" mode="12bit-uncompressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 S2" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 S2">Nikon 1 S2</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3489,7 +3489,7 @@
 		<Crop x="0" y="0" width="0" height="-2"/>
 		<Sensor black="0" white="3300"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 V2" mode="12bit-compressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 V2" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 V2">Nikon 1 V2</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3500,7 +3500,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 V2" mode="12bit-uncompressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 V2" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 V2">Nikon 1 V2</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3539,7 +3539,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-compressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 AW1">Nikon 1 AW1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3550,7 +3550,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-uncompressed" decoder_version="4">
+	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="1 AW1">Nikon 1 AW1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3561,7 +3561,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON" model="E5400" mode="12bit-compressed" decoder_version="3">
+	<Camera make="NIKON" model="E5400" mode="12bit-compressed" decoder_version="3" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="E5400">Nikon E5400</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -3575,7 +3575,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="E5400" mode="12bit-uncompressed" decoder_version="3">
+	<Camera make="NIKON" model="E5400" mode="12bit-uncompressed" decoder_version="3" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="E5400">Nikon E5400</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -3589,7 +3589,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="E5700" mode="12bit-compressed" decoder_version="4">
+	<Camera make="NIKON" model="E5700" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="E5700">Nikon E5700</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">FUJI_GREEN</Color>
@@ -3603,7 +3603,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="E5700" mode="12bit-uncompressed" decoder_version="4">
+	<Camera make="NIKON" model="E5700" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="E5700">Nikon E5700</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">FUJI_GREEN</Color>
@@ -3617,7 +3617,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="E8400" mode="12bit-compressed" decoder_version="3">
+	<Camera make="NIKON" model="E8400" mode="12bit-compressed" decoder_version="3" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="E8400">Nikon E8400</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -3631,7 +3631,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="E8400" mode="12bit-uncompressed" decoder_version="3">
+	<Camera make="NIKON" model="E8400" mode="12bit-uncompressed" decoder_version="3" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="E8400">Nikon E8400</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -3682,7 +3682,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="3800"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="12bit-compressed">
+	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix A">Nikon Coolpix A</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3693,7 +3693,7 @@
 		<Crop x="0" y="0" width="-44" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="12bit-uncompressed">
+	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix A">Nikon Coolpix A</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3704,7 +3704,7 @@
 		<Crop x="0" y="0" width="-44" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-compressed" decoder_version="1">
+	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-compressed" decoder_version="1" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix P6000">Nikon Coolpix P6000</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3719,7 +3719,7 @@
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-uncompressed" decoder_version="1">
+	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-uncompressed" decoder_version="1" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix P6000">Nikon Coolpix P6000</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3734,7 +3734,7 @@
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7000" mode="12bit-compressed" decoder_version="1">
+	<Camera make="NIKON" model="COOLPIX P7000" mode="12bit-compressed" decoder_version="1" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix P7000">Nikon Coolpix P7000</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3751,7 +3751,7 @@
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7000" mode="12bit-uncompressed" decoder_version="1">
+	<Camera make="NIKON" model="COOLPIX P7000" mode="12bit-uncompressed" decoder_version="1" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix P7000">Nikon Coolpix P7000</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3768,7 +3768,7 @@
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7100" mode="12bit-compressed" decoder_version="1">
+	<Camera make="NIKON" model="COOLPIX P7100" mode="12bit-compressed" decoder_version="1" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix P7100">Nikon Coolpix P7100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3785,7 +3785,7 @@
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7100" mode="12bit-uncompressed" decoder_version="1">
+	<Camera make="NIKON" model="COOLPIX P7100" mode="12bit-uncompressed" decoder_version="1" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix P7100">Nikon Coolpix P7100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3832,7 +3832,7 @@
 			<Hint name="real_bpp" value="16"/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="E8800" mode="12bit-compressed" decoder_version="3">
+	<Camera make="NIKON" model="E8800" mode="12bit-compressed" decoder_version="3" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix E8800">Nikon Coolpix E8800</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -3846,7 +3846,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="E8800" mode="12bit-uncompressed" decoder_version="3">
+	<Camera make="NIKON" model="E8800" mode="12bit-uncompressed" decoder_version="3" supported="no"> <!-- need raw sample for whitelevel -->
 		<ID make="Nikon" model="Coolpix E8800">Nikon Coolpix E8800</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
