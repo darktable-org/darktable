@@ -450,6 +450,12 @@ static inline int dt_get_num_atom_cores()
   }
 
   return hw_ncpu;
+#elif defined _WIN32
+  
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+  return sysinfo.dwNumberOfProcessors;
+
 #else
   return 0;
 #endif
@@ -480,6 +486,11 @@ static inline size_t dt_get_total_memory()
   size_t length = sizeof(uint64_t);
   sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
   return physical_memory / 1024;
+#elif defined _WIN32
+  MEMORYSTATUSEX memInfo;
+  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+  GlobalMemoryStatusEx(&memInfo);
+  return memInfo.ullTotalPhys / 1024;
 #else
   // assume 2GB until we have a better solution.
   fprintf(stderr, "Unknown memory size. Assuming 2GB\n");

@@ -6,6 +6,8 @@ find_path(Pugixml_INCLUDE_DIR
   PATHS
     /usr/local/include
     /usr/include
+  PATH_SUFFIXES
+    pugixml pugixml-1.7
 )
 
 find_library(Pugixml_LIBRARY
@@ -14,6 +16,9 @@ find_library(Pugixml_LIBRARY
   PATHS
     /usr/local/lib
     /usr/lib
+    /lib
+  PATH_SUFFIXES
+    pugixml pugixml-1.7
 )
 
 if (NOT Pugixml_INCLUDE_DIR OR NOT Pugixml_LIBRARY)

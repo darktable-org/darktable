@@ -50,11 +50,11 @@ if (JAVA_RUNTIME)
   # Find Saxon 6.5.x
   #
   find_file (SAXON
-    NAMES saxon.jar saxon6.jar saxon-6.5.5.jar saxon-6.5.4.jar saxon-6.5.3.jar
+    NAMES saxon.jar saxon6.jar saxon-6.5.5.jar saxon-6.5.4.jar saxon-6.5.3.jar saxon9he.jar
     PATH_SUFFIXES share/java
                   share/java/saxon
                   share/java/saxon6
-                  share/saxon-6.5/lib 
+                  share/saxon-6.5/lib
     DOC "location of saxon 6.5.x JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
   )

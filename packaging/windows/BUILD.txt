@@ -1,0 +1,99 @@
+How to make a darktable windows installer (64 bit Intel only):
+
+1). Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
+    
+    Install x64 developer toolchain from the MSYS2 prompt:
+    $ pacman -S mingw-w64-x86_64-toolchain
+    
+    Install required dependencies:
+    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,libglade,dbus-glib,libusb-compat,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk-engines,gtk3,pugixml}
+    $ pacman -S unzip perl-Locale-Gettext perl-TermReadKey perl-sgmls
+
+    For other gtk libraries:
+    $ pacman -S mingw-w64-x86_64-{atkmm, glibmm, cairomm, gtkmm3, gtksourceview3}
+
+    $ gdk-pixbuf-query-loaders --update-cache ??
+
+    Install SAXON:
+    https://sourceforge.net/projects/saxon/files/Saxon-HE/
+    copy files into /usr/share/java/saxon/
+
+    Install DocBook Extension to Saxon 
+    https://sourceforge.net/projects/docbook/files/docbook-xsl-saxon/1.00/
+    copy files to /usr/share/java/docbook-xsl-saxon
+
+    Install PO4A:
+    https://alioth.debian.org/frs/?group_id=30267
+    Extract and copy to your home folder
+    $ perl Build.PL
+    $ ./Build
+    $ ./Build install
+
+    Modify your bash_profile file in your HOME directory
+    #added as per http://wiki.gimp.org/wiki/Hacking:Building/Windows
+    export PREFIX="/mingw64"
+    export PATH="$PREFIX/bin:$PATH"
+
+    JAVA_HOME="/C/Program Files (x86)/Java/jre1.8.0_101"
+    export PATH=$JAVA_HOME/bin:$PATH
+
+    CHECK THIS!
+    export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
+    export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
+
+    #Update your CLASSPATH
+    CLASSPATH=$CLASSPATH:/usr/share/java/saxon/saxon9he.jar:/usr/share/java/docbook-xsl-saxon/saxon653.jar
+    export CLASSPATH
+    
+    execute the following command to actviate  profile changes 
+    $. .bash_profile
+
+    Clone darktable git repository (in this example into ~/src):
+        $ mkdir ~/src
+        $ cd ~/src
+        $ git clone git://github.com/darktable-org/darktable.git
+    
+    Finally build and install darktable:
+        $ mkdir darktablebuild
+        $ cd darktablebuild
+        $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/opt/darktable ../darktable
+        $ cmake --build .
+        $ cmake --build . --target install
+
+        //OLD
+        $ cd darktable
+        $ ../build.sh --build-type Release --build-generator 'MSYS Makefiles'
+        $ ./build.sh --build-dir ../darktablebuild --build-type Release --build-generator 'MSYS Makefiles' --skip-build
+        $ cmake --build ../darktablebuild
+        $ cmake --build ../darktablebuild --target install
+        $ make
+        After this darktable will be installed in /opt/darktable directory and can be started by typing /opt/darktable/bin/darktable.exe in MSYS2 MINGW64 terminal.
+
+        debug:  gdb --args /opt/darktable/bin/darktable.exe  --library "C:/Development/library.db"
+2). Download, patch and install gtk-bundle for Windows and install it
+    https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
+    + We need to copy into the "C:\Program Files\GTK3-Runtime Win64\bin" folder the following files:
+    libgdk_pixbuf-2.0-0.dll (overwriting the existing)
+    libgdk-win32-2.0-0.dll (additional file)
+    libgtk-win32-2.0-0.dll (additional file)
+    add the following files
+    libgcc_s_seh_64-1.dll - > to libgcc_s_seh-1.dll
+    libstdc++_64-6.dll -> to libstdc++-6.dll
+    libwinpthread_64-1.dll-> to libwinpthread-1.dll
+
+    need to run the installer as admin to run the cache generation
+
+3). Now preparation is done, run image creating script, it should create darktable-<VERSION>.msi in current (packaging/windows) directory:
+     $ cd ~/src/darktable/packaging/windows
+     $ ./make-windows-installer
+
+ISSUES
+    Darktablerc is being generated with Windows style line endings ( CRLF \r\n) , and file reading functions are expecting a UNIX style line ending (only CR \n)
+    same problem with strip_semicolons_from_keymap function 
+    Reading memory at init - done
+    Finding OpenCL library - done
+    Reading DPI at init
+    Loading libraries / finding plugin library
+    Do we need lib ws2_32?
+    Do we need lib msvcrt?
+    strptime had to be added

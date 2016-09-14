@@ -42,7 +42,13 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
+
+//statvfs does not exist in Windows
+#if !defined(_WIN32)
 #include <sys/statvfs.h>
+#else 
+#include "win/statvfs.h"
+#endif
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
 #define DT_MIPMAP_CACHE_FILE_VERSION 23
@@ -400,22 +406,22 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
           if (!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = fopen(filename, "wb")))
           {
             // first check the disk isn't full
-            struct statvfs vfsbuf;
-            if (!statvfs(filename, &vfsbuf))
-            {
-              int64_t free_mb = ((vfsbuf.f_frsize * vfsbuf.f_bavail) >> 20);
-              if (free_mb < 100)
+              struct statvfs vfsbuf;
+              if (!statvfs(filename, &vfsbuf))
               {
-                fprintf(stderr, "Aborting image write as only %" PRId64 " MB free to write %s\n", free_mb, filename);
-                goto write_error;
-              }
+                int64_t free_mb = ((vfsbuf.f_frsize * vfsbuf.f_bavail) >> 20);
+                if (free_mb < 100)
+                {
+                  fprintf(stderr, "Aborting image write as only %" PRId64 " MB free to write %s\n", free_mb, filename);
+                  goto write_error;
+                }
             }
             else
             {
               fprintf(stderr, "Aborting image write since couldn't determine free space available to write %s\n", filename);
               goto write_error;
             }
-
+            
             const int cache_quality = dt_conf_get_int("database_cache_quality");
             const uint8_t *exif = NULL;
             int exif_len = 0;

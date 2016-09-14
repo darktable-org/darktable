@@ -167,7 +167,7 @@ num_cpu()
 	SunOS)
 		ncpu=$(/usr/sbin/psrinfo |wc -l)
 		;;
-	Linux)
+	Linux|MINGW64*)
 		if [ -r /proc/cpuinfo ]; then
 			ncpu=$(grep -c "^processor" /proc/cpuinfo)
 		elif [ -x /sbin/sysctl ]; then
