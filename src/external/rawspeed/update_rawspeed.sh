@@ -2,17 +2,21 @@
 
 wget https://github.com/klauspost/rawspeed/archive/develop.zip
 
-unzip -j -o develop.zip rawspeed-develop/RawSpeed/* -d RawSpeed
-unzip -j -o develop.zip rawspeed-develop/data/* -d data
-
+unzip -o develop.zip rawspeed-develop/* -d ./
 rm develop.zip
+
+cp -a ./rawspeed-develop/. ./ && rm -rf rawspeed-develop
 
 rm RawSpeed/*.vcproj*
 rm RawSpeed/*.vcxproj*
 
-rm RawSpeed/pugiconfig.hpp RawSpeed/pugixml* RawSpeed/pugixml-readme.txt
+rm *.sln*
 
-fromdos RawSpeed/*
-fromdos data/*
+rm -rf dll
+rm -rf include
+rm -rf lib lib64
+
+rm RawSpeed/pugiconfig.hpp RawSpeed/pugixml* RawSpeed/pugixml-readme.txt
+rm RawSpeed/RawSpeed.cpp
 
 git diff --unified=15

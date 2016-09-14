@@ -16,14 +16,17 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <memory>
 
 #include "rawspeed/RawSpeed/RawSpeed-API.h"
 
@@ -105,17 +108,27 @@ int main(int argc, const char* argv[])
 
   try
   {
-    CameraMetaData *meta = new CameraMetaData(camfile);
+    std::unique_ptr<CameraMetaData> meta(new CameraMetaData(camfile));
+
+    if(!meta.get())
+    {
+      fprintf(stderr, "ERROR: Couldn't get a CameraMetaData instance\n");
+      return 2;
+    }
 
 #ifdef __AFL_HAVE_MANUAL_CONTROL
     __AFL_INIT();
 #endif
 
     FileReader f((char *) argv[1]);
-    RawParser t(f.readFile());
-    RawDecoder *d = t.getDecoder(meta);
 
-    if(!d)
+    std::unique_ptr<FileMap> m(f.readFile());
+
+    RawParser t(m.get());
+
+    std::unique_ptr<RawDecoder> d(t.getDecoder(meta.get()));
+
+    if(!d.get())
     {
       fprintf(stderr, "ERROR: Couldn't get a RawDecoder instance\n");
       return 2;
@@ -125,7 +138,7 @@ int main(int argc, const char* argv[])
     d->failOnUnknown = true;
     RawImage r = d->mRaw;
 
-    d->decodeMetaData(meta);
+    d->decodeMetaData(meta.get());
 
     fprintf(stdout, "make: %s\n", r->metadata.make.c_str());
     fprintf(stdout, "model: %s\n", r->metadata.model.c_str());
@@ -134,9 +147,9 @@ int main(int argc, const char* argv[])
     fprintf(stdout, "canonical_model: %s\n", r->metadata.canonical_model.c_str());
     fprintf(stdout, "canonical_alias: %s\n", r->metadata.canonical_alias.c_str());
 
-    d->checkSupport(meta);
+    d->checkSupport(meta.get());
     d->decodeRaw();
-    d->decodeMetaData(meta);
+    d->decodeMetaData(meta.get());
     r = d->mRaw;
     for (uint32 i=0; i<r->errors.size(); i++)
       fprintf(stderr, "WARNING: [rawspeed] %s\n", r->errors[i]);

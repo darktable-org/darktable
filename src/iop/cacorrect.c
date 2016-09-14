@@ -67,12 +67,6 @@ int flags()
   return IOP_FLAGS_ONE_INSTANCE;
 }
 
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return sizeof(float);
-}
-
-
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);
@@ -312,7 +306,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const uint32_t filters = piece->pipe->filters;
+  const uint32_t filters = piece->pipe->dsc.filters;
   memcpy(out, in2, width * height * sizeof(float));
   const float *const in = out;
   const double cared = 0, cablue = 0;
@@ -1500,7 +1494,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // can't be switched on for non-raw or x-trans images:
-  if(dt_image_is_raw(&module->dev->image_storage) && (module->dev->image_storage.filters != 9u))
+  if(dt_image_is_raw(&module->dev->image_storage) && (module->dev->image_storage.buf_dsc.filters != 9u))
     module->hide_enable_button = 0;
   else
     module->hide_enable_button = 1;
@@ -1561,7 +1555,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(dt_iop_module_t *self)
 {
   if(dt_image_is_raw(&self->dev->image_storage))
-    if(self->dev->image_storage.filters != 9u)
+    if(self->dev->image_storage.buf_dsc.filters != 9u)
       gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
     else
       gtk_label_set_text(GTK_LABEL(self->widget),

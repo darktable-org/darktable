@@ -70,6 +70,9 @@ static void gui_reset_wrapper(struct dt_lib_module_t *self)
 
 static void gui_cleanup_wrapper(struct dt_lib_module_t *self)
 {
+  lua_lib_data_t *gui_data =self->data;
+  free(gui_data->name);
+  free(self->data);
   self->widget = NULL;
 }
 
@@ -94,7 +97,7 @@ uint32_t container_wrapper(struct dt_lib_module_t *self)
   return 0;
 }
 
-int position_wrapper(struct dt_lib_module_t *self)
+int position_wrapper(const struct dt_lib_module_t *self)
 {
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   uint32_t cur_view = cv->view(cv);
@@ -104,7 +107,11 @@ int position_wrapper(struct dt_lib_module_t *self)
       return gui_data->position_description[index].position;
     }
   }
-  printf("ERROR in lualib, couldn't find a position, this should never happen\n");
+  //printf("ERROR in lualib, couldn't find a position, this should never happen\n");
+  /*
+     No position found. This can happen if we are called while current view is not one
+     of our views. just return 0
+     */
   return 0;
 }
 

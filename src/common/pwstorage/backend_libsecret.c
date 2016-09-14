@@ -24,8 +24,6 @@
 #include "backend_libsecret.h"
 #include "control/conf.h"
 
-#include "version.h"
-
 #include <glib.h>
 #include <json-glib/json-glib.h>
 #include <libsecret/secret.h>

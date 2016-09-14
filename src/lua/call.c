@@ -28,7 +28,7 @@ int dt_lua_check_print_error(lua_State* L, int result)
   if(result == LUA_OK) return result;
   if(darktable.unmuted & DT_DEBUG_LUA)
   {
-    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s\n", lua_tostring(darktable.lua_state.state, -1));
+    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s\n", lua_tostring(L, -1));
   }
   lua_pop(L,1); // remove the error message, it has been handled
   return result;
@@ -130,10 +130,9 @@ static void run_async_thread_main(gpointer data,gpointer user_data)
   dt_lua_finish_callback  cb = lua_touserdata(thread,1);
   void * cb_data = lua_touserdata(thread,2);
   int nresults = lua_tointeger(thread, 3);
-  lua_pushcfunction(L,create_backtrace);
-  lua_insert(L,1);
-  int thread_result = lua_pcall(thread,  lua_gettop(thread)-4,nresults,1);
-  lua_remove(L,1);
+  lua_pushcfunction(thread,create_backtrace);
+  lua_insert(thread,4);
+  int thread_result = lua_pcall(thread,  lua_gettop(thread)-5,nresults,4);
   if(cb) {
     cb(thread,thread_result,cb_data);
   } else {
@@ -484,6 +483,13 @@ void dt_lua_async_call_internal(const char* function, int line,lua_State *L, int
 
 void dt_lua_async_call_alien_internal(const char * call_function, int line,lua_CFunction pusher,int nresults,dt_lua_finish_callback cb, void*cb_data, dt_lua_async_call_arg_type arg_type,...)
 {
+  if(!darktable.lua_state.alien_job_queue) {
+    // early call before lua has properly been initialized, ignore
+#ifdef _DEBUG
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called early. probably ok.\n",__FUNCTION__);
+#endif
+    return;
+  }
 #ifdef _DEBUG
   dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,call_function,line);
 #endif

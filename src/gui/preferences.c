@@ -265,10 +265,13 @@ void dt_gui_preferences_show()
   init_tab_accels(notebook);
   init_tab_presets(notebook);
 #ifdef USE_LUA
-  init_tab_lua(_preferences_dialog, notebook);
+  GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, notebook);
 #endif
   gtk_widget_show_all(_preferences_dialog);
   (void)gtk_dialog_run(GTK_DIALOG(_preferences_dialog));
+#ifdef USE_LUA
+  destroy_tab_lua(lua_grid);
+#endif
   gtk_widget_destroy(_preferences_dialog);
 
   // Cleaning up any memory still allocated for remapping

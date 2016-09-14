@@ -27,7 +27,6 @@
 #include "dtgtk/button.h"
 #include "gui/gtkentry.h"
 #include "imageio/format/imageio_format_api.h"
-#include "version.h"
 
 DT_MODULE(1)
 

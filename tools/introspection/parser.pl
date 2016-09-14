@@ -24,6 +24,9 @@ our $ERROR_LEVEL = 0;
 use strict;
 use warnings;
 
+use FindBin;
+use lib "$FindBin::RealBin";
+
 use scanner;
 use parser;
 use ast;

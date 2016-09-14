@@ -56,11 +56,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   int process_cl_ready;       // set this to 0 in commit_params to temporarily disable the use of process_cl
 
   // the following are used  internally for caching:
-  float processed_maximum[4]; // sensor saturation after this iop
-  // sensor pattern aka filters, propagated through the operations:
-  uint32_t filters; // Bayer demosaic pattern
-  /* filter for Fuji X-Trans images, only used if filters == 9u */
-  uint8_t xtrans[6][6];
+  dt_iop_buffer_dsc_t dsc_in, dsc_out;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
@@ -93,13 +89,10 @@ typedef struct dt_dev_pixelpipe_t
   float iscale;
   // dimensions of processed buffer
   int processed_width, processed_height;
-  // sensor saturation, propagated through the operations:
-  float processed_maximum[4];
 
-  // sensor pattern aka filters, propagated through the operations:
-  uint32_t filters; // Bayer demosaic pattern
-  /* filter for Fuji X-Trans images, only used if filters == 9u */
-  uint8_t xtrans[6][6];
+  // this one actually contains the expected output format,
+  // and should be modified by process*(), if necessary.
+  dt_iop_buffer_dsc_t dsc;
 
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
