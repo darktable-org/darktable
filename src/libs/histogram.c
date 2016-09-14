@@ -412,7 +412,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   pango_layout_set_font_description(layout, desc);
 
   char exifline[50];
-  dt_image_print_exif(&dev->image_storage, exifline, 50);
+  dt_image_print_exif(&dev->image_storage, exifline, sizeof(exifline));
+
   pango_layout_set_text(layout, exifline, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .02 * width, .98 * height - ink.height - ink.y);

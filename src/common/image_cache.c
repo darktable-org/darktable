@@ -104,16 +104,29 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
 
     // buffer size?
     if(img->flags & DT_IMAGE_LDR)
-      img->bpp = 4 * sizeof(float);
+    {
+      img->buf_dsc.channels = 4;
+      img->buf_dsc.datatype = TYPE_FLOAT;
+    }
     else if(img->flags & DT_IMAGE_HDR)
     {
       if(img->flags & DT_IMAGE_RAW)
-        img->bpp = sizeof(float);
+      {
+        img->buf_dsc.channels = 1;
+        img->buf_dsc.datatype = TYPE_FLOAT;
+      }
       else
-        img->bpp = 4 * sizeof(float);
+      {
+        img->buf_dsc.channels = 4;
+        img->buf_dsc.datatype = TYPE_FLOAT;
+      }
     }
-    else // raw
-      img->bpp = sizeof(uint16_t);
+    else
+    {
+      // raw
+      img->buf_dsc.channels = 1;
+      img->buf_dsc.datatype = TYPE_UINT16;
+    }
   }
   else
   {

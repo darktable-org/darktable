@@ -325,8 +325,8 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   const int width = winw, height = winh;
   //   const float clip_pt = 1.0 / initialGain;
   //   const float clip_pt8 = 0.8 / initialGain;
-  const float clip_pt = fminf(piece->pipe->processed_maximum[0],
-                              fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+  const float clip_pt = fminf(piece->pipe->dsc.processed_maximum[0],
+                              fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   const float clip_pt8 = 0.8f * clip_pt;
 
 // this allows to pass AMAZETS to the code. On some machines larger AMAZETS is faster

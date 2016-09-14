@@ -70,11 +70,6 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
-int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return 4 * sizeof(float);
-}
-
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
 {
   dt_iop_scalepixels_data_t *d = piece->data;
