@@ -1024,23 +1024,6 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   // writing during raw loading, to write to width/height.
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
-  unsigned int pattern_size;
-  switch(image->buf_dsc.filters)
-  {
-    case 0u:
-      // non-mosaiced image - not bayer/x-trans
-      pattern_size = 1;
-      break;
-    case 9u:
-      // x-trans
-      pattern_size = 6;
-      break;
-    default:
-      // bayer
-      pattern_size = 2;
-      break;
-  }
-
   dt_iop_roi_t roi_in, roi_out;
   roi_in.x = roi_in.y = 0;
   roi_in.width = image->width;
@@ -1049,33 +1032,12 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
 
   roi_out.x = roi_out.y = 0;
 
-  // how much pixel blocks to bin into one
-  unsigned int bin_blocks = 0;
-
   // now let's figure out the scaling...
-  if(image->buf_dsc.filters == 9u)
-  {
-    // ideal [inverse] scale, will result in same aspect ratio and
-    // same or smaller area than requested.
-    const float inv_scale
-        = fmaxf((float)image->width / ((float)2.0f * wd), (float)image->height / ((float)2.0f * ht));
 
-    // why "2*"? MIP_F is 4 channels, and we use only one channel => can increase area
+  // MIP_F is 4 channels, and we do not demosaic here
+  const float coeff = (image->buf_dsc.filters) ? 2.0f : 1.0f;
 
-    // this is how much blocks will be binned into 1
-    // !!! we want to always round up, to never overflow out buffer !!!
-    bin_blocks = (int)ceilf(inv_scale);
-
-    roi_out.scale = 1.0f / (float)bin_blocks;
-  }
-  else
-  {
-    // MIP_F is 4 channels, and we do not demosaic here
-    const float coeff = (image->buf_dsc.filters) ? 2.0f : 1.0f;
-
-    roi_out.scale = fminf((coeff * (float)wd) / (float)image->width, (coeff * (float)ht) / (float)image->height);
-  }
-
+  roi_out.scale = fminf((coeff * (float)wd) / (float)image->width, (coeff * (float)ht) / (float)image->height);
   roi_out.width = roi_out.scale * roi_in.width;
   roi_out.height = roi_out.scale * roi_in.height;
 
@@ -1110,15 +1072,14 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
                                                     &roi_in, roi_out.width, roi_in.width, image->buf_dsc.xtrans,
                                                     image->raw_white_point);
     }
-    else if(image->buf_dsc.datatype == TYPE_FLOAT)
+    else if(image->buf_dsc.filters == 9u && image->buf_dsc.datatype == TYPE_FLOAT)
     {
-      dt_iop_clip_and_zoom_pixel_binning_f((float *const)out, (const float *const)buf.buf, &roi_out, &roi_in,
-                                           roi_out.width, roi_in.width, pattern_size, bin_blocks);
+      dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(out, (const float *)buf.buf, &roi_out, &roi_in,
+                                                      roi_out.width, roi_in.width, image->buf_dsc.xtrans);
     }
     else
     {
-      dt_iop_clip_and_zoom_pixel_binning((uint16_t * const)out, (const uint16_t *const)buf.buf, &roi_out, &roi_in,
-                                         roi_out.width, roi_in.width, pattern_size, bin_blocks);
+      dt_unreachable_codepath();
     }
 #else
     // demosaic during downsample
