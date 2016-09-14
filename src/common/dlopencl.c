@@ -28,8 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(WIN32)
-static const char *ocllib[] = { "OpenCL", NULL };
+#if defined(_WIN32)
+static const char *ocllib[] = { "OpenCL.dll", NULL };
 #elif defined(__APPLE__)
 static const char *ocllib[] = { "/System/Library/Frameworks/OpenCL.framework/Versions/Current/OpenCL", NULL };
 #else

@@ -132,6 +132,29 @@ endif()
 if(WIN32)
   message("-- Win32 build detected, setting default features")
   set(USE_CAMERA_SUPPORT OFF)
+  set(USE_COLORD OFF)
+  set(USE_MAP OFF)
+  set(USE_LUA OFF)
+  set(DONT_USE_INTERNAL_LUA OFF)
+  set(USE_FLICKR OFF)
+  set(USE_KWALLET OFF)
+  set(USE_LIBSECRET OFF)
+  set(BUILD_SLIDESHOW OFF)
+  set(BUILD_USERMANUAL OFF)
+  set(BUILD_CMSTEST OFF)
+  set(BUILD_PRINT OFF)
+  set(BUILD_RS_IDENTIFY  OFF)
+  set(CUSTOM_CFLAGS ON)
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
+  # add it to have proper time.h functions available
+  add_definitions(-D_POSIX_THREAD_SAFE_FUNCTIONS)
+
+  # add it to have printf formatting functions available
+  add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
+
+  message(STATUS "CMAKE_BASE_NAME: ${CMAKE_BASE_NAME}")
+
 endif(WIN32)
 
 

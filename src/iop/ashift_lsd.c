@@ -1914,7 +1914,7 @@ static int reduce_region_radius( struct point * reg, int * reg_size,
                                  image_char used, image_double angles,
                                  double density_th )
 {
-  double density,rad1,rad2,rad,xc,yc;
+  double density,radius1,radius2,rad,xc,yc;
   int i;
 
   /* check parameters */
@@ -1938,9 +1938,9 @@ static int reduce_region_radius( struct point * reg, int * reg_size,
   /* compute region's radius */
   xc = (double) reg[0].x;
   yc = (double) reg[0].y;
-  rad1 = dist( xc, yc, rec->x1, rec->y1 );
-  rad2 = dist( xc, yc, rec->x2, rec->y2 );
-  rad = rad1 > rad2 ? rad1 : rad2;
+  radius1 = dist( xc, yc, rec->x1, rec->y1 );
+  radius2 = dist( xc, yc, rec->x2, rec->y2 );
+  rad = radius1 > radius2 ? radius1 : radius2;
 
   /* while the density criterion is not satisfied, remove farther pixels */
   while( density < density_th )

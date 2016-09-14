@@ -8,6 +8,7 @@
 
 #undef __STRICT_ANSI__
 #define XMD_H
+#include <winsock2.h>
 #include <windows.h>
 
 // ugly hack to make our code work. windows.h has some terrible includes which define these things

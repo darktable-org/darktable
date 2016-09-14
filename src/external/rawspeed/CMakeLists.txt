@@ -27,7 +27,7 @@ endif(WIN32)
 #
 # set development flags for rawspeed
 #
-if(NOT SOURCE_PACKAGE AND NOT APPLE)
+if(NOT SOURCE_PACKAGE AND NOT APPLE AND NOT WIN32)
   # apple build fails on deprecated warnings..
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")

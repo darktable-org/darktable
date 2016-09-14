@@ -107,6 +107,18 @@ if(APPLE)
   set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX)
 endif(APPLE)
 
+if(WIN32)
+  list(APPEND SOURCE_FILES "win/strptime.c")
+  list(APPEND HEADER_FILES "win/strptime.h")
+  list(APPEND SOURCE_FILES "win/statvfs.c")
+  list(APPEND HEADER_FILES "win/statvfs.h")
+
+  list(APPEND SOURCE_FILES "win/getrusage.c")
+
+  # Use mingw's sprintf instead of windows's
+  ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
+endif(WIN32)
+
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
@@ -364,9 +376,10 @@ endif(NOT WIN32)
 
 if(WIN32)
   # get rid of the console window. do we need both?
-#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
-
+  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
+  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
+  
+  #TODO: Review these
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
@@ -374,12 +387,13 @@ if(WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mms-bitfields")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
 
-  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
-  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
+  #removed the -s flag, as it has stripped the debug symbols even from debug builds
+  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
+  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
-  list(APPEND LIBS ws2_32)
-  list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
-  list(APPEND SOURCES "win/getrusage.c")
+  # Don't really need these IMHO
+  #list(APPEND LIBS ws2_32)
+  #list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
@@ -636,7 +650,7 @@ endif()
 #
 # set development flags for our code
 #
-if(NOT SOURCE_PACKAGE AND NOT APPLE)
+if(NOT SOURCE_PACKAGE AND NOT APPLE AND NOT WIN32)
   # apple build fails on deprecated warnings..
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
@@ -811,6 +825,30 @@ if(BUILD_SLIDESHOW)
   endif(SDL_FOUND AND OPENGL_FOUND)
 endif(BUILD_SLIDESHOW)
 
+#diagnostic at the end of the CMAKE file
+
+get_cmake_property(_variableNames VARIABLES)
+foreach (_variableName ${_variableNames})
+    #message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  #message(STATUS "dir='${dir}'")
+endforeach()
+
+foreach(lib ${LIBS})
+  message(STATUS "lib='${lib}'")
+endforeach()
+
+#message(STATUS "lib='${LIBS}'")
+
+# the compiler flags for compiling C sources 
+MESSAGE( STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} )
+
+# the compiler flags for compiling C++ sources 
+MESSAGE( STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS} )
+
 #
 # build darktable executable
 #
@@ -821,6 +859,7 @@ if(NOT WIN32)
   set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
   set_target_properties(darktable PROPERTIES INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(NOT WIN32)
+
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")

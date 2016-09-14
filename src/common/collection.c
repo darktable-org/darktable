@@ -32,6 +32,12 @@
 #include <unistd.h>
 
 
+#ifdef _WIN32
+//MSVCRT does not have strptime implemented
+#include "win/strptime.h"
+#endif
+
+
 #define SELECT_QUERY "select distinct * from %s"
 #define ORDER_BY_QUERY "order by %s"
 #define LIMIT_QUERY "limit ?1, ?2"

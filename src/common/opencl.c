@@ -1295,42 +1295,44 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   FILE *cached = fopen_stat(binname, &cachedstat);
   if(cached)
   {
-
-    if((linkedfile_len = readlink(binname, linkedfile, sizeof(linkedfile) - 1)) > 0)
-    {
-      linkedfile[linkedfile_len] = '\0';
-
-      if(strncmp(linkedfile, md5sum, 33) == 0)
+    #if defined(_WIN32)
+    #else
+      if((linkedfile_len = readlink(binname, linkedfile, sizeof(linkedfile) - 1)) > 0)
       {
-        // md5sum matches, load cached binary
-        size_t cached_filesize = cachedstat.st_size;
+        linkedfile[linkedfile_len] = '\0';
 
-        unsigned char *cached_content = (unsigned char *)malloc(cached_filesize + 1);
-        rd = fread(cached_content, sizeof(char), cached_filesize, cached);
-        if(rd != cached_filesize)
+        if(strncmp(linkedfile, md5sum, 33) == 0)
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);
-        }
-        else
-        {
-          cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(
-              cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize,
-              (const unsigned char **)&cached_content, NULL, &err);
-          if(err != CL_SUCCESS)
+          // md5sum matches, load cached binary
+          size_t cached_filesize = cachedstat.st_size;
+
+          unsigned char *cached_content = (unsigned char *)malloc(cached_filesize + 1);
+          rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+          if(rd != cached_filesize)
           {
-            dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n",
-                     binname, err);
+            dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);
           }
           else
           {
-            cl->dev[dev].program_used[prog] = 1;
-            *loaded_cached = 1;
+            cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(
+                cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize,
+                (const unsigned char **)&cached_content, NULL, &err);
+            if(err != CL_SUCCESS)
+            {
+              dt_print(DT_DEBUG_OPENCL,
+                      "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n",
+                      binname, err);
+            }
+            else
+            {
+              cl->dev[dev].program_used[prog] = 1;
+              *loaded_cached = 1;
+            }
           }
+          free(cached_content);
         }
-        free(cached_content);
-      }
     }
+    #endif
     fclose(cached);
   }
 
@@ -1467,14 +1469,17 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           fclose(f);
 
           // create link (e.g. basic.cl.bin -> f1430102c53867c162bb60af6c163328)
-          char cwd[PATH_MAX] = { 0 };
-          if(!getcwd(cwd, sizeof(cwd))) goto ret;
-          if(chdir(cachedir) != 0) goto ret;
-          char dup[PATH_MAX] = { 0 };
-          g_strlcpy(dup, binname, sizeof(dup));
-          char *bname = basename(dup);
-          if(symlink(md5sum, bname) != 0) goto ret;
-          if(chdir(cwd) != 0) goto ret;
+          #if defined(_WIN32)
+          #else
+            char cwd[PATH_MAX] = { 0 };
+            if(!getcwd(cwd, sizeof(cwd))) goto ret;
+            if(chdir(cachedir) != 0) goto ret;
+            char dup[PATH_MAX] = { 0 };
+            g_strlcpy(dup, binname, sizeof(dup));
+            char *bname = basename(dup);
+            if(symlink(md5sum, bname) != 0) goto ret;
+            if(chdir(cwd) != 0) goto ret;
+          #endif
         }
 
     ret:

@@ -259,15 +259,17 @@ static void strip_semicolons_from_keymap(const char *path)
     while(c != '\n') c = fgetc(fin);
   }
 
-  // Then ignore the first two characters of each line, copying the rest out
+  
   while(c != EOF)
   {
-    fseek(fin, 2, SEEK_CUR);
-    do
+    //Ignore the first two characters of each line, copying the rest out
+    c = fgetc(fin);
+    c = fgetc(fin);
+    while((c = fgetc(fin)) != EOF)
     {
-      c = fgetc(fin);
-      if(c != EOF) fputc(c, fout);
-    } while(c != '\n' && c != EOF);
+      fputc(c, fout);
+      if(c == '\n') {break;} 
+    }
   }
 
   fclose(fin);
@@ -861,10 +863,10 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   const gchar *lang = dt_conf_get_string("ui_last/gui_language");
   if(lang != NULL && lang[0] != '\0')
   {
-    setenv("LANGUAGE", lang, 1);
+    g_setenv("LANGUAGE", lang, 1);
     if(setlocale(LC_ALL, lang) != NULL) gtk_disable_setlocale();
     setlocale(LC_MESSAGES, lang);
-    setenv("LANG", lang, 1);
+    g_setenv("LANGUAGE", lang, 1);
   }
   g_free((gchar *)lang);
 

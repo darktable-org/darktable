@@ -26,6 +26,13 @@
 #include <unistd.h>
 #endif
 
+#if defined _WIN32 
+#include <stdlib.h>
+#include <math.h>
+#include <glib.h>
+#include <glib/gi18n.h>
+#endif
+
 #include <sys/stat.h>
 
 #ifdef HAVE_CONFIG_H

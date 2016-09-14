@@ -158,6 +158,12 @@ if(USE_XMLLINT)
   add_dependencies(darktablerc_file validate_darktableconfig_xml)
 endif(USE_XMLLINT)
 
+if (WIN32 AND EXISTS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc)
+  #make sure line endings are UNIX like even on Windows
+  configure_file(${CMAKE_CURRENT_BINARY_DIR}/darktablerc ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.tmp NEWLINE_STYLE LF)
+  configure_file(${CMAKE_CURRENT_BINARY_DIR}/darktablerc.tmp ${CMAKE_CURRENT_BINARY_DIR}/darktablerc COPYONLY)
+endif(WIN32 AND EXISTS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc)
+
 # first of all install darktablerc file into share as template
 # postinst script should copy this into users homedirectory
 # $HOME/.config/darktable/darktable.rc
