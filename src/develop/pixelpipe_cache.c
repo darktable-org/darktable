@@ -18,6 +18,7 @@
 
 #include "develop/pixelpipe_cache.h"
 #include "develop/pixelpipe_hb.h"
+#include "develop/format.h"
 #include "libs/lib.h"
 #include <stdlib.h>
 
@@ -36,6 +37,10 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, si
   cache->entries = entries;
   cache->data = (void **)calloc(entries, sizeof(void *));
   cache->size = (size_t *)calloc(entries, sizeof(size_t));
+  cache->dsc = (dt_iop_buffer_dsc_t *)calloc(entries, sizeof(dt_iop_buffer_dsc_t));
+#ifdef _DEBUG
+  memset(cache->dsc, 0x2c, sizeof(dt_iop_buffer_dsc_t) * entries);
+#endif
   cache->hash = (uint64_t *)calloc(entries, sizeof(uint64_t));
   cache->used = (int32_t *)calloc(entries, sizeof(int32_t));
   for(int k = 0; k < entries; k++)
@@ -57,16 +62,7 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, si
   return 1;
 
 alloc_memory_fail:
-  for(int k = 0; k < entries; k++)
-  {
-    if(cache->data[k]) dt_free_align(cache->data[k]);
-  }
-
-  free(cache->data);
-  free(cache->size);
-  free(cache->hash);
-  free(cache->used);
-
+  dt_dev_pixelpipe_cache_cleanup(cache);
   return 0;
 }
 
@@ -74,6 +70,7 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 {
   for(int k = 0; k < cache->entries; k++) dt_free_align(cache->data[k]);
   free(cache->data);
+  free(cache->dsc);
   free(cache->hash);
   free(cache->used);
   free(cache->size);
@@ -122,20 +119,20 @@ int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint
   return 0;
 }
 
-int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash,
-                                         const size_t size, void **data)
+int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size,
+                                         void **data, dt_iop_buffer_dsc_t **dsc)
 {
-  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, size, data, -cache->entries);
+  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, size, data, dsc, -cache->entries);
 }
 
 int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size,
-                               void **data)
+                               void **data, dt_iop_buffer_dsc_t **dsc)
 {
-  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, size, data, 0);
+  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, size, data, dsc, 0);
 }
 
-int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash,
-                                        const size_t size, void **data, int weight)
+int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size,
+                                        void **data, dt_iop_buffer_dsc_t **dsc, int weight)
 {
   cache->queries++;
   *data = NULL;
@@ -153,6 +150,7 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
     if(cache->hash[k] == hash)
     {
       *data = cache->data[k];
+      *dsc = &cache->dsc[k];
       sz = cache->size[k];
       cache->used[k] = weight; // this is the MRU entry
     }
@@ -170,6 +168,11 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
       cache->size[max] = size;
     }
     *data = cache->data[max];
+
+    // first, update our copy, then update the pointer to point at our copy
+    cache->dsc[max] = **dsc;
+    *dsc = &cache->dsc[max];
+
     cache->hash[max] = hash;
     cache->used[max] = weight;
     cache->misses++;

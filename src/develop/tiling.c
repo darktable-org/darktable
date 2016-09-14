@@ -587,8 +587,10 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 {
   void *input = NULL;
   void *output = NULL;
+  dt_iop_buffer_dsc_t dsc;
+  self->output_format(self, piece->pipe, piece, &dsc);
+  const int out_bpp = dt_iop_buffer_dsc_to_bpp(&dsc);
 
-  const int out_bpp = self->output_bpp(self, piece->pipe, piece);
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
@@ -717,7 +719,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   /* store processed_maximum to be re-used and aggregated */
   float processed_maximum_saved[4];
   float processed_maximum_new[4] = { 1.0f };
-  for(int k = 0; k < 4; k++) processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
+  for(int k = 0; k < 4; k++) processed_maximum_saved[k] = piece->pipe->dsc.processed_maximum[k];
 
 
   /* iterate over tiles */
@@ -756,7 +758,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
         memcpy((char *)input + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch, (size_t)wd * in_bpp);
 
       /* take original processed_maximum as starting point */
-      for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+      for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process() of module */
       self->process(self, piece, input, output, &iroi, &oroi);
@@ -766,12 +768,12 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
                appropriate action (calculate minimum, maximum, average, ...?) */
       for(int k = 0; k < 4; k++)
       {
-        if(tx + ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
+        if(tx + ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->dsc.processed_maximum[k]) > 1.0e-6f)
           dt_print(
               DT_DEBUG_DEV,
               "[default_process_tiling_ptp] processed_maximum[%d] differs between tiles in module '%s'\n", k,
               self->op);
-        processed_maximum_new[k] = piece->pipe->processed_maximum[k];
+        processed_maximum_new[k] = piece->pipe->dsc.processed_maximum[k];
       }
 
       /* correct origin and region of tile for overlap.
@@ -799,7 +801,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
     }
 
   /* copy back final processed_maximum */
-  for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_new[k];
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
 
   if(input != NULL) dt_free_align(input);
   if(output != NULL) dt_free_align(output);
@@ -835,7 +837,10 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   //_print_roi(roi_in, "module roi_in");
   //_print_roi(roi_out, "module roi_out");
 
-  const int out_bpp = self->output_bpp(self, piece->pipe, piece);
+  dt_iop_buffer_dsc_t dsc;
+  self->output_format(self, piece->pipe, piece, &dsc);
+  const int out_bpp = dt_iop_buffer_dsc_to_bpp(&dsc);
+
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
@@ -973,7 +978,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   /* store processed_maximum to be re-used and aggregated */
   float processed_maximum_saved[4];
   float processed_maximum_new[4] = { 1.0f };
-  for(int k = 0; k < 4; k++) processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
+  for(int k = 0; k < 4; k++) processed_maximum_saved[k] = piece->pipe->dsc.processed_maximum[k];
 
   /* iterate over tiles */
   for(size_t tx = 0; tx < tiles_x; tx++)
@@ -1096,7 +1101,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
                (size_t)iroi_full.width * in_bpp);
 
       /* take original processed_maximum as starting point */
-      for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+      for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process() of module */
       self->process(self, piece, input, output, &iroi_full, &oroi_full);
@@ -1106,12 +1111,12 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
                appropriate action (calculate minimum, maximum, average, ...?) */
       for(int k = 0; k < 4; k++)
       {
-        if(tx + ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
+        if(tx + ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->dsc.processed_maximum[k]) > 1.0e-6f)
           dt_print(
               DT_DEBUG_DEV,
               "[default_process_tiling_roi] processed_maximum[%d] differs between tiles in module '%s'\n", k,
               self->op);
-        processed_maximum_new[k] = piece->pipe->processed_maximum[k];
+        processed_maximum_new[k] = piece->pipe->dsc.processed_maximum[k];
       }
 
       /* copy "good" part of tile to output buffer */
@@ -1131,7 +1136,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
     }
 
   /* copy back final processed_maximum */
-  for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_new[k];
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
 
   if(input != NULL) dt_free_align(input);
   if(output != NULL) dt_free_align(output);
@@ -1187,8 +1192,11 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   void *input_buffer = NULL;
   void *output_buffer = NULL;
 
+  dt_iop_buffer_dsc_t dsc;
+  self->output_format(self, piece->pipe, piece, &dsc);
+  const int out_bpp = dt_iop_buffer_dsc_to_bpp(&dsc);
+
   const int devid = piece->pipe->devid;
-  const int out_bpp = self->output_bpp(self, piece->pipe, piece);
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
@@ -1300,7 +1308,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   /* store processed_maximum to be re-used and aggregated */
   float processed_maximum_saved[4];
   float processed_maximum_new[4] = { 1.0f };
-  for(int k = 0; k < 4; k++) processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
+  for(int k = 0; k < 4; k++) processed_maximum_saved[k] = piece->pipe->dsc.processed_maximum[k];
 
   /* reserve pinned input and output memory for host<->device data transfer */
   if(use_pinned_memory)
@@ -1418,7 +1426,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       }
 
       /* take original processed_maximum as starting point */
-      for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+      for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process_cl of module */
       if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
@@ -1428,12 +1436,12 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
                appropriate action (calculate minimum, maximum, average, ...?) */
       for(int k = 0; k < 4; k++)
       {
-        if(tx + ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
+        if(tx + ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->dsc.processed_maximum[k]) > 1.0e-6f)
           dt_print(
               DT_DEBUG_OPENCL,
               "[default_process_tiling_cl_ptp] processed_maximum[%d] differs between tiles in module '%s'\n",
               k, self->op);
-        processed_maximum_new[k] = piece->pipe->processed_maximum[k];
+        processed_maximum_new[k] = piece->pipe->dsc.processed_maximum[k];
       }
 
       if(use_pinned_memory)
@@ -1491,7 +1499,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
     }
 
   /* copy back final processed_maximum */
-  for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_new[k];
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
 
   if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
   if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
@@ -1504,7 +1512,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
 
 error:
   /* copy back stored processed_maximum */
-  for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
   if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
   if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
   if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
@@ -1539,8 +1547,11 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   //_print_roi(roi_in, "module roi_in");
   //_print_roi(roi_out, "module roi_out");
 
+  dt_iop_buffer_dsc_t dsc;
+  self->output_format(self, piece->pipe, piece, &dsc);
+  const int out_bpp = dt_iop_buffer_dsc_to_bpp(&dsc);
+
   const int devid = piece->pipe->devid;
-  const int out_bpp = self->output_bpp(self, piece->pipe, piece);
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
@@ -1673,7 +1684,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   /* store processed_maximum to be re-used and aggregated */
   float processed_maximum_saved[4];
   float processed_maximum_new[4] = { 1.0f };
-  for(int k = 0; k < 4; k++) processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
+  for(int k = 0; k < 4; k++) processed_maximum_saved[k] = piece->pipe->dsc.processed_maximum[k];
 
   /* reserve pinned input and output memory for host<->device data transfer */
   if(use_pinned_memory)
@@ -1870,7 +1881,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       }
 
       /* take original processed_maximum as starting point */
-      for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+      for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process_cl of module */
       if(!self->process_cl(self, piece, input, output, &iroi_full, &oroi_full)) goto error;
@@ -1880,12 +1891,12 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
                appropriate action (calculate minimum, maximum, average, ...?) */
       for(int k = 0; k < 4; k++)
       {
-        if(tx + ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
+        if(tx + ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->dsc.processed_maximum[k]) > 1.0e-6f)
           dt_print(
               DT_DEBUG_OPENCL,
               "[default_process_tiling_cl_roi] processed_maximum[%d] differs between tiles in module '%s'\n",
               k, self->op);
-        processed_maximum_new[k] = piece->pipe->processed_maximum[k];
+        processed_maximum_new[k] = piece->pipe->dsc.processed_maximum[k];
       }
 
       if(use_pinned_memory)
@@ -1925,7 +1936,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
     }
 
   /* copy back final processed_maximum */
-  for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_new[k];
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
   if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
   if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
   if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
@@ -1937,7 +1948,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
 
 error:
   /* copy back stored processed_maximum */
-  for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
   if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
   if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
   if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
