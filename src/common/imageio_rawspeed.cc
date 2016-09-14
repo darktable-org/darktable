@@ -129,30 +129,17 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   FileReader f(filen);
 #endif
 
-#ifdef __APPLE__
-  std::auto_ptr<RawDecoder> d;
-  std::auto_ptr<FileMap> m;
-#else
   std::unique_ptr<RawDecoder> d;
   std::unique_ptr<FileMap> m;
-#endif
 
   try
   {
     dt_rawspeed_load_meta();
 
-#ifdef __APPLE__
-    m = auto_ptr<FileMap>(f.readFile());
-#else
     m = unique_ptr<FileMap>(f.readFile());
-#endif
 
     RawParser t(m.get());
-#ifdef __APPLE__
-    d = auto_ptr<RawDecoder>(t.getDecoder(meta));
-#else
     d = unique_ptr<RawDecoder>(t.getDecoder(meta));
-#endif
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -248,14 +235,32 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // Grab the WB
     for(int i = 0; i < 4; i++) img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
-    img->filters = 0u;
+    img->buf_dsc.filters = 0u;
     if(!r->isCFA)
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, mbuf);
       return ret;
     }
 
-    img->bpp = r->getBpp();
+    if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32)) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    const float cpp = r->getCpp();
+    if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    img->buf_dsc.channels = 1;
+
+    switch(r->getBpp())
+    {
+      case sizeof(uint16_t):
+        img->buf_dsc.datatype = TYPE_UINT16;
+        break;
+      case sizeof(float):
+        img->buf_dsc.datatype = TYPE_FLOAT;
+        break;
+      default:
+        return DT_IMAGEIO_FILE_CORRUPTED;
+        break;
+    }
 
     // dimensions of uncropped image
     iPoint2D dimUncropped = r->getUncroppedDim();
@@ -280,18 +285,17 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     // as the X-Trans filters comments later on states, these are for
     // cropped image, so we need to uncrop them.
-    img->filters = dt_rawspeed_crop_dcraw_filters(r->cfa.getDcrawFilter(), cropTL.x, cropTL.y);
+    img->buf_dsc.filters = dt_rawspeed_crop_dcraw_filters(r->cfa.getDcrawFilter(), cropTL.x, cropTL.y);
 
-    if(FILTERS_ARE_4BAYER(img->filters))
-      img->flags |= DT_IMAGE_4BAYER;
+    if(FILTERS_ARE_4BAYER(img->buf_dsc.filters)) img->flags |= DT_IMAGE_4BAYER;
 
-    if(img->filters)
+    if(img->buf_dsc.filters)
     {
       img->flags &= ~DT_IMAGE_LDR;
       img->flags |= DT_IMAGE_RAW;
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
       // special handling for x-trans sensors
-      if(img->filters == 9u)
+      if(img->buf_dsc.filters == 9u)
       {
         // get 6x6 CFA offset from top left of cropped image
         // NOTE: This is different from how things are done with Bayer
@@ -302,7 +306,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         for(int i = 0; i < 6; ++i)
           for(int j = 0; j < 6; ++j)
           {
-            img->xtrans[j][i] = r->cfa.getColorAt(i % 6, j % 6);
+            img->buf_dsc.xtrans[j][i] = r->cfa.getColorAt(i % 6, j % 6);
           }
       }
     }
@@ -318,7 +322,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
      * (from Klaus: r->pitch may differ from DT pitch (line to line spacing))
      * else fallback to generic dt_imageio_flip_buffers()
      */
-    const size_t bufSize_mipmap = (size_t)img->width * img->height * img->bpp;
+    const size_t bufSize_mipmap = (size_t)img->width * img->height * r->getBpp();
     const size_t bufSize_rawspeed = (size_t)r->pitch * dimUncropped.y;
     if(bufSize_mipmap == bufSize_rawspeed)
     {
@@ -357,17 +361,18 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->height = r->dim.y;
 
   // actually we want to store full floats here:
-  img->bpp = 4 * sizeof(float);
-  img->cpp = r->getCpp();
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
 
   if(r->getDataType() != TYPE_USHORT16) return DT_IMAGEIO_FILE_CORRUPTED;
 
-  if(img->cpp != 1 && img->cpp != 3 && img->cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
+  const uint32_t cpp = r->getCpp();
+  if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
 
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
-  if(img->cpp == 1)
+  if(cpp == 1)
   {
 /*
  * monochrome image (e.g. Leica M9 monochrom),
@@ -382,7 +387,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       const uint16_t *in = (uint16_t *) r->getData(0, j);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
-      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
+      for(int i = 0; i < img->width; i++, in += cpp, out += 4)
       {
         for(int k = 0; k < 3; k++)
         {
@@ -391,7 +396,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       }
     }
   }
-  else if(img->cpp == 3 || img->cpp == 4)
+  else if(cpp == 3 || cpp == 4)
   {
 /*
  * standard 3-ch image
@@ -406,7 +411,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       const uint16_t *in = (uint16_t *) r->getData(0, j);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
-      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
+      for(int i = 0; i < img->width; i++, in += cpp, out += 4)
       {
         for(int k = 0; k < 3; k++)
         {

@@ -39,7 +39,6 @@
 #include "common/points.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
-#include "version.h"
 
 #include <inttypes.h>
 #include <libintl.h>
@@ -81,7 +80,8 @@ int main(int argc, char *arg[])
       }
       else if(!strcmp(arg[k], "--version"))
       {
-        printf("this is darktable-cli " PACKAGE_VERSION  "\ncopyright (c) 2012-2016 johannes hanika, tobias ellinghaus\n");
+        printf("this is darktable-cli %s\ncopyright (c) 2012-2016 johannes hanika, tobias ellinghaus\n",
+               darktable_package_version);
         exit(1);
       }
       else if(!strcmp(arg[k], "--width") && argc > k + 1)

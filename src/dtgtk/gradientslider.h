@@ -49,7 +49,7 @@ enum _gradient_slider_direction
 {
   MOVE_LEFT = 0,
   MOVE_RIGHT = 1
-} _gradient_slider_direction;
+};
 
 
 /** bitfields for marker: bit-0 open/filled, bit-1 lower off/on, bit-2 upper off/on, bit-3 size small/big */

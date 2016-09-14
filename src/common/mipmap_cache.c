@@ -232,7 +232,9 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   const int wd = img->width;
   const int ht = img->height;
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
-  const size_t buffer_size = (size_t)wd*ht*img->bpp + sizeof(*dsc);
+
+  const size_t bpp = dt_iop_buffer_dsc_to_bpp(&img->buf_dsc);
+  const size_t buffer_size = (size_t)wd * ht * bpp + sizeof(*dsc);
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
@@ -1057,10 +1059,10 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   mipmap_buf->pre_monochrome_demosaiced = 0;
   mipmap_buf->color_space = DT_COLORSPACE_NONE; // TODO: do we need that information in this buffer?
 
-  if(image->filters)
+  if(image->buf_dsc.filters)
   {
     // demosaic during downsample
-    if(image->filters != 9u)
+    if(image->buf_dsc.filters != 9u)
     {
       const char *method_name = NULL;
       const int method = dt_image_get_demosaic_method(imgid, &(method_name));
@@ -1069,7 +1071,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
              && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")));
 
       // Bayer
-      if(image->bpp == sizeof(float))
+      if(image->buf_dsc.datatype == TYPE_FLOAT)
       {
         if(mipmap_buf->pre_monochrome_demosaiced)
         {
@@ -1079,7 +1081,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
         else
         {
           dt_iop_clip_and_zoom_demosaic_half_size_f(out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width,
-                                                    roi_in.width, image->filters, 1.0f);
+                                                    roi_in.width, image->buf_dsc.filters, 1.0f);
         }
       }
       else
@@ -1092,7 +1094,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
         else
         {
           dt_iop_clip_and_zoom_demosaic_half_size(out, (const uint16_t *)buf.buf, &roi_out, &roi_in, roi_out.width,
-                                                  roi_in.width, image->filters);
+                                                  roi_in.width, image->buf_dsc.filters);
 
           // For four bayer images we'll need to convert to XYZ here as the pipe only carries 3 channels
           if(image->flags & DT_IMAGE_4BAYER)
@@ -1112,15 +1114,15 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
     else
     {
       // X-Trans
-      if(image->bpp == sizeof(float))
+      if(image->buf_dsc.datatype == TYPE_FLOAT)
       {
         dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(out, (const float *)buf.buf, &roi_out, &roi_in,
-                                                          roi_out.width, roi_in.width, image->xtrans);
+                                                          roi_out.width, roi_in.width, image->buf_dsc.xtrans);
       }
       else
       {
         dt_iop_clip_and_zoom_demosaic_third_size_xtrans(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
-                                                        roi_out.width, roi_in.width, image->xtrans);
+                                                        roi_out.width, roi_in.width, image->buf_dsc.xtrans);
       }
     }
   }
@@ -1239,13 +1241,10 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, dt_colorspa
       if(tmp.buf == NULL)
         continue;
       dt_print(DT_DEBUG_CACHE, "[_init_8] generate mip %d for %s from level %d\n", size, filename, k);
-      //keep aspect ratio
-      float scale = MIN(wd/(float)tmp.width, ht/(float)tmp.height);
-      *width = tmp.width*scale;
-      *height = tmp.height*scale;
       *color_space = tmp.color_space;
       // downsample
-      dt_iop_clip_and_zoom_8(tmp.buf, 0, 0, tmp.width, tmp.height, tmp.width, tmp.height, buf, 0, 0, *width, *height, *width, *height);
+      dt_iop_flip_and_zoom_8(tmp.buf, tmp.width, tmp.height, buf, wd, ht, ORIENTATION_NONE, width, height);
+
       dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
       res = 0;
       break;

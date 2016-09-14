@@ -1,20 +1,23 @@
 RawSpeed - a fast RAW file decoder.
-Copyright (C) 2009 Klaus Post
+Copyright (C) 2009-2014 Klaus Post
 
-Web: http://www.klauspost.com
+Project github: https://github.com/klauspost/rawspeed/
 
 Email: klauspost (at) gmail (dot) com
 
-Contains code from the following projects:
+
+RawSpeed contains code from the following projects:
 
  * libopenraw by Hubert Figuiere, et al.
  * http://libopenraw.freedesktop.org
-	
- * dcraw by David Coffin 
+
+ * dcraw by David Coffin
  * http://www.cybercom.net/~dcoffin/
 
 Thanks to:
-
+ * Pedro Côrte-Real for writing support for Minolta & old Panasonic cameras.
+ * Pascal de Bruijn for a ton of help with camera definitions
+ * Alex Tutubalin for bug reports, help and good suggestions
  * Laurent Clevy for his excellent CR2 documentation project:
  * http://lclevy.free.fr/cr2/index.html
  * All who supplied RAW test images to Rawstudio
