@@ -129,30 +129,17 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   FileReader f(filen);
 #endif
 
-#ifdef __APPLE__
-  std::auto_ptr<RawDecoder> d;
-  std::auto_ptr<FileMap> m;
-#else
   std::unique_ptr<RawDecoder> d;
   std::unique_ptr<FileMap> m;
-#endif
 
   try
   {
     dt_rawspeed_load_meta();
 
-#ifdef __APPLE__
-    m = auto_ptr<FileMap>(f.readFile());
-#else
     m = unique_ptr<FileMap>(f.readFile());
-#endif
 
     RawParser t(m.get());
-#ifdef __APPLE__
-    d = auto_ptr<RawDecoder>(t.getDecoder(meta));
-#else
     d = unique_ptr<RawDecoder>(t.getDecoder(meta));
-#endif
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
 
