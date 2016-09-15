@@ -99,7 +99,6 @@ elseif(SOURCE_PACKAGE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
 endif()
 
-add_definitions(-std=c++11)
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
 if(USE_XMLLINT)
   add_dependencies(rawspeed validate_cameras_xml)
