@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.8.5)
+cmake_minimum_required(VERSION 3.0)
+cmake_policy(SET CMP0025 NEW)
 
 project(darktable CXX C)
 

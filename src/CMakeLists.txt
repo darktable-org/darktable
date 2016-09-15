@@ -1,6 +1,7 @@
 cmake_policy(SET CMP0011 NEW)
 
 include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
 
 #
@@ -114,7 +115,22 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
+
+CHECK_C_COMPILER_FLAG("-std=c99" COMPILER_SUPPORTS_C99)
+if(NOT COMPILER_SUPPORTS_C99)
+        message(FATAL_ERROR "The compiler ${CMAKE_C_COMPILER} has no C99 support. Please use a different C compiler.")
+endif()
+
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+if(NOT COMPILER_SUPPORTS_CXX11)
+        message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+if(APPLE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif(APPLE)
 
 # Check for openmp
 find_package(OpenMP)
@@ -350,6 +366,16 @@ if(HAVE_BUILTIN_CPU_SUPPORTS)
 endif(HAVE_BUILTIN_CPU_SUPPORTS)
 MESSAGE(STATUS "Does the compiler support __builtin_cpu_supports(): ${HAVE_BUILTIN_CPU_SUPPORTS}")
 
+check_c_source_compiles("
+static __thread int tls;
+int main(void)
+{
+  return 0;
+}" HAVE_TLS)
+if(NOT HAVE_TLS)
+  MESSAGE(FATAL_ERROR "The compiler does not support Thread-local storage.")
+endif()
+
 #
 # Set default compile flags for GCC
 #
@@ -389,7 +415,7 @@ if(NOT CUSTOM_CFLAGS)
 
   if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
     set(MARCH "-msse4.2")
-  elseif(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
+  elseif(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang"))
     MESSAGE("-- Checking for -march=native support")
     CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
     if (MARCHNATIVE)
@@ -620,19 +646,6 @@ else(BUILD_PRINT)
 endif(BUILD_PRINT)
 
 #
-# We need C++11
-#
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-	endif()
-else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-
-#
 # set development flags for our code
 #
 if(DT_CMAKE_INCLUDE_WHAT_YOU_USE)
@@ -656,14 +669,20 @@ elseif(SOURCE_PACKAGE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=varargs")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=varargs")
 
   # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
   if(NOT CMAKE_C_COMPILER_VERSION LESS 4.0)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=address-of-packed-member")
   endif()
+elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=varargs")
+
+  # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
   if(NOT CMAKE_CXX_COMPILER_VERSION LESS 4.0)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=address-of-packed-member")
   endif()
