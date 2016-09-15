@@ -60,6 +60,9 @@ typedef enum dt_pixelpipe_picker_source_t
 
 #include "develop/pixelpipe_cache.c"
 
+static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
+                              dt_develop_t *dev, dt_iop_buffer_dsc_t *dsc);
+
 static char *_pipe_type_to_str(int pipe_type)
 {
   char *r;
@@ -156,10 +159,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->input = input;
   pipe->pre_monochrome_demosaiced = pre_monochrome_demosaiced;
   pipe->image = dev->image_storage;
-  pipe->dsc = pipe->image.buf_dsc;
-
-  pipe->dsc.filters = pipe->image.buf_dsc.filters;
-  memcpy(pipe->dsc.xtrans, pipe->image.buf_dsc.xtrans, sizeof(pipe->dsc.xtrans));
+  get_output_format(NULL, pipe, NULL, dev, &pipe->dsc);
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
