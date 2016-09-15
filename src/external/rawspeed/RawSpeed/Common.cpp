@@ -35,9 +35,13 @@ int macosx_version()
   char str[256];
   size_t strsize = sizeof(str);
   if (0 == ver && sysctlbyname("kern.osrelease", str, &strsize, NULL, 0) == 0) {
-    // sysctl is major.minor.path
-    *strchr(str, '.') = '\0';
-    ver = 0x1000 + strtol(str, NULL, 10)*10;
+    // kern.osrelease is a string formated as "Major.Minor.Patch"
+    if (memchr(str, '\0', strsize) != NULL) {
+      int major, minor, patch;
+      if (sscanf(str, "%d.%d.%d", &major, &minor, &patch) == 3) {
+        ver = 0x1000 + major*10;
+      }
+    }
   }
   return ver;
 }
