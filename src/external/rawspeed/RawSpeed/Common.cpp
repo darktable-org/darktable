@@ -24,14 +24,24 @@
 
 
 #if defined(__APPLE__)
-#include <CoreServices/CoreServices.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <stdlib.h>
+#include <string.h>
 
 int macosx_version()
 {
-  SInt32 gestalt_version;
   static int ver = 0; // cached
-  if (0 == ver && (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr)) {
-    ver = gestalt_version;
+  char str[256];
+  size_t strsize = sizeof(str);
+  if (0 == ver && sysctlbyname("kern.osrelease", str, &strsize, NULL, 0) == 0) {
+    // kern.osrelease is a string formated as "Major.Minor.Patch"
+    if (memchr(str, '\0', strsize) != NULL) {
+      int major, minor, patch;
+      if (sscanf(str, "%d.%d.%d", &major, &minor, &patch) == 3) {
+        ver = 0x1000 + major*10;
+      }
+    }
   }
   return ver;
 }
