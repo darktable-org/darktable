@@ -277,7 +277,7 @@ darktable.configuration.check_version:add_parameter("...","table...","Tables of 
 darktable.preferences:set_text([[Lua allows you to manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.]]..para()..
 [[Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.]]..para()..
 [[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. ]]..para()..
-[[Note that the directory, enum and file type preferences are stored internally as string. The user can only select valid values, but a lua script can set it to any string]])
+[[Note that the directory, enum, lua and file type preferences are stored internally as string. The user can only select valid values, but a lua script can set it to any string]])
 
 
 darktable.preferences.register:set_text([[Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).]])
@@ -291,6 +291,10 @@ darktable.preferences.register:add_parameter("min","int or float",[[Minimum valu
 darktable.preferences.register:add_parameter("max","int or float",[[Maximum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("step","float",[[Step of the spinner (float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("values","string...",[[Other allowed values (enum preferences only)]]):set_attribute("optional",true)
+darktable.preferences.register:add_parameter("wiget",types.lua_widget,[[The widget to use in preference(lua preferences only)]]):set_attribute("optional",true)
+tmp = darktable.preferences.register:add_parameter("set_callback","function",[[A function called when the widget needs to be updated from the preference]])
+tmp:set_attribute("optional",true)
+tmp:add_parameter("widget",types.lua_widget,"The widget to update")
 
 darktable.preferences.read:set_text([[Reads a value from a Lua preference.]])
 darktable.preferences.read:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
@@ -677,11 +681,11 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_format_data_webp.quality:set_text([[The quality to use at export time.]])
 	types.dt_imageio_module_format_data_webp.comp_type:set_text([[The overall quality to use; can be one of "webp_lossy" or "webp_lossless".]]):set_reported_type(types.comp_type_t);
 	types.dt_imageio_module_format_data_webp.hint:set_text([[A hint on the overall content of the image.]]):set_reported_type(types.hint_t)
-	types.dt_imageio_module_format_data_j2k:set_text([[Type object describing parameters to export to jpeg2000.]])
-	types.dt_imageio_module_format_data_j2k.quality:set_text([[The quality to use at export time.]])
-	types.dt_imageio_module_format_data_j2k.bpp:set_text([[The bpp parameter to use when exporting.]])
-	types.dt_imageio_module_format_data_j2k.format:set_text([[The format to use.]]):set_reported_type(types.dt_imageio_j2k_format_t)
-	types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use.]]):set_reported_type(types.dt_imageio_j2k_preset_t)
+	--types.dt_imageio_module_format_data_j2k:set_text([[Type object describing parameters to export to jpeg2000.]])
+	--types.dt_imageio_module_format_data_j2k.quality:set_text([[The quality to use at export time.]])
+	--types.dt_imageio_module_format_data_j2k.bpp:set_text([[The bpp parameter to use when exporting.]])
+	--types.dt_imageio_module_format_data_j2k.format:set_text([[The format to use.]]):set_reported_type(types.dt_imageio_j2k_format_t)
+	--types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use.]]):set_reported_type(types.dt_imageio_j2k_preset_t)
 
 
 	types.dt_imageio_module_format_data_pdf:set_text([[Type object describing parameters to export to pdf.]])
@@ -784,8 +788,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.hint_t:set_text([[a hint on the way to encode a webp image]])
 	types.dt_ui_container_t:set_text([[A place in the darktable UI where a lib can be placed]])
 	types.snapshot_direction_t:set_text([[Which part of the main window is occupied by a snapshot]])
-	types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
-	types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
+	--types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
+	--types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
 	types.comp_type_t:set_text([[Type of compression for webp]])
 	types.lua_pref_type:set_text([[The type of value to save in a preference]])
 
