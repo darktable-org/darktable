@@ -150,14 +150,13 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   return 1;
 }
 
-void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width,
-                                int height, float iscale, int pre_monochrome_demosaiced)
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height,
+                                float iscale)
 {
   pipe->iwidth = width;
   pipe->iheight = height;
   pipe->iscale = iscale;
   pipe->input = input;
-  pipe->pre_monochrome_demosaiced = pre_monochrome_demosaiced;
   pipe->image = dev->image_storage;
   get_output_format(NULL, pipe, NULL, dev, &pipe->dsc);
 }
@@ -220,10 +219,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       piece->histogram_stats.bins_count = 0;
       piece->histogram_stats.pixels = 0;
       piece->colors
-          = ((dt_iop_module_colorspace(module) == iop_cs_RAW)
-             && (!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)))
-                ? 1
-                : 4;
+          = ((dt_iop_module_colorspace(module) == iop_cs_RAW) && (pipe->image.flags & DT_IMAGE_RAW)) ? 1 : 4;
       piece->iscale = pipe->iscale;
       piece->iwidth = pipe->iwidth;
       piece->iheight = pipe->iheight;
@@ -334,7 +330,7 @@ static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe,
 
   // first input.
   // mipf and non-raw images have 4 floats per pixel
-  if(dt_dev_pixelpipe_uses_downsampled_input(pipe) || !(pipe->image.flags & DT_IMAGE_RAW))
+  if(!(pipe->image.flags & DT_IMAGE_RAW))
   {
     dsc->channels = 4;
     dsc->datatype = TYPE_FLOAT;
@@ -799,7 +795,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     }
     dt_times_t start;
     dt_get_times(&start);
-    if(!dt_dev_pixelpipe_uses_downsampled_input(pipe)) // we're looking for the full buffer
+    // we're looking for the full buffer
     {
       if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width
          && pipe->iheight == roi_out->height)
@@ -842,26 +838,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       }
       // else found in cache.
     }
-    // optimized branch (for mipf-preview):
-    else if(dt_dev_pixelpipe_uses_downsampled_input(pipe) && roi_out->scale == 1.0 && roi_out->x == 0
-            && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
-    {
-      *output = pipe->input;
-      **out_format = pipe->dsc;
-    }
-    else
-    {
-      // reserve new cache line: output
-      if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output, out_format))
-      {
-        roi_in.x /= roi_out->scale;
-        roi_in.y /= roi_out->scale;
-        roi_in.width = pipe->iwidth;
-        roi_in.height = pipe->iheight;
-        roi_in.scale = 1.0f;
-        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
-      }
-    }
+
     dt_show_times(&start, "[dev_pixelpipe]", "initing base buffer [%s]", _pipe_type_to_str(pipe->type));
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }

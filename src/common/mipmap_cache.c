@@ -77,7 +77,6 @@ struct dt_mipmap_buffer_dsc
   uint32_t height;
   size_t size;
   dt_mipmap_buffer_dsc_flags flags;
-  uint32_t pre_monochrome_demosaiced;
   dt_colorspaces_color_profile_type_t color_space;
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
 } __attribute__((packed, aligned(16)));
@@ -628,7 +627,7 @@ void dt_mipmap_cache_get_with_caller(
       buf->color_space = dsc->color_space;
       buf->imgid = imgid;
       buf->size = mip;
-      buf->pre_monochrome_demosaiced = dsc->pre_monochrome_demosaiced;
+
       // skip to next 8-byte alignment, for sse buffers.
       buf->buf = (uint8_t *)(dsc + 1);
     }
@@ -672,8 +671,6 @@ void dt_mipmap_cache_get_with_caller(
     if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
     {
       mipmap_generated = 1;
-      // _init_f() will set it, if needed
-      buf->pre_monochrome_demosaiced = 0;
 
       __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_fetches), 1);
       // fprintf(stderr, "[mipmap cache get] now initializing buffer for img %u mip %d!\n", imgid, mip);
@@ -735,7 +732,6 @@ void dt_mipmap_cache_get_with_caller(
         // 8-bit thumbs
         _init_8((uint8_t *)(dsc + 1), &dsc->width, &dsc->height, &buf->color_space, imgid, mip);
       }
-      dsc->pre_monochrome_demosaiced = buf->pre_monochrome_demosaiced;
       dsc->color_space = buf->color_space;
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
     }
@@ -779,7 +775,6 @@ void dt_mipmap_cache_get_with_caller(
     buf->color_space = dsc->color_space;
     buf->imgid = imgid;
     buf->size = mip;
-    buf->pre_monochrome_demosaiced = dsc->pre_monochrome_demosaiced;
     buf->buf = (uint8_t *)(dsc + 1);
     if(dsc->width == 0 || dsc->height == 0)
     {
@@ -1036,7 +1031,13 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   roi_in.scale = 1.0f;
 
   roi_out.x = roi_out.y = 0;
-  roi_out.scale = fminf(wd / (float)image->width, ht / (float)image->height);
+
+  // now let's figure out the scaling...
+
+  // MIP_F is 4 channels, and we do not demosaic here
+  const float coeff = (image->buf_dsc.filters) ? 2.0f : 1.0f;
+
+  roi_out.scale = fminf((coeff * (float)wd) / (float)image->width, (coeff * (float)ht) / (float)image->height);
   roi_out.width = roi_out.scale * roi_in.width;
   roi_out.height = roi_out.scale * roi_in.height;
 
@@ -1050,11 +1051,37 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
 
   assert(!buffer_is_broken(&buf));
 
-  mipmap_buf->pre_monochrome_demosaiced = 0;
   mipmap_buf->color_space = DT_COLORSPACE_NONE; // TODO: do we need that information in this buffer?
 
   if(image->buf_dsc.filters)
   {
+#if 1
+    if(image->buf_dsc.filters != 9u && image->buf_dsc.datatype == TYPE_FLOAT)
+    {
+      dt_iop_clip_and_zoom_mosaic_half_size_f((float *const)out, (const float *const)buf.buf, &roi_out, &roi_in,
+                                              roi_out.width, roi_in.width, image->buf_dsc.filters);
+    }
+    else if(image->buf_dsc.filters != 9u && image->buf_dsc.datatype == TYPE_UINT16)
+    {
+      dt_iop_clip_and_zoom_mosaic_half_size((uint16_t * const)out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
+                                            roi_out.width, roi_in.width, image->buf_dsc.filters);
+    }
+    else if(image->buf_dsc.filters == 9u && image->buf_dsc.datatype == TYPE_UINT16)
+    {
+      dt_iop_clip_and_zoom_mosaic_third_size_xtrans((uint16_t * const)out, (const uint16_t *)buf.buf, &roi_out,
+                                                    &roi_in, roi_out.width, roi_in.width, image->buf_dsc.xtrans,
+                                                    image->raw_white_point);
+    }
+    else if(image->buf_dsc.filters == 9u && image->buf_dsc.datatype == TYPE_FLOAT)
+    {
+      dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(out, (const float *)buf.buf, &roi_out, &roi_in,
+                                                      roi_out.width, roi_in.width, image->buf_dsc.xtrans);
+    }
+    else
+    {
+      dt_unreachable_codepath();
+    }
+#else
     // demosaic during downsample
     if(image->buf_dsc.filters != 9u)
     {
@@ -1075,7 +1102,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
         else
         {
           dt_iop_clip_and_zoom_demosaic_half_size_f(out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width,
-                                                    roi_in.width, image->buf_dsc.filters, 1.0f);
+                                                    roi_in.width, image->buf_dsc.filters);
         }
       }
       else
@@ -1088,7 +1115,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
         else
         {
           dt_iop_clip_and_zoom_demosaic_half_size(out, (const uint16_t *)buf.buf, &roi_out, &roi_in, roi_out.width,
-                                                  roi_in.width, image->buf_dsc.filters);
+                                                  roi_in.width, image->buf_dsc.filters, image->raw_white_point);
 
           // For four bayer images we'll need to convert to XYZ here as the pipe only carries 3 channels
           if(image->flags & DT_IMAGE_4BAYER)
@@ -1116,9 +1143,11 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
       else
       {
         dt_iop_clip_and_zoom_demosaic_third_size_xtrans(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
-                                                        roi_out.width, roi_in.width, image->buf_dsc.xtrans);
+                                                        roi_out.width, roi_in.width, image->buf_dsc.xtrans,
+                                                        image->raw_white_point);
       }
     }
+#endif
   }
   else
   {
