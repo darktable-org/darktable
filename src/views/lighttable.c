@@ -2331,6 +2331,9 @@ static void display_intent_callback(GtkWidget *combo, gpointer user_data)
   if(new_intent != darktable.color_profiles->display_intent)
   {
     darktable.color_profiles->display_intent = new_intent;
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+    dt_colorspaces_update_display_transforms();
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
     dt_control_queue_redraw_center();
   }
 }
@@ -2370,24 +2373,6 @@ end:
     dt_colorspaces_update_display_transforms();
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
     dt_control_queue_redraw_center();
-  }
-}
-
-// FIXME: turning off lcms2 in prefs hides the widget but leaves the window sized like before -> ugly-ish
-static void _preference_changed(gpointer instance, gpointer user_data)
-{
-  GtkWidget *display_intent = GTK_WIDGET(user_data);
-
-  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-  if(force_lcms2)
-  {
-    gtk_widget_set_no_show_all(display_intent, FALSE);
-    gtk_widget_set_visible(display_intent, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_no_show_all(display_intent, TRUE);
-    gtk_widget_set_visible(display_intent, FALSE);
   }
 }
 
@@ -2434,7 +2419,6 @@ void gui_init(dt_view_t *self)
   char confdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
-  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
   GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display_intent, NULL, _("display intent"));
@@ -2443,12 +2427,6 @@ void gui_init(dt_view_t *self)
   dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
-
-  if(!force_lcms2)
-  {
-    gtk_widget_set_no_show_all(display_intent, TRUE);
-    gtk_widget_set_visible(display_intent, FALSE);
-  }
 
   GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display_profile, NULL, _("display profile"));
@@ -2476,10 +2454,6 @@ void gui_init(dt_view_t *self)
 
   g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), NULL);
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);
-
-  // update the gui when the preferences changed (i.e. show intent when using lcms2)
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                            G_CALLBACK(_preference_changed), (gpointer)display_intent);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
