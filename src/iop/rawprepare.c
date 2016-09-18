@@ -269,7 +269,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
 
     const uint16_t *const in = (const uint16_t *const)ivoid;
@@ -334,7 +334,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -435,7 +435,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   int kernel = -1;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   {
     kernel = gd->kernel_rawprepare_1f;
   }
@@ -473,7 +473,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   {
     piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
@@ -500,7 +500,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->width = p->crop.named.width;
   d->height = p->crop.named.height;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   {
     const float white = (float)p->raw_white_point;
 

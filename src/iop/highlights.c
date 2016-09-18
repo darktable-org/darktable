@@ -111,11 +111,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-  const float clip
-      = d->clip * fminf(piece->pipe->dsc.processed_maximum[0],
-                        fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+  const float clip = d->clip
+                     * fminf(piece->pipe->dsc.processed_maximum[0],
+                             fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   const uint32_t filters = piece->pipe->dsc.filters;
-  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
+  if(!filters)
   {
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f_clip, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f_clip, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -660,7 +660,7 @@ static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static)
@@ -689,7 +689,7 @@ static void process_clip_sse2(dt_dev_pixelpipe_iop_t *piece, const void *const i
                               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                               const float clip)
 {
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
     const __m128 clipm = _mm_set1_ps(clip);
     const size_t n = (size_t)roi_out->height * roi_out->width;
@@ -749,7 +749,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       = data->clip * fminf(piece->pipe->dsc.processed_maximum[0],
                            fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   // const int ch = piece->colors;
-  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
+  if(!filters)
   {
     process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
     for(int k=0;k<3;k++)

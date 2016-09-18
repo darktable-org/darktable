@@ -1686,8 +1686,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
     // sample half-size raw (Bayer) or 1/3-size raw (X-Trans)
-    const float clip = fminf(piece->pipe->dsc.processed_maximum[0],
-                             fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
     if(piece->pipe->dsc.filters == 9u)
       dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                         xtrans);
@@ -1698,7 +1696,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                                roi.width);
       else
         dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
-                                                  piece->pipe->dsc.filters, clip);
+                                                  piece->pipe->dsc.filters);
     }
   }
   if(data->color_smoothing) color_smoothing(o, roi_out, data->color_smoothing);
@@ -3586,7 +3584,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
-  if(!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe)) piece->enabled = 0;
+  if(!(pipe->image.flags & DT_IMAGE_RAW)) piece->enabled = 0;
   d->green_eq = p->green_eq;
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;

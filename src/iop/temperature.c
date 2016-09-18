@@ -80,7 +80,6 @@ typedef struct dt_iop_temperature_gui_data_t
 typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
-  double RGB_to_CAM[4][3], CAM_to_RGB[3][4];
 } dt_iop_temperature_data_t;
 
 
@@ -400,7 +399,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u)
+  if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
@@ -414,7 +413,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  else if(filters)
   { // bayer float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
@@ -427,18 +426,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         out[p] = in[p] * d->coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
       }
     }
-  }
-  else if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-  { // non-mosaiced CYGM/RGBE image
-    dt_iop_temperature_data_t *d2 = (dt_iop_temperature_data_t *)piece->data;
-
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(((float *)ovoid), ((float *)ivoid),
-                                            roi_out->width * roi_out->height, d2->RGB_to_CAM, d2->CAM_to_RGB,
-                                            d2->coeffs);
-    float new_maximum[4] = {1.0f};
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->dsc.processed_maximum, 1, d2->RGB_to_CAM,
-                                            d2->CAM_to_RGB, d2->coeffs);
-    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = new_maximum[k];
   }
   else
   { // non-mosaiced
@@ -466,11 +453,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_image_t *img = &self->dev->image_storage;
   const uint32_t filters = piece->pipe->dsc.filters;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u)
+  if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -483,7 +469,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
     }
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  else if(filters)
   { // bayer float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -520,16 +506,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         *out = *in * d->coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
     }
     _mm_sfence();
-  }
-  else if(img->flags & DT_IMAGE_4BAYER)
-  { // non-mosaiced CYGM/RGBE image
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(((float *)ovoid), ((float *)ivoid),
-                                            roi_out->width*roi_out->height,
-                                            d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
-    float new_maximum[4] = {1.0f};
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->dsc.processed_maximum, 1, d->RGB_to_CAM,
-                                            d->CAM_to_RGB, d->coeffs);
-    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = new_maximum[k];
   }
   else
   { // non-mosaiced
@@ -573,7 +549,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   int kernel = -1;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  if(filters)
   {
     kernel = gd->kernel_whitebalance_1f;
   }
@@ -632,29 +608,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k = 0; k < 4; k++) d->coeffs[k] = p->coeffs[k];
 
-  if(piece->pipe->dsc.filters && dt_dev_pixelpipe_uses_downsampled_input(piece->pipe)
-     && pipe->pre_monochrome_demosaiced)
-  {
-    // piece->process_cl_ready = 0;
-    piece->enabled = 0;
-  }
-
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
 
-  if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-  {
-    // 4Bayer images not implemented in OpenCL yet
-    piece->process_cl_ready = 0;
-
-    // Get and store the matrix to go from camera to RGB for 4Bayer images
-    char *camera = self->dev->image_storage.camera_makermodel;
-    if (!dt_colorspaces_conversion_matrices_rgb(camera, d->RGB_to_CAM, d->CAM_to_RGB, NULL))
-    {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image\n", camera);
-      dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
-    }
-  }
+  // 4Bayer images not implemented in OpenCL yet
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

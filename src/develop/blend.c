@@ -2782,7 +2782,6 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   }
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
-  const int downsampled = dt_dev_pixelpipe_uses_downsampled_input(piece->pipe);
   int kernel_mask;
   int kernel;
   int kernel_set_mask = darktable.blendop->kernel_blendop_set_mask;
@@ -2790,14 +2789,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   switch(cst)
   {
     case iop_cs_RAW:
-      // special case handling: preview pipe uses downsampled rgb images instead
-      // of pre-demosaiced raw data.
-      // actually not used today as there currently exists no pre-demosaic module
-      // with blending *and* opencl support.
-      // only defined here for potential future additions.
-      kernel = (!downsampled) ? darktable.blendop->kernel_blendop_RAW : darktable.blendop->kernel_blendop_rgb;
-      kernel_mask = (!downsampled) ? darktable.blendop->kernel_blendop_mask_RAW
-                                   : darktable.blendop->kernel_blendop_mask_rgb;
+      kernel = darktable.blendop->kernel_blendop_RAW;
+      kernel_mask = darktable.blendop->kernel_blendop_mask_RAW;
       break;
 
     case iop_cs_rgb:

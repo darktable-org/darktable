@@ -173,7 +173,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
+  if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
@@ -189,7 +189,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  else if(filters)
   { // bayer float mosaiced
 
 #ifdef _OPENMP
@@ -245,7 +245,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const uint32_t filters = piece->pipe->dsc.filters;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
+  if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -260,7 +260,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
     for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  else if(filters)
   { // bayer float mosaiced
 
     const __m128 val_min = _mm_setzero_ps();
@@ -344,7 +344,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   float film_rgb_f[4] = { d->color[0], d->color[1], d->color[2], d->color[3] };
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  if(filters)
   {
     kernel = gd->kernel_invert_1f;
 
@@ -446,9 +446,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
 
-  // 4Bayer: convert the RGB color to CYGM only if we're not in the preview pipe (which is already RGB)
-  if((self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-     && !dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  // 4Bayer: convert the RGB color to CYGM
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
   {
     double RGB_to_CAM[4][3];
 

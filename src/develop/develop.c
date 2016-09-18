@@ -220,7 +220,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   }
   // init pixel pipeline for preview.
   dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height,
-                             dev->image_storage.width / (float)buf.width, buf.pre_monochrome_demosaiced);
+                             dev->image_storage.width / (float)buf.width);
 
   if(dev->preview_loading)
   {
@@ -310,8 +310,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     return;
   }
 
-  dt_dev_pixelpipe_set_input(dev->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0,
-                             buf.pre_monochrome_demosaiced);
+  dt_dev_pixelpipe_set_input(dev->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0);
 
   if(dev->image_loading)
   {
