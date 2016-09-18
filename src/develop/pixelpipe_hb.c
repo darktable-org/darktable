@@ -1017,7 +1017,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             if(success_opencl)
             {
-              cl_int err = dt_opencl_write_host_to_device_non_blocking(pipe->devid, input, cl_mem_input,
+              cl_int err = dt_opencl_write_host_to_device(pipe->devid, input, cl_mem_input,
                                                                        roi_in.width, roi_in.height, in_bpp);
               if(err != CL_SUCCESS)
               {

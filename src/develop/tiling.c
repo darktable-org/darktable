@@ -1402,16 +1402,16 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
           memcpy((char *)input_buffer + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch,
                  (size_t)wd * in_bpp);
 
-        /* non-blocking memory transfer: pinned host input buffer -> opencl/device tile */
+        /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, origin, region,
-                                                 wd * in_bpp, CL_FALSE);
+                                                 wd * in_bpp, CL_TRUE);
         if(err != CL_SUCCESS) goto error;
       }
       else
       {
-        /* non-blocking direct memory transfer: host input image -> opencl/device tile */
+        /* blocking direct memory transfer: host input image -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch,
-                                                 CL_FALSE);
+                                                 CL_TRUE);
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -1471,9 +1471,9 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       }
       else
       {
-        /* non-blocking direct memory transfer: good part of opencl/device tile -> host output image */
+        /* blocking direct memory transfer: good part of opencl/device tile -> host output image */
         err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region,
-                                                  opitch, CL_FALSE);
+                                                  opitch, CL_TRUE);
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -1853,16 +1853,16 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
           memcpy((char *)input_buffer + j * iroi_full.width * in_bpp, (char *)ivoid + ioffs + j * ipitch,
                  (size_t)iroi_full.width * in_bpp);
 
-        /* non-blocking memory transfer: pinned host input buffer -> opencl/device tile */
+        /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, iorigin, iregion,
-                                                 (size_t)iroi_full.width * in_bpp, CL_FALSE);
+                                                 (size_t)iroi_full.width * in_bpp, CL_TRUE);
         if(err != CL_SUCCESS) goto error;
       }
       else
       {
-        /* non-blocking direct memory transfer: host input image -> opencl/device tile */
+        /* blocking direct memory transfer: host input image -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, iorigin, iregion,
-                                                 ipitch, CL_FALSE);
+                                                 ipitch, CL_TRUE);
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -1904,9 +1904,9 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       }
       else
       {
-        /* non-blocking direct memory transfer: good part of opencl/device tile -> host output image */
+        /* blocking direct memory transfer: good part of opencl/device tile -> host output image */
         err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion,
-                                                  opitch, CL_FALSE);
+                                                  opitch, CL_TRUE);
         if(err != CL_SUCCESS) goto error;
       }
 
