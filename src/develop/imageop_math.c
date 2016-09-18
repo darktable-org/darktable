@@ -446,7 +446,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
         num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
       }
 
-      const int c = (2 * (y % 2) + (x % 2));
+      const int c = (2 * ((y + rggby) % 2) + ((x + rggbx) % 2));
       *outc = (uint16_t)(col[c] / num);
       outc++;
     }
@@ -639,7 +639,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_sse2(uint16_t *const out, const uint1
       float fcol[4] __attribute__((aligned(16)));
       _mm_store_ps(fcol, col);
 
-      const int c = (2 * (y % 2) + (x % 2));
+      const int c = (2 * ((y + rggby) % 2) + ((x + rggbx) % 2));
       *outc = (uint16_t)(fcol[c]);
       outc++;
     }
@@ -842,7 +842,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f_plain(float *const out, const float
         num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
       }
 
-      const int c = (2 * (y % 2) + (x % 2));
+      const int c = (2 * ((y + rggby) % 2) + ((x + rggbx) % 2));
       *outc = col[c] / num;
       outc++;
     }
@@ -1035,7 +1035,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f_sse2(float *const out, const float 
       float fcol[4] __attribute__((aligned(16)));
       _mm_store_ps(fcol, col);
 
-      const int c = (2 * (y % 2) + (x % 2));
+      const int c = (2 * ((y + rggby) % 2) + ((x + rggbx) % 2));
       *outc = fcol[c];
       outc++;
     }
