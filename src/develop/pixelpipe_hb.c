@@ -866,6 +866,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                     g_list_previous(modules), g_list_previous(pieces), pos - 1))
       return 1;
 
+    // FIXME: this line should not be here! it is just to temporarily fix #11149
+    module->input_format(module, pipe, piece, input_format);
+
     const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
 
     piece->dsc_out = piece->dsc_in = *input_format;
