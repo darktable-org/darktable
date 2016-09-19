@@ -276,17 +276,29 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   // we have the exported buffer, let's apply the printer profile
 
   if (*ps->v_piccprofile)
-    if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp,
-                                 dt_colorspaces_get_profile(ps->v_picctype, ps->v_piccprofile,
-                                                            DT_PROFILE_DIRECTION_OUT)->profile,
-                                 ps->v_pintent, ps->v_black_point_compensation))
+  {
+    const dt_colorspaces_color_profile_t *pprof = dt_colorspaces_get_profile(ps->v_picctype, ps->v_piccprofile,
+                                                                             DT_PROFILE_DIRECTION_OUT);
+
+    if (!pprof)
     {
-      free(dat.ps->buf);
-      dt_control_log(_("cannot apply printer profile `%s'"), ps->v_piccprofile);
-      fprintf(stderr, "cannot apply printer profile `%s'\n", ps->v_piccprofile);
+      dt_control_log(_("cannot open printer profile `%s'"), ps->v_piccprofile);
+      fprintf(stderr, "cannot open printer profile `%s'\n", ps->v_piccprofile);
       dt_control_queue_redraw();
       return;
     }
+    else
+      if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp,
+                                   pprof->profile,
+                                   ps->v_pintent, ps->v_black_point_compensation))
+      {
+        free(dat.ps->buf);
+        dt_control_log(_("cannot apply printer profile `%s'"), ps->v_piccprofile);
+        fprintf(stderr, "cannot apply printer profile `%s'\n", ps->v_piccprofile);
+        dt_control_queue_redraw();
+        return;
+      }
+  }
 
   const float page_width  = dt_pdf_mm_to_point(width);
   const float page_height = dt_pdf_mm_to_point(height);
