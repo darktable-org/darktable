@@ -1989,6 +1989,24 @@ int default_process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
 
 
+static int _iop_module_demosaic = 0;
+static inline void _get_iop_priorities(const dt_iop_module_t *module)
+{
+  if(_iop_module_demosaic) return;
+
+  GList *iop = module->dev->iop;
+  while(iop)
+  {
+    dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+
+    if(!strcmp(m->op, "demosaic")) _iop_module_demosaic = m->priority;
+
+    if(_iop_module_demosaic) break;
+
+    iop = g_list_next(iop);
+  }
+}
+
 /* If a module does not implement tiling_callback() by itself, this function is called instead.
    Default is an image size factor of 2 (i.e. input + output buffer needed), no overhead (1),
    no overlap between tiles, and an pixel alignment of 1 in x and y direction, i.e. no special
@@ -1999,12 +2017,39 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
                              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                              struct dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 2.0f;
+  _get_iop_priorities(self);
+
+  const float ioratio
+      = ((float)roi_out->width * (float)roi_out->height) / ((float)roi_in->width * (float)roi_in->height);
+
+  tiling->factor = 1.0f + ioratio;
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
   tiling->xalign = 1;
   tiling->yalign = 1;
+
+  if((self->flags() & IOP_FLAGS_TILING_FULL_ROI) == IOP_FLAGS_TILING_FULL_ROI) tiling->overlap = 4;
+
+  if(self->priority > _iop_module_demosaic) return;
+
+  // all operations that work with mosaiced data should respect pattern size!
+
+  if(!piece->pipe->dsc.filters) return;
+
+  if(piece->pipe->dsc.filters == 9u)
+  {
+    // X-Trans, sensor is 6x6
+    tiling->xalign = 6;
+    tiling->yalign = 6;
+  }
+  else
+  {
+    // Bayer, good old 2x2
+    tiling->xalign = 2;
+    tiling->yalign = 2;
+  }
+
   return;
 }
 

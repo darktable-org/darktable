@@ -151,20 +151,6 @@ void connect_key_accels(dt_iop_module_t *self)
   }
 }
 
-void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in,
-                     const dt_iop_roi_t *const roi_out, dt_develop_tiling_t *tiling)
-{
-  float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
-
-  tiling->factor = 1.0f + ioratio; // in + out, no temp
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 0;
-  tiling->xalign = 2; // Bayer pattern
-  tiling->yalign = 2; // Bayer pattern
-  return;
-}
-
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
