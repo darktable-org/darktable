@@ -68,6 +68,12 @@ int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t heig
      intent,
      black_point_compensation ? cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
 
+  if (!hTransform)
+  {
+    fprintf(stderr, "error printer profile may be corrupted\n");
+    return 1;
+  }
+
   void *out = (void *)malloc(width*height*3);
 
   if (bpp == 8)
