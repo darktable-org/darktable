@@ -1400,6 +1400,14 @@ int dt_image_local_copy_reset(const int32_t imgid)
   gchar locppath[PATH_MAX] = { 0 };
   gchar cachedir[PATH_MAX] = { 0 };
 
+  // check that a local copy exists, otherwise there is nothing to do
+  dt_image_t *imgr = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const gboolean local_copy_exists = (imgr->flags & DT_IMAGE_LOCAL_COPY) == DT_IMAGE_LOCAL_COPY ? TRUE : FALSE;
+  dt_image_cache_read_release(darktable.image_cache, imgr);
+
+  if (!local_copy_exists)
+    return 0;
+
   // check that the original file is accessible
 
   gboolean from_cache = FALSE;
