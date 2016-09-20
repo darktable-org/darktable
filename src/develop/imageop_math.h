@@ -3,6 +3,7 @@
     copyright (c) 2009--2012 johannes hanika.
     copyright (c) 2011 henrik andersson.
     copyright (c) 2012 tobias ellinghaus.
+    copyright (c) 2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifndef DT_DEVELOP_IMAGEOP_MATH_H
 #define DT_DEVELOP_IMAGEOP_MATH_H
 
@@ -51,18 +53,6 @@ int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in,
                                 const struct dt_iop_roi_t *const roi_in);
 #endif
 
-void dt_iop_clip_and_zoom_pixel_binning(uint16_t *const out, const uint16_t *const in,
-                                        const struct dt_iop_roi_t *const roi_out,
-                                        const struct dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                        const int32_t in_stride, const unsigned int pattern_size,
-                                        const unsigned int bin_blocks);
-
-void dt_iop_clip_and_zoom_pixel_binning_f(float *const out, const float *const in,
-                                          const struct dt_iop_roi_t *const roi_out,
-                                          const struct dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                          const int32_t in_stride, const unsigned int pattern_size,
-                                          const unsigned int bin_blocks);
-
 void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *const in,
                                              const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
                                              const int32_t out_stride, const int32_t in_stride,
@@ -84,18 +74,6 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
                                                      const dt_iop_roi_t *const roi_in, const int32_t out_stride,
                                                      const int32_t in_stride, const uint8_t (*const xtrans)[6]);
 
-/** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
-void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
-                                             const struct dt_iop_roi_t *const roi_out,
-                                             const struct dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                             const int32_t in_stride, const uint32_t filters,
-                                             const uint16_t whitelevel);
-
-void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint16_t *const in,
-                                                          const struct dt_iop_roi_t *const roi_out,
-                                                          const struct dt_iop_roi_t *const roi_in,
-                                                          const int32_t out_stride, const int32_t in_stride);
-
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
                                                             const struct dt_iop_roi_t *const roi_out,
                                                             const struct dt_iop_roi_t *const roi_in,
@@ -108,11 +86,6 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
                                                const int32_t in_stride, const uint32_t filters);
 
 /** x-trans sensor downscaling */
-void dt_iop_clip_and_zoom_demosaic_third_size_xtrans(float *out, const uint16_t *const in,
-                                                     const struct dt_iop_roi_t *const roi_out,
-                                                     const struct dt_iop_roi_t *const roi_in,
-                                                     const int32_t out_stride, const int32_t in_stride,
-                                                     const uint8_t (*const xtrans)[6], const uint16_t whitelevel);
 
 void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *const in,
                                                        const struct dt_iop_roi_t *const roi_out,
