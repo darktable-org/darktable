@@ -917,95 +917,10 @@ void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const uint32_t imgid)
   }
 }
 
-int dt_image_get_demosaic_method(const int imgid, const char **method_name)
-{
-  // find the demosaic module -- the pointer stays valid until darktable shuts down
-  static dt_iop_module_so_t *demosaic = NULL;
-  if(demosaic == NULL)
-  {
-    GList *modules = g_list_first(darktable.iop);
-    while(modules)
-    {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
-      if(!strcmp(module->op, "demosaic"))
-      {
-        demosaic = module;
-        break;
-      }
-      modules = g_list_next(modules);
-    }
-  }
-
-  int method = 0; // normal demosaic, DT_IOP_DEMOSAIC_PPG
-
-  // db lookup demosaic params
-  if(demosaic && demosaic->get_f && demosaic->get_p)
-  {
-    dt_introspection_field_t *field = demosaic->get_f("demosaicing_method");
-    if(field)
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(
-          dt_database_get(darktable.db),
-          "SELECT op_params FROM history WHERE imgid=?1 AND operation='demosaic' ORDER BY num DESC LIMIT 1", -1,
-          &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        // use introspection to get the orientation from the binary params blob
-        const void *params = sqlite3_column_blob(stmt, 0);
-        method = *((int *)demosaic->get_p(params, "demosaicing_method"));
-      }
-      sqlite3_finalize(stmt);
-
-      if(method_name) *method_name = field->Enum.values[method].name;
-    }
-  }
-
-  return method;
-}
-
 static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width, uint32_t *height,
                     const uint32_t imgid)
 {
   const uint32_t wd = *width, ht = *height;
-
-  static int demosaic_monochrome_enum = -1;
-  if(demosaic_monochrome_enum == -1)
-  {
-    for(GList *modules = g_list_first(darktable.iop); modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
-      if(!strcmp(module->op, "demosaic"))
-      {
-        if(module->get_f)
-        {
-          dt_introspection_field_t *f = module->get_f("demosaicing_method");
-          if(f && f->header.type == DT_INTROSPECTION_TYPE_ENUM)
-          {
-            for(dt_introspection_type_enum_tuple_t *value = f->Enum.values; value->name; value++)
-            {
-              if(!strcmp(value->name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME"))
-              {
-                demosaic_monochrome_enum = value->value;
-                break;
-              }
-            }
-          }
-        }
-
-        if(demosaic_monochrome_enum == -1)
-        {
-          // oh, missing introspection for demosaic,
-          // let's hope that DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME is still 3
-          demosaic_monochrome_enum = 3;
-        }
-
-        break;
-      }
-    }
-  }
 
   /* do not even try to process file if it isn't available */
   char filename[PATH_MAX] = { 0 };
@@ -1055,7 +970,6 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
 
   if(image->buf_dsc.filters)
   {
-#if 1
     if(image->buf_dsc.filters != 9u && image->buf_dsc.datatype == TYPE_FLOAT)
     {
       dt_iop_clip_and_zoom_mosaic_half_size_f((float *const)out, (const float *const)buf.buf, &roi_out, &roi_in,
@@ -1081,73 +995,6 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
     {
       dt_unreachable_codepath();
     }
-#else
-    // demosaic during downsample
-    if(image->buf_dsc.filters != 9u)
-    {
-      const char *method_name = NULL;
-      const int method = dt_image_get_demosaic_method(imgid, &(method_name));
-      mipmap_buf->pre_monochrome_demosaiced
-          = (method == demosaic_monochrome_enum
-             && (method_name && !strcmp(method_name, "DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME")));
-
-      // Bayer
-      if(image->buf_dsc.datatype == TYPE_FLOAT)
-      {
-        if(mipmap_buf->pre_monochrome_demosaiced)
-        {
-          dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(out, (const float *)buf.buf, &roi_out,
-                                                                 &roi_in, roi_out.width, roi_in.width);
-        }
-        else
-        {
-          dt_iop_clip_and_zoom_demosaic_half_size_f(out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width,
-                                                    roi_in.width, image->buf_dsc.filters);
-        }
-      }
-      else
-      {
-        if(mipmap_buf->pre_monochrome_demosaiced)
-        {
-          dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(out, (const uint16_t *)buf.buf, &roi_out,
-                                                               &roi_in, roi_out.width, roi_in.width);
-        }
-        else
-        {
-          dt_iop_clip_and_zoom_demosaic_half_size(out, (const uint16_t *)buf.buf, &roi_out, &roi_in, roi_out.width,
-                                                  roi_in.width, image->buf_dsc.filters, image->raw_white_point);
-
-          // For four bayer images we'll need to convert to XYZ here as the pipe only carries 3 channels
-          if(image->flags & DT_IMAGE_4BAYER)
-          {
-            double CAM_to_RGB[3][4];
-            const char *camera = image->camera_makermodel;
-            if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, CAM_to_RGB, NULL))
-            {
-              fprintf(stderr, "[init_f] `%s' color matrix not found for 4bayer image!\n", camera);
-              dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
-            }
-            dt_colorspaces_cygm_to_rgb(out, roi_out.width*roi_out.height, CAM_to_RGB);
-          }
-        }
-      }
-    }
-    else
-    {
-      // X-Trans
-      if(image->buf_dsc.datatype == TYPE_FLOAT)
-      {
-        dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(out, (const float *)buf.buf, &roi_out, &roi_in,
-                                                          roi_out.width, roi_in.width, image->buf_dsc.xtrans);
-      }
-      else
-      {
-        dt_iop_clip_and_zoom_demosaic_third_size_xtrans(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
-                                                        roi_out.width, roi_in.width, image->buf_dsc.xtrans,
-                                                        image->raw_white_point);
-      }
-    }
-#endif
   }
   else
   {
