@@ -329,18 +329,12 @@ static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe,
   if(module) return module->output_format(module, pipe, piece, dsc);
 
   // first input.
-  // mipf and non-raw images have 4 floats per pixel
+  *dsc = pipe->image.buf_dsc;
+
   if(!(pipe->image.flags & DT_IMAGE_RAW))
   {
-    dsc->channels = 4;
-    dsc->datatype = TYPE_FLOAT;
-
     // image max is normalized before
     for(int k = 0; k < 4; k++) dsc->processed_maximum[k] = 1.0f;
-  }
-  else
-  {
-    *dsc = pipe->image.buf_dsc;
   }
 }
 
@@ -2386,9 +2380,6 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 
 // re-entry point: in case of late opencl errors we start all over again with opencl-support disabled
 restart:
-
-  // image max is normalized before
-  for(int k = 0; k < 4; k++) pipe->dsc.processed_maximum[k] = 1.0f;
 
   // check if we should obsolete caches
   if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(&(pipe->cache));
