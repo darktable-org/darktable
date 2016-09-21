@@ -87,6 +87,7 @@ typedef struct dt_iop_temperature_global_data_t
 {
   int kernel_whitebalance_4f;
   int kernel_whitebalance_1f;
+  int kernel_whitebalance_1f_xtrans;
 } dt_iop_temperature_global_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -546,16 +547,28 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
   cl_mem dev_coeffs = NULL;
+  cl_mem dev_xtrans = NULL;
   cl_int err = -999;
   int kernel = -1;
 
-  if(filters)
+  if(filters == 9u)
+  {
+    kernel = gd->kernel_whitebalance_1f_xtrans;
+  }
+  else if(filters)
   {
     kernel = gd->kernel_whitebalance_1f;
   }
   else
   {
     kernel = gd->kernel_whitebalance_4f;
+  }
+
+  if(filters == 9u)
+  {
+    dev_xtrans
+        = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    if(dev_xtrans == NULL) goto error;
   }
 
   dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->coeffs);
@@ -573,16 +586,19 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(uint32_t), (void *)&filters);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cl_mem), (void *)&dev_xtrans);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_coeffs);
+  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   for(int k = 0; k < 3; k++)
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
   return TRUE;
 
 error:
   if(dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   dt_print(DT_DEBUG_OPENCL, "[opencl_white_balance] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -607,9 +623,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k = 0; k < 4; k++) d->coeffs[k] = p->coeffs[k];
-
-  // x-trans images not implemented in OpenCL yet
-  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
 
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
@@ -993,6 +1006,7 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_whitebalance_4f = dt_opencl_create_kernel(program, "whitebalance_4f");
   gd->kernel_whitebalance_1f = dt_opencl_create_kernel(program, "whitebalance_1f");
+  gd->kernel_whitebalance_1f_xtrans = dt_opencl_create_kernel(program, "whitebalance_1f_xtrans");
 }
 
 void init(dt_iop_module_t *module)
@@ -1015,6 +1029,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_whitebalance_4f);
   dt_opencl_free_kernel(gd->kernel_whitebalance_1f);
+  dt_opencl_free_kernel(gd->kernel_whitebalance_1f_xtrans);
   free(module->data);
   module->data = NULL;
 }
