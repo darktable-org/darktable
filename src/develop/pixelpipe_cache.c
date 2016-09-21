@@ -208,7 +208,6 @@ void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data
     if(cache->data[k] == data)
     {
       cache->used[k] = -cache->entries;
-      ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
     }
   }
 }
