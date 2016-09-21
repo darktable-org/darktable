@@ -45,6 +45,7 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, si
   cache->used = (int32_t *)calloc(entries, sizeof(int32_t));
   for(int k = 0; k < entries; k++)
   {
+    cache->size[k] = size;
     if(size)
     { // allow 0 initial buffer size (yet unknown dimensions)
       cache->data[k] = (void *)dt_alloc_align(16, size);
@@ -52,9 +53,9 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, si
 #ifdef _DEBUG
       memset(cache->data[k], 0x5d, size);
 #endif
+      ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
     }
     else cache->data[k] = 0;
-    cache->size[k] = size;
     cache->hash[k] = -1;
     cache->used[k] = 0;
   }
@@ -149,10 +150,15 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
     cache->used[k]++; // age all entries
     if(cache->hash[k] == hash)
     {
+      assert(cache->size[k] >= size);
+
       *data = cache->data[k];
       *dsc = &cache->dsc[k];
       sz = cache->size[k];
       cache->used[k] = weight; // this is the MRU entry
+
+      ASAN_POISON_MEMORY_REGION(*data, sz);
+      ASAN_UNPOISON_MEMORY_REGION(*data, size);
     }
   }
 
@@ -168,6 +174,10 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
       cache->size[max] = size;
     }
     *data = cache->data[max];
+    sz = cache->size[max];
+
+    ASAN_POISON_MEMORY_REGION(*data, sz);
+    ASAN_UNPOISON_MEMORY_REGION(*data, size);
 
     // first, update our copy, then update the pointer to point at our copy
     cache->dsc[max] = **dsc;
@@ -198,6 +208,7 @@ void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data
     if(cache->data[k] == data)
     {
       cache->used[k] = -cache->entries;
+      ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
     }
   }
 }
@@ -209,6 +220,7 @@ void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *da
     if(cache->data[k] == data)
     {
       cache->hash[k] = -1;
+      ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
     }
   }
 }
