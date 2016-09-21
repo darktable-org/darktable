@@ -98,7 +98,7 @@ invert_4f(read_only image2d_t in, write_only image2d_t out, const int width, con
 
 kernel void
 whitebalance_1f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
-    const unsigned int filters, const int rx, const int ry)
+    const unsigned int filters, const int rx, const int ry, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -108,8 +108,20 @@ whitebalance_1f(read_only image2d_t in, write_only image2d_t out, const int widt
 }
 
 kernel void
+whitebalance_1f_xtrans(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
+    const unsigned int filters, const int rx, const int ry, global const unsigned char (*const xtrans)[6])
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+  const float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
+  write_imagef (out, (int2)(x, y), (float4)(pixel * coeffs[FCxtrans(ry+y, rx+x, xtrans)], 0.0f, 0.0f, 0.0f));
+}
+
+
+kernel void
 whitebalance_4f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
-    const unsigned int filters, const int rx, const int ry)
+    const unsigned int filters, const int rx, const int ry, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
