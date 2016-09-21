@@ -198,6 +198,7 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
   {
     cache->hash[k] = -1;
     cache->used[k] = 0;
+    ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
   }
 }
 
