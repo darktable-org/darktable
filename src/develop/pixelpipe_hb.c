@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -758,8 +759,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output, out_format);
 
-    pipe->dsc = **out_format;
-
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(!modules) return 0;
     // go to post-collect directly:
@@ -795,11 +794,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
          && pipe->iheight == roi_out->height)
       {
         *output = pipe->input;
-        **out_format = pipe->dsc;
       }
       else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output, out_format))
       {
-        **out_format = pipe->dsc;
         memset(*output, 0, pipe->backbuf_size);
         if(roi_in.scale == 1.0f)
         {
@@ -851,6 +848,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
     // recurse to get actual data of input buffer
+
     dt_iop_buffer_dsc_t _input_format = { 0 };
     dt_iop_buffer_dsc_t *input_format = &_input_format;
 
@@ -859,9 +857,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &cl_mem_input, &input_format, &roi_in,
                                     g_list_previous(modules), g_list_previous(pieces), pos - 1))
       return 1;
-
-    // FIXME: this line should not be here! it is just to temporarily fix #11149
-    module->input_format(module, pipe, piece, input_format);
 
     const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
 
