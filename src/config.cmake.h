@@ -50,6 +50,9 @@ extern const char darktable_package_string[];
 // see https://github.com/google/sanitizers/wiki/AddressSanitizerManualPoisoning
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
 #include <sanitizer/asan_interface.h>
+#else
+#define ASAN_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
 #endif
