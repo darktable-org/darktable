@@ -388,7 +388,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
       for(; i < roi_out->width; i++, in++, out++)
       {
         const int id = BL(roi_out, d, j, i);
-        *out = MAX(0.0f, ((float)(*in)) - d->sub[id]) / d->div[id];
+        *out = (((float)(*in)) - d->sub[id]) / d->div[id];
       }
     }
 
