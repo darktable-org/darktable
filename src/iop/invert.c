@@ -183,6 +183,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
   { // xtrans float mosaiced
+
+    const __m128 val_min = _mm_setzero_ps();
+    const __m128 val_max = _mm_set1_ps(1.0f);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
@@ -190,9 +194,45 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     {
       const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
       float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
-      for(int i = 0; i < roi_out->width; i++, out++, in++)
+
+      int i = 0;
+
+      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+
+      // process unaligned pixels
+      for(; i < alignment; i++, out++, in++)
+        *out = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - *in, 0.0f, 1.0f);
+
+      const __m128 film[3] = { _mm_set_ps(film_rgb_f[FCxtrans(j, i + 3, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 2, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 1, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 0, roi_out, xtrans)]),
+                               _mm_set_ps(film_rgb_f[FCxtrans(j, i + 7, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 6, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 5, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 4, roi_out, xtrans)]),
+                               _mm_set_ps(film_rgb_f[FCxtrans(j, i + 11, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 10, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 9, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 8, roi_out, xtrans)]) };
+
+      // process aligned pixels with SSE
+      for(int c = 0; c < 3 && i < roi_out->width - (4 - 1); c++, i += 4, in += 4, out += 4)
+      {
+        __m128 v;
+
+        v = _mm_load_ps(in);
+        v = _mm_sub_ps(film[c], v);
+        v = _mm_min_ps(v, val_max);
+        v = _mm_max_ps(v, val_min);
+        _mm_stream_ps(out, v);
+      }
+
+      // process the rest
+      for(; i < roi_out->width; i++, out++, in++)
         *out = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - *in, 0.0f, 1.0f);
     }
+    _mm_sfence();
 
     for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] = 1.0f;
   }
