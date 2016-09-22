@@ -466,9 +466,36 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     {
       const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
       float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
-      for(int i = 0; i < roi_out->width; i++, out++, in++)
-        *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
+
+      int i = 0;
+      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+
+      // process unaligned pixels
+      for(; i < alignment; i++, out++, in++) *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
+
+      const __m128 coeffs[3] = {
+        _mm_set_ps(d->coeffs[FCxtrans(j, i + 3, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 2, roi_out, xtrans)],
+                   d->coeffs[FCxtrans(j, i + 1, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 0, roi_out, xtrans)]),
+        _mm_set_ps(d->coeffs[FCxtrans(j, i + 7, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 6, roi_out, xtrans)],
+                   d->coeffs[FCxtrans(j, i + 5, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 4, roi_out, xtrans)]),
+        _mm_set_ps(d->coeffs[FCxtrans(j, i + 11, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 10, roi_out, xtrans)],
+                   d->coeffs[FCxtrans(j, i + 9, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 8, roi_out, xtrans)])
+      };
+
+      // process aligned pixels with SSE
+      for(int c = 0; c < 3 && i < roi_out->width - (4 - 1); c++, i += 4, in += 4, out += 4)
+      {
+        __m128 v;
+
+        v = _mm_load_ps(in);
+        v = _mm_mul_ps(v, coeffs[c]);
+        _mm_stream_ps(out, v);
+      }
+
+      // process the rest
+      for(; i < roi_out->width; i++, out++, in++) *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
     }
+    _mm_sfence();
   }
   else if(filters)
   { // bayer float mosaiced
