@@ -1140,7 +1140,7 @@ start:
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
-    gtk_window_set_title(GTK_WINDOW(window), "darktable - error opening database");
+    gtk_window_set_title(GTK_WINDOW(window), _("darktable - error opening database"));
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
