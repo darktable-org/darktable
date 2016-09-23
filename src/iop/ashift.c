@@ -192,7 +192,8 @@ typedef enum dt_iop_ashift_nmsresult_t
 {
   NMS_SUCCESS = 0,
   NMS_NOT_ENOUGH_LINES = 1,
-  NMS_DID_NOT_CONVERGE = 2
+  NMS_DID_NOT_CONVERGE = 2,
+  NMS_INSANE = 3
 } dt_iop_ashift_nmsresult_t;
 
 typedef enum dt_iop_ashift_enhance_t
@@ -2088,26 +2089,74 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
 
   // error case: we do not run simplex if there are not enough lines
   if(!enough_lines)
+  {
+#ifdef ASHIFT_DEBUG
+    printf("optimization not possible: insufficient number of lines\n");
+#endif
     return NMS_NOT_ENOUGH_LINES;
+  }
 
   // start the simplex fit
   int iter = simplex(model_fitness, params, fit.params_count, NMS_EPSILON, NMS_SCALE, NMS_ITERATIONS, NULL, (void*)&fit);
 
   // error case: the fit did not converge
   if(iter >= NMS_ITERATIONS)
+  {
+#ifdef ASHIFT_DEBUG
+    printf("optimization not successful: maximum number of iterations reached (%d)\n", iter);
+#endif
     return NMS_DID_NOT_CONVERGE;
+  }
 
-  // fit was successful: now write the results into structure p (order matters!!!)
+  // fit was successful: now consolidate the results (order matters!!!)
   pcount = 0;
-  p->rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range) : fit.rotation;
-  p->lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range) : fit.lensshift_v;
-  p->lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
-  p->shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
+  fit.rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range) : fit.rotation;
+  fit.lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range) : fit.lensshift_v;
+  fit.lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
+  fit.shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
 #ifdef ASHIFT_DEBUG
   printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f, shear %f\n",
-         iter, p->rotation, p->lensshift_v, p->lensshift_h, p->shear);
+         iter, fit.rotation, fit.lensshift_v, fit.lensshift_h, fit.shear);
 #endif
 
+  // sanity check: in case of extreme values the image gets distorted so strongly that it spans an insanely huge area. we check that
+  // case and assume values that increase the image area by more than a factor of 4 as being insane.
+  float homograph[3][3];
+  homography((float *)homograph, fit.rotation, fit.lensshift_v, fit.lensshift_h, fit.shear, fit.f_length_kb,
+             fit.orthocorr, fit.aspect, fit.width, fit.height, ASHIFT_HOMOGRAPH_FORWARD);
+
+  // visit all four corners and find maximum span
+  float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
+  for(int y = 0; y < fit.height; y += fit.height - 1)
+    for(int x = 0; x < fit.width; x += fit.width - 1)
+    {
+      float pi[3], po[3];
+      pi[0] = x;
+      pi[1] = y;
+      pi[2] = 1.0f;
+      mat3mulv(po, (float *)homograph, pi);
+      po[0] /= po[2];
+      po[1] /= po[2];
+      xm = fmin(xm, po[0]);
+      ym = fmin(ym, po[1]);
+      xM = fmax(xM, po[0]);
+      yM = fmax(yM, po[1]);
+    }
+
+  if((xM - xm) * (yM - ym) > 4.0f * fit.width * fit.height)
+  {
+#ifdef ASHIFT_DEBUG
+    printf("optimization not successful: degenerate case with area growth factor (%f) exceeding limits\n",
+           (xM - xm) * (yM - ym) / (fit.width * fit.height));
+#endif
+    return NMS_INSANE;
+  }
+
+  // now write the results into structure p
+  p->rotation = fit.rotation;
+  p->lensshift_v = fit.lensshift_v;
+  p->lensshift_h = fit.lensshift_h;
+  p->shear = fit.shear;
   return NMS_SUCCESS;
 }
 
@@ -2530,6 +2579,7 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
       goto error;
       break;
     case NMS_DID_NOT_CONVERGE:
+    case NMS_INSANE:
       dt_control_log(_("automatic correction failed, please correct manually"));
       goto error;
       break;
