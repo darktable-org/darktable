@@ -1132,7 +1132,7 @@ start:
     }
     // else: the current version, do nothing
   }
-  else if(rc == SQLITE_CORRUPT)
+  else if(rc == SQLITE_CORRUPT || rc == SQLITE_NOTADB)
   {
     // oh, bad situation. the database is corrupt and can't be read!
     // we inform the user here and let him decide what to do: exit or delete and try again.
