@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
+cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0025 NEW)
 cmake_policy(SET CMP0048 OLD) # don't touch PROJECT_VERSION/VERSION
 

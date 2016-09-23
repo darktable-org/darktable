@@ -1,5 +1,3 @@
-cmake_policy(SET CMP0011 NEW)
-
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
