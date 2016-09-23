@@ -1,5 +1,10 @@
 #!/bin/sh
 
+DT_SRC_DIR=$(dirname "$0")
+DT_SRC_DIR=$(cd "$DT_SRC_DIR/../" && pwd -P)
+
+cd $DT_SRC_DIR
+
 git shortlog -sne ^release-1.6.9 HEAD
 
 echo "are you sure these guys received proper credit in the about dialog?"
@@ -10,14 +15,14 @@ echo "* archiving git tree"
 dt_decoration=$(git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;' | sed 's/rc/~rc/')
 git archive HEAD --prefix=darktable-$dt_decoration/ -o darktable-$dt_decoration.tar
 
-SRCDIR=`pwd`
 TMPDIR=`mktemp -d -t darktable-XXXXXX`
 cd "$TMPDIR"
-tar xf "$SRCDIR/darktable-$dt_decoration.tar"
+
+tar xf "$DT_SRC_DIR/darktable-$dt_decoration.tar"
 
 # create version header for non-git tarball:
 echo "* creating version header"
-./tools/create_version_c.sh darktable-$dt_decoration/src/version_gen.c $dt_decoration
+"$DT_SRC_DIR/tools/create_version_c.sh" darktable-$dt_decoration/src/version_gen.c $dt_decoration
 
 # remove usermanual, that's > 80 MB and released separately
 echo "* removing usermanual"
