@@ -728,7 +728,7 @@ static const char* get_axis_name(int pos)
   return AXIS_NAMES[pos];
 }
 
-int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
+int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
   /* lets zero mem */
   memset(gui, 0, sizeof(dt_gui_gtk_t));
@@ -751,8 +751,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if(!g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s/darktable.css", datadir);
 
-  gtk_init(&argc, &argv);
-
 #ifdef MAC_INTEGRATION
 #ifdef GTK_TYPE_OSX_APPLICATION
   GtkOSXApplication *OSXApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
@@ -768,7 +766,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 #endif
 
   GtkWidget *widget;
-  gui->ui = dt_ui_initialize(argc, argv);
+  gui->ui = g_malloc0(sizeof(dt_ui_t));
   gui->surface = NULL;
   gui->center_tooltip = 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
@@ -1212,20 +1210,6 @@ static void init_main_table(GtkWidget *container)
 
   /* initialize right panel */
   _ui_init_panel_right(darktable.gui->ui, container);
-}
-
-/*
- * NEW UI API
- */
-dt_ui_t *dt_ui_initialize(int argc, char **argv)
-{
-  dt_ui_t *ui = g_malloc0(sizeof(dt_ui_t));
-  return ui;
-}
-
-void dt_ui_destroy(struct dt_ui_t *ui)
-{
-  g_free(ui);
 }
 
 GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c)

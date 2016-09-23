@@ -7,6 +7,7 @@ src/common/colorspaces.c
 src/common/cups_print.c
 src/common/darktable.c
 src/common/darktable.h
+src/common/database.c
 src/common/debug.h
 src/common/film.c
 src/common/history.c
