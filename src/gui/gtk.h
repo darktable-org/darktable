@@ -130,7 +130,7 @@ static inline GdkPixbuf *dt_gdk_pixbuf_new_from_file_at_size(const char *filenam
 #define dt_gdk_pixbuf_new_from_file_at_size gdk_pixbuf_new_from_file_at_size
 #endif
 
-int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
+int dt_gui_gtk_init(dt_gui_gtk_t *gui);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
 void dt_gui_gtk_quit();
@@ -223,10 +223,6 @@ typedef enum dt_ui_border_t
   DT_UI_BORDER_SIZE
 } dt_ui_border_t;
 
-/** \brief initialize the ui context */
-struct dt_ui_t *dt_ui_initialize(int argc, char **argv);
-/** \brief destroys the context and frees resources */
-void dt_ui_destroy(struct dt_ui_t *ui);
 /** \brief add's a widget to a defined container */
 void dt_ui_container_add_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
 /** \brief gives a widget focus in the container */

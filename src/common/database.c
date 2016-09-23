@@ -26,6 +26,7 @@
 
 #include <gio/gio.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <sqlite3.h>
 
 #include <errno.h>
@@ -742,9 +743,9 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
   // write the new version to db
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      db->handle, "INSERT OR REPLACE INTO db_info (key, value) VALUES ('version', ?1)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, new_version);
+  sqlite3_prepare_v2(db->handle, "INSERT OR REPLACE INTO db_info (key, value) VALUES ('version', ?1)", -1, &stmt,
+                     NULL);
+  sqlite3_bind_int(stmt, 1, new_version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -771,26 +772,25 @@ static void _create_schema(dt_database_t *db)
 {
   sqlite3_stmt *stmt;
   ////////////////////////////// db_info
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
-                        NULL, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(
+  sqlite3_exec(db->handle, "CREATE TABLE db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
+               NULL, NULL);
+  sqlite3_prepare_v2(
       db->handle, "INSERT OR REPLACE INTO db_info (key, value) VALUES ('version', ?1)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, CURRENT_DATABASE_VERSION);
+  sqlite3_bind_int(stmt, 1, CURRENT_DATABASE_VERSION);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   ////////////////////////////// film_rolls
-  DT_DEBUG_SQLITE3_EXEC(db->handle,
-                        "CREATE TABLE film_rolls "
-                        "(id INTEGER PRIMARY KEY, datetime_accessed CHAR(20), "
-                        //                        "folder VARCHAR(1024), external_drive VARCHAR(1024))", //
-                        //                        FIXME: make sure to bump CURRENT_DATABASE_VERSION and add a
-                        //                        case to _upgrade_schema_step when adding this!
-                        "folder VARCHAR(1024) NOT NULL)",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX film_rolls_folder_index ON film_rolls (folder)", NULL, NULL,
-                        NULL);
+  sqlite3_exec(db->handle,
+               "CREATE TABLE film_rolls "
+               "(id INTEGER PRIMARY KEY, datetime_accessed CHAR(20), "
+               //                        "folder VARCHAR(1024), external_drive VARCHAR(1024))", //
+               //                        FIXME: make sure to bump CURRENT_DATABASE_VERSION and add a
+               //                        case to _upgrade_schema_step when adding this!
+               "folder VARCHAR(1024) NOT NULL)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
   ////////////////////////////// images
-  DT_DEBUG_SQLITE3_EXEC(
+  sqlite3_exec(
       db->handle,
       "CREATE TABLE images (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER, "
       "width INTEGER, height INTEGER, filename VARCHAR, maker VARCHAR, model VARCHAR, "
@@ -804,54 +804,47 @@ static void _create_schema(dt_database_t *db)
       "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
       "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER)",
       NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX images_group_id_index ON images (group_id)", NULL, NULL,
-                        NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX images_film_id_index ON images (film_id)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX images_filename_index ON images (filename)", NULL, NULL,
-                        NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX images_group_id_index ON images (group_id)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX images_film_id_index ON images (film_id)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX images_filename_index ON images (filename)", NULL, NULL, NULL);
   ////////////////////////////// selected_images
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL,
-                        NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   ////////////////////////////// history
-  DT_DEBUG_SQLITE3_EXEC(
+  sqlite3_exec(
       db->handle,
       "CREATE TABLE history (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
       NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX history_imgid_index ON history (imgid)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX history_imgid_index ON history (imgid)", NULL, NULL, NULL);
   ////////////////////////////// mask
-  DT_DEBUG_SQLITE3_EXEC(db->handle,
-                        "CREATE TABLE mask (imgid INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
-                        "version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
-                        NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+               "CREATE TABLE mask (imgid INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
+               "version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
+               NULL, NULL, NULL);
   ////////////////////////////// tags
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE tags (id INTEGER PRIMARY KEY, name VARCHAR, icon BLOB, "
-                                    "description VARCHAR, flags INTEGER)",
-                        NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE tags (id INTEGER PRIMARY KEY, name VARCHAR, icon BLOB, "
+                           "description VARCHAR, flags INTEGER)", NULL, NULL, NULL);
   ////////////////////////////// tagged_images
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE tagged_images (imgid INTEGER, tagid INTEGER, "
-                                    "PRIMARY KEY (imgid, tagid))",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX tagged_images_tagid_index ON tagged_images (tagid)", NULL,
-                        NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE tagged_images (imgid INTEGER, tagid INTEGER, "
+                           "PRIMARY KEY (imgid, tagid))", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
   ////////////////////////////// tagxtag
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE tagxtag (id1 INTEGER, id2 INTEGER, count INTEGER, "
-                                    "PRIMARY KEY (id1, id2))",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TRIGGER insert_tag AFTER INSERT ON tags"
-                                    " BEGIN"
-                                    "   INSERT INTO tagxtag SELECT id, new.id, 0 FROM TAGS;"
-                                    "   UPDATE tagxtag SET count = 1000000 WHERE id1=new.id AND id2=new.id;"
-                                    " END",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TRIGGER delete_tag BEFORE DELETE on tags"
-                                    " BEGIN"
-                                    "   DELETE FROM tagxtag WHERE id1=old.id OR id2=old.id;"
-                                    "   DELETE FROM tagged_images WHERE tagid=old.id;"
-                                    " END",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(
+  sqlite3_exec(db->handle, "CREATE TABLE tagxtag (id1 INTEGER, id2 INTEGER, count INTEGER, "
+                           "PRIMARY KEY (id1, id2))", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TRIGGER insert_tag AFTER INSERT ON tags"
+                           " BEGIN"
+                           "   INSERT INTO tagxtag SELECT id, new.id, 0 FROM TAGS;"
+                           "   UPDATE tagxtag SET count = 1000000 WHERE id1=new.id AND id2=new.id;"
+                           " END",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TRIGGER delete_tag BEFORE DELETE on tags"
+                           " BEGIN"
+                           "   DELETE FROM tagxtag WHERE id1=old.id OR id2=old.id;"
+                           "   DELETE FROM tagged_images WHERE tagid=old.id;"
+                           " END",
+               NULL, NULL, NULL);
+  sqlite3_exec(
       db->handle,
       "CREATE TRIGGER attach_tag AFTER INSERT ON tagged_images"
       " BEGIN"
@@ -861,7 +854,7 @@ static void _create_schema(dt_database_t *db)
       "        OR (id2=new.tagid AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid=new.imgid));"
       " END",
       NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(
+  sqlite3_exec(
       db->handle,
       "CREATE TRIGGER detach_tag BEFORE DELETE ON tagged_images"
       " BEGIN"
@@ -872,37 +865,35 @@ static void _create_schema(dt_database_t *db)
       " END",
       NULL, NULL, NULL);
   ////////////////////////////// styles
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE styles (id INTEGER, name VARCHAR, description VARCHAR)",
+  sqlite3_exec(db->handle, "CREATE TABLE styles (id INTEGER, name VARCHAR, description VARCHAR)",
                         NULL, NULL, NULL);
   ////////////////////////////// style_items
-  DT_DEBUG_SQLITE3_EXEC(
+  sqlite3_exec(
       db->handle,
       "CREATE TABLE style_items (styleid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
       NULL, NULL, NULL);
   ////////////////////////////// color_labels
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE color_labels (imgid INTEGER, color INTEGER)", NULL, NULL,
-                        NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE UNIQUE INDEX color_labels_idx ON color_labels (imgid, color)",
-                        NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
+               NULL);
   ////////////////////////////// meta_data
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE meta_data (id INTEGER, key INTEGER, value VARCHAR)", NULL,
-                        NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE meta_data (id INTEGER, key INTEGER, value VARCHAR)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
   ////////////////////////////// presets
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE presets (name VARCHAR, description VARCHAR, operation "
-                                    "VARCHAR, op_version INTEGER, op_params BLOB, "
-                                    "enabled INTEGER, blendop_params BLOB, blendop_version INTEGER, "
-                                    "multi_priority INTEGER, multi_name VARCHAR(256), "
-                                    "model VARCHAR, maker VARCHAR, lens VARCHAR, iso_min REAL, iso_max REAL, "
-                                    "exposure_min REAL, exposure_max REAL, "
-                                    "aperture_min REAL, aperture_max REAL, focal_length_min REAL, "
-                                    "focal_length_max REAL, writeprotect INTEGER, "
-                                    "autoapply INTEGER, filter INTEGER, def INTEGER, format INTEGER)",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE UNIQUE INDEX presets_idx ON presets(name, operation, op_version)",
-                        NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE presets (name VARCHAR, description VARCHAR, operation "
+                           "VARCHAR, op_version INTEGER, op_params BLOB, "
+                           "enabled INTEGER, blendop_params BLOB, blendop_version INTEGER, "
+                           "multi_priority INTEGER, multi_name VARCHAR(256), "
+                           "model VARCHAR, maker VARCHAR, lens VARCHAR, iso_min REAL, iso_max REAL, "
+                           "exposure_min REAL, exposure_max REAL, "
+                           "aperture_min REAL, aperture_max REAL, focal_length_min REAL, "
+                           "focal_length_max REAL, writeprotect INTEGER, "
+                           "autoapply INTEGER, filter INTEGER, def INTEGER, format INTEGER)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX presets_idx ON presets(name, operation, op_version)", NULL, NULL,
+               NULL);
 }
 
 static void _sanitize_db(dt_database_t *db)
@@ -936,8 +927,31 @@ static void _sanitize_db(dt_database_t *db)
   sqlite3_finalize(innerstmt);
 }
 
+typedef struct result_t
+{
+ enum {RESULT_NONE, RESULT_CLOSE, RESULT_DELETE} result;
+ GtkWidget *window;
+} result_t;
+
+static void _button_handler_close(GtkButton *button, gpointer data)
+{
+  result_t *result = (result_t *)data;
+  result->result = RESULT_CLOSE;
+  gtk_widget_destroy(result->window);
+  gtk_main_quit();
+}
+
+static void _button_handler_delete(GtkButton *button, gpointer data)
+{
+  result_t *result = (result_t *)data;
+  result->result = RESULT_DELETE;
+  gtk_widget_destroy(result->window);
+  gtk_main_quit();
+}
+
 dt_database_t *dt_database_init(const char *alternative)
 {
+start:
   /* migrate default database location to new default */
   _database_migrate_to_xdg_structure();
 
@@ -1118,6 +1132,73 @@ dt_database_t *dt_database_init(const char *alternative)
     }
     // else: the current version, do nothing
   }
+  else if(rc == SQLITE_CORRUPT)
+  {
+    // oh, bad situation. the database is corrupt and can't be read!
+    // we inform the user here and let him decide what to do: exit or delete and try again.
+
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+    gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
+    gtk_window_set_title(GTK_WINDOW(window), "darktable - error opening database");
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_container_add(GTK_CONTAINER(window), vbox);
+
+    GtkWidget *label = gtk_label_new(_("an error has occured while trying to open the database from"));
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+
+    char *label_text = g_strdup_printf("<span style=\"italic\">%s</span>", dbfilename);
+    label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label), label_text);
+    gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+
+    label = gtk_label_new(_("it seems that the database is corrupt.\ndo you want to close darktable now "
+                            "to manually restore\nthe database from a backup or start with a new one?"));
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+    result_t result = {.result = RESULT_NONE, .window = window};
+
+    GtkWidget *button = gtk_button_new_with_label(_("close darktable"));
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_button_handler_close), &result);
+    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+    button = gtk_button_new_with_label(_("delete database"));
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_button_handler_delete), &result);
+    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+    gtk_widget_show_all(window);
+    gtk_main();
+
+    g_free(label_text);
+
+    dt_database_destroy(db);
+    db = NULL;
+
+    if(result.result == RESULT_DELETE)
+    {
+      fprintf(stderr, "[init] deleting `%s' on user request", dbfilename);
+
+      if(g_unlink(dbfilename) == 0)
+        fprintf(stderr, " ... ok\n");
+      else
+        fprintf(stderr, " ... failed\n");
+
+      goto start;
+    }
+    else
+    {
+      fprintf(stderr, "[init] database `%s' is corrupt and can't be opened! either replace it from a backup or "
+                      "delete the file so that darktable can create a new one the next time. aborting\n", dbname);
+      goto error;
+    }
+  }
   else
   {
     // does it contain the legacy 'settings' table?
@@ -1158,26 +1239,23 @@ dt_database_t *dt_database_init(const char *alternative)
 
   // create the in-memory tables
   // temporary stuff for some ops, need this for some reason with newer sqlite3:
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)", NULL,
-                        NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(
+  sqlite3_exec(db->handle, "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.collected_images (rowid INTEGER PRIMARY KEY AUTOINCREMENT, imgid INTEGER)", NULL,
       NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)", NULL,
-                        NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE memory.taglist "
-                                    "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT REPLACE, "
-                                    "count INTEGER)",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(
+  sqlite3_exec(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE memory.taglist "
+                           "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT REPLACE, count INTEGER)",
+               NULL, NULL, NULL);
+  sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.history (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256) UNIQUE ON CONFLICT REPLACE, op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
       NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(
+  sqlite3_exec(
       db->handle,
       "CREATE TABLE MEMORY.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
@@ -1213,7 +1291,7 @@ void dt_database_destroy(const dt_database_t *db)
 
 sqlite3 *dt_database_get(const dt_database_t *db)
 {
-  return db->handle;
+  return db ? db->handle : NULL;
 }
 
 const gchar *dt_database_get_path(const struct dt_database_t *db)
