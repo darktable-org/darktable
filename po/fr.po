@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-16 17:34+0200\n"
-"PO-Revision-Date: 2016-09-16 09:48+0200\n"
+"POT-Creation-Date: 2016-09-23 18:52+0200\n"
+"PO-Revision-Date: 2016-09-23 18:57+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -25,7 +25,7 @@ msgstr "taille des panneaux latéraux en pixels"
 #: ../build/src/preferences_gen.h:1772 ../build/src/preferences_gen.h:2037
 #: ../build/src/preferences_gen.h:2177 ../build/src/preferences_gen.h:2362
 #: ../build/src/preferences_gen.h:2388 ../build/src/preferences_gen.h:2416
-#: ../src/lua/preferences.c:573
+#: ../src/lua/preferences.c:657
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "double-cliquer pour réinitialiser à « %d »"
@@ -59,9 +59,10 @@ msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
 #: ../build/src/preferences_gen.h:2692 ../build/src/preferences_gen.h:2711
 #: ../build/src/preferences_gen.h:2734 ../build/src/preferences_gen.h:2753
 #: ../build/src/preferences_gen.h:2805 ../build/src/preferences_gen.h:2828
-#: ../build/src/preferences_gen.h:2851 ../src/lua/preferences.c:500
-#: ../src/lua/preferences.c:514 ../src/lua/preferences.c:525
-#: ../src/lua/preferences.c:536 ../src/lua/preferences.c:551
+#: ../build/src/preferences_gen.h:2851 ../src/lua/preferences.c:579
+#: ../src/lua/preferences.c:594 ../src/lua/preferences.c:606
+#: ../src/lua/preferences.c:618 ../src/lua/preferences.c:634
+#: ../src/lua/preferences.c:698
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "double-cliquer pour réinitialiser à « %s »"
@@ -1052,6 +1053,33 @@ msgstr "le fichier « %s » possède un format inconnu !"
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
+#: ../src/common/database.c:1143
+msgid "darktable - error opening database"
+msgstr "darktable - erreur lors de l'ouverture de la base de données"
+
+#: ../src/common/database.c:1149
+msgid "an error has occured while trying to open the database from"
+msgstr "une erreur est survenue en essayant d'ouvrir la base de données depuis"
+
+#: ../src/common/database.c:1158
+msgid ""
+"it seems that the database is corrupt.\n"
+"do you want to close darktable now to manually restore\n"
+"the database from a backup or start with a new one?"
+msgstr ""
+"la base de données semble corrompue.\n"
+"voulez vous quitter darktable maintenant et restaurer manuellement\n"
+"la base de données depuis une sauvegarde ou re-démarrer avec une nouvelle "
+"base de données?"
+
+#: ../src/common/database.c:1168
+msgid "close darktable"
+msgstr "quitter darktable"
+
+#: ../src/common/database.c:1172
+msgid "delete database"
+msgstr "effacer la base de données"
+
 #: ../src/common/film.c:350
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
@@ -1068,7 +1096,7 @@ msgstr ""
 #: ../src/common/history.c:425 ../src/common/history.c:428
 #: ../src/common/history.c:444 ../src/common/styles.c:718
 #: ../src/common/styles.c:722 ../src/develop/blend_gui.c:1818
-#: ../src/develop/develop.c:1326 ../src/iop/ashift.c:4350
+#: ../src/develop/develop.c:1325 ../src/iop/ashift.c:4400
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activé(e)"
@@ -1076,9 +1104,9 @@ msgstr "activé(e)"
 #: ../src/common/history.c:425 ../src/common/history.c:428
 #: ../src/common/history.c:444 ../src/common/styles.c:718
 #: ../src/common/styles.c:722 ../src/develop/blend_gui.c:1600
-#: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1326
+#: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1325
 #: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
-#: ../src/iop/ashift.c:4349 ../src/iop/ashift.c:4355 ../src/iop/colorin.c:1943
+#: ../src/iop/ashift.c:4399 ../src/iop/ashift.c:4405 ../src/iop/colorin.c:1943
 #: ../src/iop/demosaic.c:3872 ../src/iop/vignette.c:1139
 #: ../src/libs/history.c:149 ../src/libs/live_view.c:434
 msgid "off"
@@ -1115,20 +1143,20 @@ msgstr ""
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1421 ../src/control/jobs/control_jobs.c:636
+#: ../src/common/image.c:1429 ../src/control/jobs/control_jobs.c:636
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:1573
+#: ../src/common/image.c:1581
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:568 ../src/common/mipmap_cache.c:1045
+#: ../src/common/imageio.c:568 ../src/common/mipmap_cache.c:961
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image « %s » non disponible!"
@@ -1165,12 +1193,6 @@ msgid ""
 msgstr ""
 "impossible d'affecter un nom unique pour la session. vérifier les réglages "
 "d'importation."
-
-#: ../src/common/mipmap_cache.c:1101 ../src/iop/demosaic.c:3648
-#: ../src/iop/invert.c:459
-#, c-format
-msgid "`%s' color matrix not found for 4bayer image!"
-msgstr " matrice couleur « %s » non trouvée pour une image de bayer!"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1615,7 +1637,7 @@ msgstr "déplacer les images"
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:103
 #: ../src/imageio/storage/gallery.c:164 ../src/imageio/storage/latex.c:103
 #: ../src/imageio/storage/latex.c:164 ../src/libs/styles.c:209
-#: ../src/lua/preferences.c:511
+#: ../src/lua/preferences.c:591
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
@@ -1750,7 +1772,7 @@ msgstr "importer une image"
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "fusion ignorée dans le module « %s »: paramètres incompatibles"
 
-#: ../src/develop/blend.c:2574 ../src/develop/blend.c:2832
+#: ../src/develop/blend.c:2574 ../src/develop/blend.c:2825
 msgid "could not allocate buffer for blending"
 msgstr "impossible d'allouer la mémoire pour la fusion"
 
@@ -2178,7 +2200,7 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "désactive temporairement le masque de fusion. uniquement pour le module actif"
 
-#: ../src/develop/develop.c:1129
+#: ../src/develop/develop.c:1128
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
@@ -2394,7 +2416,7 @@ msgstr "utiliser les mêmes masques que"
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
-#: ../src/develop/pixelpipe_hb.c:2456
+#: ../src/develop/pixelpipe_hb.c:2422
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2729,67 +2751,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:872
+#: ../src/gui/gtk.c:870
 msgctxt "accel"
 msgid "tethering view"
 msgstr "capture"
 
-#: ../src/gui/gtk.c:873
+#: ../src/gui/gtk.c:871
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "table lumineuse"
 
-#: ../src/gui/gtk.c:874
+#: ../src/gui/gtk.c:872
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "chambre noire"
 
-#: ../src/gui/gtk.c:875
+#: ../src/gui/gtk.c:873
 msgctxt "accel"
 msgid "map view"
 msgstr "vue carte"
 
-#: ../src/gui/gtk.c:876
+#: ../src/gui/gtk.c:874
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "diaporama"
 
-#: ../src/gui/gtk.c:877
+#: ../src/gui/gtk.c:875
 msgctxt "accel"
 msgid "print view"
 msgstr "impression"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:900
+#: ../src/gui/gtk.c:898
 msgctxt "accel"
 msgid "quit"
 msgstr "quitter"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:905
+#: ../src/gui/gtk.c:903
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activer/désactiver le plein écran"
 
-#: ../src/gui/gtk.c:906
+#: ../src/gui/gtk.c:904
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "quitter le mode plein écran"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:914
+#: ../src/gui/gtk.c:912
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activer/désactiver les panneaux latéraux"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:917
+#: ../src/gui/gtk.c:915
 msgctxt "accel"
 msgid "toggle header"
 msgstr "activer/désactiver le panneau supérieur"
 
 #. View-switch
-#: ../src/gui/gtk.c:920
+#: ../src/gui/gtk.c:918
 msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
@@ -3070,7 +3092,7 @@ msgstr "ouverture"
 
 #. focal length
 #: ../src/gui/preferences.c:489 ../src/gui/preferences.c:1334
-#: ../src/gui/presets.c:489 ../src/iop/ashift.c:4367 ../src/libs/camera.c:575
+#: ../src/gui/presets.c:489 ../src/iop/ashift.c:4417 ../src/libs/camera.c:575
 #: ../src/libs/collect.h:34 ../src/libs/metadata_view.c:107
 msgid "focal length"
 msgstr "focale"
@@ -4187,155 +4209,155 @@ msgstr "rend l'effet plus fort ou plus faible"
 msgid "perspective correction"
 msgstr "correction de perspective"
 
-#: ../src/iop/ashift.c:508 ../src/iop/watermark.c:253
+#: ../src/iop/ashift.c:509 ../src/iop/watermark.c:253
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:509
+#: ../src/iop/ashift.c:510
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "correction d'objectif (v)"
 
-#: ../src/iop/ashift.c:510
+#: ../src/iop/ashift.c:511
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "correction d'objectif (h)"
 
-#: ../src/iop/ashift.c:511
+#: ../src/iop/ashift.c:512
 msgctxt "accel"
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:2438
+#: ../src/iop/ashift.c:2487
 msgid "automatic cropping failed"
 msgstr "recadrage automatique impossible"
 
-#: ../src/iop/ashift.c:2458
+#: ../src/iop/ashift.c:2507
 msgid "data pending - please repeat"
 msgstr "données en attente, merci de recommencer"
 
-#: ../src/iop/ashift.c:2464
+#: ../src/iop/ashift.c:2513
 msgid "could not detect structural data in image"
 msgstr "impossible de détecter les structures dans l'image"
 
-#: ../src/iop/ashift.c:2475
+#: ../src/iop/ashift.c:2524
 msgid "could not run outlier removal"
 msgstr "impossible de supprimer les lignes de contrôle"
 
-#: ../src/iop/ashift.c:2529
+#: ../src/iop/ashift.c:2578
 msgid "not enough structure for automatic correction"
 msgstr "pas assez de structure pour corriger automatiquement"
 
-#: ../src/iop/ashift.c:2533
+#: ../src/iop/ashift.c:2583
 msgid "automatic correction failed, please correct manually"
 msgstr "correction automatique impossible, merci de corriger manuellement"
 
-#: ../src/iop/ashift.c:4126 ../src/iop/ashift.c:4127 ../src/iop/ashift.c:4226
-#: ../src/iop/ashift.c:4227
+#: ../src/iop/ashift.c:4176 ../src/iop/ashift.c:4177 ../src/iop/ashift.c:4276
+#: ../src/iop/ashift.c:4277
 #, c-format
 msgid "lens shift (%s)"
 msgstr "correction d'objectif (%s)"
 
-#: ../src/iop/ashift.c:4126 ../src/iop/ashift.c:4127 ../src/iop/ashift.c:4226
-#: ../src/iop/ashift.c:4227 ../src/iop/clipping.c:1566
+#: ../src/iop/ashift.c:4176 ../src/iop/ashift.c:4177 ../src/iop/ashift.c:4276
+#: ../src/iop/ashift.c:4277 ../src/iop/clipping.c:1566
 #: ../src/iop/clipping.c:1855 ../src/iop/clipping.c:1874
 msgid "horizontal"
 msgstr "horizontale"
 
-#: ../src/iop/ashift.c:4126 ../src/iop/ashift.c:4127 ../src/iop/ashift.c:4226
-#: ../src/iop/ashift.c:4227 ../src/iop/clipping.c:1565
+#: ../src/iop/ashift.c:4176 ../src/iop/ashift.c:4177 ../src/iop/ashift.c:4276
+#: ../src/iop/ashift.c:4277 ../src/iop/clipping.c:1565
 #: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1873
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/ashift.c:4327 ../src/iop/graduatednd.c:1154
+#: ../src/iop/ashift.c:4377 ../src/iop/graduatednd.c:1154
 #: ../src/iop/watermark.c:1352
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:4333
+#: ../src/iop/ashift.c:4383
 msgid "lens shift (vertical)"
 msgstr "correction d'objectif (verticale)"
 
-#: ../src/iop/ashift.c:4338
+#: ../src/iop/ashift.c:4388
 msgid "lens shift (horizontal)"
 msgstr "correction d'objectif (horizontale)"
 
-#: ../src/iop/ashift.c:4343
+#: ../src/iop/ashift.c:4393
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:4348 ../src/iop/clipping.c:2005
+#: ../src/iop/ashift.c:4398 ../src/iop/clipping.c:2005
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/ashift.c:4354 ../src/iop/clipping.c:1881
+#: ../src/iop/ashift.c:4404 ../src/iop/clipping.c:1881
 msgid "automatic cropping"
 msgstr "recadrage"
 
-#: ../src/iop/ashift.c:4356
+#: ../src/iop/ashift.c:4406
 msgid "largest area"
 msgstr "plus grand coté"
 
-#: ../src/iop/ashift.c:4357
+#: ../src/iop/ashift.c:4407
 msgid "original format"
 msgstr "format d'origine"
 
-#: ../src/iop/ashift.c:4361
+#: ../src/iop/ashift.c:4411
 msgid "lens model"
 msgstr "modèle d'objectif"
 
-#: ../src/iop/ashift.c:4362
+#: ../src/iop/ashift.c:4412
 msgid "generic"
 msgstr "générique"
 
-#: ../src/iop/ashift.c:4363
+#: ../src/iop/ashift.c:4413
 msgid "specific"
 msgstr "spécifique"
 
-#: ../src/iop/ashift.c:4376
+#: ../src/iop/ashift.c:4426
 msgid "crop factor"
 msgstr "facteur de cadrage"
 
-#: ../src/iop/ashift.c:4381
+#: ../src/iop/ashift.c:4431
 msgid "lens dependence"
 msgstr "dépendance à l'objectif"
 
-#: ../src/iop/ashift.c:4391
+#: ../src/iop/ashift.c:4441
 msgid "aspect adjust"
 msgstr "ajustement aspect"
 
-#: ../src/iop/ashift.c:4401
+#: ../src/iop/ashift.c:4451
 msgid "automatic fit"
 msgstr "correction automatique"
 
-#: ../src/iop/ashift.c:4420
+#: ../src/iop/ashift.c:4470
 msgid "get structure"
 msgstr "récupère les structures"
 
-#: ../src/iop/ashift.c:4465
+#: ../src/iop/ashift.c:4515
 msgid "rotate image"
 msgstr "rotation de l'image"
 
-#: ../src/iop/ashift.c:4466 ../src/iop/ashift.c:4467
+#: ../src/iop/ashift.c:4516 ../src/iop/ashift.c:4517
 msgid "apply lens shift correction in one direction"
 msgstr "applique la correction d'objectif dans une direction"
 
-#: ../src/iop/ashift.c:4468
+#: ../src/iop/ashift.c:4518
 msgid "shear the image along one diagonal"
 msgstr "cisaillement de l'image selon une diagonale"
 
-#: ../src/iop/ashift.c:4469
+#: ../src/iop/ashift.c:4519
 msgid "display guide lines overlay"
 msgstr "superpose des lignes guides"
 
-#: ../src/iop/ashift.c:4470 ../src/iop/clipping.c:1884
+#: ../src/iop/ashift.c:4520 ../src/iop/clipping.c:1884
 msgid "automatically crop to avoid black edges"
 msgstr "recadre automatique pour éviter les bords noirs"
 
-#: ../src/iop/ashift.c:4471
+#: ../src/iop/ashift.c:4521
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -4343,13 +4365,13 @@ msgstr ""
 "modèle d'objectif pour la correction de perspective: générique ou fonction "
 "de la longueur focale"
 
-#: ../src/iop/ashift.c:4473
+#: ../src/iop/ashift.c:4523
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "longueur focale de l'objectif, valeur par défaut depuis les exif si "
 "disponible"
 
-#: ../src/iop/ashift.c:4475
+#: ../src/iop/ashift.c:4525
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -4357,7 +4379,7 @@ msgstr ""
 "facteur de cadrage du capteur de l'appareil, valeur par défaut depuis les "
 "exif si disponible, positionnement manuel souvent nécessaire"
 
-#: ../src/iop/ashift.c:4478
+#: ../src/iop/ashift.c:4528
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -4365,13 +4387,13 @@ msgstr ""
 "le niveau de correction dépendant de l'objectif, positionner au maximum pour "
 "une dépendance totale, positionner à zéro pour un modèle générique"
 
-#: ../src/iop/ashift.c:4480
+#: ../src/iop/ashift.c:4530
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "ajuste les dimensions de l'image en redimensionnant horizontalement ou "
 "verticalement"
 
-#: ../src/iop/ashift.c:4481
+#: ../src/iop/ashift.c:4531
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4381,7 +4403,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4484
+#: ../src/iop/ashift.c:4534
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4391,7 +4413,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4487
+#: ../src/iop/ashift.c:4537
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -4407,7 +4429,7 @@ msgstr ""
 "ctrl-shift-clic pour uniquement la correction de rotation et d'alignement "
 "d'objectif"
 
-#: ../src/iop/ashift.c:4493
+#: ../src/iop/ashift.c:4543
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement\n"
@@ -4419,11 +4441,11 @@ msgstr ""
 "shift-clic pour une amélioration des détails accrue\n"
 "ctrl-shift-clic pour une combinaison des deux méthodes"
 
-#: ../src/iop/ashift.c:4497
+#: ../src/iop/ashift.c:4547
 msgid "remove line structure information"
 msgstr "supprime la visualisation des lignes de structure"
 
-#: ../src/iop/ashift.c:4498
+#: ../src/iop/ashift.c:4548
 msgid "toggle visibility of structure lines"
 msgstr "active/désactive l'affichage des lignes de structure"
 
@@ -4647,7 +4669,7 @@ msgid "the size of bloom"
 msgstr "taille de la lumière d'arrière-plan"
 
 #: ../src/iop/bloom.c:519 ../src/iop/colorreconstruction.c:1372
-#: ../src/iop/defringe.c:461 ../src/iop/hotpixels.c:454
+#: ../src/iop/defringe.c:461 ../src/iop/hotpixels.c:452
 #: ../src/iop/sharpen.c:763
 msgid "threshold"
 msgstr "seuil"
@@ -4657,7 +4679,7 @@ msgid "the threshold of light"
 msgstr "seuil de lumière"
 
 #: ../src/iop/bloom.c:525 ../src/iop/denoiseprofile.c:2073
-#: ../src/iop/grain.c:528 ../src/iop/hotpixels.c:462 ../src/iop/nlmeans.c:855
+#: ../src/iop/grain.c:528 ../src/iop/hotpixels.c:460 ../src/iop/nlmeans.c:855
 #: ../src/iop/velvia.c:378
 msgid "strength"
 msgstr "force"
@@ -4863,13 +4885,13 @@ msgstr "choisir la couleur du cadre interne dans l'image"
 msgid "chromatic aberrations"
 msgstr "aberrations chromatiques"
 
-#: ../src/iop/cacorrect.c:1559
+#: ../src/iop/cacorrect.c:1558
 msgid "automatic chromatic aberration correction"
 msgstr ""
 "correction automatique des\n"
 "aberrations chromatiques"
 
-#: ../src/iop/cacorrect.c:1562
+#: ../src/iop/cacorrect.c:1561
 msgid ""
 "automatic chromatic aberration correction\n"
 "disabled for non-Bayer sensors"
@@ -4878,7 +4900,7 @@ msgstr ""
 "aberrations chromatiques\n"
 "uniquement pour les capteur de Bayer"
 
-#: ../src/iop/cacorrect.c:1565
+#: ../src/iop/cacorrect.c:1564
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
@@ -5498,26 +5520,26 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:852 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
-#: ../src/views/darkroom.c:1539 ../src/views/lighttable.c:2442
+#: ../src/views/darkroom.c:1539 ../src/views/lighttable.c:2426
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:853 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
-#: ../src/views/darkroom.c:1540 ../src/views/lighttable.c:2443
+#: ../src/views/darkroom.c:1540 ../src/views/lighttable.c:2427
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:854 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
-#: ../src/views/darkroom.c:1541 ../src/views/lighttable.c:2444
+#: ../src/views/darkroom.c:1541 ../src/views/lighttable.c:2428
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:855 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1054 ../src/libs/print_settings.c:1265
-#: ../src/views/darkroom.c:1542 ../src/views/lighttable.c:2445
+#: ../src/views/darkroom.c:1542 ../src/views/lighttable.c:2429
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -5743,40 +5765,45 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:3847 ../src/iop/demosaic.c:3856
+#: ../src/iop/demosaic.c:3646 ../src/iop/invert.c:498
+#, c-format
+msgid "`%s' color matrix not found for 4bayer image!"
+msgstr " matrice couleur « %s » non trouvée pour une image de bayer!"
+
+#: ../src/iop/demosaic.c:3846 ../src/iop/demosaic.c:3855
 #: ../src/iop/dither.c:791 ../src/iop/highlights.c:954
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:3849
+#: ../src/iop/demosaic.c:3848
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:3850
+#: ../src/iop/demosaic.c:3849
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:3851
+#: ../src/iop/demosaic.c:3850
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3852
+#: ../src/iop/demosaic.c:3851 ../src/iop/demosaic.c:3860
 msgid "passthrough (monochrome) (experimental)"
 msgstr "monochrome (expérimental)"
 
-#: ../src/iop/demosaic.c:3853 ../src/iop/demosaic.c:3861
+#: ../src/iop/demosaic.c:3852 ../src/iop/demosaic.c:3861
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:3858
+#: ../src/iop/demosaic.c:3857
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3859
+#: ../src/iop/demosaic.c:3858
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-passe"
 
-#: ../src/iop/demosaic.c:3860
+#: ../src/iop/demosaic.c:3859
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-passes (lent)"
 
@@ -6366,31 +6393,31 @@ msgstr "contraste du filtre passe-haut"
 msgid "hot pixels"
 msgstr "pixels chauds"
 
-#: ../src/iop/hotpixels.c:427
+#: ../src/iop/hotpixels.c:425
 #, c-format
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
 msgstr[0] "%d pixel corrigé"
 msgstr[1] "%d pixels corrigés"
 
-#: ../src/iop/hotpixels.c:455
+#: ../src/iop/hotpixels.c:453
 msgid "lower threshold for hot pixel"
 msgstr "seuil bas pour les pixels chauds"
 
-#: ../src/iop/hotpixels.c:463
+#: ../src/iop/hotpixels.c:461
 msgid "strength of hot pixel correction"
 msgstr "force de la correction des pixels chauds"
 
 #. 3 neighbours
-#: ../src/iop/hotpixels.c:468
+#: ../src/iop/hotpixels.c:466
 msgid "detect by 3 neighbors"
 msgstr "détection par 3 voisins"
 
-#: ../src/iop/hotpixels.c:475
+#: ../src/iop/hotpixels.c:473
 msgid "mark fixed pixels"
 msgstr "montrer"
 
-#: ../src/iop/hotpixels.c:487
+#: ../src/iop/hotpixels.c:485
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
@@ -6407,15 +6434,15 @@ msgctxt "accel"
 msgid "pick color of film material from image"
 msgstr "choisir la couleur du film dans l'image"
 
-#: ../src/iop/invert.c:490
+#: ../src/iop/invert.c:529
 msgid "color of film material"
 msgstr "couleur du film"
 
-#: ../src/iop/invert.c:514
+#: ../src/iop/invert.c:553
 msgid "select color of film material"
 msgstr "sélectionne la couleur du film"
 
-#: ../src/iop/invert.c:519
+#: ../src/iop/invert.c:558
 msgid "pick color of film material from image"
 msgstr "choisir la couleur du film dans l'image"
 
@@ -7011,20 +7038,20 @@ msgstr "linéaire"
 msgid "gamma exponential factor"
 msgstr "facteur exponentiel gamma"
 
-#: ../src/iop/rawdenoise.c:63
+#: ../src/iop/rawdenoise.c:62
 msgid "raw denoise"
 msgstr "réduction du bruit RAW"
 
-#: ../src/iop/rawdenoise.c:78
+#: ../src/iop/rawdenoise.c:77
 msgctxt "accel"
 msgid "noise threshold"
 msgstr "seuil de bruit"
 
-#: ../src/iop/rawdenoise.c:486
+#: ../src/iop/rawdenoise.c:470
 msgid "noise threshold"
 msgstr "seuil de bruit"
 
-#: ../src/iop/rawdenoise.c:492
+#: ../src/iop/rawdenoise.c:476
 msgid ""
 "raw denoising\n"
 "only works for raw images."
@@ -7070,7 +7097,7 @@ msgid "raw black/white point"
 msgstr "point noir/blanc raw"
 
 #: ../src/iop/rawprepare.c:116 ../src/iop/rawprepare.c:138
-#: ../src/iop/rawprepare.c:692
+#: ../src/iop/rawprepare.c:699
 #, c-format
 msgid "black level %i"
 msgstr "niveau de noir %i"
@@ -7080,12 +7107,12 @@ msgctxt "accel"
 msgid "white point"
 msgstr "point blanc"
 
-#: ../src/iop/rawprepare.c:143 ../src/iop/rawprepare.c:706
-#: ../src/iop/rawprepare.c:707
+#: ../src/iop/rawprepare.c:143 ../src/iop/rawprepare.c:713
+#: ../src/iop/rawprepare.c:714
 msgid "white point"
 msgstr "point blanc"
 
-#: ../src/iop/rawprepare.c:728
+#: ../src/iop/rawprepare.c:735
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -7409,32 +7436,32 @@ msgctxt "accel"
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:655 ../src/iop/temperature.c:882
-#, c-format
-msgid "`%s' color matrix not found for 4bayer image"
-msgstr "matrice couleur « %s » non trouvée pour une image de bayer!"
-
-#: ../src/iop/temperature.c:696
+#: ../src/iop/temperature.c:694
 msgctxt "white balance"
 msgid "camera"
 msgstr "boîtier"
 
-#: ../src/iop/temperature.c:697
+#: ../src/iop/temperature.c:695
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "neutre boîtier"
 
-#: ../src/iop/temperature.c:698
+#: ../src/iop/temperature.c:696
 msgctxt "white balance"
 msgid "spot"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:873
+#: ../src/iop/temperature.c:871
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "matrice couleur « %s » non trouvée pour l'image!"
 
-#: ../src/iop/temperature.c:927
+#: ../src/iop/temperature.c:880
+#, c-format
+msgid "`%s' color matrix not found for 4bayer image"
+msgstr "matrice couleur « %s » non trouvée pour une image de bayer!"
+
+#: ../src/iop/temperature.c:925
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "impossible de récupérer la balance des blancs du boîtier pour « %s » !"
@@ -10187,16 +10214,16 @@ msgctxt "accel"
 msgid "reset lib parameters"
 msgstr "réinitialiser les paramètres de la bibliothèque"
 
-#: ../src/lua/preferences.c:523
+#: ../src/lua/preferences.c:604
 msgid "select file"
 msgstr "sélectionner un fichier"
 
-#: ../src/lua/preferences.c:599
+#: ../src/lua/preferences.c:684
 #, c-format
 msgid "double click to reset to `%f'"
 msgstr "double-cliquer pour réinitialiser à « %f »"
 
-#: ../src/lua/preferences.c:652
+#: ../src/lua/preferences.c:764
 msgid "lua options"
 msgstr "options lua"
 
@@ -10289,7 +10316,7 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "click droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1537 ../src/views/lighttable.c:2440
+#: ../src/views/darkroom.c:1537 ../src/views/lighttable.c:2424
 msgid "display intent"
 msgstr "rendu (écran)"
 
@@ -10297,11 +10324,11 @@ msgstr "rendu (écran)"
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
-#: ../src/views/darkroom.c:1553 ../src/views/lighttable.c:2454
+#: ../src/views/darkroom.c:1553 ../src/views/lighttable.c:2432
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:1584 ../src/views/lighttable.c:2473
+#: ../src/views/darkroom.c:1584 ../src/views/lighttable.c:2451
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC d'affichage dans %s/color/out ou %s/color/out"
@@ -10514,7 +10541,7 @@ msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "sortir du mode aperçu persistant"
 
-#: ../src/views/lighttable.c:2400
+#: ../src/views/lighttable.c:2385
 msgid "set display profile"
 msgstr "profil (écran)"
 
