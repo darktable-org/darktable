@@ -5,6 +5,8 @@ cmake_policy(SET CMP0048 OLD) # don't touch PROJECT_VERSION/VERSION
 
 project(darktable CXX C)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Allow forcing the C/CPP compiler that is actually used during the compilation
 # to something other than what is used by the cmake run. This is useful when
 # the compiler for some reason breaks the initial cmake checks but works fine
@@ -368,7 +370,6 @@ if(NOT SOURCE_PACKAGE AND NOT (CMAKE_VERSION VERSION_LESS 3.3) AND DEFINED ENV{_
 
   find_program(iwyu_tool_path NAMES iwyu_tool.py)
   if (iwyu_tool_path)
-    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     add_custom_command(
       OUTPUT "${CMAKE_BINARY_DIR}/iwyu.log"
       COMMAND "${iwyu_tool_path}" -v -p "${CMAKE_BINARY_DIR}"
