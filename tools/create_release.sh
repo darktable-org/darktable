@@ -34,8 +34,9 @@ rm -rf darktable-$dt_decoration/RELEASE_NOTES
 
 # wrap it up again
 echo "* creating final tarball"
-tar cJf darktable-$dt_decoration.tar.xz darktable-$dt_decoration/
-rm "$SRCDIR/darktable-$dt_decoration.tar"
+tar cf darktable-$dt_decoration.tar darktable-$dt_decoration/
+rm "$DT_SRC_DIR/darktable-$dt_decoration.tar"
+xz -z -v -9 -e darktable-$dt_decoration.tar
 cp darktable-$dt_decoration.tar.xz "$SRCDIR"
 
 # now test the build:
