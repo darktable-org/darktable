@@ -1853,7 +1853,7 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
         // AFAICT this can't happen with regular exiv2 parsed XMP data, but better safe than sorry.
         // it can happen though when constructing things in a unusual order and then passing it to us without
         // serializing it inbetween
-        current_entry = (history_entry_t *)g_list_nth_data(history_entries, n);
+        current_entry = (history_entry_t *)g_list_nth_data(history_entries, n - 1); // XMP starts counting at 1!
       }
 
       // go on reading things into current_entry
