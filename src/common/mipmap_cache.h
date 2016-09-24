@@ -65,6 +65,7 @@ typedef struct dt_mipmap_buffer_t
   dt_mipmap_size_t size;
   uint32_t imgid;
   int32_t width, height;
+  float iscale;
   uint8_t *buf;
   dt_colorspaces_color_profile_type_t color_space;
   dt_cache_entry_t *cache_entry;
