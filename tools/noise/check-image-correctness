@@ -38,4 +38,4 @@ if [ -z "$jpeg_image" ]; then
 	export_large_jpeg "$orig_image" "$jpeg_image"
 fi
 
-check_exposition "$orig_image" "$jpeg_image"
+check_exposure "$orig_image" "$jpeg_image"
