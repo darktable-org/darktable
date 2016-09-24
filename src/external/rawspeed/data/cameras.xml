@@ -411,9 +411,9 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="72" y="52" width="0" height="0"/>
-		<Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
-		<Sensor black="2026" white="16383" iso_min="6400" iso_max = "25600"/>
-		<Sensor black="2026" white="15304"/>
+		<Sensor black="2052" white="15000"/>
+		<Sensor black="2048" white="12277" iso_list="100"/>
+		<Sensor black="2048" white="11222" iso_list="160 320 640 1250 2500 5000"/>
 		<BlackAreas>
 			<Vertical x="0" width="70"/>
 			<Horizontal y="4" height="50"/>
