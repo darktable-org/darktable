@@ -2205,7 +2205,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="14bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="14bit-compressed">
 		<ID make="Nikon" model="D4">Nikon D4</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2214,9 +2214,9 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="16383"/>
+		<Sensor black="0" white="15520"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="14bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="14bit-uncompressed">
 		<ID make="Nikon" model="D4">Nikon D4</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2225,9 +2225,9 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="16383"/>
+		<Sensor black="0" white="15520"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="12bit-compressed" supported="no">
+	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="12bit-compressed">
 		<ID make="Nikon" model="D4">Nikon D4</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2236,9 +2236,9 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="12bit-uncompressed" supported="no">
+	<Camera make="NIKON CORPORATION" model="NIKON D4" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D4">Nikon D4</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2247,7 +2247,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="14bit-compressed">
 		<ID make="Nikon" model="D5">Nikon D5</ID>
