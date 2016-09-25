@@ -265,6 +265,13 @@ else(APPLE)
     set(RPATH_DT "$ORIGIN")
 endif(APPLE)
 
+if(NOT WIN32)
+  # Windows doesn't know the concept of RPATHs :(
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+  set(CMAKE_INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+endif(NOT WIN32)
+
 # we need some external programs for building darktable
 message(STATUS "Looking for external programs")
 set(EXTERNAL_PROGRAMS_FOUND 1)
