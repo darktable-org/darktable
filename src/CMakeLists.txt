@@ -12,6 +12,7 @@ FILE(GLOB SOURCE_FILES
   "common/cache.c"
   "common/calculator.c"
   "common/collection.c"
+  "common/color_picker.c"
   "common/colorlabels.c"
   "common/colorspaces.c"
   "common/curve_tools.c"
