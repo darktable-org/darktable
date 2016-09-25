@@ -21,9 +21,9 @@
 #include "develop/format.h"
 #include "develop/imageop.h"
 
-void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel, const dt_iop_roi_t *roi,
-                            const int *const box, float *const picked_color, float *const picked_color_min,
-                            float *const picked_color_max)
+static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
+                                    const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
+                                    float *const picked_color_min, float *const picked_color_max)
 {
   const int width = roi->width;
 
@@ -110,6 +110,16 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
       }
     }
   }
+}
+
+void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel, const dt_iop_roi_t *roi,
+                            const int *const box, float *const picked_color, float *const picked_color_min,
+                            float *const picked_color_max)
+{
+  if(dsc->channels == 4u)
+    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
+  else
+    dt_unreachable_codepath();
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
