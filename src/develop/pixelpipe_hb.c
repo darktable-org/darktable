@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/color_picker.h"
 #include "common/colorspaces.h"
 #include "common/histogram.h"
 #include "common/imageio.h"
@@ -24,13 +25,13 @@
 #include "control/control.h"
 #include "control/signal.h"
 #include "develop/blend.h"
+#include "develop/format.h"
 #include "develop/imageop_math.h"
 #include "develop/pixelpipe.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
-#include "develop/format.h"
 
 #include <assert.h>
 #include <math.h>
@@ -415,7 +416,7 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
 #endif
 
 // helper for color picking
-static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *roi,
+static void pixelpipe_picker(dt_iop_module_t *module, const float *pixel, const dt_iop_roi_t *roi,
                              float *picked_color, float *picked_color_min, float *picked_color_max,
                              dt_pixelpipe_picker_source_t picker_source)
 {
@@ -434,118 +435,46 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt
   // position
   if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
 
+  float fbox[4];
+
+  // get absolute pixel coordinates in final preview image
   if(darktable.lib->proxy.colorpicker.size)
   {
-    int box[4];
-    float fbox[4];
-
-    // get absolute pixel coordinates in final preview image
     for(int k = 0; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * wd;
     for(int k = 1; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * ht;
-
-    // transform back to current module coordinates
-    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                      module->priority + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
-                                      99999, fbox, 2);
-
-    fbox[0] -= roi->x;
-    fbox[1] -= roi->y;
-    fbox[2] -= roi->x;
-    fbox[3] -= roi->y;
-
-    // re-order edges of bounding box
-    box[0] = fminf(fbox[0], fbox[2]);
-    box[1] = fminf(fbox[1], fbox[3]);
-    box[2] = fmaxf(fbox[0], fbox[2]);
-    box[3] = fmaxf(fbox[1], fbox[3]);
-
-    // do not continue if box is completely outside of roi
-    if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return;
-
-    // clamp bounding box to roi
-    for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
-    for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
-
-    const float w = 1.0 / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
-
-    const int numthreads = dt_get_num_threads();
-
-    float *mean = malloc((size_t)3 * numthreads * sizeof(float));
-    float *mmin = malloc((size_t)3 * numthreads * sizeof(float));
-    float *mmax = malloc((size_t)3 * numthreads * sizeof(float));
-
-    for(int n = 0; n < 3 * numthreads; n++)
-    {
-      mean[n] = 0.0f;
-      mmin[n] = INFINITY;
-      mmax[n] = -INFINITY;
-    }
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img, box, mean, mmin, mmax) schedule(static)
-#endif
-    for(size_t j = box[1]; j <= box[3]; j++)
-    {
-      for(size_t i = box[0]; i <= box[2]; i++)
-      {
-        const int tnum = dt_get_thread_num();
-        float *tmean = mean + 3 * tnum;
-        float *tmmin = mmin + 3 * tnum;
-        float *tmmax = mmax + 3 * tnum;
-        const size_t k = 4 * (width * j + i);
-        const float L = img[k];
-        const float a = img[k + 1];
-        const float b = img[k + 2];
-        tmean[0] += w * L;
-        tmean[1] += w * a;
-        tmean[2] += w * b;
-        tmmin[0] = fminf(tmmin[0], L);
-        tmmin[1] = fminf(tmmin[1], a);
-        tmmin[2] = fminf(tmmin[2], b);
-        tmmax[0] = fmaxf(tmmax[0], L);
-        tmmax[1] = fmaxf(tmmax[1], a);
-        tmmax[2] = fmaxf(tmmax[2], b);
-      }
-    }
-
-    for(int n = 0; n < numthreads; n++)
-    {
-      for(int k = 0; k < 3; k++)
-      {
-        picked_color[k] += mean[3 * n + k];
-        picked_color_min[k] = fminf(picked_color_min[k], mmin[3 * n + k]);
-        picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3 * n + k]);
-      }
-    }
-
-    free(mmax);
-    free(mmin);
-    free(mean);
   }
   else
   {
-    int point[2];
-    float fpoint[2];
-
-    // get absolute pixel coordinates in final preview image
-    fpoint[0] = module->color_picker_point[0] * wd;
-    fpoint[1] = module->color_picker_point[1] * ht;
-
-    // transform back to current module coordinates
-    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                      module->priority  + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
-                                      99999, fpoint, 1);
-
-    point[0] = fpoint[0] - roi->x;
-    point[1] = fpoint[1] - roi->y;
-
-    // do not continue if point is outside of roi
-    if(point[0] >= width || point[1] >= height || point[0] < 0 || point[1] < 0) return;
-
-    for(int i = 0; i < 3; i++)
-      picked_color[i] = picked_color_min[i] = picked_color_max[i]
-          = img[4 * (width * point[1] + point[0]) + i];
+    fbox[0] = fbox[2] = module->color_picker_point[0] * wd;
+    fbox[1] = fbox[3] = module->color_picker_point[1] * ht;
   }
+
+  // transform back to current module coordinates
+  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
+                                    module->priority + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1), 99999,
+                                    fbox, 2);
+
+  fbox[0] -= roi->x;
+  fbox[1] -= roi->y;
+  fbox[2] -= roi->x;
+  fbox[3] -= roi->y;
+
+  int box[4];
+
+  // re-order edges of bounding box
+  box[0] = fminf(fbox[0], fbox[2]);
+  box[1] = fminf(fbox[1], fbox[3]);
+  box[2] = fmaxf(fbox[0], fbox[2]);
+  box[3] = fmaxf(fbox[1], fbox[3]);
+
+  // do not continue if box is completely outside of roi
+  if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return;
+
+  // clamp bounding box to roi
+  for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
+  for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
+
+  dt_color_picker_helper(module, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
 }
 
 
@@ -562,11 +491,6 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
   const float ht = darktable.develop->preview_pipe->backbuf_height;
   const int width = roi->width;
   const int height = roi->height;
-  int box[4];
-  float fbox[4];
-
-  size_t origin[3];
-  size_t region[3];
 
   // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity
   // of data
@@ -577,6 +501,8 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
   // position
   if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
+
+  float fbox[4];
 
   // get absolute pixel coordinates in final preview image
   if(darktable.lib->proxy.colorpicker.size)
@@ -600,6 +526,8 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
   fbox[2] -= roi->x;
   fbox[3] -= roi->y;
 
+  int box[4];
+
   // re-order edges of bounding box
   box[0] = fminf(fbox[0], fbox[2]);
   box[1] = fminf(fbox[1], fbox[3]);
@@ -612,6 +540,9 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
   // clamp bounding box to roi
   for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
   for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
+
+  size_t origin[3];
+  size_t region[3];
 
   // Initializing bounds of colorpicker box
   origin[0] = box[0];
@@ -639,88 +570,19 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
   cl_int err = dt_opencl_read_host_from_device_raw(devid, pixel, img, origin, region,
                                                    region[0] * 4 * sizeof(float), CL_TRUE);
 
-  if(err == CL_SUCCESS)
-  {
-    const float w = 1.0f / (region[0] * region[1]);
+  if(err != CL_SUCCESS) goto error;
 
-    if(size > 100) // avoid inefficient multi-threading in case of small region size (arbitrary limit)
-    {
-      const int numthreads = dt_get_num_threads();
+  box[0] = 0;
+  box[1] = 0;
+  box[2] = region[0];
+  box[3] = region[1];
 
-      float *mean = malloc((size_t)3 * numthreads * sizeof(float));
-      float *mmin = malloc((size_t)3 * numthreads * sizeof(float));
-      float *mmax = malloc((size_t)3 * numthreads * sizeof(float));
+  dt_iop_roi_t roi_copy = (dt_iop_roi_t){.x = 0, .y = 0, .width = region[0], .height = region[1] };
 
-      for(int n = 0; n < 3 * numthreads; n++)
-      {
-        mean[n] = 0.0f;
-        mmin[n] = INFINITY;
-        mmax[n] = -INFINITY;
-      }
+  dt_color_picker_helper(module, pixel, &roi_copy, box, picked_color, picked_color_min, picked_color_max);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(pixel, mean, mmin, mmax, region) schedule(static)
-#endif
-      for(size_t j = 0; j < region[1]; j++)
-      {
-        for(size_t i = 0; i < region[0]; i++)
-        {
-          const int tnum = dt_get_thread_num();
-          float *tmean = mean + 3 * tnum;
-          float *tmmin = mmin + 3 * tnum;
-          float *tmmax = mmax + 3 * tnum;
-          const size_t k = 4 * (region[0] * j + i);
-          const float L = pixel[k];
-          const float a = pixel[k + 1];
-          const float b = pixel[k + 2];
-          tmean[0] += w * L;
-          tmean[1] += w * a;
-          tmean[2] += w * b;
-          tmmin[0] = fminf(tmmin[0], L);
-          tmmin[1] = fminf(tmmin[1], a);
-          tmmin[2] = fminf(tmmin[2], b);
-          tmmax[0] = fmaxf(tmmax[0], L);
-          tmmax[1] = fmaxf(tmmax[1], a);
-          tmmax[2] = fmaxf(tmmax[2], b);
-        }
-      }
-
-      for(int n = 0; n < numthreads; n++)
-      {
-        for(int k = 0; k < 3; k++)
-        {
-          picked_color[k] += mean[3 * n + k];
-          picked_color_min[k] = fminf(picked_color_min[k], mmin[3 * n + k]);
-          picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3 * n + k]);
-        }
-      }
-
-      free(mmax);
-      free(mmin);
-      free(mean);
-    }
-    else
-    {
-      // code path for small region, especially for color picker point mode
-      for(size_t k = 0; k < 4 * size; k += 4)
-      {
-        const float L = pixel[k];
-        const float a = pixel[k + 1];
-        const float b = pixel[k + 2];
-        picked_color[0] += w * L;
-        picked_color[1] += w * a;
-        picked_color[2] += w * b;
-        picked_color_min[0] = fminf(picked_color_min[0], L);
-        picked_color_min[1] = fminf(picked_color_min[1], a);
-        picked_color_min[2] = fminf(picked_color_min[2], b);
-        picked_color_max[0] = fmaxf(picked_color_max[0], L);
-        picked_color_max[1] = fmaxf(picked_color_max[1], a);
-        picked_color_max[2] = fmaxf(picked_color_max[2], b);
-      }
-    }
-  }
-
-  if(tmpbuf) dt_free_align(tmpbuf);
+error:
+  dt_free_align(tmpbuf);
 }
 #endif
 
