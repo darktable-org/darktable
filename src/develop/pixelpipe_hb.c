@@ -520,17 +520,18 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
 
   const size_t size = region[0] * region[1];
 
+  const size_t bpp = dt_iop_buffer_dsc_to_bpp(dsc);
+
   // if a buffer is supplied and if size fits let's use it
-  if(buffer && bufsize >= size * 4 * sizeof(float))
+  if(buffer && bufsize >= size * bpp)
     pixel = buffer;
   else
-    pixel = tmpbuf = dt_alloc_align(64, size * 4 * sizeof(float));
+    pixel = tmpbuf = dt_alloc_align(64, size * bpp);
 
   if(pixel == NULL) return;
 
   // get the required part of the image from opencl device
-  cl_int err = dt_opencl_read_host_from_device_raw(devid, pixel, img, origin, region,
-                                                   region[0] * 4 * sizeof(float), CL_TRUE);
+  cl_int err = dt_opencl_read_host_from_device_raw(devid, pixel, img, origin, region, region[0] * bpp, CL_TRUE);
 
   if(err != CL_SUCCESS) goto error;
 
