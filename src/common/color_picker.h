@@ -19,10 +19,10 @@
 #ifndef DT_COMMON_COLOR_PICKER_H
 #define DT_COMMON_COLOR_PICKER_H
 
-struct dt_iop_module_t;
+struct dt_iop_buffer_dsc_t;
 struct dt_iop_roi_t;
 
-void dt_color_picker_helper(struct dt_iop_module_t *module, const float *const pixel,
+void dt_color_picker_helper(const struct dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                             const struct dt_iop_roi_t *roi, const int *const box, float *const picked_color,
                             float *const picked_color_min, float *const picked_color_max);
 
