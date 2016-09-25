@@ -479,6 +479,163 @@ uint32_t dt_tag_get_recent_used(GList **result)
 {
   return 0;
 }
+
+/*
+  TODO
+  the file format allows to specify {synonyms} that are one hierarchy level deeper than the parent. those are not
+  to be shown in the gui but can be searched. when the parent or a synonym is attached then ALSO the rest of the
+  bunch is to be added. currently dt doesn't allow something like that but it would be really great if it could
+  be added. currently we don't import synonyms.
+  there is also a ~ prefix for tags that indicate that the tag order has to be kept instead of sorting them. that's
+  also not possible at the moment.
+*/
+ssize_t dt_tag_import(const char *filename)
+{
+  FILE *fd = fopen(filename, "r");
+
+  if(!fd) return -1;
+
+  GList * hierarchy = NULL;
+  char *line = NULL;
+  size_t len = 0;
+  ssize_t count = 0;
+
+  while(getline(&line, &len, fd) != -1)
+  {
+    // remove newlines and set start past the initial tabs
+    char *start = line;
+    while(*start == '\t') start++;
+    const int depth = start - line;
+
+    char *end = line + strlen(line) - 1;
+    while((*end == '\n' || *end == '\r') && end >= start)
+    {
+      *end = '\0';
+      end--;
+    }
+
+    // remove control characters from the string
+    // don't add the entry if it's a category
+    // TODO also ignore synonyms for now as our db can't express that concept.
+    gboolean skip = FALSE;
+    if((*start == '[' && *end == ']') // categories
+      || (*start == '{' && *end == '}')) // synonyms
+    {
+      skip = TRUE;
+      start++;
+      *end-- = '\0';
+    }
+    if(*start == '~') // fixed order. TODO not possible with our db
+    {
+      skip = TRUE;
+      start++;
+    }
+
+    // remove everything past the current prefix from hierarchy
+    GList *iter = g_list_nth(hierarchy, depth);
+    while(iter)
+    {
+      GList *current = iter;
+      iter = g_list_next(iter);
+      hierarchy = g_list_delete_link(hierarchy, current);
+    }
+
+    // add the current level
+    hierarchy = g_list_append(hierarchy, g_strdup(start));
+
+    // add tag to db iff it's not something to be ignored
+    if(!skip)
+    {
+      count++;
+      char *tag = dt_util_glist_to_str("|", hierarchy);
+      dt_tag_new(tag, NULL);
+      g_free(tag);
+    }
+  }
+
+  free(line);
+  g_list_free_full(hierarchy, g_free);
+  fclose(fd);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+  return count;
+}
+
+/*
+  TODO: there is one corner case where i am not sure if we are doing the correct thing. some examples i found
+  on the internet agreed with this version, some used an alternative:
+  consider two tags like "foo|bar" and "foo|bar|baz". the "foo|bar" part is both a regular tag (from the 1st tag)
+  and also a category (from the 2nd tag). the two way to output are
+
+  [foo]
+      bar
+          baz
+
+  and
+
+  [foo]
+      bar
+      [bar]
+          baz
+
+  we are using the first (mostly because it was easier to implement ;)). if this poses problems with other programs
+  supporting these files then we should fix that.
+*/
+ssize_t dt_tag_export(const char *filename)
+{
+  FILE *fd = fopen(filename, "w");
+
+  if(!fd) return -1;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name FROM tags WHERE name NOT LIKE \"darktable|%\" "
+                              "ORDER BY name COLLATE NOCASE ASC", -1, &stmt, NULL);
+
+
+  ssize_t count = 0;
+  gchar **hierarchy = NULL;
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *tag = (char *)sqlite3_column_text(stmt, 0);
+
+    gchar **tokens = g_strsplit(tag, "|", -1);
+
+    // find how many common levels are shared with the last tag
+    int common_start;
+    for(common_start = 0; hierarchy && hierarchy[common_start] && tokens && tokens[common_start]; common_start++)
+    {
+      if(g_strcmp0(hierarchy[common_start], tokens[common_start])) break;
+    }
+
+    g_strfreev(hierarchy);
+    hierarchy = tokens;
+
+    int tabs = common_start;
+    for(size_t i = common_start; tokens && tokens[i]; i++, tabs++)
+    {
+      for(int j = 0; j < tabs; j++) fputc('\t', fd);
+      if(!tokens[i + 1])
+      {
+        count++;
+        fprintf(fd, "%s\n", tokens[i]);
+      }
+      else
+        fprintf(fd, "[%s]\n", tokens[i]);
+    }
+  }
+
+  g_strfreev(hierarchy);
+
+  sqlite3_finalize(stmt);
+
+  fclose(fd);
+
+  return count;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
