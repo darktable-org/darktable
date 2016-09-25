@@ -18,9 +18,10 @@
 
 #include "common/color_picker.h"
 #include "common/darktable.h"
+#include "develop/format.h"
 #include "develop/imageop.h"
 
-void dt_color_picker_helper(dt_iop_module_t *module, const float *const pixel, const dt_iop_roi_t *roi,
+void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel, const dt_iop_roi_t *roi,
                             const int *const box, float *const picked_color, float *const picked_color_min,
                             float *const picked_color_max)
 {
