@@ -639,6 +639,37 @@ static gboolean _lib_tagging_tag_destroy(GtkWidget *widget, GdkEvent *event, gpo
   return FALSE;
 }
 
+static gboolean _completion_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
+                                       gpointer user_data)
+{
+  gboolean res = FALSE;
+  char *tag = NULL;
+  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
+  int column = gtk_entry_completion_get_text_column(completion);
+
+  if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return FALSE;
+
+  gtk_tree_model_get(model, iter, column, &tag, -1);
+
+  if(tag)
+  {
+    char *normalized = g_utf8_normalize(tag, -1, G_NORMALIZE_ALL);
+    if(normalized)
+    {
+      char *casefold = g_utf8_casefold(normalized, -1);
+      if(casefold)
+      {
+        res = g_strstr_len(casefold, -1, key) != NULL;
+      }
+      g_free(casefold);
+    }
+    g_free(normalized);
+    g_free(tag);
+  }
+
+  return res;
+}
+
 static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                       GdkModifierType modifier, dt_lib_module_t *self)
 {
@@ -698,6 +729,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_completion_set_popup_set_width(completion, FALSE);
+  gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_set_completion(GTK_ENTRY(entry), completion);
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
