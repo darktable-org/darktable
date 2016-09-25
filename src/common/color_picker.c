@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "develop/format.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 
 static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                                     const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
@@ -112,12 +113,112 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float 
   }
 }
 
+static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
+                                      const dt_iop_roi_t *const roi, const int *const box,
+                                      float *const picked_color, float *const picked_color_min,
+                                      float *const picked_color_max)
+{
+  const int width = roi->width;
+  const uint32_t filters = dsc->filters;
+
+  const size_t size = ((box[3] - box[1]) * (box[2] - box[0]));
+
+  uint32_t weights[3] = { 0u, 0u, 0u };
+
+  if(size > 100) // avoid inefficient multi-threading in case of small region size (arbitrary limit)
+  {
+    const int numthreads = dt_get_num_threads();
+
+    float *msum = malloc((size_t)3 * numthreads * sizeof(float));
+    float *mmin = malloc((size_t)3 * numthreads * sizeof(float));
+    float *mmax = malloc((size_t)3 * numthreads * sizeof(float));
+    uint32_t *cnt = malloc((size_t)3 * numthreads * sizeof(uint32_t));
+
+    for(int n = 0; n < 3 * numthreads; n++)
+    {
+      msum[n] = 0.0f;
+      mmin[n] = INFINITY;
+      mmax[n] = -INFINITY;
+      cnt[n] = 0u;
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(msum, mmin, mmax, cnt) schedule(static) collapse(2)
+#endif
+    for(size_t j = box[1]; j < box[3]; j++)
+    {
+      for(size_t i = box[0]; i < box[2]; i++)
+      {
+        const int tnum = dt_get_thread_num();
+
+        float *tsum = msum + 3 * tnum;
+        float *tmmin = mmin + 3 * tnum;
+        float *tmmax = mmax + 3 * tnum;
+        uint32_t *tcnt = cnt + 3 * tnum;
+
+        const int c = FC(j + roi->y, i + roi->x, filters);
+        const size_t k = width * j + i;
+
+        const float v = pixel[k];
+
+        tsum[c] += v;
+        tmmin[c] = fminf(tmmin[c], v);
+        tmmax[c] = fmaxf(tmmax[c], v);
+        tcnt[c]++;
+      }
+    }
+
+    for(int n = 0; n < numthreads; n++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        picked_color[c] += msum[3 * n + c];
+        picked_color_min[c] = fminf(picked_color_min[c], mmin[3 * n + c]);
+        picked_color_max[c] = fmaxf(picked_color_max[c], mmax[3 * n + c]);
+        weights[c] += cnt[3 * n + c];
+      }
+    }
+
+    free(cnt);
+    free(mmax);
+    free(mmin);
+    free(msum);
+  }
+  else
+  {
+    // code path for small region, especially for color picker point mode
+    for(size_t j = box[1]; j < box[3]; j++)
+    {
+      for(size_t i = box[0]; i < box[2]; i++)
+      {
+        const int c = FC(j + roi->y, i + roi->x, filters);
+        const size_t k = width * j + i;
+
+        const float v = pixel[k];
+
+        picked_color[c] += v;
+        picked_color_min[c] = fminf(picked_color_min[c], v);
+        picked_color_max[c] = fmaxf(picked_color_max[c], v);
+        weights[c]++;
+      }
+    }
+  }
+
+  // and finally normalize data. For bayer, there is twice as much green.
+  for(int c = 0; c < 3; c++)
+  {
+    picked_color[c] /= (float)weights[c];
+  }
+}
+
 void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel, const dt_iop_roi_t *roi,
                             const int *const box, float *const picked_color, float *const picked_color_min,
                             float *const picked_color_max)
 {
   if(dsc->channels == 4u)
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
+  else if(dsc->channels == 1u && dsc->filters && dsc->filters != 9u && !FILTERS_ARE_4BAYER(dsc->filters))
+    color_picker_helper_bayer(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
   else
     dt_unreachable_codepath();
 }
