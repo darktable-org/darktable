@@ -426,36 +426,39 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 
   gchar *keyword_expr = g_strdup_printf("%%%s%%", keyword);
 
-  /* SELECT T.id FROM tags T WHERE T.name LIKE '%%%s%%';  --> into temp table */
+  /* Select tags that are similar to the keyword and are actually used to tag images*/
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.tagq (id) SELECT id FROM tags T WHERE "
-                              "T.name LIKE ?1",
+                              "INSERT INTO memory.taglist (id, count) SELECT TAGID, 1000000+count(imgid) FROM tagged_images WHERE "
+                              "tagid IN (SELECT ID from tags WHERE name LIKE ?1) GROUP BY tagid ",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword_expr, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  /* Select tags that are similar to the keyword but were not used to tag any image*/
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO memory.taglist (id, count) SELECT id,1000000 FROM tags WHERE "
+                              "name LIKE ?1 AND id NOT IN (SELECT id FROM taglist)",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  /* Select tags from tagged images when at least one tag is similar to the keyword and insert in temp table*/
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO memory.tagq (id) SELECT tagid FROM tagged_images WHERE "
+                              "imgid in (SELECT DISTINCT imgid FROM tagged_images WHERE tagid IN "
+                              "(SELECT id FROM tags WHERE name LIKE ?1)) ",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
   g_free(keyword_expr);
 
-  /*
-   * SELECT TXT.id2 FROM tagxtag TXT WHERE TXT.id1 IN (temp table)
-   *   AND TXT.count > 0 ORDER BY TXT.count DESC;
-   */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "INSERT INTO memory.taglist (id, count) "
-                                                       "SELECT DISTINCT(TXT.id2), TXT.count FROM tagxtag TXT "
-                                                       "WHERE TXT.count > 0 "
-                                                       " AND TXT.id1 IN (SELECT id FROM memory.tagq) "
-                                                       "ORDER BY TXT.count DESC",
-                        NULL, NULL, NULL);
-
-  /*
-   * SELECT TXT.id1 FROM tagxtag TXT WHERE TXT.id2 IN (temp table)
-   *   AND TXT.count > 0 ORDER BY TXT.count DESC;
-   */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "INSERT OR REPLACE INTO memory.taglist (id, count) "
-                                                       "SELECT DISTINCT(TXT.id1), TXT.count FROM tagxtag TXT "
-                                                       "WHERE TXT.count > 0 "
-                                                       " AND TXT.id2 IN (SELECT id FROM memory.tagq) "
-                                                       "ORDER BY TXT.count DESC",
+  /* Select tags from temp table that are not similar to the keyword */
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "INSERT INTO taglist (id, count) SELECT id, count(1) FROM tagq WHERE "
+                                                       "id NOT IN (SELECT id FROM taglist) GROUP BY id",
                         NULL, NULL, NULL);
 
   /* Now put all the bits together */
