@@ -169,7 +169,6 @@ gboolean dt_tag_exists(const char *name, guint *tagid)
   return FALSE;
 }
 
-// FIXME: shall we increment count in tagxtag if the image was already tagged?
 void dt_tag_attach(guint tagid, gint imgid)
 {
   sqlite3_stmt *stmt;
@@ -381,33 +380,6 @@ GList *dt_tag_get_hierarchical(gint imgid)
   return tags;
 }
 
-/*
- * dt_tag_get_suggestions() takes a string (keyword) and searches the
- * tagxtags table for possibly-related tags. The list we construct at
- * the end of the function is made up as follows:
- *
- * * Tags which appear as tagxtag.id2, where (keyword's name = tagxtag.id1)
- *   are listed first, ordered by count of times seen already.
- * * Tags which appear as tagxtag.id1, where (keyword's name = tagxtag.id2)
- *   are listed second, ordered as before.
- *
- * We do not suggest tags which have not yet been matched up in tagxtag,
- * because it is up to the user to add new tags to the list and thereby
- * make the association.
- *
- * Expressing these as separate queries avoids making the sqlite3 engine
- * do a large number of operations and thus makes the user experience
- * snappy.
- *
- * SELECT T.id FROM tags T WHERE T.name LIKE '?1';  --> into temp table
- * SELECT TXT.id2 FROM tagxtag TXT WHERE TXT.id1 IN (temp table)
- *   AND TXT.count > 0 ORDER BY TXT.count DESC;
- * SELECT TXT.id1 FROM tagxtag TXT WHERE TXT.id2 IN (temp table)
- *   AND TXT.count > 0 ORDER BY TXT.count DESC;
- *
- * SELECT DISTINCT(T.name) FROM tags T JOIN memoryquery MQ on MQ.id = T.id;
- *
- */
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 {
   sqlite3_stmt *stmt;
