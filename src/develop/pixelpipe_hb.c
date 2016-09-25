@@ -416,9 +416,9 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
 #endif
 
 // helper for color picking
-static void pixelpipe_picker(dt_iop_module_t *module, const float *pixel, const dt_iop_roi_t *roi,
-                             float *picked_color, float *picked_color_min, float *picked_color_max,
-                             dt_pixelpipe_picker_source_t picker_source)
+static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *roi, float *picked_color,
+                                   float *picked_color_min, float *picked_color_max,
+                                   dt_pixelpipe_picker_source_t picker_source, int *box)
 {
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -433,7 +433,7 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *pixel, const 
 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
   // position
-  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
+  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return 1;
 
   float fbox[4];
 
@@ -459,8 +459,6 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *pixel, const 
   fbox[2] -= roi->x;
   fbox[3] -= roi->y;
 
-  int box[4];
-
   // re-order edges of bounding box
   box[0] = fminf(fbox[0], fbox[2]);
   box[1] = fminf(fbox[1], fbox[3]);
@@ -468,11 +466,23 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *pixel, const 
   box[3] = fmaxf(fbox[1], fbox[3]);
 
   // do not continue if box is completely outside of roi
-  if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return;
+  if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return 1;
 
   // clamp bounding box to roi
   for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
   for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
+
+  return 0;
+}
+
+static void pixelpipe_picker(dt_iop_module_t *module, const float *pixel, const dt_iop_roi_t *roi,
+                             float *picked_color, float *picked_color_min, float *picked_color_max,
+                             dt_pixelpipe_picker_source_t picker_source)
+{
+  int box[4];
+
+  if(pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
+    return;
 
   dt_color_picker_helper(module, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
 }
@@ -487,59 +497,10 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
                                 float *picked_color, float *picked_color_min, float *picked_color_max,
                                 float *buffer, size_t bufsize, dt_pixelpipe_picker_source_t picker_source)
 {
-  const float wd = darktable.develop->preview_pipe->backbuf_width;
-  const float ht = darktable.develop->preview_pipe->backbuf_height;
-  const int width = roi->width;
-  const int height = roi->height;
-
-  // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity
-  // of data
-  for(int k = 0; k < 3; k++) picked_color_min[k] = INFINITY;
-  for(int k = 0; k < 3; k++) picked_color_max[k] = -INFINITY;
-  for(int k = 0; k < 3; k++) picked_color[k] = 0.0f;
-
-  // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
-  // position
-  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
-
-  float fbox[4];
-
-  // get absolute pixel coordinates in final preview image
-  if(darktable.lib->proxy.colorpicker.size)
-  {
-    for(int k = 0; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * wd;
-    for(int k = 1; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * ht;
-  }
-  else
-  {
-    fbox[0] = fbox[2] = module->color_picker_point[0] * wd;
-    fbox[1] = fbox[3] = module->color_picker_point[1] * ht;
-  }
-
-  // transform back to current module coordinates
-  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                    module->priority  + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
-                                    99999, fbox, 2);
-
-  fbox[0] -= roi->x;
-  fbox[1] -= roi->y;
-  fbox[2] -= roi->x;
-  fbox[3] -= roi->y;
-
   int box[4];
 
-  // re-order edges of bounding box
-  box[0] = fminf(fbox[0], fbox[2]);
-  box[1] = fminf(fbox[1], fbox[3]);
-  box[2] = fmaxf(fbox[0], fbox[2]);
-  box[3] = fmaxf(fbox[1], fbox[3]);
-
-  // do not continue if box is completely outside of roi
-  if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return;
-
-  // clamp bounding box to roi
-  for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
-  for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
+  if(pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
+    return;
 
   size_t origin[3];
   size_t region[3];
