@@ -446,8 +446,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
+
+  piece->pipe->dsc.temperature.enabled = 1;
   for(int k = 0; k < 4; k++)
+  {
+    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+  }
 }
 
 #if defined(__SSE__)
@@ -559,8 +564,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
+
+  piece->pipe->dsc.temperature.enabled = 1;
   for(int k = 0; k < 4; k++)
+  {
+    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+  }
 }
 #endif
 
@@ -619,8 +629,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   dt_opencl_release_mem_object(dev_coeffs);
   if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+
+  piece->pipe->dsc.temperature.enabled = 1;
   for(int k = 0; k < 3; k++)
+  {
+    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+  }
   return TRUE;
 
 error:
