@@ -116,6 +116,7 @@ src/iop/lowlight.c
 src/iop/lowpass.c
 src/iop/monochrome.c
 src/iop/nlmeans.c
+src/iop/rawoverexposed.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
