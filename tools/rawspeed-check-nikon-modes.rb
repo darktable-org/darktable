@@ -29,6 +29,7 @@ IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON 1 J2"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 S1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 V1"] => "compressed",
+  ["NIKON CORPORATION", "NIKON 1 V2"] => "compressed",
   ["NIKON CORPORATION", "NIKON D600"] => "compressed",
   ["NIKON CORPORATION", "NIKON D610"] => "compressed",
   ["NIKON CORPORATION", "NIKON D3000"] => "compressed",
@@ -42,6 +43,7 @@ IGNORE_ONLY_MODE = {
 
 IGNORE_HIGH_WHITELEVEL = [
   ["NIKON CORPORATION", "NIKON 1 J2"],
+  ["NIKON CORPORATION", "NIKON 1 V2"],
   ["NIKON", "COOLPIX P330"],
   ["NIKON", "COOLPIX P7700"],
   ["NIKON", "COOLPIX P7800"]
