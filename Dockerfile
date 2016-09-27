@@ -14,7 +14,15 @@
 #    You should have received a copy of the GNU General Public License
 #    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 
-# docker build -t darktable-travis .
+# docker build -t darktable/darktable .
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!! hub.docker.com will not auto-rebuild the image                        !!!
+# !!! after making changes here, or if you just want to manually refresh    !!!
+# !!! the image, you need to go to:                                         !!!
+# https://hub.docker.com/r/darktable/darktable/~/settings/automated-builds/ !!!
+# !!!                            and press the "Trigger" button.            !!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 FROM debian:testing
 MAINTAINER Roman Lebedev <lebedev.ri@gmail.com>
