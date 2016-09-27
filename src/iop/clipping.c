@@ -988,22 +988,6 @@ error:
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
-{
-  float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
-
-  tiling->factor = 1.0f + ioratio; // in + out, no temp
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 4;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
-}
-
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl from programs.conf
