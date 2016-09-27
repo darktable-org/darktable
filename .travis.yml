@@ -16,6 +16,9 @@
 
 sudo: required
 
+notifications:
+  irc: "chat.freenode.net#darktable"
+
 services:
   - docker
 
