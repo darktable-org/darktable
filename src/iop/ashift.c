@@ -2881,20 +2881,6 @@ error:
 }
 #endif
 
-
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
-{
-  tiling->factor = 2.0f;
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 3; // accounts for interpolation width
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
-}
-
 // gather information about "near"-ness in g->points_idx
 static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, const int lines_count,
                      float pzx, float pzy, float delta)
