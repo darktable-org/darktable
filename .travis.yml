@@ -17,7 +17,9 @@
 sudo: required
 
 notifications:
-  irc: "chat.freenode.net#darktable"
+  irc:
+    channels: "chat.freenode.net#darktable"
+    skip_join: true
 
 services:
   - docker
