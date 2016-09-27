@@ -27,6 +27,7 @@ IGNORE_ONLY_14BIT = []
 IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON 1 J1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 J2"] => "compressed",
+  ["NIKON CORPORATION", "NIKON 1 J3"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 S1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 V1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 V2"] => "compressed",
@@ -43,6 +44,7 @@ IGNORE_ONLY_MODE = {
 
 IGNORE_HIGH_WHITELEVEL = [
   ["NIKON CORPORATION", "NIKON 1 J2"],
+  ["NIKON CORPORATION", "NIKON 1 J3"],
   ["NIKON CORPORATION", "NIKON 1 V2"],
   ["NIKON", "COOLPIX P330"],
   ["NIKON", "COOLPIX P7700"],
