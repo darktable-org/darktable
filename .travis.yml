@@ -20,6 +20,11 @@ notifications:
   irc:
     channels: "chat.freenode.net#darktable"
     skip_join: true
+  email:
+    recipients:
+      - darktable-ci@lists.darktable.org
+    on_success: always
+    on_failure: always
 
 services:
   - docker
