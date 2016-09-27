@@ -28,4 +28,4 @@ env:
   - CC=clang-3.8 CXX=clang++-3.8
 
 script:
-  - docker run -v $PWD:/build/darktable -w /build/darktable -e CC=$СС -e CXX=$CXX darktable/darktable sh -c "cd /build/darktable && rm -rf /build/darktable/build && mkdir /build/darktable/build && cd /build/darktable/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ../ && make -j3"
+  - docker run -v $PWD:/build/darktable -w /build/darktable -e CC -e CXX darktable/darktable sh -c "cd /build/darktable && rm -rf /build/darktable/build && mkdir /build/darktable/build && cd /build/darktable/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ../ && make -j3"
