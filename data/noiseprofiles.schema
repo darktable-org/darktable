@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 0,
+      "enum": [
+        0
+      ]
+    },
+    "noiseprofiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "maker": {
+            "type": "string",
+            "minLength": 3,
+            "enum": [
+              "Canon",
+              "Fujifilm",
+              "LGE",
+              "Minolta",
+              "Nikon",
+              "Olympus",
+              "Panasonic",
+              "Pentax",
+              "Ricoh",
+              "Samsung",
+              "Sony"
+            ]
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "comment": {
+                  "type": "string"
+                },
+                "model": {
+                  "type": "string",
+                  "minLength": 2
+                },
+                "profiles": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 10
+                      },
+                      "iso": {
+                        "type": "integer",
+                        "minimum": 31,
+                        "maximum": 256000
+                      },
+                      "a": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "b": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "skip": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "iso",
+                      "a",
+                      "b"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 4
+                },
+                "skip": {
+                  "enum": [
+                    "true"
+                  ]
+                }
+              },
+              "required": [
+                "comment",
+                "model",
+                "profiles"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "maker",
+          "models"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "version",
+    "noiseprofiles"
+  ],
+  "additionalProperties": false
+}
