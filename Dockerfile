@@ -44,6 +44,7 @@ RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/80forceyes
 # Fix broken packages
 RUN echo 'APT::Get::Fix-Missing "true";' > /etc/apt/apt.conf.d/80fixmissin
 
+# pls keep sorted :)
 RUN apt-get update && \
     apt-get install clang-3.8 cmake desktop-file-utils g++ gcc gettext git \
     intltool libatk1.0-dev libcairo2-dev libcolord-dev libcolord-gtk-dev \
@@ -53,5 +54,6 @@ RUN apt-get update && \
     liblua5.2-dev libopenexr-dev libopenjp2-7-dev libosmgpsmap-1.0-dev \
     libpango1.0-dev libpng-dev libpugixml-dev librsvg2-dev libsaxon-java \
     libsdl1.2-dev libsecret-1-dev libsoup2.4-dev libsqlite3-dev libtiff5-dev \
-    libwebp-dev libx11-dev libxml2-dev libxml2-utils make perl po4a xsltproc && \
+    libwebp-dev libx11-dev libxml2-dev libxml2-utils make perl po4a \
+    python3-jsonschema xsltproc && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
