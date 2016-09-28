@@ -30,7 +30,7 @@ MAINTAINER Roman Lebedev <lebedev.ri@gmail.com>
 ENV DEBIAN_FRONTEND noninteractive
 
 # Paper over occasional network flakiness of some mirrors.
-RUN echo 'APT::Acquire::Retries "5";' > /etc/apt/apt.conf.d/80retry
+RUN echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80retry
 
 # Do not install recommended packages
 RUN echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/80recommends
@@ -45,7 +45,7 @@ RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/80forceyes
 RUN echo 'APT::Get::Fix-Missing "true";' > /etc/apt/apt.conf.d/80fixmissin
 
 # pls keep sorted :)
-RUN apt-get update && \
+RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     apt-get install clang-3.8 cmake desktop-file-utils g++ gcc gettext git \
     intltool libatk1.0-dev libcairo2-dev libcolord-dev libcolord-gtk-dev \
     libcups2-dev libcurl4-gnutls-dev libexiv2-dev libflickcurl-dev \
