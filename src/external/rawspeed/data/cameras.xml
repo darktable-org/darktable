@@ -2502,18 +2502,7 @@
 			<Color x="1" y="1">RED</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-2" height="-2"/>
-		<Sensor black="0" white="3880"/>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D50" mode="12bit-uncompressed">
-		<ID make="Nikon" model="D50">Nikon D50</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">BLUE</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">RED</Color>
-		</CFA>
-		<Crop x="0" y="0" width="-2" height="-2"/>
-		<Sensor black="0" white="3880"/>
+		<Sensor black="0" white="4095"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D500" mode="14bit-compressed">
 		<ID make="Nikon" model="D500">Nikon D500</ID>
