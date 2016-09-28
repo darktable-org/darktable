@@ -304,6 +304,16 @@ else(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
   set(VALIDATE_DESKTOP_FILE 1)
 endif(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
 
+# we need jsonschema to check noiseprofiles.json
+find_program(jsonschema_BIN jsonschema)
+if(${jsonschema_BIN} STREQUAL "jsonschema_BIN-NOTFOUND")
+  message(STATUS "Missing jsonschema, problems in noiseprofiles.json might go unnoticed")
+  set(VALIDATE_JSON 0)
+else(${jsonschema_BIN} STREQUAL "jsonschema_BIN-NOTFOUND")
+  message(STATUS "Found jsonschema")
+  set(VALIDATE_JSON 1)
+endif(${jsonschema_BIN} STREQUAL "jsonschema_BIN-NOTFOUND")
+
 # we need an xslt interpreter to generate preferences_gen.h and darktablerc
 find_program(Xsltproc_BIN xsltproc)
 if(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
