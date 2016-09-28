@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-09 22:19+0200\n"
-"PO-Revision-Date: 2016-09-09 22:21+0200\n"
+"POT-Creation-Date: 2016-09-28 13:26+0200\n"
+"PO-Revision-Date: 2016-09-28 13:29+0200\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Josep Vicenç Moragues Pastor <josepvm@arrakis.es>\n"
 "Language: ca\n"
@@ -4953,7 +4953,7 @@ msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"arrosegueu la línia per aplicar split toning. Brillant significa altes "
+"arrossegueu la línia per aplicar split toning. Brillant significa altes "
 "llums, fosc significa ombres. empreu la roda del ratolí per canviar la "
 "saturació."
 
@@ -5126,26 +5126,26 @@ msgstr "prova sortida"
 # FIXME
 #: ../src/iop/colorout.c:687 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
-#: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2448
+#: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2432
 msgid "perceptual"
 msgstr "perceptiu"
 
 #: ../src/iop/colorout.c:688 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
-#: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2449
+#: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2433
 msgid "relative colorimetric"
 msgstr "mètrica de color relativa"
 
 #: ../src/iop/colorout.c:689 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
-#: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2450
+#: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2434
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturació"
 
 #: ../src/iop/colorout.c:690 ../src/libs/export.c:621
 #: ../src/libs/print_settings.c:1054 ../src/libs/print_settings.c:1265
-#: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2451
+#: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2435
 msgid "absolute colorimetric"
 msgstr "mètrica de color absoluta"
 
@@ -6670,7 +6670,7 @@ msgstr "compressió"
 #: ../src/iop/shadhi.c:279
 msgctxt "accel"
 msgid "shadows color correction"
-msgstr "correcció de color ales ombres "
+msgstr "correcció de color a les ombres"
 
 #: ../src/iop/shadhi.c:280
 msgctxt "accel"
@@ -6691,7 +6691,7 @@ msgstr "compressió"
 
 #: ../src/iop/shadhi.c:827
 msgid "shadows color adjustment"
-msgstr "ajusta color d¡ombres"
+msgstr "ajusta color d'ombres"
 
 #: ../src/iop/shadhi.c:828
 msgid "highlights color adjustment"
@@ -6718,8 +6718,8 @@ msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
 msgstr ""
-"comprimeix l'efecte en llums/ombres i\n"
-"preserva els tons mitjos"
+"comprimeix l'efecte en llums/ombres\n"
+"i preserva els tons mitjos"
 
 #: ../src/iop/shadhi.c:854
 msgid "adjust saturation of shadows"
@@ -9613,7 +9613,7 @@ msgstr ""
 "permuta comprovació de gamut\n"
 "clic dret per opcions del perfil ICC"
 
-#: ../src/views/darkroom.c:1545 ../src/views/lighttable.c:2446
+#: ../src/views/darkroom.c:1545 ../src/views/lighttable.c:2430
 msgid "display intent"
 msgstr "prova pantalla"
 
@@ -9621,11 +9621,11 @@ msgstr "prova pantalla"
 msgid "softproof profile"
 msgstr "ICC simulació"
 
-#: ../src/views/darkroom.c:1561 ../src/views/lighttable.c:2460
+#: ../src/views/darkroom.c:1561 ../src/views/lighttable.c:2438
 msgid "display profile"
 msgstr "ICC pantalla"
 
-#: ../src/views/darkroom.c:1592 ../src/views/lighttable.c:2479
+#: ../src/views/darkroom.c:1592 ../src/views/lighttable.c:2457
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "perfils ICC de pantalla a %s/color/out o %s/color/out"
@@ -9835,7 +9835,7 @@ msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "surt de la vista prèvia permanent"
 
-#: ../src/views/lighttable.c:2406
+#: ../src/views/lighttable.c:2391
 msgid "set display profile"
 msgstr "perfil ICC pantalla"
 
