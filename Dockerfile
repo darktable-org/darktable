@@ -27,6 +27,14 @@
 FROM debian:testing
 MAINTAINER Roman Lebedev <lebedev.ri@gmail.com>
 
+# needed at least for python-based jsonschema :(
+# see https://github.com/Julian/jsonschema/issues/299
+# and https://github.com/docker-library/python/issues/13
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENV LC_MESSAGES C.UTF-8
+ENV LANGUAGE C.UTF-8
+
 ENV DEBIAN_FRONTEND noninteractive
 
 # Paper over occasional network flakiness of some mirrors.
