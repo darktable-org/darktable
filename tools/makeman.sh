@@ -15,5 +15,4 @@ fi
 
 pod2man --utf8 --release="darktable $r" --center="darktable" $D "$input" \
   | sed -e '/.*DREGGNAUTHORS.*/r '"$authors" | sed -e '/.*DREGGNAUTHORS.*/d' \
-  > tmp.$$$$ \
-  && mv -f tmp.$$$$ "$output"
+  > "$output" || rm "$output"
