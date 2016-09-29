@@ -4,6 +4,16 @@ cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0025 NEW)
 cmake_policy(SET CMP0048 OLD) # don't touch PROJECT_VERSION/VERSION
 
+#
+# Avoid source tree pollution
+#
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
+If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+  message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
+endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+
 project(darktable CXX C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -235,13 +245,6 @@ add_custom_target(
 #
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/packaging/debian)
 
-
-#
-# Avoid source tree pollution
-#
-If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-	message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
-endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 # Add a sensible build type default and warning because empty means no optimization and no debug info.
