@@ -48,16 +48,14 @@ void dt_ratings_apply_to_selection(int rating)
                      rating, count);
 #if 0 // not updating cache
     gchar query[1024]= {0};
-    g_snprintf(query,sizeof(query),
-               "update images set flags=(images.flags & ~7) | (7 & %d) where id in (select imgid from selected_images)",
-               rating
-              );
+    g_snprintf(query,sizeof(query), "UPDATE main.images SET flags=(flags & ~7) | (7 & %d) WHERE id IN "
+                                    "(SELECT imgid FROM main.selected_images)", rating);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 #endif
 
     /* for each selected image update rating */
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {

@@ -1614,6 +1614,68 @@ void dt_ellipsize_combo(GtkComboBox *cbox)
   g_list_free(renderers);
 }
 
+typedef struct result_t
+{
+  enum {RESULT_NONE, RESULT_NO, RESULT_YES} result;
+  GtkWidget *window;
+} result_t;
+
+static void _yes_no_button_handler_no(GtkButton *button, gpointer data)
+{
+  result_t *result = (result_t *)data;
+  result->result = RESULT_NO;
+  gtk_widget_destroy(result->window);
+  gtk_main_quit();
+}
+
+static void _yes_no_button_handler_yes(GtkButton *button, gpointer data)
+{
+  result_t *result = (result_t *)data;
+  result->result = RESULT_YES;
+  gtk_widget_destroy(result->window);
+  gtk_main_quit();
+}
+
+gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *markup, const char *no_text,
+                                              const char *yes_text)
+{
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+  gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
+  gtk_window_set_title(GTK_WINDOW(window), title);
+  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_widget_set_margin_start(vbox, 10);
+  gtk_widget_set_margin_end(vbox, 10);
+  gtk_widget_set_margin_top(vbox, 7);
+  gtk_widget_set_margin_bottom(vbox, 5);
+  gtk_container_add(GTK_CONTAINER(window), vbox);
+
+  GtkWidget *label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_widget_set_margin_top(hbox, 10);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+  result_t result = {.result = RESULT_NONE, .window = window};
+
+  GtkWidget *button = gtk_button_new_with_label(no_text);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_no), &result);
+  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+  button = gtk_button_new_with_label(yes_text);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_yes), &result);
+  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+  gtk_widget_show_all(window);
+  gtk_main();
+
+  return result.result == RESULT_YES;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -45,7 +45,7 @@ int dt_grouping_remove_from_group(int image_id)
   {
     // get a new group_id for all the others in the group. also write it to the dt_image_t struct.
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "select id from images where group_id = ?1 and id != ?2", -1, &stmt, NULL);
+                                "SELECT id FROM main.images WHERE group_id = ?1 AND id != ?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img_group_id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, image_id);
     while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -59,7 +59,7 @@ int dt_grouping_remove_from_group(int image_id)
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "update images set group_id = ?1 where group_id = ?2 and id != ?3", -1, &stmt,
+                                "UPDATE main.images SET group_id = ?1 WHERE group_id = ?2 AND id != ?3", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, new_group_id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img_group_id);
@@ -87,7 +87,7 @@ int dt_grouping_change_representative(int image_id)
   int group_id = img->group_id;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE group_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
   while(sqlite3_step(stmt) == SQLITE_ROW)

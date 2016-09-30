@@ -43,7 +43,7 @@ int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void 
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select folder, filename from images, film_rolls where images.id = ?1 and film_id = film_rolls.id;", -1,
+      "SELECT folder, filename FROM main.images i, main.film_rolls f ON i.film_id = f.id WHERE i.id = ?1", -1,
       &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
