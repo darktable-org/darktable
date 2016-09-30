@@ -302,6 +302,16 @@ else(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
   set(VALIDATE_DESKTOP_FILE 1)
 endif(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
 
+# we need appstream-util to check darktable.appdata.xml
+find_program(appstream_util_BIN appstream-util)
+if(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+  message(STATUS "Missing appstream-util, problems in darktable.appdata.xml might go unnoticed")
+  set(VALIDATE_APPDATA_FILE 0)
+else(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+  message(STATUS "Found appstream-util")
+  set(VALIDATE_APPDATA_FILE 1)
+endif(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+
 # we need jsonschema to check noiseprofiles.json
 find_program(jsonschema_BIN jsonschema)
 if(${jsonschema_BIN} STREQUAL "jsonschema_BIN-NOTFOUND")
