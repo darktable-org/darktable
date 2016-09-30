@@ -1163,7 +1163,7 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
     else if(*imgid == -1) // everything which is selected
     {
       sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT imgid FROM main.selected_images",
                                   -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
         _view_map_add_image_to_map(self, sqlite3_column_int(stmt, 0), x, y);
@@ -1261,13 +1261,14 @@ static void _view_map_build_main_query(dt_map_t *lib)
   lib->max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
   if(lib->max_images_drawn == 0) lib->max_images_drawn = 100;
   lib->filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
-  geo_query = g_strdup_printf(
-      "select * from (select id, latitude from %s where \
-                               longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
-                               and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
-                               limit 0, %d) order by (180 - latitude), id",
-      lib->filter_images_drawn ? "images i inner join memory.collected_images c on i.id = c.imgid" : "images",
-      lib->max_images_drawn);
+  geo_query = g_strdup_printf("SELECT * FROM (SELECT id, latitude FROM %s WHERE longitude >= ?1 AND "
+                              "longitude <= ?2 AND latitude <= ?3 AND latitude >= ?4 AND longitude NOT NULL AND "
+                              "latitude NOT NULL ORDER BY ABS(latitude - ?5), ABS(longitude - ?6) LIMIT 0, %d) "
+                              "ORDER BY (180 - latitude), id",
+                              lib->filter_images_drawn
+                              ? "main.images i INNER JOIN memory.collected_images c ON i.id = c.imgid"
+                              : "main.images",
+                              lib->max_images_drawn);
 
   /* prepare the main query statement */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
