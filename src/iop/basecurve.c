@@ -273,14 +273,14 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
 void init_presets(dt_iop_module_so_t *self)
 {
   // sql begin
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   set_presets(self, basecurve_presets, basecurve_presets_cnt, NULL);
   int force_autoapply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
   set_presets(self, basecurve_camera_presets, basecurve_camera_presets_cnt, &force_autoapply);
 
   // sql commit
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 #ifdef HAVE_OPENCL

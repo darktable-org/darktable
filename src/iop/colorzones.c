@@ -408,7 +408,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.strength = 0.0;
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   // red black white
 
@@ -523,7 +523,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.equalizer_y[DT_IOP_COLORZONES_L][7] = 0.613040;
   dt_gui_presets_add_generic(_("black & white film"), self->op, 3, &p, sizeof(p), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 // fills in new parameters based on mouse position (in 0,1)

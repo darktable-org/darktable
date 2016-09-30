@@ -126,17 +126,17 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
   // takes ages.
   if(imgsel < 0) // selected images
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select key, value from meta_data where id in "
-                                                               "(select imgid from selected_images) group by "
-                                                               "key, value order by value",
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value FROM main.meta_data WHERE id IN "
+                                                               "(SELECT imgid FROM main.selected_images) GROUP BY "
+                                                               "key, value ORDER BY value",
                                 -1, &stmt, NULL);
   }
   else // single image under mouse cursor
   {
-    char query[1024];
-    snprintf(query, sizeof(query),
-             "select key, value from meta_data where id = %d group by key, value order by value", imgsel);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value FROM main.meta_data "
+                                                               "WHERE id = ?1 GROUP BY key, value ORDER BY value",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgsel);
   }
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
