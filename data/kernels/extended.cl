@@ -511,7 +511,7 @@ global_tonemap_filmic (read_only image2d_t in, write_only image2d_t out, const i
 #define MAXN 5
 
 // inverse distant weighting according to D. Shepard's method; with power parameter 2.0
-static void
+void
 get_clusters(const float4 col, const int n, global float2 *mean, float *weight)
 {
   float mdist = FLT_MAX;
