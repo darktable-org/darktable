@@ -1811,8 +1811,8 @@ rawoverexposed_mark_cfa (
         read_only image2d_t in, write_only image2d_t out, global float *pi,
         const int width, const int height,
         read_only image2d_t raw, const int raw_width, const int raw_height,
-        const unsigned int filters, global unsigned int *threshold,
-        global float *colors)
+        const unsigned int filters, global const unsigned char (*const xtrans)[6],
+        global unsigned int *threshold, global float *colors)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1829,7 +1829,7 @@ rawoverexposed_mark_cfa (
 
   const uint raw_pixel = read_imageui(raw, sampleri, (int2)(raw_x, raw_y)).x;
 
-  const int c = FC(raw_y, raw_x, filters);
+  const int c = (filters == 9u) ? FCxtrans(raw_y, raw_x, xtrans) : FC(raw_y, raw_x, filters);
 
   if(raw_pixel < threshold[c]) return;
 
@@ -1850,8 +1850,8 @@ rawoverexposed_mark_solid (
         read_only image2d_t in, write_only image2d_t out, global float *pi,
         const int width, const int height,
         read_only image2d_t raw, const int raw_width, const int raw_height,
-        const unsigned int filters, global unsigned int *threshold,
-        const float4 solid_color)
+        const unsigned int filters, global const unsigned char (*const xtrans)[6],
+        global unsigned int *threshold, const float4 solid_color)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1868,7 +1868,7 @@ rawoverexposed_mark_solid (
 
   const uint raw_pixel = read_imageui(raw, sampleri, (int2)(raw_x, raw_y)).x;
 
-  const int c = FC(raw_y, raw_x, filters);
+  const int c = (filters == 9u) ? FCxtrans(raw_y, raw_x, xtrans) : FC(raw_y, raw_x, filters);
 
   if(raw_pixel < threshold[c]) return;
 
@@ -1885,7 +1885,8 @@ rawoverexposed_falsecolor (
         read_only image2d_t in, write_only image2d_t out, global float *pi,
         const int width, const int height,
         read_only image2d_t raw, const int raw_width, const int raw_height,
-        const unsigned int filters, global unsigned int *threshold)
+        const unsigned int filters, global const unsigned char (*const xtrans)[6],
+        global unsigned int *threshold)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1902,7 +1903,7 @@ rawoverexposed_falsecolor (
 
   const uint raw_pixel = read_imageui(raw, sampleri, (int2)(raw_x, raw_y)).x;
 
-  const int c = FC(raw_y, raw_x, filters);
+  const int c = (filters == 9u) ? FCxtrans(raw_y, raw_x, xtrans) : FC(raw_y, raw_x, filters);
 
   if(raw_pixel < threshold[c]) return;
 
