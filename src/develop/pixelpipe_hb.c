@@ -739,7 +739,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                           g_list_previous(modules), g_list_previous(pieces), pos - 1);
   }
 
-  if(module && module->op) strncpy(module_name, module->op, sizeof(module_name));
+  if(module) strncpy(module_name, module->op, sizeof(module_name));
   const int bpp = get_output_bpp(module, pipe, piece, dev);
   *out_bpp = bpp;
   const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height;
