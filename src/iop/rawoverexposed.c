@@ -243,6 +243,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_coord = NULL;
   cl_mem dev_thresholds = NULL;
   cl_mem dev_colors = NULL;
+  cl_mem dev_xtrans = NULL;
 
   cl_int err = -999;
 
@@ -335,6 +336,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       break;
   }
 
+  if(filters == 9u)
+  {
+    dev_xtrans
+        = dt_opencl_copy_host_to_device_constant(devid, sizeof(image->buf_dsc.xtrans), image->buf_dsc.xtrans);
+    if(dev_xtrans == NULL) goto error;
+  }
+
   dev_thresholds = dt_opencl_copy_host_to_device_constant(devid, sizeof(unsigned int) * 4, (void *)d->threshold);
   if(dev_thresholds == NULL) goto error;
 
@@ -348,16 +356,18 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(int), &raw_width);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), &raw_height);
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(uint32_t), &filters);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), &dev_thresholds);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), &dev_xtrans);
+  dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), &dev_thresholds);
 
   if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA)
-    dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), &dev_colors);
+    dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(cl_mem), &dev_colors);
   else if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID)
-    dt_opencl_set_kernel_arg(devid, kernel, 10, 4 * sizeof(float), color);
+    dt_opencl_set_kernel_arg(devid, kernel, 11, 4 * sizeof(float), color);
 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
+  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   if(dev_colors != NULL) dt_opencl_release_mem_object(dev_colors);
   if(dev_thresholds != NULL) dt_opencl_release_mem_object(dev_thresholds);
   if(dev_coord != NULL) dt_opencl_release_mem_object(dev_coord);
@@ -368,6 +378,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
+  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   if(dev_colors != NULL) dt_opencl_release_mem_object(dev_colors);
   if(dev_thresholds != NULL) dt_opencl_release_mem_object(dev_thresholds);
   if(dev_coord != NULL) dt_opencl_release_mem_object(dev_coord);
@@ -424,8 +435,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   if(image->flags & DT_IMAGE_4BAYER) piece->enabled = 0;
 
   if(image->buf_dsc.datatype != TYPE_UINT16 || !image->buf_dsc.filters) piece->enabled = 0;
-
-  if(image->buf_dsc.filters == 9u) piece->process_cl_ready = 0;
 }
 
 void init_global(dt_iop_module_so_t *module)
