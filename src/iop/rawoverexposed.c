@@ -339,7 +339,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(filters == 9u)
   {
     dev_xtrans
-        = dt_opencl_copy_host_to_device_constant(devid, sizeof(image->buf_dsc.xtrans), image->buf_dsc.xtrans);
+        = dt_opencl_copy_host_to_device_constant(devid, sizeof(image->buf_dsc.xtrans), (void *)image->buf_dsc.xtrans);
     if(dev_xtrans == NULL) goto error;
   }
 
