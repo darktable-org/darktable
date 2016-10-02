@@ -773,7 +773,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT op_params FROM history WHERE imgid=?1 AND operation='colorout' ORDER BY num DESC LIMIT 1", -1,
+      "SELECT op_params FROM main.history WHERE imgid=?1 AND operation='colorout' ORDER BY num DESC LIMIT 1", -1,
       &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
