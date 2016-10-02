@@ -1553,7 +1553,7 @@ void gui_init(dt_view_t *self)
 
     /* color scheme */
     GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(colorscheme, NULL, _("solid color scheme"));
+    dt_bauhaus_widget_set_label(colorscheme, NULL, _("color scheme"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "red"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "green"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "blue"));
