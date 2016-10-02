@@ -1404,7 +1404,6 @@ void dt_colorspaces_set_display_profile()
     return; // we are already updating the profile. Or someone is reading right now. Too bad we can't
             // distinguish that. Whatever ...
 
-  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   guint8 *buffer = NULL;
   gint buffer_size = 0;
   gchar *profile_source = NULL;
@@ -1429,6 +1428,7 @@ void dt_colorspaces_set_display_profile()
   /* let's have a look at the xatom, just in case ... */
   if(use_xatom)
   {
+    GtkWidget *widget = dt_ui_center(darktable.gui->ui);
     GdkScreen *screen = gtk_widget_get_screen(widget);
     if(screen == NULL) screen = gdk_screen_get_default();
     int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
@@ -1458,8 +1458,8 @@ void dt_colorspaces_set_display_profile()
 #endif
 
 #elif defined GDK_WINDOWING_QUARTZ
-  (void)widget;
 #if 0
+  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if(screen == NULL) screen = gdk_screen_get_default();
   int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
@@ -1486,7 +1486,6 @@ void dt_colorspaces_set_display_profile()
   profile_source = g_strdup("osx color profile api");
 #endif
 #elif defined G_OS_WIN32
-  (void)widget;
   HDC hdc = GetDC(NULL);
   if(hdc != NULL)
   {
