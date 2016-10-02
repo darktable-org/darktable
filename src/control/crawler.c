@@ -58,11 +58,10 @@ GList *dt_control_crawler_run()
   gboolean look_for_xmp = dt_conf_get_bool("write_sidecar_files");
 
   sqlite3_prepare_v2(dt_database_get(darktable.db),
-                     "SELECT images.id, write_timestamp, version, folder || '/' || filename, flags "
-                     "FROM images, film_rolls WHERE images.film_id = film_rolls.id "
-                     "ORDER BY film_rolls.id, filename",
+                     "SELECT i.id, write_timestamp, version, folder || '/' || filename, flags "
+                     "FROM main.images i, main.film_rolls f ON i.film_id = f.id ORDER BY f.id, filename",
                      -1, &stmt, NULL);
-  sqlite3_prepare_v2(dt_database_get(darktable.db), "UPDATE images SET flags = ?1 WHERE id = ?2", -1,
+  sqlite3_prepare_v2(dt_database_get(darktable.db), "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
                      &inner_stmt, NULL);
 
   // let's wrap this into a transaction, it might make it a little faster.

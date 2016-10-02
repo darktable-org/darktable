@@ -1616,12 +1616,12 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos)
   const int cnt = pos->count();
 
   sqlite3_stmt *stmt_sel_id, *stmt_ins_tags, *stmt_ins_tagged;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from tags where name = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM data.tags WHERE name = ?1", -1,
                               &stmt_sel_id, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into tags (id, name) values (null, ?1)",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO data.tags (id, name) VALUES (NULL, ?1)",
                               -1, &stmt_ins_tags, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1,
+                              "INSERT INTO main.tagged_images (tagid, imgid) VALUES (?1, ?2)", -1,
                               &stmt_ins_tagged, NULL);
   for(int i = 0; i < cnt; i++)
   {
@@ -2015,7 +2015,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
          && cnt == mask_version->count() && cnt == mask_id->count() && cnt == mask_nb->count())
       {
         // clean all registered form for this image
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from mask where imgid = ?1", -1,
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.mask WHERE imgid = ?1", -1,
                                     &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
         sqlite3_step(stmt);
@@ -2026,8 +2026,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         {
           DT_DEBUG_SQLITE3_PREPARE_V2(
               dt_database_get(darktable.db),
-              "insert into mask (imgid, formid, form, name, version, points, points_count, source) "
-              "values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+              "INSERT INTO main.mask (imgid, formid, form, name, version, points, points_count, source) "
+              "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
               -1, &stmt, NULL);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, mask_id->toLong(i));
@@ -2082,7 +2082,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
     sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                                 &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     if(sqlite3_step(stmt) != SQLITE_DONE)
@@ -2096,9 +2096,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "insert into history (imgid, num, module, operation, op_params, enabled, "
+                                "INSERT INTO main.history (imgid, num, module, operation, op_params, enabled, "
                                 "blendop_params, blendop_version, multi_priority, multi_name) "
-                                "values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)", -1, &stmt, NULL);
+                                "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)", -1, &stmt, NULL);
 
     for(GList *iter = history_entries; iter; iter = g_list_next(iter))
     {
@@ -2149,7 +2149,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     {
       int history_end = MIN(pos->toLong(), num);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE images SET history_end = ?1 where id = ?2", -1,
+                                  "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
                                   &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, history_end);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
@@ -2164,8 +2164,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     else
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) FROM history "
-                                  "WHERE imgid = ?1) WHERE id = ?1", -1,
+                                  "UPDATE main.images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) "
+                                  "FROM main.history WHERE imgid = ?1) WHERE id = ?1", -1,
                                   &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
       if(sqlite3_step(stmt) != SQLITE_DONE)
@@ -2213,9 +2213,9 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   gchar *filename = NULL;
   // get stars and raw params from db
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select filename, flags, raw_parameters, "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT filename, flags, raw_parameters, "
                                                              "longitude, latitude, altitude, history_end "
-                                                             "from images where id = ?1",
+                                                             "FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2273,7 +2273,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   sqlite3_finalize(stmt);
 
   // the meta data
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select key, value from meta_data where id = ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value FROM main.meta_data WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2336,7 +2336,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   std::unique_ptr<Exiv2::Value> v(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
 
   /* Already initialized v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.*/
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT color FROM main.color_labels WHERE imgid=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2367,7 +2367,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select imgid, formid, form, name, version, points, points_count, source from mask where imgid = ?1",
+      "SELECT imgid, formid, form, name, version, points, points_count, source FROM main.mask WHERE imgid = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2430,8 +2430,8 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select module, operation, op_params, enabled, blendop_params, "
-      "blendop_version, multi_priority, multi_name from history where imgid = ?1 order by num",
+      "SELECT module, operation, op_params, enabled, blendop_params, "
+      "blendop_version, multi_priority, multi_name FROM main.history WHERE imgid = ?1 ORDER BY num",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)

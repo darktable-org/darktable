@@ -263,6 +263,11 @@ static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
   return label;
 };
 
+// show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.
+// this expects gtk_init() to be called already which should be the case during most of dt's init phase.
+gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *markup, const char *no_text,
+                                              const char *yes_text);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

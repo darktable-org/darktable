@@ -303,8 +303,8 @@ static void _update_collected_images(dt_view_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL,
                         NULL);
   // reset autoincrement. need in star_key_accel_callback
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.sqlite_sequence where name='collected_images'", NULL, NULL,
-                        NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.sqlite_sequence WHERE "
+                                                       "name='collected_images'", NULL, NULL, NULL);
 
   // 2. insert collected images into the temporary table
 
@@ -355,7 +355,7 @@ static void _update_collected_images(dt_view_t *self)
 
   /* prepare a new main query statement for collection */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT imgid FROM memory.collected_images ORDER by rowid LIMIT ?1, ?2", -1,
+                              "SELECT imgid FROM memory.collected_images ORDER BY rowid LIMIT ?1, ?2", -1,
                               &lib->statements.main_query, NULL);
 
   dt_control_queue_redraw_center();
@@ -427,10 +427,10 @@ void init(dt_view_t *self)
   _view_lighttable_collection_listener_callback(NULL, self);
 
   /* initialize reusable sql statements */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid != ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.selected_images WHERE imgid != ?1",
                               -1, &lib->statements.delete_except_arg, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select id from images where group_id = ?1 and id != ?2", -1,
+                              "SELECT id FROM main.images WHERE group_id = ?1 AND id != ?2", -1,
                               &lib->statements.is_grouped, NULL); // TODO: only check in displayed images?
 }
 
@@ -1221,7 +1221,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     /* If only one image is selected, scroll through all known images. */
     sqlite3_stmt *stmt;
     int sel_img_count = 0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select COUNT(*) from selected_images", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.selected_images", -1,
                                 &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW) sel_img_count = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -1238,7 +1238,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
                                             * so there's no need to match against the selection */
                                            "" :
                                            /* Limit the matches to the current selection */
-                                           "INNER JOIN selected_images AS sel ON col.imgid = sel.imgid",
+                                           "INNER JOIN main.selected_images AS sel ON col.imgid = sel.imgid",
                                          (offset >= 0) ? ">" : "<",
                                          lib->full_preview_rowid,
                                          /* Direction of our navigation -- when showing for the first time,
@@ -1543,7 +1543,7 @@ static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acc
     sqlite3_stmt *stmt;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT MIN(imgid) FROM selected_images", -1, &stmt, NULL);
+                                "SELECT MIN(imgid) FROM main.selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       sqlite3_stmt *inner_stmt;
@@ -1888,8 +1888,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           sqlite3_stmt *stmt;
           DT_DEBUG_SQLITE3_PREPARE_V2(
               dt_database_get(darktable.db),
-              "insert or ignore into selected_images select id from images where group_id = ?1", -1, &stmt,
-              NULL);
+              "INSERT OR IGNORE INTO main.selected_images SELECT id FROM main.images WHERE group_id = ?1",
+              -1, &stmt, NULL);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
           sqlite3_step(stmt);
           sqlite3_finalize(stmt);

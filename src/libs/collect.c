@@ -255,7 +255,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
     if(new_path)
     {
       gchar *old = NULL;
-      query = dt_util_dstrcat(query, "select id,folder from film_rolls where folder like '%s%%'", tree_path);
+      query = dt_util_dstrcat(query, "SELECT id, folder FROM main.film_rolls WHERE folder LIKE '%s%%'", tree_path);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       g_free(query);
       query = NULL;
@@ -266,7 +266,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
         old = (gchar *)sqlite3_column_text(stmt, 1);
 
         query = NULL;
-        query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
+        query = dt_util_dstrcat(query, "UPDATE main.film_rolls SET folder=?1 WHERE id=?2");
 
         gchar trailing[1024] = { 0 };
         gchar final[1024] = { 0 };
@@ -334,10 +334,10 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
   gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &filmroll_path, -1);
 
   /* Clean selected images, and add to the table those which are going to be deleted */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
-  fullq = dt_util_dstrcat(fullq, "insert into selected_images select id from images where film_id  in "
-                                 "(select id from film_rolls where folder like '%s%%')",
+  fullq = dt_util_dstrcat(fullq, "INSERT INTO main.selected_images SELECT id FROM main.images WHERE film_id IN "
+                                 "(SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
                           filmroll_path);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
 
@@ -633,7 +633,7 @@ static void _lib_folders_update_collection(const gchar *filmroll)
   if(cquery && cquery[0] != '\0')
   {
     complete_query
-        = dt_util_dstrcat(complete_query, "delete from selected_images where imgid not in (%s)", cquery);
+        = dt_util_dstrcat(complete_query, "DELETE FROM main.selected_images WHERE imgid NOT IN (%s)", cquery);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), complete_query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
@@ -682,7 +682,7 @@ static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_
         // Check if this path also matches a filmroll
         gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &pth, -1);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "select id from film_rolls where folder like ?1", -1, &stmt, NULL);
+                                    "SELECT id FROM main.film_rolls WHERE folder LIKE ?1", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, pth, -1, SQLITE_TRANSIENT);
         if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
         sqlite3_finalize(stmt);
@@ -746,9 +746,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     /* query construction */
     char query[1024] = { 0 };
     if(folders)
-      g_strlcpy(query, "SELECT distinct folder, id FROM film_rolls ORDER BY UPPER(folder) DESC", sizeof(query));
+      g_strlcpy(query, "SELECT DISTINCT folder, id FROM main.film_rolls ORDER BY UPPER(folder) DESC", sizeof(query));
     else if(tags)
-      g_strlcpy(query, "SELECT distinct name, id FROM tags ORDER BY UPPER(name) DESC", sizeof(query));
+      g_strlcpy(query, "SELECT DISTINCT name, id FROM data.tags ORDER BY UPPER(name) DESC", sizeof(query));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -976,65 +976,66 @@ static void list_view(dt_lib_collect_rule_t *dr)
       // TODO: Autogenerate this code?
       case DT_COLLECTION_PROP_TITLE: // title
         snprintf(query, sizeof(query),
-                 "select distinct value, 1 from meta_data where key = %d order by value",
+                 "SELECT DISTINCT value, 1 FROM main.meta_data WHERE key = %d ORDER BY value",
                  DT_METADATA_XMP_DC_TITLE);
         break;
       case DT_COLLECTION_PROP_DESCRIPTION: // description
         snprintf(query, sizeof(query),
-                 "select distinct value, 1 from meta_data where key = %d order by value",
+                 "SELECT DISTINCT value, 1 FROM main.meta_data WHERE key = %d ORDER BY value",
                  DT_METADATA_XMP_DC_DESCRIPTION);
         break;
       case DT_COLLECTION_PROP_CREATOR: // creator
         snprintf(query, sizeof(query),
-                 "select distinct value, 1 from meta_data where key = %d order by value",
+                 "SELECT DISTINCT value, 1 FROM main.meta_data WHERE key = %d ORDER BY value",
                  DT_METADATA_XMP_DC_CREATOR);
         break;
       case DT_COLLECTION_PROP_PUBLISHER: // publisher
         snprintf(query, sizeof(query),
-                 "select distinct value, 1 from meta_data where key = %d order by value",
+                 "SELECT DISTINCT value, 1 FROM main.meta_data WHERE key = %d ORDER BY value",
                  DT_METADATA_XMP_DC_PUBLISHER);
         break;
       case DT_COLLECTION_PROP_RIGHTS: // rights
         snprintf(query, sizeof(query),
-                 "select distinct value, 1 from meta_data where key = %d order by value ",
+                 "SELECT DISTINCT value, 1 FROM main.meta_data WHERE key = %d ORDER BY value ",
                  DT_METADATA_XMP_DC_RIGHTS);
         break;
       case DT_COLLECTION_PROP_LENS: // lens
-        g_strlcpy(query, "select distinct lens, 1 from images order by lens", sizeof(query));
+        g_strlcpy(query, "SELECT DISTINCT lens, 1 FROM main.images ORDER BY lens", sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
-        g_strlcpy(query, "select distinct cast(focal_length as integer) as focal_length, 1 "
-                         "from images order by focal_length",
+        g_strlcpy(query, "SELECT DISTINCT CAST(focal_length AS INTEGER) AS focal_length, 1 "
+                         "FROM main.images ORDER BY focal_length",
                   sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_ISO: // iso
-        g_strlcpy(query, "select distinct cast(iso as integer) as iso, 1 from images order by iso", sizeof(query));
+        g_strlcpy(query, "SELECT DISTINCT CAST(iso AS INTEGER) AS iso, 1 FROM main.images ORDER BY iso",
+                  sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_APERTURE: // aperture
-        g_strlcpy(query, "select distinct round(aperture,1) as aperture, 1 from images order by aperture",
+        g_strlcpy(query, "SELECT DISTINCT ROUND(aperture,1) AS aperture, 1 FROM main.images ORDER BY aperture",
                   sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_FILENAME: // filename
-        g_strlcpy(query, "select distinct filename, 1 from images order by filename", sizeof(query));
+        g_strlcpy(query, "SELECT DISTINCT filename, 1 FROM main.images ORDER BY filename", sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_DAY:
         g_strlcpy(query,
-                  "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images ORDER BY datetime_taken DESC",
+                  "SELECT DISTINCT SUBSTR(datetime_taken, 1, 10), 1 FROM main.images ORDER BY datetime_taken DESC",
                   sizeof(query));
         break;
 
       case DT_COLLECTION_PROP_TIME:
-        g_strlcpy(query, "SELECT DISTINCT datetime_taken, 1 FROM images ORDER BY datetime_taken DESC",
+        g_strlcpy(query, "SELECT DISTINCT datetime_taken, 1 FROM main.images ORDER BY datetime_taken DESC",
                   sizeof(query));
         break;
 
       default: // filmroll
-        g_strlcpy(query, "select distinct folder, id from film_rolls order by folder desc", sizeof(query));
+        g_strlcpy(query, "SELECT DISTINCT folder, id FROM main.film_rolls ORDER BY folder DESC", sizeof(query));
         break;
     }
 
