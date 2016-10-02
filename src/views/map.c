@@ -960,8 +960,8 @@ static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *poi
     osm_gps_map_track_add_point(track, point);
   }
 
-  g_object_set(poly, "track", track, NULL);
-  g_object_set(poly, "editable", FALSE, NULL);
+  g_object_set(poly, "track", track, (gchar *)0);
+  g_object_set(poly, "editable", FALSE, (gchar *)0);
 
   osm_gps_map_polygon_add(lib->map, poly);
 
@@ -988,7 +988,7 @@ static OsmGpsMapTrack *_view_map_add_track(const dt_view_t *view, GList *points)
     osm_gps_map_track_add_point(track, point);
   }
 
-  g_object_set(track, "editable", FALSE, NULL);
+  g_object_set(track, "editable", FALSE, (gchar *)0);
 
   osm_gps_map_track_add(lib->map, track);
 

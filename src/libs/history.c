@@ -271,7 +271,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
     GtkToggleButton *b = GTK_TOGGLE_BUTTON(l->data);
-    if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (char *)NULL);
+    if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
   }
   g_list_free(children);
 
