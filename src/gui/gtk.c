@@ -777,8 +777,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // load the style / theme
   GtkSettings *settings = gtk_settings_get_default();
-  g_object_set(G_OBJECT(settings), "gtk-application-prefer-dark-theme", TRUE, NULL);
-  g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", NULL);
+  g_object_set(G_OBJECT(settings), "gtk-application-prefer-dark-theme", TRUE, (gchar *)0);
+  g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
   g_object_unref(settings);
 
   GError *error = NULL;
@@ -1608,7 +1608,7 @@ void dt_ellipsize_combo(GtkComboBox *cbox)
   while(it)
   {
     GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
-    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
+    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
     it = g_list_next(it);
   }
   g_list_free(renderers);
