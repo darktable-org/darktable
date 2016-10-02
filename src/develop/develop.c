@@ -870,7 +870,7 @@ static void auto_apply_presets(dt_develop_t *dev)
 
   // cleanup
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
-  const char *preset_table[2] = { "main.presets", "main.legacy_presets" };
+  const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
   snprintf(query, sizeof(query), "INSERT INTO memory.history SELECT ?1, 0, op_version, operation, op_params, "
