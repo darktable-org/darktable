@@ -590,26 +590,26 @@ void gui_init(dt_iop_module_t *self)
   /* lift */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("lift")), FALSE, FALSE, 5);
 
-  N_("factor of lift");
-  N_("lift");
+  static const char *lift_messages[] = { N_("factor of lift"), N_("lift") };
+  (void)lift_messages;
   ADD_FACTOR(lift)
 
-  N_("factor of red for lift");
-  N_("red");
+  static const char *lift_red_messages[] = { N_("factor of red for lift"), N_("red") };
+  (void)lift_red_messages;
   ADD_CHANNEL(lift, r, red, RED)
   dt_bauhaus_slider_set_stop(g->lift_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_r, 1.0, 1.0, 0.0, 0.0);
 
-  N_("factor of green for lift");
-  N_("green");
+  static const char *lift_green_messages[] = { N_("factor of green for lift"), N_("green") };
+  (void)lift_green_messages;
   ADD_CHANNEL(lift, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->lift_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_g, 1.0, 0.0, 1.0, 0.0);
 
-  N_("factor of blue for lift");
-  N_("blue");
+  static const char *lift_blue_messages[] = { N_("factor of blue for lift"), N_("blue") };
+  (void)lift_blue_messages;
   ADD_CHANNEL(lift, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->lift_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->lift_b, 0.5, 1.0, 1.0, 1.0);
@@ -618,23 +618,26 @@ void gui_init(dt_iop_module_t *self)
   /* gamma */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gamma")), FALSE, FALSE, 5);
 
-  N_("factor of gamma");
-  N_("gamma");
+  static const char *gamma_messages[] = { N_("factor of gamma"), N_("gamma") };
+  (void)gamma_messages;
   ADD_FACTOR(gamma)
 
-  N_("factor of red for gamma");
+  static const char *gamma_red_messages[] = { N_("factor of red for gamma") };
+  (void)gamma_red_messages;
   ADD_CHANNEL(gamma, r, red, RED)
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 1.0, 1.0, 0.0, 0.0);
 
-  N_("factor of green for gamma");
+  static const char *gamma_green_messages[] = { N_("factor of green for gamma") };
+  (void)gamma_green_messages;
   ADD_CHANNEL(gamma, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 1.0, 0.0, 1.0, 0.0);
 
-  N_("factor of blue for gamma");
+  static const char *gamma_blue_messages[] = { N_("factor of blue for gamma") };
+  (void)gamma_blue_messages;
   ADD_CHANNEL(gamma, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.5, 1.0, 1.0, 1.0);
@@ -643,23 +646,26 @@ void gui_init(dt_iop_module_t *self)
   /* gain */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gain")), FALSE, FALSE, 5);
 
-  N_("factor of gain");
-  N_("gain");
+  static const char *gain_messages[] = { N_("factor of gain"), N_("gain") };
+  (void)gain_messages;
   ADD_FACTOR(gain)
 
-  N_("factor of red for gain");
+  static const char *gain_red_messages[] = { N_("factor of red for gain") };
+  (void)gain_red_messages;
   ADD_CHANNEL(gain, r, red, RED)
   dt_bauhaus_slider_set_stop(g->gain_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_r, 1.0, 1.0, 0.0, 0.0);
 
-  N_("factor of green for gain");
+  static const char *gain_green_messages[] = { N_("factor of green for gain") };
+  (void)gain_green_messages;
   ADD_CHANNEL(gain, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->gain_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_g, 1.0, 0.0, 1.0, 0.0);
 
-  N_("factor of blue for gain");
+  static const char *gain_blue_messages[] = { N_("factor of blue for gain") };
+  (void)gain_blue_messages;
   ADD_CHANNEL(gain, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->gain_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->gain_b, 0.5, 1.0, 1.0, 1.0);
