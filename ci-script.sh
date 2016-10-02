@@ -1,3 +1,5 @@
+#!/bin/sh
+
 #    This file is part of darktable.
 #    copyright (c) 2016 Roman Lebedev.
 #
@@ -14,33 +16,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 
-sudo: required
+# it is supposed to be run by travis-ci
+# expects a few env variables to be set:
+#   BUILD_DIR - the working directory, where to build
+#   SRC_DIR - read-only directory with git checkout to compile
+#   CC, CXX, CFLAGS, CXXFLAGS are not required, should make sense too
 
-notifications:
-  irc:
-    channels: "chat.freenode.net#darktable"
-    skip_join: true
-  email:
-    recipients:
-      - darktable-ci@lists.darktable.org
-    on_success: always
-    on_failure: always
+set -e
 
-services:
-  - docker
-
-before_install:
-#  - docker build -t darktable/darktable .
-  - docker pull darktable/darktable
-
-env:
-  global:
-    - SRC_DIR=/build/darktable
-    - BUILD_DIR=/build/darktable-build
-    - CFLAGS=-pipe CXXFLAGS=-pipe
-  matrix:
-    - CC=gcc CXX=g++
-    - CC=clang-3.8 CXX=clang++-3.8
-
-script:
-  - docker run -v $TRAVIS_BUILD_DIR:$SRC_DIR:ro -w $BUILD_DIR -e CC -e CXX -e CFLAGS -e CXXFLAGS -e SRC_DIR -e BUILD_DIR darktable/darktable sh -c ci-script.sh
+cd "$BUILD_DIR"
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo "$SRC_DIR"
+cmake --build "$BUILD_DIR" -- -j3
