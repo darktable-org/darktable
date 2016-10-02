@@ -780,15 +780,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // move presets, styles and tags over to the data database
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
-    ////////////// presets
-#define FINALIZE                                                                   \
-    do                                                                             \
-    {                                                                              \
-      sqlite3_finalize(stmt);                                                      \
-      sqlite3_finalize(insert_stmt);                                               \
-      sqlite3_finalize(delete_stmt);                                               \
-    } while(0)
-
 #define TRY_EXEC(_query, _message)                                                 \
     do                                                                             \
     {                                                                              \
@@ -828,8 +819,21 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       }                                                                            \
     } while(0)
 
+    ////////////// presets
+#define FINALIZE                                                                   \
+    do                                                                             \
+    {                                                                              \
+      sqlite3_finalize(stmt);                                                      \
+      sqlite3_finalize(select_stmt);                                               \
+      sqlite3_finalize(count_clashes_stmt);                                        \
+      sqlite3_finalize(update_name_stmt);                                          \
+      sqlite3_finalize(insert_stmt);                                               \
+      sqlite3_finalize(delete_stmt);                                               \
+    } while(0)
+
     stmt = NULL;
-    sqlite3_stmt *insert_stmt = NULL, *delete_stmt = NULL;
+    sqlite3_stmt *insert_stmt = NULL, *delete_stmt = NULL, *select_stmt = NULL, *count_clashes_stmt = NULL,
+    *update_name_stmt = NULL;
     // remove presets that are already in data.
     // we can't use a NATURAL JOIN here as that fails when columns have NULL values. :-(
     TRY_EXEC("DELETE FROM main.presets WHERE rowid IN (SELECT p1.rowid FROM main.presets p1 "
@@ -863,6 +867,23 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "WHERE p1.writeprotect = 0)",
              "[init] can't delete already migrated presets from database\n");
 
+    // find all presets that are clashing with something else in presets. that can happen as we introduced an
+    // index on presets in data which wasn't in place in library.
+    TRY_PREPARE(select_stmt, "SELECT p.rowid, r FROM main.presets AS p, (SELECT rowid AS r, name, operation, "
+                             "op_version FROM main.presets GROUP BY name, operation, op_version HAVING "
+                             "COUNT(*) > 1) USING (name, operation, op_version) WHERE p.rowid != r",
+                "[init] can't prepare selecting presets with same name, operation, op_version from database\n");
+
+    // see if an updated preset name still causes problems
+    TRY_PREPARE(count_clashes_stmt, "SELECT COUNT(*) FROM main.presets AS p, (SELECT name, operation, op_version "
+                                    "FROM main.presets WHERE rowid = ?1) AS i ON p.name = i.name || \" #\" || ?2 "
+                                    "AND p.operation = i.operation AND p.op_version = i.op_version",
+                "[init] can't prepare selection of preset count by name from database\n");
+
+    // update the preset name for good
+    TRY_PREPARE(update_name_stmt, "UPDATE main.presets SET name = name || \" #\" || ?1 WHERE rowid = ?2",
+                "[init] can't prepare updating of preset name in database\n");
+
     // find all presets that would be clashing with something in data
     TRY_PREPARE(stmt, "SELECT p1.rowid FROM main.presets p1 INNER JOIN data.presets p2 "
                       "USING (name, operation, op_version) WHERE p1.writeprotect = 0",
@@ -880,7 +901,34 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
                              "focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, format "
                              "FROM main.presets p1 WHERE p1.rowid = ?2",
                 "[init] can't prepare insertion statement\n");
-    TRY_PREPARE(delete_stmt, "DELETE FROM presets WHERE rowid = ?1", "[init] can't prepare deletion statement\n");
+
+    TRY_PREPARE(delete_stmt, "DELETE FROM main.presets WHERE rowid = ?1", "[init] can't prepare deletion statement\n");
+
+    // first rename presets with (name, operation, op_version) not being unique
+    while(sqlite3_step(select_stmt) == SQLITE_ROW)
+    {
+      int own_rowid = sqlite3_column_int(select_stmt, 0);
+      int other_rowid = sqlite3_column_int(select_stmt, 1);
+      int preset_version = 0;
+
+      do
+      {
+        preset_version++;
+        sqlite3_reset(count_clashes_stmt);
+        sqlite3_clear_bindings(count_clashes_stmt);
+        sqlite3_bind_int(count_clashes_stmt, 1, other_rowid);
+        sqlite3_bind_int(count_clashes_stmt, 2, preset_version);
+      }
+      while(sqlite3_step(count_clashes_stmt) == SQLITE_ROW && sqlite3_column_int(count_clashes_stmt, 0) > 0);
+
+      sqlite3_bind_int(update_name_stmt, 1, preset_version);
+      sqlite3_bind_int(update_name_stmt, 2, own_rowid);
+      TRY_STEP(update_name_stmt, SQLITE_DONE, "[init] can't rename preset in database\n");
+      sqlite3_reset(update_name_stmt);
+      sqlite3_reset(update_name_stmt);
+    }
+
+    // now rename to avoid clashes with data.presets
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       int preset_version = 0;
@@ -932,10 +980,11 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
 
     stmt = NULL;
+    select_stmt = NULL;
+    update_name_stmt = NULL;
     insert_stmt = NULL;
     delete_stmt = NULL;
-    sqlite3_stmt *select_stmt = NULL, *update_name_stmt = NULL, *select_new_stmt = NULL,
-                 *copy_style_items_stmt = NULL, *delete_style_items_stmt = NULL;
+    sqlite3_stmt *select_new_stmt = NULL, *copy_style_items_stmt = NULL, *delete_style_items_stmt = NULL;
 
     TRY_PREPARE(stmt, "SELECT id, name FROM main.styles", "[init] can't prepare style selection from database\n");
     TRY_PREPARE(select_stmt, "SELECT rowid FROM data.styles WHERE name = ?1 LIMIT 1",
