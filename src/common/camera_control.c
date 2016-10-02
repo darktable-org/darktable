@@ -26,10 +26,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
-#if defined(__SUNOS__)
 #include <fcntl.h>
-#endif
-#include <sys/fcntl.h>
 
 /***/
 typedef enum _camctl_camera_job_type_t
