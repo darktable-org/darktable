@@ -68,3 +68,9 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
 
 # python3-pkg-resources is only here temporairly
 # see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=839075
+
+# i'd like to explicitly use ld.gold
+# while it may be just immeasurably faster, it is known to cause more issues
+# than traditional ld.bfd; plus, at this time, ld.gold seems like the future.
+RUN dpkg-divert --add --rename --divert /usr/bin/ld.original /usr/bin/ld && \
+    ln -s /usr/bin/ld.gold /usr/bin/ld
