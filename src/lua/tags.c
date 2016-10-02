@@ -51,7 +51,7 @@ static int tag_length(lua_State *L)
   int rv, count = -1;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT count() FROM tagged_images WHERE tagid=?1", -1, &stmt, NULL);
+                              "SELECT COUNT(*) FROM main.tagged_images WHERE tagid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   rv = sqlite3_step(stmt);
   if(rv != SQLITE_ROW)
@@ -76,7 +76,7 @@ static int tag_index(lua_State *L)
   sqlite3_stmt *stmt = NULL;
   char query[1024];
   snprintf(query, sizeof(query),
-           "select imgid from tagged_images WHERE tagid=?1 order by imgid limit 1 offset %d", index - 1);
+           "SELECT imgid FROM main.tagged_images WHERE tagid=?1 ORDER BY imgid LIMIT 1 OFFSET %d", index - 1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -99,7 +99,7 @@ static int tag_lib_length(lua_State *L)
   sqlite3_stmt *stmt;
   int rv, count = -1;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT count() FROM tags", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM data.tags", -1, &stmt, NULL);
   rv = sqlite3_step(stmt);
   if(rv != SQLITE_ROW)
   {
@@ -116,7 +116,7 @@ static int tag_lib_index(lua_State *L)
   int index = luaL_checkinteger(L, -1);
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query, sizeof(query), "SELECT id from tags order by id limit 1 offset %d", index - 1);
+  snprintf(query, sizeof(query), "SELECT id FROM data.tags ORDER BY id LIMIT 1 OFFSET %d", index - 1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -208,7 +208,7 @@ int dt_lua_tag_get_attached(lua_State *L)
   luaA_to(L, dt_lua_image_t, &imgid, 1);
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT tagid FROM tagged_images WHERE imgid=?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT tagid FROM main.tagged_images WHERE imgid=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   int rv = sqlite3_step(stmt);
