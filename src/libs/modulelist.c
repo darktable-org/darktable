@@ -120,8 +120,8 @@ static void image_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *ren
   gtk_tree_model_get(model, iter, COL_IMAGE, &pixbuf, -1);
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
   surface = dt_gdk_cairo_surface_create_from_pixbuf(pixbuf, 1, NULL);
-  g_object_set(renderer, "surface", surface, NULL);
-  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, NULL);
+  g_object_set(renderer, "surface", surface, (gchar *)0);
+  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, (gchar *)0);
   cairo_surface_destroy(surface);
   g_object_unref(pixbuf);
 }
@@ -130,18 +130,18 @@ static void favorite_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *
 {
   dt_iop_module_so_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
-  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, NULL);
+  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, (gchar *)0);
   GdkPixbuf *fav_pixbuf
       = ((dt_lib_modulelist_t *)darktable.view_manager->proxy.more_module.module->data)->fav_pixbuf;
-  g_object_set(renderer, "pixbuf", module->state == dt_iop_state_FAVORITE ? fav_pixbuf : NULL, NULL);
+  g_object_set(renderer, "pixbuf", module->state == dt_iop_state_FAVORITE ? fav_pixbuf : NULL, (gchar *)0);
 }
 static void text_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
                                    GtkTreeIter *iter, gpointer user_data)
 {
   dt_iop_module_so_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
-  g_object_set(renderer, "text", module->name(), NULL);
-  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, NULL);
+  g_object_set(renderer, "text", module->name(), (gchar *)0);
+  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, (gchar *)0);
 }
 
 static GdkPixbuf *load_image(const char *filename)
@@ -188,7 +188,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), COL_MODULE, GTK_SORT_ASCENDING);
 
   pix_renderer = gtk_cell_renderer_pixbuf_new();
-  g_object_set(pix_renderer, "cell-background-rgba", &color, NULL);
+  g_object_set(pix_renderer, "cell-background-rgba", &color, (gchar *)0);
 
   fav_renderer = gtk_cell_renderer_pixbuf_new();
   cairo_surface_t *fav_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
@@ -201,12 +201,12 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   ((dt_lib_modulelist_t *)self->data)->fav_pixbuf
       = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE, ICON_SIZE,
                                  cairo_image_surface_get_stride(fav_cst), NULL, NULL);
-  g_object_set(fav_renderer, "cell-background-rgba", &color, NULL);
+  g_object_set(fav_renderer, "cell-background-rgba", &color, (gchar *)0);
   g_object_set(fav_renderer, "width", gdk_pixbuf_get_width(((dt_lib_modulelist_t *)self->data)->fav_pixbuf),
-               NULL);
+               (gchar *)0);
 
   text_renderer = gtk_cell_renderer_text_new();
-  g_object_set(text_renderer, "cell-background-rgba", &color, NULL);
+  g_object_set(text_renderer, "cell-background-rgba", &color, (gchar *)0);
 
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(view), FALSE);

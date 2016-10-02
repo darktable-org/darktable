@@ -576,7 +576,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   widget = gtk_label_new(_("title"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->title = GTK_ENTRY(gtk_entry_new());
@@ -624,7 +624,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   widget = gtk_label_new(_("border"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->border = GTK_ENTRY(gtk_entry_new());
@@ -646,7 +646,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   widget = gtk_label_new(_("dpi"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->dpi = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 5000, 1));

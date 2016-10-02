@@ -1694,7 +1694,7 @@ void gui_init(dt_lib_module_t *self)
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
-  g_object_set(renderer, "strikethrough", TRUE, NULL);
+  g_object_set(renderer, "strikethrough", TRUE, (gchar *)0);
   gtk_tree_view_column_add_attribute(col, renderer, "strikethrough-set", DT_LIB_COLLECT_COL_UNREACHABLE);
 
   GtkTreeModel *listmodel

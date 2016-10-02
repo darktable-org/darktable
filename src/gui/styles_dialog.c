@@ -358,7 +358,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   /* name */
   renderer = gtk_cell_renderer_text_new();
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_NAME);
-  g_object_set(renderer, "xalign", 0.0, NULL);
+  g_object_set(renderer, "xalign", 0.0, (gchar *)0);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items), -1, _("item"), renderer, "text",
                                               DT_STYLE_ITEMS_COL_NAME, NULL);
   if(edit)

@@ -342,7 +342,7 @@ void gui_init(dt_lib_module_t *self)
   for(line = 0; line < sizeof(entries) / sizeof(entries[0]); line++)
   {
     label = gtk_label_new(_(entries[line].name));
-    g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+    g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
 
     GtkWidget *combobox = gtk_combo_box_text_new_with_entry();
     *(entries[line].box) = GTK_COMBO_BOX(combobox);
