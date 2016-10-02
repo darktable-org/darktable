@@ -590,18 +590,26 @@ void gui_init(dt_iop_module_t *self)
   /* lift */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("lift")), FALSE, FALSE, 5);
 
+  N_("factor of lift");
+  N_("lift");
   ADD_FACTOR(lift)
 
+  N_("factor of red for lift");
+  N_("red");
   ADD_CHANNEL(lift, r, red, RED)
   dt_bauhaus_slider_set_stop(g->lift_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_r, 1.0, 1.0, 0.0, 0.0);
 
+  N_("factor of green for lift");
+  N_("green");
   ADD_CHANNEL(lift, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->lift_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_g, 1.0, 0.0, 1.0, 0.0);
 
+  N_("factor of blue for lift");
+  N_("blue");
   ADD_CHANNEL(lift, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->lift_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->lift_b, 0.5, 1.0, 1.0, 1.0);
@@ -610,18 +618,23 @@ void gui_init(dt_iop_module_t *self)
   /* gamma */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gamma")), FALSE, FALSE, 5);
 
+  N_("factor of gamma");
+  N_("gamma");
   ADD_FACTOR(gamma)
 
+  N_("factor of red for gamma");
   ADD_CHANNEL(gamma, r, red, RED)
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 1.0, 1.0, 0.0, 0.0);
 
+  N_("factor of green for gamma");
   ADD_CHANNEL(gamma, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 1.0, 0.0, 1.0, 0.0);
 
+  N_("factor of blue for gamma");
   ADD_CHANNEL(gamma, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.5, 1.0, 1.0, 1.0);
@@ -630,18 +643,23 @@ void gui_init(dt_iop_module_t *self)
   /* gain */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gain")), FALSE, FALSE, 5);
 
+  N_("factor of gain");
+  N_("gain");
   ADD_FACTOR(gain)
 
+  N_("factor of red for gain");
   ADD_CHANNEL(gain, r, red, RED)
   dt_bauhaus_slider_set_stop(g->gain_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_r, 1.0, 1.0, 0.0, 0.0);
 
+  N_("factor of green for gain");
   ADD_CHANNEL(gain, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->gain_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_g, 1.0, 0.0, 1.0, 0.0);
 
+  N_("factor of blue for gain");
   ADD_CHANNEL(gain, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->gain_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->gain_b, 0.5, 1.0, 1.0, 1.0);
