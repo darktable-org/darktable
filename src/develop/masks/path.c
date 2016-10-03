@@ -559,7 +559,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     }
   }
 
-  float border_init[6 * nb];
+  float *border_init = malloc((size_t)6 * nb * sizeof(float));
   int cw = _path_is_clockwise(form);
   if(cw == 0) cw = -1;
 
@@ -664,7 +664,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   start2 = dt_get_wtime();
 
   // we don't want the border to self-intersect
-  int intersections[nb * 8];
+  int *intersections = malloc((size_t)8 * nb * sizeof(int));
   int inter_count = 0;
   if(border)
   {
@@ -724,11 +724,15 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
         dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n", form->name,
                  dt_get_wtime() - start2);
 //       start2 = dt_get_wtime();
+      free(intersections);
+      free(border_init);
       return 1;
     }
   }
 
   // if we failed, then free all and return
+  free(intersections);
+  free(border_init);
   free(*points);
   *points = NULL;
   *points_count = 0;
