@@ -902,7 +902,7 @@ after_drawing:
   {
     int32_t imgids_num = 0;
     const int prefetchrows = .5 * max_rows + 1;
-    int32_t imgids[prefetchrows * iir];
+    int32_t *imgids = malloc(prefetchrows * iir * sizeof(int32_t));
 
     /* clear and reset main query */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
@@ -924,6 +924,8 @@ after_drawing:
       imgids_num--;
       dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgids[imgids_num], mip, DT_MIPMAP_PREFETCH, 'r');
     }
+
+    free(imgids);
   }
 
   lib->offset_changed = FALSE;
