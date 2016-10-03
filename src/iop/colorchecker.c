@@ -531,9 +531,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #pragma omp parallel default(shared)
 #endif
   {
-  double A[(N+4)*(N+4)];
-  double target[N+4];
-  memset(target, 0, sizeof(target));
+    double *A = malloc((N + 4) * (N + 4) * sizeof(double));
+    double *target = calloc(N + 4, sizeof(double));
 
   // find coeffs for three channels separately:
 #ifdef _OPENMP
@@ -569,16 +568,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     for(int j=N;j<wd;j++) for(int i=N;i<wd;i++) A[j*wd+i] = 0.0f;
 
     // coefficient vector:
-    double c[N+4];
-    memset(c, 0, sizeof(c));
+    double *c = calloc(N + 4, sizeof(double));
 
     // svd to solve for c:
     // A * c = offsets
     // A = u w v => A-1 = v^t 1/w u^t
     // regularisation epsilon:
     const float eps = 0.001f;
-    double w[N+4], v[(N+4)*(N+4)], tmp[N+4];
-    memset(tmp, 0, sizeof(tmp));
+    double *w = malloc((N + 4) * sizeof(double));
+    double *v = malloc((N + 4) * (N + 4) * sizeof(double));
+    double *tmp = calloc(N + 4, sizeof(double));
+
     dsvd(A, N+4, N+4, N+4, w, v);
 
     for(int j=0;j<wd;j++)
@@ -592,11 +592,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(ch==0) for(int i=0;i<N+4;i++) d->coeff_L[i] = c[i];
     if(ch==1) for(int i=0;i<N+4;i++) d->coeff_a[i] = c[i];
     if(ch==2) for(int i=0;i<N+4;i++) d->coeff_b[i] = c[i];
+
+    free(tmp);
+    free(v);
+    free(w);
+    free(c);
   }
   // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff L[%d] = %f\n", i, d->coeff_L[i]);
   // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff a[%d] = %f\n", i, d->coeff_a[i]);
   // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff b[%d] = %f\n", i, d->coeff_b[i]);
 #undef N
+
+    free(target);
+    free(A);
   }
 }
 
