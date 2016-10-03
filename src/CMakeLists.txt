@@ -679,13 +679,10 @@ if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
   endif()
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wframe-larger-than=${MAX_MEANINGFUL_SIZE}")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=frame-larger-than=${MAX_MEANINGFUL_SIZE}")
 
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wlarger-than=${MAX_MEANINGFUL_SIZE}")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=larger-than=${MAX_MEANINGFUL_SIZE}")
 
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstack-usage=${MAX_MEANINGFUL_SIZE}")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=stack-usage=${MAX_MEANINGFUL_SIZE}")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -697,13 +694,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wframe-larger-than=${MAX_MEANINGFUL_SIZE}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=frame-larger-than=${MAX_MEANINGFUL_SIZE}")
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlarger-than=${MAX_MEANINGFUL_SIZE}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=larger-than=${MAX_MEANINGFUL_SIZE}")
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstack-usage=${MAX_MEANINGFUL_SIZE}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=stack-usage=${MAX_MEANINGFUL_SIZE}")
 endif()
 
 ###### GTK+3 port ######
