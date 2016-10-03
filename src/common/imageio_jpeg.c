@@ -529,15 +529,16 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char buf[len];
+      unsigned char *buf = malloc((size_t)len * sizeof(unsigned char));
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg.cinfo), buf, len);
+      free(buf);
     }
   }
 
   if(exif && exif_len > 0 && exif_len < 65534) jpeg_write_marker(&(jpg.cinfo), JPEG_APP0 + 1, exif, exif_len);
 
-  uint8_t row[3 * width];
+  uint8_t *row = malloc((size_t)3 * width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -549,6 +550,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
     jpeg_write_scanlines(&(jpg.cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg.cinfo));
+  free(row);
   jpeg_destroy_compress(&(jpg.cinfo));
   fclose(f);
   return 0;
