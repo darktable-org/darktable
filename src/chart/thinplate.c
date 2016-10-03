@@ -120,7 +120,7 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
   dsvd(As, wd, s + 1, S, w, v); // As is wd x s+1 but row stride S.
   if(w[s] < 1e-3)               // if the smallest singular value becomes too small, we're done
     return 1;
-  double tmp[S];
+  double *tmp = malloc(S * sizeof(double));
   for(int i = 0; i <= s; i++) // compute tmp = u^t * b
   {
     tmp[i] = 0.0;
@@ -133,6 +133,7 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
     coeff[j] = 0.0;
     for(int i = 0; i <= s; i++) coeff[j] += v[j * (s + 1) + i] * tmp[i];
   }
+  free(tmp);
   return 0;
 }
 
