@@ -175,6 +175,9 @@ static void invert_histogram(const int *hist, float *inv_hist)
   // HISTN-1)]/(float)HISTN, inv_hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wvla"
+
 static void get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int mapio[n])
 {
   for(int ki = 0; ki < n; ki++)
@@ -314,6 +317,8 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     var_out[k][1] = sqrtf(var_out[k][1]);
   }
 }
+
+#pragma GCC diagnostic pop
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
