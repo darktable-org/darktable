@@ -290,7 +290,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
   if(quality > 90) jpg.cinfo.comp_info[0].v_samp_factor = 1;
   if(quality > 92) jpg.cinfo.comp_info[0].h_samp_factor = 1;
   jpeg_start_compress(&(jpg.cinfo), TRUE);
-  uint8_t row[3 * width];
+  uint8_t *row = malloc((size_t)3 * width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -302,6 +302,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
     jpeg_write_scanlines(&(jpg.cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg.cinfo));
+  free(row);
   jpeg_destroy_compress(&(jpg.cinfo));
   return 4 * width * height * sizeof(uint8_t) - jpg.dest.free_in_buffer;
 }
