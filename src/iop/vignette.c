@@ -735,11 +735,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dither = 0.0f;
   }
 
-  unsigned int tea_states[2 * dt_get_num_threads()];
-  memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
+  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, yscale, xscale, tea_states, dither) schedule(static)
+#pragma omp parallel for default(none) shared(data, yscale, xscale, dither) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -807,6 +806,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       out[3] = col3;
     }
   }
+
+  free(tea_states);
 }
 
 
