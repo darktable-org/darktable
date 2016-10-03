@@ -307,6 +307,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
+  __m128 *const scanline_buf = dt_alloc_align(16, size * dt_get_num_threads() * sizeof(__m128));
+
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
@@ -315,7 +317,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     /* horizontal blur out into out */
     for(int y = 0; y < roi_out->height; y++)
     {
-      __m128 scanline[size];
+      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
       size_t index = (size_t)y * roi_out->width;
       __m128 L = _mm_setzero_ps();
       int hits = 0;
@@ -347,7 +349,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
-      __m128 scanline[size];
+      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
       __m128 L = _mm_setzero_ps();
       int hits = 0;
       size_t index = (size_t)x - radius * roi_out->width;
@@ -375,6 +377,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
   }
 
+  dt_free_align(scanline_buf);
 
   const __m128 amount = _mm_set1_ps(data->amount / 100.0);
   const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);
