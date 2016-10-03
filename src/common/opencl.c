@@ -979,12 +979,13 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 {
   int devs = cl->num_devs;
   int count = 0;
-  int full[devs + 1];
+  int *full = malloc((size_t)(devs + 1) * sizeof(int));
 
   // NULL or empty configstring?
   if(configstr == NULL || *configstr == '\0')
   {
     priority_list[0] = -1;
+    free(full);
     return;
   }
 
@@ -1052,6 +1053,8 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 
   // terminate priority list with -1
   while(count < devs + 1) priority_list[count++] = -1;
+
+  free(full);
 }
 
 // parse a complete priority string
