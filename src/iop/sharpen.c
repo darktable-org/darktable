@@ -308,9 +308,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int wd = 2 * rad + 1;
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
-  __attribute__((aligned(16))) float mat[wd4 * 4];
 
-  memset(mat, 0, sizeof(mat));
+  const size_t mat_size = wd4 * 4 * sizeof(float);
+  float *const mat = dt_alloc_align(16, mat_size);
+  memset(mat, 0, mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
                        * (data->radius * roi_in->scale / piece->iscale);
@@ -322,7 +323,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // gauss blur the image horizontally
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -362,7 +363,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // gauss blur the image vertically
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - wd4 * 4 + rad; j++)
   {
@@ -389,7 +390,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = roi_out->height - wd4 * 4 + rad; j < roi_out->height - rad; j++)
   {
@@ -408,6 +409,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       in++;
     }
   }
+
+  dt_free_align(mat);
 
   // fill unsharpened border
   for(int j = 0; j < rad; j++)
