@@ -234,15 +234,13 @@ GList *dt_get_papers(const char *printer_name)
     int num_dests = cupsGetDests(&dests);
     cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
 
-    int cancel;
-    const size_t ressize = 1024;
-    char resource[ressize];
+    int cancel = 0; // important
 
-    cancel = 0; // important
+    char resource[1024];
 
     if (dest)
     {
-      http_t *hcon = cupsConnectDest (dest, 0, 2000, &cancel, resource, ressize, NULL, (void *)NULL);
+      http_t *hcon = cupsConnectDest(dest, 0, 2000, &cancel, resource, sizeof(resource), NULL, (void *)NULL);
 
       if (hcon)
       {
