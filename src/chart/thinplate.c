@@ -137,6 +137,9 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
   return 0;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wvla"
+
 // returns sparsity <= S
 int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (needed for error estimation)
                     int dim,                  // dimensionality of points
@@ -417,6 +420,8 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
   free(A);
   return -1;
 }
+
+#pragma GCC diagnostic pop
 
 float thinplate_color_pos(float L, float a, float b)
 {
