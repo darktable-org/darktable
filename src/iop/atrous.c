@@ -788,8 +788,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   cl_mem dev_filter = NULL;
   cl_mem dev_tmp = NULL;
-  cl_mem dev_detail[max_scale];
-  for(int k = 0; k < max_scale; k++) dev_detail[k] = NULL;
+  cl_mem *dev_detail = calloc(max_scale, sizeof(cl_mem));
 
   float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
   float mm[5][5];
@@ -891,6 +890,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k = 0; k < max_scale; k++)
     if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
   return TRUE;
 
 error:
@@ -898,6 +898,7 @@ error:
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k = 0; k < max_scale; k++)
     if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
   dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
