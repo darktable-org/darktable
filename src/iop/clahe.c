@@ -107,6 +107,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int bins = 256;
   const float slope = data->slope;
 
+  const size_t destbuf_size = roi_out->width;
+  float *const dest_buf = malloc(destbuf_size * sizeof(float) * dt_get_num_threads());
+
 // CLAHE
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(luminance)
@@ -122,7 +125,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     int hist[bins + 1];
     int clippedhist[bins + 1];
-    float dest[roi_out->width];
+
+    float *dest = dest_buf + destbuf_size * dt_get_thread_num();
 
     /* initially fill histogram */
     memset(hist, 0, (bins + 1) * sizeof(int));
@@ -222,6 +226,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       ld++;
     }
   }
+
+  free(dest_buf);
 
   // Cleanup
   free(luminance);
