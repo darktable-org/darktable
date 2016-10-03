@@ -668,10 +668,8 @@ elseif(SOURCE_PACKAGE)
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wvla")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=vla")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wvla")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=vla")
 
 # 8M
 set(MAX_MEANINGFUL_SIZE 8388608)
