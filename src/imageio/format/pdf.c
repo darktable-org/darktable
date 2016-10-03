@@ -287,9 +287,10 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       cmsSaveProfileToMem(profile->profile, 0, &len);
       if(len > 0)
       {
-        unsigned char buf[len];
+        unsigned char *buf = malloc(len * sizeof(unsigned char));
         cmsSaveProfileToMem(profile->profile, buf, &len);
         icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
+        free(buf);
         _pdf_icc_t *icc = (_pdf_icc_t *)malloc(sizeof(_pdf_icc_t));
         icc->profile = profile;
         icc->icc_id = icc_id;
@@ -343,7 +344,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(num == total)
   {
     int n_images = g_list_length(d->images);
-    dt_pdf_page_t *pages[n_images];
+    dt_pdf_page_t **pages = malloc(n_images * sizeof(dt_pdf_page_t *));
 
     gboolean outline_mode = d->params.mode != MODE_NORMAL;
     gboolean show_bb = d->params.mode == MODE_DEBUG;
@@ -370,6 +371,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     // we allocated the images and pages. the main pdf object gets free'ed in dt_pdf_finish().
     g_list_free_full(d->images, free);
     for(i = 0; i < n_images; i++) free(pages[i]);
+    free(pages);
     g_free(d->actual_filename);
     g_list_free_full(d->icc_profiles, free);
 
