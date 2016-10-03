@@ -1248,7 +1248,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
 
     /* Walk through the "next" images, activate preload and find out where to go if moving */
-    int preload_stack[preload_num];
+    int *preload_stack = malloc(preload_num * sizeof(int));
     for(int i = 0; i < preload_num; ++i)
     {
       preload_stack[i] = -1;
@@ -1283,6 +1283,8 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
       while(--count >= 0 && preload_stack[count] != -1)
         dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
     }
+
+    free(preload_stack);
   }
 
   lib->image_over = DT_VIEW_DESERT;
