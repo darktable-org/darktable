@@ -727,14 +727,13 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int tea_states[2 * dt_get_num_threads()];
-  memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
+  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
   buf = dt_alloc_align(16, width * height * bpp);
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf, tea_states)
+#pragma omp parallel for default(none) shared(buf)
 #endif
   for(size_t j = 0; j < height; j++)
   {
@@ -781,11 +780,13 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   double end = dt_get_wtime();
 
   dt_free_align(buf);
+  free(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free_cl(g);
   dt_free_align(buf);
+  free(tea_states);
   if(dev_mem != NULL) dt_opencl_release_mem_object(dev_mem);
   return INFINITY;
 }
