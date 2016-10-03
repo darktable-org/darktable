@@ -234,7 +234,8 @@ static int __attribute__((__unused__)) read_header(const char *filename, dt_imag
 
   if(!png->f) return 1;
 
-  const size_t NUM_BYTES_CHECK = 8;
+#define NUM_BYTES_CHECK (8)
+
   png_byte dat[NUM_BYTES_CHECK];
 
   size_t cnt = fread(dat, 1, NUM_BYTES_CHECK, png->f);
@@ -299,6 +300,8 @@ static int __attribute__((__unused__)) read_header(const char *filename, dt_imag
   png->height = png_get_image_height(png->png_ptr, png->info_ptr);
 
   return 0;
+
+#undef NUM_BYTES_CHECK
 }
 
 #if 0
