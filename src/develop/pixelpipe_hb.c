@@ -470,9 +470,9 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt
 
     const int numthreads = dt_get_num_threads();
 
-    float mean[3 * numthreads];
-    float mmin[3 * numthreads];
-    float mmax[3 * numthreads];
+    float *mean = malloc((size_t)3 * numthreads * sizeof(float));
+    float *mmin = malloc((size_t)3 * numthreads * sizeof(float));
+    float *mmax = malloc((size_t)3 * numthreads * sizeof(float));
 
     for(int n = 0; n < 3 * numthreads; n++)
     {
@@ -517,6 +517,10 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt
         picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3 * n + k]);
       }
     }
+
+    free(mmax);
+    free(mmin);
+    free(mean);
   }
   else
   {
