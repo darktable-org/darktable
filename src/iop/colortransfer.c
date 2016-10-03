@@ -238,8 +238,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   const int nit = 10;                                 // number of iterations
   const int samples = roi->width * roi->height * 0.2; // samples: only a fraction of the buffer.
 
-  float mean[n][2], var[n][2];
-  int cnt[n];
+  float(*const mean)[2] = malloc(2 * n * sizeof(float));
+  float(*const var)[2] = malloc(2 * n * sizeof(float));
+  int *const cnt = malloc(n * sizeof(int));
 
   // init n clusters for a, b channels at random
   for(int k = 0; k < n; k++)
@@ -254,7 +255,7 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(col, var, mean, mean_out, cnt)
+#pragma omp parallel for default(none) schedule(static) shared(col, mean_out)
 #endif
     for(int s = 0; s < samples; s++)
     {
@@ -303,6 +304,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     // for(int k=0;k<n;k++) printf("%f %f -- var %f %f\n", mean_out[k][0], mean_out[k][1], var_out[k][0],
     // var_out[k][1]);
   }
+  free(cnt);
+  free(var);
+  free(mean);
   for(int k = 0; k < n; k++)
   {
     // we actually want the std deviation.
