@@ -106,13 +106,14 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
   const int st = step / 2;
   const int wd = (int)(1 + (width >> (l - 1)));
 
+  float *const tmp_height_buf = (float *)malloc(height * dt_get_num_threads() * sizeof(float));
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(weight_a, buf) schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
     // cols
-    float tmp[height];
+    float *tmp = tmp_height_buf + height * dt_get_thread_num();
     int j;
     for(j = 0; j < height - st; j += st) tmp[j] = gweight(i, j, i, j + st);
     // update coarse
@@ -131,13 +132,17 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
     if(j < height)
       for(int ch = 0; ch < 3; ch++) gbuf(buf, i, j) += gbuf(buf, i, j - st);
   }
+
+  free((void *)tmp_height_buf);
+
+  float *const tmp_width_buf = (float *)malloc(width * dt_get_num_threads() * sizeof(float));
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(weight_a, buf) schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
     // rows
-    float tmp[width];
+    float *tmp = tmp_width_buf + width * dt_get_thread_num();
     for(int i = 0; i < width - st; i += st) tmp[i] = gweight(i, j, i + st, j);
     // update
     for(int ch = 0; ch < 3; ch++) gbuf(buf, 0, j) -= gbuf(buf, st, j) * 0.5f;
@@ -156,6 +161,8 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
     if(i < width)
       for(int ch = 0; ch < 3; ch++) gbuf(buf, i, j) += gbuf(buf, i - st, j);
   }
+
+  free((void *)tmp_width_buf);
 }
 
 #undef gbuf
