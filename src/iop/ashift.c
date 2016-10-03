@@ -1749,9 +1749,9 @@ static int remove_outliers(dt_iop_module_t *module)
   const int ymax = ymin + height;
 
   // holds the index set of lines we want to work on
-  int lines_set[g->lines_count];
+  int *lines_set = malloc(g->lines_count * sizeof(int));
   // holds the result of ransac
-  int inout_set[g->lines_count];
+  int *inout_set = malloc(g->lines_count * sizeof(int));
 
   // some accounting variables
   int vnb = 0, vcount = 0;
@@ -1826,9 +1826,14 @@ static int remove_outliers(dt_iop_module_t *module)
   g->horizontal_count = hcount;
   g->lines_version++;
 
+  free(inout_set);
+  free(lines_set);
+
   return TRUE;
 
 error:
+  free(inout_set);
+  free(lines_set);
   return FALSE;
 }
 
