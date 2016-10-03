@@ -470,11 +470,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float equalization = data->equalization / 100.0f;
 
     // get mapping from input clusters to target clusters
-    int mapio[data->n];
+    int *const mapio = malloc(data->n * sizeof(int));
+
     get_cluster_mapping(data->n, data->target_mean, data->target_weight, data->source_mean,
                         data->source_weight, dominance, mapio);
 
-    float var_ratio[data->n][2];
+    float(*const var_ratio)[2] = malloc(2 * data->n * sizeof(float));
+
     for(int i = 0; i < data->n; i++)
     {
       var_ratio[i][0]
@@ -505,19 +507,26 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       // bilateral blur of delta L to avoid artifacts caused by limited histogram resolution
       dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
-      if(!b) return;
+      if(!b)
+      {
+        free(var_ratio);
+        free(mapio);
+        return;
+      }
       dt_bilateral_splat(b, out);
       dt_bilateral_blur(b);
       dt_bilateral_slice(b, out, out, -1.0f);
       dt_bilateral_free(b);
     }
 
+    float *const weight_buf = malloc(data->n * dt_get_num_threads() * sizeof(float));
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, in, out, var_ratio, mapio, equalization)
+#pragma omp parallel for default(none) schedule(static) shared(data, in, out, equalization)
 #endif
     for(int k = 0; k < height; k++)
     {
-      float weight[data->n];
+      float *weight = weight_buf + data->n * dt_get_thread_num();
       size_t j = (size_t)ch * width * k;
       for(int i = 0; i < width; i++)
       {
@@ -541,6 +550,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         j += ch;
       }
     }
+
+    free(weight_buf);
+    free(var_ratio);
+    free(mapio);
   }
   // incomplete parameter set -> do nothing
   else
