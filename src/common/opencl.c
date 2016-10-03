@@ -84,6 +84,9 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl->dev_priority_export = NULL;
   cl->dev_priority_thumbnail = NULL;
 
+  cl_platform_id *all_platforms = NULL;
+  cl_uint *all_num_devices = NULL;
+
   // user selectable parameter defines minimum requirement on GPU memory
   // default is 768MB
   // values below 200 will be (re)set to 200
@@ -151,8 +154,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   g_free(library);
 
   cl_int err;
-  cl_platform_id all_platforms[DT_OPENCL_MAX_PLATFORMS];
-  cl_uint all_num_devices[DT_OPENCL_MAX_PLATFORMS];
+  all_platforms = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_platform_id));
+  all_num_devices = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_uint));
   cl_uint num_platforms = DT_OPENCL_MAX_PLATFORMS;
   err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
@@ -602,6 +605,9 @@ finally:
       free((void *)(cl->dev[i].options));
     }
   }
+
+  free(all_num_devices);
+  free(all_platforms);
 
   if(locale)
   {
