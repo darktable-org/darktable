@@ -366,16 +366,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // cluster input buffer
-    float mean[data->n][2], var[data->n][2];
+    float(*const mean)[2] = malloc(2 * data->n * sizeof(float));
+    float(*const var)[2] = malloc(2 * data->n * sizeof(float));
+
     kmeans(in, roi_in, data->n, mean, var);
 
     // get mapping from input clusters to target clusters
-    int mapio[data->n];
+    int *const mapio = malloc(data->n * sizeof(int));
+
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
 // for all pixels: find input cluster, transfer to mapped target cluster
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, mean, var, mapio, in, out)
+#pragma omp parallel for default(none) schedule(static) shared(data, in, out)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -405,6 +408,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         j += ch;
       }
     }
+
+    free(mapio);
+    free(var);
+    free(mean);
   }
   else
   {
