@@ -2333,8 +2333,8 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   if(*eventlist == NULL || *numevents == 0 || *eventtags == NULL || *eventsconsolidated == 0)
     return; // nothing to do
 
-  char *tags[*eventsconsolidated + 1];
-  float timings[*eventsconsolidated + 1];
+  char **tags = malloc((*eventsconsolidated + 1) * sizeof(char *));
+  float *timings = malloc((*eventsconsolidated + 1) * sizeof(float));
   int items = 1;
   tags[0] = "";
   timings[0] = 0.0f;
@@ -2401,6 +2401,9 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   dt_print(DT_DEBUG_OPENCL,
            "[opencl_profiling] spent %7.4f seconds totally in command queue (with %d event%s missing)\n",
            (double)total, *lostevents, *lostevents == 1 ? "" : "s");
+
+  free(timings);
+  free(tags);
 
   return;
 }
