@@ -1427,25 +1427,28 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      cl_device_id devices[numdev];
+      cl_device_id *devices = malloc(numdev * sizeof(cl_device_id));
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_DEVICES,
                                                       sizeof(cl_device_id) * numdev, devices, NULL);
       if(err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_DEVICES failed: %d\n", err);
+        free(devices);
         return CL_SUCCESS;
       }
 
-      size_t binary_sizes[numdev];
+      size_t *binary_sizes = malloc(numdev * sizeof(size_t));
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARY_SIZES,
                                                       sizeof(size_t) * numdev, binary_sizes, NULL);
       if(err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARY_SIZES failed: %d\n", err);
+        free(binary_sizes);
+        free(devices);
         return CL_SUCCESS;
       }
 
-      unsigned char *binaries[numdev];
+      unsigned char **binaries = malloc(numdev * sizeof(unsigned char *));
       for(int i = 0; i < numdev; i++) binaries[i] = (unsigned char *)malloc(binary_sizes[i]);
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARIES,
                                                       sizeof(unsigned char *) * numdev, binaries, NULL);
@@ -1480,6 +1483,9 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
 
     ret:
       for(int i = 0; i < numdev; i++) free(binaries[i]);
+      free(binaries);
+      free(binary_sizes);
+      free(devices);
     }
     return CL_SUCCESS;
   }
