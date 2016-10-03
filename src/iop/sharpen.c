@@ -128,7 +128,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
   const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
   const int wd = 2 * rad + 1;
-  float mat[wd];
+  float *mat = NULL;
 
   if(rad == 0)
   {
@@ -149,6 +149,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto error;
     return TRUE;
   }
+
+  mat = malloc(wd * sizeof(float));
 
   // init gaussian kernel
   float *m = mat + rad;
@@ -248,11 +250,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  free(mat);
   return TRUE;
 
 error:
   if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  free(mat);
   dt_print(DT_DEBUG_OPENCL, "[opencl_sharpen] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
