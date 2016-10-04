@@ -2108,6 +2108,8 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   const int only_vng_linear
       = full_scale_demosaicing && roi_out->scale < (piece->pipe->dsc.filters == 9u ? 0.5f : 0.667f);
 
+  int *ips = NULL;
+
   cl_mem dev_tmp = NULL;
   cl_mem dev_aux = NULL;
   cl_mem dev_xtrans = NULL;
@@ -2213,7 +2215,10 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
           +1, -1, +1, +1, 1, 0x88, +1, +0, +1, +2, 1, 0x08, +1, +0, +2, -1, 1, 0x40, +1, +0, +2, +1, 1, 0x10 };
     static const signed char chood[]
       = { -1, -1, -1, 0, -1, +1, 0, +1, +1, +1, +1, 0, +1, -1, 0, -1 };
-    int ips[prow * pcol * 352];
+
+    const size_t ips_size = (size_t)prow * pcol * 352 * sizeof(int);
+    ips = malloc(ips_size);
+
     int *ip = ips;
     int code[16][16];
 
@@ -2270,7 +2275,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
     if(dev_code == NULL) goto error;
 
-    dev_ips = dt_opencl_copy_host_to_device_constant(devid, sizeof(ips), ips);
+    dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
     if(dev_ips == NULL) goto error;
 
     if(piece->pipe->dsc.filters != 9u && data->green_eq != DT_IOP_GREEN_EQ_NO)
@@ -2475,6 +2480,8 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
   dev_green_eq = NULL;
 
+  free(ips);
+
   // color smoothing
   if(data->color_smoothing)
   {
@@ -2492,6 +2499,7 @@ error:
   if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
   if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+  free(ips);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

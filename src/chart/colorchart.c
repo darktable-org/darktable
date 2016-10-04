@@ -289,8 +289,9 @@ chart_t *parse_cht(const char *filename)
           size_t lxs_len = strlen(lxs), lxe_len = strlen(lxe), lys_len = strlen(lys), lye_len = strlen(lye);
           if(lxs_len > lxe_len || lys_len > lye_len) ERROR;
 
-          char x_label[lxe_len + 1],
-              y_label[lye_len + 1]; // make sure there is enough room to add another char in the beginning
+          // make sure there is enough room to add another char in the beginning
+          char *x_label = malloc((lxe_len + 1) * sizeof(char));
+          char *y_label = malloc((lye_len + 1) * sizeof(char));
 
           char *first_label = NULL, *last_label = NULL;
           GList *labels = NULL;
@@ -349,6 +350,9 @@ chart_t *parse_cht(const char *filename)
           y_max = MAX(y_max, y + h);
           if(kl == 'X' || kl == 'Y')
             g_hash_table_insert(result->patch_sets, g_strdup_printf("%s .. %s", first_label, last_label), labels);
+
+          free(y_label);
+          free(x_label);
         }
         else
           ERROR;

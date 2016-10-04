@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2014 johannes hanika.
-    copyright (c) 2015 LebedevRI.
+    copyright (c) 2015-2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -187,7 +187,7 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char *m_arg[3 + argc - k];
+  char **m_arg = malloc((3 + argc - k) * sizeof(char *));
   m_arg[m_argc++] = "darktable-generate-cache";
   m_arg[m_argc++] = "--conf";
   m_arg[m_argc++] = "write_sidecar_files=FALSE";
@@ -195,7 +195,11 @@ int main(int argc, char *arg[])
   m_arg[m_argc] = NULL;
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0, NULL)) exit(EXIT_FAILURE);
+  if(dt_init(m_argc, m_arg, 0, NULL))
+  {
+    free(m_arg);
+    exit(EXIT_FAILURE);
+  }
 
   if(!dt_conf_get_bool("cache_disk_backend"))
   {
@@ -204,12 +208,14 @@ int main(int argc, char *arg[])
               "to pre-generate thumbnails and for darktable to use them, you need to enable disk backend "
               "for thumbnail cache\nno thumbnails to be generated, done."));
     dt_cleanup();
+    free(m_arg);
     exit(EXIT_FAILURE);
   }
 
   if(min_mip > max_mip)
   {
     fprintf(stderr, _("error: ensure that min_mip <= max_mip\n"));
+    free(m_arg);
     exit(EXIT_FAILURE);
   }
 
@@ -217,10 +223,13 @@ int main(int argc, char *arg[])
 
   if(generate_thumbnail_cache(min_mip, max_mip, min_imgid, max_imgid))
   {
+    free(m_arg);
     exit(EXIT_FAILURE);
   }
 
   dt_cleanup();
+
+  free(m_arg);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

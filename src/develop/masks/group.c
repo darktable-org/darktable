@@ -289,14 +289,14 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   // we allocate buffers and values
   const guint nb = g_list_length(form->points);
   if(nb == 0) return 0;
-  float *bufs[nb];
-  int w[nb];
-  int h[nb];
-  int px[nb];
-  int py[nb];
-  int ok[nb];
-  int states[nb];
-  float op[nb];
+  float **bufs = calloc(nb, sizeof(float *));
+  int *w = malloc(nb * sizeof(int));
+  int *h = malloc(nb * sizeof(int));
+  int *px = malloc(nb * sizeof(int));
+  int *py = malloc(nb * sizeof(int));
+  int *ok = malloc(nb * sizeof(int));
+  int *states = malloc(nb * sizeof(int));
+  float *op = malloc(nb * sizeof(float));
 
   // and we get all masks
   GList *fpts = g_list_first(form->points);
@@ -324,7 +324,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     fpts = g_list_next(fpts);
     pos++;
   }
-  if(nb_ok == 0) return 0;
+  if(nb_ok == 0) goto error;
 
   // now we get the min, max, width, height of the final mask
   int l, r, t, b;
@@ -419,14 +419,33 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
       }
     }
 
-    // and we free the buffer
-    free(bufs[i]);
     if(darktable.unmuted & DT_DEBUG_PERF)
       dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", i, dt_get_wtime() - start2);
 //     start2 = dt_get_wtime();
   }
 
+  free(op);
+  free(states);
+  free(ok);
+  free(py);
+  free(px);
+  free(h);
+  free(w);
+  for(int i = 0; i < nb; i++) free(bufs[i]);
+  free(bufs);
   return 1;
+
+error:
+  free(op);
+  free(states);
+  free(ok);
+  free(py);
+  free(px);
+  free(h);
+  free(w);
+  for(int i = 0; i < nb; i++) free(bufs[i]);
+  free(bufs);
+  return 0;
 }
 
 int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
