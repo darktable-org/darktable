@@ -36,7 +36,6 @@ typedef enum _iop_operator_t
 {
   OPERATOR_LIGHTNESS,
   OPERATOR_APPARENT_GRAYSCALE,
-  OPERATOR_LAPLACIAN
 } _iop_operator_t;
 
 typedef struct dt_iop_bw_params_t
@@ -45,6 +44,8 @@ typedef struct dt_iop_bw_params_t
   struct
   {
     int adapting_luminance;
+    float colorcontrast;
+    int colorcontrast_distance;
   } apparent;
 } dt_iop_bw_params_t;
 
@@ -54,6 +55,8 @@ typedef struct dt_iop_bw_gui_data_t
   struct
   {
     GtkWidget *adapting_luminance;
+    GtkWidget *colorcontrast;
+    GtkWidget *colorcontrast_distance;
   } apparent;
 } dt_iop_bw_gui_data_t;
 
@@ -159,15 +162,12 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
 static inline void process_local_laplacian(dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  // dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
+  dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
 
-  // TODO: make some of these accessible as parameters in the gui
-  float sigma = 20.0f;
-  float shadows = 1.0f;
-  float highlights = 1.0f;
-  float clarity = 3.0f;
+  float contrast = d->apparent.colorcontrast;
+  int num_levels = (int) d->apparent.colorcontrast_distance;
   const int stride = piece->colors;
-  local_laplacian(i, (float *)o, roi_out->width, roi_out->height, stride, sigma, shadows, highlights, clarity);
+  local_laplacian(i, (float *)o, roi_out->width, roi_out->height, stride, contrast, num_levels);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
@@ -183,10 +183,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     case OPERATOR_APPARENT_GRAYSCALE:
       process_apparent_grayscale(piece, i, o, roi_in, roi_out);
-      break;
-
-    case OPERATOR_LAPLACIAN:
-      process_apparent_grayscale(piece, i, o, roi_in, roi_out);
       process_local_laplacian(piece, i, o, roi_in, roi_out);
       break;
   }
@@ -196,7 +192,7 @@ void reload_defaults(dt_iop_module_t *module)
 {
   module->default_enabled = 0;
 
-  dt_iop_bw_params_t tmp = (dt_iop_bw_params_t){ OPERATOR_APPARENT_GRAYSCALE, { 20 } };
+  dt_iop_bw_params_t tmp = (dt_iop_bw_params_t){ OPERATOR_APPARENT_GRAYSCALE, { 20, 0, 2 } };
   memcpy(module->params, &tmp, sizeof(dt_iop_bw_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bw_params_t));
 }
@@ -241,11 +237,15 @@ static void operator_callback(GtkWidget *combobox, gpointer user_data)
 
   // hide operator-specific widgets
   gtk_widget_set_visible(g->apparent.adapting_luminance, FALSE);
+  gtk_widget_set_visible(g->apparent.colorcontrast, FALSE);
+  gtk_widget_set_visible(g->apparent.colorcontrast_distance, FALSE);
 
   // enable widgets of the selected operator
   if(p->operator== OPERATOR_APPARENT_GRAYSCALE)
   {
     gtk_widget_set_visible(g->apparent.adapting_luminance, TRUE);
+    gtk_widget_set_visible(g->apparent.colorcontrast, TRUE);
+    gtk_widget_set_visible(g->apparent.colorcontrast_distance, TRUE);
   }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -262,6 +262,28 @@ static void apparent_adapting_luminance(GtkWidget *luminance, gpointer user_data
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void callback_colorcontrast(GtkWidget *contrast, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+
+  dt_iop_bw_params_t *p = (dt_iop_bw_params_t *)self->params;
+  p->apparent.colorcontrast = dt_bauhaus_slider_get(contrast);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void callback_colorcontrast_distance(GtkWidget *contrast_distance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+
+  dt_iop_bw_params_t *p = (dt_iop_bw_params_t *)self->params;
+  p->apparent.colorcontrast_distance = dt_bauhaus_slider_get(contrast_distance);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_bw_gui_data_t *g = (dt_iop_bw_gui_data_t *)self->gui_data;
@@ -269,14 +291,20 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->operator, p->operator);
   dt_bauhaus_slider_set(g->apparent.adapting_luminance, p->apparent.adapting_luminance);
+  dt_bauhaus_slider_set(g->apparent.colorcontrast, p->apparent.colorcontrast);
+  dt_bauhaus_slider_set(g->apparent.colorcontrast_distance, p->apparent.colorcontrast_distance);
 
   // hide operator-specific widgets
   gtk_widget_set_visible(g->apparent.adapting_luminance, FALSE);
+  gtk_widget_set_visible(g->apparent.colorcontrast, FALSE);
+  gtk_widget_set_visible(g->apparent.colorcontrast_distance, FALSE);
 
   // enable widgets of the selected operator
   if(p->operator== OPERATOR_APPARENT_GRAYSCALE)
   {
     gtk_widget_set_visible(g->apparent.adapting_luminance, TRUE);
+    gtk_widget_set_visible(g->apparent.colorcontrast, TRUE);
+    gtk_widget_set_visible(g->apparent.colorcontrast_distance, TRUE);
   }
 }
 
@@ -293,7 +321,6 @@ void gui_init(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_add(g->operator, _("lightness"));
   dt_bauhaus_combobox_add(g->operator, _("apparent grayscale"));
-  dt_bauhaus_combobox_add(g->operator, _("local laplacian"));
 
   gtk_widget_set_tooltip_text(g->operator, _("the conversion operator"));
   g_signal_connect(G_OBJECT(g->operator), "value-changed", G_CALLBACK(operator_callback), self);
@@ -307,6 +334,23 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->apparent.adapting_luminance), "value-changed",
                    G_CALLBACK(apparent_adapting_luminance), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->apparent.adapting_luminance, TRUE, TRUE, 0);
+
+  /* color contrast settings */
+  g->apparent.colorcontrast = dt_bauhaus_slider_new_with_range(self, 0, 5, 0.1, 0, 1);
+  dt_bauhaus_widget_set_label(g->apparent.colorcontrast, NULL, _("color contrast"));
+  gtk_widget_set_tooltip_text(g->apparent.colorcontrast,
+                              _("Increase the contrast between hues that result in a similar lightness by local transfer of the original contrast (including color information) to the monochrome image."));
+  g_signal_connect(G_OBJECT(g->apparent.colorcontrast), "value-changed",
+                   G_CALLBACK(callback_colorcontrast), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->apparent.colorcontrast, TRUE, TRUE, 0);
+
+  g->apparent.colorcontrast_distance = dt_bauhaus_slider_new_with_range(self, 2, 8, 1, 0, 0);
+  dt_bauhaus_widget_set_label(g->apparent.colorcontrast_distance, NULL, _("colorcontrast distance"));
+  gtk_widget_set_tooltip_text(g->apparent.colorcontrast_distance,
+                              _("Size of region where the color contrast acts"));
+  g_signal_connect(G_OBJECT(g->apparent.colorcontrast_distance), "value-changed",
+                   G_CALLBACK(callback_colorcontrast_distance), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->apparent.colorcontrast_distance, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

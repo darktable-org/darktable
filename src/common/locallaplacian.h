@@ -114,31 +114,6 @@ static inline void gauss_reduce(const float *const input, // fine input buffer
   ll_fill_boundary(coarse, cw, ch);
 }
 
-static inline void rgb_to_yuv(const float *const rgb, float *const yuv)
-{
-  const float M[] = { 0.299f, 0.587f, 0.114f, -0.14713f, -0.28886f, 0.436f, 0.615f, -0.51499f, -0.10001f };
-  yuv[0] = yuv[1] = yuv[2] = 0.0f;
-  for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 3; j++) yuv[i] += M[3 * i + j] * rgb[j];
-}
-
-static inline float rgb_to_y(const float *const rgb)
-{
-  const float M[] = { 0.299f, 0.587f, 0.114f, -0.14713f, -0.28886f, 0.436f, 0.615f, -0.51499f, -0.10001f };
-  float y = 0.0f;
-  for(int j = 0; j < 3; j++) y += M[j] * rgb[j];
-  // XXX try shadow lifting: if(y < .5f) return .5f * powf(2.0f*y, 1./1.8);
-  return y;
-}
-
-static inline void yuv_to_rgb(const float *const yuv, float *const rgb)
-{
-  const float Mi[] = { 1.0f, 0.0f, 1.13983f, 1.0f, -0.39465f, -0.58060f, 1.0f, 2.03211f, 0.0f };
-  rgb[0] = rgb[1] = rgb[2] = 0.0f;
-  for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 3; j++) rgb[i] += Mi[3 * i + j] * yuv[j];
-}
-
 // allocate output buffer with monochrome brightness channel from input, padded
 // up by max_supp on all four sides, dimensions written to wd2 ht2
 static inline float *ll_pad_input(const float *const input, const int wd, const int ht, const int max_supp,
@@ -179,70 +154,21 @@ static inline float ll_laplacian(const float *const coarse, // coarse res gaussi
   return fine[j * wd + i] - c;
 }
 
-static inline float ll_curve(const float x, const float g, const float sigma, const float shadows,
-                             const float highlights, const float clarity)
-{
-  // this is in the original matlab code instead:
-  // I_remap=fact*(I-ref).*exp(-(I-ref).*(I-ref)./(2*sigma*sigma));
-  // also they add up the laplacian to the ones of the base image
-  // return g + 0.7 *  (x-g) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
-
-  // XXX highlights does weird things, causing halos in dark regions
-  // XXX shadows seems to compress highlight contrast (???)
-  // XXX need to adjust this to bias shad/hi depending on g!
-  // const float compress = .2;// + powf(g, .4);
-  // if(x > g+sigma)
-  //   // return g + highlights * (x-g) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
-  //   return g+sigma + highlights * (x-g-sigma) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
-  // else if(x < g-sigma)
-  //   // return g + shadows    * (x-g) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
-  //   return g-sigma + shadows * (x-g+sigma) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
-  // else
-  return g + (x - g) + clarity * (x - g) * expf(-(x - g) * (x - g) / (2.0 * sigma * sigma));
-#if 0
-  // XXX DEBUG: shad/hi curve needs to be something smart along these lines:
-  // if(x < .5f)
-  //{
-    // const float g2 = powf(g, 1./shadows);
-    // return powf(x, g);
-    // return x + g * shadows;//- g + g2;
-  //}
-  // centered value
-  const float c = x-g;
-  if(c >  sigma) return g + sigma + highlights * (c-sigma);
-  if(c < -sigma) return g - sigma + shadows    * (c+sigma);
-  // const float beta = 0.1;//(1.0-x)*(1.0-x);
-  // if(c >  sigma) return g + sigma + beta * (c-sigma);
-  // if(c < -sigma) return g - sigma + beta * (c+sigma);
-
-  // TODO: paper says to blend this in to avoid boosting noise:
-  // t = smoothstep(x, 1%, 2%)
-  const float t = MIN(MAX(0.0f, (x-0.01)/(0.02-0.01)), 1.0f);
-  assert(t == t);
-  const float delta = fabsf(c)/sigma;
-  assert(delta == delta);
-  const float f_d = t * powf(delta, 1.-clarity) + (1.0f-t)*delta;
-  assert(f_d == f_d);
-  assert(g + copysignf(sigma * f_d, c) == g + copysignf(sigma * f_d, c));
-  return g + copysignf(sigma * f_d, c);
-#endif
-}
-
 static inline void local_laplacian(const float *const input, // input buffer in some Labx or yuvx format
                                    float *const out,         // output buffer with colour
                                    const int wd,             // width and
                                    const int ht,             // height of the input buffer
                                    const int stride,         // stride for input buffer
-                                   const float sigma,        // user param: separate shadows/midtones/highlights
-                                   const float shadows,      // user param: lift shadows
-                                   const float highlights,   // user param: compress highlights
-                                   const float clarity)      // user param: increase clarity/local contrast
+                                   const float contrast,     // user param: control strength of effect
+                                   int num_levels)      // user param: number of levels in the pyramid
 {
-#define num_levels 5
   const int max_supp = 1 << (num_levels - 1);
+  fprintf(stderr, "Do padding for %i level", num_levels);
   fprintf(stderr, "Do padding by %i pixesl", max_supp);
   int w, h;
-  float *padded[num_levels][3] = { 0 };
+  // we should do this dynamically, but we don't allow for more then 10 levels anyways, so some more pointers don't hurt
+  num_levels = (num_levels <= 10) ? num_levels : 10;
+  float *padded[10][3] = { 0 };
   for(int channel = 0; channel < 3; channel++)
   {
     padded[0][channel] = ll_pad_input(input, wd, ht, max_supp, stride, &w, &h, channel);
@@ -266,7 +192,7 @@ static inline void local_laplacian(const float *const input, // input buffer in 
   }
 
   // allocate pyramid pointers for output
-  float *output[num_levels] = { 0 };
+  float *output[10] = { 0 };
   // only use L channel (channel 0) from precomputed B&W image
   output[0] = ll_pad_input(out, wd, ht, max_supp, stride, &w, &h, 0);
 
@@ -281,7 +207,7 @@ static inline void local_laplacian(const float *const input, // input buffer in 
     gauss_reduce(output[l - 1], output[l], dl(w, l - 1), dl(h, l - 1));
   }
 
-  //#pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w, h, padded, output)
+  #pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w, h, padded, output, num_levels)
   for(int j = 0; j < ht; j++)
     for(int i = 0; i < wd; i++)
     {
@@ -290,7 +216,7 @@ static inline void local_laplacian(const float *const input, // input buffer in 
       // or start from black for debugging locla contrast additions etc
       //(out + stride * (j * wd + i))[0] = 0;
       // and increase color contrast
-      const float k[8] = { 0.7, 0.5, 0.4, 0.2, 0.1, 0.1, 0.1, 0.1 };
+      const float k[8] = { contrast, contrast, contrast, contrast, contrast, contrast, contrast, contrast};
       for(int l = 0; l < num_levels-1; l++)
       {
         // TODO: verify that these coordinates make sense
