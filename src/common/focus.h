@@ -231,7 +231,8 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
   int wd = buffer_width + image.crop_x, ht = buffer_height + image.crop_y;
 
   // array with cluster positions
-  float pos[fs * 6], *offx = pos + fs * 2, *offy = pos + fs * 4;
+  float *pos = malloc(fs * 6 * sizeof(float));
+  float *offx = pos + fs * 2, *offy = pos + fs * 4;
   for(int k = 0; k < fs; k++)
   {
     const float stddevx = sqrtf(focus[k].x2 - focus[k].x * focus[k].x);
@@ -341,6 +342,7 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
     }
   }
   cairo_restore(cr);
+  free(pos);
 }
 #undef CHANNEL
 #undef gbuf
