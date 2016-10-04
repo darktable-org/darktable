@@ -435,7 +435,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         const int dy = posy - posy_source;
         const int fw = 2 * rad, fh = 2 * rad;
 
-        float filter[2 * rad + 1];
+        float *filter = malloc((2 * rad + 1) * sizeof(float));
 
         if(rad > 0)
         {
@@ -449,6 +449,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         {
           filter[0] = 1.0f;
         }
+
         for(int yy = posy; yy < posy + fh; yy++)
         {
           // we test if we are inside roi_out
@@ -470,6 +471,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                               + posx_source - roi_in->x) + c] * f;
           }
         }
+
+        free(filter);
       }
       else
       {

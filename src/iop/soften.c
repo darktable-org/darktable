@@ -149,6 +149,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
+  const size_t scanline_size = (size_t)4 * size;
+  float *const scanline_buf = dt_alloc_align(16, scanline_size * dt_get_num_threads() * sizeof(float));
+
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
@@ -157,7 +160,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     /* horizontal blur out into out */
     for(int y = 0; y < roi_out->height; y++)
     {
-      __attribute__((aligned(16))) float scanline[(size_t)4 * size];
+      float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
       __attribute__((aligned(16))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       size_t index = (size_t)y * roi_out->width;
@@ -208,7 +211,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
-      __attribute__((aligned(16))) float scanline[(size_t)4 * size];
+      float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
       __attribute__((aligned(16))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       int hits = 0;
@@ -253,6 +256,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
   }
+
+  dt_free_align(scanline_buf);
 
   const float amount = (d->amount / 100.0);
   const float amount_1 = (1 - (d->amount) / 100.0);
@@ -302,6 +307,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
+  __m128 *const scanline_buf = dt_alloc_align(16, size * dt_get_num_threads() * sizeof(__m128));
+
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
@@ -310,7 +317,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     /* horizontal blur out into out */
     for(int y = 0; y < roi_out->height; y++)
     {
-      __m128 scanline[size];
+      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
       size_t index = (size_t)y * roi_out->width;
       __m128 L = _mm_setzero_ps();
       int hits = 0;
@@ -342,7 +349,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
-      __m128 scanline[size];
+      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
       __m128 L = _mm_setzero_ps();
       int hits = 0;
       size_t index = (size_t)x - radius * roi_out->width;
@@ -370,6 +377,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
   }
 
+  dt_free_align(scanline_buf);
 
   const __m128 amount = _mm_set1_ps(data->amount / 100.0);
   const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);
@@ -416,7 +424,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
-  float mat[wd];
+  const size_t mat_size = sizeof(float) * wd;
+  float *mat = malloc(mat_size);
   float *m = mat + wdh;
   float weight = 0.0f;
 
@@ -461,7 +470,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
   if(dev_tmp == NULL) goto error;
 
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, (size_t)sizeof(float) * wd, mat);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, mat_size, mat);
   if(dev_m == NULL) goto error;
 
   /* overexpose image */
@@ -534,11 +543,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  free(mat);
   return TRUE;
 
 error:
   if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  free(mat);
   dt_print(DT_DEBUG_OPENCL, "[opencl_soften] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
