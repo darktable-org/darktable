@@ -701,7 +701,34 @@ static gboolean center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointe
   return TRUE;
 }
 
-int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
+static const char* get_source_name(int pos)
+{
+  static const gchar *SOURCE_NAMES[]
+    = { "GDK_SOURCE_MOUSE",    "GDK_SOURCE_PEN",         "GDK_SOURCE_ERASER",   "GDK_SOURCE_CURSOR",
+        "GDK_SOURCE_KEYBOARD", "GDK_SOURCE_TOUCHSCREEN", "GDK_SOURCE_TOUCHPAD", "GDK_SOURCE_TRACKPOINT",
+        "GDK_SOURCE_TABLET_PAD" };
+  if(pos >= G_N_ELEMENTS(SOURCE_NAMES)) return "<UNKNOWN>";
+  return SOURCE_NAMES[pos];
+}
+
+static const char* get_mode_name(int pos)
+{
+  static const gchar *MODE_NAMES[] = { "GDK_MODE_DISABLED", "GDK_MODE_SCREEN", "GDK_MODE_WINDOW" };
+  if(pos >= G_N_ELEMENTS(MODE_NAMES)) return "<UNKNOWN>";
+  return MODE_NAMES[pos];
+}
+
+static const char* get_axis_name(int pos)
+{
+  static const gchar *AXIS_NAMES[]
+    = { "GDK_AXIS_IGNORE",   "GDK_AXIS_X",      "GDK_AXIS_Y",     "GDK_AXIS_PRESSURE",
+        "GDK_AXIS_XTILT",    "GDK_AXIS_YTILT",  "GDK_AXIS_WHEEL", "GDK_AXIS_DISTANCE",
+        "GDK_AXIS_ROTATION", "GDK_AXIS_SLIDER", "GDK_AXIS_LAST" };
+  if(pos >= G_N_ELEMENTS(AXIS_NAMES)) return "<UNKNOWN>";
+  return AXIS_NAMES[pos];
+}
+
+int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
   /* lets zero mem */
   memset(gui, 0, sizeof(dt_gui_gtk_t));
@@ -724,8 +751,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if(!g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s/darktable.css", datadir);
 
-  gtk_init(&argc, &argv);
-
 #ifdef MAC_INTEGRATION
 #ifdef GTK_TYPE_OSX_APPLICATION
   GtkOSXApplication *OSXApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
@@ -741,7 +766,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 #endif
 
   GtkWidget *widget;
-  gui->ui = dt_ui_initialize(argc, argv);
+  gui->ui = g_malloc0(sizeof(dt_ui_t));
   gui->surface = NULL;
   gui->center_tooltip = 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
@@ -752,8 +777,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   // load the style / theme
   GtkSettings *settings = gtk_settings_get_default();
-  g_object_set(G_OBJECT(settings), "gtk-application-prefer-dark-theme", TRUE, NULL);
-  g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", NULL);
+  g_object_set(G_OBJECT(settings), "gtk-application-prefer-dark-theme", TRUE, (gchar *)0);
+  g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
   g_object_unref(settings);
 
   GError *error = NULL;
@@ -899,13 +924,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   for(int i = 0; i < 3; i++) darktable.gui->bgcolor[i] = 0.1333;
 
   // let's try to support pressure sensitive input devices like tablets for mask drawing
-  static const gchar *SOURCE_NAMES[]
-      = { "GDK_SOURCE_MOUSE",    "GDK_SOURCE_PEN",         "GDK_SOURCE_ERASER",  "GDK_SOURCE_CURSOR",
-          "GDK_SOURCE_KEYBOARD", "GDK_SOURCE_TOUCHSCREEN", "GDK_SOURCE_TOUCHPAD" };
-  static const gchar *MODE_NAMES[] = { "GDK_MODE_DISABLED", "GDK_MODE_SCREEN", "GDK_MODE_WINDOW" };
-  static const gchar *AXIS_NAMES[]
-      = { "GDK_AXIS_IGNORE", "GDK_AXIS_X",     "GDK_AXIS_Y",     "GDK_AXIS_PRESSURE",
-          "GDK_AXIS_XTILT",  "GDK_AXIS_YTILT", "GDK_AXIS_WHEEL", "GDK_AXIS_LAST" };
   dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
@@ -923,12 +941,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
     dt_print(DT_DEBUG_INPUT, "%s (%s), source: %s, mode: %s, %d axes, %d keys\n", gdk_device_get_name(device),
              (source != GDK_SOURCE_KEYBOARD) && gdk_device_get_has_cursor(device) ? "with cursor" : "no cursor",
-             SOURCE_NAMES[source], MODE_NAMES[gdk_device_get_mode(device)], n_axes,
+             get_source_name(source), get_mode_name(gdk_device_get_mode(device)), n_axes,
              source != GDK_SOURCE_KEYBOARD ? gdk_device_get_n_keys(device) : 0);
 
     for(int i = 0; i < n_axes; i++)
     {
-      dt_print(DT_DEBUG_INPUT, "  %s\n", AXIS_NAMES[gdk_device_get_axis_use(device, i)]);
+      dt_print(DT_DEBUG_INPUT, "  %s\n", get_axis_name(gdk_device_get_axis_use(device, i)));
     }
     dt_print(DT_DEBUG_INPUT, "\n");
   }
@@ -1192,20 +1210,6 @@ static void init_main_table(GtkWidget *container)
 
   /* initialize right panel */
   _ui_init_panel_right(darktable.gui->ui, container);
-}
-
-/*
- * NEW UI API
- */
-dt_ui_t *dt_ui_initialize(int argc, char **argv)
-{
-  dt_ui_t *ui = g_malloc0(sizeof(dt_ui_t));
-  return ui;
-}
-
-void dt_ui_destroy(struct dt_ui_t *ui)
-{
-  g_free(ui);
 }
 
 GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c)
@@ -1604,10 +1608,72 @@ void dt_ellipsize_combo(GtkComboBox *cbox)
   while(it)
   {
     GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
-    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
+    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
     it = g_list_next(it);
   }
   g_list_free(renderers);
+}
+
+typedef struct result_t
+{
+  enum {RESULT_NONE, RESULT_NO, RESULT_YES} result;
+  GtkWidget *window;
+} result_t;
+
+static void _yes_no_button_handler_no(GtkButton *button, gpointer data)
+{
+  result_t *result = (result_t *)data;
+  result->result = RESULT_NO;
+  gtk_widget_destroy(result->window);
+  gtk_main_quit();
+}
+
+static void _yes_no_button_handler_yes(GtkButton *button, gpointer data)
+{
+  result_t *result = (result_t *)data;
+  result->result = RESULT_YES;
+  gtk_widget_destroy(result->window);
+  gtk_main_quit();
+}
+
+gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *markup, const char *no_text,
+                                              const char *yes_text)
+{
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+  gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
+  gtk_window_set_title(GTK_WINDOW(window), title);
+  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_widget_set_margin_start(vbox, 10);
+  gtk_widget_set_margin_end(vbox, 10);
+  gtk_widget_set_margin_top(vbox, 7);
+  gtk_widget_set_margin_bottom(vbox, 5);
+  gtk_container_add(GTK_CONTAINER(window), vbox);
+
+  GtkWidget *label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_widget_set_margin_top(hbox, 10);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+  result_t result = {.result = RESULT_NONE, .window = window};
+
+  GtkWidget *button = gtk_button_new_with_label(no_text);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_no), &result);
+  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+  button = gtk_button_new_with_label(yes_text);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_yes), &result);
+  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+  gtk_widget_show_all(window);
+  gtk_main();
+
+  return result.result == RESULT_YES;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

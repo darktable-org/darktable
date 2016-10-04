@@ -69,14 +69,27 @@ if(${VALIDATE_DESKTOP_FILE})
 endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
 
-add_custom_command(
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
-		SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
-		COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
-		MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
-		DEPENDS ${PO_FILES}
-)
+if(${VALIDATE_APPDATA_FILE})
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    COMMAND ${appstream_util_BIN} validate ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    DEPENDS ${PO_FILES}
+  )
+else()
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    DEPENDS ${PO_FILES}
+  )
+endif()
+
 add_custom_target(darktable.appdata_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml)
+
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/appdata)
 
 #
@@ -93,6 +106,15 @@ install(FILES gdb_commands DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
 #
 # Install noiseprofiles
 #
+if(${VALIDATE_JSON})
+  add_custom_target(
+    validate_noiseprofiles_json ALL
+    COMMAND ${jsonschema_BIN} -i ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    COMMENT "Checking validity of noiseprofiles.json"
+  )
+endif()
 install(FILES noiseprofiles.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
 
 #

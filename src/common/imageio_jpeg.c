@@ -741,7 +741,8 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  img->bpp = 4 * sizeof(float);
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {

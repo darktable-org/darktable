@@ -2371,6 +2371,10 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   }
 
   // now display profiling info
+  dt_print(DT_DEBUG_OPENCL,
+           "[opencl_profiling] profiling device %d ('%s'):\n", devid,
+           cl->dev[devid].name);
+
   float total = 0.0f;
   for(int i = 1; i < items; i++)
   {

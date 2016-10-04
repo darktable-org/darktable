@@ -155,7 +155,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib, _lib_lo
   w = gtk_label_new(place->name);
   gtk_label_set_line_wrap(GTK_LABEL(w), TRUE);
   gtk_widget_set_halign(w, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(w), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(w), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
 
   /* add location coord */

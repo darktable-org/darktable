@@ -1705,7 +1705,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(d->scroll_window, -1, DT_PIXEL_APPLY_DPI(300));
   gtk_container_add(GTK_CONTAINER(d->scroll_window), d->treeview);
   // gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->treeview),TREE_USED_TEXT);
-  g_object_set(d->treeview, "has-tooltip", TRUE, NULL);
+  g_object_set(d->treeview, "has-tooltip", TRUE, (gchar *)0);
   g_signal_connect(d->treeview, "query-tooltip", G_CALLBACK(_tree_query_tooltip), NULL);
 
   g_signal_connect(selection, "changed", G_CALLBACK(_tree_selection_change), d);

@@ -459,7 +459,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 
   label = gtk_label_new(_("flickr user"));
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
@@ -530,7 +530,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
 
   label = gtk_label_new(_("title"));
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
   ui->title_entry = GTK_ENTRY(gtk_entry_new()); // Album title
@@ -545,7 +545,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
 
   label = gtk_label_new(_("summary"));
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
   ui->summary_entry = GTK_ENTRY(gtk_entry_new()); // Album summary

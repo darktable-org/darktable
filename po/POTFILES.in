@@ -7,6 +7,7 @@ src/common/colorspaces.c
 src/common/cups_print.c
 src/common/darktable.c
 src/common/darktable.h
+src/common/database.c
 src/common/debug.h
 src/common/film.c
 src/common/history.c
@@ -115,6 +116,7 @@ src/iop/lowlight.c
 src/iop/lowpass.c
 src/iop/monochrome.c
 src/iop/nlmeans.c
+src/iop/rawoverexposed.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
