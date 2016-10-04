@@ -303,8 +303,8 @@ static void _update_collected_images(dt_view_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL,
                         NULL);
   // reset autoincrement. need in star_key_accel_callback
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.sqlite_sequence where name='collected_images'", NULL, NULL,
-                        NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.sqlite_sequence WHERE "
+                                                       "name='collected_images'", NULL, NULL, NULL);
 
   // 2. insert collected images into the temporary table
 
@@ -355,7 +355,7 @@ static void _update_collected_images(dt_view_t *self)
 
   /* prepare a new main query statement for collection */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT imgid FROM memory.collected_images ORDER by rowid LIMIT ?1, ?2", -1,
+                              "SELECT imgid FROM memory.collected_images ORDER BY rowid LIMIT ?1, ?2", -1,
                               &lib->statements.main_query, NULL);
 
   dt_control_queue_redraw_center();
@@ -427,10 +427,10 @@ void init(dt_view_t *self)
   _view_lighttable_collection_listener_callback(NULL, self);
 
   /* initialize reusable sql statements */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid != ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.selected_images WHERE imgid != ?1",
                               -1, &lib->statements.delete_except_arg, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select id from images where group_id = ?1 and id != ?2", -1,
+                              "SELECT id FROM main.images WHERE group_id = ?1 AND id != ?2", -1,
                               &lib->statements.is_grouped, NULL); // TODO: only check in displayed images?
 }
 
@@ -1221,7 +1221,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     /* If only one image is selected, scroll through all known images. */
     sqlite3_stmt *stmt;
     int sel_img_count = 0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select COUNT(*) from selected_images", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.selected_images", -1,
                                 &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW) sel_img_count = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -1238,7 +1238,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
                                             * so there's no need to match against the selection */
                                            "" :
                                            /* Limit the matches to the current selection */
-                                           "INNER JOIN selected_images AS sel ON col.imgid = sel.imgid",
+                                           "INNER JOIN main.selected_images AS sel ON col.imgid = sel.imgid",
                                          (offset >= 0) ? ">" : "<",
                                          lib->full_preview_rowid,
                                          /* Direction of our navigation -- when showing for the first time,
@@ -1543,7 +1543,7 @@ static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acc
     sqlite3_stmt *stmt;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT MIN(imgid) FROM selected_images", -1, &stmt, NULL);
+                                "SELECT MIN(imgid) FROM main.selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       sqlite3_stmt *inner_stmt;
@@ -1888,8 +1888,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           sqlite3_stmt *stmt;
           DT_DEBUG_SQLITE3_PREPARE_V2(
               dt_database_get(darktable.db),
-              "insert or ignore into selected_images select id from images where group_id = ?1", -1, &stmt,
-              NULL);
+              "INSERT OR IGNORE INTO main.selected_images SELECT id FROM main.images WHERE group_id = ?1",
+              -1, &stmt, NULL);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
           sqlite3_step(stmt);
           sqlite3_finalize(stmt);
@@ -2331,6 +2331,9 @@ static void display_intent_callback(GtkWidget *combo, gpointer user_data)
   if(new_intent != darktable.color_profiles->display_intent)
   {
     darktable.color_profiles->display_intent = new_intent;
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+    dt_colorspaces_update_display_transforms();
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
     dt_control_queue_redraw_center();
   }
 }
@@ -2370,24 +2373,6 @@ end:
     dt_colorspaces_update_display_transforms();
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
     dt_control_queue_redraw_center();
-  }
-}
-
-// FIXME: turning off lcms2 in prefs hides the widget but leaves the window sized like before -> ugly-ish
-static void _preference_changed(gpointer instance, gpointer user_data)
-{
-  GtkWidget *display_intent = GTK_WIDGET(user_data);
-
-  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-  if(force_lcms2)
-  {
-    gtk_widget_set_no_show_all(display_intent, FALSE);
-    gtk_widget_set_visible(display_intent, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_no_show_all(display_intent, TRUE);
-    gtk_widget_set_visible(display_intent, FALSE);
   }
 }
 
@@ -2434,7 +2419,6 @@ void gui_init(dt_view_t *self)
   char confdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
-  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
   GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display_intent, NULL, _("display intent"));
@@ -2443,12 +2427,6 @@ void gui_init(dt_view_t *self)
   dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
-
-  if(!force_lcms2)
-  {
-    gtk_widget_set_no_show_all(display_intent, TRUE);
-    gtk_widget_set_visible(display_intent, FALSE);
-  }
 
   GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display_profile, NULL, _("display profile"));
@@ -2476,10 +2454,6 @@ void gui_init(dt_view_t *self)
 
   g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), NULL);
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);
-
-  // update the gui when the preferences changed (i.e. show intent when using lcms2)
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                            G_CALLBACK(_preference_changed), (gpointer)display_intent);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

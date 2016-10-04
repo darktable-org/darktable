@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.8.5)
-
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(CMAKE_C_VISIBILITY_PRESET hidden)
@@ -77,6 +75,7 @@ add_iop(monochrome "monochrome.c" DEFAULT_VISIBLE)
 add_iop(basecurve "basecurve.c" DEFAULT_VISIBLE)
 add_iop(colorzones "colorzones.c")
 add_iop(highlights "highlights.c")
+add_iop(rawoverexposed "rawoverexposed.c")
 add_iop(velvia "velvia.c")
 add_iop(vignette "vignette.c" DEFAULT_VISIBLE)
 add_iop(splittoning "splittoning.c")

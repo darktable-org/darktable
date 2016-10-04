@@ -83,7 +83,7 @@ static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerato
 
   sqlite3_stmt *stmt;
   /* get a list of images in filmroll */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from images where film_id = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE film_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
 
@@ -201,7 +201,7 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   GList *t = params->index;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1", -1,
+                              "UPDATE main.images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1", -1,
                               &stmt, NULL);
   while(t)
   {
@@ -304,7 +304,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   if(!d->pixels)
   {
     d->first_imgid = imgid;
-    d->first_filter = image.filters;
+    d->first_filter = image.buf_dsc.filters;
     // sensor layout is just passed on to be written to dng.
     // we offset it to the crop of the image here, so we don't
     // need to load in the FCxtrans dependency into the dng writer.
@@ -314,7 +314,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     roi.x = image.crop_x;
     roi.y = image.crop_y;
     for(int j=0;j<6;j++)
-      for(int i=0;i<6;i++) d->first_xtrans[j][i] = FCxtrans(j, i, &roi, image.xtrans);
+      for(int i = 0; i < 6; i++) d->first_xtrans[j][i] = FCxtrans(j, i, &roi, image.buf_dsc.xtrans);
     d->pixels = calloc(datai->width * datai->height, sizeof(float));
     d->weight = calloc(datai->width * datai->height, sizeof(float));
     d->wd = datai->width;
@@ -322,13 +322,13 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->orientation = image.orientation;
   }
 
-  if(image.filters == 0u || image.bpp != sizeof(uint16_t))
+  if(image.buf_dsc.filters == 0u || image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16)
   {
     dt_control_log(_("exposure bracketing only works on raw images."));
     d->abort = TRUE;
     return 1;
   }
-  else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != image.filters
+  else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != image.buf_dsc.filters
           || d->orientation != image.orientation)
   {
     dt_control_log(_("images have to be of same size and orientation!"));
@@ -468,17 +468,18 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   }
 
   // output hdr as digital negative with exif data.
-  uint8_t exif[65535];
+  uint8_t *exif = NULL;
   char pathname[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
   dt_image_full_path(d.first_imgid, pathname, sizeof(pathname), &from_cache);
 
   // last param is dng mode
-  const int exif_len = dt_exif_read_blob(exif, pathname, d.first_imgid, 0, d.wd, d.ht, 1);
+  const int exif_len = dt_exif_read_blob(&exif, pathname, d.first_imgid, 0, d.wd, d.ht, 1);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
   dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, (const uint8_t (*)[6])d.first_xtrans, 1.0f);
+  free(exif);
 
   dt_control_job_set_progress(job, 1.0);
 
@@ -575,7 +576,7 @@ static void _set_remove_flag(char *imgs)
 {
   sqlite3_stmt *stmt = NULL;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE images SET flags = (flags|?1) WHERE id IN (?2)", -1, &stmt, NULL);
+                              "UPDATE main.images SET flags = (flags|?1) WHERE id IN (?2)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_REMOVE);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
   sqlite3_step(stmt);
@@ -588,8 +589,8 @@ static GList *_get_full_pathname(char *imgs)
   GList *list = NULL;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT folder || '/' || filename FROM "
-                                                             "images, film_rolls WHERE images.film_id = "
-                                                             "film_rolls.id AND images.id IN (?1)",
+                                                             "main.images i, main.film_rolls f "
+                                                             "ON i.film_id = f.id WHERE i.id IN (?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgs, -1, SQLITE_STATIC);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -615,7 +616,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   // check that we can safely remove the image
   gboolean remove_ok = TRUE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM images WHERE id IN (?2) AND flags&?1=?1", -1, &stmt, NULL);
+                              "SELECT id FROM main.images WHERE id IN (?2) AND flags&?1=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_LOCAL_COPY);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
 
@@ -867,9 +868,9 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   free(imgs);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select count(id) from images where filename in (select filename from images "
-                              "where id = ?1) and film_id in (select film_id from images where id = ?1)",
-                              -1, &stmt, NULL);
+                              "SELECT COUNT(*) FROM main.images WHERE filename IN (SELECT filename FROM "
+                              "main.images WHERE id = ?1) AND film_id IN (SELECT film_id FROM main.images WHERE "
+                              "id = ?1)", -1, &stmt, NULL);
   while(t)
   {
     enum _dt_delete_status delete_status = _DT_DELETE_STATUS_UNKNOWN;

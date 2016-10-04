@@ -74,6 +74,13 @@ typedef struct dt_iop_rawprepare_data_t
   int32_t x, y, width, height; // crop, now unused, for future expansion
   float sub[4];
   float div[4];
+
+  // cached for dt_iop_buffer_dsc_t::rawprepare
+  struct
+  {
+    uint16_t raw_black_level;
+    uint16_t raw_white_point;
+  } rawprepare;
 } dt_iop_rawprepare_data_t;
 
 typedef struct dt_iop_rawprepare_global_data_t
@@ -144,28 +151,6 @@ void connect_key_accels(dt_iop_module_t *self)
   }
 }
 
-void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in,
-                     const dt_iop_roi_t *const roi_out, dt_develop_tiling_t *tiling)
-{
-  float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
-
-  tiling->factor = 1.0f + ioratio; // in + out, no temp
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 0;
-  tiling->xalign = 2; // Bayer pattern
-  tiling->yalign = 2; // Bayer pattern
-  return;
-}
-
-int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW))
-    return sizeof(float);
-  else
-    return 4 * sizeof(float);
-}
-
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
@@ -230,6 +215,17 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->height += (int)roundf((float)y * scale);
 }
 
+void output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
+                   dt_iop_buffer_dsc_t *dsc)
+{
+  default_output_format(self, pipe, piece, dsc);
+
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  dsc->rawprepare.raw_black_level = d->rawprepare.raw_black_level;
+  dsc->rawprepare.raw_white_point = d->rawprepare.raw_white_point;
+}
+
 static void adjust_xtrans_filters(dt_dev_pixelpipe_t *pipe,
                                   uint32_t crop_x, uint32_t crop_y)
 {
@@ -237,7 +233,7 @@ static void adjust_xtrans_filters(dt_dev_pixelpipe_t *pipe,
   {
     for(int j = 0; j < 6; ++j)
     {
-      pipe->xtrans[j][i] = pipe->image.xtrans[(j + crop_y) % 6][(i + crop_x) % 6];
+      pipe->dsc.xtrans[j][i] = pipe->image.buf_dsc.xtrans[(j + crop_y) % 6][(i + crop_x) % 6];
     }
   }
 }
@@ -259,7 +255,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
 
     const uint16_t *const in = (const uint16_t *const)ivoid;
@@ -280,7 +276,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.filters, csx, csy);
+    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
   }
   else
@@ -310,6 +306,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
   }
+
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
 
 #if defined(__SSE2__)
@@ -324,7 +322,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -376,11 +374,11 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
       for(; i < roi_out->width; i++, in++, out++)
       {
         const int id = BL(roi_out, d, j, i);
-        *out = MAX(0.0f, ((float)(*in)) - d->sub[id]) / d->div[id];
+        *out = (((float)(*in)) - d->sub[id]) / d->div[id];
       }
     }
 
-    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.filters, csx, csy);
+    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
   }
   else
@@ -407,6 +405,9 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
       }
     }
   }
+
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
+
   _mm_sfence();
 }
 #endif
@@ -425,7 +426,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   int kernel = -1;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
+  if(piece->pipe->dsc.filters)
   {
     kernel = gd->kernel_rawprepare_1f;
   }
@@ -463,11 +464,13 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
+  if(piece->pipe->dsc.filters)
   {
-    piece->pipe->filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.filters, csx, csy);
+    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
   }
+
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 
   return TRUE;
 
@@ -490,7 +493,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->width = p->crop.named.width;
   d->height = p->crop.named.height;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->filters)
+  if(piece->pipe->dsc.filters)
   {
     const float white = (float)p->raw_white_point;
 
@@ -517,7 +520,17 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
     }
   }
 
-  if(!dt_image_is_raw(&piece->pipe->image) || piece->pipe->image.bpp == sizeof(float)) piece->enabled = 0;
+  float black = 0.0f;
+  for(uint8_t i = 0; i < 4; i++)
+  {
+    black += (float)p->raw_black_level_separate[i];
+  }
+  d->rawprepare.raw_black_level = (uint16_t)(black / 4.0f);
+  d->rawprepare.raw_white_point = p->raw_white_point;
+
+  if(!dt_image_is_raw(&piece->pipe->image)
+     || (piece->pipe->image.buf_dsc.channels == 1 && piece->pipe->image.buf_dsc.datatype == TYPE_FLOAT))
+    piece->enabled = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -551,7 +564,8 @@ void reload_defaults(dt_iop_module_t *self)
                                      .raw_black_level_separate[3] = image->raw_black_level_separate[3],
                                      .raw_white_point = image->raw_white_point };
 
-  self->default_enabled = dt_image_is_raw(image) && image->bpp != sizeof(float);
+  self->default_enabled
+      = dt_image_is_raw(image) && !(image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT);
 
 end:
   memcpy(self->params, &tmp, sizeof(dt_iop_rawprepare_params_t));
@@ -575,7 +589,8 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->hide_enable_button = 1;
-  self->default_enabled = dt_image_is_raw(image) && image->bpp != sizeof(float);
+  self->default_enabled
+      = dt_image_is_raw(image) && !(image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT);
   self->priority = 10; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_rawprepare_params_t);
   self->gui_data = NULL;

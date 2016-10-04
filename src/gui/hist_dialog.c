@@ -163,7 +163,7 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   /* name */
   renderer = gtk_cell_renderer_text_new();
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_NAME);
-  g_object_set(renderer, "xalign", 0.0, NULL);
+  g_object_set(renderer, "xalign", 0.0, (gchar *)0);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("item"), renderer, "text",
                                               DT_HIST_ITEMS_COL_NAME, NULL);
 

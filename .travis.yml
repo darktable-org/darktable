@@ -1,0 +1,46 @@
+#    This file is part of darktable.
+#    copyright (c) 2016 Roman Lebedev.
+#
+#    darktable is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    darktable is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+
+sudo: required
+
+notifications:
+  irc:
+    channels: "chat.freenode.net#darktable"
+    skip_join: true
+  email:
+    recipients:
+      - darktable-ci@lists.darktable.org
+    on_success: always
+    on_failure: always
+
+services:
+  - docker
+
+before_install:
+#  - docker build -t darktable/darktable .
+  - docker pull darktable/darktable
+
+env:
+  global:
+    - SRC_DIR=/build/darktable
+    - BUILD_DIR=/build/darktable-build
+    - CFLAGS=-pipe CXXFLAGS=-pipe
+  matrix:
+    - CC=gcc CXX=g++
+    - CC=clang-3.8 CXX=clang++-3.8
+
+script:
+  - docker run -v $TRAVIS_BUILD_DIR:$SRC_DIR:ro -w $BUILD_DIR -e CC -e CXX -e CFLAGS -e CXXFLAGS -e SRC_DIR -e BUILD_DIR darktable/darktable sh -c "$SRC_DIR/ci-script.sh"

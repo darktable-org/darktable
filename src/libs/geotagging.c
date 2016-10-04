@@ -289,7 +289,7 @@ static void _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_
           int32_t imgid = -1;
           sqlite3_stmt *stmt;
           DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                      "select imgid from selected_images order by imgid asc limit 1", -1,
+                                      "SELECT imgid FROM main.selected_images ORDER BY imgid ASC LIMIT 1", -1,
                                       &stmt, NULL);
           if(sqlite3_step(stmt) == SQLITE_ROW)
             imgid = sqlite3_column_int(stmt, 0);
