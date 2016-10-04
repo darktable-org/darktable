@@ -104,9 +104,9 @@ gpointer _camera_get_job(const dt_camctl_t *c, const dt_camera_t *camera);
 static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job);
 
 /** Dispatch functions for listener interfaces */
-const char *_dispatch_request_image_path(const dt_camctl_t *c, time_t exif_time, const dt_camera_t *camera);
+const char *_dispatch_request_image_path(const dt_camctl_t *c, time_t *exif_time, const dt_camera_t *camera);
 const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *filename,
-                                             time_t exif_time, const dt_camera_t *camera);
+                                             time_t *exif_time, const dt_camera_t *camera);
 void _dispatch_camera_image_downloaded(const dt_camctl_t *c, const dt_camera_t *camera, const char *filename);
 void _dispatch_camera_connected(const dt_camctl_t *c, const dt_camera_t *camera);
 void _dispatch_camera_disconnected(const dt_camctl_t *c, const dt_camera_t *camera);
@@ -286,10 +286,10 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       if((res = gp_camera_capture(camera->gpcam, GP_CAPTURE_IMAGE, &fp, c->gpcontext)) == GP_OK)
       {
         CameraFile *destination;
-        const char *output_path = _dispatch_request_image_path(c, 0, camera);
+        const char *output_path = _dispatch_request_image_path(c, NULL, camera);
         if(!output_path) output_path = "/tmp";
 
-        const char *fname = _dispatch_request_image_filename(c, fp.name, 0, cam);
+        const char *fname = _dispatch_request_image_filename(c, fp.name, NULL, cam);
         if(!fname) break;
 
         char *output = g_build_filename(output_path, fname, (char *)NULL);
@@ -872,24 +872,6 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
   return TRUE;
 }
 
-static time_t _get_exif_time_from_data(uint8_t* data, unsigned long size)
-{
-  dt_image_t img;
-  dt_exif_read_from_blob(&img, data, size);
-
-  struct tm exif_tm= {0};
-  sscanf(img.exif_datetime_taken,"%d:%d:%d %d:%d:%d",
-             &exif_tm.tm_year,
-             &exif_tm.tm_mon,
-             &exif_tm.tm_mday,
-             &exif_tm.tm_hour,
-             &exif_tm.tm_min,
-             &exif_tm.tm_sec);
-  exif_tm.tm_year -= 1900;
-  exif_tm.tm_mon--;
-  return mktime(&exif_tm);
-}
-
 void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *images)
 {
   // dt_camctl_t *camctl=(dt_camctl_t *)c;
@@ -914,23 +896,28 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
 
       CameraFile* camfile;
       int res = GP_OK;
-      uint8_t* data;
+      const uint8_t* data = NULL;
       size_t size;
 
       gp_file_new(&camfile);
       if ((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK) {
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] import failed: %s\n", gp_result_as_string(res));
+        gp_file_free(camfile);
         continue;
       }
       if ((res = gp_file_get_data_and_size(camfile, (const char**)&data, &size)) < GP_OK) {
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] import failed: %s\n", gp_result_as_string(res));
+        gp_file_free(camfile);
         continue;
       }
 
-      time_t exif_time = _get_exif_time_from_data(data, size);
+      time_t exif_time;
+      gboolean have_exif_time = dt_exif_get_datetime_taken(data, size, &exif_time);
 
-      const char *output_path=_dispatch_request_image_path(c, exif_time, cam);
-      const char *fname = _dispatch_request_image_filename(c, filename, exif_time, cam);
+      gp_file_free(camfile);
+
+      const char *output_path = _dispatch_request_image_path(c, have_exif_time ? &exif_time : NULL, cam);
+      const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
       if(!fname) continue;
 
       char *output = g_build_filename(output_path, fname, (char *)NULL);
@@ -1437,9 +1424,9 @@ void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera file added event\n");
         CameraFilePath *fp = (CameraFilePath *)data;
         CameraFile *destination;
-        const char *output_path = _dispatch_request_image_path(c, 0, cam);
+        const char *output_path = _dispatch_request_image_path(c, NULL, cam);
         if(!output_path) output_path = "/tmp";
-        const char *fname = _dispatch_request_image_filename(c, fp->name, 0, cam);
+        const char *fname = _dispatch_request_image_filename(c, fp->name, NULL, cam);
         if(!fname) fname = fp->name;
 
         char *output = g_build_filename(output_path, fname, (char *)NULL);
@@ -1564,7 +1551,7 @@ void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t *camer
 }
 
 const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *filename,
-                                             time_t exif_time, const dt_camera_t *camera)
+                                             time_t *exif_time, const dt_camera_t *camera)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   GList *listener;
@@ -1582,7 +1569,7 @@ const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *f
 }
 
 
-const char *_dispatch_request_image_path(const dt_camctl_t *c, time_t exif_time, const dt_camera_t *camera)
+const char *_dispatch_request_image_path(const dt_camctl_t *c, time_t *exif_time, const dt_camera_t *camera)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   GList *listener;

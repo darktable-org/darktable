@@ -496,6 +496,23 @@ static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::co
 }
 #define FIND_EXIF_TAG(key) dt_exif_read_exif_tag(exifData, &pos, key)
 
+static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos,
+                                 char *exif_datetime_taken)
+{
+  if(FIND_EXIF_TAG("Exif.Image.DateTimeOriginal"))
+  {
+    dt_strlcpy_to_utf8(exif_datetime_taken, 20, pos, exifData);
+  }
+  else if(FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
+  {
+    dt_strlcpy_to_utf8(exif_datetime_taken, 20, pos, exifData);
+  }
+  else
+  {
+    *exif_datetime_taken = '\0';
+  }
+}
+
 static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 {
   try
@@ -777,14 +794,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 #endif
 
-    if(FIND_EXIF_TAG("Exif.Image.DateTimeOriginal"))
-    {
-      dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
-    }
-    else if(FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-    {
-      dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
-    }
+    _find_datetime_taken(exifData, pos, img->exif_datetime_taken);
 
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
@@ -950,6 +960,25 @@ static void dt_exif_apply_global_overwrites(dt_image_t *img)
   }
 }
 
+// TODO: can this blob also contain xmp and iptc data?
+int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
+{
+  try
+  {
+    Exiv2::ExifData exifData;
+    Exiv2::ExifParser::decode(exifData, blob, size);
+    bool res = dt_exif_read_exif_data(img, exifData);
+    dt_exif_apply_global_overwrites(img);
+    return res ? 0 : 1;
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << img->filename << ": " << s << std::endl;
+    return 1;
+  }
+}
+
 /**
  * Get the largest possible thumbnail from the image
  */
@@ -1001,64 +1030,6 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
   }
 }
 
-#ifdef __APPLE__
-static int _dt_exif_read(dt_image_t *img, Exiv2::Image::AutoPtr &image)
-#else
-static int _dt_exif_read(dt_image_t *img, std::unique_ptr<Exiv2::Image> &image)
-#endif
-{
-    assert(image.get() != 0);
-    image->readMetadata();
-    bool res = true;
-
-    // EXIF metadata
-    Exiv2::ExifData &exifData = image->exifData();
-    if(!exifData.empty())
-      res = dt_exif_read_exif_data(img, exifData);
-    else
-      img->exif_inited = 1;
-
-    // IPTC metadata.
-    Exiv2::IptcData &iptcData = image->iptcData();
-    if(!iptcData.empty())
-      res = dt_exif_read_iptc_data(img, iptcData) && res;
-
-    // XMP metadata
-    Exiv2::XmpData &xmpData = image->xmpData();
-    if(!xmpData.empty()) res = dt_exif_read_xmp_data(img, xmpData, -1, true) && res;
-
-    // Initialize size - don't wait for full raw to be loaded to get this
-    // information. If use_embedded_thumbnail is set, it will take a
-    // change in development history to have this information
-    img->height = image->pixelHeight();
-    img->width = image->pixelWidth();
-
-    dt_exif_apply_global_overwrites(img);
-
-    return res ? 0 : 1;
-}
-
-// TODO: can this blob also contain xmp and iptc data?
-int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
-{
-  try
-  {
-#ifdef __APPLE__
-    Exiv2::Image::AutoPtr image;
-#else
-    std::unique_ptr<Exiv2::Image> image;
-#endif
-    image = Exiv2::ImageFactory::open(blob, size);
-    return _dt_exif_read(img, image);
-  }
-  catch (Exiv2::AnyError &e)
-  {
-    std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
-    return 1;
-  }
-}
-
 /** read the metadata of an image.
  * XMP data trumps IPTC data trumps EXIF data
  */
@@ -1076,13 +1047,36 @@ int dt_exif_read(dt_image_t *img, const char *path)
 
   try
   {
-#ifdef __APPLE__
-    Exiv2::Image::AutoPtr image;
-#else
-    std::unique_ptr<Exiv2::Image> image;
-#endif
-    image = Exiv2::ImageFactory::open(path);
-    return _dt_exif_read(img, image);
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(path));
+    assert(image.get() != 0);
+    image->readMetadata();
+    bool res = true;
+
+    // EXIF metadata
+    Exiv2::ExifData &exifData = image->exifData();
+    if(!exifData.empty())
+      res = dt_exif_read_exif_data(img, exifData);
+    else
+      img->exif_inited = 1;
+
+    // these get overwritten by IPTC and XMP. is that how it should work?
+    dt_exif_apply_global_overwrites(img);
+
+    // IPTC metadata.
+    Exiv2::IptcData &iptcData = image->iptcData();
+    if(!iptcData.empty()) res = dt_exif_read_iptc_data(img, iptcData) && res;
+
+    // XMP metadata
+    Exiv2::XmpData &xmpData = image->xmpData();
+    if(!xmpData.empty()) res = dt_exif_read_xmp_data(img, xmpData, -1, true) && res;
+
+    // Initialize size - don't wait for full raw to be loaded to get this
+    // information. If use_embedded_thumbnail is set, it will take a
+    // change in development history to have this information
+    img->height = image->pixelHeight();
+    img->width = image->pixelWidth();
+
+    return res ? 0 : 1;
   }
   catch(Exiv2::AnyError &e)
   {
@@ -2709,6 +2703,46 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
     std::string s(e.what());
     std::cerr << "[exiv2] " << s << std::endl;
     return DT_COLORSPACE_DISPLAY;
+  }
+}
+
+gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *datetime_taken)
+{
+  try
+  {
+    Exiv2::ExifData::const_iterator pos;
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(data, size));
+    image->readMetadata();
+    Exiv2::ExifData &exifData = image->exifData();
+
+    char exif_datetime_taken[20];
+    _find_datetime_taken(exifData, pos, exif_datetime_taken);
+
+    if(*exif_datetime_taken)
+    {
+      struct tm exif_tm= {0};
+      if(sscanf(exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+        &exif_tm.tm_year,
+        &exif_tm.tm_mon,
+        &exif_tm.tm_mday,
+        &exif_tm.tm_hour,
+        &exif_tm.tm_min,
+        &exif_tm.tm_sec) == 6)
+      {
+        exif_tm.tm_year -= 1900;
+        exif_tm.tm_mon--;
+        *datetime_taken = mktime(&exif_tm);
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return FALSE;
   }
 }
 
