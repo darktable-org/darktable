@@ -42,6 +42,7 @@ struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 struct dt_iop_roi_t;
 struct dt_develop_tiling_t;
+struct dt_iop_buffer_dsc_t;
 
 #ifndef DT_IOP_PARAMS_T
 #define DT_IOP_PARAMS_T
@@ -76,9 +77,13 @@ const char *description();
 int operation_tags();
 int operation_tags_filter();
 
-/** how many bytes per pixel in the output. */
-int output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-               struct dt_dev_pixelpipe_iop_t *piece);
+/** what do the iop want as an input? */
+void input_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                  struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
+/** what will it output? */
+void output_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                   struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
+
 /** report back info for tiling: memory usage and overlap. Memory usage: factor * input_size + overhead */
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,

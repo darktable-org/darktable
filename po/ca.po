@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-30 13:42+0200\n"
-"PO-Revision-Date: 2016-03-30 20:21+0200\n"
+"POT-Creation-Date: 2016-09-28 12:11+0200\n"
+"PO-Revision-Date: 2016-09-28 12:37+0200\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Josep Vicenç Moragues Pastor <josepvm@arrakis.es>\n"
 "Language: ca\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Poedit 1.8.4\n"
+"X-Generator: Poedit 1.8.7.1\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: .\n"
 
@@ -33,7 +33,7 @@ msgstr "amplada dels panells laterals en píxels"
 #: ../build/src/preferences_gen.h:1772 ../build/src/preferences_gen.h:2037
 #: ../build/src/preferences_gen.h:2177 ../build/src/preferences_gen.h:2362
 #: ../build/src/preferences_gen.h:2388 ../build/src/preferences_gen.h:2416
-#: ../src/lua/preferences.c:663
+#: ../src/lua/preferences.c:657
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "feu doble clic per reiniciar a `%d'"
@@ -67,9 +67,10 @@ msgstr "no emprar la vista prèvia JPG incrustada, sinó el raw a meitat de mida
 #: ../build/src/preferences_gen.h:2692 ../build/src/preferences_gen.h:2711
 #: ../build/src/preferences_gen.h:2734 ../build/src/preferences_gen.h:2753
 #: ../build/src/preferences_gen.h:2805 ../build/src/preferences_gen.h:2828
-#: ../build/src/preferences_gen.h:2851 ../src/lua/preferences.c:607
-#: ../src/lua/preferences.c:620 ../src/lua/preferences.c:632
-#: ../src/lua/preferences.c:643 ../src/lua/preferences.c:652
+#: ../build/src/preferences_gen.h:2851 ../src/lua/preferences.c:579
+#: ../src/lua/preferences.c:594 ../src/lua/preferences.c:606
+#: ../src/lua/preferences.c:618 ../src/lua/preferences.c:634
+#: ../src/lua/preferences.c:698
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "feu doble clic per reiniciar a `%s'"
@@ -894,52 +895,53 @@ msgstr ""
 "no s'han pogut obtenir paràmetres del mòdul de format, avortant "
 "exportació ..."
 
-#: ../src/common/collection.c:823 ../src/develop/lightroom.c:919
-#: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:448
-#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:1301
-#: ../src/libs/collect.c:955 ../src/libs/collect.c:956
-#: ../src/libs/collect.c:957
+#: ../src/common/collection.c:845 ../src/develop/lightroom.c:919
+#: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:448
+#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:1303
+#: ../src/libs/collect.c:954 ../src/libs/collect.c:955
+#: ../src/libs/collect.c:956 ../src/views/darkroom.c:1557
 msgid "red"
 msgstr "vermell"
 
-#: ../src/common/collection.c:825 ../src/develop/lightroom.c:921
-#: ../src/iop/temperature.c:1292 ../src/libs/collect.c:959
-#: ../src/libs/collect.c:960 ../src/libs/collect.c:961
+#: ../src/common/collection.c:847 ../src/develop/lightroom.c:921
+#: ../src/iop/temperature.c:1294 ../src/libs/collect.c:958
+#: ../src/libs/collect.c:959 ../src/libs/collect.c:960
 msgid "yellow"
 msgstr "groc"
 
-#: ../src/common/collection.c:827 ../src/develop/lightroom.c:923
-#: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:449
-#: ../src/iop/channelmixer.c:465 ../src/iop/temperature.c:1289
-#: ../src/iop/temperature.c:1302 ../src/libs/collect.c:963
-#: ../src/libs/collect.c:964 ../src/libs/collect.c:965
+#: ../src/common/collection.c:849 ../src/develop/lightroom.c:923
+#: ../src/iop/bilateral.cc:352 ../src/iop/channelmixer.c:449
+#: ../src/iop/channelmixer.c:465 ../src/iop/temperature.c:1291
+#: ../src/iop/temperature.c:1304 ../src/libs/collect.c:962
+#: ../src/libs/collect.c:963 ../src/libs/collect.c:964
+#: ../src/views/darkroom.c:1558
 msgid "green"
 msgstr "verd"
 
-#: ../src/common/collection.c:829 ../src/develop/lightroom.c:925
-#: ../src/iop/bilateral.cc:352 ../src/iop/channelmixer.c:450
-#: ../src/iop/channelmixer.c:471 ../src/iop/temperature.c:1303
-#: ../src/libs/collect.c:967 ../src/libs/collect.c:968
-#: ../src/libs/collect.c:969
+#: ../src/common/collection.c:851 ../src/develop/lightroom.c:925
+#: ../src/iop/bilateral.cc:353 ../src/iop/channelmixer.c:450
+#: ../src/iop/channelmixer.c:471 ../src/iop/temperature.c:1305
+#: ../src/libs/collect.c:966 ../src/libs/collect.c:967
+#: ../src/libs/collect.c:968 ../src/views/darkroom.c:1559
 msgid "blue"
 msgstr "blau"
 
-#: ../src/common/collection.c:831 ../src/libs/collect.c:971
-#: ../src/libs/collect.c:972 ../src/libs/collect.c:973
+#: ../src/common/collection.c:853 ../src/libs/collect.c:970
+#: ../src/libs/collect.c:971 ../src/libs/collect.c:972
 msgid "purple"
 msgstr "magenta"
 
-#: ../src/common/collection.c:840 ../src/libs/collect.c:933
-#: ../src/libs/collect.c:934 ../src/libs/collect.c:935
+#: ../src/common/collection.c:862 ../src/libs/collect.c:932
+#: ../src/libs/collect.c:933 ../src/libs/collect.c:934
 msgid "altered"
 msgstr "modificada"
 
-#: ../src/common/collection.c:846 ../src/libs/collect.c:944
-#: ../src/libs/collect.c:945 ../src/libs/collect.c:946
+#: ../src/common/collection.c:868 ../src/libs/collect.c:943
+#: ../src/libs/collect.c:944 ../src/libs/collect.c:945
 msgid "tagged"
 msgstr "etiquetat"
 
-#: ../src/common/collection.c:1189
+#: ../src/common/collection.c:1220
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -947,76 +949,76 @@ msgstr[0] "seleccionada %d imatge de %d de la col·lecció actual"
 msgstr[1] "seleccionades %d imatges de %d de la col·lecció actual"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1110 ../src/iop/colorin.c:1486
+#: ../src/common/colorspaces.c:1035 ../src/iop/colorin.c:1944
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1111 ../src/common/colorspaces.c:1253
-#: ../src/iop/colorin.c:1487 ../src/libs/print_settings.c:870
+#: ../src/common/colorspaces.c:1036 ../src/common/colorspaces.c:1178
+#: ../src/iop/colorin.c:1945 ../src/libs/print_settings.c:870
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
-#: ../src/common/colorspaces.c:1112 ../src/common/colorspaces.c:1258
-#: ../src/iop/colorin.c:1488
+#: ../src/common/colorspaces.c:1037 ../src/common/colorspaces.c:1183
+#: ../src/iop/colorin.c:1946
 msgid "linear Rec709 RGB"
 msgstr "lineal Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1113 ../src/common/colorspaces.c:1263
-#: ../src/iop/colorin.c:1489
+#: ../src/common/colorspaces.c:1038 ../src/common/colorspaces.c:1188
+#: ../src/iop/colorin.c:1947
 msgid "linear Rec2020 RGB"
 msgstr "lineal Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1114 ../src/common/colorspaces.c:1268
+#: ../src/common/colorspaces.c:1039 ../src/common/colorspaces.c:1193
 msgid "linear XYZ"
 msgstr "lineal XYZ"
 
-#: ../src/common/colorspaces.c:1115 ../src/common/colorspaces.c:1273
+#: ../src/common/colorspaces.c:1040 ../src/common/colorspaces.c:1199
 #: ../src/libs/colorpicker.c:541 ../src/libs/colorpicker.c:579
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1116 ../src/common/colorspaces.c:1278
+#: ../src/common/colorspaces.c:1041 ../src/common/colorspaces.c:1205
 msgid "linear infrared BGR"
 msgstr "BGR lineal infraroig"
 
-#: ../src/common/colorspaces.c:1117 ../src/common/colorspaces.c:1237
+#: ../src/common/colorspaces.c:1042 ../src/common/colorspaces.c:1162
 msgid "system display profile"
 msgstr "perf. pantalla del sistema"
 
-#: ../src/common/colorspaces.c:1118
+#: ../src/common/colorspaces.c:1043
 msgid "embedded ICC profile"
 msgstr "perfil ICC incrustat"
 
-#: ../src/common/colorspaces.c:1119
+#: ../src/common/colorspaces.c:1044
 msgid "embedded matrix"
 msgstr "matriu incrustada"
 
-#: ../src/common/colorspaces.c:1120
+#: ../src/common/colorspaces.c:1045
 msgid "standard color matrix"
 msgstr "matriu de color estàndard"
 
-#: ../src/common/colorspaces.c:1121
+#: ../src/common/colorspaces.c:1046
 msgid "enhanced color matrix"
 msgstr "matriu de color millorada"
 
-#: ../src/common/colorspaces.c:1122
+#: ../src/common/colorspaces.c:1047
 msgid "vendor color matrix"
 msgstr "matriu de color del fabricant"
 
-#: ../src/common/colorspaces.c:1123
+#: ../src/common/colorspaces.c:1048
 msgid "alternate color matrix"
 msgstr "matriu de color alternativa"
 
-#: ../src/common/colorspaces.c:1243
+#: ../src/common/colorspaces.c:1168
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (p.ex. JPG)"
 
-#: ../src/common/colorspaces.c:1248 ../src/libs/print_settings.c:863
+#: ../src/common/colorspaces.c:1173 ../src/libs/print_settings.c:863
 msgid "sRGB (web-safe)"
 msgstr "sRGB (per a web)"
 
-#: ../src/common/colorspaces.c:1283
+#: ../src/common/colorspaces.c:1210
 msgid "BRG (for testing)"
 msgstr "BRG (per proves)"
 
@@ -1035,38 +1037,53 @@ msgstr "s'ha produït un error en en imprimir la imatge %d a `%s'"
 msgid "printing image %d on `%s'"
 msgstr "imprimint la imatge %d a `%s'"
 
-#: ../src/common/darktable.c:327
+#: ../src/common/darktable.c:325
 #, c-format
 msgid "found strange path `%s'"
 msgstr "trobada una ruta estranya `%s' "
 
-#: ../src/common/darktable.c:344
+#: ../src/common/darktable.c:342
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "s'ha produït un error en carregar el directori `%s'"
 
-#: ../src/common/darktable.c:367
+#: ../src/common/darktable.c:365
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "el fitxer `%s' té un format desconegut!"
 
-#: ../src/common/darktable.c:380 ../src/libs/import.c:836
+#: ../src/common/darktable.c:378 ../src/libs/import.c:838
 #, c-format
 msgid "error loading file `%s'"
 msgstr "s'ha produït un error en carregar el fitxer `%s'"
 
-#: ../src/common/film.c:353
-msgid "no supported images were found to be imported"
-msgstr "no s'han trobat imatges compatibles per a ser importades"
+#: ../src/common/database.c:1150
+msgid "darktable - error opening database"
+msgstr "darktable - error en obrir la base de dades"
 
-#: ../src/common/film.c:407
-#, c-format
-msgid "importing %d image"
-msgid_plural "importing %d images"
-msgstr[0] "s'està important %d imatge"
-msgstr[1] "s'estan important %d imatges"
+#: ../src/common/database.c:1156
+msgid "an error has occured while trying to open the database from"
+msgstr "s'ha produït un error en obrir la base de dades des de"
 
-#: ../src/common/film.c:579
+#: ../src/common/database.c:1165
+msgid ""
+"it seems that the database is corrupt.\n"
+"do you want to close darktable now to manually restore\n"
+"the database from a backup or start with a new one?"
+msgstr ""
+"Sembla que la base de dades s'ha corromput.\n"
+"Voleu tancar el darktable per restaurar-la manualment\n"
+"des d'una còpia de seguretat, o engegar amb una de nova?"
+
+#: ../src/common/database.c:1175
+msgid "close darktable"
+msgstr "tanca el darktable"
+
+#: ../src/common/database.c:1179
+msgid "delete database"
+msgstr "esborrar la base de dades"
+
+#: ../src/common/film.c:350
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -1080,20 +1097,20 @@ msgstr ""
 "altra"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428
-#: ../src/common/history.c:444 ../src/common/styles.c:716
-#: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1818
-#: ../src/develop/develop.c:1313 ../src/iop/ashift.c:4167
+#: ../src/common/history.c:444 ../src/common/styles.c:718
+#: ../src/common/styles.c:722 ../src/develop/blend_gui.c:1818
+#: ../src/develop/develop.c:1333 ../src/iop/ashift.c:4386
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "actiu"
 
 #: ../src/common/history.c:425 ../src/common/history.c:428
-#: ../src/common/history.c:444 ../src/common/styles.c:716
-#: ../src/common/styles.c:720 ../src/develop/blend_gui.c:1600
-#: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1313
-#: ../src/imageio/format/exr.cc:351 ../src/imageio/format/j2k.c:671
-#: ../src/iop/ashift.c:4166 ../src/iop/ashift.c:4172 ../src/iop/colorin.c:1485
-#: ../src/iop/demosaic.c:3854 ../src/iop/vignette.c:1139
+#: ../src/common/history.c:444 ../src/common/styles.c:718
+#: ../src/common/styles.c:722 ../src/develop/blend_gui.c:1600
+#: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1333
+#: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
+#: ../src/iop/ashift.c:4385 ../src/iop/ashift.c:4391 ../src/iop/colorin.c:1943
+#: ../src/iop/demosaic.c:3872 ../src/iop/vignette.c:1139
 #: ../src/libs/history.c:149 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "inactiu"
@@ -1119,32 +1136,32 @@ msgstr ""
 msgid "orphaned image"
 msgstr "imatge òrfena"
 
-#: ../src/common/image.c:1343
+#: ../src/common/image.c:1349
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "no es pot crear una còpia local si el fitxer original no és accessible"
 
-#: ../src/common/image.c:1357
+#: ../src/common/image.c:1363
 msgid "cannot create local copy."
 msgstr "no es pot crear una còpia local"
 
-#: ../src/common/image.c:1415 ../src/control/jobs/control_jobs.c:626
+#: ../src/common/image.c:1429 ../src/control/jobs/control_jobs.c:636
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "no es pot eliminar una còpia local si el fitxer original no és accessible"
 
-#: ../src/common/image.c:1567
+#: ../src/common/image.c:1581
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "s'ha sincronitzat %d còpia local"
 msgstr[1] "s'han sincronitzat %d còpies locals"
 
-#: ../src/common/imageio.c:567 ../src/common/mipmap_cache.c:1043
+#: ../src/common/imageio.c:568 ../src/common/mipmap_cache.c:976
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "no es troba la imatge `%s'!"
 
-#: ../src/common/imageio.c:585
+#: ../src/common/imageio.c:586
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1153,34 +1170,28 @@ msgstr ""
 "no s'ha pogut assignar memòria per %s, si us plau reduïu els fils d'execució "
 "en exportar o adquiriu més memòria"
 
-#: ../src/common/imageio.c:586
+#: ../src/common/imageio.c:587
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "exporta miniatura"
 
-#: ../src/common/imageio.c:586
+#: ../src/common/imageio.c:587
 msgctxt "noun"
 msgid "export"
 msgstr "exporta"
 
-#: ../src/common/imageio.c:599
+#: ../src/common/imageio.c:600
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "no es troba l'estil '%s' per aplicar-lo en exportar."
 
-#: ../src/common/import_session.c:270
+#: ../src/common/import_session.c:272
 msgid ""
 "couldn't expand to a unique filename for session, please check your import "
 "session settings."
 msgstr ""
 "no s'ha pogut expandir a un sol nom d'arxiu per sessió, reviseu els "
 "ajustaments de sessions d'importació"
-
-#: ../src/common/mipmap_cache.c:1099 ../src/iop/demosaic.c:3630
-#: ../src/iop/invert.c:466
-#, c-format
-msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "no s'ha trobat la matriu de color`%s' per la imatge 4bayer!"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1191,7 +1202,7 @@ msgstr "de Poisson genèric"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "l'arxiu de perfil de soroll `%s' no és vàlid"
 
-#: ../src/common/pdf.h:89 ../src/iop/lens.c:1692
+#: ../src/common/pdf.h:89 ../src/iop/lens.c:1702
 #: ../src/libs/print_settings.c:1097
 msgid "mm"
 msgstr "mm"
@@ -1250,8 +1261,8 @@ msgstr "l'estil amb nom '%s' ja existeix"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:305 ../src/common/styles.c:309
 #: ../src/common/styles.c:389 ../src/common/styles.c:458
-#: ../src/common/styles.c:625 ../src/common/styles.c:1147
-#: ../src/common/styles.c:1166
+#: ../src/common/styles.c:626 ../src/common/styles.c:1149
+#: ../src/common/styles.c:1168
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1264,38 +1275,38 @@ msgstr "s'ha creat l'estil '%s'"
 
 #. fail :(
 #: ../src/common/styles.c:491 ../src/common/styles.c:508
-#: ../src/views/darkroom.c:459 ../src/views/print.c:271
+#: ../src/views/darkroom.c:451 ../src/views/print.c:271
 msgid "no image selected!"
 msgstr "no hi ha cap imatge seleccionada!"
 
-#: ../src/common/styles.c:803
+#: ../src/common/styles.c:805
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "no s'ha pogut sobreescriure el fitxer d'estil per a %s"
 
-#: ../src/common/styles.c:809
+#: ../src/common/styles.c:811
 #, c-format
 msgid "style file for %s exists"
 msgstr "existeix un fitxer d'estil per %s"
 
-#: ../src/common/styles.c:1038
+#: ../src/common/styles.c:1040
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "s'ha importat amb èxit l'estil %s"
 
 #: ../src/common/variables.c:248 ../src/common/variables.c:262
 #: ../src/common/variables.c:276 ../src/common/variables.c:290
-#: ../src/common/variables.c:304 ../src/iop/clipping.c:1564
-#: ../src/iop/clipping.c:1854 ../src/iop/clipping.c:1872
-#: ../src/iop/clipping.c:2014 ../src/iop/clipping.c:2041
-#: ../src/iop/colorreconstruction.c:1378 ../src/iop/lens.c:2028
-#: ../src/libs/export.c:486 ../src/libs/live_view.c:348
+#: ../src/common/variables.c:304 ../src/iop/basecurve.c:1322
+#: ../src/iop/clipping.c:1548 ../src/iop/clipping.c:1838
+#: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1996
+#: ../src/iop/clipping.c:2023 ../src/iop/colorreconstruction.c:1378
+#: ../src/iop/lens.c:2034 ../src/libs/export.c:486 ../src/libs/live_view.c:348
 #: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
 #: ../src/libs/print_settings.c:1008 ../src/libs/print_settings.c:1277
 msgid "none"
 msgstr "sense"
 
-#: ../src/common/opencl.c:578
+#: ../src/common/opencl.c:577
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "A causa d'una GPU lenta, s'ha desactivat l'acceleració via opencl"
@@ -1308,11 +1319,12 @@ msgstr "sobre el nivell del mar"
 msgid "below sea level"
 msgstr "sota el nivell del mar"
 
-#: ../src/common/utility.c:423 ../src/libs/metadata_view.c:550
+#: ../src/common/utility.c:423 ../src/iop/watermark.c:734
+#: ../src/libs/metadata_view.c:550
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:362
+#: ../src/control/control.c:368
 msgid "working.."
 msgstr "treballant..."
 
@@ -1352,197 +1364,220 @@ msgstr "torna a carregar els fitxers xmp seleccionats"
 msgid "overwrite selected xmp files"
 msgstr "sobreescriu els fitxers xmp seleccionats"
 
-#: ../src/control/jobs/camera_jobs.c:87
+#: ../src/control/jobs/camera_jobs.c:86
 #, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
 msgstr[0] "s'està capturant %d imatge"
 msgstr[1] "s'estan capturant %d imatges"
 
-#: ../src/control/jobs/camera_jobs.c:119
+#: ../src/control/jobs/camera_jobs.c:120
 msgid "please set your camera to manual mode first!"
 msgstr "ajusteu primer la vostra càmera a mode manual"
 
-#: ../src/control/jobs/camera_jobs.c:285
+#: ../src/control/jobs/camera_jobs.c:210
+msgid "capture images"
+msgstr "captura imatges"
+
+#: ../src/control/jobs/camera_jobs.c:281
 #, c-format
 msgid "%d/%d imported to %s"
 msgid_plural "%d/%d imported to %s"
 msgstr[0] "%d/%d importat a %s"
 msgstr[1] "%d/%d importats a %s"
 
-#: ../src/control/jobs/camera_jobs.c:322
+#: ../src/control/jobs/camera_jobs.c:318
 msgid "starting to import images from camera"
 msgstr "s'està iniciant la importació d'imatges de la càmera"
 
-#: ../src/control/jobs/camera_jobs.c:333
+#: ../src/control/jobs/camera_jobs.c:329
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "s'està important %d imatge de la càmera"
 msgstr[1] "s'estan important %d imatges de la càmera"
 
-#: ../src/control/jobs/control_jobs.c:134
+#: ../src/control/jobs/camera_jobs.c:383 ../src/gui/camera_import_dialog.c:204
+msgid "import images from camera"
+msgstr "importa imatges de la càmera"
+
+#: ../src/control/jobs/control_jobs.c:135
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "no s'ha pogut crear rodet pel directori destí, avortant acció de moure ... "
 
-#: ../src/control/jobs/control_jobs.c:313
-msgid "exposure bracketing only works on Bayer raw images."
-msgstr ""
-"les exposicions escalonades només funcionen en imatges raw amb matriu de "
-"Bayer"
+#: ../src/control/jobs/control_jobs.c:327
+msgid "exposure bracketing only works on raw images."
+msgstr "les exposicions escalonades només funcionen en imatges raw."
 
-#: ../src/control/jobs/control_jobs.c:320
+#: ../src/control/jobs/control_jobs.c:334
 msgid "images have to be of same size and orientation!"
 msgstr "les imatges han de ser d'igual mida i orientació"
 
-#: ../src/control/jobs/control_jobs.c:412
+#: ../src/control/jobs/control_jobs.c:426
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "s'està fusionant %d imatge"
 msgstr[1] "s'estan fusionant %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:473
+#: ../src/control/jobs/control_jobs.c:487
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "escriu l'HDR fusionat `%s'"
 
-#: ../src/control/jobs/control_jobs.c:500
+#: ../src/control/jobs/control_jobs.c:513
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "s'està duplicant %d imatge"
 msgstr[1] "s'estan duplicant %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:527
+#: ../src/control/jobs/control_jobs.c:539
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "s'està capgirant %d imatge"
 msgstr[1] "s'estan capgirant %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:602
+#: ../src/control/jobs/control_jobs.c:612
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "s'està suprimint %d imatge"
 msgstr[1] "s'estan suprimint %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:705
+#: ../src/control/jobs/control_jobs.c:713
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "no s'ha pogut enviar %s a la paperera%s%s"
 
-#: ../src/control/jobs/control_jobs.c:706
+#: ../src/control/jobs/control_jobs.c:714
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "no s'ha pogut eliminar físicament  %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:712
+#: ../src/control/jobs/control_jobs.c:720
 msgid "physically delete"
 msgstr "elimineu físicament"
 
-#: ../src/control/jobs/control_jobs.c:713
+#: ../src/control/jobs/control_jobs.c:721
 msgid "only remove from the collection"
 msgstr "només suprimeix de la col·lecció"
 
-#: ../src/control/jobs/control_jobs.c:714
+#: ../src/control/jobs/control_jobs.c:722
 msgid "skip to next file"
 msgstr "salta a l'arxiu següent"
 
-#: ../src/control/jobs/control_jobs.c:715
+#: ../src/control/jobs/control_jobs.c:723
 msgid "stop process"
 msgstr "atura el procés"
 
-#: ../src/control/jobs/control_jobs.c:720
+#: ../src/control/jobs/control_jobs.c:728
 msgid "trashing error"
 msgstr "error en esborrar"
 
-#: ../src/control/jobs/control_jobs.c:721
+#: ../src/control/jobs/control_jobs.c:729
 msgid "deletion error"
 msgstr "error en esborrar"
 
-#: ../src/control/jobs/control_jobs.c:842
+#: ../src/control/jobs/control_jobs.c:856
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "enviant a la paperera %d imatge"
 msgstr[1] "enviant a la paperera %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:844
+#: ../src/control/jobs/control_jobs.c:858
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "s'està eliminant %d imatge"
 msgstr[1] "s'estan eliminant %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:1006
+#: ../src/control/jobs/control_jobs.c:1019
 msgid "failed to parse GPX file"
 msgstr "no s'ha pogut reconèixer l'arxiu GPX"
 
-#: ../src/control/jobs/control_jobs.c:1066
+#: ../src/control/jobs/control_jobs.c:1079
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "aplicada localització GPX coincident a %d imatge"
 msgstr[1] "aplicada localització GPX coincident a %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:1081
+#: ../src/control/jobs/control_jobs.c:1094
 #, c-format
 msgid "moving %d image"
 msgstr "s'està movent %d imatge"
 
-#: ../src/control/jobs/control_jobs.c:1082
+#: ../src/control/jobs/control_jobs.c:1095
 #, c-format
 msgid "moving %d images"
 msgstr "s'estan movent %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:1087
+#: ../src/control/jobs/control_jobs.c:1100
 #, c-format
 msgid "copying %d image"
 msgstr "s'està copiant %d imatge"
 
-#: ../src/control/jobs/control_jobs.c:1088
+#: ../src/control/jobs/control_jobs.c:1101
 #, c-format
 msgid "copying %d images"
 msgstr "s'estan copiant %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:1104
+#: ../src/control/jobs/control_jobs.c:1117
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "s'està creant una còpia local de %d imatge"
 msgstr[1] "s'està creant una còpia local de %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:1107
+#: ../src/control/jobs/control_jobs.c:1120
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "s'està suprimint la còpia local de %d imatge"
 msgstr[1] "s'està suprimint la còpia local de %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:1187
+#: ../src/control/jobs/control_jobs.c:1194
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "s'està exportant %d imatge..."
 msgstr[1] "s'estan exportant %d imatges..."
 
-#: ../src/control/jobs/control_jobs.c:1189
+#: ../src/control/jobs/control_jobs.c:1196
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "s'està exportant %d imatge a %s"
 msgstr[1] "s'estan exportant %d imatges a %s"
 
-#: ../src/control/jobs/control_jobs.c:1236 ../src/views/darkroom.c:472
+#: ../src/control/jobs/control_jobs.c:1239 ../src/views/darkroom.c:464
 #: ../src/views/print.c:284
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "la imatge `%s' no està disponible"
 
-#: ../src/control/jobs/control_jobs.c:1369
+#: ../src/control/jobs/control_jobs.c:1323
+msgid "merge hdr image"
+msgstr "fusiona imatge hdr"
+
+#: ../src/control/jobs/control_jobs.c:1337
+msgid "duplicate images"
+msgstr "duplica imatges"
+
+#: ../src/control/jobs/control_jobs.c:1344
+msgid "flip images"
+msgstr "capgira imatges"
+
+#. get all selected images now, to avoid the set changing during ui interaction
+#: ../src/control/jobs/control_jobs.c:1351
+msgid "remove images"
+msgstr "treu imatges"
+
+#: ../src/control/jobs/control_jobs.c:1373
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1552,11 +1587,16 @@ msgstr[0] ""
 msgstr[1] ""
 "esteu segur que voleu treure %d imatges seleccionades de la col·lecció?"
 
-#: ../src/control/jobs/control_jobs.c:1373
+#: ../src/control/jobs/control_jobs.c:1377
 msgid "remove images?"
 msgstr "voleu suprimir les imatges?"
 
-#: ../src/control/jobs/control_jobs.c:1412
+#. first get all selected images, to avoid the set changing during ui interaction
+#: ../src/control/jobs/control_jobs.c:1392
+msgid "delete images"
+msgstr "esborra imatges"
+
+#: ../src/control/jobs/control_jobs.c:1416
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -1564,7 +1604,7 @@ msgstr[0] "esteu segur que voleu enviar %d imatge seleccionada a la paperera?"
 msgstr[1] ""
 "esteu segur que voleu enviar %d imatges seleccionades a la paperera?"
 
-#: ../src/control/jobs/control_jobs.c:1414
+#: ../src/control/jobs/control_jobs.c:1418
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1575,41 +1615,46 @@ msgstr[1] ""
 "esteu segur que voleu eliminar físicament del disc les %d imatges "
 "seleccionades?"
 
-#: ../src/control/jobs/control_jobs.c:1418
+#: ../src/control/jobs/control_jobs.c:1422
 msgid "trash images?"
 msgstr "Envia imatges a la paperera?"
 
-#: ../src/control/jobs/control_jobs.c:1418
+#: ../src/control/jobs/control_jobs.c:1422
 msgid "delete images?"
 msgstr "voleu eliminar les imatges?"
 
 #: ../src/control/jobs/control_jobs.c:1443
-#: ../src/control/jobs/control_jobs.c:1497 ../src/imageio/storage/disk.c:92
-#: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
-#: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104
-#: ../src/imageio/storage/latex.c:165 ../src/libs/styles.c:209
-#: ../src/lua/preferences.c:614
+msgid "move images"
+msgstr "mou imatges"
+
+#: ../src/control/jobs/control_jobs.c:1447
+#: ../src/control/jobs/control_jobs.c:1501 ../src/imageio/storage/disk.c:92
+#: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:103
+#: ../src/imageio/storage/gallery.c:164 ../src/imageio/storage/latex.c:103
+#: ../src/imageio/storage/latex.c:164 ../src/libs/styles.c:209
+#: ../src/lua/preferences.c:591
 msgid "select directory"
 msgstr "seleccioneu un directori"
 
-#: ../src/control/jobs/control_jobs.c:1443
-#: ../src/control/jobs/control_jobs.c:1497 ../src/gui/hist_dialog.c:137
-#: ../src/gui/preferences.c:1031 ../src/gui/preferences.c:1054
+#: ../src/control/jobs/control_jobs.c:1447
+#: ../src/control/jobs/control_jobs.c:1501 ../src/gui/hist_dialog.c:137
+#: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
 #: ../src/gui/presets.c:381 ../src/gui/styles_dialog.c:283
-#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
-#: ../src/imageio/storage/latex.c:104 ../src/libs/collect.c:227
+#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:103
+#: ../src/imageio/storage/latex.c:103 ../src/libs/collect.c:227
 #: ../src/libs/copy_history.c:72 ../src/libs/geotagging.c:454
-#: ../src/libs/import.c:772 ../src/libs/import.c:871 ../src/libs/lib.c:216
-#: ../src/libs/styles.c:209 ../src/libs/styles.c:229
+#: ../src/libs/import.c:774 ../src/libs/import.c:873 ../src/libs/lib.c:216
+#: ../src/libs/styles.c:209 ../src/libs/styles.c:229 ../src/libs/tagging.c:355
+#: ../src/libs/tagging.c:392
 msgid "_cancel"
 msgstr "_cancel·la"
 
-#: ../src/control/jobs/control_jobs.c:1444
-#: ../src/control/jobs/control_jobs.c:1498
+#: ../src/control/jobs/control_jobs.c:1448
+#: ../src/control/jobs/control_jobs.c:1502
 msgid "_select as destination"
 msgstr "_Tria com a destinació"
 
-#: ../src/control/jobs/control_jobs.c:1462
+#: ../src/control/jobs/control_jobs.c:1466
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1624,13 +1669,17 @@ msgstr[1] ""
 "esteu segur que voleu moure físicament les %d imatges seleccionades a %s?\n"
 "(tots els duplicats no seleccionats seran moguts alhora)"
 
-#: ../src/control/jobs/control_jobs.c:1468
+#: ../src/control/jobs/control_jobs.c:1472
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "voleu moure la imatge?"
 msgstr[1] "voleu moure les imatges?"
 
-#: ../src/control/jobs/control_jobs.c:1516
+#: ../src/control/jobs/control_jobs.c:1497
+msgid "copy images"
+msgstr "copia imatges"
+
+#: ../src/control/jobs/control_jobs.c:1520
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1639,37 +1688,73 @@ msgstr[0] ""
 msgstr[1] ""
 "esteu segur que voleu copiar físicament les %d imatges seleccionades a %s?"
 
-#: ../src/control/jobs/control_jobs.c:1519
+#: ../src/control/jobs/control_jobs.c:1523
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "voleu copiar la imatge?"
 msgstr[1] "voleu copiar les imatges?"
 
-#: ../src/control/jobs/control_jobs.c:1605
+#: ../src/control/jobs/control_jobs.c:1543
+#: ../src/control/jobs/control_jobs.c:1550
+msgid "local copy images"
+msgstr "copia localment imatges"
+
+#: ../src/control/jobs/control_jobs.c:1609
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "no s'han pogut obtenir paràmetres del mòdul emmagatzematge `%s', avortant "
 "exportació .."
 
-#: ../src/control/jobs/control_jobs.c:1643
+#: ../src/control/jobs/control_jobs.c:1620
+msgid "export images"
+msgstr "exporta imatges"
+
+#: ../src/control/jobs/control_jobs.c:1645
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "aplicant decalatge horari a %d imatge"
 msgstr[1] "aplicant decalatge horari a %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:1662
+#: ../src/control/jobs/control_jobs.c:1660
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "aplicat decalatge horari a %d imatge"
 msgstr[1] "aplicat decalatge horari a %d imatges"
 
-#: ../src/control/jobs/image_jobs.c:71
+#: ../src/control/jobs/control_jobs.c:1699 ../src/libs/geotagging.c:607
+msgid "time offset"
+msgstr "decalatge horari"
+
+#: ../src/control/jobs/control_jobs.c:1723 ../src/libs/copy_history.c:288
+msgid "write sidecar files"
+msgstr "escriu els fitxers XMP"
+
+#: ../src/control/jobs/film_jobs.c:65
+msgid "import images"
+msgstr "importa imatges"
+
+#: ../src/control/jobs/film_jobs.c:139
+msgid "no supported images were found to be imported"
+msgstr "no s'han trobat imatges compatibles per a ser importades"
+
+#: ../src/control/jobs/film_jobs.c:193
+#, c-format
+msgid "importing %d image"
+msgid_plural "importing %d images"
+msgstr[0] "s'està important %d imatge"
+msgstr[1] "s'estan important %d imatges"
+
+#: ../src/control/jobs/image_jobs.c:70
 #, c-format
 msgid "importing image %s"
 msgstr "s'està important la imatge %s"
+
+#: ../src/control/jobs/image_jobs.c:104 ../src/libs/import.c:774
+msgid "import image"
+msgstr "importa una imatge"
 
 #. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale,
 #. roi_out->scale ==
@@ -1677,12 +1762,12 @@ msgstr "s'està important la imatge %s"
 #. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs,
 #. roi_out->width, roi_out->height,
 #. roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:2462 ../src/develop/blend.c:2778
+#: ../src/develop/blend.c:2462 ../src/develop/blend.c:2780
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "no s'ha fet la mescla al mòdul '%s', els valors roi no encaixen"
 
-#: ../src/develop/blend.c:2574 ../src/develop/blend.c:2831
+#: ../src/develop/blend.c:2574 ../src/develop/blend.c:2825
 msgid "could not allocate buffer for blending"
 msgstr "no s'ha pogut reservar la memòria per la mescla"
 
@@ -1786,8 +1871,8 @@ msgstr ""
 "* rang per sota dels marcadors inferiors: sense mesclar\n"
 "* rang entre els marcadors superiors/inferiors adjacents: mescla gradual"
 
-#: ../src/develop/blend_gui.c:1085 ../src/iop/colorzones.c:1082
-#: ../src/iop/tonecurve.c:791
+#: ../src/develop/blend_gui.c:1085 ../src/iop/colorzones.c:1081
+#: ../src/iop/tonecurve.c:914
 msgid "pick GUI color from image"
 msgstr "pren el color pel GUI de la imatge"
 
@@ -1845,28 +1930,28 @@ msgstr "mostra i edita elements de màscara"
 msgid "toggle polarity of drawn mask"
 msgstr "inverteix polaritat de la màscara dibuixada"
 
-#: ../src/develop/blend_gui.c:1283 ../src/libs/masks.c:993
-#: ../src/libs/masks.c:1032 ../src/libs/masks.c:1633
+#: ../src/develop/blend_gui.c:1283 ../src/libs/masks.c:995
+#: ../src/libs/masks.c:1034 ../src/libs/masks.c:1635
 msgid "add gradient"
 msgstr "afegeix gradient"
 
 #: ../src/develop/blend_gui.c:1292 ../src/iop/spots.c:648
-#: ../src/libs/masks.c:989 ../src/libs/masks.c:1028 ../src/libs/masks.c:1640
+#: ../src/libs/masks.c:991 ../src/libs/masks.c:1030 ../src/libs/masks.c:1642
 msgid "add path"
 msgstr "afegeix camí"
 
 #: ../src/develop/blend_gui.c:1301 ../src/iop/spots.c:656
-#: ../src/libs/masks.c:985 ../src/libs/masks.c:1024 ../src/libs/masks.c:1648
+#: ../src/libs/masks.c:987 ../src/libs/masks.c:1026 ../src/libs/masks.c:1650
 msgid "add ellipse"
 msgstr "afegeix el·lipse"
 
 #: ../src/develop/blend_gui.c:1310 ../src/iop/spots.c:664
-#: ../src/libs/masks.c:981 ../src/libs/masks.c:1020 ../src/libs/masks.c:1656
+#: ../src/libs/masks.c:983 ../src/libs/masks.c:1022 ../src/libs/masks.c:1658
 msgid "add circle"
 msgstr "afegeix cercle"
 
-#: ../src/develop/blend_gui.c:1319 ../src/libs/masks.c:1016
-#: ../src/libs/masks.c:1663
+#: ../src/develop/blend_gui.c:1319 ../src/libs/masks.c:1018
+#: ../src/libs/masks.c:1665
 msgid "add brush"
 msgstr "afegeix pinzell"
 
@@ -2045,7 +2130,7 @@ msgstr "mode de mescla"
 msgid "choose blending mode"
 msgstr "tria el mode de mescla"
 
-#: ../src/develop/blend_gui.c:1783 ../src/iop/watermark.c:1290
+#: ../src/develop/blend_gui.c:1783 ../src/iop/watermark.c:1345
 msgid "opacity"
 msgstr "opacitat"
 
@@ -2105,87 +2190,87 @@ msgstr "mostra la màscara"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "desactiva temporalment la màscara de mescla. només pel mòdul ressaltat"
 
-#: ../src/develop/develop.c:1116
+#: ../src/develop/develop.c:1136
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: la versió del mòdul '%s' no coincideix: %d != %d"
 
-#: ../src/develop/imageop.c:870
+#: ../src/develop/imageop.c:867
 msgid "new instance"
 msgstr "nova instància"
 
-#: ../src/develop/imageop.c:875
+#: ../src/develop/imageop.c:872
 msgid "duplicate instance"
 msgstr "duplica instància"
 
-#: ../src/develop/imageop.c:880 ../src/libs/masks.c:1153
+#: ../src/develop/imageop.c:877 ../src/libs/masks.c:1155
 msgid "move up"
 msgstr "mou amunt"
 
-#: ../src/develop/imageop.c:886 ../src/libs/masks.c:1156
+#: ../src/develop/imageop.c:883 ../src/libs/masks.c:1158
 msgid "move down"
 msgstr "mou avall"
 
 #. delete
-#: ../src/develop/imageop.c:892 ../src/libs/image.c:141
-#: ../src/libs/styles.c:360 ../src/libs/tagging.c:468
+#: ../src/develop/imageop.c:889 ../src/libs/image.c:141
+#: ../src/libs/styles.c:360 ../src/libs/tagging.c:543
 msgid "delete"
 msgstr "elimina"
 
-#: ../src/develop/imageop.c:916 ../src/develop/imageop.c:1886
+#: ../src/develop/imageop.c:913 ../src/develop/imageop.c:1883
 #, c-format
 msgid "%s is switched on"
 msgstr "%s està activat"
 
-#: ../src/develop/imageop.c:916 ../src/develop/imageop.c:1886
+#: ../src/develop/imageop.c:913 ../src/develop/imageop.c:1883
 #, c-format
 msgid "%s is switched off"
 msgstr "%s està desactivat"
 
-#: ../src/develop/imageop.c:1238 ../src/gui/accelerators.c:631
-#: ../src/gui/accelerators.c:716 ../src/gui/accelerators.c:882
-#: ../src/gui/accelerators.c:908 ../src/gui/presets.c:191
+#: ../src/develop/imageop.c:1235 ../src/gui/accelerators.c:634
+#: ../src/gui/accelerators.c:719 ../src/gui/accelerators.c:884
+#: ../src/gui/accelerators.c:910 ../src/gui/presets.c:191
 #: ../src/gui/presets.c:297 ../src/gui/presets.c:639
-#: ../src/iop/temperature.c:1352 ../src/libs/import.c:553
-#: ../src/libs/lib.c:308 ../src/libs/lib.c:333 ../src/libs/lib.c:1151
+#: ../src/iop/temperature.c:1354 ../src/libs/import.c:555 ../src/libs/lib.c:308
+#: ../src/libs/lib.c:333 ../src/libs/lib.c:1151
 msgid "preset"
 msgstr "predefinit"
 
-#: ../src/develop/imageop.c:1282
+#: ../src/develop/imageop.c:1279
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusió"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1287
+#: ../src/develop/imageop.c:1284
 msgctxt "accel"
 msgid "show module"
 msgstr "mostra el mòdul"
 
-#: ../src/develop/imageop.c:1288
+#: ../src/develop/imageop.c:1285
 msgctxt "accel"
 msgid "enable module"
 msgstr "habilita el mòdul"
 
-#: ../src/develop/imageop.c:1290 ../src/libs/lib.c:583
+#: ../src/develop/imageop.c:1287 ../src/libs/lib.c:583
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "reinicia paràmetres del mòdul"
 
-#: ../src/develop/imageop.c:1291 ../src/libs/lib.c:587
+#: ../src/develop/imageop.c:1288 ../src/libs/lib.c:587
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "mostra el menú de predefinits"
 
-#: ../src/develop/imageop.c:1857
+#: ../src/develop/imageop.c:1854
 msgid "multiple instances actions"
 msgstr "accions d'instàncies múltiples"
 
-#: ../src/develop/imageop.c:1865 ../src/libs/lib.c:993
+#: ../src/develop/imageop.c:1862 ../src/libs/lib.c:993
 msgid "reset parameters"
 msgstr "reinicia paràmetres"
 
-#: ../src/develop/imageop.c:1873 ../src/gui/preferences.c:428
+#: ../src/develop/imageop.c:1870 ../src/gui/preferences.c:443
 #: ../src/libs/lib.c:1005
 msgid "presets"
 msgstr "predefinits"
@@ -2200,61 +2285,61 @@ msgstr "no s'ha pogut trobar XMP de lightroom"
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' no és un XMP de lightroom!"
 
-#: ../src/develop/lightroom.c:1386 ../src/libs/import.c:573
+#: ../src/develop/lightroom.c:1388 ../src/libs/import.c:575
 msgid "tags"
 msgstr "etiquetes"
 
-#: ../src/develop/lightroom.c:1395 ../src/libs/tools/filter.c:146
+#: ../src/develop/lightroom.c:1397 ../src/libs/tools/filter.c:146
 msgid "rating"
 msgstr "puntuació"
 
-#: ../src/develop/lightroom.c:1404 ../src/libs/collect.h:36
+#: ../src/develop/lightroom.c:1406 ../src/libs/collect.h:36
 #: ../src/libs/geotagging.c:44
 msgid "geotagging"
 msgstr "geoetiquetatge"
 
-#: ../src/develop/lightroom.c:1413 ../src/libs/collect.h:32
+#: ../src/develop/lightroom.c:1415 ../src/libs/collect.h:32
 #: ../src/libs/tools/filter.c:148
 msgid "color label"
 msgstr "etiqueta de color"
 
-#: ../src/develop/lightroom.c:1419
+#: ../src/develop/lightroom.c:1421
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
 msgstr[0] "s'ha importat %s"
 msgstr[1] "\"s'han importat %s"
 
-#: ../src/develop/masks/masks.c:42
+#: ../src/develop/masks/masks.c:45
 msgid "ctrl+click to add a sharp node"
 msgstr "ctrl+clic per afegir un node agut"
 
-#: ../src/develop/masks/masks.c:44
+#: ../src/develop/masks/masks.c:47
 msgid "ctrl+click to switch between smooth/sharp node"
 msgstr "ctrl+clic per alternar entre node suau o agut"
 
-#: ../src/develop/masks/masks.c:46
+#: ../src/develop/masks/masks.c:49
 msgid "right-click to reset feather value"
 msgstr "clic dret per reiniciar valors de la zona de transició"
 
-#: ../src/develop/masks/masks.c:48
+#: ../src/develop/masks/masks.c:51
 msgid "ctrl+click to add a node"
 msgstr "ctrl+clic per afegir un node"
 
-#: ../src/develop/masks/masks.c:50 ../src/develop/masks/masks.c:55
-#: ../src/develop/masks/masks.c:64
+#: ../src/develop/masks/masks.c:53 ../src/develop/masks/masks.c:58
+#: ../src/develop/masks/masks.c:67
 msgid "ctrl+scroll to set shape opacity"
 msgstr "ctrl+scroll (amb roda del ratolí) per ajustar l'opacitat de la forma"
 
-#: ../src/develop/masks/masks.c:57
+#: ../src/develop/masks/masks.c:60
 msgid "move to rotate shape"
 msgstr "mou per girar la forma"
 
-#: ../src/develop/masks/masks.c:62
+#: ../src/develop/masks/masks.c:65
 msgid "ctrl+click to rotate"
 msgstr "ctrl+clic per girar"
 
-#: ../src/develop/masks/masks.c:69
+#: ../src/develop/masks/masks.c:72
 msgid ""
 "scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
 "opacity"
@@ -2262,64 +2347,64 @@ msgstr ""
 "scroll (roda del ratolí) per ajustar mida del pinzell, majs+scroll la "
 "duresa, ctrl+scroll l'opacitat"
 
-#: ../src/develop/masks/masks.c:72
+#: ../src/develop/masks/masks.c:75
 msgid "scroll to set brush size"
 msgstr "scroll (roda del ratolí) per ajustar mida del pinzell"
 
-#: ../src/develop/masks/masks.c:74
+#: ../src/develop/masks/masks.c:77
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
 msgstr ""
 "scroll (roda del ratolí) per ajustar la duresa, ctrl+scroll per ajustar "
 "l'opacitat"
 
-#: ../src/develop/masks/masks.c:195
+#: ../src/develop/masks/masks.c:198
 #, c-format
 msgid "circle #%d"
 msgstr "cercle #%d"
 
-#: ../src/develop/masks/masks.c:197
+#: ../src/develop/masks/masks.c:200
 #, c-format
 msgid "path #%d"
 msgstr "camí #%d"
 
-#: ../src/develop/masks/masks.c:199
+#: ../src/develop/masks/masks.c:202
 #, c-format
 msgid "gradient #%d"
 msgstr "gradient #%d"
 
-#: ../src/develop/masks/masks.c:201
+#: ../src/develop/masks/masks.c:204
 #, c-format
 msgid "ellipse #%d"
 msgstr "el·lipse #%d"
 
-#: ../src/develop/masks/masks.c:203
+#: ../src/develop/masks/masks.c:206
 #, c-format
 msgid "brush #%d"
 msgstr "pinzell #%d"
 
-#: ../src/develop/masks/masks.c:256
+#: ../src/develop/masks/masks.c:259
 #, c-format
 msgid "copy of %s"
 msgstr "còpia de %s"
 
-#: ../src/develop/masks/masks.c:940
+#: ../src/develop/masks/masks.c:943
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: la versió de la màscara no coincideix: %d != %d"
 
-#: ../src/develop/masks/masks.c:1673 ../src/libs/masks.c:1036
+#: ../src/develop/masks/masks.c:1676 ../src/libs/masks.c:1038
 msgid "add existing shape"
 msgstr "afegeix forma ja existent"
 
-#: ../src/develop/masks/masks.c:1700
+#: ../src/develop/masks/masks.c:1703
 msgid "use same shapes as"
 msgstr "empra les mateixes formes que"
 
-#: ../src/develop/masks/masks.c:2001
+#: ../src/develop/masks/masks.c:2004
 msgid "masks can not contain themselves"
 msgstr "les màscares no es poden contenir a elles mateixes"
 
-#: ../src/develop/pixelpipe_hb.c:2417
+#: ../src/develop/pixelpipe_hb.c:2422
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2327,7 +2412,7 @@ msgstr ""
 "el darktable ha trobat problemes amb la configuració d'OpenCL: desactivant-"
 "lo en aquesta sessió"
 
-#: ../src/develop/tiling.c:810 ../src/develop/tiling.c:1142
+#: ../src/develop/tiling.c:812 ../src/develop/tiling.c:1147
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
@@ -2440,7 +2525,7 @@ msgstr "sol vespertí"
 msgid "underwater"
 msgstr "Sota aigua"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1453
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1627
 msgid "black & white"
 msgstr "Blanc i negre"
 
@@ -2475,7 +2560,17 @@ msgstr "creant el directori de memòria cau '%s'\n"
 msgid "could not create directory '%s'!\n"
 msgstr "no s'ha pogut crear el directori `%s'!\n"
 
-#: ../src/generate-cache/main.c:161
+#: ../src/generate-cache/main.c:73
+#, c-format
+msgid "warning: no images are matching the requested image id range\n"
+msgstr "avís: cap imatge concorda amb el rang d'id d'imatge triat\n"
+
+#: ../src/generate-cache/main.c:76
+#, c-format
+msgid "warning: did you want to swap these boundaries?\n"
+msgstr "avís: volíeu intercanviar aquests límits?\n"
+
+#: ../src/generate-cache/main.c:201
 #, c-format
 msgid ""
 "warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\n"
@@ -2489,7 +2584,12 @@ msgstr ""
 "l'heu d'activar\n"
 "no hi ha cap miniatura a generar, fet."
 
-#: ../src/generate-cache/main.c:168
+#: ../src/generate-cache/main.c:210
+#, c-format
+msgid "error: ensure that min_mip <= max_mip\n"
+msgstr "error: assegureu-vos que min_mip <= max_mip\n"
+
+#: ../src/generate-cache/main.c:214
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
 msgstr "creant la memòria cau completa de miniatures\n"
@@ -2544,7 +2644,7 @@ msgctxt "accel"
 msgid "lua"
 msgstr "lua"
 
-#: ../src/gui/accelerators.c:698 ../src/libs/lib.c:388
+#: ../src/gui/accelerators.c:701 ../src/libs/lib.c:388
 msgid "deleting preset for obsolete module"
 msgstr "esborrant predefinit per mòdul obsolet"
 
@@ -2555,10 +2655,6 @@ msgstr "estableix aquet valor per defecte"
 #: ../src/gui/camera_import_dialog.c:181
 msgid "reset value to default"
 msgstr "reinicia al valor per defecte"
-
-#: ../src/gui/camera_import_dialog.c:204
-msgid "import images from camera"
-msgstr "importa imatges de la càmera"
 
 #: ../src/gui/camera_import_dialog.c:205 ../src/libs/geotagging.c:400
 msgid "cancel"
@@ -2593,11 +2689,11 @@ msgid "general"
 msgstr "general"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:446
+#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:447
 msgid "ignore JPEG files"
 msgstr "ignora fitxers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:447
+#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:448
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2641,67 +2737,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "Feu servir el format AAAA-MM-DD per sobreescriure la data"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:842
+#: ../src/gui/gtk.c:870
 msgctxt "accel"
 msgid "tethering view"
 msgstr "vista de tethering"
 
-#: ../src/gui/gtk.c:843
+#: ../src/gui/gtk.c:871
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "vista de taula de llum"
 
-#: ../src/gui/gtk.c:844
+#: ../src/gui/gtk.c:872
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "vista de cambra fosca"
 
-#: ../src/gui/gtk.c:845
+#: ../src/gui/gtk.c:873
 msgctxt "accel"
 msgid "map view"
 msgstr "vista de mapa"
 
-#: ../src/gui/gtk.c:846
+#: ../src/gui/gtk.c:874
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "vista de projecció de diapositives"
 
-#: ../src/gui/gtk.c:847
+#: ../src/gui/gtk.c:875
 msgctxt "accel"
 msgid "print view"
 msgstr "vista d'impressió"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:870
+#: ../src/gui/gtk.c:898
 msgctxt "accel"
 msgid "quit"
 msgstr "surt"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:875
+#: ../src/gui/gtk.c:903
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "permuta mode pantalla completa"
 
-#: ../src/gui/gtk.c:876
+#: ../src/gui/gtk.c:904
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "surt de mode pantalla completa"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:884
+#: ../src/gui/gtk.c:912
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "permuta vista vores laterals"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:887
+#: ../src/gui/gtk.c:915
 msgctxt "accel"
 msgid "toggle header"
 msgstr "mostra/amaga capçalera"
 
 #. View-switch
-#: ../src/gui/gtk.c:890
+#: ../src/gui/gtk.c:918
 msgctxt "accel"
 msgid "switch view"
 msgstr "alterna vista"
@@ -2842,8 +2938,8 @@ msgstr "seccions d'espiral àuria "
 msgid "golden spiral"
 msgstr "espiral àuria"
 
-#: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:677
-#: ../src/iop/lens.c:2034 ../src/libs/tools/filter.c:122
+#: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:675
+#: ../src/iop/lens.c:2040 ../src/libs/tools/filter.c:122
 msgid "all"
 msgstr "totes"
 
@@ -2893,7 +2989,7 @@ msgstr "selecciona-ho _tot"
 msgid "select _none"
 msgstr "_sense selecció"
 
-#: ../src/gui/hist_dialog.c:138 ../src/gui/preferences.c:1210
+#: ../src/gui/hist_dialog.c:138 ../src/gui/preferences.c:1225
 #: ../src/gui/presets.c:380 ../src/libs/lib.c:215
 msgid "_ok"
 msgstr "_ok"
@@ -2934,132 +3030,131 @@ msgstr "preferències del darktable"
 msgid "close"
 msgstr "tanca"
 
-#: ../src/gui/preferences.c:438
+#: ../src/gui/preferences.c:453
 msgid "module"
 msgstr "mòdul"
 
-#: ../src/gui/preferences.c:446
+#: ../src/gui/preferences.c:461
 msgid "name"
 msgstr "nom"
 
 #. exif
-#: ../src/gui/preferences.c:450 ../src/gui/preferences.c:1254
+#: ../src/gui/preferences.c:465 ../src/gui/preferences.c:1269
 #: ../src/gui/presets.c:426 ../src/libs/metadata_view.c:102
 msgid "model"
 msgstr "model"
 
-#: ../src/gui/preferences.c:454 ../src/gui/preferences.c:1262
+#: ../src/gui/preferences.c:469 ../src/gui/preferences.c:1277
 #: ../src/gui/presets.c:433 ../src/libs/metadata_view.c:103
 msgid "maker"
 msgstr "fabricant"
 
-#: ../src/gui/preferences.c:458 ../src/gui/preferences.c:1270
+#: ../src/gui/preferences.c:473 ../src/gui/preferences.c:1285
 #: ../src/gui/presets.c:440 ../src/libs/collect.h:34
 #: ../src/libs/metadata_view.c:104
 msgid "lens"
 msgstr "lent"
 
 #. iso
-#: ../src/gui/preferences.c:462 ../src/gui/preferences.c:1276
+#: ../src/gui/preferences.c:477 ../src/gui/preferences.c:1291
 #: ../src/gui/presets.c:446 ../src/libs/camera.c:583 ../src/libs/collect.h:35
 #: ../src/libs/metadata_view.c:109
 msgid "ISO"
 msgstr "ISO"
 
 #. exposure
-#: ../src/gui/preferences.c:466 ../src/gui/preferences.c:1289
-#: ../src/gui/presets.c:459 ../src/iop/exposure.c:102
-#: ../src/iop/exposure.c:853 ../src/iop/relight.c:354
-#: ../src/libs/metadata_view.c:106
+#: ../src/gui/preferences.c:481 ../src/gui/preferences.c:1304
+#: ../src/gui/presets.c:459 ../src/iop/exposure.c:104 ../src/iop/exposure.c:878
+#: ../src/iop/relight.c:354 ../src/libs/metadata_view.c:106
 msgid "exposure"
 msgstr "exposició"
 
 #. aperture
-#: ../src/gui/preferences.c:470 ../src/gui/preferences.c:1304
+#: ../src/gui/preferences.c:485 ../src/gui/preferences.c:1319
 #: ../src/gui/presets.c:474 ../src/libs/camera.c:570 ../src/libs/camera.c:572
 #: ../src/libs/collect.h:35 ../src/libs/metadata_view.c:105
 msgid "aperture"
 msgstr "obertura"
 
 #. focal length
-#: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1319
-#: ../src/gui/presets.c:489 ../src/iop/ashift.c:4184 ../src/libs/camera.c:575
+#: ../src/gui/preferences.c:489 ../src/gui/preferences.c:1334
+#: ../src/gui/presets.c:489 ../src/iop/ashift.c:4403 ../src/libs/camera.c:575
 #: ../src/libs/collect.h:34 ../src/libs/metadata_view.c:107
 msgid "focal length"
 msgstr "long. focal"
 
-#: ../src/gui/preferences.c:479 ../src/iop/borders.c:993
+#: ../src/gui/preferences.c:494 ../src/iop/borders.c:993
 #: ../src/iop/levels.c:583
 msgid "auto"
 msgstr "auto"
 
-#: ../src/gui/preferences.c:520
+#: ../src/gui/preferences.c:535
 msgid "shortcuts"
 msgstr "dreceres"
 
-#: ../src/gui/preferences.c:531
+#: ../src/gui/preferences.c:546
 msgid "shortcut"
 msgstr "drecera"
 
-#: ../src/gui/preferences.c:535
+#: ../src/gui/preferences.c:550
 msgid "binding"
 msgstr "associació"
 
 #. Adding the restore defaults button
-#: ../src/gui/preferences.c:566
+#: ../src/gui/preferences.c:581
 msgctxt "preferences"
 msgid "default"
 msgstr "predeterminat"
 
 #. Adding the import/export buttons
-#: ../src/gui/preferences.c:573
+#: ../src/gui/preferences.c:588
 msgctxt "preferences"
 msgid "import"
 msgstr "importa"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:578 ../src/libs/export.c:659
+#: ../src/gui/preferences.c:593 ../src/libs/export.c:659
 #: ../src/libs/styles.c:374
 msgid "export"
 msgstr "exporta"
 
 #. Setting the notification text
-#: ../src/gui/preferences.c:847
+#: ../src/gui/preferences.c:862
 msgid "press key combination to remap..."
 msgstr "premeu la combinació de tecles a reassignar..."
 
-#: ../src/gui/preferences.c:993 ../src/gui/presets.c:186 ../src/libs/lib.c:328
+#: ../src/gui/preferences.c:1008 ../src/gui/presets.c:186 ../src/libs/lib.c:328
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "esteu segur que voleu suprimir el predefinit `%s'?"
 
-#: ../src/gui/preferences.c:994 ../src/gui/presets.c:187 ../src/libs/lib.c:329
+#: ../src/gui/preferences.c:1009 ../src/gui/presets.c:187 ../src/libs/lib.c:329
 msgid "delete preset?"
 msgstr "voleu suprimir el predefinit?"
 
 #. Non-zero value indicates export
-#: ../src/gui/preferences.c:1030
+#: ../src/gui/preferences.c:1045
 msgid "select file to export"
 msgstr "seleccioneu fitxer a exportar"
 
-#: ../src/gui/preferences.c:1031 ../src/gui/styles_dialog.c:284
+#: ../src/gui/preferences.c:1046 ../src/gui/styles_dialog.c:284
 #: ../src/libs/styles.c:210
 msgid "_save"
 msgstr "_save"
 
 #. Zero value indicates import
-#: ../src/gui/preferences.c:1053
+#: ../src/gui/preferences.c:1068
 msgid "select file to import"
 msgstr "seleccioneu fitxer a importar"
 
-#: ../src/gui/preferences.c:1054 ../src/libs/collect.c:228
+#: ../src/gui/preferences.c:1069 ../src/libs/collect.c:228
 #: ../src/libs/copy_history.c:73 ../src/libs/geotagging.c:455
-#: ../src/libs/import.c:773 ../src/libs/import.c:872 ../src/libs/styles.c:230
+#: ../src/libs/import.c:775 ../src/libs/import.c:874 ../src/libs/styles.c:230
 msgid "_open"
 msgstr "_obre"
 
-#: ../src/gui/preferences.c:1094
+#: ../src/gui/preferences.c:1109
 msgid ""
 "are you sure you want to restore the default keybindings?  this will erase "
 "any modifications you have made."
@@ -3067,25 +3162,24 @@ msgstr ""
 "n'esteu segur que voleu restaurar les associacions de tecles per defecte? "
 "això esborrarà totes les modificacions que hi hàgiu fet"
 
-#: ../src/gui/preferences.c:1208 ../src/gui/presets.c:379
+#: ../src/gui/preferences.c:1223 ../src/gui/presets.c:379
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "edició de `%s' del mòdul `%s'"
 
-#: ../src/gui/preferences.c:1231 ../src/gui/presets.c:403
-#: ../src/libs/lib.c:241
+#: ../src/gui/preferences.c:1246 ../src/gui/presets.c:403 ../src/libs/lib.c:241
 msgid "description or further information"
 msgstr "descripció o informació extra"
 
-#: ../src/gui/preferences.c:1234 ../src/gui/presets.c:406
+#: ../src/gui/preferences.c:1249 ../src/gui/presets.c:406
 msgid "auto apply this preset to matching images"
 msgstr "auto aplica aquest predefinit per imatges concordants"
 
-#: ../src/gui/preferences.c:1237 ../src/gui/presets.c:409
+#: ../src/gui/preferences.c:1252 ../src/gui/presets.c:409
 msgid "only show this preset for matching images"
 msgstr "mostra aquest predefinit només per imatges concordants"
 
-#: ../src/gui/preferences.c:1239 ../src/gui/presets.c:410
+#: ../src/gui/preferences.c:1254 ../src/gui/presets.c:410
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -3093,56 +3187,56 @@ msgstr ""
 "aneu amb compte amb aquesta opció, aquest pot ser el darrer cop que veieu el "
 "vostre predefinit"
 
-#: ../src/gui/preferences.c:1253 ../src/gui/presets.c:425
+#: ../src/gui/preferences.c:1268 ../src/gui/presets.c:425
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "text que encaixi amb el model (empreu % com a comodí)"
 
-#: ../src/gui/preferences.c:1261 ../src/gui/presets.c:432
+#: ../src/gui/preferences.c:1276 ../src/gui/presets.c:432
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "text que encaixi amb el fabricant (empreu % com a comodí)"
 
-#: ../src/gui/preferences.c:1269 ../src/gui/presets.c:439
+#: ../src/gui/preferences.c:1284 ../src/gui/presets.c:439
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "text que encaixi amb l'òptica (empreu % com a comodí)"
 
-#: ../src/gui/preferences.c:1279 ../src/gui/presets.c:449
+#: ../src/gui/preferences.c:1294 ../src/gui/presets.c:449
 msgid "minimum ISO value"
 msgstr "valor ISO mínim"
 
-#: ../src/gui/preferences.c:1282 ../src/gui/presets.c:452
+#: ../src/gui/preferences.c:1297 ../src/gui/presets.c:452
 msgid "maximum ISO value"
 msgstr "valor ISO màxim"
 
-#: ../src/gui/preferences.c:1293 ../src/gui/presets.c:463
+#: ../src/gui/preferences.c:1308 ../src/gui/presets.c:463
 msgid "minimum exposure time"
 msgstr "temps d'exposició mínim"
 
-#: ../src/gui/preferences.c:1294 ../src/gui/presets.c:464
+#: ../src/gui/preferences.c:1309 ../src/gui/presets.c:464
 msgid "maximum exposure time"
 msgstr "temps d'exposició màxim"
 
-#: ../src/gui/preferences.c:1308 ../src/gui/presets.c:478
+#: ../src/gui/preferences.c:1323 ../src/gui/presets.c:478
 msgid "minimum aperture value"
 msgstr "valor de l'obertura mínim"
 
-#: ../src/gui/preferences.c:1309 ../src/gui/presets.c:479
+#: ../src/gui/preferences.c:1324 ../src/gui/presets.c:479
 msgid "maximum aperture value"
 msgstr "valor de l'obertura màxim"
 
-#: ../src/gui/preferences.c:1324 ../src/gui/presets.c:495
+#: ../src/gui/preferences.c:1339 ../src/gui/presets.c:495
 msgid "minimum focal length"
 msgstr "distància focal mínima"
 
-#: ../src/gui/preferences.c:1325 ../src/gui/presets.c:496
+#: ../src/gui/preferences.c:1340 ../src/gui/presets.c:496
 msgid "maximum focal length"
 msgstr "distància focal màxima"
 
 #. raw/hdr/ldr
-#: ../src/gui/preferences.c:1334 ../src/gui/presets.c:502
-#: ../src/imageio/format/j2k.c:655
+#: ../src/gui/preferences.c:1349 ../src/gui/presets.c:502
+#: ../src/imageio/format/j2k.c:647
 msgid "format"
 msgstr "format"
 
@@ -3256,110 +3350,110 @@ msgstr ""
 "fés una còpia 1:1 dels fitxers triats.\n"
 "les opcions globals a sota no tindran efecte!"
 
-#: ../src/imageio/format/exr.cc:183
+#: ../src/imageio/format/exr.cc:191
 msgid "the selected output profile doesn't work well with exr"
 msgstr "el perfil de sortida triat no funciona bé amb exr"
 
-#: ../src/imageio/format/exr.cc:330
+#: ../src/imageio/format/exr.cc:338
 msgid "OpenEXR (float)"
 msgstr "OpenEXR (float)"
 
-#: ../src/imageio/format/exr.cc:349
+#: ../src/imageio/format/exr.cc:357
 msgid "compression mode"
 msgstr "mode de compressió"
 
-#: ../src/imageio/format/exr.cc:352
+#: ../src/imageio/format/exr.cc:360
 msgid "RLE"
 msgstr "RLE"
 
-#: ../src/imageio/format/exr.cc:353
+#: ../src/imageio/format/exr.cc:361
 msgid "ZIPS"
 msgstr "ZIPS"
 
-#: ../src/imageio/format/exr.cc:354
+#: ../src/imageio/format/exr.cc:362
 msgid "ZIP"
 msgstr "ZIP"
 
-#: ../src/imageio/format/exr.cc:355
+#: ../src/imageio/format/exr.cc:363
 msgid "PIZ (default)"
 msgstr "PIZ (predeterminat)"
 
-#: ../src/imageio/format/exr.cc:356
+#: ../src/imageio/format/exr.cc:364
 msgid "PXR24 (lossy)"
 msgstr "PXR24 (amb pèrdues)"
 
-#: ../src/imageio/format/exr.cc:357
+#: ../src/imageio/format/exr.cc:365
 msgid "B44 (lossy)"
 msgstr "B44 (amb pèrdues)"
 
-#: ../src/imageio/format/exr.cc:358
+#: ../src/imageio/format/exr.cc:366
 msgid "B44A (lossy)"
 msgstr "B44A (amb pèrdues)"
 
-#: ../src/imageio/format/j2k.c:622
+#: ../src/imageio/format/j2k.c:614
 msgid "JPEG 2000 (12-bit)"
 msgstr "JPEG 2000 (12-bit)"
 
-#: ../src/imageio/format/j2k.c:656
+#: ../src/imageio/format/j2k.c:648
 msgid "J2K"
 msgstr "J2K"
 
-#: ../src/imageio/format/j2k.c:657
+#: ../src/imageio/format/j2k.c:649
 msgid "jp2"
 msgstr "jp2"
 
-#: ../src/imageio/format/j2k.c:663 ../src/imageio/format/jpeg.c:593
+#: ../src/imageio/format/j2k.c:655 ../src/imageio/format/jpeg.c:594
 #: ../src/imageio/format/webp.c:308 ../src/libs/camera.c:589
 msgid "quality"
 msgstr "qualitat"
 
-#: ../src/imageio/format/j2k.c:670
+#: ../src/imageio/format/j2k.c:662
 msgid "DCP mode"
 msgstr "mode DCP"
 
-#: ../src/imageio/format/j2k.c:672
+#: ../src/imageio/format/j2k.c:664
 msgid "Cinema2K, 24FPS"
 msgstr "Cinema2K, 24FPS"
 
-#: ../src/imageio/format/j2k.c:673
+#: ../src/imageio/format/j2k.c:665
 msgid "Cinema2K, 48FPS"
 msgstr "Cinema2K, 48FPS"
 
-#: ../src/imageio/format/j2k.c:674
+#: ../src/imageio/format/j2k.c:666
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24FPS"
 
-#: ../src/imageio/format/jpeg.c:575
+#: ../src/imageio/format/jpeg.c:576
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
 
-#: ../src/imageio/format/pdf.c:78 ../src/imageio/format/png.c:468
+#: ../src/imageio/format/pdf.c:77 ../src/imageio/format/png.c:468
 #: ../src/imageio/format/tiff.c:408
 msgid "8 bit"
 msgstr "8 bit"
 
-#: ../src/imageio/format/pdf.c:79 ../src/imageio/format/png.c:469
+#: ../src/imageio/format/pdf.c:78 ../src/imageio/format/png.c:469
 #: ../src/imageio/format/tiff.c:409
 msgid "16 bit"
 msgstr "16 bit"
 
-#: ../src/imageio/format/pdf.c:201 ../src/imageio/format/pdf.c:484
+#: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:482
 msgid "invalid paper size"
 msgstr "mida de paper no vàlida"
 
-#: ../src/imageio/format/pdf.c:208
+#: ../src/imageio/format/pdf.c:207
 msgid "invalid border size, using 0"
 msgstr "mida de vora no vàlida, s'emprarà 0"
 
-#: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:293
+#: ../src/imageio/format/pdf.c:255 ../src/imageio/storage/disk.c:293
 #: ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1294
-#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:344
-#: ../src/imageio/storage/gallery.c:364 ../src/imageio/storage/picasa.c:1447
+#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:343
+#: ../src/imageio/storage/gallery.c:363 ../src/imageio/storage/picasa.c:1446
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "no s'ha pogut exportar a l'arxiu `%s'!"
 
-#: ../src/imageio/format/pdf.c:409
+#: ../src/imageio/format/pdf.c:407
 msgid "PDF"
 msgstr "PDF"
 
@@ -3367,24 +3461,24 @@ msgstr "PDF"
 #. create labels
 #. clang-format off
 #. xmp
-#: ../src/imageio/format/pdf.c:579 ../src/imageio/storage/facebook.c:1108
-#: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:171
-#: ../src/imageio/storage/latex.c:172 ../src/imageio/storage/picasa.c:1300
+#: ../src/imageio/format/pdf.c:577 ../src/imageio/storage/facebook.c:1108
+#: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:170
+#: ../src/imageio/storage/latex.c:171 ../src/imageio/storage/picasa.c:1299
 #: ../src/libs/collect.h:32 ../src/libs/metadata.c:334
 #: ../src/libs/metadata_view.c:115
 msgid "title"
 msgstr "títol"
 
-#: ../src/imageio/format/pdf.c:589
+#: ../src/imageio/format/pdf.c:587
 msgid "enter the title of the pdf"
 msgstr "introduïu el títol del pdf"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:602 ../src/libs/print_settings.c:1082
+#: ../src/imageio/format/pdf.c:600 ../src/libs/print_settings.c:1082
 msgid "paper size"
 msgstr "mida de paper"
 
-#: ../src/imageio/format/pdf.c:607
+#: ../src/imageio/format/pdf.c:605
 msgid ""
 "paper size of the pdf\n"
 "either one from the list or \"<width> [unit] x <height> <unit>\n"
@@ -3394,30 +3488,30 @@ msgstr ""
 "qualsevol de la llista or \"<amplada> [unitat] x <alçada> <unitat>\n"
 "exemple: 210 mm x 2.97 cm"
 
-#: ../src/imageio/format/pdf.c:617
+#: ../src/imageio/format/pdf.c:615
 msgid "page orientation"
 msgstr "orientació de pàgina"
 
-#: ../src/imageio/format/pdf.c:618 ../src/iop/borders.c:994
+#: ../src/imageio/format/pdf.c:616 ../src/iop/borders.c:994
 #: ../src/libs/print_settings.c:1091
 msgid "portrait"
 msgstr "vertical"
 
-#: ../src/imageio/format/pdf.c:619 ../src/iop/borders.c:995
+#: ../src/imageio/format/pdf.c:617 ../src/iop/borders.c:995
 #: ../src/libs/print_settings.c:1092
 msgid "landscape"
 msgstr "apaisat"
 
-#: ../src/imageio/format/pdf.c:622
+#: ../src/imageio/format/pdf.c:620
 msgid "paper orientation of the pdf"
 msgstr "Orientació del paper al pdf"
 
 #. border
-#: ../src/imageio/format/pdf.c:627
+#: ../src/imageio/format/pdf.c:625
 msgid "border"
 msgstr "vora"
 
-#: ../src/imageio/format/pdf.c:637
+#: ../src/imageio/format/pdf.c:635
 msgid ""
 "empty space around the pdf\n"
 "format: size + unit\n"
@@ -3428,31 +3522,31 @@ msgstr ""
 "exemples: 10 mm, 1 polzada"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:649
+#: ../src/imageio/format/pdf.c:647
 msgid "dpi"
 msgstr "dpi"
 
-#: ../src/imageio/format/pdf.c:657
+#: ../src/imageio/format/pdf.c:655
 msgid "dpi of the images inside the pdf"
 msgstr "dpi (punts per polzada) de les imatges al pdf"
 
-#: ../src/imageio/format/pdf.c:664
+#: ../src/imageio/format/pdf.c:662
 msgid "rotate images"
 msgstr "gira imatges"
 
-#: ../src/imageio/format/pdf.c:665 ../src/imageio/format/pdf.c:690
-#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1882
+#: ../src/imageio/format/pdf.c:663 ../src/imageio/format/pdf.c:688
+#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1866
 #: ../src/libs/export.c:585 ../src/libs/metadata_view.c:257
 msgid "no"
 msgstr "no"
 
-#: ../src/imageio/format/pdf.c:666 ../src/imageio/format/pdf.c:691
-#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1883
+#: ../src/imageio/format/pdf.c:664 ../src/imageio/format/pdf.c:689
+#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1867
 #: ../src/libs/export.c:586 ../src/libs/metadata_view.c:257
 msgid "yes"
 msgstr "sí"
 
-#: ../src/imageio/format/pdf.c:669
+#: ../src/imageio/format/pdf.c:667
 msgid ""
 "images can be rotated to match the pdf orientation to waste less space when "
 "printing"
@@ -3460,55 +3554,55 @@ msgstr ""
 "Les imatges es poden girar per ajustar-les a l'orientació del pdf aprofitant "
 "millor l'espai en imprimir"
 
-#: ../src/imageio/format/pdf.c:676
+#: ../src/imageio/format/pdf.c:674
 msgid "TODO: pages"
 msgstr "PENDENT: pàgines"
 
-#: ../src/imageio/format/pdf.c:678
+#: ../src/imageio/format/pdf.c:676
 msgid "single images"
 msgstr "imatges individuals"
 
-#: ../src/imageio/format/pdf.c:679
+#: ../src/imageio/format/pdf.c:677
 msgid "contact sheet"
 msgstr "full de contactes"
 
 #. gtk_grid_attach(grid, GTK_WIDGET(d->pages), 0, ++line, 2, 1);
 #. g_signal_connect(G_OBJECT(d->pages), "value-changed", G_CALLBACK(pages_toggle_callback), self);
-#: ../src/imageio/format/pdf.c:682
+#: ../src/imageio/format/pdf.c:680
 msgid "what pages should be added to the pdf"
 msgstr "quines pàgines cal afegir al pdf"
 
-#: ../src/imageio/format/pdf.c:689
+#: ../src/imageio/format/pdf.c:687
 msgid "embed icc profiles"
 msgstr "incrusta perfils ICC"
 
-#: ../src/imageio/format/pdf.c:694
+#: ../src/imageio/format/pdf.c:692
 msgid "images can be tagged with their icc profile"
 msgstr "les imatges poden ser etiquetades amb el seu perfil ICC"
 
-#: ../src/imageio/format/pdf.c:700 ../src/imageio/format/png.c:467
+#: ../src/imageio/format/pdf.c:698 ../src/imageio/format/png.c:467
 #: ../src/imageio/format/tiff.c:407
 msgid "bit depth"
 msgstr "bits per color"
 
-#: ../src/imageio/format/pdf.c:710
+#: ../src/imageio/format/pdf.c:708
 msgid "bits per channel of the embedded images"
 msgstr "bits per canal de les imatges incrustades"
 
-#: ../src/imageio/format/pdf.c:716 ../src/imageio/format/tiff.c:421
+#: ../src/imageio/format/pdf.c:714 ../src/imageio/format/tiff.c:421
 #: ../src/iop/graduatednd.c:1147
 msgid "compression"
 msgstr "compressió"
 
-#: ../src/imageio/format/pdf.c:717 ../src/imageio/format/tiff.c:422
+#: ../src/imageio/format/pdf.c:715 ../src/imageio/format/tiff.c:422
 msgid "uncompressed"
 msgstr "sense comprimir"
 
-#: ../src/imageio/format/pdf.c:718 ../src/imageio/format/tiff.c:423
+#: ../src/imageio/format/pdf.c:716 ../src/imageio/format/tiff.c:423
 msgid "deflate"
 msgstr "deflació"
 
-#: ../src/imageio/format/pdf.c:721
+#: ../src/imageio/format/pdf.c:719
 msgid ""
 "method used for image compression\n"
 "uncompressed -- fast but big files\n"
@@ -3518,23 +3612,23 @@ msgstr ""
 "sense comprimir -- ràpid, però dóna arxius grossos\n"
 "deflació -- arxius més petits, però més lent"
 
-#: ../src/imageio/format/pdf.c:729
+#: ../src/imageio/format/pdf.c:727
 msgid "image mode"
 msgstr "mode d'imatge"
 
-#: ../src/imageio/format/pdf.c:730
+#: ../src/imageio/format/pdf.c:728
 msgid "normal"
 msgstr "normal"
 
-#: ../src/imageio/format/pdf.c:731
+#: ../src/imageio/format/pdf.c:729
 msgid "draft"
 msgstr "esborrany"
 
-#: ../src/imageio/format/pdf.c:732
+#: ../src/imageio/format/pdf.c:730
 msgid "debug"
 msgstr "depuració"
 
-#: ../src/imageio/format/pdf.c:735
+#: ../src/imageio/format/pdf.c:733
 msgid ""
 "normal -- just put the images into the pdf\n"
 "draft -- images are replaced with boxes\n"
@@ -3544,7 +3638,7 @@ msgstr ""
 "esborrany -- les imatges es substitueixen per requadres\n"
 "depuració -- només mostra els contorns unint els requadres"
 
-#: ../src/imageio/format/pfm.c:109
+#: ../src/imageio/format/pfm.c:118
 msgid "PFM (float)"
 msgstr "PFM (float)"
 
@@ -3628,13 +3722,13 @@ msgstr "gràfic"
 msgid "file on disk"
 msgstr "fitxer al disc"
 
-#: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:105
-#: ../src/imageio/storage/latex.c:105
+#: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:104
+#: ../src/imageio/storage/latex.c:104
 msgid "_select as output destination"
 msgstr "_Selecciona com a destinació de sortida"
 
-#: ../src/imageio/storage/disk.c:145 ../src/imageio/storage/gallery.c:158
-#: ../src/imageio/storage/latex.c:158
+#: ../src/imageio/storage/disk.c:145 ../src/imageio/storage/gallery.c:157
+#: ../src/imageio/storage/latex.c:157
 msgid ""
 "enter the path where to put exported images\n"
 "recognized variables:"
@@ -3654,8 +3748,8 @@ msgstr "crea un únic nom d'arxiu"
 msgid "overwrite"
 msgstr "sobreescriu"
 
-#: ../src/imageio/storage/disk.c:251 ../src/imageio/storage/gallery.c:265
-#: ../src/imageio/storage/latex.c:260
+#: ../src/imageio/storage/disk.c:251 ../src/imageio/storage/gallery.c:264
+#: ../src/imageio/storage/latex.c:259
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "no s'ha pogut crear el directori `%s'!"
@@ -3666,7 +3760,7 @@ msgid "could not write to directory `%s'!"
 msgstr "no s'ha pogut escriure al directori `%s'!"
 
 #: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:142
-#: ../src/imageio/storage/gallery.c:374 ../src/imageio/storage/latex.c:350
+#: ../src/imageio/storage/gallery.c:373 ../src/imageio/storage/latex.c:349
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgid_plural "%d/%d exported to `%s%s'"
@@ -3761,7 +3855,7 @@ msgid "create new album"
 msgstr "crea un àlbum nou"
 
 #: ../src/imageio/storage/facebook.c:953 ../src/imageio/storage/picasa.c:1096
-#: ../src/imageio/storage/picasa.c:1255
+#: ../src/imageio/storage/picasa.c:1254
 msgid "logout"
 msgstr "desconnecta"
 
@@ -3770,8 +3864,8 @@ msgstr "desconnecta"
 #: ../src/imageio/storage/facebook.c:1026
 #: ../src/imageio/storage/facebook.c:1052
 #: ../src/imageio/storage/facebook.c:1171 ../src/imageio/storage/flickr.c:474
-#: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1259
-#: ../src/imageio/storage/picasa.c:1272 ../src/imageio/storage/picasa.c:1343
+#: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1258
+#: ../src/imageio/storage/picasa.c:1271 ../src/imageio/storage/picasa.c:1342
 msgid "login"
 msgstr "login"
 
@@ -3780,7 +3874,7 @@ msgid "facebook webalbum"
 msgstr "àlbum web de Facebook"
 
 #: ../src/imageio/storage/facebook.c:1109 ../src/imageio/storage/flickr.c:547
-#: ../src/imageio/storage/picasa.c:1301
+#: ../src/imageio/storage/picasa.c:1300
 msgid "summary"
 msgstr "resum"
 
@@ -3804,11 +3898,11 @@ msgstr "públic"
 msgid "friends of friends"
 msgstr "amics dels amics"
 
-#: ../src/imageio/storage/facebook.c:1303 ../src/imageio/storage/picasa.c:1456
+#: ../src/imageio/storage/facebook.c:1303 ../src/imageio/storage/picasa.c:1455
 msgid "unable to create album, no title provided"
 msgstr "no s'ha pogut crear àlbum, manca el títol"
 
-#: ../src/imageio/storage/facebook.c:1312 ../src/imageio/storage/picasa.c:1464
+#: ../src/imageio/storage/facebook.c:1312 ../src/imageio/storage/picasa.c:1463
 msgid "unable to create album"
 msgstr "no s'ha pogut crear el nou àlbum"
 
@@ -3930,20 +4024,20 @@ msgid_plural "%d/%d exported to flickr webalbum"
 msgstr[0] "Se n'ha exportat %d/%d a l'àlbum web Flickr"
 msgstr[1] "Se n'han exportat %d/%d a l'àlbum web Flickr"
 
-#: ../src/imageio/storage/gallery.c:68
+#: ../src/imageio/storage/gallery.c:67
 msgid "website gallery"
 msgstr "galeria web"
 
-#: ../src/imageio/storage/gallery.c:177
+#: ../src/imageio/storage/gallery.c:176
 msgid "enter the title of the website"
 msgstr "entreu el títol del lloc web"
 
-#: ../src/imageio/storage/latex.c:68
+#: ../src/imageio/storage/latex.c:67
 msgid "LaTeX book template"
 msgstr "plantilla de llibre LaTeX"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
-#: ../src/imageio/storage/latex.c:181
+#: ../src/imageio/storage/latex.c:180
 msgid "enter the title of the book"
 msgstr "entreu el títol del llibre"
 
@@ -3978,16 +4072,16 @@ msgstr "codi de verificació:"
 msgid "please enter the verification code"
 msgstr "introduïu el codi de verificació"
 
-#: ../src/imageio/storage/picasa.c:1287
+#: ../src/imageio/storage/picasa.c:1286
 msgid "google+ photos"
 msgstr "google+ fotos"
 
-#: ../src/imageio/storage/picasa.c:1474
+#: ../src/imageio/storage/picasa.c:1473
 msgid "unable to export photo to google+ album"
 msgstr "no s'ha pogut exportar a l'àlbum Google+"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1487
+#: ../src/imageio/storage/picasa.c:1486
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgid_plural "%d/%d exported to google+ album"
@@ -4033,62 +4127,60 @@ msgstr "enlluerna (bloom)"
 msgid "clarity"
 msgstr "claredat"
 
-#: ../src/iop/atrous.c:1414
+#: ../src/iop/atrous.c:1419
 msgid "coarse"
 msgstr "aspre"
 
-#: ../src/iop/atrous.c:1421
+#: ../src/iop/atrous.c:1426
 msgid "fine"
 msgstr "fi"
 
-#: ../src/iop/atrous.c:1433
+#: ../src/iop/atrous.c:1438
 msgid "contrasty"
 msgstr "contrastat"
 
-#: ../src/iop/atrous.c:1434 ../src/iop/atrous.c:1438
+#: ../src/iop/atrous.c:1439 ../src/iop/atrous.c:1443
 msgid "smooth"
 msgstr "suau"
 
-#: ../src/iop/atrous.c:1439
+#: ../src/iop/atrous.c:1444
 msgid "noisy"
 msgstr "sorollós"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1442
+#: ../src/iop/atrous.c:1447
 msgid "bold"
 msgstr "marcat"
 
-#: ../src/iop/atrous.c:1443
+#: ../src/iop/atrous.c:1448
 msgid "dull"
 msgstr "fluix"
 
-#: ../src/iop/atrous.c:1645 ../src/iop/equalizer.c:389
-#: ../src/iop/nlmeans.c:857
+#: ../src/iop/atrous.c:1656 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:857
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1647
+#: ../src/iop/atrous.c:1658
 msgid "change lightness at each feature size"
 msgstr ""
 "canvia la lluminositat per les diferents\n"
 "dimensions dels detalls de la imatge"
 
-#: ../src/iop/atrous.c:1650 ../src/iop/equalizer.c:390
-#: ../src/iop/nlmeans.c:859
+#: ../src/iop/atrous.c:1661 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:859
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/iop/atrous.c:1652
+#: ../src/iop/atrous.c:1663
 msgid "change color saturation at each feature size"
 msgstr ""
 "canvia la saturació per les diferents\n"
 "dimensions dels detalls de la imatge"
 
-#: ../src/iop/atrous.c:1654
+#: ../src/iop/atrous.c:1665
 msgid "edges"
 msgstr "vores"
 
-#: ../src/iop/atrous.c:1656
+#: ../src/iop/atrous.c:1667
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -4097,168 +4189,168 @@ msgstr ""
 "per les diferents dimensions dels detalls de la imatge\n"
 "només canvia resultat de les pestanyes luma i chroma"
 
-#: ../src/iop/atrous.c:1682 ../src/iop/colorzones.c:1096
+#: ../src/iop/atrous.c:1693 ../src/iop/colorzones.c:1095
 #: ../src/iop/soften.c:722
 msgid "mix"
 msgstr "mescla"
 
-#: ../src/iop/atrous.c:1683 ../src/iop/colorzones.c:1098
+#: ../src/iop/atrous.c:1694 ../src/iop/colorzones.c:1097
 msgid "make effect stronger or weaker"
 msgstr "fa l'efecte més fort o més feble"
 
-#: ../src/iop/ashift.c:104
+#: ../src/iop/ashift.c:111
 msgid "perspective correction"
 msgstr "correcció de perspectiva"
 
-#: ../src/iop/ashift.c:492 ../src/iop/watermark.c:254
+#: ../src/iop/ashift.c:509 ../src/iop/watermark.c:253
 msgctxt "accel"
 msgid "rotation"
 msgstr "gir"
 
-#: ../src/iop/ashift.c:493
+#: ../src/iop/ashift.c:510
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "desplaça l'òptica (v)"
 
-#: ../src/iop/ashift.c:494
+#: ../src/iop/ashift.c:511
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "desplaça l'òptica (h)"
 
-#: ../src/iop/ashift.c:495
+#: ../src/iop/ashift.c:512
 msgctxt "accel"
 msgid "shear"
 msgstr "cisalla"
 
-#: ../src/iop/ashift.c:2352
+#: ../src/iop/ashift.c:2487
 msgid "automatic cropping failed"
 msgstr "l'escapçat automàtic ha fallat"
 
-#: ../src/iop/ashift.c:2372
+#: ../src/iop/ashift.c:2507
 msgid "data pending - please repeat"
 msgstr "dades pendents - repetiu"
 
-#: ../src/iop/ashift.c:2378
+#: ../src/iop/ashift.c:2513
 msgid "could not detect structural data in image"
 msgstr "no s'han detectat dades d'estructura a la imatge"
 
-#: ../src/iop/ashift.c:2389
+#: ../src/iop/ashift.c:2524
 msgid "could not run outlier removal"
 msgstr "no s'han pogut eliminar valors extrems"
 
-#: ../src/iop/ashift.c:2443
+#: ../src/iop/ashift.c:2578
 msgid "not enough structure for automatic correction"
 msgstr "estructura insuficient per la correcció automàtica"
 
-#: ../src/iop/ashift.c:2447
+#: ../src/iop/ashift.c:2583
 msgid "automatic correction failed, please correct manually"
 msgstr "ha fallat la correcció automàtica, corregiu manualment."
 
-#: ../src/iop/ashift.c:3950 ../src/iop/ashift.c:3951 ../src/iop/ashift.c:4047
-#: ../src/iop/ashift.c:4048
+#: ../src/iop/ashift.c:4162 ../src/iop/ashift.c:4163 ../src/iop/ashift.c:4262
+#: ../src/iop/ashift.c:4263
 #, c-format
 msgid "lens shift (%s)"
 msgstr "desplaça l'òptica (%s)"
 
-#: ../src/iop/ashift.c:3950 ../src/iop/ashift.c:3951 ../src/iop/ashift.c:4047
-#: ../src/iop/ashift.c:4048 ../src/iop/clipping.c:1566
-#: ../src/iop/clipping.c:1855 ../src/iop/clipping.c:1874
+#: ../src/iop/ashift.c:4162 ../src/iop/ashift.c:4163 ../src/iop/ashift.c:4262
+#: ../src/iop/ashift.c:4263 ../src/iop/clipping.c:1550
+#: ../src/iop/clipping.c:1839 ../src/iop/clipping.c:1858
 msgid "horizontal"
 msgstr "horitzontal"
 
-#: ../src/iop/ashift.c:3950 ../src/iop/ashift.c:3951 ../src/iop/ashift.c:4047
-#: ../src/iop/ashift.c:4048 ../src/iop/clipping.c:1565
-#: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1873
+#: ../src/iop/ashift.c:4162 ../src/iop/ashift.c:4163 ../src/iop/ashift.c:4262
+#: ../src/iop/ashift.c:4263 ../src/iop/clipping.c:1549
+#: ../src/iop/clipping.c:1840 ../src/iop/clipping.c:1857
 msgid "vertical"
 msgstr "vertical"
 
-#: ../src/iop/ashift.c:4144 ../src/iop/graduatednd.c:1154
-#: ../src/iop/watermark.c:1297
+#: ../src/iop/ashift.c:4363 ../src/iop/graduatednd.c:1154
+#: ../src/iop/watermark.c:1352
 msgid "rotation"
 msgstr "gir"
 
-#: ../src/iop/ashift.c:4150
+#: ../src/iop/ashift.c:4369
 msgid "lens shift (vertical)"
 msgstr "desplaça l'òptica (vertical)"
 
-#: ../src/iop/ashift.c:4155
+#: ../src/iop/ashift.c:4374
 msgid "lens shift (horizontal)"
 msgstr "desplaça l'òptica (horitzontal)"
 
-#: ../src/iop/ashift.c:4160
+#: ../src/iop/ashift.c:4379
 msgid "shear"
 msgstr "cisalla"
 
-#: ../src/iop/ashift.c:4165 ../src/iop/clipping.c:2007
+#: ../src/iop/ashift.c:4384 ../src/iop/clipping.c:1989
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "guies"
 
-#: ../src/iop/ashift.c:4171 ../src/iop/clipping.c:1881
+#: ../src/iop/ashift.c:4390 ../src/iop/clipping.c:1865
 msgid "automatic cropping"
 msgstr "escapçat automàtic"
 
-#: ../src/iop/ashift.c:4173
+#: ../src/iop/ashift.c:4392
 msgid "largest area"
 msgstr "àrea més amplia"
 
-#: ../src/iop/ashift.c:4174
+#: ../src/iop/ashift.c:4393
 msgid "original format"
 msgstr "format original"
 
-#: ../src/iop/ashift.c:4178
+#: ../src/iop/ashift.c:4397
 msgid "lens model"
 msgstr "model de lent"
 
-#: ../src/iop/ashift.c:4179
+#: ../src/iop/ashift.c:4398
 msgid "generic"
 msgstr "genèric"
 
-#: ../src/iop/ashift.c:4180
+#: ../src/iop/ashift.c:4399
 msgid "specific"
 msgstr "específic"
 
-#: ../src/iop/ashift.c:4193
+#: ../src/iop/ashift.c:4412
 msgid "crop factor"
 msgstr "factor de retall"
 
-#: ../src/iop/ashift.c:4198
+#: ../src/iop/ashift.c:4417
 msgid "lens dependence"
 msgstr "dependència de l'òptica"
 
-#: ../src/iop/ashift.c:4208
+#: ../src/iop/ashift.c:4427
 msgid "aspect adjust"
 msgstr "ajustament d'aspecte"
 
-#: ../src/iop/ashift.c:4218
+#: ../src/iop/ashift.c:4437
 msgid "automatic fit"
 msgstr "ajustament automàtic"
 
-#: ../src/iop/ashift.c:4237
+#: ../src/iop/ashift.c:4456
 msgid "get structure"
 msgstr "obté estructura"
 
-#: ../src/iop/ashift.c:4282
+#: ../src/iop/ashift.c:4501
 msgid "rotate image"
 msgstr "gira imatge"
 
-#: ../src/iop/ashift.c:4283 ../src/iop/ashift.c:4284
+#: ../src/iop/ashift.c:4502 ../src/iop/ashift.c:4503
 msgid "apply lens shift correction in one direction"
 msgstr "aplica la correcció per desplaçament d'òptica en una direcció"
 
-#: ../src/iop/ashift.c:4285
+#: ../src/iop/ashift.c:4504
 msgid "shear the image along one diagonal"
 msgstr "estira o escurça la imatge en sentit d'una diagonal"
 
-#: ../src/iop/ashift.c:4286
+#: ../src/iop/ashift.c:4505
 msgid "display guide lines overlay"
 msgstr "mostra sobreposades les línies guia"
 
-#: ../src/iop/ashift.c:4287 ../src/iop/clipping.c:1884
+#: ../src/iop/ashift.c:4506 ../src/iop/clipping.c:1868
 msgid "automatically crop to avoid black edges"
 msgstr "escapça automàticament evitant vores negres"
 
-#: ../src/iop/ashift.c:4288
+#: ../src/iop/ashift.c:4507
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -4266,13 +4358,13 @@ msgstr ""
 "model òptic de la correcció de perspectiva: genèric, o segons la distància "
 "focal"
 
-#: ../src/iop/ashift.c:4290
+#: ../src/iop/ashift.c:4509
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "distància focal de la lent, valor per defecte extret de dades exif si "
 "existeixen"
 
-#: ../src/iop/ashift.c:4292
+#: ../src/iop/ashift.c:4511
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -4280,7 +4372,7 @@ msgstr ""
 "factor de retall del sensor de la càmera, valor per defecte extret de les "
 "dades exif si existeixen, sovint caldrà definir-ho manualment"
 
-#: ../src/iop/ashift.c:4295
+#: ../src/iop/ashift.c:4514
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -4288,11 +4380,11 @@ msgstr ""
 "nivell de dependència respecte l'òptica en la correcció, ajusteu al màxim "
 "per dependència plena de l'òptica, ajusteu a cero pel cas genèric"
 
-#: ../src/iop/ashift.c:4297
+#: ../src/iop/ashift.c:4516
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr "ajusta la relació d'aspecte canviant l'escala horitzontal i vertical"
 
-#: ../src/iop/ashift.c:4298
+#: ../src/iop/ashift.c:4517
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4302,7 +4394,7 @@ msgstr ""
 "ctrl-clic per ajustar només rotació\n"
 "majs-clic per ajustar només desplaçament de l'òptica"
 
-#: ../src/iop/ashift.c:4301
+#: ../src/iop/ashift.c:4520
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4312,7 +4404,7 @@ msgstr ""
 "ctrl-clic per ajustar només rotació\n"
 "majs-clic per ajustar només desplaçament de l'òptica"
 
-#: ../src/iop/ashift.c:4304
+#: ../src/iop/ashift.c:4523
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -4326,7 +4418,7 @@ msgstr ""
 "majs-clic per ajustar només desplaçament de l'òptica\n"
 "ctrl-majs-clic per ajustar només rotació i desplaçament de l'òptica"
 
-#: ../src/iop/ashift.c:4310
+#: ../src/iop/ashift.c:4529
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement\n"
@@ -4338,116 +4430,136 @@ msgstr ""
 "majs-clic: millora addicional dels detalls\n"
 "ctrl-majs-clic:  combinació d'ambdós mètodes"
 
-#: ../src/iop/ashift.c:4314
+#: ../src/iop/ashift.c:4533
 msgid "remove line structure information"
 msgstr "elimina la informació d'estructura de línies"
 
-#: ../src/iop/ashift.c:4315
+#: ../src/iop/ashift.c:4534
 msgid "toggle visibility of structure lines"
 msgstr "permuta la visibilitat de les línies d'estructura"
 
-#: ../src/iop/basecurve.c:94
+#: ../src/iop/basecurve.c:114
 msgid "neutral"
 msgstr "neutre"
 
-#: ../src/iop/basecurve.c:95
+#: ../src/iop/basecurve.c:115
 msgid "canon eos like"
 msgstr "com una Canon EOS"
 
-#: ../src/iop/basecurve.c:96
+#: ../src/iop/basecurve.c:116
 msgid "canon eos like alternate"
 msgstr "com una Canon EOS (alternatiu)"
 
-#: ../src/iop/basecurve.c:97
+#: ../src/iop/basecurve.c:117
 msgid "nikon like"
 msgstr "com una Nikon"
 
-#: ../src/iop/basecurve.c:98
+#: ../src/iop/basecurve.c:118
 msgid "nikon like alternate"
 msgstr "com una Nikon (alternatiu)"
 
-#: ../src/iop/basecurve.c:99
+#: ../src/iop/basecurve.c:119
 msgid "sony alpha like"
 msgstr "com una Sony Alpha"
 
-#: ../src/iop/basecurve.c:100
+#: ../src/iop/basecurve.c:120
 msgid "pentax like"
 msgstr "com una Pentax"
 
-#: ../src/iop/basecurve.c:101
+#: ../src/iop/basecurve.c:121
 msgid "ricoh like"
 msgstr "com una Ricoh"
 
-#: ../src/iop/basecurve.c:102
+#: ../src/iop/basecurve.c:122
 msgid "olympus like"
 msgstr "com una Olympus"
 
-#: ../src/iop/basecurve.c:103
+#: ../src/iop/basecurve.c:123
 msgid "olympus like alternate"
 msgstr "com una Olympus (alternatiu)"
 
-#: ../src/iop/basecurve.c:104
+#: ../src/iop/basecurve.c:124
 msgid "panasonic like"
 msgstr "com una Panasonic"
 
-#: ../src/iop/basecurve.c:105
+#: ../src/iop/basecurve.c:125
 msgid "leica like"
 msgstr "com una Leica"
 
-#: ../src/iop/basecurve.c:106
+#: ../src/iop/basecurve.c:126
 msgid "kodak easyshare like"
 msgstr "com una kodak easyshare"
 
-#: ../src/iop/basecurve.c:107
+#: ../src/iop/basecurve.c:127
 msgid "konica minolta like"
 msgstr "com una konica minolta"
 
-#: ../src/iop/basecurve.c:108
+#: ../src/iop/basecurve.c:128
 msgid "samsung like"
 msgstr "com una Samsung"
 
-#: ../src/iop/basecurve.c:109
+#: ../src/iop/basecurve.c:129
 msgid "fujifilm like"
 msgstr "com una fujifilm"
 
-#: ../src/iop/basecurve.c:110
+#: ../src/iop/basecurve.c:130
 msgid "nokia like"
 msgstr "com un Nokia"
 
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:158
+#: ../src/iop/basecurve.c:178
 msgid "cubic spline"
 msgstr "spline cúbic"
 
-#: ../src/iop/basecurve.c:213
+#: ../src/iop/basecurve.c:235
 msgid "base curve"
 msgstr "corba base"
 
-#: ../src/iop/basecurve.c:859
+#: ../src/iop/basecurve.c:1307
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscissa: entrada, ordenada: sortida. actua en canals RGB"
 
-#: ../src/iop/basecurve.c:864 ../src/iop/lens.c:2170
-#: ../src/iop/vignette.c:1145 ../src/iop/watermark.c:1294
+#: ../src/iop/basecurve.c:1312 ../src/iop/lens.c:2174
+#: ../src/iop/vignette.c:1145 ../src/iop/watermark.c:1349
 msgid "scale"
 msgstr "escala"
 
-#: ../src/iop/basecurve.c:865 ../src/iop/profile_gamma.c:321
-#: ../src/iop/tonecurve.c:434
+#: ../src/iop/basecurve.c:1313 ../src/iop/profile_gamma.c:321
+#: ../src/iop/tonecurve.c:435
 msgid "linear"
 msgstr "lineal"
 
-#: ../src/iop/basecurve.c:866
+#: ../src/iop/basecurve.c:1314
 msgid "logarithmic"
 msgstr "logarítmic"
 
-#: ../src/iop/basecurve.c:867
+#: ../src/iop/basecurve.c:1315
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
 msgstr ""
 "escala a emprar a la gràfica. L'escala logarítmica permet un control més "
 "precís a prop del negre"
+
+#: ../src/iop/basecurve.c:1321
+msgid "fusion"
+msgstr "fusió"
+
+#: ../src/iop/basecurve.c:1323
+msgid "0ev, +3ev"
+msgstr "0ev, +3ev"
+
+#: ../src/iop/basecurve.c:1324
+msgid "0ev, +3ev, +6ev"
+msgstr "0ev, +3ev, +6ev"
+
+#: ../src/iop/basecurve.c:1325
+msgid ""
+"fuse this image stopped up a couple of times with itself, to compress high "
+"dynamic range. expose for the highlights before use."
+msgstr ""
+"Fusioneu aquesta imatge amb ella mateixa variant l'exposició, per comprimir "
+"l'alt rang dinàmic. Exposeu per les altes llums abans de fer-ho. "
 
 #: ../src/iop/bilat.c:61 ../src/iop/clahe.c:64
 msgid "local contrast"
@@ -4457,7 +4569,7 @@ msgstr "contrast local"
 msgid "coarseness"
 msgstr "aspror"
 
-#: ../src/iop/bilat.c:255 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:661
+#: ../src/iop/bilat.c:255 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:674
 msgid "contrast"
 msgstr "contrast"
 
@@ -4476,41 +4588,41 @@ msgid "radius"
 msgstr "radi"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:169
+#: ../src/iop/temperature.c:170
 msgctxt "accel"
 msgid "red"
 msgstr "vermell"
 
 #: ../src/iop/bilateral.cc:86 ../src/iop/channelmixer.c:131
-#: ../src/iop/temperature.c:170
+#: ../src/iop/temperature.c:171
 msgctxt "accel"
 msgid "green"
 msgstr "verd"
 
 #: ../src/iop/bilateral.cc:87 ../src/iop/channelmixer.c:132
-#: ../src/iop/temperature.c:171
+#: ../src/iop/temperature.c:172
 msgctxt "accel"
 msgid "blue"
 msgstr "blau"
 
-#: ../src/iop/bilateral.cc:344
+#: ../src/iop/bilateral.cc:345
 msgid "spatial extent of the gaussian"
 msgstr "amplada espacial de la gaussiana"
 
-#: ../src/iop/bilateral.cc:345
+#: ../src/iop/bilateral.cc:346
 msgid "how much to blur red"
 msgstr "grau de difuminat del vermell"
 
-#: ../src/iop/bilateral.cc:346
+#: ../src/iop/bilateral.cc:347
 msgid "how much to blur green"
 msgstr "grau de difuminat del verd"
 
-#: ../src/iop/bilateral.cc:347
+#: ../src/iop/bilateral.cc:348
 msgid "how much to blur blue"
 msgstr "grau de difuminat del blau"
 
-#: ../src/iop/bilateral.cc:349 ../src/iop/clahe.c:312 ../src/iop/dither.c:796
-#: ../src/iop/lowpass.c:660 ../src/iop/shadhi.c:821 ../src/iop/sharpen.c:756
+#: ../src/iop/bilateral.cc:350 ../src/iop/clahe.c:312 ../src/iop/dither.c:796
+#: ../src/iop/lowpass.c:673 ../src/iop/shadhi.c:832 ../src/iop/sharpen.c:756
 msgid "radius"
 msgstr "radi"
 
@@ -4539,7 +4651,7 @@ msgid "the size of bloom"
 msgstr "amplada de la llum difusa"
 
 #: ../src/iop/bloom.c:519 ../src/iop/colorreconstruction.c:1372
-#: ../src/iop/defringe.c:462 ../src/iop/hotpixels.c:432
+#: ../src/iop/defringe.c:461 ../src/iop/hotpixels.c:452
 #: ../src/iop/sharpen.c:763
 msgid "threshold"
 msgstr "llindar"
@@ -4548,8 +4660,8 @@ msgstr "llindar"
 msgid "the threshold of light"
 msgstr "llindar de llum"
 
-#: ../src/iop/bloom.c:525 ../src/iop/denoiseprofile.c:2060
-#: ../src/iop/grain.c:528 ../src/iop/hotpixels.c:440 ../src/iop/nlmeans.c:855
+#: ../src/iop/bloom.c:525 ../src/iop/denoiseprofile.c:2073
+#: ../src/iop/grain.c:528 ../src/iop/hotpixels.c:460 ../src/iop/nlmeans.c:855
 #: ../src/iop/velvia.c:378
 msgid "strength"
 msgstr "intensitat"
@@ -4591,7 +4703,7 @@ msgid "15:10 postcard black"
 msgstr "15:10 targeta postal negra"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:911 ../src/libs/import.c:982
+#: ../src/iop/borders.c:911 ../src/libs/import.c:984
 msgid "image"
 msgstr "imatge"
 
@@ -4611,7 +4723,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:916 ../src/iop/clipping.c:1900
+#: ../src/iop/borders.c:916 ../src/iop/clipping.c:1884
 msgid "golden cut"
 msgstr "secció àuria"
 
@@ -4631,7 +4743,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:921 ../src/iop/clipping.c:1890
+#: ../src/iop/borders.c:921 ../src/iop/clipping.c:1874
 msgid "square"
 msgstr "quadrat"
 
@@ -4667,7 +4779,7 @@ msgstr "mida de la vora"
 msgid "size of the border in percent of the full image"
 msgstr "mida de la vora en percentatge de la imatge sencera"
 
-#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1987
+#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1971
 msgid "aspect"
 msgstr "aspecte"
 
@@ -4751,15 +4863,15 @@ msgid "pick frame line color from image"
 msgstr "agafa el color de la línia del marc des de la imatge"
 
 #. make sure you put all your translatable strings into _() !
-#: ../src/iop/cacorrect.c:55
+#: ../src/iop/cacorrect.c:57
 msgid "chromatic aberrations"
 msgstr "aberracions cromàtiques"
 
-#: ../src/iop/cacorrect.c:1545
+#: ../src/iop/cacorrect.c:1558
 msgid "automatic chromatic aberration correction"
 msgstr "correcció automàtica d'aberració cromàtica"
 
-#: ../src/iop/cacorrect.c:1548
+#: ../src/iop/cacorrect.c:1561
 msgid ""
 "automatic chromatic aberration correction\n"
 "disabled for non-Bayer sensors"
@@ -4767,7 +4879,7 @@ msgstr ""
 "correcció automàtica d'aberració cromàtica\n"
 "desactivada per sensors que no són tipus Bayer"
 
-#: ../src/iop/cacorrect.c:1551
+#: ../src/iop/cacorrect.c:1564
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
@@ -4786,24 +4898,24 @@ msgstr "destinació"
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/iop/channelmixer.c:445 ../src/iop/colorize.c:427
 #: ../src/iop/colorreconstruction.c:1375 ../src/iop/colorreconstruction.c:1380
-#: ../src/iop/colorzones.c:1074 ../src/iop/colorzones.c:1105
+#: ../src/iop/colorzones.c:1073 ../src/iop/colorzones.c:1104
 #: ../src/iop/graduatednd.c:1168 ../src/iop/splittoning.c:488
 msgid "hue"
 msgstr "to"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:446 ../src/iop/colisa.c:366
-#: ../src/iop/colorcorrection.c:282 ../src/iop/colorchecker.c:599
-#: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1072
-#: ../src/iop/colorzones.c:1106 ../src/iop/graduatednd.c:1182
-#: ../src/iop/lowpass.c:663 ../src/iop/soften.c:707
+#: ../src/iop/colorcorrection.c:285 ../src/iop/colorchecker.c:1062
+#: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1071
+#: ../src/iop/colorzones.c:1105 ../src/iop/graduatednd.c:1182
+#: ../src/iop/lowpass.c:676 ../src/iop/soften.c:707
 #: ../src/iop/splittoning.c:500 ../src/iop/vignette.c:1148
 msgid "saturation"
 msgstr "saturació"
 
-#: ../src/iop/channelmixer.c:447 ../src/iop/colorchecker.c:581
-#: ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1069
-#: ../src/iop/colorzones.c:1107
+#: ../src/iop/channelmixer.c:447 ../src/iop/colorchecker.c:1044
+#: ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1068
+#: ../src/iop/colorzones.c:1106
 msgid "lightness"
 msgstr "lluminositat"
 
@@ -4876,129 +4988,129 @@ msgstr "intensitat de l'efecte"
 msgid "crop and rotate"
 msgstr "escapça i gira"
 
-#: ../src/iop/clipping.c:1463
+#: ../src/iop/clipping.c:1447
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "ralació de format invàlida. Hauria de ser \"número:número\" "
 
-#: ../src/iop/clipping.c:1567 ../src/iop/clipping.c:1875
+#: ../src/iop/clipping.c:1551 ../src/iop/clipping.c:1859
 msgid "full"
 msgstr "complet"
 
-#: ../src/iop/clipping.c:1568
+#: ../src/iop/clipping.c:1552
 msgid "old system"
 msgstr "sistema antic"
 
-#: ../src/iop/clipping.c:1569
+#: ../src/iop/clipping.c:1553
 msgid "correction applied"
 msgstr "correcció aplicada"
 
-#: ../src/iop/clipping.c:1853 ../src/libs/live_view.c:372
+#: ../src/iop/clipping.c:1837 ../src/libs/live_view.c:372
 msgid "flip"
 msgstr "capgira"
 
-#: ../src/iop/clipping.c:1857 ../src/iop/clipping.c:2044
+#: ../src/iop/clipping.c:1841 ../src/iop/clipping.c:2026
 #: ../src/libs/live_view.c:376
 msgid "both"
 msgstr "tots dos"
 
-#: ../src/iop/clipping.c:1859
+#: ../src/iop/clipping.c:1843
 msgid "mirror image horizontally and/or vertically"
 msgstr "inverteix imatge horitzontalment i/o verticalment"
 
-#: ../src/iop/clipping.c:1864
+#: ../src/iop/clipping.c:1848
 msgid "angle"
 msgstr "angle"
 
-#: ../src/iop/clipping.c:1867
+#: ../src/iop/clipping.c:1851
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "feu clic dret i arrossegueu una línia per dibuixar una línia recta"
 
-#: ../src/iop/clipping.c:1871
+#: ../src/iop/clipping.c:1855
 msgid "keystone"
 msgstr "correcció de perspectiva"
 
-#: ../src/iop/clipping.c:1876
+#: ../src/iop/clipping.c:1860
 msgid "set perspective correction for your image"
 msgstr "ajusta la correcció de perspectiva per la imatge"
 
-#: ../src/iop/clipping.c:1888
+#: ../src/iop/clipping.c:1872
 msgid "freehand"
 msgstr "lliure"
 
-#: ../src/iop/clipping.c:1889
+#: ../src/iop/clipping.c:1873
 msgid "original image"
 msgstr "imatge original"
 
-#: ../src/iop/clipping.c:1891
+#: ../src/iop/clipping.c:1875
 msgid "10:8 in print"
 msgstr "10:8 a la impressió"
 
-#: ../src/iop/clipping.c:1892
+#: ../src/iop/clipping.c:1876
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:1893
+#: ../src/iop/clipping.c:1877
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:1894
+#: ../src/iop/clipping.c:1878
 msgid "8.5x11, letter"
 msgstr "8.5x11, carta"
 
-#: ../src/iop/clipping.c:1895
+#: ../src/iop/clipping.c:1879
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:1896
+#: ../src/iop/clipping.c:1880
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:1897
+#: ../src/iop/clipping.c:1881
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:1898
+#: ../src/iop/clipping.c:1882
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:1899
+#: ../src/iop/clipping.c:1883
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:1901
+#: ../src/iop/clipping.c:1885
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:1902
+#: ../src/iop/clipping.c:1886
 msgid "widescreen"
 msgstr "pantalla ampla"
 
-#: ../src/iop/clipping.c:1903
+#: ../src/iop/clipping.c:1887
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:1904
+#: ../src/iop/clipping.c:1888
 msgid "cinemascope"
 msgstr "cinemascope"
 
-#: ../src/iop/clipping.c:1905
+#: ../src/iop/clipping.c:1889
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:1906
+#: ../src/iop/clipping.c:1890
 msgid "anamorphic"
 msgstr "anamòrfic"
 
-#: ../src/iop/clipping.c:1907
+#: ../src/iop/clipping.c:1891
 msgid "3:1, panorama"
 msgstr "3:1, panoràmica"
 
-#: ../src/iop/clipping.c:1939 ../src/iop/clipping.c:1951
+#: ../src/iop/clipping.c:1923 ../src/iop/clipping.c:1935
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "relació de format invàlida per `%s'. Hauria de ser \"número:número\" "
 
-#: ../src/iop/clipping.c:2000
+#: ../src/iop/clipping.c:1982
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -5006,29 +5118,29 @@ msgstr ""
 "definiu la relació d'aspecte\n"
 "ordre de la llista : de més quadrat a menys quadrat"
 
-#: ../src/iop/clipping.c:2036 ../src/libs/live_view.c:368
+#: ../src/iop/clipping.c:2018 ../src/libs/live_view.c:368
 msgid "display guide lines to help compose your photograph"
 msgstr "mostra guies per ajudar-vos a composar la foto"
 
-#: ../src/iop/clipping.c:2040 ../src/iop/clipping.c:2045
+#: ../src/iop/clipping.c:2022 ../src/iop/clipping.c:2027
 #: ../src/libs/live_view.c:377
 msgid "flip guides"
 msgstr "guies per capgirar"
 
-#: ../src/iop/clipping.c:2042 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:2024 ../src/libs/live_view.c:374
 msgid "horizontally"
 msgstr "horitzontalment"
 
-#: ../src/iop/clipping.c:2043 ../src/libs/live_view.c:375
+#: ../src/iop/clipping.c:2025 ../src/libs/live_view.c:375
 msgid "vertically"
 msgstr "verticalment"
 
-#: ../src/iop/clipping.c:3108
+#: ../src/iop/clipping.c:3089
 msgctxt "accel"
 msgid "commit"
 msgstr "commit"
 
-#: ../src/iop/clipping.c:3109
+#: ../src/iop/clipping.c:3090
 msgctxt "accel"
 msgid "angle"
 msgstr "angle"
@@ -5147,192 +5259,114 @@ msgstr "filtre càlid"
 msgid "cooling filter"
 msgstr "filtre fred"
 
-#: ../src/iop/colorcorrection.c:263
+#: ../src/iop/colorcorrection.c:264
 msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"arrosegueu la línia per aplicar split toning. Brillant significa altes "
+"arrossegueu la línia per aplicar split toning. Brillant significa altes "
 "llums, fosc significa ombres. empreu la roda del ratolí per canviar la "
 "saturació."
 
-#: ../src/iop/colorcorrection.c:281
+#: ../src/iop/colorcorrection.c:284
 msgid "set the global saturation"
 msgstr "ajusta la saturació global"
 
-#: ../src/iop/colorchecker.c:45
-msgid "dark skin :A0"
-msgstr "pell fosca :A0"
-
-#: ../src/iop/colorchecker.c:46
-msgid "light skin :A1"
-msgstr "pell clara :A1"
-
-#: ../src/iop/colorchecker.c:47
-msgid "blue sky :A2"
-msgstr "blau cel :A2"
-
-#: ../src/iop/colorchecker.c:48
-msgid "foliage :A3"
-msgstr "vegetació :A3"
-
-#: ../src/iop/colorchecker.c:49
-msgid "blue flower :A4"
-msgstr "flor blava :A4"
-
-#: ../src/iop/colorchecker.c:50
-msgid "bluish green :A5"
-msgstr "verd blavós :A5"
-
-#: ../src/iop/colorchecker.c:51
-msgid "orange :B0"
-msgstr "taronja :B0"
-
-#: ../src/iop/colorchecker.c:52
-msgid "purple red :B1"
-msgstr "vermell porpra :B1"
-
-#: ../src/iop/colorchecker.c:53
-msgid "moderate red :B2"
-msgstr "vermell moderat :B2"
-
-#: ../src/iop/colorchecker.c:54
-msgid "purple :B3"
-msgstr "porpra :B3"
-
-#: ../src/iop/colorchecker.c:55
-msgid "yellow green :B4"
-msgstr "verd grogós :B4"
-
-#: ../src/iop/colorchecker.c:56
-msgid "orange yellow :B5"
-msgstr "groc taronja :B5"
-
-#: ../src/iop/colorchecker.c:57
-msgid "blue :C0"
-msgstr "blau :C0"
-
-#: ../src/iop/colorchecker.c:58
-msgid "green :C1"
-msgstr "verd :C1"
-
-#: ../src/iop/colorchecker.c:59
-msgid "red :C2"
-msgstr "vermell :C2"
-
-#: ../src/iop/colorchecker.c:60
-msgid "yellow :C3"
-msgstr "groc :C3"
-
-#: ../src/iop/colorchecker.c:61
-msgid "magenta :C4"
-msgstr "magenta :C4"
-
-#: ../src/iop/colorchecker.c:62
-msgid "cyan :C5"
-msgstr "cian :C5"
-
-#: ../src/iop/colorchecker.c:63
-msgid "white :D0"
-msgstr "blanc :D0"
-
-#: ../src/iop/colorchecker.c:64
-msgid "neutral 8 :D1"
-msgstr ""
-"neutre\n"
-" 8 :D1"
-
-#: ../src/iop/colorchecker.c:65
-msgid "neutral 65 :D2"
-msgstr "neutre 65 :D2"
-
-#: ../src/iop/colorchecker.c:66
-msgid "neutral 5 :D3"
-msgstr "neutre 5 :D3"
-
-#: ../src/iop/colorchecker.c:67
-msgid "neutral 35 :D4"
-msgstr "neutre 35 :D4"
-
-#: ../src/iop/colorchecker.c:68
-msgid "black :D5"
-msgstr "negre :D5"
-
-#: ../src/iop/colorchecker.c:121
+#: ../src/iop/colorchecker.c:111
 msgid "color checker lut"
 msgstr "color checker lut"
 
-#: ../src/iop/colorchecker.c:515
-#, c-format
-msgid "select patch `%s' (altered patches are marked with an outline)"
-msgstr ""
-"selecciona la mostra `%s' (les mostres modificades es marquen amb una vora)"
+#: ../src/iop/colorchecker.c:262
+msgid "it8 skin tones"
+msgstr "tonalitats de pell it8"
 
-#: ../src/iop/colorchecker.c:572
+#: ../src/iop/colorchecker.c:624 ../src/iop/colorchecker.c:1036
+#, c-format
+msgid "patch #%d"
+msgstr "mostra #%d"
+
+#: ../src/iop/colorchecker.c:926
+#, c-format
+msgid ""
+"(%2.2f %2.2f %2.2f)\n"
+"altered patches are marked with an outline\n"
+"click to select\n"
+"double click to reset\n"
+"right click to delete patch\n"
+"shift-click while color picking to replace patch"
+msgstr ""
+"(%2.2f %2.2f %2.2f)\n"
+"les seccions modificades es marquen amb un contorn\n"
+"clic per seleccionar\n"
+"doble clic per reiniciar reset\n"
+"clic dret per esborrar la secció\n"
+"majs-clic mentre es pren mostra de color, per substituir la secció"
+
+#: ../src/iop/colorchecker.c:1031
 msgid "patch"
 msgstr "mostra"
 
-#: ../src/iop/colorchecker.c:573
+#: ../src/iop/colorchecker.c:1032
 msgid "color checker patch"
 msgstr "mostra color checker"
 
-#: ../src/iop/colorchecker.c:580
+#: ../src/iop/colorchecker.c:1043
 msgid "lightness offset"
 msgstr "decalatge de lluminositat"
 
-#: ../src/iop/colorchecker.c:584
+#: ../src/iop/colorchecker.c:1047
 msgid "chroma offset green/red"
 msgstr "decalatge de chroma verd/vermell"
 
-#: ../src/iop/colorchecker.c:585
+#: ../src/iop/colorchecker.c:1048
 msgid "green/red"
 msgstr "verd/vermell"
 
-#: ../src/iop/colorchecker.c:591
+#: ../src/iop/colorchecker.c:1054
 msgid "chroma offset blue/yellow"
 msgstr "decalatge de chroma blau/groc"
 
-#: ../src/iop/colorchecker.c:592
+#: ../src/iop/colorchecker.c:1055
 msgid "blue/yellow"
 msgstr "blau/groc"
 
-#: ../src/iop/colorchecker.c:598
+#: ../src/iop/colorchecker.c:1061
 msgid "saturation offset"
 msgstr "decalatge de saturació"
 
-#: ../src/iop/colorin.c:108
+#: ../src/iop/colorin.c:110
 msgid "input color profile"
 msgstr "perfil de color d'entrada"
 
-#: ../src/iop/colorin.c:1049
+#: ../src/iop/colorin.c:1498
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "no s'ha trobat la matriu de color`%s'"
 
-#: ../src/iop/colorin.c:1083
+#: ../src/iop/colorin.c:1532
 msgid "input profile could not be generated!"
 msgstr "no s'ha pogut generar el perfil d'entrada"
 
-#: ../src/iop/colorin.c:1141
+#: ../src/iop/colorin.c:1590
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "el perfil d'entrada no suportat s'ha substituït per Rec709 RGB lineal"
 
-#: ../src/iop/colorin.c:1468 ../src/iop/denoiseprofile.c:2056
+#: ../src/iop/colorin.c:1926 ../src/iop/denoiseprofile.c:2069
 #: ../src/libs/export.c:597 ../src/libs/print_settings.c:997
 #: ../src/libs/print_settings.c:1213
 msgid "profile"
 msgstr "perfil"
 
-#: ../src/iop/colorin.c:1477
+#: ../src/iop/colorin.c:1935
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "perfils ICC a %s/color/in o %s/color/in"
 
-#: ../src/iop/colorin.c:1483
+#: ../src/iop/colorin.c:1941
 msgid "gamut clipping"
 msgstr "retall de gamut"
 
-#: ../src/iop/colorin.c:1491
+#: ../src/iop/colorin.c:1949
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "confinar els valors Lab dins del gamut de l'espai de color RGB"
 
@@ -5388,45 +5422,45 @@ msgctxt "accel"
 msgid "acquire as target"
 msgstr "obté com a destinació"
 
-#: ../src/iop/colormapping.c:1047
+#: ../src/iop/colormapping.c:1064
 msgid "source clusters:"
 msgstr "clusters d'origen"
 
-#: ../src/iop/colormapping.c:1056
+#: ../src/iop/colormapping.c:1073
 msgid "target clusters:"
 msgstr "clusters de destinació"
 
-#: ../src/iop/colormapping.c:1069
+#: ../src/iop/colormapping.c:1086
 msgid "acquire as source"
 msgstr "obté com a font"
 
-#: ../src/iop/colormapping.c:1071
+#: ../src/iop/colormapping.c:1088
 msgid "analyze this image as a source image"
 msgstr "analitza aquesta imatge com a imatge font"
 
-#: ../src/iop/colormapping.c:1075
+#: ../src/iop/colormapping.c:1092
 msgid "acquire as target"
 msgstr "obté com a destinació"
 
-#: ../src/iop/colormapping.c:1077
+#: ../src/iop/colormapping.c:1094
 msgid "analyze this image as a target image"
 msgstr "analitza aquesta imatge com a imatge de destinació"
 
-#: ../src/iop/colormapping.c:1082
+#: ../src/iop/colormapping.c:1099
 msgid "number of clusters"
 msgstr "nombre de clusters"
 
-#: ../src/iop/colormapping.c:1084
+#: ../src/iop/colormapping.c:1101
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "nombre de clusters a trobar dins la imatge. canviar el valor reinicia tots "
 "els clusters"
 
-#: ../src/iop/colormapping.c:1089
+#: ../src/iop/colormapping.c:1106
 msgid "color dominance"
 msgstr "dominant de color"
 
-#: ../src/iop/colormapping.c:1090
+#: ../src/iop/colormapping.c:1107
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -5434,65 +5468,69 @@ msgstr ""
 "com es fa el mapatge dels clusters. valors baixos: basant-se en la "
 "proximitat del color, valors alts: basant-se en la dominant de color "
 
-#: ../src/iop/colormapping.c:1097
+#: ../src/iop/colormapping.c:1114
 msgid "histogram equalization"
 msgstr "equalitzat de l'histograma"
 
-#: ../src/iop/colormapping.c:1098
+#: ../src/iop/colormapping.c:1115
 msgid "level of histogram equalization"
 msgstr "nivell d'equalització de l'histograma"
 
-#: ../src/iop/colorout.c:77
+#: ../src/iop/colorout.c:78
 msgid "output color profile"
 msgstr "perfil de color de sortida"
 
-#: ../src/iop/colorout.c:615 ../src/iop/colorout.c:633
+#: ../src/iop/colorout.c:653
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "el perfil de sortida no trobat ha estat substituït per sRGB"
 
-#: ../src/iop/colorout.c:667
+#: ../src/iop/colorout.c:670
+msgid "missing softproof profile has been replaced by sRGB!"
+msgstr "el perfil de simulació no trobat ha estat substituït per sRGB"
+
+#: ../src/iop/colorout.c:713
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "el perfil de sortida no suportat ha estat substituït per sRGB"
 
-#: ../src/iop/colorout.c:803
+#: ../src/iop/colorout.c:851
 msgid "output intent"
 msgstr "prova sortida"
 
 # FIXME
-#: ../src/iop/colorout.c:804 ../src/libs/export.c:617
+#: ../src/iop/colorout.c:852 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1051 ../src/libs/print_settings.c:1262
-#: ../src/views/darkroom.c:1547 ../src/views/lighttable.c:2443
+#: ../src/views/darkroom.c:1721 ../src/views/lighttable.c:2426
 msgid "perceptual"
 msgstr "perceptiu"
 
-#: ../src/iop/colorout.c:805 ../src/libs/export.c:618
+#: ../src/iop/colorout.c:853 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1052 ../src/libs/print_settings.c:1263
-#: ../src/views/darkroom.c:1548 ../src/views/lighttable.c:2444
+#: ../src/views/darkroom.c:1722 ../src/views/lighttable.c:2427
 msgid "relative colorimetric"
 msgstr "mètrica de color relativa"
 
-#: ../src/iop/colorout.c:806 ../src/libs/export.c:619
+#: ../src/iop/colorout.c:854 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1053 ../src/libs/print_settings.c:1264
-#: ../src/views/darkroom.c:1549 ../src/views/lighttable.c:2445
+#: ../src/views/darkroom.c:1723 ../src/views/lighttable.c:2428
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturació"
 
-#: ../src/iop/colorout.c:807 ../src/libs/export.c:620
+#: ../src/iop/colorout.c:855 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1054 ../src/libs/print_settings.c:1265
-#: ../src/views/darkroom.c:1550 ../src/views/lighttable.c:2446
+#: ../src/views/darkroom.c:1724 ../src/views/lighttable.c:2429
 msgid "absolute colorimetric"
 msgstr "mètrica de color absoluta"
 
-#: ../src/iop/colorout.c:816
+#: ../src/iop/colorout.c:864
 msgid "output profile"
 msgstr "ICC sortida"
 
-#: ../src/iop/colorout.c:825
+#: ../src/iop/colorout.c:873
 msgid "rendering intent"
 msgstr "prova de renderitzat"
 
-#: ../src/iop/colorout.c:826
+#: ../src/iop/colorout.c:874
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "perfils ICC a %s/color/out o %s/color/out"
@@ -5520,7 +5558,7 @@ msgstr "to"
 msgid "module `color reconstruction' failed"
 msgstr "el mòdul `reconstrucció de color' ha fallat"
 
-#: ../src/iop/colorreconstruction.c:1373 ../src/iop/shadhi.c:845
+#: ../src/iop/colorreconstruction.c:1373 ../src/iop/shadhi.c:856
 #: ../src/iop/tonemap.cc:298
 msgid "spatial extent"
 msgstr "extensió espacial"
@@ -5625,11 +5663,11 @@ msgstr "tonalitats naturals de pell"
 msgid "black & white film"
 msgstr "pel·lícula blanc i negre"
 
-#: ../src/iop/colorzones.c:1103
+#: ../src/iop/colorzones.c:1102
 msgid "select by"
 msgstr "selecciona segons"
 
-#: ../src/iop/colorzones.c:1104
+#: ../src/iop/colorzones.c:1103
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "trieu el criteri de selecció, serà la abscissa de la gràfica"
 
@@ -5637,25 +5675,25 @@ msgstr "trieu el criteri de selecció, serà la abscissa de la gràfica"
 msgid "defringe"
 msgstr "treu franges de color"
 
-#: ../src/iop/defringe.c:445
+#: ../src/iop/defringe.c:444
 msgid "operation mode"
 msgstr "mode d'operació"
 
-#: ../src/iop/defringe.c:446
+#: ../src/iop/defringe.c:445
 msgid "global average (fast)"
 msgstr "mitjana global (ràpid)"
 
 #. 0
-#: ../src/iop/defringe.c:447
+#: ../src/iop/defringe.c:446
 msgid "local average (slow)"
 msgstr "mitjana local (lent)"
 
 #. 1
-#: ../src/iop/defringe.c:448
+#: ../src/iop/defringe.c:447
 msgid "static threshold (fast)"
 msgstr "llindar estàtic (ràpid)"
 
-#: ../src/iop/defringe.c:450
+#: ../src/iop/defringe.c:449
 msgid ""
 "method for color protection:\n"
 " - global average: fast, might show slightly wrong previews in high "
@@ -5675,67 +5713,72 @@ msgstr ""
 "calgui\n"
 "- estàtic: ràpid, només fa servir el llindar com a límit estàtic"
 
-#: ../src/iop/defringe.c:459
+#: ../src/iop/defringe.c:458
 msgid "edge detection radius"
 msgstr "radi de detecció de vores"
 
-#: ../src/iop/defringe.c:467
+#: ../src/iop/defringe.c:466
 msgid "radius for detecting fringe"
 msgstr "radi per detectar franges de dispersió dels colors"
 
-#: ../src/iop/defringe.c:468
+#: ../src/iop/defringe.c:467
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
 "llindar per eliminar les franges de color, els valors més alts redueixen "
 "menys les franges"
 
-#: ../src/iop/demosaic.c:146
+#: ../src/iop/demosaic.c:144
 msgid "demosaic"
 msgstr "demosaic"
 
-#: ../src/iop/demosaic.c:161
+#: ../src/iop/demosaic.c:159
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "llindar de vora"
 
-#: ../src/iop/demosaic.c:3829 ../src/iop/demosaic.c:3838
-#: ../src/iop/dither.c:791 ../src/iop/highlights.c:829
+#: ../src/iop/demosaic.c:3646 ../src/iop/invert.c:498
+#, c-format
+msgid "`%s' color matrix not found for 4bayer image!"
+msgstr "no s'ha trobat la matriu de color`%s' per la imatge 4bayer!"
+
+#: ../src/iop/demosaic.c:3846 ../src/iop/demosaic.c:3855
+#: ../src/iop/dither.c:791 ../src/iop/highlights.c:954
 msgid "method"
 msgstr "mètode"
 
-#: ../src/iop/demosaic.c:3831
+#: ../src/iop/demosaic.c:3848
 msgid "PPG (fast)"
 msgstr "PPG (ràpid)"
 
-#: ../src/iop/demosaic.c:3832
+#: ../src/iop/demosaic.c:3849
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:3833
+#: ../src/iop/demosaic.c:3850
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3834
+#: ../src/iop/demosaic.c:3851 ../src/iop/demosaic.c:3860
 msgid "passthrough (monochrome) (experimental)"
 msgstr "pas directe (monocrom) (experimental)"
 
-#: ../src/iop/demosaic.c:3835 ../src/iop/demosaic.c:3843
+#: ../src/iop/demosaic.c:3852 ../src/iop/demosaic.c:3861
 msgid "demosaicing raw data method"
 msgstr "mètode de demosaicing de les dades raw"
 
-#: ../src/iop/demosaic.c:3840
+#: ../src/iop/demosaic.c:3857
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3841
+#: ../src/iop/demosaic.c:3858
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1 passada"
 
-#: ../src/iop/demosaic.c:3842
+#: ../src/iop/demosaic.c:3859
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3 passades (lent)"
 
-#: ../src/iop/demosaic.c:3846
+#: ../src/iop/demosaic.c:3864
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5745,63 +5788,63 @@ msgstr ""
 "ajusteu a 0.0 per desactivar-lo.\n"
 "ajusteu a 1.0 per ignorar les vores."
 
-#: ../src/iop/demosaic.c:3848
+#: ../src/iop/demosaic.c:3866
 msgid "edge threshold"
 msgstr "llindar de vora"
 
-#: ../src/iop/demosaic.c:3852
+#: ../src/iop/demosaic.c:3870
 msgid "color smoothing"
 msgstr "suavitzat de color"
 
-#: ../src/iop/demosaic.c:3855
+#: ../src/iop/demosaic.c:3873
 msgid "one time"
 msgstr "una vegada"
 
-#: ../src/iop/demosaic.c:3856
+#: ../src/iop/demosaic.c:3874
 msgid "two times"
 msgstr "dos vegades"
 
-#: ../src/iop/demosaic.c:3857
+#: ../src/iop/demosaic.c:3875
 msgid "three times"
 msgstr "tres cops"
 
-#: ../src/iop/demosaic.c:3858
+#: ../src/iop/demosaic.c:3876
 msgid "four times"
 msgstr "quatre vegades"
 
-#: ../src/iop/demosaic.c:3859
+#: ../src/iop/demosaic.c:3877
 msgid "five times"
 msgstr "cinc vegades"
 
-#: ../src/iop/demosaic.c:3860
+#: ../src/iop/demosaic.c:3878
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre d'etapes de suavitzat de color median després de demosaicing"
 
-#: ../src/iop/demosaic.c:3864
+#: ../src/iop/demosaic.c:3882
 msgid "match greens"
 msgstr "coincidència de verds"
 
-#: ../src/iop/demosaic.c:3865
+#: ../src/iop/demosaic.c:3883
 msgid "disabled"
 msgstr "desactivat"
 
-#: ../src/iop/demosaic.c:3866
+#: ../src/iop/demosaic.c:3884
 msgid "local average"
 msgstr "mitjana local"
 
-#: ../src/iop/demosaic.c:3867
+#: ../src/iop/demosaic.c:3885
 msgid "full average"
 msgstr "mitjana completa"
 
-#: ../src/iop/demosaic.c:3868
+#: ../src/iop/demosaic.c:3886
 msgid "full and local average"
 msgstr "mitjana local i completa"
 
-#: ../src/iop/demosaic.c:3869
+#: ../src/iop/demosaic.c:3887
 msgid "green channels matching method"
 msgstr "mètode de coincidència dels canals verds"
 
-#: ../src/iop/demosaic.c:3881
+#: ../src/iop/demosaic.c:3899
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -5813,40 +5856,40 @@ msgstr ""
 msgid "denoise (profiled)"
 msgstr "treu soroll (amb perfil)"
 
-#: ../src/iop/denoiseprofile.c:1815
+#: ../src/iop/denoiseprofile.c:1828
 #, c-format
 msgid "found match for ISO %d"
 msgstr "trobada coincidència per ISO %d"
 
-#: ../src/iop/denoiseprofile.c:1823
+#: ../src/iop/denoiseprofile.c:1836
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolat de dels ISO %d i %d"
 
-#: ../src/iop/denoiseprofile.c:2057 ../src/iop/exposure.c:824
-#: ../src/iop/lens.c:2178 ../src/iop/levels.c:550
+#: ../src/iop/denoiseprofile.c:2070 ../src/iop/exposure.c:849
+#: ../src/iop/lens.c:2182 ../src/iop/levels.c:550
 #: ../src/libs/copy_history.c:274 ../src/libs/export.c:634
-#: ../src/libs/print_settings.c:1318
+#: ../src/libs/print_settings.c:1318 ../src/views/darkroom.c:1544
 msgid "mode"
 msgstr "mode"
 
-#: ../src/iop/denoiseprofile.c:2058 ../src/iop/nlmeans.c:853
+#: ../src/iop/denoiseprofile.c:2071 ../src/iop/nlmeans.c:853
 msgid "patch size"
 msgstr "mida de plantilla"
 
-#: ../src/iop/denoiseprofile.c:2061
+#: ../src/iop/denoiseprofile.c:2074
 msgid "non-local means"
 msgstr "mitjana no local"
 
-#: ../src/iop/denoiseprofile.c:2062
+#: ../src/iop/denoiseprofile.c:2075
 msgid "wavelets"
 msgstr "ondetes (wavelets)"
 
-#: ../src/iop/denoiseprofile.c:2063
+#: ../src/iop/denoiseprofile.c:2076
 msgid "profile used for variance stabilization"
 msgstr "perfil emprat per estabilitzar la variància"
 
-#: ../src/iop/denoiseprofile.c:2064
+#: ../src/iop/denoiseprofile.c:2077
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -5855,12 +5898,12 @@ msgstr ""
 "mescla per lluminositat, la transformada d'ondeta (wavelet) funciona millor "
 "amb mescla per color"
 
-#: ../src/iop/denoiseprofile.c:2067
+#: ../src/iop/denoiseprofile.c:2080
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr ""
 "radi de les mostres a encaixar. Incrementeu-lo per resultats més nítids"
 
-#: ../src/iop/denoiseprofile.c:2068
+#: ../src/iop/denoiseprofile.c:2081
 msgid "finetune denoising strength"
 msgstr "ajust fi d'intensitat del filtre de soroll"
 
@@ -5948,108 +5991,111 @@ msgstr ""
 "i és aquí només perquè el pugueu desactivar\n"
 "i canviar-vos al nou equalitzador"
 
-#: ../src/iop/exposure.c:117
+#: ../src/iop/exposure.c:119
 msgctxt "accel"
 msgid "mode"
 msgstr "mode"
 
-#: ../src/iop/exposure.c:118
+#: ../src/iop/exposure.c:120
 msgctxt "accel"
 msgid "black"
 msgstr "negre"
 
-#: ../src/iop/exposure.c:119 ../src/iop/relight.c:102
+#: ../src/iop/exposure.c:121 ../src/iop/relight.c:102
 msgctxt "accel"
 msgid "exposure"
 msgstr "exposició"
 
-#: ../src/iop/exposure.c:120
+#: ../src/iop/exposure.c:122
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "exposició auto"
 
 # FIXME
-#: ../src/iop/exposure.c:121
+#: ../src/iop/exposure.c:123
 msgctxt "accel"
 msgid "percentile"
 msgstr "percentil"
 
-#: ../src/iop/exposure.c:122
+#: ../src/iop/exposure.c:124
 msgctxt "accel"
 msgid "target level"
 msgstr "brillantor desitjada"
 
-#: ../src/iop/exposure.c:222
+#: ../src/iop/exposure.c:219
 msgid "magic lantern defaults"
 msgstr "valors per defecte de Magic Lantern"
 
-#: ../src/iop/exposure.c:247
+#: ../src/iop/exposure.c:244 ../src/iop/rawoverexposed.c:142
+#: ../src/iop/rawoverexposed.c:270
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "no s'ha pogut obtenir el buffer raw de la imatge `%s'"
 
-#: ../src/iop/exposure.c:826 ../src/iop/levels.c:552
+#: ../src/iop/exposure.c:851 ../src/iop/levels.c:552
 msgctxt "mode"
 msgid "manual"
 msgstr "manual"
 
-#: ../src/iop/exposure.c:829 ../src/iop/levels.c:555
-#: ../src/iop/tonecurve.c:821 ../src/iop/vignette.c:1136
+#: ../src/iop/exposure.c:854 ../src/iop/levels.c:555 ../src/iop/tonecurve.c:946
+#: ../src/iop/vignette.c:1136
 msgid "automatic"
 msgstr "automàtic"
 
-#: ../src/iop/exposure.c:838
+#: ../src/iop/exposure.c:863
 msgid "adjust the black level"
 msgstr "ajusta el nivell de negre"
 
-#: ../src/iop/exposure.c:840 ../src/iop/levels.c:618
+#: ../src/iop/exposure.c:865 ../src/iop/levels.c:618
+#: ../src/views/darkroom.c:1560
 msgid "black"
 msgstr "negre"
 
-#: ../src/iop/exposure.c:851
+#: ../src/iop/exposure.c:876
 msgid "adjust the exposure correction"
 msgstr "ajusta la correcció d'exposició"
 
-#: ../src/iop/exposure.c:858
+#: ../src/iop/exposure.c:883
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
 "percentatge d'altes llums que es retallen, feu clic a la icona de mostra de "
 "color per activar/desactivar"
 
-#: ../src/iop/exposure.c:860 ../src/iop/highlights.c:838
+#: ../src/iop/exposure.c:885 ../src/iop/highlights.c:963
+#: ../src/views/darkroom.c:1572
 msgid "clipping threshold"
 msgstr "llindar de tall"
 
 # FIXME
-#: ../src/iop/exposure.c:870
+#: ../src/iop/exposure.c:895
 msgid "percentile"
 msgstr "percentil"
 
-#: ../src/iop/exposure.c:874
+#: ../src/iop/exposure.c:899
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
 "on mesurar dins l'histograma per eliminar parpelleig. P.e. 50 per cent és la "
 "mitjana "
 
-#: ../src/iop/exposure.c:879
+#: ../src/iop/exposure.c:904
 msgid "target level"
 msgstr "brillantor desitjada"
 
-#: ../src/iop/exposure.c:882
+#: ../src/iop/exposure.c:907
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "on cal situar el nivell d'exposició per les imatges processades, valor de EV "
 "sota el llindar de sobreexposició"
 
-#: ../src/iop/exposure.c:886
+#: ../src/iop/exposure.c:911
 msgid "computed EC: "
 msgstr "Corr. exp. calculada:"
 
 #. This gets filled in by process
-#: ../src/iop/exposure.c:890
+#: ../src/iop/exposure.c:915
 msgid "what exposure correction has actually been used"
 msgstr "quina correcció d'exposició s'ha emprat realment"
 
@@ -6257,27 +6303,27 @@ msgstr "mida del gra (~ISO en pel·lícula)"
 msgid "the strength of applied grain"
 msgstr "la intensitat del gra aplicat"
 
-#: ../src/iop/highlights.c:74
+#: ../src/iop/highlights.c:75
 msgid "highlight reconstruction"
 msgstr "reconstrucció d'altes llums"
 
-#: ../src/iop/highlights.c:830
+#: ../src/iop/highlights.c:955
 msgid "clip highlights"
 msgstr "retalla altes llums"
 
-#: ../src/iop/highlights.c:831
+#: ../src/iop/highlights.c:956
 msgid "reconstruct in LCh"
 msgstr "reconstrueix en LCh"
 
-#: ../src/iop/highlights.c:832
+#: ../src/iop/highlights.c:957
 msgid "reconstruct color"
 msgstr "reconstrueix color"
 
-#: ../src/iop/highlights.c:833
+#: ../src/iop/highlights.c:958
 msgid "highlight reconstruction method"
 msgstr "mètode de reconstrucció d'altes llums'"
 
-#: ../src/iop/highlights.c:836
+#: ../src/iop/highlights.c:961
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -6319,31 +6365,31 @@ msgstr "contrast del filtre passaalt"
 msgid "hot pixels"
 msgstr "píxels calents"
 
-#: ../src/iop/hotpixels.c:405
+#: ../src/iop/hotpixels.c:425
 #, c-format
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
 msgstr[0] "corregit %d píxel"
 msgstr[1] "corregits %d píxels"
 
-#: ../src/iop/hotpixels.c:433
+#: ../src/iop/hotpixels.c:453
 msgid "lower threshold for hot pixel"
 msgstr "llindar inferior per píxel calent"
 
-#: ../src/iop/hotpixels.c:441
+#: ../src/iop/hotpixels.c:461
 msgid "strength of hot pixel correction"
 msgstr "intensitat de la correcció de píxels calents"
 
 #. 3 neighbours
-#: ../src/iop/hotpixels.c:446
+#: ../src/iop/hotpixels.c:466
 msgid "detect by 3 neighbors"
 msgstr "detecta amb 3 veïns"
 
-#: ../src/iop/hotpixels.c:453
+#: ../src/iop/hotpixels.c:473
 msgid "mark fixed pixels"
 msgstr "marca els píxels corregits"
 
-#: ../src/iop/hotpixels.c:465
+#: ../src/iop/hotpixels.c:485
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
@@ -6360,15 +6406,15 @@ msgctxt "accel"
 msgid "pick color of film material from image"
 msgstr "pren de la imatge el color del suport"
 
-#: ../src/iop/invert.c:497
+#: ../src/iop/invert.c:529
 msgid "color of film material"
 msgstr "color del suport de film"
 
-#: ../src/iop/invert.c:521
+#: ../src/iop/invert.c:553
 msgid "select color of film material"
 msgstr "tria color del suport de film"
 
-#: ../src/iop/invert.c:526
+#: ../src/iop/invert.c:558
 msgid "pick color of film material from image"
 msgstr "pren de la imatge el color del suport"
 
@@ -6376,7 +6422,7 @@ msgstr "pren de la imatge el color del suport"
 msgid "lens correction"
 msgstr "correcció de l'òptica"
 
-#: ../src/iop/lens.c:152 ../src/iop/vignette.c:168 ../src/iop/watermark.c:253
+#: ../src/iop/lens.c:152 ../src/iop/vignette.c:168 ../src/iop/watermark.c:252
 msgctxt "accel"
 msgid "scale"
 msgstr "escala"
@@ -6421,7 +6467,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "tria correccions"
 
-#: ../src/iop/lens.c:1371
+#: ../src/iop/lens.c:1381
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -6434,15 +6480,15 @@ msgstr ""
 "montura:\t\t%s\n"
 "factor de retall:\t%.1f"
 
-#: ../src/iop/lens.c:1596
+#: ../src/iop/lens.c:1606
 msgid "camera/lens not found - please select manually"
 msgstr "càmera/objectiu no identificat - trieu-lo manualment"
 
-#: ../src/iop/lens.c:1599
+#: ../src/iop/lens.c:1609
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "cerqueu càmera/objectiu en els dos menús a sobre"
 
-#: ../src/iop/lens.c:1653
+#: ../src/iop/lens.c:1663
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -6461,143 +6507,143 @@ msgstr ""
 "tipus:\t\t%s\n"
 "montura:\t\t%s"
 
-#: ../src/iop/lens.c:1693
+#: ../src/iop/lens.c:1703
 msgid "focal length (mm)"
 msgstr "distància focal (mm)"
 
-#: ../src/iop/lens.c:1717
+#: ../src/iop/lens.c:1727
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1718
+#: ../src/iop/lens.c:1728
 msgid "f-number (aperture)"
 msgstr "num. f (obertura)"
 
-#: ../src/iop/lens.c:1732
+#: ../src/iop/lens.c:1742
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1733
+#: ../src/iop/lens.c:1743
 msgid "distance to subject"
 msgstr "distància al subjecte"
 
-#: ../src/iop/lens.c:2040
+#: ../src/iop/lens.c:2046
 msgid "distortion & TCA"
 msgstr "distorsió i TCA"
 
-#: ../src/iop/lens.c:2046
+#: ../src/iop/lens.c:2052
 msgid "distortion & vignetting"
 msgstr "distorsió i vinyetatge"
 
-#: ../src/iop/lens.c:2052
+#: ../src/iop/lens.c:2058
 msgid "TCA & vignetting"
 msgstr "TCA i vinyetatge"
 
-#: ../src/iop/lens.c:2058
+#: ../src/iop/lens.c:2064
 msgid "only distortion"
 msgstr "només distorsió"
 
-#: ../src/iop/lens.c:2064
+#: ../src/iop/lens.c:2070
 msgid "only TCA"
 msgstr "només TCA"
 
-#: ../src/iop/lens.c:2070
+#: ../src/iop/lens.c:2076
 msgid "only vignetting"
 msgstr "només vinyetatge"
 
-#: ../src/iop/lens.c:2091
+#: ../src/iop/lens.c:2095
 msgid "find camera"
 msgstr "cerca càmera"
 
-#: ../src/iop/lens.c:2105
+#: ../src/iop/lens.c:2109
 msgid "find lens"
 msgstr "cerca lent"
 
-#: ../src/iop/lens.c:2136
+#: ../src/iop/lens.c:2140
 msgid "corrections"
 msgstr "correccions"
 
-#: ../src/iop/lens.c:2138
+#: ../src/iop/lens.c:2142
 msgid "which corrections to apply"
 msgstr "correccions a aplicar"
 
-#: ../src/iop/lens.c:2151
+#: ../src/iop/lens.c:2155
 msgid "geometry"
 msgstr "geometria"
 
-#: ../src/iop/lens.c:2153
+#: ../src/iop/lens.c:2157
 msgid "target geometry"
 msgstr "geometria final"
 
-#: ../src/iop/lens.c:2154
+#: ../src/iop/lens.c:2158
 msgid "rectilinear"
 msgstr "rectilínia"
 
-#: ../src/iop/lens.c:2155
+#: ../src/iop/lens.c:2159
 msgid "fish-eye"
 msgstr "ull de peix"
 
-#: ../src/iop/lens.c:2156
+#: ../src/iop/lens.c:2160
 msgid "panoramic"
 msgstr "panoràmica"
 
-#: ../src/iop/lens.c:2157
+#: ../src/iop/lens.c:2161
 msgid "equirectangular"
 msgstr "equirectangular"
 
-#: ../src/iop/lens.c:2159
+#: ../src/iop/lens.c:2163
 msgid "orthographic"
 msgstr "ortogràfica"
 
-#: ../src/iop/lens.c:2160
+#: ../src/iop/lens.c:2164
 msgid "stereographic"
 msgstr "estereogràfica"
 
-#: ../src/iop/lens.c:2161
+#: ../src/iop/lens.c:2165
 msgid "equisolid angle"
 msgstr "angle equisòlid"
 
-#: ../src/iop/lens.c:2162
+#: ../src/iop/lens.c:2166
 msgid "thoby fish-eye"
 msgstr "ull de peix Thoby"
 
-#: ../src/iop/lens.c:2169
+#: ../src/iop/lens.c:2173
 msgid "auto scale"
 msgstr "auto escala"
 
-#: ../src/iop/lens.c:2180
+#: ../src/iop/lens.c:2184
 msgid "correct distortions or apply them"
 msgstr "corregeix distorsions o aplica-les"
 
-#: ../src/iop/lens.c:2181
+#: ../src/iop/lens.c:2185
 msgid "correct"
 msgstr "correccions"
 
-#: ../src/iop/lens.c:2182
+#: ../src/iop/lens.c:2186
 msgid "distort"
 msgstr "distorsiona"
 
-#: ../src/iop/lens.c:2187
+#: ../src/iop/lens.c:2191
 msgid "Transversal Chromatic Aberration red"
 msgstr "Aberració Cromàtica Transversal (TCA) vermell"
 
-#: ../src/iop/lens.c:2188
+#: ../src/iop/lens.c:2192
 msgid "TCA red"
 msgstr "TCA vermell"
 
-#: ../src/iop/lens.c:2193
+#: ../src/iop/lens.c:2197
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Aberració Cromàtica Transversal (TCA) blau"
 
-#: ../src/iop/lens.c:2194
+#: ../src/iop/lens.c:2198
 msgid "TCA blue"
 msgstr "TCA blau"
 
-#: ../src/iop/lens.c:2201
+#: ../src/iop/lens.c:2205
 msgid "corrections done: "
 msgstr "correccions aplicades:"
 
-#: ../src/iop/lens.c:2202
+#: ../src/iop/lens.c:2206
 msgid "which corrections have actually been done"
 msgstr "correccions efectivament aplicades"
 
@@ -6648,7 +6694,7 @@ msgstr "percentil de blanc"
 msgid "white"
 msgstr "blanc"
 
-#: ../src/iop/liquify.c:265
+#: ../src/iop/liquify.c:267
 msgid "liquify"
 msgstr "liquar"
 
@@ -6668,7 +6714,7 @@ msgstr "clic per afegir corba"
 msgid "click to edit nodes"
 msgstr "clic per editar nodes"
 
-#: ../src/iop/liquify.c:3275
+#: ../src/iop/liquify.c:3274
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -6676,31 +6722,27 @@ msgstr ""
 "empra una eina per afegir deformacions.\n"
 "clic dret per eliminar una deformació."
 
-#: ../src/iop/liquify.c:3277
+#: ../src/iop/liquify.c:3276
 msgid "warps|nodes count:"
 msgstr "deformacions|nodes:"
 
-#: ../src/iop/liquify.c:3284
+#: ../src/iop/liquify.c:3283
 msgid "node tool: edit, add and delete nodes"
 msgstr "eina node: edita, afegeix i elimina nodes"
 
-#: ../src/iop/liquify.c:3292
+#: ../src/iop/liquify.c:3291
 msgid "curve tool: draw curves"
 msgstr "eina corba: dibuixa corbes"
 
-#: ../src/iop/liquify.c:3300
+#: ../src/iop/liquify.c:3299
 msgid "line tool: draw lines"
 msgstr "eina línia: dibuixa línies"
 
-#: ../src/iop/liquify.c:3308
+#: ../src/iop/liquify.c:3307
 msgid "point tool: draw points"
 msgstr "eina punt: dibuixa punts"
 
-#: ../src/iop/liquify.c:3316
-msgid "disable all tools"
-msgstr "desactiva totes les eines"
-
-#: ../src/iop/liquify.c:3323
+#: ../src/iop/liquify.c:3314
 msgid ""
 "ctrl+click to add node\n"
 "right click to remove path"
@@ -6708,7 +6750,7 @@ msgstr ""
 "ctrl+clic per afegir un node\n"
 "clic dret per eliminar camí"
 
-#: ../src/iop/liquify.c:3324
+#: ../src/iop/liquify.c:3315
 msgid ""
 "click and drag to move - click : linear or feathered\n"
 "ctrl+click : autosmooth, cups, smooth, symmetrical\n"
@@ -6718,23 +6760,23 @@ msgstr ""
 "ctrl+clic : auto-suavitzat, copa, suau, simètric\n"
 "clic dret per eliminar"
 
-#: ../src/iop/liquify.c:3327 ../src/iop/liquify.c:3328
+#: ../src/iop/liquify.c:3318 ../src/iop/liquify.c:3319
 msgid "drag to change shape of path"
 msgstr "arrossega per canviar la forma del camí"
 
-#: ../src/iop/liquify.c:3329
+#: ../src/iop/liquify.c:3320
 msgid "drag to adjust warp radius"
 msgstr "arrossega per ajustar el radi de deformació "
 
-#: ../src/iop/liquify.c:3330
+#: ../src/iop/liquify.c:3321
 msgid "drag to adjust hardness (center)"
 msgstr "arrossega per ajustar la duresa (centre)"
 
-#: ../src/iop/liquify.c:3331
+#: ../src/iop/liquify.c:3322
 msgid "drag to adjust hardness (feather)"
 msgstr "arrossega per ajustar la duresa (vora difusa)"
 
-#: ../src/iop/liquify.c:3332
+#: ../src/iop/liquify.c:3323
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click : linear, grow, and shrink"
@@ -6742,30 +6784,25 @@ msgstr ""
 "arrossega per ajustar  la intensitat de la deformació\n"
 "ctrl+clic : lineal, engrandir, i reduir"
 
-#: ../src/iop/liquify.c:3350
+#: ../src/iop/liquify.c:3341
 msgctxt "accel"
 msgid "point tool"
 msgstr "eina punt"
 
-#: ../src/iop/liquify.c:3351
+#: ../src/iop/liquify.c:3342
 msgctxt "accel"
 msgid "line tool"
 msgstr "eina línia"
 
-#: ../src/iop/liquify.c:3352
+#: ../src/iop/liquify.c:3343
 msgctxt "accel"
 msgid "curve tool"
 msgstr "eina corba"
 
-#: ../src/iop/liquify.c:3353
+#: ../src/iop/liquify.c:3344
 msgctxt "accel"
 msgid "node tool"
 msgstr "eina node"
-
-#: ../src/iop/liquify.c:3354
-msgctxt "accel"
-msgid "disable tools"
-msgstr "desactiva eines"
 
 #: ../src/iop/lowlight.c:84
 msgid "lowlight vision"
@@ -6824,11 +6861,11 @@ msgstr "visió diürna"
 msgid "night vision"
 msgstr "visió nocturna"
 
-#: ../src/iop/lowlight.c:842
+#: ../src/iop/lowlight.c:848
 msgid "blue shift"
 msgstr "desplaçament al blau"
 
-#: ../src/iop/lowlight.c:844
+#: ../src/iop/lowlight.c:850
 msgid "blueness in shadows"
 msgstr "dominant blava a les ombres"
 
@@ -6836,64 +6873,64 @@ msgstr "dominant blava a les ombres"
 msgid "lowpass"
 msgstr "passabaix"
 
-#: ../src/iop/lowpass.c:612
+#: ../src/iop/lowpass.c:625
 msgid "local contrast mask"
 msgstr "màscara de contrast local"
 
-#: ../src/iop/lowpass.c:645
+#: ../src/iop/lowpass.c:658
 msgid "filter order"
 msgstr "ordre del filtre"
 
-#: ../src/iop/lowpass.c:648
+#: ../src/iop/lowpass.c:661
 msgid "0th order"
 msgstr "ordre 0"
 
-#: ../src/iop/lowpass.c:649
+#: ../src/iop/lowpass.c:662
 msgid "1st order"
 msgstr "1er ordre"
 
-#: ../src/iop/lowpass.c:650
+#: ../src/iop/lowpass.c:663
 msgid "2nd order"
 msgstr "2on ordre"
 
-#: ../src/iop/lowpass.c:651
+#: ../src/iop/lowpass.c:664
 msgid "filter order of gaussian blur"
 msgstr "ordre del filtre de desenfoc gaussià"
 
-#: ../src/iop/lowpass.c:662
+#: ../src/iop/lowpass.c:675
 msgctxt "lowpass"
 msgid "brightness"
 msgstr "brillantor"
 
-#: ../src/iop/lowpass.c:666 ../src/iop/shadhi.c:811
+#: ../src/iop/lowpass.c:679 ../src/iop/shadhi.c:822
 msgid "soften with"
 msgstr "suavitza amb"
 
-#: ../src/iop/lowpass.c:667 ../src/iop/shadhi.c:812
+#: ../src/iop/lowpass.c:680 ../src/iop/shadhi.c:823
 msgid "gaussian"
 msgstr "gaussià"
 
-#: ../src/iop/lowpass.c:668 ../src/iop/shadhi.c:813
+#: ../src/iop/lowpass.c:681 ../src/iop/shadhi.c:824
 msgid "bilateral filter"
 msgstr "filtre bilateral"
 
-#: ../src/iop/lowpass.c:675
+#: ../src/iop/lowpass.c:688
 msgid "radius of gaussian/bilateral blur"
 msgstr "radi del filtre gaussià/bilateral"
 
-#: ../src/iop/lowpass.c:676
+#: ../src/iop/lowpass.c:689
 msgid "contrast of lowpass filter"
 msgstr "contrast del filtre passabaix"
 
-#: ../src/iop/lowpass.c:677
+#: ../src/iop/lowpass.c:690
 msgid "brightness adjustment of lowpass filter"
 msgstr "ajustament de brillantor del filtre passabaix"
 
-#: ../src/iop/lowpass.c:678
+#: ../src/iop/lowpass.c:691
 msgid "color saturation of lowpass filter"
 msgstr "saturació de color del filtre passabaix"
 
-#: ../src/iop/lowpass.c:679
+#: ../src/iop/lowpass.c:692
 msgid "which filter to use for blurring"
 msgstr "filtre a emprar pel difuminat"
 
@@ -6905,17 +6942,17 @@ msgstr "monocrom"
 msgid "red filter"
 msgstr "filtre vermell"
 
-#: ../src/iop/monochrome.c:537
+#: ../src/iop/monochrome.c:579
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
 "arrossegueu i feu scroll amb la roda del ratolí per ajustar el filtre de "
 "color virtual"
 
-#: ../src/iop/monochrome.c:552
+#: ../src/iop/monochrome.c:596
 msgid "how much to keep highlights"
 msgstr "grau de preservació d'altes llums"
 
-#: ../src/iop/monochrome.c:553 ../src/iop/shadhi.c:819
+#: ../src/iop/monochrome.c:597 ../src/iop/shadhi.c:830
 #: ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "altes llums"
@@ -6946,6 +6983,10 @@ msgstr "grau de suavitzat de la lluminositat"
 msgid "how much to smooth colors"
 msgstr "grau de suavitzat dels colors"
 
+#: ../src/iop/rawoverexposed.c:67
+msgid "raw overexposed"
+msgstr "raw sobreexposat"
+
 #: ../src/iop/overexposed.c:71
 msgid "overexposed"
 msgstr "sobreexposat"
@@ -6972,20 +7013,20 @@ msgstr "part lineal"
 msgid "gamma exponential factor"
 msgstr "factor exponencial de gamma"
 
-#: ../src/iop/rawdenoise.c:63
+#: ../src/iop/rawdenoise.c:62
 msgid "raw denoise"
 msgstr "treu soroll de dades raw"
 
-#: ../src/iop/rawdenoise.c:84
+#: ../src/iop/rawdenoise.c:77
 msgctxt "accel"
 msgid "noise threshold"
 msgstr "llindar de soroll"
 
-#: ../src/iop/rawdenoise.c:492
+#: ../src/iop/rawdenoise.c:470
 msgid "noise threshold"
 msgstr "llindar de soroll"
 
-#: ../src/iop/rawdenoise.c:498
+#: ../src/iop/rawdenoise.c:476
 msgid ""
 "raw denoising\n"
 "only works for raw images."
@@ -6993,27 +7034,60 @@ msgstr ""
 "treu soroll de dades raw\n"
 "només funciona per imatges raw."
 
-#: ../src/iop/rawprepare.c:69
+#: ../src/iop/rawprepare.c:45
+msgid "crop x"
+msgstr "escapça x"
+
+#: ../src/iop/rawprepare.c:45
+msgid "crop from left border"
+msgstr "escapça des de la vora esquerra"
+
+#: ../src/iop/rawprepare.c:46
+msgid "crop y"
+msgstr "escapça y"
+
+#: ../src/iop/rawprepare.c:46
+msgid "crop from top"
+msgstr "escapça des de la vora superior"
+
+#: ../src/iop/rawprepare.c:47
+msgid "crop width"
+msgstr "escapça l'amplada"
+
+#: ../src/iop/rawprepare.c:47
+msgid "crop from right border"
+msgstr "escapça des de la vora dreta"
+
+#: ../src/iop/rawprepare.c:48
+msgid "crop height"
+msgstr "escapça l'alçada"
+
+#: ../src/iop/rawprepare.c:48
+msgid "crop from bottom"
+msgstr "escapça des de la vora inferior"
+
+#: ../src/iop/rawprepare.c:94
 msgctxt "modulename"
 msgid "raw black/white point"
 msgstr "punt de negre/blanc al raw"
 
-#: ../src/iop/rawprepare.c:91 ../src/iop/rawprepare.c:105
-#: ../src/iop/rawprepare.c:619
+#: ../src/iop/rawprepare.c:116 ../src/iop/rawprepare.c:138
+#: ../src/iop/rawprepare.c:685
 #, c-format
 msgid "black level %i"
 msgstr "nivell de negre %i"
 
-#: ../src/iop/rawprepare.c:96
+#: ../src/iop/rawprepare.c:129
 msgctxt "accel"
 msgid "white point"
 msgstr "punt de blanc"
 
-#: ../src/iop/rawprepare.c:633 ../src/iop/rawprepare.c:634
+#: ../src/iop/rawprepare.c:143 ../src/iop/rawprepare.c:699
+#: ../src/iop/rawprepare.c:700
 msgid "white point"
 msgstr "punt de blanc"
 
-#: ../src/iop/rawprepare.c:642
+#: ../src/iop/rawprepare.c:721
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -7065,11 +7139,11 @@ msgctxt "modulename"
 msgid "rotate pixels"
 msgstr "gira píxels"
 
-#: ../src/iop/rotatepixels.c:346
+#: ../src/iop/rotatepixels.c:332
 msgid "automatic pixel rotation"
 msgstr "gir de píxels automàtic"
 
-#: ../src/iop/rotatepixels.c:349
+#: ../src/iop/rotatepixels.c:335
 msgid ""
 "automatic pixel rotation\n"
 "only works for the sensors that need it."
@@ -7082,11 +7156,11 @@ msgctxt "modulename"
 msgid "scale pixels"
 msgstr "escala píxels"
 
-#: ../src/iop/scalepixels.c:274
+#: ../src/iop/scalepixels.c:255
 msgid "automatic pixel scaling"
 msgstr "escalat de píxels automàtic"
 
-#: ../src/iop/scalepixels.c:277
+#: ../src/iop/scalepixels.c:258
 msgid ""
 "automatic pixel scaling\n"
 "only works for the sensors that need it."
@@ -7121,50 +7195,50 @@ msgstr "compressió"
 #: ../src/iop/shadhi.c:279
 msgctxt "accel"
 msgid "shadows color correction"
-msgstr "correcció de color ales ombres "
+msgstr "correcció de color a les ombres"
 
 #: ../src/iop/shadhi.c:280
 msgctxt "accel"
 msgid "highlights color correction"
 msgstr "correcció de color a les altes llums"
 
-#: ../src/iop/shadhi.c:818 ../src/iop/splittoning.c:532
+#: ../src/iop/shadhi.c:829 ../src/iop/splittoning.c:532
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/shadhi.c:820
+#: ../src/iop/shadhi.c:831
 msgid "white point adjustment"
 msgstr "ajustament de punt de blanc"
 
-#: ../src/iop/shadhi.c:822 ../src/iop/splittoning.c:551
+#: ../src/iop/shadhi.c:833 ../src/iop/splittoning.c:551
 msgid "compress"
 msgstr "compressió"
 
-#: ../src/iop/shadhi.c:823
+#: ../src/iop/shadhi.c:834
 msgid "shadows color adjustment"
-msgstr "ajusta color d¡ombres"
+msgstr "ajusta color d'ombres"
 
-#: ../src/iop/shadhi.c:824
+#: ../src/iop/shadhi.c:835
 msgid "highlights color adjustment"
 msgstr "ajusta color de llums"
 
-#: ../src/iop/shadhi.c:842
+#: ../src/iop/shadhi.c:853
 msgid "correct shadows"
 msgstr "corregeix ombres"
 
-#: ../src/iop/shadhi.c:843
+#: ../src/iop/shadhi.c:854
 msgid "correct highlights"
 msgstr "corregeix altes llums"
 
-#: ../src/iop/shadhi.c:844
+#: ../src/iop/shadhi.c:855
 msgid "shift white point"
 msgstr "mou el punt de blanc"
 
-#: ../src/iop/shadhi.c:846
+#: ../src/iop/shadhi.c:857
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr "filtre emprat per suavitzar. bilateral evita halos"
 
-#: ../src/iop/shadhi.c:847
+#: ../src/iop/shadhi.c:858
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
@@ -7172,11 +7246,11 @@ msgstr ""
 "comprimeix l'efecte en llums/ombres i\n"
 "preserva els tons mitjos"
 
-#: ../src/iop/shadhi.c:848
+#: ../src/iop/shadhi.c:859
 msgid "adjust saturation of shadows"
 msgstr "ajusta saturació d'ombres"
 
-#: ../src/iop/shadhi.c:849
+#: ../src/iop/shadhi.c:860
 msgid "adjust saturation of highlights"
 msgstr "ajusta saturació d'altes llums"
 
@@ -7319,25 +7393,20 @@ msgctxt "accel"
 msgid "spot path tool"
 msgstr "eina camí (elimina punts)"
 
-#: ../src/iop/temperature.c:151
+#: ../src/iop/temperature.c:152
 msgctxt "modulename"
 msgid "white balance"
 msgstr "balanç de blancs"
 
-#: ../src/iop/temperature.c:167
+#: ../src/iop/temperature.c:168
 msgctxt "accel"
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:168
+#: ../src/iop/temperature.c:169
 msgctxt "accel"
 msgid "temperature"
 msgstr "temperatura"
-
-#: ../src/iop/temperature.c:655 ../src/iop/temperature.c:882
-#, c-format
-msgid "`%s' color matrix not found for 4bayer image"
-msgstr "no s'ha trobat la matriu de color`%s' per la imatge 4bayer"
 
 #: ../src/iop/temperature.c:696
 msgctxt "white balance"
@@ -7359,106 +7428,111 @@ msgstr "puntual"
 msgid "`%s' color matrix not found for image"
 msgstr "no s'ha trobat la matriu de color`%s' per la imatge"
 
+#: ../src/iop/temperature.c:882
+#, c-format
+msgid "`%s' color matrix not found for 4bayer image"
+msgstr "no s'ha trobat la matriu de color`%s' per la imatge 4bayer"
+
 #: ../src/iop/temperature.c:927
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "no s'ha pogut llegir balanç de blancs de la càmera de `%s'!"
 
-#: ../src/iop/temperature.c:1290
+#: ../src/iop/temperature.c:1292
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1291
+#: ../src/iop/temperature.c:1293
 msgid "cyan"
 msgstr "cian"
 
-#: ../src/iop/temperature.c:1304
+#: ../src/iop/temperature.c:1306
 msgid "emerald"
 msgstr "maragda"
 
-#: ../src/iop/temperature.c:1337
+#: ../src/iop/temperature.c:1339
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:1338
+#: ../src/iop/temperature.c:1340
 msgid "temperature"
 msgstr "temperatura"
 
-#: ../src/iop/temperature.c:1354
+#: ../src/iop/temperature.c:1356
 msgid "choose white balance preset from camera"
 msgstr "tria el balanç de blancs predefinit de la càmera"
 
-#: ../src/iop/temperature.c:1357
+#: ../src/iop/temperature.c:1359
 msgid "finetune"
 msgstr "ajustament fi"
 
-#: ../src/iop/temperature.c:1358
+#: ../src/iop/temperature.c:1360
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1362
+#: ../src/iop/temperature.c:1364
 msgid "fine tune white balance preset"
 msgstr "ajustament fi del balanç de blancs predefinit"
 
-#: ../src/iop/tonecurve.c:149
+#: ../src/iop/tonecurve.c:150
 msgid "tone curve"
 msgstr "corba de tons"
 
-#: ../src/iop/tonecurve.c:430
+#: ../src/iop/tonecurve.c:431
 msgid "low contrast"
 msgstr "baix contrast"
 
-#: ../src/iop/tonecurve.c:444
+#: ../src/iop/tonecurve.c:445
 msgid "med contrast"
 msgstr "contrast mitjà"
 
-#: ../src/iop/tonecurve.c:454
+#: ../src/iop/tonecurve.c:455
 msgid "high contrast"
 msgstr "contrast alt"
 
-#: ../src/iop/tonecurve.c:774
+#: ../src/iop/tonecurve.c:897
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:776
+#: ../src/iop/tonecurve.c:899
 msgid "tonecurve for L channel"
 msgstr "corba pel canal L"
 
-#: ../src/iop/tonecurve.c:778
+#: ../src/iop/tonecurve.c:901
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:780
+#: ../src/iop/tonecurve.c:903
 msgid "tonecurve for a channel"
 msgstr "corba pel canal a"
 
-#: ../src/iop/tonecurve.c:782
+#: ../src/iop/tonecurve.c:905
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:784
+#: ../src/iop/tonecurve.c:907
 msgid "tonecurve for b channel"
 msgstr "corba pel canal b"
 
-#: ../src/iop/tonecurve.c:805
+#: ../src/iop/tonecurve.c:928
 msgid "double click to reset curve"
 msgstr "feu doble clic per reiniciar la corba"
 
-#: ../src/iop/tonecurve.c:820
+#: ../src/iop/tonecurve.c:945
 msgid "scale chroma"
 msgstr "escalat de chroma"
 
-#: ../src/iop/tonecurve.c:822
+#: ../src/iop/tonecurve.c:947
 msgctxt "scale"
 msgid "manual"
 msgstr "manual"
 
-#: ../src/iop/tonecurve.c:823
+#: ../src/iop/tonecurve.c:948
 msgid "automatic in XYZ"
 msgstr "automàtic en XYZ"
 
-#: ../src/iop/tonecurve.c:825
+#: ../src/iop/tonecurve.c:950
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -7634,48 +7708,48 @@ msgstr "relació ample/alt"
 msgid "add some level of random noise to prevent banding"
 msgstr "afegeix soroll aleatori per evitar aparició de bandes"
 
-#: ../src/iop/watermark.c:231
+#: ../src/iop/watermark.c:230
 msgid "watermark"
 msgstr "marca d'aigua"
 
-#: ../src/iop/watermark.c:251
+#: ../src/iop/watermark.c:250
 msgctxt "accel"
 msgid "refresh"
 msgstr "refresca"
 
-#: ../src/iop/watermark.c:252
+#: ../src/iop/watermark.c:251
 msgctxt "accel"
 msgid "opacity"
 msgstr "opacitat"
 
-#: ../src/iop/watermark.c:255
+#: ../src/iop/watermark.c:254
 msgctxt "accel"
 msgid "x offset"
 msgstr "decalatge x"
 
-#: ../src/iop/watermark.c:256
+#: ../src/iop/watermark.c:255
 msgctxt "accel"
 msgid "y offset"
 msgstr "decalatge y"
 
-#: ../src/iop/watermark.c:1222
+#: ../src/iop/watermark.c:1277
 msgid "content"
 msgstr "contingut"
 
-#: ../src/iop/watermark.c:1229
+#: ../src/iop/watermark.c:1284
 msgid "marker"
 msgstr "plantilla"
 
-#: ../src/iop/watermark.c:1232
+#: ../src/iop/watermark.c:1287
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "marques d'aigua SVG a %s/watermarks o %s/watermarks"
 
-#: ../src/iop/watermark.c:1247
+#: ../src/iop/watermark.c:1302
 msgid "color"
 msgstr "color"
 
-#: ../src/iop/watermark.c:1249
+#: ../src/iop/watermark.c:1304
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -7683,16 +7757,16 @@ msgstr ""
 "color de la marca d'aigua , etiqueta:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1252
+#: ../src/iop/watermark.c:1307
 msgid "select watermark color"
 msgstr "tria color de marca d'aigua "
 
 #. Simple text
-#: ../src/iop/watermark.c:1258
+#: ../src/iop/watermark.c:1313
 msgid "text"
 msgstr "text"
 
-#: ../src/iop/watermark.c:1262
+#: ../src/iop/watermark.c:1317
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -7701,11 +7775,11 @@ msgstr ""
 "$(WATERMARK_TEXT)"
 
 #. Text font
-#: ../src/iop/watermark.c:1272
+#: ../src/iop/watermark.c:1327
 msgid "font"
 msgstr "tipus lletra"
 
-#: ../src/iop/watermark.c:1278
+#: ../src/iop/watermark.c:1333
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -7718,58 +7792,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1285 ../src/libs/camera.c:505
+#: ../src/iop/watermark.c:1340 ../src/libs/camera.c:505
 msgid "properties"
 msgstr "propietats"
 
-#: ../src/iop/watermark.c:1303
+#: ../src/iop/watermark.c:1358
 msgctxt "size"
 msgid "image"
 msgstr "imatge"
 
-#: ../src/iop/watermark.c:1304
+#: ../src/iop/watermark.c:1359
 msgid "larger border"
 msgstr "vora més amplia"
 
-#: ../src/iop/watermark.c:1305
+#: ../src/iop/watermark.c:1360
 msgid "smaller border"
 msgstr "vora més petita"
 
-#: ../src/iop/watermark.c:1307
+#: ../src/iop/watermark.c:1362
 msgid "scale on"
 msgstr "ajusta mida respecte a"
 
-#: ../src/iop/watermark.c:1308
+#: ../src/iop/watermark.c:1363
 msgid "size is relative to"
 msgstr "la mida és en relació a"
 
-#: ../src/iop/watermark.c:1311
+#: ../src/iop/watermark.c:1366
 msgid "position"
 msgstr "posició"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1314 ../src/libs/print_settings.c:1200
+#: ../src/iop/watermark.c:1369 ../src/libs/print_settings.c:1200
 msgid "alignment"
 msgstr "alineació"
 
-#: ../src/iop/watermark.c:1331
+#: ../src/iop/watermark.c:1386
 msgid "x offset"
 msgstr "decalatge x"
 
-#: ../src/iop/watermark.c:1334
+#: ../src/iop/watermark.c:1389
 msgid "y offset"
 msgstr "decalatge y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1339
+#: ../src/iop/watermark.c:1394
 msgid "the opacity of the watermark"
 msgstr "l'opacitat de la marca d'aigua"
 
-#: ../src/iop/watermark.c:1340
+#: ../src/iop/watermark.c:1395
 msgid "the scale of the watermark"
 msgstr "l'escala de la marca d'aigua"
 
-#: ../src/iop/watermark.c:1341
+#: ../src/iop/watermark.c:1396
 msgid "the rotation of the watermark"
 msgstr "l'orientació de la marca d'aigua"
 
@@ -7789,7 +7863,7 @@ msgstr ""
 "clic esquerre en una vora per crear un marcador\n"
 "clic dret en un marcador per eliminar-lo"
 
-#: ../src/libs/backgroundjobs.c:51
+#: ../src/libs/backgroundjobs.c:53
 msgid "background jobs"
 msgstr "treballs en segon pla"
 
@@ -7954,13 +8028,13 @@ msgstr "suprimeix..."
 msgid "uncategorized"
 msgstr "sense categoritzar"
 
-#: ../src/libs/collect.c:937 ../src/libs/collect.c:938
-#: ../src/libs/collect.c:939
+#: ../src/libs/collect.c:936 ../src/libs/collect.c:937
+#: ../src/libs/collect.c:938
 msgid "not altered"
 msgstr "sense modificar"
 
-#: ../src/libs/collect.c:948 ../src/libs/collect.c:949
-#: ../src/libs/collect.c:950
+#: ../src/libs/collect.c:947 ../src/libs/collect.c:948
+#: ../src/libs/collect.c:949
 msgid "not tagged"
 msgstr "sense etiquetar"
 
@@ -8048,18 +8122,16 @@ msgstr "historial"
 msgid "description"
 msgstr "descripció"
 
-#: ../src/libs/collect.h:33 ../src/libs/import.c:558
-#: ../src/libs/metadata.c:336 ../src/libs/metadata_view.c:116
+#: ../src/libs/collect.h:33 ../src/libs/import.c:560 ../src/libs/metadata.c:336
+#: ../src/libs/metadata_view.c:116
 msgid "creator"
 msgstr "autor"
 
-#: ../src/libs/collect.h:33 ../src/libs/import.c:563
-#: ../src/libs/metadata.c:337
+#: ../src/libs/collect.h:33 ../src/libs/import.c:565 ../src/libs/metadata.c:337
 msgid "publisher"
 msgstr "editor"
 
-#: ../src/libs/collect.h:34 ../src/libs/import.c:568
-#: ../src/libs/metadata.c:338
+#: ../src/libs/collect.h:34 ../src/libs/import.c:570 ../src/libs/metadata.c:338
 msgid "rights"
 msgstr "drets"
 
@@ -8138,7 +8210,7 @@ msgid "XMP sidecar files"
 msgstr "arxius sidecar XMP"
 
 #: ../src/libs/copy_history.c:84 ../src/libs/geotagging.c:473
-#: ../src/libs/import.c:801 ../src/libs/styles.c:244
+#: ../src/libs/import.c:803 ../src/libs/styles.c:244
 msgid "all files"
 msgstr "tots els fitxers"
 
@@ -8222,10 +8294,6 @@ msgid ""
 msgstr ""
 "obre un arxiu sidecar XMP\n"
 "i aplica'l a les imatges seleccionades"
-
-#: ../src/libs/copy_history.c:288
-msgid "write sidecar files"
-msgstr "escriu els fitxers XMP"
 
 #: ../src/libs/copy_history.c:291
 msgid "write history stack and tags to XMP sidecar files"
@@ -8362,7 +8430,7 @@ msgstr "exporta amb valors actuals"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1181 ../src/libs/styles.c:67
-#: ../src/views/darkroom.c:2194
+#: ../src/views/darkroom.c:2368
 msgctxt "accel"
 msgid "export"
 msgstr "exporta"
@@ -8399,10 +8467,6 @@ msgstr ""
 "la majoria de càmeres no escriuen a EXIF la zona horària, entreu la "
 "corrrecta, perquè les dades GPX coincideixin bé "
 
-#: ../src/libs/geotagging.c:607
-msgid "time offset"
-msgstr "decalatge horari"
-
 #: ../src/libs/geotagging.c:618
 msgid ""
 "time offset\n"
@@ -8433,7 +8497,7 @@ msgid "histogram"
 msgstr "histograma"
 
 #. connect callbacks
-#: ../src/libs/histogram.c:134 ../src/libs/histogram.c:524
+#: ../src/libs/histogram.c:134 ../src/libs/histogram.c:525
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
@@ -8441,43 +8505,43 @@ msgstr ""
 "arrossegueu per canviar l'exposició,\n"
 "doble click per reiniciar"
 
-#: ../src/libs/histogram.c:488
+#: ../src/libs/histogram.c:489
 msgid "set histogram mode to linear"
 msgstr "canvia l'histograma a mode lineal"
 
-#: ../src/libs/histogram.c:491
+#: ../src/libs/histogram.c:492
 msgid "set histogram mode to waveform"
 msgstr "canvia l'histograma a mode forma d'ona"
 
-#: ../src/libs/histogram.c:494
+#: ../src/libs/histogram.c:495
 msgid "set histogram mode to logarithmic"
 msgstr "canvia l'histograma a mode logarítmic"
 
-#: ../src/libs/histogram.c:503
+#: ../src/libs/histogram.c:504
 msgid "click to hide red channel"
 msgstr "feu clic per amagar el canal vermell"
 
-#: ../src/libs/histogram.c:503
+#: ../src/libs/histogram.c:504
 msgid "click to show red channel"
 msgstr "feu clic per mostrar el canal vermell"
 
-#: ../src/libs/histogram.c:508
+#: ../src/libs/histogram.c:509
 msgid "click to hide green channel"
 msgstr "feu clic per amagar el canal verd"
 
-#: ../src/libs/histogram.c:509
+#: ../src/libs/histogram.c:510
 msgid "click to show green channel"
 msgstr "feu clic per mostrar el canal verd"
 
-#: ../src/libs/histogram.c:514
+#: ../src/libs/histogram.c:515
 msgid "click to hide blue channel"
 msgstr "feu clic per amagar el canal blau"
 
-#: ../src/libs/histogram.c:514
+#: ../src/libs/histogram.c:515
 msgid "click to show blue channel"
 msgstr "feu clic per mostrar el canal blau"
 
-#: ../src/libs/histogram.c:519
+#: ../src/libs/histogram.c:520
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
@@ -8509,7 +8573,7 @@ msgstr "creeu un historial mínim que produeixi la mateixa imatge"
 msgid "create a style from the current history stack"
 msgstr "crea un estil a partir de l'actual pila de l'historial"
 
-#: ../src/libs/history.c:179 ../src/libs/snapshots.c:359
+#: ../src/libs/history.c:179 ../src/libs/snapshots.c:342
 msgid "original"
 msgstr "original"
 
@@ -8703,67 +8767,63 @@ msgid "no supported devices found"
 msgstr "no s'ha trobat cap dispositiu compatible"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:410
+#: ../src/libs/import.c:411
 msgid "import options"
 msgstr "opcions d'importació"
 
 #. recursive opening.
-#: ../src/libs/import.c:439
+#: ../src/libs/import.c:440
 msgid "import directories recursively"
 msgstr "importa directoris de forma recursiva"
 
-#: ../src/libs/import.c:441
+#: ../src/libs/import.c:442
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "importa subdirectoris recursivament, cada directori en un nou rodet."
 
-#: ../src/libs/import.c:457
+#: ../src/libs/import.c:458
 msgid "apply metadata on import"
 msgstr "aplica metadades en importar"
 
-#: ../src/libs/import.c:458
+#: ../src/libs/import.c:459
 msgid "apply some metadata to all newly imported images."
 msgstr "aplica algunes metadades a totes les noves imatges importades"
 
-#: ../src/libs/import.c:504
+#: ../src/libs/import.c:505
 msgid "comma separated list of tags"
 msgstr "llista d'etiquetes separades per comes"
 
-#: ../src/libs/import.c:772
-msgid "import image"
-msgstr "importa una imatge"
-
-#: ../src/libs/import.c:796
+#: ../src/libs/import.c:798
 msgid "supported images"
 msgstr "imatges suportades"
 
-#: ../src/libs/import.c:852
+#: ../src/libs/import.c:854
 msgid "file has unknown format!"
 msgstr "format de fitxer desconegut!"
 
-#: ../src/libs/import.c:871
+#: ../src/libs/import.c:873
 msgid "import film"
 msgstr "importa rodet"
 
-#: ../src/libs/import.c:985
+#: ../src/libs/import.c:987
 msgid "select one or more images to import"
 msgstr "selecciona una o més imatges a importar"
 
 #. adding the import folder button
-#: ../src/libs/import.c:992
+#: ../src/libs/import.c:994
 msgid "folder"
 msgstr "carpeta"
 
-#: ../src/libs/import.c:995
+#: ../src/libs/import.c:997
 msgid "select a folder to import as film roll"
 msgstr "seleccioneu una carpeta a importar com a rodet"
 
 #. add the rescan button
-#: ../src/libs/import.c:1003
+#: ../src/libs/import.c:1005
 msgid "scan for devices"
 msgstr "escaneja els dispositius"
 
-#: ../src/libs/import.c:1006
+#: ../src/libs/import.c:1008
 msgid "scan for newly attached devices"
 msgstr "cerca nous dispositius connectats"
 
@@ -8971,56 +9031,56 @@ msgstr "servei de mapes"
 msgid "select the source of the map. some entries might not work"
 msgstr "trieu un servidor de mapes. algunes entrades poden no funcionar"
 
-#: ../src/libs/masks.c:54
+#: ../src/libs/masks.c:56
 msgid "mask manager"
 msgstr "organitzador de màscares"
 
-#: ../src/libs/masks.c:240
+#: ../src/libs/masks.c:242
 #, c-format
 msgid "group #%d"
 msgstr "grup #%d"
 
-#: ../src/libs/masks.c:1106
+#: ../src/libs/masks.c:1108
 msgid "duplicate this shape"
 msgstr "duplica la forma"
 
-#: ../src/libs/masks.c:1110
+#: ../src/libs/masks.c:1112
 msgid "delete this shape"
 msgstr "elimina la forma"
 
-#: ../src/libs/masks.c:1116
+#: ../src/libs/masks.c:1118
 msgid "remove from group"
 msgstr "treu del grup"
 
-#: ../src/libs/masks.c:1124
+#: ../src/libs/masks.c:1126
 msgid "group the forms"
 msgstr "agrupa les formes"
 
-#: ../src/libs/masks.c:1133
+#: ../src/libs/masks.c:1135
 msgid "use inversed shape"
 msgstr "empra la forma invertida"
 
-#: ../src/libs/masks.c:1139
+#: ../src/libs/masks.c:1141
 msgid "mode : union"
 msgstr "mode; unió"
 
-#: ../src/libs/masks.c:1142
+#: ../src/libs/masks.c:1144
 msgid "mode : intersection"
 msgstr "mode: intersecció"
 
-#: ../src/libs/masks.c:1145
+#: ../src/libs/masks.c:1147
 msgid "mode : difference"
 msgstr "mode: diferència"
 
-#: ../src/libs/masks.c:1148
+#: ../src/libs/masks.c:1150
 msgid "mode : exclusion"
 msgstr "mode: exclusió"
 
-#: ../src/libs/masks.c:1162
+#: ../src/libs/masks.c:1164
 msgid "cleanup unused shapes"
 msgstr "netejar formes no usades"
 
-#: ../src/libs/masks.c:1627
+#: ../src/libs/masks.c:1629
 msgid "created shapes"
 msgstr "formes creades"
 
@@ -9220,7 +9280,7 @@ msgid_plural "image has %d stars"
 msgstr[0] "la imatge té %d estrella"
 msgstr[1] "la imatge té %d estrelles"
 
-#: ../src/libs/metadata_view.c:377 ../src/libs/snapshots.c:367
+#: ../src/libs/metadata_view.c:377 ../src/libs/snapshots.c:350
 msgid "unknown"
 msgstr "desconegut"
 
@@ -9265,7 +9325,7 @@ msgstr "rawspeed"
 msgid "loader: %s"
 msgstr "carregador: %s"
 
-#: ../src/libs/metadata_view.c:625
+#: ../src/libs/metadata_view.c:627
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "vés al rodet"
@@ -9311,19 +9371,19 @@ msgstr "més mòduls"
 msgid "navigation"
 msgstr "navegació"
 
-#: ../src/libs/navigation.c:494
+#: ../src/libs/navigation.c:501
 msgid "small"
 msgstr "mida reduïda"
 
-#: ../src/libs/navigation.c:498
+#: ../src/libs/navigation.c:505
 msgid "fit to screen"
 msgstr "ajusta a la pantalla"
 
-#: ../src/libs/navigation.c:502
+#: ../src/libs/navigation.c:509
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:506
+#: ../src/libs/navigation.c:513
 msgid "200%"
 msgstr "200%"
 
@@ -9523,27 +9583,27 @@ msgstr ""
 "de la col·lecció actual"
 
 #. setup selection accelerators
-#: ../src/libs/select.c:248 ../src/libs/tools/filmstrip.c:197
+#: ../src/libs/select.c:250 ../src/libs/tools/filmstrip.c:197
 msgctxt "accel"
 msgid "select all"
 msgstr "selecciona-ho tot"
 
-#: ../src/libs/select.c:249 ../src/libs/tools/filmstrip.c:198
+#: ../src/libs/select.c:251 ../src/libs/tools/filmstrip.c:198
 msgctxt "accel"
 msgid "select none"
 msgstr "sense selecció"
 
-#: ../src/libs/select.c:250 ../src/libs/tools/filmstrip.c:199
+#: ../src/libs/select.c:252 ../src/libs/tools/filmstrip.c:199
 msgctxt "accel"
 msgid "invert selection"
 msgstr "inverteix la selecció"
 
-#: ../src/libs/select.c:251 ../src/libs/tools/filmstrip.c:200
+#: ../src/libs/select.c:253 ../src/libs/tools/filmstrip.c:200
 msgctxt "accel"
 msgid "select film roll"
 msgstr "selecciona rodet"
 
-#: ../src/libs/select.c:252 ../src/libs/tools/filmstrip.c:201
+#: ../src/libs/select.c:254 ../src/libs/tools/filmstrip.c:201
 msgctxt "accel"
 msgid "select untouched"
 msgstr "selecciona les no modificades"
@@ -9567,11 +9627,11 @@ msgid "take snapshot"
 msgstr "fes una captura"
 
 #. create take snapshot button
-#: ../src/libs/snapshots.c:285
+#: ../src/libs/snapshots.c:268
 msgid "take snapshot"
 msgstr "fes una captura"
 
-#: ../src/libs/snapshots.c:288
+#: ../src/libs/snapshots.c:271
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -9695,7 +9755,41 @@ msgstr[1] ""
 msgid "delete tag?"
 msgstr "voleu suprimir l'etiqueta?"
 
-#: ../src/libs/tagging.c:403
+#: ../src/libs/tagging.c:353
+msgid "Select a keyword file"
+msgstr "Seleccioneu un arxiu de paraules clau"
+
+#: ../src/libs/tagging.c:356
+msgid "_import"
+msgstr "_importa"
+
+#: ../src/libs/tagging.c:367
+msgid "error importing tags"
+msgstr "error en importar etiquetes"
+
+#: ../src/libs/tagging.c:369
+#, c-format
+msgid "%ld tags imported"
+msgstr "%ld etiquetes importades"
+
+#: ../src/libs/tagging.c:390
+msgid "Select file to export to"
+msgstr "seleccioneu fitxer on exportar"
+
+#: ../src/libs/tagging.c:393
+msgid "_export"
+msgstr "_exporta"
+
+#: ../src/libs/tagging.c:405
+msgid "error exporting tags"
+msgstr "error en exportar les etiquetes"
+
+#: ../src/libs/tagging.c:407
+#, c-format
+msgid "%ld tags exported"
+msgstr "%ld etiquetes exportades"
+
+#: ../src/libs/tagging.c:478
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -9703,27 +9797,27 @@ msgstr ""
 "etiquetes adjuntades,\n"
 "feu doble clic per treure-les"
 
-#: ../src/libs/tagging.c:410
+#: ../src/libs/tagging.c:485
 msgid "attach"
 msgstr "adjunta"
 
-#: ../src/libs/tagging.c:412
+#: ../src/libs/tagging.c:487
 msgid "attach tag to all selected images"
 msgstr "aplica etiqueta a totes les imatges seleccionades"
 
-#: ../src/libs/tagging.c:416
+#: ../src/libs/tagging.c:491
 msgid "detach"
 msgstr "treu"
 
-#: ../src/libs/tagging.c:418
+#: ../src/libs/tagging.c:493
 msgid "detach tag from all selected images"
 msgstr "treu etiqueta de totes les imatges seleccionades"
 
-#: ../src/libs/tagging.c:430
+#: ../src/libs/tagging.c:505
 msgid "enter tag name"
 msgstr "introduïu el nom de l'etiqueta"
 
-#: ../src/libs/tagging.c:455
+#: ../src/libs/tagging.c:530
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -9731,11 +9825,11 @@ msgstr ""
 "etiquetes relacionades,\n"
 "feu doble click per adjuntar"
 
-#: ../src/libs/tagging.c:462
+#: ../src/libs/tagging.c:537
 msgid "new"
 msgstr "nova"
 
-#: ../src/libs/tagging.c:464
+#: ../src/libs/tagging.c:539
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -9743,9 +9837,27 @@ msgstr ""
 "crea una nova etiqueta\n"
 "amb el nom introduït"
 
-#: ../src/libs/tagging.c:470
+#: ../src/libs/tagging.c:545
 msgid "delete selected tag"
 msgstr "suprimeix l'etiqueta seleccionada"
+
+#: ../src/libs/tagging.c:549
+msgctxt "verb"
+msgid "import"
+msgstr "importa"
+
+#: ../src/libs/tagging.c:551
+msgid "import tags from a Lightroom keyword file"
+msgstr "importa etiquetes d'un fitxer de paraules clau de Lightroom"
+
+#: ../src/libs/tagging.c:555
+msgctxt "verb"
+msgid "export"
+msgstr "exporta"
+
+#: ../src/libs/tagging.c:557
+msgid "export all tags to a Lightroom keyword file"
+msgstr "exporta totes les etiquetes a un fitxer de paraules clau de Ligthroom"
 
 #: ../src/libs/tools/colorlabels.c:40
 msgid "colorlabels"
@@ -9827,23 +9939,23 @@ msgctxt "accel"
 msgid "clear color labels"
 msgstr "treu etiquetes de color"
 
-#: ../src/libs/tools/darktable.c:57
+#: ../src/libs/tools/darktable.c:56
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/tools/darktable.c:289
+#: ../src/libs/tools/darktable.c:288
 msgid "copyright (c) the authors 2009-2016"
 msgstr "copyright (c) Els autors 2009-2016"
 
-#: ../src/libs/tools/darktable.c:291
+#: ../src/libs/tools/darktable.c:290
 msgid "organize and develop images from digital cameras"
 msgstr "organitza i revela imatges de càmeres digitals"
 
-#: ../src/libs/tools/darktable.c:302
+#: ../src/libs/tools/darktable.c:301
 msgid "* contributors *"
 msgstr "* col·laboradors *"
 
-#: ../src/libs/tools/darktable.c:314
+#: ../src/libs/tools/darktable.c:313
 msgid "translator-credits"
 msgstr "translator-credits"
 
@@ -9854,37 +9966,37 @@ msgstr "tira de pel·lícula"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2204
+#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2203
 msgctxt "accel"
 msgid "rate 0"
 msgstr "puntua 0"
 
-#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2205
+#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2204
 msgctxt "accel"
 msgid "rate 1"
 msgstr "puntua 1"
 
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2206
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2205
 msgctxt "accel"
 msgid "rate 2"
 msgstr "puntua 2"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2207
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2206
 msgctxt "accel"
 msgid "rate 3"
 msgstr "puntua 3"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2208
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2207
 msgctxt "accel"
 msgid "rate 4"
 msgstr "puntua 4"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2209
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2208
 msgctxt "accel"
 msgid "rate 5"
 msgstr "puntua 5"
 
-#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2210
+#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2209
 msgctxt "accel"
 msgid "rate reject"
 msgstr "puntua com a rebutjada"
@@ -9950,23 +10062,19 @@ msgstr "ordena segons"
 msgid "preferences"
 msgstr "preferències"
 
-#: ../src/libs/tools/global_toolbox.c:82
-#: ../src/libs/tools/global_toolbox.c:125
+#: ../src/libs/tools/global_toolbox.c:82 ../src/libs/tools/global_toolbox.c:125
 msgid "expand grouped images"
 msgstr "expandeix imatges agrupades"
 
-#: ../src/libs/tools/global_toolbox.c:84
-#: ../src/libs/tools/global_toolbox.c:127
+#: ../src/libs/tools/global_toolbox.c:84 ../src/libs/tools/global_toolbox.c:127
 msgid "collapse grouped images"
 msgstr "col·lapsa imatges agrupades"
 
-#: ../src/libs/tools/global_toolbox.c:94
-#: ../src/libs/tools/global_toolbox.c:144
+#: ../src/libs/tools/global_toolbox.c:94 ../src/libs/tools/global_toolbox.c:145
 msgid "hide image overlays"
 msgstr "amaga elements superposats a la imatge"
 
-#: ../src/libs/tools/global_toolbox.c:96
-#: ../src/libs/tools/global_toolbox.c:146
+#: ../src/libs/tools/global_toolbox.c:96 ../src/libs/tools/global_toolbox.c:147
 msgid "show image overlays"
 msgstr "mostra elements superposats a la imatge"
 
@@ -9974,17 +10082,17 @@ msgstr "mostra elements superposats a la imatge"
 msgid "show global preferences"
 msgstr "mostra preferències globals"
 
-#: ../src/libs/tools/global_toolbox.c:160
+#: ../src/libs/tools/global_toolbox.c:162
 msgctxt "accel"
 msgid "grouping"
 msgstr "agrupament"
 
-#: ../src/libs/tools/global_toolbox.c:161
+#: ../src/libs/tools/global_toolbox.c:163
 msgctxt "accel"
 msgid "preferences"
 msgstr "preferències"
 
-#: ../src/libs/tools/global_toolbox.c:162
+#: ../src/libs/tools/global_toolbox.c:164
 msgctxt "accel"
 msgid "show overlays"
 msgstr "mostra elements superposats"
@@ -10006,22 +10114,22 @@ msgid "file manager"
 msgstr "gestor d'arxius"
 
 #. view accels
-#: ../src/libs/tools/lighttable.c:142
+#: ../src/libs/tools/lighttable.c:140
 msgctxt "accel"
 msgid "zoom max"
 msgstr "zoom màxim"
 
-#: ../src/libs/tools/lighttable.c:143
+#: ../src/libs/tools/lighttable.c:141
 msgctxt "accel"
 msgid "zoom in"
 msgstr "augmenta zoom"
 
-#: ../src/libs/tools/lighttable.c:144
+#: ../src/libs/tools/lighttable.c:142
 msgctxt "accel"
 msgid "zoom out"
 msgstr "redueix zoom"
 
-#: ../src/libs/tools/lighttable.c:145
+#: ../src/libs/tools/lighttable.c:143
 msgctxt "accel"
 msgid "zoom min"
 msgstr "zoom mínim"
@@ -10048,58 +10156,104 @@ msgstr "altres"
 msgid "view toolbox"
 msgstr "caixa d'eines de vista"
 
-#: ../src/lua/lualib.c:274
+#: ../src/lua/lualib.c:286
 msgctxt "accel"
 msgid "reset lib parameters"
 msgstr "reinicia paràmetres"
 
-#: ../src/lua/preferences.c:569
-msgid "lua options"
-msgstr "opcions lua"
-
-#: ../src/lua/preferences.c:626
+#: ../src/lua/preferences.c:604
 msgid "select file"
 msgstr "seleccioneu un arxiu"
 
-#: ../src/lua/preferences.c:675
+#: ../src/lua/preferences.c:684
 #, c-format
 msgid "double click to reset to `%f'"
 msgstr "feu doble clic per reiniciar a `%f'"
+
+#: ../src/lua/preferences.c:764
+msgid "lua options"
+msgstr "opcions lua"
 
 #: ../src/views/darkroom.c:87
 msgid "darkroom"
 msgstr "cambra fosca"
 
-#: ../src/views/darkroom.c:403
+#: ../src/views/darkroom.c:395
 msgid "gamut check"
 msgstr "comprovació de gamut"
 
-#: ../src/views/darkroom.c:403
+#: ../src/views/darkroom.c:395
 msgid "soft proof"
 msgstr "soft proof"
 
-#: ../src/views/darkroom.c:896
+#: ../src/views/darkroom.c:888
 msgid "no userdefined presets for favorite modules were found"
 msgstr "no s'han trobat predefinits de l'usuari pels mòduls favorits"
 
-#: ../src/views/darkroom.c:901
+#: ../src/views/darkroom.c:893
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "aplicat l'estil `%s' a la imatge"
 
-#: ../src/views/darkroom.c:956
+#: ../src/views/darkroom.c:948
 msgid "no styles have been created yet"
 msgstr "encara no s'ha creat cap estil"
 
-#: ../src/views/darkroom.c:1394
+#: ../src/views/darkroom.c:1486
 msgid "quick access to presets of your favorites"
 msgstr "accés ràpid als predefinits dels vostres mòduls favorits"
 
-#: ../src/views/darkroom.c:1402
+#: ../src/views/darkroom.c:1494
 msgid "quick access for applying any of your styles"
 msgstr "accés ràpid per aplicar qualsevol dels vostres estils"
 
-#: ../src/views/darkroom.c:1411
+#: ../src/views/darkroom.c:1503
+msgid ""
+"toggle raw over exposed indication\n"
+"right click for options"
+msgstr ""
+"permuta indicador de sobre/subexposició del raw\n"
+"clic dret per més opcions"
+
+#: ../src/views/darkroom.c:1545
+msgid "mark with CFA color"
+msgstr "marca amb color CFA"
+
+#: ../src/views/darkroom.c:1546
+msgid "mark with solid color"
+msgstr "marca amb color sòlid"
+
+#: ../src/views/darkroom.c:1547
+msgid "false color"
+msgstr "fals color"
+
+#: ../src/views/darkroom.c:1549
+msgid "select how to mark the clipped pixels"
+msgstr "selecciona com marcar els píxels sobreexposats"
+
+#: ../src/views/darkroom.c:1556
+msgid "solid color scheme"
+msgstr "esquema de color sòlid"
+
+#: ../src/views/darkroom.c:1564
+msgid ""
+"select the solid color to indicate over exposure.\n"
+"will only be used if mode = mark with solid color"
+msgstr ""
+"selecciona el color sòlid per indicar sobreexposició.\n"
+"només s'empra quan el mode és = marcar amb color sòlid"
+
+#: ../src/views/darkroom.c:1574
+msgid ""
+"threshold of what shall be considered overexposed\n"
+"1.0 - white level\n"
+"0.0 - black level"
+msgstr ""
+"llindar del que s'ha de considerar sobreexposat\n"
+"1.0 - nivell del blanc\n"
+"0.0 - nivell del negre"
+
+#: ../src/views/darkroom.c:1585
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -10107,39 +10261,39 @@ msgstr ""
 "permuta indicador de sobre/subexposició\n"
 "clic dret per més opcions"
 
-#: ../src/views/darkroom.c:1452
+#: ../src/views/darkroom.c:1626
 msgid "color scheme"
 msgstr "esquema de color"
 
-#: ../src/views/darkroom.c:1454
+#: ../src/views/darkroom.c:1628
 msgid "red & blue"
 msgstr "vermell i blau"
 
-#: ../src/views/darkroom.c:1455
+#: ../src/views/darkroom.c:1629
 msgid "purple & green"
 msgstr "violeta i verd"
 
-#: ../src/views/darkroom.c:1457
+#: ../src/views/darkroom.c:1631
 msgid "select colors to indicate over/under exposure"
 msgstr "trieu colors per indicar sobre/subexposició"
 
-#: ../src/views/darkroom.c:1466
+#: ../src/views/darkroom.c:1640
 msgid "lower threshold"
 msgstr "llindar inferior"
 
-#: ../src/views/darkroom.c:1467
+#: ../src/views/darkroom.c:1641
 msgid "threshold of what shall be considered underexposed"
 msgstr "llindar del que s'ha de considerar subexposat"
 
-#: ../src/views/darkroom.c:1475
+#: ../src/views/darkroom.c:1649
 msgid "upper threshold"
 msgstr "llindar superior"
 
-#: ../src/views/darkroom.c:1476
+#: ../src/views/darkroom.c:1650
 msgid "threshold of what shall be considered overexposed"
 msgstr "llindar del que s'ha de considerar sobreexposat"
 
-#: ../src/views/darkroom.c:1487
+#: ../src/views/darkroom.c:1661
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -10147,7 +10301,7 @@ msgstr ""
 "permuta indicador de softproof\n"
 "clic dret per opcions del perfil ICC"
 
-#: ../src/views/darkroom.c:1500
+#: ../src/views/darkroom.c:1674
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -10155,229 +10309,229 @@ msgstr ""
 "permuta comprovació de gamut\n"
 "clic dret per opcions del perfil ICC"
 
-#: ../src/views/darkroom.c:1545 ../src/views/lighttable.c:2441
+#: ../src/views/darkroom.c:1719 ../src/views/lighttable.c:2424
 msgid "display intent"
 msgstr "prova pantalla"
 
-#: ../src/views/darkroom.c:1560
+#: ../src/views/darkroom.c:1734
 msgid "softproof profile"
 msgstr "ICC simulació"
 
-#: ../src/views/darkroom.c:1561 ../src/views/lighttable.c:2455
+#: ../src/views/darkroom.c:1735 ../src/views/lighttable.c:2432
 msgid "display profile"
 msgstr "ICC pantalla"
 
-#: ../src/views/darkroom.c:1592 ../src/views/lighttable.c:2474
+#: ../src/views/darkroom.c:1766 ../src/views/lighttable.c:2451
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "perfils ICC de pantalla a %s/color/out o %s/color/out"
 
-#: ../src/views/darkroom.c:1595
+#: ../src/views/darkroom.c:1769
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr "perfils ICC de simulació (softproof) a %s/color/out or %s/color/out"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2186 ../src/views/map.c:855
-#: ../src/views/print.c:353 ../src/views/tethering.c:387
+#: ../src/views/darkroom.c:2360 ../src/views/map.c:850 ../src/views/print.c:353
+#: ../src/views/tethering.c:387
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "permuta la cinta de pel·licula"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2189
+#: ../src/views/darkroom.c:2363
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom proper (100%)"
 
-#: ../src/views/darkroom.c:2190
+#: ../src/views/darkroom.c:2364
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom ampli"
 
-#: ../src/views/darkroom.c:2191
+#: ../src/views/darkroom.c:2365
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajustat"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2197
+#: ../src/views/darkroom.c:2371
 msgctxt "accel"
 msgid "image forward"
 msgstr "imatge endavant"
 
-#: ../src/views/darkroom.c:2198
+#: ../src/views/darkroom.c:2372
 msgctxt "accel"
 msgid "image back"
 msgstr "imatge enrere"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2201
+#: ../src/views/darkroom.c:2375
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sobreexposat"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2204
+#: ../src/views/darkroom.c:2378
 msgctxt "accel"
 msgid "softproof"
 msgstr "soft proof"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2207
+#: ../src/views/darkroom.c:2381
 msgctxt "accel"
 msgid "gamut check"
 msgstr "comprovació de gamut"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2210
+#: ../src/views/darkroom.c:2384
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenta la mida del pinzell"
 
-#: ../src/views/darkroom.c:2211
+#: ../src/views/darkroom.c:2385
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "redueix la mida del pinzell"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2214
+#: ../src/views/darkroom.c:2388
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenta la intensitat del pinzell"
 
-#: ../src/views/darkroom.c:2215
+#: ../src/views/darkroom.c:2389
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "redueix la intensitat del pinzell"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2218
+#: ../src/views/darkroom.c:2392
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenta l'opacitat del pinzell"
 
-#: ../src/views/darkroom.c:2219
+#: ../src/views/darkroom.c:2393
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "redueix l'opacitat del pinzell"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2222
+#: ../src/views/darkroom.c:2396
 msgctxt "accel"
 msgid "full preview"
 msgstr "vista prèvia completa"
 
-#: ../src/views/lighttable.c:531 ../src/views/slideshow.c:333
+#: ../src/views/lighttable.c:530 ../src/views/slideshow.c:333
 msgid "there are no images in this collection"
 msgstr "no hi ha imatges a la col·lecció"
 
-#: ../src/views/lighttable.c:535
+#: ../src/views/lighttable.c:534
 msgid "if you have not imported any images yet"
 msgstr "encara no heu importat cap imatge"
 
-#: ../src/views/lighttable.c:539
+#: ../src/views/lighttable.c:538
 msgid "you can do so in the import module"
 msgstr "podeu fer-ho en el mòdul d'importació"
 
-#: ../src/views/lighttable.c:547
+#: ../src/views/lighttable.c:546
 msgid "try to relax the filter settings in the top panel"
 msgstr "proveu de relaxar els valors del filtre al panell superior"
 
-#: ../src/views/lighttable.c:556
+#: ../src/views/lighttable.c:555
 msgid "or add images in the collection module in the left panel"
 msgstr "o afegiu imatges amb el mòdul de col·lecció al panell esquerre"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2213
+#: ../src/views/lighttable.c:2212
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navega amunt"
 
-#: ../src/views/lighttable.c:2214
+#: ../src/views/lighttable.c:2213
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navega avall"
 
-#: ../src/views/lighttable.c:2215
+#: ../src/views/lighttable.c:2214
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navegueu una pàgina amunt"
 
-#: ../src/views/lighttable.c:2216
+#: ../src/views/lighttable.c:2215
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navega pàgina avall"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2219
+#: ../src/views/lighttable.c:2218
 msgctxt "accel"
 msgid "scroll up"
 msgstr "desplaceu-vos amunt"
 
-#: ../src/views/lighttable.c:2220
+#: ../src/views/lighttable.c:2219
 msgctxt "accel"
 msgid "scroll down"
 msgstr "desplaceu-vos avall"
 
-#: ../src/views/lighttable.c:2221
+#: ../src/views/lighttable.c:2220
 msgctxt "accel"
 msgid "scroll left"
 msgstr "desplaceu-vos a l'esquerra"
 
-#: ../src/views/lighttable.c:2222
+#: ../src/views/lighttable.c:2221
 msgctxt "accel"
 msgid "scroll right"
 msgstr "desplaçament a la dreta"
 
-#: ../src/views/lighttable.c:2223
+#: ../src/views/lighttable.c:2222
 msgctxt "accel"
 msgid "scroll center"
 msgstr "desplaceu-vos al centre"
 
-#: ../src/views/lighttable.c:2224
+#: ../src/views/lighttable.c:2223
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "alinear imatges amb la graella"
 
-#: ../src/views/lighttable.c:2225
+#: ../src/views/lighttable.c:2224
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "permuta selecció d'imatge"
 
-#: ../src/views/lighttable.c:2226
+#: ../src/views/lighttable.c:2225
 msgctxt "accel"
 msgid "select single image"
 msgstr "selecciona imatge individual"
 
 #. Preview key
-#: ../src/views/lighttable.c:2229
+#: ../src/views/lighttable.c:2228
 msgctxt "accel"
 msgid "preview"
 msgstr "vista prèvia"
 
-#: ../src/views/lighttable.c:2230
+#: ../src/views/lighttable.c:2229
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "vista prèvia amb detecció d'enfoc"
 
-#: ../src/views/lighttable.c:2231
+#: ../src/views/lighttable.c:2230
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "vista prèvia permanent"
 
-#: ../src/views/lighttable.c:2232
+#: ../src/views/lighttable.c:2231
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "vista prèvia permanent amb detecció de focus"
 
-#: ../src/views/lighttable.c:2233
+#: ../src/views/lighttable.c:2232
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "surt de la vista prèvia permanent"
 
-#: ../src/views/lighttable.c:2401
+#: ../src/views/lighttable.c:2385
 msgid "set display profile"
 msgstr "perfil ICC pantalla"
 
@@ -10385,12 +10539,12 @@ msgstr "perfil ICC pantalla"
 msgid "map"
 msgstr "mapa"
 
-#: ../src/views/map.c:852
+#: ../src/views/map.c:847
 msgctxt "accel"
 msgid "undo"
 msgstr "desfer"
 
-#: ../src/views/map.c:853
+#: ../src/views/map.c:848
 msgctxt "accel"
 msgid "redo"
 msgstr "refer"
@@ -10456,6 +10610,92 @@ msgstr ""
 "ordinador i un sistema operatiu de 64 bits).\n"
 "en cas contrari teniu GARANTIT, que experimentareu problemes que no poden "
 "ser solventats.\n"
+
+#~ msgid "dark skin :A0"
+#~ msgstr "pell fosca :A0"
+
+#~ msgid "light skin :A1"
+#~ msgstr "pell clara :A1"
+
+#~ msgid "blue sky :A2"
+#~ msgstr "blau cel :A2"
+
+#~ msgid "foliage :A3"
+#~ msgstr "vegetació :A3"
+
+#~ msgid "blue flower :A4"
+#~ msgstr "flor blava :A4"
+
+#~ msgid "bluish green :A5"
+#~ msgstr "verd blavós :A5"
+
+#~ msgid "orange :B0"
+#~ msgstr "taronja :B0"
+
+#~ msgid "purple red :B1"
+#~ msgstr "vermell porpra :B1"
+
+#~ msgid "moderate red :B2"
+#~ msgstr "vermell moderat :B2"
+
+#~ msgid "purple :B3"
+#~ msgstr "porpra :B3"
+
+#~ msgid "yellow green :B4"
+#~ msgstr "verd grogós :B4"
+
+#~ msgid "orange yellow :B5"
+#~ msgstr "groc taronja :B5"
+
+#~ msgid "blue :C0"
+#~ msgstr "blau :C0"
+
+#~ msgid "green :C1"
+#~ msgstr "verd :C1"
+
+#~ msgid "red :C2"
+#~ msgstr "vermell :C2"
+
+#~ msgid "yellow :C3"
+#~ msgstr "groc :C3"
+
+#~ msgid "magenta :C4"
+#~ msgstr "magenta :C4"
+
+#~ msgid "cyan :C5"
+#~ msgstr "cian :C5"
+
+#~ msgid "white :D0"
+#~ msgstr "blanc :D0"
+
+#~ msgid "neutral 8 :D1"
+#~ msgstr ""
+#~ "neutre\n"
+#~ " 8 :D1"
+
+#~ msgid "neutral 65 :D2"
+#~ msgstr "neutre 65 :D2"
+
+#~ msgid "neutral 5 :D3"
+#~ msgstr "neutre 5 :D3"
+
+#~ msgid "neutral 35 :D4"
+#~ msgstr "neutre 35 :D4"
+
+#~ msgid "black :D5"
+#~ msgstr "negre :D5"
+
+#~ msgid "select patch `%s' (altered patches are marked with an outline)"
+#~ msgstr ""
+#~ "selecciona la mostra `%s' (les mostres modificades es marquen amb una "
+#~ "vora)"
+
+#~ msgid "disable all tools"
+#~ msgstr "desactiva totes les eines"
+
+#~ msgctxt "accel"
+#~ msgid "disable tools"
+#~ msgstr "desactiva eines"
 
 #~ msgctxt "preferences"
 #~ msgid "gnome keyring"
@@ -10847,10 +11087,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "hsl saturation"
 #~ msgstr "saturació"
-
-#, fuzzy
-#~ msgid "hsl color"
-#~ msgstr "color"
 
 #~ msgid "failed to create session path %s."
 #~ msgstr "no s'ha pogut crear el camí de la sessió «%s»."

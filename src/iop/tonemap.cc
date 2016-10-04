@@ -194,7 +194,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   // also process the clipping point, as good as we can without knowing
   // the local environment (i.e. assuming detail == 0)
-  float *pmax = piece->pipe->processed_maximum;
+  float *pmax = piece->pipe->dsc.processed_maximum;
   float L = 0.2126 * pmax[0] + 0.7152 * pmax[1] + 0.0722 * pmax[2];
   if(L <= 0.0) L = 1e-6;
   L = logf(L);

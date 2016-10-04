@@ -483,6 +483,13 @@ void dt_lua_async_call_internal(const char* function, int line,lua_State *L, int
 
 void dt_lua_async_call_alien_internal(const char * call_function, int line,lua_CFunction pusher,int nresults,dt_lua_finish_callback cb, void*cb_data, dt_lua_async_call_arg_type arg_type,...)
 {
+  if(!darktable.lua_state.alien_job_queue) {
+    // early call before lua has properly been initialized, ignore
+#ifdef _DEBUG
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called early. probably ok.\n",__FUNCTION__);
+#endif
+    return;
+  }
 #ifdef _DEBUG
   dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,call_function,line);
 #endif

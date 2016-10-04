@@ -259,7 +259,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     // No supported devices is detected lets notice user..
     GtkWidget *label = gtk_label_new(_("no supported devices found"));
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-    g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+    g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
     gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
   }
   gtk_widget_show_all(GTK_WIDGET(d->devices));
@@ -519,7 +519,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select name, op_params from presets where operation = \"metadata\"", -1, &stmt,
+                              "SELECT name, op_params FROM data.presets WHERE operation = \"metadata\"", -1, &stmt,
                               NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {

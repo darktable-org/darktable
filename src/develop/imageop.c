@@ -38,6 +38,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
+#include "develop/format.h"
 
 #include <assert.h>
 #include <gmodule.h>
@@ -121,13 +122,6 @@ static int default_operation_tags()
 static int default_operation_tags_filter()
 {
   return 0;
-}
-
-/* default bytes per pixel: 4*sizeof(float). */
-static int default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                              struct dt_dev_pixelpipe_iop_t *piece)
-{
-  return 4 * sizeof(float);
 }
 
 static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
@@ -237,8 +231,10 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
     module->operation_tags = default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter", (gpointer) & (module->operation_tags_filter)))
     module->operation_tags_filter = default_operation_tags_filter;
-  if(!g_module_symbol(module->module, "output_bpp", (gpointer) & (module->output_bpp)))
-    module->output_bpp = default_output_bpp;
+  if(!g_module_symbol(module->module, "input_format", (gpointer) & (module->input_format)))
+    module->input_format = default_input_format;
+  if(!g_module_symbol(module->module, "output_format", (gpointer) & (module->output_format)))
+    module->output_format = default_output_format;
   if(!g_module_symbol(module->module, "tiling_callback", (gpointer) & (module->tiling_callback)))
     module->tiling_callback = default_tiling_callback;
   if(!g_module_symbol(module->module, "gui_reset", (gpointer) & (module->gui_reset)))
@@ -389,7 +385,8 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->description = so->description;
   module->operation_tags = so->operation_tags;
   module->operation_tags_filter = so->operation_tags_filter;
-  module->output_bpp = so->output_bpp;
+  module->input_format = so->input_format;
+  module->output_format = so->output_format;
   module->tiling_callback = so->tiling_callback;
   module->gui_update = so->gui_update;
   module->gui_reset = so->gui_reset;
@@ -1042,7 +1039,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select name, op_version, op_params, blendop_version, blendop_params from presets where operation = ?1",
+      "SELECT name, op_version, op_params, blendop_version, blendop_params FROM data.presets WHERE operation = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_so->op, -1, SQLITE_TRANSIENT);
 
@@ -1064,7 +1061,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
       sqlite3_stmt *stmt2;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select module from history where operation = ?1 and op_params = ?2", -1,
+                                  "SELECT module FROM main.history WHERE operation = ?1 AND op_params = ?2", -1,
                                   &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, module_so->op, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, old_params, old_params_size, SQLITE_TRANSIENT);
@@ -1091,7 +1088,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
               module_so->op, name);
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "update presets set op_version=?1 where operation=?2 and name=?3", -1,
+                                  "UPDATE data.presets SET op_version=?1 WHERE operation=?2 AND name=?3", -1,
                                   &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, old_params_version);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 2, module_so->op, -1, SQLITE_TRANSIENT);
@@ -1140,9 +1137,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
       // and write the new params back to the database
       sqlite3_stmt *stmt2;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets "
-                                                                 "set op_version=?1, op_params=?2 "
-                                                                 "where operation=?3 and name=?4",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE data.presets "
+                                                                 "SET op_version=?1, op_params=?2 "
+                                                                 "WHERE operation=?3 AND name=?4",
                                   -1, &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, module->version());
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_params, new_params_size, SQLITE_TRANSIENT);
@@ -1201,9 +1198,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
       // and write the new blend params back to the database
       sqlite3_stmt *stmt2;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets "
-                                                                 "set blendop_version=?1, blendop_params=?2 "
-                                                                 "where operation=?3 and name=?4",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE data.presets "
+                                                                 "SET blendop_version=?1, blendop_params=?2 "
+                                                                 "WHERE operation=?3 AND name=?4",
                                   -1, &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dt_develop_blend_version());
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_blend_params, sizeof(dt_develop_blend_params_t),
@@ -1229,7 +1226,7 @@ static void init_key_accels(dt_iop_module_so_t *module)
   /** load shortcuts for presets **/
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select name from presets where operation=?1 order by writeprotect desc, rowid",
+                              "SELECT name FROM data.presets WHERE operation=?1 ORDER BY writeprotect DESC, rowid",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2026,7 +2023,7 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   sqlite3_stmt *stmt;
   // don't know for which image. show all we got:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select name from presets where operation=?1 order by writeprotect desc, rowid",
+                              "SELECT name FROM data.presets WHERE operation=?1 ORDER BY writeprotect DESC, rowid",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)

@@ -1,6 +1,22 @@
-cmake_minimum_required(VERSION 2.8.5)
+cmake_minimum_required(VERSION 3.0)
+
+cmake_policy(SET CMP0011 NEW)
+cmake_policy(SET CMP0025 NEW)
+cmake_policy(SET CMP0048 OLD) # don't touch PROJECT_VERSION/VERSION
+
+#
+# Avoid source tree pollution
+#
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
+If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+  message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
+endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 
 project(darktable CXX C)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Allow forcing the C/CPP compiler that is actually used during the compilation
 # to something other than what is used by the cmake run. This is useful when
@@ -224,18 +240,6 @@ add_custom_target(
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-#
-# Initial cmake/debian/postinst and prerm script for debian package
-#
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/packaging/debian)
-
-
-#
-# Avoid source tree pollution
-#
-If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-	message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
-endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 # Add a sensible build type default and warning because empty means no optimization and no debug info.
@@ -258,6 +262,13 @@ else(APPLE)
     # The string "$ORIGIN" should end up in the executable as-is.
     set(RPATH_DT "$ORIGIN")
 endif(APPLE)
+
+if(NOT WIN32)
+  # Windows doesn't know the concept of RPATHs :(
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+  set(CMAKE_INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+endif(NOT WIN32)
 
 # we need some external programs for building darktable
 message(STATUS "Looking for external programs")
@@ -290,6 +301,26 @@ else(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
   message(STATUS "Found desktop-file-validate")
   set(VALIDATE_DESKTOP_FILE 1)
 endif(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
+
+# we need appstream-util to check darktable.appdata.xml
+find_program(appstream_util_BIN appstream-util)
+if(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+  message(STATUS "Missing appstream-util, problems in darktable.appdata.xml might go unnoticed")
+  set(VALIDATE_APPDATA_FILE 0)
+else(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+  message(STATUS "Found appstream-util")
+  set(VALIDATE_APPDATA_FILE 1)
+endif(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+
+# we need jsonschema to check noiseprofiles.json
+find_program(jsonschema_BIN jsonschema)
+if(${jsonschema_BIN} STREQUAL "jsonschema_BIN-NOTFOUND")
+  message(STATUS "Missing jsonschema, problems in noiseprofiles.json might go unnoticed")
+  set(VALIDATE_JSON 0)
+else(${jsonschema_BIN} STREQUAL "jsonschema_BIN-NOTFOUND")
+  message(STATUS "Found jsonschema")
+  set(VALIDATE_JSON 1)
+endif(${jsonschema_BIN} STREQUAL "jsonschema_BIN-NOTFOUND")
 
 # we need an xslt interpreter to generate preferences_gen.h and darktablerc
 find_program(Xsltproc_BIN xsltproc)
@@ -365,7 +396,6 @@ if(NOT SOURCE_PACKAGE AND NOT (CMAKE_VERSION VERSION_LESS 3.3) AND DEFINED ENV{_
 
   find_program(iwyu_tool_path NAMES iwyu_tool.py)
   if (iwyu_tool_path)
-    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     add_custom_command(
       OUTPUT "${CMAKE_BINARY_DIR}/iwyu.log"
       COMMAND "${iwyu_tool_path}" -v -p "${CMAKE_BINARY_DIR}"

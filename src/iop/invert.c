@@ -89,13 +89,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_button_iop(self, "pick color of film material from image", GTK_WIDGET(g->colorpicker));
 }
 
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW))
-    return sizeof(float);
-  return 4 * sizeof(float);
-}
-
 static void request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -164,7 +157,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_invert_data_t *const d = (dt_iop_invert_data_t *)piece->data;
 
-  const float *const m = piece->pipe->processed_maximum;
+  const float *const m = piece->pipe->dsc.processed_maximum;
 
   const float film_rgb_f[4]
       = { d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2], d->color[3] * m[3] };
@@ -174,13 +167,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // do nothing
   //   }
 
-  const uint32_t filters = piece->pipe->filters;
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
+  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
+  if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
@@ -194,9 +187,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  else if(filters)
   { // bayer float mosaiced
 
 #ifdef _OPENMP
@@ -211,7 +204,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
   }
   else
   { // non-mosaiced
@@ -239,7 +232,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
 
-  const float *const m = piece->pipe->processed_maximum;
+  const float *const m = piece->pipe->dsc.processed_maximum;
 
   const float film_rgb_f[4]
       = { d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2], d->color[3] * m[3] };
@@ -249,11 +242,15 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   // do nothing
   //   }
 
-  const uint32_t filters = piece->pipe->filters;
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->xtrans;
+  const uint32_t filters = piece->pipe->dsc.filters;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
+  if(filters == 9u)
   { // xtrans float mosaiced
+
+    const __m128 val_min = _mm_setzero_ps();
+    const __m128 val_max = _mm_set1_ps(1.0f);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -261,13 +258,49 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     {
       const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
       float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
-      for(int i = 0; i < roi_out->width; i++, out++, in++)
+
+      int i = 0;
+
+      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+
+      // process unaligned pixels
+      for(; i < alignment; i++, out++, in++)
+        *out = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - *in, 0.0f, 1.0f);
+
+      const __m128 film[3] = { _mm_set_ps(film_rgb_f[FCxtrans(j, i + 3, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 2, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 1, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 0, roi_out, xtrans)]),
+                               _mm_set_ps(film_rgb_f[FCxtrans(j, i + 7, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 6, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 5, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 4, roi_out, xtrans)]),
+                               _mm_set_ps(film_rgb_f[FCxtrans(j, i + 11, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 10, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 9, roi_out, xtrans)],
+                                          film_rgb_f[FCxtrans(j, i + 8, roi_out, xtrans)]) };
+
+      // process aligned pixels with SSE
+      for(int c = 0; c < 3 && i < roi_out->width - (4 - 1); c++, i += 4, in += 4, out += 4)
+      {
+        __m128 v;
+
+        v = _mm_load_ps(in);
+        v = _mm_sub_ps(film[c], v);
+        v = _mm_min_ps(v, val_max);
+        v = _mm_max_ps(v, val_min);
+        _mm_stream_ps(out, v);
+      }
+
+      // process the rest
+      for(; i < roi_out->width; i++, out++, in++)
         *out = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - *in, 0.0f, 1.0f);
     }
+    _mm_sfence();
 
-    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  else if(filters)
   { // bayer float mosaiced
 
     const __m128 val_min = _mm_setzero_ps();
@@ -307,7 +340,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
     _mm_sfence();
 
-    for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
   }
   else
   { // non-mosaiced
@@ -344,18 +377,18 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)self->data;
 
   const int devid = piece->pipe->devid;
-  const uint32_t filters = piece->pipe->filters;
+  const uint32_t filters = piece->pipe->dsc.filters;
   cl_mem dev_color = NULL;
   cl_int err = -999;
   int kernel = -1;
 
   float film_rgb_f[4] = { d->color[0], d->color[1], d->color[2], d->color[3] };
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  if(filters)
   {
     kernel = gd->kernel_invert_1f;
 
-    const float *const m = piece->pipe->processed_maximum;
+    const float *const m = piece->pipe->dsc.processed_maximum;
     for(int c = 0; c < 4; c++) film_rgb_f[c] *= m[c];
   }
   else
@@ -382,7 +415,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_color);
-  for(int k = 0; k < 4; k++) piece->pipe->processed_maximum[k] = 1.0f;
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
   return TRUE;
 
 error:
@@ -448,14 +481,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->color[3] = 0.0f;
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
+  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
 
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
 
-  // 4Bayer: convert the RGB color to CYGM only if we're not in the preview pipe (which is already RGB)
-  if((self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-     && !dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  // 4Bayer: convert the RGB color to CYGM
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
   {
     double RGB_to_CAM[4][3];
 

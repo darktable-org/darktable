@@ -789,6 +789,10 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     dt_print_mem_usage();
   }
 
+  // we need this REALLY early so that error messages can be shown
+  if(init_gui)
+    gtk_init(&argc, &argv);
+
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
@@ -948,7 +952,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   if(init_gui)
   {
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
-    if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
+    if(dt_gui_gtk_init(darktable.gui)) return 1;
     dt_bauhaus_init();
   }
   else

@@ -185,7 +185,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   t.image->width = t.width;
   t.image->height = t.height;
 
-  t.image->bpp = 4 * sizeof(float);
+  t.image->buf_dsc.channels = 4;
+  t.image->buf_dsc.datatype = TYPE_FLOAT;
 
   t.mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, t.image);
   if(!t.mipbuf)

@@ -98,7 +98,7 @@ invert_4f(read_only image2d_t in, write_only image2d_t out, const int width, con
 
 kernel void
 whitebalance_1f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
-    const unsigned int filters, const int rx, const int ry)
+    const unsigned int filters, const int rx, const int ry, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -108,8 +108,20 @@ whitebalance_1f(read_only image2d_t in, write_only image2d_t out, const int widt
 }
 
 kernel void
+whitebalance_1f_xtrans(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
+    const unsigned int filters, const int rx, const int ry, global const unsigned char (*const xtrans)[6])
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+  const float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
+  write_imagef (out, (int2)(x, y), (float4)(pixel * coeffs[FCxtrans(ry+y, rx+x, xtrans)], 0.0f, 0.0f, 0.0f));
+}
+
+
+kernel void
 whitebalance_4f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
-    const unsigned int filters, const int rx, const int ry)
+    const unsigned int filters, const int rx, const int ry, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1788,6 +1800,118 @@ overexposed (read_only image2d_t in, write_only image2d_t out, const int width, 
   {
     pixel.xyz = lower_color.xyz;
   }
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+
+/* kernel for the rawoverexposed plugin. */
+kernel void
+rawoverexposed_mark_cfa (
+        read_only image2d_t in, write_only image2d_t out, global float *pi,
+        const int width, const int height,
+        read_only image2d_t raw, const int raw_width, const int raw_height,
+        const unsigned int filters, global const unsigned char (*const xtrans)[6],
+        global unsigned int *threshold, global float *colors)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const int piwidth = 2*width;
+  global float *ppi = pi + mad24(y, piwidth, 2*x);
+
+  const int raw_x = ppi[0];
+  const int raw_y = ppi[1];
+
+  if(raw_x < 0 || raw_y < 0 || raw_x >= raw_width || raw_y >= raw_height) return;
+
+  const uint raw_pixel = read_imageui(raw, sampleri, (int2)(raw_x, raw_y)).x;
+
+  const int c = (filters == 9u) ? FCxtrans(raw_y, raw_x, xtrans) : FC(raw_y, raw_x, filters);
+
+  if(raw_pixel < threshold[c]) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  global float *color = colors + mad24(4, c, 0);
+
+  // cfa color
+  pixel.x = color[0];
+  pixel.y = color[1];
+  pixel.z = color[2];
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+kernel void
+rawoverexposed_mark_solid (
+        read_only image2d_t in, write_only image2d_t out, global float *pi,
+        const int width, const int height,
+        read_only image2d_t raw, const int raw_width, const int raw_height,
+        const unsigned int filters, global const unsigned char (*const xtrans)[6],
+        global unsigned int *threshold, const float4 solid_color)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const int piwidth = 2*width;
+  global float *ppi = pi + mad24(y, piwidth, 2*x);
+
+  const int raw_x = ppi[0];
+  const int raw_y = ppi[1];
+
+  if(raw_x < 0 || raw_y < 0 || raw_x >= raw_width || raw_y >= raw_height) return;
+
+  const uint raw_pixel = read_imageui(raw, sampleri, (int2)(raw_x, raw_y)).x;
+
+  const int c = (filters == 9u) ? FCxtrans(raw_y, raw_x, xtrans) : FC(raw_y, raw_x, filters);
+
+  if(raw_pixel < threshold[c]) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  // solid color
+  pixel.xyz = solid_color.xyz;
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+kernel void
+rawoverexposed_falsecolor (
+        read_only image2d_t in, write_only image2d_t out, global float *pi,
+        const int width, const int height,
+        read_only image2d_t raw, const int raw_width, const int raw_height,
+        const unsigned int filters, global const unsigned char (*const xtrans)[6],
+        global unsigned int *threshold)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const int piwidth = 2*width;
+  global float *ppi = pi + mad24(y, piwidth, 2*x);
+
+  const int raw_x = ppi[0];
+  const int raw_y = ppi[1];
+
+  if(raw_x < 0 || raw_y < 0 || raw_x >= raw_width || raw_y >= raw_height) return;
+
+  const uint raw_pixel = read_imageui(raw, sampleri, (int2)(raw_x, raw_y)).x;
+
+  const int c = (filters == 9u) ? FCxtrans(raw_y, raw_x, xtrans) : FC(raw_y, raw_x, filters);
+
+  if(raw_pixel < threshold[c]) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 *p = &pixel;
+
+  // falsecolor
+  p[c] = 0.0;
 
   write_imagef (out, (int2)(x, y), pixel);
 }

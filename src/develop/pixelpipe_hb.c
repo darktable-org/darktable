@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +30,7 @@
 #include "gui/gtk.h"
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
+#include "develop/format.h"
 
 #include <assert.h>
 #include <math.h>
@@ -58,6 +60,9 @@ typedef enum dt_pixelpipe_picker_source_t
 } dt_pixelpipe_picker_source_t;
 
 #include "develop/pixelpipe_cache.c"
+
+static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
+                              dt_develop_t *dev, dt_iop_buffer_dsc_t *dsc);
 
 static char *_pipe_type_to_str(int pipe_type)
 {
@@ -146,18 +151,15 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   return 1;
 }
 
-void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width,
-                                int height, float iscale, int pre_monochrome_demosaiced)
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height,
+                                float iscale)
 {
   pipe->iwidth = width;
   pipe->iheight = height;
   pipe->iscale = iscale;
   pipe->input = input;
-  pipe->pre_monochrome_demosaiced = pre_monochrome_demosaiced;
   pipe->image = dev->image_storage;
-
-  pipe->filters = pipe->image.filters;
-  memcpy(pipe->xtrans, pipe->image.xtrans, sizeof(pipe->xtrans));
+  get_output_format(NULL, pipe, NULL, dev, &pipe->dsc);
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
@@ -218,10 +220,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       piece->histogram_stats.bins_count = 0;
       piece->histogram_stats.pixels = 0;
       piece->colors
-          = ((dt_iop_module_colorspace(module) == iop_cs_RAW)
-             && (!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)))
-                ? 1
-                : 4;
+          = ((dt_iop_module_colorspace(module) == iop_cs_RAW) && (pipe->image.flags & DT_IMAGE_RAW)) ? 1 : 4;
       piece->iscale = pipe->iscale;
       piece->iwidth = pipe->iwidth;
       piece->iheight = pipe->iheight;
@@ -325,19 +324,19 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 {
 }
 
-static int get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
-                          dt_develop_t *dev)
+static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
+                              dt_develop_t *dev, dt_iop_buffer_dsc_t *dsc)
 {
-  if(!module)
+  if(module) return module->output_format(module, pipe, piece, dsc);
+
+  // first input.
+  *dsc = pipe->image.buf_dsc;
+
+  if(!(pipe->image.flags & DT_IMAGE_RAW))
   {
-    // first input.
-    // mipf and non-raw images have 4 floats per pixel
-    if(dt_dev_pixelpipe_uses_downsampled_input(pipe) || !(pipe->image.flags & DT_IMAGE_RAW))
-      return 4 * sizeof(float);
-    else
-      return pipe->image.bpp;
+    // image max is normalized before
+    for(int k = 0; k < 4; k++) dsc->processed_maximum[k] = 1.0f;
   }
-  return module->output_bpp(module, pipe, piece);
 }
 
 
@@ -720,11 +719,12 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
 
 // recursive helper for process:
 static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output,
-                                        void **cl_mem_output, int *out_bpp, const dt_iop_roi_t *roi_out,
-                                        GList *modules, GList *pieces, int pos)
+                                        void **cl_mem_output, dt_iop_buffer_dsc_t **out_format,
+                                        const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
   dt_iop_roi_t roi_in = *roi_out;
 
+  char module_name[256] = { 0 };
   void *input = NULL;
   void *cl_mem_input = NULL;
   *cl_mem_output = NULL;
@@ -737,12 +737,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     // skip this module?
     if(!piece->enabled
        || (dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
-      return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_bpp, &roi_in,
+      return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, &roi_in,
                                           g_list_previous(modules), g_list_previous(pieces), pos - 1);
   }
 
-  const int bpp = get_output_bpp(module, pipe, piece, dev);
-  *out_bpp = bpp;
+  if(module) g_strlcpy(module_name, module->op, MIN(sizeof(module_name), sizeof(module->op)));
+  get_output_format(module, pipe, piece, dev, *out_format);
+  const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
   const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height;
 
   // 1) if cached buffer is still available, return data
@@ -757,24 +758,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe ==
     // dev->preview_pipe ? "[preview]" : "", hash);
-    // copy over cached info:
-    if(piece)
-    {
-      pipe->filters = piece->filters;
 
-      for(int i = 0; i < 6; ++i)
-      {
-        for(int j = 0; j < 6; ++j)
-        {
-          pipe->xtrans[j][i] = piece->xtrans[j % 6][i % 6];
-        }
-      }
+    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output, out_format);
 
-      for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = piece->processed_maximum[k];
-    }
-    else
-      for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = 1.0f;
-    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(!modules) return 0;
     // go to post-collect directly:
@@ -804,16 +790,16 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     }
     dt_times_t start;
     dt_get_times(&start);
-    if(!dt_dev_pixelpipe_uses_downsampled_input(pipe)) // we're looking for the full buffer
+    // we're looking for the full buffer
     {
       if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width
          && pipe->iheight == roi_out->height)
       {
         *output = pipe->input;
       }
-      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
+      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output, out_format))
       {
-        memset(*output, 0, pipe->backbuf_size);
+        memset(*output, 0, bufsize);
         if(roi_in.scale == 1.0f)
         {
           // fast branch for 1:1 pixel copies.
@@ -845,23 +831,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       }
       // else found in cache.
     }
-    // optimized branch (for mipf-preview):
-    else if(dt_dev_pixelpipe_uses_downsampled_input(pipe) && roi_out->scale == 1.0 && roi_out->x == 0
-            && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
-      *output = pipe->input;
-    else
-    {
-      // reserve new cache line: output
-      if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
-      {
-        roi_in.x /= roi_out->scale;
-        roi_in.y /= roi_out->scale;
-        roi_in.width = pipe->iwidth;
-        roi_in.height = pipe->iheight;
-        roi_in.scale = 1.0f;
-        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
-      }
-    }
+
     dt_show_times(&start, "[dev_pixelpipe]", "initing base buffer [%s]", _pipe_type_to_str(pipe->type));
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
@@ -880,11 +850,24 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
     // recurse to get actual data of input buffer
-    int in_bpp;
-    if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &cl_mem_input, &in_bpp, &roi_in,
+
+    dt_iop_buffer_dsc_t _input_format = { 0 };
+    dt_iop_buffer_dsc_t *input_format = &_input_format;
+
+    piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+
+    if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &cl_mem_input, &input_format, &roi_in,
                                     g_list_previous(modules), g_list_previous(pieces), pos - 1))
       return 1;
-    piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+
+    const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
+
+    piece->dsc_out = piece->dsc_in = *input_format;
+
+    module->output_format(module, pipe, piece, &piece->dsc_out);
+
+    **out_format = pipe->dsc = piece->dsc_out;
+
 
     // reserve new cache line: output
     dt_pthread_mutex_lock(&pipe->busy_mutex);
@@ -893,10 +876,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
+
     if(!strcmp(module->op, "gamma"))
-      (void)dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, bufsize, output);
+      (void)dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, bufsize, output, out_format);
     else
-      (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
+      (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output, out_format);
+
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
 // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %p\n", module->op, pipe ==
@@ -1035,7 +1020,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             if(success_opencl)
             {
-              cl_int err = dt_opencl_write_host_to_device_non_blocking(pipe->devid, input, cl_mem_input,
+              cl_int err = dt_opencl_write_host_to_device(pipe->devid, input, cl_mem_input,
                                                                        roi_in.width, roi_in.height, in_bpp);
               if(err != CL_SUCCESS)
               {
@@ -1850,17 +1835,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     module_label = NULL;
 
     // in case we get this buffer from the cache in the future, cache some stuff:
-    piece->filters = pipe->filters;
+    **out_format = piece->dsc_out = pipe->dsc;
 
-    for(int i = 0; i < 6; ++i)
-    {
-      for(int j = 0; j < 6; ++j)
-      {
-        piece->xtrans[j][i] = pipe->xtrans[j % 6][i % 6];
-      }
-    }
-
-    for(int k = 0; k < 4; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(module == darktable.develop->gui_module)
     {
@@ -2324,14 +2300,14 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
   }
 }
 
-static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
-                                                     void **output, void **cl_mem_output, int *out_bpp,
-                                                     const dt_iop_roi_t *roi_out, GList *modules,
-                                                     GList *pieces, int pos)
+static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output,
+                                                     void **cl_mem_output, dt_iop_buffer_dsc_t **out_format,
+                                                     const dt_iop_roi_t *roi_out, GList *modules, GList *pieces,
+                                                     int pos)
 {
 #ifdef HAVE_OPENCL
-  int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_bpp, roi_out, modules, pieces,
-                                         pos);
+  int ret
+      = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 
   // copy back final opencl buffer (if any) to CPU
   dt_pthread_mutex_lock(&pipe->busy_mutex);
@@ -2346,8 +2322,8 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
     {
       cl_int err;
 
-      err = dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output, roi_out->width,
-                                          roi_out->height, *out_bpp);
+      err = dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output, roi_out->width, roi_out->height,
+                                          dt_iop_buffer_dsc_to_bpp(*out_format));
       dt_opencl_release_mem_object(*cl_mem_output);
       *cl_mem_output = NULL;
 
@@ -2366,8 +2342,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
 
   return ret;
 #else
-  return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_bpp, roi_out, modules, pieces,
-                                      pos);
+  return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #endif
 }
 
@@ -2403,9 +2378,6 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 // re-entry point: in case of late opencl errors we start all over again with opencl-support disabled
 restart:
 
-  // image max is normalized before
-  for(int k = 0; k < 4; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
-
   // check if we should obsolete caches
   if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(&(pipe->cache));
   pipe->cache_obsolete = 0;
@@ -2415,10 +2387,12 @@ restart:
 
   void *buf = NULL;
   void *cl_mem_out = NULL;
-  int out_bpp;
+
+  dt_iop_buffer_dsc_t _out_format = { 0 };
+  dt_iop_buffer_dsc_t *out_format = &_out_format;
 
   // run pixelpipe recursively and get error status
-  int err = dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules,
+  int err = dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_format, &roi, modules,
                                                       pieces, pos);
 
   // get status summary of opencl queue by checking the eventlist

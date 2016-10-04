@@ -109,6 +109,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dev->proxy.exposure = NULL;
 
+  dev->rawoverexposed.enabled = FALSE;
+  dev->rawoverexposed.mode = dt_conf_get_int("darkroom/ui/rawoverexposed/mode");
+  dev->rawoverexposed.colorscheme = dt_conf_get_int("darkroom/ui/rawoverexposed/colorscheme");
+  dev->rawoverexposed.threshold = dt_conf_get_float("darkroom/ui/rawoverexposed/threshold");
+
   dev->overexposed.enabled = FALSE;
   dev->overexposed.colorscheme = dt_conf_get_int("darkroom/ui/overexposed/colorscheme");
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
@@ -151,6 +156,10 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram_pre_levels);
 
   g_list_free_full(dev->proxy.exposure, g_free);
+
+  dt_conf_set_int("darkroom/ui/rawoverexposed/mode", dev->rawoverexposed.mode);
+  dt_conf_set_int("darkroom/ui/rawoverexposed/colorscheme", dev->rawoverexposed.colorscheme);
+  dt_conf_set_float("darkroom/ui/rawoverexposed/threshold", dev->rawoverexposed.threshold);
 
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/overexposed/lower", dev->overexposed.lower);
@@ -219,8 +228,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
             // later.
   }
   // init pixel pipeline for preview.
-  dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height,
-                             dev->image_storage.width / (float)buf.width, buf.pre_monochrome_demosaiced);
+  dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);
 
   if(dev->preview_loading)
   {
@@ -310,8 +318,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     return;
   }
 
-  dt_dev_pixelpipe_set_input(dev->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0,
-                             buf.pre_monochrome_demosaiced);
+  dt_dev_pixelpipe_set_input(dev->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0);
 
   if(dev->image_loading)
   {
@@ -512,14 +519,14 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
   if(!image) return 1;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
+                              "SELECT num FROM main.history WHERE imgid = ?1 AND num = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   if(sqlite3_step(stmt) != SQLITE_ROW)
   {
     sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
+                                "INSERT INTO main.history (imgid, num) VALUES (?1, ?2)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image->id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
     sqlite3_step(stmt);
@@ -528,9 +535,9 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
   // *(float *)h->params, *(((float *)h->params)+1));
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
+                              "UPDATE main.history SET operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
                               "blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = "
-                              "?10 where imgid = ?5 and num = ?6",
+                              "?10 WHERE imgid = ?5 AND num = ?6",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
@@ -808,7 +815,7 @@ void dt_dev_write_history(dt_develop_t *dev)
   sqlite3_stmt *stmt;
 
   gboolean changed = FALSE;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   sqlite3_step(stmt);
@@ -823,7 +830,7 @@ void dt_dev_write_history(dt_develop_t *dev)
   }
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE images SET history_end = ?1 where id = ?2", -1,
+                              "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->history_end);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dev->image_storage.id);
@@ -862,20 +869,20 @@ static void auto_apply_presets(dt_develop_t *dev)
   }
 
   // cleanup
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.history", NULL, NULL, NULL);
-  const char *preset_table[2] = { "presets", "legacy_presets" };
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
+  const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
-  snprintf(query, sizeof(query), "insert into memory.history select ?1, 0, op_version, operation, op_params, "
+  snprintf(query, sizeof(query), "INSERT INTO memory.history SELECT ?1, 0, op_version, operation, op_params, "
                                  "enabled, blendop_params, blendop_version, multi_priority, multi_name "
-                                 "from %s where autoapply=1 and "
-                                 "((?2 like model and ?3 like maker) or (?4 like model and ?5 like maker)) and"
-                                 "?6 like lens and ?7 between iso_min and iso_max and "
-                                 "?8 between exposure_min and exposure_max and "
-                                 "?9 between aperture_min and aperture_max and "
-                                 "?10 between focal_length_min and focal_length_max and "
-                                 "(format = 0 or format&?9!=0) order by writeprotect desc, "
-                                 "length(model), length(maker), length(lens)",
+                                 "FROM %s WHERE autoapply=1 AND "
+                                 "((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker)) AND "
+                                 "?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max AND "
+                                 "?8 BETWEEN exposure_min AND exposure_max AND "
+                                 "?9 BETWEEN aperture_min AND aperture_max AND "
+                                 "?10 BETWEEN focal_length_min AND focal_length_max AND "
+                                 "(format = 0 OR format&?9!=0) ORDER BY writeprotect DESC, "
+                                 "LENGTH(model), LENGTH(maker), LENGTH(lens)",
            preset_table[legacy]);
   // query for all modules at once:
   sqlite3_stmt *stmt;
@@ -899,7 +906,7 @@ static void auto_apply_presets(dt_develop_t *dev)
     sqlite3_finalize(stmt);
     int cnt = 0;
     // count what we found:
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(*) from memory.history", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.history", -1,
                                 &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -954,7 +961,7 @@ static void auto_apply_presets(dt_develop_t *dev)
       // cnt, legacy);
       // advance the current history by that amount:
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "update history set num=num+?1 where imgid=?2", -1, &stmt, NULL);
+                                  "UPDATE main.history SET num=num+?1 WHERE imgid=?2", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
@@ -962,7 +969,7 @@ static void auto_apply_presets(dt_develop_t *dev)
       {
         sqlite3_finalize(stmt);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "UPDATE images SET history_end=history_end+?1 where id=?2",
+                                    "UPDATE main.images SET history_end=history_end+?1 WHERE id=?2",
                                     -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
@@ -972,7 +979,7 @@ static void auto_apply_presets(dt_develop_t *dev)
           sqlite3_finalize(stmt);
           DT_DEBUG_SQLITE3_PREPARE_V2(
               dt_database_get(darktable.db),
-              "INSERT INTO history SELECT imgid, num, module, operation, op_params, enabled, "
+              "INSERT INTO main.history SELECT imgid, num, module, operation, op_params, enabled, "
               "blendop_params, blendop_version, multi_priority, multi_name FROM memory.history",
               -1, &stmt, NULL);
           sqlite3_step(stmt);
@@ -1001,10 +1008,10 @@ void dt_dev_read_history(dt_develop_t *dev)
   auto_apply_presets(dev);
 
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid, num, module, operation, "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, num, module, operation, "
                                                              "op_params, enabled, blendop_params, "
                                                              "blendop_version, multi_priority, multi_name "
-                                                             "from history where imgid = ?1 order by num",
+                                                             "FROM main.history WHERE imgid = ?1 ORDER BY num",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   dev->history_end = 0;
@@ -1175,7 +1182,7 @@ void dt_dev_read_history(dt_develop_t *dev)
   }
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM images WHERE id = ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail

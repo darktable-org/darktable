@@ -65,10 +65,9 @@ typedef struct dt_mipmap_buffer_t
   dt_mipmap_size_t size;
   uint32_t imgid;
   int32_t width, height;
+  float iscale;
   uint8_t *buf;
   dt_colorspaces_color_profile_type_t color_space;
-  // buffer is pre-demosaiced and the demosaicing method is monochrome
-  int pre_monochrome_demosaiced;
   dt_cache_entry_t *cache_entry;
 } dt_mipmap_buffer_t;
 

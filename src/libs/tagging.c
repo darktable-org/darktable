@@ -45,7 +45,7 @@ typedef struct dt_lib_tagging_t
   GtkTreeView *current, *related;
   int imgsel;
 
-  GtkWidget *attach_button, *detach_button, *new_button, *delete_button;
+  GtkWidget *attach_button, *detach_button, *new_button, *delete_button, *import_button, *export_button;
 
   GtkWidget *floating_tag_window;
   int floating_tag_imgid;
@@ -313,7 +313,7 @@ static void delete_button_clicked(GtkButton *button, gpointer user_data)
 
   GList *tagged_images = NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from tagged_images where tagid=?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE tagid=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -338,6 +338,81 @@ static void delete_button_clicked(GtkButton *button, gpointer user_data)
   update(self, 1);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+}
+
+static void import_button_clicked(GtkButton *button, gpointer user_data)
+{
+  char *last_dirname = dt_conf_get_string("plugins/lighttable/tagging/last_import_export_location");
+  if(!last_dirname || !*last_dirname)
+  {
+    g_free(last_dirname);
+    last_dirname = g_strdup(g_get_home_dir());
+  }
+
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("Select a keyword file"), GTK_WINDOW(win),
+                                                       GTK_FILE_CHOOSER_ACTION_OPEN,
+                                                       _("_cancel"), GTK_RESPONSE_CANCEL,
+                                                       _("_import"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+
+  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    char *dirname = g_path_get_dirname(filename);
+    dt_conf_set_string("plugins/lighttable/tagging/last_import_export_location", dirname);
+    ssize_t count = dt_tag_import(filename);
+    if(count < 0)
+      dt_control_log(_("error importing tags"));
+    else
+      dt_control_log(_("%ld tags imported"), count);
+    g_free(filename);
+    g_free(dirname);
+  }
+
+  g_free(last_dirname);
+  gtk_widget_destroy(filechooser);
+}
+
+static void export_button_clicked(GtkButton *button, gpointer user_data)
+{
+  GDateTime *now = g_date_time_new_now_local();
+  char *export_filename = g_date_time_format(now, "darktable_tags_%F_%R.txt");
+  char *last_dirname = dt_conf_get_string("plugins/lighttable/tagging/last_import_export_location");
+  if(!last_dirname || !*last_dirname)
+  {
+    g_free(last_dirname);
+    last_dirname = g_strdup(g_get_home_dir());
+  }
+
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("Select file to export to"), GTK_WINDOW(win),
+                                                       GTK_FILE_CHOOSER_ACTION_SAVE,
+                                                       _("_cancel"), GTK_RESPONSE_CANCEL,
+                                                       _("_export"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+  gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(filechooser), TRUE);
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
+  gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(filechooser), export_filename);
+
+  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    char *dirname = g_path_get_dirname(filename);
+    dt_conf_set_string("plugins/lighttable/tagging/last_import_export_location", dirname);
+    ssize_t count = dt_tag_export(filename);
+    if(count < 0)
+      dt_control_log(_("error exporting tags"));
+    else
+      dt_control_log(_("%ld tags exported"), count);
+    g_free(filename);
+    g_free(dirname);
+  }
+
+  g_date_time_unref(now);
+  g_free(last_dirname);
+  g_free(export_filename);
+  gtk_widget_destroy(filechooser);
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -471,6 +546,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
 
+  button = gtk_button_new_with_label(C_("verb", "import"));
+  d->import_button = button;
+  gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_button_clicked), (gpointer)self);
+
+  button = gtk_button_new_with_label(C_("verb", "export"));
+  d->export_button = button;
+  gtk_widget_set_tooltip_text(button, _("export all tags to a Lightroom keyword file"));
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
+
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // add entry completion
@@ -552,6 +639,37 @@ static gboolean _lib_tagging_tag_destroy(GtkWidget *widget, GdkEvent *event, gpo
   return FALSE;
 }
 
+static gboolean _completion_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
+                                       gpointer user_data)
+{
+  gboolean res = FALSE;
+  char *tag = NULL;
+  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
+  int column = gtk_entry_completion_get_text_column(completion);
+
+  if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return FALSE;
+
+  gtk_tree_model_get(model, iter, column, &tag, -1);
+
+  if(tag)
+  {
+    char *normalized = g_utf8_normalize(tag, -1, G_NORMALIZE_ALL);
+    if(normalized)
+    {
+      char *casefold = g_utf8_casefold(normalized, -1);
+      if(casefold)
+      {
+        res = g_strstr_len(casefold, -1, key) != NULL;
+      }
+      g_free(casefold);
+    }
+    g_free(normalized);
+    g_free(tag);
+  }
+
+  return res;
+}
+
 static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                       GdkModifierType modifier, dt_lib_module_t *self)
 {
@@ -611,6 +729,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_completion_set_popup_set_width(completion, FALSE);
+  gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_set_completion(GTK_ENTRY(entry), completion);
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);

@@ -91,8 +91,6 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   }
   initTable(huffSelect);
 
-  mRaw->whitePoint = curve[_max-1];
-  mRaw->blackLevel = curve[0];
   if (!uncorrectedRawValues) {
     mRaw->setTable(curve, _max, true);
   }

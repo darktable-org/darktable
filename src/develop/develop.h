@@ -49,6 +49,19 @@ typedef enum dt_dev_overexposed_colorscheme_t
   DT_DEV_OVEREXPOSED_PURPLEGREEN = 2
 } dt_dev_overexposed_colorscheme_t;
 
+typedef enum dt_dev_rawoverexposed_mode_t {
+  DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA = 0,
+  DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID = 1,
+  DT_DEV_RAWOVEREXPOSED_MODE_FALSECOLOR = 2,
+} dt_dev_rawoverexposed_mode_t;
+
+typedef enum dt_dev_rawoverexposed_colorscheme_t {
+  DT_DEV_RAWOVEREXPOSED_RED = 0,
+  DT_DEV_RAWOVEREXPOSED_GREEN = 1,
+  DT_DEV_RAWOVEREXPOSED_BLUE = 2,
+  DT_DEV_RAWOVEREXPOSED_BLACK = 3
+} dt_dev_rawoverexposed_colorscheme_t;
+
 typedef enum dt_dev_histogram_type_t
 {
   DT_DEV_HISTOGRAM_LOGARITHMIC = 0,
@@ -194,6 +207,18 @@ typedef struct dt_develop_t
     float lower;
     float upper;
   } overexposed;
+
+  // for the raw overexposure indicator
+  struct
+  {
+    guint timeout;
+    GtkWidget *floating_window, *button; // yes, having gtk stuff in here is ugly. live with it.
+
+    gboolean enabled;
+    dt_dev_rawoverexposed_mode_t mode;
+    dt_dev_rawoverexposed_colorscheme_t colorscheme;
+    float threshold;
+  } rawoverexposed;
 
   // the display profile related things (softproof, gamut check, profiles ...)
   struct

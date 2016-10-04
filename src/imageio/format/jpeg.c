@@ -395,8 +395,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
 
-  if(exif && exif_len > 0 && exif_len < 65534)
-    dt_exif_write_blob(exif, exif_len, filename, 1);
+  dt_exif_write_blob(exif, exif_len, filename, 1);
 
   return 0;
 }

@@ -36,7 +36,7 @@ typedef enum dt_undo_type_t
 typedef struct dt_undo_geotag_t
 {
   int imgid;
-  float longitude, latitude;
+  float longitude, latitude, elevation;
 } dt_undo_geotag_t;
 
 typedef void *dt_undo_data_t;
