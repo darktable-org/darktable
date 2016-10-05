@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2016-09-05 11:53+0200\n"
-"PO-Revision-Date: 2016-09-05 18:28+0200\n"
+"POT-Creation-Date: 2016-10-04 15:30+0200\n"
+"PO-Revision-Date: 2016-10-04 17:12+0200\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -179,10 +179,12 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:139(para)
 msgid ""
 "Translations of this manual to local languages are brought to you by "
-"Federico Bruni, Victor Lamoine, Michel Leblond, and María Gracia Leandro."
+"Federico Bruni, Maurizio Paglia, Victor Lamoine, Michel Leblond, and María "
+"Gracia Leandro."
 msgstr ""
 "Des traductions de ce manuel en langues locales vous sont proposées par "
-"Frederico Bruni, Victor Lamoine, Michel Leblond et María Gracia Leandro."
+"Frederico Bruni, Maurizio Paglia, Victor Lamoine, Michel Leblond et María "
+"Gracia Leandro."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:144(para)
 msgid ""
@@ -2009,7 +2011,6 @@ msgstr ""
 "fichier de sortie qui pourra être distribué en dehors de darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1484(para)
-#, fuzzy
 msgid ""
 "Images are exported from the lighttable view, using the <emphasis>export "
 "selected</emphasis> dialog in the right panel (<xref linkend="
@@ -2019,8 +2020,8 @@ msgstr ""
 "Les images sont exportées depuis la vue table lumineuse en utilisant la "
 "boîte de dialogue <emphasis>exportation de la sélection</emphasis> du "
 "panneau de droite (<xref linkend=\"export_selected\"/>). En général, "
-"exporter signifiera <quote>enregistrer sous forme d’un JPEG l'image RAW que "
-"j'ai développée</quote>."
+"exporter signifie : enregistrer sous forme d’un JPEG l'image RAW que j'ai "
+"développée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1490(para)
 msgid ""
@@ -2038,7 +2039,6 @@ msgstr ""
 "existants comme JPEG, PNG, TIFF, OpenEXR, etc."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1498(para)
-#, fuzzy
 msgid ""
 "Select images on the lighttable, choose the target storage and format, and "
 "set the maximum width and height image restraints. This means that none of "
@@ -2046,12 +2046,12 @@ msgid ""
 "the export button. Leave the width and height restraints at zero if you want "
 "the original resolution."
 msgstr ""
-"Sélectionnez les images sur la table lumineuse, choisissez le stockage cible "
-"et le format de fichier. Définissez les contraintes de largeur et de hauteur "
+"Sélectionnez les images sur la table lumineuse, choisissez le format et le "
+"stockage cible et définissez les contraintes de largeur et de hauteur "
 "maximum de l’image. Ce qui signifie qu'aucune image n'aura une largeur ou "
-"une hauteur supérieure à ces contraintes. Si vous désirez conserver la "
-"résolution d’origine laissez ces contraintes à zéro. Puis, pressez le bouton "
-"exporter."
+"une hauteur supérieure à ces contraintes. Puis presser le bouton exporter. "
+"Si vous désirez conserver la résolution d’origine laissez ces contraintes à "
+"zéro."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1517(keyword)
 msgid "lighttable"
@@ -2432,7 +2432,6 @@ msgstr ""
 "depuis un dossier spécifique du disque."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1819(para)
-#, fuzzy
 msgid ""
 "You can easily construct other kinds of collections based on various image "
 "attributes like Exif data, filename, tags etc. Multiple criteria can be "
@@ -3680,14 +3679,12 @@ msgstr ""
 "DCM, GIF, JNG, JPC, JP2, MIFF, MNG, PBM, PGM, PNM, PPM."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2743(title)
-#, fuzzy
 msgid "Camera raw files"
 msgstr "Fichiers RAW de l’appareil"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2747(secondary)
-#, fuzzy
 msgid "raw files"
-msgstr "fichiers XMP"
+msgstr "fichiers RAW"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2750(para)
 #, fuzzy
@@ -3711,7 +3708,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2763(title)
 msgid "LDR image files"
-msgstr "Fichiers images LDR"
+msgstr "Fichiers image LDR"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2767(secondary)
 msgid "LDR files"
@@ -3738,7 +3735,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2782(title)
 msgid "HDR image files"
-msgstr "Fichiers images HDR"
+msgstr "Fichiers image HDR"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2786(secondary)
 msgid "HDR files"
@@ -3890,9 +3887,8 @@ msgid "the disk folder where the input image file is located"
 msgstr "dossier disque où se trouve le fichier de l’image d’entrée ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2892(para)
-#, fuzzy
 msgid "the Exif data entry describing the camera make and model"
-msgstr "données EXIF décrivant la marque et le modèle de l’appareil photo ;"
+msgstr "les données EXIF décrivant la marque et le modèle de l’appareil photo "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2902(para)
 msgid ""
@@ -3971,19 +3967,16 @@ msgstr ""
 "métadonnées de l’image ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3010(para)
-#, fuzzy
 msgid "the Exif data entry describing the lens"
-msgstr "entrée des données EXIF décrivant l’objectif ;"
+msgstr "l'entrée des données EXIF décrivant l’objectif "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3020(para)
-#, fuzzy
 msgid "the ISO value, as derived from Exif data"
-msgstr "valeur de la sensibilité ISO déduite des données EXIF ;"
+msgstr "la valeur de la sensibilité ISO déduite des données EXIF "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3030(para)
-#, fuzzy
 msgid "the aperture value, as derived from Exif data"
-msgstr "valeur de l’ouverture déduite des données EXIF ;"
+msgstr "la valeur de l’ouverture déduite des données EXIF "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3040(para)
 msgid "the filename of the physical input image"
@@ -4201,9 +4194,8 @@ msgid "Image information"
 msgstr "Informations de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3201(primary)
-#, fuzzy
 msgid "Exif data"
-msgstr "jour EXIF ;"
+msgstr "données EXIF ;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3210(entry)
 #, fuzzy
@@ -5359,9 +5351,8 @@ msgid "$(EXIF_YEAR)"
 msgstr "$(EXIF_YEAR)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4302(entry)
-#, fuzzy
 msgid "Exif year"
-msgstr "année EXIF ;"
+msgstr "année EXIF "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4307(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18218(entry)
@@ -5369,9 +5360,8 @@ msgid "$(EXIF_MONTH)"
 msgstr "$(EXIF_MONTH)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4310(entry)
-#, fuzzy
 msgid "Exif month"
-msgstr "mois EXIF ;"
+msgstr "mois EXIF "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4315(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18226(entry)
@@ -5379,9 +5369,8 @@ msgid "$(EXIF_DAY)"
 msgstr "$(EXIF_DAY)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4318(entry)
-#, fuzzy
 msgid "Exif day"
-msgstr "jour EXIF ;"
+msgstr "jour EXIF "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4323(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18234(entry)
@@ -5389,9 +5378,8 @@ msgid "$(EXIF_HOUR)"
 msgstr "$(EXIF_HOUR)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4326(entry)
-#, fuzzy
 msgid "Exif hour"
-msgstr "heure EXIF ;"
+msgstr "heure EXIF "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4331(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18242(entry)
@@ -5399,9 +5387,8 @@ msgid "$(EXIF_MINUTE)"
 msgstr "$(EXIF_MINUTE)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4334(entry)
-#, fuzzy
 msgid "Exif minute"
-msgstr "minutes EXIF ;"
+msgstr "minute EXIF "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4339(entry)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18250(entry)
@@ -5409,9 +5396,8 @@ msgid "$(EXIF_SECOND)"
 msgstr "$(EXIF_SECOND)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4342(entry)
-#, fuzzy
 msgid "Exif second"
-msgstr "secondes EXIF ;"
+msgstr "seconde EXIF"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4347(entry)
 msgid "$(STARS)"
@@ -5571,9 +5557,8 @@ msgstr ""
 "\"><emphasis>exiftool</emphasis></ulink> avec :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4459(programlisting)
-#, fuzzy
 msgid "Exiftool -XMP:all= image.jpg"
-msgstr "exiftool -XMP:all= image.jpg"
+msgstr "Exiftool -XMP:all= image.jpg"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4467(title)
 msgid "max size"
@@ -10641,9 +10626,8 @@ msgstr ""
 "ajustement plus fin des ombres."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8632(title)
-#, fuzzy
 msgid "fusion"
-msgstr "exclusion"
+msgstr "fusion"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8633(para)
 msgid ""
@@ -13065,9 +13049,8 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11096(title)
-#, fuzzy
 msgid "interaction"
-msgstr "intersection"
+msgstr "intersaction"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11097(para)
 msgid ""
@@ -14242,9 +14225,8 @@ msgid "A point can be removed by right-clicking on the center."
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12428(title)
-#, fuzzy
 msgid "line tool"
-msgstr "line_to"
+msgstr "outil ligne"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12429(para)
 #, fuzzy
@@ -14284,9 +14266,8 @@ msgid "A ctrl-alt-click on a segment will change it to a curve segment."
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12468(title)
-#, fuzzy
 msgid "curve tool"
-msgstr "courbe"
+msgstr "outil courbe"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12469(para)
 #, fuzzy
@@ -14374,15 +14355,13 @@ msgstr ""
 "l’image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12574(title)
-#, fuzzy
 msgid "Perspective correction"
-msgstr "Correction des objectifs"
+msgstr "Correction de perspective"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12578(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12582(primary)
-#, fuzzy
 msgid "perspective correction"
-msgstr "Correction des objectifs"
+msgstr "correction de perspective"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12598(emphasis)
 msgid "ShiftN"
@@ -14487,9 +14466,8 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12717(title)
-#, fuzzy
 msgid "lens shift (horizontal)"
-msgstr "horizontal"
+msgstr "correction d'objectif (horizontal)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12718(para)
 #, fuzzy
@@ -14534,9 +14512,8 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12760(title)
-#, fuzzy
 msgid "lens model"
-msgstr "mode de fusion"
+msgstr "modèle d'objectif"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12761(para)
 msgid ""
