@@ -108,17 +108,18 @@ RawImage NefDecoder::decodeRawInternal() {
   }
 
   try {
-    NikonDecompressor decompressor(mFile, mRaw);
-    decompressor.uncorrectedRawValues = uncorrectedRawValues;
+    NikonDecompressor* decompressor = new NikonDecompressor(mFile, mRaw);
+    decompressor->uncorrectedRawValues = uncorrectedRawValues;
     ByteStream* metastream;
     if (getHostEndianness() == data[0]->endian)
       metastream = new ByteStream(meta->getData(), meta->count);
     else
       metastream = new ByteStreamSwap(meta->getData(), meta->count);
 
-    decompressor.DecompressNikon(metastream, width, height, bitPerPixel, offsets->getInt(), counts->getInt());
+    decompressor->DecompressNikon(metastream, width, height, bitPerPixel, offsets->getInt(), counts->getInt());
 
     delete metastream;
+    delete decompressor;
   } catch (IOException &e) {
     mRaw->setError(e.what());
     // Let's ignore it, it may have delivered somewhat useful data.
