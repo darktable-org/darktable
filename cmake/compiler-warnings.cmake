@@ -16,11 +16,16 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=varargs)
 # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=address-of-packed-member)
 
-# 8M
-set(MAX_MEANINGFUL_SIZE 8388608)
+# should be < 64Kb
+math(EXPR MAX_MEANINGFUL_SIZE 64*1024)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wframe-larger-than=${MAX_MEANINGFUL_SIZE})
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wstack-usage=${MAX_MEANINGFUL_SIZE})
+
+# 1Mb
+# # src/iop/ashift_lsd.c, nfa(), static double inv[TABSIZE]; <- 800000 bytes
+# # src/external/wb_presets.c, wb_preset <- ~400Kb
+math(EXPR MAX_MEANINGFUL_SIZE 1*1024*1024)
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
 
 if(SOURCE_PACKAGE)
   add_definitions(-D_RELEASE)
