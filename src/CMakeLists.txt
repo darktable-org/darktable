@@ -374,12 +374,6 @@ if(NOT HAVE_TLS)
   MESSAGE(FATAL_ERROR "The compiler does not support Thread-local storage.")
 endif()
 
-#
-# Set default compile flags for GCC
-#
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fno-strict-aliasing")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
-
 if(NOT WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
@@ -543,9 +537,27 @@ else(USE_LUA)
   message(STATUS "Lua support: Disabled")
 endif(USE_LUA)
 
+if(USE_LUA)
+  if(NOT LUA52_FOUND)
+    list(APPEND LIB_DEPS liblua) # 2nd half of the uglyness :/
+  endif(NOT LUA52_FOUND)
+  # liblautoc for lua automated interface generation
+  add_library(lautoc_static STATIC IMPORTED)
+  set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/)
+  add_subdirectory(external/LuaAutoC)
+  list(APPEND LIB_DEPS lautoc)
+  list(APPEND STATIC_LIBS lautoc_static)
+endif(USE_LUA)
+
 find_package(Pugixml 1.2 REQUIRED)
 include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
+
+if(NOT SOURCE_PACKAGE AND NOT APPLE)
+  # apple build fails on deprecated warnings..
+  add_definitions(-Werror)
+endif()
 
 #
 # the rawspeed part is a bit of a hack:
@@ -607,19 +619,6 @@ if(USE_COLORD)
   endif(COLORD_FOUND)
 endif(USE_COLORD)
 
-if(USE_LUA)
-  if(NOT LUA52_FOUND)
-    list(APPEND LIB_DEPS liblua) # 2nd half of the uglyness :/
-  endif(NOT LUA52_FOUND)
-  # liblautoc for lua automated interface generation
-  add_library(lautoc_static STATIC IMPORTED)
-  set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/)
-  add_subdirectory(external/LuaAutoC)
-  list(APPEND LIB_DEPS lautoc)
-  list(APPEND STATIC_LIBS lautoc_static)
-endif(USE_LUA)
-
 if(BUILD_PRINT)
   find_package(CUPS)
   if(CUPS_FOUND)
@@ -650,90 +649,6 @@ if(DT_CMAKE_INCLUDE_WHAT_YOU_USE)
   set(CMAKE_C_INCLUDE_WHAT_YOU_USE ${DT_CMAKE_INCLUDE_WHAT_YOU_USE})
   set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${DT_CMAKE_INCLUDE_WHAT_YOU_USE})
 endif()
-
-if(NOT SOURCE_PACKAGE AND NOT APPLE)
-  # apple build fails on deprecated warnings..
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
-
-  if(NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 5.0))
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=shadow")
-  endif()
-  if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=shadow")
-  endif()
-elseif(SOURCE_PACKAGE)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
-endif()
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wvla")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wvla")
-
-# 8M
-set(MAX_MEANINGFUL_SIZE 8388608)
-
-if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=varargs")
-
-  # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
-  if(NOT CMAKE_C_COMPILER_VERSION LESS 4.0)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=address-of-packed-member")
-  endif()
-elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wframe-larger-than=${MAX_MEANINGFUL_SIZE}")
-
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wlarger-than=${MAX_MEANINGFUL_SIZE}")
-
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstack-usage=${MAX_MEANINGFUL_SIZE}")
-endif()
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=varargs")
-
-  # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
-  if(NOT CMAKE_CXX_COMPILER_VERSION LESS 4.0)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=address-of-packed-member")
-  endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wframe-larger-than=${MAX_MEANINGFUL_SIZE}")
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlarger-than=${MAX_MEANINGFUL_SIZE}")
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstack-usage=${MAX_MEANINGFUL_SIZE}")
-endif()
-
-###### GTK+3 port ######
-#
-#  Do not include individual headers
-#
-add_definitions("-DGTK_DISABLE_SINGLE_INCLUDES")
-
-#
-# Dirty hack to enforce GTK3 behaviour in GTK2: "Replace GDK_<keyname> with GDK_KEY_<keyname>"
-#
-add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
-
-#
-#  Do not use deprecated symbols
-#
-add_definitions("-DGDK_DISABLE_DEPRECATED")
-add_definitions("-DGTK_DISABLE_DEPRECATED")
-add_definitions("-Werror=implicit-function-declaration")
-###### GTK+3 port ######
-
-###### Some good warnings ######
-# Clang-specific warnings:
-if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-#  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ")
-endif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-
-# Generic (gcc) warnings:
-if(CMAKE_C_COMPILER_ID STREQUAL "GCC")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wold-style-declaration")
-endif(CMAKE_C_COMPILER_ID STREQUAL "GCC")
-###### Some good warnings ######
 
 #
 # Setup generation of preference dialog files..
