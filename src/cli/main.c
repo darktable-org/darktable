@@ -157,7 +157,7 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char **m_arg = malloc((5 + argc - k) * sizeof(char *));
+  char **m_arg = malloc((5 + argc - k + 1) * sizeof(char *));
   m_arg[m_argc++] = "darktable-cli";
   m_arg[m_argc++] = "--library";
   m_arg[m_argc++] = ":memory:";
