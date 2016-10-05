@@ -256,7 +256,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     char driverversion[256];
     char deviceversion[256];
     size_t infoint;
-    size_t infointtab[1024];
+    size_t *infointtab = NULL;
     cl_device_type type;
     cl_bool image_support = 0;
     cl_bool device_available = 0;
@@ -356,9 +356,15 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
                                                &infoint, NULL);
       printf("     MAX_WORK_ITEM_DIMENSIONS: %zd\n", infoint);
       printf("     MAX_WORK_ITEM_SIZES:      [ ");
-      (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(infointtab),
-                                               infointtab, NULL);
+
+      const size_t infointtab_size = sizeof(size_t) * infoint;
+      infointtab = malloc(infointtab_size);
+      (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, infointtab_size, infointtab,
+                                               NULL);
       for(size_t i = 0; i < infoint; i++) printf("%zd ", infointtab[i]);
+      free(infointtab);
+      infointtab = NULL;
+
       printf("]\n");
       printf("     DRIVER_VERSION:           %s\n", driverversion);
       printf("     DEVICE_VERSION:           %s\n", deviceversion);
