@@ -1098,7 +1098,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     TRY_EXEC("DELETE FROM main.tagged_images", "[init] can't delete tagged images in database\n");
 
-    TRY_EXEC("INSERT INTO main.tagged_images (imgid, tagid) SELECT imgid, tagid FROM tagged_images_tmp",
+    TRY_EXEC("INSERT OR IGNORE INTO main.tagged_images (imgid, tagid) SELECT imgid, tagid FROM tagged_images_tmp",
              "[init] can't copy updated values back to `tagged_images'\n");
 
     TRY_EXEC("DROP TABLE tagged_images_tmp", "[init] can't drop table `tagged_images_tmp' from database\n");
