@@ -31,6 +31,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -66,7 +67,8 @@ typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
 typedef struct dt_iop_highlights_global_data_t
 {
   int kernel_highlights_1f_clip;
-  int kernel_highlights_1f_lch;
+  int kernel_highlights_1f_lch_bayer;
+  int kernel_highlights_1f_lch_xtrans;
   int kernel_highlights_4f_clip;
 } dt_iop_highlights_global_data_t;
 
@@ -106,17 +108,22 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->data;
 
   cl_int err = -999;
+  cl_mem dev_xtrans = NULL;
+
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   const float clip = d->clip
                      * fminf(piece->pipe->dsc.processed_maximum[0],
                              fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+
   const uint32_t filters = piece->pipe->dsc.filters;
+
   if(!filters)
   {
+    // non-raw images use dedicated kernel which just clips
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f_clip, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f_clip, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f_clip, 2, sizeof(int), (void *)&width);
@@ -126,20 +133,89 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_4f_clip, sizes);
     if(err != CL_SUCCESS) goto error;
   }
-  else
+  else if(d->mode == DT_IOP_HIGHLIGHTS_CLIP)
   {
-    const int kernel
-        = (d->mode == DT_IOP_HIGHLIGHTS_LCH) ? gd->kernel_highlights_1f_lch : gd->kernel_highlights_1f_clip;
+    // raw images with clip mode (both bayer and xtrans)
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 4, sizeof(float), (void *)&clip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 5, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 6, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 7, sizeof(int), (void *)&filters);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_1f_clip, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters != 9u)
+  {
+    // bayer sensor raws with LCH mode
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 4, sizeof(float), (void *)&clip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 5, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 6, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 7, sizeof(int), (void *)&filters);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_1f_lch_bayer, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters == 9u)
+  {
+    // xtrans sensor raws with LCH mode
 
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), (void *)&clip);
-    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&roi_out->x);
-    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(int), (void *)&roi_out->y);
-    dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&filters);
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    // we use local buffering for speed reasons; determine suited work group size
+    size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
+    size_t workgroupsize = 0;       // the maximum number of items in a work group
+    unsigned long localmemsize = 0; // the maximum amount of local memory we can use
+    size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+
+    int blocksizex = 1 << 8;
+    int blocksizey = 1 << 8;
+
+    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+       && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_highlights_1f_lch_xtrans, &kernelworkgroupsize) == CL_SUCCESS)
+    {
+      while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
+            || localmemsize < (blocksizex + 4) * (blocksizey + 4) * sizeof(float)
+            || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
+      {
+        if(blocksizex == 1 && blocksizey == 1) break;
+
+        if(blocksizex > blocksizey)
+          blocksizex >>= 1;
+        else
+          blocksizey >>= 1;
+      }
+    }
+    else
+    {
+      dt_print(DT_DEBUG_OPENCL,
+           "[opencl_highlights] can not identify resource limits for device %d\n", devid);
+      goto error;
+    }
+
+    dev_xtrans
+        = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    if(dev_xtrans == NULL) goto error;
+
+    size_t sizes[] = { ROUNDUP(width, blocksizex), ROUNDUP(height, blocksizey), 1 };
+    size_t local[] = { blocksizex, blocksizey, 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 4, sizeof(float), (void *)&clip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 5, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 6, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 7, sizeof(cl_mem), (void *)&dev_xtrans);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 8,
+                               (blocksizex + 4) * (blocksizey + 4) * sizeof(float), NULL);
+
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -148,13 +224,49 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                         piece->pipe->dsc.processed_maximum[2]);
   for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
 
+  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   return TRUE;
 
 error:
+  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
+
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+              struct dt_develop_tiling_t *tiling)
+{
+  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  const uint32_t filters = piece->pipe->dsc.filters;
+
+  tiling->factor = 2.0f;  // in + out
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+
+  if(filters == 9u)
+  {
+    // xtrans
+    tiling->xalign = 6;
+    tiling->yalign = 6;
+    tiling->overlap = (d->mode == DT_IOP_HIGHLIGHTS_LCH) ? 2 : 0;
+  }
+  else if(filters)
+  {
+    // bayer
+    tiling->xalign = 2;
+    tiling->yalign = 2;
+    tiling->overlap = (d->mode == DT_IOP_HIGHLIGHTS_LCH) ? 1 : 0;
+  }
+  else
+  {
+    // non-raw
+    tiling->xalign = 1;
+    tiling->yalign = 1;
+    tiling->overlap = 0;
+  }
+}
 
 /* interpolate value for a pixel, ideal via ratio to nearby pixel */
 static inline float interp_pix_xtrans(const int ratio_next,
@@ -855,9 +967,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   piece->process_cl_ready = 1;
 
-  // x-trans images not implemented in OpenCL yet
-  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
-
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
   if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT) piece->process_cl_ready = 0;
 }
@@ -869,7 +978,8 @@ void init_global(dt_iop_module_so_t *module)
       = (dt_iop_highlights_global_data_t *)malloc(sizeof(dt_iop_highlights_global_data_t));
   module->data = gd;
   gd->kernel_highlights_1f_clip = dt_opencl_create_kernel(program, "highlights_1f_clip");
-  gd->kernel_highlights_1f_lch = dt_opencl_create_kernel(program, "highlights_1f_lch");
+  gd->kernel_highlights_1f_lch_bayer = dt_opencl_create_kernel(program, "highlights_1f_lch_bayer");
+  gd->kernel_highlights_1f_lch_xtrans = dt_opencl_create_kernel(program, "highlights_1f_lch_xtrans");
   gd->kernel_highlights_4f_clip = dt_opencl_create_kernel(program, "highlights_4f_clip");
 }
 
@@ -877,7 +987,8 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_highlights_4f_clip);
-  dt_opencl_free_kernel(gd->kernel_highlights_1f_lch);
+  dt_opencl_free_kernel(gd->kernel_highlights_1f_lch_bayer);
+  dt_opencl_free_kernel(gd->kernel_highlights_1f_lch_xtrans);
   dt_opencl_free_kernel(gd->kernel_highlights_1f_clip);
   free(module->data);
   module->data = NULL;

@@ -464,7 +464,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   cl_mem dev_params = NULL;
 
-  float params[4 * (2 * num_patches + 4)];
+  const size_t params_size = (size_t)(4 * (2 * num_patches + 4)) * sizeof(float);
+  float *params = malloc(params_size);
   float *idx = params;
 
   // re-arrange data->source_Lab and data->coeff_{L,a,b} into float4
@@ -484,7 +485,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     idx[3] = 0.0f;
   }
 
-  dev_params = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4 * (2 * num_patches + 4), params);
+  dev_params = dt_opencl_copy_host_to_device_constant(devid, params_size, params);
   if(dev_params == NULL) goto error;
 
   size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -498,9 +499,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_params);
+  free(params);
   return TRUE;
 
 error:
+  free(params);
   if(dev_params != NULL) dt_opencl_release_mem_object(dev_params);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorchecker] couldn't enqueue kernel! %d\n", err);
   return FALSE;
@@ -528,9 +531,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #pragma omp parallel default(shared)
 #endif
   {
-  double A[(N+4)*(N+4)];
-  double target[N+4];
-  memset(target, 0, sizeof(target));
+    double *A = malloc((N + 4) * (N + 4) * sizeof(double));
+    double *target = calloc(N + 4, sizeof(double));
 
   // find coeffs for three channels separately:
 #ifdef _OPENMP
@@ -566,16 +568,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     for(int j=N;j<wd;j++) for(int i=N;i<wd;i++) A[j*wd+i] = 0.0f;
 
     // coefficient vector:
-    double c[N+4];
-    memset(c, 0, sizeof(c));
+    double *c = calloc(N + 4, sizeof(double));
 
     // svd to solve for c:
     // A * c = offsets
     // A = u w v => A-1 = v^t 1/w u^t
     // regularisation epsilon:
     const float eps = 0.001f;
-    double w[N+4], v[(N+4)*(N+4)], tmp[N+4];
-    memset(tmp, 0, sizeof(tmp));
+    double *w = malloc((N + 4) * sizeof(double));
+    double *v = malloc((N + 4) * (N + 4) * sizeof(double));
+    double *tmp = calloc(N + 4, sizeof(double));
+
     dsvd(A, N+4, N+4, N+4, w, v);
 
     for(int j=0;j<wd;j++)
@@ -589,11 +592,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(ch==0) for(int i=0;i<N+4;i++) d->coeff_L[i] = c[i];
     if(ch==1) for(int i=0;i<N+4;i++) d->coeff_a[i] = c[i];
     if(ch==2) for(int i=0;i<N+4;i++) d->coeff_b[i] = c[i];
+
+    free(tmp);
+    free(v);
+    free(w);
+    free(c);
   }
   // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff L[%d] = %f\n", i, d->coeff_L[i]);
   // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff a[%d] = %f\n", i, d->coeff_a[i]);
   // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff b[%d] = %f\n", i, d->coeff_b[i]);
 #undef N
+
+    free(target);
+    free(A);
   }
 }
 
