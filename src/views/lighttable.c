@@ -280,7 +280,7 @@ static void _update_collected_images(dt_view_t *self)
   int32_t min_before = 0, min_after = 0;
 
   /* check if we can get a query from collection */
-  const gchar *query = dt_collection_get_query(darktable.collection);
+  gchar *query = g_strdup(dt_collection_get_query(darktable.collection));
   if(!query) return;
 
   // we have a new query for the collection of images to display. For speed reason we collect all images into
@@ -317,6 +317,7 @@ static void _update_collected_images(dt_view_t *self)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  g_free(query);
   g_free(ins_query);
 
   // 3. get new low-bound, then update the full preview rowid accordingly
