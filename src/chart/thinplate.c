@@ -120,7 +120,7 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
   dsvd(As, wd, s + 1, S, w, v); // As is wd x s+1 but row stride S.
   if(w[s] < 1e-3)               // if the smallest singular value becomes too small, we're done
     return 1;
-  double tmp[S];
+  double *tmp = malloc(S * sizeof(double));
   for(int i = 0; i <= s; i++) // compute tmp = u^t * b
   {
     tmp[i] = 0.0;
@@ -133,8 +133,12 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
     coeff[j] = 0.0;
     for(int i = 0; i <= s; i++) coeff[j] += v[j * (s + 1) + i] * tmp[i];
   }
+  free(tmp);
   return 0;
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wvla"
 
 // returns sparsity <= S
 int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (needed for error estimation)
@@ -172,7 +176,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
     for(int i = N; i < wd; i++) A[j * wd + i] = 0.0f;
 
   // precompute normalisation factors for columns of A
-  double norm[wd];
+  double *norm = malloc(wd * sizeof(double));
   for(int i = 0; i < wd; i++)
   {
     norm[i] = 0.0;
@@ -182,13 +186,15 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
   // XXX do we need these explicitly?
   // residual = target vector
-  double r[dim][wd];
-  const double *b[dim];
+  double(*r)[wd] = malloc(dim * wd * sizeof(double));
+  const double **b = malloc(dim * sizeof(double *));
   for(int k = 0; k < dim; k++) b[k] = target[k];
-  for(int k = 0; k < dim; k++) memcpy(r[k], b[k], sizeof(r[0]));
+  for(int k = 0; k < dim; k++) memcpy(r[k], b[k], wd * sizeof(double));
 
-  double w[S], v[S * S], As[wd * S];
-  memset(As, 0, sizeof(As));
+  double *w = malloc(S * sizeof(double));
+  double *v = malloc(S * S * sizeof(double));
+  double *As = calloc(wd * S, sizeof(double));
+
   // for rank from 0 to sparsity level
   int s = 0, patches = 0;
   double olderr = FLT_MAX;
@@ -199,6 +205,12 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 #ifndef REPLACEMENT
     if(patches >= S - 4)
     {
+      free(r);
+      free(b);
+      free(w);
+      free(v);
+      free(As);
+      free(norm);
       free(A);
       return sparsity;
     }
@@ -224,8 +236,14 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
           if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity, S))
           {
-             free(A);
-             return sparsity;
+            free(r);
+            free(b);
+            free(w);
+            free(v);
+            free(As);
+            free(norm);
+            free(A);
+            return sparsity;
           }
 
           // compute tentative residual:
@@ -285,8 +303,14 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
           if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity-1, S))
           {
-             free(A);
-             return s;
+            free(r);
+            free(b);
+            free(w);
+            free(v);
+            free(As);
+            free(norm);
+            free(A);
+            return s;
           }
 
           // compute tentative residual:
@@ -354,9 +378,15 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
       // on error, return last valid configuration
       if(solve(As, w, v, b[ch], coeff[ch], wd, sp, S))
-      {  
-         free(A);
-         return sparsity;
+      {
+        free(r);
+        free(b);
+        free(w);
+        free(v);
+        free(As);
+        free(norm);
+        free(A);
+        return sparsity;
       }
 
       // compute new residual:
@@ -381,9 +411,17 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
     // if(err < 2.0) return sparsity+1;
     olderr = err;
   }
+  free(r);
+  free(b);
+  free(w);
+  free(v);
+  free(As);
+  free(norm);
   free(A);
   return -1;
 }
+
+#pragma GCC diagnostic pop
 
 float thinplate_color_pos(float L, float a, float b)
 {

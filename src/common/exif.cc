@@ -496,6 +496,23 @@ static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::co
 }
 #define FIND_EXIF_TAG(key) dt_exif_read_exif_tag(exifData, &pos, key)
 
+static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos,
+                                 char *exif_datetime_taken)
+{
+  if(FIND_EXIF_TAG("Exif.Image.DateTimeOriginal"))
+  {
+    dt_strlcpy_to_utf8(exif_datetime_taken, 20, pos, exifData);
+  }
+  else if(FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
+  {
+    dt_strlcpy_to_utf8(exif_datetime_taken, 20, pos, exifData);
+  }
+  else
+  {
+    *exif_datetime_taken = '\0';
+  }
+}
+
 static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 {
   try
@@ -777,14 +794,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 #endif
 
-    if(FIND_EXIF_TAG("Exif.Image.DateTimeOriginal"))
-    {
-      dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
-    }
-    else if(FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-    {
-      dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
-    }
+    _find_datetime_taken(exifData, pos, img->exif_datetime_taken);
 
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
@@ -2693,6 +2703,46 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
     std::string s(e.what());
     std::cerr << "[exiv2] " << s << std::endl;
     return DT_COLORSPACE_DISPLAY;
+  }
+}
+
+gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *datetime_taken)
+{
+  try
+  {
+    Exiv2::ExifData::const_iterator pos;
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(data, size));
+    image->readMetadata();
+    Exiv2::ExifData &exifData = image->exifData();
+
+    char exif_datetime_taken[20];
+    _find_datetime_taken(exifData, pos, exif_datetime_taken);
+
+    if(*exif_datetime_taken)
+    {
+      struct tm exif_tm= {0};
+      if(sscanf(exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+        &exif_tm.tm_year,
+        &exif_tm.tm_mon,
+        &exif_tm.tm_mday,
+        &exif_tm.tm_hour,
+        &exif_tm.tm_min,
+        &exif_tm.tm_sec) == 6)
+      {
+        exif_tm.tm_year -= 1900;
+        exif_tm.tm_mon--;
+        *datetime_taken = mktime(&exif_tm);
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return FALSE;
   }
 }
 
