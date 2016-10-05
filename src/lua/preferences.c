@@ -107,6 +107,7 @@ static void destroy_pref_element(pref_element *elt)
   {
     case pref_enum:
       free(elt->type_data.enum_data.default_value);
+      break;
     case pref_dir:
       free(elt->type_data.dir_data.default_value);
       break;
