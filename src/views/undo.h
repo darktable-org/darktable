@@ -33,12 +33,6 @@ typedef enum dt_undo_type_t
 
 //  types that are known by the undo module are declared here to be shared by
 //  all the views supporting undo.
-typedef struct dt_undo_geotag_t
-{
-  int imgid;
-  float longitude, latitude, elevation;
-} dt_undo_geotag_t;
-
 typedef struct dt_undo_history_t
 {
   GList *snapshot;

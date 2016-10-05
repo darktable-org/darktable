@@ -38,6 +38,11 @@
 
 DT_MODULE(1)
 
+typedef struct dt_undo_geotag_t
+{
+  int imgid;
+  float longitude, latitude, elevation;
+} dt_undo_geotag_t;
 
 typedef struct dt_map_t
 {
