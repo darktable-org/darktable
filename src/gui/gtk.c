@@ -1038,6 +1038,12 @@ static void configure_ppd_dpi(dt_gui_gtk_t *gui)
       = gui->dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
 }
 
+static gboolean _focus_in_out_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  gtk_window_set_urgency_hint(GTK_WINDOW(user_data), FALSE);
+  return FALSE;
+}
+
 static void init_widgets(dt_gui_gtk_t *gui)
 {
 
@@ -1068,6 +1074,8 @@ static void init_widgets(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "delete_event", G_CALLBACK(dt_gui_quit_callback), NULL);
   g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(key_pressed_override), NULL);
   g_signal_connect(G_OBJECT(widget), "key-release-event", G_CALLBACK(key_released), NULL);
+  g_signal_connect(G_OBJECT(widget), "focus-in-event", G_CALLBACK(_focus_in_out_event), widget);
+  g_signal_connect(G_OBJECT(widget), "focus-out-event", G_CALLBACK(_focus_in_out_event), widget);
 #ifdef GDK_WINDOWING_QUARTZ
   if(gtk_widget_get_realized(widget))
     dt_osx_allow_fullscreen(widget);
