@@ -25,11 +25,10 @@
 //  types that are known by the undo module
 typedef enum dt_undo_type_t
 {
-  DT_UNDO_GEOTAG = 1,
-  DT_UNDO_HISTORY = 2,
+  DT_UNDO_GEOTAG = 1 << 0,
+  DT_UNDO_HISTORY = 1 << 1,
+  DT_UNDO_ALL = DT_UNDO_GEOTAG | DT_UNDO_HISTORY
 } dt_undo_type_t;
-
-#define DT_UNDO_ALL (DT_UNDO_GEOTAG | DT_UNDO_HISTORY)
 
 typedef void *dt_undo_data_t;
 
