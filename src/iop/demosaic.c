@@ -2481,6 +2481,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   dev_green_eq = NULL;
 
   free(ips);
+  ips = NULL;
 
   // color smoothing
   if(data->color_smoothing)
