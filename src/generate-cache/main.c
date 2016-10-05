@@ -187,7 +187,7 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char **m_arg = malloc((3 + argc - k) * sizeof(char *));
+  char **m_arg = malloc((3 + argc - k + 1) * sizeof(char *));
   m_arg[m_argc++] = "darktable-generate-cache";
   m_arg[m_argc++] = "--conf";
   m_arg[m_argc++] = "write_sidecar_files=FALSE";
