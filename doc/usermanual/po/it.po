@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.0\n"
 "POT-Creation-Date: 2016-09-25 10:15+0200\n"
-"PO-Revision-Date: 2016-09-27 18:55+0100\n"
+"PO-Revision-Date: 2016-10-05 23:16+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -4102,7 +4102,6 @@ msgid "updating folder path"
 msgstr "aggiornare il percorso della cartella"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3134(para)
-#, fuzzy
 msgid ""
 "While it is best to not touch imported files behind darktable's back, this "
 "module can help you recover from situations when you move imported folders "
@@ -4116,7 +4115,8 @@ msgid ""
 msgstr ""
 "Dal momento che è meglio non toccare i files importati all'insaputa di"
 " darktable, questo modulo vi tornerà di aiuto se avete spostato una cartella"
-" di files dopo averla importata. Il modulo xxxxxxx vi permetterà di"
+" di files dopo averla importata. Il modulo collezione immagini vi permetterà"
+" di"
 " comunicare a darktable la posizione di cartelle spostate dopo la loro"
 " importazione. Selezionare dal menu a discesa <emphasis>cartelle</emphasis> e"
 " cercate il nome della cartella originale. Lo troverete barrato per"
@@ -6117,13 +6117,18 @@ msgstr ""
 "il suo valore predefinito."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4911(para)
-#, fuzzy
 msgid ""
 "You can hold down the <emphasis>shift</emphasis> key increasing the stepsize "
 "by a factor of 10. You can change this multiplier: <programlisting format="
 "\"linespecific\">darkroom/ui/scale_rough_step_multiplier=10.0 </"
 "programlisting>"
-msgstr "Tenete premuto il tasto <emphasis>shift</emphasis> per aumentare "
+msgstr ""
+"Tenete premuto il tasto <emphasis>Maiusc</emphasis> per aumentare gli step di"
+" regolazione  "
+"per un fattore di 10. Potete modificare questo fattore: <programlisting"
+" format="
+"\"linespecific\">darkroom/ui/scale_rough_step_multiplier=10.0 </"
+"programlisting>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4917(para)
 msgid ""
@@ -12832,15 +12837,13 @@ msgstr ""
 "saturazione globalmente."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11031(title)
-#, fuzzy
 msgid "Color checker lut"
-msgstr "selettore colore"
+msgstr "Selettore colore tabulare"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11035(secondary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11039(primary)
-#, fuzzy
 msgid "color checker lut"
-msgstr "selettore colore"
+msgstr "selettore colore tabulare"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11056(code)
 msgid "darktable-chart"
@@ -14045,7 +14048,6 @@ msgid "line tool"
 msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12429(para)
-#, fuzzy
 msgid ""
 "Click the <inlinegraphic fileref=\"images/darkroom_module_liquify_line.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the line "
@@ -14055,10 +14057,15 @@ msgid ""
 msgstr ""
 "Cliccando l'icona <inlinegraphic fileref=\"images/darkroom_module_liquify_line"
 ".png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the line "
-"tool and left-click on the image to place the first point, move and left-"
-"click to place another point and start forming the path. To end the line "
-"just right-click anywhere."
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> si attiva il controllo linea"
+" quindi "
+"fate click sinistro per fissare il primo punto sull'immagine: spostatevi e"
+" fate "
+"click sinistro nuovamente per fissare un altro punto ed iniziare così a"
+" disegnare "
+"il vostro tracciato. Per terminare occorre fare click col pulsante destro del"
+" mouse "
+"in un punto qualunque."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12443(entry)
 msgid ""
@@ -14083,12 +14090,10 @@ msgid "A ctrl-alt-click on a segment will change it to a curve segment."
 msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12468(title)
-#, fuzzy
 msgid "curve tool"
-msgstr "curva"
+msgstr "controllo curva"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12469(para)
-#, fuzzy
 msgid ""
 "Click the <inlinegraphic fileref=\"images/darkroom_module_liquify_curve.png"
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the curve "
@@ -14096,10 +14101,18 @@ msgid ""
 "click to place another point and start forming the path. To end the line "
 "just right-click anywhere."
 msgstr ""
-"Cliccando l'icona <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/>si accede ad un elenco a tendina con tutti i presets dei vostri moduli "
-"preferiti. Cliccate sul nome del preset per applicarlo all'immagine."
+"Cliccando l'icona <inlinegraphic fileref=\"images/darkroom_module_liquify_curv"
+"e"
+".png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> si attiva il controllo curva"
+" quindi "
+"fate click sinistro per fissare il primo punto sull'immagine: spostatevi e"
+" fate "
+"click sinistro nuovamente per fissare un altro punto ed iniziare così a"
+" disegnare "
+"il vostro tracciato. Per terminare occorre fare click col pulsante destro del"
+" mouse "
+"in un punto qualunque."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12483(entry)
 msgid ""
@@ -14119,7 +14132,6 @@ msgid "A ctrl-alt-click on a segment will change it to a line segment."
 msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12505(para)
-#, fuzzy
 msgid ""
 "It is possible to change the way the points of the curve are linked together "
 "by using ctrl-click on the center. There are four modes which correspond to "
@@ -14138,25 +14150,36 @@ msgid ""
 "handles are always moved together. This mode is depicted by a square symbol "
 "in the node center. </entry></row></tbody></tgroup></informaltable>"
 msgstr ""
-"La vista presentazione è solo all'inizio del proprio ciclo di sviluppo con "
-"un set di caratteristiche basilari. <informaltable frame=\"none\" width=\"80%"
-"\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"1*\"/"
-"><colspec colwidth=\"3*\"/><tbody><row><entry><emphasis>click-sinistro</"
-"emphasis></entry><entry> passa all'immagine successiva </entry></"
-"row><row><entry><emphasis>click-destro</emphasis></entry><entry> torna "
-"all'immagine precedente </entry></row><row><entry><emphasis>spazio</"
-"emphasis></entry><entry> avvia e ferma la presentazione automatica che "
-"visualizza un'immagine ogni 5 secondi e dopo l'ultima riprende dall'inizio </"
-"entry></row><row><entry><emphasis>ESC</emphasis></entry><entry> termina la "
-"presentazione e torna sulla vista tavolo luminoso </entry></row></tbody></"
-"tgroup></informaltable>"
+"E' possibile modificare il modo in cui i punti della curva sono collegati tra "
+"di loro facendo ctrl-click al centro. Ci sono quattro modalità per"
+" controllare "
+"la forma della curva di bezier utilizzando le apposite impugnature: <"
+"informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"3\" "
+"colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"4*\"/><colspec colwidth=\"6*\"/"
+"><tbody><row><entry><emphasis>autoregola</emphasis></entry><entry> Questa è"
+" la "
+"modalità predefinita: le impugnature non vengono visualizzate dato che il"
+" sistema "
+"si preoccupa automaticamente di creare una curva morbida. </entry></"
+"row><row><entry><emphasis>tazze</emphasis></entry><entry> Le impugnature di"
+" controllo possono "
+"essere spostate in modo indipendente l'una dall'altra. Questa modalità viene"
+" identificata da un simbolo "
+"a triangolo sul nodo centrale. </entry></row><row><entry><emphasis>morbido<"
+"/emphasis></"
+"entry><entry> Le impugnature modellano sempre curve morbide. Questa modalità"
+" è identificata da "
+"un simbolo a diamante sul nodo centrale. </entry><entry/></"
+"row><row><entry><emphasis>simmetrico</emphasis></entry><entry> Le impugnature"
+" si muovono "
+"tutte insieme. Questa modalità è raffigurata da un simbolo quadrato "
+"sul nodo centrale. </entry></row></tbody></tgroup></informaltable>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12558(title)
 msgid "node edit tool"
 msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12559(para)
-#, fuzzy
 msgid ""
 "Clicking the <inlinegraphic fileref=\"images/darkroom_module_liquify_edit.png"
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon activates or "
@@ -14164,10 +14187,13 @@ msgid ""
 "their controls. Alternatively you can at any time right-click on the image "
 "for the same effect."
 msgstr ""
-"Cliccando l'icona <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/>si accede ad un elenco a tendina con tutti i presets dei vostri moduli "
-"preferiti. Cliccate sul nome del preset per applicarlo all'immagine."
+"Cliccando l'icona <inlinegraphic fileref=\"images/darkroom_module_liquify_edit"
+".png"
+"\" scalefit=\"1\" width=\"2%\" align=\"center\"/> si attiva o disattiva lo"
+" strumento per  "
+"editare i nodi che visualizza tutti gli oggetti distorti e i relativi"
+" controlli. In alternativa "
+"si può anche fare click destro sull'immagine per ottenere lo stesso risultato."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12574(title)
 msgid "Perspective correction"
@@ -14213,7 +14239,6 @@ msgid ""
 msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12633(para)
-#, fuzzy
 msgid ""
 "Clicking the <quote>get structure</quote> icon ( <inlinegraphic fileref="
 "\"images/darkroom_module_ashift_structure.png\" scalefit=\"1\" width=\"2%\" "
@@ -14236,20 +14261,37 @@ msgid ""
 "identified but not of interest to this module </entry></row></tbody></"
 "tgroup></informaltable>"
 msgstr ""
-"darktable è composto di varie viste o modalità. Sono disponibili cinque "
-"viste, come è descritto in questa sezione. Puoi passare da una vista "
-"all'altra cliccando sul nome della vista in cima al pannello di destra - la "
-"vista attiva è evidenziata - o usando uno dei tasti acceleratori: "
-"<informaltable frame=\"none\" width=\"60%\"><tgroup cols=\"2\" colsep=\"0\" "
-"rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"9*\"/"
-"><tbody><row><entry><emphasis>l</emphasis></entry><entry>passa a tavolo "
-"luminoso</entry></row><row><entry><emphasis>d</emphasis></entry><entry>passa "
-"a camera oscura</entry></row><row><entry><emphasis>t</emphasis></"
-"entry><entry>passa a tethering</entry></row><row><entry><emphasis>m</"
-"emphasis></entry><entry>passa a mappa</entry></row><row><entry><emphasis>s</"
-"emphasis></entry><entry> passa a presentazione </entry></"
-"row><row><entry><emphasis>p</emphasis></entry><entry> passa a stampa </"
-"entry></row></tbody></tgroup></informaltable>"
+"Ciccando l'icona <quote>acquisisci struttura</quote> ( <inlinegraphic fileref="
+"\"images/darkroom_module_ashift_structure.png\" scalefit=\"1\" width=\"2%\" "
+"align=\"center\"/> ) si richiederà a darktable di ricercare all'interno"
+" dell'immagine "
+"elementi strutturali. Verranno identificati e valutati i segmenti di linee."
+" Solamente le linee "
+"che formano insiemi verticali od orizzontali verranno utilizzati per le"
+" successive "
+"elaborazioni. Questi segmenti verranno evidenziati in sovrapposizione"
+" all'immagine "
+"di partenza. Un codice colore descriverà il tipo di linea rilevata: <"
+"informaltable "
+"frame=\"none\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" rowsep="
+"\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"4*\"/"
+"><tbody><row><entry>le linee <emphasis>verdi</emphasis></entry><entry> sono"
+" quelle "
+"verticali convergenti </entry></"
+"row><row><entry>le linee <emphasis>rosse</emphasis></entry><entry> sono"
+" quelle verticali "
+"ma che non fanno parte di un gruppo di linee convergenti </entry></"
+"row><row><entry>le linee <emphasis>blu</emphasis></entry><entry> sono quelle"
+" orizzontali "
+"convergenti </entry></"
+"row><row><entry>le linee <emphasis>gialle</emphasis></entry><entry> sono"
+" quelle orizzontali "
+"ma che non fanno parte di un gruppo di linee convergenti </entry></"
+"row><row><entry>le linee <emphasis>grige</emphasis></entry><entry> sono tutte"
+" le altre linee "
+"individuate ma che non verranno utilizzate da questo modulo </entry></row><"
+"/tbody></"
+"tgroup></informaltable>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12690(para)
 msgid ""
@@ -14280,14 +14322,12 @@ msgid ""
 msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12717(title)
-#, fuzzy
 msgid "lens shift (horizontal)"
-msgstr "orizzontale"
+msgstr "spostamento (orizzontale) dell'obiettivo"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12718(para)
-#, fuzzy
 msgid "This parameter corrects converging lines horizontally."
-msgstr "Sposta il centro dell'area della vignetta orizzontalmente."
+msgstr "Questo parametro corregge le linee convergenti orizzontali."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12724(title)
 msgid "lens shift (vertical)"
@@ -14351,9 +14391,8 @@ msgid ""
 msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12778(title)
-#, fuzzy
 msgid "crop factor"
-msgstr "fattore di scala"
+msgstr "fattore di ritaglio"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12779(para)
 msgid ""
@@ -14363,9 +14402,8 @@ msgid ""
 msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12787(title)
-#, fuzzy
 msgid "aspect adjust"
-msgstr "aspetto"
+msgstr "regolazione dell'aspetto"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12788(para)
 msgid ""
@@ -14374,9 +14412,8 @@ msgid ""
 msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12795(title)
-#, fuzzy
 msgid "automatic fit"
-msgstr "rapporto automatico"
+msgstr "dimensione automatica"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12796(para)
 msgid ""
@@ -14568,7 +14605,6 @@ msgid "geometry"
 msgstr "geometria"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12971(para)
-#, fuzzy
 msgid ""
 "In addition to the correction of lens flaws, this module can change the "
 "projection type of your image. Set this combobox to the aimed projection "
@@ -22049,7 +22085,6 @@ msgid "How to activate OpenCL in darktable"
 msgstr "Come attivare OpenCL in darktable"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20523(para)
-#, fuzzy
 msgid ""
 "Using OpenCL in darktable requires that your PC is equipped with a suitable "
 "graphics card and that it has the required libraries in place. Namely modern "
@@ -22061,7 +22096,7 @@ msgid ""
 msgstr ""
 "Per usare OpenCL in darktable dovrete assicurarvi che il vostro PC abbia una "
 "scheda grafica idonea con tutte le sue librerie al loro posto. Virtualmente "
-"tutte le schede video recenti di NVIDIA e ATI sono completamente compatibili "
+"tutte le schede video recenti di NVIDIA e AMD sono completamente compatibili "
 "con OpenCL. Il compilatore OpenCL solitamente viene fornito insieme ai "
 "drivers della scheda e viene usato come se fosse una libreria dinamica "
 "chiamata <quote>libOpenCL.so</quote>. Questa libreria si deve trovare in una "
@@ -22069,7 +22104,6 @@ msgstr ""
 "trovarla."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20532(para)
-#, fuzzy
 msgid ""
 "When darktable starts, it will first try to find and load libOpenCL.so and – "
 "on success – check if the available graphics card comes with OpenCL support. "
@@ -22199,13 +22233,12 @@ msgstr ""
 "module(s) -&gt; GPU"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20604(para)
-#, fuzzy
 msgid ""
 "darktable dynamically loads <filename moreinfo=\"none\">libOpenCL.so</"
 "filename>, a system library which must be accessible to the system's dynamic "
 "loader (<filename moreinfo=\"none\">ld.so</filename>)."
 msgstr ""
-"darktable collega dinamicamente <filename moreinfo=\"none\">libOpenCL.so</"
+"darktable carica dinamicamente <filename moreinfo=\"none\">libOpenCL.so</"
 "filename>, una libreria di sistema che deve essere accessibile al caricatore "
 "dinamico del vostro sistema operativo  (<filename moreinfo=\"none\">ld.so</"
 "filename>)."
@@ -22516,7 +22549,6 @@ msgstr ""
 "di inizializzazione di OpenCL."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20810(para)
-#, fuzzy
 msgid ""
 "darktable might fail to compile its OpenCL source files at run-time. In that "
 "case you will get a number of error messages looking like typical compiler "
