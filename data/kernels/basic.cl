@@ -182,8 +182,8 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
 #define SQRT3 1.7320508075688772935274463415058723669f
 #define SQRT12 3.4641016151377545870548926830117447339f // 2*SQRT3
 kernel void
-highlights_1f_lch (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                   const float clip, const int rx, const int ry, const int filters)
+highlights_1f_lch_bayer (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                         const float clip, const int rx, const int ry, const int filters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -259,6 +259,148 @@ highlights_1f_lch (read_only image2d_t in, write_only image2d_t out, const int w
 
     pixel = L;
     pixel += (c == 2) ? H / 3.0f : -H / 6.0f + C / SQRT12;
+  }
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+
+kernel void
+highlights_1f_lch_xtrans (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                         const float clip, const int rx, const int ry, global const unsigned char (*const xtrans)[6],
+                         local float *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int xgid = get_group_id(0);
+  const int ygid = get_group_id(1);
+  
+  // individual control variable in this work group and the work group size
+  const int l = mad24(ylid, xlsz, xlid);
+  const int lsz = mul24(xlsz, ylsz);
+
+  // stride and maximum capacity of local buffer
+  // cells of 1*float per pixel with a surrounding border of 2 cells
+  const int stride = xlsz + 2*2;
+  const int maxbuf = mul24(stride, ylsz + 2*2);
+
+  // coordinates of top left pixel of buffer
+  // this is 2 pixel left and above of the work group origin
+  const int xul = mul24(xgid, xlsz) - 2;
+  const int yul = mul24(ygid, ylsz) - 2;
+
+  // populate local memory buffer
+  for(int n = 0; n <= maxbuf/lsz; n++)
+  {
+    const int bufidx = mad24(n, lsz, l);
+    if(bufidx >= maxbuf) continue;
+    const int xx = xul + bufidx % stride;
+    const int yy = yul + bufidx / stride;
+    buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy)).x;
+  }
+
+  // center buffer around current x,y-Pixel
+  buffer += mad24(ylid + 2, stride, xlid + 2);
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(x >= width || y >= height) return;
+
+  float pixel = 0.0f;
+
+  if(x < 2 || x > width - 3 || y < 2 || y > height - 3)
+  {
+    // fast path for border
+    pixel = min(clip, buffer[0]);
+  }
+  else
+  {
+    // if current pixel is clipped, always reconstruct
+    int clipped = (buffer[0] > clip);
+    
+    if(!clipped)
+    {
+      clipped = 1;
+      // check if there is any 3x3 block touching the current 
+      // pixel which has no clipping, as then we don't need to 
+      // reconstruct the current pixel. This avoids zippering in 
+      // edge transitions from clipped to unclipped areas. The
+      // X-Trans sensor seems prone to this, unlike Bayer, due
+      // to its irregular pattern.
+      for(int offset_j = -2; offset_j <= 0; offset_j++)
+      {
+        for(int offset_i = -2; offset_i <= 0; offset_i++)
+        {
+          if(clipped)
+          {
+            clipped = 0;
+            for(int jj = offset_j; jj <= offset_j + 2; jj++)
+            {
+              for(int ii = offset_i; ii <= offset_i + 2; ii++)
+              {
+                const float val = buffer[mad24(jj, stride, ii)];
+                clipped = (clipped || (val > clip));
+              }
+            }
+          }
+        }
+      }
+    }
+ 
+    if(clipped)
+    {
+      float mean[3] = { 0.0f, 0.0f, 0.0f };
+      int cnt[3] = { 0, 0, 0 };
+      float RGBmax[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+      for(int jj = -1; jj <= 1; jj++)
+      {
+        for(int ii = -1; ii <= 1; ii++)
+        {
+          const float val = buffer[mad24(jj, stride, ii)];
+          const int c = FCxtrans(y + jj + ry, x + ii + rx, xtrans);
+          mean[c] += val;
+          cnt[c]++;
+          RGBmax[c] = max(RGBmax[c], val);
+        }
+      }
+
+      const float Ro = min(mean[0]/cnt[0], clip);
+      const float Go = min(mean[1]/cnt[1], clip);
+      const float Bo = min(mean[2]/cnt[2], clip);
+
+      const float R = RGBmax[0];
+      const float G = RGBmax[1];
+      const float B = RGBmax[2];
+
+      const float L = (R + G + B) / 3.0f;
+      float C = SQRT3 * (R - G);
+      float H = 2.0f * B - G - R;
+
+      const float Co = SQRT3 * (Ro - Go);
+      const float Ho = 2.0f * Bo - Go - Ro;
+
+      if(R != G && G != B)
+      {
+        const float ratio = sqrt((Co * Co + Ho * Ho) / (C * C + H * H));
+        C *= ratio;
+        H *= ratio;
+      }
+
+      float RGB[3] = { 0.0f, 0.0f, 0.0f };
+
+      RGB[0] = L - H / 6.0f + C / SQRT12;
+      RGB[1] = L - H / 6.0f - C / SQRT12;
+      RGB[2] = L + H / 3.0f;
+
+      pixel = RGB[FCxtrans(y + ry, x + rx, xtrans)];
+    }
+    else
+      pixel = buffer[0];
   }
 
   write_imagef (out, (int2)(x, y), pixel);

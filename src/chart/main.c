@@ -868,13 +868,17 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
                          double *colorchecker_Lab, int N, int num_tonecurve, int sparsity)
 {
   tonecurve_t tonecurve;
-  double cx[num_tonecurve], cy[num_tonecurve];
+  double *cx = malloc(sizeof(double) * num_tonecurve);
+  double *cy = malloc(sizeof(double) * num_tonecurve);
   cx[0] = cy[0] = 0.0;                                   // fix black
   cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
   for(int k = 1; k < num_tonecurve - 1; k++)
     cx[num_tonecurve - 1 - k] = colorchecker_Lab[3 * (N - num_tonecurve + 2 + k - 1)];
   for(int k = 1; k < num_tonecurve - 1; k++) cy[num_tonecurve - 1 - k] = target_L[N - num_tonecurve + 2 + k - 1];
   tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
+
+  free(cy);
+  free(cx);
 
 #if 0 // quiet.
   for(int k = 0; k < num_tonecurve; k++)
@@ -886,10 +890,16 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   for(int k = 0; k < N; k++) target_L[k] = tonecurve_unapply(&tonecurve, target_L[k]);
 
   const double *target[3] = { target_L, target_a, target_b };
-  double coeff_L[N + 4], coeff_a[N + 4], coeff_b[N + 4];
+  double *coeff_L = malloc((N + 4) * sizeof(double));
+  double *coeff_a = malloc((N + 4) * sizeof(double));
+  double *coeff_b = malloc((N + 4) * sizeof(double));
   double *coeff[] = { coeff_L, coeff_a, coeff_b };
-  int perm[N + 4];
+  int *perm = malloc((N + 4) * sizeof(int));
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
+
+  free(coeff_b);
+  free(coeff_a);
+  free(coeff_L);
 
   int sp = 0;
   int cperm[300] = { 0 };
@@ -904,6 +914,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
             colorchecker_Lab[3 * cperm[k] + 1], colorchecker_Lab[3 * cperm[k] + 2]);
 #endif
 
+  free(perm);
   self->tonecurve_encoded = encode_tonecurve(&tonecurve);
   self->colorchecker_encoded = encode_colorchecker(sp, colorchecker_Lab, target, cperm);
 }

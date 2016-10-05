@@ -234,9 +234,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     dt_image_film_roll(img, value, sizeof(value));
     _metadata_update_value(d->metadata[md_internal_filmroll], value);
-    const int tp = 512;
-    char tooltip[tp];
-    snprintf(tooltip, tp, _("double click to jump to film roll\n%s"), value);
+
+    char tooltip[512];
+    snprintf(tooltip, sizeof(tooltip), _("double click to jump to film roll\n%s"), value);
     gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_filmroll]), tooltip);
 
     snprintf(value, sizeof(value), "%d", img->id);
