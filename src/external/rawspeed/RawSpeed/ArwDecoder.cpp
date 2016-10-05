@@ -158,7 +158,7 @@ RawImage ArwDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
 
-  ushort16 curve[0x4001];
+  ushort16 *curve = new ushort16[0x4001];
   TiffEntry *c = raw->getEntry(SONY_CURVE);
   uint32 sony_curve[] = { 0, 0, 0, 0, 0, 4095 };
 
@@ -202,6 +202,8 @@ RawImage ArwDecoder::decodeRawInternal() {
   } else {
     mRaw->setTable(NULL);
   }
+
+  delete[] curve;
 
   return mRaw;
 }
