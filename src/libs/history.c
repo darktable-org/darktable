@@ -32,6 +32,12 @@
 DT_MODULE(1)
 
 
+typedef struct dt_undo_history_t
+{
+  GList *snapshot;
+  int end;
+} dt_undo_history_t;
+
 typedef struct dt_lib_history_t
 {
   /* vbox with managed history items */
@@ -364,11 +370,20 @@ static void _history_undo_data_free(gpointer data)
   free(data);
 }
 
+static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  dt_undo_history_t *hist = (dt_undo_history_t *)item;
+  dt_dev_invalidate_history_module(hist->snapshot, module);
+}
+
 static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
   dt_dev_invalidate_history_module(d->prev.snapshot, module);
+
+  dt_undo_iterate (darktable.undo, DT_UNDO_HISTORY, &self, &_history_invalidate_cb);
 }
 
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)

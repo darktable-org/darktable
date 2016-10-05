@@ -31,14 +31,6 @@ typedef enum dt_undo_type_t
 
 #define DT_UNDO_ALL (DT_UNDO_GEOTAG | DT_UNDO_HISTORY)
 
-//  types that are known by the undo module are declared here to be shared by
-//  all the views supporting undo.
-typedef struct dt_undo_history_t
-{
-  GList *snapshot;
-  int end;
-} dt_undo_history_t;
-
 typedef void *dt_undo_data_t;
 
 typedef struct dt_undo_t
