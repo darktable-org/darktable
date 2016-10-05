@@ -236,8 +236,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_develop_t *dev = self->dev;
   dt_iop_rawoverexposed_global_data_t *gd = (dt_iop_rawoverexposed_global_data_t *)self->data;
 
-  dt_mipmap_buffer_t buf;
-
   cl_mem dev_raw = NULL;
   float *coordbuf = NULL;
   cl_mem dev_coord = NULL;
@@ -246,6 +244,17 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_xtrans = NULL;
 
   cl_int err = -999;
+
+  const dt_image_t *const image = &(dev->image_storage);
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  if(!buf.buf)
+  {
+    dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    goto error;
+  }
 
   const int devid = piece->pipe->devid;
 
@@ -260,21 +269,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 
-  const dt_image_t *const image = &(dev->image_storage);
-
   const int colorscheme = dev->rawoverexposed.colorscheme;
   const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
 
   // NOT FROM THE PIPE !!!
   const uint32_t filters = image->buf_dsc.filters;
-
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-  if(!buf.buf)
-  {
-    dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    goto error;
-  }
 
   const int raw_width = buf.width;
   const int raw_height = buf.height;
