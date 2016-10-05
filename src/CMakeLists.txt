@@ -620,10 +620,9 @@ if(USE_COLORD)
 endif(USE_COLORD)
 
 if(BUILD_PRINT)
-  find_package(CUPS)
+  find_package(Cups)
   if(CUPS_FOUND)
-    include_directories(SYSTEM ${CUPS_INCLUDE_DIRS})
-    add_definitions(${CUPS_DEFINITIONS})
+    include_directories(SYSTEM ${CUPS_INCLUDE_DIR})
     FILE(GLOB SOURCE_FILES_PRINT
       "common/cups_print.h"
       "common/cups_print.c"
