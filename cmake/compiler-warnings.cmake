@@ -1,10 +1,12 @@
 include(CheckCompilerFlagAndEnableIt)
 
-add_definitions(-Wall)
-add_definitions(-fno-strict-aliasing)
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wall)
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-fno-strict-aliasing)
+
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat)
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat-security)
 
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wtype-limits)
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat-security)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wshadow)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wvla)
 
