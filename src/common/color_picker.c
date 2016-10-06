@@ -123,18 +123,18 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
 
   const size_t size = ((box[3] - box[1]) * (box[2] - box[0]));
 
-  uint32_t weights[3] = { 0u, 0u, 0u };
+  uint32_t weights[4] = { 0u, 0u, 0u, 0u };
 
   if(size > 100) // avoid inefficient multi-threading in case of small region size (arbitrary limit)
   {
     const int numthreads = dt_get_num_threads();
 
-    float *msum = malloc((size_t)3 * numthreads * sizeof(float));
-    float *mmin = malloc((size_t)3 * numthreads * sizeof(float));
-    float *mmax = malloc((size_t)3 * numthreads * sizeof(float));
-    uint32_t *cnt = malloc((size_t)3 * numthreads * sizeof(uint32_t));
+    float *msum = malloc((size_t)4 * numthreads * sizeof(float));
+    float *mmin = malloc((size_t)4 * numthreads * sizeof(float));
+    float *mmax = malloc((size_t)4 * numthreads * sizeof(float));
+    uint32_t *cnt = malloc((size_t)4 * numthreads * sizeof(uint32_t));
 
-    for(int n = 0; n < 3 * numthreads; n++)
+    for(int n = 0; n < 4 * numthreads; n++)
     {
       msum[n] = 0.0f;
       mmin[n] = INFINITY;
@@ -151,10 +151,10 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
       {
         const int tnum = dt_get_thread_num();
 
-        float *tsum = msum + 3 * tnum;
-        float *tmmin = mmin + 3 * tnum;
-        float *tmmax = mmax + 3 * tnum;
-        uint32_t *tcnt = cnt + 3 * tnum;
+        float *tsum = msum + 4 * tnum;
+        float *tmmin = mmin + 4 * tnum;
+        float *tmmax = mmax + 4 * tnum;
+        uint32_t *tcnt = cnt + 4 * tnum;
 
         const int c = FC(j + roi->y, i + roi->x, filters);
         const size_t k = width * j + i;
@@ -170,12 +170,12 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
 
     for(int n = 0; n < numthreads; n++)
     {
-      for(int c = 0; c < 3; c++)
+      for(int c = 0; c < 4; c++)
       {
-        picked_color[c] += msum[3 * n + c];
-        picked_color_min[c] = fminf(picked_color_min[c], mmin[3 * n + c]);
-        picked_color_max[c] = fmaxf(picked_color_max[c], mmax[3 * n + c]);
-        weights[c] += cnt[3 * n + c];
+        picked_color[c] += msum[4 * n + c];
+        picked_color_min[c] = fminf(picked_color_min[c], mmin[4 * n + c]);
+        picked_color_max[c] = fmaxf(picked_color_max[c], mmax[4 * n + c]);
+        weights[c] += cnt[4 * n + c];
       }
     }
 
@@ -205,9 +205,9 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
   }
 
   // and finally normalize data. For bayer, there is twice as much green.
-  for(int c = 0; c < 3; c++)
+  for(int c = 0; c < 4; c++)
   {
-    picked_color[c] /= (float)weights[c];
+    picked_color[c] = weights[c] ? (picked_color[c] / (float)weights[c]) : 0.0f;
   }
 }
 
@@ -314,7 +314,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
 {
   if(dsc->channels == 4u)
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
-  else if(dsc->channels == 1u && dsc->filters && dsc->filters != 9u && !FILTERS_ARE_4BAYER(dsc->filters))
+  else if(dsc->channels == 1u && dsc->filters && dsc->filters != 9u)
     color_picker_helper_bayer(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
   else if(dsc->channels == 1u && dsc->filters && dsc->filters == 9u)
     color_picker_helper_xtrans(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
