@@ -172,9 +172,7 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
     color.blue = rgb[2];
   }
 
-  darktable.gui->reset = 1;
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpicker), &color);
-  darktable.gui->reset = 0;
 }
 
 static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
@@ -194,7 +192,9 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   dt_iop_invert_params_t *p = self->params;
   for(int k = 0; k < 4; k++) p->color[k] = grayrgb[k];
 
+  darktable.gui->reset = 1;
   gui_update_from_coeffs(self);
+  darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
