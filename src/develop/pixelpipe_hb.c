@@ -427,9 +427,9 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
 
   // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity
   // of data
-  for(int k = 0; k < 3; k++) picked_color_min[k] = INFINITY;
-  for(int k = 0; k < 3; k++) picked_color_max[k] = -INFINITY;
-  for(int k = 0; k < 3; k++) picked_color[k] = 0.0f;
+  for(int k = 0; k < 4; k++) picked_color_min[k] = INFINITY;
+  for(int k = 0; k < 4; k++) picked_color_max[k] = -INFINITY;
+  for(int k = 0; k < 4; k++) picked_color[k] = 0.0f;
 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
   // position
