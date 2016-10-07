@@ -465,6 +465,12 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   box[2] = fmaxf(fbox[0], fbox[2]);
   box[3] = fmaxf(fbox[1], fbox[3]);
 
+  if(!darktable.lib->proxy.colorpicker.size)
+  {
+    // if we are sampling one point, make sure that we actually sample it.
+    for(int k = 2; k < 4; k++) box[k] += 1;
+  }
+
   // do not continue if box is completely outside of roi
   if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return 1;
 
