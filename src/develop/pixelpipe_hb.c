@@ -535,12 +535,12 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
 
   if(err != CL_SUCCESS) goto error;
 
+  dt_iop_roi_t roi_copy = (dt_iop_roi_t){.x = roi->x + box[0], .y = roi->y + box[1], .width = region[0], .height = region[1] };
+
   box[0] = 0;
   box[1] = 0;
   box[2] = region[0];
   box[3] = region[1];
-
-  dt_iop_roi_t roi_copy = (dt_iop_roi_t){.x = roi->x, .y = roi->x, .width = region[0], .height = region[1] };
 
   dt_color_picker_helper(dsc, pixel, &roi_copy, box, picked_color, picked_color_min, picked_color_max);
 
