@@ -23,7 +23,8 @@
 # SOFTWARE.
 
 IGNORE_ONLY_14BIT = [
-  ["NIKON CORPORATION", "NIKON D5100"]
+  ["NIKON CORPORATION", "NIKON D5100"],
+  ["NIKON CORPORATION", "NIKON D5200"]
 ]
 
 IGNORE_ONLY_MODE = {
@@ -40,6 +41,7 @@ IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON D3000"] => "compressed",
   ["NIKON CORPORATION", "NIKON D3200"] => "compressed",
   ["NIKON CORPORATION", "NIKON D5100"] => "compressed",
+  ["NIKON CORPORATION", "NIKON D5200"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7000"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7100"] => "compressed",
   ["NIKON", "COOLPIX P330"] => "compressed",
