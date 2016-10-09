@@ -22,6 +22,6 @@ foreach(module ${MODULES})
 endforeach(module)
 
 foreach(module ${MODULES})
-	target_link_libraries(${module} ${LIBS})
+	target_link_libraries(${module} lib_darktable)
     install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/imageio/storage)
 endforeach(module)

@@ -35,7 +35,7 @@ macro (add_iop _lib _src)
   list(REMOVE_ITEM OPT_SRC "DEFAULT_VISIBLE")
 
   add_library(${_lib} MODULE ${_output} ${OPT_SRC})
-  target_link_libraries(${_lib} ${LIBS})
+  target_link_libraries(${_lib} lib_darktable)
   install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
 
   list(APPEND _iop_list ${_lib})
