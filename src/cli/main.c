@@ -157,7 +157,7 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char *m_arg[5 + argc - k];
+  char **m_arg = malloc((5 + argc - k + 1) * sizeof(char *));
   m_arg[m_argc++] = "darktable-cli";
   m_arg[m_argc++] = "--library";
   m_arg[m_argc++] = ":memory:";
@@ -169,6 +169,7 @@ int main(int argc, char *arg[])
   if(file_counter < 2 || file_counter > 3)
   {
     usage(arg[0]);
+    free(m_arg);
     exit(1);
   }
   else if(file_counter == 2)
@@ -182,6 +183,7 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("error: output file is a directory. please specify file name"));
     fprintf(stderr, "\n");
+    free(m_arg);
     exit(1);
   }
 
@@ -192,7 +194,11 @@ int main(int argc, char *arg[])
   }
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
+  if(dt_init(m_argc, m_arg, 0, NULL))
+  {
+    free(m_arg);
+    exit(1);
+  }
 
   dt_film_t film;
   int id = 0;
@@ -205,6 +211,7 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("error: can't open file %s"), image_filename);
     fprintf(stderr, "\n");
+    free(m_arg);
     exit(1);
   }
   g_free(directory);
@@ -249,6 +256,7 @@ int main(int argc, char *arg[])
     fprintf(
         stderr, "%s\n",
         _("cannot find disk storage module. please check your installation, something seems to be broken."));
+    free(m_arg);
     exit(1);
   }
 
@@ -256,6 +264,7 @@ int main(int argc, char *arg[])
   if(sdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
+    free(m_arg);
     exit(1);
   }
 
@@ -269,6 +278,7 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("unknown extension '.%s'"), ext);
     fprintf(stderr, "\n");
+    free(m_arg);
     exit(1);
   }
 
@@ -276,6 +286,7 @@ int main(int argc, char *arg[])
   if(fdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
+    free(m_arg);
     exit(1);
   }
 
@@ -317,6 +328,8 @@ int main(int argc, char *arg[])
   format->free_params(format, fdata);
 
   dt_cleanup();
+
+  free(m_arg);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

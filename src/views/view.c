@@ -47,21 +47,21 @@
 void dt_view_manager_init(dt_view_manager_t *vm)
 {
   /* prepare statements */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images where imgid = ?1",
-                              -1, &vm->statements.is_selected, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid = ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images "
+                              "WHERE imgid = ?1", -1, &vm->statements.is_selected, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.selected_images WHERE imgid = ?1",
                               -1, &vm->statements.delete_from_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "insert or ignore into selected_images values (?1)", -1,
+                              "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1,
                               &vm->statements.make_selected, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT num FROM main.history WHERE imgid = ?1", -1,
                               &vm->statements.have_history, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT color FROM main.color_labels WHERE imgid=?1",
                               -1, &vm->statements.get_color, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select id from images where group_id = (select group_id from images where id=?1) and id != ?2", -1,
-      &vm->statements.get_grouped, NULL);
+      "SELECT id FROM main.images WHERE group_id = (SELECT group_id FROM main.images WHERE id=?1) AND id != ?2",
+      -1, &vm->statements.get_grouped, NULL);
 
   int res = 0, midx = 0;
   char *modules[] = { "lighttable", "darkroom",
@@ -1576,7 +1576,7 @@ int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm)
 void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid)
 {
   /* First off clear all selected images... */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
   /* clear and reset statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.make_selected);
@@ -1599,7 +1599,7 @@ void dt_view_filmstrip_prefetch()
   {
     int imgid = -1;
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);

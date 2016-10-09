@@ -25,6 +25,8 @@ typedef struct dt_film_import1_t
   dt_film_t *film;
 } dt_film_import1_t;
 
+static void dt_film_import1(dt_job_t *job, dt_film_t *film);
+
 static int32_t dt_film_import1_run(dt_job_t *job)
 {
   dt_film_import1_t *params = dt_control_job_get_params(job);
@@ -39,6 +41,10 @@ static int32_t dt_film_import1_run(dt_job_t *job)
       dt_film_remove(params->film->id);
     }
   }
+
+  // notify the user via the window manager
+  gtk_window_set_urgency_hint(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), TRUE);
+
   return 0;
 }
 
@@ -92,7 +98,7 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive, G
     if(filename[0] == '.') continue;
 
     /* build full path for filename */
-    fullname = g_build_filename(G_DIR_SEPARATOR_S, path, filename, NULL);
+    fullname = g_build_filename(path, filename, NULL);
 
     /* recurse into directory if we hit one and we doing a recursive import */
     if(recursive && g_file_test(fullname, G_FILE_TEST_IS_DIR))
@@ -127,7 +133,7 @@ int _film_filename_cmp(gchar *a, gchar *b)
   return ret;
 }
 
-void dt_film_import1(dt_job_t *job, dt_film_t *film)
+static void dt_film_import1(dt_job_t *job, dt_film_t *film)
 {
   gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
 

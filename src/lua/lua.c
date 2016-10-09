@@ -125,7 +125,9 @@ void dt_lua_init_lock()
   pthread_mutexattr_destroy(&a);
   pthread_cond_init(&darktable.lua_state.cond,NULL);
   // we want our lock initialized locked
+  dt_pthread_mutex_lock(&darktable.lua_state.mutex);
   darktable.lua_state.exec_lock = true;
+  dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
 }
 
 void dt_lua_lock_internal(const char *function, const char *file, int line, gboolean silent)
