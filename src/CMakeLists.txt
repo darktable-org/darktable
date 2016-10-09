@@ -531,6 +531,7 @@ if(USE_LUA)
       "lua/widget/separator.c"
       "lua/widget/slider.c"
       "lua/widget/stack.c"
+      "lua/widget/text_view.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
   endif(USE_LUA)
