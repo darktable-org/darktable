@@ -724,6 +724,10 @@ add_dependencies(lib_darktable ${LIB_DEPS})
 target_link_libraries(lib_darktable ${STATIC_LIBS})
 target_link_libraries(lib_darktable ${LIBS})
 
+unset(LIBS)
+unset(STATIC_LIBS)
+unset(LIB_DEPS)
+
 #
 # Install lib_darktable
 #
@@ -733,9 +737,6 @@ if(WIN32)
 else(WIN32)
   install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
-
-# make sure static libs is first
-list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})
 
 # Compile views modules
 add_subdirectory(views)
@@ -785,5 +786,5 @@ set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")
 endif(APPLE)
-target_link_libraries(darktable ${LIBS})
+target_link_libraries(darktable lib_darktable)
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -84,7 +84,7 @@ endif(CUPS_FOUND)
 
 # Add libs references
 foreach(module ${MODULES})
-	target_link_libraries(${module} ${LIBS})
+	target_link_libraries(${module} lib_darktable)
 endforeach(module)
 
 # Add installation target for each module

@@ -30,7 +30,7 @@ if(CUPS_FOUND)
 endif(CUPS_FOUND)
 
 foreach(module ${MODULES})
-    target_link_libraries(${module} ${LIBS})
+    target_link_libraries(${module} lib_darktable)
 endforeach(module)
 
 foreach(module ${MODULES})
