@@ -914,8 +914,6 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
       time_t exif_time;
       gboolean have_exif_time = dt_exif_get_datetime_taken(data, size, &exif_time);
 
-      gp_file_free(camfile);
-
       const char *output_path = _dispatch_request_image_path(c, have_exif_time ? &exif_time : NULL, cam);
       const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
       if(!fname) continue;
@@ -935,6 +933,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
       else {
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
       }
+      gp_file_free(camfile);
       g_free(output);
     } while((ifile = g_list_next(ifile)));
 
