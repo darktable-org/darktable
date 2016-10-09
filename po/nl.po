@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-01 18:06+0200\n"
-"PO-Revision-Date: 2016-10-01 18:46+0200\n"
+"POT-Creation-Date: 2016-10-02 17:39+0200\n"
+"PO-Revision-Date: 2016-10-02 17:42+0200\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -889,7 +889,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:448
 #: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:1303
 #: ../src/libs/collect.c:954 ../src/libs/collect.c:955
-#: ../src/libs/collect.c:956 ../src/views/darkroom.c:1557
+#: ../src/libs/collect.c:956
 msgid "red"
 msgstr "rood"
 
@@ -904,7 +904,6 @@ msgstr "geel"
 #: ../src/iop/channelmixer.c:465 ../src/iop/temperature.c:1291
 #: ../src/iop/temperature.c:1304 ../src/libs/collect.c:962
 #: ../src/libs/collect.c:963 ../src/libs/collect.c:964
-#: ../src/views/darkroom.c:1558
 msgid "green"
 msgstr "groen"
 
@@ -912,7 +911,7 @@ msgstr "groen"
 #: ../src/iop/bilateral.cc:353 ../src/iop/channelmixer.c:450
 #: ../src/iop/channelmixer.c:471 ../src/iop/temperature.c:1305
 #: ../src/libs/collect.c:966 ../src/libs/collect.c:967
-#: ../src/libs/collect.c:968 ../src/views/darkroom.c:1559
+#: ../src/libs/collect.c:968
 msgid "blue"
 msgstr "blauw"
 
@@ -1047,29 +1046,36 @@ msgstr "bestand `%s' heeft een onbekend formaat!"
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
 
-#: ../src/common/database.c:1150
-msgid "darktable - error opening database"
-msgstr "darktable - fout voor openen database"
-
-#: ../src/common/database.c:1156
-msgid "an error has occured while trying to open the database from"
-msgstr "er ging wat fout bij het openen van de database van"
-
-#: ../src/common/database.c:1165
+#. oh, bad situation. the database is corrupt and can't be read!
+#. we inform the user here and let him decide what to do: exit or delete and try again.
+#: ../src/common/database.c:1564 ../src/common/database.c:1640
+#, c-format
 msgid ""
+"an error has occured while trying to open the database from\n"
+"\n"
+"<span style=\"italic\">%s</span>\n"
+"\n"
 "it seems that the database is corrupt.\n"
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or start with a new one?"
 msgstr ""
+"er ging iets fout bij het openen van de database\n"
+"\n"
+"<span style=\"italic\">%s</span>\n"
+"\n"
 "het lijkt erop dat de de database is beschadigd\n"
 "wilt u darktable sluiten voor een handmatig herstel vanuit\n"
 "een backup of moet gestart worden met een nieuwe exemplaar?"
 
-#: ../src/common/database.c:1175
+#: ../src/common/database.c:1574 ../src/common/database.c:1650
+msgid "darktable - error opening database"
+msgstr "darktable - fout voor openen database"
+
+#: ../src/common/database.c:1575 ../src/common/database.c:1651
 msgid "close darktable"
 msgstr "darktable afsluiten"
 
-#: ../src/common/database.c:1179
+#: ../src/common/database.c:1575 ../src/common/database.c:1651
 msgid "delete database"
 msgstr "verwijder database"
 
@@ -1080,22 +1086,22 @@ msgstr ""
 "verwijderen van een map is niet mogelijk wanneer lokale kopieën bestaan "
 "waarvan het origineel niet toegankelijk is"
 
-#: ../src/common/history.c:247
+#: ../src/common/history.c:249
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "kopieer eerst de afbeeldingsgeschiedenis voordat je het op een andere toepast"
 
-#: ../src/common/history.c:425 ../src/common/history.c:428
-#: ../src/common/history.c:444 ../src/common/styles.c:718
-#: ../src/common/styles.c:722 ../src/develop/blend_gui.c:1818
+#: ../src/common/history.c:430 ../src/common/history.c:433
+#: ../src/common/history.c:449 ../src/common/styles.c:721
+#: ../src/common/styles.c:725 ../src/develop/blend_gui.c:1818
 #: ../src/develop/develop.c:1333 ../src/iop/ashift.c:4386
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "aan"
 
-#: ../src/common/history.c:425 ../src/common/history.c:428
-#: ../src/common/history.c:444 ../src/common/styles.c:718
-#: ../src/common/styles.c:722 ../src/develop/blend_gui.c:1600
+#: ../src/common/history.c:430 ../src/common/history.c:433
+#: ../src/common/history.c:449 ../src/common/styles.c:721
+#: ../src/common/styles.c:725 ../src/develop/blend_gui.c:1600
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1333
 #: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
 #: ../src/iop/ashift.c:4385 ../src/iop/ashift.c:4391 ../src/iop/colorin.c:1943
@@ -1125,21 +1131,21 @@ msgstr ""
 msgid "orphaned image"
 msgstr "verweesde afbeelding"
 
-#: ../src/common/image.c:1349
+#: ../src/common/image.c:1347
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "aanmaak lokale kopie lukt alleen als het origineel toegankelijk is "
 
-#: ../src/common/image.c:1363
+#: ../src/common/image.c:1361
 msgid "cannot create local copy."
 msgstr "aanmaak lokale kopie mislukt"
 
-#: ../src/common/image.c:1429 ../src/control/jobs/control_jobs.c:636
+#: ../src/common/image.c:1427 ../src/control/jobs/control_jobs.c:636
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "verwijderen van lokale kopie is niet mogelijk wanneer het origineel niet "
 "toegankelijk is"
 
-#: ../src/common/image.c:1581
+#: ../src/common/image.c:1579
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1239,7 +1245,7 @@ msgid_plural "applying rating %d to %d images"
 msgstr[0] "geef waardering %d aan %d afbeelding"
 msgstr[1] "geef waardering %d aan %d afbeeldingen"
 
-#: ../src/common/ratings.c:73
+#: ../src/common/ratings.c:71
 msgid "no images selected to apply rating"
 msgstr "er zijn geen afbeeldingen geselecteerd om te waarderen"
 
@@ -1251,8 +1257,8 @@ msgstr "naam stijl '%s' bestaat al"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:305 ../src/common/styles.c:309
 #: ../src/common/styles.c:389 ../src/common/styles.c:458
-#: ../src/common/styles.c:626 ../src/common/styles.c:1149
-#: ../src/common/styles.c:1168
+#: ../src/common/styles.c:630 ../src/common/styles.c:1151
+#: ../src/common/styles.c:1170
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1264,22 +1270,22 @@ msgid "style named '%s' successfully created"
 msgstr "aanmaak profielstijl '%s' is gelukt"
 
 #. fail :(
-#: ../src/common/styles.c:491 ../src/common/styles.c:508
+#: ../src/common/styles.c:492 ../src/common/styles.c:510
 #: ../src/views/darkroom.c:451 ../src/views/print.c:271
 msgid "no image selected!"
 msgstr "er is geen afbeelding geselecteerd"
 
-#: ../src/common/styles.c:805
+#: ../src/common/styles.c:808
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "overschrijven stijlbestand voor %s mislukt"
 
-#: ../src/common/styles.c:811
+#: ../src/common/styles.c:814
 #, c-format
 msgid "style file for %s exists"
 msgstr "stijl bestand '%s' bestaat al"
 
-#: ../src/common/styles.c:1040
+#: ../src/common/styles.c:1042
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "stijl '%s' is geïmporteerd"
@@ -1319,39 +1325,39 @@ msgstr "m"
 msgid "working.."
 msgstr "bezig..."
 
-#: ../src/control/crawler.c:340 ../src/libs/select.c:40
+#: ../src/control/crawler.c:339 ../src/libs/select.c:40
 msgid "select"
 msgstr "selecteren"
 
-#: ../src/control/crawler.c:344
+#: ../src/control/crawler.c:343
 msgid "path"
 msgstr "pad"
 
-#: ../src/control/crawler.c:348
+#: ../src/control/crawler.c:347
 msgid "xmp timestamp"
 msgstr "xmp tijdsaanduiding"
 
-#: ../src/control/crawler.c:352
+#: ../src/control/crawler.c:351
 msgid "database timestamp"
 msgstr "database tijdsaanduiding"
 
-#: ../src/control/crawler.c:361
+#: ../src/control/crawler.c:360
 msgid "updated xmp sidecar files found"
 msgstr "bijgewerkt xmp bestand gevonden"
 
-#: ../src/control/crawler.c:363
+#: ../src/control/crawler.c:362
 msgid "_close"
 msgstr "_afsluiten"
 
-#: ../src/control/crawler.c:379 ../src/libs/select.c:100
+#: ../src/control/crawler.c:378 ../src/libs/select.c:100
 msgid "select all"
 msgstr "selecteer alles"
 
-#: ../src/control/crawler.c:386
+#: ../src/control/crawler.c:385
 msgid "reload selected xmp files"
 msgstr "herlaad xmp bestanden"
 
-#: ../src/control/crawler.c:387
+#: ../src/control/crawler.c:386
 msgid "overwrite selected xmp files"
 msgstr "overschrijf xmp bestanden"
 
@@ -1626,7 +1632,7 @@ msgstr "selecteer map"
 #: ../src/control/jobs/control_jobs.c:1447
 #: ../src/control/jobs/control_jobs.c:1501 ../src/gui/hist_dialog.c:137
 #: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
-#: ../src/gui/presets.c:381 ../src/gui/styles_dialog.c:283
+#: ../src/gui/presets.c:382 ../src/gui/styles_dialog.c:283
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:103
 #: ../src/imageio/storage/latex.c:103 ../src/libs/collect.c:227
 #: ../src/libs/copy_history.c:72 ../src/libs/geotagging.c:454
@@ -1713,7 +1719,7 @@ msgstr[1] "tijdsverschil toegepast op %d afbeeldingen"
 msgid "time offset"
 msgstr "tijdsverschil"
 
-#: ../src/control/jobs/control_jobs.c:1723 ../src/libs/copy_history.c:288
+#: ../src/control/jobs/control_jobs.c:1723 ../src/libs/copy_history.c:289
 msgid "write sidecar files"
 msgstr "schrijf xmp bestanden"
 
@@ -2219,7 +2225,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/develop/imageop.c:1235 ../src/gui/accelerators.c:634
 #: ../src/gui/accelerators.c:719 ../src/gui/accelerators.c:884
 #: ../src/gui/accelerators.c:910 ../src/gui/presets.c:191
-#: ../src/gui/presets.c:297 ../src/gui/presets.c:639
+#: ../src/gui/presets.c:298 ../src/gui/presets.c:640
 #: ../src/iop/temperature.c:1354 ../src/libs/import.c:555 ../src/libs/lib.c:308
 #: ../src/libs/lib.c:333 ../src/libs/lib.c:1151
 msgid "preset"
@@ -2545,19 +2551,19 @@ msgstr "aanmaak cache map '%s'\n"
 msgid "could not create directory '%s'!\n"
 msgstr "kan de map '%s' niet aanmaken!\n"
 
-#: ../src/generate-cache/main.c:73
+#: ../src/generate-cache/main.c:74
 #, c-format
 msgid "warning: no images are matching the requested image id range\n"
 msgstr ""
 "waarschuwing: geen enkele afbeelding komt overeen met vereist bereik "
 "afbeeldings id\n"
 
-#: ../src/generate-cache/main.c:76
+#: ../src/generate-cache/main.c:77
 #, c-format
 msgid "warning: did you want to swap these boundaries?\n"
 msgstr "waarschuwing: verwisselde je de kaders?\n"
 
-#: ../src/generate-cache/main.c:201
+#: ../src/generate-cache/main.c:203
 #, c-format
 msgid ""
 "warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\n"
@@ -2571,12 +2577,12 @@ msgstr ""
 "darktable\n"
 "dan moet de disk-backend voor miniaturen ingeschakeld worden."
 
-#: ../src/generate-cache/main.c:210
+#: ../src/generate-cache/main.c:212
 #, c-format
 msgid "error: ensure that min_mip <= max_mip\n"
 msgstr "fout: verzeker je ervan dan min_mip <= max_mip\n"
 
-#: ../src/generate-cache/main.c:214
+#: ../src/generate-cache/main.c:216
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
 msgstr "aanmaak complete cache van miniaturenbibliotheek\n"
@@ -2979,7 +2985,7 @@ msgid "select _none"
 msgstr "selecteer _niets"
 
 #: ../src/gui/hist_dialog.c:138 ../src/gui/preferences.c:1225
-#: ../src/gui/presets.c:380 ../src/libs/lib.c:215
+#: ../src/gui/presets.c:381 ../src/libs/lib.c:215
 msgid "_ok"
 msgstr "_ok"
 
@@ -3029,45 +3035,45 @@ msgstr "bestandsnaam"
 
 #. exif
 #: ../src/gui/preferences.c:465 ../src/gui/preferences.c:1269
-#: ../src/gui/presets.c:426 ../src/libs/metadata_view.c:102
+#: ../src/gui/presets.c:427 ../src/libs/metadata_view.c:102
 msgid "model"
 msgstr "model"
 
 #: ../src/gui/preferences.c:469 ../src/gui/preferences.c:1277
-#: ../src/gui/presets.c:433 ../src/libs/metadata_view.c:103
+#: ../src/gui/presets.c:434 ../src/libs/metadata_view.c:103
 msgid "maker"
 msgstr "merk"
 
 #: ../src/gui/preferences.c:473 ../src/gui/preferences.c:1285
-#: ../src/gui/presets.c:440 ../src/libs/collect.h:34
+#: ../src/gui/presets.c:441 ../src/libs/collect.h:34
 #: ../src/libs/metadata_view.c:104
 msgid "lens"
 msgstr "lens"
 
 #. iso
 #: ../src/gui/preferences.c:477 ../src/gui/preferences.c:1291
-#: ../src/gui/presets.c:446 ../src/libs/camera.c:583 ../src/libs/collect.h:35
+#: ../src/gui/presets.c:447 ../src/libs/camera.c:583 ../src/libs/collect.h:35
 #: ../src/libs/metadata_view.c:109
 msgid "ISO"
 msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:481 ../src/gui/preferences.c:1304
-#: ../src/gui/presets.c:459 ../src/iop/exposure.c:104 ../src/iop/exposure.c:878
+#: ../src/gui/presets.c:460 ../src/iop/exposure.c:104 ../src/iop/exposure.c:878
 #: ../src/iop/relight.c:354 ../src/libs/metadata_view.c:106
 msgid "exposure"
 msgstr "belichting"
 
 #. aperture
 #: ../src/gui/preferences.c:485 ../src/gui/preferences.c:1319
-#: ../src/gui/presets.c:474 ../src/libs/camera.c:570 ../src/libs/camera.c:572
+#: ../src/gui/presets.c:475 ../src/libs/camera.c:570 ../src/libs/camera.c:572
 #: ../src/libs/collect.h:35 ../src/libs/metadata_view.c:105
 msgid "aperture"
 msgstr "diafragma"
 
 #. focal length
 #: ../src/gui/preferences.c:489 ../src/gui/preferences.c:1334
-#: ../src/gui/presets.c:489 ../src/iop/ashift.c:4403 ../src/libs/camera.c:575
+#: ../src/gui/presets.c:490 ../src/iop/ashift.c:4403 ../src/libs/camera.c:575
 #: ../src/libs/collect.h:34 ../src/libs/metadata_view.c:107
 msgid "focal length"
 msgstr "brandpuntsafstand"
@@ -3151,24 +3157,24 @@ msgstr ""
 "weet u zeker dat u terug wilt naar de standaard snelkoppelingen? hierdoor "
 "vervallen alle gemaakte aanpassingen."
 
-#: ../src/gui/preferences.c:1223 ../src/gui/presets.c:379
+#: ../src/gui/preferences.c:1223 ../src/gui/presets.c:380
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "bewerk `%s' voor module `%s'"
 
-#: ../src/gui/preferences.c:1246 ../src/gui/presets.c:403 ../src/libs/lib.c:241
+#: ../src/gui/preferences.c:1246 ../src/gui/presets.c:404 ../src/libs/lib.c:241
 msgid "description or further information"
 msgstr "beschrijving dan wel extra informatie"
 
-#: ../src/gui/preferences.c:1249 ../src/gui/presets.c:406
+#: ../src/gui/preferences.c:1249 ../src/gui/presets.c:407
 msgid "auto apply this preset to matching images"
 msgstr "pas voorkeur automatisch toe op overeenkomende afbeelding(en)"
 
-#: ../src/gui/preferences.c:1252 ../src/gui/presets.c:409
+#: ../src/gui/preferences.c:1252 ../src/gui/presets.c:410
 msgid "only show this preset for matching images"
 msgstr "toon deze voorkeur alleen bij overeenkomstige afbeeldingen"
 
-#: ../src/gui/preferences.c:1254 ../src/gui/presets.c:410
+#: ../src/gui/preferences.c:1254 ../src/gui/presets.c:411
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -3176,67 +3182,67 @@ msgstr ""
 "Wees voorzichtig met deze optie, het kan de laatste mogelijkheid zijn om uw "
 "voorkeuren te zien."
 
-#: ../src/gui/preferences.c:1268 ../src/gui/presets.c:425
+#: ../src/gui/preferences.c:1268 ../src/gui/presets.c:426
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "string om model aan te passen (gebruik % als vervanging)"
 
-#: ../src/gui/preferences.c:1276 ../src/gui/presets.c:432
+#: ../src/gui/preferences.c:1276 ../src/gui/presets.c:433
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "string om fabrikant aan te passen (gebruik % als vervanging)"
 
-#: ../src/gui/preferences.c:1284 ../src/gui/presets.c:439
+#: ../src/gui/preferences.c:1284 ../src/gui/presets.c:440
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "string om lens aan te passen (gebruik % als vervanging)"
 
-#: ../src/gui/preferences.c:1294 ../src/gui/presets.c:449
+#: ../src/gui/preferences.c:1294 ../src/gui/presets.c:450
 msgid "minimum ISO value"
 msgstr "minimale ISO waarde"
 
-#: ../src/gui/preferences.c:1297 ../src/gui/presets.c:452
+#: ../src/gui/preferences.c:1297 ../src/gui/presets.c:453
 msgid "maximum ISO value"
 msgstr "maximale ISO waarde"
 
-#: ../src/gui/preferences.c:1308 ../src/gui/presets.c:463
+#: ../src/gui/preferences.c:1308 ../src/gui/presets.c:464
 msgid "minimum exposure time"
 msgstr "minimale belichtingstijd"
 
-#: ../src/gui/preferences.c:1309 ../src/gui/presets.c:464
+#: ../src/gui/preferences.c:1309 ../src/gui/presets.c:465
 msgid "maximum exposure time"
 msgstr "maximale belichtingstijd"
 
-#: ../src/gui/preferences.c:1323 ../src/gui/presets.c:478
+#: ../src/gui/preferences.c:1323 ../src/gui/presets.c:479
 msgid "minimum aperture value"
 msgstr "minimale diafragma waarde"
 
-#: ../src/gui/preferences.c:1324 ../src/gui/presets.c:479
+#: ../src/gui/preferences.c:1324 ../src/gui/presets.c:480
 msgid "maximum aperture value"
 msgstr "maximale diafragma waarde"
 
-#: ../src/gui/preferences.c:1339 ../src/gui/presets.c:495
+#: ../src/gui/preferences.c:1339 ../src/gui/presets.c:496
 msgid "minimum focal length"
 msgstr "minimale brandpuntsafstand (mm)"
 
-#: ../src/gui/preferences.c:1340 ../src/gui/presets.c:496
+#: ../src/gui/preferences.c:1340 ../src/gui/presets.c:497
 msgid "maximum focal length"
 msgstr "maximale brandpuntsafstand (mm)"
 
 #. raw/hdr/ldr
-#: ../src/gui/preferences.c:1349 ../src/gui/presets.c:502
+#: ../src/gui/preferences.c:1349 ../src/gui/presets.c:503
 #: ../src/imageio/format/j2k.c:647
 msgid "format"
 msgstr "formaat"
 
-#: ../src/gui/presets.c:142 ../src/gui/presets.c:845 ../src/gui/presets.c:858
+#: ../src/gui/presets.c:142 ../src/gui/presets.c:846 ../src/gui/presets.c:859
 #: ../src/libs/lib.c:72
 msgid "(default)"
 msgstr "(standaard)"
 
 #. then show edit dialog
-#: ../src/gui/presets.c:219 ../src/gui/presets.c:632 ../src/gui/presets.c:639
-#: ../src/gui/presets.c:641 ../src/gui/presets.c:643 ../src/libs/lib.c:287
+#: ../src/gui/presets.c:219 ../src/gui/presets.c:633 ../src/gui/presets.c:640
+#: ../src/gui/presets.c:642 ../src/gui/presets.c:644 ../src/libs/lib.c:287
 #: ../src/libs/lib.c:300 ../src/libs/lib.c:308 ../src/libs/lib.c:310
 #: ../src/libs/lib.c:312
 msgid "new preset"
@@ -3250,7 +3256,7 @@ msgstr "geef deze voorkeur een naam"
 msgid "unnamed preset"
 msgstr "naamloze voorkeur"
 
-#: ../src/gui/presets.c:251 ../src/libs/lib.c:142
+#: ../src/gui/presets.c:252 ../src/libs/lib.c:142
 #, c-format
 msgid ""
 "preset `%s' already exists.\n"
@@ -3259,31 +3265,31 @@ msgstr ""
 "voorkeur `%s' bestaat al\n"
 "moet die worden overschreven?"
 
-#: ../src/gui/presets.c:253 ../src/libs/lib.c:143
+#: ../src/gui/presets.c:254 ../src/libs/lib.c:143
 msgid "overwrite preset?"
 msgstr "voorkeur overschrijven?"
 
-#: ../src/gui/presets.c:399 ../src/libs/lib.c:237
+#: ../src/gui/presets.c:400 ../src/libs/lib.c:237
 msgid "name of the preset"
 msgstr "naam van deze voorkeur"
 
-#: ../src/gui/presets.c:869
+#: ../src/gui/presets.c:870
 msgid "disabled: wrong module version"
 msgstr "uitgeschakeld: verkeerde module versie"
 
-#: ../src/gui/presets.c:890 ../src/libs/lib.c:464
+#: ../src/gui/presets.c:891 ../src/libs/lib.c:464
 msgid "edit this preset.."
 msgstr "voorkeur bewerken"
 
-#: ../src/gui/presets.c:894 ../src/libs/lib.c:468
+#: ../src/gui/presets.c:895 ../src/libs/lib.c:468
 msgid "delete this preset"
 msgstr "voorkeur verwijderen"
 
-#: ../src/gui/presets.c:900 ../src/libs/lib.c:475
+#: ../src/gui/presets.c:901 ../src/libs/lib.c:475
 msgid "store new preset.."
 msgstr "voorkeur opslaan"
 
-#: ../src/gui/presets.c:906 ../src/libs/lib.c:482
+#: ../src/gui/presets.c:907 ../src/libs/lib.c:482
 msgid "update preset"
 msgstr "update voorkeur "
 
@@ -3327,7 +3333,7 @@ msgstr "update"
 msgid "can't create style out of unaltered image"
 msgstr "kan geen stijl maken van niet gewijzigde afbeelding"
 
-#: ../src/imageio/format/copy.c:134 ../src/libs/copy_history.c:241
+#: ../src/imageio/format/copy.c:134 ../src/libs/copy_history.c:242
 #: ../src/libs/image.c:202
 msgid "copy"
 msgstr "kopiëren"
@@ -3735,7 +3741,7 @@ msgstr "bij conflict"
 msgid "create unique filename"
 msgstr "creëer unieke bestandsnaam"
 
-#: ../src/imageio/storage/disk.c:163 ../src/libs/copy_history.c:276
+#: ../src/imageio/storage/disk.c:163 ../src/libs/copy_history.c:277
 msgid "overwrite"
 msgstr "overschrijf"
 
@@ -5861,7 +5867,7 @@ msgstr "geïnterpoleerd uit ISO %d en %d"
 
 #: ../src/iop/denoiseprofile.c:2070 ../src/iop/exposure.c:849
 #: ../src/iop/lens.c:2182 ../src/iop/levels.c:550
-#: ../src/libs/copy_history.c:274 ../src/libs/export.c:634
+#: ../src/libs/copy_history.c:275 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1330 ../src/views/darkroom.c:1544
 msgid "mode"
 msgstr "modus"
@@ -6038,7 +6044,6 @@ msgid "adjust the black level"
 msgstr "aanpassen zwartpunt"
 
 #: ../src/iop/exposure.c:865 ../src/iop/levels.c:618
-#: ../src/views/darkroom.c:1560
 msgid "black"
 msgstr "zwartpunt"
 
@@ -6121,24 +6126,24 @@ msgstr "roteer 90 graden"
 msgid "rotate by 180 degrees"
 msgstr "roteer 180 graden"
 
-#: ../src/iop/flip.c:507
+#: ../src/iop/flip.c:508
 msgid "rotate"
 msgstr "draai"
 
-#: ../src/iop/flip.c:512
+#: ../src/iop/flip.c:513
 msgid "rotate 90 degrees CCW"
 msgstr "draai 90 graden tegen de klok richting in"
 
-#: ../src/iop/flip.c:518
+#: ../src/iop/flip.c:519
 msgid "rotate 90 degrees CW"
 msgstr "draai 90 graden met de klok richting mee"
 
-#: ../src/iop/flip.c:530 ../src/libs/live_view.c:167
+#: ../src/iop/flip.c:531 ../src/libs/live_view.c:167
 msgctxt "accel"
 msgid "rotate 90 degrees CCW"
 msgstr "draai 90 graden tegen de klok richting in"
 
-#: ../src/iop/flip.c:531 ../src/libs/live_view.c:168
+#: ../src/iop/flip.c:532 ../src/libs/live_view.c:168
 msgctxt "accel"
 msgid "rotate 90 degrees CW"
 msgstr "draai 90 graden met de klok richting mee"
@@ -8030,20 +8035,20 @@ msgstr "niet gewijzigd"
 msgid "not tagged"
 msgstr "niet gelabeld"
 
-#: ../src/libs/collect.c:1195 ../src/libs/collect.c:1209
-#: ../src/libs/collect.c:1588
+#: ../src/libs/collect.c:1196 ../src/libs/collect.c:1210
+#: ../src/libs/collect.c:1589
 msgid "clear this rule"
 msgstr "verwijder voorwaarde"
 
-#: ../src/libs/collect.c:1200
+#: ../src/libs/collect.c:1201
 msgid "clear this rule or add new rules"
 msgstr "voorwaarde toevoegen / verwijderen"
 
-#: ../src/libs/collect.c:1250
+#: ../src/libs/collect.c:1251
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "geef zoekopdracht, gebruik <, <=, >, >=, <>, =, [;] als operators"
 
-#: ../src/libs/collect.c:1255
+#: ../src/libs/collect.c:1256
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -8051,32 +8056,32 @@ msgstr ""
 "geef zoekopdracht, gebruik <, <=, >, >=, <>, =, [;] als operators, geef data "
 "in de vorm van: YYYY:MM:DD HH:MM:SS (alleen het jaar is verplicht)"
 
-#: ../src/libs/collect.c:1261 ../src/libs/collect.c:1662
+#: ../src/libs/collect.c:1262 ../src/libs/collect.c:1663
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "type uw zoekopdracht, gebruik `%' als vervanging"
 
-#: ../src/libs/collect.c:1594
+#: ../src/libs/collect.c:1595
 msgid "narrow down search"
 msgstr "submappen"
 
-#: ../src/libs/collect.c:1598
+#: ../src/libs/collect.c:1599
 msgid "add more images"
 msgstr "afbeeldingen toevoegen "
 
-#: ../src/libs/collect.c:1602
+#: ../src/libs/collect.c:1603
 msgid "exclude images"
 msgstr "afbeeldingen uitsluiten "
 
-#: ../src/libs/collect.c:1608
+#: ../src/libs/collect.c:1609
 msgid "change to: and"
 msgstr "wijzig in <en>"
 
-#: ../src/libs/collect.c:1612
+#: ../src/libs/collect.c:1613
 msgid "change to: or"
 msgstr "wijzig in <of>"
 
-#: ../src/libs/collect.c:1616
+#: ../src/libs/collect.c:1617
 msgid "change to: except"
 msgstr "wijzig in <en niet>"
 
@@ -8211,7 +8216,7 @@ msgstr "alle bestanden"
 msgid "error loading file '%s'"
 msgstr "fout bij het inladen van het bestand '%s"
 
-#: ../src/libs/copy_history.c:244
+#: ../src/libs/copy_history.c:245
 msgid ""
 "copy part history stack of\n"
 "first selected image"
@@ -8219,11 +8224,11 @@ msgstr ""
 "kopieer deel van bewerkingsstappen\n"
 "van als eerst geselecteerde afbeelding"
 
-#: ../src/libs/copy_history.c:247
+#: ../src/libs/copy_history.c:248
 msgid "copy all"
 msgstr "kopieer alles"
 
-#: ../src/libs/copy_history.c:250
+#: ../src/libs/copy_history.c:251
 msgid ""
 "copy history stack of\n"
 "first selected image"
@@ -8231,21 +8236,21 @@ msgstr ""
 "kopieer bewerkingsstappen\n"
 "van als eerst geselecteerde afbeelding"
 
-#: ../src/libs/copy_history.c:253
+#: ../src/libs/copy_history.c:254
 msgid "discard"
 msgstr "wissen"
 
-#: ../src/libs/copy_history.c:256
+#: ../src/libs/copy_history.c:257
 msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr "wis bewerkingsstap(pen) van geselecteerde afbeelding(en)"
 
-#: ../src/libs/copy_history.c:260
+#: ../src/libs/copy_history.c:261
 msgid "paste"
 msgstr "plakken"
 
-#: ../src/libs/copy_history.c:262
+#: ../src/libs/copy_history.c:263
 msgid ""
 "paste part history stack to\n"
 "all selected images"
@@ -8253,11 +8258,11 @@ msgstr ""
 "deel van bewerkingsstappen toepassen\n"
 "op alle geselecteerde afbeeldingen"
 
-#: ../src/libs/copy_history.c:267
+#: ../src/libs/copy_history.c:268
 msgid "paste all"
 msgstr "plakken alles"
 
-#: ../src/libs/copy_history.c:269
+#: ../src/libs/copy_history.c:270
 msgid ""
 "paste history stack to\n"
 "all selected images"
@@ -8265,19 +8270,19 @@ msgstr ""
 "bewerkingsstappen toepassen\n"
 "op alle geselecteerde afbeeldingen"
 
-#: ../src/libs/copy_history.c:275
+#: ../src/libs/copy_history.c:276
 msgid "append"
 msgstr "toevoegen"
 
-#: ../src/libs/copy_history.c:277
+#: ../src/libs/copy_history.c:278
 msgid "how to handle existing history"
 msgstr "hoe om te gaan met de bestaande geschiedenis"
 
-#: ../src/libs/copy_history.c:282
+#: ../src/libs/copy_history.c:283
 msgid "load sidecar file"
 msgstr "laad xmp bestand"
 
-#: ../src/libs/copy_history.c:285
+#: ../src/libs/copy_history.c:286
 msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
@@ -8285,41 +8290,41 @@ msgstr ""
 "open xmp bestand en pas het toe\n"
 "op geselecteerde afbeelding(en)"
 
-#: ../src/libs/copy_history.c:291
+#: ../src/libs/copy_history.c:292
 msgid "write history stack and tags to XMP sidecar files"
 msgstr "bewerkingsstappen en labelingen opslaan in xmp bestanden"
 
-#: ../src/libs/copy_history.c:314
+#: ../src/libs/copy_history.c:315
 msgctxt "accel"
 msgid "copy all"
 msgstr "alles kopiëren"
 
-#: ../src/libs/copy_history.c:315
+#: ../src/libs/copy_history.c:316
 msgctxt "accel"
 msgid "copy"
 msgstr "kopiëren"
 
-#: ../src/libs/copy_history.c:316
+#: ../src/libs/copy_history.c:317
 msgctxt "accel"
 msgid "discard"
 msgstr "verwerp"
 
-#: ../src/libs/copy_history.c:317
+#: ../src/libs/copy_history.c:318
 msgctxt "accel"
 msgid "paste all"
 msgstr "alles plakken"
 
-#: ../src/libs/copy_history.c:318
+#: ../src/libs/copy_history.c:319
 msgctxt "accel"
 msgid "paste"
 msgstr "plakken"
 
-#: ../src/libs/copy_history.c:319
+#: ../src/libs/copy_history.c:320
 msgctxt "accel"
 msgid "load sidecar files"
 msgstr "laad xmp bestand(en)"
 
-#: ../src/libs/copy_history.c:320
+#: ../src/libs/copy_history.c:321
 msgctxt "accel"
 msgid "write sidecar files"
 msgstr "schrijf xmp bestanden"
@@ -10232,7 +10237,7 @@ msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
 msgstr ""
-"raw over belichtingsindicator in/uit schakelen\n"
+"raw overbelichtingsindicator in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
 #: ../src/views/darkroom.c:1545
@@ -10254,6 +10259,26 @@ msgstr "bepaal hoe geclipte pixels worden gemarkeerd"
 #: ../src/views/darkroom.c:1556
 msgid "solid color scheme"
 msgstr "vast kleurenschema"
+
+#: ../src/views/darkroom.c:1557
+msgctxt "solidcolor"
+msgid "red"
+msgstr "rood"
+
+#: ../src/views/darkroom.c:1558
+msgctxt "solidcolor"
+msgid "green"
+msgstr "groen"
+
+#: ../src/views/darkroom.c:1559
+msgctxt "solidcolor"
+msgid "blue"
+msgstr "blauw"
+
+#: ../src/views/darkroom.c:1560
+msgctxt "solidcolor"
+msgid "black"
+msgstr "zwart"
 
 #: ../src/views/darkroom.c:1564
 msgid ""
@@ -10628,6 +10653,9 @@ msgstr ""
 "gebruik van 32-bit builds\n"
 "we adviseren u dringend om over te gaan naar een geschikte 64-bit build\n"
 "anders zult u zeker problemen ervaren die niet kunnen worden opgelost\n"
+
+#~ msgid "an error has occured while trying to open the database from"
+#~ msgstr "er ging wat fout bij het openen van de database van"
 
 #~ msgid "disable all tools"
 #~ msgstr "alle gereedschappen uitschakelen"

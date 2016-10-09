@@ -287,9 +287,10 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       cmsSaveProfileToMem(profile->profile, 0, &len);
       if(len > 0)
       {
-        unsigned char buf[len];
+        unsigned char *buf = malloc(len * sizeof(unsigned char));
         cmsSaveProfileToMem(profile->profile, buf, &len);
         icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
+        free(buf);
         _pdf_icc_t *icc = (_pdf_icc_t *)malloc(sizeof(_pdf_icc_t));
         icc->profile = profile;
         icc->icc_id = icc_id;
@@ -343,7 +344,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(num == total)
   {
     int n_images = g_list_length(d->images);
-    dt_pdf_page_t *pages[n_images];
+    dt_pdf_page_t **pages = malloc(n_images * sizeof(dt_pdf_page_t *));
 
     gboolean outline_mode = d->params.mode != MODE_NORMAL;
     gboolean show_bb = d->params.mode == MODE_DEBUG;
@@ -370,6 +371,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     // we allocated the images and pages. the main pdf object gets free'ed in dt_pdf_finish().
     g_list_free_full(d->images, free);
     for(i = 0; i < n_images; i++) free(pages[i]);
+    free(pages);
     g_free(d->actual_filename);
     g_list_free_full(d->icc_profiles, free);
 
@@ -576,7 +578,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   widget = gtk_label_new(_("title"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->title = GTK_ENTRY(gtk_entry_new());
@@ -624,7 +626,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   widget = gtk_label_new(_("border"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->border = GTK_ENTRY(gtk_entry_new());
@@ -646,7 +648,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   widget = gtk_label_new(_("dpi"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->dpi = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 5000, 1));

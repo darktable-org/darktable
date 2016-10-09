@@ -1,3 +1,16 @@
+include(CheckCompilerFlagAndEnableIt)
+
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=shadow)
+
+# should be < 64Kb
+math(EXPR MAX_MEANINGFUL_SIZE 16*1024)
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wframe-larger-than=${MAX_MEANINGFUL_SIZE})
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wstack-usage=${MAX_MEANINGFUL_SIZE})
+
+# as small as possible, but 1Mb+ is ok.
+math(EXPR MAX_MEANINGFUL_SIZE 16*1024)
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
+
 if(USE_XMLLINT)
 	add_custom_target(
 		validate_cameras_xml ALL
@@ -86,18 +99,6 @@ if(WIN32)
 else(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif(WIN32)
-
-#
-# set development flags for rawspeed
-#
-if(NOT SOURCE_PACKAGE AND NOT APPLE)
-  # apple build fails on deprecated warnings..
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
-elseif(SOURCE_PACKAGE)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
-endif()
 
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
 if(USE_XMLLINT)

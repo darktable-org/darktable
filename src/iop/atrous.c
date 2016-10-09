@@ -788,8 +788,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   cl_mem dev_filter = NULL;
   cl_mem dev_tmp = NULL;
-  cl_mem dev_detail[max_scale];
-  for(int k = 0; k < max_scale; k++) dev_detail[k] = NULL;
+  cl_mem *dev_detail = calloc(max_scale, sizeof(cl_mem));
 
   float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
   float mm[5][5];
@@ -891,6 +890,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k = 0; k < max_scale; k++)
     if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
   return TRUE;
 
 error:
@@ -898,6 +898,7 @@ error:
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k = 0; k < max_scale; k++)
     if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
   dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -1018,7 +1019,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
   dt_iop_atrous_params_t p;
   p.octaves = 7;
 
@@ -1121,7 +1122,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("clarity"), self->op, self->version(), &p, sizeof(p), 1);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 static void reset_mix(dt_iop_module_t *self)

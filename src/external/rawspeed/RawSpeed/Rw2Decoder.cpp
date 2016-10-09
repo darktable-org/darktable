@@ -140,9 +140,9 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
   skip += w * 2 * t->start_y;
   skip /= 8;
 
-  PanaBitpump bits(new ByteStream(input_start));
-  bits.load_flags = load_flags;
-  bits.skipBytes(skip);
+  PanaBitpump *bits = new PanaBitpump(new ByteStream(input_start));
+  bits->load_flags = load_flags;
+  bits->skipBytes(skip);
 
   vector<uint32> zero_pos;
   for (y = t->start_y; y < t->end_y; y++) {
@@ -154,17 +154,17 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
         // Even pixels
         if (u == 2)
         {
-          sh = 4 >> (3 - bits.getBits(2));
+          sh = 4 >> (3 - bits->getBits(2));
           u = -1;
         }
         if (nonz[0]) {
-          if ((j = bits.getBits(8))) {
+          if ((j = bits->getBits(8))) {
             if ((pred[0] -= 0x80 << sh) < 0 || sh == 4)
               pred[0] &= ~(-1 << sh);
             pred[0] += j << sh;
           }
-        } else if ((nonz[0] = bits.getBits(8)) || i > 11)
-          pred[0] = nonz[0] << 4 | bits.getBits(4);
+        } else if ((nonz[0] = bits->getBits(8)) || i > 11)
+          pred[0] = nonz[0] << 4 | bits->getBits(4);
         *dest++ = pred[0];
         if (zero_is_bad && 0 == pred[0])
           zero_pos.push_back((y<<16) | (x*14+i));
@@ -174,17 +174,17 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
         u++;
         if (u == 2)
         {
-          sh = 4 >> (3 - bits.getBits(2));
+          sh = 4 >> (3 - bits->getBits(2));
           u = -1;
         }
         if (nonz[1]) {
-          if ((j = bits.getBits(8))) {
+          if ((j = bits->getBits(8))) {
             if ((pred[1] -= 0x80 << sh) < 0 || sh == 4)
               pred[1] &= ~(-1 << sh);
             pred[1] += j << sh;
           }
-        } else if ((nonz[1] = bits.getBits(8)) || i > 11)
-          pred[1] = nonz[1] << 4 | bits.getBits(4);
+        } else if ((nonz[1] = bits->getBits(8)) || i > 11)
+          pred[1] = nonz[1] << 4 | bits->getBits(4);
         *dest++ = pred[1];
         if (zero_is_bad && 0 == pred[1])
           zero_pos.push_back((y<<16) | (x*14+i));
@@ -197,6 +197,8 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
     mRaw->mBadPixelPositions.insert(mRaw->mBadPixelPositions.end(), zero_pos.begin(), zero_pos.end());
     pthread_mutex_unlock(&mRaw->mBadPixelMutex);
   }
+
+  delete bits;
 }
 
 void Rw2Decoder::checkSupportInternal(CameraMetaData *meta) {

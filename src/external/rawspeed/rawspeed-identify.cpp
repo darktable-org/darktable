@@ -21,14 +21,15 @@
 #include <omp.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <memory>
+#include <cstddef>    // for size_t
+#include <cstdio>     // for fprintf, stdout, stderr
+#include <exception>  // for exception
+#include <memory>     // for unique_ptr, allocator
+#include <string>     // for string, operator+
+#include <sys/stat.h> // for stat
+#include <vector>     // for vector
 
-#include "rawspeed/RawSpeed/RawSpeed-API.h"
+#include "rawspeed/RawSpeed/RawSpeed-API.h" // IWYU pragma: keep
 
 // define this function, it is only declared in rawspeed:
 int rawspeed_get_number_of_processor_cores()
@@ -42,12 +43,12 @@ int rawspeed_get_number_of_processor_cores()
 
 using namespace RawSpeed;
 
-char *find_cameras_xml(const char *argv0)
+std::string find_cameras_xml(const char *argv0)
 {
   struct stat statbuf;
 
 #ifdef RS_CAMERAS_XML_PATH
-  static char set_camfile[] = RS_CAMERAS_XML_PATH;
+  static const char set_camfile[] = RS_CAMERAS_XML_PATH;
   if (stat(set_camfile, &statbuf))
   {
     fprintf(stderr, "WARNING: Couldn't find cameras.xml in '%s'\n", set_camfile);
@@ -58,34 +59,20 @@ char *find_cameras_xml(const char *argv0)
   }
 #endif
 
+  std::string self(argv0);
+
   // If we haven't been provided with a valid cameras.xml path on compile try relative to argv[0]
-  size_t len = strlen(argv0);
-  char *bindir = (char *) calloc(len+1, sizeof(char));
-  int found_slash = FALSE;
-  for (int i = len-1; i >= 0; i--)
+  std::size_t lastslash = self.find_last_of("/\\");
+  std::string bindir(self.substr(0, lastslash));
+
+  std::string found_camfile(bindir + "/../share/darktable/rawspeed/cameras.xml");
+
+  if (stat(found_camfile.c_str(), &statbuf))
   {
-    if (found_slash)
-    {
-      bindir[i] = argv0[i];
-    }
-    else
-    {
-      bindir[i] = '\0';
-      if (argv0[i] == '/')
-        found_slash = TRUE;
-    }
-  }
-  char *found_camfile = NULL;
-  if (asprintf(&found_camfile, "%s/../share/darktable/rawspeed/cameras.xml", bindir) == -1)
-  {
-    fprintf(stderr, "ERROR: Something is seriously broken here, bailing out");
+    fprintf(stderr, "ERROR: Couldn't find cameras.xml in '%s'\n", found_camfile.c_str());
     return NULL;
   }
-  if (stat(found_camfile, &statbuf))
-  {
-    fprintf(stderr, "ERROR: Couldn't find cameras.xml in '%s'\n", found_camfile);
-    return NULL;
-  }
+
   return found_camfile;
 }
 
@@ -98,8 +85,8 @@ int main(int argc, const char* argv[])
     return 2;
   }
 
-  char *camfile = find_cameras_xml(argv[0]);
-  if (!camfile)
+  const std::string camfile = find_cameras_xml(argv[0]);
+  if (camfile.empty())
   {
     //fprintf(stderr, "ERROR: Couldn't find cameras.xml\n");
     return 2;
@@ -108,7 +95,7 @@ int main(int argc, const char* argv[])
 
   try
   {
-    std::unique_ptr<CameraMetaData> meta(new CameraMetaData(camfile));
+    std::unique_ptr<CameraMetaData> meta(new CameraMetaData(camfile.c_str()));
 
     if(!meta.get())
     {
@@ -157,11 +144,11 @@ int main(int argc, const char* argv[])
     fprintf(stdout, "blackLevel: %d\n", r->blackLevel);
     fprintf(stdout, "whitePoint: %d\n", r->whitePoint);
 
-    fprintf(stdout, "blackLevelSeparate: %d %d %d %d\n", 
+    fprintf(stdout, "blackLevelSeparate: %d %d %d %d\n",
                     r->blackLevelSeparate[0], r->blackLevelSeparate[1],
                     r->blackLevelSeparate[2], r->blackLevelSeparate[3]);
 
-    fprintf(stdout, "wbCoeffs: %f %f %f %f\n", 
+    fprintf(stdout, "wbCoeffs: %f %f %f %f\n",
                     r->metadata.wbCoeffs[0], r->metadata.wbCoeffs[1],
                     r->metadata.wbCoeffs[2], r->metadata.wbCoeffs[3]);
 

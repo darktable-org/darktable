@@ -89,7 +89,7 @@ static int editable_member(lua_State *L)
   gboolean editable;
   if(lua_gettop(L) > 2) {
     editable = lua_toboolean(L,3);
-    g_object_set(G_OBJECT(entry->widget),"editable",editable,NULL);
+    g_object_set(G_OBJECT(entry->widget), "editable", editable, (gchar *)0);
     return 0;
   }
   g_object_get(G_OBJECT(entry->widget),"editable",&editable,NULL);

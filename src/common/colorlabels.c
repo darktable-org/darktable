@@ -33,14 +33,14 @@ const char *dt_colorlabels_name[] = {
 void dt_colorlabels_remove_labels_selection()
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "delete from color_labels where imgid in (select imgid from selected_images)", NULL,
-                        NULL, NULL);
+                        "DELETE FROM main.color_labels WHERE imgid IN (SELECT imgid FROM main.selected_images)",
+                        NULL, NULL, NULL);
 }
 
 void dt_colorlabels_remove_labels(const int imgid)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from color_labels where imgid=?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.color_labels WHERE imgid=?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
@@ -51,7 +51,7 @@ void dt_colorlabels_set_label(const int imgid, const int color)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "insert into color_labels (imgid, color) values (?1, ?2)", -1, &stmt, NULL);
+                              "INSERT INTO main.color_labels (imgid, color) VALUES (?1, ?2)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   sqlite3_step(stmt);
@@ -62,7 +62,7 @@ void dt_colorlabels_remove_label(const int imgid, const int color)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "delete from color_labels where imgid=?1 and color=?2", -1, &stmt, NULL);
+                              "DELETE FROM main.color_labels WHERE imgid=?1 AND color=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   sqlite3_step(stmt);
@@ -74,10 +74,10 @@ void dt_colorlabels_toggle_label_selection(const int color)
   sqlite3_stmt *stmt, *stmt2;
 
   // check if all images in selection have that color label, i.e. try to get those which do not have the label
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images where imgid not "
-                                                             "in (select a.imgid from selected_images as a "
-                                                             "join color_labels as b on a.imgid = b.imgid "
-                                                             "where b.color = ?1)",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images WHERE imgid "
+                                                             "NOT IN (SELECT a.imgid FROM main.selected_images AS "
+                                                             "a JOIN main.color_labels AS b ON a.imgid = b.imgid "
+                                                             "WHERE b.color = ?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, color);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -85,8 +85,8 @@ void dt_colorlabels_toggle_label_selection(const int color)
     // none or only part of images have that color label, so label them all
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
-        "insert or ignore into color_labels (imgid, color) select imgid, ?1 from selected_images", -1, &stmt2,
-        NULL);
+        "INSERT OR IGNORE INTO main.color_labels (imgid, color) SELECT imgid, ?1 FROM main.selected_images",
+        -1, &stmt2, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, color);
     sqlite3_step(stmt2);
     sqlite3_finalize(stmt2);
@@ -96,7 +96,7 @@ void dt_colorlabels_toggle_label_selection(const int color)
     // none of the selected images without that color label, so delete them all
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
-        "delete from color_labels where imgid in (select imgid from selected_images) and color=?1", -1,
+        "DELETE FROM main.color_labels WHERE imgid IN (SELECT imgid FROM main.selected_images) AND color=?1", -1,
         &stmt2, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, color);
     sqlite3_step(stmt2);
@@ -112,13 +112,14 @@ void dt_colorlabels_toggle_label(const int imgid, const int color)
   if(imgid <= 0) return;
   sqlite3_stmt *stmt, *stmt2;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select * from color_labels where imgid=?1 and color=?2", -1, &stmt, NULL);
+                              "SELECT * FROM main.color_labels WHERE imgid=?1 AND color=?2 LIMIT 1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "delete from color_labels where imgid=?1 and color=?2", -1, &stmt2, NULL);
+                                "DELETE FROM main.color_labels WHERE imgid=?1 AND color=?2", -1, &stmt2, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, color);
     sqlite3_step(stmt2);
@@ -127,7 +128,7 @@ void dt_colorlabels_toggle_label(const int imgid, const int color)
   else
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "insert into color_labels (imgid, color) values (?1, ?2)", -1, &stmt2, NULL);
+                                "INSERT INTO main.color_labels (imgid, color) VALUES (?1, ?2)", -1, &stmt2, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, color);
     sqlite3_step(stmt2);
@@ -143,7 +144,8 @@ int dt_colorlabels_check_label(const int imgid, const int color)
   if(imgid <= 0) return 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select * from color_labels where imgid=?1 and color=?2", -1, &stmt, NULL);
+                              "SELECT * FROM main.color_labels WHERE imgid=?1 AND color=?2 LIMIT 1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   if(sqlite3_step(stmt) == SQLITE_ROW)

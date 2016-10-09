@@ -777,8 +777,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // load the style / theme
   GtkSettings *settings = gtk_settings_get_default();
-  g_object_set(G_OBJECT(settings), "gtk-application-prefer-dark-theme", TRUE, NULL);
-  g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", NULL);
+  g_object_set(G_OBJECT(settings), "gtk-application-prefer-dark-theme", TRUE, (gchar *)0);
+  g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
   g_object_unref(settings);
 
   GError *error = NULL;
@@ -1038,6 +1038,12 @@ static void configure_ppd_dpi(dt_gui_gtk_t *gui)
       = gui->dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
 }
 
+static gboolean _focus_in_out_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  gtk_window_set_urgency_hint(GTK_WINDOW(user_data), FALSE);
+  return FALSE;
+}
+
 static void init_widgets(dt_gui_gtk_t *gui)
 {
 
@@ -1068,6 +1074,8 @@ static void init_widgets(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "delete_event", G_CALLBACK(dt_gui_quit_callback), NULL);
   g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(key_pressed_override), NULL);
   g_signal_connect(G_OBJECT(widget), "key-release-event", G_CALLBACK(key_released), NULL);
+  g_signal_connect(G_OBJECT(widget), "focus-in-event", G_CALLBACK(_focus_in_out_event), widget);
+  g_signal_connect(G_OBJECT(widget), "focus-out-event", G_CALLBACK(_focus_in_out_event), widget);
 #ifdef GDK_WINDOWING_QUARTZ
   if(gtk_widget_get_realized(widget))
     dt_osx_allow_fullscreen(widget);
@@ -1608,10 +1616,72 @@ void dt_ellipsize_combo(GtkComboBox *cbox)
   while(it)
   {
     GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
-    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
+    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
     it = g_list_next(it);
   }
   g_list_free(renderers);
+}
+
+typedef struct result_t
+{
+  enum {RESULT_NONE, RESULT_NO, RESULT_YES} result;
+  GtkWidget *window;
+} result_t;
+
+static void _yes_no_button_handler_no(GtkButton *button, gpointer data)
+{
+  result_t *result = (result_t *)data;
+  result->result = RESULT_NO;
+  gtk_widget_destroy(result->window);
+  gtk_main_quit();
+}
+
+static void _yes_no_button_handler_yes(GtkButton *button, gpointer data)
+{
+  result_t *result = (result_t *)data;
+  result->result = RESULT_YES;
+  gtk_widget_destroy(result->window);
+  gtk_main_quit();
+}
+
+gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *markup, const char *no_text,
+                                              const char *yes_text)
+{
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+  gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
+  gtk_window_set_title(GTK_WINDOW(window), title);
+  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_widget_set_margin_start(vbox, 10);
+  gtk_widget_set_margin_end(vbox, 10);
+  gtk_widget_set_margin_top(vbox, 7);
+  gtk_widget_set_margin_bottom(vbox, 5);
+  gtk_container_add(GTK_CONTAINER(window), vbox);
+
+  GtkWidget *label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_widget_set_margin_top(hbox, 10);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+  result_t result = {.result = RESULT_NONE, .window = window};
+
+  GtkWidget *button = gtk_button_new_with_label(no_text);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_no), &result);
+  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+  button = gtk_button_new_with_label(yes_text);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_yes), &result);
+  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+  gtk_widget_show_all(window);
+  gtk_main();
+
+  return result.result == RESULT_YES;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
