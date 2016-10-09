@@ -609,6 +609,8 @@ void dt_image_remove(const int32_t imgid)
   sqlite3_finalize(stmt);
   // also clear all thumbnails in mipmap_cache.
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+
+  dt_tag_update_used_tags();
 }
 
 int dt_image_altered(const uint32_t imgid)

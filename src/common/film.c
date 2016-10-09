@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/dtpthread.h"
 #include "common/image_cache.h"
+#include "common/tags.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -407,6 +408,9 @@ void dt_film_remove(const int id)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
+
+  dt_tag_update_used_tags();
+
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
