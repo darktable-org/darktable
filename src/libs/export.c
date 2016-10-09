@@ -571,7 +571,7 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10)));
   label = gtk_label_new(_("max size"));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
   gtk_box_pack_start(hbox1, GTK_WIDGET(d->width), TRUE, TRUE, 0);
@@ -720,7 +720,7 @@ void init_presets(dt_lib_module_t *self)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select rowid, op_version, op_params, name from presets where operation='export'", -1, &stmt, NULL);
+      "SELECT rowid, op_version, op_params, name FROM data.presets WHERE operation='export'", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int rowid = sqlite3_column_int(stmt, 0);
@@ -736,7 +736,7 @@ void init_presets(dt_lib_module_t *self)
                       "expected. dropping preset.\n",
               name, op_version, version);
       sqlite3_stmt *innerstmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1", -1,
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.presets WHERE rowid=?1", -1,
                                   &innerstmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
       sqlite3_step(innerstmt);
@@ -831,7 +831,7 @@ void init_presets(dt_lib_module_t *self)
                 name, fversion, sversion, new_fversion, new_sversion);
         sqlite3_stmt *innerstmt;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "update presets set op_params=?1 where rowid=?2", -1, &innerstmt, NULL);
+                                    "UPDATE data.presets SET op_params=?1 WHERE rowid=?2", -1, &innerstmt, NULL);
         DT_DEBUG_SQLITE3_BIND_BLOB(innerstmt, 1, new_params, new_params_size, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 2, rowid);
         sqlite3_step(innerstmt);
@@ -851,7 +851,7 @@ void init_presets(dt_lib_module_t *self)
                       "versions %d/%d. dropping preset\n",
               name, fversion, sversion, new_fversion, new_sversion);
       sqlite3_stmt *innerstmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1", -1,
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.presets WHERE rowid=?1", -1,
                                   &innerstmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
       sqlite3_step(innerstmt);

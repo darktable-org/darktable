@@ -83,38 +83,59 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   dt_develop_t *dev = self->dev;
   dt_iop_rawoverexposed_data_t *d = piece->data;
 
+  float threshold;
+
+  // the clipping is detected as >1.0 after white level normalization
+
+  /*
+   * yes, technically, sensor clipping needs to be detected not accounting
+   * for white balance.
+   *
+   * but we are not after technical sensor clipping.
+   *
+   * pick some image that is overexposed, disable highlight clipping, apply
+   * negative exposure compensation. you'll see magenta highlight.
+   * if comment-out that ^ wb division, the module would not mark that
+   * area with magenta highlights as clipped, because technically
+   * the channels are not clipped, even though the colour is wrong.
+   *
+   * but we do want to see those magenta highlights marked...
+   */
+
+  if(piece->pipe->dsc.temperature.enabled)
+  {
+    threshold = FLT_MAX;
+
+    // so to detect the color clipping, we need to take white balance into account.
+    for(int k = 0; k < 4; k++) threshold = fminf(threshold, piece->pipe->dsc.temperature.coeffs[k]);
+  }
+  else
+  {
+    threshold = 1.0f;
+  }
+
+  threshold *= dev->rawoverexposed.threshold;
+
   for(int k = 0; k < 4; k++)
   {
-    // the clipping is detected as 1.0 in highlights iop
-    float threshold = dev->rawoverexposed.threshold;
+    // here is our threshold
+    float chthr = threshold;
 
-    // but we check it on the raw input buffer, so we need backtransform thresholds
+    // but we check it on the raw input buffer, so we need backtransform threshold
 
     // "undo" temperature iop
-    if(piece->pipe->dsc.temperature.enabled) threshold /= piece->pipe->dsc.temperature.coeffs[k];
-
-    /*
-     * yes, technically, sensor clipping needs to be detected not accounting
-     * for white balance.
-     *
-     * but we are not after technical sensor clipping.
-     *
-     * pick some image that is overexposed, disable highlight clipping, apply
-     * negative exposure compensation. you'll see magenta highlight.
-     * if comment-out that ^ wb division, the module would not mark that
-     * area with magenta highlights as clipped, because technically
-     * the channels are not clipped, even though the colour is wrong.
-     *
-     * but we do want to see those magenta highlights marked...
-     */
+    if(piece->pipe->dsc.temperature.enabled) chthr /= piece->pipe->dsc.temperature.coeffs[k];
 
     // "undo" rawprepare iop
-    threshold *= piece->pipe->dsc.rawprepare.raw_white_point - piece->pipe->dsc.rawprepare.raw_black_level;
-    threshold += piece->pipe->dsc.rawprepare.raw_black_level;
+    chthr *= piece->pipe->dsc.rawprepare.raw_white_point - piece->pipe->dsc.rawprepare.raw_black_level;
+    chthr += piece->pipe->dsc.rawprepare.raw_black_level;
 
-    // and this is that 1.0 threshold, but in raw input buffer values
-    d->threshold[k] = (unsigned int)threshold;
+    // and this is that threshold, but in raw input buffer values
+    d->threshold[k] = (unsigned int)chthr;
   }
+
+  // printf("d->threshold[] = { %i, %i, %i, %i }\n", d->threshold[0], d->threshold[1], d->threshold[2],
+  // d->threshold[3]);
 }
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -236,8 +257,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_develop_t *dev = self->dev;
   dt_iop_rawoverexposed_global_data_t *gd = (dt_iop_rawoverexposed_global_data_t *)self->data;
 
-  dt_mipmap_buffer_t buf;
-
   cl_mem dev_raw = NULL;
   float *coordbuf = NULL;
   cl_mem dev_coord = NULL;
@@ -246,6 +265,17 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_xtrans = NULL;
 
   cl_int err = -999;
+
+  const dt_image_t *const image = &(dev->image_storage);
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  if(!buf.buf)
+  {
+    dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    goto error;
+  }
 
   const int devid = piece->pipe->devid;
 
@@ -260,21 +290,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 
-  const dt_image_t *const image = &(dev->image_storage);
-
   const int colorscheme = dev->rawoverexposed.colorscheme;
   const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
 
   // NOT FROM THE PIPE !!!
   const uint32_t filters = image->buf_dsc.filters;
-
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-  if(!buf.buf)
-  {
-    dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    goto error;
-  }
 
   const int raw_width = buf.width;
   const int raw_height = buf.height;

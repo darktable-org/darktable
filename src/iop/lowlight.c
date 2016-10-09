@@ -309,7 +309,7 @@ void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_lowlight_params_t p;
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -465,7 +465,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blueness = 50.0f;
   dt_gui_presets_add_generic(_("night"), self->op, self->version(), &p, sizeof(p), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 // fills in new parameters based on mouse position (in 0,1)

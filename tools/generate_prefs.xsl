@@ -127,13 +127,13 @@
 	<xsl:apply-templates select="." mode="tab"/>
 	<xsl:text>    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);</xsl:text>
 	<xsl:if test="longdescription != ''">
-		<xsl:text>&#xA;    g_object_set(widget, "tooltip-text", _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"), (char *)NULL);</xsl:text>
+		<xsl:text>&#xA;    g_object_set(widget, "tooltip-text", _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"), (gchar *)0);</xsl:text>
 	</xsl:if>
 	<xsl:if test="@capability">
                 <xsl:text>&#xA;    gtk_widget_set_sensitive(labelev, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));</xsl:text>
                 <xsl:text>&#xA;    gtk_widget_set_sensitive(widget, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));</xsl:text>
                 <xsl:text>&#xA;    if(!dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"))</xsl:text>
-                <xsl:text>&#xA;      g_object_set(widget, "tooltip-text", _("not available on this system"), (char *)NULL);</xsl:text>
+                <xsl:text>&#xA;      g_object_set(widget, "tooltip-text", _("not available on this system"), (gchar *)0);</xsl:text>
 	</xsl:if>
 	<xsl:text>
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
@@ -225,7 +225,7 @@
     g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
-    g_object_set(labelev,  "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
 	</xsl:template>
 
@@ -242,7 +242,7 @@
     g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%d'"), (int)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
-    g_object_set(labelev,  "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
 	</xsl:template>
 
@@ -259,7 +259,7 @@
     char value[100];
     snprintf(value, 100, "%"G_GINT64_FORMAT"",(gint64)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), value);
-    g_object_set(labelev,  "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
 	</xsl:template>
 
@@ -274,7 +274,7 @@
     g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%.03f'"), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);
-    g_object_set(labelev,  "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
 	</xsl:template>
 
@@ -284,7 +284,7 @@
     g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="translate(default, $lowercase, $uppercase)"/><xsl:text>"));
-    g_object_set(labelev,  "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
 	</xsl:template>
 
@@ -322,7 +322,7 @@
     g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="default"/><xsl:text>"));
-    g_object_set(labelev,  "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
 	</xsl:template>
 

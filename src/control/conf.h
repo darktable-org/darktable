@@ -202,7 +202,11 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
   FILE *f = 0;
-  char line[1024];
+
+#define LINE_SIZE 1023
+
+  char line[LINE_SIZE + 1];
+
   int read = 0;
   int defaults = 0;
   for(int i = 0; i < 2; i++)
@@ -229,9 +233,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     if(!f) return;
     while(!feof(f))
     {
-      gchar *line_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(line) - 1);
-      read = fscanf(f, line_pattern, line);
-      g_free(line_pattern);
+      read = fscanf(f, "%" STR(LINE_SIZE) "[^\n]\n", line);
       if(read > 0)
       {
         char *c = line;
@@ -259,6 +261,8 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
       p = g_slist_next(p);
     }
   }
+
+#undef LINE_SIZE
 
   return;
 }

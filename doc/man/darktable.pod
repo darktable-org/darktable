@@ -31,17 +31,17 @@ Options:
 B<darktable> is a digital photography workflow application for B<Linux>, B<Mac OS X> and several other B<Unices>.
 
 The application is designed to ease editing and consistent processing of large
-photo sessions and provides an easy to use digital light-table and a set
+photo sessions and provides an easy to use digital lighttable and a set
 of sophisticated post-processing tools.
 
 Most processing is done in 32-bit floating point per channel mode in device independent
 B<CIE L*a*b*> color space.
 B<darktable> is also fully color managed, which gives you full control over the look of the photos.
 
-The application relies on a modern plug-in architecture thus making it easy for
+The application relies on a modern plugin architecture thus making it easy for
 3rd party developers to extend the existing capabilities of the application.
-All lighttable and darkroom features are implemented as plug-ins, so you can
-create your plug-ins reusing existing code.
+All lighttable and darkroom features are implemented as plugins, so you can
+create your plugins reusing existing code.
 Most workflow specific things can also be scripted in B<Lua>.
 
 =head1 OPTIONS
@@ -508,7 +508,7 @@ Typical places are C</opt/darktable/share/doc/darktable/> and C</usr/share/doc/d
 =over
 
 =item B<darktable-viewer> screensaver version of darktable.
-Shows the last active collection in full screen as a slideshow.
+It shows the last active collection in full screen as a slideshow.
 Using the slideshow mode of darktable is encouraged.
 
 =back

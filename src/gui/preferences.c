@@ -325,10 +325,10 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
                                                      cairo_destroy_from_pixbuf, check_cr);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select rowid, name, operation, autoapply, model, maker, lens, iso_min, "
+                              "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
                               "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-                              "focal_length_min, focal_length_max, writeprotect from presets order by "
-                              "operation,name",
+                              "focal_length_min, focal_length_max, writeprotect FROM data.presets ORDER BY "
+                              "operation, name",
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1011,7 +1011,7 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
       {
         // TODO: remove accel
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "delete from presets where rowid=?1 and writeprotect=0", -1, &stmt, NULL);
+                                    "DELETE FROM data.presets WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
@@ -1360,9 +1360,9 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select description, model, maker, lens, iso_min, iso_max, exposure_min, "
+                              "SELECT description, model, maker, lens, iso_min, iso_max, exposure_min, "
                               "exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, "
-                              "autoapply, filter, format from presets where rowid = ?1",
+                              "autoapply, filter, format FROM data.presets WHERE rowid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1410,12 +1410,11 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
   // commit all the user input fields
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update presets set description = ?1, "
-                              "model = ?2, maker = ?3, lens = ?4, iso_min = ?5, iso_max = ?6, exposure_min = "
-                              "?7, exposure_max = ?8, aperture_min = ?9, "
-                              "aperture_max = ?10, focal_length_min = ?11, focal_length_max = ?12, autoapply "
-                              "= ?13, filter = ?14, def = 0, format = ?15 "
-                              "where rowid = ?16",
+                              "UPDATE data.presets SET description = ?1, model = ?2, maker = ?3, lens = ?4, "
+                              "iso_min = ?5, iso_max = ?6, exposure_min = ?7, exposure_max = ?8, "
+                              "aperture_min = ?9, aperture_max = ?10, focal_length_min = ?11, "
+                              "focal_length_max = ?12, autoapply = ?13, filter = ?14, def = 0, format = ?15 "
+                              "WHERE rowid = ?16",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->model), -1, SQLITE_TRANSIENT);

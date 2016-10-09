@@ -313,7 +313,7 @@ static void delete_button_clicked(GtkButton *button, gpointer user_data)
 
   GList *tagged_images = NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from tagged_images where tagid=?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE tagid=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   while(sqlite3_step(stmt) == SQLITE_ROW)

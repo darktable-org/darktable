@@ -1570,10 +1570,11 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
 {
   if(set_count < 3) return;
 
-  int best_set[set_count];
-  memcpy(best_set, index_set, sizeof(best_set));
-  int best_inout[set_count];
-  memset(best_inout, 0, sizeof(best_inout));
+  const size_t set_size = set_count * sizeof(int);
+  int *best_set = malloc(set_size);
+  memcpy(best_set, index_set, set_size);
+  int *best_inout = calloc(1, set_size);
+
   float best_quality = 0.0f;
 
   // hurdle value epsilon for rejecting a line as an outlier will be self-tuning
@@ -1590,9 +1591,12 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   const int riter = (set_count > RANSAC_HURDLE) ? RANSAC_RUNS : fact(set_count);
 
   // some data needed for quickperm
-  int perm[set_count + 1];
+  int *perm = malloc((set_count + 1) * sizeof(int));
   for(int n = 0; n < set_count + 1; n++) perm[n] = n;
   int piter = 1;
+
+  // inout holds good/bad qualification for each line
+  int *inout = malloc(set_size);
 
   for(int r = 0; r < optiruns + riter; r++)
   {
@@ -1601,9 +1605,6 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
       shuffle(index_set, set_count);
     else
       (void)quickperm(index_set, perm, set_count, &piter);
-
-    // inout holds good/bad qualification for each line
-    int inout[set_count];
 
     // summed quality evaluation of this run
     float quality = 0.0f;
@@ -1707,8 +1708,8 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
       // in the "real" runs check against the best model found so far
       if(quality > best_quality)
       {
-        memcpy(best_set, index_set, sizeof(best_set));
-        memcpy(best_inout, inout, sizeof(best_inout));
+        memcpy(best_set, index_set, set_size);
+        memcpy(best_inout, inout, set_size);
         best_quality = quality;
       }
     }
@@ -1724,8 +1725,13 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   }
 
   // store back best set
-  memcpy(index_set, best_set, set_count * sizeof(int));
-  memcpy(inout_set, best_inout, set_count * sizeof(int));
+  memcpy(index_set, best_set, set_size);
+  memcpy(inout_set, best_inout, set_size);
+
+  free(inout);
+  free(perm);
+  free(best_inout);
+  free(best_set);
 }
 
 
@@ -1743,9 +1749,9 @@ static int remove_outliers(dt_iop_module_t *module)
   const int ymax = ymin + height;
 
   // holds the index set of lines we want to work on
-  int lines_set[g->lines_count];
+  int *lines_set = malloc(g->lines_count * sizeof(int));
   // holds the result of ransac
-  int inout_set[g->lines_count];
+  int *inout_set = malloc(g->lines_count * sizeof(int));
 
   // some accounting variables
   int vnb = 0, vcount = 0;
@@ -1820,9 +1826,14 @@ static int remove_outliers(dt_iop_module_t *module)
   g->horizontal_count = hcount;
   g->lines_version++;
 
+  free(inout_set);
+  free(lines_set);
+
   return TRUE;
 
 error:
+  free(inout_set);
+  free(lines_set);
   return FALSE;
 }
 

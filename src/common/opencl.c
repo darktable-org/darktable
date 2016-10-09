@@ -84,6 +84,9 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl->dev_priority_export = NULL;
   cl->dev_priority_thumbnail = NULL;
 
+  cl_platform_id *all_platforms = NULL;
+  cl_uint *all_num_devices = NULL;
+
   // user selectable parameter defines minimum requirement on GPU memory
   // default is 768MB
   // values below 200 will be (re)set to 200
@@ -151,8 +154,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   g_free(library);
 
   cl_int err;
-  cl_platform_id all_platforms[DT_OPENCL_MAX_PLATFORMS];
-  cl_uint all_num_devices[DT_OPENCL_MAX_PLATFORMS];
+  all_platforms = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_platform_id));
+  all_num_devices = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_uint));
   cl_uint num_platforms = DT_OPENCL_MAX_PLATFORMS;
   err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
@@ -253,7 +256,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     char driverversion[256];
     char deviceversion[256];
     size_t infoint;
-    size_t infointtab[1024];
+    size_t *infointtab = NULL;
     cl_device_type type;
     cl_bool image_support = 0;
     cl_bool device_available = 0;
@@ -353,9 +356,15 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
                                                &infoint, NULL);
       printf("     MAX_WORK_ITEM_DIMENSIONS: %zd\n", infoint);
       printf("     MAX_WORK_ITEM_SIZES:      [ ");
-      (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(infointtab),
-                                               infointtab, NULL);
+
+      const size_t infointtab_size = sizeof(size_t) * infoint;
+      infointtab = malloc(infointtab_size);
+      (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, infointtab_size, infointtab,
+                                               NULL);
       for(size_t i = 0; i < infoint; i++) printf("%zd ", infointtab[i]);
+      free(infointtab);
+      infointtab = NULL;
+
       printf("]\n");
       printf("     DRIVER_VERSION:           %s\n", driverversion);
       printf("     DEVICE_VERSION:           %s\n", deviceversion);
@@ -603,6 +612,9 @@ finally:
     }
   }
 
+  free(all_num_devices);
+  free(all_platforms);
+
   if(locale)
   {
     setlocale(LC_ALL, locale);
@@ -727,14 +739,13 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int tea_states[2 * dt_get_num_threads()];
-  memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
+  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
   buf = dt_alloc_align(16, width * height * bpp);
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf, tea_states)
+#pragma omp parallel for default(none) shared(buf)
 #endif
   for(size_t j = 0; j < height; j++)
   {
@@ -781,11 +792,13 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   double end = dt_get_wtime();
 
   dt_free_align(buf);
+  free(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free_cl(g);
   dt_free_align(buf);
+  free(tea_states);
   if(dev_mem != NULL) dt_opencl_release_mem_object(dev_mem);
   return INFINITY;
 }
@@ -799,14 +812,13 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int tea_states[2 * dt_get_num_threads()];
-  memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
+  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
   buf = dt_alloc_align(16, width * height * bpp);
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf, tea_states)
+#pragma omp parallel for default(none) shared(buf)
 #endif
   for(size_t j = 0; j < height; j++)
   {
@@ -841,11 +853,13 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   double end = dt_get_wtime();
 
   dt_free_align(buf);
+  free(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free(g);
   dt_free_align(buf);
+  free(tea_states);
   return INFINITY;
 }
 
@@ -979,12 +993,13 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 {
   int devs = cl->num_devs;
   int count = 0;
-  int full[devs + 1];
+  int *full = malloc((size_t)(devs + 1) * sizeof(int));
 
   // NULL or empty configstring?
   if(configstr == NULL || *configstr == '\0')
   {
     priority_list[0] = -1;
+    free(full);
     return;
   }
 
@@ -1052,6 +1067,8 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 
   // terminate priority list with -1
   while(count < devs + 1) priority_list[count++] = -1;
+
+  free(full);
 }
 
 // parse a complete priority string
@@ -1424,25 +1441,28 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      cl_device_id devices[numdev];
+      cl_device_id *devices = malloc(numdev * sizeof(cl_device_id));
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_DEVICES,
                                                       sizeof(cl_device_id) * numdev, devices, NULL);
       if(err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_DEVICES failed: %d\n", err);
+        free(devices);
         return CL_SUCCESS;
       }
 
-      size_t binary_sizes[numdev];
+      size_t *binary_sizes = malloc(numdev * sizeof(size_t));
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARY_SIZES,
                                                       sizeof(size_t) * numdev, binary_sizes, NULL);
       if(err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARY_SIZES failed: %d\n", err);
+        free(binary_sizes);
+        free(devices);
         return CL_SUCCESS;
       }
 
-      unsigned char *binaries[numdev];
+      unsigned char **binaries = malloc(numdev * sizeof(unsigned char *));
       for(int i = 0; i < numdev; i++) binaries[i] = (unsigned char *)malloc(binary_sizes[i]);
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARIES,
                                                       sizeof(unsigned char *) * numdev, binaries, NULL);
@@ -1477,6 +1497,9 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
 
     ret:
       for(int i = 0; i < numdev; i++) free(binaries[i]);
+      free(binaries);
+      free(binary_sizes);
+      free(devices);
     }
     return CL_SUCCESS;
   }
@@ -2324,8 +2347,8 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   if(*eventlist == NULL || *numevents == 0 || *eventtags == NULL || *eventsconsolidated == 0)
     return; // nothing to do
 
-  char *tags[*eventsconsolidated + 1];
-  float timings[*eventsconsolidated + 1];
+  char **tags = malloc((*eventsconsolidated + 1) * sizeof(char *));
+  float *timings = malloc((*eventsconsolidated + 1) * sizeof(float));
   int items = 1;
   tags[0] = "";
   timings[0] = 0.0f;
@@ -2392,6 +2415,9 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   dt_print(DT_DEBUG_OPENCL,
            "[opencl_profiling] spent %7.4f seconds totally in command queue (with %d event%s missing)\n",
            (double)total, *lostevents, *lostevents == 1 ? "" : "s");
+
+  free(timings);
+  free(tags);
 
   return;
 }

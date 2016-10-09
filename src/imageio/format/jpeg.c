@@ -374,13 +374,14 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char buf[len];
+      unsigned char *buf = malloc(len * sizeof(unsigned char));
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
+      free(buf);
     }
   }
 
-  uint8_t row[3 * jpg->width];
+  uint8_t *row = malloc((size_t)3 * jpg->width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
@@ -392,6 +393,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     jpeg_write_scanlines(&(jpg->cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg->cinfo));
+  free(row);
   jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
 
