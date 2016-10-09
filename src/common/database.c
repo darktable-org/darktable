@@ -1085,7 +1085,7 @@ static void _create_library_schema(dt_database_t *db)
                            "PRIMARY KEY (imgid, tagid))", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
   ////////////////////////////// used_tags
-  sqlite3_exec(db->handle, "CREATE TABLE main.used_tags (imgid INTEGER, name VARCHAR NOT NULL)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE main.used_tags (id INTEGER, name VARCHAR NOT NULL)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.used_tags_idx ON used_tags (id, name)", NULL, NULL, NULL);
   ////////////////////////////// color_labels
   sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
