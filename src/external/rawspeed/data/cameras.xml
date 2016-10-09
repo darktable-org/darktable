@@ -7966,6 +7966,18 @@
 			<Hint name="fuji_rotate" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="FUJIFILM" model="FinePix S100FS">
+		<ID make="Fujifilm" model="FinePix S100FS">Fujifilm FinePix S100FS</ID>
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="64" y="0" width="-64" height="0"/>
+		<Sensor black="512" white="16383"/>
+		<Hints>
+			<Hint name="fuji_rotate" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S200EXR">
 		<ID make="Fujifilm" model="FinePix S200EXR">Fujifilm FinePix S200EXR</ID>
 		<CFA width="2" height="2">
