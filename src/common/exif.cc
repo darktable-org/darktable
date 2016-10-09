@@ -1674,6 +1674,9 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos)
   sqlite3_finalize(stmt_sel_id);
   sqlite3_finalize(stmt_ins_tags);
   sqlite3_finalize(stmt_ins_tagged);
+
+  // update used_tags
+  dt_tag_update_used_tags();
 }
 
 typedef struct history_entry_t
@@ -1942,22 +1945,6 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     Exiv2::XmpData &xmpData = image->xmpData();
 
     sqlite3_stmt *stmt;
-
-#if 0
-    // get rid of old meta data
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "delete from meta_data where id = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    // remove from tagged_images
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-#endif
 
     Exiv2::XmpData::iterator pos;
 

@@ -105,6 +105,8 @@ void dt_tag_free_result(GList **result);
 /** reorganize tags */
 void dt_tag_reorganize(const gchar *source, const gchar *dest);
 
+/** make sure that main.used_tags has everything. to be used after changes to main.tagged_images */
+void dt_tag_update_used_tags();
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
