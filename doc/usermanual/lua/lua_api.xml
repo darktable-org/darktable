@@ -597,6 +597,7 @@
 <listitem><para>separator</para></listitem>
 <listitem><para>slider</para></listitem>
 <listitem><para>stack</para></listitem>
+<listitem><para>text_view</para></listitem>
 </itemizedlist>
 </para>
 
@@ -7358,7 +7359,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The widgets contained by the box</para>
 <para>You can append widgets by adding them at the end of the list</para>
 <para>You can remove widgets by setting them to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 </section>
@@ -7972,7 +7983,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 <section status="final" id="types_lua_combobox_changed_callback">
@@ -8426,6 +8447,79 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_lua_text_view">
+<title>types.lua_text_view</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_text_view</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A multiline text input widget</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_text_view.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_text_view_text">
+<title>types.lua_text_view.text</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>text</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The text in the widget</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_text_view_editable">
+<title>types.lua_text_view.editable</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>editable</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>False if the entry should be read-only</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+</section>
+
 </section>
 
 <section status="final" id="events">
@@ -8538,7 +8632,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 <varlistentry id="events_post-import-image_callback_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The image object that has been exported.</para>
+<para>The image object that has been imported.</para>
 
 </listitem></varlistentry>
 

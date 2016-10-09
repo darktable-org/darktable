@@ -986,6 +986,9 @@ local widget = dt.new_widget("button"){
   types.lua_slider.label:set_text("The label next to the slider")
   types.lua_slider.label:set_reported_type("string")
 
+  types.lua_text_view:set_text("A multiline text input widget")
+  types.lua_text_view.text:set_text("The text in the widget")
+  types.lua_text_view.editable:set_text("False if the entry should be read-only")
 
 	----------------------
 	--  EVENTS          --
