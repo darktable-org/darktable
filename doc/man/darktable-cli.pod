@@ -46,6 +46,7 @@ belongs to the given input file.
 
 The name of the output file.
 darktable derives the export file format from the file extension.
+You can also use all the variables available in B<darktable>'s export module in the output filename.
 
 =item B<< --width <max width>  >>
 
