@@ -183,13 +183,13 @@
 <synopsis>darktable [-d {all,cache,camctl,camsupport,control,dev,
                fswatch,input,lighttable,masks,memory,nan,
                opencl,perf,pwstorage,print,sql}]
-          [IMG_1234.{RAW,..}|image_folder] 
+          [IMG_1234.{RAW,..}|image_folder]
           [--version]
-          [--disable-opencl] 
-          [--library &lt;library file&gt;] 
-          [--datadir &lt;data directory&gt;] 
+          [--disable-opencl]
+          [--library &lt;library file&gt;]
+          [--datadir &lt;data directory&gt;]
           [--moduledir &lt;module directory&gt;]
-          [--tmpdir &lt;tmp directory&gt;] 
+          [--tmpdir &lt;tmp directory&gt;]
           [--configdir &lt;user config directory&gt;]
           [--cachedir &lt;user cache directory&gt;]
           [--localedir &lt;locale directory&gt;]
@@ -413,13 +413,13 @@
       </para>
 
 <synopsis>darktable-cli &lt;input file&gt;
-              [&lt;xmp file&gt;] 
+              [&lt;xmp file&gt;]
               &lt;output file&gt;
               [--width &lt;max width&gt;]
               [--height &lt;max height&gt;]
               [--bpp &lt;bpp&gt;]
               [--hq &lt;0|1|true|false&gt;]
-              [--verbose] 
+              [--verbose]
               [--core &lt;darktable options&gt;]</synopsis>
 
       <para>
@@ -455,7 +455,8 @@
 
             <listitem><para>
               The name of the output file. darktable derives the export file format from the
-              file extension.
+              file extension. You can also use all the variables available in darktable's
+              export module in the output filename.
             </para></listitem>
 
           </varlistentry>
