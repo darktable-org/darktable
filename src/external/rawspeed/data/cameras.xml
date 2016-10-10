@@ -8933,6 +8933,9 @@
 	<Camera make="RICOH" model="GR DIGITAL 2" mode="dng">
 		<ID make="Ricoh" model="GR II">Ricoh GR DIGITAL 2</ID>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot A720 IS" mode="dng">
+		<ID make="Canon" model="PowerShot A720 IS">Canon PowerShot A720 IS</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot SX100 IS" mode="dng">
 		<ID make="Canon" model="PowerShot SX100 IS">Canon PowerShot SX100 IS</ID>
 	</Camera>
