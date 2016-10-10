@@ -50,6 +50,67 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 /** parse a complete priority string */
 static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr);
 
+int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_info param_name, void **param_value,
+                              size_t *param_value_size)
+{
+  cl_int err;
+
+  *param_value_size = SIZE_MAX;
+
+  // 1. figure out how much memory is needed
+  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(device, param_name, 0, NULL, param_value_size);
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_get_device_info] could not query the actual size in bytes of info %d: %d\n", param_name,
+             err);
+    goto error;
+  }
+
+  // 2. did we /actually/ get the size?
+  if(*param_value_size == SIZE_MAX || *param_value_size == 0)
+  {
+    // both of these sizes make no sense. either i failed to parse spec, or opencl implementation bug?
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_get_device_info] ERROR: no size returned, or zero size returned for data %d: %zu\n",
+             param_name, *param_value_size);
+    err = CL_INVALID_VALUE; // FIXME: anything better?
+    goto error;
+  }
+
+  // 3. make sure that *param_value points to big-enough memory block
+  {
+    void *ptr = realloc(*param_value, *param_value_size);
+    if(!ptr)
+    {
+      dt_print(DT_DEBUG_OPENCL,
+               "[dt_opencl_get_device_info] memory allocation failed! tried to allocate %zu bytes for data %d: %d",
+               *param_value_size, param_name, err);
+      err = CL_OUT_OF_HOST_MEMORY;
+      goto error;
+    }
+
+    // allocation succeeed, update pointer.
+    *param_value = ptr;
+  }
+
+  // 4. actually get the value
+  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(device, param_name, *param_value_size, *param_value, NULL);
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_get_device_info] could not query info %d: %d\n", param_name, err);
+    goto error;
+  }
+
+  return CL_SUCCESS;
+
+error:
+  free(*param_value);
+  *param_value = NULL;
+  param_value_size = 0;
+  return err;
+}
+
 void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics)
 {
   char *str;
@@ -357,13 +418,17 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
       printf("     MAX_WORK_ITEM_DIMENSIONS: %zd\n", infoint);
       printf("     MAX_WORK_ITEM_SIZES:      [ ");
 
-      const size_t infointtab_size = sizeof(size_t) * infoint;
-      infointtab = malloc(infointtab_size);
-      (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, infointtab_size, infointtab,
-                                               NULL);
-      for(size_t i = 0; i < infoint; i++) printf("%zd ", infointtab[i]);
-      free(infointtab);
-      infointtab = NULL;
+      size_t infointtab_size;
+      err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, (void **)&infointtab,
+                                      &infointtab_size);
+      if(err == CL_SUCCESS)
+      {
+        for(size_t i = 0; i < infoint; i++) printf("%zd ", infointtab[i]);
+        free(infointtab);
+        infointtab = NULL;
+      }
+      else
+        goto finally;
 
       printf("]\n");
       printf("     DRIVER_VERSION:           %s\n", driverversion);
