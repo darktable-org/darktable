@@ -142,12 +142,23 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].options = NULL;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
-  char infostr[1024];
-  char cname[1024];
-  char options[1024];
-  char vendor[256];
-  char driverversion[256];
-  char deviceversion[256];
+  char *infostr = NULL;
+  size_t infostr_size;
+
+  char *cname = NULL;
+  size_t cname_size;
+
+  char *options = NULL;
+
+  char *vendor = NULL;
+  size_t vendor_size;
+
+  char *driverversion = NULL;
+  size_t driverversion_size;
+
+  char *deviceversion = NULL;
+  size_t deviceversion_size;
+
   size_t infoint;
   size_t *infointtab = NULL;
   cl_device_type type;
@@ -158,11 +169,37 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
   // test GPU availability, vendor, memory, image support etc:
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE, sizeof(cl_bool), &device_available, NULL);
-  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR, sizeof(vendor), &vendor, NULL);
+
+  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VENDOR, (void **)&vendor, &vendor_size);
+  if(err != CL_SUCCESS)
+  {
+    res = 1;
+    goto end;
+  }
+
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR_ID, sizeof(cl_uint), &vendor_id, NULL);
-  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
-  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DRIVER_VERSION, sizeof(driverversion), &driverversion, NULL);
-  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VERSION, sizeof(deviceversion), &deviceversion, NULL);
+
+  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_NAME, (void **)&infostr, &infostr_size);
+  if(err != CL_SUCCESS)
+  {
+    res = 1;
+    goto end;
+  }
+
+  err = dt_opencl_get_device_info(cl, devid, CL_DRIVER_VERSION, (void **)&driverversion, &driverversion_size);
+  if(err != CL_SUCCESS)
+  {
+    res = 1;
+    goto end;
+  }
+
+  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VERSION, (void **)&deviceversion, &deviceversion_size);
+  if(err != CL_SUCCESS)
+  {
+    res = 1;
+    goto end;
+  }
+
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t),
@@ -174,7 +211,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_ENDIAN_LITTLE, sizeof(cl_bool), &little_endian, NULL);
 
 
-  _ascii_str_canonical(infostr, cname, sizeof(cname));
+  cname_size = infostr_size;
+  cname = malloc(cname_size);
+  _ascii_str_canonical(infostr, cname, sizeof(cname_size));
 
   if(!strncasecmp(vendor, "NVIDIA", 6))
   {
@@ -315,11 +354,12 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   char kerneldir[PATH_MAX] = { 0 };
   snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
 
-  snprintf(options, sizeof(options), "-cl-fast-relaxed-math %s -D%s=1 -I%s",
-           (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""), dt_opencl_get_vendor_by_id(vendor_id),
-           kerneldir);
+  options = g_strdup_printf("-cl-fast-relaxed-math %s -D%s=1 -I%s",
+                            (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
+                            dt_opencl_get_vendor_by_id(vendor_id), kerneldir);
   cl->dev[dev].options = strdup(options);
-
+  g_free(options);
+  options = NULL;
 
   const char *clincludes[DT_OPENCL_MAX_INCLUDES] = { "colorspace.cl", "common.h", NULL };
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
@@ -407,6 +447,14 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   res = 0;
 
 end:
+
+  free(infostr);
+  free(cname);
+  free(options);
+  free(vendor);
+  free(driverversion);
+  free(deviceversion);
+
   return res;
 }
 
