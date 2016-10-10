@@ -38,6 +38,7 @@
 #include "develop/imageop.h"
 #include "develop/lightroom.h"
 #include "develop/masks.h"
+#include "views/undo.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
@@ -139,9 +140,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   }
   while(dev->history)
   {
-    free(((dt_dev_history_item_t *)dev->history->data)->params);
-    free(((dt_dev_history_item_t *)dev->history->data)->blend_params);
-    free((dt_dev_history_item_t *)dev->history->data);
+    dt_dev_free_history_item(((dt_dev_history_item_t *)dev->history->data));
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
   while(dev->iop)
@@ -567,9 +566,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       GList *next = g_list_next(history);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
       // printf("removing obsoleted history item: %s\n", hist->module->op);
-      free(hist->params);
-      free(hist->blend_params);
-      free(history->data);
+      dt_dev_free_history_item(hist);
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
     }
@@ -674,6 +671,14 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   }
 }
 
+void dt_dev_free_history_item(gpointer data)
+{
+  dt_dev_history_item_t *item = (dt_dev_history_item_t *)data;
+  free(item->params);
+  free(item->blend_params);
+  free(item);
+}
+
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dev->focus_hash = 0;
@@ -684,9 +689,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   {
     GList *next = g_list_next(history);
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    free(hist->params);
-    free(hist->blend_params);
-    free(history->data);
+    dt_dev_free_history_item(hist);
     dev->history = g_list_delete_link(dev->history, history);
     history = next;
   }
@@ -1126,8 +1129,6 @@ void dt_dev_read_history(dt_develop_t *dev)
          || hist->module->legacy_params(hist->module, sqlite3_column_blob(stmt, 4), labs(modversion),
                                         hist->params, labs(hist->module->version())))
       {
-        free(hist->params);
-        free(hist->blend_params);
         fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n",
                 hist->module->op, modversion, hist->module->version());
         const char *fname = dev->image_storage.filename + strlen(dev->image_storage.filename);
@@ -1135,7 +1136,7 @@ void dt_dev_read_history(dt_develop_t *dev)
         if(fname > dev->image_storage.filename) fname++;
         dt_control_log(_("%s: module `%s' version mismatch: %d != %d"), fname, hist->module->op,
                        hist->module->version(), modversion);
-        free(hist);
+        dt_dev_free_history_item(hist);
         continue;
       }
       else
@@ -1566,6 +1567,21 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   return module;
 }
 
+void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
+{
+  while (list)
+  {
+    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)list->data;
+    if (hitem->module == module)
+    {
+      hitem->module = NULL;
+      // set the multi_name to the module op name to be able to recreate the multi-instance later
+      strncpy(hitem->multi_name, module->op, sizeof(hitem->multi_name));
+    }
+    list = list->next;
+  }
+}
+
 void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
 {
   // if(darktable.gui->reset) return;
@@ -1583,9 +1599,7 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
       {
         // printf("removing obsoleted history item: %s %s %p %p\n", hist->module->op, hist->module->multi_name,
         //        module, hist->module);
-        free(hist->params);
-        free(hist->blend_params);
-        free(hist);
+        dt_dev_free_history_item(hist);
         dev->history = g_list_delete_link(dev->history, elem);
         dev->history_end--;
         del = 1;
@@ -1612,6 +1626,7 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached && del)
   {
     /* signal that history has changed */
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     /* redraw */
     dt_control_queue_redraw_center();
