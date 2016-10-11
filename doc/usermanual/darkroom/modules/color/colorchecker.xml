@@ -5,15 +5,15 @@
 		]>
 <sect3 status="final" id="colorchecker">
 
-  <title>Color checker lut</title>
+  <title>Color look up table</title>
 
   <indexterm>
     <primary>modules</primary>
-    <secondary>color checker lut</secondary>
+    <secondary>color look up table</secondary>
   </indexterm>
 
   <indexterm>
-    <primary>color checker lut</primary>
+    <primary>color look up table</primary>
   </indexterm>
 
   <sect4>
