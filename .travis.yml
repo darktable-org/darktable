@@ -21,7 +21,7 @@ notifications:
     channels: "chat.freenode.net#darktable"
     skip_join: true
     template:
-      - "%{repository}#%{build_number} (\x037%{branch}\x03 - \x02%{commit}\x02 : \x033%{author}\x03): \x02%{message}\x02"
+      - "%{repository}#%{build_number} (\x037%{branch}\x03 - \x02%{commit}\x02 : \x033%{author}\x03): \x1f\x02%{message}\x02\x1f"
       - "Build details : %{build_url}"
   email:
     recipients:
