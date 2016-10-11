@@ -997,7 +997,8 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
   // COLORB TOT_WEIGHT
   // COLORPIX                   # color of center pixel
 
-  int lookup[16][16][32];
+  int(*const lookup)[16][32] = malloc((size_t)16 * 16 * 32 * sizeof(int));
+
   const int size = (filters == 9) ? 6 : 16;
   for(int row = 0; row < size; row++)
     for(int col = 0; col < size; col++)
@@ -1028,7 +1029,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
     }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lookup, out) schedule(static)
+#pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
   for(int row = 1; row < roi_out->height - 1; row++)
   {
@@ -1047,6 +1048,8 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
       buf_in++;
     }
   }
+
+  free(lookup);
 }
 
 
