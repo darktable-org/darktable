@@ -1,0 +1,79 @@
+[Desktop Entry]
+Name=Darktable
+GenericName=Virtual Lighttable and Darkroom
+GenericName[ca]=Taula de llum i Cambra fosca virtuals
+GenericName[cs]=Virtuální prosvětlovací pult a fotokomora
+GenericName[da]=Virtuelt lysbord og mørkekammer
+GenericName[de]=Virtueller Leuchttisch und Dunkelkammer
+GenericName[el]=Virtual Lighttable and Darkroom
+GenericName[es]=Mesa de Luz y Cuarto Oscuro Virtuales
+GenericName[fr]=Table lumineuse et chambre noire virtuelles
+GenericName[he]=שולחן אור וחדר חושך וירטואלי
+GenericName[hu]=Virtuális átvilágító és sötétkamra
+GenericName[it]=Tavolo luminoso e camera oscura virtuali
+GenericName[ja]=Virtual Lighttable and Darkroom
+GenericName[nl]=virtuele bibliotheek  en donkere kamer
+GenericName[pt_BR]=Mesa de Luz e Sala Escura Virtuais
+GenericName[ru]=Виртуальный просмотровый стол и фоторедактор
+GenericName[sk]=Virtuálny presvetľovací pult a fotokomora
+GenericName[sl]=Virtualna osvetljena miza in temnica
+GenericName[sq]=Fototekë dhe Dhomë e Errët Virtuale
+GenericName[sv]=Virtuellt ljusbord och mörkerrum
+Comment=Organize and develop images from digital cameras
+Comment[ca]=Organitza i revela imatges de càmeres digitals
+Comment[cs]=Správa a vyvolávání snímků z digitálních fotoaparátů
+Comment[da]=organisér og fremkald billeder fra digitale kameraer
+Comment[de]=Organisiere und entwickle Bilder von Digitalkameras
+Comment[el]=οργανώστε και εμφανίστε εικόνες απο ψηφιακές μηχανές
+Comment[es]=Organizar y revelar imágenes de cámaras digitales
+Comment[fr]=Organiser et développer les images d'un boîtier numérique
+Comment[he]=ארגן ופתח תמונות ממצלמות דיגיטליות
+Comment[hu]=Digitális fényképező képeinek rendezése, kidolgozása
+Comment[it]=Organizza e sviluppa le immagini della tua fotocamera digitale
+Comment[ja]=デジタルカメラ画像の現像と整理
+Comment[nl]=organiseer en ontwikkel afbeeldingen van digitale camera's
+Comment[pt_BR]=Organiza e revela imagens de câmeras digitais
+Comment[ru]=Организация и обработка цифровых фотографий
+Comment[sk]=Organizuje a vyvoláva obrázky z digitálnych fotoaprátov
+Comment[sl]=Organizira in razvija slike digitalnih kamer
+Comment[sq]=organizoni dhe zhvilloni imazhet nga fotoaparatet
+Comment[sv]=Organisera och utveckla bilder från digitalkameror
+
+X-GNOME-FullName=Darktable Photo Workflow Software
+
+Version=1.0
+
+Type=Application
+Categories=Graphics;Photography;GTK;
+# TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+Keywords=graphics;photography;raw;
+Keywords[ca]=graphics;photography;raw;
+Keywords[cs]=grafika;fotografie;raw;
+Keywords[da]=grafik;fotografi;raw;
+Keywords[de]=Graphik;Grafik;Photographie;Fotografie;Raw;
+Keywords[el]=graphics;photography;raw;
+Keywords[es]=gráficos;fotografía;raw;
+Keywords[fr]=graphisme;photographie;raw;
+Keywords[he]=גרפיקה;צילום;raw;
+Keywords[hu]=grafika;fénykép;fotó;raw;
+Keywords[it]=grafica;fotografia;raw;
+Keywords[ja]=graphics;photography;raw;
+Keywords[nl]=grafische vormgeving;fotografie;raw;
+Keywords[pt_BR]=gráfico;fotografia;raw;
+Keywords[ru]=graphics;photography;raw;
+Keywords[sk]=grafika;fotografovanie;fotografie;raw;surový;
+Keywords[sl]=grafika;fotografije;surove;
+Keywords[sq]=graphics;photography;raw;
+Keywords[sv]=grafik;fotografi;rå;
+
+Exec=darktable %U
+TryExec=darktable
+Terminal=false
+StartupNotify=true
+
+MimeType=application/x-darktable;image/x-dcraw;image/jpeg;image/jpg;image/jp2;image/png;image/tiff;image/x-portable-pixmap;image/x-portable-floatmap;image/x-exr;
+
+Icon=${SNAP}/meta/gui/icon.svg
+
+X-Unity-IconBackgroundColor=#252525
+
