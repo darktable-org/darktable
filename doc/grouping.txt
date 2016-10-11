@@ -28,3 +28,7 @@
     - remove an image with ctrl-shift-g from a group. [done]
     - an image is the representative of the group iff id == group_id. [done]
     - expand the group after creating a duplicate and adding it. [done]
+
+TODO:
+=====
+- rating/rejecting an image does the same to all images in the group iff the group is collapsed.
