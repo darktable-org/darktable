@@ -20,6 +20,9 @@ notifications:
   irc:
     channels: "chat.freenode.net#darktable"
     skip_join: true
+    template:
+      - "%{repository}#%{build_number} (\x037%{branch}\x03 - \x02%{commit}\x02 : \x033%{author}\x03): \x02%{message}\x02"
+      - "Build details : %{build_url}"
   email:
     recipients:
       - darktable-ci@lists.darktable.org
