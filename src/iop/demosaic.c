@@ -2160,6 +2160,8 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   cl_mem dev_green_eq = NULL;
   cl_int err = -999;
 
+  int32_t(*lookup)[16][32] = NULL;
+
   if(piece->pipe->dsc.filters == 9u)
   {
     dev_xtrans
@@ -2200,7 +2202,8 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     // COLORA TOT_WEIGHT
     // COLORB TOT_WEIGHT
     // COLORPIX                   # color of center pixel
-    int32_t lookup[16][16][32];
+    const size_t lookup_size = (size_t)16 * 16 * 32 * sizeof(int32_t);
+    lookup = malloc(lookup_size);
 
     for(int row = 0; row < size; row++)
       for(int col = 0; col < size; col++)
@@ -2304,7 +2307,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       }
 
 
-    dev_lookup = dt_opencl_copy_host_to_device_constant(devid, sizeof(lookup), lookup);
+    dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
     if(dev_lookup == NULL) goto error;
 
     dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
@@ -2504,6 +2507,8 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
   dev_lookup = NULL;
 
+  free(lookup);
+
   if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
   dev_code = NULL;
 
@@ -2530,6 +2535,7 @@ error:
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
+  free(lookup);
   if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
   if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
   if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
