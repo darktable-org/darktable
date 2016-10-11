@@ -108,7 +108,7 @@ typedef struct dt_iop_colorchecker_global_data_t
 
 const char *name()
 {
-  return _("color checker lut");
+  return _("color look up table");
 }
 
 int groups()
