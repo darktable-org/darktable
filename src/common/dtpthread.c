@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/resource.h>
@@ -48,8 +49,8 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
   {
     // looks like we need to bump/set it...
 
-    fprintf(stderr, "[dt_pthread_create] ERROR: RLIMIT_STACK rlim_cur is less than we thought it is: %lu < %i\n",
-            rlim.rlim_cur, WANTED_STACK_SIZE);
+    fprintf(stderr, "[dt_pthread_create] ERROR: RLIMIT_STACK rlim_cur is less than we thought it is: %ju < %i\n",
+            (uintmax_t)rlim.rlim_cur, WANTED_STACK_SIZE);
 
     rlim.rlim_cur = WANTED_STACK_SIZE;
   }
@@ -76,8 +77,8 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
   {
     // looks like we need to bump/set it...
 
-    fprintf(stderr, "[dt_pthread_create] info: bumping pthread's stacksize from %zu to %lu\n", stacksize,
-            rlim.rlim_cur);
+    fprintf(stderr, "[dt_pthread_create] info: bumping pthread's stacksize from %zu to %ju\n", stacksize,
+            (uintmax_t)rlim.rlim_cur);
 
     ret = pthread_attr_setstacksize(&attr, rlim.rlim_cur);
     if(ret != 0)
