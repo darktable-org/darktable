@@ -323,12 +323,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
              title ? title : relfilename, description ? description : "&nbsp;", relfilename, relthumbfilename,
              num, title ? title : "&nbsp;", description ? description : "&nbsp;");
 
-    char next[PATH_MAX] = { 0 };
-    snprintf(next, sizeof(next), "img_%d.html", (num) % total + 1);
-
-    char prev[PATH_MAX] = { 0 };
-    snprintf(prev, sizeof(prev), "img_%d.html", (num == 1) ? total : num - 1);
-
     pair->pos = num;
     if(res_title) g_list_free_full(res_title, &g_free);
     if(res_desc) g_list_free_full(res_desc, &g_free);
