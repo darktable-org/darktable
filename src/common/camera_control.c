@@ -607,6 +607,7 @@ dt_camctl_t *dt_camctl_new()
 
 static void dt_camctl_camera_destroy(dt_camera_t *cam)
 {
+  if(!cam) return;
   gp_camera_exit(cam->gpcam, cam->gpcontext);
   gp_camera_unref(cam->gpcam);
   gp_widget_unref(cam->configuration);
@@ -626,6 +627,7 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam)
 
 void dt_camctl_destroy(dt_camctl_t *camctl)
 {
+  if(!camctl) return;
   // Go thru all c->cameras and release them..
   for(GList *it = g_list_first(camctl->cameras); it != NULL; it = g_list_delete_link(it, it))
   {
