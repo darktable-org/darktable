@@ -40,6 +40,11 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wstack-usage=${MAX_MEANINGFUL_SIZE})
 math(EXPR MAX_MEANINGFUL_SIZE 1*1024*1024)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
 
+# minimal stack/frame stack size. (musl)
+# let's see if 1Mb is good-enough...
+# MUST be a multiple of the system page size !!!
+math(EXPR WANTED_STACK_SIZE 1*1024*1024)
+
 if(SOURCE_PACKAGE)
   add_definitions(-D_RELEASE)
 endif()
