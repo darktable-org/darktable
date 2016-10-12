@@ -19,13 +19,17 @@
 # it is supposed to be run by travis-ci
 # expects a few env variables to be set:
 #   BUILD_DIR - the working directory, where to build
+#   INSTALL_DIR - the installation prefix.
 #   SRC_DIR - read-only directory with git checkout to compile
 #   CC, CXX, CFLAGS, CXXFLAGS are not required, should make sense too
 
 set -e
 
 cd "$BUILD_DIR"
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo "$SRC_DIR"
+cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$SRC_DIR"
 
 # to get as much of the issues into the log as possible
 cmake --build "$BUILD_DIR" -- -j3 || cmake --build "$BUILD_DIR" -- -j1 -k
+
+# and now check that it installs where told and only there.
+cmake --build "$BUILD_DIR" --target install -- -j3 || cmake --build "$BUILD_DIR" --target install -- -j1 -k
