@@ -66,6 +66,7 @@
 #include <errno.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -489,7 +490,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     {
       // looks like we need to bump/set it...
 
-      fprintf(stderr, "[dt_init] info: bumping RLIMIT_STACK rlim_cur from %lu to %i\n", rlim.rlim_cur,
+      fprintf(stderr, "[dt_init] info: bumping RLIMIT_STACK rlim_cur from %ju to %i\n", (uintmax_t)rlim.rlim_cur,
               WANTED_STACK_SIZE);
 
       rlim.rlim_cur = WANTED_STACK_SIZE;
