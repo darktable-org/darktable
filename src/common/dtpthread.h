@@ -314,6 +314,9 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 #define dt_pthread_rwlock_trywrlock_with_caller(A,B,C) pthread_rwlock_trywrlock(A)
 
 #endif
+
+int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg);
+
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
