@@ -970,14 +970,14 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 
-#ifdef HAVE_GPHOTO2
-  // Initialize the camera control.
-  // this is done late so that the gui can react to the signal sent but before switching to lighttable!
-  darktable.camctl = dt_camctl_new();
-#endif
-
   if(init_gui)
   {
+#ifdef HAVE_GPHOTO2
+    // Initialize the camera control.
+    // this is done late so that the gui can react to the signal sent but before switching to lighttable!
+    darktable.camctl = dt_camctl_new();
+#endif
+
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
