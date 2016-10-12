@@ -370,6 +370,33 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
     return 1;
   }
 
+  if(!control->running)
+  {
+    // whatever we are adding here won't be scheduled as the system isn't running. execute it synchronous instead.
+    dt_pthread_mutex_lock(&job->wait_mutex); // is that even needed?
+    dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
+             dt_get_wtime());
+    dt_control_job_print(job);
+    dt_print(DT_DEBUG_CONTROL, "\n");
+
+    dt_control_job_set_state(job, DT_JOB_STATE_RUNNING);
+
+    /* execute job */
+    job->result = job->execute(job);
+
+    dt_control_job_set_state(job, DT_JOB_STATE_FINISHED);
+
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
+             dt_get_wtime());
+    dt_control_job_print(job);
+    dt_print(DT_DEBUG_CONTROL, "\n");
+
+    dt_pthread_mutex_unlock(&job->wait_mutex);
+
+    dt_control_job_dispose(job);
+    return 0;
+  }
+
   job->queue = queue_id;
 
   _dt_job_t *job_for_disposal = NULL;
