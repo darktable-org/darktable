@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-10 22:18+0200\n"
-"PO-Revision-Date: 2016-10-10 22:20+0200\n"
+"POT-Creation-Date: 2016-10-12 23:09+0200\n"
+"PO-Revision-Date: 2016-10-12 23:12+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -857,17 +857,27 @@ msgstr ""
 msgid "output file already exists, it will get renamed"
 msgstr "ficher de sortie existant, il va être renommé"
 
-#: ../src/cli/main.c:212
+#: ../src/cli/main.c:210
+#, c-format
+msgid "error: can't open folder %s"
+msgstr "erreur : impossible d'ouvrir le répertoire « %s »"
+
+#: ../src/cli/main.c:228
 #, c-format
 msgid "error: can't open file %s"
 msgstr "erreur : impossible d'ouvrir le fichier « %s »"
 
+#: ../src/cli/main.c:242
+#, c-format
+msgid "no images to export, aborting\n"
+msgstr "aucune image à exporter, annulation\n"
+
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
-#: ../src/cli/main.c:235
+#: ../src/cli/main.c:268
 msgid "empty history stack"
 msgstr "réinitialiser le développement"
 
-#: ../src/cli/main.c:258
+#: ../src/cli/main.c:291
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -875,18 +885,18 @@ msgstr ""
 "impossible de trouver le module d'export vers le disque. vérifier votre "
 "installation, quelque chose est brisée."
 
-#: ../src/cli/main.c:266
+#: ../src/cli/main.c:299
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage, exportation "
 "abandonnée..."
 
-#: ../src/cli/main.c:279
+#: ../src/cli/main.c:312
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "extension inconnue « .%s »"
 
-#: ../src/cli/main.c:288
+#: ../src/cli/main.c:321
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
@@ -951,35 +961,35 @@ msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1036 ../src/common/colorspaces.c:1178
+#: ../src/common/colorspaces.c:1036 ../src/common/colorspaces.c:1181
 #: ../src/iop/colorin.c:1945 ../src/libs/print_settings.c:882
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
-#: ../src/common/colorspaces.c:1037 ../src/common/colorspaces.c:1183
+#: ../src/common/colorspaces.c:1037 ../src/common/colorspaces.c:1186
 #: ../src/iop/colorin.c:1946
 msgid "linear Rec709 RGB"
 msgstr "RGB Rec709 linéaire"
 
-#: ../src/common/colorspaces.c:1038 ../src/common/colorspaces.c:1188
+#: ../src/common/colorspaces.c:1038 ../src/common/colorspaces.c:1191
 #: ../src/iop/colorin.c:1947
 msgid "linear Rec2020 RGB"
 msgstr "RGB Rec2020 linéaire"
 
-#: ../src/common/colorspaces.c:1039 ../src/common/colorspaces.c:1193
+#: ../src/common/colorspaces.c:1039 ../src/common/colorspaces.c:1196
 msgid "linear XYZ"
 msgstr "linéaire XYZ"
 
-#: ../src/common/colorspaces.c:1040 ../src/common/colorspaces.c:1199
+#: ../src/common/colorspaces.c:1040 ../src/common/colorspaces.c:1202
 #: ../src/libs/colorpicker.c:541 ../src/libs/colorpicker.c:579
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1041 ../src/common/colorspaces.c:1205
+#: ../src/common/colorspaces.c:1041 ../src/common/colorspaces.c:1208
 msgid "linear infrared BGR"
 msgstr "infrarouge linéaire BGR"
 
-#: ../src/common/colorspaces.c:1042 ../src/common/colorspaces.c:1162
+#: ../src/common/colorspaces.c:1042 ../src/common/colorspaces.c:1165
 msgid "system display profile"
 msgstr "système"
 
@@ -1007,15 +1017,15 @@ msgstr "matrice de couleur du vendeur"
 msgid "alternate color matrix"
 msgstr "alternative à la matrice de couleur"
 
-#: ../src/common/colorspaces.c:1168
+#: ../src/common/colorspaces.c:1171
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (ex: JPG)"
 
-#: ../src/common/colorspaces.c:1173 ../src/libs/print_settings.c:875
+#: ../src/common/colorspaces.c:1176 ../src/libs/print_settings.c:875
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web)"
 
-#: ../src/common/colorspaces.c:1210
+#: ../src/common/colorspaces.c:1213
 msgid "BRG (for testing)"
 msgstr "BRG (pour test)"
 
@@ -1088,7 +1098,7 @@ msgstr "quitter darktable"
 msgid "delete database"
 msgstr "effacer la base de données"
 
-#: ../src/common/film.c:351
+#: ../src/common/film.c:356
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -1115,7 +1125,7 @@ msgstr "activé(e)"
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1334
 #: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
 #: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1943
-#: ../src/iop/demosaic.c:3881 ../src/iop/vignette.c:1140
+#: ../src/iop/demosaic.c:3851 ../src/iop/vignette.c:1140
 #: ../src/libs/history.c:168 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "désactivé(e)"
@@ -1315,7 +1325,7 @@ msgstr "le style « %s » a été importé"
 msgid "none"
 msgstr "sans"
 
-#: ../src/common/opencl.c:651
+#: ../src/common/opencl.c:726
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
@@ -1569,24 +1579,24 @@ msgstr[1] "exportation de %d images vers %s"
 msgid "image `%s' is currently unavailable"
 msgstr "image « %s » non disponible actuellement"
 
-#: ../src/control/jobs/control_jobs.c:1326
+#: ../src/control/jobs/control_jobs.c:1327
 msgid "merge hdr image"
 msgstr "fusion hdr d'images"
 
-#: ../src/control/jobs/control_jobs.c:1340
+#: ../src/control/jobs/control_jobs.c:1341
 msgid "duplicate images"
 msgstr "cloner les images"
 
-#: ../src/control/jobs/control_jobs.c:1347
+#: ../src/control/jobs/control_jobs.c:1348
 msgid "flip images"
 msgstr "retourne les images"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1354
+#: ../src/control/jobs/control_jobs.c:1355
 msgid "remove images"
 msgstr "enlever les images"
 
-#: ../src/control/jobs/control_jobs.c:1376
+#: ../src/control/jobs/control_jobs.c:1377
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1597,16 +1607,16 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir enlever de la bibliothèque les %d images "
 "sélectionnées ?"
 
-#: ../src/control/jobs/control_jobs.c:1380
+#: ../src/control/jobs/control_jobs.c:1381
 msgid "remove images?"
 msgstr "enlever les images ?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1395
+#: ../src/control/jobs/control_jobs.c:1396
 msgid "delete images"
 msgstr "supprimer les images"
 
-#: ../src/control/jobs/control_jobs.c:1419
+#: ../src/control/jobs/control_jobs.c:1420
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -1616,7 +1626,7 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers la "
 "poubelle  ?"
 
-#: ../src/control/jobs/control_jobs.c:1421
+#: ../src/control/jobs/control_jobs.c:1422
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1628,20 +1638,20 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir supprimer du disque définitivement les %d images "
 "sélectionnées  ?"
 
-#: ../src/control/jobs/control_jobs.c:1425
+#: ../src/control/jobs/control_jobs.c:1426
 msgid "trash images?"
 msgstr "mise à la poubelle?"
 
-#: ../src/control/jobs/control_jobs.c:1425
+#: ../src/control/jobs/control_jobs.c:1426
 msgid "delete images?"
 msgstr "supprimer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1446
+#: ../src/control/jobs/control_jobs.c:1447
 msgid "move images"
 msgstr "déplacer les images"
 
-#: ../src/control/jobs/control_jobs.c:1450
-#: ../src/control/jobs/control_jobs.c:1504 ../src/imageio/storage/disk.c:92
+#: ../src/control/jobs/control_jobs.c:1451
+#: ../src/control/jobs/control_jobs.c:1505 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:103
 #: ../src/imageio/storage/gallery.c:164 ../src/imageio/storage/latex.c:103
 #: ../src/imageio/storage/latex.c:164 ../src/libs/styles.c:209
@@ -1649,8 +1659,8 @@ msgstr "déplacer les images"
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
-#: ../src/control/jobs/control_jobs.c:1450
-#: ../src/control/jobs/control_jobs.c:1504 ../src/gui/hist_dialog.c:137
+#: ../src/control/jobs/control_jobs.c:1451
+#: ../src/control/jobs/control_jobs.c:1505 ../src/gui/hist_dialog.c:137
 #: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
 #: ../src/gui/presets.c:382 ../src/gui/styles_dialog.c:283
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:103
@@ -1662,12 +1672,12 @@ msgstr "sélectionner répertoire"
 msgid "_cancel"
 msgstr "annuler"
 
-#: ../src/control/jobs/control_jobs.c:1451
-#: ../src/control/jobs/control_jobs.c:1505
+#: ../src/control/jobs/control_jobs.c:1452
+#: ../src/control/jobs/control_jobs.c:1506
 msgid "_select as destination"
 msgstr "_sélectionner comme destination"
 
-#: ../src/control/jobs/control_jobs.c:1469
+#: ../src/control/jobs/control_jobs.c:1470
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1682,17 +1692,17 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers %s  ?\n"
 "(les clones non sélectionnés seront également déplacés)"
 
-#: ../src/control/jobs/control_jobs.c:1475
+#: ../src/control/jobs/control_jobs.c:1476
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "déplacer l' image ?"
 msgstr[1] "déplacer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1500
+#: ../src/control/jobs/control_jobs.c:1501
 msgid "copy images"
 msgstr "copier les images"
 
-#: ../src/control/jobs/control_jobs.c:1523
+#: ../src/control/jobs/control_jobs.c:1524
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1702,59 +1712,59 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir copier physiquement les %d images sélectionnées "
 "vers %s  ?"
 
-#: ../src/control/jobs/control_jobs.c:1526
+#: ../src/control/jobs/control_jobs.c:1527
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copier l'image ?"
 msgstr[1] "copier les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1546
-#: ../src/control/jobs/control_jobs.c:1553
+#: ../src/control/jobs/control_jobs.c:1547
+#: ../src/control/jobs/control_jobs.c:1554
 msgid "local copy images"
 msgstr "copie locale d'images"
 
-#: ../src/control/jobs/control_jobs.c:1612
+#: ../src/control/jobs/control_jobs.c:1613
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage « %s », "
 "exportation abandonnée."
 
-#: ../src/control/jobs/control_jobs.c:1623
+#: ../src/control/jobs/control_jobs.c:1624
 msgid "export images"
 msgstr "exporter les images"
 
-#: ../src/control/jobs/control_jobs.c:1648
+#: ../src/control/jobs/control_jobs.c:1649
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1663
+#: ../src/control/jobs/control_jobs.c:1664
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "décalage horaire ajouté à %d image"
 msgstr[1] "décalage horaire ajouté à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1702 ../src/libs/geotagging.c:607
+#: ../src/control/jobs/control_jobs.c:1703 ../src/libs/geotagging.c:607
 msgid "time offset"
 msgstr "décalage"
 
-#: ../src/control/jobs/control_jobs.c:1726 ../src/libs/copy_history.c:289
+#: ../src/control/jobs/control_jobs.c:1727 ../src/libs/copy_history.c:289
 msgid "write sidecar files"
 msgstr "sauver en xmp"
 
-#: ../src/control/jobs/film_jobs.c:71
+#: ../src/control/jobs/film_jobs.c:72
 msgid "import images"
 msgstr "importer les images"
 
-#: ../src/control/jobs/film_jobs.c:145
+#: ../src/control/jobs/film_jobs.c:146
 msgid "no supported images were found to be imported"
 msgstr "aucune image supportée n'a été importée"
 
-#: ../src/control/jobs/film_jobs.c:199
+#: ../src/control/jobs/film_jobs.c:200
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
@@ -3470,8 +3480,8 @@ msgstr "taille des bords non valide, 0 est utilisé"
 
 #: ../src/imageio/format/pdf.c:255 ../src/imageio/storage/disk.c:293
 #: ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1294
-#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:343
-#: ../src/imageio/storage/gallery.c:363 ../src/imageio/storage/picasa.c:1446
+#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:337
+#: ../src/imageio/storage/gallery.c:357 ../src/imageio/storage/picasa.c:1446
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier « %s » !"
@@ -3783,7 +3793,7 @@ msgid "could not write to directory `%s'!"
 msgstr "impossible d'écrire dans le répertoire « %s » !"
 
 #: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:142
-#: ../src/imageio/storage/gallery.c:373 ../src/imageio/storage/latex.c:349
+#: ../src/imageio/storage/gallery.c:367 ../src/imageio/storage/latex.c:349
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgid_plural "%d/%d exported to `%s%s'"
@@ -5361,7 +5371,7 @@ msgid "set the global saturation"
 msgstr "règle la saturation globale"
 
 #: ../src/iop/colorchecker.c:111
-msgid "color checker lut"
+msgid "color look up table"
 msgstr "table correspondance couleurs"
 
 #: ../src/iop/colorchecker.c:262
@@ -5822,58 +5832,58 @@ msgstr ""
 "seuil pour la détection de la frange, valeurs plus grandes pour moins de "
 "suppression de la frange"
 
-#: ../src/iop/demosaic.c:144
+#: ../src/iop/demosaic.c:143
 msgid "demosaic"
 msgstr "dématriçage"
 
-#: ../src/iop/demosaic.c:159
+#: ../src/iop/demosaic.c:158
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:3655
+#: ../src/iop/demosaic.c:3625
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr " matrice couleur « %s » non trouvée pour une image de bayer!"
 
-#: ../src/iop/demosaic.c:3855 ../src/iop/demosaic.c:3864
+#: ../src/iop/demosaic.c:3825 ../src/iop/demosaic.c:3834
 #: ../src/iop/dither.c:792 ../src/iop/highlights.c:1065
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:3857
+#: ../src/iop/demosaic.c:3827
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:3858
+#: ../src/iop/demosaic.c:3828
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:3859
+#: ../src/iop/demosaic.c:3829
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3860 ../src/iop/demosaic.c:3869
+#: ../src/iop/demosaic.c:3830 ../src/iop/demosaic.c:3839
 msgid "passthrough (monochrome) (experimental)"
 msgstr "monochrome (expérimental)"
 
-#: ../src/iop/demosaic.c:3861 ../src/iop/demosaic.c:3870
+#: ../src/iop/demosaic.c:3831 ../src/iop/demosaic.c:3840
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:3866
+#: ../src/iop/demosaic.c:3836
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3867
+#: ../src/iop/demosaic.c:3837
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-passe"
 
-#: ../src/iop/demosaic.c:3868
+#: ../src/iop/demosaic.c:3838
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-passes (lent)"
 
-#: ../src/iop/demosaic.c:3873
+#: ../src/iop/demosaic.c:3843
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5883,63 +5893,63 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:3875
+#: ../src/iop/demosaic.c:3845
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:3879
+#: ../src/iop/demosaic.c:3849
 msgid "color smoothing"
 msgstr "lissage des couleurs"
 
-#: ../src/iop/demosaic.c:3882
+#: ../src/iop/demosaic.c:3852
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:3883
+#: ../src/iop/demosaic.c:3853
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:3884
+#: ../src/iop/demosaic.c:3854
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:3885
+#: ../src/iop/demosaic.c:3855
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:3886
+#: ../src/iop/demosaic.c:3856
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:3887
+#: ../src/iop/demosaic.c:3857
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:3891
+#: ../src/iop/demosaic.c:3861
 msgid "match greens"
 msgstr "correction des verts"
 
-#: ../src/iop/demosaic.c:3892
+#: ../src/iop/demosaic.c:3862
 msgid "disabled"
 msgstr "désactivée"
 
-#: ../src/iop/demosaic.c:3893
+#: ../src/iop/demosaic.c:3863
 msgid "local average"
 msgstr "moyenne locale"
 
-#: ../src/iop/demosaic.c:3894
+#: ../src/iop/demosaic.c:3864
 msgid "full average"
 msgstr "moyenne globale"
 
-#: ../src/iop/demosaic.c:3895
+#: ../src/iop/demosaic.c:3865
 msgid "full and local average"
 msgstr "moyenne globale et locale"
 
-#: ../src/iop/demosaic.c:3896
+#: ../src/iop/demosaic.c:3866
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:3908
+#: ../src/iop/demosaic.c:3878
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -10811,6 +10821,9 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgid "color checker lut"
+#~ msgstr "table correspondance couleurs"
 
 #~ msgid "an error has occured while trying to open the database from"
 #~ msgstr ""
