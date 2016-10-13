@@ -384,19 +384,32 @@
 				<Horizontal y="0" height="33"/>
 			</BlackAreas>
 		</Camera>
-		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw1" supported="no">
+		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw1" supported="yes"> <!-- "mRaw" -->
 			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
-			<Crop x="0" y="0" width="0" height="0"/>
-			<Sensor black="0" white="14338"/>
+			<Crop x="28" y="10" width="0" height="0"/>
+			<Sensor black="0" white="48816" iso_list="320 640 1250 2500 5000"/>
+			<Sensor black="0" white="51936" iso_list="160"/>
+			<Sensor black="0" white="55680" iso_list="400 500 800 1000 1600 2000 3200 4000 6400 12800 16000 25600"/>
+			<Sensor black="0" white="55688" iso_list="8000 10000"/>
+			<Sensor black="0" white="58832" iso_list="100 125 200 250"/>
 			<Hints>
 				<Hint name="sraw_new" value=""/>
 				<Hint name="invert_sraw_wb" value=""/>
+				<Hint name="wrapped_cr2_slices" value=""/>
 			</Hints>
 		</Camera>
-		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw2" supported="no">
+		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw2"> <!-- "sRaw" -->
 			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
 			<Crop x="0" y="0" width="0" height="0"/>
-			<Sensor black="0" white="14338"/>
+			<Sensor black="0" white="48468" iso_list="2500"/>
+			<Sensor black="0" white="48488" iso_list="1250"/>
+			<Sensor black="0" white="48492" iso_list="320"/>
+			<Sensor black="0" white="48496" iso_list="640"/>
+			<Sensor black="0" white="48588" iso_list="5000"/>
+			<Sensor black="0" white="51932" iso_list="160"/>
+			<Sensor black="0" white="55680" iso_list="400 500 800 1000 1600 2000 3200 4000 6400 12800 16000 25600"/>
+			<Sensor black="0" white="55688" iso_list="8000 10000"/>
+			<Sensor black="0" white="58832" iso_list="100 125 200 250"/>
 			<Hints>
 				<Hint name="sraw_new" value=""/>
 				<Hint name="invert_sraw_wb" value=""/>
