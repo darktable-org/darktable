@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-12 23:09+0200\n"
-"PO-Revision-Date: 2016-10-12 23:12+0200\n"
+"POT-Creation-Date: 2016-10-13 18:16+0200\n"
+"PO-Revision-Date: 2016-10-13 18:25+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -793,18 +793,9 @@ msgstr "nommage des fichiers"
 msgid "file naming pattern used for a import session"
 msgstr "nommage des fichiers pour la session d'importation"
 
-#: ../data/darktable.desktop.in.h:1
-msgid "Virtual Lighttable and Darkroom"
-msgstr "Table lumineuse et chambre noire virtuelles"
-
-#: ../data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
+#: ../data/darktable.appdata.xml.in.h:1 ../data/darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
 msgstr "Organiser et développer les images d'un boîtier numérique"
-
-#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../data/darktable.desktop.in.h:4
-msgid "graphics;photography;raw;"
-msgstr "graphisme;photographie;raw;"
 
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
@@ -831,6 +822,43 @@ msgid ""
 msgstr ""
 "darktable supporte la plupart des formats raw récents, et fait tous ces "
 "calculs avec une très haute précision."
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Table lumineuse et chambre noire virtuelles"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "graphisme;photographie;raw;"
+
+#: ../src/chart/main.c:461 ../src/control/jobs/control_jobs.c:1451
+#: ../src/control/jobs/control_jobs.c:1505 ../src/gui/hist_dialog.c:137
+#: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
+#: ../src/gui/presets.c:382 ../src/gui/styles_dialog.c:283
+#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:103
+#: ../src/imageio/storage/latex.c:103 ../src/libs/collect.c:227
+#: ../src/libs/copy_history.c:72 ../src/libs/geotagging.c:454
+#: ../src/libs/import.c:774 ../src/libs/import.c:873 ../src/libs/lib.c:216
+#: ../src/libs/styles.c:209 ../src/libs/styles.c:229 ../src/libs/tagging.c:355
+#: ../src/libs/tagging.c:392
+msgid "_cancel"
+msgstr "annuler"
+
+#: ../src/chart/main.c:461 ../src/gui/preferences.c:1046
+#: ../src/gui/styles_dialog.c:284 ../src/libs/styles.c:210
+msgid "_save"
+msgstr "_enregistrer"
+
+#. TODO: is the rank interesting, too?
+#: ../src/chart/main.c:902
+#, c-format
+msgid ""
+"average dE: %.02f\n"
+"max dE: %.02f"
+msgstr ""
+"dE moyen: %.02f\n"
+"dE max: %.02f"
 
 #: ../src/cli/main.c:102
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
@@ -1167,7 +1195,7 @@ msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:1581
+#: ../src/common/image.c:1595
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1221,6 +1249,11 @@ msgstr "distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "le profil de gestion du bruit « %s » n'est pas valide"
 
+#: ../src/common/opencl.c:726
+msgid ""
+"due to a slow GPU hardware acceleration via opencl has been de-activated."
+msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
+
 #: ../src/common/pdf.h:89 ../src/iop/lens.c:1702
 #: ../src/libs/print_settings.c:1109
 msgid "mm"
@@ -1253,6 +1286,10 @@ msgstr "letter"
 #: ../src/common/pdf.h:108
 msgid "legal"
 msgstr "legal"
+
+#: ../src/common/pwstorage/pwstorage.c:83
+msgid "GNOME Keyring backend is no longer supported. configure a different one"
+msgstr "Le module GNOME Keyring n'est plus supporté. configurez en un autre"
 
 #: ../src/common/ratings.c:45
 #, c-format
@@ -1313,23 +1350,6 @@ msgstr "le fichier du style « %s » existe"
 msgid "style %s was successfully imported"
 msgstr "le style « %s » a été importé"
 
-#: ../src/common/variables.c:254 ../src/common/variables.c:268
-#: ../src/common/variables.c:282 ../src/common/variables.c:296
-#: ../src/common/variables.c:310 ../src/iop/basecurve.c:1342
-#: ../src/iop/clipping.c:1548 ../src/iop/clipping.c:1838
-#: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1996
-#: ../src/iop/clipping.c:2023 ../src/iop/colorreconstruction.c:1378
-#: ../src/iop/lens.c:2034 ../src/libs/export.c:486 ../src/libs/live_view.c:348
-#: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
-#: ../src/libs/print_settings.c:1020 ../src/libs/print_settings.c:1289
-msgid "none"
-msgstr "sans"
-
-#: ../src/common/opencl.c:726
-msgid ""
-"due to a slow GPU hardware acceleration via opencl has been de-activated."
-msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
-
 #: ../src/common/utility.c:371
 msgid "above sea level"
 msgstr "au dessus du niveau de la mer"
@@ -1342,6 +1362,18 @@ msgstr "sous le niveau de la mer"
 #: ../src/libs/metadata_view.c:550
 msgid "m"
 msgstr "m"
+
+#: ../src/common/variables.c:254 ../src/common/variables.c:268
+#: ../src/common/variables.c:282 ../src/common/variables.c:296
+#: ../src/common/variables.c:310 ../src/iop/basecurve.c:1342
+#: ../src/iop/clipping.c:1548 ../src/iop/clipping.c:1838
+#: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1996
+#: ../src/iop/clipping.c:2023 ../src/iop/colorreconstruction.c:1378
+#: ../src/iop/lens.c:2034 ../src/libs/export.c:486 ../src/libs/live_view.c:348
+#: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
+#: ../src/libs/print_settings.c:1020 ../src/libs/print_settings.c:1289
+msgid "none"
+msgstr "sans"
 
 #: ../src/control/control.c:368
 msgid "working.."
@@ -1658,19 +1690,6 @@ msgstr "déplacer les images"
 #: ../src/lua/preferences.c:592
 msgid "select directory"
 msgstr "sélectionner répertoire"
-
-#: ../src/control/jobs/control_jobs.c:1451
-#: ../src/control/jobs/control_jobs.c:1505 ../src/gui/hist_dialog.c:137
-#: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
-#: ../src/gui/presets.c:382 ../src/gui/styles_dialog.c:283
-#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:103
-#: ../src/imageio/storage/latex.c:103 ../src/libs/collect.c:227
-#: ../src/libs/copy_history.c:72 ../src/libs/geotagging.c:454
-#: ../src/libs/import.c:774 ../src/libs/import.c:873 ../src/libs/lib.c:216
-#: ../src/libs/styles.c:209 ../src/libs/styles.c:229 ../src/libs/tagging.c:355
-#: ../src/libs/tagging.c:392
-msgid "_cancel"
-msgstr "annuler"
 
 #: ../src/control/jobs/control_jobs.c:1452
 #: ../src/control/jobs/control_jobs.c:1506
@@ -3171,11 +3190,6 @@ msgstr "supprimer ce pré-réglage ?"
 msgid "select file to export"
 msgstr "sélectionne le fichier à exporter"
 
-#: ../src/gui/preferences.c:1046 ../src/gui/styles_dialog.c:284
-#: ../src/libs/styles.c:210
-msgid "_save"
-msgstr "_enregistrer"
-
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1068
 msgid "select file to import"
@@ -4119,111 +4133,6 @@ msgid_plural "%d/%d exported to google+ album"
 msgstr[0] "%d/%d exportée vers l'album google+"
 msgstr[1] "%d/%d exportées vers l'album google+"
 
-#: ../src/iop/atrous.c:115
-msgid "equalizer"
-msgstr "égaliseur"
-
-#: ../src/iop/atrous.c:130 ../src/iop/soften.c:105
-msgctxt "accel"
-msgid "mix"
-msgstr "fusion"
-
-#: ../src/iop/atrous.c:1039
-msgctxt "eq_preset"
-msgid "coarse"
-msgstr "global"
-
-#: ../src/iop/atrous.c:1053
-msgid "denoise & sharpen"
-msgstr "réduction du bruit & accentuation"
-
-#: ../src/iop/atrous.c:1067
-msgctxt "atrous"
-msgid "sharpen"
-msgstr "renforcer la netteté"
-
-#: ../src/iop/atrous.c:1081
-msgid "denoise chroma"
-msgstr "réduction du bruit chromatique"
-
-#: ../src/iop/atrous.c:1095 ../src/iop/equalizer.c:331
-msgid "denoise"
-msgstr "réduction du bruit"
-
-#: ../src/iop/atrous.c:1110 ../src/iop/bloom.c:80
-msgid "bloom"
-msgstr "lumière d'arrière-plan"
-
-#: ../src/iop/atrous.c:1124
-msgid "clarity"
-msgstr "clarté"
-
-#: ../src/iop/atrous.c:1420
-msgid "coarse"
-msgstr "global"
-
-#: ../src/iop/atrous.c:1427
-msgid "fine"
-msgstr "détail"
-
-#: ../src/iop/atrous.c:1439
-msgid "contrasty"
-msgstr "contrasté"
-
-#: ../src/iop/atrous.c:1440 ../src/iop/atrous.c:1444
-msgid "smooth"
-msgstr "flou"
-
-#: ../src/iop/atrous.c:1445
-msgid "noisy"
-msgstr "bruité"
-
-#. case atrous_s:
-#: ../src/iop/atrous.c:1448
-msgid "bold"
-msgstr "net"
-
-#: ../src/iop/atrous.c:1449
-msgid "dull"
-msgstr "flou"
-
-#: ../src/iop/atrous.c:1657 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:857
-msgid "luma"
-msgstr "luma"
-
-#: ../src/iop/atrous.c:1659
-msgid "change lightness at each feature size"
-msgstr "changer la luminosité pour chaque taille"
-
-#: ../src/iop/atrous.c:1662 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:859
-msgid "chroma"
-msgstr "chroma"
-
-#: ../src/iop/atrous.c:1664
-msgid "change color saturation at each feature size"
-msgstr "changer la saturation pour chaque taille"
-
-#: ../src/iop/atrous.c:1666
-msgid "edges"
-msgstr "contours"
-
-#: ../src/iop/atrous.c:1668
-msgid ""
-"change edge halos at each feature size\n"
-"only changes results of luma and chroma tabs"
-msgstr ""
-"change les halos de contour à chaque niveau de détail\n"
-"change uniquement les résultats des sections luma et chroma"
-
-#: ../src/iop/atrous.c:1694 ../src/iop/colorzones.c:1095
-#: ../src/iop/soften.c:733
-msgid "mix"
-msgstr "fusion"
-
-#: ../src/iop/atrous.c:1695 ../src/iop/colorzones.c:1097
-msgid "make effect stronger or weaker"
-msgstr "rend l'effet plus fort ou plus faible"
-
 #: ../src/iop/ashift.c:111
 msgid "perspective correction"
 msgstr "correction de perspective"
@@ -4467,6 +4376,111 @@ msgstr "supprime la visualisation des lignes de structure"
 #: ../src/iop/ashift.c:4545
 msgid "toggle visibility of structure lines"
 msgstr "active/désactive l'affichage des lignes de structure"
+
+#: ../src/iop/atrous.c:115
+msgid "equalizer"
+msgstr "égaliseur"
+
+#: ../src/iop/atrous.c:130 ../src/iop/soften.c:105
+msgctxt "accel"
+msgid "mix"
+msgstr "fusion"
+
+#: ../src/iop/atrous.c:1039
+msgctxt "eq_preset"
+msgid "coarse"
+msgstr "global"
+
+#: ../src/iop/atrous.c:1053
+msgid "denoise & sharpen"
+msgstr "réduction du bruit & accentuation"
+
+#: ../src/iop/atrous.c:1067
+msgctxt "atrous"
+msgid "sharpen"
+msgstr "renforcer la netteté"
+
+#: ../src/iop/atrous.c:1081
+msgid "denoise chroma"
+msgstr "réduction du bruit chromatique"
+
+#: ../src/iop/atrous.c:1095 ../src/iop/equalizer.c:331
+msgid "denoise"
+msgstr "réduction du bruit"
+
+#: ../src/iop/atrous.c:1110 ../src/iop/bloom.c:80
+msgid "bloom"
+msgstr "lumière d'arrière-plan"
+
+#: ../src/iop/atrous.c:1124
+msgid "clarity"
+msgstr "clarté"
+
+#: ../src/iop/atrous.c:1420
+msgid "coarse"
+msgstr "global"
+
+#: ../src/iop/atrous.c:1427
+msgid "fine"
+msgstr "détail"
+
+#: ../src/iop/atrous.c:1439
+msgid "contrasty"
+msgstr "contrasté"
+
+#: ../src/iop/atrous.c:1440 ../src/iop/atrous.c:1444
+msgid "smooth"
+msgstr "flou"
+
+#: ../src/iop/atrous.c:1445
+msgid "noisy"
+msgstr "bruité"
+
+#. case atrous_s:
+#: ../src/iop/atrous.c:1448
+msgid "bold"
+msgstr "net"
+
+#: ../src/iop/atrous.c:1449
+msgid "dull"
+msgstr "flou"
+
+#: ../src/iop/atrous.c:1657 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:857
+msgid "luma"
+msgstr "luma"
+
+#: ../src/iop/atrous.c:1659
+msgid "change lightness at each feature size"
+msgstr "changer la luminosité pour chaque taille"
+
+#: ../src/iop/atrous.c:1662 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:859
+msgid "chroma"
+msgstr "chroma"
+
+#: ../src/iop/atrous.c:1664
+msgid "change color saturation at each feature size"
+msgstr "changer la saturation pour chaque taille"
+
+#: ../src/iop/atrous.c:1666
+msgid "edges"
+msgstr "contours"
+
+#: ../src/iop/atrous.c:1668
+msgid ""
+"change edge halos at each feature size\n"
+"only changes results of luma and chroma tabs"
+msgstr ""
+"change les halos de contour à chaque niveau de détail\n"
+"change uniquement les résultats des sections luma et chroma"
+
+#: ../src/iop/atrous.c:1694 ../src/iop/colorzones.c:1095
+#: ../src/iop/soften.c:733
+msgid "mix"
+msgstr "fusion"
+
+#: ../src/iop/atrous.c:1695 ../src/iop/colorzones.c:1097
+msgid "make effect stronger or weaker"
+msgstr "rend l'effet plus fort ou plus faible"
 
 #: ../src/iop/basecurve.c:114
 msgid "neutral"
@@ -4954,7 +4968,7 @@ msgstr "teinte"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:446 ../src/iop/colisa.c:366
-#: ../src/iop/colorcorrection.c:285 ../src/iop/colorchecker.c:1073
+#: ../src/iop/colorchecker.c:1073 ../src/iop/colorcorrection.c:285
 #: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1071
 #: ../src/iop/colorzones.c:1105 ../src/iop/graduatednd.c:1182
 #: ../src/iop/lowpass.c:676 ../src/iop/soften.c:718
@@ -5312,64 +5326,6 @@ msgstr "facteur vert du gain"
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
-#: ../src/iop/colorcontrast.c:88
-msgid "color contrast"
-msgstr "contraste de couleur"
-
-#: ../src/iop/colorcontrast.c:122
-msgctxt "accel"
-msgid "green vs magenta"
-msgstr "vert vs magenta"
-
-#: ../src/iop/colorcontrast.c:123
-msgctxt "accel"
-msgid "blue vs yellow"
-msgstr "bleu vs jaune"
-
-#: ../src/iop/colorcontrast.c:390
-msgid "green vs magenta"
-msgstr "vert vs magenta"
-
-#: ../src/iop/colorcontrast.c:392
-msgid "steepness of the a* curve in Lab"
-msgstr "pente de la courbe a* (Lab)"
-
-#: ../src/iop/colorcontrast.c:398
-msgid "blue vs yellow"
-msgstr "bleu vs jaune"
-
-#: ../src/iop/colorcontrast.c:400
-msgid "steepness of the b* curve in Lab"
-msgstr "pente de la courbe b* (Lab)"
-
-#: ../src/iop/colorcorrection.c:68
-msgid "color correction"
-msgstr "correction des couleurs"
-
-#: ../src/iop/colorcorrection.c:90
-msgid "warm tone"
-msgstr "ton chaud"
-
-#: ../src/iop/colorcorrection.c:97
-msgid "warming filter"
-msgstr "filtre chaud"
-
-#: ../src/iop/colorcorrection.c:104
-msgid "cooling filter"
-msgstr "filtre froid"
-
-#: ../src/iop/colorcorrection.c:264
-msgid ""
-"drag the line for split toning. bright means highlights, dark means shadows. "
-"use mouse wheel to change saturation."
-msgstr ""
-"utiliser la ligne pour un virage partiel. point blanc : hautes lumières, "
-"point noir : ombres. défiler à la souris pour changer la saturation"
-
-#: ../src/iop/colorcorrection.c:284
-msgid "set the global saturation"
-msgstr "règle la saturation globale"
-
 #: ../src/iop/colorchecker.c:111
 msgid "color look up table"
 msgstr "table correspondance couleurs"
@@ -5431,6 +5387,64 @@ msgstr "bleu/jaune"
 #: ../src/iop/colorchecker.c:1072
 msgid "saturation offset"
 msgstr "décalage saturation"
+
+#: ../src/iop/colorcontrast.c:88
+msgid "color contrast"
+msgstr "contraste de couleur"
+
+#: ../src/iop/colorcontrast.c:122
+msgctxt "accel"
+msgid "green vs magenta"
+msgstr "vert vs magenta"
+
+#: ../src/iop/colorcontrast.c:123
+msgctxt "accel"
+msgid "blue vs yellow"
+msgstr "bleu vs jaune"
+
+#: ../src/iop/colorcontrast.c:390
+msgid "green vs magenta"
+msgstr "vert vs magenta"
+
+#: ../src/iop/colorcontrast.c:392
+msgid "steepness of the a* curve in Lab"
+msgstr "pente de la courbe a* (Lab)"
+
+#: ../src/iop/colorcontrast.c:398
+msgid "blue vs yellow"
+msgstr "bleu vs jaune"
+
+#: ../src/iop/colorcontrast.c:400
+msgid "steepness of the b* curve in Lab"
+msgstr "pente de la courbe b* (Lab)"
+
+#: ../src/iop/colorcorrection.c:68
+msgid "color correction"
+msgstr "correction des couleurs"
+
+#: ../src/iop/colorcorrection.c:90
+msgid "warm tone"
+msgstr "ton chaud"
+
+#: ../src/iop/colorcorrection.c:97
+msgid "warming filter"
+msgstr "filtre chaud"
+
+#: ../src/iop/colorcorrection.c:104
+msgid "cooling filter"
+msgstr "filtre froid"
+
+#: ../src/iop/colorcorrection.c:264
+msgid ""
+"drag the line for split toning. bright means highlights, dark means shadows. "
+"use mouse wheel to change saturation."
+msgstr ""
+"utiliser la ligne pour un virage partiel. point blanc : hautes lumières, "
+"point noir : ombres. défiler à la souris pour changer la saturation"
+
+#: ../src/iop/colorcorrection.c:284
+msgid "set the global saturation"
+msgstr "règle la saturation globale"
 
 #: ../src/iop/colorin.c:110
 msgid "input color profile"
@@ -7095,10 +7109,6 @@ msgstr "force du flou pour la luminosité"
 msgid "how much to smooth colors"
 msgstr "force du flou pour les couleurs"
 
-#: ../src/iop/rawoverexposed.c:68
-msgid "raw overexposed"
-msgstr "raw sur-exposé"
-
 #: ../src/iop/overexposed.c:71
 msgid "overexposed"
 msgstr "sous- et sur-exposition"
@@ -7145,6 +7155,10 @@ msgid ""
 msgstr ""
 "réduction du bruit raw\n"
 "uniquement pour les images raw"
+
+#: ../src/iop/rawoverexposed.c:68
+msgid "raw overexposed"
+msgstr "raw sur-exposé"
 
 #: ../src/iop/rawprepare.c:45
 msgid "crop x"
@@ -10643,6 +10657,10 @@ msgstr "défaire"
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
+
+#: ../src/views/knight.c:334
+msgid "good knight"
+msgstr "bon chevalier"
 
 #: ../src/views/lighttable.c:531 ../src/views/slideshow.c:333
 msgid "there are no images in this collection"
