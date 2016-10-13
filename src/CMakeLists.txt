@@ -58,6 +58,7 @@ FILE(GLOB SOURCE_FILES
   "common/dynload.c"
   "common/dlopencl.c"
   "common/ratings.c"
+  "common/resource_limits.c"
   "common/histogram.c"
   "control/control.c"
   "control/crawler.c"

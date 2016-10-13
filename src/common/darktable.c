@@ -49,6 +49,7 @@
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
 #include "common/points.h"
+#include "common/resource_limits.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -470,40 +471,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #endif
 
   // make sure that stack/frame limits are good (musl)
-  {
-    int ret;
-
-    struct rlimit rlim = { 0 };
-
-    ret = getrlimit(RLIMIT_STACK, &rlim);
-
-    if(ret != 0)
-    {
-      const int errsv = errno;
-      fprintf(stderr, "[dt_init] error: getrlimit(RLIMIT_STACK) returned %i: %i (%s)\n", ret, errsv,
-              strerror(errsv));
-    }
-
-    assert((ret == 0 && WANTED_STACK_SIZE <= rlim.rlim_max) || (ret != 0));
-
-    if(ret != 0 || rlim.rlim_cur < WANTED_STACK_SIZE)
-    {
-      // looks like we need to bump/set it...
-
-      fprintf(stderr, "[dt_init] info: bumping RLIMIT_STACK rlim_cur from %ju to %i\n", (uintmax_t)rlim.rlim_cur,
-              WANTED_STACK_SIZE);
-
-      rlim.rlim_cur = WANTED_STACK_SIZE;
-
-      ret = setrlimit(RLIMIT_STACK, &rlim);
-      if(ret != 0)
-      {
-        int errsv = errno;
-        fprintf(stderr, "[dt_init] error: setrlimit(RLIMIT_STACK) returned %i: %i (%s)\n", ret, errsv,
-                strerror(errsv));
-      }
-    }
-  }
+  dt_set_rlimits();
 
   // we have to have our share dir in XDG_DATA_DIRS,
   // otherwise GTK+ won't find our logo for the about screen (and maybe other things)
