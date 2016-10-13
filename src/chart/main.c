@@ -50,7 +50,7 @@ typedef struct dt_lut_t
   // gtk gui
   GtkWidget *window, *image_button, *cht_button, *it8_button, *reference_image_button, *reference_it8_box,
       *reference_image_box, *process_button, *export_button, *export_raw_button, *reference_mode, *gray_ramp,
-      *number_patches, *source_shrink, *reference_shrink;
+      *number_patches, *source_shrink, *reference_shrink, *result_label;
   GtkWidget *treeview;
   GtkTreeModel *model;
 
@@ -895,7 +895,13 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   double *coeff_b = malloc((N + 4) * sizeof(double));
   double *coeff[] = { coeff_L, coeff_a, coeff_b };
   int *perm = malloc((N + 4) * sizeof(int));
-  sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff);
+  double avgerr, maxerr;
+  sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff, &avgerr, &maxerr);
+
+  // TODO: is the rank interesting, too?
+  char *result_string = g_strdup_printf("average dE: %.02f\nmax dE: %.02f", avgerr, maxerr);
+  gtk_label_set_text(GTK_LABEL(self->result_label), result_string);
+  g_free(result_string);
 
   free(coeff_b);
   free(coeff_a);
@@ -1145,6 +1151,10 @@ static GtkWidget *create_notebook_page_process(dt_lut_t *self)
   gtk_grid_attach(GTK_GRID(page), process_button, 1, line, 1, 1);
   gtk_grid_attach(GTK_GRID(page), export_button, 2, line, 1, 1);
   gtk_grid_attach(GTK_GRID(page), export_raw_button, 3, line++, 1, 1);
+
+  self->result_label = gtk_label_new(NULL);
+  gtk_widget_set_halign(self->result_label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(page), self->result_label, 1, line++, 3, 1);
 
   g_signal_connect(gray_ramp, "changed", G_CALLBACK(gray_ramp_changed_callback), self);
   g_signal_connect(process_button, "clicked", G_CALLBACK(process_button_clicked_callback), self);
