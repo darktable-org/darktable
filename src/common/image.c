@@ -1564,11 +1564,11 @@ void dt_image_local_copy_synch(void)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int imgid = sqlite3_column_int(stmt, 0);
-    gboolean from_cache = TRUE;
+    gboolean from_cache = FALSE;
     char filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
-    if(!from_cache)
+    if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       dt_image_write_sidecar_file(imgid);
       count++;
