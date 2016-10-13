@@ -1,6 +1,7 @@
 build/src/preferences_gen.h
-data/darktable.desktop.in
 data/darktable.appdata.xml.in
+data/darktable.desktop.in
+src/chart/main.c
 src/cli/main.c
 src/common/collection.c
 src/common/colorspaces.c
@@ -17,14 +18,15 @@ src/common/imageio.c
 src/common/import_session.c
 src/common/mipmap_cache.c
 src/common/noiseprofiles.c
+src/common/opencl.c
 src/common/pdf.h
 src/common/points.h
 src/common/printprof.c
+src/common/pwstorage/pwstorage.c
 src/common/ratings.c
 src/common/styles.c
-src/common/variables.c
-src/common/opencl.c
 src/common/utility.c
+src/common/variables.c
 src/control/control.c
 src/control/crawler.c
 src/control/jobs/camera_jobs.c
@@ -70,8 +72,8 @@ src/imageio/storage/gallery.c
 src/imageio/storage/latex.c
 src/imageio/storage/picasa.c
 src/iop/amaze_demosaic_RT.cc
-src/iop/atrous.c
 src/iop/ashift.c
+src/iop/atrous.c
 src/iop/basecurve.c
 src/iop/bilat.c
 src/iop/bilateral.cc
@@ -83,9 +85,9 @@ src/iop/clahe.c
 src/iop/clipping.c
 src/iop/colisa.c
 src/iop/colorbalance.c
+src/iop/colorchecker.c
 src/iop/colorcontrast.c
 src/iop/colorcorrection.c
-src/iop/colorchecker.c
 src/iop/colorin.c
 src/iop/colorize.c
 src/iop/colormapping.c
@@ -116,10 +118,10 @@ src/iop/lowlight.c
 src/iop/lowpass.c
 src/iop/monochrome.c
 src/iop/nlmeans.c
-src/iop/rawoverexposed.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
+src/iop/rawoverexposed.c
 src/iop/rawprepare.c
 src/iop/relight.c
 src/iop/rotatepixels.c
@@ -180,6 +182,7 @@ src/libs/tools/view_toolbox.c
 src/lua/lualib.c
 src/lua/preferences.c
 src/views/darkroom.c
+src/views/knight.c
 src/views/lighttable.c
 src/views/map.c
 src/views/print.c
