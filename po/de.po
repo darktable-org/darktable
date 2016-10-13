@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-11 11:48+0200\n"
-"PO-Revision-Date: 2016-10-11 11:49+0200\n"
+"POT-Creation-Date: 2016-10-13 11:31+0200\n"
+"PO-Revision-Date: 2016-10-13 11:39+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -801,18 +801,9 @@ msgstr "Namensformat der Dateien"
 msgid "file naming pattern used for a import session"
 msgstr "Das Namensformat für Dateien, welches beim Importieren benutzt wird"
 
-#: ../data/darktable.desktop.in.h:1
-msgid "Virtual Lighttable and Darkroom"
-msgstr "Virtueller Leuchttisch und Dunkelkammer"
-
-#: ../data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
+#: ../data/darktable.appdata.xml.in.h:1 ../data/darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
 msgstr "Organisiere und entwickle Bilder von Digitalkameras"
-
-#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../data/darktable.desktop.in.h:4
-msgid "graphics;photography;raw;"
-msgstr "Graphik;Grafik;Photographie;Fotografie;Raw;"
 
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
@@ -840,6 +831,43 @@ msgstr ""
 "darktable unterstützt das Raw-Format der meisten modernen Kameras und führt "
 "seine Berechnungen mit sehr hoher Präzision durch."
 
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Virtueller Leuchttisch und Dunkelkammer"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "Graphik;Grafik;Photographie;Fotografie;Raw;"
+
+#: ../src/chart/main.c:461 ../src/control/jobs/control_jobs.c:1451
+#: ../src/control/jobs/control_jobs.c:1505 ../src/gui/hist_dialog.c:137
+#: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
+#: ../src/gui/presets.c:382 ../src/gui/styles_dialog.c:283
+#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:103
+#: ../src/imageio/storage/latex.c:103 ../src/libs/collect.c:227
+#: ../src/libs/copy_history.c:72 ../src/libs/geotagging.c:454
+#: ../src/libs/import.c:774 ../src/libs/import.c:873 ../src/libs/lib.c:216
+#: ../src/libs/styles.c:209 ../src/libs/styles.c:229 ../src/libs/tagging.c:355
+#: ../src/libs/tagging.c:392
+msgid "_cancel"
+msgstr "_Abbrechen"
+
+#: ../src/chart/main.c:461 ../src/gui/preferences.c:1046
+#: ../src/gui/styles_dialog.c:284 ../src/libs/styles.c:210
+msgid "_save"
+msgstr "_Speichern"
+
+#. TODO: is the rank interesting, too?
+#: ../src/chart/main.c:902
+#, c-format
+msgid ""
+"average dE: %.02f\n"
+"max dE: %.02f"
+msgstr ""
+"mittleres dE: %.02f\n"
+"maximales dE: %.02f"
+
 #: ../src/cli/main.c:102
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
@@ -864,16 +892,26 @@ msgstr ""
 msgid "output file already exists, it will get renamed"
 msgstr "Ausgabedatei existiert bereits, sie wird umbenannt"
 
-#: ../src/cli/main.c:212
+#: ../src/cli/main.c:210
+#, c-format
+msgid "error: can't open folder %s"
+msgstr "Fehler: kann Ordner %s nicht öffnen"
+
+#: ../src/cli/main.c:228
 #, c-format
 msgid "error: can't open file %s"
 msgstr "Fehler: kann Datei %s nicht öffnen"
 
-#: ../src/cli/main.c:235
+#: ../src/cli/main.c:242
+#, c-format
+msgid "no images to export, aborting\n"
+msgstr "keine Bilder zum exportieren gefunden, breche ab\n"
+
+#: ../src/cli/main.c:268
 msgid "empty history stack"
 msgstr "leerer Verlaufsstapel"
 
-#: ../src/cli/main.c:258
+#: ../src/cli/main.c:291
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -881,17 +919,17 @@ msgstr ""
 "kann Modul zum Speichern auf der Festplatten nicht finden. Bitte die "
 "Installation prüfen, irgendwas scheint kaputt zu sein."
 
-#: ../src/cli/main.c:266
+#: ../src/cli/main.c:299
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "Konnte keine Einstellungen vom Speicher-Modul bekommen, breche Export ab …"
 
-#: ../src/cli/main.c:279
+#: ../src/cli/main.c:312
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "unbekannte Datei-Erweiterung '.%s'"
 
-#: ../src/cli/main.c:288
+#: ../src/cli/main.c:321
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "Konnte keine Einstellungen vom Format-Modul bekommen, breche Export ab …"
@@ -1093,7 +1131,7 @@ msgstr "darktable schließen"
 msgid "delete database"
 msgstr "Datenbank löschen"
 
-#: ../src/common/film.c:351
+#: ../src/common/film.c:356
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -1120,7 +1158,7 @@ msgstr "ein"
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1334
 #: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
 #: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1943
-#: ../src/iop/demosaic.c:3842 ../src/iop/vignette.c:1140
+#: ../src/iop/demosaic.c:3851 ../src/iop/vignette.c:1140
 #: ../src/libs/history.c:168 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "aus"
@@ -1217,6 +1255,13 @@ msgstr "generische Poisson-Verteilung"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Rauschprofildatei „%s“ ist defekt"
 
+#: ../src/common/opencl.c:726
+msgid ""
+"due to a slow GPU hardware acceleration via opencl has been de-activated."
+msgstr ""
+"OpenCL-Hardware-Beschleunigung wurde aufgrund einer langsamen GPU "
+"deaktiviert."
+
 #: ../src/common/pdf.h:89 ../src/iop/lens.c:1702
 #: ../src/libs/print_settings.c:1109
 msgid "mm"
@@ -1249,6 +1294,12 @@ msgstr "Letter"
 #: ../src/common/pdf.h:108
 msgid "legal"
 msgstr "Legal"
+
+#: ../src/common/pwstorage/pwstorage.c:83
+msgid "GNOME Keyring backend is no longer supported. configure a different one"
+msgstr ""
+"Das GNOME Keyring-Backend wird nicht mehr unterstützt. Wählen Sie bitte ein "
+"anderes"
 
 #: ../src/common/ratings.c:45
 #, c-format
@@ -1309,25 +1360,6 @@ msgstr "Stil-Datei für ‚%s‘ existiert bereits"
 msgid "style %s was successfully imported"
 msgstr "Stil ‚%s‘ erfolgreich importiert"
 
-#: ../src/common/variables.c:254 ../src/common/variables.c:268
-#: ../src/common/variables.c:282 ../src/common/variables.c:296
-#: ../src/common/variables.c:310 ../src/iop/basecurve.c:1342
-#: ../src/iop/clipping.c:1548 ../src/iop/clipping.c:1838
-#: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1996
-#: ../src/iop/clipping.c:2023 ../src/iop/colorreconstruction.c:1378
-#: ../src/iop/lens.c:2034 ../src/libs/export.c:486 ../src/libs/live_view.c:348
-#: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
-#: ../src/libs/print_settings.c:1020 ../src/libs/print_settings.c:1289
-msgid "none"
-msgstr "keine"
-
-#: ../src/common/opencl.c:726
-msgid ""
-"due to a slow GPU hardware acceleration via opencl has been de-activated."
-msgstr ""
-"OpenCL-Hardware-Beschleunigung wurde aufgrund einer langsamen GPU "
-"deaktiviert."
-
 #: ../src/common/utility.c:371
 msgid "above sea level"
 msgstr "über Null"
@@ -1340,6 +1372,18 @@ msgstr "unter Null"
 #: ../src/libs/metadata_view.c:550
 msgid "m"
 msgstr "m"
+
+#: ../src/common/variables.c:254 ../src/common/variables.c:268
+#: ../src/common/variables.c:282 ../src/common/variables.c:296
+#: ../src/common/variables.c:310 ../src/iop/basecurve.c:1342
+#: ../src/iop/clipping.c:1548 ../src/iop/clipping.c:1838
+#: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1996
+#: ../src/iop/clipping.c:2023 ../src/iop/colorreconstruction.c:1378
+#: ../src/iop/lens.c:2034 ../src/libs/export.c:486 ../src/libs/live_view.c:348
+#: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
+#: ../src/libs/print_settings.c:1020 ../src/libs/print_settings.c:1289
+msgid "none"
+msgstr "keine"
 
 #: ../src/control/control.c:368
 msgid "working.."
@@ -1578,24 +1622,24 @@ msgstr[1] "%d Bilder nach %s exportieren"
 msgid "image `%s' is currently unavailable"
 msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
 
-#: ../src/control/jobs/control_jobs.c:1326
+#: ../src/control/jobs/control_jobs.c:1327
 msgid "merge hdr image"
 msgstr "HDR-Bild zusammenfassen"
 
-#: ../src/control/jobs/control_jobs.c:1340
+#: ../src/control/jobs/control_jobs.c:1341
 msgid "duplicate images"
 msgstr "Bilder duplizieren"
 
-#: ../src/control/jobs/control_jobs.c:1347
+#: ../src/control/jobs/control_jobs.c:1348
 msgid "flip images"
 msgstr "Bilder spiegeln"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1354
+#: ../src/control/jobs/control_jobs.c:1355
 msgid "remove images"
 msgstr "Bilder entfernen"
 
-#: ../src/control/jobs/control_jobs.c:1376
+#: ../src/control/jobs/control_jobs.c:1377
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1605,16 +1649,16 @@ msgstr[0] ""
 msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder aus der Sammlung entfernt werden?"
 
-#: ../src/control/jobs/control_jobs.c:1380
+#: ../src/control/jobs/control_jobs.c:1381
 msgid "remove images?"
 msgstr "Bilder entfernen?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1395
+#: ../src/control/jobs/control_jobs.c:1396
 msgid "delete images"
 msgstr "Bilder löschen"
 
-#: ../src/control/jobs/control_jobs.c:1419
+#: ../src/control/jobs/control_jobs.c:1420
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -1623,7 +1667,7 @@ msgstr[0] ""
 msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder in den Papierkorb verschoben werden?"
 
-#: ../src/control/jobs/control_jobs.c:1421
+#: ../src/control/jobs/control_jobs.c:1422
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1635,20 +1679,20 @@ msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder physikalisch von der Festplatte "
 "gelöscht werden?"
 
-#: ../src/control/jobs/control_jobs.c:1425
+#: ../src/control/jobs/control_jobs.c:1426
 msgid "trash images?"
 msgstr "Bilder in den Papierkorb verschieben?"
 
-#: ../src/control/jobs/control_jobs.c:1425
+#: ../src/control/jobs/control_jobs.c:1426
 msgid "delete images?"
 msgstr "Bilder löschen?"
 
-#: ../src/control/jobs/control_jobs.c:1446
+#: ../src/control/jobs/control_jobs.c:1447
 msgid "move images"
 msgstr "Bilder verschieben"
 
-#: ../src/control/jobs/control_jobs.c:1450
-#: ../src/control/jobs/control_jobs.c:1504 ../src/imageio/storage/disk.c:92
+#: ../src/control/jobs/control_jobs.c:1451
+#: ../src/control/jobs/control_jobs.c:1505 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:103
 #: ../src/imageio/storage/gallery.c:164 ../src/imageio/storage/latex.c:103
 #: ../src/imageio/storage/latex.c:164 ../src/libs/styles.c:209
@@ -1656,25 +1700,12 @@ msgstr "Bilder verschieben"
 msgid "select directory"
 msgstr "Verzeichnis wählen"
 
-#: ../src/control/jobs/control_jobs.c:1450
-#: ../src/control/jobs/control_jobs.c:1504 ../src/gui/hist_dialog.c:137
-#: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
-#: ../src/gui/presets.c:382 ../src/gui/styles_dialog.c:283
-#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:103
-#: ../src/imageio/storage/latex.c:103 ../src/libs/collect.c:227
-#: ../src/libs/copy_history.c:72 ../src/libs/geotagging.c:454
-#: ../src/libs/import.c:774 ../src/libs/import.c:873 ../src/libs/lib.c:216
-#: ../src/libs/styles.c:209 ../src/libs/styles.c:229 ../src/libs/tagging.c:355
-#: ../src/libs/tagging.c:392
-msgid "_cancel"
-msgstr "_Abbrechen"
-
-#: ../src/control/jobs/control_jobs.c:1451
-#: ../src/control/jobs/control_jobs.c:1505
+#: ../src/control/jobs/control_jobs.c:1452
+#: ../src/control/jobs/control_jobs.c:1506
 msgid "_select as destination"
 msgstr "als Ziel _wählen"
 
-#: ../src/control/jobs/control_jobs.c:1469
+#: ../src/control/jobs/control_jobs.c:1470
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1691,17 +1722,17 @@ msgstr[1] ""
 "werden?\n"
 "(alle nicht ausgewählten Duplikate werden auch verschoben)"
 
-#: ../src/control/jobs/control_jobs.c:1475
+#: ../src/control/jobs/control_jobs.c:1476
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "Bild verschieben?"
 msgstr[1] "Bilder verschieben?"
 
-#: ../src/control/jobs/control_jobs.c:1500
+#: ../src/control/jobs/control_jobs.c:1501
 msgid "copy images"
 msgstr "Bilder kopieren"
 
-#: ../src/control/jobs/control_jobs.c:1523
+#: ../src/control/jobs/control_jobs.c:1524
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1711,59 +1742,59 @@ msgstr[1] ""
 "Sollen die %d ausgewählten Bilder wirklich physikalisch nach %s kopiert "
 "werden?"
 
-#: ../src/control/jobs/control_jobs.c:1526
+#: ../src/control/jobs/control_jobs.c:1527
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "Bild kopieren?"
 msgstr[1] "Bilder kopieren?"
 
-#: ../src/control/jobs/control_jobs.c:1546
-#: ../src/control/jobs/control_jobs.c:1553
+#: ../src/control/jobs/control_jobs.c:1547
+#: ../src/control/jobs/control_jobs.c:1554
 msgid "local copy images"
 msgstr "Bilder lokal kopieren"
 
-#: ../src/control/jobs/control_jobs.c:1612
+#: ../src/control/jobs/control_jobs.c:1613
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "Konnte keine Einstellungen vom Speicher-Modul ‚%s‘ bekommen, breche Export "
 "ab …"
 
-#: ../src/control/jobs/control_jobs.c:1623
+#: ../src/control/jobs/control_jobs.c:1624
 msgid "export images"
 msgstr "Bilder exportieren"
 
-#: ../src/control/jobs/control_jobs.c:1648
+#: ../src/control/jobs/control_jobs.c:1649
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "füge Zeitversatz zu %d Bild hinzu"
 msgstr[1] "füge Zeitversatz zu %d Bildern hinzu"
 
-#: ../src/control/jobs/control_jobs.c:1663
+#: ../src/control/jobs/control_jobs.c:1664
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "Zeitversatz zu %d Bild hinzugefügt"
 msgstr[1] "Zeitversatz zu %d Bildern hinzugefügt"
 
-#: ../src/control/jobs/control_jobs.c:1702 ../src/libs/geotagging.c:607
+#: ../src/control/jobs/control_jobs.c:1703 ../src/libs/geotagging.c:607
 msgid "time offset"
 msgstr "Zeitversatz"
 
-#: ../src/control/jobs/control_jobs.c:1726 ../src/libs/copy_history.c:289
+#: ../src/control/jobs/control_jobs.c:1727 ../src/libs/copy_history.c:289
 msgid "write sidecar files"
 msgstr "XMP schreiben"
 
-#: ../src/control/jobs/film_jobs.c:71
+#: ../src/control/jobs/film_jobs.c:72
 msgid "import images"
 msgstr "Bilder importieren"
 
-#: ../src/control/jobs/film_jobs.c:145
+#: ../src/control/jobs/film_jobs.c:146
 msgid "no supported images were found to be imported"
 msgstr "keine unterstützten Bilder zum Importieren gefunden"
 
-#: ../src/control/jobs/film_jobs.c:199
+#: ../src/control/jobs/film_jobs.c:200
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
@@ -3165,11 +3196,6 @@ msgstr "Voreinstellung löschen?"
 msgid "select file to export"
 msgstr "Datei zum exportieren wählen"
 
-#: ../src/gui/preferences.c:1046 ../src/gui/styles_dialog.c:284
-#: ../src/libs/styles.c:210
-msgid "_save"
-msgstr "_Speichern"
-
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1068
 msgid "select file to import"
@@ -3480,8 +3506,8 @@ msgstr "ungültige Randgröße wurde durch 0 ersetzt"
 
 #: ../src/imageio/format/pdf.c:255 ../src/imageio/storage/disk.c:293
 #: ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1294
-#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:343
-#: ../src/imageio/storage/gallery.c:363 ../src/imageio/storage/picasa.c:1446
+#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:337
+#: ../src/imageio/storage/gallery.c:357 ../src/imageio/storage/picasa.c:1446
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "Konnte nicht in Datei ‚%s‘ exportieren!"
@@ -3794,7 +3820,7 @@ msgid "could not write to directory `%s'!"
 msgstr "Konnte nicht in Verzeichnis ‚%s‘ schreiben!"
 
 #: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:142
-#: ../src/imageio/storage/gallery.c:373 ../src/imageio/storage/latex.c:349
+#: ../src/imageio/storage/gallery.c:367 ../src/imageio/storage/latex.c:349
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgid_plural "%d/%d exported to `%s%s'"
@@ -4124,114 +4150,6 @@ msgid_plural "%d/%d exported to google+ album"
 msgstr[0] "%d/%d ins Google+-Album exportiert"
 msgstr[1] "%d/%d ins Google+-Album exportiert"
 
-#: ../src/iop/atrous.c:115
-msgid "equalizer"
-msgstr "Equalizer"
-
-#: ../src/iop/atrous.c:130 ../src/iop/soften.c:105
-msgctxt "accel"
-msgid "mix"
-msgstr "Einblenden"
-
-#: ../src/iop/atrous.c:1039
-msgctxt "eq_preset"
-msgid "coarse"
-msgstr "grobe Strukturen"
-
-#: ../src/iop/atrous.c:1053
-msgid "denoise & sharpen"
-msgstr "entrauschen & schärfen"
-
-#: ../src/iop/atrous.c:1067
-msgctxt "atrous"
-msgid "sharpen"
-msgstr "schärfen"
-
-#: ../src/iop/atrous.c:1081
-msgid "denoise chroma"
-msgstr "entrauschen (Chrominanz)"
-
-#: ../src/iop/atrous.c:1095 ../src/iop/equalizer.c:331
-msgid "denoise"
-msgstr "entrauschen"
-
-#: ../src/iop/atrous.c:1110 ../src/iop/bloom.c:80
-msgid "bloom"
-msgstr "Überstrahlung"
-
-#: ../src/iop/atrous.c:1124
-msgid "clarity"
-msgstr "Klarheit"
-
-#: ../src/iop/atrous.c:1420
-msgid "coarse"
-msgstr "grob"
-
-#: ../src/iop/atrous.c:1427
-msgid "fine"
-msgstr "fein"
-
-#: ../src/iop/atrous.c:1439
-msgid "contrasty"
-msgstr "kontrastreich"
-
-# ist das eine passende Übersetzung?
-#: ../src/iop/atrous.c:1440 ../src/iop/atrous.c:1444
-msgid "smooth"
-msgstr "gleichmäßig"
-
-#: ../src/iop/atrous.c:1445
-msgid "noisy"
-msgstr "verrauscht"
-
-#. case atrous_s:
-#: ../src/iop/atrous.c:1448
-msgid "bold"
-msgstr "kräftig"
-
-#: ../src/iop/atrous.c:1449
-msgid "dull"
-msgstr "matt"
-
-#: ../src/iop/atrous.c:1657 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:857
-msgid "luma"
-msgstr "Luminanz"
-
-# uh, häßlich
-#: ../src/iop/atrous.c:1659
-msgid "change lightness at each feature size"
-msgstr "Helligkeit je nach Strukturgröße ändern"
-
-#: ../src/iop/atrous.c:1662 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:859
-msgid "chroma"
-msgstr "Chrominanz"
-
-#: ../src/iop/atrous.c:1664
-msgid "change color saturation at each feature size"
-msgstr "Farbsättigung je nach Strukturgröße ändern"
-
-#: ../src/iop/atrous.c:1666
-msgid "edges"
-msgstr "Kanten"
-
-#: ../src/iop/atrous.c:1668
-msgid ""
-"change edge halos at each feature size\n"
-"only changes results of luma and chroma tabs"
-msgstr ""
-"Kanten-Halos je nach Strukturgröße ändern\n"
-"dies ändert nur die Ergebnisse der Luminanz-\n"
-"und Chrominanz-Tabs"
-
-#: ../src/iop/atrous.c:1694 ../src/iop/colorzones.c:1095
-#: ../src/iop/soften.c:733
-msgid "mix"
-msgstr "einblenden"
-
-#: ../src/iop/atrous.c:1695 ../src/iop/colorzones.c:1097
-msgid "make effect stronger or weaker"
-msgstr "mache den Effekt stärker oder schwächer"
-
 #: ../src/iop/ashift.c:111
 msgid "perspective correction"
 msgstr "Perspektivkorrektur"
@@ -4476,6 +4394,114 @@ msgstr "Informationen über Linienstrukturen entfernen"
 msgid "toggle visibility of structure lines"
 msgstr "Sichtbarkeit der Struktur-Linien umschalten"
 
+#: ../src/iop/atrous.c:115
+msgid "equalizer"
+msgstr "Equalizer"
+
+#: ../src/iop/atrous.c:130 ../src/iop/soften.c:105
+msgctxt "accel"
+msgid "mix"
+msgstr "Einblenden"
+
+#: ../src/iop/atrous.c:1039
+msgctxt "eq_preset"
+msgid "coarse"
+msgstr "grobe Strukturen"
+
+#: ../src/iop/atrous.c:1053
+msgid "denoise & sharpen"
+msgstr "entrauschen & schärfen"
+
+#: ../src/iop/atrous.c:1067
+msgctxt "atrous"
+msgid "sharpen"
+msgstr "schärfen"
+
+#: ../src/iop/atrous.c:1081
+msgid "denoise chroma"
+msgstr "entrauschen (Chrominanz)"
+
+#: ../src/iop/atrous.c:1095 ../src/iop/equalizer.c:331
+msgid "denoise"
+msgstr "entrauschen"
+
+#: ../src/iop/atrous.c:1110 ../src/iop/bloom.c:80
+msgid "bloom"
+msgstr "Überstrahlung"
+
+#: ../src/iop/atrous.c:1124
+msgid "clarity"
+msgstr "Klarheit"
+
+#: ../src/iop/atrous.c:1420
+msgid "coarse"
+msgstr "grob"
+
+#: ../src/iop/atrous.c:1427
+msgid "fine"
+msgstr "fein"
+
+#: ../src/iop/atrous.c:1439
+msgid "contrasty"
+msgstr "kontrastreich"
+
+# ist das eine passende Übersetzung?
+#: ../src/iop/atrous.c:1440 ../src/iop/atrous.c:1444
+msgid "smooth"
+msgstr "gleichmäßig"
+
+#: ../src/iop/atrous.c:1445
+msgid "noisy"
+msgstr "verrauscht"
+
+#. case atrous_s:
+#: ../src/iop/atrous.c:1448
+msgid "bold"
+msgstr "kräftig"
+
+#: ../src/iop/atrous.c:1449
+msgid "dull"
+msgstr "matt"
+
+#: ../src/iop/atrous.c:1657 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:857
+msgid "luma"
+msgstr "Luminanz"
+
+# uh, häßlich
+#: ../src/iop/atrous.c:1659
+msgid "change lightness at each feature size"
+msgstr "Helligkeit je nach Strukturgröße ändern"
+
+#: ../src/iop/atrous.c:1662 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:859
+msgid "chroma"
+msgstr "Chrominanz"
+
+#: ../src/iop/atrous.c:1664
+msgid "change color saturation at each feature size"
+msgstr "Farbsättigung je nach Strukturgröße ändern"
+
+#: ../src/iop/atrous.c:1666
+msgid "edges"
+msgstr "Kanten"
+
+#: ../src/iop/atrous.c:1668
+msgid ""
+"change edge halos at each feature size\n"
+"only changes results of luma and chroma tabs"
+msgstr ""
+"Kanten-Halos je nach Strukturgröße ändern\n"
+"dies ändert nur die Ergebnisse der Luminanz-\n"
+"und Chrominanz-Tabs"
+
+#: ../src/iop/atrous.c:1694 ../src/iop/colorzones.c:1095
+#: ../src/iop/soften.c:733
+msgid "mix"
+msgstr "einblenden"
+
+#: ../src/iop/atrous.c:1695 ../src/iop/colorzones.c:1097
+msgid "make effect stronger or weaker"
+msgstr "mache den Effekt stärker oder schwächer"
+
 #: ../src/iop/basecurve.c:114
 msgid "neutral"
 msgstr "neutral"
@@ -4602,11 +4628,11 @@ msgstr ""
 #: ../src/iop/basecurve.c:1350
 msgid "how many stops to shift the individual exposures apart"
 msgstr ""
+"wie viele Blendenstufen sollen die einzelnen Belichtungen auseinander liegen"
 
 #: ../src/iop/basecurve.c:1351
-#, fuzzy
 msgid "exposure shift"
-msgstr "Belichtung"
+msgstr "Belichtungsanpassung"
 
 #: ../src/iop/bilat.c:61 ../src/iop/clahe.c:64
 msgid "local contrast"
@@ -4955,7 +4981,7 @@ msgstr "Farbton"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:446 ../src/iop/colisa.c:366
-#: ../src/iop/colorcorrection.c:285 ../src/iop/colorchecker.c:1073
+#: ../src/iop/colorchecker.c:1073 ../src/iop/colorcorrection.c:285
 #: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1071
 #: ../src/iop/colorzones.c:1105 ../src/iop/graduatednd.c:1182
 #: ../src/iop/lowpass.c:676 ../src/iop/soften.c:718
@@ -5319,6 +5345,72 @@ msgstr "Grün-Faktor für Gain"
 msgid "factor of blue for gain"
 msgstr "Blau-Faktor für Gain"
 
+#: ../src/iop/colorchecker.c:111
+msgid "color look up table"
+msgstr "Farb-Lookup-Tabelle"
+
+#: ../src/iop/colorchecker.c:262
+msgid "it8 skin tones"
+msgstr "IT8 Hautfarben"
+
+#: ../src/iop/colorchecker.c:635 ../src/iop/colorchecker.c:1047
+#, c-format
+msgid "patch #%d"
+msgstr "Feld #%d"
+
+#: ../src/iop/colorchecker.c:937
+#, c-format
+msgid ""
+"(%2.2f %2.2f %2.2f)\n"
+"altered patches are marked with an outline\n"
+"click to select\n"
+"double click to reset\n"
+"right click to delete patch\n"
+"shift-click while color picking to replace patch"
+msgstr ""
+"(%2.2f %2.2f %2.2f)\n"
+"geänderte Felder sind mit einer Umrandung markiert\n"
+"Klick zum Auswählen\n"
+"Doppelklick zum Zurücksetzen\n"
+"Rechtsklick zum Löschen des Felds\n"
+"Umschalt-Klick während die Pipette aktiv ist zum ersetzen des Felds"
+
+#: ../src/iop/colorchecker.c:1042
+msgid "patch"
+msgstr "Feld"
+
+#: ../src/iop/colorchecker.c:1043
+msgid "color checker patch"
+msgstr "Farbfeld"
+
+#: ../src/iop/colorchecker.c:1054
+#, fuzzy
+msgid "lightness offset"
+msgstr "Helligkeit"
+
+#: ../src/iop/colorchecker.c:1058
+#, fuzzy
+msgid "chroma offset green/red"
+msgstr "Chrominanz-Verschiebung Grün/Rot"
+
+#: ../src/iop/colorchecker.c:1059
+msgid "green/red"
+msgstr "Grün / Rot"
+
+#: ../src/iop/colorchecker.c:1065
+#, fuzzy
+msgid "chroma offset blue/yellow"
+msgstr "Chrominanz-Verschiebung Blau/Gelb"
+
+#: ../src/iop/colorchecker.c:1066
+msgid "blue/yellow"
+msgstr "Blau / Gelb"
+
+#: ../src/iop/colorchecker.c:1072
+#, fuzzy
+msgid "saturation offset"
+msgstr "Sättigung"
+
 #: ../src/iop/colorcontrast.c:88
 msgid "color contrast"
 msgstr "Farbkontrast"
@@ -5376,74 +5468,6 @@ msgstr ""
 #: ../src/iop/colorcorrection.c:284
 msgid "set the global saturation"
 msgstr "Globale Sättigung setzen"
-
-#: ../src/iop/colorchecker.c:111
-#, fuzzy
-msgid "color checker lut"
-msgstr "Pipette"
-
-#: ../src/iop/colorchecker.c:262
-msgid "it8 skin tones"
-msgstr "IT8 Hautfarben"
-
-#: ../src/iop/colorchecker.c:635 ../src/iop/colorchecker.c:1047
-#, c-format
-msgid "patch #%d"
-msgstr "Feld #%d"
-
-#: ../src/iop/colorchecker.c:937
-#, c-format
-msgid ""
-"(%2.2f %2.2f %2.2f)\n"
-"altered patches are marked with an outline\n"
-"click to select\n"
-"double click to reset\n"
-"right click to delete patch\n"
-"shift-click while color picking to replace patch"
-msgstr ""
-"(%2.2f %2.2f %2.2f)\n"
-"geänderte Felder sind mit einer Umrandung markiert\n"
-"Klick zum Auswählen\n"
-"Doppelklick zum Zurücksetzen\n"
-"Rechtsklick zum Löschen des Felds\n"
-"Umschalt-Klick während die Pipette aktiv ist zum ersetzen des Felds"
-
-#: ../src/iop/colorchecker.c:1042
-msgid "patch"
-msgstr "Feld"
-
-#: ../src/iop/colorchecker.c:1043
-#, fuzzy
-msgid "color checker patch"
-msgstr "Pipette"
-
-#: ../src/iop/colorchecker.c:1054
-#, fuzzy
-msgid "lightness offset"
-msgstr "Helligkeit"
-
-#: ../src/iop/colorchecker.c:1058
-#, fuzzy
-msgid "chroma offset green/red"
-msgstr "Chrominanz-Verschiebung Grün/Rot"
-
-#: ../src/iop/colorchecker.c:1059
-msgid "green/red"
-msgstr "Grün / Rot"
-
-#: ../src/iop/colorchecker.c:1065
-#, fuzzy
-msgid "chroma offset blue/yellow"
-msgstr "Chrominanz-Verschiebung Blau/Gelb"
-
-#: ../src/iop/colorchecker.c:1066
-msgid "blue/yellow"
-msgstr "Blau / Gelb"
-
-#: ../src/iop/colorchecker.c:1072
-#, fuzzy
-msgid "saturation offset"
-msgstr "Sättigung"
 
 #: ../src/iop/colorin.c:110
 msgid "input color profile"
@@ -5851,50 +5875,50 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
-#: ../src/iop/demosaic.c:3616
+#: ../src/iop/demosaic.c:3625
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "‚%s‘ Farbmatrix für 4-Bayer-Bild nicht gefunden!"
 
-#: ../src/iop/demosaic.c:3816 ../src/iop/demosaic.c:3825
+#: ../src/iop/demosaic.c:3825 ../src/iop/demosaic.c:3834
 #: ../src/iop/dither.c:792 ../src/iop/highlights.c:1065
 msgid "method"
 msgstr "Methode"
 
-#: ../src/iop/demosaic.c:3818
+#: ../src/iop/demosaic.c:3827
 msgid "PPG (fast)"
 msgstr "PPG (schnell)"
 
-#: ../src/iop/demosaic.c:3819
+#: ../src/iop/demosaic.c:3828
 msgid "AMaZE (slow)"
 msgstr "AMaZE (langsam)"
 
-#: ../src/iop/demosaic.c:3820
+#: ../src/iop/demosaic.c:3829
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3821 ../src/iop/demosaic.c:3830
+#: ../src/iop/demosaic.c:3830 ../src/iop/demosaic.c:3839
 msgid "passthrough (monochrome) (experimental)"
 msgstr "durchschleifen (monochrom) (experimentell)"
 
-#: ../src/iop/demosaic.c:3822 ../src/iop/demosaic.c:3831
+#: ../src/iop/demosaic.c:3831 ../src/iop/demosaic.c:3840
 msgid "demosaicing raw data method"
 msgstr "Methode zum Entrastern der Rohdaten"
 
-#: ../src/iop/demosaic.c:3827
+#: ../src/iop/demosaic.c:3836
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3828
+#: ../src/iop/demosaic.c:3837
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-mal"
 
-#: ../src/iop/demosaic.c:3829
+#: ../src/iop/demosaic.c:3838
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-mal (langsam)"
 
 # WTF? Wer bitte soll das verstehen?
-#: ../src/iop/demosaic.c:3834
+#: ../src/iop/demosaic.c:3843
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5904,63 +5928,63 @@ msgstr ""
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen um Kanten zu ignorieren."
 
-#: ../src/iop/demosaic.c:3836
+#: ../src/iop/demosaic.c:3845
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
-#: ../src/iop/demosaic.c:3840
+#: ../src/iop/demosaic.c:3849
 msgid "color smoothing"
 msgstr "Farbglättung"
 
-#: ../src/iop/demosaic.c:3843
+#: ../src/iop/demosaic.c:3852
 msgid "one time"
 msgstr "einmal"
 
-#: ../src/iop/demosaic.c:3844
+#: ../src/iop/demosaic.c:3853
 msgid "two times"
 msgstr "zweimal"
 
-#: ../src/iop/demosaic.c:3845
+#: ../src/iop/demosaic.c:3854
 msgid "three times"
 msgstr "dreimal"
 
-#: ../src/iop/demosaic.c:3846
+#: ../src/iop/demosaic.c:3855
 msgid "four times"
 msgstr "viermal"
 
-#: ../src/iop/demosaic.c:3847
+#: ../src/iop/demosaic.c:3856
 msgid "five times"
 msgstr "fünfmal"
 
-#: ../src/iop/demosaic.c:3848
+#: ../src/iop/demosaic.c:3857
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "wie viele Median-Schritte zur Fabrglättung nach dem Entrastern"
 
-#: ../src/iop/demosaic.c:3852
+#: ../src/iop/demosaic.c:3861
 msgid "match greens"
 msgstr "Grün anpassen"
 
-#: ../src/iop/demosaic.c:3853
+#: ../src/iop/demosaic.c:3862
 msgid "disabled"
 msgstr "deaktiviert"
 
-#: ../src/iop/demosaic.c:3854
+#: ../src/iop/demosaic.c:3863
 msgid "local average"
 msgstr "lokales Mittel"
 
-#: ../src/iop/demosaic.c:3855
+#: ../src/iop/demosaic.c:3864
 msgid "full average"
 msgstr "volles Mittel"
 
-#: ../src/iop/demosaic.c:3856
+#: ../src/iop/demosaic.c:3865
 msgid "full and local average"
 msgstr "volles und lokales Mittel"
 
-#: ../src/iop/demosaic.c:3857
+#: ../src/iop/demosaic.c:3866
 msgid "green channels matching method"
 msgstr "Methode zum Abgleichen des Grünkanals"
 
-#: ../src/iop/demosaic.c:3869
+#: ../src/iop/demosaic.c:3878
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -7106,10 +7130,6 @@ msgstr "wie stark soll die Helligkeit geglättet werden"
 msgid "how much to smooth colors"
 msgstr "wie stark sollen die Farben geglättet werden"
 
-#: ../src/iop/rawoverexposed.c:68
-msgid "raw overexposed"
-msgstr "Raw-Überbelichtet"
-
 #: ../src/iop/overexposed.c:71
 msgid "overexposed"
 msgstr "Überbelichtet"
@@ -7156,6 +7176,10 @@ msgid ""
 msgstr ""
 "Raw-Entrauschen funktioniert\n"
 "nur mit Raw-Bildern."
+
+#: ../src/iop/rawoverexposed.c:68
+msgid "raw overexposed"
+msgstr "Raw-Überbelichtet"
 
 #: ../src/iop/rawprepare.c:45
 msgid "crop x"
@@ -10615,6 +10639,10 @@ msgctxt "accel"
 msgid "redo"
 msgstr "Wiederherstellen"
 
+#: ../src/views/knight.c:334
+msgid "good knight"
+msgstr "Good Knight"
+
 #: ../src/views/lighttable.c:531 ../src/views/slideshow.c:333
 msgid "there are no images in this collection"
 msgstr "Diese Sammlung enthält keine Bilder."
@@ -10794,6 +10822,10 @@ msgstr ""
 "Wir raten dringend dazu, zu einem vernünftigen 64 Bit-System zu wechseln.\n"
 "Andernfalls werden sie GARANTIERT Probleme haben, die nicht behoben werden "
 "können.\n"
+
+#, fuzzy
+#~ msgid "color checker lut"
+#~ msgstr "Pipette"
 
 #, fuzzy
 #~ msgid "solid color scheme"
