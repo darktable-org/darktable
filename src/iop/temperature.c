@@ -130,6 +130,33 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+static gboolean _set_preset_camera(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                   GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 0);
+  return TRUE;
+}
+
+static gboolean _set_preset_camera_neutral(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 1);
+  return TRUE;
+}
+
+static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                 GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 2);
+  return TRUE;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
@@ -137,6 +164,10 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera neutral"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/spot"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -148,6 +179,17 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_r));
   dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
+
+  GClosure *closure;
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_camera), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/camera", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_camera_neutral), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/camera neutral", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/spot", closure);
 }
 
 
