@@ -608,11 +608,11 @@ void dt_control_jobs_init(dt_control_t *control)
         = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    pthread_create(&control->thread[k], NULL, dt_control_work, params);
+    dt_pthread_create(&control->thread[k], dt_control_work, params);
   }
 
   /* create queue kicker thread */
-  pthread_create(&control->kick_on_workers_thread, NULL, dt_control_worker_kicker, control);
+  dt_pthread_create(&control->kick_on_workers_thread, dt_control_worker_kicker, control);
 
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
   {
@@ -622,7 +622,7 @@ void dt_control_jobs_init(dt_control_t *control)
         = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    pthread_create(&control->thread_res[k], NULL, dt_control_work_res, params);
+    dt_pthread_create(&control->thread_res[k], dt_control_work_res, params);
   }
 }
 
