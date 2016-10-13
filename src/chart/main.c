@@ -899,7 +899,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff, &avgerr, &maxerr);
 
   // TODO: is the rank interesting, too?
-  char *result_string = g_strdup_printf("average dE: %.02f\nmax dE: %.02f", avgerr, maxerr);
+  char *result_string = g_strdup_printf(_("average dE: %.02f\nmax dE: %.02f"), avgerr, maxerr);
   gtk_label_set_text(GTK_LABEL(self->result_label), result_string);
   g_free(result_string);
 
