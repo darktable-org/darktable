@@ -41,6 +41,7 @@ IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON D610"] => "compressed",
   ["NIKON CORPORATION", "NIKON D750"] => "compressed",
   ["NIKON CORPORATION", "NIKON D3000"] => "compressed",
+  ["NIKON CORPORATION", "NIKON D3100"] => "compressed",
   ["NIKON CORPORATION", "NIKON D3200"] => "compressed",
   ["NIKON CORPORATION", "NIKON D5100"] => "compressed",
   ["NIKON CORPORATION", "NIKON D5200"] => "compressed",
