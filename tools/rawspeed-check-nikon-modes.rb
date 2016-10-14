@@ -45,6 +45,7 @@ IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON D7000"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7100"] => "compressed",
   ["NIKON", "COOLPIX P330"] => "compressed",
+  ["NIKON", "COOLPIX P7100"] => "uncompressed",
   ["NIKON", "COOLPIX P7700"] => "compressed",
   ["NIKON", "COOLPIX P7800"] => "compressed"
 }
