@@ -986,6 +986,9 @@ local widget = dt.new_widget("button"){
   types.lua_slider.label:set_text("The label next to the slider")
   types.lua_slider.label:set_reported_type("string")
 
+  types.lua_text_view:set_text("A multiline text input widget")
+  types.lua_text_view.text:set_text("The text in the widget")
+  types.lua_text_view.editable:set_text("False if the entry should be read-only")
 
 	----------------------
 	--  EVENTS          --
@@ -1006,7 +1009,7 @@ local widget = dt.new_widget("button"){
 
 	This event can be registered multiple times, all callbacks will be called.]])
 	events["post-import-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
-	events["post-import-image"].callback:add_parameter("image",types.dt_lua_image_t,[[The image object that has been exported.]])
+	events["post-import-image"].callback:add_parameter("image",types.dt_lua_image_t,[[The image object that has been imported.]])
 	events["post-import-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 

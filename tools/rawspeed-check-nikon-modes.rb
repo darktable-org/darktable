@@ -22,24 +22,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-IGNORE_ONLY_14BIT = []
+IGNORE_ONLY_14BIT = [
+  ["NIKON CORPORATION", "NIKON D5100"],
+  ["NIKON CORPORATION", "NIKON D5200"]
+]
 
 IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON 1 J1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 J2"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 J3"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 S1"] => "compressed",
+  ["NIKON CORPORATION", "NIKON 1 S2"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 V1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 V2"] => "compressed",
   ["NIKON CORPORATION", "NIKON D50"] => "compressed",
+  ["NIKON CORPORATION", "NIKON D70"] => "compressed",
   ["NIKON CORPORATION", "NIKON D600"] => "compressed",
   ["NIKON CORPORATION", "NIKON D610"] => "compressed",
   ["NIKON CORPORATION", "NIKON D750"] => "compressed",
   ["NIKON CORPORATION", "NIKON D3000"] => "compressed",
   ["NIKON CORPORATION", "NIKON D3200"] => "compressed",
+  ["NIKON CORPORATION", "NIKON D5100"] => "compressed",
+  ["NIKON CORPORATION", "NIKON D5200"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7000"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7100"] => "compressed",
   ["NIKON", "COOLPIX P330"] => "compressed",
+  ["NIKON", "COOLPIX P7100"] => "uncompressed",
   ["NIKON", "COOLPIX P7700"] => "compressed",
   ["NIKON", "COOLPIX P7800"] => "compressed"
 }
@@ -47,8 +55,11 @@ IGNORE_ONLY_MODE = {
 IGNORE_HIGH_WHITELEVEL = [
   ["NIKON CORPORATION", "NIKON 1 J2"],
   ["NIKON CORPORATION", "NIKON 1 J3"],
+  ["NIKON CORPORATION", "NIKON 1 S2"],
   ["NIKON CORPORATION", "NIKON 1 V2"],
+  ["NIKON CORPORATION", "NIKON D1X"],
   ["NIKON CORPORATION", "NIKON D50"],
+  ["NIKON CORPORATION", "NIKON D70"],
   ["NIKON", "COOLPIX P330"],
   ["NIKON", "COOLPIX P7700"],
   ["NIKON", "COOLPIX P7800"]

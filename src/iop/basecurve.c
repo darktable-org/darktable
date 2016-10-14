@@ -92,7 +92,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
                                         { { 0.0, 0.0 }, { 1.0, 1.0 } },
                                       },
                                       { 2, 3, 3 },
-                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE } , 0, 0};
+                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE } , 0, 3};
     for(int k = 0; k < 6; k++) n->basecurve[0][k].x = o->tonecurve_x[k];
     for(int k = 0; k < 6; k++) n->basecurve[0][k].y = o->tonecurve_y[k];
     n->basecurve_nodes[0] = 6;
@@ -105,7 +105,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params2_t));
     n->exposure_fusion = 0;
-    n->exposure_stops = 0;
+    n->exposure_stops = 3;
     return 0;
   }
   return 1;
@@ -203,7 +203,7 @@ typedef struct dt_iop_basecurve_gui_data_t
   int minmax_curve_type, minmax_curve_nodes;
   GtkBox *hbox;
   GtkDrawingArea *area;
-  GtkWidget *scale, *fusion;
+  GtkWidget *scale, *fusion, *exstep;
   double mouse_x, mouse_y;
   int selected;
   double selected_offset, selected_y, selected_min, selected_max;
@@ -722,6 +722,11 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_bauhaus_combobox_set(g->fusion, p->exposure_fusion);
+  if(p->exposure_fusion != 0)
+    gtk_widget_set_visible(g->exstep, TRUE);
+  if(p->exposure_fusion == 0)
+    gtk_widget_set_visible(g->exstep, FALSE);
+  dt_bauhaus_slider_set(g->exstep, p->exposure_stops);
   // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -1271,8 +1276,23 @@ static void fusion_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   int fuse = dt_bauhaus_combobox_get(widget);
+  if(p->exposure_fusion == 0 && p->exposure_stops == 0)
+    p->exposure_stops = ((dt_iop_basecurve_params_t *)self->default_params)->exposure_stops;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  if(p->exposure_fusion == 0 && fuse != 0)
+    gtk_widget_set_visible(g->exstep, TRUE);
+  if(p->exposure_fusion != 0 && fuse == 0)
+    gtk_widget_set_visible(g->exstep, FALSE);
   p->exposure_fusion = fuse;
-  p->exposure_stops = 3;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void exstep_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  float stops = dt_bauhaus_slider_get(widget);
+  p->exposure_stops = stops;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1320,11 +1340,17 @@ void gui_init(struct dt_iop_module_t *self)
   c->fusion = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->fusion, NULL, _("fusion"));
   dt_bauhaus_combobox_add(c->fusion, _("none"));
-  dt_bauhaus_combobox_add(c->fusion, _("0ev, +3ev"));
-  dt_bauhaus_combobox_add(c->fusion, _("0ev, +3ev, +6ev"));
+  dt_bauhaus_combobox_add(c->fusion, _("two exposures"));
+  dt_bauhaus_combobox_add(c->fusion, _("three exposures"));
   gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up a couple of times with itself, to compress high dynamic range. expose for the highlights before use."));
   gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);
+
+  c->exstep = dt_bauhaus_slider_new_with_range(self, 0.01, 4.0, 0.100, 3.0, 3);
+  gtk_widget_set_tooltip_text(c->exstep, _("how many stops to shift the individual exposures apart"));
+  dt_bauhaus_widget_set_label(c->exstep, NULL, _("exposure shift"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->exstep, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(c->exstep), "value-changed", G_CALLBACK(exstep_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK

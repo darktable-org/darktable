@@ -74,7 +74,6 @@ typedef struct dt_iop_temperature_gui_data_t
   int preset_num[50];
   double daylight_wb[4];
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
-  double RGB_to_CAM[4][3];
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
@@ -163,6 +162,33 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+static gboolean _set_preset_camera(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                   GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 0);
+  return TRUE;
+}
+
+static gboolean _set_preset_camera_neutral(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 1);
+  return TRUE;
+}
+
+static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                 GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 2);
+  return TRUE;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
@@ -170,6 +196,10 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera neutral"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/spot"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -182,6 +212,17 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
   dt_accel_connect_slider_iop(self, "green2", GTK_WIDGET(g->scale_g2));
+
+  GClosure *closure;
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_camera), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/camera", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_camera_neutral), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/camera neutral", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/spot", closure);
 }
 
 /*
@@ -872,16 +913,6 @@ static void prepare_matrices(dt_iop_module_t *module)
     fprintf(stderr, "[temperature] `%s' color matrix not found for image\n", camera);
     dt_control_log(_("`%s' color matrix not found for image"), camera);
   }
-
-  if (module->dev->image_storage.flags & DT_IMAGE_4BAYER)
-  {
-    // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-    if (!dt_colorspaces_conversion_matrices_rgb(camera, g->RGB_to_CAM, NULL, NULL))
-    {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image\n", camera);
-      dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
-    }
-  }
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -1088,25 +1119,19 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   if(darktable.gui->reset) return FALSE;
   if(self->picked_color_max[0] < self->picked_color_min[0]) return FALSE;
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
-  static float old[3] = { 0, 0, 0 };
+  static float old[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
   const float *grayrgb = self->picked_color;
-  if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2]) return FALSE;
-  for(int k = 0; k < 3; k++) old[k] = grayrgb[k];
+  if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2] && grayrgb[3] == old[3]) return FALSE;
+  for(int k = 0; k < 4; k++) old[k] = grayrgb[k];
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  for(int k = 0; k < 3; k++) p->coeffs[k] = (grayrgb[k] > 0.001f) ? 1.0f / grayrgb[k] : 1.0f;
+  for(int k = 0; k < 4; k++) p->coeffs[k] = (grayrgb[k] > 0.001f) ? 1.0f / grayrgb[k] : 1.0f;
   // normalize green:
   p->coeffs[0] /= p->coeffs[1];
   p->coeffs[2] /= p->coeffs[1];
+  p->coeffs[3] /= p->coeffs[1];
   p->coeffs[1] = 1.0;
-  for(int k = 0; k < 3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
-
-  // If we're in a CMYG image we need to create CMYG coeffs from the RGB ones
-  const dt_image_t *img = &self->dev->image_storage;
-  if (img->flags & DT_IMAGE_4BAYER)
-  {
-    dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-    dt_colorspaces_rgb_to_cygm(p->coeffs, 1, g->RGB_to_CAM);
-  }
+  // clamp
+  for(int k = 0; k < 4; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);

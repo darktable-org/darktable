@@ -67,7 +67,7 @@ static void _group_helper_function(void)
 {
   int new_group_id = darktable.gui->expanded_group_id;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FOM main.selected_images", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
                               &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {

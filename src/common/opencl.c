@@ -50,6 +50,414 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 /** parse a complete priority string */
 static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr);
 
+int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_info param_name, void **param_value,
+                              size_t *param_value_size)
+{
+  cl_int err;
+
+  *param_value_size = SIZE_MAX;
+
+  // 1. figure out how much memory is needed
+  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(device, param_name, 0, NULL, param_value_size);
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_get_device_info] could not query the actual size in bytes of info %d: %d\n", param_name,
+             err);
+    goto error;
+  }
+
+  // 2. did we /actually/ get the size?
+  if(*param_value_size == SIZE_MAX || *param_value_size == 0)
+  {
+    // both of these sizes make no sense. either i failed to parse spec, or opencl implementation bug?
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_get_device_info] ERROR: no size returned, or zero size returned for data %d: %zu\n",
+             param_name, *param_value_size);
+    err = CL_INVALID_VALUE; // FIXME: anything better?
+    goto error;
+  }
+
+  // 3. make sure that *param_value points to big-enough memory block
+  {
+    void *ptr = realloc(*param_value, *param_value_size);
+    if(!ptr)
+    {
+      dt_print(DT_DEBUG_OPENCL,
+               "[dt_opencl_get_device_info] memory allocation failed! tried to allocate %zu bytes for data %d: %d",
+               *param_value_size, param_name, err);
+      err = CL_OUT_OF_HOST_MEMORY;
+      goto error;
+    }
+
+    // allocation succeeed, update pointer.
+    *param_value = ptr;
+  }
+
+  // 4. actually get the value
+  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(device, param_name, *param_value_size, *param_value, NULL);
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_get_device_info] could not query info %d: %d\n", param_name, err);
+    goto error;
+  }
+
+  return CL_SUCCESS;
+
+error:
+  free(*param_value);
+  *param_value = NULL;
+  param_value_size = 0;
+  return err;
+}
+
+// returns 0 if all ok
+// returns 1 if we failed hard, and need to skip opencl initialization
+// returns -1 if we failed to init this device
+static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *devices, const int k,
+                                 const int opencl_memory_requirement)
+{
+  int res;
+  cl_int err;
+
+  memset(cl->dev[dev].program, 0x0, sizeof(cl_program) * DT_OPENCL_MAX_PROGRAMS);
+  memset(cl->dev[dev].program_used, 0x0, sizeof(int) * DT_OPENCL_MAX_PROGRAMS);
+  memset(cl->dev[dev].kernel, 0x0, sizeof(cl_kernel) * DT_OPENCL_MAX_KERNELS);
+  memset(cl->dev[dev].kernel_used, 0x0, sizeof(int) * DT_OPENCL_MAX_KERNELS);
+  cl->dev[dev].eventlist = NULL;
+  cl->dev[dev].eventtags = NULL;
+  cl->dev[dev].numevents = 0;
+  cl->dev[dev].eventsconsolidated = 0;
+  cl->dev[dev].maxevents = 0;
+  cl->dev[dev].lostevents = 0;
+  cl->dev[dev].totalevents = 0;
+  cl->dev[dev].totalsuccess = 0;
+  cl->dev[dev].totallost = 0;
+  cl->dev[dev].summary = CL_COMPLETE;
+  cl->dev[dev].used_global_mem = 0;
+  cl->dev[dev].nvidia_sm_20 = 0;
+  cl->dev[dev].vendor = NULL;
+  cl->dev[dev].name = NULL;
+  cl->dev[dev].cname = NULL;
+  cl->dev[dev].options = NULL;
+  cl_device_id devid = cl->dev[dev].devid = devices[k];
+
+  char *infostr = NULL;
+  size_t infostr_size;
+
+  char *cname = NULL;
+  size_t cname_size;
+
+  char *options = NULL;
+
+  char *vendor = NULL;
+  size_t vendor_size;
+
+  char *driverversion = NULL;
+  size_t driverversion_size;
+
+  char *deviceversion = NULL;
+  size_t deviceversion_size;
+
+  size_t infoint;
+  size_t *infointtab = NULL;
+  cl_device_type type;
+  cl_bool image_support = 0;
+  cl_bool device_available = 0;
+  cl_uint vendor_id = 0;
+  cl_bool little_endian = 0;
+
+  // test GPU availability, vendor, memory, image support etc:
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE, sizeof(cl_bool), &device_available, NULL);
+
+  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VENDOR, (void **)&vendor, &vendor_size);
+  if(err != CL_SUCCESS)
+  {
+    res = 1;
+    goto end;
+  }
+
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR_ID, sizeof(cl_uint), &vendor_id, NULL);
+
+  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_NAME, (void **)&infostr, &infostr_size);
+  if(err != CL_SUCCESS)
+  {
+    res = 1;
+    goto end;
+  }
+
+  err = dt_opencl_get_device_info(cl, devid, CL_DRIVER_VERSION, (void **)&driverversion, &driverversion_size);
+  if(err != CL_SUCCESS)
+  {
+    res = 1;
+    goto end;
+  }
+
+  err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VERSION, (void **)&deviceversion, &deviceversion_size);
+  if(err != CL_SUCCESS)
+  {
+    res = 1;
+    goto end;
+  }
+
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t),
+                                           &(cl->dev[dev].max_image_height), NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_WIDTH, sizeof(size_t),
+                                           &(cl->dev[dev].max_image_width), NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong),
+                                           &(cl->dev[dev].max_mem_alloc), NULL);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_ENDIAN_LITTLE, sizeof(cl_bool), &little_endian, NULL);
+
+
+  cname_size = infostr_size;
+  cname = malloc(cname_size);
+  _ascii_str_canonical(infostr, cname, sizeof(cname_size));
+
+  if(!strncasecmp(vendor, "NVIDIA", 6))
+  {
+    // very lame attempt to detect support for atomic float add in global memory.
+    // we need compute model sm_20, but let's try for all nvidia devices :(
+    cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(infostr);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' %s sm_20 support.\n", k, infostr,
+             cl->dev[dev].nvidia_sm_20 ? "has" : "doesn't have");
+  }
+
+  if(((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) && !dt_conf_get_bool("opencl_use_cpu_devices"))
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding CPU device %d `%s'.\n", k, infostr);
+    res = -1;
+    goto end;
+  }
+
+  if(!device_available)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' as it is not available.\n", k, infostr);
+    res = -1;
+    goto end;
+  }
+
+  if(!image_support)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to missing image support.\n", k,
+             infostr);
+    res = -1;
+    goto end;
+  }
+
+  if(!little_endian)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' as it is not little endian.\n", k, infostr);
+    res = -1;
+    goto end;
+  }
+
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong),
+                                           &(cl->dev[dev].max_global_mem), NULL);
+  if(cl->dev[dev].max_global_mem < opencl_memory_requirement * 1024 * 1024)
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_init] discarding device %d `%s' due to insufficient global memory (%" PRIu64 "MB).\n", k,
+             infostr, cl->dev[dev].max_global_mem / 1024 / 1024);
+    res = -1;
+    goto end;
+  }
+
+  cl->dev[dev].vendor = strdup(dt_opencl_get_vendor_by_id(vendor_id));
+  cl->dev[dev].name = strdup(infostr);
+  cl->dev[dev].cname = strdup(cname);
+
+  cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr,
+           cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %" PRIu64 "MB\n",
+           k, infostr, cl->dev[dev].max_mem_alloc / 1024 / 1024);
+
+  if(darktable.unmuted & DT_DEBUG_OPENCL)
+  {
+    printf("[opencl_init] device %d: %s \n", k, infostr);
+    printf("     GLOBAL_MEM_SIZE:          %.0fMB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
+    printf("     MAX_WORK_GROUP_SIZE:      %zd\n", infoint);
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(infoint), &infoint,
+                                             NULL);
+    printf("     MAX_WORK_ITEM_DIMENSIONS: %zd\n", infoint);
+    printf("     MAX_WORK_ITEM_SIZES:      [ ");
+
+    size_t infointtab_size;
+    err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, (void **)&infointtab,
+                                    &infointtab_size);
+    if(err == CL_SUCCESS)
+    {
+      for(size_t i = 0; i < infoint; i++) printf("%zd ", infointtab[i]);
+      free(infointtab);
+      infointtab = NULL;
+    }
+    else
+    {
+      res = 1;
+      goto end;
+    }
+
+    printf("]\n");
+    printf("     DRIVER_VERSION:           %s\n", driverversion);
+    printf("     DEVICE_VERSION:           %s\n", deviceversion);
+  }
+
+  dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
+
+  cl->dev[dev].context = (cl->dlocl->symbols->dt_clCreateContext)(0, 1, &devid, NULL, NULL, &err);
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context for device %d: %d\n", k, err);
+    res = 1;
+    goto end;
+  }
+  // create a command queue for first device the context reported
+  cl->dev[dev].cmd_queue = (cl->dlocl->symbols->dt_clCreateCommandQueue)(
+      cl->dev[dev].context, devid, (darktable.unmuted & DT_DEBUG_PERF) ? CL_QUEUE_PROFILING_ENABLE : 0, &err);
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
+    res = 1;
+    goto end;
+  }
+
+  char dtcache[PATH_MAX] = { 0 };
+  char cachedir[PATH_MAX] = { 0 };
+  char devname[1024];
+  double tstart, tend, tdiff;
+  dt_loc_get_user_cache_dir(dtcache, sizeof(dtcache));
+
+  int len = strlen(infostr);
+  int j = 0;
+  // remove non-alphanumeric chars from device name
+  for(int i = 0; i < len; i++)
+    if(isalnum(infostr[i])) devname[j++] = infostr[i];
+  devname[j] = 0;
+  snprintf(cachedir, sizeof(cachedir), "%s/cached_kernels_for_%s", dtcache, devname);
+  if(g_mkdir_with_parents(cachedir, 0700) == -1)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
+    res = 1;
+    goto end;
+  }
+
+  char dtpath[PATH_MAX] = { 0 };
+  char filename[PATH_MAX] = { 0 };
+  char confentry[PATH_MAX] = { 0 };
+  char binname[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(dtpath, sizeof(dtpath));
+  snprintf(filename, sizeof(filename), "%s/kernels/programs.conf", dtpath);
+  char kerneldir[PATH_MAX] = { 0 };
+  snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
+
+  options = g_strdup_printf("-cl-fast-relaxed-math %s -D%s=1 -I%s",
+                            (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
+                            dt_opencl_get_vendor_by_id(vendor_id), kerneldir);
+  cl->dev[dev].options = strdup(options);
+  g_free(options);
+  options = NULL;
+
+  const char *clincludes[DT_OPENCL_MAX_INCLUDES] = { "colorspace.cl", "common.h", NULL };
+  char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
+  dt_opencl_md5sum(clincludes, includemd5);
+
+  // now load all darktable cl kernels.
+  // TODO: compile as a job?
+  tstart = dt_get_wtime();
+  FILE *f = fopen(filename, "rb");
+  if(f)
+  {
+
+    while(!feof(f))
+    {
+      int prog = -1;
+      gchar *confline_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(confentry) - 1);
+      int rd = fscanf(f, confline_pattern, confentry);
+      g_free(confline_pattern);
+      if(rd != 1) continue;
+      // remove comments:
+      size_t end = strlen(confentry);
+      for(size_t pos = 0; pos < end; pos++)
+        if(confentry[pos] == '#')
+        {
+          confentry[pos] = '\0';
+          for(int l = pos - 1; l >= 0; l--)
+          {
+            if(confentry[l] == ' ')
+              confentry[l] = '\0';
+            else
+              break;
+          }
+          break;
+        }
+      if(confentry[0] == '\0') continue;
+
+      const char *programname = NULL, *programnumber = NULL;
+      gchar **tokens = g_strsplit_set(confentry, " \t", 2);
+      if(tokens)
+      {
+        programname = tokens[0];
+        if(tokens[0])
+          programnumber = tokens[1]; // if the 0st wasn't NULL then we have at least the terminating NULL in [1]
+      }
+
+      prog = programnumber ? strtol(programnumber, NULL, 10) : -1;
+
+      if(!programname || programname[0] == '\0' || prog < 0)
+      {
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] malformed entry in programs.conf `%s'; ignoring it!\n", confentry);
+        continue;
+      }
+
+      snprintf(filename, sizeof(filename), "%s/kernels/%s", dtpath, programname);
+      snprintf(binname, sizeof(binname), "%s/%s.bin", cachedir, programname);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
+      int loaded_cached;
+      char md5sum[33];
+      if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, includemd5, &loaded_cached)
+         && dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached) != CL_SUCCESS)
+      {
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
+        fclose(f);
+        g_strfreev(tokens);
+        res = 1;
+        goto end;
+      }
+
+      g_strfreev(tokens);
+    }
+
+    fclose(f);
+    tend = dt_get_wtime();
+    tdiff = tend - tstart;
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] kernel loading time: %2.4lf \n", tdiff);
+  }
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not open `%s'!\n", filename);
+    res = 1;
+    goto end;
+  }
+  for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++) g_free(includemd5[n]);
+
+  res = 0;
+
+end:
+
+  free(infostr);
+  free(cname);
+  free(options);
+  free(vendor);
+  free(driverversion);
+  free(deviceversion);
+
+  return res;
+}
+
 void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics)
 {
   char *str;
@@ -227,277 +635,15 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   int dev = 0;
   for(int k = 0; k < num_devices; k++)
   {
-    memset(cl->dev[dev].program, 0x0, sizeof(cl_program) * DT_OPENCL_MAX_PROGRAMS);
-    memset(cl->dev[dev].program_used, 0x0, sizeof(int) * DT_OPENCL_MAX_PROGRAMS);
-    memset(cl->dev[dev].kernel, 0x0, sizeof(cl_kernel) * DT_OPENCL_MAX_KERNELS);
-    memset(cl->dev[dev].kernel_used, 0x0, sizeof(int) * DT_OPENCL_MAX_KERNELS);
-    cl->dev[dev].eventlist = NULL;
-    cl->dev[dev].eventtags = NULL;
-    cl->dev[dev].numevents = 0;
-    cl->dev[dev].eventsconsolidated = 0;
-    cl->dev[dev].maxevents = 0;
-    cl->dev[dev].lostevents = 0;
-    cl->dev[dev].totalevents = 0;
-    cl->dev[dev].totalsuccess = 0;
-    cl->dev[dev].totallost = 0;
-    cl->dev[dev].summary = CL_COMPLETE;
-    cl->dev[dev].used_global_mem = 0;
-    cl->dev[dev].nvidia_sm_20 = 0;
-    cl->dev[dev].vendor = NULL;
-    cl->dev[dev].name = NULL;
-    cl->dev[dev].cname = NULL;
-    cl->dev[dev].options = NULL;
-    cl_device_id devid = cl->dev[dev].devid = devices[k];
+    const int res = dt_opencl_device_init(cl, dev, devices, k, opencl_memory_requirement);
 
-    char infostr[1024];
-    char cname[1024];
-    char options[1024];
-    char vendor[256];
-    char driverversion[256];
-    char deviceversion[256];
-    size_t infoint;
-    size_t infointtab[1024];
-    cl_device_type type;
-    cl_bool image_support = 0;
-    cl_bool device_available = 0;
-    cl_uint vendor_id = 0;
-    cl_bool little_endian = 0;
-
-    // test GPU availability, vendor, memory, image support etc:
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE, sizeof(cl_bool), &device_available,
-                                             NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR, sizeof(vendor), &vendor, NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VENDOR_ID, sizeof(cl_uint), &vendor_id, NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DRIVER_VERSION, sizeof(driverversion), &driverversion,
-                                             NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_VERSION, sizeof(deviceversion), &deviceversion,
-                                             NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support,
-                                             NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t),
-                                             &(cl->dev[dev].max_image_height), NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_WIDTH, sizeof(size_t),
-                                             &(cl->dev[dev].max_image_width), NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong),
-                                             &(cl->dev[dev].max_mem_alloc), NULL);
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_ENDIAN_LITTLE, sizeof(cl_bool), &little_endian,
-                                             NULL);
-
-
-    _ascii_str_canonical(infostr, cname, sizeof(cname));
-
-    if(!strncasecmp(vendor, "NVIDIA", 6))
-    {
-      // very lame attempt to detect support for atomic float add in global memory.
-      // we need compute model sm_20, but let's try for all nvidia devices :(
-      cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(infostr);
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' %s sm_20 support.\n", k, infostr,
-               cl->dev[dev].nvidia_sm_20 ? "has" : "doesn't have");
-    }
-
-    if(((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) && !dt_conf_get_bool("opencl_use_cpu_devices"))
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding CPU device %d `%s'.\n", k, infostr);
-      continue;
-    }
-
-    if(!device_available)
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' as it is not available.\n", k,
-               infostr);
-      continue;
-    }
-
-    if(!image_support)
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to missing image support.\n", k,
-               infostr);
-      continue;
-    }
-
-    if(!little_endian)
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' as it is not little endian.\n", k,
-               infostr);
-      continue;
-    }
-
-    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong),
-                                             &(cl->dev[dev].max_global_mem), NULL);
-    if(cl->dev[dev].max_global_mem < opencl_memory_requirement * 1024 * 1024)
-    {
-      dt_print(DT_DEBUG_OPENCL,
-               "[opencl_init] discarding device %d `%s' due to insufficient global memory (%" PRIu64 "MB).\n", k,
-               infostr, cl->dev[dev].max_global_mem / 1024 / 1024);
-      continue;
-    }
-
-    cl->dev[dev].vendor = strdup(dt_opencl_get_vendor_by_id(vendor_id));
-    cl->dev[dev].name = strdup(infostr);
-    cl->dev[dev].cname = strdup(cname);
-
-    cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
-
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr,
-             cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %" PRIu64 "MB\n",
-             k, infostr, cl->dev[dev].max_mem_alloc / 1024 / 1024);
-
-    if(darktable.unmuted & DT_DEBUG_OPENCL)
-    {
-      printf("[opencl_init] device %d: %s \n", k, infostr);
-      printf("     GLOBAL_MEM_SIZE:          %.0fMB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
-      (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint),
-                                               &infoint, NULL);
-      printf("     MAX_WORK_GROUP_SIZE:      %zd\n", infoint);
-      (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(infoint),
-                                               &infoint, NULL);
-      printf("     MAX_WORK_ITEM_DIMENSIONS: %zd\n", infoint);
-      printf("     MAX_WORK_ITEM_SIZES:      [ ");
-      (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(infointtab),
-                                               infointtab, NULL);
-      for(size_t i = 0; i < infoint; i++) printf("%zd ", infointtab[i]);
-      printf("]\n");
-      printf("     DRIVER_VERSION:           %s\n", driverversion);
-      printf("     DEVICE_VERSION:           %s\n", deviceversion);
-    }
-
-    dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
-
-    cl->dev[dev].context = (cl->dlocl->symbols->dt_clCreateContext)(0, 1, &devid, NULL, NULL, &err);
-    if(err != CL_SUCCESS)
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context for device %d: %d\n", k, err);
+    if(res == 1)
       goto finally;
-    }
-    // create a command queue for first device the context reported
-    cl->dev[dev].cmd_queue = (cl->dlocl->symbols->dt_clCreateCommandQueue)(
-        cl->dev[dev].context, devid, (darktable.unmuted & DT_DEBUG_PERF) ? CL_QUEUE_PROFILING_ENABLE : 0,
-        &err);
-    if(err != CL_SUCCESS)
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
-      goto finally;
-    }
+    else if(res == -1)
+      continue;
 
-    char dtcache[PATH_MAX] = { 0 };
-    char cachedir[PATH_MAX] = { 0 };
-    char devname[1024];
-    double tstart, tend, tdiff;
-    dt_loc_get_user_cache_dir(dtcache, sizeof(dtcache));
+    // that is, increase dev only if res == 0
 
-    int len = strlen(infostr);
-    int j = 0;
-    // remove non-alphanumeric chars from device name
-    for(int i = 0; i < len; i++)
-      if(isalnum(infostr[i])) devname[j++] = infostr[i];
-    devname[j] = 0;
-    snprintf(cachedir, sizeof(cachedir), "%s/cached_kernels_for_%s", dtcache, devname);
-    if(g_mkdir_with_parents(cachedir, 0700) == -1)
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
-      goto finally;
-    }
-
-    char dtpath[PATH_MAX] = { 0 };
-    char filename[PATH_MAX] = { 0 };
-    char confentry[PATH_MAX] = { 0 };
-    char binname[PATH_MAX] = { 0 };
-    dt_loc_get_datadir(dtpath, sizeof(dtpath));
-    snprintf(filename, sizeof(filename), "%s/kernels/programs.conf", dtpath);
-    char kerneldir[PATH_MAX] = { 0 };
-    snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
-
-    snprintf(options, sizeof(options), "-cl-fast-relaxed-math %s -D%s=1 -I%s",
-           (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""), dt_opencl_get_vendor_by_id(vendor_id), kerneldir);
-    cl->dev[dev].options = strdup(options);
-
-
-    const char *clincludes[DT_OPENCL_MAX_INCLUDES] = { "colorspace.cl", "common.h", NULL };
-    char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
-    dt_opencl_md5sum(clincludes, includemd5);
-
-    // now load all darktable cl kernels.
-    // TODO: compile as a job?
-    tstart = dt_get_wtime();
-    FILE *f = fopen(filename, "rb");
-    if(f)
-    {
-
-      while(!feof(f))
-      {
-        int prog = -1;
-        gchar *confline_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(confentry) - 1);
-        int rd = fscanf(f, confline_pattern, confentry);
-        g_free(confline_pattern);
-        if(rd != 1) continue;
-        // remove comments:
-        size_t end = strlen(confentry);
-        for(size_t pos = 0; pos < end; pos++)
-          if(confentry[pos] == '#')
-          {
-            confentry[pos] = '\0';
-            for(int l = pos - 1; l >= 0; l--)
-            {
-              if(confentry[l] == ' ')
-                confentry[l] = '\0';
-              else
-                break;
-            }
-            break;
-          }
-        if(confentry[0] == '\0') continue;
-
-        const char *programname = NULL, *programnumber = NULL;
-        gchar **tokens = g_strsplit_set(confentry, " \t", 2);
-        if(tokens)
-        {
-          programname = tokens[0];
-          if(tokens[0])
-            programnumber
-                = tokens[1]; // if the 0st wasn't NULL then we have at least the terminating NULL in [1]
-        }
-
-        prog = programnumber ? strtol(programnumber, NULL, 10) : -1;
-
-        if(!programname || programname[0] == '\0' || prog < 0)
-        {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_init] malformed entry in programs.conf `%s'; ignoring it!\n",
-                   confentry);
-          continue;
-        }
-
-        snprintf(filename, sizeof(filename), "%s/kernels/%s", dtpath, programname);
-        snprintf(binname, sizeof(binname), "%s/%s.bin", cachedir, programname);
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
-        int loaded_cached;
-        char md5sum[33];
-        if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, includemd5, &loaded_cached)
-           && dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached)
-              != CL_SUCCESS)
-        {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
-          fclose(f);
-          g_strfreev(tokens);
-          goto finally;
-        }
-
-        g_strfreev(tokens);
-      }
-
-      fclose(f);
-      tend = dt_get_wtime();
-      tdiff = tend - tstart;
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] kernel loading time: %2.4lf \n", tdiff);
-    }
-    else
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not open `%s'!\n", filename);
-      goto finally;
-    }
-    for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++) g_free(includemd5[n]);
     ++dev;
   }
   free(devices);

@@ -1,7 +1,6 @@
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+include(manage-symbol-visibility)
 
 add_definitions(-include common/module_api.h)
 add_definitions(-include iop/iop_api.h)
@@ -35,7 +34,7 @@ macro (add_iop _lib _src)
   list(REMOVE_ITEM OPT_SRC "DEFAULT_VISIBLE")
 
   add_library(${_lib} MODULE ${_output} ${OPT_SRC})
-  target_link_libraries(${_lib} ${LIBS})
+  target_link_libraries(${_lib} lib_darktable)
   install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
 
   list(APPEND _iop_list ${_lib})

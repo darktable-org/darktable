@@ -609,6 +609,8 @@ void dt_image_remove(const int32_t imgid)
   sqlite3_finalize(stmt);
   // also clear all thumbnails in mipmap_cache.
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+
+  dt_tag_update_used_tags();
 }
 
 int dt_image_altered(const uint32_t imgid)
@@ -1481,11 +1483,25 @@ void dt_image_write_sidecar_file(int imgid)
   // write .xmp file
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
-    gboolean from_cache = TRUE;
     char filename[PATH_MAX] = { 0 };
+
+    // FIRST: check if the original file is present
+    gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+
+    if (!g_file_test(filename, G_FILE_TEST_EXISTS))
+    {
+      // OTHERWISE: check if the local copy exists
+      from_cache = TRUE;
+      dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+
+      //  nothing to do, the original is not accessible and there is no local copy
+      if (!from_cache) return;
+    }
+
     dt_image_path_append_version(imgid, filename, sizeof(filename));
     g_strlcat(filename, ".xmp", sizeof(filename));
+
     if(!dt_exif_xmp_write(imgid, filename))
     {
       // put the timestamp into db. this can't be done in exif.cc since that code gets called
@@ -1562,11 +1578,11 @@ void dt_image_local_copy_synch(void)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int imgid = sqlite3_column_int(stmt, 0);
-    gboolean from_cache = TRUE;
+    gboolean from_cache = FALSE;
     char filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
-    if(!from_cache)
+    if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       dt_image_write_sidecar_file(imgid);
       count++;

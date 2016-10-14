@@ -45,8 +45,8 @@
 
     <listitem><para>
       darktable makes heavy use of <emphasis>Streaming SIMD Extensions 2</emphasis> (SSE2)
-      instructions of the CPU to speed up processing. In fact, darktable requires either
-      an SSE2-capable x86 processor or an ARM64 processor.
+      instructions of the CPU to speed up processing. In fact, darktable requires either an
+      SSE2-capable x86 processor or an ARM64 processor.
     </para></listitem>
 
     <listitem><para>
@@ -183,13 +183,13 @@
 <synopsis>darktable [-d {all,cache,camctl,camsupport,control,dev,
                fswatch,input,lighttable,masks,memory,nan,
                opencl,perf,pwstorage,print,sql}]
-          [IMG_1234.{RAW,..}|image_folder] 
+          [&lt;input file&gt;|&lt;image folder&gt;]
           [--version]
-          [--disable-opencl] 
-          [--library &lt;library file&gt;] 
-          [--datadir &lt;data directory&gt;] 
+          [--disable-opencl]
+          [--library &lt;library file&gt;]
+          [--datadir &lt;data directory&gt;]
           [--moduledir &lt;module directory&gt;]
-          [--tmpdir &lt;tmp directory&gt;] 
+          [--tmpdir &lt;tmp directory&gt;]
           [--configdir &lt;user config directory&gt;]
           [--cachedir &lt;user cache directory&gt;]
           [--localedir &lt;locale directory&gt;]
@@ -217,7 +217,7 @@
 
           <varlistentry>
 
-            <term>IMG_1234.{RAW,..} | image_folder</term>
+            <term>&lt;input file&gt;|&lt;image folder&gt;</term>
 
             <listitem><para>
               You may optionally supply the filename of an image or the name of a folder
@@ -403,8 +403,8 @@
       </para>
 
       <para>
-        This variant does not open any display, so it will work in pure console mode
-        without using any X11, wayland, etc.&nbsp;&ndash; this mode is useful for servers running
+        This variant does not open any display, so it will work in pure console mode without
+        using any X11, wayland, etc.&nbsp;&ndash; this mode is useful for servers running
         background jobs.
       </para>
 
@@ -412,14 +412,14 @@
         <filename>darktable-cli</filename> is called with the following command line parameters:
       </para>
 
-<synopsis>darktable-cli &lt;input file&gt;
-              [&lt;xmp file&gt;] 
+<synopsis>darktable-cli &lt;input file&gt;|&lt;image folder&gt;
+              [&lt;xmp file&gt;]
               &lt;output file&gt;
               [--width &lt;max width&gt;]
               [--height &lt;max height&gt;]
               [--bpp &lt;bpp&gt;]
               [--hq &lt;0|1|true|false&gt;]
-              [--verbose] 
+              [--verbose]
               [--core &lt;darktable options&gt;]</synopsis>
 
       <para>
@@ -432,7 +432,8 @@
             <term>&lt;input file&gt;</term>
 
             <listitem><para>
-              The name of the input file to export.
+              The name of the input file to export or the name of an folder containing input
+              images which are to be exported.
             </para></listitem>
 
           </varlistentry>
@@ -444,7 +445,7 @@
             <listitem><para>
               The optional name of an XMP sidecar file containing the history stack data to be
               applied during export. If this option is not given darktable will search for an
-              XMP file that belongs to the given input file.
+              XMP file that belongs to the given input file(s).
             </para></listitem>
 
           </varlistentry>
@@ -455,7 +456,10 @@
 
             <listitem><para>
               The name of the output file. darktable derives the export file format from the
-              file extension.
+              file extension. You can also use all the variables available in darktable's export
+              module in the output filename (see <xref linkend="export_selected"/>). For obvious
+              reasons this is mandatory if you use the program on an image folder containing
+              multiple images.
             </para></listitem>
 
           </varlistentry>
@@ -724,6 +728,134 @@
       <para>
 <programlisting>darktable-viewer --core --disable-opencl
 </programlisting>
+      </para>
+
+    </sect2>
+
+    <sect2 status="draft" id="darktable_chart_commandline_parameters">
+
+      <title><filename>darktable-chart</filename> binary</title>
+
+      <indexterm>
+        <primary>darktable-chart</primary>
+      </indexterm>
+
+      <para>
+        This binary is a dedicated utility to create styles out of pairs of images such as
+        RAW+JPEG with in-camera processing. Details about its usage can be found in
+        <xref linkend="darktable_chart"/>.
+      </para>
+
+      <para>
+        <filename>darktable-chart</filename> either starts a GUI or is used as a command-line
+        program.
+      </para>
+
+<synopsis>darktable-chart
+              [--help]
+              [&lt;input Lab pfm file&gt;] 
+              [&lt;cht file&gt;]
+              [&lt;reference cgats/it8 or Lab pfm file&gt;]</synopsis>
+
+      <para>
+        All parameters are optional, however, if you want to supply the second file name you
+        also need to supply the first one etc. Starting <filename>darktable-chart</filename>
+        this way opens up a special GUI (details can be found in
+        <xref linkend="darktable_chart"/>).
+        <variablelist>
+
+          <varlistentry>
+
+            <term>--help</term>
+
+            <listitem><para>
+              Gives usage information and terminates.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>&lt;input Lab pfm file&gt;</term>
+
+            <listitem><para>
+              Opens the utility with the given file as source image. The input file needs to be
+              in Lab Portable Float Map format.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>&lt;cht file&gt;</term>
+
+            <listitem><para>
+              Specifies a chart file describing the layout of the used color reference chart.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>&lt;reference cgats/it8 or Lab pfm file&gt;</term>
+
+            <listitem><para>
+              Specifies the reference values, either as measured values according to the CGATS
+              standard, or as a reference image in Lab Portable Float Map format.
+            </para></listitem>
+
+          </varlistentry>
+
+        </variablelist>
+      </para>
+
+      <para>
+        Alternatively <filename>darktable-chart</filename> can be used as a command line program
+        to generate darktable style files out of previously saved CSV files.
+      </para>
+
+<synopsis>darktable-chart
+              --csv
+              &lt;csv file&gt; 
+              &lt;number patches&gt; 
+              &lt;output dtstyle file&gt;</synopsis>
+
+      <para>
+        All parameters are mandatory.
+        <variablelist>
+
+          <varlistentry>
+
+            <term>&lt;csv file&gt;</term>
+
+            <listitem><para>
+              A CSV file previously saved from within <filename>darktable-chart</filename>.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>&lt;number patches&gt;</term>
+
+            <listitem><para>
+              The number of color patches to be used in the <emphasis>color look up
+              table</emphasis> settings of the created style.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>&lt;output dtstyle file&lt;</term>
+
+            <listitem><para>
+              The name of the style file to be created.
+            </para></listitem>
+
+          </varlistentry>
+
+        </variablelist>
       </para>
 
     </sect2>
@@ -1086,10 +1218,10 @@
         </para>
 
         <para>
-          All changes are stored automatically when you switch images or go from one darktable view to another. You can safely
-          leave darkroom mode or quit darktable at any time and come back later to continue
-          your work. That said darktable does not need a <quote>save</quote> button and
-          it does not have one.
+          All changes are stored automatically when you switch images or go from one darktable
+          view to another. You can safely leave darkroom mode or quit darktable at any time and
+          come back later to continue your work. That said darktable does not need a
+          <quote>save</quote> button and it does not have one.
           <indexterm>
             <primary>save button</primary>
           </indexterm>
