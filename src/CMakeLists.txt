@@ -563,14 +563,6 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
   add_definitions(-Werror)
 endif()
 
-#
-# the rawspeed part is a bit of a hack:
-# the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
-# so we do a custom dependency and pretend an imported librawsped.a so no other -l are
-# appended.
-#
-add_library(rawspeed_static STATIC IMPORTED)
-set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
 # compile rawspeed
 add_subdirectory(external/rawspeed)
 list(APPEND LIB_DEPS rawspeed)
