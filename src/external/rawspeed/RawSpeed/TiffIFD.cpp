@@ -126,8 +126,7 @@ TiffIFD* TiffIFD::parseDngPrivateData(TiffEntry *t) {
   */
   uint32 size = t->count;
   const uchar8 *data = t->getData();
-  string id((const char*)data);
-  if (0 != id.compare("Adobe"))
+  if (0 != memcmp(data, "Adobe", 6))
     ThrowTPE("Not Adobe Private data");
 
   data+=6;
