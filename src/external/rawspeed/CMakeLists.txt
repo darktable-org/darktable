@@ -101,10 +101,28 @@ else(WIN32)
 endif(WIN32)
 
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
+
 if(USE_XMLLINT)
   add_dependencies(rawspeed validate_cameras_xml)
 endif(USE_XMLLINT)
-target_link_libraries(rawspeed ${RAWSPEED_LIBS})
+
+target_link_libraries(rawspeed ${RAWSPEED_LIBS} ${Pugixml_LIBRARIES} ${JPEG_LIBRARIES})
+
+#
+# the rawspeed part is a bit of a hack:
+# the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
+# so we do a custom dependency and pretend an imported librawsped.a so no other -l are
+# appended.
+#
+add_library(rawspeed_static STATIC IMPORTED GLOBAL)
+set_target_properties(rawspeed_static
+  PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/librawspeed.a
+    INTERFACE_LINK_LIBRARIES $<TARGET_PROPERTY:rawspeed,INTERFACE_LINK_LIBRARIES>
+    POSITION_INDEPENDENT_CODE $<TARGET_PROPERTY:rawspeed,POSITION_INDEPENDENT_CODE>
+)
+
+add_dependencies(rawspeed_static rawspeed)
 
 # Adapted from src/cli/CMakeLists.txt
 if (BUILD_RS_IDENTIFY)
@@ -118,9 +136,7 @@ if (BUILD_RS_IDENTIFY)
     PROPERTIES
       LINKER_LANGUAGE CXX)
 
-  add_dependencies(darktable-rs-identify rawspeed)
-
-  target_link_libraries(darktable-rs-identify rawspeed_static ${Pugixml_LIBRARIES} ${JPEG_LIBRARIES})
+  target_link_libraries(darktable-rs-identify rawspeed_static)
 
   install(TARGETS darktable-rs-identify DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
