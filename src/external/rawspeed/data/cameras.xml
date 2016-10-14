@@ -2934,18 +2934,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D70s" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
-		<ID make="Nikon" model="D70s">Nikon D70s</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">BLUE</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">RED</Color>
-		</CFA>
-		<Crop x="0" y="0" width="3040" height="2014"/>
-		<Sensor black="0" white="4095"/>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D70s" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON D70s" mode="12bit-compressed">
 		<ID make="Nikon" model="D70s">Nikon D70s</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
