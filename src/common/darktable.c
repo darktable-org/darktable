@@ -573,6 +573,12 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #else
                "  GraphicsMagick support disabled\n"
 #endif
+
+#ifdef HAVE_OPENEXR
+               "  OpenEXR support enabled\n"
+#else
+               "  OpenEXR support disabled\n"
+#endif
                , (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
 #if USE_LUA
                , lua_api_version
