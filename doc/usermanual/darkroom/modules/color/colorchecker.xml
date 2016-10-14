@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="final" id="colorchecker">
+<sect3 status="final" id="color_look_up_table">
 
   <title>Color look up table</title>
 
@@ -30,9 +30,9 @@
               This module implements a generic color look up table in Lab space. The input is a
               list of source and target points, the complete mapping will be interpolated using
               splines. The resulting luts are editable by hand and can be created using the
-              <code>darktable-chart</code>
-              utility to match given input (such as hald-cluts and RAW/JPEG with in-camera
-              processing pairs).
+              <filename>darktable-chart</filename> utility to match given input (such as
+              hald-cluts and RAW/JPEG with in-camera processing pairs). See
+              <xref linkend="darktable_chart"/> for details.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/colorchecker.png" scalefit="1" width="80%" align="center" />

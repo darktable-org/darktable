@@ -38,5 +38,10 @@
 <!-- darktable and opencl -->
 
   <xi:include href="opencl.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
+<!-- darktable-chart -->
+
+  <xi:include href="darktable-chart.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 
 </chapter>
