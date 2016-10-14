@@ -56,15 +56,29 @@ CameraMetaData::~CameraMetaData(void) {
   }
 }
 
+static inline string getId(string make, string model, string mode)
+{
+  TrimSpaces(make);
+  TrimSpaces(model);
+  TrimSpaces(mode);
+
+  return string(make).append(model).append(mode);
+}
+
+static inline string getId(Camera* cam)
+{
+  return getId(cam->make, cam->model, cam->mode);
+}
+
 Camera* CameraMetaData::getCamera(string make, string model, string mode) {
-  string id = string(make).append(model).append(mode);
+  string id = getId(make, model, mode);
   if (cameras.end() == cameras.find(id))
     return NULL;
   return cameras[id];
 }
 
 bool CameraMetaData::hasCamera(string make, string model, string mode) {
-  string id = string(make).append(model).append(mode);
+  string id = getId(make, model, mode);
   if (cameras.end() == cameras.find(id))
     return FALSE;
   return TRUE;
@@ -82,7 +96,7 @@ bool CameraMetaData::hasChdkCamera(uint32 filesize) {
 
 bool CameraMetaData::addCamera( Camera* cam )
 {
-  string id = string(cam->make).append(cam->model).append(cam->mode);
+  string id = getId(cam);
   if (cameras.end() != cameras.find(id)) {
     writeLog(DEBUG_PRIO_WARNING, "CameraMetaData: Duplicate entry found for camera: %s %s, Skipping!\n", cam->make.c_str(), cam->model.c_str());
     delete(cam);
