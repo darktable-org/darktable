@@ -96,11 +96,14 @@ FILE(GLOB RAWSPEED_SOURCES
 #
 if(WIN32)
   set(RAWSPEED_LIBS "msvcrt")
-else(WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif(WIN32)
 
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
+
+set_target_properties(rawspeed
+  PROPERTIES
+    POSITION_INDEPENDENT_CODE True
+)
 
 if(USE_XMLLINT)
   add_dependencies(rawspeed validate_cameras_xml)
@@ -119,7 +122,7 @@ set_target_properties(rawspeed_static
   PROPERTIES
     IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/librawspeed.a
     INTERFACE_LINK_LIBRARIES $<TARGET_PROPERTY:rawspeed,INTERFACE_LINK_LIBRARIES>
-    POSITION_INDEPENDENT_CODE $<TARGET_PROPERTY:rawspeed,POSITION_INDEPENDENT_CODE>
+    POSITION_INDEPENDENT_CODE True
 )
 
 add_dependencies(rawspeed_static rawspeed)
