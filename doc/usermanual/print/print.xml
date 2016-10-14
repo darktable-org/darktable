@@ -158,7 +158,7 @@
       <bridgehead renderas="sect4">orientation</bridgehead>
 
       <para>
-        Portrait or landscape (note that darktable choses by default the best fit).
+        Portrait or landscape (note that darktable chooses by default the best fit).
       </para>
 
       <bridgehead renderas="sect4">units</bridgehead>
