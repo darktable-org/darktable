@@ -3378,21 +3378,7 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="E5700" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
-		<ID make="Nikon" model="E5700">Nikon E5700</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">FUJI_GREEN</Color>
-			<Color x="1" y="0">MAGENTA</Color>
-			<Color x="0" y="1">YELLOW</Color>
-			<Color x="1" y="1">CYAN</Color>
-		</CFA>
-		<Crop x="0" y="0" width="2576" height="1924"/>
-		<Sensor black="0" white="4095"/>
-		<Hints>
-			<Hint name="coolpixsplit" value=""/>
-		</Hints>
-	</Camera>
-	<Camera make="NIKON" model="E5700" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON" model="E5700" mode="12bit-uncompressed" decoder_version="4">
 		<ID make="Nikon" model="E5700">Nikon E5700</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">FUJI_GREEN</Color>
