@@ -4465,7 +4465,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_both, g->fit_h, GTK_POS_RIGHT, 1, 1);
 
   GtkWidget *label2 = gtk_label_new(_("get structure"));
-  gtk_widget_set_halign(label1, GTK_ALIGN_START);
+  gtk_widget_set_halign(label2, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), label2, 0, 1, 1, 1);
 
   g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);

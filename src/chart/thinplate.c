@@ -148,9 +148,14 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
                     const double **target,    // target values, one pointer per dimension
                     int S,                    // desired sparsity level, actual result will be returned
                     int *permutation, // pointing to original order of points, to identify correct output coeff
-                    double **coeff)   // output coefficient arrays for each dimension, ordered according to
+                    double **coeff,   // output coefficient arrays for each dimension, ordered according to
                                       // permutation[dim]
+                    double *avgerr,           // average error
+                    double *maxerr)           // max error
 {
+  if(avgerr) *avgerr = 0.0;
+  if(maxerr) *maxerr = 0.0;
+
   const int wd = N + 4;
   double *A = malloc(wd * wd * sizeof(double));
   // construct system matrix A such that:
@@ -398,13 +403,17 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
       }
     }
 
-    double maxerr = 0.0;
-    const double err = compute_error(curve, target, r[0], r[1], r[2], wd, &maxerr);
+    double merr = 0.0;
+    const double err = compute_error(curve, target, r[0], r[1], r[2], wd, &merr);
 #endif
     // residual is max CIE76 delta E now
     // everything < 2 is usually considired a very good approximation:
     if(patches == S-4)
-      fprintf(stderr, "rank %d/%d avg DE %g max DE %g\n", sp + 1, patches, err, maxerr);
+    {
+      if(avgerr) *avgerr = err;
+      if(maxerr) *maxerr = merr;
+      fprintf(stderr, "rank %d/%d avg DE %g max DE %g\n", sp + 1, patches, err, merr);
+    }
     if(s >= S && err >= olderr)
       fprintf(stderr, "error increased!\n");
       // return sparsity + 1;

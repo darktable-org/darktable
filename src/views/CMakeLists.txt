@@ -1,7 +1,6 @@
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+include(manage-symbol-visibility)
 
 add_definitions(-include common/module_api.h)
 add_definitions(-include views/view_api.h)
@@ -30,7 +29,7 @@ if(CUPS_FOUND)
 endif(CUPS_FOUND)
 
 foreach(module ${MODULES})
-    target_link_libraries(${module} ${LIBS})
+    target_link_libraries(${module} lib_darktable)
 endforeach(module)
 
 foreach(module ${MODULES})
