@@ -37,7 +37,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 14
+#define CURRENT_DATABASE_VERSION_LIBRARY 15
 #define CURRENT_DATABASE_VERSION_DATA 1
 
 typedef struct dt_database_t
@@ -943,6 +943,28 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 14;
+  }
+  else if(version == 14)
+  {
+    // 13 -> fix the index on used_tags to be a UNIQUE index :-/
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("DELETE FROM main.used_tags WHERE rowid NOT IN (SELECT rowid FROM used_tags GROUP BY id)",
+             "[init] can't delete duplicated entries from `used_tags' in database\n");
+
+    TRY_EXEC("DROP INDEX main.used_tags_idx", "[init] can't drop index `used_tags_idx' from database\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX main.used_tags_idx ON used_tags (id, name)",
+             "[init] can't create index `used_tags_idx' in database\n");
+
+    TRY_EXEC("DELETE FROM main.tagged_images WHERE tagid IS NULL",
+             "[init] can't delete NULL entries from `tagged_images' in database");
+
+    TRY_EXEC("DELETE FROM main.used_tags WHERE id NOT IN (SELECT DISTINCT tagid FROM main.tagged_images)",
+             "[init] can't delete unused tags from `used_tags' in database\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 15;
   } // maybe in the future, see commented out code elsewhere
     //   else if(version == XXX)
     //   {
@@ -1086,7 +1108,7 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
   ////////////////////////////// used_tags
   sqlite3_exec(db->handle, "CREATE TABLE main.used_tags (id INTEGER, name VARCHAR NOT NULL)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.used_tags_idx ON used_tags (id, name)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.used_tags_idx ON used_tags (id, name)", NULL, NULL, NULL);
   ////////////////////////////// color_labels
   sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
