@@ -2000,7 +2000,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="16384"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-compressed" supported="no">
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-compressed">
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2009,9 +2009,9 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-uncompressed" supported="no">
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2020,7 +2020,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3X" mode="14bit-compressed">
 		<ID make="Nikon" model="D3X">Nikon D3X</ID>
