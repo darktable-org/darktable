@@ -18,7 +18,7 @@
     <title>Overview</title>
 
     <para>
-      With <filename>darktagle-chart</filename> we provide a tool for extracting luminance and
+      With <filename>darktable-chart</filename> we provide a tool for extracting luminance and
       color values out of images taken from color reference cards like IT8.7/1 charts. Its main
       purpose is to compare a source image (typically a largely unprocessed raw image) to a
       target image (typically a JPEG image created in-camera) and produce a darktable style that
@@ -31,7 +31,7 @@
 
     <para>
       Some cameras are particularly advanced in offering various film simulation modes at your
-      choice. With the help of <filename>darktagle-chart</filename> and the underlying modules
+      choice. With the help of <filename>darktable-chart</filename> and the underlying modules
       you can now create styles that replicate these film simulations from within darktable.
     </para>
 
@@ -131,7 +131,7 @@
       or you supply a photographic image (mode <quote>color chart image</quote>) much in the
       same way as described above. This second image must also be supplied in Lab Portable Float
       Map format. There is no need to supply the chart file again as
-      <filename>darktagle-chart</filename> takes the same one as defined under <quote>source
+      <filename>darktable-chart</filename> takes the same one as defined under <quote>source
       image</quote>. You only need to again align the layout grid and the image and potentially
       adjust the <quote>size</quote> slider.
     </para>
@@ -178,7 +178,7 @@
     </para>
 
     <para>
-      You first need to tell <filename>darktagle-chart</filename> which of the patches represent
+      You first need to tell <filename>darktable-chart</filename> which of the patches represent
       the gray ramp. In the screenshot displayed further above the gray ramp is positioned in
       the lower part of the color reference chart, denoted as <quote>GS00...GS23</quote>.
     </para>
@@ -221,14 +221,14 @@
 
     <para>
       You supply a style name and a style description under which the style will later appear in
-      darktable. <filename>darktagle-chart</filename> saves the style as a
+      darktable. <filename>darktable-chart</filename> saves the style as a
       <emphasis>.dtstyle</emphasis> file which can be imported into darktable (see
       <xref linkend="styles"/>) and shared with others.
     </para>
 
     <para>
       The <quote>export raw data as csv</quote> button allows you to save the extracted raw data
-      as a CSV file for debugging purposes or later usage. <filename>darktagle-chart</filename>
+      as a CSV file for debugging purposes or later usage. <filename>darktable-chart</filename>
       offers a command line option to produce a style with the desired number of final patches
       from a supplied CSV file (see <xref linkend="darktable_chart_commandline_parameters"/>).
     </para>
@@ -237,7 +237,7 @@
 
   <sect2 status="draft">
 
-    <title>Making input images for <filename>darktagle-chart</filename>
+    <title>Making input images for <filename>darktable-chart</filename>
 
     </title>
 
