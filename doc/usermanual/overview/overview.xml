@@ -847,7 +847,7 @@
 
           <varlistentry>
 
-            <term>&lt;output dtstyle file&lt;</term>
+            <term>&lt;output dtstyle file&gt;</term>
 
             <listitem><para>
               The name of the style file to be created.
