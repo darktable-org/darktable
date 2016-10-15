@@ -6,10 +6,14 @@ set(LUAAUTOC_SOURCES
 # build liblautoc
 #
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Wno-unused -O3 -g ")
-if(NOT WIN32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-endif(NOT WIN32)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-add_library(lautoc STATIC ${LUAAUTOC_SOURCES})
-target_link_libraries(lautoc)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_library(lautoc STATIC ${LUAAUTOC_SOURCES})
+
+set_target_properties(lautoc
+  PROPERTIES
+    POSITION_INDEPENDENT_CODE True
+)
+
+target_link_libraries(lautoc)

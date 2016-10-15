@@ -334,6 +334,7 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_separator(L);
   dt_lua_init_widget_slider(L);
   dt_lua_init_widget_stack(L);
+  dt_lua_init_widget_text_view(L);
 
   dt_lua_push_darktable_lib(L);
   lua_pushstring(L, "new_widget");

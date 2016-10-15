@@ -63,11 +63,8 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     libpango1.0-dev libpng-dev libpugixml-dev librsvg2-dev libsaxon-java \
     libsdl1.2-dev libsecret-1-dev libsoup2.4-dev libsqlite3-dev libtiff5-dev \
     libwebp-dev libx11-dev libxml2-dev libxml2-utils make perl po4a \
-    python3-jsonschema python3-pkg-resources xsltproc && \
+    python3-jsonschema xsltproc && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# python3-pkg-resources is only here temporairly
-# see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=839075
 
 # i'd like to explicitly use ld.gold
 # while it may be just immeasurably faster, it is known to cause more issues

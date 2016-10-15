@@ -526,7 +526,9 @@ gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
   }
   cam->is_live_viewing = TRUE;
   dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 1);
-  pthread_create(&cam->live_view_thread, NULL, &dt_camctl_camera_get_live_view, (void *)camctl);
+
+  dt_pthread_create(&cam->live_view_thread, &dt_camctl_camera_get_live_view, (void *)camctl);
+
   return TRUE;
 }
 
@@ -607,6 +609,7 @@ dt_camctl_t *dt_camctl_new()
 
 static void dt_camctl_camera_destroy(dt_camera_t *cam)
 {
+  if(!cam) return;
   gp_camera_exit(cam->gpcam, cam->gpcontext);
   gp_camera_unref(cam->gpcam);
   gp_widget_unref(cam->configuration);
@@ -626,6 +629,7 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam)
 
 void dt_camctl_destroy(dt_camctl_t *camctl)
 {
+  if(!camctl) return;
   // Go thru all c->cameras and release them..
   for(GList *it = g_list_first(camctl->cameras); it != NULL; it = g_list_delete_link(it, it))
   {
@@ -914,8 +918,6 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
       time_t exif_time;
       gboolean have_exif_time = dt_exif_get_datetime_taken(data, size, &exif_time);
 
-      gp_file_free(camfile);
-
       const char *output_path = _dispatch_request_image_path(c, have_exif_time ? &exif_time : NULL, cam);
       const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
       if(!fname) continue;
@@ -935,6 +937,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
       else {
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
       }
+      gp_file_free(camfile);
       g_free(output);
     } while((ifile = g_list_next(ifile)));
 
@@ -1111,7 +1114,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam, gboolea
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] enabling tether mode\n");
       camctl->active_camera = camera;
       camera->is_tethering = TRUE;
-      pthread_create(&camctl->camera_event_thread, NULL, &_camera_event_thread, (void *)c);
+      dt_pthread_create(&camctl->camera_event_thread, &_camera_event_thread, (void *)c);
     }
     else
     {

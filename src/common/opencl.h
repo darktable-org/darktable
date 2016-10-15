@@ -135,6 +135,12 @@ typedef struct dt_opencl_t
   struct dt_interpolation_cl_global_t *interpolation;
 } dt_opencl_t;
 
+/** internally calls dt_clGetDeviceInfo, and takes care of memory allocation
+ * afterwards, *param_value will point to memory block of size at least *param_value
+ * which needs to be free()'d manually */
+int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_info param_name, void **param_value,
+                              size_t *param_value_size);
+
 /** inits the opencl subsystem. */
 void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics);
 

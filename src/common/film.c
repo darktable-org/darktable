@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/dtpthread.h"
 #include "common/image_cache.h"
+#include "common/tags.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -273,13 +274,18 @@ int dt_film_import(const char *dirname)
     return 0;
   }
 
+  // when called without job system running the import will be done synchronously and destroy the film object
+  int filmid = film->id;
+
   /* at last put import film job on queue */
   film->last_loaded = 0;
   g_strlcpy(film->dirname, dirname, sizeof(film->dirname));
+  char *last = &film->dirname[strlen(film->dirname) - 1];
+  if(*last == '/' && last != film->dirname) *last = '\0'; // remove the closing /, unless it's also the start
   film->dir = g_dir_open(film->dirname, 0, NULL);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_film_import1_create(film));
 
-  return film->id;
+  return filmid;
 }
 
 void dt_film_remove_empty()
@@ -407,8 +413,27 @@ void dt_film_remove(const int id)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
+
+  dt_tag_update_used_tags();
+
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
 }
+
+GList *dt_film_get_image_ids(const int filmid)
+{
+  GList *result = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE film_id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    result = g_list_append(result, GINT_TO_POINTER(id));
+  }
+  return result;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

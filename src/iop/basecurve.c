@@ -1340,8 +1340,8 @@ void gui_init(struct dt_iop_module_t *self)
   c->fusion = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->fusion, NULL, _("fusion"));
   dt_bauhaus_combobox_add(c->fusion, _("none"));
-  dt_bauhaus_combobox_add(c->fusion, _("0ev, +3ev"));
-  dt_bauhaus_combobox_add(c->fusion, _("0ev, +3ev, +6ev"));
+  dt_bauhaus_combobox_add(c->fusion, _("two exposures"));
+  dt_bauhaus_combobox_add(c->fusion, _("three exposures"));
   gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up a couple of times with itself, to compress high dynamic range. expose for the highlights before use."));
   gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);

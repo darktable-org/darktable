@@ -542,7 +542,11 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
   Camera *cam = meta->getCamera(make, model, mode);
   if (!cam) {
     writeLog(DEBUG_PRIO_INFO, "ISO:%d\n", iso_speed);
-    writeLog(DEBUG_PRIO_WARNING, "Unable to find camera in database: %s %s %s\nPlease upload file to ftp.rawstudio.org, thanks!\n", make.c_str(), model.c_str(), mode.c_str());
+    writeLog(DEBUG_PRIO_WARNING, "Unable to find camera in database: '%s' '%s' '%s'\nPlease upload file to ftp.rawstudio.org, thanks!\n", make.c_str(), model.c_str(), mode.c_str());
+
+    if (failOnUnknown)
+      ThrowRDE("Camera '%s' '%s', mode '%s' not supported, and not allowed to guess. Sorry.", make.c_str(), model.c_str(), mode.c_str());
+
     return;
   }
 

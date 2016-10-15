@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2012 tobias ellinghaus.
+    copyright (c) 2016 pascal obry
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,24 +19,15 @@
 #define DT_UNDO_H
 
 #include "common/dtpthread.h"
-#include "views/view.h"
 #include <glib.h>
 
 //  types that are known by the undo module
 typedef enum dt_undo_type_t
 {
-  DT_UNDO_GEOTAG = 1,
+  DT_UNDO_GEOTAG = 1 << 0,
+  DT_UNDO_HISTORY = 1 << 1,
+  DT_UNDO_ALL = DT_UNDO_GEOTAG | DT_UNDO_HISTORY
 } dt_undo_type_t;
-
-#define DT_UNDO_ALL (DT_UNDO_GEOTAG)
-
-//  types that are known by the undo module are declared here to be shared by
-//  all the views supporting undo.
-typedef struct dt_undo_geotag_t
-{
-  int imgid;
-  float longitude, latitude, elevation;
-} dt_undo_geotag_t;
 
 typedef void *dt_undo_data_t;
 
@@ -51,8 +41,9 @@ dt_undo_t *dt_undo_init(void);
 void dt_undo_cleanup(dt_undo_t *self);
 
 // record a change that will be insered into the undo list
-void dt_undo_record(dt_undo_t *self, dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data,
-                    void (*undo)(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *item));
+void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
+                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
+                    void (*free_data)(gpointer data));
 
 //  undo an element which correspond to filter. filter here is expected to be
 //  a set of dt_undo_type_t.
@@ -63,6 +54,9 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter);
 
 //  removes all items which correspond to filter in the undo/redo lists
 void dt_undo_clear(dt_undo_t *self, uint32_t filter);
+
+void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
+                     void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item));
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

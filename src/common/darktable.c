@@ -49,6 +49,7 @@
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
 #include "common/points.h"
+#include "common/resource_limits.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -63,11 +64,12 @@
 #include "lua/init.h"
 #include "views/undo.h"
 #include "views/view.h"
+#include <errno.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <string.h>
 #include <sys/param.h>
 #include <sys/types.h>
@@ -468,6 +470,9 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   mallopt(M_MMAP_THRESHOLD, 128 * 1024); /* use mmap() for large allocations */
 #endif
 
+  // make sure that stack/frame limits are good (musl)
+  dt_set_rlimits();
+
   // we have to have our share dir in XDG_DATA_DIRS,
   // otherwise GTK+ won't find our logo for the about screen (and maybe other things)
   {
@@ -608,6 +613,12 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
                "  GraphicsMagick support enabled\n"
 #else
                "  GraphicsMagick support disabled\n"
+#endif
+
+#ifdef HAVE_OPENEXR
+               "  OpenEXR support enabled\n"
+#else
+               "  OpenEXR support disabled\n"
 #endif
                ,
                darktable_package_string,
@@ -970,14 +981,14 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 
-#ifdef HAVE_GPHOTO2
-  // Initialize the camera control.
-  // this is done late so that the gui can react to the signal sent but before switching to lighttable!
-  darktable.camctl = dt_camctl_new();
-#endif
-
   if(init_gui)
   {
+#ifdef HAVE_GPHOTO2
+    // Initialize the camera control.
+    // this is done late so that the gui can react to the signal sent but before switching to lighttable!
+    darktable.camctl = dt_camctl_new();
+#endif
+
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 

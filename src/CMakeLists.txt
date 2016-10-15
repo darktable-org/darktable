@@ -20,6 +20,7 @@ FILE(GLOB SOURCE_FILES
   "common/darktable.c"
   "common/database.c"
   "common/dbus.c"
+  "common/dtpthread.c"
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
@@ -57,6 +58,7 @@ FILE(GLOB SOURCE_FILES
   "common/dynload.c"
   "common/dlopencl.c"
   "common/ratings.c"
+  "common/resource_limits.c"
   "common/histogram.c"
   "control/control.c"
   "control/crawler.c"
@@ -531,6 +533,7 @@ if(USE_LUA)
       "lua/widget/separator.c"
       "lua/widget/slider.c"
       "lua/widget/stack.c"
+      "lua/widget/text_view.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
   endif(USE_LUA)
@@ -544,7 +547,7 @@ if(USE_LUA)
   endif(NOT LUA52_FOUND)
   # liblautoc for lua automated interface generation
   add_library(lautoc_static STATIC IMPORTED)
-  set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+  set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a POSITION_INDEPENDENT_CODE True)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/)
   add_subdirectory(external/LuaAutoC)
   list(APPEND LIB_DEPS lautoc)
@@ -560,14 +563,6 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
   add_definitions(-Werror)
 endif()
 
-#
-# the rawspeed part is a bit of a hack:
-# the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
-# so we do a custom dependency and pretend an imported librawsped.a so no other -l are
-# appended.
-#
-add_library(rawspeed_static STATIC IMPORTED)
-set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
 # compile rawspeed
 add_subdirectory(external/rawspeed)
 list(APPEND LIB_DEPS rawspeed)
@@ -630,7 +625,6 @@ if(BUILD_PRINT)
       "common/printprof.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
-    add_library(cups_static STATIC IMPORTED)
     list(APPEND LIBS ${CUPS_LIBRARIES})
     add_definitions("-DHAVE_PRINT")
     message(STATUS "Print mode: enabled")
@@ -724,6 +718,10 @@ add_dependencies(lib_darktable ${LIB_DEPS})
 target_link_libraries(lib_darktable ${STATIC_LIBS})
 target_link_libraries(lib_darktable ${LIBS})
 
+unset(LIBS)
+unset(STATIC_LIBS)
+unset(LIB_DEPS)
+
 #
 # Install lib_darktable
 #
@@ -733,9 +731,6 @@ if(WIN32)
 else(WIN32)
   install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
-
-# make sure static libs is first
-list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})
 
 # Compile views modules
 add_subdirectory(views)
@@ -785,5 +780,5 @@ set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")
 endif(APPLE)
-target_link_libraries(darktable ${LIBS})
+target_link_libraries(darktable lib_darktable)
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -285,6 +285,26 @@ static _dt_job_t *dt_control_schedule_job(dt_control_t *control)
   return job;
 }
 
+static void dt_control_job_execute(_dt_job_t *job)
+{
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
+           dt_get_wtime());
+  dt_control_job_print(job);
+  dt_print(DT_DEBUG_CONTROL, "\n");
+
+  dt_control_job_set_state(job, DT_JOB_STATE_RUNNING);
+
+  /* execute job */
+  job->result = job->execute(job);
+
+  dt_control_job_set_state(job, DT_JOB_STATE_FINISHED);
+
+  dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
+           dt_get_wtime());
+  dt_control_job_print(job);
+  dt_print(DT_DEBUG_CONTROL, "\n");
+}
+
 static int32_t dt_control_run_job(dt_control_t *control)
 {
   _dt_job_t *job = dt_control_schedule_job(control);
@@ -294,24 +314,7 @@ static int32_t dt_control_run_job(dt_control_t *control)
   /* change state to running */
   dt_pthread_mutex_lock(&job->wait_mutex);
   if(dt_control_job_get_state(job) == DT_JOB_STATE_QUEUED)
-  {
-    dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
-             dt_get_wtime());
-    dt_control_job_print(job);
-    dt_print(DT_DEBUG_CONTROL, "\n");
-
-    dt_control_job_set_state(job, DT_JOB_STATE_RUNNING);
-
-    /* execute job */
-    job->result = job->execute(job);
-
-    dt_control_job_set_state(job, DT_JOB_STATE_FINISHED);
-
-    dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
-             dt_get_wtime());
-    dt_control_job_print(job);
-    dt_print(DT_DEBUG_CONTROL, "\n");
-  }
+    dt_control_job_execute(job);
 
   dt_pthread_mutex_unlock(&job->wait_mutex);
 
@@ -368,6 +371,17 @@ int dt_control_add_job(dt_control_t *control, dt_job_queue_t queue_id, _dt_job_t
   {
     dt_control_job_dispose(job);
     return 1;
+  }
+
+  if(!control->running)
+  {
+    // whatever we are adding here won't be scheduled as the system isn't running. execute it synchronous instead.
+    dt_pthread_mutex_lock(&job->wait_mutex); // is that even needed?
+    dt_control_job_execute(job);
+    dt_pthread_mutex_unlock(&job->wait_mutex);
+
+    dt_control_job_dispose(job);
+    return 0;
   }
 
   job->queue = queue_id;
@@ -594,11 +608,11 @@ void dt_control_jobs_init(dt_control_t *control)
         = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    pthread_create(&control->thread[k], NULL, dt_control_work, params);
+    dt_pthread_create(&control->thread[k], dt_control_work, params);
   }
 
   /* create queue kicker thread */
-  pthread_create(&control->kick_on_workers_thread, NULL, dt_control_worker_kicker, control);
+  dt_pthread_create(&control->kick_on_workers_thread, dt_control_worker_kicker, control);
 
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
   {
@@ -608,7 +622,7 @@ void dt_control_jobs_init(dt_control_t *control)
         = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    pthread_create(&control->thread_res[k], NULL, dt_control_work_res, params);
+    dt_pthread_create(&control->thread_res[k], dt_control_work_res, params);
   }
 }
 
