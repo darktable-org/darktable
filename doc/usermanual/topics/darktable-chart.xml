@@ -32,7 +32,7 @@
     <para>
       Some cameras are particularly advanced in offering various film simulation modes at your
       choice. With the help of <filename>darktagle-chart</filename> and the underlying modules
-      you can now generate styles that replicate these film simulations from within darktable.
+      you can now create styles that replicate these film simulations from within darktable.
     </para>
 
   </sect2>
@@ -138,7 +138,7 @@
 
     <para>
       In a typical use case the second image will be based on a JPEG file produced in-camera.
-      This way you can generate a style to simulate the in-camera processing within darktable.
+      This way you can create a style to simulate the in-camera processing within darktable.
     </para>
 
     <para>
@@ -237,7 +237,7 @@
 
   <sect2 status="draft">
 
-    <title>Generating input images for <filename>darktagle-chart</filename>
+    <title>Making input images for <filename>darktagle-chart</filename>
 
     </title>
 
@@ -289,11 +289,11 @@
 
     <para>
       Then select <quote>PFM (float)</quote> as output format and press <quote>export</quote> to
-      generate the source image.
+      generate the source image file.
     </para>
 
     <para>
-      In a similar way you generate the corresponding reference (target) image from the JPEG.
+      In a similar way you produce the corresponding reference (target) image from the JPEG.
       Also this time you need to disable all modules and export with <quote>Lab</quote> output
       color profile in <quote>PFM (float)</quote> format.
     </para>
