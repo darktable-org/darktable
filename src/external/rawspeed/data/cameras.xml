@@ -3364,21 +3364,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON" model="E5400" mode="12bit-compressed" decoder_version="3" supported="no"> <!-- need raw sample for whitelevel -->
-		<ID make="Nikon" model="E5400">Nikon E5400</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">BLUE</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">RED</Color>
-		</CFA>
-		<Crop x="0" y="0" width="2608" height="1950"/>
-		<Sensor black="0" white="4095"/>
-		<Hints>
-			<Hint name="coolpixsplit" value=""/>
-		</Hints>
-	</Camera>
-	<Camera make="NIKON" model="E5400" mode="12bit-uncompressed" decoder_version="3" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON" model="E5400" mode="12bit-uncompressed" decoder_version="3">
 		<ID make="Nikon" model="E5400">Nikon E5400</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
