@@ -50,6 +50,7 @@ IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON D7000"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7100"] => "compressed",
   ["NIKON", "COOLPIX P330"] => "compressed",
+  ["NIKON", "COOLPIX P6000"] => "uncompressed",
   ["NIKON", "COOLPIX P7100"] => "uncompressed",
   ["NIKON", "COOLPIX P7700"] => "compressed",
   ["NIKON", "COOLPIX P7800"] => "compressed"
@@ -66,6 +67,7 @@ IGNORE_HIGH_WHITELEVEL = [
   ["NIKON CORPORATION", "NIKON D70"],
   ["NIKON CORPORATION", "NIKON D70s"],
   ["NIKON", "COOLPIX P330"],
+  ["NIKON", "COOLPIX P6000"],
   ["NIKON", "COOLPIX P7700"],
   ["NIKON", "COOLPIX P7800"]
 ]
