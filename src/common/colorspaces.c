@@ -1072,8 +1072,11 @@ static void _update_display_transforms(dt_colorspaces_t *self)
   if(self->transform_adobe_rgb_to_display) cmsDeleteTransform(self->transform_adobe_rgb_to_display);
   self->transform_adobe_rgb_to_display = NULL;
 
-  cmsHPROFILE display_profile = _get_profile(self, self->display_type, self->display_filename,
-                                             DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  const dt_colorspaces_color_profile_t *display_dt_profile = _get_profile(self, self->display_type,
+                                                                          self->display_filename,
+                                                                          DT_PROFILE_DIRECTION_DISPLAY);
+  if(!display_dt_profile) return;
+  cmsHPROFILE display_profile = display_dt_profile->profile;
   if(!display_profile) return;
 
   self->transform_srgb_to_display = cmsCreateTransform(_get_profile(self, DT_COLORSPACE_SRGB, "",
@@ -1289,11 +1292,11 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->mode = dt_conf_get_int("ui_last/color/mode");
   if((unsigned int)res->display_type >= DT_COLORSPACE_LAST
     || (res->display_type == DT_COLORSPACE_FILE
-        && !res->display_filename[0]))
+        && (!res->display_filename[0] || !g_file_test(res->display_filename, G_FILE_TEST_IS_REGULAR))))
     res->display_type = DT_COLORSPACE_DISPLAY;
   if((unsigned int)res->softproof_type >= DT_COLORSPACE_LAST
     || (res->softproof_type == DT_COLORSPACE_FILE
-        && !res->softproof_filename[0]))
+        && (!res->softproof_filename[0] || !g_file_test(res->softproof_filename, G_FILE_TEST_IS_REGULAR))))
     res->softproof_type = DT_COLORSPACE_SRGB;
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
 

@@ -30,7 +30,7 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=varargs)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=address-of-packed-member)
 
 # should be < 64Kb
-math(EXPR MAX_MEANINGFUL_SIZE 64*1024)
+math(EXPR MAX_MEANINGFUL_SIZE 32*1024)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wframe-larger-than=${MAX_MEANINGFUL_SIZE})
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wstack-usage=${MAX_MEANINGFUL_SIZE})
 
@@ -39,6 +39,11 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wstack-usage=${MAX_MEANINGFUL_SIZE})
 # # src/external/wb_presets.c, wb_preset <- ~400Kb
 math(EXPR MAX_MEANINGFUL_SIZE 1*1024*1024)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
+
+# minimal stack/frame stack size. (musl)
+# let's see if 1Mb is good-enough...
+# MUST be a multiple of the system page size !!!
+math(EXPR WANTED_STACK_SIZE 1*1024*1024)
 
 if(SOURCE_PACKAGE)
   add_definitions(-D_RELEASE)

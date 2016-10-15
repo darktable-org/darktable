@@ -96,33 +96,50 @@ FILE(GLOB RAWSPEED_SOURCES
 #
 if(WIN32)
   set(RAWSPEED_LIBS "msvcrt")
-else(WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif(WIN32)
 
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
+
+set_target_properties(rawspeed
+  PROPERTIES
+    POSITION_INDEPENDENT_CODE True
+)
+
 if(USE_XMLLINT)
   add_dependencies(rawspeed validate_cameras_xml)
 endif(USE_XMLLINT)
-target_link_libraries(rawspeed ${RAWSPEED_LIBS})
+
+target_link_libraries(rawspeed ${RAWSPEED_LIBS} ${Pugixml_LIBRARIES} ${JPEG_LIBRARIES})
+
+#
+# the rawspeed part is a bit of a hack:
+# the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
+# so we do a custom dependency and pretend an imported librawsped.a so no other -l are
+# appended.
+#
+add_library(rawspeed_static STATIC IMPORTED GLOBAL)
+set_target_properties(rawspeed_static
+  PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/librawspeed.a
+    INTERFACE_LINK_LIBRARIES $<TARGET_PROPERTY:rawspeed,INTERFACE_LINK_LIBRARIES>
+    POSITION_INDEPENDENT_CODE True
+)
+
+add_dependencies(rawspeed_static rawspeed)
 
 # Adapted from src/cli/CMakeLists.txt
 if (BUILD_RS_IDENTIFY)
-  add_definitions(-DRS_CAMERAS_XML_PATH="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/darktable/rawspeed/cameras.xml")
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../..)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/../..)
-
   add_executable(darktable-rs-identify rawspeed-identify.cpp)
-  set_target_properties(darktable-rs-identify PROPERTIES LINKER_LANGUAGE CXX)
-  if(CMAKE_COMPILER_IS_GNUCC)
-	  if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.3)
-		  if (CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
-			  message("-- Force link to libintl on *BSD with GCC 4.3+")
-			  target_link_libraries(darktable-rs-identify -lintl)
-		  endif()
-	  endif()
-  endif()
-  add_dependencies(darktable-rs-identify rawspeed)
-  target_link_libraries(darktable-rs-identify rawspeed_static ${Pugixml_LIBRARIES} ${JPEG_LIBRARIES})
+
+  target_compile_definitions(darktable-rs-identify
+    PRIVATE -DRS_CAMERAS_XML_PATH="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/darktable/rawspeed/cameras.xml"
+  )
+
+  set_target_properties(darktable-rs-identify
+    PROPERTIES
+      LINKER_LANGUAGE CXX)
+
+  target_link_libraries(darktable-rs-identify rawspeed_static)
+
   install(TARGETS darktable-rs-identify DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

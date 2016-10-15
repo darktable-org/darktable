@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.0\n"
-"POT-Creation-Date: 2016-09-25 10:15+0200\n"
-"PO-Revision-Date: 2016-09-27 18:55+0100\n"
+"POT-Creation-Date: 2016-10-14 19:34+0200\n"
+"PO-Revision-Date: 2016-10-14 21:37+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -178,10 +178,11 @@ msgstr ""
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:139(para)
 msgid ""
 "Translations of this manual to local languages are brought to you by "
-"Federico Bruni, Victor Lamoine, Michel Leblond, and María Gracia Leandro."
+"Federico Bruni, Maurizio Paglia, Victor Lamoine, Michel Leblond, and María "
+"Gracia Leandro."
 msgstr ""
 "Le traduzioni del presente manuale nelle varie lingue sono state curate da "
-"Federico Bruni e Maurizio Paglia, Victor Lamoine, Michel Leblond, e María "
+"Maurizio Paglia e Federico Bruni, Victor Lamoine, Michel Leblond, e María "
 "Gracia Leandro."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:144(para)
@@ -393,7 +394,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:231(para)
 msgid "Tethered shooting."
-msgstr "Scatto in tethering."
+msgstr "Scatto remoto (tethering)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:235(para)
 msgid ""
@@ -515,7 +516,7 @@ msgstr "Avvio del programma"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:304(primary)
 msgid "program invocation"
-msgstr "avvio del programma"
+msgstr "programma, avvio"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:308(primary)
 msgid "command line parameters"
@@ -838,9 +839,9 @@ msgid ""
 "without using any X11, wayland, etc. – this mode is useful for servers "
 "running background jobs."
 msgstr ""
-"Questa variante non avvia nessun display ma opera in pura modalità console,"
-" senza utilizzare X11, wayland, ecc. è una modalità utile per avviare lavori"
-" in background su di un server."
+"Questa variante non avvia nessun display ma opera in pura modalità console, "
+"senza utilizzare X11, wayland, ecc. è una modalità utile per avviare lavori "
+"in background su di un server."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:559(para)
 msgid ""
@@ -1275,7 +1276,7 @@ msgstr ""
 "><tbody><row><entry><emphasis>l</emphasis></entry><entry>passa a tavolo "
 "luminoso</entry></row><row><entry><emphasis>d</emphasis></entry><entry>passa "
 "a camera oscura</entry></row><row><entry><emphasis>t</emphasis></"
-"entry><entry>passa a tethering</entry></row><row><entry><emphasis>m</"
+"entry><entry>passa a scatto remoto</entry></row><row><entry><emphasis>m</"
 "emphasis></entry><entry>passa a mappa</entry></row><row><entry><emphasis>s</"
 "emphasis></entry><entry> passa a presentazione </entry></"
 "row><row><entry><emphasis>p</emphasis></entry><entry> passa a stampa </"
@@ -1314,7 +1315,7 @@ msgstr ""
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16544(title)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16592(title)
 msgid "Tethering"
-msgstr "Tethering"
+msgstr "Tethering (scatto remoto)"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1042(para)
 msgid ""
@@ -1773,12 +1774,11 @@ msgstr ""
 "margini dell'inquadratura. In altri casi può essere necessario correggere il "
 "livello dell'orizzonte o le distorsioni prospettiche. Tutti questi difetti "
 "si possono correggere col modulo <link linkend=\"crop_and_rotate"
-"\"><emphasis>Ritaglia e ruota</emphasis></link>. Per una correzione delle"
-" distorzioni prospettiche completamente automatizzata "
-"potete utilizzare il modulo <link linkend="
-"\"perspective_correction\"><emphasis>correzione prospettica</emphasis></"
-"link>. Per correggere i tipici "
-"difetti dell'obiettivo della fotocamera, come la  distorsione a cuscino, le "
+"\"><emphasis>Ritaglia e ruota</emphasis></link>. Per una correzione delle "
+"distorzioni prospettiche completamente automatizzata potete utilizzare il "
+"modulo <link linkend=\"perspective_correction\"><emphasis>correzione "
+"prospettica</emphasis></link>. Per correggere i tipici difetti "
+"dell'obiettivo della fotocamera, come la  distorsione a cuscino, le "
 "aberrazioni cromatiche trasversali  o la vignettatura, si usa invece il "
 "modulo <link linkend=\"lens_correction\"><emphasis>correzione obiettivo</"
 "emphasis></link>."
@@ -2170,12 +2170,12 @@ msgstr "Gestione del colore"
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6564(primary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7849(bridgehead)
 msgid "display profile"
-msgstr "Profilo del monitor"
+msgstr "profilo del monitor"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1663(primary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6560(primary)
 msgid "monitor profile"
-msgstr "Profilo del monitor"
+msgstr "profilo del monitor"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1670(para)
 msgid ""
@@ -2664,9 +2664,8 @@ msgstr ""
 "l'esaurimento della memoria. Se darktable esaurisce la memoria durante la "
 "generazione delle anteprime avvisa l'utente e visualizza i teschi. Questa è "
 "il caso che più probabilmente accade quando darktable funziona con "
-"regolazioni non ottimali specialmente in un ambiente a 32-bit. Vedere anche <"
-"xref linkend="
-"\"darktable_and_memory\"/> per maggiori informazioni."
+"regolazioni non ottimali specialmente in un ambiente a 32-bit. Vedere anche "
+"<xref linkend=\"darktable_and_memory\"/> per maggiori informazioni."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1990(title)
 msgid "Star ratings and color labels"
@@ -3007,7 +3006,7 @@ msgstr "File sidecar"
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2280(primary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3663(primary)
 msgid "sidecar files"
-msgstr "file sidecar"
+msgstr "sidecar, file"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2284(primary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3667(primary)
@@ -3398,7 +3397,8 @@ msgstr ""
 "con <placeholder-2/>. Si può anche importare direttamente da una fotocamera "
 "collegata utilizzando il pulsante <placeholder-3/>. Se una fotocamera "
 "supportata è collegata potete importare le immagini direttamente da quel "
-"dispositivo oppure potete controllarla con darktable in modalità tethering."
+"dispositivo oppure potete controllarla con darktable in modalità scatto "
+"remoto (tethering)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2586(para)
 msgid ""
@@ -3515,7 +3515,7 @@ msgstr "Importa dalla fotocamera"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2663(quote)
 msgid "tethered shoot"
-msgstr "Scatto in tethering."
+msgstr "Scatto remoto"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2657(entry)
 msgid ""
@@ -3559,7 +3559,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2692(title)
 msgid "Tethered shoot"
-msgstr "Scatto in tethering"
+msgstr "Scatto remoto"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2694(para)
 msgid ""
@@ -3569,12 +3569,12 @@ msgid ""
 "jobs, controlling the number of images and time between captures, along with "
 "camera settings such as exposure time, aperture and more."
 msgstr ""
-"Il tethering serve a integrare darktable con la fotocamera. Mentre si "
-"scattano le immagini con la fotocamera, queste vengono automaticamente "
-"importate in darktable, in modo da poter controllare il risultato dello "
-"scatto. Si possono anche  impostare sessioni di acquisizione remota, "
-"specificando il numero di immagini e l'intervallo di tempo tra ciascuna "
-"acquisizione, oltre a impostazioni della fotocamera come tempo di "
+"Il tethering (scatto remoto) serve a integrare darktable con la fotocamera. "
+"Mentre si scattano le immagini con la fotocamera, queste vengono "
+"automaticamente importate in darktable, in modo da poter controllare il "
+"risultato dello scatto. Si possono anche  impostare sessioni di acquisizione "
+"remota, specificando il numero di immagini e l'intervallo di tempo tra "
+"ciascuna acquisizione, oltre a impostazioni della fotocamera come tempo di "
 "esposizione, diaframma e altro."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2702(para)
@@ -3584,8 +3584,8 @@ msgid ""
 "\"tethering_chapter\"/>."
 msgstr ""
 "Se la fotocamera è abilitata, il pulsante tethering porta alla vista di "
-"acquisizione dove si può fare  lo scatto in tethering. Altre informazioni "
-"sul tethering si trovano nel <xref linkend=\"tethering_chapter\"/>."
+"acquisizione dove si può utilizzare lo scatto remoto. Altre informazioni sul "
+"tethering si trovano nel <xref linkend=\"tethering_chapter\"/>."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2713(title)
 msgid "Supported file formats"
@@ -3656,13 +3656,13 @@ msgid ""
 "Sigmas with the Foveon X3 sensor)."
 msgstr ""
 "darktable legge i file raw attraverso la libreria open source: RawSpeed "
-"(sviluppata da Klaus Post). Il numero di "
-"fotocamere e formati file supportati è in costante aumento; darne una lista "
-"completa non rientra nell'ambito di questo manuale. È supportata la maggior "
-"parte dei modelli di fotocamera moderni e i nuovi tendono a essere aggiunti "
-"molto rapidamente.  darktable non decodifica le immagini provenienti da "
-"fotocamere che hanno sensori diversi dal Bayer  (ad esempio, Fuji X-Pro1 o "
-"le Sigma col sensore Foveon X3)."
+"(sviluppata da Klaus Post). Il numero di fotocamere e formati file "
+"supportati è in costante aumento; darne una lista completa non rientra "
+"nell'ambito di questo manuale. È supportata la maggior parte dei modelli di "
+"fotocamera moderni e i nuovi tendono a essere aggiunti molto rapidamente.  "
+"darktable non decodifica le immagini provenienti da fotocamere che hanno "
+"sensori diversi dal Bayer  (ad esempio, Fuji X-Pro1 o le Sigma col sensore "
+"Foveon X3)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2763(title)
 msgid "LDR image files"
@@ -3683,11 +3683,11 @@ msgid ""
 msgstr ""
 "darktable legge nativamente le <quote>comuni</quote> immagini in formato "
 "JPEG, 8-bit/16-bit PNG e 8-bit/16-bit TIFF. È supportato anche JPEG2000 se "
-"le librerie necessarie sono presenti al momento della "
-"compilazione. Analogalmente, se darktable è compilato col supporto a "
-"GraphicsMagick, sono disponibili altri formati di importazione, come GIF, "
-"Dicom DCM, ulteriori formati TIFF esotici e alcuni formati della famiglia "
-"<quote>portable xyz-map</quote> di Sun."
+"le librerie necessarie sono presenti al momento della compilazione. "
+"Analogalmente, se darktable è compilato col supporto a GraphicsMagick, sono "
+"disponibili altri formati di importazione, come GIF, Dicom DCM, ulteriori "
+"formati TIFF esotici e alcuni formati della famiglia <quote>portable xyz-"
+"map</quote> di Sun."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2782(title)
 msgid "HDR image files"
@@ -4102,7 +4102,6 @@ msgid "updating folder path"
 msgstr "aggiornare il percorso della cartella"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3134(para)
-#, fuzzy
 msgid ""
 "While it is best to not touch imported files behind darktable's back, this "
 "module can help you recover from situations when you move imported folders "
@@ -4114,16 +4113,16 @@ msgid ""
 "folder name, select <quote>search filmroll...</quote>, and then select the "
 "new location of the folder."
 msgstr ""
-"Dal momento che è meglio non toccare i files importati all'insaputa di"
-" darktable, questo modulo vi tornerà di aiuto se avete spostato una cartella"
-" di files dopo averla importata. Il modulo xxxxxxx vi permetterà di"
-" comunicare a darktable la posizione di cartelle spostate dopo la loro"
-" importazione. Selezionare dal menu a discesa <emphasis>cartelle</emphasis> e"
-" cercate il nome della cartella originale. Lo troverete barrato per"
-" sottolineare il fatto che non si trova più al suo posto. Fate quindi click"
-" col pulsante destro del mouse sul nome della cartella e selezionate <quote"
-">cerca rullino...</quote>, quindi selezionate la nuova posizione della"
-" cartella."
+"Dal momento che è meglio non toccare i files importati all'insaputa di "
+"darktable, questo modulo vi tornerà di aiuto se avete spostato una cartella "
+"di files dopo averla importata. Il modulo raccolta immagini vi permetterà di "
+"comunicare a darktable la posizione di cartelle spostate dopo la loro "
+"importazione. Selezionare dal menu a discesa <emphasis>cartelle</emphasis> e "
+"cercate il nome della cartella originale. Lo troverete barrato per "
+"sottolineare il fatto che non si trova più al suo posto. Fate quindi click "
+"col pulsante destro del mouse sul nome della cartella e selezionate "
+"<quote>cerca rullino...</quote>, quindi selezionate la nuova posizione della "
+"cartella."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3153(title)
 msgid "Recently used collections"
@@ -4529,7 +4528,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3607(title)
 msgid "discard"
-msgstr "Scarta"
+msgstr "scarta"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3609(para)
 msgid ""
@@ -4561,7 +4560,7 @@ msgstr "accoda"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3628(quote)
 msgid "overwrite"
-msgstr "Sovrascrivi"
+msgstr "sovrascrivi"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3627(emphasis)
 msgid ""
@@ -4578,7 +4577,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3637(title)
 msgid "paste"
-msgstr "Incolla"
+msgstr "incolla"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3639(para)
 msgid ""
@@ -4593,7 +4592,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3649(title)
 msgid "paste all"
-msgstr "Incolla tutto"
+msgstr "incolla tutto"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3651(para)
 msgid ""
@@ -4608,7 +4607,7 @@ msgstr ""
 # uso la traduzione (non letterale) dell'interfaccia grafica
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3660(title)
 msgid "load sidecar file"
-msgstr "Carica file XMP"
+msgstr "carica file sidecar"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3670(para)
 msgid ""
@@ -4640,7 +4639,7 @@ msgstr ""
 # uso la traduzione (non letterale) dell'interfaccia grafica
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3688(title)
 msgid "write sidecar files"
-msgstr "Scrivi file XMP"
+msgstr "scrivi file sidecar"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3690(para)
 msgid ""
@@ -4671,7 +4670,7 @@ msgstr "Stili"
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3714(secondary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3718(primary)
 msgid "styles"
-msgstr "Stili"
+msgstr "stili"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3727(entry)
 msgid ""
@@ -4706,7 +4705,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3757(title)
 msgid "create duplicate"
-msgstr "Crea duplicato"
+msgstr "crea duplicato"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3759(para)
 msgid ""
@@ -4724,7 +4723,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3770(title)
 msgid "create"
-msgstr "Crea"
+msgstr "crea"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3772(para)
 msgid ""
@@ -4742,7 +4741,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3783(title)
 msgid "edit"
-msgstr "Modifica"
+msgstr "modifica"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3785(para)
 msgid ""
@@ -4762,7 +4761,7 @@ msgstr ""
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3796(title)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4116(title)
 msgid "delete"
-msgstr "Elimina"
+msgstr "elimina"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3798(para)
 msgid "This deletes the selected style, without further question."
@@ -4782,7 +4781,7 @@ msgstr ""
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4140(primary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4559(title)
 msgid "export"
-msgstr "Esporta"
+msgstr "esporta"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3819(para)
 msgid ""
@@ -4800,7 +4799,7 @@ msgstr "Georeferenziazione"
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3836(secondary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3840(primary)
 msgid "geo tagging"
-msgstr "Georeferenziazione"
+msgstr "georeferenziazione"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3849(entry)
 msgid ""
@@ -4942,27 +4941,27 @@ msgstr "Editor metadati"
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3966(secondary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3970(primary)
 msgid "metadata editor"
-msgstr "Editor metadati"
+msgstr "metadati, editor"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3980(emphasis)
 msgid "title"
-msgstr "Titolo"
+msgstr "titolo"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3981(emphasis)
 msgid "description"
-msgstr "Descrizione"
+msgstr "descrizione"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3981(emphasis)
 msgid "creator"
-msgstr "Autore"
+msgstr "autore"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3982(emphasis)
 msgid "publisher"
-msgstr "Editore"
+msgstr "editore"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3982(emphasis)
 msgid "rights"
-msgstr "Diritti"
+msgstr "diritti"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3979(entry)
 msgid ""
@@ -4977,7 +4976,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3999(title)
 msgid "clear"
-msgstr "Pulisci"
+msgstr "pulisci"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4001(para)
 msgid "Delete existing metadata from the selected image(s)."
@@ -4985,7 +4984,7 @@ msgstr "Elimina i metadati esistenti dalle immagini selezionate."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4009(title)
 msgid "apply"
-msgstr "Applica"
+msgstr "applica"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4011(para)
 msgid ""
@@ -5001,7 +5000,7 @@ msgstr "Etichettatura"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4027(secondary)
 msgid "tagging"
-msgstr "Etichettatura"
+msgstr "etichettatura"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4031(primary)
 msgid "tags"
@@ -5071,7 +5070,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4085(title)
 msgid "attach"
-msgstr "Attacca"
+msgstr "attacca"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4087(para)
 msgid "Attach the selected tag from the list below to all selected images."
@@ -5081,7 +5080,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4095(title)
 msgid "detach"
-msgstr "Stacca"
+msgstr "stacca"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4097(para)
 msgid ""
@@ -5094,7 +5093,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4106(title)
 msgid "new"
-msgstr "Nuova"
+msgstr "nuova"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4108(para)
 msgid "Create a new tag for the list."
@@ -5122,8 +5121,8 @@ msgstr "esportazione di file"
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4156(emphasis)
 msgid "Tip: you can use ctrl-e from within the darkroom mode to export."
 msgstr ""
-"Suggerimento: per esportare potete anche usare la scorciatoia ctrl-e dalla"
-" vista camera oscura."
+"Suggerimento: per esportare potete anche usare la scorciatoia ctrl-e dalla "
+"vista camera oscura."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4153(entry)
 msgid ""
@@ -5133,8 +5132,8 @@ msgid ""
 msgstr ""
 "Tutti i flussi di lavoro terminano in questo pannello con l'esportazione "
 "delle  immagini sviluppate. Si può  esportare su file su disco, inviare una "
-"e-mail, esportare in vari servizi online, su un album web "
-"o sulla struttura di un libro. <placeholder-1/>"
+"e-mail, esportare in vari servizi online, su un album web o sulla struttura "
+"di un libro. <placeholder-1/>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4167(para)
 msgid ""
@@ -5149,7 +5148,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4179(title)
 msgid "target storage"
-msgstr "Destinazione di salvataggio"
+msgstr "destinazione di salvataggio"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4181(para)
 msgid ""
@@ -5165,7 +5164,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4192(title)
 msgid "filename template"
-msgstr "Modello di nome file"
+msgstr "modello di nome file"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4194(para)
 msgid ""
@@ -5379,7 +5378,7 @@ msgstr "cartella desktop"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4394(title)
 msgid "output directory"
-msgstr "Directory di destinazione"
+msgstr "cartella di destinazione"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4396(para)
 msgid ""
@@ -5393,7 +5392,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4406(title)
 msgid "on conflict"
-msgstr "Sul conflitto"
+msgstr "sul conflitto"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4408(para)
 msgid ""
@@ -5416,7 +5415,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4421(title)
 msgid "file format"
-msgstr "Formato file"
+msgstr "formato file"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4423(para)
 msgid ""
@@ -5494,7 +5493,7 @@ msgstr "Exiftool -XMP:all= immagine.jpg"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4467(title)
 msgid "max size"
-msgstr "Dimensione massima"
+msgstr "dimensione massima"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4469(para)
 msgid ""
@@ -5525,7 +5524,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4487(title)
 msgid "allow upscaling"
-msgstr "Abilita upscaling"
+msgstr "abilita upscaling"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4489(para)
 msgid ""
@@ -5547,7 +5546,7 @@ msgstr ""
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17446(bridgehead)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17530(bridgehead)
 msgid "profile"
-msgstr "Profilo"
+msgstr "profilo"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4502(para)
 msgid ""
@@ -5565,7 +5564,7 @@ msgstr ""
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17454(bridgehead)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17538(bridgehead)
 msgid "intent"
-msgstr "Intento"
+msgstr "intento"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4515(para)
 msgid ""
@@ -5581,7 +5580,7 @@ msgstr ""
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4525(title)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17545(bridgehead)
 msgid "style"
-msgstr "Stile"
+msgstr "stile"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4527(para)
 msgid ""
@@ -5602,10 +5601,9 @@ msgstr ""
 "vengono aggiunti solo temporaneamente; la coda di sviluppo originaria non "
 "viene sovrascritta. Si usa questa funzionalità per aggiungere elementi e "
 "parametri di sviluppo che si desidera applicare specificamente alle immagini "
-"prima dell'esportazione: ad esempio, si può definire uno stile che aggiunge"
-" un maggior "
-"livello di nitidezza quando si creano file JPEG ridimensionati per Internet "
-"oppure si intende aggiungere un certo livello di compensazione "
+"prima dell'esportazione: ad esempio, si può definire uno stile che aggiunge "
+"un maggior livello di nitidezza quando si creano file JPEG ridimensionati "
+"per Internet oppure si intende aggiungere un certo livello di compensazione "
 "dell'esposizione a tutte le immagini esportate. Gli stili sono trattati in "
 "modo più approfondito in <xref linkend=\"styles\"/> e <xref linkend=\"history"
 "\"/>."
@@ -5617,7 +5615,7 @@ msgstr ""
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12991(title)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17553(bridgehead)
 msgid "mode"
-msgstr "Modo"
+msgstr "modo"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4544(para)
 msgid ""
@@ -5942,9 +5940,8 @@ msgstr ""
 "espandere i moduli successivi con <emphasis>shift-click</emphasis> - tutti i "
 "moduli aperti precedentemente restano espansi. Il comportamento della barra "
 "di espansione relativo a <emphasis>click</emphasis> e <emphasis>shift-click</"
-"emphasis>, viene regolato da un'impostazione nelle preferenze globali, sotto"
-" le "
-"opzioni interfaccia (vedi <xref linkend=\"gui_options\"/>)."
+"emphasis>, viene regolato da un'impostazione nelle preferenze globali, sotto "
+"le opzioni interfaccia (vedi <xref linkend=\"gui_options\"/>)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4779(para)
 msgid ""
@@ -6016,8 +6013,8 @@ msgid ""
 "Sliders offer five different ways of interaction, depending on the level of "
 "control you need."
 msgstr ""
-"I selettori scorrevoli offrono cinque diversi modi di interazione, a "
-"seconda del livello di controllo richiesto."
+"I selettori scorrevoli offrono cinque diversi modi di interazione, a seconda "
+"del livello di controllo richiesto."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4830(para)
 msgid "Triangular marker"
@@ -6051,9 +6048,9 @@ msgid ""
 "Hover over any place on the slider with your mouse, then use your keyboard's "
 "arrow keys (←/↓ and →/↑) to adjust the value stepwise."
 msgstr ""
-"Posiziona il cursore del mouse in un punto qualsiasi del selettore scorrevole"
-" quindi utilizza i tasti freccia (←/↓ e →/↑) della tastiera per regolare i"
-" valori progressivamente."
+"Posiziona il cursore del mouse in un punto qualsiasi del selettore "
+"scorrevole quindi utilizza i tasti freccia (←/↓ e →/↑) della tastiera per "
+"regolare i valori progressivamente."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4856(para)
 msgid "Right-click"
@@ -6117,13 +6114,16 @@ msgstr ""
 "il suo valore predefinito."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4911(para)
-#, fuzzy
 msgid ""
 "You can hold down the <emphasis>shift</emphasis> key increasing the stepsize "
 "by a factor of 10. You can change this multiplier: <programlisting format="
 "\"linespecific\">darkroom/ui/scale_rough_step_multiplier=10.0 </"
 "programlisting>"
-msgstr "Tenete premuto il tasto <emphasis>shift</emphasis> per aumentare "
+msgstr ""
+"Tenete premuto il tasto <emphasis>Maiusc</emphasis> per aumentare gli step "
+"di regolazione  per un fattore di 10. Potete modificare questo fattore: "
+"<programlisting format=\"linespecific\">darkroom/ui/"
+"scale_rough_step_multiplier=10.0 </programlisting>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4917(para)
 msgid ""
@@ -6132,14 +6132,18 @@ msgid ""
 "\"linespecific\">darkroom/ui/scale_precise_step_multiplier=0.1 </"
 "programlisting>"
 msgstr ""
+"Tenete premuto il tasto <emphasis>ctrl</emphasis> per diminuire gli step di "
+"regolazione per un fattore di 10. Potete modificare questo fattore: "
+"<programlisting format=\"linespecific\">darkroom/ui/"
+"scale_rough_step_multiplier=0.1 </programlisting>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4907(para)
 msgid ""
 "Additionally, the mouse wheel and keyboard arrow keys support two input "
 "modifiers: <placeholder-1/>"
 msgstr ""
-"Inoltre, la rotella del mouse e le frecce sulla tastiera supportano due"
-" modificatori di input: <placeholder-1/>"
+"Inoltre, la rotella del mouse e le frecce sulla tastiera supportano due "
+"modificatori di input: <placeholder-1/>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4930(title)
 msgid "Comboboxes"
@@ -6162,8 +6166,8 @@ msgstr ""
 "disponibili. Clicca sull'elemento che vuoi selezionare. Talvolta la lista di "
 "selezione si apre in prossimità della fine o dell'inizio dello schermo e "
 "solo una parte degli elementi è visibile; usa la rotella del mouse per "
-"vedere la lista completa. In alternativa potete anche usare la rotella del"
-" mouse e i tasti freccia della tasteria per selezionare un'opzione."
+"vedere la lista completa. In alternativa potete anche usare la rotella del "
+"mouse e i tasti freccia della tasteria per selezionare un'opzione."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4952(title)
 msgid "Curves"
@@ -8183,14 +8187,13 @@ msgid ""
 "linkend=\"gui_options\"/>)."
 msgstr ""
 "Per poter visualizzare correttamente i colori a video darktable deve essere "
-"in grado di trovare un profilo corretto per il monitor. In linea "
-"generale ciò significa che il vostro monitor dovrà essere calibrato e "
-"profilato e il profilo ottenuto dovrà essere correttamente installato sul "
-"vostro sistema. darktable interroga il server X <emphasis>xatom</emphasis> "
-"così come il servizio <emphasis>colord</emphasis> (se disponibile) per "
-"individuare il profilo corretto. Se necessario potete forzare un metodo "
-"specifico nella finestra di dialogo preferenze (vedi <xref linkend="
-"\"gui_options\"/>)."
+"in grado di trovare un profilo corretto per il monitor. In linea generale "
+"ciò significa che il vostro monitor dovrà essere calibrato e profilato e il "
+"profilo ottenuto dovrà essere correttamente installato sul vostro sistema. "
+"darktable interroga il server X <emphasis>xatom</emphasis> così come il "
+"servizio <emphasis>colord</emphasis> (se disponibile) per individuare il "
+"profilo corretto. Se necessario potete forzare un metodo specifico nella "
+"finestra di dialogo preferenze (vedi <xref linkend=\"gui_options\"/>)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6577(para)
 msgid ""
@@ -8227,7 +8230,7 @@ msgstr "Metodi di interpretazione"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6599(secondary)
 msgid "rendering method"
-msgstr "metodi di interpretazione"
+msgstr "interpretazione, metodi"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6603(primary)
 msgid "LittleCMS2"
@@ -8266,9 +8269,9 @@ msgid ""
 "matrix, darktable will use LittleCMS 2 to render the colors regardless of "
 "that configuration parameter's value."
 msgstr ""
-"Notare che il profilo ICC è basato su LUT o le contiene entrambe, una LUT e"
-" una matrice, darktable utilizzerà LittleCMS2 per interpretare i colori senza"
-" curarsi di questo parametro di configurazione."
+"Notare che il profilo ICC è basato su LUT o le contiene entrambe, una LUT e "
+"una matrice, darktable utilizzerà LittleCMS2 per interpretare i colori senza "
+"curarsi di questo parametro di configurazione."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6629(title)
 msgid "Rendering intent"
@@ -8395,11 +8398,11 @@ msgid ""
 "some of the modules in this part can also act on non-raw input images in RGB "
 "format with full information on all three color channels."
 msgstr ""
-"Un'immagine in formato raw contiene i colori solo in forma latente. "
-"Ogni pixel è accompagnato da informazioni riguardanti la luminosità e il "
-"colore per un solo colore base. Ricordate che alcuni moduli possono agire "
-"solo su immagini non raw ovvero solo su immagini in formato RGB con "
-"informazioni complete per tutti e tre i canali colore."
+"Un'immagine in formato raw contiene i colori solo in forma latente. Ogni "
+"pixel è accompagnato da informazioni riguardanti la luminosità e il colore "
+"per un solo colore base. Ricordate che alcuni moduli possono agire solo su "
+"immagini non raw ovvero solo su immagini in formato RGB con informazioni "
+"complete per tutti e tre i canali colore."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6745(emphasis)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6756(emphasis)
@@ -8474,9 +8477,8 @@ msgid ""
 msgstr ""
 "In teoria i componenti individuali di ogni colore sono racchiusi tra un "
 "valore minimo ed uno massimo. Ad esempio l'intensità di un singolo canale "
-"rosso, verde o blu in RGB è compresa in una gamma da 0% a 100% (ovvero tra"
-" 0,0 "
-"e 1,0). Allo stesso modo il canale L nello spazio Lab è confinato tra il "
+"rosso, verde o blu in RGB è compresa in una gamma da 0% a 100% (ovvero tra "
+"0,0 e 1,0). Allo stesso modo il canale L nello spazio Lab è confinato tra il "
 "valore 0 (nero puro) e 100 (bianco puro)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6798(para)
@@ -9260,7 +9262,7 @@ msgstr "Gruppo moduli"
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7488(secondary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7492(primary)
 msgid "module groups"
-msgstr "gruppo moduli"
+msgstr "moduli, gruppo"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7502(para)
 msgid ""
@@ -9565,7 +9567,7 @@ msgstr "Prova di stampa"
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7797(secondary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7801(primary)
 msgid "soft proof"
-msgstr "prova di stampa"
+msgstr "stampa, prova"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7804(para)
 msgid ""
@@ -9649,7 +9651,7 @@ msgstr "Controllo gamma"
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7867(secondary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7871(primary)
 msgid "gamut check"
-msgstr "controllo gamma"
+msgstr "gamma, controllo"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7874(para)
 msgid ""
@@ -9699,9 +9701,8 @@ msgid ""
 "its top."
 msgstr ""
 "I provini possono essere attivati e disattivati con la scorciatoia "
-"<emphasis>ctrl-f</emphasis>. Potete anche modificare la dimensione dei"
-" provini trascinandone col "
-"mouse la parte superiore."
+"<emphasis>ctrl-f</emphasis>. Potete anche modificare la dimensione dei "
+"provini trascinandone col mouse la parte superiore."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7910(para)
 msgid ""
@@ -9710,10 +9711,10 @@ msgid ""
 "You can also use space bar to process the next photo and use backspace key "
 "to process the previous photo."
 msgstr ""
-"Potete agire sulla rotella del mouse per navigare velocemente tra le"
-" immagini. Potete cambiare fotografia facendo doppio click su di un'altra"
-" immagine. Potete anche usare la barra spaziatrice per passare all'immagine"
-" successiva e il tasto indietro per andare a quella precedente."
+"Potete agire sulla rotella del mouse per navigare velocemente tra le "
+"immagini. Potete cambiare fotografia facendo doppio click su di un'altra "
+"immagine. Potete anche usare la barra spaziatrice per passare all'immagine "
+"successiva e il tasto indietro per andare a quella precedente."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7916(para)
 msgid ""
@@ -9724,12 +9725,12 @@ msgid ""
 "<emphasis>ctrl-shift-a</emphasis> you unselect all images, and with "
 "<emphasis>ctrl-i</emphasis> you reverse the current selection."
 msgstr ""
-"L'immagine attiva è selezionata ed evidenziata; con un singolo click del"
-" mouse potete selezionare una diversa immagine dai provini senza che"
-" l'immagine attiva venga cambiata. Con la scorciatoia <emphasis>ctrl-a<"
-"/emphasis> potete selezionare tutte le immagini del provino. Con la"
-" scorciatoia <emphasis>ctrl-shift-a</emphasis> le de-selezionerete tutte e"
-" con <emphasis>ctrl-i</emphasis> potete invertire la selezione corrente."
+"L'immagine attiva è selezionata ed evidenziata; con un singolo click del "
+"mouse potete selezionare una diversa immagine dai provini senza che "
+"l'immagine attiva venga cambiata. Con la scorciatoia <emphasis>ctrl-a</"
+"emphasis> potete selezionare tutte le immagini del provino. Con la "
+"scorciatoia <emphasis>ctrl-shift-a</emphasis> le de-selezionerete tutte e "
+"con <emphasis>ctrl-i</emphasis> potete invertire la selezione corrente."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7924(para)
 msgid ""
@@ -9753,18 +9754,17 @@ msgstr ""
 "Potete utilizzarele seguenti scorciatoie sulle immagini selezionate: "
 "<informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep="
 "\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"3*\"/"
-"><tbody><row><entry><emphasis>F1 – F5</emphasis></entry><entry>"
-" assegna/rimuovi le etichette "
-"colorate (rosso, giallo, verde, blu, viola) </entry></"
-"row><row><entry><emphasis>0 – 5</emphasis></entry><entry> assegne/modifica la"
-" valutazione "
-"dell'immagine </entry></row><row><entry><emphasis>r</emphasis></entry><entry> "
-"scarta l'immagine </entry></row><row><entry><emphasis>ctrl-d</emphasis></"
-"entry><entry> duplica l'immagine </entry></row><row><entry><emphasis>ctrl-c</"
-"emphasis></entry><entry> copia l'intera coda di sviluppo </entry></"
+"><tbody><row><entry><emphasis>F1 – F5</emphasis></entry><entry> assegna/"
+"rimuovi le etichette colorate (rosso, giallo, verde, blu, viola) </entry></"
+"row><row><entry><emphasis>0 – 5</emphasis></entry><entry> assegne/modifica "
+"la valutazione dell'immagine </entry></row><row><entry><emphasis>r</"
+"emphasis></entry><entry> scarta l'immagine </entry></"
+"row><row><entry><emphasis>ctrl-d</emphasis></entry><entry> duplica "
+"l'immagine </entry></row><row><entry><emphasis>ctrl-c</emphasis></"
+"entry><entry> copia l'intera coda di sviluppo </entry></"
 "row><row><entry><emphasis>ctrl-v</emphasis></entry><entry> incolla l'intera "
-"coda di sviluppo </entry></row><row><entry><emphasis>alt-ctrl-c</"
-"emphasis></entry><entry> copia selettivamente la coda di sviluppo </entry></"
+"coda di sviluppo </entry></row><row><entry><emphasis>alt-ctrl-c</emphasis></"
+"entry><entry> copia selettivamente la coda di sviluppo </entry></"
 "row><row><entry><emphasis>alt-ctrl-v</emphasis></entry><entry> incolla "
 "selettivamente la coda di sviluppo </entry></row></tbody></tgroup></"
 "informaltable>"
@@ -10407,10 +10407,10 @@ msgid ""
 "images with better colors and contrast."
 msgstr ""
 "I sensori delle fotocamere forniscono i dati in formato RGB lineare quindi "
-"le immagini originali appaiono solitamente piatte e scolorite. Per questo"
-" motivo i produttori di fotocamere applicano una curva base caratteristica ai"
-" dati raw nel momento in cui generano il JPEG all'interno della fotocamera"
-" stessa: per ottenere un'immagine con più colore e contrasto."
+"le immagini originali appaiono solitamente piatte e scolorite. Per questo "
+"motivo i produttori di fotocamere applicano una curva base caratteristica ai "
+"dati raw nel momento in cui generano il JPEG all'interno della fotocamera "
+"stessa: per ottenere un'immagine con più colore e contrasto."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8597(para)
 msgid ""
@@ -10499,6 +10499,14 @@ msgid ""
 "\"exposure\"/>) to expose the image for the highlights before toggling this "
 "feature on."
 msgstr ""
+"Questo controllo attiva la <emphasis>fusione dell'esposizione</emphasis>. "
+"Potete scegliere di fondere l'immagine con una copia di se stessa dopo aver "
+"applicato la curva base corrente e aver aumentato l'esposizione di un paio "
+"di stop. Utilizzate questa funzione per comprimere la gamma dinamica di "
+"un'immagine estremamente sottoesposta e quindi renderla più idonea per la "
+"corstruzione di un HDR. Per raggiuingere i migliori risultati usate il "
+"modulo esposizione (vedi <xref linkend=\"exposure\"/>) per esporre "
+"l'immagine per le alte luci prima di abilitare questo controllo."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8647(title)
 msgid "Exposure"
@@ -11138,11 +11146,10 @@ msgstr ""
 "Ci sono alcune fotocamere i cui sensori non utilizzano il filtro Bayer. Le "
 "fotocamere dotate di sensore \"X-Trans\" hanno un loro set di algoritmi di "
 "demosaicizzazione. Quello che i sensori X-Trans utilizzano di default si "
-"chiama Markesteijn 1-pass. Per ottenere un'immagine di qualità migliore"
-" (anche se a costo "
-"di un'alaborazione più lenta) utilizzate invece Markesteijn 3-pass: La"
-" demosaicizzazione VNG è più veloce della Markesteijn 1-pass ma su alcuni"
-" computers tende a creare artefatti."
+"chiama Markesteijn 1-pass. Per ottenere un'immagine di qualità migliore "
+"(anche se a costo di un'alaborazione più lenta) utilizzate invece "
+"Markesteijn 3-pass: La demosaicizzazione VNG è più veloce della Markesteijn "
+"1-pass ma su alcuni computers tende a creare artefatti."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9163(para)
 msgid ""
@@ -11158,6 +11165,18 @@ msgid ""
 "guarantees that there are no interpolation artifacts that would otherwise be "
 "present should one of the standard demosaicing algorithm be used."
 msgstr ""
+"darktable supporta inoltre uno speciale algoritmo di demosaicizzazione "
+"chiamato passthrough (monocromia). Non si tratta di un algoritmo generico "
+"che funziona con tutte le immagini ma è utilizzabile solo con le fotocamere "
+"alle quali è stato fisicamente rimosso il filtro colore dal sensore. "
+"Normalmente la demosaicizzazione ricostruisce i canali colore mancanti "
+"interpolando i dati con quelli dei pixel vicini. Dato, però, che in questo "
+"caso il filtro colori non è presente non c'è niente da interpolare, quindi "
+"questo algoritmo imposta tutti i canali colore al medesimo valore ovvero "
+"assegna ad ogni pixel un grigio: l'immagine risultante sarà quindi "
+"monocromatica. Questo metodo garantisce l'assenza di artefatti di "
+"interpolazione che sono, invece, presenti se si utilizza uno qualsiasi degli "
+"algoritmi standard."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9175(para)
 msgid ""
@@ -11285,9 +11304,8 @@ msgid ""
 "tones. This method is most useful in cases where clipped highlights occur in "
 "non-colored areas like clouds in the sky."
 msgstr ""
-"<quote>Taglio alteluci</quote> porta semplicemente tutti i pixel al livello"
-" di bianco. "
-"Di fatto questa operazione converte tutte le alteluci in toni di "
+"<quote>Taglio alteluci</quote> porta semplicemente tutti i pixel al livello "
+"di bianco. Di fatto questa operazione converte tutte le alteluci in toni di "
 "grigio ed è molto utile quando le alteluci si trovano in aree non colorate "
 "come le nuvole in cielo."
 
@@ -11308,19 +11326,16 @@ msgid ""
 msgstr ""
 "<quote>Ricostruisci in LCh</quote> analizza ogni pixel con almeno un canale "
 "tagliato e trasforma l'informazione in spazio colore LCh per tentare di "
-"correggere i pixel tagliati usando i valori degli altri (3 per i Bayer "
-"e 8 per gli X-Trans) pixel del blocco interessato. Questo metodo solitamente"
-" porta ad un migliore "
-"risultato rispetto al <quote>taglio alteluci</quote> dato che riesce a"
-" preservare qualche "
-"dettaglio. Non è tuttavia in grado di ricostruire alcuna "
-"informazione sul colore: le alteluci ricostruite saranno tutte in toni "
-"neutri di grigio ma più luminose e con più dettagli rispetto a quelle"
-" ottenute con <quote>taglio alteluci</quote>. "
-"Questo metodo funziona piuttosto bene in presenza di una "
-"curva di tono piuttosto contrastata (come molti produttori applicano ai loro "
-"jpg) che desatura le alteluci. Buoni risultati si ottengono su oggetti "
-"naturalmente desaturati come le nuvole."
+"correggere i pixel tagliati usando i valori degli altri (3 per i Bayer e 8 "
+"per gli X-Trans) pixel del blocco interessato. Questo metodo solitamente "
+"porta ad un migliore risultato rispetto al <quote>taglio alteluci</quote> "
+"dato che riesce a preservare qualche dettaglio. Non è tuttavia in grado di "
+"ricostruire alcuna informazione sul colore: le alteluci ricostruite saranno "
+"tutte in toni neutri di grigio ma più luminose e con più dettagli rispetto a "
+"quelle ottenute con <quote>taglio alteluci</quote>. Questo metodo funziona "
+"piuttosto bene in presenza di una curva di tono piuttosto contrastata (come "
+"molti produttori applicano ai loro jpg) che desatura le alteluci. Buoni "
+"risultati si ottengono su oggetti naturalmente desaturati come le nuvole."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9296(para)
 msgid ""
@@ -11450,18 +11465,15 @@ msgid ""
 "shade and a number of indoor lighting options. </entry></row></tbody></"
 "tgroup></informaltable>"
 msgstr ""
-"Seleziona un bilanciamento del bianco preimpostato. <informaltable"
-" frame=\"none\" width=\"80%"
-"\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"4*\"/"
-"><colspec colwidth=\"6*\"/><tbody><row><entry><emphasis>Fotocamera "
-"(default)</emphasis></entry><entry> Bilanciamento come riportato dalla"
-" fotocamera. </"
-"entry></row><row><entry><emphasis>Fotocamera neutrale</emphasis></entry><"
-"entry> "
-"Fondamentalmente imposta la temperatura a 6502K con questo calcolo"
-" matematico: imposta il livello di bianco moltiplicando "
-"i canali  it computes such "
-"white balance channel multipliers, so that pure white color in camera "
+"Seleziona un bilanciamento del bianco preimpostato. <informaltable frame="
+"\"none\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec "
+"colwidth=\"4*\"/><colspec colwidth=\"6*\"/"
+"><tbody><row><entry><emphasis>Fotocamera (default)</emphasis></entry><entry> "
+"Bilanciamento come riportato dalla fotocamera. </entry></"
+"row><row><entry><emphasis>Fotocamera neutrale</emphasis></entry><entry> "
+"Fondamentalmente imposta la temperatura a 6502K con questo calcolo "
+"matematico: imposta il livello di bianco moltiplicando i canali  it computes "
+"such white balance channel multipliers, so that pure white color in camera "
 "colorspace is converted into pure white color in sRGB D65. (pure white color "
 "here means having the same equal value for each channel = 1.0) </entry></"
 "row><row><entry><emphasis>spot white balance</emphasis></entry><entry> "
@@ -11522,12 +11534,12 @@ msgstr ""
 "L'unico elemento di controllo di questo modulo è un selettore di colore che "
 "permette di regolare l'inversione in base al colore del materiale della "
 "pellicola. Cliccate sul campo colorato per visualizzare un selettore che vi "
-"permetterà di selezionare un colore tra quelli comunemente usati oppure di"
-" definirne uno in modalità RGB. E' anche possibile "
-"attivare un selettore di colore cliccando il simbolo <inlinegraphic fileref="
-"\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align="
-"\"center\"/> per prelevare il colore dalla vostra immagine (preferibilmente "
-"su un bordo non esposto del vostro negativo)."
+"permetterà di selezionare un colore tra quelli comunemente usati oppure di "
+"definirne uno in modalità RGB. E' anche possibile attivare un selettore di "
+"colore cliccando il simbolo <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
+"\"/> per prelevare il colore dalla vostra immagine (preferibilmente su un "
+"bordo non esposto del vostro negativo)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9524(title)
 msgid "Raw black/white point"
@@ -12819,11 +12831,10 @@ msgid ""
 "select a tint for shadows with the dark spot. For a simple global tint set "
 "both spots to the same color."
 msgstr ""
-"Per la divisione dei toni trascinate il punto bianco sulla tinta che"
-" desiderate "
-"dare alle alteluci quindi selezionate una tinta da assegnare alle ombre con "
-"il puntino nero. Per una tinta uniforme globale trascinate entrambi i punti "
-"sul medesimo colore."
+"Per la divisione dei toni trascinate il punto bianco sulla tinta che "
+"desiderate dare alle alteluci quindi selezionate una tinta da assegnare alle "
+"ombre con il puntino nero. Per una tinta uniforme globale trascinate "
+"entrambi i punti sul medesimo colore."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11020(para)
 msgid "Use the saturation slider to correct the global saturation."
@@ -12832,15 +12843,13 @@ msgstr ""
 "saturazione globalmente."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11031(title)
-#, fuzzy
 msgid "Color checker lut"
-msgstr "selettore colore"
+msgstr "Color checker lut"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11035(secondary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11039(primary)
-#, fuzzy
 msgid "color checker lut"
-msgstr "selettore colore"
+msgstr "color checker lut"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11056(code)
 msgid "darktable-chart"
@@ -12854,6 +12863,12 @@ msgid ""
 "be created using the <placeholder-1/> utility to match given input (such as "
 "hald-cluts and RAW/JPEG with in-camera processing pairs)."
 msgstr ""
+"Questo modulo implementa una tabella colore generica in spazio Lab. L'input "
+"è costituito da una serie di colori sorgente e colori di destinazione: la "
+"mappatura verrà quindi interpolata utilizzando le linguette. Le matrici "
+"risultanti possono essere editate a mano e possono essere generate "
+"utilizzando l'utilità <placeholder-1/> affinchè corrispondano ad un dato "
+"input (come le elaborazioni in camera hald-cluts e RAW/JPEG)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11076(para)
 msgid ""
@@ -12862,6 +12877,11 @@ msgid ""
 "grid instead). By default, it will load the 24 patches of a color checker "
 "classic and initialise the mapping to identity (no change to the image)."
 msgstr ""
+"Quando selezionate il modulo nella vista camera oscura, dovreste vedere "
+"qualcosa simile all'immagine qui sopra (le configurazioni con più di 24 "
+"campioni vengono mostrate in una griglia 7x7). Di default verrà caricata una "
+"classica matrice a 24 campioni ed inizializzata una mappatura dell'immagine "
+"(nessun cambiamento all'immagine stessa)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11082(para)
 msgid ""
@@ -12871,6 +12891,11 @@ msgid ""
 "drawn around patches that have been altered, i.e. the source and target "
 "colors differ."
 msgstr ""
+"La griglia mostra una lista di campioni colorati. I colori dei campioni sono "
+"i punti sorgente. Il colore finale di ogni punto sorgente è una deviazione "
+"controllata da un selettore scorrevole che trovate sotto la matrice dei "
+"colori. Una linea evidenzia il campione colore che è stato alterato, ovvero "
+"quando il colore sorgente e quello finale sono diversi."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11088(para)
 msgid ""
@@ -12878,6 +12903,10 @@ msgid ""
 "displayed in the combo box below. Select a patch by left clicking on it, or "
 "using the combo box, or using the color picker."
 msgstr ""
+"Il campione selezionato viene evidenziato con un quadrato bianco e il suo "
+"numero viene visualizzato nell'elenco a discesa sotto. Selezionate un "
+"campione colore con un click sinistro del mouse oppure tramite l'elenco a "
+"discesa o, ancora, utilizzando il selettore colore."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11096(title)
 msgid "interaction"
@@ -12887,6 +12916,8 @@ msgstr "interazione"
 msgid ""
 "To modify the color mapping, you can change source as well as target colors."
 msgstr ""
+"Per modificare la mappatura dei colori potete cambiare il colore sorgente "
+"così come il colore di destinazione."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11100(para)
 msgid ""
@@ -12895,6 +12926,12 @@ msgid ""
 "style you download). You can then change lightness (L), green-red (a), blue-"
 "yellow (b), or saturation (C) of the patches' target values via sliders."
 msgstr ""
+"Il tipico utilizzo prevede l'alterazione del colore di destinazione. Partite "
+"da un'appropriata paletta di colori sorgente (sia dal menu dei preset che da "
+"uno stile scaricato in precedenza) per cambiare successivamente la "
+"luminosità (L), il canale verde-rosso (a), quello blu-giallo (b) o la "
+"saturazione (C) dei valori di destinazione utilizzando gli appositi "
+"selettori scorrevoli."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11106(para)
 msgid ""
@@ -12904,6 +12941,12 @@ msgid ""
 "click on empty space to add a new patch (with the currently picked color as "
 "source color)."
 msgstr ""
+"Per modificare, invece, il colore sorgente di un campione potete selezionare "
+"un nuovo colore dall'immagine utilizzando il selettore colore e facendo "
+"Maiusc-click sul campione da sostituire. Per resettare un campione fare "
+"doppio-click su di esso. Click-destro su di un campione lo cancella. Maiusc-"
+"click su di uno spazio vuoto aggiunge un campione colore (come sorgente "
+"verrà utilizzato il colore attualmente selezionato con il selettore colore)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11120(title)
 msgid "Monochrome"
@@ -12931,8 +12974,8 @@ msgid ""
 msgstr ""
 "E' disponibile un selettore di colore premendo <inlinegraphic fileref="
 "\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align="
-"\"center\"/> che automaticamente imposterà la posizione e la dimensione del"
-" filtro."
+"\"center\"/> che automaticamente imposterà la posizione e la dimensione del "
+"filtro."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11175(para)
 msgid ""
@@ -13531,9 +13574,9 @@ msgid ""
 msgstr ""
 "Ogni frequenza può essere modificata separatamente. In particolare è "
 "possibile sistemare la soglia di contrasto e di riduzione del rumore sia per "
-"la luminanza che per la crominanza  (<quote>luma</quote> e <quote>chroma<"
-"/quote>), così come l'acutezza (<quote>spigoli</"
-"quote>) della base dell'onda di ogni frequenza."
+"la luminanza che per la crominanza  (<quote>luma</quote> e <quote>chroma</"
+"quote>), così come l'acutezza (<quote>spigoli</quote>) della base dell'onda "
+"di ogni frequenza."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11836(entry)
 msgid ""
@@ -13720,11 +13763,10 @@ msgstr ""
 "sul database, viene richiamato il profilo rumore corrispondente. Se la "
 "vostra immagine ha un valore ISO intermedio il modulo applica la riduzione "
 "del rumore interpolando le proprietà dei due profili più vicini: potrete "
-"visualizzare i valori interpolati nella prima linea dell'elenco a "
-"discesa. Potete anche forzare manualmente il modulo affinchè utilizzi dei "
-"valori che vi soddisfano di più. La selezione che viene fatta più spesso "
-"all'interno dell'elenco a discesa verrà considerata da darktable quella più "
-"idonea."
+"visualizzare i valori interpolati nella prima linea dell'elenco a discesa. "
+"Potete anche forzare manualmente il modulo affinchè utilizzi dei valori che "
+"vi soddisfano di più. La selezione che viene fatta più spesso all'interno "
+"dell'elenco a discesa verrà considerata da darktable quella più idonea."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12035(para)
 msgid ""
@@ -13925,12 +13967,12 @@ msgstr "Intensità di sfocatura per il canale blu."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12242(title)
 msgid "Liquify"
-msgstr ""
+msgstr "Fluidifica"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12246(secondary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12250(primary)
 msgid "liquify"
-msgstr ""
+msgstr "fluidifica"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12263(entry)
 msgid ""
@@ -13938,12 +13980,19 @@ msgid ""
 "applying free style distortions to parts of the image. There are three tools "
 "to help doing that: points, lines, and curves."
 msgstr ""
+"Il modulo fluidifica mette a disposizione un modo molto versatile di "
+"spostare i pixel applicando a parti dell'immagine una distorsione in "
+"modalità libera. Per aiutarvi a portare a termine questa operazione ci sono "
+"tre strumenti: punti, linee e curve."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12276(para)
 msgid ""
 "Each of liquify's tools is based on nodes. A point is given by a single "
 "node, a line or a curve consist of a set of nodes defining the path."
 msgstr ""
+"Ogni strumento del modulo fluidifica si basa sui nodi. Un punto è costituito "
+"da un singolo nodo, una linea o una curva consiste in una serie di nodi che "
+"definiscono un tracciato."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12281(para)
 msgid ""
@@ -13952,10 +14001,15 @@ msgid ""
 "take into account that the liquify module requires a lot of computing "
 "resources."
 msgstr ""
+"Per ogni istanza del modulo fluidifica avete a disposizione al massimo 100 "
+"nodi. Per applicare una distorsione maggiore potete utilizzare più istanze "
+"del modulo stesso. Considerate tuttavia che il modulo fluidifica utilizza "
+"parecchie risorse."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12299(entry)
 msgid "The basic elements of all tools in liquify are nodes."
 msgstr ""
+"Gli elementi base di tutti gli strumenti del modulo fluidifica sono i nodi."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12310(para)
 msgid ""
@@ -13966,20 +14020,29 @@ msgid ""
 "distortion, and its strength is depicted by the length of the vector. You "
 "change the vector by dragging its arrowhead."
 msgstr ""
+"Per spostare un nodo potete tenere cliccato e trascinare il suo punto "
+"centrale. Il raggio descrive l'area all'interno della quale verrà applicato "
+"l'effetto: la distorsione verrà fatta solamente all'interno del raggio. Per "
+"modificare il raggio trascinate le maniglie sulla sua circonferenza. Un "
+"vettore che parte dal centro [del raggio] visualizza la direzione della "
+"distorsione e la lunghezza dello stesso ne indica l'intensità. Potete "
+"modificare il vettore trascinandone l'estremità a freccia."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12319(title)
 msgid "warps and nodes count"
-msgstr ""
+msgstr "deformazioni e conteggio dei nodi"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12320(para)
 msgid ""
 "This information field displays the the number of warps (individual "
 "distortion object) and nodes currently used."
 msgstr ""
+"Questo campo visualizza il numero delle deformazioni (oggetti individuali di "
+"distorsione) e quello dei nodi attualmente utilizzati."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12327(title)
 msgid "point tool"
-msgstr ""
+msgstr "strumento di puntamento"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12328(para)
 msgid ""
@@ -13987,10 +14050,10 @@ msgid ""
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the point "
 "tool and left-click on the image to place it."
 msgstr ""
-"L'icona <inlinegraphic fileref=\"images/darkroom_module_liquify_point.png"
-"\" scalefit=\"1\" width=\"2%\" align=\"center\"/> attiva lo strumento di"
-" puntamento e con il pulsante sinistro del mouse potete posizionarlo"
-" sull'immagine."
+"L'icona <inlinegraphic fileref=\"images/darkroom_module_liquify_point.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> attiva lo strumento di "
+"puntamento e con il pulsante sinistro del mouse potete posizionarlo "
+"sull'immagine."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12333(para)
 msgid ""
@@ -14018,6 +14081,30 @@ msgid ""
 "scalefit=\"1\" width=\"80%\" align=\"center\"/></entry></row></tbody></"
 "tgroup></informaltable>"
 msgstr ""
+"Un punto è formato da un singolo nodo. In un punto il vettore dell'intensità "
+"può assumere tre diverse modalità che potete scambiare facendo ctrl-click "
+"sull'estremità a freccia: <informaltable frame=\"none\" width=\"80%"
+"\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"2*\"/"
+"><colspec colwidth=\"4*\"/><colspec colwidth=\"4*\"/"
+"><tbody><row><entry><emphasis>lineare</emphasis></entry><entry> La modalità "
+"lineare produce una distorsione, appunto, lineare all'interno del cerchio "
+"che parte dalla direzione opposta a quella del vettore e segue la sua "
+"direzione. Questa è la modalità standard. </entry><entry><graphic fileref="
+"\"darkroom/modules/images/liquify_ex1.png\" scalefit=\"1\" width=\"80%\" "
+"align=\"center\"/></entry></row><row><entry><emphasis>crescita radiale</"
+"emphasis></entry><entry> In questa modalità l'effetto del vettore è radiale: "
+"inizia con una intensità dello 0% al centro e aumenta sempre più "
+"allontanandosi verso la periferia. Questa modalità è visualizzata da un "
+"cerchio addizionale con una freccia che punta all'esterno. </"
+"entry><entry><graphic fileref=\"darkroom/modules/images/liquify_ex4.png\" "
+"scalefit=\"1\" width=\"80%\" align=\"center\"/></entry></"
+"row><row><entry><emphasis>riduzione radiale</emphasis></entry><entry>  In "
+"questa modalità l'effetto del vettore è sempre radiale ma inizia con una "
+"intensità del 100% al centro e diminuisce sempre più allontanandosi verso "
+"l'esterno. La modalità viene visualizzata da un cerchiio addizionale con una "
+"freccia che punta all'interno. </entry><entry><graphic fileref=\"darkroom/"
+"modules/images/liquify_ex3.png\" scalefit=\"1\" width=\"80%\" align=\"center"
+"\"/></entry></row></tbody></tgroup></informaltable>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12385(para)
 msgid ""
@@ -14035,17 +14122,30 @@ msgid ""
 "fileref=\"darkroom/modules/images/liquify_ex2.png\" scalefit=\"1\" width="
 "\"80%\" align=\"center\"/></entry></row></tbody></tgroup></informaltable>"
 msgstr ""
+"Notare che l'intensità dell'effetto varia linearmente da 0 a 100% tra il "
+"centro e il raggio del punto di controllo. E' possibile modificare l'effetto "
+"di sfocatura dei bordi cliccando al centro del cerchio: <informaltable frame="
+"\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec "
+"colwidth=\"2*\"/><colspec colwidth=\"4*\"/><colspec colwidth=\"4*\"/"
+"><tbody><row><entry><emphasis>default</emphasis></entry><entry> Lineare dal "
+"centro verso il raggio. </entry><entry><graphic fileref=\"darkroom/modules/"
+"images/liquify_ex1.png\" scalefit=\"1\" width=\"80%\" align=\"center\"/></"
+"entry></row><row><entry><emphasis>morbido</emphasis></entry><entry> Verranno "
+"visualizzati due cerchi concentrici che possono essere modificati "
+"indipendentemente per ammorbidire l'intensità dell'effetto. </"
+"entry><entry><graphic fileref=\"darkroom/modules/images/liquify_ex2.png\" "
+"scalefit=\"1\" width=\"80%\" align=\"center\"/></entry></row></tbody></"
+"tgroup></informaltable>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12422(para)
 msgid "A point can be removed by right-clicking on the center."
-msgstr ""
+msgstr "Un punto può essere rimosso facendo click-destro sul suo centro."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12428(title)
 msgid "line tool"
-msgstr ""
+msgstr "strumento linea"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12429(para)
-#, fuzzy
 msgid ""
 "Click the <inlinegraphic fileref=\"images/darkroom_module_liquify_line.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the line "
@@ -14053,18 +14153,21 @@ msgid ""
 "click to place another point and start forming the path. To end the line "
 "just right-click anywhere."
 msgstr ""
-"Cliccando l'icona <inlinegraphic fileref=\"images/darkroom_module_liquify_line"
-".png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the line "
-"tool and left-click on the image to place the first point, move and left-"
-"click to place another point and start forming the path. To end the line "
-"just right-click anywhere."
+"Cliccando l'icona <inlinegraphic fileref=\"images/"
+"darkroom_module_liquify_line.png\" scalefit=\"1\" width=\"2%\" align=\"center"
+"\"/> si attiva il controllo linea quindi fate click sinistro per fissare il "
+"primo punto sull'immagine: spostatevi e fate click sinistro nuovamente per "
+"fissare un altro punto ed iniziare così a disegnare il vostro tracciato. Per "
+"terminare occorre fare click col pulsante destro del mouse in un punto "
+"qualunque."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12443(entry)
 msgid ""
 "A line is a set of points. The points are linked together, the effect is "
 "interpolated by a set of strength vectors."
 msgstr ""
+"Una linea è un insieme di punti. I punti sono collegati insieme e l'effetto "
+"è interpolato usando una serie di vettori che ne regolano l'intensità."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12455(para)
 msgid ""
@@ -14072,23 +14175,26 @@ msgid ""
 "You may remove a control point from a line by ctrl-right- click on the node "
 "center."
 msgstr ""
+"E' possibile aggiungere un punto di controllo su di una linea facendo ctrl-"
+"click su di un segmento. Potete invece rimuovere un punto di controllo "
+"facendo ctrl-click destro sul centro del nodo."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12459(para)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12499(para)
 msgid "A right-click on a segment will remove the shape completely."
 msgstr ""
+"Con un click destro su di un segmento è possibile rimuovere completamente "
+"l'intero tracciato."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12462(para)
 msgid "A ctrl-alt-click on a segment will change it to a curve segment."
-msgstr ""
+msgstr "Ctrl-alt-click su di un segmento lo trasformerà in una curva."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12468(title)
-#, fuzzy
 msgid "curve tool"
-msgstr "curva"
+msgstr "controllo curva"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12469(para)
-#, fuzzy
 msgid ""
 "Click the <inlinegraphic fileref=\"images/darkroom_module_liquify_curve.png"
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the curve "
@@ -14097,15 +14203,21 @@ msgid ""
 "just right-click anywhere."
 msgstr ""
 "Cliccando l'icona <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/>si accede ad un elenco a tendina con tutti i presets dei vostri moduli "
-"preferiti. Cliccate sul nome del preset per applicarlo all'immagine."
+"darkroom_module_liquify_curve.png\" scalefit=\"1\" width=\"2%\" align="
+"\"center\"/> si attiva il controllo curva quindi fate click sinistro per "
+"fissare il primo punto sull'immagine: spostatevi e fate click sinistro "
+"nuovamente per fissare un altro punto ed iniziare così a disegnare il vostro "
+"tracciato. Per terminare occorre fare click col pulsante destro del mouse in "
+"un punto qualunque."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12483(entry)
 msgid ""
 "A curve is a set of points. The points are linked together, the effect is "
 "interpolated as a bezier curve by a set of strength vectors."
 msgstr ""
+"Una curva è un insieme di punti. I punti sono collegati insieme e l'effetto "
+"è interpolato come una curva di bezier usando una serie di vettori che ne "
+"regolano l'intensità."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12495(para)
 msgid ""
@@ -14113,13 +14225,17 @@ msgid ""
 "You may remove a control point from a curve by ctrl-right- click on the node "
 "center."
 msgstr ""
+"E' possibile aggiungere un punto di controllo sulla curva facendo ctrl-click "
+"su di un segmento. Potete rimuovere un punto di controllo da una curva "
+"facendo ctrl-click destro sul centro di un nodo."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12502(para)
 msgid "A ctrl-alt-click on a segment will change it to a line segment."
 msgstr ""
+"Ctrl-alt-click su di un segmento di curva lo trasforma in un segmento di "
+"linea."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12505(para)
-#, fuzzy
 msgid ""
 "It is possible to change the way the points of the curve are linked together "
 "by using ctrl-click on the center. There are four modes which correspond to "
@@ -14138,25 +14254,30 @@ msgid ""
 "handles are always moved together. This mode is depicted by a square symbol "
 "in the node center. </entry></row></tbody></tgroup></informaltable>"
 msgstr ""
-"La vista presentazione è solo all'inizio del proprio ciclo di sviluppo con "
-"un set di caratteristiche basilari. <informaltable frame=\"none\" width=\"80%"
-"\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"1*\"/"
-"><colspec colwidth=\"3*\"/><tbody><row><entry><emphasis>click-sinistro</"
-"emphasis></entry><entry> passa all'immagine successiva </entry></"
-"row><row><entry><emphasis>click-destro</emphasis></entry><entry> torna "
-"all'immagine precedente </entry></row><row><entry><emphasis>spazio</"
-"emphasis></entry><entry> avvia e ferma la presentazione automatica che "
-"visualizza un'immagine ogni 5 secondi e dopo l'ultima riprende dall'inizio </"
-"entry></row><row><entry><emphasis>ESC</emphasis></entry><entry> termina la "
-"presentazione e torna sulla vista tavolo luminoso </entry></row></tbody></"
-"tgroup></informaltable>"
+"E' possibile modificare il modo in cui i punti della curva sono collegati "
+"tra di loro facendo ctrl-click al centro. Ci sono quattro modalità per "
+"controllare la forma della curva di bezier utilizzando le apposite "
+"impugnature: <informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"3\" "
+"colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"4*\"/><colspec colwidth=\"6*\"/"
+"><tbody><row><entry><emphasis>autoregola</emphasis></entry><entry> Questa è "
+"la modalità predefinita: le impugnature non vengono visualizzate dato che il "
+"sistema si preoccupa automaticamente di creare una curva morbida. </entry></"
+"row><row><entry><emphasis>tazze</emphasis></entry><entry> Le impugnature di "
+"controllo possono essere spostate in modo indipendente l'una dall'altra. "
+"Questa modalità viene identificata da un simbolo a triangolo sul nodo "
+"centrale. </entry></row><row><entry><emphasis>morbido</emphasis></"
+"entry><entry> Le impugnature modellano sempre curve morbide. Questa modalità "
+"è identificata da un simbolo a diamante sul nodo centrale. </entry><entry/></"
+"row><row><entry><emphasis>simmetrico</emphasis></entry><entry> Le "
+"impugnature si muovono tutte insieme. Questa modalità è raffigurata da un "
+"simbolo quadrato sul nodo centrale. </entry></row></tbody></tgroup></"
+"informaltable>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12558(title)
 msgid "node edit tool"
-msgstr ""
+msgstr "strumento modifica nodi"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12559(para)
-#, fuzzy
 msgid ""
 "Clicking the <inlinegraphic fileref=\"images/darkroom_module_liquify_edit.png"
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon activates or "
@@ -14165,9 +14286,11 @@ msgid ""
 "for the same effect."
 msgstr ""
 "Cliccando l'icona <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/>si accede ad un elenco a tendina con tutti i presets dei vostri moduli "
-"preferiti. Cliccate sul nome del preset per applicarlo all'immagine."
+"darkroom_module_liquify_edit.png\" scalefit=\"1\" width=\"2%\" align=\"center"
+"\"/> si attiva o disattiva lo strumento per  modificare i nodi che "
+"visualizza tutti gli oggetti distorti e i relativi controlli. In alternativa "
+"si può anche fare click destro sull'immagine per ottenere lo stesso "
+"risultato."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12574(title)
 msgid "Perspective correction"
@@ -14180,7 +14303,7 @@ msgstr "correzione prospettica"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12598(emphasis)
 msgid "ShiftN"
-msgstr ""
+msgstr "ShiftN"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12595(entry)
 msgid ""
@@ -14189,6 +14312,10 @@ msgid ""
 "photographs. The underlying mechanism is inspired by Markus Hebel's "
 "<placeholder-1/> program."
 msgstr ""
+"Questo modulo è progettato per correggere automaticamente le linee"
+" convergenti, un tipo di distorsione prospettica che si trova solitamente"
+" nelle fotografie di architettura. Il meccanismo alla base è ispirato al"
+" programma <placeholder-1/> di Markus Hebel."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12609(para)
 msgid ""
@@ -14200,6 +14327,13 @@ msgid ""
 "into converging lines that meet at some vantage point within or outside the "
 "image frame."
 msgstr ""
+"Le distorsioni prospettiche sono normali quando si proietta una scena"
+" tridimensionale su di un piano bidimensionale: gli oggetti vicini"
+" all'osservatore appaiono più larghi di quelli a maggiore distanza. Le linee"
+" convergenti sono un tipo particolare di distorsione prospettica frequente"
+" nelle fotografie di architettura. Le linee parallele fotografate da una"
+" posizione angolata vengono trasformate in linee convergenti che tendono and"
+" incontrarsi in un certo punto (anche esterno al bordo dell'immagine)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12618(para)
 msgid ""
@@ -14211,9 +14345,15 @@ msgid ""
 "line segments. Based on these line segments a fitting procedure is started "
 "that determines the best values of the module parameters."
 msgstr ""
+"Questo modulo è in grado di correggere le linee convergenti stirando"
+" l'immagine finchè le linee non risultino parallele ai bordi dell'immagine"
+" stessa. Le correzioni vengono applicate sia in direzione verticale che"
+" orizzontale: separatamente o insieme. Per poter eseguire questa correzione"
+" il modulo analizza la struttura dell'immagine alla ricerca di segmenti di"
+" linee. Basandosi sui segmenti rilevati una procedura automatica determina i"
+" valori migliori da assegnare ai parametri di configurazione del modulo."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12633(para)
-#, fuzzy
 msgid ""
 "Clicking the <quote>get structure</quote> icon ( <inlinegraphic fileref="
 "\"images/darkroom_module_ashift_structure.png\" scalefit=\"1\" width=\"2%\" "
@@ -14236,20 +14376,27 @@ msgid ""
 "identified but not of interest to this module </entry></row></tbody></"
 "tgroup></informaltable>"
 msgstr ""
-"darktable è composto di varie viste o modalità. Sono disponibili cinque "
-"viste, come è descritto in questa sezione. Puoi passare da una vista "
-"all'altra cliccando sul nome della vista in cima al pannello di destra - la "
-"vista attiva è evidenziata - o usando uno dei tasti acceleratori: "
-"<informaltable frame=\"none\" width=\"60%\"><tgroup cols=\"2\" colsep=\"0\" "
-"rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"9*\"/"
-"><tbody><row><entry><emphasis>l</emphasis></entry><entry>passa a tavolo "
-"luminoso</entry></row><row><entry><emphasis>d</emphasis></entry><entry>passa "
-"a camera oscura</entry></row><row><entry><emphasis>t</emphasis></"
-"entry><entry>passa a tethering</entry></row><row><entry><emphasis>m</"
-"emphasis></entry><entry>passa a mappa</entry></row><row><entry><emphasis>s</"
-"emphasis></entry><entry> passa a presentazione </entry></"
-"row><row><entry><emphasis>p</emphasis></entry><entry> passa a stampa </"
-"entry></row></tbody></tgroup></informaltable>"
+"Ciccando l'icona <quote>acquisisci struttura</quote> ( <inlinegraphic "
+"fileref=\"images/darkroom_module_ashift_structure.png\" scalefit=\"1\" width="
+"\"2%\" align=\"center\"/> ) si richiederà a darktable di ricercare "
+"all'interno dell'immagine elementi strutturali. Verranno identificati e "
+"valutati i segmenti di linee. Solamente le linee che formano insiemi "
+"verticali od orizzontali verranno utilizzati per le successive elaborazioni. "
+"Questi segmenti verranno evidenziati in sovrapposizione all'immagine di "
+"partenza. Un codice colore descriverà il tipo di linea rilevata: "
+"<informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" "
+"rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"4*\"/"
+"><tbody><row><entry>le linee <emphasis>verdi</emphasis></entry><entry> sono "
+"quelle verticali convergenti </entry></row><row><entry>le linee "
+"<emphasis>rosse</emphasis></entry><entry> sono quelle verticali ma che non "
+"fanno parte di un gruppo di linee convergenti </entry></row><row><entry>le "
+"linee <emphasis>blu</emphasis></entry><entry> sono quelle orizzontali "
+"convergenti </entry></row><row><entry>le linee <emphasis>gialle</emphasis></"
+"entry><entry> sono quelle orizzontali ma che non fanno parte di un gruppo di "
+"linee convergenti </entry></row><row><entry>le linee <emphasis>grige</"
+"emphasis></entry><entry> sono tutte le altre linee individuate ma che non "
+"verranno utilizzate da questo modulo </entry></row></tbody></tgroup></"
+"informaltable>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12690(para)
 msgid ""
@@ -14265,6 +14412,19 @@ msgid ""
 "emphasis> key and keeping the left or right mouse button pressed while "
 "dragging selects or deselects all lines in the chosen rectangular area."
 msgstr ""
+"Le linee evidenziate in rosso o giallo sono considerate anomale e non vengono"
+" prese in considerazione durante il processo di modifica. L'eliminazione di"
+" queste anomalie prevede un processo statistico con campionature casuali così"
+" che ogni volta che viene premuto il pulsante <quote>analizza struttura<"
+"/quote> il colore delle linee cambia leggermente. Manualmente potete"
+" intervenire per cambiare lo stato dei segmenti: facendo click col pulsante"
+" sinistro del mouse potete selezionare un segmento (cambiando il colore in"
+" verde o blu) mentre con un click destro potete deselezionarlo (cambiando il"
+" colore in rosso o giallo). Tenendo premuto il pulsante del mouse potete"
+" selezionare o deselezionare più segmenti per ogni riga. Tenendo premuto il"
+" tasto <emphasis>Maiusc</emphasis> e trascinando il mouse con il pulsante"
+" sinistro o destro premuto, potete selezionare o deselezionare tutte le linee"
+" nell'area rettangolare che andrete a tracciare."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12702(para)
 msgid ""
@@ -14272,26 +14432,30 @@ msgid ""
 "optimization process which finds the best suited parameters. The image and "
 "the overlayed lines are then displayed with perspective corrections applied."
 msgstr ""
+"Cliccando una delle icone <quote>imposta automaticamente</quote> (vedi sotto)"
+" avviate un processo di ottimizzazione che tenterà di trovare i migliori"
+" parametri. L'immagine e le linee in sovrimpressione verranno quindi"
+" visualizzate con la correzione della prospettiva applicata."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12710(para)
 msgid ""
 "This parameter controls a rotation of the image around its center and can "
 "correct for a skewed horizon."
 msgstr ""
+"Questo parametro controlla la rotazione dell'immagine sul suo centro e può"
+" correggere un orizzonte storto."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12717(title)
-#, fuzzy
 msgid "lens shift (horizontal)"
-msgstr "orizzontale"
+msgstr "spostamento (orizzontale) dell'obiettivo"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12718(para)
-#, fuzzy
 msgid "This parameter corrects converging lines horizontally."
-msgstr "Sposta il centro dell'area della vignetta orizzontalmente."
+msgstr "Questo parametro corregge le linee convergenti orizzontali."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12724(title)
 msgid "lens shift (vertical)"
-msgstr ""
+msgstr "spostamento (verticale) dell'obiettivo"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12725(para)
 msgid ""
@@ -14300,10 +14464,15 @@ msgid ""
 "their full extent but rather at an 80 to 90% level. If desired just reduce "
 "the value after having performed the automatic correction."
 msgstr ""
+"Questo parametro corregge le linee convergenti verticali. In alcuni casi"
+" potete ottenere un risultato più naturale correggendo le linee verticali non"
+" precisamente ma limitandovi ad un 80/90% del risultato che ritenete"
+" ottimale. Se lo desiderate potete ridurre il valore dopo la correzione"
+" automatica."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12734(title)
 msgid "shear"
-msgstr ""
+msgstr "cesoia"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12735(para)
 msgid ""
@@ -14311,12 +14480,17 @@ msgid ""
 "when correcting vertical and horizontal perspective distortions "
 "simultaneously."
 msgstr ""
+"Questo parametro taglia l'immagine lungo una delle sue diagonali ed è"
+" necessario quando si correggono simultaneamente le distorsione verticali ed"
+" orizzontali."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12743(para)
 msgid ""
 "If activated a number of guide lines is laid over the image to help you "
 "judge the quality of the correction."
 msgstr ""
+"Attivandolo si potranno visualizzare una serie di linee guida sovrapposte"
+" all'immagine che vi aiuteranno a valutare la qualità della correzione."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12751(para)
 msgid ""
@@ -14325,6 +14499,11 @@ msgid ""
 "area</quote> or to the largest rectangle maintaining the original aspect "
 "ratio (<quote>original format</quote>)."
 msgstr ""
+"Attivandolo la funzione di ritaglio automatico si preoccuperà di"
+" ridimensionare l'immagine per eliminare eventuali angoli neri. A scelta"
+" potrete decidere di ritagliare <quote>l'area maggiore</quote> oppure il"
+" rettangolo più grosso possibile mantenendo le proporzioni originali"
+" dell'immagine (<quote>formato originale</quote>)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12760(title)
 msgid "lens model"
@@ -14337,6 +14516,12 @@ msgid ""
 "format camera is assumed. If set to <quote>specific</quote>, focal length "
 "and crop factor can be set manually."
 msgstr ""
+"Questo parametro controlla come vengono utilizzati i parametri specifici"
+" delle varie fotocamere e obiettivi. Se impostato a <quote>generico</quote>"
+" si presuppone che sia stato utilizzato un obiettivo da 28mm su una"
+" fotocamera pieno formato. Se impostato a <quote>specifico</quote> sarà"
+" invece possibile inserire manualmente la lunghezza focale e il fattore di"
+" ritaglio."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12769(title)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19273(bridgehead)
@@ -14349,11 +14534,14 @@ msgid ""
 "data of your image. This parameter is only effective and visible if the "
 "<quote>specific</quote> lens model has been selected."
 msgstr ""
+"La lunghezza focale dell'obiettivo utilizzato. Il valore di default viene"
+" preso direttamente dai dati Exif dell'immagine. Questo parametro sarà"
+" visibile solamente se sarà stato selezionato uno <quote>specifico</quote>"
+" obiettivo."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12778(title)
-#, fuzzy
 msgid "crop factor"
-msgstr "fattore di scala"
+msgstr "fattore di ritaglio"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12779(para)
 msgid ""
@@ -14361,22 +14549,26 @@ msgid ""
 "value manually. This parameter is only effective and visible if the "
 "<quote>specific</quote> lens model has been selected."
 msgstr ""
+"Il fattore di ritaglio della fotocamera utilizzata. Normalmente questo valore"
+" deve essere inserito manualmente ed è visibile solo se sarà stato"
+" selezionato uno <quote>specifico</quote> obiettivo."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12787(title)
-#, fuzzy
 msgid "aspect adjust"
-msgstr "aspetto"
+msgstr "regolazione dell'aspetto"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12788(para)
 msgid ""
 "If the <quote>specific</quote> lens model has been selected this parameter "
 "allows for a free manual adjustment of the image's aspect ratio."
 msgstr ""
+"Se uno <quote>specifico</quote> modello di obiettivo è stato specificato"
+" questo parametro permette di modificare manualmente il rapporto di"
+" proporzione dell'immagine."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12795(title)
-#, fuzzy
 msgid "automatic fit"
-msgstr "rapporto automatico"
+msgstr "dimensione automatica"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12796(para)
 msgid ""
@@ -14392,10 +14584,22 @@ msgid ""
 "on either icon only fits rotation. <emphasis>Shift-clicking</emphasis> on "
 "either icon only fits vertical and/or horizontal lens shift."
 msgstr ""
+"Cliccando su una di queste icone si avvia la parametrizzazione automatica del"
+" modulo basata sulle linee verticali e/o orizzontali selezionate. Potete"
+" decidere di correggere solo le linee verticali ( <inlinegraphic"
+" fileref=\"images/darkroom_module_ashift_vertical.png\" scalefit=\"1\""
+" width=\"2%\" align=\"center\"/> ), solo quelle orizzontali ( <inlinegraphic"
+" fileref=\"images/darkroom_module_ashift_horizontal.png\" scalefit=\"1\""
+" width=\"2%\" align=\"center\"/> ), oppure entrambe le distorsioni"
+" simultaneamente ( <inlinegraphic fileref=\"images/darkroom_module_ashift_both"
+".png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> ). <emphasis"
+">Ctrl-click</emphasis> su una delle icone per sistemare solamente la"
+" rotazione. <emphasis>Maiusc-click</emphasis> su una delle icone per"
+" aggiustare solamente lo spostamento verticale e/o orizzontale dell'obiettivo."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12811(title)
 msgid "get structure"
-msgstr ""
+msgstr "analizza struttura"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12812(para)
 msgid ""
@@ -14412,12 +14616,28 @@ msgid ""
 "darkroom_module_ashift_eye.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> icon you can switch the overlay display of line segments on and off."
 msgstr ""
+"Cliccando sull'icona <inlinegraphic fileref=\"images/darkroom_module_ashift_st"
+"ructure.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> è possibile"
+" ri-analizzare l'immagine alla ricerca di segmenti utili. <emphasis"
+">Maiusc-click</emphasis> per applicare a priori un passaggio di aumento del"
+" contrasto, con <emphasis>ctrl-click</emphasis>, invece, si applica un"
+" passaggio di aumento di contrasto degli spigoli. Entrambe queste operazioni"
+" possono essere usate da sole oppure insieme se la procedura standard non è"
+" in grado di trovare un numero sufficiente di linee. Cliccando sull'icona <"
+"inlinegraphic fileref=\"images/darkroom_module_ashift_clear.png\""
+" scalefit=\"1\" width=\"2%\" align=\"center\"/> si eliminano tutti i dati"
+" strutturali raccolti. Cliccando invece sull'icona <inlinegraphic"
+" fileref=\"images/darkroom_module_ashift_eye.png\" scalefit=\"1\" width=\"2"
+"%\" align=\"center\"/> è possibile visualizzare o nascondere l'evidenziazione"
+" dei segmenti."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12842(entry)
 msgid ""
 "An input image with a skewed horizon and converging lines caused by "
 "directing the camera upwards."
 msgstr ""
+"Una immagine di input con l'orizzonte storto e linee convergenti ottenute"
+" scattando con la fotocamera rivolta verso l'alto."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12851(entry)
 msgid ""
@@ -14425,6 +14645,9 @@ msgid ""
 "distortions. Note the framing by the automatic cropping feature and the "
 "still visible overlay of structural lines."
 msgstr ""
+"La stessa immagine dopo aver corretto la distorsione prospettica verticale e"
+" orizzontale. Notare la cornice creata dal ritaglio automatico e la struttura"
+" - ancora visibile - delle linee strutturali."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12868(title)
 msgid "Lens correction"
@@ -14485,9 +14708,9 @@ msgid ""
 msgstr ""
 "Il produttore e il modello dell'obiettivo rilevato dai dati EXIF. Potete "
 "impostare dati differenti selezionandoli da un menu gerarchico. Questa "
-"operazione è necessaria per gli obiettivi completamente meccanici ma potrebbe"
-" essere anche necessaria per individuare un obiettivo senza marca o di terze"
-" parti."
+"operazione è necessaria per gli obiettivi completamente meccanici ma "
+"potrebbe essere anche necessaria per individuare un obiettivo senza marca o "
+"di terze parti."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12933(title)
 msgid "photometric parameters: focal length, aperture, focal distance"
@@ -14568,7 +14791,6 @@ msgid "geometry"
 msgstr "geometria"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12971(para)
-#, fuzzy
 msgid ""
 "In addition to the correction of lens flaws, this module can change the "
 "projection type of your image. Set this combobox to the aimed projection "
@@ -14580,9 +14802,9 @@ msgstr ""
 "Oltre alle correzioni relative ai difetti ottici questo modulo può "
 "intervenire sul tipo di proiezione dell'immagine. Potete impostare il valore "
 "dell'elenco a discesa in <quote>rettilineare</quote>, <quote>fish-eye</"
-"quote>, <quote>panoramico</quote>, <quote>equirettangolare</quote>,<quote"
-">ortografico</quote>, <quote>stereografico</quote>, <quote>angolo equisolido "
-"</quote>, <quote>thoby fish-eye</quote>.."
+"quote>, <quote>panoramico</quote>, <quote>equirettangolare</quote>,"
+"<quote>ortografico</quote>, <quote>stereografico</quote>, <quote>angolo "
+"equisolido </quote>, <quote>thoby fish-eye</quote>.."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12983(para)
 msgid ""
@@ -15326,62 +15548,57 @@ msgstr ""
 "font (grasetto) </entry></row><row><entry> $(IMAGE.ID) </entry><entry> L'ID "
 "univoco dell'immagine all'interno della collezione corrente </entry></"
 "row><row><entry> $(IMAGE.FILENAME) </entry><entry> Il nome file "
-"dell'immagine </entry></row><row><entry> $(IMAGE.BASENAME) </entry><entry> Il"
-" nome file dell'immagine "
-"(senza estensione) </entry></row><row><entry> $(IMAGE.EXIF) </entry><entry>"
-" La "
-"stringa EXIF dell'immagine </entry></row><row><entry> $(EXIF.DATE) </"
-"entry><entry> La data dell'immagine </entry></row><row><entry> $(EXIF.DATE."
-"SECOND) </entry><entry> I secondi della data EXIF dell'immagine </entry></"
-"row><row><entry> $(EXIF.DATE.MINUTE) </entry><entry> I minuti della data "
-"EXIF dell'immagine </entry></row><row><entry> $(EXIF.DATE.HOUR) </"
-"entry><entry> L'ora della data EXIF dell'immagine (24h) </entry></"
-"row><row><entry> $(EXIF.DATE.HOUR_AMPM) </entry><entry> L'ora della data "
-"EXIF dell'immagine (12h, AM/PM) </entry></row><row><entry> $(EXIF.DATE.DAY) "
-"</entry><entry> Il giorno del mese della data EXIF dell'immagine (01 .. 31) "
-"</entry></row><row><entry> $(EXIF.DATE.MONTH) </entry><entry> Il numero del "
-"mese della data EXIF dell'immagine (01 .. 12) </entry></row><row><entry> "
-"$(EXIF.DATE.SHORT_MONTH) </entry><entry> Il mese in breve della data EXIF "
-"dell'immagine (Gen, Feb, .. Dic) </entry></row><row><entry> $(EXIF.DATE."
-"LONG_MONTH) </entry><entry> Il nome del mese della data EXIF dell'immagine "
-"(Gennaio, Febbraio, .. Dicembre) </entry></row><row><entry> $(EXIF.DATE."
-"SHORT_YEAR) </entry><entry> L'anno breve della data EXIF dell'immagine (2016 "
-"diventa \"16\") </entry></row><row><entry> $(EXIF.DATE.LONG_YEAR) </"
-"entry><entry> L'anno intero della data EXIF dell'immagine </entry></"
-"row><row><entry> $(DATE) </entry><entry> Data odierna di sistema </entry></"
-"row><row><entry> $(DATE.SECOND) </entry><entry> Secondi della data corrente "
-"</entry></row><row><entry> $(DATE.MINUTE) </entry><entry> Minuti della data "
-"corrente</entry></row><row><entry> $(DATE.HOUR) </entry><entry> Ora della "
-"data corrente (24h) </entry></row><row><entry> $(DATE.HOUR_AMPM) </"
-"entry><entry> Ora della data corrente (12, AP/PM) </entry></row><row><entry> "
-"$(DATE.DAY) </entry><entry> Il numero del giorno della data corrente "
-"(01 .. 31) </entry></row><row><entry> $(DATE.MONTH) </entry><entry> Il "
-"numero del mese della data corrente (01 .. 12) </entry></row><row><entry> "
-"$(DATE.SHORT_MONTH) </entry><entry> Il mese in breve della data corrente "
-"(Gen, Feb, .. Dic) </entry></row><row><entry> $(DATE.LONG_MONTH) </"
-"entry><entry> IL nome del mese della data corrente (Gennaio, Febbraio, .. "
-"Dicembre) </entry></row><row><entry> $(DATE.SHORT_YEAR) </entry><entry> "
-"L'anno breve della data corrente </entry></row><row><entry> $(DATE."
-"LONG_YEAR) </entry><entry> L'anno intero della data corrente </entry></"
-"row><row><entry> $(EXIF.MAKER) </entry><entry> Il produttore della "
-"fotocamera </entry></row><row><entry> $(EXIF.MODEL) </entry><entry> Il "
-"modello della fotocamera </entry></row><row><entry> $(EXIF.LENS) </"
-"entry><entry> L'obiettivo utilizzato </entry></row><row><entry> $(Xmp.dc."
-"creator) </entry><entry> La stringa dell'autore </entry></row><row><entry> "
-"$(Xmp.dc.publisher) </entry><entry> La stringa dell'editore </entry></"
-"row><row><entry> $(Xmp.dc.title) </entry><entry> Il titolo della fotografia "
-"</entry></row><row><entry> $(Xmp.dc.description) </entry><entry> La "
-"descrizione della fotografia </entry></row><row><entry> $(Xmp.dc.rights) </"
-"entry><entry> Eventuali diritti assegnati alla fotografia </entry></row><row"
-"><entry> $(GPS.LATITUDE) </"
-"entry><entry> Le coordinate di latitudine dell'immagine (N/S 0 .. 90) </entry"
-"></"
-"row><row><entry> $(GPS.LONGITUDE) </entry><entry> Le coordinate di"
-" longitudine "
-"dell'immagine (E/W 0 .. 180) </entry></row><row><entry> $(GPS.ELEVATION) </"
-"entry><entry> L'altitudine dell'immagine (meters) </entry></row><row><entry> "
-"$(GPS.LOCATION) </entry><entry> Tutte e tre le coordinate (latitudine,"
-" longitudine, "
+"dell'immagine </entry></row><row><entry> $(IMAGE.BASENAME) </entry><entry> "
+"Il nome file dell'immagine (senza estensione) </entry></row><row><entry> "
+"$(IMAGE.EXIF) </entry><entry> La stringa EXIF dell'immagine </entry></"
+"row><row><entry> $(EXIF.DATE) </entry><entry> La data dell'immagine </"
+"entry></row><row><entry> $(EXIF.DATE.SECOND) </entry><entry> I secondi della "
+"data EXIF dell'immagine </entry></row><row><entry> $(EXIF.DATE.MINUTE) </"
+"entry><entry> I minuti della data EXIF dell'immagine </entry></"
+"row><row><entry> $(EXIF.DATE.HOUR) </entry><entry> L'ora della data EXIF "
+"dell'immagine (24h) </entry></row><row><entry> $(EXIF.DATE.HOUR_AMPM) </"
+"entry><entry> L'ora della data EXIF dell'immagine (12h, AM/PM) </entry></"
+"row><row><entry> $(EXIF.DATE.DAY) </entry><entry> Il giorno del mese della "
+"data EXIF dell'immagine (01 .. 31) </entry></row><row><entry> $(EXIF.DATE."
+"MONTH) </entry><entry> Il numero del mese della data EXIF dell'immagine "
+"(01 .. 12) </entry></row><row><entry> $(EXIF.DATE.SHORT_MONTH) </"
+"entry><entry> Il mese in breve della data EXIF dell'immagine (Gen, Feb, .. "
+"Dic) </entry></row><row><entry> $(EXIF.DATE.LONG_MONTH) </entry><entry> Il "
+"nome del mese della data EXIF dell'immagine (Gennaio, Febbraio, .. Dicembre) "
+"</entry></row><row><entry> $(EXIF.DATE.SHORT_YEAR) </entry><entry> L'anno "
+"breve della data EXIF dell'immagine (2016 diventa \"16\") </entry></"
+"row><row><entry> $(EXIF.DATE.LONG_YEAR) </entry><entry> L'anno intero della "
+"data EXIF dell'immagine </entry></row><row><entry> $(DATE) </entry><entry> "
+"Data odierna di sistema </entry></row><row><entry> $(DATE.SECOND) </"
+"entry><entry> Secondi della data corrente </entry></row><row><entry> $(DATE."
+"MINUTE) </entry><entry> Minuti della data corrente</entry></row><row><entry> "
+"$(DATE.HOUR) </entry><entry> Ora della data corrente (24h) </entry></"
+"row><row><entry> $(DATE.HOUR_AMPM) </entry><entry> Ora della data corrente "
+"(12, AP/PM) </entry></row><row><entry> $(DATE.DAY) </entry><entry> Il numero "
+"del giorno della data corrente (01 .. 31) </entry></row><row><entry> $(DATE."
+"MONTH) </entry><entry> Il numero del mese della data corrente (01 .. 12) </"
+"entry></row><row><entry> $(DATE.SHORT_MONTH) </entry><entry> Il mese in "
+"breve della data corrente (Gen, Feb, .. Dic) </entry></row><row><entry> "
+"$(DATE.LONG_MONTH) </entry><entry> IL nome del mese della data corrente "
+"(Gennaio, Febbraio, .. Dicembre) </entry></row><row><entry> $(DATE."
+"SHORT_YEAR) </entry><entry> L'anno breve della data corrente </entry></"
+"row><row><entry> $(DATE.LONG_YEAR) </entry><entry> L'anno intero della data "
+"corrente </entry></row><row><entry> $(EXIF.MAKER) </entry><entry> Il "
+"produttore della fotocamera </entry></row><row><entry> $(EXIF.MODEL) </"
+"entry><entry> Il modello della fotocamera </entry></row><row><entry> $(EXIF."
+"LENS) </entry><entry> L'obiettivo utilizzato </entry></row><row><entry> "
+"$(Xmp.dc.creator) </entry><entry> La stringa dell'autore </entry></"
+"row><row><entry> $(Xmp.dc.publisher) </entry><entry> La stringa dell'editore "
+"</entry></row><row><entry> $(Xmp.dc.title) </entry><entry> Il titolo della "
+"fotografia </entry></row><row><entry> $(Xmp.dc.description) </entry><entry> "
+"La descrizione della fotografia </entry></row><row><entry> $(Xmp.dc.rights) "
+"</entry><entry> Eventuali diritti assegnati alla fotografia </entry></"
+"row><row><entry> $(GPS.LATITUDE) </entry><entry> Le coordinate di latitudine "
+"dell'immagine (N/S 0 .. 90) </entry></row><row><entry> $(GPS.LONGITUDE) </"
+"entry><entry> Le coordinate di longitudine dell'immagine (E/W 0 .. 180) </"
+"entry></row><row><entry> $(GPS.ELEVATION) </entry><entry> L'altitudine "
+"dell'immagine (meters) </entry></row><row><entry> $(GPS.LOCATION) </"
+"entry><entry> Tutte e tre le coordinate (latitudine, longitudine, "
 "altitudine) </entry></row></tbody></tgroup></informaltable>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14132(title)
@@ -15629,9 +15846,9 @@ msgid ""
 msgstr ""
 "Un selettore colore che permette di definire un colore per il bordo."
 "Cliccando sulla casella colorata si accederà ad un selettore colore che vi "
-"permetterà di selezionare un colore tra alcuni comunemente usati oppure di"
-" definirne uno per il bordo in formato RGB. Potete "
-"anche attivare un selettore colore premendo <inlinegraphic fileref=\"images/"
+"permetterà di selezionare un colore tra alcuni comunemente usati oppure di "
+"definirne uno per il bordo in formato RGB. Potete anche attivare un "
+"selettore colore premendo <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> per prelevare un colore dalla vostra immagine."
 
@@ -15650,11 +15867,11 @@ msgid ""
 msgstr ""
 "Un selettore colore che permette di definire un colore per la cornice."
 "Cliccando sulla casella colorata si accederà ad un selettore colore che vi "
-"permetterà di selezionare un colore tra alcuni comunemente usati oppure di"
-" definirne uno in formato RGB. Potete "
-"anche attivare un selettore colore premendo <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/> per prelevare un colore dalla vostra immagine."
+"permetterà di selezionare un colore tra alcuni comunemente usati oppure di "
+"definirne uno in formato RGB. Potete anche attivare un selettore colore "
+"premendo <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> per prelevare un colore dalla "
+"vostra immagine."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14363(entry)
 msgid "Example image with a user defined frame."
@@ -16299,12 +16516,11 @@ msgid ""
 "the name of the effect. There are numerous ways to use this module depending "
 "on the image's actual scenery lighting."
 msgstr ""
-"Questo modulo identifica le alteluci, le sfuoca e quindi le fonde (in"
-" modalità luminosità) con l'immagine originale al fine di creare un soffice"
-" effetto di luce soffusa sull'immagine: da qui il nome dell'effetto. Ci sono"
-" molti modi di utilizzare "
-"questo modulo a seconda del tipo di illuminazione che ha la scena "
-"fotografata."
+"Questo modulo identifica le alteluci, le sfuoca e quindi le fonde (in "
+"modalità luminosità) con l'immagine originale al fine di creare un soffice "
+"effetto di luce soffusa sull'immagine: da qui il nome dell'effetto. Ci sono "
+"molti modi di utilizzare questo modulo a seconda del tipo di illuminazione "
+"che ha la scena fotografata."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15249(para)
 msgid ""
@@ -16837,9 +17053,8 @@ msgid ""
 "To perform such conversion we use the <emphasis>color contrast</emphasis> "
 "module (<xref linkend=\"color_contrast\"/>)."
 msgstr ""
-"Per effettuare questa conversione utilizzeremo il modulo "
-"<emphasis>contrasto colore</emphasis> (<xref linkend=\"color_correction\"/"
-">)."
+"Per effettuare questa conversione utilizzeremo il modulo <emphasis>contrasto "
+"colore</emphasis> (<xref linkend=\"color_correction\"/>)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15944(para)
 msgid "Activate the color contrast module"
@@ -17374,7 +17589,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16539(keyword)
 msgid "tethering"
-msgstr "Tethering"
+msgstr "tethering (scatto remoto)"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16547(primary)
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16655(primary)
@@ -17393,7 +17608,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16558(screeninfo)
 msgid "The tethering view"
-msgstr "La vista Tethering"
+msgstr "La vista tethering"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16569(para)
 msgid ""
@@ -17403,12 +17618,12 @@ msgid ""
 "will need to <quote>unmount/eject</quote> the camera. This is required to "
 "unlock the camera so darktable can lock it for usage."
 msgstr ""
-"Per usare la funzionalità di tethring occorre connettere la fotocamera al PC "
-"con un cavo USB. Il computer potrebbe chiedere di montare o visualizzare la "
-"fotocamera connessa, ma non si deve montare né vedere la fotocamera. Se "
-"questo accade automaticamente, la si dovrà <quote>smontare o espellere</"
-"quote>. Questo è necessario per sbloccare la fotocamera in modo che "
-"darktable possa bloccarla per poterla usare."
+"Per usare la funzionalità di scatto remoto occorre connettere la fotocamera "
+"al PC con un cavo USB. Il computer potrebbe chiedere di montare o "
+"visualizzare la fotocamera connessa, ma non si deve montare né vedere la "
+"fotocamera. Se questo accade automaticamente, la si dovrà <quote>smontare o "
+"espellere</quote>. Questo è necessario per sbloccare la fotocamera in modo "
+"che darktable possa bloccarla per poterla usare."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16576(para)
 msgid ""
@@ -17423,7 +17638,7 @@ msgstr ""
 "vede la fotocamera nel pannello, si clicca il pulsante <quote>cerca "
 "dispositivi</quote> e appariranno due funzioni: <quote>importa da "
 "fotocamera</quote> e <quote>scatto in tethering</quote>. Cliccando su "
-"<quote>scatto in tethering</quote> si entra nella modalità di tethering."
+"<quote>scatto in tethering</quote> si entra nella modalità di scatto remoto."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16584(para)
 msgid ""
@@ -17434,7 +17649,7 @@ msgstr ""
 "darktable usa gphoto2 per interfacciarsi con le fotocamere. Se non si riesce "
 "a trovare la fotocamera connessa nel modo appena descritto, conviene leggere "
 "la sezione di risoluzione dei problemi in questo capitolo per verificare se "
-"la propria fotocamera ha il supporto per il tethering."
+"la propria fotocamera ha il supporto per lo scatto remoto."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16600(entry)
 msgid ""
@@ -17488,7 +17703,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16642(title)
 msgid "Tethering panels"
-msgstr "Pannelli tethering"
+msgstr "Pannelli scatto remoto"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16644(para)
 msgid ""
@@ -17513,7 +17728,7 @@ msgid ""
 "created with the same storage structure that is used when you import images "
 "from camera into darktable."
 msgstr ""
-"Una sessione è una sequenza di scatti presi in modalità tethering e "
+"Una sessione è una sequenza di scatti presi in modalità scatto remoto e "
 "raggruppati in un unico rullino. Una nuova sessione equivale a un nuovo "
 "rullino. Un rullino viene creato con la stessa struttura di archiviazione "
 "usata quando si importano le immagini dalla fotocamera in darktable."
@@ -17566,7 +17781,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16763(para)
 msgid "This section contains examples of typical usages of tethering."
-msgstr "Questa sezione contiene tipici esempi d'uso del tethering."
+msgstr "Questa sezione contiene tipici esempi d'uso dello scatto remoto."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16769(title)
 msgid "Studio setup with screening"
@@ -17675,8 +17890,8 @@ msgid ""
 "is what darktable uses to interface with your camera."
 msgstr ""
 "Questa guida alla risoluzione dei problemi presenta i passi da seguire per "
-"verificare se la fotocamera può essere usata per il tethering. Per farlo si "
-"usano gli strumenti a linea di comando di gphoto2, ovvero gli stessi che "
+"verificare se la fotocamera può essere usata per lo scatto remoto. Per farlo "
+"si usano gli strumenti a linea di comando di gphoto2, ovvero gli stessi che "
 "darktable usa per interfacciarsi con la fotocamera."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16842(para)
@@ -17853,12 +18068,11 @@ msgid ""
 msgstr ""
 "Esiste un metodo alternativo per chi ha una fotocamera che non supporta "
 "questa funzionalità. darktable può combinare l'ora e la data dei metadati "
-"EXIF dell'immagine con un file GPX di tracciamento dati creato da un"
-" rilevatore "
-"GPS che registra i movimenti. Può essere sia un dispositivo portatile oppure "
-"un'applicazione di rilevamento GPS dello smartphone. Tutto questo viene fatto"
-" nella "
-"vista tavolo luminoso (vedi <xref linkend=\"geotagging\"/>)."
+"EXIF dell'immagine con un file GPX di tracciamento dati creato da un "
+"rilevatore GPS che registra i movimenti. Può essere sia un dispositivo "
+"portatile oppure un'applicazione di rilevamento GPS dello smartphone. Tutto "
+"questo viene fatto nella vista tavolo luminoso (vedi <xref linkend="
+"\"geotagging\"/>)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16996(title)
 msgid "Center map view"
@@ -18693,7 +18907,7 @@ msgstr "Abilita i provini"
 msgid ""
 "Enable the filmstrip in darkroom, tethering and geomapping modes (default "
 "on)."
-msgstr "Abilita i provini in modalità camera oscura, Tethering e Mappa."
+msgstr "Abilita i provini in modalità camera oscura, tethering e mappa."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17735(bridgehead)
 msgid "high quality thumb processing from size"
@@ -18855,8 +19069,8 @@ msgstr ""
 "Regola il modo in cui sono espansi i pannelli del tavolo luminoso. Se questa "
 "opzione è abilitata, l'espansione di un pannello tramite un <emphasis>click</"
 "emphasis> contrae qualsiasi pannello attualmente espanso. Se si desidera "
-"espandere un pannello senza contrarre gli altri, si usa <emphasis>shift"
-"-click</emphasis>. Se si disabilita questa opzione, si ripristina il "
+"espandere un pannello senza contrarre gli altri, si usa <emphasis>shift-"
+"click</emphasis>. Se si disabilita questa opzione, si ripristina il "
 "significato di <emphasis>click</emphasis> e <emphasis>shift-click</emphasis> "
 "(disabilitato di default)."
 
@@ -19162,6 +19376,10 @@ msgid ""
 "matrix, darktable will use LittleCMS 2 to render the colors regardless of "
 "this configuration parameter's value."
 msgstr ""
+"Notare che se il profilo ICC fornito si basa su di una LUT o contiene"
+" entrambe, una LUT e una matrice, darktable utilizzerà LittleCMS2 per"
+" visualizzare i colori senza considerare il valore di configurazione di"
+" questo parametro."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17994(bridgehead)
 msgid "do high quality resampling during export"
@@ -19222,8 +19440,7 @@ msgid ""
 "quote>."
 msgstr ""
 "Gestore delle password memorizzate. Opzioni: <quote>auto</quote> (default), "
-"<quote>nessuno</quote>, <quote>libsecret</quote>, <quote>kwallet</"
-"quote>."
+"<quote>nessuno</quote>, <quote>libsecret</quote>, <quote>kwallet</quote>."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18025(bridgehead)
 msgid "look for updated xmp files on startup"
@@ -21605,19 +21822,17 @@ msgstr ""
 "Putroppo, però, la storia non è ancora finita. C'è un effetto, chiamato "
 "frammentazione della memoria, che colpisce i software che hanno bisogno di "
 "gestire grosse quanità di memoria. Se uno di questi software dovesse "
-"allocare 5 volte 300MB in una sola volta per poi liberarla, ci aspetteremmo"
-" di "
-"averne nuovamente a disposizione 1,5GB. Spesso però questo non accade perchè "
-"il sistema di allocazione della memoria potrebbe non vederla più come "
+"allocare 5 volte 300MB in una sola volta per poi liberarla, ci aspetteremmo "
+"di averne nuovamente a disposizione 1,5GB. Spesso però questo non accade "
+"perchè il sistema di allocazione della memoria potrebbe non vederla più come "
 "un'area contigua da 1,5GB ma come aree di 300MB allineate quindi, se non "
 "dovesse esserci una nuova area libera da 1,5GB la nuova allocazione di "
 "memoria fallirebbe. Duante l'esecuzione di un programma questo meccanismo "
 "perderebbe sempre più blocchi di memoria grandi in favore di blocchi più "
-"piccoli. La cache mip map di darktable 2.0 alloca molti piccoli blocchi di"
-" memoria per "
-"ogni anteprima così questo problema potrebbe essere ancora più grave. "
-"Per questo motivo, a partire da darktable 2.0, il supporto a 32-bit è"
-" deprecato."
+"piccoli. La cache mip map di darktable 2.0 alloca molti piccoli blocchi di "
+"memoria per ogni anteprima così questo problema potrebbe essere ancora più "
+"grave. Per questo motivo, a partire da darktable 2.0, il supporto a 32-bit è "
+"deprecato."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20245(title)
 msgid "Further limitations"
@@ -21769,15 +21984,13 @@ msgid ""
 "this poses a problem for 32-bit systems. For this reason, as of darktable "
 "2.0, 32-bit support is soft-deprecated."
 msgstr ""
-"Questo parametro controlla quante anteprime (o mip maps) possono essere"
-" memorizzate in una volta sola. "
-"Per partire potete inserire un valore di 256MB. Dal momento che a partire da"
-" darktable 2.0 la cache alloca una serie "
-"di piccoli buffer per ogni anteprima, questa cosa causa una notevole"
-" frammentazione della memoria. "
-"Come spiegato prima questo è un problema per i sistemi a 32-bit. E per questo"
-" motivo a partire da darktable 2.0 "
-"il supporto a 32-bit è deprecato."
+"Questo parametro controlla quante anteprime (o mip maps) possono essere "
+"memorizzate in una volta sola. Per partire potete inserire un valore di "
+"256MB. Dal momento che a partire da darktable 2.0 la cache alloca una serie "
+"di piccoli buffer per ogni anteprima, questa cosa causa una notevole "
+"frammentazione della memoria. Come spiegato prima questo è un problema per i "
+"sistemi a 32-bit. E per questo motivo a partire da darktable 2.0 il supporto "
+"a 32-bit è deprecato."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20299(para)
 msgid ""
@@ -22049,7 +22262,6 @@ msgid "How to activate OpenCL in darktable"
 msgstr "Come attivare OpenCL in darktable"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20523(para)
-#, fuzzy
 msgid ""
 "Using OpenCL in darktable requires that your PC is equipped with a suitable "
 "graphics card and that it has the required libraries in place. Namely modern "
@@ -22061,7 +22273,7 @@ msgid ""
 msgstr ""
 "Per usare OpenCL in darktable dovrete assicurarvi che il vostro PC abbia una "
 "scheda grafica idonea con tutte le sue librerie al loro posto. Virtualmente "
-"tutte le schede video recenti di NVIDIA e ATI sono completamente compatibili "
+"tutte le schede video recenti di NVIDIA e AMD sono completamente compatibili "
 "con OpenCL. Il compilatore OpenCL solitamente viene fornito insieme ai "
 "drivers della scheda e viene usato come se fosse una libreria dinamica "
 "chiamata <quote>libOpenCL.so</quote>. Questa libreria si deve trovare in una "
@@ -22069,7 +22281,6 @@ msgstr ""
 "trovarla."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20532(para)
-#, fuzzy
 msgid ""
 "When darktable starts, it will first try to find and load libOpenCL.so and – "
 "on success – check if the available graphics card comes with OpenCL support. "
@@ -22199,13 +22410,12 @@ msgstr ""
 "module(s) -&gt; GPU"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20604(para)
-#, fuzzy
 msgid ""
 "darktable dynamically loads <filename moreinfo=\"none\">libOpenCL.so</"
 "filename>, a system library which must be accessible to the system's dynamic "
 "loader (<filename moreinfo=\"none\">ld.so</filename>)."
 msgstr ""
-"darktable collega dinamicamente <filename moreinfo=\"none\">libOpenCL.so</"
+"darktable carica dinamicamente <filename moreinfo=\"none\">libOpenCL.so</"
 "filename>, una libreria di sistema che deve essere accessibile al caricatore "
 "dinamico del vostro sistema operativo  (<filename moreinfo=\"none\">ld.so</"
 "filename>)."
@@ -22516,7 +22726,6 @@ msgstr ""
 "di inizializzazione di OpenCL."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20810(para)
-#, fuzzy
 msgid ""
 "darktable might fail to compile its OpenCL source files at run-time. In that "
 "case you will get a number of error messages looking like typical compiler "

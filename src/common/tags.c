@@ -93,6 +93,18 @@ guint dt_tag_remove(const guint tagid, gboolean final)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.used_tags WHERE id=?1", -1, &stmt,
+                                NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.tagged_images WHERE tagid=?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
     /* raise signal of tags change to refresh keywords module */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
@@ -141,6 +153,16 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, source_expr, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.used_tags SET name=REPLACE(name,?1,?2) WHERE name LIKE ?3",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, source, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, new_expr, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, source_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
   g_free(source_expr);
   g_free(new_expr);
 
@@ -193,6 +215,8 @@ void dt_tag_attach(guint tagid, gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+
+  dt_tag_update_used_tags();
 
   dt_collection_update_query(darktable.collection);
 }
@@ -257,6 +281,8 @@ void dt_tag_detach(guint tagid, gint imgid)
     sqlite3_finalize(stmt);
   }
 
+  dt_tag_update_used_tags();
+
   dt_collection_update_query(darktable.collection);
 }
 
@@ -271,6 +297,8 @@ void dt_tag_detach_by_string(const char *name, gint imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  dt_tag_update_used_tags();
 
   dt_collection_update_query(darktable.collection);
 }
@@ -635,6 +663,19 @@ ssize_t dt_tag_export(const char *filename)
   fclose(fd);
 
   return count;
+}
+
+void dt_tag_update_used_tags()
+{
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.used_tags WHERE id NOT IN "
+                                                       "(SELECT tagid FROM main.tagged_images GROUP BY tagid)",
+                        NULL, NULL, NULL);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "INSERT OR IGNORE INTO main.used_tags (id, name) "
+                                                       "SELECT t.id, t.name "
+                                                       "FROM data.tags AS t, main.tagged_images AS i "
+                                                       "ON t.id = i.tagid GROUP BY t.id",
+                        NULL, NULL, NULL);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

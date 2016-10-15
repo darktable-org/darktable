@@ -31,6 +31,7 @@ typedef dt_lua_widget_t* lua_combobox;
 typedef dt_lua_widget_t* lua_check_button;
 typedef dt_lua_widget_t* lua_button;
 typedef dt_lua_widget_t* lua_slider;
+typedef dt_lua_widget_t* lua_text_view;
 
 // containers can be inherited
 extern dt_lua_widget_type_t container_type;
@@ -52,6 +53,7 @@ int dt_lua_init_widget_combobox(lua_State* L);
 int dt_lua_init_widget_container(lua_State* L);
 int dt_lua_init_widget_stack(lua_State* L);
 int dt_lua_init_widget_slider(lua_State* L);
+int dt_lua_init_widget_text_view(lua_State* L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
