@@ -137,10 +137,6 @@ else(DEFINED PROJECT_VERSION)
 endif(DEFINED PROJECT_VERSION)
 
 
-#
-# Initial cmake/debian/postinst and prerm script for debian package
-#
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/packaging/debian)
 
 
 #
