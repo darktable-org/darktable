@@ -120,7 +120,7 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     CiffEntry *shot_info = mRootIFD->getEntryRecursive(CIFF_SHOTINFO);
     if (shot_info->type == CIFF_SHORT && shot_info->count >= 2) {
       // os << exp(canonEv(value.toLong()) * log(2.0)) * 100.0 / 32.0;
-      ushort16 iso_index = shot_info->getShort(2);
+      ushort16 iso_index = shot_info->getShortArray()[2];
       iso = expf(canonEv((long)iso_index) * logf(2.0)) * 100.0f / 32.0f;
     }
   }
