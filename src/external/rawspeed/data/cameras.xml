@@ -5104,6 +5104,34 @@
 			<Alias>DMC-G70</Alias>
 		</Aliases>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-G8">
+		<ID make="Panasonic" model="DMC-G8">Panasonic DMC-G8</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-208" height="0"/>
+		<Sensor black="143" white="4095"/>
+		<Aliases>
+			<Alias>DMC-G80</Alias>
+		</Aliases>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-G8" mode="4:3">
+		<ID make="Panasonic" model="DMC-G8">Panasonic DMC-G8</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-208" height="0"/>
+		<Sensor black="143" white="4095"/>
+		<Aliases>
+			<Alias>DMC-G80</Alias>
+		</Aliases>
+	</Camera>
 	<Camera make="Panasonic" model = "DMC-GF3">
 		<ID make="Panasonic" model="DMC-GF3">Panasonic DMC-GF3</ID>
 		<CFA width="2" height="2">
