@@ -2276,7 +2276,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="12bit-compressed" supported="no">
+	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="12bit-compressed">
 		<ID make="Nikon" model="D5">Nikon D5</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2285,12 +2285,12 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="400" white="4096"/>
+		<Sensor black="100" white="3880"/>
 		<Hints>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="12bit-uncompressed" supported="no">
+	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D5">Nikon D5</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2299,7 +2299,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="400" white="4096"/>
+		<Sensor black="100" white="3880"/>
 		<Hints>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
