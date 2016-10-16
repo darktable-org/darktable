@@ -1,0 +1,50 @@
+#    This file is part of darktable.
+#    copyright (c) 2016 Roman Lebedev.
+#
+#    darktable is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    darktable is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+
+sudo: required
+
+notifications:
+  irc:
+    channels: "chat.freenode.net#darktable"
+    skip_join: true
+    template:
+      - "%{repository}#%{build_number} (\x037%{branch}\x03 - \x02%{commit}\x02 : \x033%{author}\x03): \x1f\x02%{message}\x02\x1f"
+      - "Build details : %{build_url}"
+  email:
+    recipients:
+      - darktable-ci@lists.darktable.org
+    on_success: always
+    on_failure: always
+
+services:
+  - docker
+
+before_install:
+#  - docker build -t darktable/darktable .
+  - docker pull darktable/darktable
+
+env:
+  global:
+    - SRC_DIR=/build/darktable
+    - BUILD_DIR=/build/darktable-build
+    - INSTALL_PREFIX=/build/darktable-install
+    - CFLAGS=-pipe CXXFLAGS=-pipe
+  matrix:
+    - CC=gcc CXX=g++
+    - CC=clang-3.8 CXX=clang++-3.8
+
+script:
+  - docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX darktable/darktable sh -c "$SRC_DIR/ci-script.sh"
