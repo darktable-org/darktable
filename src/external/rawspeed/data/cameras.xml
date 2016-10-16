@@ -1760,7 +1760,7 @@
 			<Hint name="wb_offset" value="142"/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D100" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON D100" mode="12bit-compressed">
 		<ID make="Nikon" model="D100">Nikon D100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -1771,7 +1771,7 @@
 		<Crop x="2" y="0" width="3030" height="2024"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D100" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON D100" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D100">Nikon D100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
