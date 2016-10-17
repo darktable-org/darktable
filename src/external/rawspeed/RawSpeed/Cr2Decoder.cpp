@@ -179,6 +179,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
   // Fix for Canon 6D mRaw, which has flipped width & height for some part of the image
   // In that case, we swap width and height, since this is the correct dimension
   bool flipDims = false;
+  bool wrappedCr2Slices = false;
   if (raw->hasEntry((TiffTag)0xc6c5)) {
     ushort16 ss = raw->getEntry((TiffTag)0xc6c5)->getInt();
     // sRaw
@@ -186,6 +187,19 @@ RawImage Cr2Decoder::decodeRawInternal() {
       mRaw->dim.x /= 3;
       mRaw->setCpp(3);
       mRaw->isCFA = false;
+      // Fix for Canon 80D mraw format.
+      // In that format, the frame (as read by getSOF()) is 4032x3402, while the
+      // real image should be 4536x3024 (where the full vertical slices in
+      // the frame "wrap around" the image.
+      if (hints.find("wrapped_cr2_slices") != hints.end() && raw->hasEntry(IMAGEWIDTH) && raw->hasEntry(IMAGELENGTH)) {
+        wrappedCr2Slices = true;
+        int w = raw->getEntry(IMAGEWIDTH)->getInt();
+        int h = raw->getEntry(IMAGELENGTH)->getInt();
+        if (w * h != mRaw->dim.x * mRaw->dim.y) {
+          ThrowRDE("CR2 Decoder: Wrapped slices don't match image size");
+        }
+        mRaw->dim = iPoint2D(w, h);
+      }
     }
     flipDims = mRaw->dim.x < mRaw->dim.y;
     if (flipDims) {
@@ -220,6 +234,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
       l->mUseBigtable = true;
       l->mCanonFlipDim = flipDims;
       l->mCanonDoubleHeight = doubleHeight;
+      l->mWrappedCr2Slices = wrappedCr2Slices;
       l->startDecoder(slice.offset, slice.count, 0, offY);
       delete l;
     } catch (RawDecoderException &e) {
