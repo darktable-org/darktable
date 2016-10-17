@@ -187,6 +187,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
       mRaw->dim.x /= 3;
       mRaw->setCpp(3);
       mRaw->isCFA = false;
+
       // Fix for Canon 80D mraw format.
       // In that format, the frame (as read by getSOF()) is 4032x3402, while the
       // real image should be 4536x3024 (where the full vertical slices in

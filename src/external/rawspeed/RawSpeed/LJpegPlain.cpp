@@ -255,12 +255,14 @@ void LJpegPlain::decodeScanLeftGeneric() {
 
   uint32 cw = (frame.w - skipX);
   uint32 ch = (frame.h - skipY);
+
   // Fix for Canon 80D mraw format.
   // In that format, `frame` is 4032x3402, while `mRaw` is 4536x3024.
   // Consequently, the slices in `frame` wrap around (this is taken care of by
   // `offset`) and must be decoded fully (without skipY) to fill the image
   if (mWrappedCr2Slices)
     ch = frame.h;
+
   for (uint32 y = 0;y < ch;y += maxSuperV) {
     for (; x < cw ; x += maxSuperH) {
 
@@ -410,12 +412,14 @@ void LJpegPlain::decodeScanLeft4_2_0() {
 
   uint32 cw = (frame.w - skipX);
   uint32 ch = (frame.h - skipY);
+
   // Fix for Canon 80D mraw format.
   // In that format, `frame` is 4032x3402, while `mRaw` is 4536x3024.
   // Consequently, the slices in `frame` wrap around (this is taken care of by
   // `offset`) and must be decoded fully (without skipY) to fill the image
   if (mWrappedCr2Slices)
     ch = frame.h;
+
   for (uint32 y = 0;y < ch;y += 2) {
     for (; x < cw ; x += 2) {
 
@@ -545,12 +549,14 @@ void LJpegPlain::decodeScanLeft4_2_2() {
 
   uint32 cw = (frame.w - skipX);
   uint32 ch = (frame.h - skipY);
+
   // Fix for Canon 80D mraw format.
   // In that format, `frame` is 4032x3402, while `mRaw` is 4536x3024.
   // Consequently, the slices in `frame` wrap around (this is taken care of by
   // `offset`) and must be decoded fully (without skipY) to fill the image
   if (mWrappedCr2Slices)
     ch = frame.h;
+
   for (uint32 y = 0;y < ch;y++) {
     for (; x < cw ; x += 2) {
 
@@ -648,12 +654,14 @@ void LJpegPlain::decodeScanLeft2Comps() {
 
   uint32 x = 1;                            // Skip first pixels on first line.
   uint32 ch = (frame.h - skipY);
+
   // Fix for Canon 80D mraw format.
   // In that format, `frame` is 4032x3402, while `mRaw` is 4536x3024.
   // Consequently, the slices in `frame` wrap around (this is taken care of by
   // `offset`) and must be decoded fully (without skipY) to fill the image
   if (mWrappedCr2Slices)
     ch = frame.h;
+
   for (uint32 y = 0;y < ch;y++) {
     for (; x < cw ; x++) {
       int diff = HuffDecode(dctbl1);
@@ -751,6 +759,7 @@ void LJpegPlain::decodeScanLeft3Comps() {
   uint32 cw = (frame.w - skipX);
   uint32 x = 1;                            // Skip first pixels on first line.
   uint32 ch = (frame.h - skipY);
+
   // Fix for Canon 80D mraw format.
   // In that format, `frame` is 4032x3402, while `mRaw` is 4536x3024.
   // Consequently, the slices in `frame` wrap around (this is taken care of by
@@ -870,12 +879,14 @@ void LJpegPlain::decodeScanLeft4Comps() {
     skipY = frame.h >> 1;
 
   uint32 ch = (frame.h - skipY);
+
   // Fix for Canon 80D mraw format.
   // In that format, `frame` is 4032x3402, while `mRaw` is 4536x3024.
   // Consequently, the slices in `frame` wrap around (this is taken care of by
   // `offset`) and must be decoded fully (without skipY) to fill the image
   if (mWrappedCr2Slices)
     ch = frame.h;
+
   for (uint32 y = 0;y < ch;y++) {
     for (; x < cw ; x++) {
       p1 += HuffDecode(dctbl1);
