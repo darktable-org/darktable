@@ -1017,12 +1017,14 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
     // downsample
     dt_iop_clip_and_zoom(out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width, roi_in.width);
   }
-  dt_image_cache_read_release(darktable.image_cache, image);
+
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   *width = roi_out.width;
   *height = roi_out.height;
   *iscale = (float)image->width / (float)roi_out.width;
+
+  dt_image_cache_read_release(darktable.image_cache, image);
 }
 
 
