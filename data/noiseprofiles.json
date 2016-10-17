@@ -3971,7 +3971,7 @@
       "maker": "Sony",
       "models": [
 			  {
-          "comment": "dsc-rx10 contributed by mandree",
+          "comment": "dsc-rx10 contributed by mandree (blue channel off)",
           "model": "DSC-RX10",
           "profiles": [
             {"name": "DSC-RX10 iso 80", "iso": 80, "a": [1.3679691454889e-05, 7.96549064647615e-06, 3.14321912006296e-05], "b": [1.48978249459691e-08, 1.00536661910982e-08, 3.12542293886576e-08]},
