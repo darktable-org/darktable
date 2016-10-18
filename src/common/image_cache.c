@@ -180,6 +180,7 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const uint32_t imgid, ch
 {
   if(imgid <= 0) return NULL;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
+  ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   return img;
@@ -190,6 +191,7 @@ dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const uint32_t imgid
   if(imgid <= 0) return 0;
   dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
   if(!entry) return 0;
+  ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   return img;
