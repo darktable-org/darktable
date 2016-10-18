@@ -22,7 +22,16 @@
 #include "common/darktable.h"
 
 #include <glib.h>
+#if defined (_WIN32)
+//GPPortSettingsUSB->interface naming conflict in gphoto2-port.h
+#define interface interfacenum
 #include <gphoto2/gphoto2.h>
+#undef interface
+
+#else //defined (_WIN32)
+#include <gphoto2/gphoto2.h>
+#endif //defined (_WIN32)
+
 #include <gtk/gtk.h>
 
 

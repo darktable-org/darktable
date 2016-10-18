@@ -146,7 +146,33 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
   g_free(curr);
   return g_strdup(tmp);
 }
+#elif defined(_WIN32)
+char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
+{
+  gchar *runtime_prefix;
+  gchar *slash;  
+  gchar *finaldir;
+  wchar_t fn[PATH_MAX];
+  
+  GetModuleFileNameW (NULL, fn, G_N_ELEMENTS (fn));
+  runtime_prefix = g_utf16_to_utf8 (fn, -1, NULL, NULL, NULL);
+  
+  //strip off /darktable
+  slash = strrchr (runtime_prefix, '\\');
+  *slash = '\0';
+  
+  //strip off /bin
+  slash = strrchr (runtime_prefix, '\\');
+  *slash = '\0';
+
+  finaldir = g_strconcat (runtime_prefix,
+                            suffix,
+                            NULL);
+                            
+  return g_strdup(finaldir);
+}
 #endif
+
 int dt_loc_init_tmp_dir(const char *tmpdir)
 {
   darktable.tmpdir = dt_loc_init_generic(tmpdir, DARKTABLE_TMPDIR);
@@ -164,7 +190,7 @@ void dt_loc_init_user_cache_dir(const char *cachedir)
 
 void dt_loc_init_plugindir(const char *plugindir)
 {
-#if defined(__MACH__) || defined(__APPLE__)
+#if defined(__MACH__) || defined(__APPLE__) || defined(_WIN32)
   char *directory = dt_loc_find_install_dir("/lib/darktable", darktable.progname);
   if(plugindir || !directory)
   {
@@ -181,7 +207,7 @@ void dt_loc_init_plugindir(const char *plugindir)
 
 void dt_loc_init_datadir(const char *datadir)
 {
-#if defined(__MACH__) || defined(__APPLE__)
+#if defined(__MACH__) || defined(__APPLE__) || defined(_WIN32)
   char *directory = dt_loc_find_install_dir("/share/darktable", darktable.progname);
   if(datadir || !directory)
   {
