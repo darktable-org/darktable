@@ -222,6 +222,9 @@ restart:
   else
     entry->data = dt_alloc_align(16, entry->data_size);
 
+  assert(entry->data_size);
+  ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
+
   // if allocate callback is given, always return a write lock
   const int write = ((mode == 'w') || cache->allocate);
 
