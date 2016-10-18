@@ -200,16 +200,23 @@ restart:
   entry->link = g_list_append(0, entry);
   entry->key = key;
   entry->_lock_demoting = 0;
+
   g_hash_table_insert(cache->hashtable, GINT_TO_POINTER(key), entry);
-  // if allocate callback is given, always return a write lock
-  int write = ((mode == 'w') || cache->allocate);
+
+  assert(cache->allocate || entry->data_size);
+
   if(cache->allocate)
     cache->allocate(cache->allocate_data, entry);
   else
-    entry->data = dt_alloc_align(16, cache->entry_size);
+    entry->data = dt_alloc_align(16, entry->data_size);
+
+  // if allocate callback is given, always return a write lock
+  const int write = ((mode == 'w') || cache->allocate);
+
   // write lock in case the caller requests it:
   if(write) dt_pthread_rwlock_wrlock_with_caller(&entry->lock, file, line);
   else      dt_pthread_rwlock_rdlock_with_caller(&entry->lock, file, line);
+
   cache->cost += entry->cost;
 
   // put at end of lru list (most recently used):
