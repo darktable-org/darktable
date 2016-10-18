@@ -126,6 +126,9 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
     double end = dt_get_wtime();
     if(end - start > 0.1)
       fprintf(stderr, "try+ wait time %.06fs mode %c \n", end - start, mode);
+
+    // WARNING: do *NOT* unpoison here. it must be done by the caller!
+
     return entry;
   }
   dt_pthread_mutex_unlock(&cache->lock);
@@ -177,6 +180,8 @@ restart:
     }
 #endif
 
+    // WARNING: do *NOT* unpoison here. it must be done by the caller!
+
     return entry;
   }
 
@@ -226,6 +231,9 @@ restart:
   double end = dt_get_wtime();
   if(end - start > 0.1)
     fprintf(stderr, "wait time %.06fs\n", end - start);
+
+  // WARNING: do *NOT* unpoison here. it must be done by the caller!
+
   return entry;
 }
 
