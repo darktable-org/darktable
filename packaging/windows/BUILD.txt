@@ -67,7 +67,7 @@ How to make a darktable windows installer (64 bit Intel only):
     Finally build and install darktable:
         $ mkdir darktablebuild
         $ cd darktablebuild
-        $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/opt/darktable ../darktable
+        $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Debug -DPROJECT_VERSION=2.0.6 -DCMAKE_INSTALL_PREFIX=/opt/darktable ../darktable
         $ cmake --build .
         $ cmake --build . --target install
 
@@ -96,6 +96,7 @@ ISSUES - FIXED
     same problem with strip_semicolons_from_keymap function 
     * Reading system parameters (memory/CPU) at init - done
     * Finding OpenCL library - done
+    * Replacing OpenCL symlinks with a filename/MD5tag combination
     * Loading libraries / finding plugin library
     * Do we need lib ws2_32? - no, done
     * Do we need lib msvcrt? - no, done
@@ -105,7 +106,6 @@ ISSUES - FIXED
     * Added LIBGPHOTO (camera support)
 
 ISSUES - TO BE FIXED
-    replace readlink calls use g_file_read_link
     lua select() replacement in function read_cb
     ADD COLORD or find a way to replace it
     lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively unders darktable/share
@@ -113,3 +113,4 @@ ISSUES - TO BE FIXED
     check _JOB_TYPE_EXECUTE_LIVE_VIEW why doesnt work?
     right alignment of views at the toolbar
     OpenCL64.dll!!!
+    fix getrlimit: https://msdn.microsoft.com/ko-kr/library/ms811896.aspx#ucmgch09_topic9

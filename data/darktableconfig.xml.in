@@ -1075,6 +1075,27 @@
     <longdescription>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>darkroom/ui/rawoverexposed/mode</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/rawoverexposed/colorscheme</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/rawoverexposed/threshold</name>
+    <type>float</type>
+    <default>1.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>darkroom/ui/overexposed/colorscheme</name>
     <type>int</type>
     <default>1</default>

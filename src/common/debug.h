@@ -22,6 +22,20 @@
 
 #include <sqlite3.h>
 
+// define this to see all sql queries passed to prepare and exec at compile time, or a variable name
+// warning:
+// there are some direct calls to sqlite3_exec and sqlite3_prepare_v2 which are missing here. grep manually.
+// #define DEBUG_SQL_QUERIES
+
+#ifdef DEBUG_SQL_QUERIES
+  #define __STRINGIFY(TEXT) #TEXT
+  #define MESSAGE(VALUE) __STRINGIFY(message __STRINGIFY(SQLDEBUG: VALUE))
+  #define __DT_DEBUG_SQL_QUERY__(value) _Pragma(MESSAGE(value))
+#else
+  #define __DT_DEBUG_SQL_QUERY__(value)
+#endif
+
+
 #ifdef _DEBUG
 #include <assert.h>
 #define __DT_DEBUG_ASSERT__(xin)                                                                                  \
@@ -54,6 +68,7 @@
   {                                                                                                               \
     dt_print(DT_DEBUG_SQL, "[sql] %s:%d, function %s(): exec \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (b));   \
     __DT_DEBUG_ASSERT__(sqlite3_exec(a, b, c, d, e));                                                             \
+    __DT_DEBUG_SQL_QUERY__(b)                                                                                     \
   } while(0)
 
 #define DT_DEBUG_SQLITE3_PREPARE_V2(a, b, c, d, e)                                                                \
@@ -61,6 +76,7 @@
   {                                                                                                               \
     dt_print(DT_DEBUG_SQL, "[sql] %s:%d, function %s(): prepare \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (b));\
     __DT_DEBUG_ASSERT__(sqlite3_prepare_v2(a, b, c, d, e));                                                       \
+    __DT_DEBUG_SQL_QUERY__(b)                                                                                     \
   } while(0)
 
 #define DT_DEBUG_SQLITE3_BIND_INT(a, b, c) __DT_DEBUG_ASSERT__(sqlite3_bind_int(a, b, c))

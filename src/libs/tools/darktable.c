@@ -307,7 +307,7 @@ static void _lib_darktable_show_about_dialog()
           "Bruce Guenter", "K. Adam Christensen", "Guillaume Benny", "Matthieu Volat",
           "Jan Kundrát", "Matthias Gehre", "Tom Vijlbrief", "Alexandre Prokoudine",
           "Axel Burri", "Guillaume Subiron", "Martin Brodbeck", "Simon Spannagel",
-          "And all those of you that made previous releases possible", NULL };
+          _("And all those of you that made previous releases possible"), NULL };
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));

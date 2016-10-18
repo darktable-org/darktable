@@ -49,6 +49,12 @@ typedef struct dt_iop_buffer_dsc_t
     uint16_t raw_white_point;
   } rawprepare;
 
+  struct
+  {
+    int enabled;
+    float coeffs[4];
+  } temperature;
+
   /** sensor saturation, propagated through the operations */
   float processed_maximum[4];
 } dt_iop_buffer_dsc_t;

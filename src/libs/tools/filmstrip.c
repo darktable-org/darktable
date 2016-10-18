@@ -507,17 +507,17 @@ static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collec
   const gchar *query = dt_collection_get_query(collection);
   gchar *count_query = NULL;
 
-  // gchar *fq = g_strstr_len(query, strlen(query), "from");
-  gchar *fw = g_strstr_len(query, strlen(query), "where") + 6;
+  // gchar *fq = g_strstr_len(query, strlen(query), "FROM");
+  gchar *fw = g_strstr_len(query, strlen(query), "WHERE") + 6;
 
   gchar *qq = NULL;
-  qq = dt_util_dstrcat(qq, "id=?3 and %s", fw);
+  qq = dt_util_dstrcat(qq, "id=?3 AND %s", fw);
 
   if((collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
     count_query
-        = dt_util_dstrcat(NULL, "select count(images.id) from images %s and id=?3", collection->where_ext);
+        = dt_util_dstrcat(NULL, "SELECT COUNT(*) FROM main.images %s AND id=?3", collection->where_ext);
   else
-    count_query = dt_util_dstrcat(count_query, "select count(id) from images where %s", qq);
+    count_query = dt_util_dstrcat(count_query, "SELECT COUNT(*) FROM main.images WHERE %s", qq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
   if((collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
@@ -1056,7 +1056,7 @@ static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *c
         sqlite3_stmt *stmt;
         GList *images = NULL;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "select distinct imgid from selected_images", -1, &stmt, NULL);
+                                    "SELECT imgid FROM main.selected_images", -1, &stmt, NULL);
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
           int id = sqlite3_column_int(stmt, 0);
@@ -1092,7 +1092,7 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
   strip->select = DT_LIB_FILMSTRIP_SELECT_NONE;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select imgid from selected_images where imgid=?1", -1, &stmt, NULL);
+                              "SELECT imgid FROM main.selected_images WHERE imgid=?1 LIMIT 1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) != SQLITE_ROW)
   {

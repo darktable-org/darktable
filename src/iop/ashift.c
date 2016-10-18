@@ -192,7 +192,8 @@ typedef enum dt_iop_ashift_nmsresult_t
 {
   NMS_SUCCESS = 0,
   NMS_NOT_ENOUGH_LINES = 1,
-  NMS_DID_NOT_CONVERGE = 2
+  NMS_DID_NOT_CONVERGE = 2,
+  NMS_INSANE = 3
 } dt_iop_ashift_nmsresult_t;
 
 typedef enum dt_iop_ashift_enhance_t
@@ -1569,10 +1570,11 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
 {
   if(set_count < 3) return;
 
-  int best_set[set_count];
-  memcpy(best_set, index_set, sizeof(best_set));
-  int best_inout[set_count];
-  memset(best_inout, 0, sizeof(best_inout));
+  const size_t set_size = set_count * sizeof(int);
+  int *best_set = malloc(set_size);
+  memcpy(best_set, index_set, set_size);
+  int *best_inout = calloc(1, set_size);
+
   float best_quality = 0.0f;
 
   // hurdle value epsilon for rejecting a line as an outlier will be self-tuning
@@ -1589,9 +1591,12 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   const int riter = (set_count > RANSAC_HURDLE) ? RANSAC_RUNS : fact(set_count);
 
   // some data needed for quickperm
-  int perm[set_count + 1];
+  int *perm = malloc((set_count + 1) * sizeof(int));
   for(int n = 0; n < set_count + 1; n++) perm[n] = n;
   int piter = 1;
+
+  // inout holds good/bad qualification for each line
+  int *inout = malloc(set_size);
 
   for(int r = 0; r < optiruns + riter; r++)
   {
@@ -1600,9 +1605,6 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
       shuffle(index_set, set_count);
     else
       (void)quickperm(index_set, perm, set_count, &piter);
-
-    // inout holds good/bad qualification for each line
-    int inout[set_count];
 
     // summed quality evaluation of this run
     float quality = 0.0f;
@@ -1706,8 +1708,8 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
       // in the "real" runs check against the best model found so far
       if(quality > best_quality)
       {
-        memcpy(best_set, index_set, sizeof(best_set));
-        memcpy(best_inout, inout, sizeof(best_inout));
+        memcpy(best_set, index_set, set_size);
+        memcpy(best_inout, inout, set_size);
         best_quality = quality;
       }
     }
@@ -1723,8 +1725,13 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   }
 
   // store back best set
-  memcpy(index_set, best_set, set_count * sizeof(int));
-  memcpy(inout_set, best_inout, set_count * sizeof(int));
+  memcpy(index_set, best_set, set_size);
+  memcpy(inout_set, best_inout, set_size);
+
+  free(inout);
+  free(perm);
+  free(best_inout);
+  free(best_set);
 }
 
 
@@ -1742,9 +1749,9 @@ static int remove_outliers(dt_iop_module_t *module)
   const int ymax = ymin + height;
 
   // holds the index set of lines we want to work on
-  int lines_set[g->lines_count];
+  int *lines_set = malloc(g->lines_count * sizeof(int));
   // holds the result of ransac
-  int inout_set[g->lines_count];
+  int *inout_set = malloc(g->lines_count * sizeof(int));
 
   // some accounting variables
   int vnb = 0, vcount = 0;
@@ -1819,9 +1826,14 @@ static int remove_outliers(dt_iop_module_t *module)
   g->horizontal_count = hcount;
   g->lines_version++;
 
+  free(inout_set);
+  free(lines_set);
+
   return TRUE;
 
 error:
+  free(inout_set);
+  free(lines_set);
   return FALSE;
 }
 
@@ -2088,26 +2100,74 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
 
   // error case: we do not run simplex if there are not enough lines
   if(!enough_lines)
+  {
+#ifdef ASHIFT_DEBUG
+    printf("optimization not possible: insufficient number of lines\n");
+#endif
     return NMS_NOT_ENOUGH_LINES;
+  }
 
   // start the simplex fit
   int iter = simplex(model_fitness, params, fit.params_count, NMS_EPSILON, NMS_SCALE, NMS_ITERATIONS, NULL, (void*)&fit);
 
   // error case: the fit did not converge
   if(iter >= NMS_ITERATIONS)
+  {
+#ifdef ASHIFT_DEBUG
+    printf("optimization not successful: maximum number of iterations reached (%d)\n", iter);
+#endif
     return NMS_DID_NOT_CONVERGE;
+  }
 
-  // fit was successful: now write the results into structure p (order matters!!!)
+  // fit was successful: now consolidate the results (order matters!!!)
   pcount = 0;
-  p->rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range) : fit.rotation;
-  p->lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range) : fit.lensshift_v;
-  p->lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
-  p->shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
+  fit.rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range) : fit.rotation;
+  fit.lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range) : fit.lensshift_v;
+  fit.lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
+  fit.shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
 #ifdef ASHIFT_DEBUG
   printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f, shear %f\n",
-         iter, p->rotation, p->lensshift_v, p->lensshift_h, p->shear);
+         iter, fit.rotation, fit.lensshift_v, fit.lensshift_h, fit.shear);
 #endif
 
+  // sanity check: in case of extreme values the image gets distorted so strongly that it spans an insanely huge area. we check that
+  // case and assume values that increase the image area by more than a factor of 4 as being insane.
+  float homograph[3][3];
+  homography((float *)homograph, fit.rotation, fit.lensshift_v, fit.lensshift_h, fit.shear, fit.f_length_kb,
+             fit.orthocorr, fit.aspect, fit.width, fit.height, ASHIFT_HOMOGRAPH_FORWARD);
+
+  // visit all four corners and find maximum span
+  float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
+  for(int y = 0; y < fit.height; y += fit.height - 1)
+    for(int x = 0; x < fit.width; x += fit.width - 1)
+    {
+      float pi[3], po[3];
+      pi[0] = x;
+      pi[1] = y;
+      pi[2] = 1.0f;
+      mat3mulv(po, (float *)homograph, pi);
+      po[0] /= po[2];
+      po[1] /= po[2];
+      xm = fmin(xm, po[0]);
+      ym = fmin(ym, po[1]);
+      xM = fmax(xM, po[0]);
+      yM = fmax(yM, po[1]);
+    }
+
+  if((xM - xm) * (yM - ym) > 4.0f * fit.width * fit.height)
+  {
+#ifdef ASHIFT_DEBUG
+    printf("optimization not successful: degenerate case with area growth factor (%f) exceeding limits\n",
+           (xM - xm) * (yM - ym) / (fit.width * fit.height));
+#endif
+    return NMS_INSANE;
+  }
+
+  // now write the results into structure p
+  p->rotation = fit.rotation;
+  p->lensshift_v = fit.lensshift_v;
+  p->lensshift_h = fit.lensshift_h;
+  p->shear = fit.shear;
   return NMS_SUCCESS;
 }
 
@@ -2530,6 +2590,7 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
       goto error;
       break;
     case NMS_DID_NOT_CONVERGE:
+    case NMS_INSANE:
       dt_control_log(_("automatic correction failed, please correct manually"));
       goto error;
       break;
@@ -2830,20 +2891,6 @@ error:
   return FALSE;
 }
 #endif
-
-
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
-{
-  tiling->factor = 2.0f;
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 3; // accounts for interpolation width
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
-}
 
 // gather information about "near"-ness in g->points_idx
 static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, const int lines_count,
@@ -4418,7 +4465,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_both, g->fit_h, GTK_POS_RIGHT, 1, 1);
 
   GtkWidget *label2 = gtk_label_new(_("get structure"));
-  gtk_widget_set_halign(label1, GTK_ALIGN_START);
+  gtk_widget_set_halign(label2, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), label2, 0, 1, 1, 1);
 
   g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);

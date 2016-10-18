@@ -74,13 +74,11 @@ typedef struct dt_iop_temperature_gui_data_t
   int preset_num[50];
   double daylight_wb[4];
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
-  double RGB_to_CAM[4][3];
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
 {
   float coeffs[4];
-  double RGB_to_CAM[4][3], CAM_to_RGB[3][4];
 } dt_iop_temperature_data_t;
 
 
@@ -88,6 +86,7 @@ typedef struct dt_iop_temperature_global_data_t
 {
   int kernel_whitebalance_4f;
   int kernel_whitebalance_1f;
+  int kernel_whitebalance_1f_xtrans;
 } dt_iop_temperature_global_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -163,6 +162,33 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+static gboolean _set_preset_camera(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                   GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 0);
+  return TRUE;
+}
+
+static gboolean _set_preset_camera_neutral(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 1);
+  return TRUE;
+}
+
+static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                 GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *self = data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_bauhaus_combobox_set(g->presets, 2);
+  return TRUE;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
@@ -170,6 +196,10 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera neutral"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/spot"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -182,6 +212,17 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
   dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
   dt_accel_connect_slider_iop(self, "green2", GTK_WIDGET(g->scale_g2));
+
+  GClosure *closure;
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_camera), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/camera", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_camera_neutral), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/camera neutral", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "preset/spot", closure);
 }
 
 /*
@@ -400,7 +441,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u)
+  if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
@@ -414,7 +455,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  else if(filters)
   { // bayer float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
@@ -427,18 +468,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         out[p] = in[p] * d->coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
       }
     }
-  }
-  else if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-  { // non-mosaiced CYGM/RGBE image
-    dt_iop_temperature_data_t *d2 = (dt_iop_temperature_data_t *)piece->data;
-
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(((float *)ovoid), ((float *)ivoid),
-                                            roi_out->width * roi_out->height, d2->RGB_to_CAM, d2->CAM_to_RGB,
-                                            d2->coeffs);
-    float new_maximum[4] = {1.0f};
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->dsc.processed_maximum, 1, d2->RGB_to_CAM,
-                                            d2->CAM_to_RGB, d2->coeffs);
-    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = new_maximum[k];
   }
   else
   { // non-mosaiced
@@ -458,19 +487,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
+
+  piece->pipe->dsc.temperature.enabled = 1;
   for(int k = 0; k < 4; k++)
+  {
+    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+  }
 }
 
 #if defined(__SSE__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_image_t *img = &self->dev->image_storage;
   const uint32_t filters = piece->pipe->dsc.filters;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u)
+  if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -479,11 +512,38 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     {
       const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
       float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
-      for(int i = 0; i < roi_out->width; i++, out++, in++)
-        *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
+
+      int i = 0;
+      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+
+      // process unaligned pixels
+      for(; i < alignment; i++, out++, in++) *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
+
+      const __m128 coeffs[3] = {
+        _mm_set_ps(d->coeffs[FCxtrans(j, i + 3, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 2, roi_out, xtrans)],
+                   d->coeffs[FCxtrans(j, i + 1, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 0, roi_out, xtrans)]),
+        _mm_set_ps(d->coeffs[FCxtrans(j, i + 7, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 6, roi_out, xtrans)],
+                   d->coeffs[FCxtrans(j, i + 5, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 4, roi_out, xtrans)]),
+        _mm_set_ps(d->coeffs[FCxtrans(j, i + 11, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 10, roi_out, xtrans)],
+                   d->coeffs[FCxtrans(j, i + 9, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 8, roi_out, xtrans)])
+      };
+
+      // process aligned pixels with SSE
+      for(int c = 0; c < 3 && i < roi_out->width - (4 - 1); c++, i += 4, in += 4, out += 4)
+      {
+        __m128 v;
+
+        v = _mm_load_ps(in);
+        v = _mm_mul_ps(v, coeffs[c]);
+        _mm_stream_ps(out, v);
+      }
+
+      // process the rest
+      for(; i < roi_out->width; i++, out++, in++) *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
     }
+    _mm_sfence();
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  else if(filters)
   { // bayer float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -521,16 +581,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
     _mm_sfence();
   }
-  else if(img->flags & DT_IMAGE_4BAYER)
-  { // non-mosaiced CYGM/RGBE image
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(((float *)ovoid), ((float *)ivoid),
-                                            roi_out->width*roi_out->height,
-                                            d->RGB_to_CAM, d->CAM_to_RGB, d->coeffs);
-    float new_maximum[4] = {1.0f};
-    dt_colorspaces_cygm_apply_coeffs_to_rgb(new_maximum, piece->pipe->dsc.processed_maximum, 1, d->RGB_to_CAM,
-                                            d->CAM_to_RGB, d->coeffs);
-    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = new_maximum[k];
-  }
   else
   { // non-mosaiced
     const int ch = piece->colors;
@@ -555,8 +605,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
     if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
+
+  piece->pipe->dsc.temperature.enabled = 1;
   for(int k = 0; k < 4; k++)
+  {
+    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+  }
 }
 #endif
 
@@ -570,16 +625,28 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
   cl_mem dev_coeffs = NULL;
+  cl_mem dev_xtrans = NULL;
   cl_int err = -999;
   int kernel = -1;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  if(filters == 9u)
+  {
+    kernel = gd->kernel_whitebalance_1f_xtrans;
+  }
+  else if(filters)
   {
     kernel = gd->kernel_whitebalance_1f;
   }
   else
   {
     kernel = gd->kernel_whitebalance_4f;
+  }
+
+  if(filters == 9u)
+  {
+    dev_xtrans
+        = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    if(dev_xtrans == NULL) goto error;
   }
 
   dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->coeffs);
@@ -597,33 +664,28 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(uint32_t), (void *)&filters);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cl_mem), (void *)&dev_xtrans);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_coeffs);
+  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+
+  piece->pipe->dsc.temperature.enabled = 1;
   for(int k = 0; k < 3; k++)
+  {
+    piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+  }
   return TRUE;
 
 error:
   if(dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
   dt_print(DT_DEBUG_OPENCL, "[opencl_white_balance] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
-
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
-{
-  tiling->factor = 2.0f; // in + out
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 0;
-  tiling->xalign = 2; // Bayer pattern
-  tiling->yalign = 2; // Bayer pattern
-  return;
-}
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -632,29 +694,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k = 0; k < 4; k++) d->coeffs[k] = p->coeffs[k];
 
-  if(piece->pipe->dsc.filters && dt_dev_pixelpipe_uses_downsampled_input(piece->pipe)
-     && pipe->pre_monochrome_demosaiced)
-  {
-    // piece->process_cl_ready = 0;
-    piece->enabled = 0;
-  }
-
-  // x-trans images not implemented in OpenCL yet
-  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
-
-  if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-  {
-    // 4Bayer images not implemented in OpenCL yet
-    piece->process_cl_ready = 0;
-
-    // Get and store the matrix to go from camera to RGB for 4Bayer images
-    char *camera = self->dev->image_storage.camera_makermodel;
-    if (!dt_colorspaces_conversion_matrices_rgb(camera, d->RGB_to_CAM, d->CAM_to_RGB, NULL))
-    {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image\n", camera);
-      dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
-    }
-  }
+  // 4Bayer images not implemented in OpenCL yet
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -872,16 +913,6 @@ static void prepare_matrices(dt_iop_module_t *module)
     fprintf(stderr, "[temperature] `%s' color matrix not found for image\n", camera);
     dt_control_log(_("`%s' color matrix not found for image"), camera);
   }
-
-  if (module->dev->image_storage.flags & DT_IMAGE_4BAYER)
-  {
-    // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-    if (!dt_colorspaces_conversion_matrices_rgb(camera, g->RGB_to_CAM, NULL, NULL))
-    {
-      fprintf(stderr, "[temperature] `%s' color matrix not found for 4bayer image\n", camera);
-      dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
-    }
-  }
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -1035,6 +1066,7 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_whitebalance_4f = dt_opencl_create_kernel(program, "whitebalance_4f");
   gd->kernel_whitebalance_1f = dt_opencl_create_kernel(program, "whitebalance_1f");
+  gd->kernel_whitebalance_1f_xtrans = dt_opencl_create_kernel(program, "whitebalance_1f_xtrans");
 }
 
 void init(dt_iop_module_t *module)
@@ -1057,6 +1089,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_whitebalance_4f);
   dt_opencl_free_kernel(gd->kernel_whitebalance_1f);
+  dt_opencl_free_kernel(gd->kernel_whitebalance_1f_xtrans);
   free(module->data);
   module->data = NULL;
 }
@@ -1086,25 +1119,19 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   if(darktable.gui->reset) return FALSE;
   if(self->picked_color_max[0] < self->picked_color_min[0]) return FALSE;
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
-  static float old[3] = { 0, 0, 0 };
+  static float old[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
   const float *grayrgb = self->picked_color;
-  if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2]) return FALSE;
-  for(int k = 0; k < 3; k++) old[k] = grayrgb[k];
+  if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2] && grayrgb[3] == old[3]) return FALSE;
+  for(int k = 0; k < 4; k++) old[k] = grayrgb[k];
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  for(int k = 0; k < 3; k++) p->coeffs[k] = (grayrgb[k] > 0.001f) ? 1.0f / grayrgb[k] : 1.0f;
+  for(int k = 0; k < 4; k++) p->coeffs[k] = (grayrgb[k] > 0.001f) ? 1.0f / grayrgb[k] : 1.0f;
   // normalize green:
   p->coeffs[0] /= p->coeffs[1];
   p->coeffs[2] /= p->coeffs[1];
+  p->coeffs[3] /= p->coeffs[1];
   p->coeffs[1] = 1.0;
-  for(int k = 0; k < 3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
-
-  // If we're in a CMYG image we need to create CMYG coeffs from the RGB ones
-  const dt_image_t *img = &self->dev->image_storage;
-  if (img->flags & DT_IMAGE_4BAYER)
-  {
-    dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-    dt_colorspaces_rgb_to_cygm(p->coeffs, 1, g->RGB_to_CAM);
-  }
+  // clamp
+  for(int k = 0; k < 4; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);

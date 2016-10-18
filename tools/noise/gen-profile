@@ -218,7 +218,7 @@ EOF
 ${color_error}ERROR: Incorrect green channel.
 
 Possible reason:
-    o  The input RAW image is bad regarding lighting or exposition.
+    o  The input RAW image is bad regarding lighting or exposure.
     o  You may have set a default output profile in darktable which is
        unsuitable for noise profiling.
 
@@ -237,7 +237,7 @@ EOF
 ${color_warning}WARNING: Incorrect red channel.
 
 Possible reason:
-    o  The input RAW image is bad regarding lighting or exposition.
+    o  The input RAW image is bad regarding lighting or exposure.
     o  You may have set a default output profile in darktable which is
        unsuitable for noise profiling.
 
@@ -258,7 +258,7 @@ EOF
 ${color_warning}WARNING: Incorrect blue channel.
 
 Possible reason:
-    o  The input RAW image is bad regarding lighting or exposition.
+    o  The input RAW image is bad regarding lighting or exposure.
     o  You may have set a default output profile in darktable which is
        unsuitable for noise profiling.
 
@@ -406,7 +406,7 @@ for iso in $iso_settings; do
 		echo "$(basename "$jpeg_thumb")" >> $files_list
 
 		if [ "$skip_correctness_check" != "1" ]; then
-			if ! check_exposition "$image" "$jpeg_export"; then
+			if ! check_exposure "$image" "$jpeg_export"; then
 				if [ "$incorrect_isos" ]; then
 					incorrect_isos="$iso"
 				else

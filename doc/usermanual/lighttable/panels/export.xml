@@ -283,7 +283,7 @@
 
       <para>
         If this option is set to <quote>create unique filename</quote> darktable automatically
-        choses a unique new file name in case of naming conflicts with existing files. The
+        chooses a unique new file name in case of naming conflicts with existing files. The
         alternative <quote>overwrite</quote> setting forces darktable to exactly adhere to the
         selected filename template, overwriting any existing files on conflict. This option gets
         reset to <quote>create unique filename</quote> after each export job in order to protect

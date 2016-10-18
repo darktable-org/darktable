@@ -118,8 +118,6 @@ typedef struct dt_dev_pixelpipe_t
   int mask_display;
   // input data based on this timestamp:
   int input_timestamp;
-  // input data was pre-demosaiced and the demosaicing method is monochrome
-  int pre_monochrome_demosaiced;
   dt_dev_pixelpipe_type_t type;
   // the final output pixel format this pixelpipe will be converted to
   dt_imageio_levels_t levels;
@@ -147,7 +145,7 @@ int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t
 int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries);
 // constructs a new input buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
-                                int height, float iscale, int pre_monochrome_demosaiced);
+                                int height, float iscale);
 
 // returns the dimensions of the full image after processing.
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int width_in,
@@ -187,16 +185,6 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 // TODO: future application: remove/add modules from list, load from disk, user programmable etc
 void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
-
-// signifies that this pipeline uses the MIP_F buffer instead of MIP_FULL
-// i.e. four floats per pixel already demosaiced/downsampled
-static inline int dt_dev_pixelpipe_uses_downsampled_input(dt_dev_pixelpipe_t *pipe)
-{
-  if(!dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
-    return pipe->type == DT_DEV_PIXELPIPE_PREVIEW;
-  else
-    return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
-}
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

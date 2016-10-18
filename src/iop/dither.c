@@ -116,7 +116,7 @@ int flags()
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   dt_iop_dither_params_t tmp
       = (dt_iop_dither_params_t){ DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
@@ -125,7 +125,7 @@ void init_presets(dt_iop_module_so_t *self)
   // make it auto-apply for all images:
   // dt_gui_presets_update_autoapply(_("dither"), self->op, self->version(), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 
@@ -599,11 +599,10 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
   const float dither = powf(2.0f, data->random.damping / 10.0f);
 
-  unsigned int tea_states[2 * dt_get_num_threads()];
-  memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
+  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tea_states) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -622,6 +621,8 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
       out[2] = CLIP(in[2] + dith);
     }
   }
+
+  free(tea_states);
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
