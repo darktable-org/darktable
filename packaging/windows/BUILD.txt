@@ -6,13 +6,20 @@ How to make a darktable windows installer (64 bit Intel only):
     $ pacman -S mingw-w64-x86_64-toolchain
     
     Install required dependencies:
-    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,libglade,dbus-glib,libusb-compat,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk-engines,gtk3,pugixml}
+    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,libglade,dbus-glib,libusb-compat,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk-engines,gtk3,pugixml,sdl,libexif}
+    
+    For osm-gps-map:
+    $ pacman -S mingw-w64-x86_64-{python2-cairo,python2-pygtk}
+
+    For gphoto2:
+    $ pacman -S mingw-w64-x86_64-{libusb,popt}
+
+    For Saxon:
     $ pacman -S unzip perl-Locale-Gettext perl-TermReadKey perl-sgmls
 
     For other gtk libraries:
     $ pacman -S mingw-w64-x86_64-{atkmm, glibmm, cairomm, gtkmm3, gtksourceview3}
 
-    $ gdk-pixbuf-query-loaders --update-cache ??
 
     Install SAXON:
     https://sourceforge.net/projects/saxon/files/Saxon-HE/
@@ -45,6 +52,10 @@ How to make a darktable windows installer (64 bit Intel only):
     CLASSPATH=$CLASSPATH:/usr/share/java/saxon/saxon9he.jar:/usr/share/java/docbook-xsl-saxon/saxon653.jar
     export CLASSPATH
     
+    # export location of libraries for LIBGPHOTO
+    export CAMLIBS=/mingw64/lib/libgphoto2/2.5.10
+    export IOLIBS=/mingw64/lib/libgphoto2_port/0.12.0
+
     execute the following command to actviate  profile changes 
     $. .bash_profile
 
@@ -72,28 +83,33 @@ How to make a darktable windows installer (64 bit Intel only):
         debug:  gdb --args /opt/darktable/bin/darktable.exe  --library "C:/Development/library.db"
 2). Download, patch and install gtk-bundle for Windows and install it
     https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
-    + We need to copy into the "C:\Program Files\GTK3-Runtime Win64\bin" folder the following files:
-    libgdk_pixbuf-2.0-0.dll (overwriting the existing)
-    libgdk-win32-2.0-0.dll (additional file)
-    libgtk-win32-2.0-0.dll (additional file)
-    add the following files
-    libgcc_s_seh_64-1.dll - > to libgcc_s_seh-1.dll
-    libstdc++_64-6.dll -> to libstdc++-6.dll
-    libwinpthread_64-1.dll-> to libwinpthread-1.dll
+    Pls note: need to run the installer as admin to run the cache generation
 
-    need to run the installer as admin to run the cache generation
+    $ gdk-pixbuf-query-loaders --update-cache 
 
 3). Now preparation is done, run image creating script, it should create darktable-<VERSION>.msi in current (packaging/windows) directory:
      $ cd ~/src/darktable/packaging/windows
      $ ./make-windows-installer
 
-ISSUES
-    Darktablerc is being generated with Windows style line endings ( CRLF \r\n) , and file reading functions are expecting a UNIX style line ending (only CR \n)
+ISSUES - FIXED
+    * darktablerc config file  is being generated with Windows style line endings ( CRLF \r\n) , and file reading functions are expecting a UNIX style line ending (only CR \n)
     same problem with strip_semicolons_from_keymap function 
-    Reading memory at init - done
-    Finding OpenCL library - done
-    Reading DPI at init
-    Loading libraries / finding plugin library
-    Do we need lib ws2_32?
-    Do we need lib msvcrt?
-    strptime had to be added
+    * Reading system parameters (memory/CPU) at init - done
+    * Finding OpenCL library - done
+    * Loading libraries / finding plugin library
+    * Do we need lib ws2_32? - no, done
+    * Do we need lib msvcrt? - no, done
+    * Added LUA (needs a special old, 5.2 version of the package)
+    * Added SLIDESHOW
+    * Added OPENMAP Support
+    * Added LIBGPHOTO (camera support)
+
+ISSUES - TO BE FIXED
+    replace readlink calls use g_file_read_link
+    lua select() replacement in function read_cb
+    ADD COLORD or find a way to replace it
+    lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively unders darktable/share
+    check asprntf in rs-identify
+    check _JOB_TYPE_EXECUTE_LIVE_VIEW why doesnt work?
+    right alignment of views at the toolbar
+    OpenCL64.dll!!!

@@ -31,8 +31,12 @@
 #include <GL/glu.h>
 #include <SDL/SDL.h>
 #include <stdlib.h>
-double drand48(void);
-void srand48(long int);
+#if !defined(_WIN32)
+  double drand48(void);
+#endif
+#if !defined(_WIN32)
+  void srand48(long int);
+#endif
 #include <inttypes.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -329,8 +333,17 @@ int main(int argc, char *arg[])
   running = init(m_argc, m_arg);
   gtk_init(&argc, &arg);
 
-  srand48(SDL_GetTicks());
-  if(use_random) random_state = drand48() * INT_MAX;
+  #if defined(_WIN32)
+    srand((long)time(NULL));
+  #else
+    srand48(SDL_GetTicks());
+  #endif
+
+  #if defined(_WIN32)
+    if(use_random) random_state = rand()/RAND_MAX * INT_MAX;
+  #else
+    if(use_random) random_state = drand48() * INT_MAX;
+  #endif
   if(repeat < 0) repeat = random_state;
   while(running)
   {
@@ -364,6 +377,8 @@ int main(int argc, char *arg[])
   }
 
   dtv_shutdown();
+
+  return 0;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

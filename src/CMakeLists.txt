@@ -664,7 +664,7 @@ if(DT_CMAKE_INCLUDE_WHAT_YOU_USE)
   set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${DT_CMAKE_INCLUDE_WHAT_YOU_USE})
 endif()
 
-if(NOT SOURCE_PACKAGE AND NOT APPLE)
+if(NOT SOURCE_PACKAGE AND NOT APPLE AND NOT WIN32)
   # apple build fails on deprecated warnings..
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits -Werror=format-security")
