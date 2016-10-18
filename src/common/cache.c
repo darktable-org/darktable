@@ -312,7 +312,7 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
   }
 }
 
-void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry)
+void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, const char *file, int line)
 {
   dt_pthread_rwlock_unlock(&entry->lock);
 }
