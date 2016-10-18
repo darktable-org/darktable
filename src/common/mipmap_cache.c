@@ -287,6 +287,13 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   // fprintf(stderr, "full buffer allocating img %u %d x %d = %u bytes (%p)\n", img->id, img->width,
   // img->height, buffer_size, *buf);
 
+  assert(entry->data_size);
+  assert(dsc->size);
+  assert(dsc->size <= entry->data_size);
+
+  ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
+  ASAN_UNPOISON_MEMORY_REGION(dsc + 1, buffer_size - sizeof(struct dt_mipmap_buffer_dsc));
+
   // return pointer to start of payload
   return dsc + 1;
 }
