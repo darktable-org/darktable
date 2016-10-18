@@ -318,7 +318,7 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char *m_arg[6 + argc - k];
+  char **m_arg = malloc((6 + argc - k) * sizeof(char *));
   m_arg[m_argc++] = "darktable-viewer";
   m_arg[m_argc++] = "--disable-opencl";
   m_arg[m_argc++] = "--conf";
@@ -329,7 +329,12 @@ int main(int argc, char *arg[])
   m_arg[m_argc] = NULL;
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
+  if(dt_init(m_argc, m_arg, 0, NULL))
+  {
+    free(m_arg);
+    exit(1);
+  }
+
   running = init(m_argc, m_arg);
   gtk_init(&argc, &arg);
 
@@ -378,7 +383,7 @@ int main(int argc, char *arg[])
 
   dtv_shutdown();
 
-  return 0;
+  free(m_arg);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

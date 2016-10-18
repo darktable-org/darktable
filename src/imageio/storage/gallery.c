@@ -168,7 +168,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   widget = gtk_label_new(_("title"));
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   d->title_entry = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
@@ -322,12 +322,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
              "      %s</div>\n",
              title ? title : relfilename, description ? description : "&nbsp;", relfilename, relthumbfilename,
              num, title ? title : "&nbsp;", description ? description : "&nbsp;");
-
-    char next[PATH_MAX] = { 0 };
-    snprintf(next, sizeof(next), "img_%d.html", (num) % total + 1);
-
-    char prev[PATH_MAX] = { 0 };
-    snprintf(prev, sizeof(prev), "img_%d.html", (num == 1) ? total : num - 1);
 
     pair->pos = num;
     if(res_title) g_list_free_full(res_title, &g_free);

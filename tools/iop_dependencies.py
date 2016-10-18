@@ -282,6 +282,7 @@ def add_edges(gr):
   gr.add_edge(('gamma', 'splittoning'))
   gr.add_edge(('gamma', 'watermark'))
   gr.add_edge(('gamma', 'overexposed'))
+  gr.add_edge(('gamma', 'rawoverexposed'))
   gr.add_edge(('gamma', 'borders'))
   gr.add_edge(('gamma', 'dither'))
   gr.add_edge(('channelmixer', 'colorout'))
@@ -292,6 +293,7 @@ def add_edges(gr):
   gr.add_edge(('splittoning', 'colorout'))
   gr.add_edge(('watermark', 'colorout'))
   gr.add_edge(('overexposed', 'colorout'))
+  gr.add_edge(('rawoverexposed', 'colorout'))
   gr.add_edge(('dither', 'colorout'))
 
   # borders should not change shape/color:
@@ -304,6 +306,7 @@ def add_edges(gr):
   gr.add_edge(('borders', 'channelmixer'))
   # don't indicate borders as over/under exposed
   gr.add_edge(('borders', 'overexposed'))
+  gr.add_edge(('borders', 'rawoverexposed')) # can, but no need to
   # don't resample borders when scaling to the output dimensions
   gr.add_edge(('borders', 'finalscale'))
 
@@ -315,7 +318,15 @@ def add_edges(gr):
   gr.add_edge(('finalscale', 'soften'))
   gr.add_edge(('finalscale', 'clahe'))
   gr.add_edge(('finalscale', 'channelmixer'))
-  gr.add_edge(('finalscale', 'overexposed'))
+
+  # but can display overexposure after scaling
+  # NOTE: finalscale is only done in export pipe,
+  #       while *overexposed is only done in full darkroom preview pipe
+  gr.add_edge(('overexposed', 'finalscale'))
+  gr.add_edge(('rawoverexposed', 'finalscale'))
+
+  # let's display raw overexposure indication after usual overexposed
+  gr.add_edge(('rawoverexposed', 'overexposed'))
 
   # but watermark can be drawn on top of borders
   gr.add_edge(('watermark', 'borders'))
@@ -504,6 +515,7 @@ gr.add_nodes([
 'monochrome',
 'nlmeans',
 'overexposed',
+'rawoverexposed',
 'profile_gamma',
 'rawdenoise',
 'relight',

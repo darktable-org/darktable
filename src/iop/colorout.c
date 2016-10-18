@@ -634,6 +634,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     out_intent = darktable.color_profiles->display_intent;
   }
 
+  // when the output type is Lab then process is a nop, so we can avoid creating a transform
+  // and the subsequent error messages
+  if(out_type == DT_COLORSPACE_LAB)
+    goto end;
+
   /*
    * Setup transform flags
    */
@@ -745,9 +750,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->unbounded_coeffs[k][0] = -1.0f;
   }
 
-  g_free(over_filename);
   // softproof is never the original but always a copy that went through _make_clipping_profile()
   dt_colorspaces_cleanup_profile(softproof);
+
+end:
+  g_free(over_filename);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

@@ -61,7 +61,7 @@ int main(int argc, char *arg[])
   if(!gtk_parse_args(&argc, &arg)) exit(1);
 
   // parse command line arguments
-  char *image_filename = NULL;
+  char *input_filename = NULL;
   char *xmp_filename = NULL;
   char *output_filename = NULL;
   int file_counter = 0;
@@ -147,7 +147,7 @@ int main(int argc, char *arg[])
     else
     {
       if(file_counter == 0)
-        image_filename = arg[k];
+        input_filename = arg[k];
       else if(file_counter == 1)
         xmp_filename = arg[k];
       else if(file_counter == 2)
@@ -157,7 +157,7 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char *m_arg[5 + argc - k];
+  char **m_arg = malloc((5 + argc - k + 1) * sizeof(char *));
   m_arg[m_argc++] = "darktable-cli";
   m_arg[m_argc++] = "--library";
   m_arg[m_argc++] = ":memory:";
@@ -169,6 +169,7 @@ int main(int argc, char *arg[])
   if(file_counter < 2 || file_counter > 3)
   {
     usage(arg[0]);
+    free(m_arg);
     exit(1);
   }
   else if(file_counter == 2)
@@ -182,6 +183,7 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("error: output file is a directory. please specify file name"));
     fprintf(stderr, "\n");
+    free(m_arg);
     exit(1);
   }
 
@@ -192,35 +194,73 @@ int main(int argc, char *arg[])
   }
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
-
-  dt_film_t film;
-  int id = 0;
-  int filmid = 0;
-
-  gchar *directory = g_path_get_dirname(image_filename);
-  filmid = dt_film_new(&film, directory);
-  id = dt_image_import(filmid, image_filename, TRUE);
-  if(!id)
+  if(dt_init(m_argc, m_arg, 0, NULL))
   {
-    fprintf(stderr, _("error: can't open file %s"), image_filename);
-    fprintf(stderr, "\n");
+    free(m_arg);
     exit(1);
   }
-  g_free(directory);
+
+  GList *id_list = NULL;
+
+  if(g_file_test(input_filename, G_FILE_TEST_IS_DIR))
+  {
+    int filmid = dt_film_import(input_filename);
+    if(!filmid)
+    {
+      fprintf(stderr, _("error: can't open folder %s"), input_filename);
+      fprintf(stderr, "\n");
+      free(m_arg);
+      exit(1);
+    }
+    id_list = dt_film_get_image_ids(filmid);
+  }
+  else
+  {
+    dt_film_t film;
+    int id = 0;
+    int filmid = 0;
+
+    gchar *directory = g_path_get_dirname(input_filename);
+    filmid = dt_film_new(&film, directory);
+    id = dt_image_import(filmid, input_filename, TRUE);
+    if(!id)
+    {
+      fprintf(stderr, _("error: can't open file %s"), input_filename);
+      fprintf(stderr, "\n");
+      free(m_arg);
+      exit(1);
+    }
+    g_free(directory);
+
+    id_list = g_list_append(id_list, GINT_TO_POINTER(id));
+  }
+
+  int total = g_list_length(id_list);
+
+  if(total == 0)
+  {
+    fprintf(stderr, _("no images to export, aborting\n"));
+    free(m_arg);
+    exit(1);
+  }
 
   // attach xmp, if requested:
   if(xmp_filename)
   {
-    dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
-    dt_exif_xmp_read(image, xmp_filename, 1);
-    // don't write new xmp:
-    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+    for(GList *iter = id_list; iter; iter = g_list_next(iter))
+    {
+      int id = GPOINTER_TO_INT(iter->data);
+      dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
+      dt_exif_xmp_read(image, xmp_filename, 1);
+      // don't write new xmp:
+      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+    }
   }
 
-  // print the history stack
+  // print the history stack. only look at the first image and assume all got the same processing applied
   if(verbose)
   {
+    int id = GPOINTER_TO_INT(id_list->data);
     gchar *history = dt_history_get_items_as_string(id);
     if(history)
       printf("%s\n", history);
@@ -249,6 +289,7 @@ int main(int argc, char *arg[])
     fprintf(
         stderr, "%s\n",
         _("cannot find disk storage module. please check your installation, something seems to be broken."));
+    free(m_arg);
     exit(1);
   }
 
@@ -256,6 +297,7 @@ int main(int argc, char *arg[])
   if(sdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
+    free(m_arg);
     exit(1);
   }
 
@@ -269,6 +311,7 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("unknown extension '.%s'"), ext);
     fprintf(stderr, "\n");
+    free(m_arg);
     exit(1);
   }
 
@@ -276,6 +319,7 @@ int main(int argc, char *arg[])
   if(fdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
+    free(m_arg);
     exit(1);
   }
 
@@ -303,20 +347,30 @@ int main(int argc, char *arg[])
 
   if(storage->initialize_store)
   {
-    GList *single_image = g_list_append(NULL, GINT_TO_POINTER(id));
-    storage->initialize_store(storage, sdata, &format, &fdata, &single_image, high_quality, upscale);
-    g_list_free(single_image);
+    storage->initialize_store(storage, sdata, &format, &fdata, &id_list, high_quality, upscale);
+
+    format->set_params(format, fdata, format->params_size(format));
+    storage->set_params(storage, sdata, storage->params_size(storage));
   }
+
   // TODO: add a callback to set the bpp without going through the config
 
-  storage->store(storage, sdata, id, format, fdata, 1, 1, high_quality, upscale);
+  int num = 1;
+  for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
+  {
+    int id = GPOINTER_TO_INT(iter->data);
+    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale);
+  }
 
   // cleanup time
   if(storage->finalize_store) storage->finalize_store(storage, sdata);
   storage->free_params(storage, sdata);
   format->free_params(format, fdata);
+  g_list_free(id_list);
 
   dt_cleanup();
+
+  free(m_arg);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

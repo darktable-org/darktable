@@ -130,7 +130,7 @@ static inline GdkPixbuf *dt_gdk_pixbuf_new_from_file_at_size(const char *filenam
 #define dt_gdk_pixbuf_new_from_file_at_size gdk_pixbuf_new_from_file_at_size
 #endif
 
-int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
+int dt_gui_gtk_init(dt_gui_gtk_t *gui);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
 void dt_gui_gtk_quit();
@@ -223,10 +223,6 @@ typedef enum dt_ui_border_t
   DT_UI_BORDER_SIZE
 } dt_ui_border_t;
 
-/** \brief initialize the ui context */
-struct dt_ui_t *dt_ui_initialize(int argc, char **argv);
-/** \brief destroys the context and frees resources */
-void dt_ui_destroy(struct dt_ui_t *ui);
 /** \brief add's a widget to a defined container */
 void dt_ui_container_add_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
 /** \brief gives a widget focus in the container */
@@ -260,12 +256,17 @@ static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
   GtkWidget *label = gtk_label_new(str);
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
   gtk_widget_set_hexpand(label, TRUE); // not really needed, but it makes sure that parent containers expand
-  g_object_set(G_OBJECT(label), "xalign", 1.0, NULL); // make the text right aligned
+  g_object_set(G_OBJECT(label), "xalign", 1.0, (gchar *)0);    // make the text right aligned
   gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(10)); // gtk+ css doesn't support margins :(
   gtk_widget_set_margin_start(label, DT_PIXEL_APPLY_DPI(30)); // gtk+ css doesn't support margins :(
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
   return label;
 };
+
+// show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.
+// this expects gtk_init() to be called already which should be the case during most of dt's init phase.
+gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *markup, const char *no_text,
+                                              const char *yes_text);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -126,7 +126,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *in = (float *)ivoid;
     float *out = (float *)ovoid;
 
-    float mat[2 * (6 + 1) * 2 * (6 + 1)];
+    static const size_t weights_size = 2 * (6 + 1) * 2 * (6 + 1);
+    float mat[weights_size];
     const int wd = 2 * rad + 1;
     float *m = mat + rad * wd + rad;
     float weight = 0.0f;
@@ -138,6 +139,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         weight += m[l * wd + k] = expf(-(l * l + k * k) / (2.f * sigma[0] * sigma[0]));
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
+
+    float *const weights_buf = (float *)malloc(weights_size * dt_get_num_threads() * sizeof(float));
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(m, mat, isig2col) private(in, out)
 #endif
@@ -145,7 +149,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       in = ((float *)ivoid) + ch * ((size_t)j * roi_in->width + rad);
       out = ((float *)ovoid) + ch * ((size_t)j * roi_out->width + rad);
-      float weights[2 * (6 + 1) * 2 * (6 + 1)];
+      float *weights = weights_buf + weights_size * dt_get_thread_num();
       float *w = weights + rad * wd + rad;
       float sumw;
       for(int i = rad; i < roi_out->width - rad; i++)
@@ -174,6 +178,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         in += ch;
       }
     }
+
+    free((void *)weights_buf);
+
     // fill unprocessed border
     for(int j = 0; j < rad; j++)
       memcpy(((float *)ovoid) + (size_t)ch * j * roi_out->width,

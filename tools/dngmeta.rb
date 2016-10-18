@@ -68,6 +68,41 @@ def get_exif(filename)
   return exifhash
 end
 
+class Array
+  def handle_data_dups
+    iso = self.first
+    return [iso, self.last.first] if self.last.size == 1
+
+    whitelevels = self.last.map { |black, white| white }.uniq
+
+    if whitelevels.size != 1
+      $stderr.puts "ISO #{iso} has multiple variants with different white levels: #{self.last}"
+      return [iso, [-1, -1]]
+    end
+
+    whitelevel = whitelevels[0]
+
+    blacklevels = self.last.map { |black, white| black }.uniq
+
+    if (blacklevels.max - blacklevels.min) > 4
+      $stderr.puts "ISO #{iso} has multiple variants with too different black levels: #{self.last}"
+      return [iso, [-1, -1]]
+    end
+
+    blacklevel = blacklevels.max
+
+    return [iso, [blacklevel, whitelevel]]
+  end
+
+  def handle_different_black_levels
+    white = self.first
+    black = self.last.keys.max
+    isos = self.last.values.flatten
+
+    return isos, [black, white]
+  end
+end
+
 def print_sensor(black, white, iso = false)
   if iso
     isolist = " iso_list=\"#{iso.join(" ")}\""
@@ -79,15 +114,16 @@ def print_sensor(black, white, iso = false)
 end
 
 make = model = uniquecameramodel = nil
-sensors = []
+sensors = {}
 ARGV.each do |filename|
   exifhash = get_exif(filename)
 
-  if (make != exifhash["Exif.Image.Make"]) or
-      (model != exifhash["Exif.Image.Model"]) or
-      (uniquecameramodel != exifhash["Exif.Image.UniqueCameraModel"])
+  if (make and make != exifhash["Exif.Image.Make"]) or
+      # (model and model != exifhash["Exif.Image.Model"]) or
+      (uniquecameramodel and uniquecameramodel != exifhash["Exif.Image.UniqueCameraModel"])
     $stderr.puts "WARNING: #{filename} - " \
                  "all files must be from the same camera maker and model!"
+    next
   end
 
   make = exifhash["Exif.Image.Make"]
@@ -106,50 +142,76 @@ ARGV.each do |filename|
   black = black.ceil.to_i
 
   dsc = [black, white]
-  sensors << [iso, dsc]
+
+  sensors[iso] = [] if not sensors[iso]
+  sensors[iso] << dsc
 end
 
-# want uniq values, sorted by increasing ISO level
-sensors = sensors.uniq.sort{ |x,y| x[0] <=> y[0] }
+# want sorted by increasing ISO level
+sensors = sensors.sort
 
-# do we have confusing, half-duplicating information?
-if 1
-  error = 0
-  isos = {}
+# and only unique values
+sensors.map! { |iso, dscs| [iso, dscs.uniq.sort] }
 
-  sensors.each do |iso, dsc|
-    if isos[iso]
-      $stderr.puts "ISO #{iso} has multiple variants: #{isos[iso]} #{dsc}"
-      error += 1
-    end
-
-    isos[iso] = [] if not isos[iso]
-    isos[iso] << dsc
-  end
-
-  exit 1 if error != 0
-end
+# sometimes there may be duplicate data still.
+# if white levels match, and black levels are not too different, just take the biggest black level
+sensors.map!(&:handle_data_dups)
 
 invsensors = {}
-sensors.each do |iso, dsc|
-  invsensors[dsc] = [] if not invsensors[dsc]
-  invsensors[dsc] << iso
+
+if make == "Canon"
+  isohash = {} # white => black => iso
+
+  sensors.each do |iso, dsc|
+    black = dsc.first
+    white = dsc.last
+
+    isohash[white] = {} if not isohash[white]
+    isohash[white][black] = [] if not isohash[white][black]
+    isohash[white][black] << iso
+  end
+
+  # group by white level, take the max black level.
+  invsensors = isohash.map(&:handle_different_black_levels)
+
+  tmp = {}
+  invsensors.each do |iso, dsc|
+    tmp[dsc] = [] if not tmp[dsc]
+    tmp[dsc] << iso.flatten.sort
+  end
+
+  invsensors = tmp
+else
+  invsensors = {}
+  sensors.each do |iso, dsc|
+    invsensors[dsc] = [] if not invsensors[dsc]
+    invsensors[dsc] << iso
+  end
+end
+
+if true
+  puts "invsensors #{invsensors}"
+  puts
 end
 
 # so, which [black, white] is the most common ?
-mostfrequent = invsensors.sort{ |x,y| y[1].size <=> x[1].size }.first
+mostfrequent = invsensors.sort{ |x,y| y[1].flatten.size <=> x[1].flatten.size }.first
 invsensors.delete(mostfrequent.first)
 
-if 0
-  puts "#{sensors}"
-  puts "#{mostfrequent}"
-  puts "#{invsensors}"
+if true
+  puts "sensors #{sensors}"
+  puts "mostfrequent #{mostfrequent}"
+  puts "invsensors #{invsensors}"
+  puts
+  # exit
 end
+
+mostfrequent = mostfrequent.first
 
 puts "\t<Camera make=\"#{make}\" model=\"#{model}\">"
 puts "\t\t<ID make=\"\" model=\"\">#{uniquecameramodel}</ID>"
 
-puts print_sensor(mostfrequent.first.first, mostfrequent.first.last)
+puts print_sensor(mostfrequent.first, mostfrequent.last)
 invsensors.each do |dsc, isos|
   puts print_sensor(dsc.first, dsc.last, isos)
 end

@@ -773,7 +773,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT op_params FROM history WHERE imgid=?1 AND operation='colorout' ORDER BY num DESC LIMIT 1", -1,
+      "SELECT op_params FROM main.history WHERE imgid=?1 AND operation='colorout' ORDER BY num DESC LIMIT 1", -1,
       &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1072,8 +1072,11 @@ static void _update_display_transforms(dt_colorspaces_t *self)
   if(self->transform_adobe_rgb_to_display) cmsDeleteTransform(self->transform_adobe_rgb_to_display);
   self->transform_adobe_rgb_to_display = NULL;
 
-  cmsHPROFILE display_profile = _get_profile(self, self->display_type, self->display_filename,
-                                             DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  const dt_colorspaces_color_profile_t *display_dt_profile = _get_profile(self, self->display_type,
+                                                                          self->display_filename,
+                                                                          DT_PROFILE_DIRECTION_DISPLAY);
+  if(!display_dt_profile) return;
+  cmsHPROFILE display_profile = display_dt_profile->profile;
   if(!display_profile) return;
 
   self->transform_srgb_to_display = cmsCreateTransform(_get_profile(self, DT_COLORSPACE_SRGB, "",
@@ -1289,11 +1292,11 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->mode = dt_conf_get_int("ui_last/color/mode");
   if((unsigned int)res->display_type >= DT_COLORSPACE_LAST
     || (res->display_type == DT_COLORSPACE_FILE
-        && !res->display_filename[0]))
+        && (!res->display_filename[0] || !g_file_test(res->display_filename, G_FILE_TEST_IS_REGULAR))))
     res->display_type = DT_COLORSPACE_DISPLAY;
   if((unsigned int)res->softproof_type >= DT_COLORSPACE_LAST
     || (res->softproof_type == DT_COLORSPACE_FILE
-        && !res->softproof_filename[0]))
+        && (!res->softproof_filename[0] || !g_file_test(res->softproof_filename, G_FILE_TEST_IS_REGULAR))))
     res->softproof_type = DT_COLORSPACE_SRGB;
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
 
@@ -1404,7 +1407,6 @@ void dt_colorspaces_set_display_profile()
     return; // we are already updating the profile. Or someone is reading right now. Too bad we can't
             // distinguish that. Whatever ...
 
-  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   guint8 *buffer = NULL;
   gint buffer_size = 0;
   gchar *profile_source = NULL;
@@ -1429,6 +1431,7 @@ void dt_colorspaces_set_display_profile()
   /* let's have a look at the xatom, just in case ... */
   if(use_xatom)
   {
+    GtkWidget *widget = dt_ui_center(darktable.gui->ui);
     GdkScreen *screen = gtk_widget_get_screen(widget);
     if(screen == NULL) screen = gdk_screen_get_default();
     int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
@@ -1458,8 +1461,8 @@ void dt_colorspaces_set_display_profile()
 #endif
 
 #elif defined GDK_WINDOWING_QUARTZ
-  (void)widget;
 #if 0
+  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if(screen == NULL) screen = gdk_screen_get_default();
   int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
@@ -1486,7 +1489,6 @@ void dt_colorspaces_set_display_profile()
   profile_source = g_strdup("osx color profile api");
 #endif
 #elif defined G_OS_WIN32
-  (void)widget;
   HDC hdc = GetDC(NULL);
   if(hdc != NULL)
   {

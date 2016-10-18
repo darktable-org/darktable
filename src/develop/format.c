@@ -68,11 +68,11 @@ void default_input_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
   if(self->priority > _iop_module_demosaic) return;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) dsc->channels = 1;
+  if(pipe->image.flags & DT_IMAGE_RAW) dsc->channels = 1;
 
   if(self->priority > _iop_module_rawprepare) return;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
     dsc->datatype = TYPE_UINT16;
 }
 
@@ -86,11 +86,11 @@ void default_output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
   if(self->priority >= _iop_module_demosaic) return;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) dsc->channels = 1;
+  if(pipe->image.flags & DT_IMAGE_RAW) dsc->channels = 1;
 
   if(self->priority >= _iop_module_rawprepare) return;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
     dsc->datatype = TYPE_UINT16;
 }
 

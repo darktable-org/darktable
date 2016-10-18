@@ -3311,17 +3311,17 @@ void gui_init (dt_iop_module_t *module)
 
   gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
 
-  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click to add node\nright click to remove path");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl-click to add node\nright click to remove path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click : linear or feathered\n"
-                                                              "ctrl+click : autosmooth, cups, smooth, symmetrical\n"
-                                                              "right-click to remove");
+                                                              "ctrl-click : autosmooth, cusp, smooth, symmetrical\n"
+                                                              "right click to remove");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_RADIUSPOINT].hint    = _("drag to adjust warp radius");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT1].hint = _("drag to adjust hardness (center)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT2].hint = _("drag to adjust hardness (feather)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\n"
-                                                              "ctrl+click : linear, grow, and shrink");
+                                                              "ctrl-click : linear, grow, and shrink");
 }
 
 void gui_cleanup (dt_iop_module_t *module)

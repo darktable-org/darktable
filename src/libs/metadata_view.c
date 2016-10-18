@@ -211,7 +211,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     else
     {
       sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images limit 1",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images LIMIT 1",
                                   -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW) mouse_over_id = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
@@ -234,9 +234,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     dt_image_film_roll(img, value, sizeof(value));
     _metadata_update_value(d->metadata[md_internal_filmroll], value);
-    const int tp = 512;
-    char tooltip[tp];
-    snprintf(tooltip, tp, _("double click to jump to film roll\n%s"), value);
+
+    char tooltip[512];
+    snprintf(tooltip, sizeof(tooltip), _("double click to jump to film roll\n%s"), value);
     gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_filmroll]), tooltip);
 
     snprintf(value, sizeof(value), "%d", img->id);
@@ -583,7 +583,7 @@ static void _jump_to()
   {
     sqlite3_stmt *stmt;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
 
     if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);

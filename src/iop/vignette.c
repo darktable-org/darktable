@@ -735,11 +735,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dither = 0.0f;
   }
 
-  unsigned int tea_states[2 * dt_get_num_threads()];
-  memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
+  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, yscale, xscale, tea_states, dither) schedule(static)
+#pragma omp parallel for default(none) shared(data, yscale, xscale, dither) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -807,6 +806,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       out[3] = col3;
     }
   }
+
+  free(tea_states);
 }
 
 
@@ -1047,7 +1048,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
   dt_iop_vignette_params_t p;
   p.scale = 40.0f;
   p.falloff_scale = 100.0f;
@@ -1061,7 +1062,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.dithering = 0;
   p.unbound = TRUE;
   dt_gui_presets_add_generic(_("lomo"), self->op, self->version(), &p, sizeof(p), 1);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
