@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-13 18:27+0200\n"
-"PO-Revision-Date: 2016-10-13 18:29+0200\n"
+"POT-Creation-Date: 2016-10-18 19:42+0200\n"
+"PO-Revision-Date: 2016-10-18 19:44+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -933,13 +933,13 @@ msgstr ""
 #: ../src/common/collection.c:845 ../src/develop/lightroom.c:919
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:448
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:597
-#: ../src/iop/temperature.c:1286 ../src/libs/collect.c:954
+#: ../src/iop/temperature.c:1328 ../src/libs/collect.c:954
 #: ../src/libs/collect.c:955 ../src/libs/collect.c:956
 msgid "red"
 msgstr "rouge"
 
 #: ../src/common/collection.c:847 ../src/develop/lightroom.c:921
-#: ../src/iop/temperature.c:1277 ../src/libs/collect.c:958
+#: ../src/iop/temperature.c:1319 ../src/libs/collect.c:958
 #: ../src/libs/collect.c:959 ../src/libs/collect.c:960
 msgid "yellow"
 msgstr "jaune"
@@ -947,7 +947,7 @@ msgstr "jaune"
 #: ../src/common/collection.c:849 ../src/develop/lightroom.c:923
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:449
 #: ../src/iop/channelmixer.c:465 ../src/iop/colorbalance.c:604
-#: ../src/iop/temperature.c:1274 ../src/iop/temperature.c:1287
+#: ../src/iop/temperature.c:1316 ../src/iop/temperature.c:1329
 #: ../src/libs/collect.c:962 ../src/libs/collect.c:963
 #: ../src/libs/collect.c:964
 msgid "green"
@@ -956,7 +956,7 @@ msgstr "vert"
 #: ../src/common/collection.c:851 ../src/develop/lightroom.c:925
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:450
 #: ../src/iop/channelmixer.c:471 ../src/iop/colorbalance.c:611
-#: ../src/iop/temperature.c:1288 ../src/libs/collect.c:966
+#: ../src/iop/temperature.c:1330 ../src/libs/collect.c:966
 #: ../src/libs/collect.c:967 ../src/libs/collect.c:968
 msgid "blue"
 msgstr "bleu"
@@ -1072,29 +1072,29 @@ msgstr "erreur pendant l'impression de l'image %d sur « %s »"
 msgid "printing image %d on `%s'"
 msgstr "impression de l'image %d sur « %s »"
 
-#: ../src/common/darktable.c:325
+#: ../src/common/darktable.c:327
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange « %s »"
 
-#: ../src/common/darktable.c:342
+#: ../src/common/darktable.c:344
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier « %s »"
 
-#: ../src/common/darktable.c:365
+#: ../src/common/darktable.c:367
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:378 ../src/libs/import.c:838
+#: ../src/common/darktable.c:380 ../src/libs/import.c:838
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1552 ../src/common/database.c:1628
+#: ../src/common/database.c:1574 ../src/common/database.c:1650
 #, c-format
 msgid ""
 "an error has occured while trying to open the database from\n"
@@ -1114,15 +1114,15 @@ msgstr ""
 "la base de données depuis une sauvegarde ou re-démarrer avec une nouvelle "
 "base de données?"
 
-#: ../src/common/database.c:1562 ../src/common/database.c:1638
+#: ../src/common/database.c:1584 ../src/common/database.c:1660
 msgid "darktable - error opening database"
 msgstr "darktable - erreur lors de l'ouverture de la base de données"
 
-#: ../src/common/database.c:1563 ../src/common/database.c:1639
+#: ../src/common/database.c:1585 ../src/common/database.c:1661
 msgid "close darktable"
 msgstr "quitter darktable"
 
-#: ../src/common/database.c:1563 ../src/common/database.c:1639
+#: ../src/common/database.c:1585 ../src/common/database.c:1661
 msgid "delete database"
 msgstr "effacer la base de données"
 
@@ -2281,7 +2281,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:719 ../src/gui/accelerators.c:884
 #: ../src/gui/accelerators.c:910 ../src/gui/presets.c:191
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:640
-#: ../src/iop/temperature.c:1337 ../src/libs/import.c:555 ../src/libs/lib.c:308
+#: ../src/iop/temperature.c:1379 ../src/libs/import.c:555 ../src/libs/lib.c:308
 #: ../src/libs/lib.c:333 ../src/libs/lib.c:1151
 msgid "preset"
 msgstr "pré-réglage"
@@ -4590,12 +4590,12 @@ msgid "fusion"
 msgstr "fusion"
 
 #: ../src/iop/basecurve.c:1343
-msgid "0ev, +3ev"
-msgstr "0IL, +3IL"
+msgid "two exposures"
+msgstr "deux expositions"
 
 #: ../src/iop/basecurve.c:1344
-msgid "0ev, +3ev, +6ev"
-msgstr "0IL, +3IL, +6IL"
+msgid "three exposures"
+msgstr "trois expositions"
 
 #: ../src/iop/basecurve.c:1345
 msgid ""
@@ -4641,19 +4641,19 @@ msgid "radius"
 msgstr "rayon"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:169
+#: ../src/iop/temperature.c:196
 msgctxt "accel"
 msgid "red"
 msgstr "rouge"
 
 #: ../src/iop/bilateral.cc:86 ../src/iop/channelmixer.c:131
-#: ../src/iop/temperature.c:170
+#: ../src/iop/temperature.c:197
 msgctxt "accel"
 msgid "green"
 msgstr "vert"
 
 #: ../src/iop/bilateral.cc:87 ../src/iop/channelmixer.c:132
-#: ../src/iop/temperature.c:171
+#: ../src/iop/temperature.c:198
 msgctxt "accel"
 msgid "blue"
 msgstr "bleu"
@@ -5592,59 +5592,59 @@ msgstr "niveau d'égalisation de l'histogramme"
 msgid "output color profile"
 msgstr "profil de couleur de sortie "
 
-#: ../src/iop/colorout.c:653
+#: ../src/iop/colorout.c:658
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "profil de sortie non trouvé, remplacé par sRGB !"
 
-#: ../src/iop/colorout.c:670
+#: ../src/iop/colorout.c:675
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "profil d'épreuvage non trouvé, remplacé par sRGB !"
 
-#: ../src/iop/colorout.c:713
+#: ../src/iop/colorout.c:718
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "profil de sortie non supporté, remplacé par sRGB !"
 
-#: ../src/iop/colorout.c:851
+#: ../src/iop/colorout.c:858
 msgid "output intent"
 msgstr "rendu (sortie)"
 
-#: ../src/iop/colorout.c:852 ../src/libs/export.c:617
+#: ../src/iop/colorout.c:859 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1063 ../src/libs/print_settings.c:1274
 #: ../src/views/darkroom.c:1724 ../src/views/lighttable.c:2431
 msgid "perceptual"
 msgstr "perceptif"
 
-#: ../src/iop/colorout.c:853 ../src/libs/export.c:618
+#: ../src/iop/colorout.c:860 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1064 ../src/libs/print_settings.c:1275
 #: ../src/views/darkroom.c:1725 ../src/views/lighttable.c:2432
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
-#: ../src/iop/colorout.c:854 ../src/libs/export.c:619
+#: ../src/iop/colorout.c:861 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1065 ../src/libs/print_settings.c:1276
 #: ../src/views/darkroom.c:1726 ../src/views/lighttable.c:2433
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/colorout.c:855 ../src/libs/export.c:620
+#: ../src/iop/colorout.c:862 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1066 ../src/libs/print_settings.c:1277
 #: ../src/views/darkroom.c:1727 ../src/views/lighttable.c:2434
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
-#: ../src/iop/colorout.c:864
+#: ../src/iop/colorout.c:871
 msgid "output profile"
 msgstr "profil (sortie)"
 
-#: ../src/iop/colorout.c:873
+#: ../src/iop/colorout.c:880
 msgid "rendering intent"
 msgstr ""
 "mode de rendu\n"
 "définit comment les couleurs hors gamut sont reproduites\n"
 "perceptif est adapté à la photographie"
 
-#: ../src/iop/colorout.c:874
+#: ../src/iop/colorout.c:881
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC dans %s/color/out ou %s/color/out"
@@ -7527,75 +7527,90 @@ msgctxt "modulename"
 msgid "white balance"
 msgstr "balance des blancs"
 
-#: ../src/iop/temperature.c:167
+#: ../src/iop/temperature.c:194
 msgctxt "accel"
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:168
+#: ../src/iop/temperature.c:195
 msgctxt "accel"
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:695
+#: ../src/iop/temperature.c:200
+msgctxt "accel"
+msgid "preset/camera"
+msgstr "pré-réglage/appareil"
+
+#: ../src/iop/temperature.c:201
+msgctxt "accel"
+msgid "preset/camera neutral"
+msgstr "pré-réglage/neutre boîtier"
+
+#: ../src/iop/temperature.c:202
+msgctxt "accel"
+msgid "preset/spot"
+msgstr "pré-réglages/spot"
+
+#: ../src/iop/temperature.c:737
 msgctxt "white balance"
 msgid "camera"
 msgstr "boîtier"
 
-#: ../src/iop/temperature.c:696
+#: ../src/iop/temperature.c:738
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "neutre boîtier"
 
-#: ../src/iop/temperature.c:697
+#: ../src/iop/temperature.c:739
 msgctxt "white balance"
 msgid "spot"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:872
+#: ../src/iop/temperature.c:914
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "matrice couleur « %s » non trouvée pour l'image!"
 
-#: ../src/iop/temperature.c:916
+#: ../src/iop/temperature.c:958
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "impossible de récupérer la balance des blancs du boîtier pour « %s » !"
 
-#: ../src/iop/temperature.c:1275
+#: ../src/iop/temperature.c:1317
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1276
+#: ../src/iop/temperature.c:1318
 msgid "cyan"
 msgstr "cyan"
 
-#: ../src/iop/temperature.c:1289
+#: ../src/iop/temperature.c:1331
 msgid "emerald"
 msgstr "émeraude"
 
-#: ../src/iop/temperature.c:1322
+#: ../src/iop/temperature.c:1364
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:1323
+#: ../src/iop/temperature.c:1365
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:1339
+#: ../src/iop/temperature.c:1381
 msgid "choose white balance preset from camera"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:1342
+#: ../src/iop/temperature.c:1384
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:1343
+#: ../src/iop/temperature.c:1385
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1347
+#: ../src/iop/temperature.c:1389
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
@@ -10844,6 +10859,12 @@ msgstr ""
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
 
+#~ msgid "0ev, +3ev"
+#~ msgstr "0IL, +3IL"
+
+#~ msgid "0ev, +3ev, +6ev"
+#~ msgstr "0IL, +3IL, +6IL"
+
 #~ msgid "color checker lut"
 #~ msgstr "table correspondance couleurs"
 
@@ -11315,9 +11336,6 @@ msgstr ""
 
 #~ msgid "cache locally"
 #~ msgstr "copier localement"
-
-#~ msgid "reset cache"
-#~ msgstr "suppr. copie locale"
 
 #~ msgid "Beta RGB (compatible)"
 #~ msgstr "Beta RGB (compatible)"
